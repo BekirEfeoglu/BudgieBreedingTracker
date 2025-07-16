@@ -1,0 +1,30 @@
+
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#10b981;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#059669;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background circle -->
+  <circle cx="64" cy="64" r="64" fill="url(#bg)"/>
+  
+  <!-- Bird body -->
+  <ellipse cx="64" cy="80" rx="42.666666666666664" ry="32" fill="white" opacity="0.9"/>
+  
+  <!-- Bird head -->
+  <circle cx="64" cy="42.66666666666667" r="21.333333333333332" fill="white" opacity="0.9"/>
+  
+  <!-- Bird eye -->
+  <circle cx="74.66666666666667" cy="42.66666666666667" r="6.4" fill="#374151"/>
+  
+  <!-- Bird beak -->
+  <polygon points="57.6,48 70.4,48 64,32" fill="#f59e0b"/>
+  
+  <!-- Bird wing -->
+  <ellipse cx="48" cy="64" rx="16" ry="10.666666666666666" fill="white" opacity="0.7"/>
+  
+  <!-- Bird tail -->
+  <polygon points="106.66666666666666,64 115.2,48 115.2,80" fill="white" opacity="0.8"/>
+</svg>

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">BudgieBreedingTracker</string>
+    <string name="title_activity_main">BudgieBreedingTracker</string>
+    <string name="package_name">com.budgienest.app</string>
+    <string name="custom_url_scheme">com.budgienest.app</string>
+</resources>

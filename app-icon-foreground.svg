@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="108" height="108" viewBox="0 0 108 108" xmlns="http://www.w3.org/2000/svg">
+  <!-- Foreground Layer for Adaptive Icon -->
+  <defs>
+    <linearGradient id="birdGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FEF3C7;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#FDE68A;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FCD34D;stop-opacity:1" />
+    </linearGradient>
+    
+    <linearGradient id="wingGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FDE68A;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#F59E0B;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Nest Background -->
+  <ellipse cx="54" cy="75" rx="30" ry="18" fill="#FEF3C7" opacity="0.4"/>
+  
+  <!-- Budgie Bird Body -->
+  <ellipse cx="54" cy="55" rx="18" ry="12" fill="url(#birdGradient)"/>
+  
+  <!-- Bird Head -->
+  <circle cx="67" cy="48" r="9" fill="url(#birdGradient)"/>
+  
+  <!-- Bird Beak -->
+  <path d="M76 48 L82 44 L82 52 Z" fill="#F59E0B"/>
+  
+  <!-- Bird Eye -->
+  <circle cx="70" cy="45" r="2.5" fill="#1F2937"/>
+  <circle cx="70" cy="45" r="1" fill="white"/>
+  
+  <!-- Bird Wing -->
+  <ellipse cx="48" cy="52" rx="6" ry="9" fill="url(#wingGradient)" transform="rotate(-15 48 52)"/>
+  
+  <!-- Bird Tail -->
+  <path d="M36 55 L28 48 L28 62 Z" fill="url(#wingGradient)"/>
+  
+  <!-- Eggs in Nest -->
+  <ellipse cx="45" cy="75" rx="5" ry="7" fill="white" opacity="0.9"/>
+  <ellipse cx="54" cy="77" rx="4" ry="6" fill="white" opacity="0.9"/>
+  <ellipse cx="63" cy="75" rx="5" ry="7" fill="white" opacity="0.9"/>
+  
+  <!-- App Text -->
+  <text x="54" y="95" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="white">BBT</text>
+</svg> 
