@@ -4,7 +4,7 @@ Modern muhabbet kuşu üretim takip uygulaması. Kuluçka, yumurta, yavru ve soy
 
 ## Proje Bilgileri
 
-**URL**: https://lovable.dev/projects/51ad85f2-ff1b-433c-8427-a15796131532
+**URL**: 
 
 ## Özellikler
 
@@ -46,9 +46,7 @@ npm run dev
 
 ## Geliştirme
 
-**Lovable ile Düzenleme**
 
-[Lovable Projesi](https://lovable.dev/projects/51ad85f2-ff1b-433c-8427-a15796131532) adresini ziyaret ederek prompt ile düzenlemeye başlayabilirsiniz.
 
 **Yerel IDE ile Düzenleme**
 
