@@ -44,8 +44,10 @@ export const DateTimeInput: React.FC<DateTimeInputProps> = ({
     if (newDate) {
       // Eğer saat varsa, yeni tarihe saati ekle
       if (time && onTimeChange) {
-        const [hours, minutes] = time.split(':').map(Number);
-        newDate.setHours(hours || 0, minutes || 0, 0, 0);
+        const timeParts = time.split(':').map(Number);
+        const hours = timeParts[0] || 0;
+        const minutes = timeParts[1] || 0;
+        newDate.setHours(hours, minutes, 0, 0);
       }
       onDateChange(newDate);
     }
@@ -57,9 +59,11 @@ export const DateTimeInput: React.FC<DateTimeInputProps> = ({
       onTimeChange(newTime);
       
       // Tarihe yeni saati uygula
-      const [hours, minutes] = newTime.split(':').map(Number);
+      const timeParts = newTime.split(':').map(Number);
+      const hours = timeParts[0] || 0;
+      const minutes = timeParts[1] || 0;
       const newDate = new Date(date);
-      newDate.setHours(hours || 0, minutes || 0, 0, 0);
+      newDate.setHours(hours, minutes, 0, 0);
       onDateChange(newDate);
     }
   };

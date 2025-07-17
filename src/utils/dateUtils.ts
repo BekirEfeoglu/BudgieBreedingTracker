@@ -26,7 +26,15 @@ export const isFutureDate = (date: string | Date): boolean => {
   try {
     const dateObj = typeof date === 'string' ? parseISO(date) : date;
     if (!isValid(dateObj)) return false;
-    return dateObj > getTodayEnd();
+    
+    // Bugünün başlangıcını al (00:00:00)
+    const todayStart = getTodayStart();
+    
+    // Tarihin sadece gün kısmını karşılaştır (saat bilgisini göz ardı et)
+    const dateOnly = new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate());
+    const todayOnly = new Date(todayStart.getFullYear(), todayStart.getMonth(), todayStart.getDate());
+    
+    return dateOnly > todayOnly;
   } catch {
     return false;
   }
@@ -37,7 +45,15 @@ export const isPastDate = (date: string | Date): boolean => {
   try {
     const dateObj = typeof date === 'string' ? parseISO(date) : date;
     if (!isValid(dateObj)) return false;
-    return dateObj < getTodayStart();
+    
+    // Bugünün başlangıcını al (00:00:00)
+    const todayStart = getTodayStart();
+    
+    // Tarihin sadece gün kısmını karşılaştır (saat bilgisini göz ardı et)
+    const dateOnly = new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate());
+    const todayOnly = new Date(todayStart.getFullYear(), todayStart.getMonth(), todayStart.getDate());
+    
+    return dateOnly < todayOnly;
   } catch {
     return false;
   }
@@ -298,9 +314,11 @@ export const combineDateAndTime = (date: string | Date, time: string): Date => {
       throw new Error('Geçersiz tarih');
     }
     
-    const [hours, minutes] = time.split(':').map(Number);
+    const timeParts = time.split(':').map(Number);
+    const hours = timeParts[0];
+    const minutes = timeParts[1];
     
-    if (isNaN(hours) || isNaN(minutes)) {
+    if (hours === undefined || minutes === undefined || isNaN(hours) || isNaN(minutes)) {
       throw new Error('Geçersiz saat formatı');
     }
     
@@ -447,9 +465,11 @@ export const getDateValidationMessage = (date: string | Date, fieldName: string)
 // Yeni: Saat doğrulama mesajları
 export const getTimeValidationMessage = (time: string): string | null => {
   try {
-    const [hours, minutes] = time.split(':').map(Number);
+    const timeParts = time.split(':').map(Number);
+    const hours = timeParts[0];
+    const minutes = timeParts[1];
     
-    if (isNaN(hours) || isNaN(minutes)) {
+    if (hours === undefined || minutes === undefined || isNaN(hours) || isNaN(minutes)) {
       return 'Geçerli bir saat formatı giriniz (HH:MM)';
     }
     
