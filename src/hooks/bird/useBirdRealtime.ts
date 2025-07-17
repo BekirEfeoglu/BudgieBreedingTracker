@@ -71,9 +71,22 @@ export const useBirdRealtime = (setBirds: React.Dispatch<React.SetStateAction<Bi
             if (payload.eventType === 'INSERT' && payload.new) {
               const newBird = transformBird(payload.new as DatabaseBird);
               setBirds(prev => {
-                const exists = prev.some(bird => bird.id === newBird.id);
-                if (exists) {
-                  console.log('🔄 Bird already exists, skipping insert');
+                // Çok sıkı kontrol: ID, isim, cinsiyet, halka numarası ve oluşturma zamanı kontrolü
+                const existsById = prev.some(bird => bird.id === newBird.id);
+                const existsByNameAndGender = prev.some(bird => 
+                  bird.name === newBird.name && 
+                  bird.gender === newBird.gender
+                );
+                const existsByRingNumber = newBird.ringNumber ? 
+                  prev.some(bird => bird.ringNumber === newBird.ringNumber) : false;
+                
+                if (existsById || existsByNameAndGender || existsByRingNumber) {
+                  console.log('🔄 Bird already exists, skipping insert:', {
+                    name: newBird.name,
+                    existsById,
+                    existsByNameAndGender,
+                    existsByRingNumber
+                  });
                   return prev;
                 }
                 console.log('🔄 Adding new bird via realtime:', newBird.name);

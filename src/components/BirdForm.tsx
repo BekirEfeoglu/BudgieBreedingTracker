@@ -32,6 +32,7 @@ interface BirdFormProps {
 const BirdForm = ({ isOpen, onClose, onSave, existingBirds, editingBird }: BirdFormProps) => {
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [lastSubmitTime, setLastSubmitTime] = useState(0);
   const isEditing = !!editingBird;
   const { validateBirdForm, schemas } = useFormValidation();
   const { t } = useLanguage();
@@ -93,6 +94,12 @@ const BirdForm = ({ isOpen, onClose, onSave, existingBirds, editingBird }: BirdF
   };
 
   const onSubmit = async (data: any) => {
+    const now = Date.now();
+    if (isSubmitting || (now - lastSubmitTime) < 2000) {
+      console.log('🔄 Form submission blocked - already in progress or too recent');
+      return;
+    }
+    setLastSubmitTime(now);
     setIsSubmitting(true);
     
     try {
@@ -145,11 +152,6 @@ const BirdForm = ({ isOpen, onClose, onSave, existingBirds, editingBird }: BirdF
       console.log('Transformed data for onSave:', transformedData);
       
       await onSave(transformedData);
-      
-      toast({
-        title: 'Başarılı',
-        description: isEditing ? 'Kuş bilgileri güncellendi.' : 'Yeni kuş eklendi.',
-      });
       
       onClose();
     } catch (error) {
@@ -382,7 +384,7 @@ const BirdForm = ({ isOpen, onClose, onSave, existingBirds, editingBird }: BirdF
                             mode="single"
                             selected={field.value}
                             onSelect={field.onChange}
-                            disabled={(date) => date > new Date()}
+                            disabled={(date) => date > new Date() || false}
                             initialFocus
                             className="pointer-events-auto"
                             captionLayout="dropdown-buttons"

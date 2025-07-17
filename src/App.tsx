@@ -92,29 +92,23 @@ const AppContainer = () => {
         const updatedBird = { ...editingBird, ...birdData };
         await editBird(updatedBird); // Supabase'e de güncelleme gönder
       } else {
-        // Yeni kuş ekleme
-        const newBird = {
-          id: Date.now().toString(),
-          ...birdData
-        } as Bird;
-        // Supabase'e kaydet
+        // Yeni kuş ekleme - sadece Supabase'e kaydet, local state güncellemesi useBirdsData hook'unda yapılacak
         const result = await insertRecord('birds', {
-          name: newBird.name,
-          gender: newBird.gender,
-          color: newBird.color ? newBird.color : null,
-          birth_date: newBird.birthDate ? (typeof newBird.birthDate === 'string' ? newBird.birthDate : new Date(newBird.birthDate).toISOString().split('T')[0]) : null,
-          ring_number: newBird.ringNumber ? newBird.ringNumber : null,
-          photo_url: newBird.photo ? newBird.photo : null,
-          health_notes: newBird.healthNotes ? newBird.healthNotes : null,
-          mother_id: newBird.motherId ? newBird.motherId : null,
-          father_id: newBird.fatherId ? newBird.fatherId : null
+          name: birdData.name,
+          gender: birdData.gender,
+          color: birdData.color ? birdData.color : null,
+          birth_date: birdData.birthDate ? (typeof birdData.birthDate === 'string' ? birdData.birthDate : new Date(birdData.birthDate).toISOString().split('T')[0]) : null,
+          ring_number: birdData.ringNumber ? birdData.ringNumber : null,
+          photo_url: birdData.photo ? birdData.photo : null,
+          health_notes: birdData.healthNotes ? birdData.healthNotes : null,
+          mother_id: birdData.motherId ? birdData.motherId : null,
+          father_id: birdData.fatherId ? birdData.fatherId : null
         });
-        if (result.success) {
-          setBirds(prev => [...prev, newBird]);
-          toast({ title: 'Başarılı', description: 'Kuş başarıyla eklendi.' });
-        } else {
+        if (!result.success) {
           toast({ title: 'Hata', description: 'Kuş eklenirken bir hata oluştu.', variant: 'destructive' });
+          return;
         }
+        toast({ title: 'Başarılı', description: 'Kuş başarıyla eklendi.' });
       }
       setIsBirdFormOpen(false);
       setEditingBird(null);
@@ -126,7 +120,7 @@ const AppContainer = () => {
         variant: 'destructive' 
       });
     }
-  }, [editingBird, setBirds, insertRecord, toast, editBird]);
+  }, [editingBird, insertRecord, toast, editBird]);
 
   const handleCloseBirdForm = useCallback(() => {
     setIsBirdFormOpen(false);
