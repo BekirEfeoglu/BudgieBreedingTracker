@@ -55,19 +55,41 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }): React
     
     try {
       debug('Fetching profile for user', { userId }, 'Auth');
+      
       const { data, error } = await supabase
         .from('profiles')
-        .select('*')
+        .select('id, first_name, last_name, avatar_url, updated_at')
         .eq('id', userId)
         .single();
 
-      if (error && error.code !== 'PGRST116') {
-        logError('Error fetching profile', error, 'Auth');
-        return;
-      }
+      if (error) {
+        if (error.code === 'PGRST116') {
+          // Profile doesn't exist, create it
+          const { data: newProfile, error: createError } = await supabase
+            .from('profiles')
+            .insert({
+              id: userId,
+              first_name: null,
+              last_name: null,
+              avatar_url: null
+            })
+            .select()
+            .single();
 
-      debug('Profile data loaded successfully', { profileExists: !!data }, 'Auth');
-      setProfile(data as Profile | null);
+          if (createError) {
+            logError('Failed to create profile', createError, 'Auth');
+            return;
+          }
+
+          setProfile(newProfile as Profile);
+        } else {
+          logError('Error fetching profile', error, 'Auth');
+          return;
+        }
+      } else {
+        debug('Profile data loaded successfully', { profileExists: !!data }, 'Auth');
+        setProfile(data as Profile);
+      }
     } catch (error) {
       logError('Exception fetching profile', error, 'Auth');
     } finally {
@@ -264,27 +286,34 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }): React
   };
 
   const updateProfile = async (updates: Partial<Profile>): Promise<{ error: AuthError | null }> => {
-    if (!user) return { error: { message: 'No user found' } as AuthError };
+    if (!user) {
+      return { error: { message: 'No user found' } as AuthError };
+    }
 
     // Sanitize input data
-    const sanitizedUpdates = {
+    const sanitizedUpdates: Partial<Profile> = {
       ...updates,
-      first_name: updates.first_name ? sanitizeText(updates.first_name) : updates.first_name,
-      last_name: updates.last_name ? sanitizeText(updates.last_name) : updates.last_name,
+      first_name: updates.first_name ? sanitizeText(updates.first_name) : updates.first_name || null,
+      last_name: updates.last_name ? sanitizeText(updates.last_name) : updates.last_name || null,
     };
 
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('profiles')
         .update(sanitizedUpdates)
-        .eq('id', user.id);
+        .eq('id', user.id)
+        .select();
 
-      if (!error) {
-        setProfile((prev: Profile | null) => prev ? { ...prev, ...sanitizedUpdates } : null);
-        debug('Profile updated successfully', { updates: Object.keys(sanitizedUpdates) }, 'Auth');
+      if (error) {
+        logError('Update profile failed', error, 'Auth');
+        return { error: { message: error.message } as AuthError };
       }
 
-      return { error };
+      // Update local state
+      setProfile((prev: Profile | null) => prev ? { ...prev, ...sanitizedUpdates } : null);
+      
+      debug('Profile updated successfully', { updates: Object.keys(sanitizedUpdates) }, 'Auth');
+      return { error: null };
     } catch (error) {
       logError('Update profile failed', error, 'Auth');
       return { error: error as AuthError };

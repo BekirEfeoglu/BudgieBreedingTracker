@@ -105,6 +105,7 @@ Eğer sorun devam ederse:
    - Hata oluştuğunda yaptığınız işlemler
 
 3. **İletişim:**
+   - admin@budgiebreedingtracker.com adresine e-posta gönderin
    - Debug bilgilerini ve topladığınız bilgileri paylaşın
    - Hatanın ne zaman oluştuğunu belirtin
 

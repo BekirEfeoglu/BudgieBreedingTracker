@@ -71,24 +71,26 @@ export const useBirdRealtime = (setBirds: React.Dispatch<React.SetStateAction<Bi
             if (payload.eventType === 'INSERT' && payload.new) {
               const newBird = transformBird(payload.new as DatabaseBird);
               setBirds(prev => {
-                // Çok sıkı kontrol: ID, isim, cinsiyet, halka numarası ve oluşturma zamanı kontrolü
+                // Sadece ID kontrolü yap, optimistic update ile çakışmayı önle
                 const existsById = prev.some(bird => bird.id === newBird.id);
-                const existsByNameAndGender = prev.some(bird => 
-                  bird.name === newBird.name && 
-                  bird.gender === newBird.gender
-                );
-                const existsByRingNumber = newBird.ringNumber ? 
-                  prev.some(bird => bird.ringNumber === newBird.ringNumber) : false;
                 
-                if (existsById || existsByNameAndGender || existsByRingNumber) {
-                  console.log('🔄 Bird already exists, skipping insert:', {
-                    name: newBird.name,
-                    existsById,
-                    existsByNameAndGender,
-                    existsByRingNumber
-                  });
+                if (existsById) {
+                  console.log('🔄 Bird already exists by ID, skipping insert:', newBird.name);
                   return prev;
                 }
+                
+                // Eğer aynı isim ve cinsiyet varsa, muhtemelen optimistic update ile eklenmiş
+                const existsByNameAndGender = prev.some(bird => 
+                  bird.name === newBird.name && 
+                  bird.gender === newBird.gender &&
+                  bird.id !== newBird.id // Farklı ID'ler varsa ekle
+                );
+                
+                if (existsByNameAndGender) {
+                  console.log('🔄 Bird with same name and gender exists, but different ID, adding:', newBird.name);
+                  return [newBird, ...prev];
+                }
+                
                 console.log('🔄 Adding new bird via realtime:', newBird.name);
                 return [newBird, ...prev];
               });

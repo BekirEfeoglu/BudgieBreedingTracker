@@ -92,7 +92,25 @@ const AppContainer = () => {
         const updatedBird = { ...editingBird, ...birdData };
         await editBird(updatedBird); // Supabase'e de güncelleme gönder
       } else {
-        // Yeni kuş ekleme - sadece Supabase'e kaydet, local state güncellemesi useBirdsData hook'unda yapılacak
+        // Yeni kuş ekleme - Optimistic update ile hemen local state'e ekle
+        const newBirdId = crypto.randomUUID();
+        const newBird: Bird = {
+          id: newBirdId,
+          name: birdData.name || '',
+          gender: birdData.gender || 'unknown',
+          color: birdData.color || '',
+          birthDate: birdData.birthDate ? (typeof birdData.birthDate === 'string' ? birdData.birthDate : new Date(birdData.birthDate).toISOString().split('T')[0]) : '',
+          ringNumber: birdData.ringNumber || '',
+          photo: birdData.photo || '',
+          healthNotes: birdData.healthNotes || '',
+          motherId: birdData.motherId || '',
+          fatherId: birdData.fatherId || ''
+        };
+
+        // Optimistic update - hemen local state'e ekle
+        setBirds(prev => [newBird, ...prev]);
+
+        // Supabase'e kaydet
         const result = await insertRecord('birds', {
           name: birdData.name,
           gender: birdData.gender,
@@ -104,10 +122,14 @@ const AppContainer = () => {
           mother_id: birdData.motherId ? birdData.motherId : null,
           father_id: birdData.fatherId ? birdData.fatherId : null
         });
+
         if (!result.success) {
+          // Hata durumunda optimistic update'i geri al
+          setBirds(prev => prev.filter(bird => bird.id !== newBirdId));
           toast({ title: 'Hata', description: 'Kuş eklenirken bir hata oluştu.', variant: 'destructive' });
           return;
         }
+
         toast({ title: 'Başarılı', description: 'Kuş başarıyla eklendi.' });
       }
       setIsBirdFormOpen(false);
@@ -120,7 +142,7 @@ const AppContainer = () => {
         variant: 'destructive' 
       });
     }
-  }, [editingBird, insertRecord, toast, editBird]);
+  }, [editingBird, insertRecord, toast, editBird, setBirds]);
 
   const handleCloseBirdForm = useCallback(() => {
     setIsBirdFormOpen(false);

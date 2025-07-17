@@ -298,6 +298,8 @@ const ProfilePage = ({ onBack }: ProfilePageProps) => {
             </CardContent>
           </Card>
 
+
+
           {/* Action Buttons */}
           <div className="space-y-4">
             <Card className="budgie-card">

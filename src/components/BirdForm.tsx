@@ -59,7 +59,7 @@ const BirdForm = ({ isOpen, onClose, onSave, existingBirds, editingBird }: BirdF
         name: editingBird.name || '',
         gender: editingBird.gender || '',
         color: editingBird.color || '',
-        birthDate: editingBird.birthDate ? new Date(editingBird.birthDate) : null,
+        birthDate: editingBird.birthDate ? new Date(editingBird.birthDate) : undefined,
         ringNumber: editingBird.ringNumber || '',
         motherId: editingBird.motherId || '',
         fatherId: editingBird.fatherId || '',
@@ -124,6 +124,22 @@ const BirdForm = ({ isOpen, onClose, onSave, existingBirds, editingBird }: BirdF
           });
           return;
         }
+      }
+
+      // İsim tekrarlılık kontrolü (aynı isim ve cinsiyet)
+      const existingBirdWithSameName = existingBirds.find(bird => 
+        bird.name.toLowerCase() === validatedData.name.toLowerCase() && 
+        bird.gender === validatedData.gender &&
+        bird.id !== editingBird?.id
+      );
+      
+      if (existingBirdWithSameName) {
+        toast({
+          title: 'İsim Hatası',
+          description: `"${validatedData.name}" adlı ${validatedData.gender === 'female' ? 'dişi' : validatedData.gender === 'male' ? 'erkek' : 'bilinmeyen cinsiyetli'} kuş zaten mevcut.`,
+          variant: 'destructive'
+        });
+        return;
       }
 
       // Tarih kontrolleri
@@ -382,7 +398,7 @@ const BirdForm = ({ isOpen, onClose, onSave, existingBirds, editingBird }: BirdF
                           </div>
                           <Calendar
                             mode="single"
-                            selected={field.value}
+                            selected={field.value || undefined}
                             onSelect={field.onChange}
                             disabled={(date) => date > new Date() || false}
                             initialFocus

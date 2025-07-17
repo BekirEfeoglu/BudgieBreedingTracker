@@ -61,7 +61,23 @@ export const useBirdData = () => {
         sample: transformedBirds.slice(0, 2).map(b => ({ id: b.id, name: b.name }))
       });
       
-      setBirds(transformedBirds);
+      // Mevcut optimistic update'leri koruyarak güncelle
+      setBirds(prev => {
+        // Optimistic update'ler ile veritabanı verilerini birleştir
+        const optimisticBirds = prev.filter(bird => 
+          !transformedBirds.some(dbBird => dbBird.id === bird.id)
+        );
+        
+        const allBirds = [...transformedBirds, ...optimisticBirds];
+        console.log('🔄 useBirdData: Merged birds:', {
+          dbCount: transformedBirds.length,
+          optimisticCount: optimisticBirds.length,
+          totalCount: allBirds.length
+        });
+        
+        return allBirds;
+      });
+      
       setError(null);
 
     } catch (err) {

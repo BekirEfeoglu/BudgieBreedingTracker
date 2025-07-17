@@ -144,7 +144,7 @@ class GlobalErrorBoundary extends Component<Props, State> {
               <div className="text-center text-sm text-gray-500 border-t pt-4">
                 <p>
                   Sorun devam ederse, lütfen tarayıcınızın önbelleğini temizleyin 
-                  veya destek ekibiyle iletişime geçin.
+                  veya uygulama içi geri bildirim formunu kullanın.
                 </p>
               </div>
             </CardContent>
