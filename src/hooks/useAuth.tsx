@@ -21,7 +21,7 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<{ error: AuthError | null }>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<{ error: AuthError | null }>;
-  updateProfile: (updates: Partial<Profile>) => Promise<{ error: Error | null }>;
+  updateProfile: (updates: Partial<Profile>) => Promise<{ error: AuthError | null }>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -263,8 +263,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }): React
     }
   };
 
-  const updateProfile = async (updates: Partial<Profile>): Promise<{ error: Error | null }> => {
-    if (!user) return { error: 'No user found' };
+  const updateProfile = async (updates: Partial<Profile>): Promise<{ error: AuthError | null }> => {
+    if (!user) return { error: { message: 'No user found' } as AuthError };
 
     // Sanitize input data
     const sanitizedUpdates = {
@@ -287,7 +287,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }): React
       return { error };
     } catch (error) {
       logError('Update profile failed', error, 'Auth');
-      return { error };
+      return { error: error as AuthError };
     }
   };
 

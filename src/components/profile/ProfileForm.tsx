@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -15,6 +15,12 @@ const ProfileForm = ({ initialFirstName, initialLastName }: ProfileFormProps) =>
   const { loading, updateProfile } = useAuth();
   const [firstName, setFirstName] = useState(initialFirstName);
   const [lastName, setLastName] = useState(initialLastName);
+
+  // Prop'lar değiştiğinde state'leri güncelle
+  useEffect(() => {
+    setFirstName(initialFirstName);
+    setLastName(initialLastName);
+  }, [initialFirstName, initialLastName]);
 
   const handleSave = async () => {
     try {
