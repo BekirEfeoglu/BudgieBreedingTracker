@@ -1,17 +1,19 @@
-import { useState, useEffect } from 'react';
-import { Card } from '@/components/ui/card';
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useSecureAuth } from '@/hooks/useSecureAuth';
+import { ArrowLeft, Mail, Lock, User, Eye, EyeOff, Bug } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
-import { ArrowLeft, Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
+import { useSecureAuth } from '@/hooks/useSecureAuth';
+import { AuthDebug } from './AuthDebug';
 
 interface AuthPageProps {
-  onBack: () => void;
+  onBack?: () => void;
+  showBackButton?: boolean;
 }
 
-const AuthPage = ({ onBack }: AuthPageProps) => {
+const AuthPage = ({ onBack, showBackButton = false }: AuthPageProps) => {
   const [mode, setMode] = useState<'login' | 'signup' | 'forgot'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -19,13 +21,12 @@ const AuthPage = ({ onBack }: AuthPageProps) => {
   const [lastName, setLastName] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showDebug, setShowDebug] = useState(false);
 
   const [typewriterText, setTypewriterText] = useState("");
   const fullTitle = "BudgieBreedingTracker";
   
   const { signIn, signUp, resetPassword, user } = useSecureAuth();
-
-
 
   useEffect(() => {
     let currentIndex = 0;
@@ -36,7 +37,7 @@ const AuthPage = ({ onBack }: AuthPageProps) => {
       if (currentIndex === fullTitle.length) {
         clearInterval(interval);
       }
-    }, 70); // Hız ayarlanabilir
+    }, 70);
     return () => clearInterval(interval);
   }, []);
 
@@ -105,7 +106,7 @@ const AuthPage = ({ onBack }: AuthPageProps) => {
       console.error('Auth error:', error);
       toast({
         title: 'Hata',
-        description: 'Bir hata oluştu. Lütfen tekrar deneyin.',
+        description: 'Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.',
         variant: 'destructive',
       });
     } finally {
@@ -113,42 +114,35 @@ const AuthPage = ({ onBack }: AuthPageProps) => {
     }
   };
 
-  // Don't show back button since this is now the entry point
-  const showBackButton = false;
+  if (showDebug) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center p-4">
+        <div className="w-full max-w-6xl">
+          <div className="mb-6">
+            <Button
+              variant="ghost"
+              onClick={() => setShowDebug(false)}
+              className="p-0 h-auto hover:bg-transparent text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Auth Sayfasına Dön
+            </Button>
+          </div>
+          <AuthDebug />
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-budgie-cream via-budgie-warm to-budgie-cream flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Background decorative elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 w-20 h-20 budgie-gradient rounded-full opacity-20 animate-bounce-gentle" 
-             style={{ animationDelay: '0s', animationDuration: '3s' }}></div>
-        <div className="absolute top-40 right-20 w-16 h-16 bg-accent/20 rounded-full animate-bounce-gentle" 
-             style={{ animationDelay: '1s', animationDuration: '4s' }}></div>
-        <div className="absolute bottom-32 left-1/4 w-12 h-12 bg-primary/20 rounded-full animate-bounce-gentle" 
-             style={{ animationDelay: '2s', animationDuration: '5s' }}></div>
-      </div>
-
-      <div className="w-full max-w-none relative z-10 p-0 m-0 flex flex-col items-center">
-        {/* Animated Header */}
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center p-4">
+      <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-3 mb-6">
-            <div className="w-20 h-20 budgie-gradient rounded-full flex items-center justify-center text-4xl shadow-lg animated-budgie">
-              ��
-            </div>
-          </div>
-          
-          <div className="mb-4">
-            <h1 className="text-xl md:text-2xl animated-title mb-2 text-center whitespace-nowrap w-full max-w-none overflow-x-auto p-0 m-0" style={{letterSpacing: 0}}>
-              <span className="typewriter-text w-full whitespace-nowrap max-w-none overflow-x-auto block">{typewriterText}</span>
-            </h1>
-          </div>
-          
-          <p className="text-lg text-muted-foreground animated-subtitle">
-            Muhabbet kuşlarınızın takibini kolaylaştırın
-          </p>
-          
-          <div className="w-24 h-1 budgie-gradient rounded-full mx-auto mt-4 animated-subtitle" 
-               style={{ animationDelay: '0.8s' }}></div>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            {typewriterText}
+            <span className="animate-pulse">|</span>
+          </h1>
+          <p className="text-gray-600">Muhabbet kuşu üretim takip uygulaması</p>
         </div>
 
         <Card className="budgie-card p-6 backdrop-blur-sm bg-card/95">
@@ -295,6 +289,19 @@ const AuthPage = ({ onBack }: AuthPageProps) => {
                 </button>
               </div>
             )}
+
+            {/* Debug butonu */}
+            <div className="text-center pt-4 border-t">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowDebug(true)}
+                className="text-xs text-muted-foreground hover:text-foreground"
+              >
+                <Bug className="w-3 h-3 mr-1" />
+                Kayıt Sorunları?
+              </Button>
+            </div>
           </div>
         </Card>
       </div>

@@ -1,5 +1,23 @@
 import { z } from 'zod';
 import { useCallback } from 'react';
+import { getTodayEnd, isFutureDate, validateDateTime } from '@/utils/dateUtils';
+
+// Tarih doğrulama yardımcı fonksiyonu
+const validateDateNotFuture = (date: Date, fieldName: string = 'Tarih') => {
+  if (isFutureDate(date)) {
+    return `${fieldName} gelecekte olamaz`;
+  }
+  return null;
+};
+
+// Tarih ve saat doğrulama yardımcı fonksiyonu
+const validateDateTimeNotFuture = (date: Date, time?: string, fieldName: string = 'Tarih') => {
+  const validation = validateDateTime(date, time);
+  if (!validation.isValid) {
+    return validation.message || `${fieldName} geçerli olmalıdır`;
+  }
+  return null;
+};
 
 // Kuş formu için validation schema
 export const birdFormSchema = z.object({
@@ -18,7 +36,7 @@ export const birdFormSchema = z.object({
     .optional(),
   
   birthDate: z.date()
-    .max(new Date(), 'Doğum tarihi gelecekte olamaz')
+    .refine((date) => !isFutureDate(date), 'Doğum tarihi gelecekte olamaz')
     .optional()
     .nullable(),
   
@@ -26,8 +44,8 @@ export const birdFormSchema = z.object({
     .max(20, 'Halka numarası en fazla 20 karakter olabilir')
     .regex(/^[a-zA-Z0-9-]*$/, 'Halka numarası sadece harf, rakam ve tire içerebilir')
     .refine((val) => {
-      if (!val || val.trim() === '') return true; // Allow empty values
-      return val.trim().length >= 2; // If provided, must be at least 2 characters
+      if (!val || val.trim() === '') return true;
+      return val.trim().length >= 2;
     }, 'Halka numarası en az 2 karakter olmalıdır')
     .optional(),
   
@@ -57,7 +75,7 @@ export const incubationFormSchema = z.object({
   startDate: z.date({
     required_error: 'Başlangıç tarihi zorunludur'
   })
-    .max(new Date(), 'Başlangıç tarihi gelecekte olamaz'),
+    .refine((date) => !isFutureDate(date), 'Başlangıç tarihi gelecekte olamaz'),
   
   enableNotifications: z.boolean(),
   
@@ -66,9 +84,9 @@ export const incubationFormSchema = z.object({
     .optional()
 });
 
-// Yumurta formu için validation schema - EggFormData ile tam uyumlu
+// Yumurta formu için validation schema
 export const eggFormSchema = z.object({
-  id: z.string().optional(), // Optional for new eggs, required for editing
+  id: z.string().optional(),
   clutchId: z.string()
     .min(1, 'Kuluçka seçimi zorunludur'),
   
@@ -79,11 +97,7 @@ export const eggFormSchema = z.object({
   startDate: z.date({
     required_error: 'Başlangıç tarihi zorunludur'
   })
-    .refine((date) => {
-      const today = new Date();
-      today.setHours(23, 59, 59, 999); // Set to end of today
-      return date <= today;
-    }, 'Başlangıç tarihi gelecekte olamaz'),
+    .refine((date) => !isFutureDate(date), 'Başlangıç tarihi gelecekte olamaz'),
   
   status: z.enum(['laid', 'fertile', 'hatched', 'infertile']),
   
@@ -106,7 +120,7 @@ export const chickFormSchema = z.object({
   hatchDate: z.date({
     required_error: 'Çıkış tarihi zorunludur'
   })
-    .max(new Date(), 'Çıkış tarihi gelecekte olamaz'),
+    .refine((date) => !isFutureDate(date), 'Çıkış tarihi gelecekte olamaz'),
   
   motherId: z.string()
     .min(1, 'Anne kuş seçimi zorunludur'),
@@ -122,14 +136,108 @@ export const chickFormSchema = z.object({
     .max(20, 'Halka numarası en fazla 20 karakter olabilir')
     .regex(/^[a-zA-Z0-9-]*$/, 'Halka numarası sadece harf, rakam ve tire içerebilir')
     .refine((val) => {
-      if (!val || val.trim() === '') return true; // Allow empty values
-      return val.trim().length >= 2; // If provided, must be at least 2 characters
+      if (!val || val.trim() === '') return true;
+      return val.trim().length >= 2;
     }, 'Halka numarası en az 2 karakter olmalıdır')
     .optional(),
   
   healthNotes: z.string()
     .max(500, 'Sağlık notları en fazla 500 karakter olabilir')
     .optional()
+});
+
+// Yeni: Bildirim formu için validation schema
+export const notificationFormSchema = z.object({
+  type: z.enum(['incubation', 'feeding', 'veterinary', 'breeding', 'event']),
+  
+  title: z.string()
+    .min(1, 'Başlık zorunludur')
+    .max(100, 'Başlık en fazla 100 karakter olabilir'),
+  
+  date: z.date({
+    required_error: 'Tarih zorunludur'
+  }),
+  
+  time: z.string()
+    .regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Geçerli saat formatı giriniz (HH:MM)')
+    .optional(),
+  
+  description: z.string()
+    .max(500, 'Açıklama en fazla 500 karakter olabilir')
+    .optional(),
+  
+  enabled: z.boolean().default(true)
+}).refine((data) => {
+  if (data.time) {
+    const validation = validateDateTime(data.date, data.time);
+    return validation.isValid;
+  }
+  return !isFutureDate(data.date);
+}, {
+  message: 'Bildirim tarihi gelecekte olamaz',
+  path: ['date']
+});
+
+// Yeni: Etkinlik formu için validation schema
+export const eventFormSchema = z.object({
+  title: z.string()
+    .min(1, 'Etkinlik adı zorunludur')
+    .min(2, 'Etkinlik adı en az 2 karakter olmalıdır')
+    .max(100, 'Etkinlik adı en fazla 100 karakter olabilir'),
+  
+  date: z.date({
+    required_error: 'Etkinlik tarihi zorunludur'
+  }),
+  
+  time: z.string()
+    .regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Geçerli saat formatı giriniz (HH:MM)')
+    .optional(),
+  
+  type: z.enum(['competition', 'exhibition', 'show', 'meeting', 'custom']),
+  
+  location: z.string()
+    .max(200, 'Konum en fazla 200 karakter olabilir')
+    .optional(),
+  
+  description: z.string()
+    .max(1000, 'Açıklama en fazla 1000 karakter olabilir')
+    .optional(),
+  
+  color: z.string().optional(),
+  icon: z.string().optional()
+});
+
+// Yeni: Veteriner randevu formu için validation schema
+export const veterinaryAppointmentSchema = z.object({
+  birdId: z.string()
+    .min(1, 'Kuş seçimi zorunludur'),
+  
+  appointmentType: z.enum(['checkup', 'vaccination', 'treatment', 'emergency']),
+  
+  date: z.date({
+    required_error: 'Randevu tarihi zorunludur'
+  }),
+  
+  time: z.string()
+    .regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Geçerli saat formatı giriniz (HH:MM)')
+    .optional(),
+  
+  vetName: z.string()
+    .max(100, 'Veteriner adı en fazla 100 karakter olabilir')
+    .optional(),
+  
+  notes: z.string()
+    .max(500, 'Notlar en fazla 500 karakter olabilir')
+    .optional()
+}).refine((data) => {
+  if (data.time) {
+    const validation = validateDateTime(data.date, data.time);
+    return validation.isValid;
+  }
+  return !isFutureDate(data.date);
+}, {
+  message: 'Randevu tarihi gelecekte olamaz',
+  path: ['date']
 });
 
 export const useFormValidation = () => {
@@ -193,16 +301,82 @@ export const useFormValidation = () => {
     }
   }, []);
 
+  // Yeni: Bildirim formu doğrulama
+  const validateNotificationForm = useCallback((data: unknown) => {
+    try {
+      return notificationFormSchema.parse(data);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const formattedErrors = error.errors.map(err => ({
+          field: err.path.join('.'),
+          message: err.message
+        }));
+        throw new Error(`Bildirim formu hatası: ${formattedErrors.map(e => e.message).join(', ')}`);
+      }
+      throw error;
+    }
+  }, []);
+
+  // Yeni: Etkinlik formu doğrulama
+  const validateEventForm = useCallback((data: unknown) => {
+    try {
+      return eventFormSchema.parse(data);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const formattedErrors = error.errors.map(err => ({
+          field: err.path.join('.'),
+          message: err.message
+        }));
+        throw new Error(`Etkinlik formu hatası: ${formattedErrors.map(e => e.message).join(', ')}`);
+      }
+      throw error;
+    }
+  }, []);
+
+  // Yeni: Veteriner randevu formu doğrulama
+  const validateVeterinaryAppointment = useCallback((data: unknown) => {
+    try {
+      return veterinaryAppointmentSchema.parse(data);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const formattedErrors = error.errors.map(err => ({
+          field: err.path.join('.'),
+          message: err.message
+        }));
+        throw new Error(`Randevu formu hatası: ${formattedErrors.map(e => e.message).join(', ')}`);
+      }
+      throw error;
+    }
+  }, []);
+
+  // Yeni: Genel tarih doğrulama
+  const validateDate = useCallback((date: Date, fieldName: string = 'Tarih'): string | null => {
+    return validateDateNotFuture(date, fieldName);
+  }, []);
+
+  // Yeni: Genel tarih ve saat doğrulama
+  const validateDateTimeField = useCallback((date: Date, time?: string, fieldName: string = 'Tarih'): string | null => {
+    return validateDateTimeNotFuture(date, time, fieldName);
+  }, []);
+
   return {
     validateBirdForm,
     validateIncubationForm,
     validateEggForm,
     validateChickForm,
+    validateNotificationForm,
+    validateEventForm,
+    validateVeterinaryAppointment,
+    validateDate,
+    validateDateTimeField,
     schemas: {
       birdFormSchema,
       incubationFormSchema,
       eggFormSchema,
-      chickFormSchema
+      chickFormSchema,
+      notificationFormSchema,
+      eventFormSchema,
+      veterinaryAppointmentSchema
     }
   };
 };

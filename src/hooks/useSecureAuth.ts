@@ -143,24 +143,34 @@ export const useSecureAuth = (): SecureAuthResult => {
     firstName?: string, 
     lastName?: string
   ): Promise<{ error: AuthError | null }> => {
+    console.log('🔄 Kayıt işlemi başlatılıyor:', { 
+      email: email.toLowerCase().trim(),
+      passwordLength: password.length,
+      firstName: firstName?.trim() || '',
+      lastName: lastName?.trim() || ''
+    });
+
     // Rate limiting
     if (!rateLimitCheck('signup', 3, 60 * 60 * 1000)) { // 3 attempts per hour
+      console.warn('⚠️ Rate limit exceeded for signup');
       await logSecurityEvent('rate_limit_exceeded', { action: 'sign_up', email });
       return { error: { message: 'Çok fazla kayıt denemesi. Lütfen 1 saat bekleyin.' } };
     }
 
     // Input validation
     if (!validateEmail(email)) {
+      console.warn('⚠️ Invalid email format:', email);
       return { error: { message: 'Geçerli bir e-posta adresi girin.' } };
     }
 
     const passwordValidation = validatePassword(password);
     if (!passwordValidation.isValid) {
-      return { error: { message: passwordValidation.errors[0] } };
+      console.warn('⚠️ Password validation failed:', passwordValidation.errors);
+      return { error: { message: passwordValidation.errors[0] || 'Şifre geçersiz' } };
     }
 
     try {
-      console.log('🔄 Kayıt işlemi başlatılıyor:', { email: email.toLowerCase().trim() });
+      console.log('🔄 Supabase auth.signUp çağrılıyor...');
       
       const { data, error } = await supabase.auth.signUp({
         email: email.toLowerCase().trim(),
@@ -175,25 +185,41 @@ export const useSecureAuth = (): SecureAuthResult => {
       });
 
       if (error) {
-        console.error('❌ Kayıt hatası:', error);
+        console.error('❌ Supabase kayıt hatası:', {
+          message: error.message,
+          status: error.status,
+          name: error.name,
+          stack: error.stack
+        });
+        
         await logSecurityEvent('sign_up_failed', { email, error: error.message });
         
         // Daha detaylı hata mesajları
         let userFriendlyMessage = 'Kayıt işlemi başarısız oldu.';
         
         const errorMsg = error.message || '';
-        if (errorMsg.includes('already registered')) {
+        const errorStatus = error.status || 0;
+        
+        console.log('🔍 Hata analizi:', { errorMsg, errorStatus });
+        
+        if (errorMsg.includes('already registered') || errorMsg.includes('already exists')) {
           userFriendlyMessage = 'Bu e-posta adresi zaten kayıtlı. Giriş yapmayı deneyin.';
-        } else if (errorMsg.includes('invalid email')) {
+        } else if (errorMsg.includes('invalid email') || errorMsg.includes('Invalid email')) {
           userFriendlyMessage = 'Geçersiz e-posta adresi formatı.';
-        } else if (errorMsg.includes('weak password')) {
+        } else if (errorMsg.includes('weak password') || errorMsg.includes('Password should be at least')) {
           userFriendlyMessage = 'Şifre çok zayıf. Daha güçlü bir şifre seçin.';
-        } else if (errorMsg.includes('network') || errorMsg.includes('fetch')) {
+        } else if (errorMsg.includes('network') || errorMsg.includes('fetch') || errorMsg.includes('Failed to fetch')) {
           userFriendlyMessage = 'İnternet bağlantısı sorunu. Lütfen bağlantınızı kontrol edin.';
-        } else if (errorMsg.includes('timeout')) {
+        } else if (errorMsg.includes('timeout') || errorMsg.includes('time out')) {
           userFriendlyMessage = 'İşlem zaman aşımına uğradı. Lütfen tekrar deneyin.';
-        } else if (errorMsg.includes('rate limit')) {
+        } else if (errorMsg.includes('rate limit') || errorMsg.includes('too many requests')) {
           userFriendlyMessage = 'Çok fazla deneme. Lütfen biraz bekleyin.';
+        } else if (errorStatus === 422) {
+          userFriendlyMessage = 'Geçersiz veri formatı. Lütfen bilgilerinizi kontrol edin.';
+        } else if (errorStatus === 429) {
+          userFriendlyMessage = 'Çok fazla istek. Lütfen biraz bekleyin.';
+        } else if (errorStatus >= 500) {
+          userFriendlyMessage = 'Sunucu hatası. Lütfen daha sonra tekrar deneyin.';
         } else {
           userFriendlyMessage = `Kayıt hatası: ${errorMsg || 'Bilinmeyen hata'}`;
         }
@@ -201,20 +227,36 @@ export const useSecureAuth = (): SecureAuthResult => {
         return { error: { message: userFriendlyMessage, code: error.message || 'unknown' } };
       }
 
-      console.log('✅ Kayıt başarılı:', { email, userId: data.user?.id });
+      console.log('✅ Kayıt başarılı:', { 
+        email, 
+        userId: data.user?.id,
+        emailConfirmed: data.user?.email_confirmed_at,
+        session: !!data.session
+      });
+      
       await logSecurityEvent('sign_up_success', { email });
       return { error: null };
     } catch (error: any) {
-      console.error('💥 Kayıt işleminde beklenmeyen hata:', error);
+      console.error('💥 Kayıt işleminde beklenmeyen hata:', {
+        name: error.name,
+        message: error.message,
+        stack: error.stack,
+        cause: error.cause
+      });
+      
       await logSecurityEvent('sign_up_error', { email, error: error.message || 'Unknown error' });
       
       let userFriendlyMessage = 'Hesap oluşturulurken beklenmeyen bir hata oluştu.';
       
       const errorMsg = error.message || '';
-      if (errorMsg.includes('network') || error.name === 'NetworkError') {
+      const errorName = error.name || '';
+      
+      if (errorMsg.includes('network') || errorName === 'NetworkError' || errorMsg.includes('fetch')) {
         userFriendlyMessage = 'İnternet bağlantısı sorunu. Lütfen bağlantınızı kontrol edin.';
-      } else if (errorMsg.includes('timeout')) {
+      } else if (errorMsg.includes('timeout') || errorName === 'TimeoutError') {
         userFriendlyMessage = 'İşlem zaman aşımına uğradı. Lütfen tekrar deneyin.';
+      } else if (errorMsg.includes('CORS') || errorMsg.includes('cross-origin')) {
+        userFriendlyMessage = 'Tarayıcı güvenlik hatası. Lütfen sayfayı yenileyin.';
       } else if (errorMsg) {
         userFriendlyMessage = `Teknik hata: ${errorMsg}`;
       }
@@ -285,7 +327,7 @@ export const useSecureAuth = (): SecureAuthResult => {
 
     const passwordValidation = validatePassword(newPassword);
     if (!passwordValidation.isValid) {
-      return { error: { message: passwordValidation.errors[0] } };
+      return { error: { message: passwordValidation.errors[0] || 'Şifre geçersiz' } };
     }
 
     try {

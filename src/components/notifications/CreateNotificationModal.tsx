@@ -18,6 +18,9 @@ import { Plus } from 'lucide-react';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { format } from 'date-fns';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { formatDateForInput, formatTimeForInput, validateDateTime } from '@/utils/dateUtils';
+import { useFormValidation } from '@/hooks/useFormValidation';
+import { toast } from '@/hooks/use-toast';
 
 interface CreateNotificationModalProps {
   open: boolean;
@@ -88,30 +91,88 @@ export const CreateNotificationModal: React.FC<CreateNotificationModalProps> = (
   });
 
   const { t } = useLanguage();
+  const { validateNotificationForm, validateVeterinaryAppointment } = useFormValidation();
 
   const handleSubmit = async () => {
     setIsLoading(true);
     try {
       switch (activeTab) {
         case 'incubation':
+          // Kuluçka bildirimi doğrulama
+          const incubationData = {
+            type: 'incubation' as const,
+            title: `Kuluçka Hatırlatıcısı - ${incubationForm.breedingId}`,
+            date: incubationForm.startDate,
+            description: `${incubationForm.eggCount} yumurta için kuluçka takibi`
+          };
+          validateNotificationForm(incubationData);
           await createIncubationReminder(incubationForm);
           break;
+          
         case 'feeding':
+          // Beslenme bildirimi doğrulama
+          const feedingData = {
+            type: 'feeding' as const,
+            title: `Beslenme Hatırlatıcısı`,
+            date: new Date(),
+            time: feedingForm.time,
+            description: feedingForm.notes
+          };
+          validateNotificationForm(feedingData);
           await createFeedingReminder(feedingForm);
           break;
+          
         case 'veterinary':
+          // Veteriner randevu doğrulama
+          const veterinaryData = {
+            birdId: veterinaryForm.birdId,
+            appointmentType: veterinaryForm.appointmentType,
+            date: veterinaryForm.date,
+            vetName: veterinaryForm.vetName,
+            notes: veterinaryForm.notes
+          };
+          validateVeterinaryAppointment(veterinaryData);
           await createVeterinaryReminder(veterinaryForm);
           break;
+          
         case 'breeding':
+          // Üreme bildirimi doğrulama
+          const breedingData = {
+            type: 'breeding' as const,
+            title: `Üreme Hatırlatıcısı - ${breedingForm.pairName}`,
+            date: breedingForm.dueDate,
+            description: `${breedingForm.cycleType} aşaması`
+          };
+          validateNotificationForm(breedingData);
           await createBreedingReminder(breedingForm);
           break;
+          
         case 'event':
+          // Etkinlik bildirimi doğrulama
+          const eventData = {
+            type: 'event' as const,
+            title: eventForm.title,
+            date: eventForm.date,
+            description: eventForm.description
+          };
+          validateNotificationForm(eventData);
           await createEventReminder(eventForm);
           break;
       }
+      
+      toast({
+        title: 'Başarılı',
+        description: 'Bildirim başarıyla oluşturuldu.',
+      });
+      
       onOpenChange(false);
     } catch (error) {
       console.error('Error creating notification:', error);
+      toast({
+        title: 'Hata',
+        description: error instanceof Error ? error.message : 'Bildirim oluşturulurken bir hata oluştu.',
+        variant: 'destructive'
+      });
     } finally {
       setIsLoading(false);
     }
@@ -187,16 +248,18 @@ export const CreateNotificationModal: React.FC<CreateNotificationModalProps> = (
                 <Label>Başlangıç Tarihi</Label>
                 <Input
                   type="date"
-                  value={format(incubationForm.startDate, 'yyyy-MM-dd')}
+                  value={formatDateForInput(incubationForm.startDate)}
                   onChange={(e) => handleDateChange(new Date(e.target.value), 'incubation')}
+                  max={formatDateForInput(new Date())}
                 />
               </div>
               <div>
                 <Label>Beklenen Çıkım Tarihi</Label>
                 <Input
                   type="date"
-                  value={format(incubationForm.expectedHatchDate, 'yyyy-MM-dd')}
+                  value={formatDateForInput(incubationForm.expectedHatchDate)}
                   onChange={(e) => setIncubationForm(prev => ({ ...prev, expectedHatchDate: new Date(e.target.value) }))}
+                  min={formatDateForInput(incubationForm.startDate)}
                 />
               </div>
             </div>
@@ -350,15 +413,16 @@ export const CreateNotificationModal: React.FC<CreateNotificationModalProps> = (
                 <Label>Randevu Tarihi</Label>
                 <Input
                   type="date"
-                  value={format(veterinaryForm.date, 'yyyy-MM-dd')}
+                  value={formatDateForInput(veterinaryForm.date)}
                   onChange={(e) => handleDateChange(new Date(e.target.value), 'veterinary')}
+                  min={formatDateForInput(new Date())}
                 />
               </div>
               <div>
                 <Label>Randevu Saati</Label>
                 <Input
                   type="time"
-                  value={format(veterinaryForm.date, 'HH:mm')}
+                  value={formatTimeForInput(veterinaryForm.date)}
                   onChange={(e) => {
                     const [hours, minutes] = e.target.value.split(':');
                     const newDate = new Date(veterinaryForm.date);
@@ -482,15 +546,16 @@ export const CreateNotificationModal: React.FC<CreateNotificationModalProps> = (
                 <Label>Etkinlik Tarihi</Label>
                 <Input
                   type="date"
-                  value={format(eventForm.date, 'yyyy-MM-dd')}
+                  value={formatDateForInput(eventForm.date)}
                   onChange={(e) => handleDateChange(new Date(e.target.value), 'event')}
+                  min={formatDateForInput(new Date())}
                 />
               </div>
               <div>
                 <Label>Etkinlik Saati</Label>
                 <Input
                   type="time"
-                  value={format(eventForm.date, 'HH:mm')}
+                  value={formatTimeForInput(eventForm.date)}
                   onChange={(e) => {
                     const [hours, minutes] = e.target.value.split(':');
                     const newDate = new Date(eventForm.date);

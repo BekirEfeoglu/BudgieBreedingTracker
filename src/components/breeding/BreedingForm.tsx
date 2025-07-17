@@ -17,6 +17,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useErrorReporting } from '@/hooks/useErrorReporting';
 import { incubationFormSchema } from '@/hooks/useFormValidation';
 import { Bird, Breeding } from '@/types';
+import { getTodayEnd, isFutureDate } from '@/utils/dateUtils';
 
 interface BreedingFormProps {
   isOpen: boolean;
@@ -86,9 +87,7 @@ const BreedingForm = ({ isOpen, onClose, onSave, editingBreeding, birds }: Breed
       }
 
       // Validate date is not in the future
-      const today = new Date();
-      today.setHours(23, 59, 59, 999);
-      if (data.startDate > today) {
+      if (isFutureDate(data.startDate)) {
         toast({
           title: 'Hata',
           description: 'Başlangıç tarihi gelecekte olamaz.',
@@ -270,9 +269,7 @@ const BreedingForm = ({ isOpen, onClose, onSave, editingBreeding, birds }: Breed
                           setIsCalendarOpen(false);
                         }}
                         disabled={(date) => {
-                          const today = new Date();
-                          today.setHours(23, 59, 59, 999);
-                          return date > today || date < new Date("1900-01-01");
+                          return isFutureDate(date) || date < new Date("1900-01-01");
                         }}
                         initialFocus
                       />

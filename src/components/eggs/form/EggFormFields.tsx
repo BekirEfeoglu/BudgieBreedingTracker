@@ -13,6 +13,7 @@ import { CalendarIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { EggFormData } from '@/types/egg';
+import { isFutureDate } from '@/utils/dateUtils';
 
 interface EggFormFieldsProps {
   form: UseFormReturn<EggFormData>;
@@ -86,9 +87,7 @@ const EggFormFields: React.FC<EggFormFieldsProps> = ({
                     setIsCalendarOpen(false);
                   }}
                   disabled={(date) => {
-                    const today = new Date();
-                    today.setHours(23, 59, 59, 999); // Set to end of today
-                    return date > today || date < new Date("1900-01-01");
+                    return isFutureDate(date) || date < new Date("1900-01-01");
                   }}
                   initialFocus
                   className={cn("p-3 pointer-events-auto")}

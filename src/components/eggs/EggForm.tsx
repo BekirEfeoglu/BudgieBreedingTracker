@@ -10,6 +10,7 @@ import { useFormValidation } from '@/hooks/useFormValidation';
 import { toast } from '@/hooks/use-toast';
 import EggFormFields from './form/EggFormFields';
 import EggFormActions from './form/EggFormActions';
+import { isFutureDate } from '@/utils/dateUtils';
 
 interface EggFormProps {
   clutchId: string; // Required - no more optional
@@ -56,7 +57,7 @@ const EggForm: React.FC<EggFormProps> = ({
           });
           return false;
         }
-        if (validatedData.startDate > new Date()) {
+        if (isFutureDate(validatedData.startDate)) {
           toast({
             title: 'Form Hatası',
             description: 'Başlangıç tarihi gelecekte olamaz.',
