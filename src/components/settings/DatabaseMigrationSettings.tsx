@@ -23,7 +23,7 @@ export const DatabaseMigrationSettings: React.FC<DatabaseMigrationSettingsProps>
         title: 'Başarılı',
         description: 'Database migrations completed successfully',
       });
-    } catch (_error) {
+    } catch {
       toast({
         title: 'Hata',
         description: 'Failed to run migrations',

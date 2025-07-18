@@ -145,7 +145,7 @@ const SimpleBirdList: React.FC<SimpleBirdListProps> = ({
     const allBirds = [...birds, ...chicks];
     
     // Önce arama ve filtreleme
-    let filtered = allBirds.filter(bird => {
+    const filtered = allBirds.filter(bird => {
       // Arama terimi
       const matchesSearch = !searchTerm || 
         bird.name.toLowerCase().includes(searchTerm.toLowerCase()) ||

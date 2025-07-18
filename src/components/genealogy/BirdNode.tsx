@@ -54,7 +54,6 @@ const BirdNode = memo(({ bird, position, label, isSelected = false, onClick, col
     }
   };
 
-  const isChick = 'hatchDate' in bird && bird.hatchDate;
   const ageGroup = getAgeGroup(bird);
   const birthDate = 'hatchDate' in bird ? bird.hatchDate : bird.birthDate;
 

@@ -1,8 +1,7 @@
 import { LocalNotifications } from '@capacitor/local-notifications';
-import { Capacitor } from '@capacitor/core';
 import { supabase } from '@/integrations/supabase/client';
 import { NotificationSettings, NotificationSchedule } from './types';
-import { loadUserSettings, saveUserSettings, saveFCMToken, logNotificationInteraction } from './database';
+import { loadUserSettings, saveUserSettings, logNotificationInteraction } from './database';
 import { getLocalizedText, isInDoNotDisturbPeriod } from './utils';
 import { 
   getIncubationMilestones, 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import NotificationBell from '@/components/NotificationBell';
 import { NotificationPanel } from '@/components/NotificationPanel';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';

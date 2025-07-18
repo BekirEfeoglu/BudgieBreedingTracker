@@ -4,18 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { 
-  Bell, 
-  BellOff, 
-  Clock, 
-  Trash2, 
-  Info, 
-  CheckCircle,
-  Calendar,
-  Thermometer,
-  Droplets,
-  RotateCcw
-} from 'lucide-react';
+import { Bell, BellOff, Clock, Trash2, Info, CheckCircle, Calendar, Thermometer, Droplets, RotateCcw } from 'lucide-react';
 import { NotificationScheduler } from '@/services/notification/NotificationScheduler';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';

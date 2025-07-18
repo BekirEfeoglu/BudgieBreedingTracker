@@ -43,7 +43,7 @@ const BirdForm = ({ isOpen, onClose, onSave, existingBirds, editingBird }: BirdF
       name: '',
       gender: '',
       color: '',
-      birthDate: null,
+      birthDate: undefined,
       ringNumber: '',
       motherId: '',
       fatherId: '',
@@ -72,7 +72,7 @@ const BirdForm = ({ isOpen, onClose, onSave, existingBirds, editingBird }: BirdF
         name: '',
         gender: '',
         color: '',
-        birthDate: null,
+        birthDate: undefined,
         ringNumber: '',
         motherId: '',
         fatherId: '',
@@ -210,7 +210,7 @@ const BirdForm = ({ isOpen, onClose, onSave, existingBirds, editingBird }: BirdF
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent 
         aria-describedby="bird-form-description"
-        className="mobile-modal max-w-md mx-auto max-h-[90vh] overflow-y-auto"
+        className="mobile-modal-large max-w-[95vw] mx-auto max-h-[95vh] overflow-y-auto"
       >
         <DialogHeader>
           <DialogTitle className="text-xl font-bold text-center flex items-center justify-between">
@@ -220,6 +220,7 @@ const BirdForm = ({ isOpen, onClose, onSave, existingBirds, editingBird }: BirdF
               size="icon" 
               onClick={handleClose}
               disabled={isSubmitting}
+              className="touch-target"
             >
               <X className="w-4 h-4" />
             </Button>
@@ -233,7 +234,7 @@ const BirdForm = ({ isOpen, onClose, onSave, existingBirds, editingBird }: BirdF
         </DialogHeader>
         
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <PhotoUpload 
               selectedPhoto={selectedPhoto} 
               onPhotoSelect={handlePhotoSelect} 
@@ -256,17 +257,17 @@ const BirdForm = ({ isOpen, onClose, onSave, existingBirds, editingBird }: BirdF
                     <RadioGroup 
                       value={field.value} 
                       onValueChange={field.onChange}
-                      className="flex space-x-4"
+                      className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4"
                     >
-                      <div className="flex items-center space-x-2">
+                      <div className="flex items-center space-x-2 touch-target">
                         <RadioGroupItem value="female" id="female" />
                         <Label htmlFor="female">Dişi ♀️</Label>
                       </div>
-                      <div className="flex items-center space-x-2">
+                      <div className="flex items-center space-x-2 touch-target">
                         <RadioGroupItem value="male" id="male" />
                         <Label htmlFor="male">Erkek ♂️</Label>
                       </div>
-                      <div className="flex items-center space-x-2">
+                      <div className="flex items-center space-x-2 touch-target">
                         <RadioGroupItem value="unknown" id="unknown" />
                         <Label htmlFor="unknown">{t('birds.unknown')}</Label>
                       </div>
@@ -289,6 +290,7 @@ const BirdForm = ({ isOpen, onClose, onSave, existingBirds, editingBird }: BirdF
                       {...field} 
                       placeholder="örn: sarı, gök mavisi, yeşil-beyaz"
                       maxLength={100}
+                      className="mobile-form-input"
                     />
                   </FormControl>
                   <FormMessage />
@@ -303,14 +305,14 @@ const BirdForm = ({ isOpen, onClose, onSave, existingBirds, editingBird }: BirdF
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Doğum Tarihi</FormLabel>
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     {/* Hızlı Seçim Butonları */}
-                    <div className="grid grid-cols-3 gap-2">
+                    <div className="grid grid-cols-3 gap-3">
                       <Button
                         type="button"
                         variant="outline"
                         size="sm"
-                        className="text-xs"
+                        className="text-xs mobile-form-button"
                         onClick={() => {
                           const sixMonthsAgo = new Date();
                           sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
@@ -325,7 +327,7 @@ const BirdForm = ({ isOpen, onClose, onSave, existingBirds, editingBird }: BirdF
                         type="button"
                         variant="outline"
                         size="sm"
-                        className="text-xs"
+                        className="text-xs mobile-form-button"
                         onClick={() => {
                           const oneYearAgo = new Date();
                           oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
@@ -340,7 +342,7 @@ const BirdForm = ({ isOpen, onClose, onSave, existingBirds, editingBird }: BirdF
                         type="button"
                         variant="outline"
                         size="sm"
-                        className="text-xs"
+                        className="text-xs mobile-form-button"
                         onClick={() => {
                           const twoYearsAgo = new Date();
                           twoYearsAgo.setFullYear(twoYearsAgo.getFullYear() - 2);
@@ -360,7 +362,7 @@ const BirdForm = ({ isOpen, onClose, onSave, existingBirds, editingBird }: BirdF
                           <Button
                             variant="outline"
                             className={cn(
-                              "w-full pl-3 text-left font-normal min-h-[44px]",
+                              "w-full pl-3 text-left font-normal mobile-form-input",
                               !field.value && "text-muted-foreground"
                             )}
                           >
@@ -373,17 +375,17 @@ const BirdForm = ({ isOpen, onClose, onSave, existingBirds, editingBird }: BirdF
                           </Button>
                         </FormControl>
                       </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <div className="p-3 space-y-2">
+                      <PopoverContent className="w-auto p-0 mobile-modal" align="start">
+                        <div className="p-3 space-y-3">
                           {/* Yıl Hızlı Seçim */}
-                          <div className="flex gap-1 flex-wrap">
+                          <div className="flex gap-2 flex-wrap">
                             {[2024, 2023, 2022, 2021, 2020].map(year => (
                               <Button
                                 key={year}
                                 type="button"
                                 variant="ghost"
                                 size="sm"
-                                className="text-xs h-7 px-2"
+                                className="text-xs h-8 px-3 touch-target"
                                 onClick={() => {
                                   const yearDate = new Date();
                                   yearDate.setFullYear(year);

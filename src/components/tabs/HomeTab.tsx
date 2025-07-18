@@ -5,7 +5,7 @@ import BirdStatistics from '@/components/dashboard/BirdStatistics';
 import BreedingStatistics from '@/components/dashboard/BreedingStatistics';
 import ChickStatistics from '@/components/dashboard/ChickStatistics';
 import QuickActions from '@/components/dashboard/QuickActions';
-import ChartsSection from '@/components/dashboard/ChartsSection';
+// ChartsSection removed - not implemented yet
 import { Bird, Chick, Breeding, Egg } from '@/types';
 import type { Incubation } from '@/hooks/useIncubationData';
 import ComponentErrorBoundary from '@/components/errors/ComponentErrorBoundary';
@@ -29,15 +29,6 @@ const HomeTabLoading = () => (
       <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto flex-shrink-0"></div>
       <p className="mobile-empty-text mt-4 truncate max-w-full min-w-0">Yükleniyor...</p>
     </div>
-  </div>
-);
-
-// Skeleton loading for statistics
-const StatisticsSkeleton = () => (
-  <div className="space-y-4 min-w-0">
-    <Skeleton className="h-24 w-full min-w-0" />
-    <Skeleton className="h-24 w-full min-w-0" />
-    <Skeleton className="h-24 w-full min-w-0" />
   </div>
 );
 
@@ -163,15 +154,6 @@ const HomeTab = memo<HomeTabProps>(({
               <QuickActions 
                 onAddBird={handleAddBird} 
                 onTabChange={handleTabChange} 
-              />
-            </div>
-          </Suspense>
-
-          {/* Grafikler Bölümü */}
-          <Suspense fallback={<StatisticsSkeleton />}> 
-            <div className="mobile-card mobile-stats-card flex flex-col items-center justify-center min-w-0 overflow-x-auto">
-              <ChartsSection 
-                breedingData={[]}
               />
             </div>
           </Suspense>

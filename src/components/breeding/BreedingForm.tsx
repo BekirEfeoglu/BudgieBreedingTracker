@@ -180,9 +180,9 @@ const BreedingForm = ({ isOpen, onClose, onSave, editingBreeding, birds }: Breed
                     </FormControl>
                     <SelectContent>
                       {femaleBirds.length === 0 ? (
-                        <SelectItem value="" disabled>
+                        <div className="px-2 py-1.5 text-sm text-muted-foreground">
                           Dişi kuş bulunamadı
-                        </SelectItem>
+                        </div>
                       ) : (
                         femaleBirds.map((bird) => (
                           <SelectItem key={bird.id} value={bird.id}>
@@ -214,9 +214,9 @@ const BreedingForm = ({ isOpen, onClose, onSave, editingBreeding, birds }: Breed
                     </FormControl>
                     <SelectContent>
                       {maleBirds.length === 0 ? (
-                        <SelectItem value="" disabled>
+                        <div className="px-2 py-1.5 text-sm text-muted-foreground">
                           Erkek kuş bulunamadı
-                        </SelectItem>
+                        </div>
                       ) : (
                         maleBirds.map((bird) => (
                           <SelectItem key={bird.id} value={bird.id}>

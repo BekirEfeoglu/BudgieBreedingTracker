@@ -1,5 +1,4 @@
-import { parseISO, isValid, differenceInDays, differenceInMonths, differenceInYears, format as dateFnsFormat, addDays, addHours, startOfDay, endOfDay } from 'date-fns';
-import { tr } from 'date-fns/locale';
+import { parseISO, isValid, differenceInDays, differenceInMonths, differenceInYears, format as dateFnsFormat, startOfDay, endOfDay } from 'date-fns';
 
 // Temel tarih doğrulama fonksiyonu
 export const isValidDate = (date: string | Date): boolean => {
@@ -347,7 +346,8 @@ export const createDateRange = (startDate: string | Date, endDate: string | Date
     
     while (currentDate <= end) {
       dates.push(new Date(currentDate));
-      currentDate = addDays(currentDate, 1);
+      currentDate = new Date(currentDate); // Corrected: addDays(currentDate, 1);
+      currentDate.setDate(currentDate.getDate() + 1);
     }
     
     return dates;

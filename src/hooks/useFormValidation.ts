@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { useCallback } from 'react';
-import { getTodayEnd, isFutureDate, validateDateTime } from '@/utils/dateUtils';
+import { isFutureDate, validateDateTime } from '@/utils/dateUtils';
 
 // Tarih doğrulama yardımcı fonksiyonu
 const validateDateNotFuture = (date: Date, fieldName: string = 'Tarih') => {
@@ -37,8 +37,8 @@ export const birdFormSchema = z.object({
   
   birthDate: z.date()
     .refine((date) => !isFutureDate(date), 'Doğum tarihi gelecekte olamaz')
-    .optional()
-    .nullable(),
+    .nullable()
+    .optional(),
   
   ringNumber: z.string()
     .max(20, 'Halka numarası en fazla 20 karakter olabilir')

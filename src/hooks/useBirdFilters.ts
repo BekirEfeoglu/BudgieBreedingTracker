@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback } from 'react';
 import { Bird, Chick } from '@/types';
 
 export type SortOption = 'name' | 'birthDate' | 'gender' | 'color';

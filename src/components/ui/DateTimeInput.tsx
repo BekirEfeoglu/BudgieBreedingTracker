@@ -7,7 +7,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { CalendarIcon, Clock } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
-import { formatDateForInput, formatTimeForInput, isFutureDate, validateDateTime } from '@/utils/dateUtils';
+import { formatTimeForInput, isFutureDate, validateDateTime } from '@/utils/dateUtils';
 
 interface DateTimeInputProps {
   date: Date;

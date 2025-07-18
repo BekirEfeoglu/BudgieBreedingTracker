@@ -14,8 +14,6 @@ import {
   ChevronUp,
   Users,
   Baby,
-  Heart,
-  Calendar,
   Tag
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';

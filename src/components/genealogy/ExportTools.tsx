@@ -1,7 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
@@ -15,15 +14,9 @@ import {
   Image, 
   Save, 
   Upload,
-  Mail,
-  MessageCircle,
   Copy,
   Check,
   Settings,
-  Palette,
-  Globe,
-  Smartphone,
-  Monitor,
   BarChart3
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';

@@ -208,21 +208,21 @@ const CalendarTab = memo(() => {
   return (
     <div className="space-y-4 sm:space-y-6 pb-20 md:pb-4 px-2 md:px-0 min-w-0" role="region" aria-label="Takvim">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 min-w-0">
+      <div className="mobile-header min-w-0">
         <div className="min-w-0 flex-1">
-          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold enhanced-text-primary truncate max-w-full min-w-0 flex items-center gap-2">
+          <h1 className="mobile-header-title truncate max-w-full min-w-0 flex items-center gap-2">
             <Calendar className="w-5 h-5 sm:w-6 sm:h-6 text-primary flex-shrink-0" />
             <span className="truncate max-w-full min-w-0">Takvim</span>
           </h1>
-          <p className="text-sm enhanced-text-secondary truncate max-w-full min-w-0 mt-1">
+          <p className="mobile-subtitle truncate max-w-full min-w-0 mt-1">
             Üreme takvimi ve önemli tarihler
           </p>
         </div>
         
-        <div className="min-w-0 flex-shrink-0">
+        <div className="mobile-header-actions min-w-0 flex-shrink-0">
           <Button 
             onClick={() => setIsAddEventModalOpen(true)}
-            className="w-full sm:w-auto enhanced-button-primary min-h-[44px] min-w-0"
+            className="w-full sm:w-auto enhanced-button-primary mobile-form-button min-w-0"
           >
             <Plus className="w-4 h-4 mr-2 flex-shrink-0" />
             <span className="truncate max-w-full min-w-0">Olay Ekle</span>
@@ -236,7 +236,7 @@ const CalendarTab = memo(() => {
           variant="outline"
           size="sm"
           onClick={() => setCurrentDate(subMonths(currentDate, 1))}
-          className="enhanced-button-secondary min-h-[44px] w-12 h-12 rounded-full p-0 flex-shrink-0"
+          className="enhanced-button-secondary min-h-[48px] w-12 h-12 rounded-full p-0 flex-shrink-0 touch-target"
         >
           <ChevronLeft className="w-4 h-4 flex-shrink-0" />
         </Button>
@@ -249,7 +249,7 @@ const CalendarTab = memo(() => {
           variant="outline"
           size="sm"
           onClick={() => setCurrentDate(addMonths(currentDate, 1))}
-          className="enhanced-button-secondary min-h-[44px] w-12 h-12 rounded-full p-0 flex-shrink-0"
+          className="enhanced-button-secondary min-h-[48px] w-12 h-12 rounded-full p-0 flex-shrink-0 touch-target"
         >
           <ChevronRight className="w-4 h-4 flex-shrink-0" />
         </Button>
@@ -274,7 +274,7 @@ const CalendarTab = memo(() => {
                 key={index}
                 onClick={() => handleDayClick(day.date)}
                 className={`
-                  aspect-square p-1 text-center cursor-pointer rounded-md transition-colors min-w-0
+                  aspect-square p-1 text-center cursor-pointer rounded-md transition-colors min-w-0 touch-target
                   hover:bg-accent focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2
                   ${!day.isCurrentMonth ? 'text-muted-foreground/50' : 'enhanced-text-primary'}
                   ${day.isToday ? 'bg-primary text-primary-foreground font-bold ring-2 ring-primary ring-offset-2' : ''}
@@ -307,16 +307,16 @@ const CalendarTab = memo(() => {
         </CardHeader>
         <CardContent className="min-w-0">
           {dailyEvents.length === 0 ? (
-            <div className="text-center py-8 min-w-0">
+            <div className="mobile-empty-state min-w-0">
               <Calendar className="h-12 w-12 mx-auto mb-4 opacity-50 flex-shrink-0" />
-              <p className="text-muted-foreground truncate max-w-full min-w-0">Bu tarihte olay bulunmuyor</p>
+              <p className="mobile-empty-text truncate max-w-full min-w-0">Bu tarihte olay bulunmuyor</p>
             </div>
           ) : (
             <div className="space-y-3 min-w-0">
               {dailyEvents.map((event) => (
                 <div 
                   key={event.id} 
-                  className="flex items-center gap-3 p-3 border rounded-lg hover:bg-muted/50 transition-colors min-w-0 cursor-pointer"
+                  className="flex items-center gap-3 p-4 border rounded-lg hover:bg-muted/50 transition-colors min-w-0 cursor-pointer touch-target"
                   onClick={() => handleEventClick(event)}
                 >
                   <div className={`w-3 h-3 rounded-full flex-shrink-0 ${getEventColor(event.type)}`}></div>
@@ -337,11 +337,11 @@ const CalendarTab = memo(() => {
       </Card>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 min-w-0">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 min-w-0">
         <Button 
           variant="outline" 
           onClick={() => setIsAddEventModalOpen(true)}
-          className="enhanced-button-secondary min-h-[44px] min-w-0"
+          className="enhanced-button-secondary mobile-form-button min-w-0"
         >
           <Plus className="w-4 h-4 mr-2 flex-shrink-0" />
           <span className="truncate max-w-full min-w-0">Olay Ekle</span>
@@ -349,7 +349,7 @@ const CalendarTab = memo(() => {
         <Button 
           variant="outline" 
           onClick={() => setCurrentDate(new Date())}
-          className="enhanced-button-secondary min-h-[44px] min-w-0"
+          className="enhanced-button-secondary mobile-form-button min-w-0"
         >
           <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
           <span className="truncate max-w-full min-w-0">Bugüne Git</span>

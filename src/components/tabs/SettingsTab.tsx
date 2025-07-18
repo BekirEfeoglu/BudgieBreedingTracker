@@ -116,19 +116,19 @@ const SettingsTab = memo(() => {
       </div>
 
       <Tabs defaultValue="general" className="space-y-4 min-w-0">
-        {/* Responsive tab list */}
+        {/* Responsive tab list - Enhanced for mobile */}
         <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 h-auto p-1 gap-1 bg-muted/50 min-w-0 overflow-x-auto">
           {tabConfig.map((tab) => (
             <TabsTrigger 
               key={tab.value}
               value={tab.value} 
-              className="text-xs py-2 px-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-muted flex flex-col items-center gap-1 min-h-[60px] truncate max-w-full min-w-0 flex-shrink-0"
+              className="text-xs sm:text-sm py-3 px-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-muted flex flex-col items-center gap-1 min-h-[70px] sm:min-h-[80px] truncate max-w-full min-w-0 flex-shrink-0 touch-target"
               aria-label={`${tab.label} ayarları`}
             >
-              <span className="text-base flex-shrink-0" role="img" aria-hidden="true">
+              <span className="text-lg sm:text-xl flex-shrink-0" role="img" aria-hidden="true">
                 {tab.icon}
               </span>
-              <span className="truncate max-w-full min-w-0">
+              <span className="truncate max-w-full min-w-0 text-center leading-tight">
                 {tab.label}
               </span>
             </TabsTrigger>

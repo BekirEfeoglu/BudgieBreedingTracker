@@ -3,8 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { AlertTriangle, Clock, Database, Smartphone, CheckCircle, XCircle, RefreshCw, Merge } from 'lucide-react';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { AlertTriangle, Clock } from 'lucide-react';
 
 interface ConflictResolutionDialogProps {
   isOpen: boolean;
@@ -61,10 +60,6 @@ export const ConflictResolutionDialog: React.FC<ConflictResolutionDialogProps> =
     if (typeof value === 'object') return JSON.stringify(value, null, 2);
     if (typeof value === 'boolean') return value ? 'Evet' : 'Hayır';
     return String(value);
-  };
-
-  const handleResolve = (resolution: unknown) => {
-    // Implementation of handleResolve function
   };
 
   return (

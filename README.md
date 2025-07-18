@@ -61,11 +61,16 @@ Tercih ettiğiniz IDE'yi kullanarak yerel olarak çalışabilirsiniz. Tek gereks
 
 ## Deployment
 
-Lovable'da Share -> Publish seçeneği ile kolayca yayınlayabilirsiniz.
+Uygulamanızı aşağıdaki platformlarda yayınlayabilirsiniz:
+
+- **Vercel**: `npm run build` sonrası Vercel'e deploy edin
+- **Netlify**: Build komutunu `npm run build` olarak ayarlayın
+- **GitHub Pages**: GitHub Actions ile otomatik deployment
+- **Firebase Hosting**: Firebase CLI ile deploy edin
 
 ## Özel Domain
 
-Proje > Settings > Domains bölümünden özel domain bağlayabilirsiniz.
+Deployment platformunuzun ayarlarından özel domain bağlayabilirsiniz.
 
 ## Lisans
 

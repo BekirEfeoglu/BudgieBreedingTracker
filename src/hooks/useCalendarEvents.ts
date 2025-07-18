@@ -117,35 +117,6 @@ export const useCalendarEvents = () => {
         }
       });
 
-      // Process incubation events
-      incubations.forEach(incubation => {
-        const maleBird = birds.find(bird => bird.id === incubation.maleBirdId);
-        const femaleBird = birds.find(bird => bird.id === incubation.femaleBirdId);
-        
-        const parentNames = maleBird && femaleBird 
-          ? `${femaleBird.name} (Anne) & ${maleBird.name} (Baba)`
-          : 'Bilinmiyor';
-
-        // Incubation start event
-        if (incubation.startDate) {
-          eventList.push({
-            id: eventId++,
-            date: incubation.startDate,
-            title: `${incubation.name} - Kuluçka Başlangıcı`,
-            description: `${incubation.name} kuluçka süreci başladı`,
-            type: 'breeding',
-            icon: '🥚',
-            color: 'bg-orange-100 text-orange-800 border-orange-200',
-            birdName: incubation.name,
-            status: 'active',
-            parentNames
-          });
-        }
-
-        // Expected hatch date event (if available)
-        // Note: expectedHatchDate might not exist in current Incubation type
-      });
-
       // Add custom events
       customEvents.forEach(customEvent => {
         eventList.push({

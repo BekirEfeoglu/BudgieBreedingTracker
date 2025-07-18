@@ -19,28 +19,33 @@ const GenealogyTab = memo(({ birds, chicks = [] }: GenealogyTabProps) => {
 
   return (
     <ComponentErrorBoundary>
-      <div className="mobile-spacing-y mobile-container">
-        <div className="mobile-header">
-          <h2 className="mobile-header-title" aria-label={t('genealogy.title')}>
+      <div className="space-y-4 sm:space-y-6 pb-20 md:pb-4 px-2 md:px-0 min-w-0" role="main" aria-label={t('genealogy.title')}>
+        <div className="mobile-header min-w-0">
+          <h2 className="mobile-header-title truncate max-w-full min-w-0" aria-label={t('genealogy.title')}>
             {t('genealogy.title')}
           </h2>
+          <p className="mobile-subtitle truncate max-w-full min-w-0">
+            Kuşlarınızın soy ağacını görüntüleyin
+          </p>
         </div>
         
         {birds.length === 0 ? (
-          <div className="mobile-empty-state" role="status" aria-live="polite">
-            <div className="mobile-empty-icon" aria-hidden="true">🌳</div>
-            <p className="mobile-empty-text">{t('genealogy.emptyStateTitle')}</p>
-            <p className="mobile-caption mt-2 max-w-sm mx-auto">
+          <div className="mobile-empty-state min-w-0" role="status" aria-live="polite">
+            <div className="mobile-empty-icon flex-shrink-0" aria-hidden="true">🌳</div>
+            <p className="mobile-empty-text truncate max-w-full min-w-0">{t('genealogy.emptyStateTitle')}</p>
+            <p className="mobile-caption mt-2 max-w-sm mx-auto truncate max-w-full min-w-0">
               {t('genealogy.emptyStateDescription')}
             </p>
           </div>
         ) : (
-          <div className="mobile-card mobile-card-content">
-            <GenealogyView 
-              birds={birds} 
-              chicks={chicks}
-              onBirdSelect={handleBirdSelect}
-            />
+          <div className="mobile-card min-w-0">
+            <div className="mobile-card-content min-w-0">
+              <GenealogyView 
+                birds={birds} 
+                chicks={chicks}
+                onBirdSelect={handleBirdSelect}
+              />
+            </div>
           </div>
         )}
       </div>

@@ -50,7 +50,7 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose })
   const [currentStep, setCurrentStep] = useState(1);
   const { toast } = useToast();
   const { user } = useAuth();
-  const { t } = useLanguage();
+  // const { t } = useLanguage(); // t, getSystemInfo kullanılmıyor, kaldırıldı
 
   const feedbackTypes = [
     { value: 'bug', label: 'Hata Bildirimi', icon: Bug, color: 'text-red-500' },

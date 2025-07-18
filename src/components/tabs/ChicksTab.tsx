@@ -65,7 +65,7 @@ const ChicksTab = memo<ChicksTabProps>(({
             </div>
             <div className="mobile-header-actions min-w-0 flex-shrink-0">
               <Button 
-                className="enhanced-button-primary touch-target mobile-form-button w-full sm:w-auto min-h-[44px] min-w-0"
+                className="enhanced-button-primary touch-target mobile-form-button w-full sm:w-auto min-w-0"
                 size="default"
                 onClick={onAddChick}
                 aria-label={t('chicks.addChick')}

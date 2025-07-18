@@ -32,9 +32,9 @@ const ParentSelection = ({ control, existingBirds }: ParentSelectionProps) => {
                     </SelectItem>
                   ))}
                   {motherOptions.length === 0 && (
-                    <SelectItem value="no-mothers" disabled>
+                    <div className="px-2 py-1.5 text-sm text-muted-foreground">
                       Dişi kuş bulunamadı
-                    </SelectItem>
+                    </div>
                   )}
                 </SelectContent>
               </Select>
@@ -62,9 +62,9 @@ const ParentSelection = ({ control, existingBirds }: ParentSelectionProps) => {
                     </SelectItem>
                   ))}
                   {fatherOptions.length === 0 && (
-                    <SelectItem value="no-fathers" disabled>
+                    <div className="px-2 py-1.5 text-sm text-muted-foreground">
                       Erkek kuş bulunamadı
-                    </SelectItem>
+                    </div>
                   )}
                 </SelectContent>
               </Select>

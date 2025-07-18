@@ -20,23 +20,7 @@ interface BirdsTabProps {
   loading?: boolean;
 }
 
-// Loading skeleton component
-const BirdsLoadingSkeleton = () => (
-  <div className="space-y-4">
-    {Array.from({ length: 3 }).map((_, index) => (
-      <div key={index} className="p-4 border rounded-lg animate-pulse">
-        <div className="flex items-start gap-4">
-          <div className="w-16 h-16 bg-muted rounded-lg"></div>
-          <div className="flex-1 space-y-2">
-            <div className="h-4 bg-muted rounded w-1/3"></div>
-            <div className="h-3 bg-muted rounded w-1/2"></div>
-            <div className="h-3 bg-muted rounded w-1/4"></div>
-          </div>
-        </div>
-      </div>
-    ))}
-  </div>
-);
+// Loading skeleton component - removed unused variable
 
 const BirdsTab = memo(({ birds, onAddBird, onEditBird, onDeleteBird, loading = false }: BirdsTabProps) => {
   const { t } = useLanguage();
@@ -155,20 +139,20 @@ const BirdsTab = memo(({ birds, onAddBird, onEditBird, onDeleteBird, loading = f
 
         {/* Search and Filters */}
         <div className="space-y-4 min-w-0">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 min-w-0">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 min-w-0">
             <div className="relative min-w-0">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4 flex-shrink-0" />
               <Input
                 placeholder={t('birds.searchPlaceholder')}
                 value={searchTerm}
                 onChange={handleSearchChange}
-                className="pl-10 min-h-[44px] min-w-0"
+                className="pl-10 min-h-[48px] min-w-0 mobile-form-input"
                 aria-label={t('birds.searchPlaceholder')}
               />
             </div>
             
             <Select value={genderFilter} onValueChange={handleGenderFilterChange}>
-              <SelectTrigger className="min-h-[44px] min-w-0">
+              <SelectTrigger className="min-h-[48px] min-w-0 mobile-form-input">
                 <SelectValue placeholder={t('birds.genderFilter')} />
               </SelectTrigger>
               <SelectContent>
@@ -180,7 +164,7 @@ const BirdsTab = memo(({ birds, onAddBird, onEditBird, onDeleteBird, loading = f
             </Select>
 
             <Select value={sortBy} onValueChange={handleSortChange}>
-              <SelectTrigger className="min-h-[44px] min-w-0">
+              <SelectTrigger className="min-h-[48px] min-w-0 mobile-form-input">
                 <SelectValue placeholder={t('birds.sortBy')} />
               </SelectTrigger>
               <SelectContent>
@@ -211,7 +195,9 @@ const BirdsTab = memo(({ birds, onAddBird, onEditBird, onDeleteBird, loading = f
         ) : (
           <div className="grid grid-cols-1 gap-4 sm:gap-6 min-w-0" role="region" aria-label={t('birds.birdList')}>
             {filtered.map((bird) => (
-              <Suspense key={bird.id} fallback={<BirdsLoadingSkeleton />}>
+              <Suspense key={bird.id} fallback={
+                <div className="w-full h-32 bg-muted rounded-lg animate-pulse min-w-0" aria-hidden="true"></div>
+              }>
                 <BirdCard 
                   bird={bird} 
                   onEdit={onEditBird}

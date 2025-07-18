@@ -1,14 +1,12 @@
 import React, { useState } from 'react';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
-import { Bell, ArrowLeft } from 'lucide-react';
-import NotificationCenter from './NotificationCenter';
+import { Bell, ArrowLeft, BellOff, Check, Trash2, Calendar } from 'lucide-react';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { formatDistanceToNow } from 'date-fns';
 import { tr } from 'date-fns/locale';
-import { BellOff, Check, Trash2, Calendar } from 'lucide-react';
 
 const NotificationPanel = () => {
   const [isOpen, setIsOpen] = useState(false);

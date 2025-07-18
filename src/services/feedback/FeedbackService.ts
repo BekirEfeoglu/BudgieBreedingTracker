@@ -1,5 +1,4 @@
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
 import EmailService from './EmailService';
 
 export interface FeedbackData {

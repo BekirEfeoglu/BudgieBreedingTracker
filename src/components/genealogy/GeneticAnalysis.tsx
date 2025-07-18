@@ -3,19 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  Dna, 
-  Heart, 
-  TrendingUp, 
-  Clock, 
-  Users, 
-  Baby, 
-  AlertTriangle,
-  CheckCircle,
-  BarChart3,
-  PieChart,
-  Activity
-} from 'lucide-react';
+import { Dna, TrendingUp, Clock, Users, Baby, AlertTriangle, CheckCircle, BarChart3, PieChart, Activity } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Bird, Chick } from '@/types';
 

@@ -8,9 +8,8 @@ import { Input } from '@/components/ui/input';
 import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { Bell, Globe, Volume2, VolumeX, Thermometer, Droplets, Moon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { Bell, Volume2, VolumeX, Globe, Moon, Thermometer, Droplets } from 'lucide-react';
 import { NotificationScheduler } from '@/services/notification/NotificationScheduler';
 
 interface Settings {

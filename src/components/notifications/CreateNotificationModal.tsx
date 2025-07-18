@@ -18,7 +18,7 @@ import { Plus } from 'lucide-react';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { format } from 'date-fns';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { formatDateForInput, formatTimeForInput, validateDateTime } from '@/utils/dateUtils';
+import { formatDateForInput, formatTimeForInput } from '@/utils/dateUtils';
 import { useFormValidation } from '@/hooks/useFormValidation';
 import { toast } from '@/hooks/use-toast';
 

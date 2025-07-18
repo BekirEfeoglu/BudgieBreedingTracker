@@ -1,6 +1,6 @@
-import React, { Suspense, lazy, memo, useCallback, useMemo } from 'react';
+import React, { memo, useCallback, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Plus, Users, Egg, Heart } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Bird, Breeding, Egg as EggType, BreedingRecord } from '@/types';
@@ -20,10 +20,7 @@ type IncubationFormBird = {
   age?: number;
 };
 
-// Lazy load heavy components
-const BreedingTabHeader = lazy(() => import('@/components/tabs/breeding/BreedingTabHeader'));
-const BreedingTabEmptyState = lazy(() => import('@/components/tabs/breeding/BreedingTabEmptyState'));
-const BreedingTabContent = lazy(() => import('@/components/tabs/breeding/BreedingTabContent'));
+// Lazy load heavy components - removed unused imports
 
 interface BreedingTabProps {
   breeding: Breeding[];
@@ -189,7 +186,7 @@ const BreedingTab = memo(({
           <div className="mobile-header-actions min-w-0 flex-shrink-0">
             <Button 
               onClick={handleAddIncubation}
-              className="w-full sm:w-auto enhanced-button-primary min-h-[44px] min-w-0"
+              className="w-full sm:w-auto enhanced-button-primary mobile-form-button min-w-0"
             >
               <Plus className="w-4 h-4 mr-2 flex-shrink-0" />
               <span className="truncate max-w-full min-w-0">Üreme Ekle</span>
@@ -199,10 +196,10 @@ const BreedingTab = memo(({
       </div>
 
       {/* Statistics Cards */}
-      <div className="mobile-grid mobile-grid-cols-3 gap-3 sm:gap-4 min-w-0">
+      <div className="mobile-grid mobile-grid-cols-3 gap-4 min-w-0">
         <Card className="mobile-card min-w-0">
           <CardContent className="p-4 min-w-0">
-            <div className="flex items-center gap-2 min-w-0">
+            <div className="flex items-center gap-3 min-w-0">
               <div className="p-2 bg-primary/10 rounded-full flex-shrink-0">
                 <Users className="w-4 h-4 text-primary flex-shrink-0" />
               </div>
@@ -216,7 +213,7 @@ const BreedingTab = memo(({
 
         <Card className="mobile-card min-w-0">
           <CardContent className="p-4 min-w-0">
-            <div className="flex items-center gap-2 min-w-0">
+            <div className="flex items-center gap-3 min-w-0">
               <div className="p-2 bg-orange-100 rounded-full flex-shrink-0">
                 <Egg className="w-4 h-4 text-orange-600 flex-shrink-0" />
               </div>
@@ -230,7 +227,7 @@ const BreedingTab = memo(({
 
         <Card className="mobile-card min-w-0">
           <CardContent className="p-4 min-w-0">
-            <div className="flex items-center gap-2 min-w-0">
+            <div className="flex items-center gap-3 min-w-0">
               <div className="p-2 bg-green-100 rounded-full flex-shrink-0">
                 <Egg className="w-4 h-4 text-green-600 flex-shrink-0" />
               </div>
@@ -255,7 +252,7 @@ const BreedingTab = memo(({
           <p className="mobile-empty-text truncate max-w-full min-w-0">Henüz üreme kaydı bulunmuyor</p>
           <Button 
             onClick={handleAddIncubation}
-            className="mt-4 enhanced-button-primary min-h-[44px] min-w-0"
+            className="mt-4 enhanced-button-primary mobile-form-button min-w-0"
           >
             <Plus className="w-4 h-4 mr-2 flex-shrink-0" />
             <span className="truncate max-w-full min-w-0">İlk Üremeyi Ekle</span>

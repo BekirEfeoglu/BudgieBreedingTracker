@@ -6,19 +6,7 @@ import { Slider } from '@/components/ui/slider';
 import { 
   ZoomIn, 
   ZoomOut, 
-  RotateCcw, 
-  Download, 
-  Share2,
-  Map,
-  Heart,
-  AlertTriangle,
-  CheckCircle,
-  Clock,
-  Users,
-  Baby,
-  Wifi,
-  WifiOff,
-  Activity
+  RotateCcw
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Bird, Chick } from '@/types';
