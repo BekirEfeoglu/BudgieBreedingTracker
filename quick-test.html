@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hızlı Kayıt Testi</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .container { max-width: 500px; margin: 0 auto; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
+        button { background: #007bff; color: white; padding: 12px 20px; border: none; border-radius: 4px; cursor: pointer; width: 100%; }
+        .result { margin-top: 20px; padding: 15px; border-radius: 4px; white-space: pre-wrap; font-family: monospace; }
+        .success { background: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .error { background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+        .info { background: #d1ecf1; border: 1px solid #bee5eb; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Hızlı Kayıt Testi</h1>
+        
+        <button onclick="clearAll()" style="margin-bottom: 20px;">🧹 Tüm Önbelleği Temizle</button>
+        
+        <form id="testForm">
+            <div class="form-group">
+                <label>E-posta:</label>
+                <input type="email" id="email" value="test@example.com" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Şifre:</label>
+                <input type="password" id="password" value="Test123" required>
+            </div>
+            
+            <button type="submit">Kayıt Ol</button>
+        </form>
+
+        <div id="result" class="result" style="display: none;"></div>
+    </div>
+
+    <script>
+        function log(message, type = 'info') {
+            const result = document.getElementById('result');
+            const timestamp = new Date().toLocaleTimeString();
+            result.style.display = 'block';
+            result.className = `result ${type}`;
+            result.textContent += `[${timestamp}] ${message}\n`;
+            result.scrollTop = result.scrollHeight;
+            console.log(message);
+        }
+
+        function clearAll() {
+            localStorage.clear();
+            sessionStorage.clear();
+            log('🧹 Tüm önbellek temizlendi', 'success');
+        }
+
+        document.getElementById('testForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            log('🔄 Test başlatılıyor...', 'info');
+            log(`📧 E-posta: ${email}`, 'info');
+            log(`🔐 Şifre: ${password}`, 'info');
+            
+            try {
+                // Supabase'i yükle
+                const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2');
+                
+                const supabase = createClient(
+                    "https://jxbfdgyusoehqybxdnii.supabase.co",
+                    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp4YmZkZ3l1c29laHF5YnhkbmlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEyMjY5NTksImV4cCI6MjA2NjgwMjk1OX0.aBMXWV0yeW8cunOtrKGGakLv_7yZi1vbV1Q1fXsJJeg"
+                );
+                
+                log('✅ Supabase yüklendi', 'success');
+                
+                // Kayıt işlemi
+                log('📡 Kayıt işlemi başlatılıyor...', 'info');
+                
+                const { data, error } = await supabase.auth.signUp({
+                    email: email,
+                    password: password,
+                    options: {
+                        emailRedirectTo: window.location.origin + '/',
+                        data: {
+                            first_name: 'Test',
+                            last_name: 'Kullanıcı',
+                        },
+                    },
+                });
+                
+                log('📡 Yanıt alındı', 'info');
+                log(`📊 Veri var mı: ${data ? 'Evet' : 'Hayır'}`, 'info');
+                log(`❌ Hata var mı: ${error ? 'Evet' : 'Hayır'}`, 'info');
+                
+                if (error) {
+                    log(`❌ HATA: ${error.message}`, 'error');
+                    log(`📋 Hata kodu: ${error.status || 'N/A'}`, 'info');
+                    log(`🔍 Hata tipi: ${error.name || 'N/A'}`, 'info');
+                    
+                    // E-posta onayı gerekli mesajı
+                    if (error.message.includes('E-posta onayı gerekli') || error.message.includes('Email not confirmed')) {
+                        log('✅ Kayıt başarılı - E-posta onayı gerekli', 'success');
+                    }
+                } else {
+                    log('✅ Kayıt başarılı!', 'success');
+                    log(`👤 Kullanıcı ID: ${data.user?.id || 'N/A'}`, 'info');
+                    log(`📧 Doğrulama gerekli: ${data.user?.email_confirmed_at ? 'Hayır' : 'Evet'}`, 'info');
+                }
+                
+            } catch (error) {
+                log(`💥 Beklenmeyen hata: ${error.message}`, 'error');
+            }
+        });
+    </script>
+</body>
+</html> 

@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kayıt Olma Testi</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        .test-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .test-buttons button {
+            flex: 1;
+            padding: 8px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Kayıt Olma Test Sayfası</h1>
+        
+        <div class="test-buttons">
+            <button onclick="clearStorage()">🧹 Önbelleği Temizle</button>
+            <button onclick="fillTestData()">📝 Test Verileri</button>
+            <button onclick="testConnection()">🔗 Bağlantı Testi</button>
+        </div>
+
+        <form id="signupForm">
+            <div class="form-group">
+                <label for="firstName">Ad:</label>
+                <input type="text" id="firstName" placeholder="Adınız">
+            </div>
+            
+            <div class="form-group">
+                <label for="lastName">Soyad:</label>
+                <input type="text" id="lastName" placeholder="Soyadınız">
+            </div>
+            
+            <div class="form-group">
+                <label for="email">E-posta:</label>
+                <input type="email" id="email" placeholder="ornek@email.com" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Şifre:</label>
+                <input type="password" id="password" placeholder="En az 6 karakter" required>
+            </div>
+            
+            <button type="submit" id="submitBtn">Kayıt Ol</button>
+        </form>
+
+        <div id="result" class="result" style="display: none;"></div>
+    </div>
+
+    <script>
+        // Supabase konfigürasyonu
+        const SUPABASE_URL = "https://jxbfdgyusoehqybxdnii.supabase.co";
+        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp4YmZkZ3l1c29laHF5YnhkbmlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEyMjY5NTksImV4cCI6MjA2NjgwMjk1OX0.aBMXWV0yeW8cunOtrKGGakLv_7yZi1vbV1Q1fXsJJeg";
+
+        let supabase;
+
+        // Supabase'i yükle
+        async function loadSupabase() {
+            try {
+                const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2');
+                supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+                log('✅ Supabase yüklendi', 'info');
+            } catch (error) {
+                log('❌ Supabase yüklenemedi: ' + error.message, 'error');
+            }
+        }
+
+        // Log fonksiyonu
+        function log(message, type = 'info') {
+            const result = document.getElementById('result');
+            const timestamp = new Date().toLocaleTimeString();
+            const logMessage = `[${timestamp}] ${message}\n`;
+            
+            result.style.display = 'block';
+            result.className = `result ${type}`;
+            result.textContent += logMessage;
+            result.scrollTop = result.scrollHeight;
+            
+            console.log(message);
+        }
+
+        // Önbelleği temizle
+        function clearStorage() {
+            localStorage.clear();
+            sessionStorage.clear();
+            log('🧹 Tüm önbellek temizlendi', 'success');
+        }
+
+        // Test verilerini doldur
+        function fillTestData() {
+            document.getElementById('firstName').value = 'Test';
+            document.getElementById('lastName').value = 'Kullanıcı';
+            document.getElementById('email').value = 'test@example.com';
+            document.getElementById('password').value = 'Test123';
+            log('📝 Test verileri dolduruldu', 'info');
+        }
+
+        // Bağlantı testi
+        async function testConnection() {
+            if (!supabase) {
+                log('❌ Supabase yüklenmemiş', 'error');
+                return;
+            }
+
+            try {
+                log('🔍 Bağlantı test ediliyor...', 'info');
+                const { data, error } = await supabase.from('profiles').select('count').limit(1);
+                
+                if (error) {
+                    log('❌ Bağlantı hatası: ' + error.message, 'error');
+                } else {
+                    log('✅ Bağlantı başarılı', 'success');
+                }
+            } catch (error) {
+                log('💥 Bağlantı hatası: ' + error.message, 'error');
+            }
+        }
+
+        // E-posta doğrulama
+        function validateEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
+
+        // Şifre doğrulama
+        function validatePassword(password) {
+            if (password.length < 6) {
+                return { isValid: false, error: 'Şifre en az 6 karakter olmalıdır' };
+            }
+            
+            let criteria = 0;
+            if (/[A-Z]/.test(password)) criteria++;
+            if (/[a-z]/.test(password)) criteria++;
+            if (/[0-9]/.test(password)) criteria++;
+            if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) criteria++;
+            
+            if (criteria < 2) {
+                return { isValid: false, error: 'Şifre en az 2 farklı karakter türü içermelidir' };
+            }
+            
+            return { isValid: true };
+        }
+
+        // Form gönderimi
+        document.getElementById('signupForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            if (!supabase) {
+                log('❌ Supabase yüklenmemiş', 'error');
+                return;
+            }
+
+            const firstName = document.getElementById('firstName').value.trim();
+            const lastName = document.getElementById('lastName').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const submitBtn = document.getElementById('submitBtn');
+
+            // Form doğrulama
+            log('🔍 Form doğrulaması yapılıyor...', 'info');
+            
+            if (!email) {
+                log('❌ E-posta adresi gerekli', 'error');
+                return;
+            }
+            
+            if (!validateEmail(email)) {
+                log('❌ Geçersiz e-posta formatı', 'error');
+                return;
+            }
+            
+            const passwordValidation = validatePassword(password);
+            if (!passwordValidation.isValid) {
+                log('❌ Şifre hatası: ' + passwordValidation.error, 'error');
+                return;
+            }
+            
+            log('✅ Form doğrulaması başarılı', 'success');
+            log(`📧 E-posta: ${email}`, 'info');
+            log(`🔐 Şifre uzunluğu: ${password.length}`, 'info');
+            log(`👤 Ad: ${firstName || 'Boş'}`, 'info');
+            log(`👤 Soyad: ${lastName || 'Boş'}`, 'info');
+
+            // Submit butonunu devre dışı bırak
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Kayıt Ediliyor...';
+
+            try {
+                log('🔄 Kayıt işlemi başlatılıyor...', 'info');
+                
+                const { data, error } = await supabase.auth.signUp({
+                    email: email.toLowerCase(),
+                    password: password,
+                    options: {
+                        emailRedirectTo: window.location.origin + '/',
+                        data: {
+                            first_name: firstName || 'Test',
+                            last_name: lastName || 'Kullanıcı',
+                        },
+                    },
+                });
+
+                log('📡 Supabase yanıtı alındı', 'info');
+                log(`📊 Veri var mı: ${data ? 'Evet' : 'Hayır'}`, 'info');
+                log(`❌ Hata var mı: ${error ? 'Evet' : 'Hayır'}`, 'info');
+
+                if (error) {
+                    log(`❌ Kayıt hatası: ${error.message}`, 'error');
+                    log(`📋 Hata kodu: ${error.status || 'N/A'}`, 'info');
+                    log(`🔍 Hata tipi: ${error.name || 'N/A'}`, 'info');
+                    
+                    // E-posta onayı gerekli mesajı başarı mesajı olarak göster
+                    if (error.message.includes('E-posta onayı gerekli') || error.message.includes('Email not confirmed')) {
+                        log('✅ Kayıt başarılı - E-posta onayı gerekli', 'success');
+                        log('📧 E-posta kutunuzu kontrol edin', 'info');
+                    } else {
+                        log('❌ Gerçek kayıt hatası', 'error');
+                    }
+                } else {
+                    log('✅ Kayıt başarılı!', 'success');
+                    log(`👤 Kullanıcı ID: ${data.user?.id || 'N/A'}`, 'info');
+                    log(`📧 Doğrulama gerekli: ${data.user?.email_confirmed_at ? 'Hayır' : 'Evet'}`, 'info');
+                    log(`🔑 Oturum oluşturuldu: ${data.session ? 'Evet' : 'Hayır'}`, 'info');
+                    log('📧 E-posta kutunuzu kontrol edin', 'info');
+                }
+            } catch (error) {
+                log(`💥 Beklenmeyen hata: ${error.message}`, 'error');
+                log(`🔍 Hata tipi: ${error.name || 'Unknown'}`, 'info');
+            } finally {
+                // Submit butonunu tekrar etkinleştir
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Kayıt Ol';
+            }
+        });
+
+        // Sayfa yüklendiğinde Supabase'i yükle
+        window.addEventListener('load', loadSupabase);
+    </script>
+</body>
+</html> 

@@ -20,6 +20,7 @@ import BirdForm from '@/components/BirdForm';
 import { useSupabaseOperations } from '@/hooks/useSupabaseOperations';
 import { useToast } from '@/hooks/use-toast';
 import { AuthDebug } from '@/components/auth/AuthDebug';
+import { SignupTest } from '@/components/auth/SignupTest';
 import { useBirdUpdate } from '@/hooks/bird/useBirdUpdate';
 import { useBirdDelete } from '@/hooks/bird/useBirdDelete';
 
@@ -197,6 +198,7 @@ function App() {
                               <Route path="/" element={<MainLayout><AppContainer /></MainLayout>} />
                               <Route path="/profile" element={<MainLayout><ProfilePage onBack={() => window.location.hash = '#/'} /></MainLayout>} />
                               <Route path="/debug" element={<AuthDebug />} />
+                              <Route path="/signup-test" element={<SignupTest />} />
                               <Route path="*" element={<NotFound />} />
                             </Routes>
                           </ProtectedRoute>
