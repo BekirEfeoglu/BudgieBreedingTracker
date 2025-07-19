@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚨 Acil 401 Fix</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            min-height: 100vh;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+        .emergency-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .emergency-header h1 {
+            font-size: 2.5em;
+            margin: 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        .emergency-header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        .button {
+            background: #fff;
+            color: #ff6b6b;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+        .button.danger {
+            background: #e74c3c;
+            color: white;
+        }
+        .button.success {
+            background: #27ae60;
+            color: white;
+        }
+        .button.warning {
+            background: #f39c12;
+            color: white;
+        }
+        .status {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-weight: bold;
+        }
+        .status.success {
+            background: rgba(39, 174, 96, 0.3);
+            border: 2px solid #27ae60;
+        }
+        .status.error {
+            background: rgba(231, 76, 60, 0.3);
+            border: 2px solid #e74c3c;
+        }
+        .status.warning {
+            background: rgba(243, 156, 18, 0.3);
+            border: 2px solid #f39c12;
+        }
+        .log {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+            font-size: 14px;
+        }
+        .progress {
+            width: 100%;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #27ae60, #2ecc71);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        .steps {
+            display: flex;
+            justify-content: space-between;
+            margin: 20px 0;
+        }
+        .step {
+            text-align: center;
+            flex: 1;
+            padding: 10px;
+        }
+        .step.active {
+            color: #f39c12;
+            font-weight: bold;
+        }
+        .step.completed {
+            color: #27ae60;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="emergency-header">
+            <h1>🚨 ACİL 401 FIX</h1>
+            <p>401 Unauthorized hatalarını acil olarak çözüyoruz...</p>
+        </div>
+        
+        <div id="status" class="status warning">
+            Acil fix aracı hazır. Başlatmak için "ACİL FIX BAŞLAT" butonuna tıklayın.
+        </div>
+        
+        <div class="steps">
+            <div class="step active" id="step1">1. Veri Temizleme</div>
+            <div class="step" id="step2">2. Cache Temizleme</div>
+            <div class="step" id="step3">3. Client Sıfırlama</div>
+            <div class="step" id="step4">4. Session Kontrolü</div>
+            <div class="step" id="step5">5. API Test</div>
+        </div>
+        
+        <div class="progress">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+        
+        <div style="text-align: center;">
+            <button class="button danger" onclick="startEmergencyFix()">🚨 ACİL FIX BAŞLAT</button>
+            <button class="button warning" onclick="clearAllData()">🗑️ TÜM VERİLERİ TEMİZLE</button>
+            <button class="button success" onclick="redirectToLogin()">🔀 LOGIN SAYFASINA GİT</button>
+            <button class="button" onclick="refreshPage()">🔄 SAYFAYI YENİLE</button>
+        </div>
+        
+        <div id="log" class="log">Acil fix logları burada görünecek...</div>
+    </div>
+
+    <script>
+        let currentStep = 0;
+        const totalSteps = 5;
+        
+        // Log fonksiyonu
+        function log(message) {
+            const logElement = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            logElement.textContent += `[${timestamp}] ${message}\n`;
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+        
+        // Status güncelleme
+        function updateStatus(message, type = 'warning') {
+            const statusElement = document.getElementById('status');
+            statusElement.textContent = message;
+            statusElement.className = `status ${type}`;
+        }
+        
+        // Progress güncelleme
+        function updateProgress(step) {
+            const progress = (step / totalSteps) * 100;
+            document.getElementById('progressBar').style.width = `${progress}%`;
+            
+            // Step'leri güncelle
+            for (let i = 1; i <= totalSteps; i++) {
+                const stepElement = document.getElementById(`step${i}`);
+                if (i < step) {
+                    stepElement.className = 'step completed';
+                } else if (i === step) {
+                    stepElement.className = 'step active';
+                } else {
+                    stepElement.className = 'step';
+                }
+            }
+        }
+        
+        // Tüm auth verilerini temizle
+        function clearAllAuthData() {
+            log('🗑️ TÜM AUTH VERİLERİ TEMİZLENİYOR...');
+            updateProgress(1);
+            
+            // LocalStorage'ı temizle
+            const keysToRemove = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && (
+                    key.includes('supabase') || 
+                    key.includes('auth') || 
+                    key.includes('session') ||
+                    key.includes('token')
+                )) {
+                    keysToRemove.push(key);
+                }
+            }
+            
+            keysToRemove.forEach(key => {
+                localStorage.removeItem(key);
+                log(`🗑️ ${key} silindi`);
+            });
+            
+            // SessionStorage'ı temizle
+            const sessionKeysToRemove = [];
+            for (let i = 0; i < sessionStorage.length; i++) {
+                const key = sessionStorage.key(i);
+                if (key && (
+                    key.includes('supabase') || 
+                    key.includes('auth') || 
+                    key.includes('session') ||
+                    key.includes('token')
+                )) {
+                    sessionKeysToRemove.push(key);
+                }
+            }
+            
+            sessionKeysToRemove.forEach(key => {
+                sessionStorage.removeItem(key);
+                log(`🗑️ SessionStorage: ${key} silindi`);
+            });
+            
+            log('✅ Tüm auth verileri temizlendi');
+        }
+        
+        // Browser cache'ini temizle
+        function clearBrowserCache() {
+            log('🧹 BROWSER CACHE TEMİZLENİYOR...');
+            updateProgress(2);
+            
+            // Cache API'yi temizle
+            if ('caches' in window) {
+                caches.keys().then(cacheNames => {
+                    cacheNames.forEach(cacheName => {
+                        caches.delete(cacheName);
+                        log(`🗑️ Cache silindi: ${cacheName}`);
+                    });
+                });
+            }
+            
+            // Service Worker'ları temizle
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.getRegistrations().then(registrations => {
+                    registrations.forEach(registration => {
+                        registration.unregister();
+                        log('🗑️ Service Worker kaldırıldı');
+                    });
+                });
+            }
+            
+            log('✅ Browser cache temizlendi');
+        }
+        
+        // Supabase client'ı sıfırla
+        async function resetSupabaseClient() {
+            log('🔄 SUPABASE CLIENT SIFIRLANIYOR...');
+            updateProgress(3);
+            
+            try {
+                if (window.supabase) {
+                    try {
+                        await window.supabase.auth.signOut();
+                        log('✅ Mevcut oturum kapatıldı');
+                    } catch (error) {
+                        log('⚠️ Oturum kapatma hatası (normal):', error.message);
+                    }
+                }
+                
+                window.supabase = null;
+                log('✅ Supabase client sıfırlandı');
+                
+            } catch (error) {
+                log('❌ Supabase client sıfırlama hatası:', error.message);
+            }
+        }
+        
+        // Session kontrolü
+        async function checkSession() {
+            log('🔐 SESSION KONTROL EDİLİYOR...');
+            updateProgress(4);
+            
+            try {
+                if (!window.supabase) {
+                    log('❌ Supabase client bulunamadı');
+                    return false;
+                }
+                
+                const { data: { session }, error } = await window.supabase.auth.getSession();
+                
+                if (error) {
+                    log('❌ Session kontrolü başarısız:', error.message);
+                    return false;
+                }
+                
+                if (session) {
+                    log('✅ Session mevcut');
+                    log(`   User ID: ${session.user.id}`);
+                    log(`   Email: ${session.user.email}`);
+                    return true;
+                } else {
+                    log('ℹ️ Session yok - login gerekli');
+                    return false;
+                }
+                
+            } catch (error) {
+                log('❌ Session kontrolü hatası:', error.message);
+                return false;
+            }
+        }
+        
+        // API test
+        async function testApi() {
+            log('🧪 API TEST EDİLİYOR...');
+            updateProgress(5);
+            
+            try {
+                if (!window.supabase) {
+                    log('❌ Supabase client bulunamadı');
+                    return false;
+                }
+                
+                const { data, error } = await window.supabase
+                    .from('profiles')
+                    .select('count')
+                    .limit(1);
+                
+                if (error) {
+                    log('❌ API test başarısız:', error.message);
+                    return false;
+                }
+                
+                log('✅ API test başarılı');
+                return true;
+                
+            } catch (error) {
+                log('❌ API test hatası:', error.message);
+                return false;
+            }
+        }
+        
+        // Ana acil fix fonksiyonu
+        async function startEmergencyFix() {
+            updateStatus('Acil fix başlatılıyor...', 'warning');
+            log('🚨 ACİL FIX BAŞLATILIYOR...');
+            
+            try {
+                // Adım 1: Veri temizleme
+                clearAllAuthData();
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                // Adım 2: Cache temizleme
+                clearBrowserCache();
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                // Adım 3: Client sıfırlama
+                await resetSupabaseClient();
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                // Adım 4: Session kontrolü
+                const sessionOk = await checkSession();
+                
+                // Adım 5: API test
+                let apiOk = false;
+                if (sessionOk) {
+                    apiOk = await testApi();
+                }
+                
+                if (sessionOk && apiOk) {
+                    updateStatus('✅ Acil fix başarılı! Sayfa yenileniyor...', 'success');
+                    log('✅ ACİL FIX BAŞARILI!');
+                    log('🔄 Sayfa 3 saniye sonra yenilenecek...');
+                    
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 3000);
+                } else {
+                    updateStatus('⚠️ Acil fix tamamlandı ama login gerekli', 'warning');
+                    log('⚠️ ACİL FIX TAMAMLANDI AMA LOGIN GEREKLİ');
+                    log('💡 Login sayfasına yönlendiriliyor...');
+                    
+                    setTimeout(() => {
+                        window.location.href = '/login';
+                    }, 3000);
+                }
+                
+            } catch (error) {
+                updateStatus('❌ Acil fix hatası!', 'error');
+                log('💥 ACİL FIX HATASI:', error.message);
+            }
+        }
+        
+        // Manuel fonksiyonlar
+        function clearAllData() {
+            clearAllAuthData();
+            clearBrowserCache();
+            updateStatus('Tüm veriler temizlendi', 'success');
+        }
+        
+        function redirectToLogin() {
+            window.location.href = '/login';
+        }
+        
+        function refreshPage() {
+            window.location.reload();
+        }
+        
+        // Sayfa yüklendiğinde
+        window.addEventListener('load', () => {
+            log('🚨 Acil 401 Fix Tool yüklendi');
+            log('Kullanım:');
+            log('1. ACİL FIX BAŞLAT - Otomatik tam fix');
+            log('2. TÜM VERİLERİ TEMİZLE - Manuel temizlik');
+            log('3. LOGIN SAYFASINA GİT - Login sayfasına yönlendir');
+            log('4. SAYFAYI YENİLE - Sayfayı yenile');
+        });
+    </script>
+</body>
+</html> 

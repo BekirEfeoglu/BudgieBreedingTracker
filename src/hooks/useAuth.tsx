@@ -171,41 +171,79 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }): React
     
     initializeAuth();
 
-    // Auth state listener with enhanced token handling
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event: string, session: Session | null) => {
-        debug('Auth state changed', { event, hasUser: !!session?.user, userId: session?.user?.id }, 'Auth');
-        console.log('🔐 Auth: State change event:', {
-          event,
-          hasUser: !!session?.user,
-          userId: session?.user?.id,
-          userEmail: session?.user?.email
-        });
-        
-        // Only process non-initial events to avoid duplication
-        if (event === 'INITIAL_SESSION') {
-          return;
-        }
-        
-        // Token refresh event'ini özel olarak işle
-        if (event === 'TOKEN_REFRESHED') {
-          console.log('🔄 Token yenilendi, session güncelleniyor...');
-          setSession(session);
-          setUser(session?.user ?? null);
-          return;
-        }
-        
+      // Auth state listener with enhanced token handling
+  const { data: { subscription } } = supabase.auth.onAuthStateChange(
+    async (event: string, session: Session | null) => {
+      debug('Auth state changed', { event, hasUser: !!session?.user, userId: session?.user?.id }, 'Auth');
+      console.log('🔐 Auth: State change event:', {
+        event,
+        hasUser: !!session?.user,
+        userId: session?.user?.id,
+        userEmail: session?.user?.email
+      });
+      
+      // Only process non-initial events to avoid duplication
+      if (event === 'INITIAL_SESSION') {
+        return;
+      }
+      
+      // Token refresh event'ini özel olarak işle
+      if (event === 'TOKEN_REFRESHED') {
+        console.log('🔄 Token yenilendi, session güncelleniyor...');
         setSession(session);
         setUser(session?.user ?? null);
-        
-        if (session?.user && event !== 'TOKEN_REFRESHED') {
-          // Only fetch profile for sign-in events, not token refreshes
+        return;
+      }
+      
+      // Token expired event'ini işle
+      if (event === 'TOKEN_REFRESHED' || event === 'SIGNED_IN') {
+        // Token yenilendiğinde veya giriş yapıldığında profile'ı yeniden yükle
+        if (session?.user) {
           fetchProfile(session.user.id);
-        } else if (!session?.user) {
-          setProfile(null);
         }
       }
-    );
+      
+      setSession(session);
+      setUser(session?.user ?? null);
+      
+      if (session?.user && event !== 'TOKEN_REFRESHED') {
+        // Only fetch profile for sign-in events, not token refreshes
+        fetchProfile(session.user.id);
+      } else if (!session?.user) {
+        setProfile(null);
+      }
+    }
+  );
+
+  // Periyodik token kontrolü (her 5 dakikada bir)
+  useEffect(() => {
+    if (!user || !session) return;
+    
+    const tokenCheckInterval = setInterval(async () => {
+      try {
+        if (session.expires_at) {
+          const now = Math.floor(Date.now() / 1000);
+          const timeUntilExpiry = session.expires_at - now;
+          
+          // Token'ın 10 dakika içinde süresi dolacaksa yenile
+          if (timeUntilExpiry < 600) {
+            console.log('🔄 Token süresi yaklaşıyor, yenileniyor...');
+            const { data, error } = await supabase.auth.refreshSession();
+            
+            if (error) {
+              console.log('❌ Periyodik token yenileme hatası:', error.message);
+            } else if (data.session) {
+              console.log('✅ Periyodik token yenileme başarılı');
+            }
+          }
+        }
+      } catch (error) {
+        console.log('❌ Periyodik token kontrolü hatası:', error);
+      }
+    }, 5 * 60 * 1000); // 5 dakika
+    
+    return () => clearInterval(tokenCheckInterval);
+  }, [user, session]);
 
     return () => {
       debug('Cleaning up auth subscription', undefined, 'Auth');
