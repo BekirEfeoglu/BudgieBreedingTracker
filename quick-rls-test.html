@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RLS Hızlı Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 RLS Hızlı Test</h1>
+        
+        <div>
+            <button onclick="testAuth()">🔐 Kimlik Doğrula</button>
+            <button onclick="testBirdInsert()">🐦 Kuş Ekle</button>
+            <button onclick="testBirdSelect()">👁️ Kuş Görüntüle</button>
+            <button onclick="testAllTables()">📋 Tüm Tablolar</button>
+            <button onclick="clearLog()">🗑️ Temizle</button>
+        </div>
+        
+        <div id="results"></div>
+        <div id="log" class="log"></div>
+    </div>
+
+    <script type="module">
+        import { createClient } from 'https://cdn.skypack.dev/@supabase/supabase-js';
+
+        const supabaseUrl = 'https://jxbfdgyusoehqybxdnii.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp4YmZkZ3l1c29laHF5YnhkbmlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQ5NzI5NzQsImV4cCI6MjA1MDU0ODk3NH0.Ej8Ej8Ej8Ej8Ej8Ej8Ej8Ej8Ej8Ej8Ej8Ej8Ej8Ej8';
+        
+        const supabase = createClient(supabaseUrl, supabaseKey);
+
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            logDiv.innerHTML += `[${timestamp}] ${message}\n`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        function showResult(message, type = 'info') {
+            const resultsDiv = document.getElementById('results');
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `result ${type}`;
+            resultDiv.textContent = message;
+            resultsDiv.appendChild(resultDiv);
+        }
+
+        async function testAuth() {
+            try {
+                log('🔐 Kimlik doğrulama test ediliyor...');
+                const { data: { user }, error } = await supabase.auth.getUser();
+                
+                if (error) {
+                    log(`❌ Kimlik doğrulama hatası: ${error.message}`, 'error');
+                    showResult(`❌ Kimlik doğrulama hatası: ${error.message}`, 'error');
+                } else if (user) {
+                    log(`✅ Kullanıcı oturumu açık: ${user.email}`);
+                    showResult(`✅ Kullanıcı: ${user.email} (ID: ${user.id})`, 'success');
+                } else {
+                    log('⚠️ Kullanıcı oturumu bulunamadı');
+                    showResult('⚠️ Kullanıcı oturumu bulunamadı', 'warning');
+                }
+            } catch (error) {
+                log(`❌ Kimlik doğrulama testinde hata: ${error.message}`, 'error');
+                showResult(`❌ Hata: ${error.message}`, 'error');
+            }
+        }
+
+        async function testBirdInsert() {
+            try {
+                log('🐦 Kuş ekleme test ediliyor...');
+                const testBird = {
+                    name: 'TEST_BIRD_' + Date.now(),
+                    gender: 'male',
+                    color: 'Test',
+                    birth_date: '2023-01-01',
+                    ring_number: 'TEST-' + Date.now()
+                };
+                
+                const { data, error } = await supabase
+                    .from('birds')
+                    .insert([testBird])
+                    .select();
+                
+                if (error) {
+                    log(`❌ Kuş ekleme hatası: ${error.message}`, 'error');
+                    showResult(`❌ Kuş ekleme hatası: ${error.message}`, 'error');
+                } else {
+                    log(`✅ Kuş başarıyla eklendi: ${testBird.name}`);
+                    showResult(`✅ Kuş eklendi: ${testBird.name} (ID: ${data[0].id})`, 'success');
+                }
+            } catch (error) {
+                log(`❌ Kuş ekleme testinde hata: ${error.message}`, 'error');
+                showResult(`❌ Hata: ${error.message}`, 'error');
+            }
+        }
+
+        async function testBirdSelect() {
+            try {
+                log('👁️ Kuş görüntüleme test ediliyor...');
+                const { data, error } = await supabase
+                    .from('birds')
+                    .select('*')
+                    .limit(5);
+                
+                if (error) {
+                    log(`❌ Kuş görüntüleme hatası: ${error.message}`, 'error');
+                    showResult(`❌ Kuş görüntüleme hatası: ${error.message}`, 'error');
+                } else {
+                    log(`✅ Kuşlar başarıyla görüntülendi (${data.length} adet)`);
+                    showResult(`✅ ${data.length} kuş görüntülendi`, 'success');
+                    data.forEach(bird => {
+                        log(`  - ${bird.name} (${bird.gender})`);
+                    });
+                }
+            } catch (error) {
+                log(`❌ Kuş görüntüleme testinde hata: ${error.message}`, 'error');
+                showResult(`❌ Hata: ${error.message}`, 'error');
+            }
+        }
+
+        async function testAllTables() {
+            const tables = ['birds', 'incubations', 'chicks', 'eggs', 'profiles'];
+            log('📋 Tüm tablolar test ediliyor...');
+            
+            for (const table of tables) {
+                try {
+                    const { data, error } = await supabase
+                        .from(table)
+                        .select('count')
+                        .limit(1);
+                    
+                    if (error) {
+                        log(`❌ ${table} tablosu hatası: ${error.message}`, 'error');
+                        showResult(`❌ ${table}: ${error.message}`, 'error');
+                    } else {
+                        log(`✅ ${table} tablosu erişilebilir`);
+                        showResult(`✅ ${table} tablosu OK`, 'success');
+                    }
+                } catch (error) {
+                    log(`❌ ${table} tablosu testinde hata: ${error.message}`, 'error');
+                    showResult(`❌ ${table}: ${error.message}`, 'error');
+                }
+            }
+        }
+
+        function clearLog() {
+            document.getElementById('results').innerHTML = '';
+            document.getElementById('log').innerHTML = '';
+        }
+
+        // Global fonksiyonları window'a ekle
+        window.testAuth = testAuth;
+        window.testBirdInsert = testBirdInsert;
+        window.testBirdSelect = testBirdSelect;
+        window.testAllTables = testAllTables;
+        window.clearLog = clearLog;
+
+        // Sayfa yüklendiğinde otomatik test
+        document.addEventListener('DOMContentLoaded', () => {
+            log('🚀 RLS Test Sayfası Başlatıldı');
+            testAuth();
+        });
+    </script>
+</body>
+</html> 

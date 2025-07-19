@@ -10,7 +10,7 @@ const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiO
 
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: {
-    storage: localStorage,
+    storage: typeof window !== 'undefined' ? localStorage : undefined,
     persistSession: true,
     autoRefreshToken: true,
     flowType: 'pkce',
@@ -20,24 +20,35 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
     headers: {
       'X-Client-Info': 'budgie-breeding-tracker',
       'Cache-Control': 'no-cache',
+      'apikey': SUPABASE_PUBLISHABLE_KEY, // API key'i header'da da gönder
+      'Content-Type': 'application/json', // Content-Type'ı global olarak ayarla
     },
     fetch: (url, options = {}) => {
       // Çok agresif timeout ayarları
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 120000); // 120 saniye
       
+      // Content-Type'ı doğru şekilde ayarla
+      const headers = {
+        ...options.headers,
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0',
+        'Connection': 'keep-alive',
+        'User-Agent': 'BudgieBreedingTracker/1.0.0',
+        'apikey': SUPABASE_PUBLISHABLE_KEY, // API key'i her istekte gönder
+      } as any;
+
+      // POST/PUT/PATCH istekleri için Content-Type'ı zorla
+      if (options.method && ['POST', 'PUT', 'PATCH'].includes(options.method.toUpperCase())) {
+        (headers as any)['Content-Type'] = 'application/json';
+      }
+
       return fetch(url, {
         ...options,
         signal: controller.signal,
         cache: 'no-cache',
-        headers: {
-          ...options.headers,
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
-          'Pragma': 'no-cache',
-          'Expires': '0',
-          'Connection': 'keep-alive',
-          'User-Agent': 'BudgieBreedingTracker/1.0.0',
-        },
+        headers,
         mode: 'cors',
         credentials: 'omit',
       }).finally(() => clearTimeout(timeoutId));

@@ -99,6 +99,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }): React
     }
   };
 
+  // Ana auth initialization useEffect
   useEffect(() => {
     if (initializationRef.current) {
       debug('Auth already initialized, skipping', undefined, 'Auth');
@@ -171,49 +172,56 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }): React
     
     initializeAuth();
 
-      // Auth state listener with enhanced token handling
-  const { data: { subscription } } = supabase.auth.onAuthStateChange(
-    async (event: string, session: Session | null) => {
-      debug('Auth state changed', { event, hasUser: !!session?.user, userId: session?.user?.id }, 'Auth');
-      console.log('🔐 Auth: State change event:', {
-        event,
-        hasUser: !!session?.user,
-        userId: session?.user?.id,
-        userEmail: session?.user?.email
-      });
-      
-      // Only process non-initial events to avoid duplication
-      if (event === 'INITIAL_SESSION') {
-        return;
-      }
-      
-      // Token refresh event'ini özel olarak işle
-      if (event === 'TOKEN_REFRESHED') {
-        console.log('🔄 Token yenilendi, session güncelleniyor...');
+    // Auth state listener with enhanced token handling
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event: string, session: Session | null) => {
+        debug('Auth state changed', { event, hasUser: !!session?.user, userId: session?.user?.id }, 'Auth');
+        console.log('🔐 Auth: State change event:', {
+          event,
+          hasUser: !!session?.user,
+          userId: session?.user?.id,
+          userEmail: session?.user?.email
+        });
+        
+        // Only process non-initial events to avoid duplication
+        if (event === 'INITIAL_SESSION') {
+          return;
+        }
+        
+        // Token refresh event'ini özel olarak işle
+        if (event === 'TOKEN_REFRESHED') {
+          console.log('🔄 Token yenilendi, session güncelleniyor...');
+          setSession(session);
+          setUser(session?.user ?? null);
+          return;
+        }
+        
+        // Token expired event'ini işle
+        if (event === 'TOKEN_REFRESHED' || event === 'SIGNED_IN') {
+          // Token yenilendiğinde veya giriş yapıldığında profile'ı yeniden yükle
+          if (session?.user) {
+            fetchProfile(session.user.id);
+          }
+        }
+        
         setSession(session);
         setUser(session?.user ?? null);
-        return;
-      }
-      
-      // Token expired event'ini işle
-      if (event === 'TOKEN_REFRESHED' || event === 'SIGNED_IN') {
-        // Token yenilendiğinde veya giriş yapıldığında profile'ı yeniden yükle
-        if (session?.user) {
+        
+        if (session?.user && event !== 'TOKEN_REFRESHED') {
+          // Only fetch profile for sign-in events, not token refreshes
           fetchProfile(session.user.id);
+        } else if (!session?.user) {
+          setProfile(null);
         }
       }
-      
-      setSession(session);
-      setUser(session?.user ?? null);
-      
-      if (session?.user && event !== 'TOKEN_REFRESHED') {
-        // Only fetch profile for sign-in events, not token refreshes
-        fetchProfile(session.user.id);
-      } else if (!session?.user) {
-        setProfile(null);
-      }
-    }
-  );
+    );
+
+    return () => {
+      debug('Cleaning up auth subscription', undefined, 'Auth');
+      subscription.unsubscribe();
+      initializationRef.current = false;
+    };
+  }, [debug, logError]);
 
   // Periyodik token kontrolü (her 5 dakikada bir)
   useEffect(() => {
@@ -244,13 +252,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }): React
     
     return () => clearInterval(tokenCheckInterval);
   }, [user, session]);
-
-    return () => {
-      debug('Cleaning up auth subscription', undefined, 'Auth');
-      subscription.unsubscribe();
-      initializationRef.current = false;
-    };
-  }, [debug, logError]);
 
   const signUp = async (email: string, password: string, firstName?: string, lastName?: string): Promise<{ error: AuthError | null }> => {
     debug('Starting sign up process', { email }, 'Auth');

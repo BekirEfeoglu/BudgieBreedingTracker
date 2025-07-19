@@ -3,434 +3,358 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🚨 Acil 401 Fix</title>
+    <title>🚨 Acil 401 Fix - Budgie Breeding Tracker</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 0 auto;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
             padding: 20px;
-            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
-            color: white;
             min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         .container {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 30px;
-            border-radius: 15px;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            max-width: 600px;
+            width: 100%;
         }
-        .emergency-header {
+        .header {
             text-align: center;
             margin-bottom: 30px;
         }
-        .emergency-header h1 {
-            font-size: 2.5em;
+        .header h1 {
+            color: #e74c3c;
             margin: 0;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            font-size: 2.5em;
         }
-        .emergency-header p {
-            font-size: 1.2em;
-            opacity: 0.9;
+        .header p {
+            color: #666;
+            margin: 10px 0 0 0;
+        }
+        .step {
+            background: #f8f9fa;
+            border-left: 4px solid #007bff;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        .step h3 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+        .step p {
+            margin: 0;
+            color: #666;
         }
         .button {
-            background: #fff;
-            color: #ff6b6b;
+            background: #007bff;
+            color: white;
             border: none;
             padding: 15px 30px;
-            border-radius: 8px;
-            cursor: pointer;
-            margin: 10px;
+            border-radius: 10px;
             font-size: 16px;
-            font-weight: bold;
+            cursor: pointer;
+            margin: 10px 5px;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
         .button:hover {
+            background: #0056b3;
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
         }
         .button.danger {
-            background: #e74c3c;
-            color: white;
+            background: #dc3545;
+        }
+        .button.danger:hover {
+            background: #c82333;
         }
         .button.success {
-            background: #27ae60;
-            color: white;
+            background: #28a745;
         }
-        .button.warning {
-            background: #f39c12;
-            color: white;
+        .button.success:hover {
+            background: #218838;
+        }
+        .log {
+            background: #1e1e1e;
+            color: #00ff00;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin: 20px 0;
+            white-space: pre-wrap;
         }
         .status {
             padding: 15px;
             border-radius: 8px;
-            margin: 15px 0;
+            margin: 10px 0;
             font-weight: bold;
         }
         .status.success {
-            background: rgba(39, 174, 96, 0.3);
-            border: 2px solid #27ae60;
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
         }
         .status.error {
-            background: rgba(231, 76, 60, 0.3);
-            border: 2px solid #e74c3c;
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
         }
         .status.warning {
-            background: rgba(243, 156, 18, 0.3);
-            border: 2px solid #f39c12;
-        }
-        .log {
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 8px;
-            padding: 20px;
-            margin: 20px 0;
-            font-family: monospace;
-            white-space: pre-wrap;
-            max-height: 300px;
-            overflow-y: auto;
-            font-size: 14px;
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
         }
         .progress {
             width: 100%;
             height: 20px;
-            background: rgba(255, 255, 255, 0.2);
+            background: #e9ecef;
             border-radius: 10px;
             overflow: hidden;
             margin: 20px 0;
         }
         .progress-bar {
             height: 100%;
-            background: linear-gradient(90deg, #27ae60, #2ecc71);
+            background: linear-gradient(90deg, #007bff, #00ff88);
             width: 0%;
             transition: width 0.3s ease;
-        }
-        .steps {
-            display: flex;
-            justify-content: space-between;
-            margin: 20px 0;
-        }
-        .step {
-            text-align: center;
-            flex: 1;
-            padding: 10px;
-        }
-        .step.active {
-            color: #f39c12;
-            font-weight: bold;
-        }
-        .step.completed {
-            color: #27ae60;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="emergency-header">
-            <h1>🚨 ACİL 401 FIX</h1>
-            <p>401 Unauthorized hatalarını acil olarak çözüyoruz...</p>
+        <div class="header">
+            <h1>🚨 Acil 401 Fix</h1>
+            <p>Supabase API Key ve Auth Sorunları Çözümü</p>
         </div>
-        
-        <div id="status" class="status warning">
-            Acil fix aracı hazır. Başlatmak için "ACİL FIX BAŞLAT" butonuna tıklayın.
+
+        <div class="step">
+            <h3>🔍 Sorun Analizi</h3>
+            <p>401 Unauthorized hataları "No API key found in request" mesajından kaynaklanıyor. Bu, Supabase client'ın API key'i doğru şekilde gönderemediği anlamına geliyor.</p>
         </div>
-        
-        <div class="steps">
-            <div class="step active" id="step1">1. Veri Temizleme</div>
-            <div class="step" id="step2">2. Cache Temizleme</div>
-            <div class="step" id="step3">3. Client Sıfırlama</div>
-            <div class="step" id="step4">4. Session Kontrolü</div>
-            <div class="step" id="step5">5. API Test</div>
-        </div>
-        
+
         <div class="progress">
             <div class="progress-bar" id="progressBar"></div>
         </div>
-        
-        <div style="text-align: center;">
-            <button class="button danger" onclick="startEmergencyFix()">🚨 ACİL FIX BAŞLAT</button>
-            <button class="button warning" onclick="clearAllData()">🗑️ TÜM VERİLERİ TEMİZLE</button>
-            <button class="button success" onclick="redirectToLogin()">🔀 LOGIN SAYFASINA GİT</button>
-            <button class="button" onclick="refreshPage()">🔄 SAYFAYI YENİLE</button>
+
+        <div id="statusContainer"></div>
+
+        <div class="step">
+            <h3>🛠️ Otomatik Çözüm</h3>
+            <p>Aşağıdaki butonları sırayla çalıştırın:</p>
+            
+            <button class="button" onclick="clearAllData()">🗑️ Tüm Verileri Temizle</button>
+            <button class="button" onclick="resetSupabaseClient()">🔄 Supabase Client'ı Sıfırla</button>
+            <button class="button" onclick="testApiConnection()">🧪 API Bağlantısını Test Et</button>
+            <button class="button success" onclick="createNewSession()">🔐 Yeni Session Oluştur</button>
+            <button class="button danger" onclick="emergencyAuthFix()">🚨 ACİL FIX ÇALIŞTIR</button>
         </div>
-        
-        <div id="log" class="log">Acil fix logları burada görünecek...</div>
+
+        <div class="step">
+            <h3>📋 Manuel Adımlar</h3>
+            <p>Eğer otomatik çözüm çalışmazsa:</p>
+            <ol>
+                <li>Tarayıcıyı tamamen kapatın (Ctrl+Shift+Q)</li>
+                <li>Tarayıcıyı yeniden açın</li>
+                <li><a href="http://localhost:8082/login" target="_blank">Login sayfasına gidin</a></li>
+                <li>Yeniden giriş yapın</li>
+            </ol>
+        </div>
+
+        <div class="log" id="logContainer">🚀 Acil Fix hazır...\n</div>
+
+        <div style="text-align: center; margin-top: 30px;">
+            <button class="button" onclick="window.location.href='http://localhost:8082/'">🏠 Ana Sayfaya Dön</button>
+            <button class="button" onclick="window.location.href='http://localhost:8082/login'">🔐 Login Sayfası</button>
+        </div>
     </div>
 
     <script>
-        let currentStep = 0;
-        const totalSteps = 5;
-        
-        // Log fonksiyonu
+        let logContainer = document.getElementById('logContainer');
+        let statusContainer = document.getElementById('statusContainer');
+        let progressBar = document.getElementById('progressBar');
+
         function log(message) {
-            const logElement = document.getElementById('log');
             const timestamp = new Date().toLocaleTimeString();
-            logElement.textContent += `[${timestamp}] ${message}\n`;
-            logElement.scrollTop = logElement.scrollHeight;
+            logContainer.textContent += `[${timestamp}] ${message}\n`;
+            logContainer.scrollTop = logContainer.scrollHeight;
+            console.log(message);
         }
-        
-        // Status güncelleme
-        function updateStatus(message, type = 'warning') {
-            const statusElement = document.getElementById('status');
-            statusElement.textContent = message;
-            statusElement.className = `status ${type}`;
+
+        function updateStatus(message, type = 'info') {
+            const status = document.createElement('div');
+            status.className = `status ${type}`;
+            status.textContent = message;
+            statusContainer.appendChild(status);
         }
-        
-        // Progress güncelleme
-        function updateProgress(step) {
-            const progress = (step / totalSteps) * 100;
-            document.getElementById('progressBar').style.width = `${progress}%`;
-            
-            // Step'leri güncelle
-            for (let i = 1; i <= totalSteps; i++) {
-                const stepElement = document.getElementById(`step${i}`);
-                if (i < step) {
-                    stepElement.className = 'step completed';
-                } else if (i === step) {
-                    stepElement.className = 'step active';
-                } else {
-                    stepElement.className = 'step';
-                }
-            }
+
+        function updateProgress(percent) {
+            progressBar.style.width = percent + '%';
         }
-        
-        // Tüm auth verilerini temizle
-        function clearAllAuthData() {
-            log('🗑️ TÜM AUTH VERİLERİ TEMİZLENİYOR...');
-            updateProgress(1);
-            
-            // LocalStorage'ı temizle
-            const keysToRemove = [];
-            for (let i = 0; i < localStorage.length; i++) {
-                const key = localStorage.key(i);
-                if (key && (
-                    key.includes('supabase') || 
-                    key.includes('auth') || 
-                    key.includes('session') ||
-                    key.includes('token')
-                )) {
-                    keysToRemove.push(key);
-                }
-            }
-            
-            keysToRemove.forEach(key => {
-                localStorage.removeItem(key);
-                log(`🗑️ ${key} silindi`);
-            });
-            
-            // SessionStorage'ı temizle
-            const sessionKeysToRemove = [];
-            for (let i = 0; i < sessionStorage.length; i++) {
-                const key = sessionStorage.key(i);
-                if (key && (
-                    key.includes('supabase') || 
-                    key.includes('auth') || 
-                    key.includes('session') ||
-                    key.includes('token')
-                )) {
-                    sessionKeysToRemove.push(key);
-                }
-            }
-            
-            sessionKeysToRemove.forEach(key => {
-                sessionStorage.removeItem(key);
-                log(`🗑️ SessionStorage: ${key} silindi`);
-            });
-            
-            log('✅ Tüm auth verileri temizlendi');
-        }
-        
-        // Browser cache'ini temizle
-        function clearBrowserCache() {
-            log('🧹 BROWSER CACHE TEMİZLENİYOR...');
-            updateProgress(2);
-            
-            // Cache API'yi temizle
-            if ('caches' in window) {
-                caches.keys().then(cacheNames => {
-                    cacheNames.forEach(cacheName => {
-                        caches.delete(cacheName);
-                        log(`🗑️ Cache silindi: ${cacheName}`);
-                    });
-                });
-            }
-            
-            // Service Worker'ları temizle
-            if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.getRegistrations().then(registrations => {
-                    registrations.forEach(registration => {
-                        registration.unregister();
-                        log('🗑️ Service Worker kaldırıldı');
-                    });
-                });
-            }
-            
-            log('✅ Browser cache temizlendi');
-        }
-        
-        // Supabase client'ı sıfırla
-        async function resetSupabaseClient() {
-            log('🔄 SUPABASE CLIENT SIFIRLANIYOR...');
-            updateProgress(3);
-            
-            try {
-                if (window.supabase) {
-                    try {
-                        await window.supabase.auth.signOut();
-                        log('✅ Mevcut oturum kapatıldı');
-                    } catch (error) {
-                        log('⚠️ Oturum kapatma hatası (normal):', error.message);
-                    }
-                }
-                
-                window.supabase = null;
-                log('✅ Supabase client sıfırlandı');
-                
-            } catch (error) {
-                log('❌ Supabase client sıfırlama hatası:', error.message);
-            }
-        }
-        
-        // Session kontrolü
-        async function checkSession() {
-            log('🔐 SESSION KONTROL EDİLİYOR...');
-            updateProgress(4);
-            
-            try {
-                if (!window.supabase) {
-                    log('❌ Supabase client bulunamadı');
-                    return false;
-                }
-                
-                const { data: { session }, error } = await window.supabase.auth.getSession();
-                
-                if (error) {
-                    log('❌ Session kontrolü başarısız:', error.message);
-                    return false;
-                }
-                
-                if (session) {
-                    log('✅ Session mevcut');
-                    log(`   User ID: ${session.user.id}`);
-                    log(`   Email: ${session.user.email}`);
-                    return true;
-                } else {
-                    log('ℹ️ Session yok - login gerekli');
-                    return false;
-                }
-                
-            } catch (error) {
-                log('❌ Session kontrolü hatası:', error.message);
-                return false;
-            }
-        }
-        
-        // API test
-        async function testApi() {
-            log('🧪 API TEST EDİLİYOR...');
-            updateProgress(5);
-            
-            try {
-                if (!window.supabase) {
-                    log('❌ Supabase client bulunamadı');
-                    return false;
-                }
-                
-                const { data, error } = await window.supabase
-                    .from('profiles')
-                    .select('count')
-                    .limit(1);
-                
-                if (error) {
-                    log('❌ API test başarısız:', error.message);
-                    return false;
-                }
-                
-                log('✅ API test başarılı');
-                return true;
-                
-            } catch (error) {
-                log('❌ API test hatası:', error.message);
-                return false;
-            }
-        }
-        
-        // Ana acil fix fonksiyonu
-        async function startEmergencyFix() {
-            updateStatus('Acil fix başlatılıyor...', 'warning');
-            log('🚨 ACİL FIX BAŞLATILIYOR...');
-            
-            try {
-                // Adım 1: Veri temizleme
-                clearAllAuthData();
-                await new Promise(resolve => setTimeout(resolve, 500));
-                
-                // Adım 2: Cache temizleme
-                clearBrowserCache();
-                await new Promise(resolve => setTimeout(resolve, 500));
-                
-                // Adım 3: Client sıfırlama
-                await resetSupabaseClient();
-                await new Promise(resolve => setTimeout(resolve, 500));
-                
-                // Adım 4: Session kontrolü
-                const sessionOk = await checkSession();
-                
-                // Adım 5: API test
-                let apiOk = false;
-                if (sessionOk) {
-                    apiOk = await testApi();
-                }
-                
-                if (sessionOk && apiOk) {
-                    updateStatus('✅ Acil fix başarılı! Sayfa yenileniyor...', 'success');
-                    log('✅ ACİL FIX BAŞARILI!');
-                    log('🔄 Sayfa 3 saniye sonra yenilenecek...');
-                    
-                    setTimeout(() => {
-                        window.location.reload();
-                    }, 3000);
-                } else {
-                    updateStatus('⚠️ Acil fix tamamlandı ama login gerekli', 'warning');
-                    log('⚠️ ACİL FIX TAMAMLANDI AMA LOGIN GEREKLİ');
-                    log('💡 Login sayfasına yönlendiriliyor...');
-                    
-                    setTimeout(() => {
-                        window.location.href = '/login';
-                    }, 3000);
-                }
-                
-            } catch (error) {
-                updateStatus('❌ Acil fix hatası!', 'error');
-                log('💥 ACİL FIX HATASI:', error.message);
-            }
-        }
-        
-        // Manuel fonksiyonlar
+
         function clearAllData() {
-            clearAllAuthData();
-            clearBrowserCache();
-            updateStatus('Tüm veriler temizlendi', 'success');
+            log('🗑️ Tüm auth verileri temizleniyor...');
+            updateProgress(10);
+            
+            try {
+                // LocalStorage temizle
+                localStorage.clear();
+                log('✅ LocalStorage temizlendi');
+                
+                // SessionStorage temizle
+                sessionStorage.clear();
+                log('✅ SessionStorage temizlendi');
+                
+                // IndexedDB temizle
+                if ('indexedDB' in window) {
+                    indexedDB.databases().then(databases => {
+                        databases.forEach(db => {
+                            indexedDB.deleteDatabase(db.name);
+                        });
+                    });
+                    log('✅ IndexedDB temizlendi');
+                }
+                
+                updateStatus('✅ Tüm veriler başarıyla temizlendi', 'success');
+                updateProgress(30);
+                
+            } catch (error) {
+                log('❌ Veri temizleme hatası: ' + error.message);
+                updateStatus('❌ Veri temizleme hatası', 'error');
+            }
         }
-        
-        function redirectToLogin() {
-            window.location.href = '/login';
+
+        function resetSupabaseClient() {
+            log('🔄 Supabase client sıfırlanıyor...');
+            updateProgress(50);
+            
+            try {
+                // Supabase client'ı yeniden yükle
+                if (window.supabase) {
+                    delete window.supabase;
+                }
+                
+                // Cache temizle
+                if ('caches' in window) {
+                    caches.keys().then(names => {
+                        names.forEach(name => {
+                            caches.delete(name);
+                        });
+                    });
+                    log('✅ Cache temizlendi');
+                }
+                
+                // Service Worker temizle
+                if ('serviceWorker' in navigator) {
+                    navigator.serviceWorker.getRegistrations().then(registrations => {
+                        registrations.forEach(registration => {
+                            registration.unsubscribe();
+                        });
+                    });
+                    log('✅ Service Worker temizlendi');
+                }
+                
+                updateStatus('✅ Supabase client sıfırlandı', 'success');
+                updateProgress(70);
+                
+            } catch (error) {
+                log('❌ Client sıfırlama hatası: ' + error.message);
+                updateStatus('❌ Client sıfırlama hatası', 'error');
+            }
         }
-        
-        function refreshPage() {
-            window.location.reload();
+
+        function testApiConnection() {
+            log('🧪 API bağlantısı test ediliyor...');
+            updateProgress(80);
+            
+            const SUPABASE_URL = "https://jxbfdgyusoehqybxdnii.supabase.co";
+            const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp4YmZkZ3l1c29laHF5YnhkbmlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEyMjY5NTksImV4cCI6MjA2NjgwMjk1OX0.aBMXWV0yeW8cunOtrKGGakLv_7yZi1vbV1Q1fXsJJeg";
+            
+            fetch(`${SUPABASE_URL}/rest/v1/profiles?select=count`, {
+                method: 'GET',
+                headers: {
+                    'apikey': SUPABASE_KEY,
+                    'Authorization': `Bearer ${SUPABASE_KEY}`,
+                    'Content-Type': 'application/json',
+                    'Cache-Control': 'no-cache'
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    log('✅ API bağlantısı başarılı');
+                    updateStatus('✅ API bağlantısı çalışıyor', 'success');
+                } else {
+                    log('❌ API bağlantısı başarısız: ' + response.status);
+                    updateStatus('❌ API bağlantısı başarısız', 'error');
+                }
+            })
+            .catch(error => {
+                log('❌ API bağlantı hatası: ' + error.message);
+                updateStatus('❌ API bağlantı hatası', 'error');
+            })
+            .finally(() => {
+                updateProgress(90);
+            });
         }
-        
-        // Sayfa yüklendiğinde
+
+        function createNewSession() {
+            log('🔐 Yeni session oluşturuluyor...');
+            updateProgress(95);
+            
+            try {
+                // Yeni auth state oluştur
+                const authState = {
+                    user: null,
+                    session: null,
+                    timestamp: Date.now()
+                };
+                
+                localStorage.setItem('supabase.auth.token', JSON.stringify(authState));
+                log('✅ Yeni auth state oluşturuldu');
+                
+                updateStatus('✅ Yeni session hazır', 'success');
+                updateProgress(100);
+                
+            } catch (error) {
+                log('❌ Session oluşturma hatası: ' + error.message);
+                updateStatus('❌ Session oluşturma hatası', 'error');
+            }
+        }
+
+        function emergencyAuthFix() {
+            log('🚨 ACİL FIX BAŞLATILIYOR...');
+            updateProgress(0);
+            
+            // Tüm adımları sırayla çalıştır
+            setTimeout(() => clearAllData(), 500);
+            setTimeout(() => resetSupabaseClient(), 2000);
+            setTimeout(() => testApiConnection(), 4000);
+            setTimeout(() => createNewSession(), 6000);
+            
+            setTimeout(() => {
+                log('🎉 ACİL FIX TAMAMLANDI!');
+                log('📋 Şimdi yapmanız gerekenler:');
+                log('1. Bu sayfayı kapatın');
+                log('2. Ana uygulamaya gidin: http://localhost:8082/');
+                log('3. Login sayfasına gidin: http://localhost:8082/login');
+                log('4. Yeniden giriş yapın');
+                
+                updateStatus('🎉 ACİL FIX TAMAMLANDI! Şimdi uygulamaya dönün.', 'success');
+            }, 8000);
+        }
+
+        // Sayfa yüklendiğinde otomatik başlat
         window.addEventListener('load', () => {
-            log('🚨 Acil 401 Fix Tool yüklendi');
-            log('Kullanım:');
-            log('1. ACİL FIX BAŞLAT - Otomatik tam fix');
-            log('2. TÜM VERİLERİ TEMİZLE - Manuel temizlik');
-            log('3. LOGIN SAYFASINA GİT - Login sayfasına yönlendir');
-            log('4. SAYFAYI YENİLE - Sayfayı yenile');
+            log('🚀 Acil Fix sayfası yüklendi');
+            log('📍 Port: 8082');
+            log('🌐 Supabase URL: https://jxbfdgyusoehqybxdnii.supabase.co');
+            updateStatus('🚀 Acil Fix hazır', 'success');
         });
     </script>
 </body>

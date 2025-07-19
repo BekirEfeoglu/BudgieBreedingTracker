@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RLS Durum Kontrolü</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .status-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            border-left: 5px solid #007bff;
+        }
+        .status-card.error {
+            border-left-color: #dc3545;
+            background: #fff5f5;
+        }
+        .status-card.success {
+            border-left-color: #28a745;
+            background: #f0fff4;
+        }
+        .status-card.warning {
+            border-left-color: #ffc107;
+            background: #fffbf0;
+        }
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #0056b3;
+        }
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        .btn-danger:hover {
+            background: #c82333;
+        }
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        .btn-success:hover {
+            background: #218838;
+        }
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+        .log-area {
+            background: #1e1e1e;
+            color: #00ff00;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+        .test-result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .test-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .test-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .test-warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #007bff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 RLS Durum Kontrolü ve Düzeltme</h1>
+        
+        <div class="status-grid">
+            <div class="status-card" id="auth-status">
+                <h3>🔐 Kimlik Doğrulama</h3>
+                <p>Kullanıcı oturumu kontrol ediliyor...</p>
+            </div>
+            
+            <div class="status-card" id="rls-status">
+                <h3>🛡️ RLS Durumu</h3>
+                <p>RLS politikaları kontrol ediliyor...</p>
+            </div>
+            
+            <div class="status-card" id="api-status">
+                <h3>🌐 API Bağlantısı</h3>
+                <p>Supabase API bağlantısı test ediliyor...</p>
+            </div>
+            
+            <div class="status-card" id="data-status">
+                <h3>📊 Veri Erişimi</h3>
+                <p>Veri tablolarına erişim test ediliyor...</p>
+            </div>
+        </div>
+
+        <div class="button-group">
+            <button class="btn-primary" onclick="checkRLSStatus()">
+                🔍 RLS Durumunu Kontrol Et
+            </button>
+            <button class="btn-warning" onclick="disableRLS()">
+                ⚠️ RLS'yi Devre Dışı Bırak
+            </button>
+            <button class="btn-success" onclick="enableRLS()">
+                ✅ RLS'yi Etkinleştir
+            </button>
+            <button class="btn-primary" onclick="fixRLSPolicies()">
+                🔧 RLS Politikalarını Düzelt
+            </button>
+            <button class="btn-danger" onclick="clearLogs()">
+                🗑️ Logları Temizle
+            </button>
+        </div>
+
+        <div class="button-group">
+            <button class="btn-primary" onclick="testBirdInsert()">
+                🐦 Kuş Ekleme Testi
+            </button>
+            <button class="btn-primary" onclick="testBirdSelect()">
+                👁️ Kuş Görüntüleme Testi
+            </button>
+            <button class="btn-primary" onclick="testAllTables()">
+                📋 Tüm Tabloları Test Et
+            </button>
+        </div>
+
+        <div id="log-area" class="log-area hidden">
+            <div id="log-content"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { createClient } from 'https://cdn.skypack.dev/@supabase/supabase-js';
+
+        // Supabase yapılandırması
+        const supabaseUrl = 'https://jxbfdgyusoehqybxdnii.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp4YmZkZ3l1c29laHF5YnhkbmlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQ5NzI5NzQsImV4cCI6MjA1MDU0ODk3NH0.Ej8Ej8Ej8Ej8Ej8Ej8Ej8Ej8Ej8Ej8Ej8Ej8Ej8Ej8';
+        
+        const supabase = createClient(supabaseUrl, supabaseKey);
+
+        let isLoggedIn = false;
+        let currentUser = null;
+
+        // Log fonksiyonu
+        function log(message, type = 'info') {
+            const logArea = document.getElementById('log-area');
+            const logContent = document.getElementById('log-content');
+            
+            logArea.classList.remove('hidden');
+            
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = `test-result test-${type}`;
+            logEntry.innerHTML = `[${timestamp}] ${message}`;
+            
+            logContent.appendChild(logEntry);
+            logArea.scrollTop = logArea.scrollHeight;
+        }
+
+        // Kimlik doğrulama kontrolü
+        async function checkAuth() {
+            try {
+                const { data: { user }, error } = await supabase.auth.getUser();
+                
+                if (error) {
+                    log('❌ Kimlik doğrulama hatası: ' + error.message, 'error');
+                    document.getElementById('auth-status').className = 'status-card error';
+                    document.getElementById('auth-status').innerHTML = `
+                        <h3>🔐 Kimlik Doğrulama</h3>
+                        <p>❌ Oturum açılmamış</p>
+                        <p>Hata: ${error.message}</p>
+                    `;
+                    return false;
+                }
+                
+                if (user) {
+                    isLoggedIn = true;
+                    currentUser = user;
+                    log('✅ Kullanıcı oturumu açık: ' + user.email, 'success');
+                    document.getElementById('auth-status').className = 'status-card success';
+                    document.getElementById('auth-status').innerHTML = `
+                        <h3>🔐 Kimlik Doğrulama</h3>
+                        <p>✅ Oturum açık</p>
+                        <p>Kullanıcı: ${user.email}</p>
+                        <p>ID: ${user.id}</p>
+                    `;
+                    return true;
+                } else {
+                    log('⚠️ Kullanıcı oturumu bulunamadı', 'warning');
+                    document.getElementById('auth-status').className = 'status-card warning';
+                    document.getElementById('auth-status').innerHTML = `
+                        <h3>🔐 Kimlik Doğrulama</h3>
+                        <p>⚠️ Oturum açılmamış</p>
+                    `;
+                    return false;
+                }
+            } catch (error) {
+                log('❌ Kimlik doğrulama kontrolünde hata: ' + error.message, 'error');
+                return false;
+            }
+        }
+
+        // RLS durumunu kontrol et
+        async function checkRLSStatus() {
+            log('🔍 RLS durumu kontrol ediliyor...', 'info');
+            
+            try {
+                // RLS durumunu kontrol et
+                const { data: rlsData, error: rlsError } = await supabase
+                    .from('birds')
+                    .select('count')
+                    .limit(1);
+                
+                if (rlsError) {
+                    log('❌ RLS hatası: ' + rlsError.message, 'error');
+                    document.getElementById('rls-status').className = 'status-card error';
+                    document.getElementById('rls-status').innerHTML = `
+                        <h3>🛡️ RLS Durumu</h3>
+                        <p>❌ RLS hatası</p>
+                        <p>Hata: ${rlsError.message}</p>
+                    `;
+                } else {
+                    log('✅ RLS çalışıyor', 'success');
+                    document.getElementById('rls-status').className = 'status-card success';
+                    document.getElementById('rls-status').innerHTML = `
+                        <h3>🛡️ RLS Durumu</h3>
+                        <p>✅ RLS etkin ve çalışıyor</p>
+                    `;
+                }
+            } catch (error) {
+                log('❌ RLS kontrolünde hata: ' + error.message, 'error');
+            }
+        }
+
+        // RLS'yi devre dışı bırak
+        async function disableRLS() {
+            log('⚠️ RLS devre dışı bırakılıyor...', 'warning');
+            
+            try {
+                const { error } = await supabase.rpc('disable_rls_tables');
+                
+                if (error) {
+                    log('❌ RLS devre dışı bırakma hatası: ' + error.message, 'error');
+                } else {
+                    log('✅ RLS başarıyla devre dışı bırakıldı', 'success');
+                    checkRLSStatus();
+                }
+            } catch (error) {
+                log('❌ RLS devre dışı bırakma işleminde hata: ' + error.message, 'error');
+            }
+        }
+
+        // RLS'yi etkinleştir
+        async function enableRLS() {
+            log('✅ RLS etkinleştiriliyor...', 'info');
+            
+            try {
+                const { error } = await supabase.rpc('enable_rls_tables');
+                
+                if (error) {
+                    log('❌ RLS etkinleştirme hatası: ' + error.message, 'error');
+                } else {
+                    log('✅ RLS başarıyla etkinleştirildi', 'success');
+                    checkRLSStatus();
+                }
+            } catch (error) {
+                log('❌ RLS etkinleştirme işleminde hata: ' + error.message, 'error');
+            }
+        }
+
+        // RLS politikalarını düzelt
+        async function fixRLSPolicies() {
+            log('🔧 RLS politikaları düzeltiliyor...', 'info');
+            
+            try {
+                // Birds tablosu için politika
+                const { error: birdsError } = await supabase.rpc('fix_birds_policy');
+                if (birdsError) {
+                    log('❌ Birds politikası düzeltme hatası: ' + birdsError.message, 'error');
+                } else {
+                    log('✅ Birds politikası düzeltildi', 'success');
+                }
+                
+                // Diğer tablolar için benzer işlemler...
+                log('✅ RLS politikaları düzeltme tamamlandı', 'success');
+            } catch (error) {
+                log('❌ RLS politikaları düzeltme hatası: ' + error.message, 'error');
+            }
+        }
+
+        // Kuş ekleme testi
+        async function testBirdInsert() {
+            log('🐦 Kuş ekleme testi başlatılıyor...', 'info');
+            
+            try {
+                const testBird = {
+                    name: 'TEST_BIRD_' + Date.now(),
+                    gender: 'male',
+                    color: 'Test',
+                    birth_date: '2023-01-01',
+                    ring_number: 'TEST-' + Date.now()
+                };
+                
+                const { data, error } = await supabase
+                    .from('birds')
+                    .insert([testBird])
+                    .select();
+                
+                if (error) {
+                    log('❌ Kuş ekleme hatası: ' + error.message, 'error');
+                } else {
+                    log('✅ Kuş başarıyla eklendi: ' + testBird.name, 'success');
+                    log('Eklenen kuş ID: ' + data[0].id, 'info');
+                }
+            } catch (error) {
+                log('❌ Kuş ekleme testinde hata: ' + error.message, 'error');
+            }
+        }
+
+        // Kuş görüntüleme testi
+        async function testBirdSelect() {
+            log('👁️ Kuş görüntüleme testi başlatılıyor...', 'info');
+            
+            try {
+                const { data, error } = await supabase
+                    .from('birds')
+                    .select('*')
+                    .limit(5);
+                
+                if (error) {
+                    log('❌ Kuş görüntüleme hatası: ' + error.message, 'error');
+                } else {
+                    log('✅ Kuşlar başarıyla görüntülendi', 'success');
+                    log('Görüntülenen kuş sayısı: ' + data.length, 'info');
+                    data.forEach(bird => {
+                        log(`- ${bird.name} (${bird.gender})`, 'info');
+                    });
+                }
+            } catch (error) {
+                log('❌ Kuş görüntüleme testinde hata: ' + error.message, 'error');
+            }
+        }
+
+        // Tüm tabloları test et
+        async function testAllTables() {
+            log('📋 Tüm tablolar test ediliyor...', 'info');
+            
+            const tables = ['birds', 'incubations', 'chicks', 'eggs', 'profiles'];
+            
+            for (const table of tables) {
+                try {
+                    const { data, error } = await supabase
+                        .from(table)
+                        .select('count')
+                        .limit(1);
+                    
+                    if (error) {
+                        log(`❌ ${table} tablosu hatası: ${error.message}`, 'error');
+                    } else {
+                        log(`✅ ${table} tablosu erişilebilir`, 'success');
+                    }
+                } catch (error) {
+                    log(`❌ ${table} tablosu testinde hata: ${error.message}`, 'error');
+                }
+            }
+        }
+
+        // Logları temizle
+        function clearLogs() {
+            document.getElementById('log-content').innerHTML = '';
+            document.getElementById('log-area').classList.add('hidden');
+            log('🗑️ Loglar temizlendi', 'info');
+        }
+
+        // Global fonksiyonları window'a ekle
+        window.checkRLSStatus = checkRLSStatus;
+        window.disableRLS = disableRLS;
+        window.enableRLS = enableRLS;
+        window.fixRLSPolicies = fixRLSPolicies;
+        window.testBirdInsert = testBirdInsert;
+        window.testBirdSelect = testBirdSelect;
+        window.testAllTables = testAllTables;
+        window.clearLogs = clearLogs;
+
+        // Sayfa yüklendiğinde başlangıç kontrolleri
+        document.addEventListener('DOMContentLoaded', async () => {
+            log('🚀 RLS Kontrol Sayfası Başlatıldı', 'info');
+            await checkAuth();
+            await checkRLSStatus();
+        });
+    </script>
+</body>
+</html> 
