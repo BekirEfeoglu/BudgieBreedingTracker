@@ -30,6 +30,8 @@ const LoginPage = React.lazy(() => import('@/pages/LoginPage'));
 const NotFound = React.lazy(() => import('@/pages/NotFound'));
 const ProfilePage = React.lazy(() => import('@/components/profile/ProfilePage'));
 const Dashboard = React.lazy(() => import('@/components/Dashboard'));
+const QuickTestPage = React.lazy(() => import('@/pages/QuickTestPage'));
+const EmergencyTestPage = React.lazy(() => import('@/pages/EmergencyTestPage'));
 
 // Optimize QueryClient configuration for better performance
 const queryClient = new QueryClient({
@@ -199,6 +201,8 @@ function App() {
                               <Route path="/profile" element={<MainLayout><ProfilePage onBack={() => window.location.hash = '#/'} /></MainLayout>} />
                               <Route path="/debug" element={<AuthDebug />} />
                               <Route path="/signup-test" element={<SignupTest />} />
+                              <Route path="/quick-test" element={<QuickTestPage />} />
+                              <Route path="/emergency-test" element={<EmergencyTestPage />} />
                               <Route path="*" element={<NotFound />} />
                             </Routes>
                           </ProtectedRoute>
