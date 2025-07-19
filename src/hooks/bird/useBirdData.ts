@@ -11,7 +11,7 @@ export const useBirdData = () => {
   const [birds, setBirds] = useState<Bird[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { user } = useAuth();
+  const { user, session } = useAuth();
   const { toast } = useToast();
   
   // Track loading state to prevent multiple simultaneous requests
@@ -38,13 +38,38 @@ export const useBirdData = () => {
 
   // Memoize loadBirds to prevent unnecessary re-renders
   const loadBirds = useCallback(async () => {
-    if (!user || isLoadingRef.current) {
-      if (!user) {
-        console.log('🔄 useBirdData: No user, clearing birds data');
+    if (!user || !session || isLoadingRef.current) {
+      if (!user || !session) {
+        console.log('🔄 useBirdData: No user or session, clearing birds data');
         setBirds([]);
         setLoading(false);
       }
       return;
+    }
+
+    // Token'ın geçerli olup olmadığını kontrol et
+    if (session.expires_at) {
+      const now = Math.floor(Date.now() / 1000);
+      const isExpired = session.expires_at < now;
+      
+      if (isExpired) {
+        console.log('🔄 useBirdData: Token expired, attempting refresh...');
+        try {
+          const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
+          if (refreshError || !refreshData.session) {
+            console.log('❌ useBirdData: Token refresh failed, clearing data');
+            setBirds([]);
+            setLoading(false);
+            return;
+          }
+          console.log('✅ useBirdData: Token refreshed successfully');
+        } catch (error) {
+          console.log('❌ useBirdData: Token refresh error:', error);
+          setBirds([]);
+          setLoading(false);
+          return;
+        }
+      }
     }
 
     isLoadingRef.current = true;
@@ -78,14 +103,14 @@ export const useBirdData = () => {
       const transformedBirds = data ? data.map(transformBird) : [];
       console.log('✅ useBirdData: Successfully loaded birds:', {
         count: transformedBirds.length,
-        sample: transformedBirds.slice(0, 2).map(b => ({ id: b.id, name: b.name }))
+        sample: transformedBirds.slice(0, 2).map((b: any) => ({ id: b.id, name: b.name }))
       });
       
       // Mevcut optimistic update'leri koruyarak güncelle
       setBirds(prev => {
         // Optimistic update'ler ile veritabanı verilerini birleştir
         const optimisticBirds = prev.filter(bird => 
-          !transformedBirds.some(dbBird => dbBird.id === bird.id)
+          !transformedBirds.some((dbBird: any) => dbBird.id === bird.id)
         );
         
         const allBirds = [...transformedBirds, ...optimisticBirds];
@@ -113,7 +138,7 @@ export const useBirdData = () => {
       setLoading(false);
       isLoadingRef.current = false;
     }
-  }, [user, toast]);
+  }, [user, session, toast]);
 
   return {
     birds,

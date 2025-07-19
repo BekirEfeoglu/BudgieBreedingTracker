@@ -108,31 +108,70 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }): React
     initializationRef.current = true;
     debug('Initializing auth state listener', undefined, 'Auth');
     
-    // Get initial session first
-    supabase.auth.getSession().then(({ data: { session }, error }: { data: { session: Session | null }, error: AuthError | null }) => {
-      if (error) {
-        logError('Error getting initial session', error, 'Auth');
+    // Get initial session first with token refresh
+    const initializeAuth = async () => {
+      try {
+        // Önce mevcut session'ı al
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          logError('Error getting initial session', error, 'Auth');
+        }
+        
+        // Session varsa token'ın geçerli olup olmadığını kontrol et
+        if (session && session.expires_at) {
+          const now = Math.floor(Date.now() / 1000);
+          const isExpired = session.expires_at < now;
+          
+          console.log('🔐 Auth: Token durumu:', {
+            hasSession: !!session,
+            userId: session?.user?.id,
+            userEmail: session?.user?.email,
+            isExpired,
+            expiresAt: new Date(session.expires_at * 1000).toLocaleString()
+          });
+          
+          // Token süresi dolmuşsa yenilemeyi dene
+          if (isExpired) {
+            console.log('🔄 Token süresi dolmuş, yenileniyor...');
+            const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
+            
+            if (refreshError) {
+              console.log('❌ Token yenileme başarısız:', refreshError.message);
+              // Token yenilenemezse session'ı temizle
+              setSession(null);
+              setUser(null);
+              setProfile(null);
+            } else if (refreshData.session) {
+              console.log('✅ Token başarıyla yenilendi');
+              setSession(refreshData.session);
+              setUser(refreshData.session.user);
+              fetchProfile(refreshData.session.user.id);
+            }
+          } else {
+            // Token geçerli, normal devam et
+            setSession(session);
+            setUser(session.user);
+            fetchProfile(session.user.id);
+          }
+        } else {
+          console.log('🔐 Auth: Session yok');
+          setSession(null);
+          setUser(null);
+          setProfile(null);
+        }
+        
+        setLoading(false);
+      } catch (error) {
+        console.error('💥 Auth initialization error:', error);
+        logError('Auth initialization failed', error, 'Auth');
+        setLoading(false);
       }
-      
-      debug('Initial session loaded', { hasSession: !!session, userId: session?.user?.id }, 'Auth');
-      console.log('🔐 Auth: Initial session check:', {
-        hasSession: !!session,
-        userId: session?.user?.id,
-        userEmail: session?.user?.email,
-        error: error?.message
-      });
-      
-      setSession(session);
-      setUser(session?.user ?? null);
-      
-      if (session?.user) {
-        fetchProfile(session.user.id);
-      }
-      
-      setLoading(false);
-    });
+    };
+    
+    initializeAuth();
 
-    // Auth state listener
+    // Auth state listener with enhanced token handling
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event: string, session: Session | null) => {
         debug('Auth state changed', { event, hasUser: !!session?.user, userId: session?.user?.id }, 'Auth');
@@ -145,6 +184,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }): React
         
         // Only process non-initial events to avoid duplication
         if (event === 'INITIAL_SESSION') {
+          return;
+        }
+        
+        // Token refresh event'ini özel olarak işle
+        if (event === 'TOKEN_REFRESHED') {
+          console.log('🔄 Token yenilendi, session güncelleniyor...');
+          setSession(session);
+          setUser(session?.user ?? null);
           return;
         }
         
