@@ -13,5 +13,81 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
     storage: localStorage,
     persistSession: true,
     autoRefreshToken: true,
-  }
+    flowType: 'pkce',
+    detectSessionInUrl: true,
+  },
+  global: {
+    headers: {
+      'X-Client-Info': 'budgie-breeding-tracker',
+      'Cache-Control': 'no-cache',
+    },
+    fetch: (url, options = {}) => {
+      // Çok agresif timeout ayarları
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 120000); // 120 saniye
+      
+      return fetch(url, {
+        ...options,
+        signal: controller.signal,
+        cache: 'no-cache',
+        headers: {
+          ...options.headers,
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0',
+          'Connection': 'keep-alive',
+          'User-Agent': 'BudgieBreedingTracker/1.0.0',
+        },
+        mode: 'cors',
+        credentials: 'omit',
+      }).finally(() => clearTimeout(timeoutId));
+    },
+  },
+  realtime: {
+    params: {
+      eventsPerSecond: 10,
+    },
+  },
 });
+
+// Timeout wrapper for Supabase operations
+export const withTimeout = async <T>(
+  promise: Promise<T>,
+  timeoutMs: number = 30000
+): Promise<T> => {
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    setTimeout(() => {
+      reject(new Error(`İşlem zaman aşımına uğradı (${timeoutMs}ms)`));
+    }, timeoutMs);
+  });
+
+  return Promise.race([promise, timeoutPromise]);
+};
+
+// Retry wrapper for Supabase operations
+export const withRetry = async <T>(
+  operation: () => Promise<T>,
+  maxRetries: number = 3,
+  delayMs: number = 1000
+): Promise<T> => {
+  let lastError: Error;
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      return await operation();
+    } catch (error) {
+      lastError = error as Error;
+      console.warn(`Deneme ${attempt}/${maxRetries} başarısız:`, error);
+      
+      if (attempt === maxRetries) {
+        throw lastError;
+      }
+      
+      // Exponential backoff
+      const delay = delayMs * Math.pow(2, attempt - 1);
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+  }
+
+  throw lastError!;
+};

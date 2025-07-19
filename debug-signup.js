@@ -71,7 +71,7 @@ async function testSupabase() {
       email: testEmail,
       password: testPassword,
       options: {
-        emailRedirectTo: window.location.origin + '/',
+        emailRedirectTo: 'https://www.budgiebreedingtracker.com/',
         data: {
           first_name: 'Test',
           last_name: 'Kullanıcı',

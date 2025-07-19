@@ -108,7 +108,7 @@ export const SignupTest = () => {
         email: email.toLowerCase().trim(),
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/`,
+                        emailRedirectTo: 'https://www.budgiebreedingtracker.com/',
           data: {
             first_name: firstName?.trim() || 'Test',
             last_name: lastName?.trim() || 'Kullanıcı',

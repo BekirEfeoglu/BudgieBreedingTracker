@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { retryAuth } from '@/utils/simpleRetry';
 import { toast } from '@/components/ui/use-toast';
 import { rateLimitCheck, validateEmail, validatePassword, encryptLocalStorage, decryptLocalStorage } from '@/utils/inputSanitization';
 
@@ -118,10 +119,13 @@ export const useSecureAuth = (): SecureAuthResult => {
     }
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: email.toLowerCase().trim(),
-        password,
-      });
+      const { data, error } = await retryAuth(
+        () => supabase.auth.signInWithPassword({
+          email: email.toLowerCase().trim(),
+          password,
+        }),
+        'Güvenli Giriş'
+      );
 
       if (error) {
         const errorMessage = error.message || 'Unknown error';
@@ -178,17 +182,20 @@ export const useSecureAuth = (): SecureAuthResult => {
     try {
       console.log('🔄 Supabase auth.signUp çağrılıyor...');
       
-      const { data, error } = await supabase.auth.signUp({
-        email: email.toLowerCase().trim(),
-        password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/`,
-          data: {
-            first_name: firstName?.trim() || '',
-            last_name: lastName?.trim() || '',
+      const { data, error } = await retryAuth(
+        () => supabase.auth.signUp({
+          email: email.toLowerCase().trim(),
+          password,
+          options: {
+                          emailRedirectTo: 'https://www.budgiebreedingtracker.com/',
+            data: {
+              first_name: firstName?.trim() || '',
+              last_name: lastName?.trim() || '',
+            },
           },
-        },
-      });
+        }),
+        'Güvenli Kayıt'
+      );
 
       if (error) {
         console.error('❌ Supabase kayıt hatası:', {
@@ -308,11 +315,14 @@ export const useSecureAuth = (): SecureAuthResult => {
     }
 
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(
-        email.toLowerCase().trim(),
-        {
-          redirectTo: `${window.location.origin}/`,
-        }
+      const { error } = await retryAuth(
+        () => supabase.auth.resetPasswordForEmail(
+          email.toLowerCase().trim(),
+          {
+            redirectTo: 'https://www.budgiebreedingtracker.com/',
+          }
+        ),
+        'Güvenli Şifre Sıfırlama'
       );
 
       if (error) {
@@ -342,9 +352,12 @@ export const useSecureAuth = (): SecureAuthResult => {
     }
 
     try {
-      const { error } = await supabase.auth.updateUser({
-        password: newPassword
-      });
+      const { error } = await retryAuth(
+        () => supabase.auth.updateUser({
+          password: newPassword
+        }),
+        'Güvenli Şifre Güncelleme'
+      );
 
       if (error) {
         const errorMessage = error.message || 'Unknown error';

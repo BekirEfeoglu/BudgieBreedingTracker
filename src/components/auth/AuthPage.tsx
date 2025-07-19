@@ -3,10 +3,12 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, Mail, Lock, User, Eye, EyeOff, Bug } from 'lucide-react';
+import { ArrowLeft, Mail, Lock, User, Eye, EyeOff, Bug, Wifi, Server } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 import { useSecureAuth } from '@/hooks/useSecureAuth';
 import { AuthDebug } from './AuthDebug';
+import { ConnectionTest } from './ConnectionTest';
+import { AdvancedConnectionTest } from './AdvancedConnectionTest';
 
 interface AuthPageProps {
   onBack?: () => void;
@@ -22,6 +24,8 @@ const AuthPage = ({ onBack, showBackButton = false }: AuthPageProps) => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showDebug, setShowDebug] = useState(false);
+  const [showConnectionTest, setShowConnectionTest] = useState(false);
+  const [showAdvancedTest, setShowAdvancedTest] = useState(false);
 
   const [typewriterText, setTypewriterText] = useState("");
   const fullTitle = "BudgieBreedingTracker";
@@ -129,6 +133,46 @@ const AuthPage = ({ onBack, showBackButton = false }: AuthPageProps) => {
             </Button>
           </div>
           <AuthDebug />
+        </div>
+      </div>
+    );
+  }
+
+  if (showConnectionTest) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center p-4">
+        <div className="w-full max-w-6xl">
+          <div className="mb-6">
+            <Button
+              variant="ghost"
+              onClick={() => setShowConnectionTest(false)}
+              className="p-0 h-auto hover:bg-transparent text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Auth Sayfasına Dön
+            </Button>
+          </div>
+          <ConnectionTest />
+        </div>
+      </div>
+    );
+  }
+
+  if (showAdvancedTest) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center p-4">
+        <div className="w-full max-w-6xl">
+          <div className="mb-6">
+            <Button
+              variant="ghost"
+              onClick={() => setShowAdvancedTest(false)}
+              className="p-0 h-auto hover:bg-transparent text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Auth Sayfasına Dön
+            </Button>
+          </div>
+          <AdvancedConnectionTest />
         </div>
       </div>
     );
@@ -319,15 +363,35 @@ const AuthPage = ({ onBack, showBackButton = false }: AuthPageProps) => {
 
             {/* Debug butonu */}
             <div className="text-center pt-4 border-t">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowDebug(true)}
-                className="text-xs text-muted-foreground hover:text-foreground"
-              >
-                <Bug className="w-3 h-3 mr-1" />
-                Kayıt Sorunları?
-              </Button>
+              <div className="flex gap-2 justify-center mb-2 flex-wrap">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowDebug(true)}
+                  className="text-xs text-muted-foreground hover:text-foreground"
+                >
+                  <Bug className="w-3 h-3 mr-1" />
+                  Kayıt Sorunları?
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowConnectionTest(true)}
+                  className="text-xs text-muted-foreground hover:text-foreground"
+                >
+                  <Wifi className="w-3 h-3 mr-1" />
+                  Bağlantı Testi
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowAdvancedTest(true)}
+                  className="text-xs text-muted-foreground hover:text-foreground"
+                >
+                  <Server className="w-3 h-3 mr-1" />
+                  Gelişmiş Test
+                </Button>
+              </div>
               
               {/* Yardım bilgileri */}
               <div className="mt-3 text-xs text-muted-foreground space-y-1">

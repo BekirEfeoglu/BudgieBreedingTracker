@@ -1,6 +1,8 @@
 import React, { useState, useEffect, createContext, useContext, useRef } from 'react';
 import { User, Session, AuthError } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { retryAuth } from '@/utils/simpleRetry';
+import { manualSignUp, manualSignIn, manualResetPassword } from '@/utils/manualAuth';
 import { rateLimitCheck, validateEmail, validatePassword, sanitizeText } from '@/utils/inputSanitization';
 import { useOptimizedLogging } from '@/hooks/useOptimizedLogging';
 
@@ -200,17 +202,51 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }): React
       console.log('🏭 Environment: Production (forced)');
       
       console.log('📡 Supabase auth.signUp çağrılıyor...');
-      const { data, error } = await supabase.auth.signUp({
-        email: email.toLowerCase().trim(),
-        password,
-        options: {
-          emailRedirectTo: redirectUrl,
-          data: {
-            first_name: sanitizeText(firstName),
-            last_name: sanitizeText(lastName),
-          }
+      
+      let data: any = null;
+      let error: any = null;
+      
+      // Önce normal Supabase auth'u dene
+      try {
+        const result = await retryAuth(
+          () => supabase.auth.signUp({
+            email: email.toLowerCase().trim(),
+            password,
+            options: {
+              emailRedirectTo: redirectUrl,
+              data: {
+                first_name: sanitizeText(firstName),
+                last_name: sanitizeText(lastName),
+              }
+            }
+          }),
+          'Kayıt İşlemi'
+        );
+        
+        data = result.data;
+        error = result.error;
+      } catch (retryError) {
+        console.warn('⚠️ Normal auth başarısız, manuel auth deneniyor...', retryError);
+        
+        // Normal auth başarısızsa manuel auth'u dene
+        try {
+          const result = await manualSignUp(
+            email.toLowerCase().trim(),
+            password,
+            {
+              first_name: sanitizeText(firstName),
+              last_name: sanitizeText(lastName),
+            }
+          );
+          
+          console.log('✅ Manuel auth başarılı!');
+          data = result.data;
+          error = result.error;
+        } catch (manualError) {
+          console.error('❌ Manuel auth da başarısız:', manualError);
+          error = manualError;
         }
-      });
+      }
       
       console.log('📡 Supabase yanıtı:', { 
         hasData: !!data, 
@@ -299,10 +335,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }): React
     }
     
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email: email.toLowerCase().trim(),
-        password,
-      });
+      const { error } = await retryAuth(
+        () => supabase.auth.signInWithPassword({
+          email: email.toLowerCase().trim(),
+          password,
+        }),
+        'Giriş İşlemi'
+      );
       
       if (error) {
         logError('Sign in failed', error, 'Auth');
@@ -367,9 +406,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }): React
       // Her zaman production URL'ini kullan
       const redirectUrl = 'https://www.budgiebreedingtracker.com/';
       
-      const { error } = await supabase.auth.resetPasswordForEmail(email.toLowerCase().trim(), {
-        redirectTo: redirectUrl,
-      });
+      const { error } = await retryAuth(
+        () => supabase.auth.resetPasswordForEmail(email.toLowerCase().trim(), {
+          redirectTo: redirectUrl,
+        }),
+        'Şifre Sıfırlama'
+      );
       return { error };
     } catch (error) {
       logError('Reset password failed', error, 'Auth');
