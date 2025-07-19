@@ -99,11 +99,14 @@ export const useSecureAuth = (): SecureAuthResult => {
   }, []);
 
   const signIn = async (email: string, password: string): Promise<{ error: AuthError | null }> => {
-    // Rate limiting
+    // Rate limiting - DEVRE DIŞI
+    console.log('⚠️ SecureAuth login rate limiting devre dışı');
+    /*
     if (!rateLimitCheck('login', 5, 15 * 60 * 1000)) { // 5 attempts per 15 minutes
       await logSecurityEvent('rate_limit_exceeded', { action: 'sign_in', email });
       return { error: { message: 'Çok fazla giriş denemesi. Lütfen 15 dakika bekleyin.' } };
     }
+    */
 
     // Input validation
     if (!validateEmail(email)) {
@@ -150,12 +153,15 @@ export const useSecureAuth = (): SecureAuthResult => {
       lastName: lastName?.trim() || ''
     });
 
-    // Rate limiting - daha esnek
+    // Rate limiting - DEVRE DIŞI
+    console.log('⚠️ SecureAuth signup rate limiting devre dışı');
+    /*
     if (!rateLimitCheck('signup', 5, 60 * 60 * 1000)) { // 5 attempts per hour (3'ten 5'e çıkarıldı)
       console.warn('⚠️ Rate limit exceeded for signup');
       await logSecurityEvent('rate_limit_exceeded', { action: 'sign_up', email });
       return { error: { message: 'Çok fazla kayıt denemesi. Lütfen 1 saat bekleyin veya farklı bir e-posta adresi deneyin.' } };
     }
+    */
 
     // Input validation
     if (!validateEmail(email)) {
@@ -288,11 +294,14 @@ export const useSecureAuth = (): SecureAuthResult => {
   };
 
   const resetPassword = async (email: string): Promise<{ error: AuthError | null }> => {
-    // Rate limiting
+    // Rate limiting - DEVRE DIŞI
+    console.log('⚠️ SecureAuth password reset rate limiting devre dışı');
+    /*
     if (!rateLimitCheck('reset', 3, 60 * 60 * 1000)) { // 3 attempts per hour
       await logSecurityEvent('rate_limit_exceeded', { action: 'password_reset', email });
       return { error: { message: 'Çok fazla şifre sıfırlama denemesi. Lütfen 1 saat bekleyin.' } };
     }
+    */
 
     if (!validateEmail(email)) {
       return { error: { message: 'Geçerli bir e-posta adresi girin.' } };

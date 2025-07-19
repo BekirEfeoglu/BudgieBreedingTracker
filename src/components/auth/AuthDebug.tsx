@@ -8,7 +8,7 @@ import { Separator } from '@/components/ui/separator';
 import { AlertTriangle, CheckCircle, Info, RefreshCw, Trash2, HelpCircle } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { validateEmail, validatePassword, rateLimitCheck } from '@/utils/inputSanitization';
+import { validateEmail, validatePassword, rateLimitCheck, clearAllRateLimits } from '@/utils/inputSanitization';
 
 export const AuthDebug = () => {
   const [email, setEmail] = useState('');
@@ -431,10 +431,32 @@ export const AuthDebug = () => {
   };
 
   const clearRateLimits = () => {
-    localStorage.removeItem('rateLimit_signup');
-    localStorage.removeItem('rateLimit_login');
-    localStorage.removeItem('rateLimit_reset');
-    addDebugInfo('🧹 Rate limit verileri temizlendi');
+    clearAllRateLimits();
+    addDebugInfo('🧹 Tüm rate limit verileri temizlendi');
+    toast({
+      title: 'Rate Limit Temizlendi',
+      description: 'Artık kayıt olmayı deneyebilirsiniz.',
+    });
+  };
+
+  const disableRateLimiting = () => {
+    // Rate limiting'i tamamen devre dışı bırak
+    localStorage.setItem('rateLimitDisabled', 'true');
+    addDebugInfo('🚫 Rate limiting tamamen devre dışı bırakıldı');
+    toast({
+      title: 'Rate Limiting Devre Dışı',
+      description: 'Artık tüm kayıt denemeleri izin verilecek.',
+    });
+  };
+
+  const enableRateLimiting = () => {
+    // Rate limiting'i tekrar etkinleştir
+    localStorage.removeItem('rateLimitDisabled');
+    addDebugInfo('✅ Rate limiting tekrar etkinleştirildi');
+    toast({
+      title: 'Rate Limiting Etkinleştirildi',
+      description: 'Rate limiting tekrar aktif.',
+    });
   };
 
   return (
@@ -506,6 +528,14 @@ export const AuthDebug = () => {
             </Button>
             <Button onClick={resendConfirmationEmail} variant="outline" size="sm" disabled={loading}>
               📧 Onay E-postasını Yeniden Gönder
+            </Button>
+            <Button onClick={disableRateLimiting} variant="outline" size="sm" disabled={loading}>
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Rate Limiting Devre Dışı
+            </Button>
+            <Button onClick={enableRateLimiting} variant="outline" size="sm" disabled={loading}>
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Rate Limiting Tekrar Etkinleştir
             </Button>
           </div>
           

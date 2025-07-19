@@ -281,10 +281,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }): React
   const signIn = async (email: string, password: string): Promise<{ error: AuthError | null }> => {
     debug('Starting sign in process', { email }, 'Auth');
     
-    // Rate limiting
+    // Rate limiting - DEVRE DIŞI
+    console.log('⚠️ Login rate limiting devre dışı');
+    /*
     if (!rateLimitCheck('login', 5, 15 * 60 * 1000)) {
       return { error: { message: 'Çok fazla giriş denemesi. Lütfen 15 dakika bekleyin.' } as AuthError };
     }
+    */
 
     // Input validation
     if (!validateEmail(email)) {
@@ -348,10 +351,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }): React
   };
 
   const resetPassword = async (email: string): Promise<{ error: AuthError | null }> => {
-    // Rate limiting
+    // Rate limiting - DEVRE DIŞI
+    console.log('⚠️ Password reset rate limiting devre dışı');
+    /*
     if (!rateLimitCheck('reset', 3, 60 * 60 * 1000)) {
       return { error: { message: 'Çok fazla şifre sıfırlama denemesi. Lütfen 1 saat bekleyin.' } as AuthError };
     }
+    */
 
     if (!validateEmail(email)) {
       return { error: { message: 'Geçerli bir e-posta adresi girin.' } as AuthError };

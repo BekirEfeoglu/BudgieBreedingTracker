@@ -127,6 +127,12 @@ export const sanitizeFileUpload = (file: File): { isValid: boolean; error?: stri
 };
 
 export const rateLimitCheck = (key: string, limit: number, windowMs: number): boolean => {
+  // Rate limiting devre dışı kontrolü
+  if (localStorage.getItem('rateLimitDisabled') === 'true') {
+    console.log(`⚠️ Rate limiting devre dışı: ${key}`);
+    return true;
+  }
+  
   const now = Date.now();
   const attempts = JSON.parse(localStorage.getItem(`rateLimit_${key}`) || '[]') as number[];
   
@@ -142,4 +148,17 @@ export const rateLimitCheck = (key: string, limit: number, windowMs: number): bo
   localStorage.setItem(`rateLimit_${key}`, JSON.stringify(validAttempts));
   
   return true; // Allow request
+};
+
+// Rate limit verilerini temizleme fonksiyonu
+export const clearAllRateLimits = (): void => {
+  const keysToRemove = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key && key.startsWith('rateLimit_')) {
+      keysToRemove.push(key);
+    }
+  }
+  keysToRemove.forEach(key => localStorage.removeItem(key));
+  console.log('✅ Tüm rate limit verileri temizlendi');
 };
