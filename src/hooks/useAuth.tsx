@@ -167,26 +167,40 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }): React
 
   const signUp = async (email: string, password: string, firstName?: string, lastName?: string): Promise<{ error: AuthError | null }> => {
     debug('Starting sign up process', { email }, 'Auth');
+    console.log('🔄 useAuth.signUp başlatılıyor:', { email, firstName, lastName, passwordLength: password.length });
     
-    // Rate limiting
-    if (!rateLimitCheck('signup', 3, 60 * 60 * 1000)) {
-      return { error: { message: 'Çok fazla kayıt denemesi. Lütfen 1 saat bekleyin.' } as AuthError };
+    // Rate limiting - GEÇİCİ OLARAK DEVRE DIŞI
+    console.log('⚠️ Rate limiting geçici olarak devre dışı');
+    /*
+    if (!rateLimitCheck('signup', 10, 60 * 60 * 1000)) { // 10 attempts per hour (5'ten 10'a çıkarıldı)
+      console.log('⏱️ Rate limit aşıldı');
+      return { error: { message: 'Çok fazla kayıt denemesi. Lütfen 1 saat bekleyin veya farklı bir e-posta adresi deneyin.' } as AuthError };
     }
+    */
 
     // Input validation
     if (!validateEmail(email)) {
-      return { error: { message: 'Geçerli bir e-posta adresi girin.' } as AuthError };
+      console.log('❌ E-posta geçersiz');
+      return { error: { message: 'Geçerli bir e-posta adresi girin. Örnek: kullanici@email.com' } as AuthError };
     }
 
     const passwordValidation = validatePassword(password);
     if (!passwordValidation.isValid) {
+      console.log('❌ Şifre geçersiz:', passwordValidation.errors);
       return { error: { message: passwordValidation.errors[0] } as AuthError };
     }
     
+    console.log('✅ Girdi doğrulaması geçti');
+    
     try {
-      const redirectUrl = `${window.location.origin}/`;
+      // Her zaman production URL'ini kullan
+      const redirectUrl = 'https://www.budgiebreedingtracker.com/';
       
-      const { error } = await supabase.auth.signUp({
+      console.log('🌐 Redirect URL:', redirectUrl);
+      console.log('🏭 Environment: Production (forced)');
+      
+      console.log('📡 Supabase auth.signUp çağrılıyor...');
+      const { data, error } = await supabase.auth.signUp({
         email: email.toLowerCase().trim(),
         password,
         options: {
@@ -198,14 +212,67 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }): React
         }
       });
       
+      console.log('📡 Supabase yanıtı:', { 
+        hasData: !!data, 
+        hasError: !!error, 
+        userExists: !!data?.user,
+        sessionExists: !!data?.session,
+        errorMessage: error?.message 
+      });
+      
       if (error) {
+        console.error('❌ Supabase kayıt hatası:', {
+          message: error.message,
+          status: error.status,
+          name: error.name
+        });
         logError('Sign up failed', error, 'Auth');
+        return { error };
       } else {
+        console.log('✅ Supabase kayıt başarılı');
         debug('Sign up successful', { email }, 'Auth');
+        
+        // E-posta onayı olmadan da oturum açmaya çalış - GEÇİCİ OLARAK DEVRE DIŞI
+        if (data.user && !data.session) {
+          console.log('🔐 E-posta onayı olmadan oturum açmaya çalışılıyor...');
+          debug('Attempting to sign in without email confirmation', { email }, 'Auth');
+          
+          // Geçici olarak otomatik giriş denemesini devre dışı bırak
+          console.log('⚠️ Otomatik giriş denemesi geçici olarak devre dışı');
+          return { 
+            error: { 
+              message: 'Hesabınız oluşturuldu! E-posta onayı gerekli. E-posta kutunuzu kontrol edin veya spam klasörüne bakın.',
+              name: 'EMAIL_CONFIRMATION_REQUIRED',
+              status: 200 // Başarılı kayıt için 200 kodu
+            } as AuthError 
+          };
+          
+          /*
+          const { error: signInError } = await supabase.auth.signInWithPassword({
+            email: email.toLowerCase().trim(),
+            password,
+          });
+          
+          if (signInError) {
+            console.log('❌ Otomatik giriş başarısız:', signInError.message);
+            debug('Auto sign-in failed, email confirmation required', { error: signInError.message }, 'Auth');
+            return { 
+              error: { 
+                message: 'Hesabınız oluşturuldu! E-posta onayı gerekli. E-posta kutunuzu kontrol edin veya spam klasörüne bakın.' 
+              } as AuthError 
+            };
+          } else {
+            console.log('✅ Otomatik giriş başarılı');
+            debug('Auto sign-in successful', { email }, 'Auth');
+            return { error: null };
+          }
+          */
+        }
       }
       
-      return { error };
+      return { error: null };
     } catch (error) {
+      console.error('💥 useAuth.signUp beklenmeyen hata:', error);
       logError('Sign up exception', error, 'Auth');
       return { error: error as AuthError };
     }
@@ -236,16 +303,33 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }): React
       
       if (error) {
         logError('Sign in failed', error, 'Auth');
+        
+        // Kullanıcı dostu hata mesajları
+        let userFriendlyMessage = error.message;
+        
+        if (error.message.includes('Invalid login credentials')) {
+          userFriendlyMessage = 'E-posta adresi veya şifre yanlış. Lütfen bilgilerinizi kontrol edin.';
+        } else if (error.message.includes('Email not confirmed')) {
+          userFriendlyMessage = 'E-posta adresiniz henüz doğrulanmamış. Lütfen e-posta kutunuzu kontrol edin ve doğrulama bağlantısına tıklayın.';
+        } else if (error.message.includes('Too many requests')) {
+          userFriendlyMessage = 'Çok fazla giriş denemesi yaptınız. Lütfen 15 dakika bekleyin.';
+        } else if (error.message.includes('User not found')) {
+          userFriendlyMessage = 'Bu e-posta adresi ile kayıtlı kullanıcı bulunamadı. Kayıt olmayı deneyin.';
+        } else if (error.message.includes('Invalid email')) {
+          userFriendlyMessage = 'Geçersiz e-posta adresi formatı. Lütfen doğru formatta girin.';
+        }
+        
+        return { error: { message: userFriendlyMessage } as AuthError };
       } else {
         debug('Sign in successful', { email }, 'Auth');
         // Clear rate limit on successful login
         localStorage.removeItem('rateLimit_login');
       }
       
-      return { error };
+      return { error: null };
     } catch (error) {
       logError('Sign in exception', error, 'Auth');
-      return { error: error as AuthError };
+      return { error: { message: 'Giriş yapılırken beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.' } as AuthError };
     }
   };
 
@@ -274,7 +358,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }): React
     }
 
     try {
-      const redirectUrl = `${window.location.origin}/`;
+      // Her zaman production URL'ini kullan
+      const redirectUrl = 'https://www.budgiebreedingtracker.com/';
+      
       const { error } = await supabase.auth.resetPasswordForEmail(email.toLowerCase().trim(), {
         redirectTo: redirectUrl,
       });

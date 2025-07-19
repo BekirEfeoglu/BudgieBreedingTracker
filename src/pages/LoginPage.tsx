@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/components/ui/use-toast';
+import { validatePassword } from '@/utils/inputSanitization';
 import { Mail, Lock, User, Eye, EyeOff, AlertCircle, Sparkles, Shield, Zap } from 'lucide-react';
 
 // Animasyonlu SVG Muhabbet Kuşu + Yumurta bileşeni
@@ -127,52 +128,130 @@ const LoginPage = () => {
   }, [user, navigate]);
 
   const getErrorMessage = (error: unknown) => {
-    if (error instanceof Error) return error.message;
+    if (error && typeof error === 'object' && 'message' in error) {
+      const errorMessage = (error as any).message;
+      
+      if (errorMessage.includes('email rate limit exceeded')) {
+        return 'Bu e-posta adresi ile çok fazla kayıt denemesi yapıldı. Lütfen 1 saat bekleyin veya farklı bir e-posta adresi kullanın.';
+      }
+      if (errorMessage.includes('Too many requests')) {
+        return 'Çok fazla deneme yaptınız. Lütfen bir süre bekleyin.';
+      }
+      if (errorMessage.includes('User not found')) {
+        return 'Bu e-posta adresi ile kayıtlı kullanıcı bulunamadı.';
+      }
+      if (errorMessage.includes('Invalid email')) {
+        return 'Geçersiz e-posta adresi formatı.';
+      }
+      if (errorMessage.includes('Weak password')) {
+        return 'Şifre çok zayıf. En az 6 karakter kullanın.';
+      }
+      if (errorMessage.includes('User already registered')) {
+        return 'Bu e-posta adresi zaten kayıtlı. Giriş yapmayı deneyin.';
+      }
+      if (errorMessage.includes('Unable to validate email address')) {
+        return 'E-posta adresi doğrulanamadı. Lütfen geçerli bir e-posta adresi girin.';
+      }
+      if (errorMessage.includes('Signup disabled')) {
+        return 'Yeni hesap oluşturma şu anda devre dışı.';
+      }
+      if (errorMessage.includes('Signup not allowed')) {
+        return 'Yeni hesap oluşturmaya izin verilmiyor.';
+      }
+      if (errorMessage.includes('Password should be at least')) {
+        return 'Şifre en az 6 karakter olmalıdır.';
+      }
+      if (errorMessage.includes('Password should contain')) {
+        return 'Şifre en az 2 farklı karakter türü içermelidir (büyük harf, küçük harf, rakam, özel karakter).';
+      }
+      
+      return errorMessage;
+    }
     if (typeof error === 'string') return error;
-    return 'Bilinmeyen bir hata oluştu.';
+    return 'Bilinmeyen bir hata oluştu. Lütfen tekrar deneyin.';
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setEmailError('');
+    
+    console.log('🔄 Form gönderiliyor:', { mode, email, firstName, lastName });
+    
     if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
       setEmailError('Geçerli bir e-posta adresi giriniz.');
       setLoading(false);
       return;
     }
+    
     try {
       if (mode === 'login') {
+        console.log('🔐 Giriş işlemi başlatılıyor...');
         const { error } = await signIn(email, password);
         if (error) {
+          console.error('❌ Giriş hatası:', error);
           toast({ title: 'Giriş Yapılamadı', description: getErrorMessage(error), variant: 'destructive' });
         } else {
+          console.log('✅ Giriş başarılı!');
           toast({ title: 'Hoş Geldiniz! 🎉', description: 'Başarıyla giriş yaptınız.' });
           navigate('/', { replace: true });
         }
       } else if (mode === 'signup') {
-        if (password.length < 6) {
-          toast({ title: 'Şifre Çok Kısa', description: 'Şifre en az 6 karakter olmalı.', variant: 'destructive' });
+        console.log('📝 Kayıt işlemi başlatılıyor...');
+        console.log('📋 Form verileri:', { email, firstName, lastName, passwordLength: password.length });
+        
+        const passwordValidation = validatePassword(password);
+        if (!passwordValidation.isValid) {
+          console.error('❌ Şifre geçersiz:', passwordValidation.errors);
+          toast({ title: 'Şifre Geçersiz', description: passwordValidation.errors[0], variant: 'destructive' });
           return;
         }
+        
+        console.log('✅ Şifre doğrulaması geçti');
         const { error } = await signUp(email, password, firstName, lastName);
+        
         if (error) {
-          toast({ title: 'Hesap Oluşturulamadı', description: getErrorMessage(error), variant: 'destructive' });
+          console.error('❌ Kayıt hatası:', error);
+          console.error('❌ Hata detayları:', {
+            message: error.message,
+            name: error.name,
+            stack: error.stack
+          });
+          
+          // E-posta onayı gerekli mesajı başarı mesajı olarak göster
+          if (error.message.includes('E-posta onayı gerekli')) {
+            console.log('✅ Kayıt başarılı - E-posta onayı gerekli');
+            console.log('📧 Kullanıcıya e-posta onayı mesajı gösteriliyor');
+            toast({ title: 'Hesap Oluşturuldu! 📧', description: error.message });
+            setMode('login');
+          } else {
+            console.log('❌ Gerçek kayıt hatası - Kullanıcıya hata mesajı gösteriliyor');
+            toast({ title: 'Hesap Oluşturulamadı', description: getErrorMessage(error), variant: 'destructive' });
+          }
         } else {
+          console.log('✅ Kayıt başarılı!');
           toast({ title: 'Hesap Oluşturuldu! 📧', description: 'E-posta adresinize doğrulama bağlantısı gönderildi. Lütfen e-posta kutunuzu kontrol edin.' });
           setMode('login');
         }
       } else if (mode === 'forgot') {
+        console.log('📧 Şifre sıfırlama işlemi başlatılıyor...');
         const { error } = await resetPassword(email);
         if (error) {
+          console.error('❌ Şifre sıfırlama hatası:', error);
           toast({ title: 'E-posta Gönderilemedi', description: getErrorMessage(error), variant: 'destructive' });
         } else {
+          console.log('✅ Şifre sıfırlama e-postası gönderildi');
           toast({ title: 'E-posta Gönderildi 📬', description: 'Şifre sıfırlama bağlantısı e-posta adresinize gönderildi.' });
           setMode('login');
         }
       }
     } catch (error) {
-      console.error('Auth error:', error);
+      console.error('💥 Beklenmeyen hata:', error);
+      console.error('💥 Hata detayları:', {
+        name: error instanceof Error ? error.name : 'Unknown',
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : 'No stack'
+      });
       toast({ title: 'Bağlantı Hatası', description: 'İnternet bağlantınızı kontrol edin ve tekrar deneyin.', variant: 'destructive' });
     } finally {
       setLoading(false);

@@ -50,20 +50,20 @@ export const validateEmail = (email: string): boolean => {
 export const validatePassword = (password: string): { isValid: boolean; errors: string[] } => {
   const errors: string[] = [];
   
-  if (password.length < 8) {
-    errors.push('Şifre en az 8 karakter olmalıdır');
+  if (password.length < 6) {
+    errors.push('Şifre en az 6 karakter olmalıdır');
   }
   
-  if (!/[A-Z]/.test(password)) {
-    errors.push('Şifre en az bir büyük harf içermelidir');
-  }
+  // Daha esnek kurallar - en az 2 kriteri karşılamalı
+  const hasUpperCase = /[A-Z]/.test(password);
+  const hasLowerCase = /[a-z]/.test(password);
+  const hasNumbers = /[0-9]/.test(password);
+  const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
   
-  if (!/[a-z]/.test(password)) {
-    errors.push('Şifre en az bir küçük harf içermelidir');
-  }
+  const criteriaCount = [hasUpperCase, hasLowerCase, hasNumbers, hasSpecialChar].filter(Boolean).length;
   
-  if (!/[0-9]/.test(password)) {
-    errors.push('Şifre en az bir rakam içermelidir');
+  if (criteriaCount < 2) {
+    errors.push('Şifre en az 2 farklı karakter türü içermelidir (büyük harf, küçük harf, rakam, özel karakter)');
   }
   
   return {

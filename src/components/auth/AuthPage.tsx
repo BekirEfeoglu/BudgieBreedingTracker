@@ -243,7 +243,7 @@ const AuthPage = ({ onBack, showBackButton = false }: AuthPageProps) => {
                     <Input
                       id="password"
                       type={showPassword ? 'text' : 'password'}
-                      placeholder="Şifreniz"
+                      placeholder={mode === 'signup' ? 'En az 6 karakter' : 'Şifreniz'}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       className="pl-10 pr-10"
@@ -257,6 +257,33 @@ const AuthPage = ({ onBack, showBackButton = false }: AuthPageProps) => {
                       {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
                   </div>
+                  
+                  {/* Şifre gereksinimleri - sadece kayıt olma modunda */}
+                  {mode === 'signup' && password.length > 0 && (
+                    <div className="text-xs text-muted-foreground bg-muted/30 p-2 rounded-md">
+                      <div className="font-medium mb-1">🔒 Şifre gereksinimleri:</div>
+                      <ul className="space-y-1">
+                        <li className={password.length >= 6 ? 'text-green-600' : 'text-red-600'}>
+                          • En az 6 karakter {password.length >= 6 ? '✅' : '❌'}
+                        </li>
+                        <li className={/[A-Z]/.test(password) ? 'text-green-600' : 'text-gray-500'}>
+                          • Büyük harf {/[A-Z]/.test(password) ? '✅' : '○'}
+                        </li>
+                        <li className={/[a-z]/.test(password) ? 'text-green-600' : 'text-gray-500'}>
+                          • Küçük harf {/[a-z]/.test(password) ? '✅' : '○'}
+                        </li>
+                        <li className={/[0-9]/.test(password) ? 'text-green-600' : 'text-gray-500'}>
+                          • Rakam {/[0-9]/.test(password) ? '✅' : '○'}
+                        </li>
+                        <li className={/[!@#$%^&*(),.?":{}|<>]/.test(password) ? 'text-green-600' : 'text-gray-500'}>
+                          • Özel karakter {/[!@#$%^&*(),.?":{}|<>]/.test(password) ? '✅' : '○'}
+                        </li>
+                      </ul>
+                      <div className="mt-1 text-blue-600">
+                        En az 2 kriteri karşılamanız yeterli!
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -301,6 +328,15 @@ const AuthPage = ({ onBack, showBackButton = false }: AuthPageProps) => {
                 <Bug className="w-3 h-3 mr-1" />
                 Kayıt Sorunları?
               </Button>
+              
+              {/* Yardım bilgileri */}
+              <div className="mt-3 text-xs text-muted-foreground space-y-1">
+                <div>💡 <strong>Yaygın Sorunlar:</strong></div>
+                <div>• E-posta zaten kayıtlı → Giriş yapmayı deneyin</div>
+                <div>• Şifre çok zayıf → En az 6 karakter + 2 farklı tür</div>
+                <div>• Bağlantı hatası → İnterneti kontrol edin</div>
+                <div>• Çok fazla deneme → 1 saat bekleyin</div>
+              </div>
             </div>
           </div>
         </Card>

@@ -150,17 +150,17 @@ export const useSecureAuth = (): SecureAuthResult => {
       lastName: lastName?.trim() || ''
     });
 
-    // Rate limiting
-    if (!rateLimitCheck('signup', 3, 60 * 60 * 1000)) { // 3 attempts per hour
+    // Rate limiting - daha esnek
+    if (!rateLimitCheck('signup', 5, 60 * 60 * 1000)) { // 5 attempts per hour (3'ten 5'e çıkarıldı)
       console.warn('⚠️ Rate limit exceeded for signup');
       await logSecurityEvent('rate_limit_exceeded', { action: 'sign_up', email });
-      return { error: { message: 'Çok fazla kayıt denemesi. Lütfen 1 saat bekleyin.' } };
+      return { error: { message: 'Çok fazla kayıt denemesi. Lütfen 1 saat bekleyin veya farklı bir e-posta adresi deneyin.' } };
     }
 
     // Input validation
     if (!validateEmail(email)) {
       console.warn('⚠️ Invalid email format:', email);
-      return { error: { message: 'Geçerli bir e-posta adresi girin.' } };
+      return { error: { message: 'Geçerli bir e-posta adresi girin. Örnek: kullanici@email.com' } };
     }
 
     const passwordValidation = validatePassword(password);
@@ -194,7 +194,7 @@ export const useSecureAuth = (): SecureAuthResult => {
         
         await logSecurityEvent('sign_up_failed', { email, error: error.message });
         
-        // Daha detaylı hata mesajları
+        // Daha kullanıcı dostu hata mesajları
         let userFriendlyMessage = 'Kayıt işlemi başarısız oldu.';
         
         const errorMsg = error.message || '';
@@ -202,24 +202,26 @@ export const useSecureAuth = (): SecureAuthResult => {
         
         console.log('🔍 Hata analizi:', { errorMsg, errorStatus });
         
-        if (errorMsg.includes('already registered') || errorMsg.includes('already exists')) {
-          userFriendlyMessage = 'Bu e-posta adresi zaten kayıtlı. Giriş yapmayı deneyin.';
+        if (errorMsg.includes('already registered') || errorMsg.includes('already exists') || errorMsg.includes('User already registered')) {
+          userFriendlyMessage = 'Bu e-posta adresi zaten kayıtlı. Giriş yapmayı deneyin veya "Şifremi unuttum" seçeneğini kullanın.';
         } else if (errorMsg.includes('invalid email') || errorMsg.includes('Invalid email')) {
-          userFriendlyMessage = 'Geçersiz e-posta adresi formatı.';
+          userFriendlyMessage = 'Geçersiz e-posta adresi formatı. Lütfen doğru formatta girin (örn: kullanici@email.com)';
         } else if (errorMsg.includes('weak password') || errorMsg.includes('Password should be at least')) {
-          userFriendlyMessage = 'Şifre çok zayıf. Daha güçlü bir şifre seçin.';
+          userFriendlyMessage = 'Şifre çok zayıf. En az 6 karakter ve 2 farklı karakter türü kullanın.';
         } else if (errorMsg.includes('network') || errorMsg.includes('fetch') || errorMsg.includes('Failed to fetch')) {
-          userFriendlyMessage = 'İnternet bağlantısı sorunu. Lütfen bağlantınızı kontrol edin.';
+          userFriendlyMessage = 'İnternet bağlantısı sorunu. Lütfen bağlantınızı kontrol edin ve tekrar deneyin.';
         } else if (errorMsg.includes('timeout') || errorMsg.includes('time out')) {
           userFriendlyMessage = 'İşlem zaman aşımına uğradı. Lütfen tekrar deneyin.';
         } else if (errorMsg.includes('rate limit') || errorMsg.includes('too many requests')) {
-          userFriendlyMessage = 'Çok fazla deneme. Lütfen biraz bekleyin.';
+          userFriendlyMessage = 'Çok fazla deneme. Lütfen 1 saat bekleyin.';
         } else if (errorStatus === 422) {
           userFriendlyMessage = 'Geçersiz veri formatı. Lütfen bilgilerinizi kontrol edin.';
         } else if (errorStatus === 429) {
           userFriendlyMessage = 'Çok fazla istek. Lütfen biraz bekleyin.';
         } else if (errorStatus >= 500) {
           userFriendlyMessage = 'Sunucu hatası. Lütfen daha sonra tekrar deneyin.';
+        } else if (errorMsg.includes('Email not confirmed')) {
+          userFriendlyMessage = 'E-posta adresiniz henüz doğrulanmamış. E-posta kutunuzu kontrol edin.';
         } else {
           userFriendlyMessage = `Kayıt hatası: ${errorMsg || 'Bilinmeyen hata'}`;
         }
@@ -252,7 +254,7 @@ export const useSecureAuth = (): SecureAuthResult => {
       const errorName = error.name || '';
       
       if (errorMsg.includes('network') || errorName === 'NetworkError' || errorMsg.includes('fetch')) {
-        userFriendlyMessage = 'İnternet bağlantısı sorunu. Lütfen bağlantınızı kontrol edin.';
+        userFriendlyMessage = 'İnternet bağlantısı sorunu. Lütfen bağlantınızı kontrol edin ve tekrar deneyin.';
       } else if (errorMsg.includes('timeout') || errorName === 'TimeoutError') {
         userFriendlyMessage = 'İşlem zaman aşımına uğradı. Lütfen tekrar deneyin.';
       } else if (errorMsg.includes('CORS') || errorMsg.includes('cross-origin')) {

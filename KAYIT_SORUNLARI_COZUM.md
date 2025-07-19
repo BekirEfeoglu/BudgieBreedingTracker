@@ -4,24 +4,26 @@
 
 Bu hata genellikle aşağıdaki nedenlerden kaynaklanır:
 
-### 1. Şifre Gereksinimleri
+### 1. Şifre Gereksinimleri (Güncellendi!)
 
 **Şifreniz şu kriterleri karşılamalıdır:**
-- ✅ En az 8 karakter
-- ✅ En az bir büyük harf (A-Z)
-- ✅ En az bir küçük harf (a-z)
-- ✅ En az bir rakam (0-9)
+- ✅ En az 6 karakter
+- ✅ En az 2 farklı karakter türü:
+  - Büyük harf (A-Z)
+  - Küçük harf (a-z)
+  - Rakam (0-9)
+  - Özel karakter (!@#$%^&*)
 
 **Örnek geçerli şifreler:**
-- `Test1234`
-- `MyPassword2024`
-- `SecurePass1`
+- `Test123` (6 karakter, 3 tür: büyük, küçük, rakam)
+- `MyPass1` (7 karakter, 3 tür: büyük, küçük, rakam)
+- `Secure!` (7 karakter, 2 tür: büyük, özel karakter)
+- `123456` (6 karakter, 1 tür: sadece rakam) ❌
 
 **Örnek geçersiz şifreler:**
-- `123456` (sadece rakam)
-- `password` (sadece küçük harf)
-- `PASSWORD` (sadece büyük harf)
-- `test` (çok kısa)
+- `123` (çok kısa)
+- `abcdef` (sadece küçük harf)
+- `ABCDEF` (sadece büyük harf)
 
 ### 2. E-posta Formatı
 
@@ -36,23 +38,40 @@ Bu hata genellikle aşağıdaki nedenlerden kaynaklanır:
 - ❌ `user.example.com` (@ işareti yok)
 - ❌ `user@@example.com` (çift @ işareti)
 
-### 3. Rate Limiting (Hız Sınırı)
+### 3. Rate Limiting (Hız Sınırı) - Güncellendi!
 
 **Sınırlar:**
-- Saatte en fazla 3 kayıt denemesi
+- Saatte en fazla 5 kayıt denemesi (3'ten 5'e çıkarıldı)
 - 15 dakikada en fazla 5 giriş denemesi
 - Saatte en fazla 3 şifre sıfırlama denemesi
 
 **Çözüm:**
 - 1 saat bekleyin
+- Farklı bir e-posta adresi deneyin
 - Veya debug sayfasından "Rate Limit Temizle" butonunu kullanın
 
-### 4. İnternet Bağlantısı
+### 4. Yaygın Hata Mesajları ve Çözümleri
 
-**Kontrol edin:**
-- İnternet bağlantınızın aktif olduğundan emin olun
-- VPN kullanıyorsanız kapatıp deneyin
-- Farklı bir tarayıcı deneyin
+**"Bu e-posta adresi zaten kayıtlı"**
+- ✅ Giriş yapmayı deneyin
+- ✅ "Şifremi unuttum" seçeneğini kullanın
+- ✅ Farklı bir e-posta adresi deneyin
+
+**"Şifre çok zayıf"**
+- ✅ En az 6 karakter kullanın
+- ✅ En az 2 farklı karakter türü ekleyin
+- ✅ Örnek: `Test123`, `MyPass1`, `Secure!`
+
+**"İnternet bağlantısı sorunu"**
+- ✅ İnternet bağlantınızı kontrol edin
+- ✅ VPN kullanıyorsanız kapatın
+- ✅ Farklı bir tarayıcı deneyin
+- ✅ Sayfayı yenileyin (Ctrl+F5)
+
+**"Çok fazla deneme"**
+- ✅ 1 saat bekleyin
+- ✅ Farklı bir e-posta adresi deneyin
+- ✅ Debug sayfasından rate limit temizleyin
 
 ### 5. Tarayıcı Sorunları
 
@@ -61,6 +80,15 @@ Bu hata genellikle aşağıdaki nedenlerden kaynaklanır:
 - Gizli/incognito modda deneyin
 - JavaScript'in etkin olduğundan emin olun
 - Ad blocker'ı geçici olarak kapatın
+- Farklı bir tarayıcı deneyin (Chrome, Firefox, Safari)
+
+### 6. E-posta Doğrulama
+
+**Kayıt olduktan sonra:**
+- ✅ E-posta kutunuzu kontrol edin
+- ✅ Spam/junk klasörünü kontrol edin
+- ✅ Doğrulama bağlantısına tıklayın
+- ✅ E-posta gelmezse "Şifremi unuttum" deneyin
 
 ## Debug Sayfasını Kullanma
 
@@ -70,58 +98,20 @@ Bu hata genellikle aşağıdaki nedenlerden kaynaklanır:
    - E-posta ve şifrenizi girin
    - "Kayıt İşlemini Test Et" ile detaylı hata analizi yapın
    - Debug bilgilerini inceleyin
+   - "Rate Limit Temizle" ile sınırları sıfırlayın
 
-## Yaygın Hata Mesajları ve Çözümleri
+## Hızlı Test
 
-### "Bu e-posta adresi zaten kayıtlı"
-**Çözüm:** Giriş yapmayı deneyin, şifrenizi unuttuysanız "Şifremi unuttum" kullanın
+**Test için kullanabileceğiniz bilgiler:**
+- E-posta: `test@example.com`
+- Şifre: `Test123` (geçerli)
+- Şifre: `123` (geçersiz - çok kısa)
+- Şifre: `abcdef` (geçersiz - tek tür)
 
-### "Şifre çok zayıf"
-**Çözüm:** Yukarıdaki şifre gereksinimlerini kontrol edin
+## Destek
 
-### "İnternet bağlantısı sorunu"
-**Çözüm:** 
-- İnternet bağlantınızı kontrol edin
-- Farklı bir ağ deneyin
-- VPN kullanıyorsanız kapatın
-
-### "Çok fazla deneme"
-**Çözüm:** 1 saat bekleyin veya debug sayfasından rate limit'i temizleyin
-
-### "Geçersiz e-posta adresi formatı"
-**Çözüm:** E-posta adresinizin doğru formatta olduğundan emin olun
-
-## Teknik Destek
-
-Eğer sorun devam ederse:
-
-1. **Debug bilgilerini kaydedin:**
-   - Debug sayfasındaki tüm bilgileri kopyalayın
-   - Tarayıcı konsolundaki hata mesajlarını kaydedin
-
-2. **Bilgi toplayın:**
-   - Kullandığınız tarayıcı ve versiyonu
-   - İşletim sistemi
-   - Hata oluştuğunda yaptığınız işlemler
-
-3. **İletişim:**
-   - admin@budgiebreedingtracker.com adresine e-posta gönderin
-   - Debug bilgilerini ve topladığınız bilgileri paylaşın
-   - Hatanın ne zaman oluştuğunu belirtin
-
-## Önleyici Tedbirler
-
-1. **Güçlü şifre kullanın:** Şifre gereksinimlerini karşılayan güçlü bir şifre seçin
-2. **Geçerli e-posta kullanın:** Aktif bir e-posta adresi kullanın
-3. **İnternet bağlantısını kontrol edin:** Kararlı bir bağlantı kullanın
-4. **Tarayıcıyı güncel tutun:** Güncel bir tarayıcı kullanın
-5. **Ad blocker'ı kontrol edin:** Gerekirse geçici olarak kapatın
-
-## Test E-posta Adresleri
-
-Geliştirme/test için kullanabileceğiniz geçici e-posta servisleri:
-- 10minutemail.com
-- temp-mail.org
-- mailinator.com
-
-**Not:** Bu servisler sadece test amaçlıdır, gerçek kullanım için aktif bir e-posta adresi kullanın. 
+Hala sorun yaşıyorsanız:
+1. Debug sayfasındaki bilgileri not edin
+2. Tarayıcı konsolundaki hata mesajlarını kontrol edin
+3. Farklı bir cihaz/tarayıcı deneyin
+4. İnternet bağlantınızı test edin 

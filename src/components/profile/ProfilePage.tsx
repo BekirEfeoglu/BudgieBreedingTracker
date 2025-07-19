@@ -4,14 +4,15 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useAuth } from '@/hooks/useAuth';
-import { toast } from '@/components/ui/use-toast';
-import { ArrowLeft, Camera, Save, LogOut, Edit, Lock, AlertTriangle } from 'lucide-react';
-import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { useAuth } from '@/hooks/useAuth';
+import { useAccountDeletion } from '@/hooks/useAccountDeletion';
+import { ArrowLeft, Save, Edit, LogOut, Camera, AlertTriangle, Lock } from 'lucide-react';
+import { toast } from '@/components/ui/use-toast';
+import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { Camera as CapacitorCamera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { supabase } from '@/integrations/supabase/client';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 
 interface ProfilePageProps {
   onBack: () => void;
@@ -19,6 +20,7 @@ interface ProfilePageProps {
 
 const ProfilePage = ({ onBack }: ProfilePageProps) => {
   const { profile, updateProfile, signOut } = useAuth();
+  const { deleteAccount, isDeleting } = useAccountDeletion();
   const [firstName, setFirstName] = useState(profile?.first_name || '');
   const [lastName, setLastName] = useState(profile?.last_name || '');
   const [loading, setLoading] = useState(false);
@@ -87,14 +89,13 @@ const ProfilePage = ({ onBack }: ProfilePageProps) => {
     }
   };
 
-  const handleDeleteAccount = () => {
-    // Account deletion would be implemented here
+  const handleDeleteAccount = async () => {
     setShowDeleteAccount(false);
-    toast({
-      title: 'Hesap Silme Talebi',
-      description: 'Hesap silme özelliği yakında eklenecek.',
-      variant: 'destructive',
-    });
+    try {
+      await deleteAccount();
+    } catch (error) {
+      console.error('Hesap silme hatası:', error);
+    }
   };
 
   const getInitials = () => {
@@ -328,22 +329,38 @@ const ProfilePage = ({ onBack }: ProfilePageProps) => {
                 
                 <AlertDialog open={showDeleteAccount} onOpenChange={setShowDeleteAccount}>
                   <AlertDialogTrigger asChild>
-                    <Button variant="destructive" className="w-full">
+                    <Button variant="destructive" className="w-full" disabled={isDeleting}>
                       <AlertTriangle className="w-4 h-4 mr-2" />
-                      Hesabı Sil
+                      {isDeleting ? 'Siliniyor...' : 'Hesabı Sil'}
                     </Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent>
                     <AlertDialogHeader>
-                      <AlertDialogTitle>Hesabı Sil</AlertDialogTitle>
+                      <AlertDialogTitle>Hesabı Kalıcı Olarak Sil</AlertDialogTitle>
                       <AlertDialogDescription>
-                        Bu işlem geri alınamaz. Hesabınız ve tüm verileriniz kalıcı olarak silinecektir.
+                        <div className="space-y-3">
+                          <p className="font-semibold text-red-600">⚠️ Bu işlem geri alınamaz!</p>
+                          <p>Hesabınızı sildiğinizde:</p>
+                          <div className="space-y-1 text-sm">
+                            <div>• Tüm kuş kayıtlarınız silinecek</div>
+                            <div>• Kuluçka ve yumurta verileriniz silinecek</div>
+                            <div>• Yavru kayıtlarınız silinecek</div>
+                            <div>• Takvim etkinlikleriniz silinecek</div>
+                            <div>• Profil bilgileriniz silinecek</div>
+                            <div>• Tüm yedekleme verileriniz silinecek</div>
+                          </div>
+                          <p className="font-semibold">Bu işlemi onaylıyor musunuz?</p>
+                        </div>
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                      <AlertDialogCancel>İptal</AlertDialogCancel>
-                      <AlertDialogAction onClick={handleDeleteAccount}>
-                        Hesabı Sil
+                      <AlertDialogCancel disabled={isDeleting}>İptal</AlertDialogCancel>
+                      <AlertDialogAction 
+                        onClick={handleDeleteAccount}
+                        disabled={isDeleting}
+                        className="bg-red-600 hover:bg-red-700"
+                      >
+                        {isDeleting ? 'Siliniyor...' : 'Evet, Hesabımı Sil'}
                       </AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>

@@ -1,10 +1,11 @@
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { transformBird } from '@/utils/birdTransforms';
 import { Bird } from '@/types';
+import { useBirdRealtime, setOptimisticUpdateTracker, isGlobalSubscriptionActive } from './useBirdRealtime';
 
 export const useBirdData = () => {
   const [birds, setBirds] = useState<Bird[]>([]);
@@ -15,6 +16,25 @@ export const useBirdData = () => {
   
   // Track loading state to prevent multiple simultaneous requests
   const isLoadingRef = useRef(false);
+  const realtimeInitializedRef = useRef(false);
+
+  // Optimistic update tracker'ı ayarla
+  useEffect(() => {
+    setOptimisticUpdateTracker((birdId: string) => {
+      console.log('🔄 Optimistic update tracked for bird:', birdId);
+    });
+  }, []);
+
+  // Realtime subscription'ı sadece bir kez başlat
+  useEffect(() => {
+    if (user?.id && !realtimeInitializedRef.current && !isGlobalSubscriptionActive()) {
+      console.log('🔄 Initializing bird realtime subscription');
+      realtimeInitializedRef.current = true;
+    }
+  }, [user?.id]);
+
+  // Realtime subscription'ı başlat (sadece bir kez)
+  useBirdRealtime(setBirds);
 
   // Memoize loadBirds to prevent unnecessary re-renders
   const loadBirds = useCallback(async () => {

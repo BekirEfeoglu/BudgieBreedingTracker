@@ -15,6 +15,7 @@ const AutoBackupSettings = React.lazy(() => import('@/components/settings/AutoBa
 const AppearanceSettings = React.lazy(() => import('@/components/settings/AppearanceSettings'));
 const DangerZoneSettings = React.lazy(() => import('@/components/settings/DangerZoneSettings'));
 const SupportSettings = React.lazy(() => import('@/components/settings/SupportSettings'));
+const AccountSettings = React.lazy(() => import('@/components/settings/AccountSettings'));
 
 // Loading component
 const SettingsLoading = () => (
@@ -98,6 +99,12 @@ const SettingsTab = memo(() => {
       label: t('settings.tabs.support', 'Destek'),
       component: SupportSettings,
       icon: "❓"
+    },
+    {
+      value: "account",
+      label: t('settings.tabs.account', 'Hesap'),
+      component: AccountSettings,
+      icon: "👤"
     }
   ];
 

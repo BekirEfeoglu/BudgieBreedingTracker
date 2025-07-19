@@ -480,7 +480,8 @@ export const translations = {
         backup: 'Yedekleme',
         autoBackup: 'Otomatik Yedek',
         appearance: 'Görünüm',
-        support: 'Destek'
+        support: 'Destek',
+        account: 'Hesap'
       },
       descriptions: {
         general: 'Genel uygulama ayarlarını buradan değiştirebilirsiniz.',
@@ -613,6 +614,17 @@ export const translations = {
         version: 'Version',
         termsOfService: 'Terms of Service',
         privacyPolicy: 'Privacy Policy'
+      },
+      account: {
+        title: 'Hesap',
+        description: 'Hesap ayarlarınızı yönetin',
+        accountInfo: 'Hesap Bilgileri',
+        accountActions: 'Hesap İşlemleri',
+        deleteAccount: 'Hesabı Sil',
+        deleteAccountWarning: 'Bu işlem geri alınamaz. Tüm verileriniz kalıcı olarak silinecektir.',
+        signOut: 'Çıkış Yap',
+        signOutConfirm: 'Çıkış yapmak istediğinizden emin misiniz?',
+        changePassword: 'Şifre Değiştir'
       }
     },
     profile: {
@@ -1431,6 +1443,17 @@ export const translations = {
         version: 'Version',
         termsOfService: 'Terms of Service',
         privacyPolicy: 'Privacy Policy'
+      },
+      account: {
+        title: 'Account',
+        description: 'Manage your account settings',
+        accountInfo: 'Account Information',
+        accountActions: 'Account Actions',
+        deleteAccount: 'Delete Account',
+        deleteAccountWarning: 'This action cannot be undone. All your data will be permanently deleted.',
+        signOut: 'Sign Out',
+        signOutConfirm: 'Are you sure you want to sign out?',
+        changePassword: 'Change Password'
       }
     },
     profile: {
