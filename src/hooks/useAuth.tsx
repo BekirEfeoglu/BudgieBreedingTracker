@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { User, Session, AuthError } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
-import { useOptimizedLogging } from '@/hooks/useOptimizedLogging';
 import { sanitizeText } from '@/utils/inputSanitization';
 
 interface Profile {
@@ -43,19 +42,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }): React
   const [loading, setLoading] = useState(true);
   const initializationRef = useRef(false);
   const profileFetchingRef = useRef(false);
-  const { debug, error: logError } = useOptimizedLogging();
 
   const fetchProfile = async (userId: string): Promise<void> => {
     if (profileFetchingRef.current) {
-      debug('Profile fetch already in progress, skipping', { userId }, 'Auth');
       return;
     }
 
     profileFetchingRef.current = true;
     
     try {
-          // Reduced logging for performance
-      debug('Fetching profile for user', { userId }, 'Auth');
       
       const { data, error } = await supabase
         .from('profiles')
@@ -84,7 +79,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }): React
 
           if (createError) {
             console.error('❌ Profil oluşturma hatası:', createError);
-            logError('Failed to create profile', createError, 'Auth');
             return;
           }
 
@@ -94,7 +88,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }): React
           setProfile(newProfile as Profile);
         } else {
           console.error('❌ Profil yükleme hatası:', error);
-          logError('Error fetching profile', error, 'Auth');
           return;
         }
       } else {
@@ -105,12 +98,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }): React
         
         // Reduced logging for performance
         
-        debug('Profile data loaded successfully', { profileExists: !!profileData }, 'Auth');
+        if (process.env.NODE_ENV === 'development') {
+          console.log('✅ Profile data loaded successfully', { profileExists: !!profileData });
+        }
         setProfile(profileData as Profile);
       }
     } catch (error) {
       console.error('❌ Profil yükleme exception:', error);
-      logError('Exception fetching profile', error, 'Auth');
     } finally {
       profileFetchingRef.current = false;
     }
@@ -192,7 +186,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }): React
   }, []);
 
   const signUp = async (email: string, password: string, firstName?: string, lastName?: string): Promise<{ error: AuthError | null }> => {
-    debug('Starting sign up process', { email }, 'Auth');
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔄 Starting sign up process', { email });
+    }
     console.log('🔄 useAuth.signUp başlatılıyor:', { email, firstName, lastName, passwordLength: password.length });
     
     if (!validateEmail(email)) {
@@ -212,7 +208,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }): React
       });
       
       if (error) {
-        logError('Sign up failed', error, 'Auth');
+        console.error('❌ Sign up failed:', error);
         return { error };
       }
 
@@ -226,16 +222,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }): React
         }
       }
 
-      debug('Sign up successful', { userId: data.user?.id }, 'Auth');
+      if (process.env.NODE_ENV === 'development') {
+        console.log('✅ Sign up successful', { userId: data.user?.id });
+      }
       return { error: null };
     } catch (error) {
-      logError('Sign up exception', error, 'Auth');
+      console.error('❌ Sign up exception:', error);
       return { error: error as AuthError };
     }
   };
 
   const signIn = async (email: string, password: string): Promise<{ error: AuthError | null }> => {
-    debug('Starting sign in process', { email }, 'Auth');
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔄 Starting sign in process', { email });
+    }
     console.log('🔄 useAuth.signIn başlatılıyor:', { email, passwordLength: password.length });
 
     if (!validateEmail(email)) {
@@ -249,7 +249,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }): React
       });
       
       if (error) {
-        logError('Sign in failed', error, 'Auth');
+        console.error('❌ Sign in failed:', error);
         return { error };
       }
 
@@ -263,36 +263,44 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }): React
         }
       }
 
-      debug('Sign in successful', { userId: data.user?.id }, 'Auth');
+      if (process.env.NODE_ENV === 'development') {
+        console.log('✅ Sign in successful', { userId: data.user?.id });
+      }
       return { error: null };
     } catch (error) {
-      logError('Sign in exception', error, 'Auth');
+      console.error('❌ Sign in exception:', error);
       return { error: error as AuthError };
     }
   };
 
   const signOut = async (): Promise<void> => {
-    debug('Starting sign out process', undefined, 'Auth');
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔄 Starting sign out process');
+    }
     console.log('🔄 useAuth.signOut başlatılıyor');
 
     try {
       const { error } = await supabase.auth.signOut();
       
       if (error) {
-        logError('Sign out failed', error, 'Auth');
+        console.error('❌ Sign out failed:', error);
       } else {
       setUser(null);
       setSession(null);
       setProfile(null);
-        debug('Sign out successful', undefined, 'Auth');
+        if (process.env.NODE_ENV === 'development') {
+          console.log('✅ Sign out successful');
+        }
       }
     } catch (error) {
-      logError('Sign out exception', error, 'Auth');
+      console.error('❌ Sign out exception:', error);
     }
   };
 
   const resetPassword = async (email: string): Promise<{ error: AuthError | null }> => {
-    debug('Starting password reset process', { email }, 'Auth');
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔄 Starting password reset process', { email });
+    }
     console.log('🔄 useAuth.resetPassword başlatılıyor:', { email });
 
     if (!validateEmail(email)) {
@@ -308,7 +316,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }): React
       
       return { error };
     } catch (error) {
-      logError('Reset password failed', error, 'Auth');
+      console.error('❌ Reset password failed:', error);
       return { error: error as AuthError };
     }
   };
@@ -318,7 +326,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }): React
       return { error: { message: 'Kullanıcı oturumu bulunamadı' } as AuthError };
     }
 
-    debug('Starting profile update', { userId: user.id, updates }, 'Auth');
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔄 Starting profile update', { userId: user.id, updates });
+    }
 
     // Sanitize input data
     const sanitizedUpdates: any = {
@@ -338,7 +348,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }): React
 
     try {
       console.log('🔄 Profil güncelleniyor...', { sanitizedUpdates });
-      debug('Updating profile in Supabase', { sanitizedUpdates }, 'Auth');
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔄 Updating profile in Supabase', { sanitizedUpdates });
+      }
       
       const { data, error } = await supabase
         .from('profiles')
@@ -347,17 +359,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }): React
         .select('id, first_name, last_name, avatar_url, updated_at');
 
       console.log('📊 Supabase güncelleme yanıtı:', { data, error });
-      debug('Supabase response', { data, error }, 'Auth');
+      if (process.env.NODE_ENV === 'development') {
+        console.log('📊 Supabase response', { data, error });
+      }
 
       if (error) {
-        logError('Update profile failed', error, 'Auth');
+        console.error('❌ Update profile failed:', error);
         return { error: { message: `Profil güncellenirken hata: ${error.message}` } as AuthError };
       }
 
       // Eğer data yoksa, mevcut profili güncelle
       if (!data || data.length === 0) {
         console.log('⚠️ Veri döndürülmedi, local state güncelleniyor:', sanitizedUpdates);
-        debug('No data returned, updating local state with sanitized updates', { sanitizedUpdates }, 'Auth');
+        if (process.env.NODE_ENV === 'development') {
+          console.log('⚠️ No data returned, updating local state with sanitized updates', { sanitizedUpdates });
+        }
         
         // Local state'i güncelle
         setProfile((prev: Profile | null) => {
@@ -380,14 +396,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }): React
       // Update local state
       setProfile(updatedProfile);
       
-      debug('Profile updated successfully', { 
-        updatedFields: Object.keys(sanitizedUpdates),
-        newProfile: updatedProfile 
-      }, 'Auth');
+      if (process.env.NODE_ENV === 'development') {
+        console.log('✅ Profile updated successfully', { 
+          updatedFields: Object.keys(sanitizedUpdates),
+          newProfile: updatedProfile 
+        });
+      }
       
       return { error: null };
     } catch (error) {
-      logError('Update profile failed', error, 'Auth');
+      console.error('❌ Update profile failed:', error);
       return { error: { message: 'Profil güncellenirken beklenmeyen bir hata oluştu' } as AuthError };
     }
   };
@@ -399,7 +417,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }): React
 
     try {
       console.log('🔄 Şifre güncelleniyor...');
-      debug('Updating password', {}, 'Auth');
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔄 Updating password');
+      }
       
       // Önce mevcut şifreyi doğrula
       const { error: signInError } = await supabase.auth.signInWithPassword({
@@ -417,14 +437,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }): React
       });
 
       if (error) {
-        logError('Error updating password', error, 'Auth');
+        console.error('❌ Error updating password:', error);
         throw new Error(error.message);
       }
 
       console.log('✅ Şifre başarıyla güncellendi');
-      debug('Password updated successfully', {}, 'Auth');
+      if (process.env.NODE_ENV === 'development') {
+        console.log('✅ Password updated successfully');
+      }
     } catch (error) {
-      logError('Exception updating password', error, 'Auth');
+      console.error('❌ Exception updating password:', error);
       throw error;
     }
   };

@@ -1,7 +1,6 @@
 
 import { toast } from '@/hooks/use-toast';
 import { Bird, Chick, Breeding } from '@/types';
-import { notificationService } from '@/services/notificationService';
 
 export const useEggOperations = (
   breeding: Breeding[],
@@ -35,11 +34,6 @@ export const useEggOperations = (
   const handleDeleteEgg = async (breedingId: string, eggId: string) => {
     const breedingRecord = breeding.find(b => b.id === breedingId);
     const egg = breedingRecord?.eggs?.find((e: any) => e.id === eggId);
-    
-    if (egg) {
-      // Cancel notifications for this egg
-      await notificationService.cancelEggNotifications(breedingId, egg.number);
-    }
 
     setBreeding(prev => prev.map(b => {
       if (b.id === breedingId) {
