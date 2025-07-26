@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supabase API Test</title>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <h1>Supabase API Test</h1>
+    <div id="result"></div>
+
+    <script>
+        // Supabase configuration
+        const SUPABASE_URL = "https://etkvuonkmmzihsjwbcrl.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV0a3Z1b25rbW16aWhsanZiY3JsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMwMjk0NTEsImV4cCI6MjA2ODYwNTQ1MX0.v4wCLxVMXyI32pAX7zg0fxoEeRNtWp4SfN0y8edqNhE";
+
+        // Create Supabase client
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        async function testSupabase() {
+            const resultDiv = document.getElementById('result');
+            
+            try {
+                console.log('🔑 Testing Supabase connection...');
+                console.log('URL:', SUPABASE_URL);
+                console.log('Key Length:', SUPABASE_ANON_KEY.length);
+                console.log('Key Start:', SUPABASE_ANON_KEY.substring(0, 20));
+
+                // Test 1: Basic connection
+                resultDiv.innerHTML += '<p>🔄 Test 1: Basic connection...</p>';
+                
+                // Test 2: Auth signup
+                resultDiv.innerHTML += '<p>🔄 Test 2: Auth signup...</p>';
+                
+                const { data, error } = await supabase.auth.signUp({
+                    email: 'test@example.com',
+                    password: 'testpassword123',
+                    options: {
+                        data: {
+                            first_name: 'Test',
+                            last_name: 'User'
+                        }
+                    }
+                });
+
+                if (error) {
+                    console.error('❌ Signup Error:', error);
+                    resultDiv.innerHTML += `<p style="color: red;">❌ Signup Error: ${error.message}</p>`;
+                } else {
+                    console.log('✅ Signup Success:', data);
+                    resultDiv.innerHTML += `<p style="color: green;">✅ Signup Success!</p>`;
+                }
+
+                // Test 3: Database query
+                resultDiv.innerHTML += '<p>🔄 Test 3: Database query...</p>';
+                
+                const { data: todos, error: todosError } = await supabase
+                    .from('todos')
+                    .select('*')
+                    .limit(1);
+
+                if (todosError) {
+                    console.error('❌ Database Error:', todosError);
+                    resultDiv.innerHTML += `<p style="color: red;">❌ Database Error: ${todosError.message}</p>`;
+                } else {
+                    console.log('✅ Database Success:', todos);
+                    resultDiv.innerHTML += `<p style="color: green;">✅ Database Success!</p>`;
+                }
+
+            } catch (error) {
+                console.error('❌ General Error:', error);
+                resultDiv.innerHTML += `<p style="color: red;">❌ General Error: ${error.message}</p>`;
+            }
+        }
+
+        // Run test when page loads
+        window.onload = testSupabase;
+    </script>
+</body>
+</html> 

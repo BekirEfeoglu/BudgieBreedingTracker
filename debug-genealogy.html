@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Genealogy Debug</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .debug-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; border-radius: 5px; }
+        .error { color: red; }
+        .success { color: green; }
+        .info { color: blue; }
+        pre { background: #f5f5f5; padding: 10px; border-radius: 3px; overflow-x: auto; }
+        button { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .family-member { margin: 10px 0; padding: 10px; border: 1px solid #ddd; border-radius: 3px; }
+    </style>
+</head>
+<body>
+    <h1>🌳 Genealogy Debug</h1>
+    
+    <div class="debug-section">
+        <h2>1. Chick Anne Baba Bilgilerini Kontrol Et</h2>
+        <button onclick="checkChickParents()">Chick Anne Baba Bilgilerini Getir</button>
+        <div id="chickParentsResult"></div>
+    </div>
+
+    <div class="debug-section">
+        <h2>2. Chick Anne Baba Bilgilerini Güncelle</h2>
+        <button onclick="updateChickParents()">Chick Anne Baba Bilgilerini Güncelle</button>
+        <div id="updateResult"></div>
+    </div>
+
+    <div class="debug-section">
+        <h2>3. Aile Ağacı Verilerini Test Et</h2>
+        <button onclick="testFamilyTree()">Aile Ağacı Test Et</button>
+        <div id="familyTreeResult"></div>
+    </div>
+
+    <div class="debug-section">
+        <h2>4. Tüm Kuş ve Chick Verilerini Getir</h2>
+        <button onclick="getAllData()">Tüm Verileri Getir</button>
+        <div id="allDataResult"></div>
+    </div>
+
+    <script>
+        // Supabase client setup
+        const SUPABASE_URL = 'https://your-project.supabase.co';
+        const SUPABASE_ANON_KEY = 'your-anon-key';
+        
+        // Bu bilgileri gerçek değerlerle değiştirin
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        async function checkChickParents() {
+            const resultDiv = document.getElementById('chickParentsResult');
+            resultDiv.innerHTML = '<p class="info">Chick anne baba bilgileri getiriliyor...</p>';
+            
+            try {
+                const { data, error } = await supabase
+                    .from('chicks')
+                    .select(`
+                        id,
+                        name,
+                        mother_id,
+                        father_id,
+                        incubation_id,
+                        birds!chicks_mother_id_fkey(name as mother_name),
+                        birds!chicks_father_id_fkey(name as father_name),
+                        incubations!chicks_incubation_id_fkey(
+                            name,
+                            female_bird_id,
+                            male_bird_id
+                        )
+                    `)
+                    .order('created_at', { ascending: false });
+                
+                if (error) {
+                    resultDiv.innerHTML = `<p class="error">Hata: ${error.message}</p>`;
+                    return;
+                }
+                
+                let html = `<p class="success">✅ ${data.length} chick bulundu</p>`;
+                data.forEach(chick => {
+                    html += `
+                        <div class="family-member">
+                            <strong>${chick.name}</strong><br>
+                            Anne ID: ${chick.mother_id || 'Yok'} - Anne Adı: ${chick.birds?.mother_name || 'Bilinmiyor'}<br>
+                            Baba ID: ${chick.father_id || 'Yok'} - Baba Adı: ${chick.birds?.father_name || 'Bilinmiyor'}<br>
+                            Incubation: ${chick.incubations?.name || 'Yok'}<br>
+                            Incubation Anne ID: ${chick.incubations?.female_bird_id || 'Yok'}<br>
+                            Incubation Baba ID: ${chick.incubations?.male_bird_id || 'Yok'}
+                        </div>
+                    `;
+                });
+                
+                resultDiv.innerHTML = html;
+            } catch (err) {
+                resultDiv.innerHTML = `<p class="error">Hata: ${err.message}</p>`;
+            }
+        }
+
+        async function updateChickParents() {
+            const resultDiv = document.getElementById('updateResult');
+            resultDiv.innerHTML = '<p class="info">Chick anne baba bilgileri güncelleniyor...</p>';
+            
+            try {
+                // Chick anne baba bilgilerini incubation'dan güncelle
+                const { data, error } = await supabase
+                    .rpc('update_chick_parents_from_incubation', {
+                        user_id_param: 'd055c311-fba9-4d78-adbf-ee01658e72e3'
+                    });
+                
+                if (error) {
+                    resultDiv.innerHTML = `<p class="error">Hata: ${error.message}</p>`;
+                    return;
+                }
+                
+                resultDiv.innerHTML = `<p class="success">✅ Chick anne baba bilgileri güncellendi</p>`;
+            } catch (err) {
+                resultDiv.innerHTML = `<p class="error">Hata: ${err.message}</p>`;
+            }
+        }
+
+        async function testFamilyTree() {
+            const resultDiv = document.getElementById('familyTreeResult');
+            resultDiv.innerHTML = '<p class="info">Aile ağacı test ediliyor...</p>';
+            
+            try {
+                // Önce bir chick seç
+                const { data: chicks, error: chicksError } = await supabase
+                    .from('chicks')
+                    .select('*')
+                    .limit(1);
+                
+                if (chicksError || !chicks.length) {
+                    resultDiv.innerHTML = `<p class="error">Chick bulunamadı: ${chicksError?.message}</p>`;
+                    return;
+                }
+                
+                const chick = chicks[0];
+                
+                // Aile verilerini hesapla
+                const { data: birds, error: birdsError } = await supabase
+                    .from('birds')
+                    .select('*');
+                
+                if (birdsError) {
+                    resultDiv.innerHTML = `<p class="error">Kuş verileri alınamadı: ${birdsError.message}</p>`;
+                    return;
+                }
+                
+                // Aile verilerini manuel hesapla
+                const father = birds.find(b => b.id === chick.father_id);
+                const mother = birds.find(b => b.id === chick.mother_id);
+                const children = [...birds, ...chicks].filter(b => 
+                    (b.mother_id || b.motherId) === chick.id || 
+                    (b.father_id || b.fatherId) === chick.id
+                );
+                
+                let html = `
+                    <p class="success">✅ Aile ağacı test edildi</p>
+                    <div class="family-member">
+                        <strong>Seçili Chick:</strong> ${chick.name}<br>
+                        <strong>Anne:</strong> ${mother?.name || 'Bilinmiyor'} (ID: ${chick.mother_id || 'Yok'})<br>
+                        <strong>Baba:</strong> ${father?.name || 'Bilinmiyor'} (ID: ${chick.father_id || 'Yok'})<br>
+                        <strong>Çocuklar:</strong> ${children.length} adet
+                    </div>
+                `;
+                
+                resultDiv.innerHTML = html;
+            } catch (err) {
+                resultDiv.innerHTML = `<p class="error">Hata: ${err.message}</p>`;
+            }
+        }
+
+        async function getAllData() {
+            const resultDiv = document.getElementById('allDataResult');
+            resultDiv.innerHTML = '<p class="info">Tüm veriler getiriliyor...</p>';
+            
+            try {
+                const [birdsResult, chicksResult] = await Promise.all([
+                    supabase.from('birds').select('*'),
+                    supabase.from('chicks').select('*')
+                ]);
+                
+                if (birdsResult.error) {
+                    resultDiv.innerHTML = `<p class="error">Kuş verileri alınamadı: ${birdsResult.error.message}</p>`;
+                    return;
+                }
+                
+                if (chicksResult.error) {
+                    resultDiv.innerHTML = `<p class="error">Chick verileri alınamadı: ${chicksResult.error.message}</p>`;
+                    return;
+                }
+                
+                resultDiv.innerHTML = `
+                    <p class="success">✅ Veriler getirildi</p>
+                    <p><strong>Kuşlar:</strong> ${birdsResult.data.length} adet</p>
+                    <p><strong>Chickler:</strong> ${chicksResult.data.length} adet</p>
+                    <pre>${JSON.stringify({ birds: birdsResult.data, chicks: chicksResult.data }, null, 2)}</pre>
+                `;
+            } catch (err) {
+                resultDiv.innerHTML = `<p class="error">Hata: ${err.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html> 

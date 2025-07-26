@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="192" height="192" viewBox="0 0 192 192" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="96" cy="96" r="96" fill="#22C55E"/>
+  <!-- Yumurta -->
+  <ellipse cx="135" cy="135" rx="22" ry="30" fill="#FEF3C7" stroke="#E5E7EB" stroke-width="3"/>
+  <!-- Muhabbet kuşu gövdesi -->
+  <ellipse cx="80" cy="120" rx="30" ry="40" fill="#A7F3D0" stroke="#047857" stroke-width="3"/>
+  <!-- Kanat -->
+  <ellipse cx="70" cy="130" rx="12" ry="18" fill="#6EE7B7" stroke="#047857" stroke-width="2"/>
+  <!-- Kafa -->
+  <ellipse cx="80" cy="75" rx="18" ry="18" fill="#FDE68A" stroke="#F59E0B" stroke-width="3"/>
+  <!-- Göz -->
+  <circle cx="88" cy="75" r="3" fill="#1F2937"/>
+  <!-- Gaga -->
+  <ellipse cx="97" cy="85" rx="3" ry="5" fill="#F59E0B"/>
+  <!-- Ayaklar -->
+  <rect x="70" y="150" width="4" height="15" fill="#374151" rx="2"/>
+  <rect x="86" y="150" width="4" height="15" fill="#374151" rx="2"/>
+  <!-- BBT yazısı -->
+  <text x="96" y="180" text-anchor="middle" font-family="Arial" font-size="20" fill="#fff" font-weight="bold">BBT</text>
+</svg> 

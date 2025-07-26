@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Egg & Chick Debug</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .debug-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; border-radius: 5px; }
+        .error { color: red; }
+        .success { color: green; }
+        .info { color: blue; }
+        pre { background: #f5f5f5; padding: 10px; border-radius: 3px; overflow-x: auto; }
+        button { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .data-item { margin: 10px 0; padding: 10px; border: 1px solid #ddd; border-radius: 3px; }
+    </style>
+</head>
+<body>
+    <h1>🥚 Egg & Chick Debug</h1>
+    
+    <div class="debug-section">
+        <h2>1. Egg Verilerini Kontrol Et</h2>
+        <button onclick="checkEggData()">Egg Verilerini Getir</button>
+        <div id="eggDataResult"></div>
+    </div>
+
+    <div class="debug-section">
+        <h2>2. Incubation Verilerini Kontrol Et</h2>
+        <button onclick="checkIncubationData()">Incubation Verilerini Getir</button>
+        <div id="incubationDataResult"></div>
+    </div>
+
+    <div class="debug-section">
+        <h2>3. Chick Verilerini Kontrol Et</h2>
+        <button onclick="checkChickData()">Chick Verilerini Getir</button>
+        <div id="chickDataResult"></div>
+    </div>
+
+    <div class="debug-section">
+        <h2>4. Test Chick Oluştur</h2>
+        <button onclick="testChickCreation()">Test Chick Oluştur</button>
+        <div id="testResult"></div>
+    </div>
+
+    <script>
+        // Supabase client setup
+        const SUPABASE_URL = 'https://your-project.supabase.co';
+        const SUPABASE_ANON_KEY = 'your-anon-key';
+        
+        // Bu bilgileri gerçek değerlerle değiştirin
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        async function checkEggData() {
+            const resultDiv = document.getElementById('eggDataResult');
+            resultDiv.innerHTML = '<p class="info">Egg verileri getiriliyor...</p>';
+            
+            try {
+                const { data, error } = await supabase
+                    .from('eggs')
+                    .select(`
+                        id,
+                        number,
+                        egg_number,
+                        incubation_id,
+                        status,
+                        lay_date,
+                        hatch_date,
+                        created_at,
+                        updated_at
+                    `)
+                    .eq('user_id', 'd055c311-fba9-4d78-adbf-ee01658e72e3')
+                    .order('created_at', { ascending: false });
+                
+                if (error) {
+                    resultDiv.innerHTML = `<p class="error">Hata: ${error.message}</p>`;
+                    return;
+                }
+                
+                let html = `<p class="success">✅ ${data.length} egg bulundu</p>`;
+                data.forEach(egg => {
+                    html += `
+                        <div class="data-item">
+                            <strong>ID:</strong> ${egg.id}<br>
+                            <strong>Number:</strong> ${egg.number || 'Yok'}<br>
+                            <strong>Egg Number:</strong> ${egg.egg_number || 'Yok'}<br>
+                            <strong>Incubation ID:</strong> ${egg.incubation_id || 'Yok'}<br>
+                            <strong>Status:</strong> ${egg.status}<br>
+                            <strong>Lay Date:</strong> ${egg.lay_date}<br>
+                            <strong>Hatch Date:</strong> ${egg.hatch_date || 'Yok'}
+                        </div>
+                    `;
+                });
+                
+                resultDiv.innerHTML = html;
+            } catch (err) {
+                resultDiv.innerHTML = `<p class="error">Hata: ${err.message}</p>`;
+            }
+        }
+
+        async function checkIncubationData() {
+            const resultDiv = document.getElementById('incubationDataResult');
+            resultDiv.innerHTML = '<p class="info">Incubation verileri getiriliyor...</p>';
+            
+            try {
+                const { data, error } = await supabase
+                    .from('incubations')
+                    .select(`
+                        id,
+                        name,
+                        male_bird_id,
+                        female_bird_id,
+                        start_date,
+                        created_at
+                    `)
+                    .eq('user_id', 'd055c311-fba9-4d78-adbf-ee01658e72e3')
+                    .order('created_at', { ascending: false });
+                
+                if (error) {
+                    resultDiv.innerHTML = `<p class="error">Hata: ${error.message}</p>`;
+                    return;
+                }
+                
+                let html = `<p class="success">✅ ${data.length} incubation bulundu</p>`;
+                data.forEach(inc => {
+                    html += `
+                        <div class="data-item">
+                            <strong>ID:</strong> ${inc.id}<br>
+                            <strong>Name:</strong> ${inc.name}<br>
+                            <strong>Male Bird ID:</strong> ${inc.male_bird_id || 'Yok'}<br>
+                            <strong>Female Bird ID:</strong> ${inc.female_bird_id || 'Yok'}<br>
+                            <strong>Start Date:</strong> ${inc.start_date}
+                        </div>
+                    `;
+                });
+                
+                resultDiv.innerHTML = html;
+            } catch (err) {
+                resultDiv.innerHTML = `<p class="error">Hata: ${err.message}</p>`;
+            }
+        }
+
+        async function checkChickData() {
+            const resultDiv = document.getElementById('chickDataResult');
+            resultDiv.innerHTML = '<p class="info">Chick verileri getiriliyor...</p>';
+            
+            try {
+                const { data, error } = await supabase
+                    .from('chicks')
+                    .select(`
+                        id,
+                        name,
+                        egg_id,
+                        incubation_id,
+                        mother_id,
+                        father_id,
+                        hatch_date,
+                        gender,
+                        created_at
+                    `)
+                    .eq('user_id', 'd055c311-fba9-4d78-adbf-ee01658e72e3')
+                    .order('created_at', { ascending: false });
+                
+                if (error) {
+                    resultDiv.innerHTML = `<p class="error">Hata: ${error.message}</p>`;
+                    return;
+                }
+                
+                let html = `<p class="success">✅ ${data.length} chick bulundu</p>`;
+                data.forEach(chick => {
+                    html += `
+                        <div class="data-item">
+                            <strong>ID:</strong> ${chick.id}<br>
+                            <strong>Name:</strong> ${chick.name}<br>
+                            <strong>Egg ID:</strong> ${chick.egg_id || 'Yok'}<br>
+                            <strong>Incubation ID:</strong> ${chick.incubation_id || 'Yok'}<br>
+                            <strong>Mother ID:</strong> ${chick.mother_id || 'Yok'}<br>
+                            <strong>Father ID:</strong> ${chick.father_id || 'Yok'}<br>
+                            <strong>Gender:</strong> ${chick.gender || 'Yok'}<br>
+                            <strong>Hatch Date:</strong> ${chick.hatch_date}
+                        </div>
+                    `;
+                });
+                
+                resultDiv.innerHTML = html;
+            } catch (err) {
+                resultDiv.innerHTML = `<p class="error">Hata: ${err.message}</p>`;
+            }
+        }
+
+        async function testChickCreation() {
+            const resultDiv = document.getElementById('testResult');
+            resultDiv.innerHTML = '<p class="info">Test chick oluşturuluyor...</p>';
+            
+            try {
+                // Önce bir egg bul
+                const { data: eggs, error: eggsError } = await supabase
+                    .from('eggs')
+                    .select('*')
+                    .eq('user_id', 'd055c311-fba9-4d78-adbf-ee01658e72e3')
+                    .eq('status', 'laid')
+                    .limit(1);
+                
+                if (eggsError || !eggs.length) {
+                    resultDiv.innerHTML = `<p class="error">Test için egg bulunamadı: ${eggsError?.message}</p>`;
+                    return;
+                }
+                
+                const egg = eggs[0];
+                
+                // Egg verilerini kontrol et
+                console.log('🔍 Test egg data:', egg);
+                
+                // Chick oluştur
+                const eggNumber = egg.number || egg.egg_number;
+                const chickName = eggNumber 
+                    ? `Test Yavru ${eggNumber}`
+                    : `Test Yavru ${new Date().getTime().toString().slice(-4)}`;
+                
+                const chickData = {
+                    user_id: 'd055c311-fba9-4d78-adbf-ee01658e72e3',
+                    egg_id: egg.id,
+                    incubation_id: egg.incubation_id,
+                    name: chickName,
+                    hatch_date: new Date().toISOString().split('T')[0],
+                    mother_id: null,
+                    father_id: null,
+                    health_notes: 'Test chick',
+                    gender: 'unknown'
+                };
+                
+                console.log('🔍 Creating test chick with data:', chickData);
+                
+                const { data: createdChick, error: chickError } = await supabase
+                    .from('chicks')
+                    .insert(chickData)
+                    .select()
+                    .single();
+                
+                if (chickError) {
+                    resultDiv.innerHTML = `<p class="error">Test chick oluşturulamadı: ${chickError.message}</p>`;
+                    return;
+                }
+                
+                resultDiv.innerHTML = `
+                    <p class="success">✅ Test chick başarıyla oluşturuldu!</p>
+                    <div class="data-item">
+                        <strong>Chick ID:</strong> ${createdChick.id}<br>
+                        <strong>Name:</strong> ${createdChick.name}<br>
+                        <strong>Egg ID:</strong> ${createdChick.egg_id}<br>
+                        <strong>Incubation ID:</strong> ${createdChick.incubation_id}<br>
+                        <strong>Gender:</strong> ${createdChick.gender}
+                    </div>
+                `;
+            } catch (err) {
+                resultDiv.innerHTML = `<p class="error">Hata: ${err.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html> 

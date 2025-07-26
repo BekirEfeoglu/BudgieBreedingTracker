@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supabase Direct API Test</title>
+</head>
+<body>
+    <h1>Supabase Direct API Test</h1>
+    <div id="result"></div>
+
+    <script>
+        const SUPABASE_URL = "https://etkvuonkmmzihsjwbcrl.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV0a3Z1b25rbW16aWhsanZiY3JsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMwMjk0NTEsImV4cCI6MjA2ODYwNTQ1MX0.v4wCLxVMXyI32pAX7zg0fxoEeRNtWp4SfN0y8edqNhE";
+
+        async function testDirectAPI() {
+            const resultDiv = document.getElementById('result');
+            
+            try {
+                console.log('🔑 Testing direct API calls...');
+                
+                // Test 1: Direct auth signup
+                resultDiv.innerHTML += '<p>🔄 Test 1: Direct auth signup...</p>';
+                
+                const signupResponse = await fetch(`${SUPABASE_URL}/auth/v1/signup`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                    },
+                    body: JSON.stringify({
+                        email: 'test@example.com',
+                        password: 'testpassword123',
+                        data: {
+                            first_name: 'Test',
+                            last_name: 'User'
+                        }
+                    })
+                });
+
+                const signupData = await signupResponse.json();
+                console.log('Signup Response:', signupResponse.status, signupData);
+                
+                if (signupResponse.ok) {
+                    resultDiv.innerHTML += `<p style="color: green;">✅ Direct Signup Success!</p>`;
+                } else {
+                    resultDiv.innerHTML += `<p style="color: red;">❌ Direct Signup Error: ${signupData.error_description || signupData.message}</p>`;
+                }
+
+                // Test 2: Direct database query
+                resultDiv.innerHTML += '<p>🔄 Test 2: Direct database query...</p>';
+                
+                const queryResponse = await fetch(`${SUPABASE_URL}/rest/v1/todos?select=*&limit=1`, {
+                    method: 'GET',
+                    headers: {
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const queryData = await queryResponse.json();
+                console.log('Query Response:', queryResponse.status, queryData);
+                
+                if (queryResponse.ok) {
+                    resultDiv.innerHTML += `<p style="color: green;">✅ Direct Query Success!</p>`;
+                } else {
+                    resultDiv.innerHTML += `<p style="color: red;">❌ Direct Query Error: ${queryData.error_description || queryData.message}</p>`;
+                }
+
+            } catch (error) {
+                console.error('❌ General Error:', error);
+                resultDiv.innerHTML += `<p style="color: red;">❌ General Error: ${error.message}</p>`;
+            }
+        }
+
+        window.onload = testDirectAPI;
+    </script>
+</body>
+</html> 

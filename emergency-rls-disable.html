@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚨 ACİL RLS DEVRE DIŞI BIRAKMA</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #dcfce7;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            border: 3px solid #22c55e;
+        }
+        h1 {
+            color: #16a34a;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+        .warning {
+            background: #fef3c7;
+            border: 2px solid #f59e0b;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+        .sql-box {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            line-height: 1.5;
+        }
+        .copy-btn {
+            background: #22c55e;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            margin: 20px 0;
+            display: block;
+            width: 100%;
+        }
+        .copy-btn:hover {
+            background: #16a34a;
+        }
+        .steps {
+            background: #f0f9ff;
+            border: 2px solid #0ea5e9;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .step {
+            margin: 10px 0;
+            padding: 10px;
+            background: white;
+            border-radius: 5px;
+            border-left: 4px solid #0ea5e9;
+        }
+        .success {
+            background: #dcfce7;
+            border: 2px solid #22c55e;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚨 ACİL RLS DEVRE DIŞI BIRAKMA</h1>
+        
+        <div class="warning">
+            <h2>⚠️ ÖNEMLİ: Bu geçici bir çözümdür!</h2>
+            <p>RLS'yi devre dışı bırakarak uygulamanın hemen çalışmasını sağlayacağız. Bu güvenlik açısından ideal değildir ama uygulamanızı hemen kullanabilir hale getirecektir.</p>
+        </div>
+
+        <div class="steps">
+            <h3>🔧 Hızlı Çözüm Adımları:</h3>
+            <div class="step">
+                <strong>1.</strong> Supabase Dashboard'a gidin: <a href="https://supabase.com/dashboard/project/jxbfdgyusoehqybxdnii" target="_blank">https://supabase.com/dashboard/project/jxbfdgyusoehqybxdnii</a>
+            </div>
+            <div class="step">
+                <strong>2.</strong> Sol menüden "SQL Editor" seçin
+            </div>
+            <div class="step">
+                <strong>3.</strong> Aşağıdaki "KOPYALA" butonuna tıklayın
+            </div>
+            <div class="step">
+                <strong>4.</strong> SQL Editor'e yapıştırın ve "Run" butonuna tıklayın
+            </div>
+            <div class="step">
+                <strong>5.</strong> Uygulamayı yenileyin ve test edin
+            </div>
+        </div>
+
+        <button class="copy-btn" onclick="copyDisableSQL()">🚨 RLS'Yİ DEVRE DIŞI BIRAK</button>
+        
+        <div class="sql-box" id="disableSQL">-- ACİL RLS DEVRE DIŞI BIRAKMA - Uygulamayı hemen çalışır hale getir
+
+-- 1. Tüm tablolarda RLS'yi devre dışı bırak
+ALTER TABLE public.birds DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.chicks DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.eggs DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.incubations DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.user_notification_settings DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.user_notification_tokens DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.notification_interactions DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.profiles DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.photos DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.feedback DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.calendar DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.backup_jobs DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.backup_settings DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.backup_history DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.clutches DISABLE ROW LEVEL SECURITY;
+
+-- 2. Bildirim ayarlarını mevcut kullanıcılar için oluştur
+INSERT INTO public.user_notification_settings (user_id)
+SELECT id FROM auth.users
+ON CONFLICT (user_id) DO NOTHING;
+
+-- 3. Durumu kontrol et
+SELECT 
+  schemaname,
+  tablename,
+  rowsecurity
+FROM pg_tables 
+WHERE schemaname = 'public' 
+  AND tablename IN ('birds', 'chicks', 'eggs', 'incubations', 'user_notification_settings')
+ORDER BY tablename;</div>
+
+        <div class="success">
+            <h3>✅ Bu SQL kodu şunları yapacak:</h3>
+            <ul>
+                <li>🔓 Tüm tablolarda RLS'yi devre dışı bırakır</li>
+                <li>⚡ Uygulamanızı hemen çalışır hale getirir</li>
+                <li>📧 Mevcut kullanıcılar için bildirim ayarları oluşturur</li>
+                <li>🔍 RLS durumunu kontrol eder</li>
+            </ul>
+        </div>
+
+        <div class="warning">
+            <h3>⚠️ Güvenlik Notu:</h3>
+            <p>Bu geçici bir çözümdür. RLS devre dışı olduğunda:</p>
+            <ul>
+                <li>Kullanıcılar birbirlerinin verilerini görebilir</li>
+                <li>Güvenlik seviyesi düşer</li>
+                <li>Daha sonra RLS'yi tekrar aktif etmeniz önerilir</li>
+            </ul>
+        </div>
+
+        <div class="steps">
+            <h3>🔍 Test Etmek İçin:</h3>
+            <p>SQL çalıştırdıktan sonra uygulamada:</p>
+            <ol>
+                <li>Yeni bir kuş eklemeyi deneyin (SUNNY, BELLA, MANGO vb.)</li>
+                <li>Bildirim ayarlarını kaydetmeyi deneyin</li>
+                <li>Herhangi bir hata mesajı olup olmadığını kontrol edin</li>
+                <li>Kuşların listelendiğini kontrol edin</li>
+            </ol>
+        </div>
+
+        <div class="success">
+            <h3>🔄 Daha Sonra RLS'yi Tekrar Aktif Etmek İçin:</h3>
+            <p>Uygulama çalışır hale geldikten sonra, RLS'yi güvenli bir şekilde tekrar aktif etmek için:</p>
+            <ol>
+                <li>RLS politikalarını düzgün bir şekilde yapılandırın</li>
+                <li>Test edin</li>
+                <li>RLS'yi tekrar aktif edin</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        function copyDisableSQL() {
+            const sqlCode = document.getElementById('disableSQL').textContent;
+            navigator.clipboard.writeText(sqlCode).then(function() {
+                alert('🚨 RLS DEVRE DIŞI BIRAKMA KODU KOPYALANDI! Şimdi Supabase SQL Editor\'e yapıştırın!');
+            }).catch(function(err) {
+                console.error('Kopyalama başarısız:', err);
+                const textArea = document.createElement('textarea');
+                textArea.value = sqlCode;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                alert('🚨 RLS DEVRE DIŞI BIRAKMA KODU KOPYALANDI! Şimdi Supabase SQL Editor\'e yapıştırın!');
+            });
+        }
+    </script>
+</body>
+</html> 

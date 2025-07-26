@@ -1,0 +1,30 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background Circle -->
+  <circle cx="256" cy="256" r="256" fill="#22C55E"/>
+  
+  <!-- Budgie Bird Body -->
+  <ellipse cx="256" cy="233" rx="117" ry="84" fill="#FDE68A"/>
+  
+  <!-- Bird Head -->
+  <circle cx="373" cy="163" r="70" fill="#FDE68A"/>
+  
+  <!-- Bird Beak -->
+  <path d="M443,163 L490,140 L490,186 Z" fill="#F59E0B"/>
+  
+  <!-- Bird Eye -->
+  <circle cx="340" cy="149" rx="14" ry="14" fill="#1F2937"/>
+  <circle cx="347" cy="145" rx="7" ry="7" fill="#FFFFFF"/>
+  
+  <!-- Bird Wing -->
+  <ellipse cx="172" cy="210" rx="56" ry="93" fill="#F59E0B"/>
+  
+  <!-- Bird Tail -->
+  <path d="M158,233 L70,210 L70,256 Z" fill="#F59E0B"/>
+  
+  <!-- Bird Feet -->
+  <path d="M210,318 L196,350 L224,350 Z" fill="#92400E"/>
+  <path d="M294,318 L280,350 L308,350 Z" fill="#92400E"/>
+  
+  <!-- Budgie Cheek Patch -->
+  <ellipse cx="303" cy="187" rx="21" ry="14" fill="#FCA5A5" fill-opacity="0.8"/>
+</svg> 
