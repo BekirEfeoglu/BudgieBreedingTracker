@@ -74,7 +74,7 @@ const LoginPage = () => {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [showAll, setShowAll] = useState(false);
   const [displayedText, setDisplayedText] = useState('');
   const [currentCharIndex, setCurrentCharIndex] = useState(0);
@@ -180,14 +180,14 @@ const LoginPage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    setIsSubmitting(true);
     setEmailError('');
     
     console.log('🔄 Form gönderiliyor:', { mode, email, firstName, lastName });
     
     if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
       setEmailError('Geçerli bir e-posta adresi giriniz.');
-      setLoading(false);
+      setIsSubmitting(false);
       return;
     }
     
@@ -260,7 +260,7 @@ const LoginPage = () => {
       });
       toast({ title: 'Bağlantı Hatası', description: 'İnternet bağlantınızı kontrol edin ve tekrar deneyin.', variant: 'destructive' });
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -497,9 +497,9 @@ const LoginPage = () => {
               <Button 
                 type="submit" 
                 className="w-full h-11 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold rounded-lg transition-all duration-300 hover:shadow-lg" 
-                disabled={loading}
+                disabled={isSubmitting}
               >
-                {loading ? (
+                {isSubmitting ? (
                   <div className="flex items-center gap-2">
                     <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                     <span>Lütfen bekleyin...</span>
