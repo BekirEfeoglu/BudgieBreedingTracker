@@ -44,11 +44,13 @@ const AppHeader = ({ onTabChange, onToggleSidebar, isSidebarOpen }: AppHeaderPro
 
   const handleSignOut = async () => {
     try {
-    await signOut();
+      await signOut();
       toast({
         title: 'Başarıyla Çıkış Yapıldı',
         description: 'Güvenli bir şekilde çıkış yaptınız.',
       });
+      // Çıkış onay dialog'unu kapat
+      setShowLogoutConfirm(false);
     } catch (error) {
       toast({
         title: 'Hata',

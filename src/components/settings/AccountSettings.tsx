@@ -154,13 +154,13 @@ const AccountSettings = () => {
                 >
                   İptal
                 </Button>
-              <Button 
+                <Button 
                   onClick={handleSignOut}
                   variant="destructive"
                   className="flex-1"
-              >
+                >
                   Evet, Çıkış Yap
-              </Button>
+                </Button>
               </div>
             </CardContent>
           </Card>

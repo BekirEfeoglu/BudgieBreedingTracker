@@ -283,11 +283,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }): React
       if (error) {
         console.error('❌ Sign out failed:', error);
       } else {
-      setUser(null);
-      setSession(null);
-      setProfile(null);
+        setUser(null);
+        setSession(null);
+        setProfile(null);
+        
         if (process.env.NODE_ENV === 'development') {
           console.log('✅ Sign out successful');
+        }
+        
+        // Çıkış yaptıktan sonra login sayfasına yönlendir
+        if (typeof window !== 'undefined') {
+          window.location.href = '/login';
         }
       }
     } catch (error) {
