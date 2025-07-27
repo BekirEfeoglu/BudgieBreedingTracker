@@ -267,9 +267,9 @@ Bu proje MIT lisansı altında lisanslanmıştır. Detaylar için [LICENSE](LICE
 
 ## 📞 İletişim
 
-- **Proje Sahibi**: [Your Name](mailto:your.email@example.com)
-- **GitHub**: [@yourusername](https://github.com/yourusername)
-- **Website**: [https://yourwebsite.com](https://yourwebsite.com)
+- **Proje Sahibi**: Bekir EFEOĞLU
+- **GitHub**: [@BekirEfeoglu](https://github.com/BekirEfeoglu)
+- **Website**: [https://budgiebreedingtracker.com/](https://budgiebreedingtracker.com/)
 
 ## 🙏 Teşekkürler
 
