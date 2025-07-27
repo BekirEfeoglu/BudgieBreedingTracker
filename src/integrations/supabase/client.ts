@@ -4,28 +4,15 @@ import type { Database } from './types';
 
 // Environment variables for Supabase configuration
 // Web uygulaması için optimize edildi
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-// Environment variables validation
-if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
-  throw new Error('Supabase environment variables are not configured. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.');
-}
-
-// Force reload environment variables
-const envVars = {
-  VITE_SUPABASE_URL: import.meta.env.VITE_SUPABASE_URL,
-  VITE_SUPABASE_ANON_KEY: import.meta.env.VITE_SUPABASE_ANON_KEY,
-  MODE: import.meta.env.MODE,
-  DEV: import.meta.env.DEV,
-  PROD: import.meta.env.PROD,
-};
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || import.meta.env.EXPO_PUBLIC_SUPABASE_URL || "https://etkvuonkmmzihsjwbcrl.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.EXPO_PUBLIC_SUPABASE_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV0a3Z1b25rbW16aWhzandiY3JsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMwMjk0NTEsImV4cCI6MjA2ODYwNTQ1MX0.v4wCLxVMXyI32pAX7zg0fxoEeRNtWp4SfN0y8edqNhE";
 
 // Debug için API key'i kontrol et (sadece development'ta)
 if (import.meta.env.DEV) {
   console.log('🔑 Supabase URL:', SUPABASE_URL);
   console.log('🔑 Supabase Key Length:', SUPABASE_PUBLISHABLE_KEY?.length || 0);
   console.log('✅ Web uygulaması için optimize edildi');
+  console.log('🔧 Environment Source:', import.meta.env.VITE_SUPABASE_URL ? 'VITE' : import.meta.env.EXPO_PUBLIC_SUPABASE_URL ? 'EXPO' : 'FALLBACK');
 }
 
 // Import the supabase client like this:
