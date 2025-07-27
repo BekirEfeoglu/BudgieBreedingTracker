@@ -1,4 +1,5 @@
 {
+  "name": "budgie-tracker",
   "redirects": [
     {
       "source": "/home",
@@ -30,9 +31,5 @@
       "source": "/(.*)",
       "destination": "/index.html"
     }
-  ],
-  "domains": [
-    "budgiebreedingtracker.com",
-    "www.budgiebreedingtracker.com"
   ]
 } 
