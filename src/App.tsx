@@ -22,10 +22,12 @@ import { useToast } from '@/hooks/use-toast';
 import { useBirdUpdate } from '@/hooks/bird/useBirdUpdate';
 import { useBirdDelete } from '@/hooks/bird/useBirdDelete';
 import { useSessionSecurity } from '@/hooks/useSessionSecurity';
+import ProtectedRoute from '@/components/ProtectedRoute';
 
 // Lazy load components for better performance
 const Index = React.lazy(() => import('@/pages/Index'));
 const LoginPage = React.lazy(() => import('@/pages/LoginPage'));
+const AuthCallback = React.lazy(() => import('@/pages/AuthCallback'));
 const NotFound = React.lazy(() => import('@/pages/NotFound'));
 const UserGuidePage = React.lazy(() => import('@/pages/UserGuidePage'));
 
@@ -221,14 +223,16 @@ function App() {
                     <Suspense fallback={<LoadingSpinner />}>
                       <Routes>
                         <Route path="/login" element={<LoginPage />} />
+                        <Route path="/auth/callback" element={<AuthCallback />} />
                         <Route path="/*" element={
-                          <Routes>
-                            <Route path="/" element={<AppContainer />} />
-
-                            <Route path="/user-guide" element={<UserGuidePage />} />
-                            <Route path="/premium" element={<PremiumPage />} />
-                            <Route path="*" element={<NotFound />} />
-                          </Routes>
+                          <ProtectedRoute>
+                            <Routes>
+                              <Route path="/" element={<AppContainer />} />
+                              <Route path="/user-guide" element={<UserGuidePage />} />
+                              <Route path="/premium" element={<PremiumPage />} />
+                              <Route path="*" element={<NotFound />} />
+                            </Routes>
+                          </ProtectedRoute>
                         } />
                       </Routes>
                     </Suspense>
