@@ -189,7 +189,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }): React
     if (process.env.NODE_ENV === 'development') {
       console.log('🔄 Starting sign up process', { email });
     }
-    console.log('🔄 useAuth.signUp başlatılıyor:', { email, firstName, lastName, passwordLength: password.length });
     
     if (!validateEmail(email)) {
       return { error: { message: 'Geçerli bir e-posta adresi girin.' } as AuthError };
@@ -236,7 +235,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }): React
     if (process.env.NODE_ENV === 'development') {
       console.log('🔄 Starting sign in process', { email });
     }
-    console.log('🔄 useAuth.signIn başlatılıyor:', { email, passwordLength: password.length });
 
     if (!validateEmail(email)) {
       return { error: { message: 'Geçerli bir e-posta adresi girin.' } as AuthError };
@@ -301,7 +299,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }): React
     if (process.env.NODE_ENV === 'development') {
       console.log('🔄 Starting password reset process', { email });
     }
-    console.log('🔄 useAuth.resetPassword başlatılıyor:', { email });
 
     if (!validateEmail(email)) {
       return { error: { message: 'Geçerli bir e-posta adresi girin.' } as AuthError };
@@ -347,8 +344,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }): React
     }
 
     try {
-      console.log('🔄 Profil güncelleniyor...', { sanitizedUpdates });
       if (process.env.NODE_ENV === 'development') {
+        console.log('🔄 Profil güncelleniyor...');
         console.log('🔄 Updating profile in Supabase', { sanitizedUpdates });
       }
       
@@ -358,8 +355,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }): React
         .eq('id', user.id)
         .select('id, first_name, last_name, avatar_url, updated_at');
 
-      console.log('📊 Supabase güncelleme yanıtı:', { data, error });
       if (process.env.NODE_ENV === 'development') {
+        console.log('📊 Supabase güncelleme yanıtı:', { data, error });
         console.log('📊 Supabase response', { data, error });
       }
 
@@ -370,9 +367,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }): React
 
       // Eğer data yoksa, mevcut profili güncelle
       if (!data || data.length === 0) {
-        console.log('⚠️ Veri döndürülmedi, local state güncelleniyor:', sanitizedUpdates);
         if (process.env.NODE_ENV === 'development') {
-          console.log('⚠️ No data returned, updating local state with sanitized updates', { sanitizedUpdates });
+          console.log('⚠️ Veri döndürülmedi, local state güncelleniyor:', sanitizedUpdates);
         }
         
         // Local state'i güncelle
@@ -383,7 +379,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }): React
             ...sanitizedUpdates,
             updated_at: new Date().toISOString()
           };
-          console.log('🔄 Local state güncellendi:', updatedProfile);
+          if (process.env.NODE_ENV === 'development') {
+            console.log('🔄 Local state güncellendi:', updatedProfile);
+          }
           return updatedProfile;
         });
         
@@ -391,7 +389,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }): React
       }
 
       const updatedProfile = data[0] as Profile;
-      console.log('✅ Profil güncellendi ve yeni veri alındı:', updatedProfile);
+      if (process.env.NODE_ENV === 'development') {
+        console.log('✅ Profil güncellendi ve yeni veri alındı:', updatedProfile);
+      }
 
       // Update local state
       setProfile(updatedProfile);
@@ -416,8 +416,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }): React
     }
 
     try {
-      console.log('🔄 Şifre güncelleniyor...');
       if (process.env.NODE_ENV === 'development') {
+        console.log('🔄 Şifre güncelleniyor...');
         console.log('🔄 Updating password');
       }
       
@@ -441,8 +441,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }): React
         throw new Error(error.message);
       }
 
-      console.log('✅ Şifre başarıyla güncellendi');
       if (process.env.NODE_ENV === 'development') {
+        console.log('✅ Şifre başarıyla güncellendi');
         console.log('✅ Password updated successfully');
       }
     } catch (error) {

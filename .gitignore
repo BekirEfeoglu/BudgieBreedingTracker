@@ -23,4 +23,46 @@ dist-ssr
 *.sln
 *.sw?
 /BudgieBreedingTracker
+
+# Environment files - GÜVENLİK
 .env
+.env.local
+.env.development
+.env.production
+.env.test
+.env.*.local
+
+# API Keys and Secrets
+*.key
+*.pem
+*.p12
+*.pfx
+secrets.json
+config.json
+
+# Build outputs
+build/
+out/
+.next/
+.nuxt/
+
+# Cache
+.cache/
+.parcel-cache/
+.eslintcache
+
+# OS generated files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# Backup files
+*.bak
+*.backup

@@ -127,7 +127,9 @@ export const saveFCMToken = async (token: string): Promise<void> => {
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
       // FCM token'ı manuel olarak kaydet (veritabanı tablosu oluşturuldu)
-      console.log('FCM token saved:', token);
+      if (process.env.NODE_ENV === 'development') {
+        console.log('FCM token saved successfully');
+      }
     }
   } catch (error) {
     console.error('FCM token kaydedilemedi:', error);

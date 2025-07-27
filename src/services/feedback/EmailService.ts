@@ -10,7 +10,7 @@ export interface EmailData {
 export class EmailService {
   private static instance: EmailService;
   private adminEmail = 'admin@budgiebreedingtracker.com';
-  private sendGridApiKey = import.meta.env.VITE_SENDGRID_API_KEY || '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';
+  private sendGridApiKey = import.meta.env.VITE_SENDGRID_API_KEY;
   private fromEmail = 'noreply@sendgrid.net';
 
   static getInstance(): EmailService {
@@ -91,7 +91,7 @@ export class EmailService {
     userName?: string;
   }): Promise<{ success: boolean; error?: any }> {
     try {
-      const sendGridApiKey = import.meta.env.VITE_SENDGRID_API_KEY || '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';
+      const sendGridApiKey = import.meta.env.VITE_SENDGRID_API_KEY;
       
       console.log('📧 SendGrid API ile e-posta gönderimi deneniyor...');
       console.log('🔑 SendGrid API Key Length:', sendGridApiKey?.length || 0);

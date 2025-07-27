@@ -169,7 +169,9 @@ export const sanitizeFileUpload = (file: File): { isValid: boolean; error?: stri
 export const rateLimitCheck = (key: string, limit: number, windowMs: number): boolean => {
   // Rate limiting devre dışı kontrolü
   if (localStorage.getItem('rateLimitDisabled') === 'true') {
-    console.log(`⚠️ Rate limiting devre dışı: ${key}`);
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`⚠️ Rate limiting devre dışı: ${key}`);
+    }
     return true;
   }
   

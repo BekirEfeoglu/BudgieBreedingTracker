@@ -198,7 +198,6 @@ const LoginPage = () => {
         }
       } else if (mode === 'signup') {
         console.log('📝 Kayıt işlemi başlatılıyor...');
-        console.log('📋 Form verileri:', { email, firstName, lastName, passwordLength: password.length });
         
         const passwordValidation = validatePassword(password);
         if (!passwordValidation.isValid) {

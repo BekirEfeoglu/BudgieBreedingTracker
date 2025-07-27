@@ -7,14 +7,20 @@ import { createClient, processLock } from '@supabase/supabase-js'
 import type { Database } from './types';
 
 // Mobile için Supabase konfigürasyonu
-const SUPABASE_URL = "https://etkvuonkmmzihsjwbcrl.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV0a3Z1b25rbW16aWhzandiY3JsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMwMjk0NTEsImV4cCI6MjA2ODYwNTQ1MX0.v4wCLxVMXyI32pAX7zg0fxoEeRNtWp4SfN0y8edqNhE";
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+// Environment variables validation
+if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+  throw new Error('Supabase environment variables are not configured. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.');
+}
 
 // Debug için API key'i kontrol et
-console.log('🔑 Mobile Supabase URL:', SUPABASE_URL);
-console.log('🔑 Mobile Supabase Key Length:', SUPABASE_ANON_KEY?.length || 0);
-console.log('🔑 Mobile Supabase Key Starts With:', SUPABASE_ANON_KEY?.substring(0, 20) || 'undefined');
-console.log('✅ Mobile uygulaması için optimize edildi');
+if (process.env.NODE_ENV === 'development') {
+  console.log('🔑 Mobile Supabase URL:', SUPABASE_URL);
+  console.log('🔑 Mobile Supabase Key Length:', SUPABASE_ANON_KEY?.length || 0);
+  console.log('✅ Mobile uygulaması için optimize edildi');
+}
 
 export const supabaseMobile = createClient<Database>(
   SUPABASE_URL,

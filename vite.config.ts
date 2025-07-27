@@ -8,8 +8,15 @@ export default defineConfig(({ mode }) => ({
   // Use relative paths for Capacitor compatibility
   base: './',
   server: {
-    host: "::",
+    host: mode === 'development' ? 'localhost' : '::',
     port: 8080,
+    // Güvenlik: Development server'da sadece localhost'a izin ver
+    strictPort: true,
+    // CORS ayarları
+    cors: {
+      origin: mode === 'development' ? ['http://localhost:8080', 'http://localhost:5173'] : false,
+      credentials: true
+    }
   },
   plugins: [
     react(),
@@ -50,6 +57,8 @@ export default defineConfig(({ mode }) => ({
     reportCompressedSize: true,
     // Chunk size warnings
     chunkSizeWarningLimit: 1000,
+    // Güvenlik: Source map'leri sadece development'ta etkinleştir
+    sourcemap: mode === 'development',
   },
   define: {
     global: 'globalThis',
@@ -76,4 +85,10 @@ export default defineConfig(({ mode }) => ({
       // Capacitor modüllerini exclude etmiyoruz
     ]
   },
+  // Güvenlik ayarları
+  preview: {
+    host: 'localhost',
+    port: 4173,
+    strictPort: true,
+  }
 }));
