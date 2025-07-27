@@ -8,7 +8,6 @@ import GlobalErrorBoundary from '@/components/errors/GlobalErrorBoundary';
 import LoadingSpinner from '@/components/ui/loading-spinner';
 import './App.css';
 import { AuthProvider } from '@/hooks/useAuth';
-import ProtectedRoute from '@/components/ProtectedRoute';
 import { useBirdsData } from '@/hooks/bird/useBirdsData';
 import { useChicksData } from '@/hooks/chick/useChicksData';
 import { useClutchesData } from '@/hooks/useClutchesData';
@@ -19,8 +18,7 @@ import { MainLayout } from '@/layouts/MainLayout';
 import BirdForm from '@/components/BirdForm';
 import { useSupabaseOperations } from '@/hooks/useSupabaseOperations';
 import { useToast } from '@/hooks/use-toast';
-import { AuthDebug } from '@/components/auth/AuthDebug';
-import { SignupTest } from '@/components/auth/SignupTest';
+
 import { useBirdUpdate } from '@/hooks/bird/useBirdUpdate';
 import { useBirdDelete } from '@/hooks/bird/useBirdDelete';
 import { useSessionSecurity } from '@/hooks/useSessionSecurity';
@@ -32,10 +30,7 @@ const NotFound = React.lazy(() => import('@/pages/NotFound'));
 const UserGuidePage = React.lazy(() => import('@/pages/UserGuidePage'));
 
 const Dashboard = React.lazy(() => import('@/components/Dashboard'));
-const QuickTestPage = React.lazy(() => import('@/pages/QuickTestPage'));
-const EmergencyTestPage = React.lazy(() => import('@/pages/EmergencyTestPage'));
 const PremiumPage = React.lazy(() => import('@/components/premium/PremiumPage'));
-const PremiumSystemTest = React.lazy(() => import('@/components/premium/PremiumSystemTest'));
 
 // Optimize QueryClient configuration for better performance
 const queryClient = new QueryClient({
@@ -227,20 +222,13 @@ function App() {
                       <Routes>
                         <Route path="/login" element={<LoginPage />} />
                         <Route path="/*" element={
-                          <ProtectedRoute>
-                            <Routes>
-                              <Route path="/" element={<AppContainer />} />
+                          <Routes>
+                            <Route path="/" element={<AppContainer />} />
 
-                              <Route path="/debug" element={<AuthDebug />} />
-                              <Route path="/signup-test" element={<SignupTest />} />
-                              <Route path="/quick-test" element={<QuickTestPage />} />
-                              <Route path="/emergency-test" element={<EmergencyTestPage />} />
-                              <Route path="/user-guide" element={<UserGuidePage />} />
-                              <Route path="/premium" element={<PremiumPage />} />
-                              <Route path="/premium-test" element={<PremiumSystemTest />} />
-                              <Route path="*" element={<NotFound />} />
-                            </Routes>
-                          </ProtectedRoute>
+                            <Route path="/user-guide" element={<UserGuidePage />} />
+                            <Route path="/premium" element={<PremiumPage />} />
+                            <Route path="*" element={<NotFound />} />
+                          </Routes>
                         } />
                       </Routes>
                     </Suspense>

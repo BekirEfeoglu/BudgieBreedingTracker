@@ -8,7 +8,7 @@ import ComponentErrorBoundary from '@/components/errors/ComponentErrorBoundary';
 // Lazy load components for better performance
 const LanguageSettings = React.lazy(() => import('@/components/settings/LanguageSettings'));
 const NotificationSettings = React.lazy(() => import('@/components/settings/NotificationSettings'));
-const TemperatureSensorIntegration = React.lazy(() => import('@/components/sensors/TemperatureSensorIntegration'));
+
 const BackupSettings = React.lazy(() => import('@/components/settings/BackupSettings'));
 const DataRestoreSettings = React.lazy(() => import('@/components/settings/DataRestoreSettings'));
 const AutoBackupSettings = React.lazy(() => import('@/components/settings/AutoBackupSettings'));
@@ -64,12 +64,7 @@ const SettingsTab = memo(() => {
       component: NotificationSettings,
       icon: "🔔"
     },
-    {
-      value: "sensors",
-      label: t('settings.tabs.sensors', 'Sensörler'),
-      component: TemperatureSensorIntegration,
-      icon: "🌡️"
-    },
+
     {
       value: "backup",
       label: t('settings.tabs.backup', 'Yedekleme'),
