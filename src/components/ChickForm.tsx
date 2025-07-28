@@ -38,7 +38,7 @@ const ChickForm = memo(({ isOpen, onClose, onSave, birds, editingChick }: {
       required_error: t('chicks.genderRequired')
     }),
     color: z.string().optional(),
-    birthDate: z.date({
+    hatchDate: z.date({
       required_error: t('chicks.birthDateRequired')
     }),
     ringNumber: z.string().optional(),
@@ -56,7 +56,7 @@ const ChickForm = memo(({ isOpen, onClose, onSave, birds, editingChick }: {
       name: '',
       gender: 'unknown',
       color: '',
-      birthDate: new Date(),
+      hatchDate: new Date(),
       ringNumber: '',
       motherId: undefined,
       fatherId: undefined,
@@ -72,7 +72,7 @@ const ChickForm = memo(({ isOpen, onClose, onSave, birds, editingChick }: {
         name: editingChick.name || '',
         gender: editingChick.gender || 'unknown',
         color: editingChick.color || '',
-        birthDate: editingChick.hatchDate ? new Date(editingChick.hatchDate) : new Date(),
+        hatchDate: editingChick.hatchDate ? new Date(editingChick.hatchDate) : new Date(),
         ringNumber: editingChick.ringNumber || '',
         motherId: editingChick.motherId || undefined,
         fatherId: editingChick.fatherId || undefined,
@@ -85,7 +85,7 @@ const ChickForm = memo(({ isOpen, onClose, onSave, birds, editingChick }: {
         name: '',
         gender: 'unknown',
         color: '',
-        birthDate: new Date(),
+        hatchDate: new Date(),
         ringNumber: '',
         motherId: undefined,
         fatherId: undefined,
@@ -107,7 +107,7 @@ const ChickForm = memo(({ isOpen, onClose, onSave, birds, editingChick }: {
   };
 
   const onSubmit = (data: ChickFormData) => {
-    if (data.birthDate && data.birthDate > new Date()) {
+    if (data.hatchDate && data.hatchDate > new Date()) {
       toast({
         title: t('chicks.error'),
         description: t('chicks.futureDateError'),
@@ -245,13 +245,13 @@ const ChickForm = memo(({ isOpen, onClose, onSave, birds, editingChick }: {
               )}
             />
 
-            {/* Doğum Tarihi */}
+            {/* Çıkış Tarihi */}
             <FormField
               control={form.control}
-              name="birthDate"
+              name="hatchDate"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t('chicks.birthDate')} *</FormLabel>
+                  <FormLabel>{t('chicks.hatchDate')} *</FormLabel>
                   <FormControl>
                     <Popover>
                       <PopoverTrigger asChild>
@@ -261,7 +261,7 @@ const ChickForm = memo(({ isOpen, onClose, onSave, birds, editingChick }: {
                             "w-full justify-start text-left font-normal",
                             !field.value && "text-muted-foreground"
                           )}
-                          aria-label={t('chicks.birthDate')}
+                          aria-label={t('chicks.hatchDate')}
                         >
                           <CalendarIcon className="mr-2 h-4 w-4" aria-hidden="true" />
                           {field.value ? format(field.value, "PPP") : t('common.selectDate')}

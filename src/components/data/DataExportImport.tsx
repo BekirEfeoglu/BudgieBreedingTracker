@@ -181,7 +181,7 @@ export const DataExportImport: React.FC = () => {
         chick.id || '',
         chick.name || '',
         chick.gender || '',
-        chick.birthDate ? new Date(chick.birthDate).toLocaleDateString('tr-TR') : 'Bilinmiyor',
+        chick.hatchDate ? new Date(chick.hatchDate).toLocaleDateString('tr-TR') : 'Bilinmiyor',
         parents,
         status,
         chick.weight || 'Ölçülmedi',

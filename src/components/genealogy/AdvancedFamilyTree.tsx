@@ -396,7 +396,7 @@ const AdvancedFamilyTree: React.FC<AdvancedFamilyTreeProps> = ({
   };
 
   return (
-    <div className="space-y-4 md:space-y-6">
+    <div className="space-y-4 md:space-y-6 genealogy-view">
       <Card className="enhanced-card">
         <CardHeader className="pb-4">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">

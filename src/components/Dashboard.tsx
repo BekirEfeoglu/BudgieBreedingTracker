@@ -90,7 +90,7 @@ const Dashboard = forwardRef<{ handleTabChange: (tab: string) => void }, Dashboa
     setIsChickFormOpen(true);
   }, []);
 
-  const handleSaveChick = useCallback(async (chickData: Partial<Chick> & { birthDate?: Date }) => {
+  const handleSaveChick = useCallback(async (chickData: Partial<Chick> & { hatchDate?: Date }) => {
     if (!editingChick) {
       console.error('❌ handleSaveChick - Düzenlenecek yavru bulunamadı');
       return;
@@ -102,10 +102,17 @@ const Dashboard = forwardRef<{ handleTabChange: (tab: string) => void }, Dashboa
         chickData 
       });
 
-      // birthDate'i string'e çevir
-      const updatedChickData: Partial<Chick> = {
-        ...chickData,
-        hatchDate: chickData.birthDate ? chickData.birthDate.toISOString().split('T')[0] : editingChick.hatchDate
+      // Veritabanı alan adlarını kullan
+      const updatedChickData: any = {
+        name: chickData.name,
+        gender: chickData.gender,
+        color: chickData.color,
+        hatch_date: chickData.hatchDate ? chickData.hatchDate.toISOString().split('T')[0] : editingChick.hatchDate,
+        ring_number: chickData.ringNumber,
+        mother_id: chickData.motherId,
+        father_id: chickData.fatherId,
+        health_notes: chickData.healthNotes,
+        photo_url: chickData.photo
       };
 
       const result = await updateChickCrud(editingChick.id, updatedChickData);
