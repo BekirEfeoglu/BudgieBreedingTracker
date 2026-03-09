@@ -1,7 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lucide_icons/lucide_icons.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
@@ -35,7 +34,9 @@ class GeneticsCompareScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('genetics.compare_title'.tr(args: [historyIds.length.toString()])),
+        title: Text(
+          'genetics.compare_title'.tr(args: [historyIds.length.toString()]),
+        ),
       ),
       body: historyAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -44,7 +45,9 @@ class GeneticsCompareScreen extends ConsumerWidget {
           onRetry: () => ref.invalidate(geneticsHistoryStreamProvider(userId)),
         ),
         data: (entries) {
-          final selectedEntries = entries.where((e) => historyIds.contains(e.id)).toList();
+          final selectedEntries = entries
+              .where((e) => historyIds.contains(e.id))
+              .toList();
 
           if (selectedEntries.isEmpty) {
             return Center(child: Text('genetics.no_results'.tr()));
@@ -57,9 +60,7 @@ class GeneticsCompareScreen extends ConsumerWidget {
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                _CompareTable(entries: selectedEntries),
-              ],
+              children: [_CompareTable(entries: selectedEntries)],
             ),
           );
         },
@@ -82,7 +83,12 @@ class _CompareTable extends StatelessWidget {
     for (final entry in entries) {
       final results = parseHistoryResults(entry.resultsJson);
       for (final r in results) {
-        allPhenotypes.add(r.compoundPhenotype ?? (r.isCarrier ? r.phenotype.replaceAll(' (carrier)', '') : r.phenotype));
+        allPhenotypes.add(
+          r.compoundPhenotype ??
+              (r.isCarrier
+                  ? r.phenotype.replaceAll(' (carrier)', '')
+                  : r.phenotype),
+        );
       }
     }
 
@@ -105,13 +111,13 @@ class _CompareTable extends StatelessWidget {
               ),
             ),
             ...entries.map((e) {
-              return DataColumn(
-                label: _EntryHeader(entry: e),
-              );
+              return DataColumn(label: _EntryHeader(entry: e));
             }),
           ],
           rows: sortedPhenotypes.map((phenotype) {
-            final localizedPhenotype = PhenotypeLocalizer.localizePhenotype(phenotype);
+            final localizedPhenotype = PhenotypeLocalizer.localizePhenotype(
+              phenotype,
+            );
             return DataRow(
               cells: [
                 DataCell(
@@ -134,7 +140,11 @@ class _CompareTable extends StatelessWidget {
                   final results = parseHistoryResults(e.resultsJson);
                   final match = results.firstWhere(
                     (r) {
-                      final p = r.compoundPhenotype ?? (r.isCarrier ? r.phenotype.replaceAll(' (carrier)', '') : r.phenotype);
+                      final p =
+                          r.compoundPhenotype ??
+                          (r.isCarrier
+                              ? r.phenotype.replaceAll(' (carrier)', '')
+                              : r.phenotype);
                       return p == phenotype;
                     },
                     orElse: () => const OffspringResult(
@@ -149,7 +159,9 @@ class _CompareTable extends StatelessWidget {
                     return DataCell(
                       Text(
                         '-',
-                        style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
+                        style: TextStyle(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
                       ),
                     );
                   }
@@ -192,7 +204,9 @@ class _EntryHeader extends StatelessWidget {
             const SizedBox(width: AppSpacing.xs),
             Flexible(
               child: Text(
-                fatherMutations.isEmpty ? 'genetics.mutation_normal'.tr() : fatherMutations.join(', '),
+                fatherMutations.isEmpty
+                    ? 'genetics.mutation_normal'.tr()
+                    : fatherMutations.join(', '),
                 style: theme.textTheme.labelSmall?.copyWith(fontSize: 10),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -203,11 +217,17 @@ class _EntryHeader extends StatelessWidget {
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const AppIcon(AppIcons.female, size: 12, color: AppColors.genderFemale),
+            const AppIcon(
+              AppIcons.female,
+              size: 12,
+              color: AppColors.genderFemale,
+            ),
             const SizedBox(width: AppSpacing.xs),
             Flexible(
               child: Text(
-                motherMutations.isEmpty ? 'genetics.mutation_normal'.tr() : motherMutations.join(', '),
+                motherMutations.isEmpty
+                    ? 'genetics.mutation_normal'.tr()
+                    : motherMutations.join(', '),
                 style: theme.textTheme.labelSmall?.copyWith(fontSize: 10),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -222,7 +242,8 @@ class _EntryHeader extends StatelessWidget {
   List<String> _mutationNames(Map<String, String> genotype) {
     return genotype.keys.map((id) {
       final record = MutationDatabase.getById(id);
-      return record?.localizationKey.tr() ?? PhenotypeLocalizer.localizeMutation(id);
+      return record?.localizationKey.tr() ??
+          PhenotypeLocalizer.localizeMutation(id);
     }).toList();
   }
 }
