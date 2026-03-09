@@ -10,6 +10,7 @@ import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
 import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
 import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
 import 'package:budgie_breeding_tracker/data/models/health_record_model.dart';
+import 'package:budgie_breeding_tracker/data/models/statistics_models.dart';
 import 'package:budgie_breeding_tracker/features/birds/providers/bird_providers.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_providers.dart';
 import 'package:budgie_breeding_tracker/features/chicks/providers/chick_providers.dart';
@@ -322,6 +323,91 @@ void main() {
       expect(data.deceased, 1);
       expect(data.survivalRate, closeTo(2 / 3, 0.0001));
     });
+
+    test(
+      'healthRecordTypeDistributionProvider uses month-aligned current period',
+      () async {
+        const period = StatsPeriod.threeMonths;
+        final now = DateTime.now();
+        final range = buildStatsDateRange(period, now: now);
+        final legacyCutoff = DateTime(
+          now.year,
+          now.month - period.monthCount,
+          now.day,
+        );
+        final bridgeDate = legacyCutoff.add(
+          range.currentStart.difference(legacyCutoff) ~/ 2,
+        );
+
+        final container = _container(
+          birds: const [],
+          pairs: const [],
+          eggs: const [],
+          chicks: const [],
+          healthRecords: [
+            _record(
+              id: 'legacy-window',
+              date: bridgeDate,
+              type: HealthRecordType.illness,
+            ),
+            _record(
+              id: 'current-window',
+              date: range.currentStart,
+              type: HealthRecordType.checkup,
+            ),
+          ],
+        );
+        addTearDown(container.dispose);
+        container.read(statsPeriodProvider.notifier).state = period;
+        container.listen(healthRecordsStreamProvider(userId), (_, __) {});
+        await container.read(healthRecordsStreamProvider(userId).future);
+
+        final value = container.read(
+          healthRecordTypeDistributionProvider(userId),
+        );
+        expect(value.hasValue, isTrue);
+        final counts = value.requireValue;
+        expect(counts[HealthRecordType.checkup], 1);
+        expect(counts[HealthRecordType.illness], isNull);
+      },
+    );
+
+    test(
+      'quickInsightsProvider keeps egg insight neutral when trend is loading',
+      () async {
+        final now = DateTime.now();
+        final container = ProviderContainer(
+          overrides: [
+            eggsStreamProvider(userId).overrideWith(
+              (_) => Stream.value([
+                _egg(id: 'e1', layDate: now, status: EggStatus.fertile),
+              ]),
+            ),
+            chicksStreamProvider(
+              userId,
+            ).overrideWith((_) => Stream.value(<Chick>[])),
+            breedingPairsStreamProvider(
+              userId,
+            ).overrideWith((_) => Stream.value(<BreedingPair>[])),
+            trendStatsProvider(userId).overrideWithValue(const AsyncLoading()),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        container.listen(eggsStreamProvider(userId), (_, __) {});
+        await container.read(eggsStreamProvider(userId).future);
+        container.listen(chicksStreamProvider(userId), (_, __) {});
+        await container.read(chicksStreamProvider(userId).future);
+        container.listen(breedingPairsStreamProvider(userId), (_, __) {});
+        await container.read(breedingPairsStreamProvider(userId).future);
+
+        final value = container.read(quickInsightsProvider(userId));
+        expect(value.hasValue, isTrue);
+        final insights = value.requireValue;
+        expect(insights, isNotEmpty);
+        expect(insights.first.sentiment, InsightSentiment.neutral);
+      },
+    );
   });
 
   group('trend providers', () {
@@ -400,5 +486,49 @@ void main() {
       expect(trend.breedingsTrend, closeTo(100, 0.001));
       expect(trend.eggsTrend, closeTo(100, 0.001));
     });
+
+    test(
+      'trendStatsProvider excludes completed pairs from previous active baseline',
+      () async {
+        final now = DateTime.now();
+        final currentDate = DateTime(now.year, now.month - 1, 1);
+        final previousDate = DateTime(now.year, now.month - 4, 1);
+
+        final container = _container(
+          birds: const [],
+          eggs: const [],
+          chicks: const [],
+          healthRecords: const [],
+          pairs: [
+            _pair(
+              id: 'p-current',
+              status: BreedingStatus.active,
+              pairingDate: currentDate,
+            ),
+            _pair(
+              id: 'p-prev-completed',
+              status: BreedingStatus.completed,
+              pairingDate: previousDate,
+            ),
+          ],
+        );
+        addTearDown(container.dispose);
+        container.read(statsPeriodProvider.notifier).state =
+            StatsPeriod.threeMonths;
+        container.listen(breedingPairsStreamProvider(userId), (_, __) {});
+        await container.read(breedingPairsStreamProvider(userId).future);
+        container.listen(eggsStreamProvider(userId), (_, __) {});
+        await container.read(eggsStreamProvider(userId).future);
+        container.listen(chicksStreamProvider(userId), (_, __) {});
+        await container.read(chicksStreamProvider(userId).future);
+        container.listen(birdsStreamProvider(userId), (_, __) {});
+        await container.read(birdsStreamProvider(userId).future);
+
+        final value = container.read(trendStatsProvider(userId));
+        expect(value.hasValue, isTrue);
+        final trend = value.requireValue;
+        expect(trend.breedingsTrend, closeTo(100, 0.001));
+      },
+    );
   });
 }

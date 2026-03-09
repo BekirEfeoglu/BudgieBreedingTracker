@@ -388,7 +388,7 @@ class _PremiumPurchaseIssueCard extends StatelessWidget {
     ('tr', PremiumPurchaseIssue.missingApiKey) => (
       title: 'Satın alma yapılandırması eksik',
       body:
-          'Bu build için RevenueCat satın alma anahtarı tanımlı değil. iOS satın alma anahtarını ekleyip tekrar deneyin.',
+          'Bu build için RevenueCat satın alma anahtarı tanımlı değil. Uygun mağaza anahtarını ekleyip tekrar deneyin.',
     ),
     ('tr', PremiumPurchaseIssue.iosDebugStoreKitRequired) => (
       title: 'iOS Simulator testinde kısıt var',
@@ -403,7 +403,7 @@ class _PremiumPurchaseIssueCard extends StatelessWidget {
     ('de', PremiumPurchaseIssue.missingApiKey) => (
       title: 'Kaufkonfiguration fehlt',
       body:
-          'Für diesen Build fehlt der RevenueCat-Kaufschlüssel. Füge den iOS-Kaufschlüssel hinzu und versuche es erneut.',
+          'Für diesen Build fehlt der RevenueCat-Kaufschlüssel. Hinterlege den passenden Store-Schlüssel und versuche es erneut.',
     ),
     ('de', PremiumPurchaseIssue.iosDebugStoreKitRequired) => (
       title: 'iOS-Simulator ist eingeschränkt',
@@ -418,7 +418,7 @@ class _PremiumPurchaseIssueCard extends StatelessWidget {
     (_, PremiumPurchaseIssue.missingApiKey) => (
       title: 'Purchase setup is missing',
       body:
-          'RevenueCat is not configured for this build. Add the iOS purchase key before testing purchases.',
+          'RevenueCat is not configured for this build. Add the appropriate store purchase key before testing purchases.',
     ),
     (_, PremiumPurchaseIssue.iosDebugStoreKitRequired) => (
       title: 'iOS simulator testing is limited',

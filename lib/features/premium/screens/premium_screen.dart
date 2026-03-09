@@ -50,6 +50,7 @@ class PremiumScreen extends ConsumerWidget {
           'purchase_configuration_error' =>
             'premium.purchase_configuration_error'.tr(),
           'purchase_not_activated' => 'premium.purchase_not_activated'.tr(),
+          'restore_failed' => 'premium.purchase_error'.tr(),
           _ => 'premium.purchase_error'.tr(),
         };
         ScaffoldMessenger.of(context).showSnackBar(

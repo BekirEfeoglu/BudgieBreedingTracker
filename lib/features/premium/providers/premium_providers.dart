@@ -56,17 +56,21 @@ final localPremiumProvider = NotifierProvider<PremiumNotifier, bool>(
 /// Notifier that manages premium subscription state with persistence
 /// and RevenueCat integration.
 class PremiumNotifier extends Notifier<bool> {
+  int _loadSequence = 0;
+
   @override
   bool build() {
     final userId = ref.watch(currentUserIdProvider);
-    _load(userId);
+    _load(userId, ++_loadSequence);
     return false;
   }
 
   static String _cacheKey(String userId) => 'is_premium_$userId';
 
-  Future<void> _load(String userId) async {
+  Future<void> _load(String userId, int loadToken) async {
     final prefs = await SharedPreferences.getInstance();
+    if (!_isLatestLoad(loadToken)) return;
+
     if (userId == 'anonymous') {
       state = false;
       try {
@@ -92,6 +96,7 @@ class PremiumNotifier extends Notifier<bool> {
     final service = ref.read(purchaseServiceProvider);
     try {
       final isPremium = await service.isPremium();
+      if (!_isLatestLoad(loadToken)) return;
       if (isPremium != state) {
         state = isPremium;
         await prefs.setBool(cacheKey, isPremium);
@@ -100,6 +105,8 @@ class PremiumNotifier extends Notifier<bool> {
       // RevenueCat not initialized yet, use cached value
     }
   }
+
+  bool _isLatestLoad(int token) => ref.mounted && token == _loadSequence;
 
   /// Updates the premium status and persists to SharedPreferences.
   Future<void> setPremium(bool value) async {
@@ -217,6 +224,11 @@ class PremiumNotifier extends Notifier<bool> {
               .from(SupabaseConstants.userSubscriptionsTable)
               .insert(data);
         }
+      } else {
+        await client
+            .from(SupabaseConstants.userSubscriptionsTable)
+            .delete()
+            .eq('user_id', userId);
       }
     } catch (e) {
       if (_isSupabaseUnavailableError(e)) {
@@ -448,9 +460,12 @@ class PurchaseActionNotifier extends Notifier<PurchaseActionState> {
       } else {
         state = const PurchaseActionState(error: 'restore_no_purchases');
       }
+    } on PurchaseException catch (e, st) {
+      AppLogger.error('Restore failed', e, st);
+      state = PurchaseActionState(error: e.code);
     } catch (e, st) {
       AppLogger.error('Restore failed', e, st);
-      state = PurchaseActionState(error: e.toString());
+      state = const PurchaseActionState(error: 'restore_failed');
     }
   }
 

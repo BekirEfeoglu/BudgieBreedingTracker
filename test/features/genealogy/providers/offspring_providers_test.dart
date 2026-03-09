@@ -1,4 +1,5 @@
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
+import 'package:budgie_breeding_tracker/core/enums/chick_enums.dart';
 import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
 import 'package:budgie_breeding_tracker/features/genealogy/providers/offspring_providers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -54,9 +55,24 @@ void main() {
 
   group('filterOffspringChicks', () {
     final chicks = [
-      const Chick(id: 'male', userId: 'user-1', gender: BirdGender.male),
-      const Chick(id: 'female', userId: 'user-1', gender: BirdGender.female),
-      const Chick(id: 'unknown', userId: 'user-1', gender: BirdGender.unknown),
+      const Chick(
+        id: 'male',
+        userId: 'user-1',
+        gender: BirdGender.male,
+        healthStatus: ChickHealthStatus.healthy,
+      ),
+      const Chick(
+        id: 'female',
+        userId: 'user-1',
+        gender: BirdGender.female,
+        healthStatus: ChickHealthStatus.sick,
+      ),
+      const Chick(
+        id: 'deceased',
+        userId: 'user-1',
+        gender: BirdGender.unknown,
+        healthStatus: ChickHealthStatus.deceased,
+      ),
     ];
 
     test('returns original list for all', () {
@@ -74,14 +90,14 @@ void main() {
       expect(result.map((c) => c.id), ['female']);
     });
 
-    test('returns all chicks for alive filter', () {
+    test('filters out deceased chicks for alive filter', () {
       final result = filterOffspringChicks(chicks, OffspringFilter.alive);
-      expect(result, same(chicks));
+      expect(result.map((c) => c.id), ['male', 'female']);
     });
 
-    test('returns empty list for dead filter', () {
+    test('returns only deceased chicks for dead filter', () {
       final result = filterOffspringChicks(chicks, OffspringFilter.dead);
-      expect(result, isEmpty);
+      expect(result.map((c) => c.id), ['deceased']);
     });
   });
 
