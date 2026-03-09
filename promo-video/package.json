@@ -11,7 +11,7 @@
     "render:hq:en": "remotion render src/index.ts PromoVideo-EN out/promo-en-hq.mp4 --codec h264 --crf 14 --image-format png"
   },
   "dependencies": {
-    "@remotion/cli": "4.0.431",
+    "@remotion/cli": "4.0.434",
     "@remotion/shapes": "4.0.242",
     "@remotion/transitions": "4.0.242",
     "react": "^18.3.1",
