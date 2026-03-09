@@ -1,0 +1,83 @@
+import Flutter
+import UIKit
+import UserNotifications
+
+@main
+@objc class AppDelegate: FlutterAppDelegate, FlutterImplicitEngineDelegate {
+  override func application(
+    _ application: UIApplication,
+    didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
+  ) -> Bool {
+    // Required for flutter_local_notifications to show notifications in foreground
+    if #available(iOS 10.0, *) {
+      UNUserNotificationCenter.current().delegate = self
+    }
+
+    let result = super.application(application, didFinishLaunchingWithOptions: launchOptions)
+
+    // Guard against any SDK (e.g. google_mobile_ads 7.x / UserMessagingPlatform)
+    // that calls makeKeyAndVisible() on its own UIWindow during plugin
+    // registration or early SDK setup. On iOS 14+ this steals key-window
+    // status from Flutter, which prevents FlutterTextInputView from becoming
+    // first responder — causing TextFormField taps to silently do nothing
+    // (no keyboard appears). We detect the theft and immediately restore the
+    // Flutter window as key window.
+    NotificationCenter.default.addObserver(
+      self,
+      selector: #selector(onWindowBecameKey(_:)),
+      name: UIWindow.didBecomeKeyNotification,
+      object: nil
+    )
+
+    return result
+  }
+
+  @objc private func onWindowBecameKey(_ notification: Notification) {
+    guard let newKey = notification.object as? UIWindow else { return }
+
+    // If Flutter's own window became key, nothing to do.
+    if let fw = SceneDelegate.flutterWindow, newKey === fw { return }
+
+    // A non-Flutter window became key. Restore Flutter's window after a
+    // brief yield so any SDK transition can complete first.
+    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+      // Try cached reference first; fall back to searching connected scenes
+      // (handles the case where SceneDelegate.flutterWindow is nil because
+      // the observer fires during super.scene() before our override sets it).
+      let flutterWin = SceneDelegate.flutterWindow ?? self?.findFlutterWindow()
+      flutterWin?.makeKeyAndVisible()
+    }
+  }
+
+  /// Searches connected window scenes for the window whose root view
+  /// controller hierarchy contains a FlutterViewController.
+  private func findFlutterWindow() -> UIWindow? {
+    return UIApplication.shared.connectedScenes
+      .compactMap { $0 as? UIWindowScene }
+      .flatMap(\.windows)
+      .first { self.containsFlutterVC($0.rootViewController) }
+  }
+
+  private func containsFlutterVC(_ vc: UIViewController?) -> Bool {
+    guard let vc = vc else { return false }
+    if vc is FlutterViewController { return true }
+    return vc.children.contains { containsFlutterVC($0) }
+  }
+
+  func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
+    GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
+    // NOTE: The keyboard-fix MethodChannel is set up in SceneDelegate
+    // (not here) because engineBridge.pluginRegistry.registrar(forPlugin:)
+    // returns nil for ad-hoc plugin keys in the implicit-engine pattern.
+  }
+
+  // Fallback URL handler for non-scene apps or when scene-based handling is bypassed.
+  // Ensures app_links (used by supabase_flutter) can process deep links.
+  override func application(
+    _ app: UIApplication,
+    open url: URL,
+    options: [UIApplication.OpenURLOptionsKey: Any] = [:]
+  ) -> Bool {
+    return super.application(app, open: url, options: options)
+  }
+}

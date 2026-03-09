@@ -1,0 +1,154 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_providers.dart';
+import 'package:budgie_breeding_tracker/features/chicks/providers/chick_form_providers.dart';
+import 'package:budgie_breeding_tracker/features/chicks/providers/chick_providers.dart';
+import 'package:budgie_breeding_tracker/features/chicks/screens/chick_form_screen.dart';
+
+void main() {
+  late GoRouter router;
+
+  setUp(() {
+    SharedPreferences.setMockInitialValues({});
+
+    router = GoRouter(
+      initialLocation: '/chicks/form',
+      routes: [
+        GoRoute(
+          path: '/chicks',
+          builder: (_, __) => const Scaffold(body: Text('Chicks')),
+          routes: [
+            GoRoute(
+              path: 'form',
+              builder: (_, state) => ChickFormScreen(
+                editChickId: state.uri.queryParameters['editId'],
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  });
+
+  Widget createSubject() {
+    return ProviderScope(
+      overrides: [
+        currentUserIdProvider.overrideWithValue('test-user'),
+        chickFormStateProvider.overrideWith(() => ChickFormNotifier()),
+      ],
+      child: MaterialApp.router(routerConfig: router),
+    );
+  }
+
+  group('ChickFormScreen', () {
+    testWidgets('shows AppBar with new chick title', (tester) async {
+      await tester.pumpWidget(createSubject());
+      await tester.pump();
+
+      expect(find.text('chicks.new_chick'), findsOneWidget);
+    });
+
+    testWidgets('shows form widget', (tester) async {
+      await tester.pumpWidget(createSubject());
+      await tester.pump();
+
+      expect(find.byType(Form), findsOneWidget);
+    });
+
+    testWidgets('shows name text field', (tester) async {
+      await tester.pumpWidget(createSubject());
+      await tester.pump();
+
+      expect(find.byType(TextFormField), findsWidgets);
+    });
+
+    testWidgets('shows save button', (tester) async {
+      await tester.pumpWidget(createSubject());
+      await tester.pump();
+
+      // PrimaryButton or ElevatedButton should be present
+      expect(
+        find.byWidgetPredicate((w) => w is FilledButton || w is ElevatedButton),
+        findsAtLeastNWidgets(1),
+      );
+    });
+
+    testWidgets('renders without errors', (tester) async {
+      await tester.pumpWidget(createSubject());
+      await tester.pump();
+
+      expect(find.byType(ChickFormScreen), findsOneWidget);
+    });
+
+    testWidgets('shows gender segmented button', (tester) async {
+      await tester.pumpWidget(createSubject());
+      await tester.pump();
+
+      expect(find.byWidgetPredicate((w) => w is SegmentedButton), findsWidgets);
+    });
+
+    testWidgets('shows health status segmented button', (tester) async {
+      await tester.pumpWidget(createSubject());
+      await tester.pump();
+
+      // Both gender and health status use SegmentedButton
+      expect(
+        find.byWidgetPredicate((w) => w is SegmentedButton),
+        findsNWidgets(2),
+      );
+    });
+
+    testWidgets('shows ring number text field', (tester) async {
+      await tester.pumpWidget(createSubject());
+      await tester.pump();
+
+      // Multiple text fields: name, hatch date (DatePickerField), weight, ring, notes
+      final fields = find.byType(TextFormField);
+      expect(fields, findsNWidgets(5));
+    });
+
+    testWidgets('title changes for edit mode when editChickId is provided', (
+      tester,
+    ) async {
+      // Without an actual editChickId stream we can only verify the loading
+      // state which shows 'common.loading' when isEdit && existingChick == null.
+      final editRouter = GoRouter(
+        initialLocation: '/chicks/form',
+        routes: [
+          GoRoute(
+            path: '/chicks',
+            builder: (_, __) => const Scaffold(body: Text('Chicks')),
+            routes: [
+              GoRoute(
+                path: 'form',
+                builder: (_, __) =>
+                    const ChickFormScreen(editChickId: 'some-id'),
+              ),
+            ],
+          ),
+        ],
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            currentUserIdProvider.overrideWithValue('test-user'),
+            chickFormStateProvider.overrideWith(() => ChickFormNotifier()),
+            chickByIdProvider(
+              'some-id',
+            ).overrideWith((_) => Stream.value(null)),
+          ],
+          child: MaterialApp.router(routerConfig: editRouter),
+        ),
+      );
+      await tester.pump();
+
+      // In edit mode with no existing chick loaded → shows loading title
+      expect(find.text('common.loading'), findsOneWidget);
+    });
+  });
+}

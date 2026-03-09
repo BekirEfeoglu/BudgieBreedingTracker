@@ -1,0 +1,26 @@
+{
+  "name": "remotion-promo",
+  "version": "1.0.0",
+  "description": "BudgieBreedingTracker promo video",
+  "scripts": {
+    "start": "npx remotion studio",
+    "build": "npx remotion render src/index.ts BudgiePromo out/promo.mp4",
+    "build:gif": "npx remotion render src/index.ts BudgiePromo out/promo.gif --image-format png"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@remotion/cli": "^4.0.423",
+    "@remotion/player": "^4.0.423",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "remotion": "^4.0.423"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "typescript": "^5.9.3"
+  }
+}

@@ -1,0 +1,200 @@
+# ============================================================
+# BudgieBreedingTracker - .gitignore
+# Cross-Platform: Windows + macOS | Flutter + Dart
+# ============================================================
+
+# --------------------------------------------------
+# macOS
+# --------------------------------------------------
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+*.swp
+.AppleDouble
+.LSOverride
+Icon?
+
+# --------------------------------------------------
+# Windows
+# --------------------------------------------------
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+desktop.ini
+*.lnk
+[Dd]esktop.ini
+$RECYCLE.BIN/
+
+# --------------------------------------------------
+# IDE - VS Code
+# --------------------------------------------------
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# --------------------------------------------------
+# IDE - IntelliJ / Android Studio
+# --------------------------------------------------
+.idea/
+*.iml
+*.ipr
+*.iws
+.idea_modules/
+atlassian-ide-plugin.xml
+
+# --------------------------------------------------
+# Flutter / Dart
+# --------------------------------------------------
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+build/
+
+# Generated files (build_runner re-generates on CI)
+*.g.dart
+*.freezed.dart
+*.mocks.dart
+*.config.dart
+*.gr.dart
+lib/generated_plugin_registrant.dart
+
+# Drift (SQLite) generated files
+*.drift.dart
+lib/**/*.drift.dart
+
+# Coverage
+coverage/
+.test_coverage/
+
+# --------------------------------------------------
+# Platform - Android
+# --------------------------------------------------
+android/.gradle/
+android/captures/
+android/gradlew
+android/gradlew.bat
+android/local.properties
+android/**/GeneratedPluginRegistrant.java
+android/**/GeneratedPluginRegistrant.kt
+android/key.properties
+android/**/*.keystore
+android/**/*.jks
+!android/gradle/wrapper/gradle-wrapper.jar
+
+# --------------------------------------------------
+# Platform - iOS
+# --------------------------------------------------
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+ios/Flutter/Generated.xcconfig
+ios/Flutter/ephemeral/
+ios/Flutter/app.flx
+ios/Flutter/app.zip
+ios/Flutter/flutter_assets/
+ios/ServiceDefinitions.json
+ios/Runner/GeneratedPluginRegistrant.*
+
+# --------------------------------------------------
+# Platform - Windows
+# --------------------------------------------------
+windows/flutter/generated_plugin_registrant.cc
+windows/flutter/generated_plugin_registrant.h
+windows/flutter/generated_plugins.cmake
+windows/flutter/ephemeral/
+
+# --------------------------------------------------
+# Platform - macOS
+# --------------------------------------------------
+macos/Flutter/GeneratedPluginRegistrant.swift
+macos/Flutter/ephemeral/
+macos/Pods/
+
+# --------------------------------------------------
+# Platform - Linux
+# --------------------------------------------------
+linux/flutter/generated_plugin_registrant.cc
+linux/flutter/generated_plugin_registrant.h
+linux/flutter/generated_plugins.cmake
+linux/flutter/ephemeral/
+
+# --------------------------------------------------
+# Platform - Web
+# --------------------------------------------------
+web/splash/img/
+
+# --------------------------------------------------
+# Supabase
+# --------------------------------------------------
+supabase/.branches
+supabase/.temp/
+.supabase/
+
+# --------------------------------------------------
+# Environment & Secrets
+# --------------------------------------------------
+.env
+.env.*
+!.env.example
+*.pem
+*.p12
+*.key
+secrets/
+config/local_config.dart
+lib/config/supabase_config.dart
+
+# --------------------------------------------------
+# Testing
+# --------------------------------------------------
+test_results/
+test_reports/
+*.test-results.xml
+integration_test/screenshots/
+
+# --------------------------------------------------
+# Build & Distribution
+# --------------------------------------------------
+dist/
+*.apk
+*.aab
+*.ipa
+*.exe
+*.msix
+*.msixbundle
+*.dmg
+*.app
+*.deb
+*.rpm
+
+# --------------------------------------------------
+# Claude Code (AI config, rules, hooks, skills - local only)
+# --------------------------------------------------
+.claude/
+
+# --------------------------------------------------
+# Temporary / CI artifacts
+# --------------------------------------------------
+tmp/
+
+# --------------------------------------------------
+# Misc
+# --------------------------------------------------
+*.log
+*.tmp
+*.temp
+*.bak
+*.swp
+*~
+.cache/
+node_modules/
+__pycache__/

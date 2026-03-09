@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gizlilik Politikası — BudgieBreedingTracker</title>
+  <meta name="description" content="BudgieBreedingTracker uygulamasının gizlilik politikası. Verilerinizi nasıl topladığımızı, kullandığımızı ve koruduğumuzu öğrenin.">
+  <meta name="theme-color" content="#1E40AF">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: { 50: '#EFF6FF', 100: '#DBEAFE', 200: '#BFDBFE', 300: '#93C5FD', 400: '#60A5FA', 500: '#3B82F6', 600: '#2563EB', 700: '#1D4ED8', 800: '#1E40AF', 900: '#1E3A8A' },
+            accent: { 400: '#FBBF24', 500: '#F59E0B', 600: '#D97706' },
+            budgie: { 50: '#F0FDF4', 100: '#DCFCE7', 400: '#4ADE80', 500: '#22C55E', 600: '#16A34A' },
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+          },
+        },
+      },
+    }
+  </script>
+
+  <!-- Inter Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="logo.png">
+  <link rel="apple-touch-icon" href="logo.png">
+
+  <style>
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+    .gradient-text {
+      background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 40%, #22C55E 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .lang-btn { transition: all 0.2s ease; }
+    .lang-btn.active { background-color: #1E40AF; color: white; box-shadow: 0 2px 8px rgba(30, 64, 175, 0.3); }
+    .lang-btn:not(.active):hover { background-color: #E5E7EB; }
+  </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+  <!-- Header -->
+  <header class="bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-50">
+    <div class="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
+      <a href="index.html" class="flex items-center gap-3 hover:opacity-80 transition">
+        <img src="logo.png" alt="BudgieBreedingTracker" class="w-9 h-9 rounded-xl">
+        <span class="text-lg font-bold gradient-text hidden sm:inline">BudgieBreedingTracker</span>
+      </a>
+      <div class="flex items-center gap-4">
+        <!-- Language Switcher -->
+        <div class="flex items-center gap-1 bg-gray-100/80 rounded-lg p-1">
+          <button onclick="setLanguage('tr')" class="lang-btn px-2.5 py-1 rounded-md text-xs font-semibold active" data-lang="tr">TR</button>
+          <button onclick="setLanguage('en')" class="lang-btn px-2.5 py-1 rounded-md text-xs font-semibold" data-lang="en">EN</button>
+          <button onclick="setLanguage('de')" class="lang-btn px-2.5 py-1 rounded-md text-xs font-semibold" data-lang="de">DE</button>
+        </div>
+        <a href="index.html" class="text-sm text-primary-600 hover:text-primary-800 font-medium transition" data-i18n="back">&larr; Ana Sayfa</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Content -->
+  <main class="max-w-4xl mx-auto px-6 py-12">
+
+    <div class="mb-10">
+      <h1 class="text-4xl font-extrabold text-gray-900 mb-3" data-i18n="title">Gizlilik Politikası</h1>
+      <p class="text-gray-500" data-i18n="last_updated">Son güncelleme: 27 Şubat 2026</p>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 md:p-10 space-y-10">
+
+      <section>
+        <h2 class="text-xl font-bold text-gray-900 mb-3" data-i18n="s1_title">1. Giriş</h2>
+        <p class="text-gray-600 leading-relaxed" data-i18n="s1_text">BudgieBreedingTracker ("Uygulama"), muhabbet kuşu yetiştiricileri için geliştirilmiş bir üreme takip uygulamasıdır. Bu gizlilik politikası, uygulamayı kullanırken kişisel verilerinizin nasıl toplandığını, kullanıldığını, saklandığını ve korunduğunu açıklar. Uygulamayı kullanarak bu politikayı kabul etmiş sayılırsınız.</p>
+      </section>
+
+      <section>
+        <h2 class="text-xl font-bold text-gray-900 mb-3" data-i18n="s2_title">2. Toplanan Veriler</h2>
+        <h3 class="text-lg font-semibold text-gray-800 mt-4 mb-2" data-i18n="s2_1_title">2.1 Hesap Bilgileri</h3>
+        <div data-i18n-html="s2_1_list">
+          <ul class="list-disc list-inside text-gray-600 space-y-1 ml-2">
+            <li>E-posta adresi (kayıt ve giriş için)</li>
+            <li>Kullanıcı adı ve profil bilgileri</li>
+            <li>Profil fotoğrafı (isteğe bağlı)</li>
+          </ul>
+        </div>
+        <h3 class="text-lg font-semibold text-gray-800 mt-4 mb-2" data-i18n="s2_2_title">2.2 Uygulama Verileri</h3>
+        <div data-i18n-html="s2_2_list">
+          <ul class="list-disc list-inside text-gray-600 space-y-1 ml-2">
+            <li>Kuş kayıtları (isim, cinsiyet, renk mutasyonu, halka numarası vb.)</li>
+            <li>Üreme çifti, yumurta ve yavru bilgileri</li>
+            <li>Kuluçka takip verileri</li>
+            <li>Sağlık kayıtları ve büyüme ölçümleri</li>
+            <li>Genetik hesaplama geçmişi</li>
+            <li>Takvim etkinlikleri ve hatırlatıcılar</li>
+            <li>Kuş, yumurta ve yavru fotoğrafları</li>
+          </ul>
+        </div>
+        <h3 class="text-lg font-semibold text-gray-800 mt-4 mb-2" data-i18n="s2_3_title">2.3 Otomatik Toplanan Veriler</h3>
+        <div data-i18n-html="s2_3_list">
+          <ul class="list-disc list-inside text-gray-600 space-y-1 ml-2">
+            <li>Uygulama çökme raporları ve hata günlükleri (Sentry aracılığıyla)</li>
+            <li>Cihaz türü ve işletim sistemi versiyonu</li>
+            <li>Uygulama kullanım istatistikleri (ekran gezinme verileri)</li>
+          </ul>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="text-xl font-bold text-gray-900 mb-3" data-i18n="s3_title">3. Verilerin Kullanım Amaçları</h2>
+        <div data-i18n-html="s3_list">
+          <ul class="list-disc list-inside text-gray-600 space-y-1 ml-2">
+            <li>Kullanıcı hesabı oluşturma ve kimlik doğrulama</li>
+            <li>Kuş üreme verilerinizi kaydetme ve senkronize etme</li>
+            <li>Genetik hesaplamalar ve soy ağacı oluşturma</li>
+            <li>Kuluçka hatırlatıcıları ve bildirimler gönderme</li>
+            <li>Veri yedekleme ve geri yükleme</li>
+            <li>Uygulama hatalarını tespit etme ve düzeltme</li>
+            <li>Uygulama performansını iyileştirme</li>
+          </ul>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="text-xl font-bold text-gray-900 mb-3" data-i18n="s4_title">4. Veri Saklama ve Güvenlik</h2>
+        <p class="text-gray-600 leading-relaxed mb-3" data-i18n="s4_intro">Verileriniz iki katmanlı bir yapıda saklanır:</p>
+        <div data-i18n-html="s4_list">
+          <ul class="list-disc list-inside text-gray-600 space-y-1 ml-2">
+            <li><strong>Yerel depolama:</strong> Verileriniz cihazınızda şifrelenmiş SQLite veritabanında saklanır (AES-256-CBC şifreleme).</li>
+            <li><strong>Bulut depolama:</strong> Senkronizasyon için Supabase (PostgreSQL) altyapısı kullanılır. Veriler satır düzeyinde güvenlik politikaları (RLS) ile korunur.</li>
+            <li><strong>Fotoğraflar:</strong> Güvenli bulut depolama alanında saklanır ve yalnızca hesap sahibi tarafından erişilebilir.</li>
+            <li><strong>Yedeklemeler:</strong> Şifrelenmiş olarak oluşturulur ve güvenli şekilde saklanır.</li>
+          </ul>
+        </div>
+        <p class="text-gray-600 leading-relaxed mt-3" data-i18n="s4_tls">Tüm veri iletişimi HTTPS/TLS protokolü üzerinden şifrelenerek gerçekleştirilir.</p>
+      </section>
+
+      <section>
+        <h2 class="text-xl font-bold text-gray-900 mb-3" data-i18n="s5_title">5. Veri Paylaşımı</h2>
+        <p class="text-gray-600 leading-relaxed mb-3" data-i18n="s5_intro">Kişisel verilerinizi üçüncü taraflarla <strong>satmaz veya kiralamayız</strong>. Verileriniz yalnızca aşağıdaki durumlarda paylaşılabilir:</p>
+        <div data-i18n-html="s5_list">
+          <ul class="list-disc list-inside text-gray-600 space-y-1 ml-2">
+            <li><strong>Hizmet sağlayıcılar:</strong> Supabase (veritabanı ve kimlik doğrulama), Sentry (hata raporlama) — yalnızca hizmetin işletilmesi için gerekli veriler paylaşılır.</li>
+            <li><strong>Yasal zorunluluk:</strong> Yasal düzenlemeler veya mahkeme kararları gerektirdiğinde.</li>
+          </ul>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="text-xl font-bold text-gray-900 mb-3" data-i18n="s6_title">6. Kullanıcı Hakları</h2>
+        <p class="text-gray-600 leading-relaxed mb-3" data-i18n="s6_intro">Aşağıdaki haklara sahipsiniz:</p>
+        <div data-i18n-html="s6_list">
+          <ul class="list-disc list-inside text-gray-600 space-y-1 ml-2">
+            <li><strong>Erişim hakkı:</strong> Saklanan kişisel verilerinize uygulama içinden erişebilirsiniz.</li>
+            <li><strong>Düzeltme hakkı:</strong> Profil ve kuş verilerinizi istediğiniz zaman güncelleyebilirsiniz.</li>
+            <li><strong>Silme hakkı:</strong> Verilerinizi uygulama içinden silebilir veya hesabınızı tamamen kapatabilirsiniz.</li>
+            <li><strong>Dışa aktarma hakkı:</strong> Verilerinizi PDF veya Excel formatında dışa aktarabilirsiniz.</li>
+            <li><strong>Yedekleme hakkı:</strong> Şifrelenmiş yedek oluşturup indirebilirsiniz.</li>
+          </ul>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="text-xl font-bold text-gray-900 mb-3" data-i18n="s7_title">7. Çocukların Gizliliği</h2>
+        <p class="text-gray-600 leading-relaxed" data-i18n="s7_text">Uygulamamız 13 yaşından küçük çocuklara yönelik değildir. Bilerek 13 yaşından küçük çocuklardan kişisel veri toplamayız. Eğer 13 yaşından küçük bir çocuğun bize kişisel veri sağladığını fark ederseniz, lütfen bizimle iletişime geçin. Bu verileri derhal sileceğiz.</p>
+      </section>
+
+      <section>
+        <h2 class="text-xl font-bold text-gray-900 mb-3" data-i18n="s8_title">8. Çerezler ve İzleme</h2>
+        <p class="text-gray-600 leading-relaxed" data-i18n="s8_text">Uygulama, çerez (cookie) kullanmaz. Hata raporlama amacıyla Sentry SDK'sı kullanılmakta olup, bu hizmet yalnızca uygulama çökmelerini ve performans sorunlarını tespit etmek için anonim teknik veriler toplar. Reklam izleme veya üçüncü taraf analitik araçları kullanılmamaktadır.</p>
+      </section>
+
+      <section>
+        <h2 class="text-xl font-bold text-gray-900 mb-3" data-i18n="s9_title">9. Veri Saklama Süresi</h2>
+        <div data-i18n-html="s9_list">
+          <ul class="list-disc list-inside text-gray-600 space-y-1 ml-2">
+            <li>Hesap verileri: Hesabınız aktif olduğu sürece saklanır.</li>
+            <li>Uygulama verileri: Siz silene kadar saklanır.</li>
+            <li>Hata raporları: 90 gün sonra otomatik olarak silinir.</li>
+            <li>Hesap silme: Hesabınızı sildiğinizde tüm verileriniz 30 gün içinde kalıcı olarak kaldırılır.</li>
+          </ul>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="text-xl font-bold text-gray-900 mb-3" data-i18n="s10_title">10. Politika Değişiklikleri</h2>
+        <p class="text-gray-600 leading-relaxed" data-i18n="s10_text">Bu gizlilik politikasını zaman zaman güncelleyebiliriz. Önemli değişiklikler yapıldığında, uygulama içi bildirim veya e-posta yoluyla sizi bilgilendireceğiz. Güncellenmiş politika bu sayfada yayınlandığı anda yürürlüğe girer.</p>
+      </section>
+
+      <section>
+        <h2 class="text-xl font-bold text-gray-900 mb-3" data-i18n="s11_title">11. İletişim</h2>
+        <p class="text-gray-600 leading-relaxed" data-i18n="s11_text">Gizlilik politikamız hakkında sorularınız veya talepleriniz için bizimle iletişime geçebilirsiniz:</p>
+        <div class="mt-4 p-4 bg-primary-50 rounded-xl border border-primary-100">
+          <p class="text-gray-700">
+            <strong>E-posta:</strong> <a href="mailto:support@budgiebreedingtracker.online" class="text-primary-600 hover:text-primary-800 underline">support@budgiebreedingtracker.online</a>
+          </p>
+          <p class="text-gray-700 mt-1">
+            <strong>Web:</strong> <a href="https://budgiebreedingtracker.online" class="text-primary-600 hover:text-primary-800 underline">budgiebreedingtracker.online</a>
+          </p>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-white border-t border-gray-100 mt-16">
+    <div class="max-w-4xl mx-auto px-6 py-8 text-center">
+      <p class="text-gray-400 text-sm" data-i18n="footer">&copy; 2025 BudgieBreedingTracker. Tüm hakları saklıdır.</p>
+    </div>
+  </footer>
+
+  <script>
+    const translations = {
+      tr: {
+        back: '&larr; Ana Sayfa',
+        title: 'Gizlilik Politikası',
+        last_updated: 'Son güncelleme: 27 Şubat 2026',
+        s1_title: '1. Giriş',
+        s1_text: 'BudgieBreedingTracker ("Uygulama"), muhabbet kuşu yetiştiricileri için geliştirilmiş bir üreme takip uygulamasıdır. Bu gizlilik politikası, uygulamayı kullanırken kişisel verilerinizin nasıl toplandığını, kullanıldığını, saklandığını ve korunduğunu açıklar. Uygulamayı kullanarak bu politikayı kabul etmiş sayılırsınız.',
+        s2_title: '2. Toplanan Veriler',
+        s2_1_title: '2.1 Hesap Bilgileri',
+        s2_1_list: '<ul class="list-disc list-inside text-gray-600 space-y-1 ml-2"><li>E-posta adresi (kayıt ve giriş için)</li><li>Kullanıcı adı ve profil bilgileri</li><li>Profil fotoğrafı (isteğe bağlı)</li></ul>',
+        s2_2_title: '2.2 Uygulama Verileri',
+        s2_2_list: '<ul class="list-disc list-inside text-gray-600 space-y-1 ml-2"><li>Kuş kayıtları (isim, cinsiyet, renk mutasyonu, halka numarası vb.)</li><li>Üreme çifti, yumurta ve yavru bilgileri</li><li>Kuluçka takip verileri</li><li>Sağlık kayıtları ve büyüme ölçümleri</li><li>Genetik hesaplama geçmişi</li><li>Takvim etkinlikleri ve hatırlatıcılar</li><li>Kuş, yumurta ve yavru fotoğrafları</li></ul>',
+        s2_3_title: '2.3 Otomatik Toplanan Veriler',
+        s2_3_list: '<ul class="list-disc list-inside text-gray-600 space-y-1 ml-2"><li>Uygulama çökme raporları ve hata günlükleri (Sentry aracılığıyla)</li><li>Cihaz türü ve işletim sistemi versiyonu</li><li>Uygulama kullanım istatistikleri (ekran gezinme verileri)</li></ul>',
+        s3_title: '3. Verilerin Kullanım Amaçları',
+        s3_list: '<ul class="list-disc list-inside text-gray-600 space-y-1 ml-2"><li>Kullanıcı hesabı oluşturma ve kimlik doğrulama</li><li>Kuş üreme verilerinizi kaydetme ve senkronize etme</li><li>Genetik hesaplamalar ve soy ağacı oluşturma</li><li>Kuluçka hatırlatıcıları ve bildirimler gönderme</li><li>Veri yedekleme ve geri yükleme</li><li>Uygulama hatalarını tespit etme ve düzeltme</li><li>Uygulama performansını iyileştirme</li></ul>',
+        s4_title: '4. Veri Saklama ve Güvenlik',
+        s4_intro: 'Verileriniz iki katmanlı bir yapıda saklanır:',
+        s4_list: '<ul class="list-disc list-inside text-gray-600 space-y-1 ml-2"><li><strong>Yerel depolama:</strong> Verileriniz cihazınızda şifrelenmiş SQLite veritabanında saklanır (AES-256-CBC şifreleme).</li><li><strong>Bulut depolama:</strong> Senkronizasyon için Supabase (PostgreSQL) altyapısı kullanılır. Veriler satır düzeyinde güvenlik politikaları (RLS) ile korunur.</li><li><strong>Fotoğraflar:</strong> Güvenli bulut depolama alanında saklanır ve yalnızca hesap sahibi tarafından erişilebilir.</li><li><strong>Yedeklemeler:</strong> Şifrelenmiş olarak oluşturulur ve güvenli şekilde saklanır.</li></ul>',
+        s4_tls: 'Tüm veri iletişimi HTTPS/TLS protokolü üzerinden şifrelenerek gerçekleştirilir.',
+        s5_title: '5. Veri Paylaşımı',
+        s5_intro: 'Kişisel verilerinizi üçüncü taraflarla <strong>satmaz veya kiralamayız</strong>. Verileriniz yalnızca aşağıdaki durumlarda paylaşılabilir:',
+        s5_list: '<ul class="list-disc list-inside text-gray-600 space-y-1 ml-2"><li><strong>Hizmet sağlayıcılar:</strong> Supabase (veritabanı ve kimlik doğrulama), Sentry (hata raporlama) — yalnızca hizmetin işletilmesi için gerekli veriler paylaşılır.</li><li><strong>Yasal zorunluluk:</strong> Yasal düzenlemeler veya mahkeme kararları gerektirdiğinde.</li></ul>',
+        s6_title: '6. Kullanıcı Hakları',
+        s6_intro: 'Aşağıdaki haklara sahipsiniz:',
+        s6_list: '<ul class="list-disc list-inside text-gray-600 space-y-1 ml-2"><li><strong>Erişim hakkı:</strong> Saklanan kişisel verilerinize uygulama içinden erişebilirsiniz.</li><li><strong>Düzeltme hakkı:</strong> Profil ve kuş verilerinizi istediğiniz zaman güncelleyebilirsiniz.</li><li><strong>Silme hakkı:</strong> Verilerinizi uygulama içinden silebilir veya hesabınızı tamamen kapatabilirsiniz.</li><li><strong>Dışa aktarma hakkı:</strong> Verilerinizi PDF veya Excel formatında dışa aktarabilirsiniz.</li><li><strong>Yedekleme hakkı:</strong> Şifrelenmiş yedek oluşturup indirebilirsiniz.</li></ul>',
+        s7_title: '7. Çocukların Gizliliği',
+        s7_text: 'Uygulamamız 13 yaşından küçük çocuklara yönelik değildir. Bilerek 13 yaşından küçük çocuklardan kişisel veri toplamayız. Eğer 13 yaşından küçük bir çocuğun bize kişisel veri sağladığını fark ederseniz, lütfen bizimle iletişime geçin. Bu verileri derhal sileceğiz.',
+        s8_title: '8. Çerezler ve İzleme',
+        s8_text: 'Uygulama, çerez (cookie) kullanmaz. Hata raporlama amacıyla Sentry SDK\'sı kullanılmakta olup, bu hizmet yalnızca uygulama çökmelerini ve performans sorunlarını tespit etmek için anonim teknik veriler toplar. Reklam izleme veya üçüncü taraf analitik araçları kullanılmamaktadır.',
+        s9_title: '9. Veri Saklama Süresi',
+        s9_list: '<ul class="list-disc list-inside text-gray-600 space-y-1 ml-2"><li>Hesap verileri: Hesabınız aktif olduğu sürece saklanır.</li><li>Uygulama verileri: Siz silene kadar saklanır.</li><li>Hata raporları: 90 gün sonra otomatik olarak silinir.</li><li>Hesap silme: Hesabınızı sildiğinizde tüm verileriniz 30 gün içinde kalıcı olarak kaldırılır.</li></ul>',
+        s10_title: '10. Politika Değişiklikleri',
+        s10_text: 'Bu gizlilik politikasını zaman zaman güncelleyebiliriz. Önemli değişiklikler yapıldığında, uygulama içi bildirim veya e-posta yoluyla sizi bilgilendireceğiz. Güncellenmiş politika bu sayfada yayınlandığı anda yürürlüğe girer.',
+        s11_title: '11. İletişim',
+        s11_text: 'Gizlilik politikamız hakkında sorularınız veya talepleriniz için bizimle iletişime geçebilirsiniz:',
+        footer: '&copy; 2025 BudgieBreedingTracker. Tüm hakları saklıdır.',
+      },
+      en: {
+        back: '&larr; Home',
+        title: 'Privacy Policy',
+        last_updated: 'Last updated: February 27, 2026',
+        s1_title: '1. Introduction',
+        s1_text: 'BudgieBreedingTracker ("App") is a breeding tracker application developed for budgerigar breeders. This privacy policy explains how your personal data is collected, used, stored, and protected when you use the application. By using the App, you agree to this policy.',
+        s2_title: '2. Data We Collect',
+        s2_1_title: '2.1 Account Information',
+        s2_1_list: '<ul class="list-disc list-inside text-gray-600 space-y-1 ml-2"><li>Email address (for registration and login)</li><li>Username and profile information</li><li>Profile photo (optional)</li></ul>',
+        s2_2_title: '2.2 App Data',
+        s2_2_list: '<ul class="list-disc list-inside text-gray-600 space-y-1 ml-2"><li>Bird records (name, gender, color mutation, ring number, etc.)</li><li>Breeding pair, egg, and chick information</li><li>Incubation tracking data</li><li>Health records and growth measurements</li><li>Genetics calculation history</li><li>Calendar events and reminders</li><li>Bird, egg, and chick photos</li></ul>',
+        s2_3_title: '2.3 Automatically Collected Data',
+        s2_3_list: '<ul class="list-disc list-inside text-gray-600 space-y-1 ml-2"><li>App crash reports and error logs (via Sentry)</li><li>Device type and operating system version</li><li>App usage statistics (screen navigation data)</li></ul>',
+        s3_title: '3. How We Use Your Data',
+        s3_list: '<ul class="list-disc list-inside text-gray-600 space-y-1 ml-2"><li>Creating user accounts and authentication</li><li>Saving and syncing your bird breeding data</li><li>Genetics calculations and pedigree creation</li><li>Sending incubation reminders and notifications</li><li>Data backup and restore</li><li>Detecting and fixing app errors</li><li>Improving app performance</li></ul>',
+        s4_title: '4. Data Storage and Security',
+        s4_intro: 'Your data is stored in a two-layer architecture:',
+        s4_list: '<ul class="list-disc list-inside text-gray-600 space-y-1 ml-2"><li><strong>Local storage:</strong> Your data is stored in an encrypted SQLite database on your device (AES-256-CBC encryption).</li><li><strong>Cloud storage:</strong> Supabase (PostgreSQL) infrastructure is used for synchronization. Data is protected with Row Level Security (RLS) policies.</li><li><strong>Photos:</strong> Stored in secure cloud storage and accessible only by the account owner.</li><li><strong>Backups:</strong> Created encrypted and stored securely.</li></ul>',
+        s4_tls: 'All data communication is encrypted via HTTPS/TLS protocol.',
+        s5_title: '5. Data Sharing',
+        s5_intro: 'We <strong>do not sell or rent</strong> your personal data to third parties. Your data may only be shared in the following cases:',
+        s5_list: '<ul class="list-disc list-inside text-gray-600 space-y-1 ml-2"><li><strong>Service providers:</strong> Supabase (database and authentication), Sentry (error reporting) — only data necessary for service operation is shared.</li><li><strong>Legal requirements:</strong> When required by law or court orders.</li></ul>',
+        s6_title: '6. User Rights',
+        s6_intro: 'You have the following rights:',
+        s6_list: '<ul class="list-disc list-inside text-gray-600 space-y-1 ml-2"><li><strong>Right of access:</strong> You can access your stored personal data from within the app.</li><li><strong>Right to rectification:</strong> You can update your profile and bird data at any time.</li><li><strong>Right to deletion:</strong> You can delete your data from the app or close your account entirely.</li><li><strong>Right to export:</strong> You can export your data in PDF or Excel format.</li><li><strong>Right to backup:</strong> You can create and download encrypted backups.</li></ul>',
+        s7_title: '7. Children\'s Privacy',
+        s7_text: 'Our app is not intended for children under 13 years of age. We do not knowingly collect personal data from children under 13. If you become aware that a child under 13 has provided us with personal data, please contact us. We will delete such data immediately.',
+        s8_title: '8. Cookies and Tracking',
+        s8_text: 'The App does not use cookies. Sentry SDK is used for error reporting purposes, and this service only collects anonymous technical data to detect app crashes and performance issues. No advertising tracking or third-party analytics tools are used.',
+        s9_title: '9. Data Retention',
+        s9_list: '<ul class="list-disc list-inside text-gray-600 space-y-1 ml-2"><li>Account data: Stored as long as your account is active.</li><li>App data: Stored until you delete it.</li><li>Error reports: Automatically deleted after 90 days.</li><li>Account deletion: All your data is permanently removed within 30 days of account deletion.</li></ul>',
+        s10_title: '10. Policy Changes',
+        s10_text: 'We may update this privacy policy from time to time. When significant changes are made, we will notify you via in-app notification or email. The updated policy takes effect as soon as it is published on this page.',
+        s11_title: '11. Contact',
+        s11_text: 'If you have any questions or requests regarding our privacy policy, you can contact us:',
+        footer: '&copy; 2025 BudgieBreedingTracker. All rights reserved.',
+      },
+      de: {
+        back: '&larr; Startseite',
+        title: 'Datenschutzrichtlinie',
+        last_updated: 'Letzte Aktualisierung: 27. Februar 2026',
+        s1_title: '1. Einleitung',
+        s1_text: 'BudgieBreedingTracker ("App") ist eine Zucht-Tracking-Anwendung für Wellensittichzüchter. Diese Datenschutzrichtlinie erklärt, wie Ihre personenbezogenen Daten bei der Nutzung der App erhoben, verwendet, gespeichert und geschützt werden. Durch die Nutzung der App stimmen Sie dieser Richtlinie zu.',
+        s2_title: '2. Erhobene Daten',
+        s2_1_title: '2.1 Kontoinformationen',
+        s2_1_list: '<ul class="list-disc list-inside text-gray-600 space-y-1 ml-2"><li>E-Mail-Adresse (für Registrierung und Anmeldung)</li><li>Benutzername und Profilinformationen</li><li>Profilfoto (optional)</li></ul>',
+        s2_2_title: '2.2 App-Daten',
+        s2_2_list: '<ul class="list-disc list-inside text-gray-600 space-y-1 ml-2"><li>Vogelaufzeichnungen (Name, Geschlecht, Farbmutation, Ringnummer usw.)</li><li>Zuchtpaar-, Ei- und Kükeninformationen</li><li>Brutüberwachungsdaten</li><li>Gesundheitsakten und Wachstumsmessungen</li><li>Genetik-Berechnungsverlauf</li><li>Kalendertermine und Erinnerungen</li><li>Vogel-, Ei- und Kükenfotos</li></ul>',
+        s2_3_title: '2.3 Automatisch erhobene Daten',
+        s2_3_list: '<ul class="list-disc list-inside text-gray-600 space-y-1 ml-2"><li>App-Absturzberichte und Fehlerprotokolle (über Sentry)</li><li>Gerätetyp und Betriebssystemversion</li><li>App-Nutzungsstatistiken (Bildschirmnavigationsdaten)</li></ul>',
+        s3_title: '3. Verwendungszwecke',
+        s3_list: '<ul class="list-disc list-inside text-gray-600 space-y-1 ml-2"><li>Erstellung von Benutzerkonten und Authentifizierung</li><li>Speichern und Synchronisieren Ihrer Vogelzuchtdaten</li><li>Genetische Berechnungen und Stammbaumerstellung</li><li>Senden von Bruterinnerungen und Benachrichtigungen</li><li>Datensicherung und -wiederherstellung</li><li>Erkennung und Behebung von App-Fehlern</li><li>Verbesserung der App-Leistung</li></ul>',
+        s4_title: '4. Datenspeicherung und Sicherheit',
+        s4_intro: 'Ihre Daten werden in einer zweischichtigen Architektur gespeichert:',
+        s4_list: '<ul class="list-disc list-inside text-gray-600 space-y-1 ml-2"><li><strong>Lokale Speicherung:</strong> Ihre Daten werden in einer verschlüsselten SQLite-Datenbank auf Ihrem Gerät gespeichert (AES-256-CBC-Verschlüsselung).</li><li><strong>Cloud-Speicherung:</strong> Supabase (PostgreSQL) wird für die Synchronisierung verwendet. Daten werden durch Row Level Security (RLS) geschützt.</li><li><strong>Fotos:</strong> Werden in sicherem Cloud-Speicher aufbewahrt und sind nur für den Kontoinhaber zugänglich.</li><li><strong>Backups:</strong> Werden verschlüsselt erstellt und sicher gespeichert.</li></ul>',
+        s4_tls: 'Die gesamte Datenkommunikation wird über das HTTPS/TLS-Protokoll verschlüsselt.',
+        s5_title: '5. Datenweitergabe',
+        s5_intro: 'Wir <strong>verkaufen oder vermieten</strong> Ihre personenbezogenen Daten nicht an Dritte. Ihre Daten können nur in folgenden Fällen weitergegeben werden:',
+        s5_list: '<ul class="list-disc list-inside text-gray-600 space-y-1 ml-2"><li><strong>Dienstleister:</strong> Supabase (Datenbank und Authentifizierung), Sentry (Fehlerberichterstattung) — es werden nur die für den Betrieb notwendigen Daten weitergegeben.</li><li><strong>Gesetzliche Anforderungen:</strong> Wenn gesetzliche Vorschriften oder Gerichtsbeschlüsse dies erfordern.</li></ul>',
+        s6_title: '6. Benutzerrechte',
+        s6_intro: 'Sie haben folgende Rechte:',
+        s6_list: '<ul class="list-disc list-inside text-gray-600 space-y-1 ml-2"><li><strong>Auskunftsrecht:</strong> Sie können auf Ihre gespeicherten personenbezogenen Daten innerhalb der App zugreifen.</li><li><strong>Recht auf Berichtigung:</strong> Sie können Ihre Profil- und Vogeldaten jederzeit aktualisieren.</li><li><strong>Recht auf Löschung:</strong> Sie können Ihre Daten aus der App löschen oder Ihr Konto vollständig schließen.</li><li><strong>Recht auf Export:</strong> Sie können Ihre Daten im PDF- oder Excel-Format exportieren.</li><li><strong>Recht auf Backup:</strong> Sie können verschlüsselte Backups erstellen und herunterladen.</li></ul>',
+        s7_title: '7. Datenschutz für Kinder',
+        s7_text: 'Unsere App richtet sich nicht an Kinder unter 13 Jahren. Wir erheben wissentlich keine personenbezogenen Daten von Kindern unter 13 Jahren. Wenn Sie feststellen, dass ein Kind unter 13 Jahren uns personenbezogene Daten bereitgestellt hat, kontaktieren Sie uns bitte. Wir werden diese Daten umgehend löschen.',
+        s8_title: '8. Cookies und Tracking',
+        s8_text: 'Die App verwendet keine Cookies. Das Sentry SDK wird für Fehlerberichterstattung verwendet und erhebt nur anonyme technische Daten zur Erkennung von App-Abstürzen und Leistungsproblemen. Es werden keine Werbe-Tracking- oder Drittanbieter-Analysetools verwendet.',
+        s9_title: '9. Datenaufbewahrung',
+        s9_list: '<ul class="list-disc list-inside text-gray-600 space-y-1 ml-2"><li>Kontodaten: Werden gespeichert, solange Ihr Konto aktiv ist.</li><li>App-Daten: Werden gespeichert, bis Sie sie löschen.</li><li>Fehlerberichte: Werden nach 90 Tagen automatisch gelöscht.</li><li>Kontolöschung: Alle Ihre Daten werden innerhalb von 30 Tagen nach Kontolöschung dauerhaft entfernt.</li></ul>',
+        s10_title: '10. Richtlinienänderungen',
+        s10_text: 'Wir können diese Datenschutzrichtlinie von Zeit zu Zeit aktualisieren. Bei wesentlichen Änderungen werden wir Sie per In-App-Benachrichtigung oder E-Mail informieren. Die aktualisierte Richtlinie tritt in Kraft, sobald sie auf dieser Seite veröffentlicht wird.',
+        s11_title: '11. Kontakt',
+        s11_text: 'Bei Fragen oder Anfragen zu unserer Datenschutzrichtlinie können Sie uns kontaktieren:',
+        footer: '&copy; 2025 BudgieBreedingTracker. Alle Rechte vorbehalten.',
+      },
+    };
+
+    let currentLang = 'tr';
+
+    function setLanguage(lang) {
+      currentLang = lang;
+      localStorage.setItem('bbt-lang', lang);
+      document.documentElement.lang = lang;
+
+      const t = translations[lang];
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (t[key]) el.innerHTML = t[key];
+      });
+      document.querySelectorAll('[data-i18n-html]').forEach(el => {
+        const key = el.getAttribute('data-i18n-html');
+        if (t[key]) el.innerHTML = t[key];
+      });
+
+      const titles = {
+        tr: 'Gizlilik Politikası — BudgieBreedingTracker',
+        en: 'Privacy Policy — BudgieBreedingTracker',
+        de: 'Datenschutzrichtlinie — BudgieBreedingTracker',
+      };
+      document.title = titles[lang];
+
+      document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('data-lang') === lang);
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const saved = localStorage.getItem('bbt-lang');
+      if (saved && translations[saved]) {
+        setLanguage(saved);
+      } else {
+        const browserLang = (navigator.language || navigator.userLanguage || 'tr').substring(0, 2).toLowerCase();
+        if (translations[browserLang]) {
+          setLanguage(browserLang);
+        }
+      }
+    });
+  </script>
+
+</body>
+</html>

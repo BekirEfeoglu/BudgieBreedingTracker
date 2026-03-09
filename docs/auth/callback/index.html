@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BudgieBreedingTracker — Email Verified</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #e0f4f2 0%, #f0f9ff 50%, #e8f5e9 100%);
+        padding: 20px;
+      }
+      .card {
+        background: white;
+        border-radius: 20px;
+        padding: 48px 36px;
+        max-width: 440px;
+        width: 100%;
+        text-align: center;
+        box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+      }
+      .icon { font-size: 64px; margin-bottom: 16px; }
+      h1 { font-size: 22px; color: #1a1a2e; margin-bottom: 8px; }
+      .subtitle { color: #64748b; font-size: 15px; line-height: 1.5; margin-bottom: 28px; }
+      .btn {
+        display: inline-block;
+        padding: 14px 32px;
+        border-radius: 12px;
+        font-size: 16px;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        transition: transform 0.15s, box-shadow 0.15s;
+        border: none;
+      }
+      .btn:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,0,0,0.12); }
+      .btn-primary { background: #0d9488; color: white; }
+      .btn-store { background: #f1f5f9; color: #334155; margin-top: 12px; font-size: 14px; padding: 12px 24px; }
+      .status { margin-top: 24px; font-size: 13px; color: #94a3b8; }
+      .status.error { color: #ef4444; }
+      .spinner { display: inline-block; width: 20px; height: 20px; border: 2.5px solid #e2e8f0; border-top-color: #0d9488; border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 6px; }
+      @keyframes spin { to { transform: rotate(360deg); } }
+      .hidden { display: none; }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <div class="icon">&#x1F426;</div>
+
+      <div id="loading">
+        <h1>Verifying your email...</h1>
+        <p class="subtitle">Please wait a moment.</p>
+        <div class="spinner"></div>
+      </div>
+
+      <div id="success" class="hidden">
+        <h1>Email Verified! &#10003;</h1>
+        <p class="subtitle">Your email has been confirmed successfully. Open the app to continue.</p>
+        <a id="deeplink-btn" class="btn btn-primary" href="#">Open BudgieBreedingTracker</a>
+        <br>
+        <a class="btn btn-store" href="https://budgiebreedingtracker.online/#download">Don't have the app? Download here</a>
+        <p class="status" id="auto-redirect-msg"><span class="spinner"></span> Redirecting to app...</p>
+      </div>
+
+      <div id="error" class="hidden">
+        <h1>Verification Failed</h1>
+        <p class="subtitle error" id="error-msg">Something went wrong. Please try again or request a new verification email.</p>
+        <a class="btn btn-primary" href="https://budgiebreedingtracker.online">Go to Homepage</a>
+      </div>
+    </div>
+
+    <script>
+      (function() {
+        var DEEP_LINK_SCHEME = 'io.supabase.budgiebreeding://login-callback/';
+
+        var hash = window.location.hash.substring(1);
+        var params = new URLSearchParams(hash);
+        var accessToken = params.get('access_token');
+        var refreshToken = params.get('refresh_token');
+        var type = params.get('type');
+
+        var queryParams = new URLSearchParams(window.location.search);
+        var errorParam = queryParams.get('error');
+        var errorDescription = queryParams.get('error_description');
+
+        if (errorParam) {
+          document.getElementById('loading').classList.add('hidden');
+          document.getElementById('error').classList.remove('hidden');
+          document.getElementById('error-msg').textContent =
+            errorDescription || 'Verification failed. Please try again.';
+          return;
+        }
+
+        if (accessToken) {
+          var deepLink = DEEP_LINK_SCHEME + '#' + hash;
+          document.getElementById('loading').classList.add('hidden');
+          document.getElementById('success').classList.remove('hidden');
+          document.getElementById('deeplink-btn').href = deepLink;
+
+          setTimeout(function() {
+            window.location.href = deepLink;
+          }, 1500);
+
+          setTimeout(function() {
+            document.getElementById('auto-redirect-msg').textContent =
+              'If the app didn\'t open, tap the button above.';
+          }, 3000);
+        } else {
+          setTimeout(function() {
+            document.getElementById('loading').classList.add('hidden');
+            document.getElementById('success').classList.remove('hidden');
+            document.getElementById('deeplink-btn').href = DEEP_LINK_SCHEME;
+            document.getElementById('auto-redirect-msg').textContent =
+              'Tap the button to open the app.';
+          }, 1500);
+        }
+      })();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,20 @@
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  exclude:
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"
+  errors:
+    invalid_annotation_target: ignore
+    invalid_use_of_protected_member: ignore
+    invalid_use_of_visible_for_testing_member: ignore
+
+linter:
+  rules:
+    prefer_const_constructors: true
+    prefer_final_locals: true
+    prefer_const_declarations: true
+    avoid_print: true
+    unnecessary_underscores: false
+    use_null_aware_elements: false
+    unintended_html_in_doc_comment: false

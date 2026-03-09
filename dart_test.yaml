@@ -1,0 +1,3 @@
+tags:
+  golden:
+    description: "Platform-dependent golden (snapshot) tests"
