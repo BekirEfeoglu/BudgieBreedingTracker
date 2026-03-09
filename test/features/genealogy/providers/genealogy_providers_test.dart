@@ -1,10 +1,15 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mocktail/mocktail.dart';
 
+import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
 import 'package:budgie_breeding_tracker/features/genealogy/providers/genealogy_calculation_providers.dart';
 import 'package:budgie_breeding_tracker/features/genealogy/providers/genealogy_providers.dart';
+import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
+
+import '../../../helpers/mocks.dart';
 
 Bird _bird(String id, {String? fatherId, String? motherId}) {
   return Bird(
@@ -163,6 +168,42 @@ void main() {
     test('depth can be set to maximum 8', () {
       container.read(pedigreeDepthProvider.notifier).state = 8;
       expect(container.read(pedigreeDepthProvider), 8);
+    });
+  });
+
+  group('ancestorsProvider', () {
+    test('recomputes when pedigree depth changes', () async {
+      final mockBirdRepo = MockBirdRepository();
+      final birds = [
+        _bird('root', fatherId: 'father', motherId: 'mother'),
+        _bird('father', fatherId: 'grandfather'),
+        _bird('mother'),
+        _bird('grandfather'),
+      ];
+
+      when(() => mockBirdRepo.getAll('user-1')).thenAnswer((_) async => birds);
+
+      final container = ProviderContainer(
+        overrides: [
+          currentUserIdProvider.overrideWithValue('user-1'),
+          birdRepositoryProvider.overrideWithValue(mockBirdRepo),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      container.read(pedigreeDepthProvider.notifier).state = 1;
+      final depth1Ancestors = await container.read(
+        ancestorsProvider('root').future,
+      );
+      expect(depth1Ancestors.containsKey('grandfather'), isFalse);
+
+      container.read(pedigreeDepthProvider.notifier).state = 2;
+      final depth2Ancestors = await container.read(
+        ancestorsProvider('root').future,
+      );
+      expect(depth2Ancestors.containsKey('grandfather'), isTrue);
+
+      verify(() => mockBirdRepo.getAll('user-1')).called(2);
     });
   });
 }

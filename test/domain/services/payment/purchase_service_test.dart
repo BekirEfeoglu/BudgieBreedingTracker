@@ -387,7 +387,16 @@ void main() {
       final package = Package.fromJson(_monthlyPackageJson());
       await service.initialize(apiKey: 'test_key', userId: 'user-1');
 
-      expect(await service.purchasePackage(package), isFalse);
+      expect(
+        () => service.purchasePackage(package),
+        throwsA(
+          isA<PurchaseException>().having(
+            (e) => e.code,
+            'code',
+            'purchase_pending',
+          ),
+        ),
+      );
     });
 
     test('purchasePackage rethrows non-cancelled purchase errors', () async {
@@ -409,7 +418,7 @@ void main() {
           isA<PurchaseException>().having(
             (e) => e.code,
             'code',
-            'purchase_pending',
+            'purchase_store_problem',
           ),
         ),
       );
@@ -483,7 +492,7 @@ void main() {
       expect(await service.restorePurchases(), isTrue);
     });
 
-    test('restorePurchases returns false when plugin throws', () async {
+    test('restorePurchases throws mapped error when plugin throws', () async {
       await _installHandler((call) async {
         if (call.method == 'setupPurchases') return null;
         if (call.method == 'restorePurchases') {
@@ -495,7 +504,16 @@ void main() {
       final service = PurchaseService();
       await service.initialize(apiKey: 'test_key', userId: 'user-1');
 
-      expect(await service.restorePurchases(), isFalse);
+      expect(
+        () => service.restorePurchases(),
+        throwsA(
+          isA<PurchaseException>().having(
+            (e) => e.code,
+            'code',
+            'purchase_error',
+          ),
+        ),
+      );
     });
 
     test('getSubscriptionInfo parses entitlement details', () async {

@@ -50,8 +50,9 @@ class FamilyTreeViewState extends State<FamilyTreeView> {
 
   /// Captures the tree as a PNG image for sharing.
   Future<ui.Image?> captureTreeImage() async {
-    final boundary = _repaintBoundaryKey.currentContext?.findRenderObject()
-        as RenderRepaintBoundary?;
+    final boundary =
+        _repaintBoundaryKey.currentContext?.findRenderObject()
+            as RenderRepaintBoundary?;
     if (boundary == null) return null;
     return boundary.toImage(pixelRatio: 3.0);
   }
@@ -83,7 +84,9 @@ class FamilyTreeViewState extends State<FamilyTreeView> {
                   Text(
                     'genealogy.tap_node_hint'.tr(),
                     style: theme.textTheme.labelSmall?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
+                      color: theme.colorScheme.onSurfaceVariant.withValues(
+                        alpha: 0.6,
+                      ),
                     ),
                   ),
                   const SizedBox(height: AppSpacing.md),
@@ -97,7 +100,13 @@ class FamilyTreeViewState extends State<FamilyTreeView> {
                         _buildOffspringConnector(theme),
                       ],
                       // Center + Right: root with ancestors
-                      _buildAncestorTree(context, widget.rootBird, 0, siblingCounts, theme),
+                      _buildAncestorTree(
+                        context,
+                        widget.rootBird,
+                        0,
+                        siblingCounts,
+                        theme,
+                      ),
                     ],
                   ),
                 ],
@@ -155,10 +164,12 @@ class FamilyTreeViewState extends State<FamilyTreeView> {
 
     for (final bird in widget.ancestors.values) {
       if (bird.fatherId != null) {
-        fatherChildren[bird.fatherId!] = (fatherChildren[bird.fatherId!] ?? 0) + 1;
+        fatherChildren[bird.fatherId!] =
+            (fatherChildren[bird.fatherId!] ?? 0) + 1;
       }
       if (bird.motherId != null) {
-        motherChildren[bird.motherId!] = (motherChildren[bird.motherId!] ?? 0) + 1;
+        motherChildren[bird.motherId!] =
+            (motherChildren[bird.motherId!] ?? 0) + 1;
       }
     }
 
@@ -194,18 +205,23 @@ class FamilyTreeViewState extends State<FamilyTreeView> {
       );
     }
 
-    final father = bird.fatherId != null ? widget.ancestors[bird.fatherId] : null;
-    final mother = bird.motherId != null ? widget.ancestors[bird.motherId] : null;
+    final father = bird.fatherId != null
+        ? widget.ancestors[bird.fatherId]
+        : null;
+    final mother = bird.motherId != null
+        ? widget.ancestors[bird.motherId]
+        : null;
     final hasParents = bird.fatherId != null || bird.motherId != null;
     final isRootNode = depth == 0;
     final isCommon = widget.commonAncestorIds.contains(bird.id);
     final siblings = siblingCounts[bird.id] ?? 0;
 
     // Root node that is a chick should navigate to /chicks/:id
-    final VoidCallback? nodeOnTap =
-        (isRootNode && widget.isRootChick) ? () => context.push('/chicks/${bird.id}') : null;
+    final VoidCallback? nodeOnTap = (isRootNode && widget.isRootChick)
+        ? () => context.push('/chicks/${bird.id}')
+        : null;
 
-    if (!hasParents) {
+    if (!hasParents || depth >= widget.maxDepth) {
       return PedigreeNode(
         bird: bird,
         isRoot: isRootNode,
@@ -233,12 +249,26 @@ class FamilyTreeViewState extends State<FamilyTreeView> {
           mainAxisSize: MainAxisSize.min,
           children: [
             // Generation label for father line
-            if (depth == 0) GenerationLabel(label: 'genealogy.father_line'.tr()),
-            _buildAncestorTree(context, father, depth + 1, siblingCounts, theme),
+            if (depth == 0)
+              GenerationLabel(label: 'genealogy.father_line'.tr()),
+            _buildAncestorTree(
+              context,
+              father,
+              depth + 1,
+              siblingCounts,
+              theme,
+            ),
             const SizedBox(height: AppSpacing.lg),
-            _buildAncestorTree(context, mother, depth + 1, siblingCounts, theme),
+            _buildAncestorTree(
+              context,
+              mother,
+              depth + 1,
+              siblingCounts,
+              theme,
+            ),
             // Generation label for mother line
-            if (depth == 0) GenerationLabel(label: 'genealogy.mother_line'.tr()),
+            if (depth == 0)
+              GenerationLabel(label: 'genealogy.mother_line'.tr()),
           ],
         ),
       ],

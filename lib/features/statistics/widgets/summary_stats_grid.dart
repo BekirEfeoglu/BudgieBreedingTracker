@@ -45,8 +45,6 @@ class SummaryStatsGrid extends StatelessWidget {
           value: stats.incubatingEggs.toString(),
           icon: const AppIcon(AppIcons.egg),
           color: AppColors.warning,
-          trendPercent: trends?.eggsTrend,
-          trendUp: trends != null ? (trends!.eggsTrend >= 0) : null,
         ),
         StatCard(
           label: 'statistics.summary_fertility_rate'.tr(),

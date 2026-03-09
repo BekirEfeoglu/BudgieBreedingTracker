@@ -95,6 +95,19 @@ void main() {
       expect(find.byType(BarChart), findsOneWidget);
     });
 
+    testWidgets('renders non-zero bar for unknown type data', (tester) async {
+      await tester.pumpWidget(buildSubject({HealthRecordType.unknown: 3}));
+      await tester.pump(const Duration(milliseconds: 300));
+      consumeExceptions(tester);
+
+      expect(find.byType(BarChart), findsOneWidget);
+      final chart = tester.widget<BarChart>(find.byType(BarChart));
+      final hasNonZero = chart.data.barGroups.any(
+        (group) => group.barRods.any((rod) => rod.toY > 0),
+      );
+      expect(hasNonZero, isTrue);
+    });
+
     testWidgets('renders SizedBox with height constraint', (tester) async {
       await tester.pumpWidget(
         buildSubject({

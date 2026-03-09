@@ -33,6 +33,15 @@ class PedigreeExportButton extends StatefulWidget {
 class _PedigreeExportButtonState extends State<PedigreeExportButton> {
   bool _isExporting = false;
 
+  String _safeFileSegment(String value) {
+    final sanitized = value
+        .replaceAll(RegExp(r'[<>:"/\\|?*\x00-\x1F]'), '_')
+        .replaceAll(RegExp(r'\s+'), '_')
+        .replaceAll(RegExp(r'_+'), '_')
+        .trim();
+    return sanitized.isEmpty ? 'bird' : sanitized;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -85,7 +94,8 @@ class _PedigreeExportButtonState extends State<PedigreeExportButton> {
 
       final dir = await getTemporaryDirectory();
       final timestamp = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
-      final fileName = 'pedigree_${widget.rootBird.name}_$timestamp.pdf';
+      final safeName = _safeFileSegment(widget.rootBird.name);
+      final fileName = 'pedigree_${safeName}_$timestamp.pdf';
       final file = File('${dir.path}/$fileName');
       await file.writeAsBytes(bytes);
       await SharePlus.instance.share(ShareParams(files: [XFile(file.path)]));
@@ -95,9 +105,7 @@ class _PedigreeExportButtonState extends State<PedigreeExportButton> {
       );
     } catch (e, st) {
       AppLogger.error('[PedigreeExport]', e, st);
-      messenger.showSnackBar(
-        SnackBar(content: Text('errors.unknown'.tr())),
-      );
+      messenger.showSnackBar(SnackBar(content: Text('errors.unknown'.tr())));
     } finally {
       if (mounted) setState(() => _isExporting = false);
     }
@@ -117,7 +125,8 @@ class _PedigreeExportButtonState extends State<PedigreeExportButton> {
 
       final dir = await getTemporaryDirectory();
       final timestamp = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
-      final fileName = 'pedigree_${widget.rootBird.name}_$timestamp.png';
+      final safeName = _safeFileSegment(widget.rootBird.name);
+      final fileName = 'pedigree_${safeName}_$timestamp.png';
       final file = File('${dir.path}/$fileName');
       await file.writeAsBytes(byteData.buffer.asUint8List());
       await SharePlus.instance.share(ShareParams(files: [XFile(file.path)]));
@@ -127,9 +136,7 @@ class _PedigreeExportButtonState extends State<PedigreeExportButton> {
       );
     } catch (e, st) {
       AppLogger.error('[PedigreeImageExport]', e, st);
-      messenger.showSnackBar(
-        SnackBar(content: Text('errors.unknown'.tr())),
-      );
+      messenger.showSnackBar(SnackBar(content: Text('errors.unknown'.tr())));
     } finally {
       if (mounted) setState(() => _isExporting = false);
     }

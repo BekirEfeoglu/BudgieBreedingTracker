@@ -465,10 +465,7 @@ void main() {
 
       service.restoreError = Exception('restore failed');
       await container.read(purchaseActionProvider.notifier).restorePurchases();
-      expect(
-        container.read(purchaseActionProvider).error,
-        contains('restore failed'),
-      );
+      expect(container.read(purchaseActionProvider).error, 'restore_failed');
     });
 
     test('restorePurchases sets success state on successful restore', () async {

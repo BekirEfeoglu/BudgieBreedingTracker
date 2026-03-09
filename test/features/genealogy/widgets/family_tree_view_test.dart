@@ -57,6 +57,15 @@ const _motherBird = Bird(
   status: BirdStatus.alive,
 );
 
+const _depthLimitedFather = Bird(
+  id: 'father-depth-1',
+  userId: 'user-1',
+  name: 'Derin Baba',
+  gender: BirdGender.male,
+  status: BirdStatus.alive,
+  fatherId: 'missing-grandfather',
+);
+
 void main() {
   group('FamilyTreeView', () {
     testWidgets('renders without crashing with minimal data', (tester) async {
@@ -70,7 +79,10 @@ void main() {
 
       await tester.pumpWidget(
         _wrap(
-          const FamilyTreeView(rootBird: rootOnly, ancestors: {'solo-1': rootOnly}),
+          const FamilyTreeView(
+            rootBird: rootOnly,
+            ancestors: {'solo-1': rootOnly},
+          ),
         ),
       );
       await tester.pump();
@@ -117,7 +129,10 @@ void main() {
     testWidgets('renders FloatingActionButton for zoom reset', (tester) async {
       await tester.pumpWidget(
         _wrap(
-          const FamilyTreeView(rootBird: _rootBird, ancestors: {'root-1': _rootBird}),
+          const FamilyTreeView(
+            rootBird: _rootBird,
+            ancestors: {'root-1': _rootBird},
+          ),
         ),
       );
       await tester.pump();
@@ -213,7 +228,10 @@ void main() {
     testWidgets('tapping zoom reset button does not crash', (tester) async {
       await tester.pumpWidget(
         _wrap(
-          const FamilyTreeView(rootBird: _rootBird, ancestors: {'root-1': _rootBird}),
+          const FamilyTreeView(
+            rootBird: _rootBird,
+            ancestors: {'root-1': _rootBird},
+          ),
         ),
       );
       await tester.pump();
@@ -223,6 +241,37 @@ void main() {
 
       // Herhangi bir exception fırlatılmamalı
       expect(find.byType(FamilyTreeView), findsOneWidget);
+    });
+
+    testWidgets('does not render placeholder ancestors beyond maxDepth', (
+      tester,
+    ) async {
+      const root = Bird(
+        id: 'root-depth-1',
+        userId: 'user-1',
+        name: 'Kök',
+        gender: BirdGender.male,
+        status: BirdStatus.alive,
+        fatherId: 'father-depth-1',
+        motherId: 'mother-1',
+      );
+
+      await tester.pumpWidget(
+        _wrap(
+          const FamilyTreeView(
+            rootBird: root,
+            maxDepth: 1,
+            ancestors: {
+              'root-depth-1': root,
+              'father-depth-1': _depthLimitedFather,
+              'mother-1': _motherBird,
+            },
+          ),
+        ),
+      );
+      await tester.pump();
+
+      expect(find.text('genealogy.unknown_parent'), findsNothing);
     });
   });
 }

@@ -52,6 +52,7 @@ class PurchaseService {
       AppLogger.info('RevenueCat initialized for user: $userId');
       return true;
     } catch (e) {
+      _clearIdentity();
       AppLogger.error('RevenueCat init failed: $e');
       return false;
     } finally {
@@ -66,6 +67,9 @@ class PurchaseService {
       AppLogger.info('RevenueCat switched to user: $userId');
       return true;
     } catch (e) {
+      // User switch failed: clear in-memory identity to avoid stale entitlements
+      // from the previous user leaking into subsequent checks.
+      _clearIdentity();
       AppLogger.error('RevenueCat user switch failed: $e');
       return false;
     } finally {
@@ -127,9 +131,18 @@ class PurchaseService {
 
       if (errorCode == PurchasesErrorCode.productAlreadyPurchasedError) {
         AppLogger.warning('Product already purchased, attempting restore');
-        final restored = await restorePurchases();
-        if (restored || await isPremium()) {
-          return true;
+        try {
+          final restored = await restorePurchases();
+          if (restored || await isPremium()) {
+            return true;
+          }
+        } on PurchaseException catch (restoreError) {
+          AppLogger.warning(
+            'Restore after already-owned purchase failed: ${restoreError.code}',
+          );
+          if (await isPremium()) {
+            return true;
+          }
         }
       }
 
@@ -144,6 +157,8 @@ class PurchaseService {
   }
 
   /// Restores previous purchases. Returns true if premium is now active.
+  ///
+  /// Throws [PurchaseException] on restore failures (store/network/config).
   Future<bool> restorePurchases() async {
     if (!_initialized) return false;
 
@@ -154,9 +169,18 @@ class PurchaseService {
       );
       AppLogger.info('Restore result: premium=$isActive');
       return isActive;
+    } on PlatformException catch (e) {
+      final errorCode = PurchasesErrorHelper.getErrorCode(e);
+      final mappedCode = _mapPurchaseErrorCode(errorCode);
+      AppLogger.warning('Restore error [$mappedCode]: ${e.message ?? e.code}');
+      throw PurchaseException(
+        mappedCode,
+        purchasesCode: errorCode,
+        message: e.message,
+      );
     } catch (e) {
       AppLogger.warning('Restore failed: $e');
-      return false;
+      throw const PurchaseException('restore_failed');
     }
   }
 
@@ -191,12 +215,17 @@ class PurchaseService {
 
     try {
       await Purchases.logOut();
-      _initialized = false;
-      _configuredApiKey = null;
-      _configuredUserId = null;
     } catch (e) {
       AppLogger.warning('RevenueCat logout failed: $e');
+    } finally {
+      _clearIdentity();
     }
+  }
+
+  void _clearIdentity() {
+    _initialized = false;
+    _configuredApiKey = null;
+    _configuredUserId = null;
   }
 
   String _mapPurchaseErrorCode(PurchasesErrorCode errorCode) {
