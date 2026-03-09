@@ -1,4 +1,5 @@
 import java.util.Properties
+import java.io.File
 import java.io.FileInputStream
 
 plugins {
@@ -13,6 +14,22 @@ val keystorePropertiesFile = rootProject.file("key.properties")
 if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(FileInputStream(keystorePropertiesFile))
 }
+val releaseStorePath = keystoreProperties.getProperty("storeFile")?.trim().orEmpty()
+val releaseStoreFile = releaseStorePath.takeIf { it.isNotEmpty() }?.let { configuredPath ->
+    val isWindowsAbsolutePath = Regex("^[A-Za-z]:[\\\\/].*").matches(configuredPath)
+    if (isWindowsAbsolutePath) {
+        File(configuredPath)
+    } else {
+        rootProject.file(configuredPath)
+    }
+}
+val hasReleaseSigningConfig =
+    keystorePropertiesFile.exists() &&
+    !keystoreProperties.getProperty("keyAlias").isNullOrBlank() &&
+    !keystoreProperties.getProperty("keyPassword").isNullOrBlank() &&
+    !keystoreProperties.getProperty("storePassword").isNullOrBlank() &&
+    releaseStoreFile?.exists() == true
+
 val isCiBuild = System.getenv("CI") == "true" || !System.getenv("CM_BUILD_ID").isNullOrBlank()
 val isReleaseTaskRequested = gradle.startParameter.taskNames.any { taskName ->
     taskName.contains("release", ignoreCase = true)
@@ -43,11 +60,11 @@ android {
     }
 
     signingConfigs {
-        if (keystorePropertiesFile.exists()) {
+        if (hasReleaseSigningConfig) {
             create("release") {
                 keyAlias = keystoreProperties["keyAlias"] as String
                 keyPassword = keystoreProperties["keyPassword"] as String
-                storeFile = file(keystoreProperties["storeFile"] as String)
+                storeFile = releaseStoreFile
                 storePassword = keystoreProperties["storePassword"] as String
             }
         }
@@ -55,12 +72,18 @@ android {
 
     buildTypes {
         release {
-            if (isCiBuild && isReleaseTaskRequested && !keystorePropertiesFile.exists()) {
+            if (isCiBuild && isReleaseTaskRequested && !hasReleaseSigningConfig) {
                 throw org.gradle.api.GradleException(
-                    "Release signing is not configured for CI. Expected android/key.properties to be generated before the release build."
+                    "Release signing is not fully configured for CI. Ensure android/key.properties exists and storeFile points to a valid keystore."
                 )
             }
-            signingConfig = if (keystorePropertiesFile.exists()) {
+            if (!isCiBuild && isReleaseTaskRequested && !hasReleaseSigningConfig) {
+                logger.warn(
+                    "Release keystore not found or invalid (storeFile='{}'). Using debug signing for local build.",
+                    releaseStorePath.ifBlank { "<missing>" }
+                )
+            }
+            signingConfig = if (hasReleaseSigningConfig) {
                 signingConfigs.getByName("release")
             } else {
                 signingConfigs.getByName("debug")
