@@ -1,0 +1,19 @@
+targets:
+  $default:
+    builders:
+      json_serializable:
+        options:
+          field_rename: snake
+          explicit_to_json: true
+      freezed:
+        options:
+          from_json: true
+          to_json: true
+      riverpod_generator:
+        options:
+          provider_name_prefix: ''
+      drift_dev:
+        options:
+          store_date_time_values_as_text: true
+        generate_for:
+          - lib/data/local/database/**

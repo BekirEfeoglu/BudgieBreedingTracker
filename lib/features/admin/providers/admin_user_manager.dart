@@ -1,0 +1,252 @@
+import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+import '../../../core/constants/supabase_constants.dart';
+import '../../../core/utils/logger.dart';
+import '../../auth/providers/auth_providers.dart';
+import 'admin_auth_utils.dart';
+
+class _ProtectedRoleError implements Exception {
+  final String role;
+  const _ProtectedRoleError(this.role);
+}
+
+/// Manages admin user operations (activate/deactivate, premium grant/revoke).
+///
+/// Delegates state updates to the parent [AdminActionsNotifier] via callbacks.
+class AdminUserManager {
+  final Ref _ref;
+  final void Function({
+    bool? isLoading,
+    String? error,
+    bool? isSuccess,
+    String? successMessage,
+  })
+  _updateState;
+
+  AdminUserManager(this._ref, this._updateState);
+
+  /// Toggle user active/inactive status.
+  Future<void> toggleUserActive(String targetUserId, bool isActive) async {
+    _updateState(isLoading: true, error: null, isSuccess: false);
+    try {
+      await requireAdmin(_ref);
+      final client = _ref.read(supabaseClientProvider);
+
+      await client
+          .from(SupabaseConstants.profilesTable)
+          .update({'is_active': isActive})
+          .eq('id', targetUserId);
+
+      await _logAdminAction(
+        isActive ? 'user_activated' : 'user_deactivated',
+        targetUserId: targetUserId,
+        details: isActive ? 'User activated' : 'User deactivated',
+      );
+
+      _updateState(isLoading: false, isSuccess: true);
+    } catch (e, st) {
+      AppLogger.error('AdminUserManager.toggleUserActive', e, st);
+      _updateState(isLoading: false, error: 'admin.action_error'.tr());
+    }
+  }
+
+  /// Grant premium subscription to a user.
+  Future<void> grantPremium(String targetUserId) async {
+    _updateState(isLoading: true, error: null, isSuccess: false);
+    try {
+      await requireAdmin(_ref);
+      final client = _ref.read(supabaseClientProvider);
+      final now = DateTime.now().toUtc().toIso8601String();
+      final role = await _fetchTargetUserRole(client, targetUserId);
+      if (_isProtectedRole(role)) throw _ProtectedRoleError(role!);
+
+      // Server-side guard: protected roles cannot be mutated for premium flags.
+      final updatedRows = await client
+          .from(SupabaseConstants.profilesTable)
+          .update({'is_premium': true, 'subscription_status': 'premium'})
+          .eq('id', targetUserId)
+          .or('role.is.null,role.not.in.(founder,admin)')
+          .select('id');
+      if ((updatedRows as List).isEmpty) {
+        if (_isProtectedRole(role)) throw _ProtectedRoleError(role!);
+        throw StateError(
+          'No profile row updated for grantPremium: $targetUserId',
+        );
+      }
+
+      // Supplementary record: check existing then insert or update
+      await _upsertSubscription(client, targetUserId, {
+        'plan': 'premium',
+        'status': 'active',
+        'updated_at': now,
+      });
+
+      await _logAdminAction(
+        'premium_granted',
+        targetUserId: targetUserId,
+        details: 'Premium subscription granted',
+      );
+
+      _updateState(isLoading: false, isSuccess: true);
+    } on _ProtectedRoleError catch (e) {
+      AppLogger.warning(
+        'AdminUserManager.grantPremium blocked for role: ${e.role}',
+      );
+      _updateState(
+        isLoading: false,
+        error: 'admin.protected_user_premium_error'.tr(),
+      );
+    } on PostgrestException catch (e, st) {
+      AppLogger.error('AdminUserManager.grantPremium Postgrest', e, st);
+      if (_isProtectedRoleMutationError(e)) {
+        _updateState(
+          isLoading: false,
+          error: 'admin.protected_user_premium_error'.tr(),
+        );
+      } else {
+        _updateState(isLoading: false, error: 'admin.action_error'.tr());
+      }
+    } catch (e, st) {
+      AppLogger.error('AdminUserManager.grantPremium', e, st);
+      _updateState(isLoading: false, error: 'admin.action_error'.tr());
+    }
+  }
+
+  /// Revoke premium subscription from a user.
+  Future<void> revokePremium(String targetUserId) async {
+    _updateState(isLoading: true, error: null, isSuccess: false);
+    try {
+      await requireAdmin(_ref);
+      final client = _ref.read(supabaseClientProvider);
+      final role = await _fetchTargetUserRole(client, targetUserId);
+      if (_isProtectedRole(role)) throw _ProtectedRoleError(role!);
+
+      // Server-side guard: protected roles cannot be mutated for premium flags.
+      final updatedRows = await client
+          .from(SupabaseConstants.profilesTable)
+          .update({'is_premium': false, 'subscription_status': 'free'})
+          .eq('id', targetUserId)
+          .or('role.is.null,role.not.in.(founder,admin)')
+          .select('id');
+      if ((updatedRows as List).isEmpty) {
+        if (_isProtectedRole(role)) throw _ProtectedRoleError(role!);
+        throw StateError(
+          'No profile row updated for revokePremium: $targetUserId',
+        );
+      }
+
+      // Remove subscription record entirely (no orphan 'free' records)
+      await client
+          .from(SupabaseConstants.userSubscriptionsTable)
+          .delete()
+          .eq('user_id', targetUserId);
+
+      await _logAdminAction(
+        'premium_revoked',
+        targetUserId: targetUserId,
+        details: 'Premium subscription revoked',
+      );
+
+      _updateState(isLoading: false, isSuccess: true);
+    } on _ProtectedRoleError catch (e) {
+      AppLogger.warning(
+        'AdminUserManager.revokePremium blocked for role: ${e.role}',
+      );
+      _updateState(
+        isLoading: false,
+        error: 'admin.protected_user_premium_error'.tr(),
+      );
+    } on PostgrestException catch (e, st) {
+      AppLogger.error('AdminUserManager.revokePremium Postgrest', e, st);
+      if (_isProtectedRoleMutationError(e)) {
+        _updateState(
+          isLoading: false,
+          error: 'admin.protected_user_premium_error'.tr(),
+        );
+      } else {
+        _updateState(isLoading: false, error: 'admin.action_error'.tr());
+      }
+    } catch (e, st) {
+      AppLogger.error('AdminUserManager.revokePremium', e, st);
+      _updateState(isLoading: false, error: 'admin.action_error'.tr());
+    }
+  }
+
+  // ── Private helpers ──────────────────────────────────
+
+  bool _isProtectedRole(String? role) {
+    if (role == null) return false;
+    final normalized = role.toLowerCase().trim();
+    return normalized == 'founder' || normalized == 'admin';
+  }
+
+  bool _isProtectedRoleMutationError(PostgrestException e) {
+    final payload = '${e.message} ${e.details ?? ''} ${e.hint ?? ''}'
+        .toLowerCase();
+    return payload.contains('protected_role_premium_mutation');
+  }
+
+  Future<String?> _fetchTargetUserRole(
+    SupabaseClient client,
+    String targetUserId,
+  ) async {
+    final row = await client
+        .from(SupabaseConstants.profilesTable)
+        .select('role')
+        .eq('id', targetUserId)
+        .maybeSingle();
+    if (row == null) return null;
+    return row['role'] as String?;
+  }
+
+  /// Safe insert-or-update for user_subscriptions (no unique constraint on user_id).
+  Future<void> _upsertSubscription(
+    SupabaseClient client,
+    String targetUserId,
+    Map<String, dynamic> data,
+  ) async {
+    final existingRows =
+        (await client
+                .from(SupabaseConstants.userSubscriptionsTable)
+                .select('id')
+                .eq('user_id', targetUserId)
+                .order('updated_at', ascending: false)
+                .limit(1))
+            as List;
+
+    if (existingRows.isNotEmpty) {
+      await client
+          .from(SupabaseConstants.userSubscriptionsTable)
+          .update(data)
+          .eq('user_id', targetUserId);
+    } else {
+      await client.from(SupabaseConstants.userSubscriptionsTable).insert({
+        ...data,
+        'user_id': targetUserId,
+      });
+    }
+  }
+
+  /// Log an admin action to admin_logs.
+  Future<void> _logAdminAction(
+    String action, {
+    String? targetUserId,
+    String? details,
+  }) async {
+    try {
+      final client = _ref.read(supabaseClientProvider);
+      final adminUserId = _ref.read(currentUserIdProvider);
+
+      await client.from(SupabaseConstants.adminLogsTable).insert({
+        'action': action,
+        'admin_user_id': adminUserId,
+        if (targetUserId != null) 'target_user_id': targetUserId,
+        if (details != null) 'details': {'message': details},
+      });
+    } catch (e, st) {
+      AppLogger.error('AdminUserManager._logAdminAction', e, st);
+    }
+  }
+}

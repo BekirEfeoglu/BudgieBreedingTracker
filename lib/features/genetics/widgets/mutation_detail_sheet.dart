@@ -1,0 +1,176 @@
+import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/material.dart';
+import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
+import 'package:budgie_breeding_tracker/domain/services/genetics/mutation_database.dart';
+import 'package:budgie_breeding_tracker/features/genetics/widgets/inheritance_badge.dart';
+
+/// Shows a bottom sheet with detailed mutation information.
+Future<void> showMutationDetailSheet(
+  BuildContext context, {
+  required BudgieMutationRecord mutation,
+}) {
+  return showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(
+        top: Radius.circular(AppSpacing.radiusXl),
+      ),
+    ),
+    builder: (_) => _MutationDetailContent(mutation: mutation),
+  );
+}
+
+class _MutationDetailContent extends StatelessWidget {
+  final BudgieMutationRecord mutation;
+
+  const _MutationDetailContent({required this.mutation});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Padding(
+      padding: EdgeInsets.fromLTRB(
+        AppSpacing.lg,
+        AppSpacing.lg,
+        AppSpacing.lg,
+        MediaQuery.of(context).viewInsets.bottom + AppSpacing.lg,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Drag handle
+          Center(
+            child: Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.lg),
+
+          // Title + badge
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  mutation.localizationKey.tr(),
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              InheritanceBadge(type: mutation.inheritanceType),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.sm),
+
+          // Category
+          Text(
+            _categoryKey(mutation.category).tr(),
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.primary,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.lg),
+
+          // Inheritance type
+          _DetailRow(
+            label: 'genetics.inheritance_type'.tr(),
+            value: mutation.inheritanceType.labelKey.tr(),
+          ),
+
+          // Alleles
+          _DetailRow(
+            label: 'genetics.alleles'.tr(),
+            value: mutation.alleles.join(' / '),
+          ),
+
+          // Allele symbol
+          _DetailRow(
+            label: 'genetics.allele_symbol'.tr(),
+            value: mutation.alleleSymbol,
+          ),
+
+          // Visual effect
+          if (mutation.visualEffect != null) ...[
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              'genetics.visual_effect'.tr(),
+              style: theme.textTheme.labelMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            Container(
+              width: double.infinity,
+              padding: AppSpacing.cardPadding,
+              decoration: BoxDecoration(
+                color: theme.colorScheme.surfaceContainerHighest
+                    .withValues(alpha: 0.5),
+                borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+              ),
+              child: Text(
+                mutation.visualEffect!,
+                style: theme.textTheme.bodyMedium,
+              ),
+            ),
+          ],
+          const SizedBox(height: AppSpacing.xl),
+        ],
+      ),
+    );
+  }
+
+  String _categoryKey(String category) {
+    final key = category
+        .toLowerCase()
+        .replaceAll(' ', '_')
+        .replaceAll('-', '_');
+    return 'genetics.category_$key';
+  }
+}
+
+class _DetailRow extends StatelessWidget {
+  final String label;
+  final String value;
+
+  const _DetailRow({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 120,
+            child: Text(
+              label,
+              style: theme.textTheme.labelMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

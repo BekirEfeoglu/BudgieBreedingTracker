@@ -1,0 +1,35 @@
+name: "✨ Özellik İsteği"
+description: "Yeni bir özellik veya iyileştirme önerin"
+labels: ["enhancement"]
+body:
+  - type: dropdown
+    id: category
+    attributes:
+      label: Kategori
+      options:
+        - Genetik Hesaplama / Mutasyon
+        - Kuş Yönetimi
+        - Eşleştirme & Üreme
+        - UI/UX İyileştirme
+        - Raporlama & İstatistik
+        - Senkronizasyon & Veri
+        - Bildirimler
+        - Yedekleme & Dışa Aktarma
+        - Platform Desteği
+        - Diğer
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Özellik Açıklaması
+      placeholder: Ne istiyorsunuz ve neden faydalı olur?
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Önerilen Çözüm
+      placeholder: Nasıl çalışmasını hayal ediyorsunuz?

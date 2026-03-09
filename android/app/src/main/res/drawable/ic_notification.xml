@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Notification icon: stylized budgie/bird silhouette.
+     Must be monochrome (white+transparent) for Android 5+ status bar. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24"
+    android:tint="#FFFFFF">
+
+    <!-- Bird body + head + tail silhouette -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M12,2C9.5,2 7.5,3.5 7,5.5C5.5,5 4,6 4,7.5C4,8.5 4.5,9.3 5.3,9.7C5.1,10.1 5,10.6 5,11C5,13.2 6.8,15 9,15L9,18C9,18 9,20 11,21L13,21C15,20 15,18 15,18L15,15C17.2,15 19,13.2 19,11C19,10.6 18.9,10.1 18.7,9.7C19.5,9.3 20,8.5 20,7.5C20,6 18.5,5 17,5.5C16.5,3.5 14.5,2 12,2Z" />
+
+    <!-- Eye -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="0.5"
+        android:pathData="M10,8A1,1 0,1 1,10 8.01" />
+
+    <!-- Beak -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M7,9L5.5,10L7,10.5Z" />
+</vector>

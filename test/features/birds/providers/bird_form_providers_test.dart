@@ -1,0 +1,289 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
+
+import 'package:budgie_breeding_tracker/core/constants/app_constants.dart';
+import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
+import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
+import 'package:budgie_breeding_tracker/data/repositories/bird_repository.dart';
+import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
+import 'package:budgie_breeding_tracker/features/birds/providers/bird_form_providers.dart';
+import 'package:budgie_breeding_tracker/features/premium/providers/premium_providers.dart';
+
+class MockBirdRepository extends Mock implements BirdRepository {}
+
+void main() {
+  late MockBirdRepository repo;
+
+  setUp(() {
+    repo = MockBirdRepository();
+    registerFallbackValue(
+      const Bird(id: '', name: '', gender: BirdGender.unknown, userId: ''),
+    );
+  });
+
+  ProviderContainer makeContainer({bool isPremium = false}) {
+    return ProviderContainer(
+      overrides: [
+        birdRepositoryProvider.overrideWithValue(repo),
+        isPremiumProvider.overrideWithValue(isPremium),
+      ],
+    );
+  }
+
+  /// Stubs getAll to return a list under the free tier limit.
+  void stubUnderLimit({int count = 1}) {
+    final birds = List.generate(
+      count,
+      (i) => Bird(
+        id: 'b-$i',
+        name: 'Bird $i',
+        gender: BirdGender.male,
+        userId: 'user-1',
+      ),
+    );
+    when(() => repo.getAll(any())).thenAnswer((_) async => birds);
+  }
+
+  group('BirdFormState', () {
+    test('initial state has default values', () {
+      const state = BirdFormState();
+      expect(state.isLoading, isFalse);
+      expect(state.error, isNull);
+      expect(state.isSuccess, isFalse);
+      expect(state.remainingBirds, isNull);
+    });
+
+    test('copyWith updates isLoading', () {
+      const state = BirdFormState();
+      final updated = state.copyWith(isLoading: true);
+      expect(updated.isLoading, isTrue);
+      expect(updated.error, isNull);
+    });
+
+    test('copyWith clears error when passed null', () {
+      final state = const BirdFormState().copyWith(error: 'fail');
+      final cleared = state.copyWith(error: null);
+      expect(cleared.error, isNull);
+    });
+
+    test('copyWith updates isSuccess', () {
+      const state = BirdFormState();
+      final updated = state.copyWith(isSuccess: true);
+      expect(updated.isSuccess, isTrue);
+    });
+  });
+
+  group('BirdFormNotifier', () {
+    test('initial state is default BirdFormState', () {
+      final container = makeContainer();
+      addTearDown(container.dispose);
+
+      final state = container.read(birdFormStateProvider);
+      expect(state.isLoading, isFalse);
+      expect(state.isSuccess, isFalse);
+    });
+
+    test('createBird sets isSuccess on success', () async {
+      stubUnderLimit();
+      when(() => repo.save(any())).thenAnswer((_) async {});
+
+      final container = makeContainer();
+      addTearDown(container.dispose);
+
+      await container
+          .read(birdFormStateProvider.notifier)
+          .createBird(userId: 'user-1', name: 'Alpha', gender: BirdGender.male);
+
+      final state = container.read(birdFormStateProvider);
+      expect(state.isSuccess, isTrue);
+      expect(state.isLoading, isFalse);
+      verify(() => repo.save(any())).called(1);
+    });
+
+    test(
+      'createBird persists explicit mutation payload when provided',
+      () async {
+        stubUnderLimit();
+        when(() => repo.save(any())).thenAnswer((_) async {});
+
+        final container = makeContainer();
+        addTearDown(container.dispose);
+
+        await container
+            .read(birdFormStateProvider.notifier)
+            .createBird(
+              userId: 'user-1',
+              name: 'Gamma',
+              gender: BirdGender.male,
+              mutations: const ['ino'],
+              genotypeInfo: const {'ino': 'carrier'},
+            );
+
+        final captured =
+            verify(() => repo.save(captureAny())).captured.single as Bird;
+        expect(captured.mutations, ['ino']);
+        expect(captured.genotypeInfo, {'ino': 'carrier'});
+      },
+    );
+
+    test('createBird sets error on failure', () async {
+      stubUnderLimit();
+      when(() => repo.save(any())).thenThrow(Exception('DB error'));
+
+      final container = makeContainer();
+      addTearDown(container.dispose);
+
+      await container
+          .read(birdFormStateProvider.notifier)
+          .createBird(userId: 'user-1', name: 'Alpha', gender: BirdGender.male);
+
+      final state = container.read(birdFormStateProvider);
+      expect(state.error, isNotNull);
+      expect(state.isLoading, isFalse);
+    });
+
+    test('createBird returns remainingBirds for free tier', () async {
+      stubUnderLimit(count: 10);
+      when(() => repo.save(any())).thenAnswer((_) async {});
+      // After save, getAll returns 11 (10 existing + 1 newly saved)
+      var callCount = 0;
+      when(() => repo.getAll(any())).thenAnswer((_) async {
+        callCount++;
+        // First call: limit check (10 birds), second call: remaining calc (11 birds)
+        final count = callCount == 1 ? 10 : 11;
+        return List.generate(
+          count,
+          (i) => Bird(
+            id: 'b-$i',
+            name: 'Bird $i',
+            gender: BirdGender.male,
+            userId: 'user-1',
+          ),
+        );
+      });
+
+      final container = makeContainer(isPremium: false);
+      addTearDown(container.dispose);
+
+      await container
+          .read(birdFormStateProvider.notifier)
+          .createBird(
+            userId: 'user-1',
+            name: 'NewBird',
+            gender: BirdGender.male,
+          );
+
+      final state = container.read(birdFormStateProvider);
+      expect(state.isSuccess, isTrue);
+      expect(state.remainingBirds, AppConstants.freeTierMaxBirds - 11);
+    });
+
+    test('createBird does not set remainingBirds for premium', () async {
+      when(() => repo.save(any())).thenAnswer((_) async {});
+
+      final container = makeContainer(isPremium: true);
+      addTearDown(container.dispose);
+
+      await container
+          .read(birdFormStateProvider.notifier)
+          .createBird(userId: 'user-1', name: 'Alpha', gender: BirdGender.male);
+
+      final state = container.read(birdFormStateProvider);
+      expect(state.isSuccess, isTrue);
+      expect(state.remainingBirds, isNull);
+    });
+
+    test('updateBird sets isSuccess on success', () async {
+      when(() => repo.save(any())).thenAnswer((_) async {});
+
+      final container = makeContainer();
+      addTearDown(container.dispose);
+
+      const bird = Bird(
+        id: 'b1',
+        name: 'Beta',
+        gender: BirdGender.female,
+        userId: 'user-1',
+      );
+
+      await container.read(birdFormStateProvider.notifier).updateBird(bird);
+
+      expect(container.read(birdFormStateProvider).isSuccess, isTrue);
+    });
+
+    test('deleteBird sets isSuccess on success', () async {
+      when(() => repo.remove(any())).thenAnswer((_) async {});
+
+      final container = makeContainer();
+      addTearDown(container.dispose);
+
+      await container.read(birdFormStateProvider.notifier).deleteBird('b1');
+
+      expect(container.read(birdFormStateProvider).isSuccess, isTrue);
+    });
+
+    test('markAsDead updates bird status', () async {
+      const bird = Bird(
+        id: 'b1',
+        name: 'Test',
+        gender: BirdGender.male,
+        userId: 'user-1',
+        status: BirdStatus.alive,
+      );
+      when(() => repo.getById('b1')).thenAnswer((_) async => bird);
+      when(() => repo.save(any())).thenAnswer((_) async {});
+
+      final container = makeContainer();
+      addTearDown(container.dispose);
+
+      await container.read(birdFormStateProvider.notifier).markAsDead('b1');
+
+      expect(container.read(birdFormStateProvider).isSuccess, isTrue);
+      final captured =
+          verify(() => repo.save(captureAny())).captured.single as Bird;
+      expect(captured.status, BirdStatus.dead);
+    });
+
+    test('markAsSold updates bird status', () async {
+      const bird = Bird(
+        id: 'b1',
+        name: 'Test',
+        gender: BirdGender.male,
+        userId: 'user-1',
+        status: BirdStatus.alive,
+      );
+      when(() => repo.getById('b1')).thenAnswer((_) async => bird);
+      when(() => repo.save(any())).thenAnswer((_) async {});
+
+      final container = makeContainer();
+      addTearDown(container.dispose);
+
+      await container.read(birdFormStateProvider.notifier).markAsSold('b1');
+
+      final captured =
+          verify(() => repo.save(captureAny())).captured.single as Bird;
+      expect(captured.status, BirdStatus.sold);
+    });
+
+    test('reset clears state', () async {
+      stubUnderLimit();
+      when(() => repo.save(any())).thenAnswer((_) async {});
+
+      final container = makeContainer();
+      addTearDown(container.dispose);
+
+      await container
+          .read(birdFormStateProvider.notifier)
+          .createBird(userId: 'user-1', name: 'X', gender: BirdGender.male);
+      expect(container.read(birdFormStateProvider).isSuccess, isTrue);
+
+      container.read(birdFormStateProvider.notifier).reset();
+      final state = container.read(birdFormStateProvider);
+      expect(state.isLoading, isFalse);
+      expect(state.error, isNull);
+      expect(state.isSuccess, isFalse);
+      expect(state.remainingBirds, isNull);
+    });
+  });
+}

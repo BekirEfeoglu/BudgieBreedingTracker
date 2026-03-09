@@ -1,0 +1,54 @@
+Building com.budgiebreeding.tracker for simulator (ios)...
+Running Xcode build...                                          
+Xcode build done.                                            6,3s
+Failed to build iOS app
+Error output from Xcode build:
+↳
+    ** BUILD FAILED **
+
+
+Xcode's output:
+↳
+    Writing result bundle at path:
+    	/var/folders/y7/v8z69sw15_93w9ynmh4qq5zr0000gn/T/flutter_tools.EmKHNU/flutter_ios_build_temp_dir9YTrWn/temporary_xcresult_bundle
+
+    lib/features/genetics/screens/genetics_reverse_screen.dart:9:8: Error: Error when reading 'lib/core/widgets/app_button.dart': No such file or directory
+    import 'package:budgie_breeding_tracker/core/widgets/app_button.dart';
+           ^
+    lib/features/genetics/screens/genetics_compare_screen.dart:144:23: Error: No named parameter with the name 'mutationIds'.
+                          mutationIds: [],
+                          ^^^^^^^^^^^
+    lib/domain/services/genetics/offspring_result.dart:33:9: Context: Found this candidate, but the arguments don't match.
+      const OffspringResult({
+            ^^^^^^^^^^^^^^^
+    lib/features/genetics/screens/genetics_compare_screen.dart:115:27: Error: The method 'phenotypeColor' isn't defined for the type '_CompareTable'.
+     - '_CompareTable' is from 'package:budgie_breeding_tracker/features/genetics/screens/genetics_compare_screen.dart' ('lib/features/genetics/screens/genetics_compare_screen.dart').
+    Try correcting the name to the name of an existing method, or defining a method named 'phenotypeColor'.
+                final color = phenotypeColor(phenotype);
+                              ^^^^^^^^^^^^^^
+    lib/features/genetics/screens/genetics_reverse_screen.dart:126:28: Error: The method 'AppButton' isn't defined for the type '_GeneticsReverseScreenState'.
+     - '_GeneticsReverseScreenState' is from 'package:budgie_breeding_tracker/features/genetics/screens/genetics_reverse_screen.dart' ('lib/features/genetics/screens/genetics_reverse_screen.dart').
+    Try correcting the name to the name of an existing method, or defining a method named 'AppButton'.
+                        child: AppButton(
+                               ^^^^^^^^^
+    lib/features/genetics/screens/genetics_reverse_screen.dart:144:40: Error: The getter 'surfaceWrapper' isn't defined for the type 'ColorScheme'.
+     - 'ColorScheme' is from 'package:flutter/src/material/color_scheme.dart' ('../../development/flutter/packages/flutter/lib/src/material/color_scheme.dart').
+    Try correcting the name to the name of an existing getter, or defining a getter or field named 'surfaceWrapper'.
+                  color: theme.colorScheme.surfaceWrapper,
+                                           ^^^^^^^^^^^^^^
+    lib/features/genetics/screens/genetics_reverse_screen.dart:159:30: Error: Member not found: 'dnd'.
+                Icon(LucideIcons.dnd, size: 48, color: theme.colorScheme.outline),
+                                 ^^^
+    lib/features/genetics/screens/genetics_reverse_screen.dart:359:36: Error: Member not found: 'mars'.
+                  isMale ? LucideIcons.mars : LucideIcons.venus,
+                                       ^^^^
+    lib/features/genetics/screens/genetics_reverse_screen.dart:359:55: Error: Member not found: 'venus'.
+                  isMale ? LucideIcons.mars : LucideIcons.venus,
+                                                          ^^^^^
+    Target kernel_snapshot_program failed: Exception
+    Failed to package /Users/rentamac/Downloads/BudgieBreedingTracker.
+    Command PhaseScriptExecution failed with a nonzero exit code
+    note: Run script build phase 'Run Script' will be run during every build because the option to run the script phase "Based on dependency analysis" is unchecked. (in target 'Runner' from project 'Runner')
+    note: Run script build phase 'Thin Binary' will be run during every build because the option to run the script phase "Based on dependency analysis" is unchecked. (in target 'Runner' from project 'Runner')
+
+Encountered error while building for simulator.

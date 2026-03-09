@@ -1,0 +1,15 @@
+# Default owner for all files
+* @BekirEfeoglu
+
+# CI/CD pipeline
+.github/ @BekirEfeoglu
+
+# Dependencies
+pubspec.yaml @BekirEfeoglu
+pubspec.lock @BekirEfeoglu
+
+# Database migrations
+lib/data/local/database/app_database.dart @BekirEfeoglu
+
+# Supabase configuration
+lib/core/constants/supabase_constants.dart @BekirEfeoglu

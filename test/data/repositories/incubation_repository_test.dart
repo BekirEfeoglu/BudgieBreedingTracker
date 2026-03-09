@@ -1,0 +1,477 @@
+import 'dart:async';
+
+import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
+import 'package:budgie_breeding_tracker/core/errors/app_exception.dart';
+import 'package:budgie_breeding_tracker/data/local/database/daos/incubations_dao.dart';
+import 'package:budgie_breeding_tracker/data/local/database/daos/sync_metadata_dao.dart';
+import 'package:budgie_breeding_tracker/data/models/incubation_model.dart';
+import 'package:budgie_breeding_tracker/data/models/sync_metadata_model.dart';
+import 'package:budgie_breeding_tracker/data/remote/api/incubation_remote_source.dart';
+import 'package:budgie_breeding_tracker/data/repositories/incubation_repository.dart';
+
+import '../../helpers/test_fixtures.dart';
+
+class MockIncubationsDao extends Mock implements IncubationsDao {}
+
+class MockIncubationRemoteSource extends Mock
+    implements IncubationRemoteSource {}
+
+class MockSyncMetadataDao extends Mock implements SyncMetadataDao {}
+
+Incubation _makeIncubation({String id = 'inc-1', String userId = 'user-1'}) {
+  return Incubation(
+    id: id,
+    userId: userId,
+    createdAt: DateTime(2024, 1, 1),
+    updatedAt: DateTime(2024, 1, 1),
+  );
+}
+
+void main() {
+  late MockIncubationsDao localDao;
+  late MockIncubationRemoteSource remoteSource;
+  late MockSyncMetadataDao syncDao;
+  late IncubationRepository repository;
+
+  const userId = 'user-1';
+
+  setUpAll(() {
+    registerFallbackValue(DateTime(2024, 1, 1));
+    registerFallbackValue(_makeIncubation());
+    registerFallbackValue(TestFixtures.sampleSyncMetadata());
+  });
+
+  setUp(() {
+    localDao = MockIncubationsDao();
+    remoteSource = MockIncubationRemoteSource();
+    syncDao = MockSyncMetadataDao();
+
+    repository = IncubationRepository(
+      localDao: localDao,
+      remoteSource: remoteSource,
+      syncDao: syncDao,
+    );
+
+    when(() => localDao.insertItem(any())).thenAnswer((_) async {});
+    when(() => localDao.insertAll(any())).thenAnswer((_) async {});
+    when(() => localDao.hardDelete(any())).thenAnswer((_) async {});
+    when(() => localDao.getById(any())).thenAnswer((_) async => null);
+    when(() => localDao.getAll(any())).thenAnswer((_) async => []);
+    when(
+      () => localDao.watchAll(any()),
+    ).thenAnswer((_) => const Stream.empty());
+    when(
+      () => localDao.watchById(any()),
+    ).thenAnswer((_) => const Stream.empty());
+    when(
+      () => localDao.watchActive(any()),
+    ).thenAnswer((_) => const Stream.empty());
+    when(() => localDao.getByBreedingPair(any())).thenAnswer((_) async => []);
+    when(
+      () => localDao.getByBreedingPairIds(any()),
+    ).thenAnswer((_) async => []);
+
+    when(() => remoteSource.fetchAll(any())).thenAnswer((_) async => []);
+    when(
+      () => remoteSource.fetchUpdatedSince(any(), any()),
+    ).thenAnswer((_) async => []);
+    when(() => remoteSource.upsert(any())).thenAnswer((_) async {});
+    when(() => remoteSource.deleteById(any(), userId: any(named: 'userId'))).thenAnswer((_) async {});
+
+    when(() => syncDao.insertItem(any())).thenAnswer((_) async {});
+    when(() => syncDao.insertAll(any())).thenAnswer((_) async {});
+    when(() => syncDao.deleteByRecord(any(), any())).thenAnswer((_) async {});
+    when(() => syncDao.updateItem(any())).thenAnswer((_) async {});
+    when(() => syncDao.getByRecord(any(), any())).thenAnswer((_) async => null);
+    when(
+      () => syncDao.getPendingByTable(any(), any()),
+    ).thenAnswer((_) async => []);
+    when(() => syncDao.getPendingRecordIds(any())).thenAnswer((_) async => {});
+  });
+
+  group('IncubationRepository', () {
+    test('watchAll delegates to DAO stream', () {
+      final expected = [_makeIncubation(id: 'inc-1')];
+      when(
+        () => localDao.watchAll(userId),
+      ).thenAnswer((_) => Stream.value(expected));
+
+      expect(repository.watchAll(userId), emits(expected));
+      verify(() => localDao.watchAll(userId)).called(1);
+    });
+
+    test('watchById delegates to DAO stream', () {
+      final incubation = _makeIncubation(id: 'inc-1');
+      when(
+        () => localDao.watchById('inc-1'),
+      ).thenAnswer((_) => Stream.value(incubation));
+
+      expect(repository.watchById('inc-1'), emits(incubation));
+      verify(() => localDao.watchById('inc-1')).called(1);
+    });
+
+    test('getAll delegates to DAO', () async {
+      final expected = [_makeIncubation(id: 'inc-1')];
+      when(() => localDao.getAll(userId)).thenAnswer((_) async => expected);
+
+      final result = await repository.getAll(userId);
+      expect(result, expected);
+      verify(() => localDao.getAll(userId)).called(1);
+    });
+
+    test('getById delegates to DAO and may return null', () async {
+      final incubation = _makeIncubation(id: 'inc-1');
+      when(() => localDao.getById('inc-1')).thenAnswer((_) async => incubation);
+      when(() => localDao.getById('missing')).thenAnswer((_) async => null);
+
+      expect(await repository.getById('inc-1'), incubation);
+      expect(await repository.getById('missing'), isNull);
+    });
+
+    test(
+      'save inserts item marks sync pending and tries immediate push',
+      () async {
+        final incubation = _makeIncubation(id: 'inc-1');
+
+        await repository.save(incubation);
+
+        verify(() => localDao.insertItem(incubation)).called(1);
+        final captured =
+            verify(() => syncDao.insertItem(captureAny())).captured.single
+                as SyncMetadata;
+        expect(captured.table, SupabaseConstants.incubationsTable);
+        expect(captured.recordId, incubation.id);
+        expect(captured.userId, incubation.userId);
+        expect(captured.status, SyncStatus.pending);
+        verify(() => remoteSource.upsert(incubation)).called(1);
+      },
+    );
+
+    test('saveAll inserts all and creates metadata for each item', () async {
+      final items = [
+        _makeIncubation(id: 'inc-1'),
+        _makeIncubation(id: 'inc-2'),
+      ];
+
+      await repository.saveAll(items);
+
+      verify(() => localDao.insertAll(items)).called(1);
+      final captured =
+          verify(() => syncDao.insertAll(captureAny())).captured.single
+              as List<SyncMetadata>;
+      expect(captured, hasLength(2));
+      expect(
+        captured.every((m) => m.table == SupabaseConstants.incubationsTable),
+        isTrue,
+      );
+      expect(captured.map((m) => m.recordId), containsAll(['inc-1', 'inc-2']));
+    });
+
+    test('saveAll with empty list does not create sync metadata', () async {
+      await repository.saveAll([]);
+
+      verify(() => localDao.insertAll([])).called(1);
+      verifyNever(() => syncDao.insertAll(any()));
+    });
+
+    test(
+      'remove hard deletes item creates pendingDelete metadata and tries remote delete',
+      () async {
+        final incubation = _makeIncubation(id: 'inc-1', userId: userId);
+        when(
+          () => localDao.getById('inc-1'),
+        ).thenAnswer((_) async => incubation);
+
+        await repository.remove('inc-1');
+
+        verify(() => localDao.hardDelete('inc-1')).called(1);
+        final captured =
+            verify(() => syncDao.insertItem(captureAny())).captured.single
+                as SyncMetadata;
+        expect(captured.table, SupabaseConstants.incubationsTable);
+        expect(captured.recordId, 'inc-1');
+        expect(captured.userId, userId);
+        expect(captured.status, SyncStatus.pendingDelete);
+        verify(() => remoteSource.deleteById('inc-1', userId: userId)).called(1);
+        verify(
+          () => syncDao.deleteByRecord(
+            SupabaseConstants.incubationsTable,
+            'inc-1',
+          ),
+        ).called(1);
+      },
+    );
+
+    test('remove skips sync metadata when item is not found', () async {
+      when(() => localDao.getById('missing')).thenAnswer((_) async => null);
+
+      await repository.remove('missing');
+
+      verify(() => localDao.hardDelete('missing')).called(1);
+      verifyNever(() => syncDao.insertItem(any()));
+      verifyNever(() => remoteSource.deleteById(any(), userId: any(named: 'userId')));
+    });
+
+    test('hardRemove delegates to DAO', () async {
+      await repository.hardRemove('inc-1');
+      verify(() => localDao.hardDelete('inc-1')).called(1);
+    });
+
+    test('pull uses fetchUpdatedSince when lastSyncedAt is provided', () async {
+      final since = DateTime(2024, 1, 1);
+      final remoteItems = [_makeIncubation(id: 'inc-remote')];
+      when(
+        () => remoteSource.fetchUpdatedSince(userId, since),
+      ).thenAnswer((_) async => remoteItems);
+
+      await repository.pull(userId, lastSyncedAt: since);
+
+      verify(() => remoteSource.fetchUpdatedSince(userId, since)).called(1);
+      verify(() => localDao.insertAll(remoteItems)).called(1);
+      verifyNever(() => remoteSource.fetchAll(any()));
+    });
+
+    test('pull uses fetchAll when lastSyncedAt is null', () async {
+      await repository.pull(userId);
+      verify(() => remoteSource.fetchAll(userId)).called(1);
+      verifyNever(() => remoteSource.fetchUpdatedSince(any(), any()));
+    });
+
+    test('pull full sync removes local orphans not pending', () async {
+      final local = [
+        _makeIncubation(id: 'keep-pending'),
+        _makeIncubation(id: 'delete-me'),
+      ];
+      when(() => remoteSource.fetchAll(userId)).thenAnswer((_) async => []);
+      when(() => localDao.getAll(userId)).thenAnswer((_) async => local);
+      when(
+        () => syncDao.getPendingRecordIds(userId),
+      ).thenAnswer((_) async => {'keep-pending'});
+
+      await repository.pull(userId);
+
+      verify(() => localDao.hardDelete('delete-me')).called(1);
+      verifyNever(() => localDao.hardDelete('keep-pending'));
+    });
+
+    test('pull rethrows AppException', () async {
+      when(
+        () => remoteSource.fetchAll(userId),
+      ).thenThrow(const DatabaseException('db failure'));
+
+      expect(() => repository.pull(userId), throwsA(isA<DatabaseException>()));
+    });
+
+    test('pull logs unknown errors and does not throw', () async {
+      when(
+        () => remoteSource.fetchAll(userId),
+      ).thenThrow(Exception('unexpected'));
+
+      await expectLater(repository.pull(userId), completes);
+    });
+
+    test('push upserts remote and clears sync metadata on success', () async {
+      final incubation = _makeIncubation(id: 'inc-1');
+
+      await repository.push(incubation);
+
+      verify(() => remoteSource.upsert(incubation)).called(1);
+      verify(
+        () =>
+            syncDao.deleteByRecord(SupabaseConstants.incubationsTable, 'inc-1'),
+      ).called(1);
+    });
+
+    test('push marks error when AppException occurs', () async {
+      final incubation = _makeIncubation(id: 'inc-1', userId: userId);
+      final existing = TestFixtures.sampleSyncMetadata(
+        table: SupabaseConstants.incubationsTable,
+        recordId: 'inc-1',
+        userId: userId,
+        retryCount: 1,
+      );
+      when(
+        () => remoteSource.upsert(incubation),
+      ).thenThrow(const DatabaseException('push failed'));
+      when(
+        () => syncDao.getByRecord(SupabaseConstants.incubationsTable, 'inc-1'),
+      ).thenAnswer((_) async => existing);
+
+      await repository.push(incubation);
+
+      final updated =
+          verify(() => syncDao.updateItem(captureAny())).captured.single
+              as SyncMetadata;
+      expect(updated.status, SyncStatus.error);
+      expect(updated.retryCount, 2);
+      expect(updated.errorMessage, 'push failed');
+    });
+
+    test(
+      'pushAll iterates pending metadata and pushes existing records',
+      () async {
+        final inc1 = _makeIncubation(id: 'inc-1');
+        final pending = [
+          TestFixtures.sampleSyncMetadata(
+            id: 'meta-1',
+            table: SupabaseConstants.incubationsTable,
+            recordId: 'inc-1',
+            userId: userId,
+          ),
+          TestFixtures.sampleSyncMetadata(
+            id: 'meta-2',
+            table: SupabaseConstants.incubationsTable,
+            recordId: 'missing',
+            userId: userId,
+          ),
+        ];
+        when(
+          () => syncDao.getPendingByTable(
+            userId,
+            SupabaseConstants.incubationsTable,
+          ),
+        ).thenAnswer((_) async => pending);
+        when(() => localDao.getById('inc-1')).thenAnswer((_) async => inc1);
+        when(() => localDao.getById('missing')).thenAnswer((_) async => null);
+
+        await repository.pushAll(userId);
+
+        verify(() => remoteSource.upsert(inc1)).called(1);
+      },
+    );
+
+    test(
+      'pushAll cleans orphan sync metadata for missing local records',
+      () async {
+        final pending = [
+          TestFixtures.sampleSyncMetadata(
+            id: 'meta-1',
+            table: SupabaseConstants.incubationsTable,
+            recordId: 'missing',
+            userId: userId,
+          ),
+        ];
+        when(
+          () => syncDao.getPendingByTable(
+            userId,
+            SupabaseConstants.incubationsTable,
+          ),
+        ).thenAnswer((_) async => pending);
+        when(() => localDao.getById('missing')).thenAnswer((_) async => null);
+
+        await repository.pushAll(userId);
+
+        verify(
+          () => syncDao.deleteByRecord(
+            SupabaseConstants.incubationsTable,
+            'missing',
+          ),
+        ).called(1);
+        verifyNever(() => remoteSource.upsert(any()));
+      },
+    );
+
+    test('pushAll processes pendingDelete records by remote delete', () async {
+      final pendingDelete = TestFixtures.sampleSyncMetadata(
+        id: 'meta-del',
+        table: SupabaseConstants.incubationsTable,
+        recordId: 'del-1',
+        userId: userId,
+        status: SyncStatus.pendingDelete,
+      );
+      when(
+        () => syncDao.getPendingByTable(
+          userId,
+          SupabaseConstants.incubationsTable,
+        ),
+      ).thenAnswer((_) async => [pendingDelete]);
+
+      await repository.pushAll(userId);
+
+      verify(() => remoteSource.deleteById('del-1', userId: userId)).called(1);
+      verify(
+        () =>
+            syncDao.deleteByRecord(SupabaseConstants.incubationsTable, 'del-1'),
+      ).called(1);
+    });
+
+    test(
+      'pushAll marks error when pendingDelete remote delete fails',
+      () async {
+        final pendingDelete = TestFixtures.sampleSyncMetadata(
+          id: 'meta-del',
+          table: SupabaseConstants.incubationsTable,
+          recordId: 'del-1',
+          userId: userId,
+          status: SyncStatus.pendingDelete,
+        );
+        final existing = TestFixtures.sampleSyncMetadata(
+          table: SupabaseConstants.incubationsTable,
+          recordId: 'del-1',
+          userId: userId,
+          retryCount: 0,
+        );
+        when(
+          () => syncDao.getPendingByTable(
+            userId,
+            SupabaseConstants.incubationsTable,
+          ),
+        ).thenAnswer((_) async => [pendingDelete]);
+        when(
+          () => remoteSource.deleteById('del-1', userId: userId),
+        ).thenThrow(const NetworkException('network error'));
+        when(
+          () =>
+              syncDao.getByRecord(SupabaseConstants.incubationsTable, 'del-1'),
+        ).thenAnswer((_) async => existing);
+
+        await repository.pushAll(userId);
+
+        final updated =
+            verify(() => syncDao.updateItem(captureAny())).captured.single
+                as SyncMetadata;
+        expect(updated.status, SyncStatus.error);
+        expect(updated.retryCount, 1);
+      },
+    );
+
+    test('watchActive delegates to DAO', () {
+      final expected = [_makeIncubation(id: 'inc-active')];
+      when(
+        () => localDao.watchActive(userId),
+      ).thenAnswer((_) => Stream.value(expected));
+
+      expect(repository.watchActive(userId), emits(expected));
+      verify(() => localDao.watchActive(userId)).called(1);
+    });
+
+    test('getByBreedingPair delegates to DAO', () async {
+      final expected = [_makeIncubation(id: 'inc-1')];
+      when(
+        () => localDao.getByBreedingPair('pair-1'),
+      ).thenAnswer((_) async => expected);
+
+      final result = await repository.getByBreedingPair('pair-1');
+      expect(result, expected);
+      verify(() => localDao.getByBreedingPair('pair-1')).called(1);
+    });
+
+    test('getByBreedingPairIds delegates to DAO', () async {
+      final expected = [_makeIncubation(id: 'inc-1')];
+      when(
+        () => localDao.getByBreedingPairIds(['pair-1', 'pair-2']),
+      ).thenAnswer((_) async => expected);
+
+      final result = await repository.getByBreedingPairIds([
+        'pair-1',
+        'pair-2',
+      ]);
+      expect(result, expected);
+      verify(
+        () => localDao.getByBreedingPairIds(['pair-1', 'pair-2']),
+      ).called(1);
+    });
+  });
+}

@@ -1,0 +1,76 @@
+name: "🐛 Hata Bildirimi"
+description: "Bir hata veya beklenmeyen davranış bildirin"
+labels: ["bug"]
+body:
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      options:
+        - Android
+        - iOS
+        - Windows
+        - macOS
+        - Birden fazla platform
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Kategori
+      options:
+        - Genetik Hesaplama
+        - Veritabanı (Drift SQLite)
+        - Supabase Senkronizasyon
+        - UI/UX
+        - Kuş Kaydı Yönetimi
+        - Eşleştirme / Üreme Takibi
+        - Mutasyon Hesaplama
+        - Offline Mod
+        - Bildirimler
+        - Yedekleme / Dışa Aktarma
+        - Diğer
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Hata Açıklaması
+      placeholder: Hatayı detaylı açıklayın
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Tekrarlama Adımları
+      placeholder: |
+        1. '...' sayfasına git
+        2. '...' butonuna tıkla
+        3. Hata oluşuyor
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Beklenen Davranış
+      placeholder: Ne olması gerekiyordu?
+
+  - type: dropdown
+    id: connection
+    attributes:
+      label: Bağlantı Durumu
+      options:
+        - Online
+        - Offline
+        - Geçiş sırasında (Offline → Online)
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Hata Logları
+      render: shell
+      placeholder: Varsa konsol çıktısı veya hata mesajı

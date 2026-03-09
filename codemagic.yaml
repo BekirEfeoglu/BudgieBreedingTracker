@@ -1,0 +1,271 @@
+workflows:
+  android-release:
+    name: Android Release
+    max_build_duration: 60
+    environment:
+      flutter: stable
+      groups:
+        - app_env_vars        # SUPABASE_URL, SUPABASE_ANON_KEY, REVENUECAT_API_KEY_ANDROID, GOOGLE_PLAY_SERVICE_ACCOUNT_CREDENTIALS
+        - android_signing     # CM_KEYSTORE, CM_KEYSTORE_PASSWORD, CM_KEY_ALIAS, CM_KEY_PASSWORD
+      vars:
+        GOOGLE_PLAY_PACKAGE_NAME: com.budgiebreeding.budgie_breeding_tracker
+        GOOGLE_PLAY_TRACK: alpha
+    scripts:
+      - name: Verify required environment variables
+        script: |
+          set -e
+          echo "=== Verifying required environment variables ==="
+          MISSING=0
+          if [ -z "$SUPABASE_URL" ]; then
+            echo "ERROR: SUPABASE_URL is not set or empty"
+            MISSING=1
+          else
+            echo "SUPABASE_URL is set (length: ${#SUPABASE_URL})"
+          fi
+          if [ -z "$SUPABASE_ANON_KEY" ]; then
+            echo "ERROR: SUPABASE_ANON_KEY is not set or empty"
+            MISSING=1
+          else
+            echo "SUPABASE_ANON_KEY is set (length: ${#SUPABASE_ANON_KEY})"
+          fi
+          if [ -z "$REVENUECAT_API_KEY_ANDROID" ]; then
+            echo "ERROR: REVENUECAT_API_KEY_ANDROID is not set or empty"
+            MISSING=1
+          else
+            echo "REVENUECAT_API_KEY_ANDROID is set (length: ${#REVENUECAT_API_KEY_ANDROID})"
+          fi
+          if [ -z "$GOOGLE_PLAY_SERVICE_ACCOUNT_CREDENTIALS" ]; then
+            echo "ERROR: GOOGLE_PLAY_SERVICE_ACCOUNT_CREDENTIALS is not set or empty"
+            MISSING=1
+          else
+            echo "GOOGLE_PLAY_SERVICE_ACCOUNT_CREDENTIALS is set"
+          fi
+          if [ "$MISSING" -eq 1 ]; then
+            echo ""
+            echo "Add SUPABASE_URL, SUPABASE_ANON_KEY, REVENUECAT_API_KEY_ANDROID,"
+            echo "and GOOGLE_PLAY_SERVICE_ACCOUNT_CREDENTIALS"
+            echo "to the 'app_env_vars' group in Codemagic."
+            exit 1
+          fi
+          echo "=== All required variables present ==="
+
+      - name: Prepare Android signing
+        script: |
+          set -e
+          echo "=== Preparing Android signing ==="
+          MISSING=0
+          for VAR_NAME in CM_KEYSTORE CM_KEYSTORE_PASSWORD CM_KEY_ALIAS CM_KEY_PASSWORD; do
+            if [ -z "${!VAR_NAME}" ]; then
+              echo "ERROR: $VAR_NAME is not set or empty"
+              MISSING=1
+            fi
+          done
+          if [ "$MISSING" -eq 1 ]; then
+            echo ""
+            echo "Add CM_KEYSTORE, CM_KEYSTORE_PASSWORD, CM_KEY_ALIAS, and CM_KEY_PASSWORD"
+            echo "to the 'android_signing' group in Codemagic."
+            exit 1
+          fi
+
+          KEYSTORE_FILE="${CM_BUILD_DIR:-$PWD}/android-release.keystore"
+          if [ -f "$CM_KEYSTORE" ]; then
+            cp "$CM_KEYSTORE" "$KEYSTORE_FILE"
+          else
+            echo "$CM_KEYSTORE" | base64 --decode > "$KEYSTORE_FILE"
+          fi
+
+          if [ ! -s "$KEYSTORE_FILE" ]; then
+            echo "ERROR: Android keystore file was not created correctly"
+            exit 1
+          fi
+
+          cat > android/key.properties <<EOF
+          storePassword=$CM_KEYSTORE_PASSWORD
+          keyPassword=$CM_KEY_PASSWORD
+          keyAlias=$CM_KEY_ALIAS
+          storeFile=$KEYSTORE_FILE
+          EOF
+
+          chmod 600 android/key.properties "$KEYSTORE_FILE"
+          echo "Android signing prepared with key.properties"
+
+      - name: Install dependencies
+        script: flutter pub get
+
+      - name: Generate code
+        script: dart run build_runner build --delete-conflicting-outputs
+
+      - name: Create dummy .env
+        script: touch .env   # asset declared in pubspec.yaml; credentials come from --dart-define
+
+      - name: Analyze
+        script: flutter analyze --no-fatal-infos --no-fatal-warnings
+
+      - name: Resolve Android build number
+        script: |
+          set -e
+          if ! LATEST_BUILD_NUMBER="$(google-play get-latest-build-number \
+            --package-name "$GOOGLE_PLAY_PACKAGE_NAME" \
+            --tracks="$GOOGLE_PLAY_TRACK" 2>/dev/null)"; then
+            LATEST_BUILD_NUMBER=0
+          fi
+          case "$LATEST_BUILD_NUMBER" in
+            ''|*[!0-9]*)
+              LATEST_BUILD_NUMBER=0
+              ;;
+          esac
+          ANDROID_BUILD_NUMBER=$((LATEST_BUILD_NUMBER + 1))
+          echo "Resolved Android build number: $ANDROID_BUILD_NUMBER"
+          echo "ANDROID_BUILD_NUMBER=$ANDROID_BUILD_NUMBER" >> "$CM_ENV"
+
+      - name: Build Android App Bundle
+        script: |
+          flutter build appbundle --release \
+            --build-number=$ANDROID_BUILD_NUMBER \
+            --dart-define=SUPABASE_URL="$SUPABASE_URL" \
+            --dart-define=SUPABASE_ANON_KEY="$SUPABASE_ANON_KEY" \
+            --dart-define=SENTRY_DSN="${SENTRY_DSN:-}" \
+            --dart-define=SENTRY_ENVIRONMENT=production \
+            --dart-define=REVENUECAT_API_KEY_ANDROID="$REVENUECAT_API_KEY_ANDROID"
+
+    artifacts:
+      - build/**/outputs/**/*.aab
+      - build/**/outputs/**/mapping.txt
+      - flutter_drive.log
+
+    publishing:
+      google_play:
+        credentials: $GOOGLE_PLAY_SERVICE_ACCOUNT_CREDENTIALS
+        track: $GOOGLE_PLAY_TRACK
+        submit_as_draft: true
+
+  ios-release:
+    name: iOS Release
+    max_build_duration: 60
+    environment:
+      flutter: stable
+      groups:
+        - app_env_vars        # SUPABASE_URL, SUPABASE_ANON_KEY, REVENUECAT_API_KEY_IOS
+      vars:
+        APP_STORE_APPLE_ID: 6759828211
+    integrations:
+      app_store_connect: Codemagic CI
+    scripts:
+      - name: Verify required environment variables
+        script: |
+          set -e
+          echo "=== Verifying required environment variables ==="
+          MISSING=0
+          if [ -z "$SUPABASE_URL" ]; then
+            echo "ERROR: SUPABASE_URL is not set or empty"
+            MISSING=1
+          else
+            echo "SUPABASE_URL is set (length: ${#SUPABASE_URL})"
+          fi
+          if [ -z "$SUPABASE_ANON_KEY" ]; then
+            echo "ERROR: SUPABASE_ANON_KEY is not set or empty"
+            MISSING=1
+          else
+            echo "SUPABASE_ANON_KEY is set (length: ${#SUPABASE_ANON_KEY})"
+          fi
+          if [ -z "$REVENUECAT_API_KEY_IOS" ]; then
+            echo "ERROR: REVENUECAT_API_KEY_IOS is not set or empty"
+            MISSING=1
+          else
+            echo "REVENUECAT_API_KEY_IOS is set (length: ${#REVENUECAT_API_KEY_IOS})"
+          fi
+          if [ "$MISSING" -eq 1 ]; then
+            echo ""
+            echo "Add SUPABASE_URL, SUPABASE_ANON_KEY, and REVENUECAT_API_KEY_IOS"
+            echo "to the 'app_env_vars' group in Codemagic."
+            exit 1
+          fi
+          echo "=== All required variables present ==="
+
+      - name: Verify iOS signing variables
+        script: |
+          set -e
+          if [ -z "$CERTIFICATE_PRIVATE_KEY" ]; then
+            echo "ERROR: Missing CERTIFICATE_PRIVATE_KEY."
+            echo "Import an environment group or app-level variable that provides CERTIFICATE_PRIVATE_KEY before running the iOS workflow."
+            exit 1
+          fi
+          echo "CERTIFICATE_PRIVATE_KEY is set (length: ${#CERTIFICATE_PRIVATE_KEY})"
+
+      - name: Set up code signing
+        script: |
+          set -e
+          if [ -z "$APP_STORE_CONNECT_KEY_IDENTIFIER" ] || [ -z "$APP_STORE_CONNECT_ISSUER_ID" ] || [ -z "$APP_STORE_CONNECT_PRIVATE_KEY" ]; then
+            echo "ERROR: Missing required App Store Connect credentials."
+            echo "  APP_STORE_CONNECT_KEY_IDENTIFIER: ${APP_STORE_CONNECT_KEY_IDENTIFIER:-(not set)}"
+            echo "  APP_STORE_CONNECT_ISSUER_ID: ${APP_STORE_CONNECT_ISSUER_ID:-(not set)}"
+            echo "  APP_STORE_CONNECT_PRIVATE_KEY length: ${#APP_STORE_CONNECT_PRIVATE_KEY}"
+            exit 1
+          fi
+          keychain initialize
+          # Credentials are read directly from environment variables
+          # APP_STORE_CONNECT_KEY_IDENTIFIER, APP_STORE_CONNECT_ISSUER_ID,
+          # APP_STORE_CONNECT_PRIVATE_KEY are auto-detected by the CLI
+          app-store-connect fetch-signing-files \
+            "com.budgiebreeding.tracker" \
+            --type IOS_APP_STORE \
+            --create
+          keychain add-certificates
+          xcode-project use-profiles
+
+      - name: Install dependencies
+        script: flutter pub get
+
+      - name: Generate code
+        script: dart run build_runner build --delete-conflicting-outputs
+
+      - name: Create dummy .env
+        script: touch .env   # asset declared in pubspec.yaml; credentials come from --dart-define
+
+      - name: Analyze
+        script: flutter analyze --no-fatal-infos --no-fatal-warnings
+
+      - name: Resolve iOS build number
+        script: |
+          set -e
+          LATEST_BUILD_NUMBER="$(app-store-connect get-latest-app-store-build-number \
+            "$APP_STORE_APPLE_ID" \
+            --platform=IOS)"
+          IOS_BUILD_NUMBER=$((LATEST_BUILD_NUMBER + 1))
+          echo "Resolved iOS build number: $IOS_BUILD_NUMBER"
+          echo "IOS_BUILD_NUMBER=$IOS_BUILD_NUMBER" >> "$CM_ENV"
+
+      - name: Build iOS IPA
+        script: |
+          set -e
+          # xcode-project use-profiles generates export_options.plist at $HOME
+          EXPORT_PLIST="$HOME/export_options.plist"
+          if [ ! -f "$EXPORT_PLIST" ]; then
+            # Fallback: some Codemagic CLI versions write to CM_BUILD_DIR
+            EXPORT_PLIST="${CM_BUILD_DIR:-$HOME}/export_options.plist"
+          fi
+          if [ ! -f "$EXPORT_PLIST" ]; then
+            echo "ERROR: export_options.plist not found at $EXPORT_PLIST"
+            echo "Ensure 'xcode-project use-profiles' ran successfully."
+            exit 1
+          fi
+          echo "Using export options plist: $EXPORT_PLIST"
+          flutter build ipa --release \
+            --build-number=$IOS_BUILD_NUMBER \
+            --export-options-plist="$EXPORT_PLIST" \
+            --dart-define=SUPABASE_URL="$SUPABASE_URL" \
+            --dart-define=SUPABASE_ANON_KEY="$SUPABASE_ANON_KEY" \
+            --dart-define=SENTRY_DSN="${SENTRY_DSN:-}" \
+            --dart-define=SENTRY_ENVIRONMENT=production \
+            --dart-define=REVENUECAT_API_KEY_IOS="$REVENUECAT_API_KEY_IOS"
+
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+      - flutter_drive.log
+
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: false
+        submit_to_app_store: false
