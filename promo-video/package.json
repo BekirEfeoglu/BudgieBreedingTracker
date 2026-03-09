@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@remotion/cli": "4.0.431",
-    "@remotion/shapes": "4.0.242",
+    "@remotion/shapes": "4.0.434",
     "@remotion/transitions": "4.0.242",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
