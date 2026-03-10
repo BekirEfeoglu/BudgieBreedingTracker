@@ -69,9 +69,9 @@ class _DetailContent extends ConsumerWidget {
         );
       }
       if (state.error != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(state.error!)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(state.error!)));
       }
     });
 
@@ -82,12 +82,10 @@ class _DetailContent extends ConsumerWidget {
           IconButton(
             icon: const AppIcon(AppIcons.edit),
             tooltip: 'common.edit'.tr(),
-            onPressed: () =>
-                context.push('/breeding/form?editId=${pair.id}'),
+            onPressed: () => context.push('/breeding/form?editId=${pair.id}'),
           ),
           PopupMenuButton<String>(
-            onSelected: (value) =>
-                _handleMenuAction(context, ref, value),
+            onSelected: (value) => _handleMenuAction(context, ref, value),
             itemBuilder: (context) => [
               PopupMenuItem(
                 value: 'complete',
@@ -97,10 +95,7 @@ class _DetailContent extends ConsumerWidget {
                 value: 'cancel',
                 child: Text('breeding.cancel_breeding'.tr()),
               ),
-              PopupMenuItem(
-                value: 'delete',
-                child: Text('common.delete'.tr()),
-              ),
+              PopupMenuItem(value: 'delete', child: Text('common.delete'.tr())),
             ],
           ),
         ],
@@ -118,8 +113,8 @@ class _DetailContent extends ConsumerWidget {
               ),
               error: (_, __) => const SizedBox.shrink(),
               data: (incubations) {
-                if (incubations.isEmpty) return const SizedBox.shrink();
-                final incubation = incubations.first;
+                final incubation = selectPrimaryIncubation(incubations);
+                if (incubation == null) return const SizedBox.shrink();
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -217,16 +212,19 @@ class _IncubationSection extends StatelessWidget {
           const SizedBox(height: AppSpacing.md),
           Row(
             children: [
-              Text('breeding.incubation_process'.tr(),
-                  style: theme.textTheme.titleMedium),
+              Text(
+                'breeding.incubation_process'.tr(),
+                style: theme.textTheme.titleMedium,
+              ),
               const SizedBox(width: AppSpacing.sm),
               Container(
                 padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.sm, vertical: 2),
+                  horizontal: AppSpacing.sm,
+                  vertical: 2,
+                ),
                 decoration: BoxDecoration(
                   color: stageColor.withValues(alpha: 0.12),
-                  borderRadius:
-                      BorderRadius.circular(AppSpacing.radiusSm),
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
                 ),
                 child: Text(
                   stageLabel,

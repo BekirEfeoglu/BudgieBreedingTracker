@@ -27,22 +27,21 @@ class IncubationsDao extends DatabaseAccessor<AppDatabase>
   }
 
   Future<List<Incubation>> getAll(String userId) async {
-    final rows = await (select(incubationsTable)
-          ..where((t) => t.userId.equals(userId)))
-        .get();
+    final rows = await (select(
+      incubationsTable,
+    )..where((t) => t.userId.equals(userId))).get();
     return rows.map((r) => r.toModel()).toList();
   }
 
   Future<Incubation?> getById(String id) async {
-    final row =
-        await (select(incubationsTable)..where((t) => t.id.equals(id)))
-            .getSingleOrNull();
+    final row = await (select(
+      incubationsTable,
+    )..where((t) => t.id.equals(id))).getSingleOrNull();
     return row?.toModel();
   }
 
   Future<void> insertItem(Incubation model) {
-    return into(incubationsTable)
-        .insertOnConflictUpdate(model.toCompanion());
+    return into(incubationsTable).insertOnConflictUpdate(model.toCompanion());
   }
 
   Future<void> insertAll(List<Incubation> models) {
@@ -63,10 +62,11 @@ class IncubationsDao extends DatabaseAccessor<AppDatabase>
   }
 
   Stream<List<Incubation>> watchActive(String userId) {
-    return (select(incubationsTable)
-          ..where((t) =>
+    return (select(incubationsTable)..where(
+          (t) =>
               t.userId.equals(userId) &
-              t.status.equalsValue(IncubationStatus.active)))
+              t.status.equalsValue(IncubationStatus.active),
+        ))
         .watch()
         .map((rows) => rows.map((r) => r.toModel()).toList());
   }
@@ -75,24 +75,36 @@ class IncubationsDao extends DatabaseAccessor<AppDatabase>
     final count = incubationsTable.id.count();
     return (selectOnly(incubationsTable)
           ..addColumns([count])
-          ..where(incubationsTable.userId.equals(userId) &
-              incubationsTable.status.equalsValue(IncubationStatus.active)))
+          ..where(
+            incubationsTable.userId.equals(userId) &
+                incubationsTable.status.equalsValue(IncubationStatus.active),
+          ))
         .watchSingle()
         .map((row) => row.read(count) ?? 0);
   }
 
   Future<List<Incubation>> getByBreedingPair(String pairId) async {
-    final rows = await (select(incubationsTable)
-          ..where((t) => t.breedingPairId.equals(pairId)))
-        .get();
+    final rows =
+        await (select(incubationsTable)
+              ..where((t) => t.breedingPairId.equals(pairId))
+              ..orderBy([
+                (t) => OrderingTerm.desc(t.startDate),
+                (t) => OrderingTerm.desc(t.createdAt),
+              ]))
+            .get();
     return rows.map((r) => r.toModel()).toList();
   }
 
   Future<List<Incubation>> getByBreedingPairIds(List<String> pairIds) async {
     if (pairIds.isEmpty) return [];
-    final rows = await (select(incubationsTable)
-          ..where((t) => t.breedingPairId.isIn(pairIds)))
-        .get();
+    final rows =
+        await (select(incubationsTable)
+              ..where((t) => t.breedingPairId.isIn(pairIds))
+              ..orderBy([
+                (t) => OrderingTerm.desc(t.startDate),
+                (t) => OrderingTerm.desc(t.createdAt),
+              ]))
+            .get();
     return rows.map((r) => r.toModel()).toList();
   }
 }

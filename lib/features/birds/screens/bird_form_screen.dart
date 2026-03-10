@@ -156,7 +156,10 @@ class _BirdFormScreenState extends ConsumerState<BirdFormScreen> {
               _colorMutation = bird.colorMutation == BirdColor.unknown
                   ? null
                   : bird.colorMutation;
-              _genotype = BirdGenotypeMapper.birdToGenotype(bird);
+              _genotype = normalizeGenotypeForGender(
+                genotype: BirdGenotypeMapper.birdToGenotype(bird),
+                gender: bird.gender,
+              );
               _ringController.text = bird.ringNumber ?? '';
               _birthDate = bird.birthDate;
               _fatherId = bird.fatherId;
@@ -300,8 +303,12 @@ class _BirdFormScreenState extends ConsumerState<BirdFormScreen> {
               BirdFormGeneticsSection(
                 gender: _gender,
                 genotype: _genotype,
-                onGenotypeChanged: (genotype) =>
-                    setState(() => _genotype = genotype),
+                onGenotypeChanged: (genotype) => setState(() {
+                  _genotype = normalizeGenotypeForGender(
+                    genotype: genotype,
+                    gender: _gender,
+                  );
+                }),
               ),
               const SizedBox(height: AppSpacing.xl),
               BirdFormIdentitySection(
@@ -344,8 +351,11 @@ class _BirdFormScreenState extends ConsumerState<BirdFormScreen> {
       colorNoteText: _colorNoteController.text,
       notesText: _notesController.text,
     );
-    final selectedGenotype = ParentGenotype(
-      mutations: Map<String, AlleleState>.from(_genotype.mutations),
+    final selectedGenotype = normalizeGenotypeForGender(
+      genotype: ParentGenotype(
+        mutations: Map<String, AlleleState>.from(_genotype.mutations),
+        gender: _gender,
+      ),
       gender: _gender,
     );
     final genotypeForSave = selectedGenotype.isNotEmpty

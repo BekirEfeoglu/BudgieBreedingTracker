@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 
+import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/widgets/error_state.dart';
 import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/features/birds/screens/bird_form_screen.dart';
@@ -52,6 +53,7 @@ void main() {
       () => mockBirdRepo.watchAll(any()),
     ).thenAnswer((_) => Stream.value([]));
     when(() => mockBirdRepo.getAll(any())).thenAnswer((_) async => []);
+    when(() => mockBirdRepo.save(any())).thenAnswer((_) async {});
     when(() => mockBirdRepo.watchById(any())).thenAnswer((invocation) {
       final id = invocation.positionalArguments.first as String;
       if (editBirdId != null && id == editBirdId) {
@@ -205,6 +207,41 @@ void main() {
 
       expect(find.byType(ErrorState), findsOneWidget);
       expect(find.byType(Form), findsNothing);
+    });
+
+    testWidgets('normalizes female legacy sex-linked genotype on update', (
+      tester,
+    ) async {
+      final existing = Bird(
+        id: 'bird-legacy',
+        name: 'Luna',
+        gender: BirdGender.female,
+        userId: 'test-user',
+        mutations: const ['lutino'],
+        genotypeInfo: const {'lutino': 'carrier'},
+      );
+
+      await tester.pumpWidget(
+        buildSubject(editBirdId: existing.id, editBird: existing),
+      );
+      await tester.pumpAndSettle();
+
+      final updateButton = find.widgetWithText(FilledButton, 'common.update');
+      await tester.ensureVisible(updateButton);
+      await tester.tap(updateButton);
+      await tester.pumpAndSettle();
+
+      final saved =
+          verify(() => mockBirdRepo.save(captureAny())).captured.single as Bird;
+
+      expect(saved.mutations, isNotNull);
+      expect(saved.mutations, hasLength(1));
+      expect(saved.mutations!.single, 'ino');
+
+      expect(saved.genotypeInfo, isNotNull);
+      expect(saved.genotypeInfo, hasLength(1));
+      expect(saved.genotypeInfo!['ino'], 'visual');
+      expect(saved.genotypeInfo!.containsKey('lutino'), isFalse);
     });
   });
 }

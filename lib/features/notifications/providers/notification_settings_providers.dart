@@ -23,17 +23,21 @@ class NotificationToggleSettingsNotifier
     extends Notifier<NotificationToggleSettings> {
   @override
   NotificationToggleSettings build() {
-    _loadFromDao();
+    final userId = ref.watch(currentUserIdProvider);
+    if (userId == 'anonymous') {
+      return const NotificationToggleSettings();
+    }
+
+    _loadFromDao(userId);
     return const NotificationToggleSettings();
   }
 
   /// Loads stored settings from the Drift DAO.
-  Future<void> _loadFromDao() async {
+  Future<void> _loadFromDao(String userId) async {
     try {
-      final userId = ref.read(currentUserIdProvider);
-      if (userId == 'anonymous') return;
       final dao = ref.read(notificationSettingsDaoProvider);
       final settings = await dao.getByUser(userId);
+      if (ref.read(currentUserIdProvider) != userId) return;
       if (settings != null) {
         state = NotificationToggleSettings(
           soundEnabled: settings.soundEnabled,

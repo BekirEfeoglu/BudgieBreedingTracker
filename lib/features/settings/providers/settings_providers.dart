@@ -2,7 +2,9 @@ import 'dart:io';
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -62,6 +64,17 @@ enum AppDateFormat {
         AppDateFormat.mdy => 'AA/GG/YYYY',
         AppDateFormat.ymd => 'YYYY-AA-GG',
       };
+
+  String get intlPattern => switch (this) {
+        AppDateFormat.dmy => 'dd.MM.yyyy',
+        AppDateFormat.mdy => 'MM/dd/yyyy',
+        AppDateFormat.ymd => 'yyyy-MM-dd',
+      };
+
+  DateFormat formatter({bool withTime = false}) {
+    final pattern = withTime ? '$intlPattern HH:mm' : intlPattern;
+    return DateFormat(pattern);
+  }
 }
 
 final dateFormatProvider =
@@ -149,11 +162,67 @@ final cacheSizeProvider = FutureProvider<int>((ref) async {
   return _getDirectorySize(tempDir);
 });
 
+final databaseSizeProvider = FutureProvider<int>((ref) async {
+  final appDir = await getApplicationDocumentsDirectory();
+  final dbFile = File(p.join(appDir.path, 'budgie_tracker.sqlite'));
+  if (!await dbFile.exists()) return 0;
+  return dbFile.length();
+});
+
+final imageStorageSizeProvider = FutureProvider<int>((ref) async {
+  final tempDir = await getTemporaryDirectory();
+  final appDir = await getApplicationDocumentsDirectory();
+
+  final candidates = <Directory>[
+    Directory(p.join(tempDir.path, 'libCachedImageData')),
+    Directory(p.join(appDir.path, 'images')),
+    Directory(p.join(appDir.path, 'photo_cache')),
+  ];
+
+  int total = 0;
+  for (final dir in candidates) {
+    total += await _getDirectorySize(dir);
+  }
+
+  if (total > 0) return total;
+
+  // Fallback: scan temp folder for common image extensions.
+  return _getDirectorySizeWhere(
+    tempDir,
+    (file) {
+      final lower = file.path.toLowerCase();
+      return lower.endsWith('.jpg') ||
+          lower.endsWith('.jpeg') ||
+          lower.endsWith('.png') ||
+          lower.endsWith('.webp') ||
+          lower.endsWith('.gif') ||
+          lower.endsWith('.heic') ||
+          lower.endsWith('.heif') ||
+          lower.endsWith('.avif');
+    },
+  );
+});
+
 Future<int> _getDirectorySize(Directory dir) async {
   int size = 0;
   if (await dir.exists()) {
     await for (final entity in dir.list(recursive: true, followLinks: false)) {
       if (entity is File) {
+        size += await entity.length();
+      }
+    }
+  }
+  return size;
+}
+
+Future<int> _getDirectorySizeWhere(
+  Directory dir,
+  bool Function(File file) include,
+) async {
+  int size = 0;
+  if (await dir.exists()) {
+    await for (final entity in dir.list(recursive: true, followLinks: false)) {
+      if (entity is File && include(entity)) {
         size += await entity.length();
       }
     }

@@ -7,6 +7,7 @@ import 'package:budgie_breeding_tracker/core/enums/breeding_enums.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
+import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
 import 'package:budgie_breeding_tracker/data/models/incubation_model.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/calendar/calendar_event_providers.dart';
@@ -89,7 +90,11 @@ class BreedingFormNotifier extends Notifier<BreedingFormState> {
       if (!isPremium) {
         final existingPairs = await pairRepo.getAll(userId);
         final activePairs = existingPairs
-            .where((p) => p.status == BreedingStatus.active)
+            .where(
+              (p) =>
+                  p.status == BreedingStatus.active ||
+                  p.status == BreedingStatus.ongoing,
+            )
             .length;
         if (activePairs >= AppConstants.freeTierMaxBreedingPairs) {
           state = state.copyWith(
@@ -218,16 +223,22 @@ class BreedingFormNotifier extends Notifier<BreedingFormState> {
     try {
       final repo = ref.read(breedingPairRepositoryProvider);
       final pair = await repo.getById(id);
+      final now = DateTime.now();
       if (pair != null) {
         await repo.save(
           pair.copyWith(
             status: BreedingStatus.cancelled,
-            separationDate: DateTime.now(),
-            updatedAt: DateTime.now(),
+            separationDate: now,
+            updatedAt: now,
           ),
         );
 
-        await _cancelBreedingNotifications(id);
+        final incubations = await _closeActiveIncubations(
+          breedingPairId: id,
+          status: IncubationStatus.cancelled,
+          closedAt: now,
+        );
+        await _cancelBreedingNotifications(id, incubations: incubations);
       }
       state = state.copyWith(isLoading: false, isSuccess: true);
     } catch (e) {
@@ -242,16 +253,22 @@ class BreedingFormNotifier extends Notifier<BreedingFormState> {
     try {
       final repo = ref.read(breedingPairRepositoryProvider);
       final pair = await repo.getById(id);
+      final now = DateTime.now();
       if (pair != null) {
         await repo.save(
           pair.copyWith(
             status: BreedingStatus.completed,
-            separationDate: DateTime.now(),
-            updatedAt: DateTime.now(),
+            separationDate: now,
+            updatedAt: now,
           ),
         );
 
-        await _cancelBreedingNotifications(id);
+        final incubations = await _closeActiveIncubations(
+          breedingPairId: id,
+          status: IncubationStatus.completed,
+          closedAt: now,
+        );
+        await _cancelBreedingNotifications(id, incubations: incubations);
       }
       state = state.copyWith(isLoading: false, isSuccess: true);
     } catch (e) {
@@ -262,18 +279,34 @@ class BreedingFormNotifier extends Notifier<BreedingFormState> {
 
   /// Cancels incubation milestone and egg turning notifications
   /// associated with a breeding pair.
-  Future<void> _cancelBreedingNotifications(String breedingPairId) async {
+  Future<void> _cancelBreedingNotifications(
+    String breedingPairId, {
+    List<Incubation>? incubations,
+    List<Egg>? eggs,
+  }) async {
     try {
-      final incubationRepo = ref.read(incubationRepositoryProvider);
-      final incubations = await incubationRepo.getByBreedingPairIds([
-        breedingPairId,
-      ]);
-      if (incubations.isEmpty) return;
+      final loadedIncubations =
+          incubations ??
+          await ref.read(incubationRepositoryProvider).getByBreedingPairIds([
+            breedingPairId,
+          ]);
+      if (loadedIncubations.isEmpty) return;
+
+      final loadedEggs =
+          eggs ?? await _getEggsForIncubations(loadedIncubations);
 
       final scheduler = ref.read(notificationSchedulerProvider);
-      for (final incubation in incubations) {
+      for (final incubation in loadedIncubations) {
         await scheduler.cancelIncubationMilestones(incubation.id);
-        await scheduler.cancelEggTurningReminders(incubation.id);
+      }
+
+      // Keep legacy cancellation by incubationId and cancel proper eggId-based schedules.
+      final turningReminderIds = <String>{
+        for (final incubation in loadedIncubations) incubation.id,
+        for (final egg in loadedEggs) egg.id,
+      };
+      for (final reminderId in turningReminderIds) {
+        await scheduler.cancelEggTurningReminders(reminderId);
       }
     } catch (e) {
       AppLogger.warning('Failed to cancel breeding notifications: $e');
@@ -284,14 +317,71 @@ class BreedingFormNotifier extends Notifier<BreedingFormState> {
   Future<void> deleteBreeding(String id) async {
     state = state.copyWith(isLoading: true, error: null, isSuccess: false);
     try {
-      final repo = ref.read(breedingPairRepositoryProvider);
-      await repo.remove(id);
+      final pairRepo = ref.read(breedingPairRepositoryProvider);
+      final incubationRepo = ref.read(incubationRepositoryProvider);
+      final eggRepo = ref.read(eggRepositoryProvider);
+
+      try {
+        final incubations = await incubationRepo.getByBreedingPairIds([id]);
+        final eggs = await _getEggsForIncubations(incubations);
+
+        await _cancelBreedingNotifications(
+          id,
+          incubations: incubations,
+          eggs: eggs,
+        );
+
+        for (final egg in eggs) {
+          await eggRepo.remove(egg.id);
+        }
+        for (final incubation in incubations) {
+          await incubationRepo.remove(incubation.id);
+        }
+      } catch (e) {
+        AppLogger.warning(
+          'Failed to clean related incubation/egg records before deleting breeding $id: $e',
+        );
+      }
+
+      await pairRepo.remove(id);
       state = state.copyWith(isLoading: false, isSuccess: true);
     } catch (e, st) {
       AppLogger.error('BreedingFormNotifier', e, st);
       Sentry.captureException(e, stackTrace: st);
       state = state.copyWith(isLoading: false, error: e.toString());
     }
+  }
+
+  Future<List<Egg>> _getEggsForIncubations(List<Incubation> incubations) async {
+    final incubationIds = incubations.map((i) => i.id).toList();
+    if (incubationIds.isEmpty) return const <Egg>[];
+
+    final eggRepo = ref.read(eggRepositoryProvider);
+    return eggRepo.getByIncubationIds(incubationIds);
+  }
+
+  Future<List<Incubation>> _closeActiveIncubations({
+    required String breedingPairId,
+    required IncubationStatus status,
+    required DateTime closedAt,
+  }) async {
+    final incubationRepo = ref.read(incubationRepositoryProvider);
+    final incubations = await incubationRepo.getByBreedingPairIds([
+      breedingPairId,
+    ]);
+
+    for (final incubation in incubations) {
+      if (incubation.status != IncubationStatus.active) continue;
+      await incubationRepo.save(
+        incubation.copyWith(
+          status: status,
+          endDate: incubation.endDate ?? closedAt,
+          updatedAt: closedAt,
+        ),
+      );
+    }
+
+    return incubations;
   }
 
   /// Resets form state for a new operation.

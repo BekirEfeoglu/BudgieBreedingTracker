@@ -111,13 +111,32 @@ class _BudgieBreedingAppState extends ConsumerState<BudgieBreedingApp> {
     });
 
     final fontScale = ref.watch(fontScaleProvider);
+    final compactView = ref.watch(compactViewProvider);
+    final reduceAnimations = ref.watch(reduceAnimationsProvider);
+    final visualDensity = compactView
+        ? const VisualDensity(horizontal: -1, vertical: -1)
+        : VisualDensity.standard;
 
     return MaterialApp.router(
       title: 'BudgieBreedingTracker',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.light(),
-      darkTheme: AppTheme.dark(),
+      theme: AppTheme.light().copyWith(
+        visualDensity: visualDensity,
+        listTileTheme: ListTileThemeData(
+          dense: compactView,
+          visualDensity: visualDensity,
+        ),
+      ),
+      darkTheme: AppTheme.dark().copyWith(
+        visualDensity: visualDensity,
+        listTileTheme: ListTileThemeData(
+          dense: compactView,
+          visualDensity: visualDensity,
+        ),
+      ),
       themeMode: themeMode,
+      themeAnimationDuration:
+          reduceAnimations ? Duration.zero : kThemeAnimationDuration,
       localizationsDelegates: context.localizationDelegates,
       supportedLocales: context.supportedLocales,
       locale: context.locale,
@@ -127,7 +146,10 @@ class _BudgieBreedingAppState extends ConsumerState<BudgieBreedingApp> {
         return MediaQuery(
           data: MediaQuery.of(
             context,
-          ).copyWith(textScaler: TextScaler.linear(scale)),
+          ).copyWith(
+            textScaler: TextScaler.linear(scale),
+            disableAnimations: reduceAnimations,
+          ),
           child: child!,
         );
       },

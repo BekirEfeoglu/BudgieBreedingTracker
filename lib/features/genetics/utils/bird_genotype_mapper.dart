@@ -1,5 +1,6 @@
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
+import 'package:budgie_breeding_tracker/domain/services/genetics/mutation_database.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/parent_genotype.dart';
 
 /// Shared mapping helpers between Bird records and genetics genotype state.
@@ -14,12 +15,10 @@ abstract final class BirdGenotypeMapper {
 
     if (bird.mutations != null && bird.mutations!.isNotEmpty) {
       for (final mutationId in bird.mutations!) {
-        final stateValue = bird.genotypeInfo?[mutationId];
-        mutations[mutationId] = switch (stateValue) {
-          'carrier' => AlleleState.carrier,
-          'split' => AlleleState.split,
-          _ => AlleleState.visual,
-        };
+        final resolvedId = MutationDatabase.resolveId(mutationId);
+        final stateValue =
+            bird.genotypeInfo?[mutationId] ?? bird.genotypeInfo?[resolvedId];
+        mutations[mutationId] = _parseAlleleState(stateValue);
       }
     } else {
       final fallback = genotypeFromColor(
@@ -29,7 +28,8 @@ abstract final class BirdGenotypeMapper {
       mutations.addAll(fallback.mutations);
     }
 
-    return ParentGenotype(mutations: mutations, gender: bird.gender);
+    final canonical = _canonicalizeMutations(mutations);
+    return ParentGenotype(mutations: canonical, gender: bird.gender);
   }
 
   /// Builds a best-effort genotype from a single [BirdColor].
@@ -74,7 +74,8 @@ abstract final class BirdGenotypeMapper {
   /// Serializes genotype mutation keys for [Bird.mutations] payload.
   static List<String>? mutationIdsFromGenotype(ParentGenotype genotype) {
     if (genotype.mutations.isEmpty) return null;
-    return genotype.mutations.keys.toList();
+    final canonical = _canonicalizeMutations(genotype.mutations);
+    return canonical.keys.toList();
   }
 
   /// Serializes genotype allele states for [Bird.genotypeInfo] payload.
@@ -82,9 +83,61 @@ abstract final class BirdGenotypeMapper {
     ParentGenotype genotype,
   ) {
     if (genotype.mutations.isEmpty) return null;
-    return {
-      for (final entry in genotype.mutations.entries)
-        entry.key: entry.value.name,
+    final canonical = _canonicalizeMutations(genotype.mutations);
+    return {for (final entry in canonical.entries) entry.key: entry.value.name};
+  }
+
+  static AlleleState _parseAlleleState(String? value) {
+    return switch (value) {
+      'carrier' => AlleleState.carrier,
+      'split' => AlleleState.split,
+      _ => AlleleState.visual,
     };
+  }
+
+  /// Resolves legacy IDs (e.g., lutino→ino) and collapses collisions.
+  static Map<String, AlleleState> _canonicalizeMutations(
+    Map<String, AlleleState> source,
+  ) {
+    final canonical = <String, AlleleState>{};
+    final cameFromCanonicalKey = <String, bool>{};
+
+    for (final entry in source.entries) {
+      final resolvedId = MutationDatabase.resolveId(entry.key);
+      final sourceIsCanonical = resolvedId == entry.key;
+      final existing = canonical[resolvedId];
+
+      if (existing == null) {
+        canonical[resolvedId] = entry.value;
+        cameFromCanonicalKey[resolvedId] = sourceIsCanonical;
+        continue;
+      }
+
+      final existingIsCanonical = cameFromCanonicalKey[resolvedId] ?? false;
+      if (sourceIsCanonical && !existingIsCanonical) {
+        canonical[resolvedId] = entry.value;
+        cameFromCanonicalKey[resolvedId] = true;
+        continue;
+      }
+      if (!sourceIsCanonical && existingIsCanonical) {
+        continue;
+      }
+
+      canonical[resolvedId] = _preferredState(existing, entry.value);
+    }
+
+    return canonical;
+  }
+
+  static AlleleState _preferredState(
+    AlleleState current,
+    AlleleState incoming,
+  ) {
+    int rank(AlleleState state) => switch (state) {
+      AlleleState.carrier => 1,
+      AlleleState.split => 2,
+      AlleleState.visual => 3,
+    };
+    return rank(incoming) > rank(current) ? incoming : current;
   }
 }

@@ -12,6 +12,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:budgie_breeding_tracker/core/widgets/date_picker_field.dart';
 import 'package:budgie_breeding_tracker/core/widgets/empty_state.dart';
 import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
+import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
 import 'package:budgie_breeding_tracker/features/birds/providers/bird_providers.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_providers.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_detail_providers.dart';
@@ -37,6 +38,8 @@ class _BreedingFormScreenState extends ConsumerState<BreedingFormScreen> {
   final _cageController = TextEditingController();
   final _notesController = TextEditingController();
   bool _isEdit = false;
+  bool _isLoadingExistingPair = false;
+  BreedingPair? _existingPair;
 
   @override
   void initState() {
@@ -47,22 +50,35 @@ class _BreedingFormScreenState extends ConsumerState<BreedingFormScreen> {
     }
   }
 
-  void _loadExistingPair() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final pairAsync =
-          ref.read(breedingPairByIdProvider(widget.editPairId!));
-      pairAsync.whenData((pair) {
-        if (pair != null && mounted) {
-          setState(() {
-            _maleId = pair.maleId;
-            _femaleId = pair.femaleId;
-            _pairingDate = pair.pairingDate ?? DateTime.now();
-            _cageController.text = pair.cageNumber ?? '';
-            _notesController.text = pair.notes ?? '';
-          });
-        }
-      });
-    });
+  Future<void> _loadExistingPair() async {
+    final editPairId = widget.editPairId;
+    if (editPairId == null) return;
+
+    setState(() => _isLoadingExistingPair = true);
+    try {
+      final pair = await ref.read(breedingPairByIdProvider(editPairId).future);
+      if (!mounted) return;
+
+      if (pair != null) {
+        setState(() {
+          _existingPair = pair;
+          _maleId = pair.maleId;
+          _femaleId = pair.femaleId;
+          _pairingDate = pair.pairingDate ?? DateTime.now();
+          _cageController.text = pair.cageNumber ?? '';
+          _notesController.text = pair.notes ?? '';
+        });
+      }
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('common.data_load_error'.tr())));
+    } finally {
+      if (mounted) {
+        setState(() => _isLoadingExistingPair = false);
+      }
+    }
   }
 
   @override
@@ -108,20 +124,31 @@ class _BreedingFormScreenState extends ConsumerState<BreedingFormScreen> {
           ),
         );
       } else if (state.error != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(state.error!)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(state.error!)));
       }
     });
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(_isEdit ? 'breeding.edit_breeding'.tr() : 'breeding.new_breeding'.tr()),
+        title: Text(
+          _isEdit
+              ? 'breeding.edit_breeding'.tr()
+              : 'breeding.new_breeding'.tr(),
+        ),
       ),
       body: birdsAsync.when(
         loading: () => const LoadingState(),
         error: (e, _) => Center(child: Text('${'common.error'.tr()}: $e')),
         data: (allBirds) {
+          if (_isEdit && _isLoadingExistingPair) {
+            return const LoadingState();
+          }
+          if (_isEdit && _existingPair == null) {
+            return Center(child: Text('breeding.not_found'.tr()));
+          }
+
           if (allBirds.isEmpty && !_isEdit) {
             return EmptyState(
               icon: const AppIcon(AppIcons.bird),
@@ -149,7 +176,8 @@ class _BreedingFormScreenState extends ConsumerState<BreedingFormScreen> {
                   ),
                   const SizedBox(height: AppSpacing.lg),
                   BirdSelectorField(
-                    label: '${'breeding.female_bird'.tr()} (${femaleBirds.length})',
+                    label:
+                        '${'breeding.female_bird'.tr()} (${femaleBirds.length})',
                     birds: femaleBirds,
                     selectedId: _femaleId,
                     onChanged: (id) => setState(() => _femaleId = id),
@@ -159,8 +187,7 @@ class _BreedingFormScreenState extends ConsumerState<BreedingFormScreen> {
                   DatePickerField(
                     label: 'breeding.pairing_date'.tr(),
                     value: _pairingDate,
-                    onChanged: (date) =>
-                        setState(() => _pairingDate = date),
+                    onChanged: (date) => setState(() => _pairingDate = date),
                   ),
                   const SizedBox(height: AppSpacing.lg),
                   TextFormField(
@@ -206,23 +233,30 @@ class _BreedingFormScreenState extends ConsumerState<BreedingFormScreen> {
     final notifier = ref.read(breedingFormStateProvider.notifier);
 
     if (_isEdit && widget.editPairId != null) {
-      final pairAsync =
-          ref.read(breedingPairByIdProvider(widget.editPairId!));
-      pairAsync.whenData((pair) {
-        if (pair != null) {
-          notifier.updateBreeding(pair.copyWith(
-            maleId: _maleId,
-            femaleId: _femaleId,
-            pairingDate: _pairingDate,
-            cageNumber: _cageController.text.isEmpty
-                ? null
-                : _cageController.text,
-            notes: _notesController.text.isEmpty
-                ? null
-                : _notesController.text,
-          ));
-        }
-      });
+      final existingPair = _existingPair;
+      if (existingPair == null) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('common.data_load_error'.tr())));
+        return;
+      }
+      if (_maleId == null || _femaleId == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('breeding.select_birds_required'.tr())),
+        );
+        return;
+      }
+      notifier.updateBreeding(
+        existingPair.copyWith(
+          maleId: _maleId,
+          femaleId: _femaleId,
+          pairingDate: _pairingDate,
+          cageNumber: _cageController.text.isEmpty
+              ? null
+              : _cageController.text,
+          notes: _notesController.text.isEmpty ? null : _notesController.text,
+        ),
+      );
     } else {
       if (_maleId == null || _femaleId == null) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -235,12 +269,8 @@ class _BreedingFormScreenState extends ConsumerState<BreedingFormScreen> {
         maleId: _maleId!,
         femaleId: _femaleId!,
         pairingDate: _pairingDate,
-        cageNumber: _cageController.text.isEmpty
-            ? null
-            : _cageController.text,
-        notes: _notesController.text.isEmpty
-            ? null
-            : _notesController.text,
+        cageNumber: _cageController.text.isEmpty ? null : _cageController.text,
+        notes: _notesController.text.isEmpty ? null : _notesController.text,
       );
     }
   }

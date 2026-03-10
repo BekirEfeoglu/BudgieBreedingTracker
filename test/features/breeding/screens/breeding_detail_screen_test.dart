@@ -14,6 +14,7 @@ import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.d
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_detail_providers.dart';
 import 'package:budgie_breeding_tracker/features/breeding/screens/breeding_detail_screen.dart';
 import 'package:budgie_breeding_tracker/features/breeding/widgets/breeding_pair_info_section.dart';
+import 'package:budgie_breeding_tracker/features/eggs/providers/egg_providers.dart';
 import 'package:budgie_breeding_tracker/features/notifications/providers/notification_list_providers.dart';
 import 'package:budgie_breeding_tracker/features/profile/providers/profile_providers.dart';
 
@@ -78,6 +79,8 @@ void main() {
         incubationsByPairProvider(
           'pair-1',
         ).overrideWith((_) async => incubations),
+        eggsByIncubationProvider('inc-1').overrideWith((_) => Stream.value([])),
+        eggActionsProvider.overrideWith(() => EggActionsNotifier()),
         // Override bird providers for male/female (null birds)
         birdByIdProvider('').overrideWith((_) => Stream.value(null)),
       ],
