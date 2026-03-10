@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/lethal_combination_database.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/mendelian_calculator.dart';
 import 'package:budgie_breeding_tracker/features/genetics/providers/genetics_providers.dart';
+import 'package:budgie_breeding_tracker/features/genetics/widgets/epistasis_interactions_card.dart';
 import 'package:budgie_breeding_tracker/features/genetics/widgets/genetic_charts.dart';
 import 'package:budgie_breeding_tracker/features/genetics/widgets/genetics_results_step.dart';
 
@@ -61,11 +62,7 @@ void main() {
     ) async {
       await tester.pumpWidget(_wrap(overrides: _emptyOverrides()));
       await tester.pump();
-
-      var ex = tester.takeException();
-      while (ex != null) {
-        ex = tester.takeException();
-      }
+      expect(tester.takeException(), isNull);
 
       expect(find.text('genetics.no_results'), findsOneWidget);
     });
@@ -75,11 +72,7 @@ void main() {
     ) async {
       await tester.pumpWidget(_wrap(overrides: _dataOverrides()));
       await tester.pump();
-
-      var ex = tester.takeException();
-      while (ex != null) {
-        ex = tester.takeException();
-      }
+      expect(tester.takeException(), isNull);
 
       expect(find.text('genetics.results_title'), findsOneWidget);
     });
@@ -87,11 +80,7 @@ void main() {
     testWidgets('shows show_sex_specific toggle label', (tester) async {
       await tester.pumpWidget(_wrap(overrides: _dataOverrides()));
       await tester.pump();
-
-      var ex = tester.takeException();
-      while (ex != null) {
-        ex = tester.takeException();
-      }
+      expect(tester.takeException(), isNull);
 
       expect(find.text('genetics.show_sex_specific'), findsOneWidget);
     });
@@ -99,11 +88,7 @@ void main() {
     testWidgets('shows show_genotype toggle label', (tester) async {
       await tester.pumpWidget(_wrap(overrides: _dataOverrides()));
       await tester.pump();
-
-      var ex = tester.takeException();
-      while (ex != null) {
-        ex = tester.takeException();
-      }
+      expect(tester.takeException(), isNull);
 
       expect(find.text('genetics.show_genotype'), findsOneWidget);
     });
@@ -111,11 +96,7 @@ void main() {
     testWidgets('shows two Switch widgets for toggles', (tester) async {
       await tester.pumpWidget(_wrap(overrides: _dataOverrides()));
       await tester.pump();
-
-      var ex = tester.takeException();
-      while (ex != null) {
-        ex = tester.takeException();
-      }
+      expect(tester.takeException(), isNull);
 
       expect(find.byType(Switch), findsNWidgets(2));
     });
@@ -125,11 +106,7 @@ void main() {
     ) async {
       await tester.pumpWidget(_wrap(overrides: _dataOverrides()));
       await tester.pump();
-
-      var ex = tester.takeException();
-      while (ex != null) {
-        ex = tester.takeException();
-      }
+      expect(tester.takeException(), isNull);
 
       expect(find.byType(OffspringProbabilityBarChart), findsOneWidget);
     });
@@ -137,11 +114,7 @@ void main() {
     testWidgets('shows phenotype names in results', (tester) async {
       await tester.pumpWidget(_wrap(overrides: _dataOverrides()));
       await tester.pump();
-
-      var ex = tester.takeException();
-      while (ex != null) {
-        ex = tester.takeException();
-      }
+      expect(tester.takeException(), isNull);
 
       expect(
         find.textContaining('genetics.mutation_normal'),
@@ -152,11 +125,7 @@ void main() {
     testWidgets('shows no PunnettSquare when punnett is null', (tester) async {
       await tester.pumpWidget(_wrap(overrides: _dataOverrides()));
       await tester.pump();
-
-      var ex = tester.takeException();
-      while (ex != null) {
-        ex = tester.takeException();
-      }
+      expect(tester.takeException(), isNull);
 
       // No punnett data => no PunnettSquareWidget
       expect(find.byKey(const ValueKey('punnett_square')), findsNothing);
@@ -202,11 +171,7 @@ void main() {
         ),
       );
       await tester.pump();
-
-      var ex = tester.takeException();
-      while (ex != null) {
-        ex = tester.takeException();
-      }
+      expect(tester.takeException(), isNull);
 
       expect(find.text('genetics.lethal_warning_title'), findsOneWidget);
     });
@@ -239,13 +204,8 @@ void main() {
         ),
       );
       await tester.pump();
-
-      var ex = tester.takeException();
-      while (ex != null) {
-        ex = tester.takeException();
-      }
-
-      expect(find.text('genetics.interaction_info'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+      expect(find.byType(EpistasisInteractionsCard), findsOneWidget);
     });
   });
 }

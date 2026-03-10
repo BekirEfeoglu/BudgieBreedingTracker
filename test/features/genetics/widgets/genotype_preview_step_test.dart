@@ -30,13 +30,6 @@ Widget _wrap(Widget child, {List<dynamic> overrides = const []}) {
   );
 }
 
-void _drainExceptions(WidgetTester tester) {
-  var ex = tester.takeException();
-  while (ex != null) {
-    ex = tester.takeException();
-  }
-}
-
 void main() {
   group('GenotypePreviewStep', () {
     testWidgets('renders without crashing with empty genotypes', (
@@ -52,7 +45,7 @@ void main() {
         ),
       );
       await tester.pump();
-      _drainExceptions(tester);
+      expect(tester.takeException(), isNull);
       expect(find.byType(GenotypePreviewStep), findsOneWidget);
     });
 
@@ -67,7 +60,7 @@ void main() {
         ),
       );
       await tester.pump();
-      _drainExceptions(tester);
+      expect(tester.takeException(), isNull);
       expect(find.text('genetics.genotype_preview'), findsOneWidget);
     });
 
@@ -82,7 +75,7 @@ void main() {
         ),
       );
       await tester.pump();
-      _drainExceptions(tester);
+      expect(tester.takeException(), isNull);
       expect(find.text('genetics.carrier_info_tip'), findsOneWidget);
     });
 
@@ -97,7 +90,7 @@ void main() {
         ),
       );
       await tester.pump();
-      _drainExceptions(tester);
+      expect(tester.takeException(), isNull);
       expect(find.byType(SelectionSummary), findsNWidgets(2));
     });
 
@@ -112,7 +105,7 @@ void main() {
         ),
       );
       await tester.pump();
-      _drainExceptions(tester);
+      expect(tester.takeException(), isNull);
       expect(find.text('genetics.father_mutations'), findsOneWidget);
     });
 
@@ -127,7 +120,7 @@ void main() {
         ),
       );
       await tester.pump();
-      _drainExceptions(tester);
+      expect(tester.takeException(), isNull);
       expect(find.text('genetics.mother_mutations'), findsOneWidget);
     });
 
@@ -142,7 +135,7 @@ void main() {
         ),
       );
       await tester.pump();
-      _drainExceptions(tester);
+      expect(tester.takeException(), isNull);
       expect(find.byType(GenotypePreviewStep), findsOneWidget);
     });
 
@@ -157,7 +150,7 @@ void main() {
         ),
       );
       await tester.pump();
-      _drainExceptions(tester);
+      expect(tester.takeException(), isNull);
       expect(find.byType(Card), findsAtLeastNWidgets(2));
     });
   });

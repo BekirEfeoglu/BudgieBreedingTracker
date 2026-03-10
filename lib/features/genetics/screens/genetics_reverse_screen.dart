@@ -17,7 +17,7 @@ import 'package:budgie_breeding_tracker/domain/services/genetics/parent_genotype
 List<Map<String, dynamic>> _calculateReverseResultsInIsolate(
   List<String> selectedMutationIds,
 ) {
-  final calculator = const ReverseCalculator();
+  const calculator = ReverseCalculator();
   final results = calculator.calculateParents(selectedMutationIds.toSet());
 
   return results

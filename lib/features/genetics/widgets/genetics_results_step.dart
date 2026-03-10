@@ -138,9 +138,7 @@ class GeneticsResultsStep extends ConsumerWidget {
             if (availableLoci.length > 1)
               Padding(
                 padding: AppSpacing.screenPadding,
-                child: _PunnettLocusSelector(
-                  availableLoci: availableLoci,
-                ),
+                child: _PunnettLocusSelector(availableLoci: availableLoci),
               ),
             Padding(
               padding: AppSpacing.screenPadding,
@@ -183,11 +181,7 @@ class _ResultsHeader extends StatelessWidget {
         children: [
           Row(
             children: [
-              AppIcon(
-                AppIcons.dna,
-                size: 20,
-                color: theme.colorScheme.primary,
-              ),
+              AppIcon(AppIcons.dna, size: 20, color: theme.colorScheme.primary),
               const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: Text(
@@ -313,12 +307,12 @@ class _PunnettLocusSelector extends ConsumerWidget {
 
 /// Maps raw locus IDs to localized display names.
 String _localizeLocusId(String id) => switch (id) {
-      'blue_series' => 'genetics.locus_blue_series'.tr(),
-      'dilution' => 'genetics.locus_dilution'.tr(),
-      'crested' => 'genetics.locus_crested'.tr(),
-      'ino_locus' => 'genetics.locus_ino'.tr(),
-      _ => id,
-    };
+  'blue_series' => 'genetics.locus_blue_series'.tr(),
+  'dilution' => 'genetics.locus_dilution'.tr(),
+  'crested' => 'genetics.locus_crested'.tr(),
+  'ino_locus' => 'genetics.locus_ino'.tr(),
+  _ => id,
+};
 
 /// Replaces the English "carrier" word in chart labels with the localized term.
 List<GeneticChartItem> _localizeChartData(
@@ -327,8 +321,10 @@ List<GeneticChartItem> _localizeChartData(
 ) {
   final carrierLabel = 'genetics.carrier'.tr().toLowerCase();
   return data.map((item) {
-    final localizedLabel =
-        item.label.replaceAll(' carrier)', ' $carrierLabel)');
+    final localizedLabel = item.label.replaceAll(
+      ' carrier)',
+      ' $carrierLabel)',
+    );
     return GeneticChartItem(
       label: localizedLabel,
       value: item.value,
@@ -354,8 +350,9 @@ class _DihybridPunnettSection extends ConsumerWidget {
     final dihybridPunnett = ref.watch(dihybridPunnettSquareProvider);
 
     // Available loci for second selector (exclude first selected locus)
-    final secondLociOptions =
-        availableLoci.where((l) => l != selectedLocus1).toList();
+    final secondLociOptions = availableLoci
+        .where((l) => l != selectedLocus1)
+        .toList();
     if (secondLociOptions.isEmpty) return const SizedBox.shrink();
 
     return Padding(
@@ -380,7 +377,8 @@ class _DihybridPunnettSection extends ConsumerWidget {
               Expanded(
                 child: DropdownButtonFormField<String?>(
                   key: ValueKey('dihybrid_locus2_$selectedLocus2'),
-                  value: selectedLocus2 != null &&
+                  initialValue:
+                      selectedLocus2 != null &&
                           secondLociOptions.contains(selectedLocus2)
                       ? selectedLocus2
                       : null,
@@ -391,8 +389,7 @@ class _DihybridPunnettSection extends ConsumerWidget {
                       vertical: AppSpacing.sm,
                     ),
                     border: OutlineInputBorder(
-                      borderRadius:
-                          BorderRadius.circular(AppSpacing.radiusMd),
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
                     ),
                   ),
                   hint: Text(
@@ -402,18 +399,14 @@ class _DihybridPunnettSection extends ConsumerWidget {
                   items: [
                     DropdownMenuItem<String?>(
                       value: null,
-                      child: Text(
-                        '—',
-                        style: theme.textTheme.bodySmall,
-                      ),
+                      child: Text('—', style: theme.textTheme.bodySmall),
                     ),
                     ...secondLociOptions.map((id) {
                       final record = MutationDatabase.getById(id);
                       return DropdownMenuItem<String?>(
                         value: id,
                         child: Text(
-                          record?.localizationKey.tr() ??
-                              _localizeLocusId(id),
+                          record?.localizationKey.tr() ?? _localizeLocusId(id),
                           style: theme.textTheme.bodySmall,
                         ),
                       );

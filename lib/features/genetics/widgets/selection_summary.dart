@@ -39,18 +39,26 @@ class SelectionSummary extends StatelessWidget {
             child: icon,
           ),
           const SizedBox(width: AppSpacing.sm),
-          Text(
-            label,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-          ),
-          const SizedBox(width: AppSpacing.sm),
-          Text(
-            'genetics.no_mutations_selected'.tr(),
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-              fontStyle: FontStyle.italic,
+          Expanded(
+            child: Wrap(
+              spacing: AppSpacing.sm,
+              runSpacing: AppSpacing.xs,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                Text(
+                  label,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                Text(
+                  'genetics.no_mutations_selected'.tr(),
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -63,10 +71,7 @@ class SelectionSummary extends StatelessWidget {
         Row(
           children: [
             IconTheme(
-              data: IconThemeData(
-                size: 18,
-                color: theme.colorScheme.primary,
-              ),
+              data: IconThemeData(size: 18, color: theme.colorScheme.primary),
               child: icon,
             ),
             const SizedBox(width: AppSpacing.sm),
@@ -189,8 +194,8 @@ class _MutationChip extends StatelessWidget {
     };
 
     // For dosage-based (AD + AID): visual=DF, carrier=SF
-    final isDosageBased = record.inheritanceType ==
-            InheritanceType.autosomalIncompleteDominant ||
+    final isDosageBased =
+        record.inheritanceType == InheritanceType.autosomalIncompleteDominant ||
         record.inheritanceType == InheritanceType.autosomalDominant;
     final String stateLabel;
     if (isDosageBased) {
@@ -211,10 +216,7 @@ class _MutationChip extends StatelessWidget {
       label: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
-            record.localizationKey.tr(),
-            style: theme.textTheme.labelMedium,
-          ),
+          Text(record.localizationKey.tr(), style: theme.textTheme.labelMedium),
           const SizedBox(width: AppSpacing.xs),
           GestureDetector(
             onTap: onToggleState,
@@ -261,10 +263,7 @@ class _CompoundChip extends StatelessWidget {
   final List<BudgieMutationRecord> records;
   final VoidCallback onRemove;
 
-  const _CompoundChip({
-    required this.records,
-    required this.onRemove,
-  });
+  const _CompoundChip({required this.records, required this.onRemove});
 
   @override
   Widget build(BuildContext context) {
