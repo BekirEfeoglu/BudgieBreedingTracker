@@ -101,7 +101,9 @@ void main() {
       expect(find.text('birds.species'), findsAtLeastNWidgets(1));
     });
 
-    testWidgets('species dropdown only includes budgie option', (tester) async {
+    testWidgets('species dropdown keeps current non-budgie value visible', (
+      tester,
+    ) async {
       final nameCtrl = TextEditingController();
       final colorCtrl = TextEditingController();
 
@@ -132,8 +134,8 @@ void main() {
           .whereType<Species>()
           .toList();
 
-      expect(speciesDropdown.value, Species.budgie);
-      expect(speciesValues, equals([Species.budgie]));
+      expect(speciesDropdown.value, Species.canary);
+      expect(speciesValues, equals([Species.budgie, Species.canary]));
     });
 
     testWidgets(

@@ -51,6 +51,31 @@ class BirdFormNotifier extends Notifier<BirdFormState> {
   @override
   BirdFormState build() => const BirdFormState();
 
+  String? _normalizeOptionalText(String? value) {
+    final normalized = value?.trim();
+    if (normalized == null || normalized.isEmpty) return null;
+    return normalized;
+  }
+
+  Future<bool> _hasRingNumberConflict({
+    required String userId,
+    required String? ringNumber,
+    String? excludeBirdId,
+  }) async {
+    final normalizedRing = _normalizeOptionalText(ringNumber)?.toLowerCase();
+    if (normalizedRing == null) return false;
+
+    final repo = ref.read(birdRepositoryProvider);
+    final allBirds = await repo.getAll(userId);
+    return allBirds.any((bird) {
+      if (excludeBirdId != null && bird.id == excludeBirdId) return false;
+      final existingRing = _normalizeOptionalText(
+        bird.ringNumber,
+      )?.toLowerCase();
+      return existingRing == normalizedRing;
+    });
+  }
+
   /// Creates a new bird.
   Future<void> createBird({
     required String userId,
@@ -70,6 +95,8 @@ class BirdFormNotifier extends Notifier<BirdFormState> {
     state = state.copyWith(isLoading: true, error: null, isSuccess: false);
     try {
       final repo = ref.read(birdRepositoryProvider);
+      final normalizedRingNumber = _normalizeOptionalText(ringNumber);
+      final normalizedCageNumber = _normalizeOptionalText(cageNumber);
 
       // Free tier bird limit check
       final isPremium = ref.read(isPremiumProvider);
@@ -87,6 +114,17 @@ class BirdFormNotifier extends Notifier<BirdFormState> {
         }
       }
 
+      if (await _hasRingNumberConflict(
+        userId: userId,
+        ringNumber: normalizedRingNumber,
+      )) {
+        state = state.copyWith(
+          isLoading: false,
+          error: 'birds.ring_number_not_unique'.tr(),
+        );
+        return;
+      }
+
       final bird = Bird(
         id: const Uuid().v4(),
         userId: userId,
@@ -95,11 +133,11 @@ class BirdFormNotifier extends Notifier<BirdFormState> {
         species: species,
         status: BirdStatus.alive,
         colorMutation: colorMutation,
-        ringNumber: ringNumber,
+        ringNumber: normalizedRingNumber,
         birthDate: birthDate,
         fatherId: fatherId,
         motherId: motherId,
-        cageNumber: cageNumber,
+        cageNumber: normalizedCageNumber,
         notes: notes,
         mutations: mutations,
         genotypeInfo: genotypeInfo,
@@ -131,7 +169,28 @@ class BirdFormNotifier extends Notifier<BirdFormState> {
     state = state.copyWith(isLoading: true, error: null, isSuccess: false);
     try {
       final repo = ref.read(birdRepositoryProvider);
-      await repo.save(bird.copyWith(updatedAt: DateTime.now()));
+      final normalizedRingNumber = _normalizeOptionalText(bird.ringNumber);
+      final normalizedCageNumber = _normalizeOptionalText(bird.cageNumber);
+
+      if (await _hasRingNumberConflict(
+        userId: bird.userId,
+        ringNumber: normalizedRingNumber,
+        excludeBirdId: bird.id,
+      )) {
+        state = state.copyWith(
+          isLoading: false,
+          error: 'birds.ring_number_not_unique'.tr(),
+        );
+        return;
+      }
+
+      await repo.save(
+        bird.copyWith(
+          ringNumber: normalizedRingNumber,
+          cageNumber: normalizedCageNumber,
+          updatedAt: DateTime.now(),
+        ),
+      );
       state = state.copyWith(isLoading: false, isSuccess: true);
     } catch (e) {
       AppLogger.error('BirdFormNotifier', e, StackTrace.current);

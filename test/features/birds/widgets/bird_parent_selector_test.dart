@@ -186,6 +186,49 @@ void main() {
         findsOneWidget,
       );
     });
+
+    testWidgets(
+      'keeps selected parent visible even when it is outside top 50/alive filter',
+      (tester) async {
+        final aliveMales = List.generate(
+          55,
+          (index) => createTestBird(
+            id: 'm-$index',
+            name: 'Erkek $index',
+            gender: BirdGender.male,
+            status: BirdStatus.alive,
+          ),
+        );
+        final selectedDeadMale = createTestBird(
+          id: 'm-selected',
+          name: 'Secili Baba',
+          gender: BirdGender.male,
+          status: BirdStatus.dead,
+        );
+
+        await _pump(
+          tester,
+          BirdParentSelector(
+            label: 'Baba',
+            icon: const AppIcon('assets/icons/birds/male.svg'),
+            selectedId: selectedDeadMale.id,
+            excludeId: null,
+            genderFilter: BirdGender.male,
+            onChanged: (_) {},
+          ),
+          overrides: [
+            currentUserIdProvider.overrideWithValue('user-1'),
+            birdsStreamProvider.overrideWith(
+              (ref, userId) => Stream.value([...aliveMales, selectedDeadMale]),
+            ),
+          ],
+        );
+        await tester.pumpAndSettle();
+
+        // selected value must still be renderable even if not in default candidate set
+        expect(find.text('Secili Baba'), findsOneWidget);
+      },
+    );
   });
 
   group('BirdFormSectionHeader', () {

@@ -40,7 +40,10 @@ class BirdFormBasicInfoSection extends StatelessWidget {
     final normalizedColorMutation = colorMutation == BirdColor.unknown
         ? null
         : colorMutation;
-    const selectableSpecies = <Species>[Species.budgie];
+    final selectableSpecies = <Species>[
+      Species.budgie,
+      if (species != Species.budgie && species != Species.unknown) species,
+    ];
     final selectedSpecies = selectableSpecies.contains(species)
         ? species
         : Species.budgie;

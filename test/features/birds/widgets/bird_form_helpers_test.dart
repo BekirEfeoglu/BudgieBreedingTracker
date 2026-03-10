@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
+import 'package:budgie_breeding_tracker/domain/services/genetics/parent_genotype.dart';
 import 'package:budgie_breeding_tracker/features/birds/widgets/bird_form_helpers.dart';
 
 void main() {
@@ -171,6 +172,69 @@ void main() {
   group('birdFormColorPrefix constant', () {
     test('has expected value', () {
       expect(birdFormColorPrefix, 'color:');
+    });
+  });
+
+  group('normalizeGenotypeForGender', () {
+    test('forces sex-linked carrier states to visual for female', () {
+      final genotype = ParentGenotype(
+        mutations: const {
+          'ino': AlleleState.carrier,
+          'blue': AlleleState.carrier,
+        },
+        gender: BirdGender.male,
+      );
+
+      final normalized = normalizeGenotypeForGender(
+        genotype: genotype,
+        gender: BirdGender.female,
+      );
+
+      expect(normalized.gender, BirdGender.female);
+      expect(normalized.getState('ino'), AlleleState.visual);
+      expect(normalized.getState('blue'), AlleleState.carrier);
+    });
+
+    test('keeps one sex-linked mutation per locus for female', () {
+      final genotype = ParentGenotype(
+        mutations: const {
+          'ino': AlleleState.visual,
+          'pallid': AlleleState.visual,
+          'blue': AlleleState.visual,
+        },
+        gender: BirdGender.male,
+      );
+
+      final normalized = normalizeGenotypeForGender(
+        genotype: genotype,
+        gender: BirdGender.female,
+      );
+
+      final inoLocusSelections = [
+        'ino',
+        'pallid',
+      ].where((id) => normalized.mutations.containsKey(id)).length;
+      expect(inoLocusSelections, 1);
+      expect(normalized.mutations.containsKey('blue'), isTrue);
+    });
+
+    test('does not alter mutation states for non-female genders', () {
+      final genotype = ParentGenotype(
+        mutations: const {
+          'ino': AlleleState.carrier,
+          'blue': AlleleState.visual,
+        },
+        gender: BirdGender.male,
+      );
+
+      final normalized = normalizeGenotypeForGender(
+        genotype: genotype,
+        gender: BirdGender.male,
+      );
+
+      expect(normalized.gender, BirdGender.male);
+      expect(normalized.getState('ino'), AlleleState.carrier);
+      expect(normalized.getState('blue'), AlleleState.visual);
     });
   });
 }

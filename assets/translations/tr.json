@@ -162,6 +162,7 @@
     "female": "Dişi",
     "unknown": "Bilinmiyor",
     "ring_number": "Halka Numarası",
+    "ring_number_not_unique": "Halka numarası benzersiz olmalıdır",
     "birth_date": "Doğum Tarihi",
     "species": "Tür",
     "budgie": "Muhabbet",

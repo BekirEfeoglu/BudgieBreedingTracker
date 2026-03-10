@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
+import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_providers.dart';
 import 'package:budgie_breeding_tracker/features/birds/providers/bird_providers.dart';
 
@@ -56,16 +57,40 @@ class BirdParentSelector extends ConsumerWidget {
         onChanged: null,
       ),
       data: (birds) {
-        final candidates = birds
-            .where((b) => b.gender == genderFilter)
-            .where((b) => b.id != excludeId)
-            .where((b) => b.status == BirdStatus.alive)
-            .toList()
-          ..sort((a, b) => a.name.compareTo(b.name));
+        final candidates =
+            birds
+                .where((b) => b.gender == genderFilter)
+                .where((b) => b.id != excludeId)
+                .where((b) => b.status == BirdStatus.alive)
+                .toList()
+              ..sort((a, b) => a.name.compareTo(b.name));
         final displayCandidates = candidates.take(50).toList();
 
+        Bird? selectedBird;
+        if (selectedId != null) {
+          for (final bird in birds) {
+            if (bird.id == selectedId &&
+                bird.id != excludeId &&
+                bird.gender == genderFilter) {
+              selectedBird = bird;
+              break;
+            }
+          }
+        }
+
+        if (selectedBird != null &&
+            !displayCandidates.any((bird) => bird.id == selectedBird?.id)) {
+          displayCandidates.insert(0, selectedBird);
+        }
+
+        final effectiveSelectedId =
+            selectedId != null &&
+                displayCandidates.any((bird) => bird.id == selectedId)
+            ? selectedId
+            : null;
+
         return DropdownButtonFormField<String>(
-          initialValue: selectedId,
+          initialValue: effectiveSelectedId,
           decoration: InputDecoration(
             labelText: label,
             border: const OutlineInputBorder(),

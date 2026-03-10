@@ -101,6 +101,37 @@ void main() {
       verify(() => repo.save(any())).called(1);
     });
 
+    test('createBird blocks duplicate ring number', () async {
+      when(() => repo.getAll(any())).thenAnswer(
+        (_) async => const [
+          Bird(
+            id: 'existing',
+            name: 'Existing',
+            gender: BirdGender.male,
+            userId: 'user-1',
+            ringNumber: 'TR-100',
+          ),
+        ],
+      );
+
+      final container = makeContainer();
+      addTearDown(container.dispose);
+
+      await container
+          .read(birdFormStateProvider.notifier)
+          .createBird(
+            userId: 'user-1',
+            name: 'Alpha',
+            gender: BirdGender.male,
+            ringNumber: ' tr-100 ',
+          );
+
+      final state = container.read(birdFormStateProvider);
+      expect(state.isSuccess, isFalse);
+      expect(state.error, 'birds.ring_number_not_unique');
+      verifyNever(() => repo.save(any()));
+    });
+
     test(
       'createBird persists explicit mutation payload when provided',
       () async {
@@ -180,6 +211,7 @@ void main() {
     });
 
     test('createBird does not set remainingBirds for premium', () async {
+      stubUnderLimit();
       when(() => repo.save(any())).thenAnswer((_) async {});
 
       final container = makeContainer(isPremium: true);
@@ -195,6 +227,7 @@ void main() {
     });
 
     test('updateBird sets isSuccess on success', () async {
+      stubUnderLimit();
       when(() => repo.save(any())).thenAnswer((_) async {});
 
       final container = makeContainer();
@@ -210,6 +243,47 @@ void main() {
       await container.read(birdFormStateProvider.notifier).updateBird(bird);
 
       expect(container.read(birdFormStateProvider).isSuccess, isTrue);
+    });
+
+    test('updateBird blocks duplicate ring number on another bird', () async {
+      when(() => repo.getAll(any())).thenAnswer(
+        (_) async => const [
+          Bird(
+            id: 'b1',
+            name: 'Bird One',
+            gender: BirdGender.male,
+            userId: 'user-1',
+            ringNumber: 'TR-100',
+          ),
+          Bird(
+            id: 'b2',
+            name: 'Bird Two',
+            gender: BirdGender.female,
+            userId: 'user-1',
+            ringNumber: 'TR-200',
+          ),
+        ],
+      );
+
+      final container = makeContainer();
+      addTearDown(container.dispose);
+
+      await container
+          .read(birdFormStateProvider.notifier)
+          .updateBird(
+            const Bird(
+              id: 'b2',
+              name: 'Bird Two',
+              gender: BirdGender.female,
+              userId: 'user-1',
+              ringNumber: 'tr-100',
+            ),
+          );
+
+      final state = container.read(birdFormStateProvider);
+      expect(state.isSuccess, isFalse);
+      expect(state.error, 'birds.ring_number_not_unique');
+      verifyNever(() => repo.save(any()));
     });
 
     test('deleteBird sets isSuccess on success', () async {

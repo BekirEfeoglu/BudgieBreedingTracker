@@ -162,6 +162,7 @@
     "female": "Weiblich",
     "unknown": "Unbekannt",
     "ring_number": "Ringnummer",
+    "ring_number_not_unique": "Ringnummer muss eindeutig sein",
     "birth_date": "Geburtsdatum",
     "species": "Art",
     "budgie": "Wellensittich",

@@ -4,6 +4,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 
+import 'package:budgie_breeding_tracker/core/widgets/error_state.dart';
+import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/features/birds/screens/bird_form_screen.dart';
 import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
 import 'package:budgie_breeding_tracker/features/birds/providers/bird_providers.dart';
@@ -45,11 +47,18 @@ void main() {
     );
   }
 
-  Widget buildSubject({String? editBirdId}) {
+  Widget buildSubject({String? editBirdId, Bird? editBird}) {
     when(
       () => mockBirdRepo.watchAll(any()),
     ).thenAnswer((_) => Stream.value([]));
     when(() => mockBirdRepo.getAll(any())).thenAnswer((_) async => []);
+    when(() => mockBirdRepo.watchById(any())).thenAnswer((invocation) {
+      final id = invocation.positionalArguments.first as String;
+      if (editBirdId != null && id == editBirdId) {
+        return Stream.value(editBird);
+      }
+      return Stream.value(null);
+    });
 
     return ProviderScope(
       overrides: [
@@ -146,6 +155,56 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(SingleChildScrollView), findsAtLeastNWidgets(1));
+    });
+  });
+
+  group('BirdFormScreen - edit bird', () {
+    testWidgets('loads existing bird and prefills form fields', (tester) async {
+      final existing = createTestBird(
+        id: 'bird-1',
+        name: 'Mavi',
+        ringNumber: 'TR-100',
+        cageNumber: 'A1',
+      );
+
+      await tester.pumpWidget(
+        buildSubject(editBirdId: existing.id, editBird: existing),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('birds.edit_bird'), findsOneWidget);
+      expect(
+        find.widgetWithText(FilledButton, 'common.update'),
+        findsOneWidget,
+      );
+
+      final editableTexts = tester.widgetList<EditableText>(
+        find.byType(EditableText),
+      );
+      expect(
+        editableTexts.any((field) => field.controller.text == 'Mavi'),
+        isTrue,
+      );
+      expect(
+        editableTexts.any((field) => field.controller.text == 'TR-100'),
+        isTrue,
+      );
+      expect(
+        editableTexts.any((field) => field.controller.text == 'A1'),
+        isTrue,
+      );
+    });
+
+    testWidgets('shows not found state when edit bird does not exist', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        buildSubject(editBirdId: 'missing', editBird: null),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byType(ErrorState), findsOneWidget);
+      expect(find.byType(Form), findsNothing);
     });
   });
 }
