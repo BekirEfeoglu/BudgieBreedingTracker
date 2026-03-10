@@ -86,7 +86,6 @@ class _SocialLoginButtonsState extends State<SocialLoginButtons> {
           width: double.infinity,
           child: SignInWithAppleButton(
             onPressed: widget.isLoading ? null : widget.onAppleTap,
-            text: 'auth.sign_in_with_apple'.tr(),
             height: AppSpacing.touchTargetMd,
             style: theme.brightness == Brightness.dark
                 ? SignInWithAppleButtonStyle.white

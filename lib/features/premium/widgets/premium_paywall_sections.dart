@@ -617,7 +617,11 @@ class _PremiumLegalLinksSection extends StatelessWidget {
           spacing: AppSpacing.sm,
           children: [
             TextButton(
-              onPressed: () => context.push(AppRoutes.privacyPolicy),
+              onPressed: () async => _openLegalUrl(
+                context,
+                url: AppConstants.privacyPolicyUrl,
+                fallbackRoute: AppRoutes.privacyPolicy,
+              ),
               child: Text('settings.privacy_policy'.tr()),
             ),
             TextButton(
