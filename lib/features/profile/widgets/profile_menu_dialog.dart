@@ -20,7 +20,11 @@ import 'package:budgie_breeding_tracker/router/route_names.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 
 class ProfileMenuDialog extends ConsumerWidget {
-  const ProfileMenuDialog({super.key, required this.profile, required this.email});
+  const ProfileMenuDialog({
+    super.key,
+    required this.profile,
+    required this.email,
+  });
 
   final Profile? profile;
   final String? email;
@@ -35,7 +39,8 @@ class ProfileMenuDialog extends ConsumerWidget {
     final isFounderFromProfile = profile?.isFounder == true;
     final isFounderFromDb = ref.watch(isFounderProvider).value ?? false;
     final isFounder = isFounderFromProfile || isFounderFromDb;
-    final isPremium = (profile?.hasPremium == true) || ref.watch(isPremiumProvider);
+    final isPremium =
+        (profile?.hasPremium == true) || ref.watch(isPremiumProvider);
     final hasBadges = isPremium || isFounder || (profile?.isAdmin == true);
 
     return Align(
@@ -69,8 +74,7 @@ class ProfileMenuDialog extends ConsumerWidget {
 
                 // -- Navigation group --
                 Padding(
-                  padding:
-                      const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+                  padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -128,8 +132,9 @@ class ProfileMenuDialog extends ConsumerWidget {
                   height: 1,
                   indent: AppSpacing.xl,
                   endIndent: AppSpacing.xl,
-                  color:
-                      theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
+                  color: theme.colorScheme.outlineVariant.withValues(
+                    alpha: 0.5,
+                  ),
                 ),
 
                 // -- Logout --
@@ -138,8 +143,12 @@ class ProfileMenuDialog extends ConsumerWidget {
                   label: 'auth.logout'.tr(),
                   onTap: () {
                     final authActions = ref.read(authActionsProvider);
-                    Navigator.of(context).pop();
-                    _confirmLogout(context, authActions);
+                    final rootNavigator = Navigator.of(
+                      context,
+                      rootNavigator: true,
+                    );
+                    rootNavigator.pop();
+                    _confirmLogout(rootNavigator.context, authActions);
                   },
                 ),
 
@@ -150,8 +159,9 @@ class ProfileMenuDialog extends ConsumerWidget {
 
                 // -- Delete account (destructive) --
                 ColoredBox(
-                  color: theme.colorScheme.errorContainer
-                      .withValues(alpha: 0.08),
+                  color: theme.colorScheme.errorContainer.withValues(
+                    alpha: 0.08,
+                  ),
                   child: ProfileMenuItem(
                     icon: const AppIcon(AppIcons.delete),
                     label: 'profile.delete_account'.tr(),
@@ -184,8 +194,11 @@ Future<void> _confirmLogout(
   final confirmed = await showDialog<bool>(
     context: context,
     builder: (ctx) => AlertDialog(
-      icon: Icon(LucideIcons.logOut,
-          color: theme.colorScheme.primary, size: 32),
+      icon: Icon(
+        LucideIcons.logOut,
+        color: theme.colorScheme.primary,
+        size: 32,
+      ),
       title: Text('auth.logout'.tr()),
       content: Text('auth.logout_confirm'.tr()),
       actions: [
@@ -204,14 +217,10 @@ Future<void> _confirmLogout(
   if (confirmed == true) {
     try {
       await authActions.signOut();
-    } catch (_) {
-      if (context.mounted) context.go(AppRoutes.login);
-    }
+    } catch (_) {}
+    if (context.mounted) context.go(AppRoutes.login);
   }
 }
 
-Future<void> _confirmDeleteAccount(
-  BuildContext context,
-  WidgetRef ref,
-) =>
+Future<void> _confirmDeleteAccount(BuildContext context, WidgetRef ref) =>
     confirmAndDeleteAccount(context, ref);
