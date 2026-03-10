@@ -280,11 +280,7 @@ void main() {
       );
       await tester.pump();
 
-      // DashboardStatCard TweenAnimationBuilder may cause overflow — consume
-      var ex = tester.takeException();
-      while (ex != null) {
-        ex = tester.takeException();
-      }
+      expect(tester.takeException(), isNull);
 
       expect(find.byType(DashboardContent), findsOneWidget);
     });
@@ -301,10 +297,7 @@ void main() {
       );
       await tester.pump();
 
-      var ex = tester.takeException();
-      while (ex != null) {
-        ex = tester.takeException();
-      }
+      expect(tester.takeException(), isNull);
 
       expect(find.text('admin.quick_actions'), findsOneWidget);
     });
@@ -321,10 +314,7 @@ void main() {
       );
       await tester.pump();
 
-      var ex = tester.takeException();
-      while (ex != null) {
-        ex = tester.takeException();
-      }
+      expect(tester.takeException(), isNull);
 
       expect(find.text('admin.go_to_settings'), findsOneWidget);
     });

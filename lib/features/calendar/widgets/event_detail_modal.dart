@@ -21,8 +21,9 @@ Future<void> showEventDetailModal(
     context: context,
     isScrollControlled: true,
     shape: const RoundedRectangleBorder(
-      borderRadius:
-          BorderRadius.vertical(top: Radius.circular(AppSpacing.radiusXl)),
+      borderRadius: BorderRadius.vertical(
+        top: Radius.circular(AppSpacing.radiusXl),
+      ),
     ),
     builder: (ctx) => _EventDetailContent(
       event: event,
@@ -71,8 +72,9 @@ class _EventDetailContent extends StatelessWidget {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: theme.colorScheme.onSurfaceVariant
-                    .withValues(alpha: 0.4),
+                color: theme.colorScheme.onSurfaceVariant.withValues(
+                  alpha: 0.4,
+                ),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -84,8 +86,9 @@ class _EventDetailContent extends StatelessWidget {
             children: [
               CircleAvatar(
                 radius: 22,
-                backgroundColor:
-                    eventTypeColor(event.type).withValues(alpha: 0.15),
+                backgroundColor: eventTypeColor(
+                  event.type,
+                ).withValues(alpha: 0.15),
                 child: Icon(
                   eventTypeIcon(event.type),
                   size: 22,
@@ -103,7 +106,10 @@ class _EventDetailContent extends StatelessWidget {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    Row(
+                    Wrap(
+                      spacing: AppSpacing.sm,
+                      runSpacing: AppSpacing.xxs,
+                      crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
                         Text(
                           eventTypeLabel(event.type),
@@ -113,10 +119,8 @@ class _EventDetailContent extends StatelessWidget {
                           ),
                         ),
                         if (event.status != EventStatus.active &&
-                            event.status != EventStatus.unknown) ...[
-                          const SizedBox(width: AppSpacing.sm),
+                            event.status != EventStatus.unknown)
                           EventStatusBadge(status: event.status),
-                        ],
                       ],
                     ),
                   ],
@@ -152,9 +156,12 @@ class _EventDetailContent extends StatelessWidget {
                 color: theme.colorScheme.onSurfaceVariant,
               ),
               const SizedBox(width: AppSpacing.sm),
-              Text(
-                '${'calendar.event_status'.tr()}: ${eventStatusLabel(event.status)}',
-                style: theme.textTheme.bodyMedium,
+              Expanded(
+                child: Text(
+                  '${'calendar.event_status'.tr()}: ${eventStatusLabel(event.status)}',
+                  style: theme.textTheme.bodyMedium,
+                  softWrap: true,
+                ),
               ),
             ],
           ),
@@ -173,8 +180,7 @@ class _EventDetailContent extends StatelessWidget {
           const SizedBox(height: AppSpacing.xl),
 
           // Status change buttons
-          if (onStatusChange != null &&
-              event.status == EventStatus.active) ...[
+          if (onStatusChange != null && event.status == EventStatus.active) ...[
             Row(
               children: [
                 Expanded(

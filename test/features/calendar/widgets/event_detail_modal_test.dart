@@ -14,15 +14,6 @@ class _MockAssetLoader extends AssetLoader {
   Future<Map<String, dynamic>> load(String path, Locale locale) async => {};
 }
 
-/// Drains all rendering exceptions (overflow, SVG loading, etc.) that can
-/// occur in test env due to .tr() key strings and asset loading.
-void _consumeOverflowExceptions(WidgetTester tester) {
-  Object? ex;
-  do {
-    ex = tester.takeException();
-  } while (ex != null);
-}
-
 void main() {
   setUpAll(() async {
     TestWidgetsFlutterBinding.ensureInitialized();
@@ -84,7 +75,7 @@ void main() {
       await tester.tap(find.text('Open Modal'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
-      _consumeOverflowExceptions(tester);
+      expect(tester.takeException(), isNull);
       expect(find.text('Veteriner Kontrolü'), findsOneWidget);
     });
 
@@ -94,7 +85,7 @@ void main() {
       await tester.tap(find.text('Open Modal'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
-      _consumeOverflowExceptions(tester);
+      expect(tester.takeException(), isNull);
       expect(find.text('Kanat muayenesi'), findsOneWidget);
     });
 
@@ -104,7 +95,7 @@ void main() {
       await tester.tap(find.text('Open Modal'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
-      _consumeOverflowExceptions(tester);
+      expect(tester.takeException(), isNull);
       // OutlinedButton.icon with edit text
       expect(find.byType(OutlinedButton), findsAtLeastNWidgets(1));
     });
@@ -115,7 +106,7 @@ void main() {
       await tester.tap(find.text('Open Modal'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
-      _consumeOverflowExceptions(tester);
+      expect(tester.takeException(), isNull);
       // FilledButton for delete
       expect(find.byType(FilledButton), findsOneWidget);
     });
@@ -128,7 +119,7 @@ void main() {
       await tester.tap(find.text('Open Modal'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
-      _consumeOverflowExceptions(tester);
+      expect(tester.takeException(), isNull);
       // Two OutlinedButtons for mark-completed + mark-cancelled, plus edit
       expect(find.byType(OutlinedButton), findsAtLeastNWidgets(2));
     });
@@ -141,7 +132,7 @@ void main() {
       await tester.tap(find.text('Open Modal'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
-      _consumeOverflowExceptions(tester);
+      expect(tester.takeException(), isNull);
       // Only 1 OutlinedButton (edit), not 3
       final outlinedButtons = tester.widgetList<OutlinedButton>(
         find.byType(OutlinedButton),
@@ -160,13 +151,13 @@ void main() {
       await tester.tap(find.text('Open Modal'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
-      _consumeOverflowExceptions(tester);
+      expect(tester.takeException(), isNull);
       // Tap the edit OutlinedButton (last one in the row at the bottom)
       final outlinedButtons = find.byType(OutlinedButton);
       if (tester.widgetList(outlinedButtons).isNotEmpty) {
         await tester.tap(outlinedButtons.last);
         await tester.pump();
-        _consumeOverflowExceptions(tester);
+        expect(tester.takeException(), isNull);
       }
       expect(editCalled, anyOf(isTrue, isFalse)); // depends on exact tap
     });

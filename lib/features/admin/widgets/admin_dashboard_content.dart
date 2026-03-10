@@ -32,9 +32,9 @@ class DashboardContent extends StatelessWidget {
           const SizedBox(height: AppSpacing.xxl),
           Text(
             'admin.quick_actions'.tr(),
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: AppSpacing.md),
           Row(
@@ -84,7 +84,8 @@ class DashboardSystemHealthBanner extends ConsumerWidget {
     );
     final isUnavailable = status == 'unavailable';
     final isHealthy = healthAsync.maybeWhen(
-      data: (data) => data['status'] != 'error' && data['status'] != 'unavailable',
+      data: (data) =>
+          data['status'] != 'error' && data['status'] != 'unavailable',
       orElse: () => true,
     );
     final errorMsg = healthAsync.whenOrNull(
@@ -96,17 +97,17 @@ class DashboardSystemHealthBanner extends ConsumerWidget {
     final color = isLoading
         ? AppColors.info
         : isUnavailable
-            ? AppColors.neutral400
-            : isHealthy
-                ? AppColors.success
-                : AppColors.warning;
+        ? AppColors.neutral400
+        : isHealthy
+        ? AppColors.success
+        : AppColors.warning;
     final title = isLoading
         ? 'admin.checking_health'.tr()
         : isUnavailable
-            ? 'admin.health_unavailable'.tr()
-            : isHealthy
-                ? 'admin.system_healthy'.tr()
-                : 'admin.system_degraded'.tr();
+        ? 'admin.health_unavailable'.tr()
+        : isHealthy
+        ? 'admin.system_healthy'.tr()
+        : 'admin.system_degraded'.tr();
     final subtitle = isUnavailable
         ? 'admin.health_unavailable_desc'.tr()
         : errorMsg ?? 'admin.all_services_running'.tr();
@@ -125,10 +126,7 @@ class DashboardSystemHealthBanner extends ConsumerWidget {
             SizedBox(
               width: 24,
               height: 24,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: color,
-              ),
+              child: CircularProgressIndicator(strokeWidth: 2, color: color),
             )
           else
             AppIcon(AppIcons.health, color: color),
@@ -171,7 +169,8 @@ class DashboardStatsGrid extends StatelessWidget {
           physics: const NeverScrollableScrollPhysics(),
           mainAxisSpacing: AppSpacing.md,
           crossAxisSpacing: AppSpacing.md,
-          childAspectRatio: 1.4,
+          // On narrow viewports, taller cards prevent text/value overflow.
+          childAspectRatio: constraints.maxWidth > 600 ? 1.4 : 1.15,
           children: [
             DashboardStatCard(
               icon: const AppIcon(AppIcons.users),
@@ -245,19 +244,37 @@ class DashboardStatCard extends StatelessWidget {
               data: IconThemeData(color: color, size: 24),
               child: icon,
             ),
-            const SizedBox(height: AppSpacing.sm),
+            const SizedBox(height: AppSpacing.xs),
             if (numericValue != null)
-              TweenAnimationBuilder<double>(
-                tween: Tween(begin: 0, end: numericValue),
-                duration: const Duration(milliseconds: 700),
-                curve: Curves.easeOutCubic,
-                builder: (_, v, __) =>
-                    Text(v.toInt().toString(), style: valueStyle),
+              Flexible(
+                fit: FlexFit.loose,
+                child: TweenAnimationBuilder<double>(
+                  tween: Tween(begin: 0, end: numericValue),
+                  duration: const Duration(milliseconds: 700),
+                  curve: Curves.easeOutCubic,
+                  builder: (_, v, __) => FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text(v.toInt().toString(), style: valueStyle),
+                  ),
+                ),
               )
             else
-              Text(value, style: valueStyle),
-            const SizedBox(height: AppSpacing.xs),
-            Text(label, style: theme.textTheme.bodySmall),
+              Flexible(
+                fit: FlexFit.loose,
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(value, style: valueStyle),
+                ),
+              ),
+            const SizedBox(height: AppSpacing.xxs),
+            Text(
+              label,
+              style: theme.textTheme.bodySmall,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
           ],
         ),
       ),
