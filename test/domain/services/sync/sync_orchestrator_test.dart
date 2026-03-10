@@ -528,6 +528,45 @@ void main() {
       expect(container.read(isSyncingProvider), isFalse);
       expect(orchestrator.isSyncing, isFalse);
     });
+
+    test(
+      'returns error and does not advance checkpoint when pull is partial',
+      () async {
+        final previousSync = DateTime(2026, 1, 1, 10, 0, 0);
+        SharedPreferences.setMockInitialValues({
+          'pref_last_synced_at': previousSync.toIso8601String(),
+          'pref_last_reconciled_at': DateTime(
+            2026,
+            1,
+            1,
+            9,
+            0,
+            0,
+          ).toIso8601String(),
+        });
+        when(
+          () => mockBirdRepository.pull(
+            _userId,
+            lastSyncedAt: any(named: 'lastSyncedAt'),
+          ),
+        ).thenThrow(Exception('partial pull failure'));
+
+        final container = createContainer();
+        addTearDown(container.dispose);
+        final orchestrator = container.read(syncOrchestratorProvider);
+
+        final result = await orchestrator.fullSync();
+
+        expect(result, SyncResult.error);
+        expect(container.read(syncErrorProvider), isTrue);
+
+        final prefs = await SharedPreferences.getInstance();
+        expect(
+          prefs.getString('pref_last_synced_at'),
+          previousSync.toIso8601String(),
+        );
+      },
+    );
   });
 
   group('SyncOrchestrator.forceFullSync', () {
@@ -547,6 +586,45 @@ void main() {
       expect(prefs.getString('pref_last_synced_at'), isNotNull);
       expect(prefs.getString('pref_last_reconciled_at'), isNotNull);
     });
+
+    test(
+      'returns error and does not advance checkpoint when pull is partial',
+      () async {
+        final previousSync = DateTime(2026, 1, 1, 10, 0, 0);
+        SharedPreferences.setMockInitialValues({
+          'pref_last_synced_at': previousSync.toIso8601String(),
+          'pref_last_reconciled_at': DateTime(
+            2026,
+            1,
+            1,
+            9,
+            0,
+            0,
+          ).toIso8601String(),
+        });
+        when(
+          () => mockBirdRepository.pull(
+            _userId,
+            lastSyncedAt: any(named: 'lastSyncedAt'),
+          ),
+        ).thenThrow(Exception('partial pull failure'));
+
+        final container = createContainer();
+        addTearDown(container.dispose);
+        final orchestrator = container.read(syncOrchestratorProvider);
+
+        final result = await orchestrator.forceFullSync();
+
+        expect(result, SyncResult.error);
+        expect(container.read(syncErrorProvider), isTrue);
+
+        final prefs = await SharedPreferences.getInstance();
+        expect(
+          prefs.getString('pref_last_synced_at'),
+          previousSync.toIso8601String(),
+        );
+      },
+    );
   });
 
   group('SyncOrchestrator.pushChanges', () {

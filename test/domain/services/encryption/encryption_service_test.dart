@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
+import 'package:encrypt/encrypt.dart' as enc;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -142,6 +144,38 @@ void main() {
       final decrypted = await service.decrypt(encrypted);
 
       expect(decrypted, 'padded-key-data');
+    });
+
+    test('decrypt rejects tampered authenticated payload', () async {
+      when(
+        () => mockStorage.read(key: _keyName),
+      ).thenAnswer((_) async => _validBase64Key);
+
+      final encrypted = await service.encrypt('tamper-check');
+      final tamperedBytes = base64Decode(encrypted);
+      tamperedBytes[tamperedBytes.length - 1] ^= 0x01;
+
+      await expectLater(
+        service.decrypt(base64Encode(tamperedBytes)),
+        throwsA(isA<FormatException>()),
+      );
+    });
+
+    test('decrypt supports legacy iv+ciphertext payload format', () async {
+      when(
+        () => mockStorage.read(key: _keyName),
+      ).thenAnswer((_) async => _validBase64Key);
+
+      final keyBytes = Uint8List.fromList(base64Decode(_validBase64Key));
+      final iv = enc.IV.fromLength(16);
+      final encrypter = enc.Encrypter(
+        enc.AES(enc.Key(keyBytes), mode: enc.AESMode.cbc),
+      );
+      final encrypted = encrypter.encrypt('legacy-payload', iv: iv);
+      final legacyCipher = base64Encode([...iv.bytes, ...encrypted.bytes]);
+
+      final decrypted = await service.decrypt(legacyCipher);
+      expect(decrypted, 'legacy-payload');
     });
   });
 }

@@ -22,8 +22,8 @@ import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart
 /// - [SyncErrorHandler] for retry and cleanup
 class SyncOrchestrator {
   SyncOrchestrator(this._ref)
-      : _pushHandler = SyncPushHandler(_ref),
-        _pullHandler = SyncPullHandler(_ref) {
+    : _pushHandler = SyncPushHandler(_ref),
+      _pullHandler = SyncPullHandler(_ref) {
     _errorHandler = SyncErrorHandler(_ref, _pushHandler);
   }
 
@@ -76,7 +76,14 @@ class SyncOrchestrator {
       // If push had errors, skip full reconciliation to protect unsynced
       // local records. Fall back to incremental pull instead.
       final effectiveSince = pushSuccess ? since : (lastSync ?? since);
-      await _pullHandler.pullChanges(userId, since: effectiveSince);
+      final pullSuccess = await _pullHandler.pullChanges(
+        userId,
+        since: effectiveSince,
+      );
+      if (!pullSuccess) {
+        _ref.read(syncErrorProvider.notifier).state = true;
+        return SyncResult.error;
+      }
 
       // Clean up unrecoverable errors AFTER sync cycle completes.
       // Running before sync would remove error metadata that protects
@@ -116,7 +123,8 @@ class SyncOrchestrator {
 
     // Throttle rapid consecutive calls
     if (_lastForceFullSyncAt != null &&
-        DateTime.now().difference(_lastForceFullSyncAt!) < _forceFullSyncCooldown) {
+        DateTime.now().difference(_lastForceFullSyncAt!) <
+            _forceFullSyncCooldown) {
       AppLogger.info('[SyncOrchestrator] Force full sync skipped (cooldown)');
       return SyncResult.throttled;
     }
@@ -137,7 +145,14 @@ class SyncOrchestrator {
       // incremental pull to avoid deleting unsynced local records.
       final lastSync = await _loadLastSyncTime();
       final effectiveSince = pushSuccess ? null : lastSync;
-      await _pullHandler.pullChanges(userId, since: effectiveSince);
+      final pullSuccess = await _pullHandler.pullChanges(
+        userId,
+        since: effectiveSince,
+      );
+      if (!pullSuccess) {
+        _ref.read(syncErrorProvider.notifier).state = true;
+        return SyncResult.error;
+      }
 
       // Clean up unrecoverable errors AFTER sync cycle completes.
       await _errorHandler.cleanupUnrecoverableErrors(userId);
@@ -169,7 +184,7 @@ class SyncOrchestrator {
   Future<bool> pushChanges(String userId) => _pushHandler.pushChanges(userId);
 
   /// Delegates pull to [SyncPullHandler].
-  Future<void> pullChanges(String userId, {DateTime? since}) =>
+  Future<bool> pullChanges(String userId, {DateTime? since}) =>
       _pullHandler.pullChanges(userId, since: since);
 
   /// Delegates retry to [SyncErrorHandler].
@@ -189,7 +204,9 @@ class SyncOrchestrator {
       final processor = _ref.read(notificationProcessorProvider);
       await processor.processAll();
     } catch (e, st) {
-      AppLogger.warning('[SyncOrchestrator] Notification processing failed: $e');
+      AppLogger.warning(
+        '[SyncOrchestrator] Notification processing failed: $e',
+      );
       Sentry.captureException(e, stackTrace: st);
     }
   }
@@ -215,7 +232,10 @@ class SyncOrchestrator {
   Future<void> _persistLastSyncTime(DateTime time) async {
     try {
       final prefs = await _getPrefs();
-      await prefs.setString(AppPreferences.keyLastSyncedAt, time.toIso8601String());
+      await prefs.setString(
+        AppPreferences.keyLastSyncedAt,
+        time.toIso8601String(),
+      );
     } catch (e) {
       AppLogger.warning('[SyncOrchestrator] Failed to persist sync time: $e');
     }
@@ -239,7 +259,10 @@ class SyncOrchestrator {
   Future<void> _persistLastReconcileTime(DateTime time) async {
     try {
       final prefs = await _getPrefs();
-      await prefs.setString(AppPreferences.keyLastReconciledAt, time.toIso8601String());
+      await prefs.setString(
+        AppPreferences.keyLastReconciledAt,
+        time.toIso8601String(),
+      );
     } catch (e) {
       AppLogger.warning(
         '[SyncOrchestrator] Failed to persist reconcile time: $e',

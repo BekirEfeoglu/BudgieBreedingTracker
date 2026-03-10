@@ -261,7 +261,8 @@ void main() {
       addTearDown(container.dispose);
       final handler = container.read(_syncPullHandlerProvider);
 
-      await handler.pullChanges(_userId, since: null);
+      final ok = await handler.pullChanges(_userId, since: null);
+      expect(ok, isTrue);
 
       final captured = verify(
         () => mockBirdRepository.pull(
@@ -278,7 +279,8 @@ void main() {
       final handler = container.read(_syncPullHandlerProvider);
 
       final pastTime = DateTime(2020, 1, 1);
-      await handler.pullChanges(_userId, since: pastTime);
+      final ok = await handler.pullChanges(_userId, since: pastTime);
+      expect(ok, isTrue);
 
       final captured = verify(
         () => mockBirdRepository.pull(
@@ -425,7 +427,7 @@ void main() {
       ).called(1);
     });
 
-    test('does not throw when a layer repo throws', () async {
+    test('returns false when a layer repo throws', () async {
       when(
         () => mockBirdRepository.pull(
           any(),
@@ -437,8 +439,9 @@ void main() {
       addTearDown(container.dispose);
       final handler = container.read(_syncPullHandlerProvider);
 
-      // Should complete without throwing — errors are isolated per layer
-      await expectLater(handler.pullChanges(_userId), completes);
+      // Should not throw — but should report incomplete pull
+      final ok = await handler.pullChanges(_userId);
+      expect(ok, isFalse);
     });
 
     test('still pulls other repos when one layer fails', () async {

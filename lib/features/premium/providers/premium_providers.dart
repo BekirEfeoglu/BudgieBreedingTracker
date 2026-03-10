@@ -110,6 +110,7 @@ class PremiumNotifier extends Notifier<bool> {
 
   /// Updates the premium status and persists to SharedPreferences.
   Future<void> setPremium(bool value) async {
+    if (!ref.mounted) return;
     state = value;
     final prefs = await SharedPreferences.getInstance();
     final userId = ref.read(currentUserIdProvider);
@@ -130,6 +131,7 @@ class PremiumNotifier extends Notifier<bool> {
     final service = ref.read(purchaseServiceProvider);
     try {
       final isPremium = await service.isPremium();
+      if (!ref.mounted) return;
       if (isPremium != state) {
         AppLogger.info(
           '[PremiumNotifier] Status changed on resume: $isPremium',
@@ -148,6 +150,7 @@ class PremiumNotifier extends Notifier<bool> {
   Future<bool> purchase(Package package) async {
     final service = ref.read(purchaseServiceProvider);
     final success = await service.purchasePackage(package);
+    if (!ref.mounted) return success;
     if (success) {
       await setPremium(true);
       await _syncPremiumToSupabase(isPremium: true, package: package);
@@ -159,6 +162,7 @@ class PremiumNotifier extends Notifier<bool> {
   Future<bool> restore() async {
     final service = ref.read(purchaseServiceProvider);
     final success = await service.restorePurchases();
+    if (!ref.mounted) return success;
     await setPremium(success);
     if (success) {
       await _syncPremiumToSupabase(isPremium: true);
@@ -172,6 +176,7 @@ class PremiumNotifier extends Notifier<bool> {
     required bool isPremium,
     Package? package,
   }) async {
+    if (!ref.mounted) return;
     try {
       final client = ref.read(supabaseClientProvider);
       final userId = ref.read(currentUserIdProvider);
@@ -190,6 +195,7 @@ class PremiumNotifier extends Notifier<bool> {
         // Determine expiry from RevenueCat subscription info
         DateTime? expiresAt;
         try {
+          if (!ref.mounted) return;
           final info = await ref
               .read(purchaseServiceProvider)
               .getSubscriptionInfo();
@@ -400,10 +406,12 @@ class PurchaseActionNotifier extends Notifier<PurchaseActionState> {
 
   /// Purchases a plan via RevenueCat offerings.
   Future<void> purchasePlan(PremiumPlan plan) async {
+    if (!ref.mounted) return;
     state = PurchaseActionState(isLoading: true, purchasingPlan: plan);
 
     try {
       final isReady = await ref.read(purchaseServiceReadyProvider.future);
+      if (!ref.mounted) return;
       if (!isReady) {
         AppLogger.warning('Purchase service is not ready');
         state = const PurchaseActionState(error: 'no_offerings');
@@ -411,6 +419,7 @@ class PurchaseActionNotifier extends Notifier<PurchaseActionState> {
       }
 
       final offerings = await ref.read(premiumOfferingsProvider.future);
+      if (!ref.mounted) return;
 
       if (offerings.isEmpty) {
         AppLogger.warning('No RevenueCat offerings available');
@@ -428,6 +437,7 @@ class PurchaseActionNotifier extends Notifier<PurchaseActionState> {
       final success = await ref
           .read(localPremiumProvider.notifier)
           .purchase(package);
+      if (!ref.mounted) return;
       if (success) {
         state = const PurchaseActionState(isSuccess: true);
       } else {
@@ -435,19 +445,23 @@ class PurchaseActionNotifier extends Notifier<PurchaseActionState> {
       }
     } on PurchaseException catch (e, st) {
       AppLogger.error('Purchase failed', e, st);
+      if (!ref.mounted) return;
       state = PurchaseActionState(error: e.code);
     } catch (e, st) {
       AppLogger.error('Purchase failed', e, st);
+      if (!ref.mounted) return;
       state = PurchaseActionState(error: e.toString());
     }
   }
 
   /// Restores previous purchases via RevenueCat.
   Future<void> restorePurchases() async {
+    if (!ref.mounted) return;
     state = const PurchaseActionState(isLoading: true);
 
     try {
       final isReady = await ref.read(purchaseServiceReadyProvider.future);
+      if (!ref.mounted) return;
       if (!isReady) {
         AppLogger.warning('Purchase service is not ready for restore');
         state = const PurchaseActionState(error: 'no_offerings');
@@ -455,6 +469,7 @@ class PurchaseActionNotifier extends Notifier<PurchaseActionState> {
       }
 
       final success = await ref.read(localPremiumProvider.notifier).restore();
+      if (!ref.mounted) return;
       if (success) {
         state = const PurchaseActionState(isSuccess: true);
       } else {
@@ -462,9 +477,11 @@ class PurchaseActionNotifier extends Notifier<PurchaseActionState> {
       }
     } on PurchaseException catch (e, st) {
       AppLogger.error('Restore failed', e, st);
+      if (!ref.mounted) return;
       state = PurchaseActionState(error: e.code);
     } catch (e, st) {
       AppLogger.error('Restore failed', e, st);
+      if (!ref.mounted) return;
       state = const PurchaseActionState(error: 'restore_failed');
     }
   }

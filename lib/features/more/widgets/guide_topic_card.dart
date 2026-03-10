@@ -22,11 +22,9 @@ class GuideTopicCard extends StatelessWidget {
       ),
       clipBehavior: Clip.antiAlias,
       child: ExpansionTile(
+        key: PageStorageKey<String>('guide-topic-${topic.titleKey}'),
         leading: IconTheme(
-          data: IconThemeData(
-            color: theme.colorScheme.primary,
-            size: 24,
-          ),
+          data: IconThemeData(color: theme.colorScheme.primary, size: 24),
           child: AppIcon(topic.iconAsset),
         ),
         title: Row(
@@ -44,10 +42,7 @@ class GuideTopicCard extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: AppColors.warning.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-                  border: Border.all(
-                    color: AppColors.warning,
-                    width: 1,
-                  ),
+                  border: Border.all(color: AppColors.warning, width: 1),
                 ),
                 child: Text(
                   'user_guide.premium_feature'.tr(),
@@ -65,9 +60,7 @@ class GuideTopicCard extends StatelessWidget {
           AppSpacing.lg,
           AppSpacing.lg,
         ),
-        children: [
-          GuideBlockRenderer(blocks: topic.blocks),
-        ],
+        children: [GuideBlockRenderer(blocks: topic.blocks)],
       ),
     );
   }

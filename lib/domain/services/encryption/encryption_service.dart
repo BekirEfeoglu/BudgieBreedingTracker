@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:math';
 import 'dart:typed_data';
 
+import 'package:crypto/crypto.dart' as crypto;
 import 'package:encrypt/encrypt.dart' as enc;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
@@ -21,32 +22,40 @@ class EncryptionService {
 
   static const String _keyName = 'budgie_encryption_key';
   static const int _keyLength = 32; // 256 bits for AES-256
+  static const int _ivLength = 16;
+  static const int _macLength = 32; // HMAC-SHA256 output size
+  static const String _payloadMagic = 'BBTENC1!';
+  static final List<int> _payloadMagicBytes = ascii.encode(_payloadMagic);
 
   String? _cachedKey;
 
-  EncryptionService([
-    FlutterSecureStorage? secureStorage,
-  ]) : _secureStorage =
-            secureStorage ?? const FlutterSecureStorage();
+  EncryptionService([FlutterSecureStorage? secureStorage])
+    : _secureStorage = secureStorage ?? const FlutterSecureStorage();
 
   /// Encrypts [plainText] using AES-256-CBC with a random IV.
   ///
-  /// Returns a Base64-encoded string containing the IV (first 16 bytes)
-  /// followed by the ciphertext. Each call produces different output
-  /// due to the random IV, even for the same plaintext.
+  /// Returns a Base64-encoded payload:
+  /// `MAGIC(8) + IV(16) + ciphertext + HMAC_SHA256(32)`.
+  ///
+  /// The MAC protects encrypted backups against tampering.
   Future<String> encrypt(String plainText) async {
     if (plainText.isEmpty) return plainText;
 
     try {
       final keyBytes = await _getOrCreateKeyBytes();
       final key = enc.Key(keyBytes);
-      final iv = enc.IV.fromSecureRandom(16);
+      final iv = enc.IV.fromSecureRandom(_ivLength);
       final encrypter = enc.Encrypter(enc.AES(key, mode: enc.AESMode.cbc));
 
       final encrypted = encrypter.encrypt(plainText, iv: iv);
 
-      // Prepend IV to ciphertext so we can extract it during decryption
-      final combined = iv.bytes + encrypted.bytes;
+      final payload = <int>[
+        ..._payloadMagicBytes,
+        ...iv.bytes,
+        ...encrypted.bytes,
+      ];
+      final mac = _computeMac(payload, keyBytes);
+      final combined = <int>[...payload, ...mac];
       return base64Encode(combined);
     } catch (e, st) {
       AppLogger.error('Encryption failed', e, st);
@@ -66,23 +75,82 @@ class EncryptionService {
       final key = enc.Key(keyBytes);
 
       final combined = base64Decode(cipherText);
-      if (combined.length < 17) {
-        // Too short to contain IV + at least 1 block
-        throw FormatException(
-          'Invalid ciphertext: too short (${combined.length} bytes, minimum 17)',
-        );
-      }
-
-      final iv = enc.IV(combined.sublist(0, 16));
-      final cipherBytes = combined.sublist(16);
-      final encrypted = enc.Encrypted(cipherBytes);
+      final encrypted = _decodeEncryptedPayload(combined, keyBytes);
 
       final encrypter = enc.Encrypter(enc.AES(key, mode: enc.AESMode.cbc));
-      return encrypter.decrypt(encrypted, iv: iv);
+      return encrypter.decrypt(encrypted.$1, iv: encrypted.$2);
     } catch (e, st) {
       AppLogger.error('Decryption failed', e, st);
       rethrow; // Never fallback to ciphertext — caller must handle
     }
+  }
+
+  (enc.Encrypted, enc.IV) _decodeEncryptedPayload(
+    List<int> combined,
+    Uint8List keyBytes,
+  ) {
+    // New authenticated format: MAGIC + IV + ciphertext + HMAC
+    if (_hasMagicPrefix(combined)) {
+      final minimumLength =
+          _payloadMagicBytes.length + _ivLength + 1 + _macLength;
+      if (combined.length < minimumLength) {
+        throw FormatException(
+          'Invalid ciphertext: too short authenticated payload '
+          '(${combined.length} bytes)',
+        );
+      }
+
+      final payloadEnd = combined.length - _macLength;
+      final payload = combined.sublist(0, payloadEnd);
+      final providedMac = combined.sublist(payloadEnd);
+      final expectedMac = _computeMac(payload, keyBytes);
+      if (!_constantTimeEquals(providedMac, expectedMac)) {
+        throw const FormatException(
+          'Invalid ciphertext: integrity check failed',
+        );
+      }
+
+      final ivStart = _payloadMagicBytes.length;
+      final ivEnd = ivStart + _ivLength;
+      final iv = enc.IV(Uint8List.fromList(combined.sublist(ivStart, ivEnd)));
+      final cipherBytes = combined.sublist(ivEnd, payloadEnd);
+      if (cipherBytes.isEmpty) {
+        throw const FormatException('Invalid ciphertext: empty payload');
+      }
+      return (enc.Encrypted(Uint8List.fromList(cipherBytes)), iv);
+    }
+
+    // Legacy format: IV + ciphertext (no MAC)
+    if (combined.length < _ivLength + 1) {
+      throw FormatException(
+        'Invalid ciphertext: too short (${combined.length} bytes, minimum 17)',
+      );
+    }
+    final iv = enc.IV(Uint8List.fromList(combined.sublist(0, _ivLength)));
+    final cipherBytes = combined.sublist(_ivLength);
+    return (enc.Encrypted(Uint8List.fromList(cipherBytes)), iv);
+  }
+
+  bool _hasMagicPrefix(List<int> bytes) {
+    if (bytes.length < _payloadMagicBytes.length) return false;
+    for (var i = 0; i < _payloadMagicBytes.length; i++) {
+      if (bytes[i] != _payloadMagicBytes[i]) return false;
+    }
+    return true;
+  }
+
+  List<int> _computeMac(List<int> payload, Uint8List keyBytes) {
+    final hmac = crypto.Hmac(crypto.sha256, keyBytes);
+    return hmac.convert(payload).bytes;
+  }
+
+  bool _constantTimeEquals(List<int> a, List<int> b) {
+    if (a.length != b.length) return false;
+    var diff = 0;
+    for (var i = 0; i < a.length; i++) {
+      diff |= a[i] ^ b[i];
+    }
+    return diff == 0;
   }
 
   /// Returns whether the encryption key exists in secure storage.
@@ -144,8 +212,7 @@ class EncryptionService {
 
   String _generateKey() {
     final random = Random.secure();
-    final bytes =
-        List<int>.generate(_keyLength, (_) => random.nextInt(256));
+    final bytes = List<int>.generate(_keyLength, (_) => random.nextInt(256));
     return base64Encode(bytes);
   }
 }
