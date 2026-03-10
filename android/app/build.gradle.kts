@@ -9,6 +9,12 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localProperties.load(FileInputStream(localPropertiesFile))
+}
+
 val keystoreProperties = Properties()
 val keystorePropertiesFile = rootProject.file("key.properties")
 if (keystorePropertiesFile.exists()) {
@@ -35,6 +41,53 @@ val isReleaseTaskRequested = gradle.startParameter.taskNames.any { taskName ->
     taskName.contains("release", ignoreCase = true)
 }
 
+fun loadEnvFile(file: File): Map<String, String> {
+    if (!file.exists()) return emptyMap()
+    return file.readLines()
+        .mapNotNull { rawLine ->
+            val line = rawLine.trim()
+            if (line.isEmpty() || line.startsWith("#")) return@mapNotNull null
+            val separatorIndex = line.indexOf('=')
+            if (separatorIndex <= 0) return@mapNotNull null
+            val key = line.substring(0, separatorIndex).trim()
+            if (key.isEmpty()) return@mapNotNull null
+            var value = line.substring(separatorIndex + 1).trim()
+            if (
+                (value.startsWith("\"") && value.endsWith("\"")) ||
+                (value.startsWith("'") && value.endsWith("'"))
+            ) {
+                value = value.substring(1, value.length - 1)
+            }
+            key to value
+        }
+        .toMap()
+}
+
+fun escapeForBuildConfig(value: String): String =
+    value.replace("\\", "\\\\").replace("\"", "\\\"")
+
+val envFileValues = loadEnvFile(rootProject.file("../.env"))
+
+fun resolveRuntimeConfigValue(key: String, defaultValue: String = ""): String {
+    val fromEnv = System.getenv(key)?.trim().orEmpty()
+    if (fromEnv.isNotEmpty()) return fromEnv
+
+    val fromLocalProperties = localProperties.getProperty(key)?.trim().orEmpty()
+    if (fromLocalProperties.isNotEmpty()) return fromLocalProperties
+
+    val fromEnvFile = envFileValues[key]?.trim().orEmpty()
+    if (fromEnvFile.isNotEmpty()) return fromEnvFile
+
+    return defaultValue
+}
+
+val supabaseUrlFromConfig = resolveRuntimeConfigValue("SUPABASE_URL")
+val supabaseAnonKeyFromConfig = resolveRuntimeConfigValue("SUPABASE_ANON_KEY")
+val sentryDsnFromConfig = resolveRuntimeConfigValue("SENTRY_DSN")
+val sentryEnvironmentFromConfig = resolveRuntimeConfigValue("SENTRY_ENVIRONMENT", "production")
+val revenueCatIosFromConfig = resolveRuntimeConfigValue("REVENUECAT_API_KEY_IOS")
+val revenueCatAndroidFromConfig = resolveRuntimeConfigValue("REVENUECAT_API_KEY_ANDROID")
+
 android {
     namespace = "com.budgiebreeding.budgie_breeding_tracker"
     compileSdk = 36
@@ -50,6 +103,10 @@ android {
         jvmTarget = JavaVersion.VERSION_17.toString()
     }
 
+    buildFeatures {
+        buildConfig = true
+    }
+
     defaultConfig {
         applicationId = "com.budgiebreeding.budgie_breeding_tracker"
         minSdk = flutter.minSdkVersion
@@ -57,6 +114,36 @@ android {
         versionCode = flutter.versionCode
         versionName = flutter.versionName
         multiDexEnabled = true
+        buildConfigField(
+            "String",
+            "SUPABASE_URL",
+            "\"${escapeForBuildConfig(supabaseUrlFromConfig)}\""
+        )
+        buildConfigField(
+            "String",
+            "SUPABASE_ANON_KEY",
+            "\"${escapeForBuildConfig(supabaseAnonKeyFromConfig)}\""
+        )
+        buildConfigField(
+            "String",
+            "SENTRY_DSN",
+            "\"${escapeForBuildConfig(sentryDsnFromConfig)}\""
+        )
+        buildConfigField(
+            "String",
+            "SENTRY_ENVIRONMENT",
+            "\"${escapeForBuildConfig(sentryEnvironmentFromConfig)}\""
+        )
+        buildConfigField(
+            "String",
+            "REVENUECAT_API_KEY_IOS",
+            "\"${escapeForBuildConfig(revenueCatIosFromConfig)}\""
+        )
+        buildConfigField(
+            "String",
+            "REVENUECAT_API_KEY_ANDROID",
+            "\"${escapeForBuildConfig(revenueCatAndroidFromConfig)}\""
+        )
     }
 
     signingConfigs {

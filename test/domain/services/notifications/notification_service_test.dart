@@ -338,6 +338,54 @@ void main() {
       ).called(1);
     });
 
+    test(
+      'scheduleNotification uses inexact mode when exact alarms are not allowed',
+      () async {
+        final mockAndroid = _MockAndroidPlugin();
+        when(
+          () => mockPlugin
+              .resolvePlatformSpecificImplementation<
+                AndroidFlutterLocalNotificationsPlugin
+              >(),
+        ).thenReturn(mockAndroid);
+        when(
+          () => mockAndroid.canScheduleExactNotifications(),
+        ).thenAnswer((_) async => false);
+        when(
+          () => mockPlugin.zonedSchedule(
+            id: any(named: 'id'),
+            title: any(named: 'title'),
+            body: any(named: 'body'),
+            scheduledDate: any(named: 'scheduledDate'),
+            notificationDetails: any(named: 'notificationDetails'),
+            androidScheduleMode: any(named: 'androidScheduleMode'),
+            payload: any(named: 'payload'),
+          ),
+        ).thenAnswer((_) async {});
+
+        await service.init();
+        await service.scheduleNotification(
+          id: 101,
+          title: 'Scheduled',
+          body: 'Fallback',
+          scheduledDate: DateTime.now().add(const Duration(minutes: 10)),
+          payload: 'event:test',
+        );
+
+        verify(
+          () => mockPlugin.zonedSchedule(
+            id: 101,
+            title: 'Scheduled',
+            body: 'Fallback',
+            scheduledDate: any(named: 'scheduledDate'),
+            notificationDetails: any(named: 'notificationDetails'),
+            androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+            payload: 'event:test',
+          ),
+        ).called(1);
+      },
+    );
+
     test('cancel calls plugin.cancel with correct id', () async {
       when(
         () => mockPlugin.cancel(id: any(named: 'id')),

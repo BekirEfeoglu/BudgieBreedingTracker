@@ -58,6 +58,7 @@ class AdService {
   InterstitialAd? _interstitialAd;
   bool _isAdLoaded = false;
   bool _sdkInitialized = false;
+  Future<void>? _sdkInitializationFuture;
   DateTime? _lastShownAt;
 
   RewardedAd? _rewardedAd;
@@ -75,12 +76,25 @@ class AdService {
   /// Safe to call multiple times — only initializes once.
   Future<void> ensureSdkInitialized() async {
     if (_sdkInitialized) return;
+    if (_sdkInitializationFuture != null) {
+      await _sdkInitializationFuture;
+      return;
+    }
+
+    final initFuture = _initializeSdk();
+    _sdkInitializationFuture = initFuture;
+    await initFuture;
+  }
+
+  Future<void> _initializeSdk() async {
     try {
       await MobileAds.instance.initialize();
       _sdkInitialized = true;
       AppLogger.info('$_tag: SDK initialized');
     } catch (e) {
       AppLogger.warning('$_tag: SDK initialization failed - $e');
+    } finally {
+      _sdkInitializationFuture = null;
     }
   }
 
@@ -195,9 +209,7 @@ class AdService {
       },
     );
 
-    await _rewardedAd!.show(
-      onUserEarnedReward: (_, __) => onRewarded(),
-    );
+    await _rewardedAd!.show(onUserEarnedReward: (_, __) => onRewarded());
     _rewardedAd = null;
   }
 

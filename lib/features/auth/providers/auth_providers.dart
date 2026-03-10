@@ -68,7 +68,7 @@ final authSessionSideEffectsProvider = Provider<void>((ref) {
     if (next != 'anonymous') return;
     unawaited(ref.read(purchaseServiceProvider).logout());
     unawaited(ref.read(localPremiumProvider.notifier).setPremium(false));
-  }, fireImmediately: true);
+  });
 });
 
 /// App initialization provider.
