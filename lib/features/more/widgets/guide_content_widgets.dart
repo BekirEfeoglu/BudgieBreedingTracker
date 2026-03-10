@@ -18,8 +18,9 @@ class GuideTipBox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final containerColor =
-        theme.colorScheme.primaryContainer.withValues(alpha: 0.3);
+    final containerColor = theme.colorScheme.primaryContainer.withValues(
+      alpha: 0.3,
+    );
     final accentColor = theme.colorScheme.primary;
 
     return Container(
@@ -32,23 +33,30 @@ class GuideTipBox extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          AppIcon(AppIcons.info, size: 20, color: accentColor, semanticsLabel: 'Tip'),
+          AppIcon(
+            AppIcons.info,
+            size: 20,
+            color: accentColor,
+            semanticsLabel: 'user_guide.tip_label'.tr(),
+          ),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Text.rich(
-              TextSpan(children: [
-                TextSpan(
-                  text: '${'user_guide.tip_label'.tr()} ',
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: accentColor,
+              TextSpan(
+                children: [
+                  TextSpan(
+                    text: '${'user_guide.tip_label'.tr()} ',
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: accentColor,
+                    ),
                   ),
-                ),
-                TextSpan(
-                  text: textKey.tr(),
-                  style: theme.textTheme.bodyMedium,
-                ),
-              ]),
+                  TextSpan(
+                    text: textKey.tr(),
+                    style: theme.textTheme.bodyMedium,
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -81,23 +89,30 @@ class GuideWarningBox extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const AppIcon(AppIcons.warning, size: 20, color: warningColor, semanticsLabel: 'Warning'),
+          AppIcon(
+            AppIcons.warning,
+            size: 20,
+            color: warningColor,
+            semanticsLabel: 'user_guide.warning_label'.tr(),
+          ),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Text.rich(
-              TextSpan(children: [
-                TextSpan(
-                  text: '${'user_guide.warning_label'.tr()} ',
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: warningColor,
+              TextSpan(
+                children: [
+                  TextSpan(
+                    text: '${'user_guide.warning_label'.tr()} ',
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: warningColor,
+                    ),
                   ),
-                ),
-                TextSpan(
-                  text: textKey.tr(),
-                  style: theme.textTheme.bodyMedium,
-                ),
-              ]),
+                  TextSpan(
+                    text: textKey.tr(),
+                    style: theme.textTheme.bodyMedium,
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -131,7 +146,12 @@ class GuidePremiumNote extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const AppIcon(AppIcons.premium, size: 20, color: AppColors.premiumGoldDark),
+          AppIcon(
+            AppIcons.premium,
+            size: 20,
+            color: AppColors.premiumGoldDark,
+            semanticsLabel: 'user_guide.premium_feature'.tr(),
+          ),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Text(
@@ -168,10 +188,7 @@ class GuideStepList extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          titleKey.tr(),
-          style: theme.textTheme.titleSmall,
-        ),
+        Text(titleKey.tr(), style: theme.textTheme.titleSmall),
         const SizedBox(height: AppSpacing.sm),
         ...List.generate(stepKeys.length, (i) {
           return Padding(
@@ -225,7 +242,9 @@ class GuideBlockRenderer extends StatelessWidget {
     for (final block in blocks) {
       switch (block.type) {
         case GuideBlockType.text:
-          children.add(Text(block.textKey!.tr(), style: theme.textTheme.bodyMedium));
+          children.add(
+            Text(block.textKey!.tr(), style: theme.textTheme.bodyMedium),
+          );
         case GuideBlockType.tip:
           children.add(GuideTipBox(textKey: block.textKey!));
         case GuideBlockType.warning:
@@ -233,10 +252,12 @@ class GuideBlockRenderer extends StatelessWidget {
         case GuideBlockType.premiumNote:
           children.add(GuidePremiumNote(textKey: block.textKey!));
         case GuideBlockType.steps:
-          children.add(GuideStepList(
-            titleKey: block.stepsTitle!,
-            stepKeys: block.stepKeys!,
-          ));
+          children.add(
+            GuideStepList(
+              titleKey: block.stepsTitle!,
+              stepKeys: block.stepKeys!,
+            ),
+          );
       }
     }
 

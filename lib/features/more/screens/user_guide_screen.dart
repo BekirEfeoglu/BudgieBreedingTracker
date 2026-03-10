@@ -21,6 +21,49 @@ class _UserGuideScreenState extends State<UserGuideScreen> {
   GuideCategory _selectedCategory = GuideCategory.all;
   String _searchQuery = '';
 
+  static const Map<String, String> _searchFoldMap = {
+    'i̇': 'i',
+    'ı': 'i',
+    'ş': 's',
+    'ç': 'c',
+    'ğ': 'g',
+    'ü': 'u',
+    'ö': 'o',
+    'ä': 'a',
+    'â': 'a',
+    'à': 'a',
+    'á': 'a',
+    'é': 'e',
+    'è': 'e',
+    'ê': 'e',
+    'î': 'i',
+    'í': 'i',
+    'ì': 'i',
+    'ô': 'o',
+    'ó': 'o',
+    'ò': 'o',
+    'û': 'u',
+    'ú': 'u',
+    'ù': 'u',
+    'ñ': 'n',
+    'ß': 'ss',
+  };
+
+  static String _normalizeSearchText(String value) {
+    var normalized = value.trim().toLowerCase();
+    if (normalized.isEmpty) return '';
+
+    _searchFoldMap.forEach((source, target) {
+      normalized = normalized.replaceAll(source, target);
+    });
+    return normalized;
+  }
+
+  static bool _matchesQuery(String candidate, String normalizedQuery) {
+    if (normalizedQuery.isEmpty) return true;
+    return _normalizeSearchText(candidate).contains(normalizedQuery);
+  }
+
   @override
   void dispose() {
     _searchController.dispose();
@@ -32,31 +75,29 @@ class _UserGuideScreenState extends State<UserGuideScreen> {
 
     // Category filter
     if (_selectedCategory != GuideCategory.all) {
-      topics = topics
-          .where((t) => t.category == _selectedCategory)
-          .toList();
+      topics = topics.where((t) => t.category == _selectedCategory).toList();
     }
 
     // Search filter
     if (_searchQuery.isNotEmpty) {
-      final query = _searchQuery.toLowerCase();
+      final query = _normalizeSearchText(_searchQuery);
       topics = topics.where((t) {
-        final titleMatch = t.title.toLowerCase().contains(query);
+        final titleMatch = _matchesQuery(t.title, query);
         if (titleMatch) return true;
 
         // Search through block text content
         for (final block in t.blocks) {
           if (block.textKey != null &&
-              block.textKey!.tr().toLowerCase().contains(query)) {
+              _matchesQuery(block.textKey!.tr(), query)) {
             return true;
           }
           if (block.stepsTitle != null &&
-              block.stepsTitle!.tr().toLowerCase().contains(query)) {
+              _matchesQuery(block.stepsTitle!.tr(), query)) {
             return true;
           }
           if (block.stepKeys != null) {
             for (final key in block.stepKeys!) {
-              if (key.tr().toLowerCase().contains(query)) return true;
+              if (_matchesQuery(key.tr(), query)) return true;
             }
           }
         }
@@ -103,8 +144,7 @@ class _UserGuideScreenState extends State<UserGuideScreen> {
                   vertical: AppSpacing.md,
                 ),
               ),
-              onChanged: (value) =>
-                  setState(() => _searchQuery = value.trim()),
+              onChanged: (value) => setState(() => _searchQuery = value),
             ),
           ),
           const SizedBox(height: AppSpacing.sm),
@@ -112,8 +152,7 @@ class _UserGuideScreenState extends State<UserGuideScreen> {
           // Category chips
           _CategoryChipBar(
             selected: _selectedCategory,
-            onSelected: (cat) =>
-                setState(() => _selectedCategory = cat),
+            onSelected: (cat) => setState(() => _selectedCategory = cat),
           ),
           const SizedBox(height: AppSpacing.sm),
 
@@ -131,8 +170,10 @@ class _UserGuideScreenState extends State<UserGuideScreen> {
                       bottom: AppSpacing.xxxl * 2,
                     ),
                     itemCount: topics.length,
-                    itemBuilder: (_, i) =>
-                        GuideTopicCard(topic: topics[i]),
+                    itemBuilder: (_, i) => GuideTopicCard(
+                      key: ValueKey(topics[i].titleKey),
+                      topic: topics[i],
+                    ),
                   ),
           ),
         ],
@@ -149,10 +190,7 @@ class _CategoryChipBar extends StatelessWidget {
   final GuideCategory selected;
   final ValueChanged<GuideCategory> onSelected;
 
-  const _CategoryChipBar({
-    required this.selected,
-    required this.onSelected,
-  });
+  const _CategoryChipBar({required this.selected, required this.onSelected});
 
   @override
   Widget build(BuildContext context) {

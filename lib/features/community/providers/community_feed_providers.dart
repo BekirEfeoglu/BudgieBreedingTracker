@@ -55,6 +55,7 @@ class CommunityFeedNotifier extends Notifier<FeedState> {
   }
 
   Future<void> fetchInitial() async {
+    if (!ref.mounted) return;
     state = const FeedState(isLoading: true);
 
     try {
@@ -62,6 +63,7 @@ class CommunityFeedNotifier extends Notifier<FeedState> {
       final userId = ref.read(currentUserIdProvider);
 
       final posts = await repo.getFeed(currentUserId: userId, limit: _pageSize);
+      if (!ref.mounted) return;
 
       state = FeedState(
         posts: posts,
@@ -74,15 +76,18 @@ class CommunityFeedNotifier extends Notifier<FeedState> {
         AppLogger.info(
           'Skipping community feed fetch: Supabase is not initialized',
         );
+        if (!ref.mounted) return;
         state = const FeedState(posts: [], isLoading: false, hasMore: false);
       } else {
         AppLogger.error('CommunityFeedNotifier.fetchInitial', e, st);
+        if (!ref.mounted) return;
         state = FeedState(isLoading: false, error: e.toString());
       }
     }
   }
 
   Future<void> fetchMore() async {
+    if (!ref.mounted) return;
     if (state.isLoading || !state.hasMore || state.cursor == null) return;
 
     state = state.copyWith(isLoading: true, error: null);
@@ -96,6 +101,7 @@ class CommunityFeedNotifier extends Notifier<FeedState> {
         limit: _pageSize,
         before: state.cursor,
       );
+      if (!ref.mounted) return;
 
       final allPosts = [...state.posts, ...newPosts];
 
@@ -110,9 +116,11 @@ class CommunityFeedNotifier extends Notifier<FeedState> {
         AppLogger.info(
           'Skipping community feed pagination: Supabase is not initialized',
         );
+        if (!ref.mounted) return;
         state = state.copyWith(isLoading: false, hasMore: false, error: null);
       } else {
         AppLogger.error('CommunityFeedNotifier.fetchMore', e, st);
+        if (!ref.mounted) return;
         state = state.copyWith(isLoading: false, error: e.toString());
       }
     }

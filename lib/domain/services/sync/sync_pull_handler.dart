@@ -17,7 +17,7 @@ class SyncPullHandler {
   /// Pulls remote changes from Supabase into local DB.
   ///
   /// Uses [since] for incremental sync. Pass `null` for full reconciliation.
-  Future<void> pullChanges(String userId, {DateTime? since}) async {
+  Future<bool> pullChanges(String userId, {DateTime? since}) async {
     // Clock skew protection: if since is in the future, force full reconciliation
     if (since != null && since.isAfter(DateTime.now())) {
       AppLogger.warning(
@@ -45,11 +45,17 @@ class SyncPullHandler {
       final errors = await _safeParallelPull([
         () async {
           await birdRepo.pull(userId, lastSyncedAt: since);
-          _reportPullConflicts(birdRepo.lastPullConflicts, SupabaseConstants.birdsTable);
+          _reportPullConflicts(
+            birdRepo.lastPullConflicts,
+            SupabaseConstants.birdsTable,
+          );
         },
         () async {
           await nestRepo.pull(userId, lastSyncedAt: since);
-          _reportPullConflicts(nestRepo.lastPullConflicts, SupabaseConstants.nestsTable);
+          _reportPullConflicts(
+            nestRepo.lastPullConflicts,
+            SupabaseConstants.nestsTable,
+          );
         },
       ], 'L1 (birds/nests)');
       layerErrors += errors;
@@ -59,10 +65,17 @@ class SyncPullHandler {
     try {
       final bpRepo = _ref.read(breedingPairRepositoryProvider);
       await bpRepo.pull(userId, lastSyncedAt: since);
-      _reportPullConflicts(bpRepo.lastPullConflicts, SupabaseConstants.breedingPairsTable);
+      _reportPullConflicts(
+        bpRepo.lastPullConflicts,
+        SupabaseConstants.breedingPairsTable,
+      );
     } catch (e, st) {
       layerErrors++;
-      AppLogger.error('[SyncOrchestrator] Pull L2 (breeding_pairs) failed', e, st);
+      AppLogger.error(
+        '[SyncOrchestrator] Pull L2 (breeding_pairs) failed',
+        e,
+        st,
+      );
     }
 
     // Layer 3: clutches, incubations (depend on breeding_pairs)
@@ -71,9 +84,14 @@ class SyncPullHandler {
       final errors = await _safeParallelPull([
         () async {
           await clutchRepo.pull(userId, lastSyncedAt: since);
-          _reportPullConflicts(clutchRepo.lastPullConflicts, SupabaseConstants.clutchesTable);
+          _reportPullConflicts(
+            clutchRepo.lastPullConflicts,
+            SupabaseConstants.clutchesTable,
+          );
         },
-        () => _ref.read(incubationRepositoryProvider).pull(userId, lastSyncedAt: since),
+        () => _ref
+            .read(incubationRepositoryProvider)
+            .pull(userId, lastSyncedAt: since),
       ], 'L3 (clutches/incubations)');
       layerErrors += errors;
     }
@@ -82,7 +100,10 @@ class SyncPullHandler {
     try {
       final eggRepo = _ref.read(eggRepositoryProvider);
       await eggRepo.pull(userId, lastSyncedAt: since);
-      _reportPullConflicts(eggRepo.lastPullConflicts, SupabaseConstants.eggsTable);
+      _reportPullConflicts(
+        eggRepo.lastPullConflicts,
+        SupabaseConstants.eggsTable,
+      );
     } catch (e, st) {
       layerErrors++;
       AppLogger.error('[SyncOrchestrator] Pull L4 (eggs) failed', e, st);
@@ -92,7 +113,10 @@ class SyncPullHandler {
     try {
       final chickRepo = _ref.read(chickRepositoryProvider);
       await chickRepo.pull(userId, lastSyncedAt: since);
-      _reportPullConflicts(chickRepo.lastPullConflicts, SupabaseConstants.chicksTable);
+      _reportPullConflicts(
+        chickRepo.lastPullConflicts,
+        SupabaseConstants.chicksTable,
+      );
     } catch (e, st) {
       layerErrors++;
       AppLogger.error('[SyncOrchestrator] Pull L5 (chicks) failed', e, st);
@@ -106,19 +130,34 @@ class SyncPullHandler {
       final errors = await _safeParallelPull([
         () async {
           await hrRepo.pull(userId, lastSyncedAt: since);
-          _reportPullConflicts(hrRepo.lastPullConflicts, SupabaseConstants.healthRecordsTable);
+          _reportPullConflicts(
+            hrRepo.lastPullConflicts,
+            SupabaseConstants.healthRecordsTable,
+          );
         },
-        () => _ref.read(growthMeasurementRepositoryProvider).pull(userId, lastSyncedAt: since),
+        () => _ref
+            .read(growthMeasurementRepositoryProvider)
+            .pull(userId, lastSyncedAt: since),
         () async {
           await eventRepo.pull(userId, lastSyncedAt: since);
-          _reportPullConflicts(eventRepo.lastPullConflicts, SupabaseConstants.eventsTable);
+          _reportPullConflicts(
+            eventRepo.lastPullConflicts,
+            SupabaseConstants.eventsTable,
+          );
         },
-        () => _ref.read(notificationRepositoryProvider).pull(userId, lastSyncedAt: since),
+        () => _ref
+            .read(notificationRepositoryProvider)
+            .pull(userId, lastSyncedAt: since),
         () async {
           await nsRepo.pull(userId, lastSyncedAt: since);
-          _reportPullConflicts(nsRepo.lastPullConflicts, SupabaseConstants.notificationSchedulesTable);
+          _reportPullConflicts(
+            nsRepo.lastPullConflicts,
+            SupabaseConstants.notificationSchedulesTable,
+          );
         },
-        () => _ref.read(photoRepositoryProvider).pull(userId, lastSyncedAt: since),
+        () => _ref
+            .read(photoRepositoryProvider)
+            .pull(userId, lastSyncedAt: since),
       ], 'L6 (leaf entities)');
       layerErrors += errors;
     }
@@ -127,18 +166,27 @@ class SyncPullHandler {
     try {
       final erRepo = _ref.read(eventReminderRepositoryProvider);
       await erRepo.pull(userId, lastSyncedAt: since);
-      _reportPullConflicts(erRepo.lastPullConflicts, SupabaseConstants.eventRemindersTable);
+      _reportPullConflicts(
+        erRepo.lastPullConflicts,
+        SupabaseConstants.eventRemindersTable,
+      );
     } catch (e, st) {
       layerErrors++;
-      AppLogger.error('[SyncOrchestrator] Pull L7 (event_reminders) failed', e, st);
+      AppLogger.error(
+        '[SyncOrchestrator] Pull L7 (event_reminders) failed',
+        e,
+        st,
+      );
     }
 
     if (layerErrors > 0) {
       AppLogger.warning(
         '[SyncOrchestrator] Pull completed with $layerErrors layer error(s)',
       );
+      return false;
     } else {
       AppLogger.info('[SyncOrchestrator] Pull complete');
+      return true;
     }
   }
 
@@ -150,12 +198,14 @@ class SyncPullHandler {
     if (conflicts.isEmpty) return;
     final notifier = _ref.read(conflictHistoryProvider.notifier);
     for (final c in conflicts) {
-      notifier.addConflict(SyncConflict(
-        table: tableName,
-        recordId: c.recordId,
-        detectedAt: DateTime.now(),
-        description: c.detail,
-      ));
+      notifier.addConflict(
+        SyncConflict(
+          table: tableName,
+          recordId: c.recordId,
+          detectedAt: DateTime.now(),
+          description: c.detail,
+        ),
+      );
     }
     AppLogger.info(
       '[SyncOrchestrator] ${conflicts.length} conflict(s) detected in $tableName',
@@ -173,7 +223,11 @@ class SyncPullHandler {
         await task();
         return true;
       } catch (e, st) {
-        AppLogger.error('[SyncOrchestrator] Pull $layerLabel partial failure', e, st);
+        AppLogger.error(
+          '[SyncOrchestrator] Pull $layerLabel partial failure',
+          e,
+          st,
+        );
         return false;
       }
     });
