@@ -42,6 +42,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
   late final AnimationController _wingFlapCtrl;
   late final AnimationController _hopCtrl;
   Timer? _blinkTimer;
+  Timer? _oAuthTimeoutTimer;
   bool _isBlinking = false;
 
   @override
@@ -72,6 +73,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
     _wingFlapCtrl.dispose();
     _hopCtrl.dispose();
     _blinkTimer?.cancel();
+    _oAuthTimeoutTimer?.cancel();
     super.dispose();
   }
 
@@ -107,7 +109,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
       );
       if (!mounted) return;
       if (!initialized) {
-        AppLogger.error('[Register] Supabase not initialized after runtime retry');
+        AppLogger.error(
+          '[Register] Supabase not initialized after runtime retry',
+        );
         _showSnack('auth.error_service_unavailable'.tr(), isError: true);
         setState(() => _loading = false);
         return;
@@ -128,7 +132,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
           )
           .timeout(
             const Duration(seconds: 30),
-            onTimeout: () => throw const SocketException('Connection timed out'),
+            onTimeout: () =>
+                throw const SocketException('Connection timed out'),
           );
       if (mounted) {
         _showSnack('auth.register_success'.tr(), isSuccess: true);
@@ -150,7 +155,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
       );
       _showSnack(mapAuthError(e), isError: true);
     } catch (e, st) {
-      AppLogger.error('[Register] signUpWithEmail failed: ${e.runtimeType}: $e', e, st);
+      AppLogger.error(
+        '[Register] signUpWithEmail failed: ${e.runtimeType}: $e',
+        e,
+        st,
+      );
       Sentry.captureException(e, stackTrace: st);
       if (e is SocketException || e is HandshakeException) {
         _showSnack('auth.error_network'.tr(), isError: true);
@@ -165,11 +174,36 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
   Future<void> _signInWithOAuth(OAuthProvider provider) async {
     setState(() => _loading = true);
     try {
+      if (!ref.read(supabaseInitializedProvider)) {
+        final initialized = await ensureSupabaseInitialized(
+          timeout: const Duration(seconds: 12),
+        );
+        if (!mounted) return;
+        if (!initialized) {
+          AppLogger.error('[Register] Supabase not initialized before OAuth');
+          _showSnack('auth.error_service_unavailable'.tr(), isError: true);
+          setState(() => _loading = false);
+          return;
+        }
+      }
+
       final auth = ref.read(authActionsProvider);
       final launched = await auth.signInWithOAuth(provider);
-      if (!launched && mounted) setState(() => _loading = false);
+      if (!launched && mounted) {
+        setState(() => _loading = false);
+      } else if (launched && mounted) {
+        _oAuthTimeoutTimer?.cancel();
+        _oAuthTimeoutTimer = Timer(const Duration(seconds: 30), () {
+          if (mounted && _loading) {
+            setState(() => _loading = false);
+          }
+        });
+      }
     } on AuthException catch (e) {
-      AppLogger.error('[Register] OAuth AuthException: ${e.message} (status=${e.statusCode})', e);
+      AppLogger.error(
+        '[Register] OAuth AuthException: ${e.message} (status=${e.statusCode})',
+        e,
+      );
       Sentry.captureException(e);
       if (mounted) setState(() => _loading = false);
       _showSnack(mapAuthError(e), isError: true);
@@ -232,14 +266,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
                         onSubmit: _submit,
                         onGoogleTap: () =>
                             _signInWithOAuth(OAuthProvider.google),
-                        onAppleTap: () =>
-                            _signInWithOAuth(OAuthProvider.apple),
+                        onAppleTap: () => _signInWithOAuth(OAuthProvider.apple),
                         onLoginTap: () => context.pop(),
                       ),
                     ),
-                    SizedBox(
-                      height: isSmall ? AppSpacing.md : AppSpacing.xxl,
-                    ),
+                    SizedBox(height: isSmall ? AppSpacing.md : AppSpacing.xxl),
                   ],
                 ),
               ),

@@ -9,9 +9,11 @@ import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_pro
 
 Future<void> _pumpSimple(WidgetTester tester, Widget child) async {
   await tester.pumpWidget(
-    MaterialApp(
-      home: Scaffold(
-        body: SingleChildScrollView(child: Form(child: child)),
+    ProviderScope(
+      child: MaterialApp(
+        home: Scaffold(
+          body: SingleChildScrollView(child: Form(child: child)),
+        ),
       ),
     ),
   );

@@ -8,7 +8,9 @@ import 'package:mocktail/mocktail.dart';
 
 import 'package:budgie_breeding_tracker/features/admin/providers/admin_providers.dart';
 import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
+import 'package:budgie_breeding_tracker/features/home/providers/home_providers.dart';
 import 'package:budgie_breeding_tracker/features/premium/providers/premium_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/sync/sync_providers.dart';
 import 'package:budgie_breeding_tracker/router/app_router.dart';
 import 'package:budgie_breeding_tracker/router/guards/admin_guard.dart';
 import 'package:budgie_breeding_tracker/router/guards/premium_guard.dart';
@@ -41,6 +43,11 @@ ProviderContainer _createContainer({
       initSkippedProvider.overrideWith(
         () => _TestInitSkippedNotifier(initSkipped),
       ),
+      periodicSyncProvider.overrideWith((ref) {}),
+      networkAwareSyncProvider.overrideWith((ref) {}),
+      unweanedChicksCountProvider.overrideWith((ref, userId) {
+        return Stream<int>.value(0);
+      }),
     ],
   );
 }
@@ -84,6 +91,7 @@ Future<String> _resolveLocation(
     AppRoutes.login,
     AppRoutes.register,
     AppRoutes.authCallback,
+    AppRoutes.oauthCallback,
     AppRoutes.emailVerification,
     AppRoutes.forgotPassword,
     AppRoutes.twoFactorVerify,

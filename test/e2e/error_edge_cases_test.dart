@@ -160,6 +160,9 @@ void main() {
         when(
           () => mockBirdRepository.watchAll('test-user'),
         ).thenAnswer((_) => Stream.value(const <Bird>[]));
+        when(
+          () => mockBirdRepository.getAll(any()),
+        ).thenAnswer((_) async => const <Bird>[]);
         when(() => mockBirdRepository.save(any())).thenAnswer((_) async {});
 
         final container = createTestContainer(
@@ -170,10 +173,15 @@ void main() {
         addTearDown(container.dispose);
 
         await pumpApp(tester, container, child: const BirdFormScreen());
+        await tester.pumpAndSettle();
+
+        // Form auto-fills a default bird name; clear it to trigger required validation.
+        await tester.enterText(find.byType(TextFormField).first, '');
+        await tester.pumpAndSettle();
 
         await tester.ensureVisible(find.text('common.save'));
         await tester.tap(find.text('common.save'));
-        await tester.pump(const Duration(milliseconds: 150));
+        await tester.pumpAndSettle();
 
         expect(find.text('birds.name_required'), findsOneWidget);
         verifyNever(() => mockBirdRepository.save(any()));
@@ -227,34 +235,38 @@ void main() {
         final container = createTestContainer();
         addTearDown(container.dispose);
 
-        final draftHost = UncontrolledProviderScope(
-          container: container,
-          child: MaterialApp(
-            home: Scaffold(
-              body: Consumer(
-                builder: (context, ref, _) {
-                  return TextField(
-                    onChanged: (value) {
-                      ref.read(_birdDraftProvider.notifier).state = value;
-                    },
-                  );
-                },
+        Widget buildDraftHost() {
+          return UncontrolledProviderScope(
+            container: container,
+            child: MaterialApp(
+              home: Scaffold(
+                body: Consumer(
+                  builder: (context, ref, _) {
+                    return TextField(
+                      onChanged: (value) {
+                        ref.read(_birdDraftProvider.notifier).state = value;
+                      },
+                    );
+                  },
+                ),
               ),
             ),
-          ),
-        );
+          );
+        }
 
-        await tester.pumpWidget(draftHost);
-        await tester.pump();
+        await tester.pumpWidget(buildDraftHost());
+        await tester.pumpAndSettle();
 
         await tester.enterText(find.byType(TextField), 'Sari Boncuk');
-        await tester.pump();
+        await tester.pumpAndSettle();
 
         // Simulate app leaving/returning foreground by rebuilding the tree.
+        FocusManager.instance.primaryFocus?.unfocus();
+        await tester.pumpAndSettle();
         await tester.pumpWidget(const SizedBox.shrink());
-        await tester.pump();
-        await tester.pumpWidget(draftHost);
-        await tester.pump();
+        await tester.pumpAndSettle();
+        await tester.pumpWidget(buildDraftHost());
+        await tester.pumpAndSettle();
 
         expect(container.read(_birdDraftProvider), 'Sari Boncuk');
       },

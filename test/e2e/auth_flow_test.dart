@@ -22,7 +22,7 @@ Future<void> _tapVisible(WidgetTester tester, Finder finder) async {
   await tester.ensureVisible(finder);
   await tester.pump(const Duration(milliseconds: 50));
   await tester.tap(finder);
-  await tester.pump(const Duration(milliseconds: 300));
+  await tester.pump(const Duration(milliseconds: 500));
 }
 
 void main() {
@@ -78,8 +78,10 @@ void main() {
           tester,
           find.widgetWithText(FilledButton, 'auth.register'),
         );
+        await tester.pump(const Duration(milliseconds: 900));
 
-        expect(find.byType(EmailVerificationScreen), findsOneWidget);
+        expect(router.state.uri.path, AppRoutes.emailVerification);
+        expect(find.byType(EmailVerificationScreen), findsWidgets);
         expect(find.text('auth.email_verification_title'), findsOneWidget);
         verify(
           () => mockAuthActions.signUpWithEmail(
@@ -294,8 +296,10 @@ void main() {
           tester,
           find.widgetWithText(TextButton, 'auth.forgot_password'),
         );
+        await tester.pump(const Duration(milliseconds: 700));
 
-        expect(find.byType(ForgotPasswordScreen), findsOneWidget);
+        expect(router.state.uri.path, AppRoutes.forgotPassword);
+        expect(find.byType(ForgotPasswordScreen), findsWidgets);
 
         final forgotEmailField = find.descendant(
           of: find.byType(ForgotPasswordScreen),
@@ -398,8 +402,10 @@ void main() {
         await pumpApp(tester, container, router: router);
 
         await _tapVisible(tester, find.widgetWithText(FilledButton, 'logout'));
+        await tester.pump(const Duration(milliseconds: 700));
 
-        expect(find.byType(BudgieLoginScreen), findsOneWidget);
+        expect(router.state.uri.path, AppRoutes.login);
+        expect(find.byType(BudgieLoginScreen), findsWidgets);
         verify(() => mockAuthActions.signOut()).called(1);
       },
       timeout: e2eTimeout,

@@ -37,10 +37,13 @@ import UserNotifications
 
     // If Flutter's own window became key, nothing to do.
     if let fw = SceneDelegate.flutterWindow, newKey === fw { return }
+    if UIApplication.shared.applicationState != .active { return }
+    if shouldIgnoreWindowReclaim(for: newKey) { return }
 
     // A non-Flutter window became key. Restore Flutter's window after a
     // brief yield so any SDK transition can complete first.
     DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+      if self?.shouldIgnoreWindowReclaim(for: newKey) == true { return }
       // Try cached reference first; fall back to searching connected scenes
       // (handles the case where SceneDelegate.flutterWindow is nil because
       // the observer fires during super.scene() before our override sets it).
@@ -61,7 +64,37 @@ import UserNotifications
   private func containsFlutterVC(_ vc: UIViewController?) -> Bool {
     guard let vc = vc else { return false }
     if vc is FlutterViewController { return true }
+    if containsFlutterVC(vc.presentedViewController) { return true }
     return vc.children.contains { containsFlutterVC($0) }
+  }
+
+  // System OAuth UIs (ASWebAuthenticationSession / SafariServices) must keep
+  // their own key window while the user signs in. Reclaiming the window there
+  // can produce an empty OAuth page.
+  private func shouldIgnoreWindowReclaim(for window: UIWindow) -> Bool {
+    return containsSystemAuthVC(window.rootViewController)
+  }
+
+  private func containsSystemAuthVC(_ vc: UIViewController?) -> Bool {
+    guard let vc = vc else { return false }
+
+    let className = String(describing: type(of: vc)).lowercased()
+    let bundleId = Bundle(for: type(of: vc)).bundleIdentifier?.lowercased() ?? ""
+    let isSystemAuthClass =
+      className.contains("sfauthentication") ||
+      className.contains("aswebauthentication") ||
+      className.contains("sfsafari") ||
+      className.contains("safari")
+    let isSystemAuthBundle =
+      bundleId.contains("safariservices") ||
+      bundleId.contains("authenticationservices")
+
+    if isSystemAuthClass || isSystemAuthBundle {
+      return true
+    }
+
+    if containsSystemAuthVC(vc.presentedViewController) { return true }
+    return vc.children.contains { containsSystemAuthVC($0) }
   }
 
   func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {

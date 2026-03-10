@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
@@ -167,8 +168,9 @@ void main() {
       await tester.pumpWidget(buildSubject());
       await tester.pump(const Duration(milliseconds: 500));
 
-      // Google and Apple OutlinedButton should be present
-      expect(find.byType(OutlinedButton), findsNWidgets(2));
+      // Google uses OutlinedButton, Apple uses official SignInWithAppleButton
+      expect(find.byType(OutlinedButton), findsOneWidget);
+      expect(find.byType(SignInWithAppleButton), findsOneWidget);
       // Verify labels (keys returned in test context)
       expect(find.text('auth.sign_in_with_google'), findsOneWidget);
       expect(find.text('auth.sign_in_with_apple'), findsOneWidget);

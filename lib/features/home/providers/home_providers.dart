@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:budgie_breeding_tracker/core/constants/incubation_constants.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
@@ -97,17 +99,32 @@ final activeBreedingsForDashboardProvider =
           .watchActiveLimited(userId, limit: 3);
     });
 
-Stream<DateTime> _midnightTicker() async* {
-  yield DateTime.now();
-  while (true) {
+Stream<DateTime> _midnightTicker() {
+  late final StreamController<DateTime> controller;
+  Timer? timer;
+
+  void scheduleNextTick() {
     final now = DateTime.now();
     final nextMidnight = DateTime(now.year, now.month, now.day + 1);
-    // Re-evaluate date-based counts after calendar day rollover.
-    await Future<void>.delayed(
-      nextMidnight.difference(now) + const Duration(seconds: 1),
-    );
-    yield DateTime.now();
+    final delay = nextMidnight.difference(now) + const Duration(seconds: 1);
+    timer = Timer(delay, () {
+      if (controller.isClosed) return;
+      controller.add(DateTime.now());
+      scheduleNextTick();
+    });
   }
+
+  controller = StreamController<DateTime>(
+    onListen: () {
+      controller.add(DateTime.now());
+      scheduleNextTick();
+    },
+    onCancel: () {
+      timer?.cancel();
+    },
+  );
+
+  return controller.stream;
 }
 
 final _unweanedCountRefreshProvider = StreamProvider<DateTime>((ref) {
