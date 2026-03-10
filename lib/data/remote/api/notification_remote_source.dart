@@ -24,11 +24,36 @@ class NotificationRemoteSource extends BaseRemoteSource<AppNotification> {
   /// notifications — they use hard-delete).
   @override
   Future<List<AppNotification>> fetchAll(String userId) async {
-    final response = await table
-        .select()
-        .eq('user_id', userId)
-        .order('created_at', ascending: false);
-    return response.map((json) => fromJson(json)).toList();
+    try {
+      final response = await table
+          .select()
+          .eq('user_id', userId)
+          .order('created_at', ascending: false);
+      return response.map((json) => fromJson(json)).toList();
+    } catch (e, st) {
+      throw handleError(e, st);
+    }
+  }
+
+  /// Fetches notifications updated since [since] without `is_deleted` filter.
+  ///
+  /// Notifications table uses hard-delete, so filtering by `is_deleted`
+  /// would fail on projects where the column is absent.
+  @override
+  Future<List<AppNotification>> fetchUpdatedSince(
+    String userId,
+    DateTime since,
+  ) async {
+    try {
+      final response = await table
+          .select()
+          .eq('user_id', userId)
+          .gte('updated_at', since.toIso8601String())
+          .order('updated_at');
+      return response.map((json) => fromJson(json)).toList();
+    } catch (e, st) {
+      throw handleError(e, st);
+    }
   }
 
   /// Fetches unread notifications for a user.

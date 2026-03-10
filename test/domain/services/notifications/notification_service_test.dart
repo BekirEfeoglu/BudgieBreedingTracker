@@ -44,13 +44,10 @@ void main() {
         NotificationService.payloadToRoute('chick_care:abc'),
         '/chicks/abc',
       );
-      expect(
-        NotificationService.payloadToRoute('egg:abc'),
-        '/breeding/abc/eggs',
-      );
+      expect(NotificationService.payloadToRoute('egg:abc'), '/breeding');
       expect(
         NotificationService.payloadToRoute('egg_turning:abc'),
-        '/breeding/abc/eggs',
+        '/breeding',
       );
       expect(
         NotificationService.payloadToRoute('health_check:abc'),
@@ -113,11 +110,7 @@ void main() {
     test('showNotification throws StateError before init', () {
       final service = NotificationService();
       expect(
-        () => service.showNotification(
-          id: 1,
-          title: 'Test',
-          body: 'Body',
-        ),
+        () => service.showNotification(id: 1, title: 'Test', body: 'Body'),
         throwsStateError,
       );
     });
@@ -169,10 +162,12 @@ void main() {
       when(
         () => mockPlugin.initialize(
           settings: any(named: 'settings'),
-          onDidReceiveNotificationResponse:
-              any(named: 'onDidReceiveNotificationResponse'),
-          onDidReceiveBackgroundNotificationResponse:
-              any(named: 'onDidReceiveBackgroundNotificationResponse'),
+          onDidReceiveNotificationResponse: any(
+            named: 'onDidReceiveNotificationResponse',
+          ),
+          onDidReceiveBackgroundNotificationResponse: any(
+            named: 'onDidReceiveBackgroundNotificationResponse',
+          ),
         ),
       ).thenAnswer((_) async => true);
     });
@@ -185,9 +180,9 @@ void main() {
     test('initializes with valid timezone', () async {
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(_timezoneChannel, (call) async {
-        if (call.method == 'getLocalTimezone') return 'Europe/Istanbul';
-        return null;
-      });
+            if (call.method == 'getLocalTimezone') return 'Europe/Istanbul';
+            return null;
+          });
 
       await service.init();
 
@@ -195,10 +190,12 @@ void main() {
       verify(
         () => mockPlugin.initialize(
           settings: any(named: 'settings'),
-          onDidReceiveNotificationResponse:
-              any(named: 'onDidReceiveNotificationResponse'),
-          onDidReceiveBackgroundNotificationResponse:
-              any(named: 'onDidReceiveBackgroundNotificationResponse'),
+          onDidReceiveNotificationResponse: any(
+            named: 'onDidReceiveNotificationResponse',
+          ),
+          onDidReceiveBackgroundNotificationResponse: any(
+            named: 'onDidReceiveBackgroundNotificationResponse',
+          ),
         ),
       ).called(1);
     });
@@ -206,11 +203,11 @@ void main() {
     test('initializes with UTC fallback when timezone fails', () async {
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(_timezoneChannel, (call) async {
-        if (call.method == 'getLocalTimezone') {
-          throw PlatformException(code: 'ERROR', message: 'Not available');
-        }
-        return null;
-      });
+            if (call.method == 'getLocalTimezone') {
+              throw PlatformException(code: 'ERROR', message: 'Not available');
+            }
+            return null;
+          });
 
       await service.init();
 
@@ -221,9 +218,9 @@ void main() {
     test('init is idempotent — second call is no-op', () async {
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(_timezoneChannel, (call) async {
-        if (call.method == 'getLocalTimezone') return 'UTC';
-        return null;
-      });
+            if (call.method == 'getLocalTimezone') return 'UTC';
+            return null;
+          });
 
       await service.init();
       await service.init();
@@ -231,10 +228,12 @@ void main() {
       verify(
         () => mockPlugin.initialize(
           settings: any(named: 'settings'),
-          onDidReceiveNotificationResponse:
-              any(named: 'onDidReceiveNotificationResponse'),
-          onDidReceiveBackgroundNotificationResponse:
-              any(named: 'onDidReceiveBackgroundNotificationResponse'),
+          onDidReceiveNotificationResponse: any(
+            named: 'onDidReceiveNotificationResponse',
+          ),
+          onDidReceiveBackgroundNotificationResponse: any(
+            named: 'onDidReceiveBackgroundNotificationResponse',
+          ),
         ),
       ).called(1);
     });
@@ -251,18 +250,20 @@ void main() {
       when(
         () => mockPlugin.initialize(
           settings: any(named: 'settings'),
-          onDidReceiveNotificationResponse:
-              any(named: 'onDidReceiveNotificationResponse'),
-          onDidReceiveBackgroundNotificationResponse:
-              any(named: 'onDidReceiveBackgroundNotificationResponse'),
+          onDidReceiveNotificationResponse: any(
+            named: 'onDidReceiveNotificationResponse',
+          ),
+          onDidReceiveBackgroundNotificationResponse: any(
+            named: 'onDidReceiveBackgroundNotificationResponse',
+          ),
         ),
       ).thenAnswer((_) async => true);
 
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(_timezoneChannel, (call) async {
-        if (call.method == 'getLocalTimezone') return 'UTC';
-        return null;
-      });
+            if (call.method == 'getLocalTimezone') return 'UTC';
+            return null;
+          });
     });
 
     tearDown(() {
@@ -338,8 +339,9 @@ void main() {
     });
 
     test('cancel calls plugin.cancel with correct id', () async {
-      when(() => mockPlugin.cancel(id: any(named: 'id')))
-          .thenAnswer((_) async {});
+      when(
+        () => mockPlugin.cancel(id: any(named: 'id')),
+      ).thenAnswer((_) async {});
 
       await service.init();
       await service.cancel(123);
@@ -356,30 +358,34 @@ void main() {
       verify(() => mockPlugin.cancelAll()).called(1);
     });
 
-    test('cancelByIdRange cancels only matching pending notifications',
-        () async {
-      when(() => mockPlugin.pendingNotificationRequests()).thenAnswer(
-        (_) async => [
-          const PendingNotificationRequest(100000, 'a', 'b', null),
-          const PendingNotificationRequest(150000, 'c', 'd', null),
-          const PendingNotificationRequest(200000, 'e', 'f', null),
-        ],
-      );
-      when(() => mockPlugin.cancel(id: any(named: 'id')))
-          .thenAnswer((_) async {});
+    test(
+      'cancelByIdRange cancels only matching pending notifications',
+      () async {
+        when(() => mockPlugin.pendingNotificationRequests()).thenAnswer(
+          (_) async => [
+            const PendingNotificationRequest(100000, 'a', 'b', null),
+            const PendingNotificationRequest(150000, 'c', 'd', null),
+            const PendingNotificationRequest(200000, 'e', 'f', null),
+          ],
+        );
+        when(
+          () => mockPlugin.cancel(id: any(named: 'id')),
+        ).thenAnswer((_) async {});
 
-      await service.init();
-      final cancelled = await service.cancelByIdRange(100000, 200000);
+        await service.init();
+        final cancelled = await service.cancelByIdRange(100000, 200000);
 
-      expect(cancelled, 2);
-      verify(() => mockPlugin.cancel(id: 100000)).called(1);
-      verify(() => mockPlugin.cancel(id: 150000)).called(1);
-      verifyNever(() => mockPlugin.cancel(id: 200000));
-    });
+        expect(cancelled, 2);
+        verify(() => mockPlugin.cancel(id: 100000)).called(1);
+        verify(() => mockPlugin.cancel(id: 150000)).called(1);
+        verifyNever(() => mockPlugin.cancel(id: 200000));
+      },
+    );
 
     test('cancelByIdRange returns 0 when no pending notifications', () async {
-      when(() => mockPlugin.pendingNotificationRequests())
-          .thenAnswer((_) async => []);
+      when(
+        () => mockPlugin.pendingNotificationRequests(),
+      ).thenAnswer((_) async => []);
 
       await service.init();
       final cancelled = await service.cancelByIdRange(100000, 200000);
@@ -410,16 +416,20 @@ void main() {
       when(
         () => mockPlugin.initialize(
           settings: any(named: 'settings'),
-          onDidReceiveNotificationResponse:
-              any(named: 'onDidReceiveNotificationResponse'),
-          onDidReceiveBackgroundNotificationResponse:
-              any(named: 'onDidReceiveBackgroundNotificationResponse'),
+          onDidReceiveNotificationResponse: any(
+            named: 'onDidReceiveNotificationResponse',
+          ),
+          onDidReceiveBackgroundNotificationResponse: any(
+            named: 'onDidReceiveBackgroundNotificationResponse',
+          ),
         ),
       ).thenAnswer((invocation) async {
         // Capture the callback and simulate a tap
-        final callback = invocation.namedArguments[
-            const Symbol('onDidReceiveNotificationResponse')]
-            as DidReceiveNotificationResponseCallback;
+        final callback =
+            invocation.namedArguments[const Symbol(
+                  'onDidReceiveNotificationResponse',
+                )]
+                as DidReceiveNotificationResponseCallback;
         callback(
           const NotificationResponse(
             notificationResponseType:
@@ -445,9 +455,9 @@ void main() {
     test('getLocalTimezone returns TimezoneInfo with identifier', () async {
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(_timezoneChannel, (call) async {
-        if (call.method == 'getLocalTimezone') return 'Europe/Istanbul';
-        return null;
-      });
+            if (call.method == 'getLocalTimezone') return 'Europe/Istanbul';
+            return null;
+          });
 
       final info = await FlutterTimezone.getLocalTimezone();
       expect(info.identifier, 'Europe/Istanbul');
@@ -459,15 +469,15 @@ void main() {
     test('getLocalTimezone with localized name returns both fields', () async {
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(_timezoneChannel, (call) async {
-        if (call.method == 'getLocalTimezone') {
-          return {
-            'identifier': 'America/New_York',
-            'localizedName': 'Eastern Standard Time',
-            'locale': 'en_US',
-          };
-        }
-        return null;
-      });
+            if (call.method == 'getLocalTimezone') {
+              return {
+                'identifier': 'America/New_York',
+                'localizedName': 'Eastern Standard Time',
+                'locale': 'en_US',
+              };
+            }
+            return null;
+          });
 
       final info = await FlutterTimezone.getLocalTimezone();
       expect(info.identifier, 'America/New_York');
@@ -478,9 +488,9 @@ void main() {
     test('timezone identifier resolves to valid tz.Location', () async {
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(_timezoneChannel, (call) async {
-        if (call.method == 'getLocalTimezone') return 'Asia/Tokyo';
-        return null;
-      });
+            if (call.method == 'getLocalTimezone') return 'Asia/Tokyo';
+            return null;
+          });
 
       final info = await FlutterTimezone.getLocalTimezone();
       final location = tz.getLocation(info.identifier);
@@ -500,25 +510,33 @@ void main() {
     });
 
     group('requestAndroidPermission', () {
-      test('returns true when no Android implementation (non-Android)', () async {
-        when(() => mockPlugin
+      test(
+        'returns true when no Android implementation (non-Android)',
+        () async {
+          when(
+            () => mockPlugin
                 .resolvePlatformSpecificImplementation<
-                    AndroidFlutterLocalNotificationsPlugin>())
-            .thenReturn(null);
+                  AndroidFlutterLocalNotificationsPlugin
+                >(),
+          ).thenReturn(null);
 
-        final result = await service.requestAndroidPermission();
+          final result = await service.requestAndroidPermission();
 
-        expect(result, isTrue);
-      });
+          expect(result, isTrue);
+        },
+      );
 
       test('returns true when permission is granted', () async {
         final mockAndroid = _MockAndroidPlugin();
-        when(() => mockPlugin
-                .resolvePlatformSpecificImplementation<
-                    AndroidFlutterLocalNotificationsPlugin>())
-            .thenReturn(mockAndroid);
-        when(() => mockAndroid.requestNotificationsPermission())
-            .thenAnswer((_) async => true);
+        when(
+          () => mockPlugin
+              .resolvePlatformSpecificImplementation<
+                AndroidFlutterLocalNotificationsPlugin
+              >(),
+        ).thenReturn(mockAndroid);
+        when(
+          () => mockAndroid.requestNotificationsPermission(),
+        ).thenAnswer((_) async => true);
 
         final result = await service.requestAndroidPermission();
 
@@ -527,12 +545,15 @@ void main() {
 
       test('returns false when permission is denied', () async {
         final mockAndroid = _MockAndroidPlugin();
-        when(() => mockPlugin
-                .resolvePlatformSpecificImplementation<
-                    AndroidFlutterLocalNotificationsPlugin>())
-            .thenReturn(mockAndroid);
-        when(() => mockAndroid.requestNotificationsPermission())
-            .thenAnswer((_) async => false);
+        when(
+          () => mockPlugin
+              .resolvePlatformSpecificImplementation<
+                AndroidFlutterLocalNotificationsPlugin
+              >(),
+        ).thenReturn(mockAndroid);
+        when(
+          () => mockAndroid.requestNotificationsPermission(),
+        ).thenAnswer((_) async => false);
 
         final result = await service.requestAndroidPermission();
 
@@ -541,12 +562,15 @@ void main() {
 
       test('returns false when permission returns null', () async {
         final mockAndroid = _MockAndroidPlugin();
-        when(() => mockPlugin
-                .resolvePlatformSpecificImplementation<
-                    AndroidFlutterLocalNotificationsPlugin>())
-            .thenReturn(mockAndroid);
-        when(() => mockAndroid.requestNotificationsPermission())
-            .thenAnswer((_) async => null);
+        when(
+          () => mockPlugin
+              .resolvePlatformSpecificImplementation<
+                AndroidFlutterLocalNotificationsPlugin
+              >(),
+        ).thenReturn(mockAndroid);
+        when(
+          () => mockAndroid.requestNotificationsPermission(),
+        ).thenAnswer((_) async => null);
 
         final result = await service.requestAndroidPermission();
 
@@ -555,25 +579,33 @@ void main() {
     });
 
     group('checkExactAlarmPermission', () {
-      test('returns true when no Android implementation (non-Android)', () async {
-        when(() => mockPlugin
+      test(
+        'returns true when no Android implementation (non-Android)',
+        () async {
+          when(
+            () => mockPlugin
                 .resolvePlatformSpecificImplementation<
-                    AndroidFlutterLocalNotificationsPlugin>())
-            .thenReturn(null);
+                  AndroidFlutterLocalNotificationsPlugin
+                >(),
+          ).thenReturn(null);
 
-        final result = await service.checkExactAlarmPermission();
+          final result = await service.checkExactAlarmPermission();
 
-        expect(result, isTrue);
-      });
+          expect(result, isTrue);
+        },
+      );
 
       test('returns true when exact alarms allowed', () async {
         final mockAndroid = _MockAndroidPlugin();
-        when(() => mockPlugin
-                .resolvePlatformSpecificImplementation<
-                    AndroidFlutterLocalNotificationsPlugin>())
-            .thenReturn(mockAndroid);
-        when(() => mockAndroid.canScheduleExactNotifications())
-            .thenAnswer((_) async => true);
+        when(
+          () => mockPlugin
+              .resolvePlatformSpecificImplementation<
+                AndroidFlutterLocalNotificationsPlugin
+              >(),
+        ).thenReturn(mockAndroid);
+        when(
+          () => mockAndroid.canScheduleExactNotifications(),
+        ).thenAnswer((_) async => true);
 
         final result = await service.checkExactAlarmPermission();
 
@@ -582,31 +614,40 @@ void main() {
 
       test('returns false when exact alarms not allowed', () async {
         final mockAndroid = _MockAndroidPlugin();
-        when(() => mockPlugin
-                .resolvePlatformSpecificImplementation<
-                    AndroidFlutterLocalNotificationsPlugin>())
-            .thenReturn(mockAndroid);
-        when(() => mockAndroid.canScheduleExactNotifications())
-            .thenAnswer((_) async => false);
+        when(
+          () => mockPlugin
+              .resolvePlatformSpecificImplementation<
+                AndroidFlutterLocalNotificationsPlugin
+              >(),
+        ).thenReturn(mockAndroid);
+        when(
+          () => mockAndroid.canScheduleExactNotifications(),
+        ).thenAnswer((_) async => false);
 
         final result = await service.checkExactAlarmPermission();
 
         expect(result, isFalse);
       });
 
-      test('returns true when canScheduleExactNotifications returns null', () async {
-        final mockAndroid = _MockAndroidPlugin();
-        when(() => mockPlugin
+      test(
+        'returns true when canScheduleExactNotifications returns null',
+        () async {
+          final mockAndroid = _MockAndroidPlugin();
+          when(
+            () => mockPlugin
                 .resolvePlatformSpecificImplementation<
-                    AndroidFlutterLocalNotificationsPlugin>())
-            .thenReturn(mockAndroid);
-        when(() => mockAndroid.canScheduleExactNotifications())
-            .thenAnswer((_) async => null);
+                  AndroidFlutterLocalNotificationsPlugin
+                >(),
+          ).thenReturn(mockAndroid);
+          when(
+            () => mockAndroid.canScheduleExactNotifications(),
+          ).thenAnswer((_) async => null);
 
-        final result = await service.checkExactAlarmPermission();
+          final result = await service.checkExactAlarmPermission();
 
-        expect(result, isTrue);
-      });
+          expect(result, isTrue);
+        },
+      );
     });
   });
 }

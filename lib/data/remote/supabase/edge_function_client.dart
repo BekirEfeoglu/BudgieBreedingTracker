@@ -86,6 +86,16 @@ class EdgeFunctionClient {
       }
 
       return result;
+    } on FunctionException catch (e, st) {
+      if (e.status == 404 &&
+          functionName == 'system-health') {
+        AppLogger.warning(
+          '$_tag $functionName not deployed (404), treating as unavailable',
+        );
+      } else {
+        AppLogger.error('$_tag Error invoking $functionName', e, st);
+      }
+      return EdgeFunctionResult.failure(e.toString());
     } catch (e, st) {
       AppLogger.error('$_tag Error invoking $functionName', e, st);
       return EdgeFunctionResult.failure(e.toString());

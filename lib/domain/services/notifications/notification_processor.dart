@@ -23,6 +23,7 @@ class NotificationProcessor {
 
   final Ref _ref;
   static const _tag = '[NotificationProcessor]';
+  final Set<String> _scheduledByProcessor = <String>{};
 
   /// Processes all pending items (event reminders + notification schedules)
   /// and cleans up old read notifications.
@@ -46,8 +47,10 @@ class NotificationProcessor {
       final settingsDao = _ref.read(notificationSettingsDaoProvider);
       final settings = await settingsDao.getByUser(userId);
       final daysOld = settings?.cleanupDaysOld ?? 30;
-      final deleted =
-          await notificationsDao.deleteOldRead(userId, daysOld: daysOld);
+      final deleted = await notificationsDao.deleteOldRead(
+        userId,
+        daysOld: daysOld,
+      );
       if (deleted > 0) {
         AppLogger.info('$_tag Cleaned up $deleted old read notifications');
       }
@@ -71,7 +74,9 @@ class NotificationProcessor {
 
       final unsent = await eventRemindersDao.getUnsent(userId);
 
-      AppLogger.info('$_tag Processing ${unsent.length} unsent event reminders');
+      AppLogger.info(
+        '$_tag Processing ${unsent.length} unsent event reminders',
+      );
 
       for (final reminder in unsent) {
         try {
@@ -80,6 +85,8 @@ class NotificationProcessor {
             AppLogger.warning(
               '$_tag Event ${reminder.eventId} not found for reminder ${reminder.id}',
             );
+            // Event was deleted; mark reminder as sent to avoid reprocessing.
+            await eventRemindersDao.markSent(reminder.id);
             continue;
           }
 
@@ -118,7 +125,9 @@ class NotificationProcessor {
             await eventRemindersDao.markSent(reminder.id);
           }
         } catch (e, st) {
-          AppLogger.warning('$_tag Failed to process reminder ${reminder.id}: $e');
+          AppLogger.warning(
+            '$_tag Failed to process reminder ${reminder.id}: $e',
+          );
           Sentry.captureException(e, stackTrace: st);
         }
       }
@@ -152,57 +161,78 @@ class NotificationProcessor {
 
       for (final schedule in pending) {
         try {
+          var processed = false;
+
           // Skip if the category toggle is disabled
           if (settings != null && !_isTypeEnabled(schedule.type, settings)) {
+            _scheduledByProcessor.remove(schedule.id);
             await schedulesDao.markProcessed(schedule.id);
             continue;
           }
 
           if (schedule.scheduledAt.isAfter(now)) {
-            // Future — schedule via plugin
-            final notificationId = _scheduleNotificationId(schedule);
-            await service.scheduleNotification(
-              id: notificationId,
-              title: schedule.title,
-              body: schedule.message ?? '',
-              scheduledDate: schedule.scheduledAt,
-              channelId: _channelForType(schedule.type),
-              payload: _payloadForSchedule(schedule),
-            );
-            await schedulesDao.markProcessed(schedule.id);
+            // Future — schedule once per processor lifetime.
+            if (!_scheduledByProcessor.contains(schedule.id)) {
+              final notificationId = _scheduleNotificationId(schedule);
+              await service.scheduleNotification(
+                id: notificationId,
+                title: schedule.title,
+                body: schedule.message ?? '',
+                scheduledDate: schedule.scheduledAt,
+                channelId: _channelForType(schedule.type),
+                payload: _payloadForSchedule(schedule),
+              );
+              _scheduledByProcessor.add(schedule.id);
+            }
           } else if (now.difference(schedule.scheduledAt).inHours < 24) {
-            // Past but recent — show immediately
-            final shown = await scheduler.showImmediateNotification(
-              id: _scheduleNotificationId(schedule),
-              title: schedule.title,
-              body: schedule.message ?? '',
-              type: schedule.type.name,
-              userId: userId,
-              channelId: _channelForType(schedule.type),
-              payload: _payloadForSchedule(schedule),
+            final wasScheduledByProcessor = _scheduledByProcessor.remove(
+              schedule.id,
             );
+            bool shown = false;
+
+            if (wasScheduledByProcessor) {
+              // Already scheduled via plugin for this runtime. Assume delivery
+              // happened and avoid duplicate immediate notifications.
+              shown = true;
+            } else {
+              // Past but recent — show immediately
+              shown = await scheduler.showImmediateNotification(
+                id: _scheduleNotificationId(schedule),
+                title: schedule.title,
+                body: schedule.message ?? '',
+                type: schedule.type.name,
+                userId: userId,
+                channelId: _channelForType(schedule.type),
+                payload: _payloadForSchedule(schedule),
+              );
+            }
+
             if (shown) {
               await schedulesDao.markProcessed(schedule.id);
+              processed = true;
             }
           } else {
             // Too old — mark processed
+            _scheduledByProcessor.remove(schedule.id);
             await schedulesDao.markProcessed(schedule.id);
+            processed = true;
           }
 
           // Handle recurring schedules
-          if (schedule.isRecurring &&
+          if (processed &&
+              schedule.isRecurring &&
               schedule.intervalMinutes != null &&
               schedule.intervalMinutes! > 0) {
-            final nextAt = schedule.scheduledAt.add(
-              Duration(minutes: schedule.intervalMinutes!),
+            final nextAt = _nextOccurrenceAfter(
+              base: schedule.scheduledAt,
+              intervalMinutes: schedule.intervalMinutes!,
+              now: now,
             );
-            if (nextAt.isAfter(now)) {
-              final nextSchedule = schedule.copyWith(
-                scheduledAt: nextAt,
-                processedAt: null,
-              );
-              await schedulesDao.insertItem(nextSchedule);
-            }
+            final nextSchedule = schedule.copyWith(
+              scheduledAt: nextAt,
+              processedAt: null,
+            );
+            await schedulesDao.insertItem(nextSchedule);
           }
         } catch (e, st) {
           AppLogger.warning(
@@ -235,7 +265,8 @@ class NotificationProcessor {
       NotificationType.eggTurning => NotificationService.eggTurningChannelId,
       NotificationType.incubationReminder =>
         NotificationService.incubationChannelId,
-      NotificationType.feedingReminder => NotificationService.chickCareChannelId,
+      NotificationType.feedingReminder =>
+        NotificationService.chickCareChannelId,
       NotificationType.healthCheck => NotificationService.healthCheckChannelId,
       _ => 'default',
     };
@@ -251,11 +282,25 @@ class NotificationProcessor {
   String _formatReminderBody(EventReminder reminder, String eventTitle) {
     if (reminder.minutesBefore >= 60) {
       final hours = reminder.minutesBefore ~/ 60;
-      return 'notifications.reminder_hours_before'
-          .tr(args: [eventTitle, '$hours']);
+      return 'notifications.reminder_hours_before'.tr(
+        args: [eventTitle, '$hours'],
+      );
     }
-    return 'notifications.reminder_minutes_before'
-        .tr(args: [eventTitle, '${reminder.minutesBefore}']);
+    return 'notifications.reminder_minutes_before'.tr(
+      args: [eventTitle, '${reminder.minutesBefore}'],
+    );
+  }
+
+  DateTime _nextOccurrenceAfter({
+    required DateTime base,
+    required int intervalMinutes,
+    required DateTime now,
+  }) {
+    var next = base.add(Duration(minutes: intervalMinutes));
+    while (!next.isAfter(now)) {
+      next = next.add(Duration(minutes: intervalMinutes));
+    }
+    return next;
   }
 
   /// Loads notification toggle settings from the DAO.
@@ -273,8 +318,7 @@ class NotificationProcessor {
   bool _isTypeEnabled(NotificationType type, NotificationSettings settings) {
     return switch (type) {
       NotificationType.eggTurning => settings.eggTurningEnabled,
-      NotificationType.incubationReminder =>
-        settings.incubationReminderEnabled,
+      NotificationType.incubationReminder => settings.incubationReminderEnabled,
       NotificationType.feedingReminder => settings.feedingReminderEnabled,
       NotificationType.healthCheck => settings.healthCheckEnabled,
       NotificationType.temperatureAlert => settings.temperatureAlertEnabled,

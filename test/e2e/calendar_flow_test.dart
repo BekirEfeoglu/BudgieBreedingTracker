@@ -115,7 +115,7 @@ void main() {
         );
         final chickRoute = NotificationService.payloadToRoute('chick:chick-1');
 
-        expect(eggRoute, '/breeding/inc-1/eggs');
+        expect(eggRoute, '/breeding');
         expect(chickRoute, '/chicks/chick-1');
       },
       timeout: e2eTimeout,

@@ -192,31 +192,22 @@ void main() {
       expect(id, lessThan(200000));
     });
 
-    test('high offset can overflow slot boundary into next slot', () {
-      // Each slot has 100 IDs (offsets 0-99). Offset >= 100 spills.
-      // chick care worst case: 24/2 * 60 = 720 offsets
-      final baseId = NotificationScheduler.notificationId(400000, 'chick-x', 0);
-      final overflowId =
-          NotificationScheduler.notificationId(400000, 'chick-x', 150);
-      // offset 150 pushes 50 past slot boundary
-      expect(overflowId, equals(baseId + 150));
-      // Still within category range (400000-499999)
-      expect(overflowId, greaterThanOrEqualTo(400000));
-      expect(overflowId, lessThan(500000));
+    test('throws when offset exceeds slot boundary', () {
+      expect(
+        () => NotificationScheduler.notificationId(400000, 'chick-x', 150),
+        throwsRangeError,
+      );
     });
 
-    test('chick care max offset stays within category range', () {
-      // Worst realistic case: intervalHours=2, durationDays=60
-      // 24/2 = 12 reminders/day * 60 days = 720 offsets
-      const maxOffset = 720;
-      final id = NotificationScheduler.notificationId(
-        400000,
-        'chick-worst-case',
-        maxOffset,
+    test('throws for very large offsets to avoid cross-slot collisions', () {
+      expect(
+        () => NotificationScheduler.notificationId(
+          400000,
+          'chick-worst-case',
+          720,
+        ),
+        throwsRangeError,
       );
-      // Should still be within 400000-499999 range
-      expect(id, greaterThanOrEqualTo(400000));
-      expect(id, lessThan(500000));
     });
   });
 
@@ -271,45 +262,48 @@ void main() {
       );
     });
 
-    test('scheduleEggTurningReminders dates are chronologically ordered',
-        () async {
-      final startDate = DateTime.now().add(const Duration(days: 1));
+    test(
+      'scheduleEggTurningReminders dates are chronologically ordered',
+      () async {
+        final startDate = DateTime.now().add(const Duration(days: 1));
 
-      await scheduler.scheduleEggTurningReminders(
-        eggId: 'egg-order',
-        startDate: startDate,
-        eggLabel: 'Egg Order Test',
-      );
-
-      // Verify dates are in non-decreasing order
-      for (var i = 1; i < fakeService.scheduled.length; i++) {
-        expect(
-          fakeService.scheduled[i].scheduledDate.isAfter(
-                fakeService.scheduled[i - 1].scheduledDate,
-              ) ||
-              fakeService.scheduled[i].scheduledDate.isAtSameMomentAs(
-                fakeService.scheduled[i - 1].scheduledDate,
-              ),
-          isTrue,
-          reason:
-              'Notification $i should be at or after notification ${i - 1}',
+        await scheduler.scheduleEggTurningReminders(
+          eggId: 'egg-order',
+          startDate: startDate,
+          eggLabel: 'Egg Order Test',
         );
-      }
 
-      // Verify first notification is on startDate
-      final firstDate = fakeService.scheduled.first.scheduledDate;
-      expect(firstDate.year, startDate.year);
-      expect(firstDate.month, startDate.month);
-      expect(firstDate.day, startDate.day);
+        // Verify dates are in non-decreasing order
+        for (var i = 1; i < fakeService.scheduled.length; i++) {
+          expect(
+            fakeService.scheduled[i].scheduledDate.isAfter(
+                  fakeService.scheduled[i - 1].scheduledDate,
+                ) ||
+                fakeService.scheduled[i].scheduledDate.isAtSameMomentAs(
+                  fakeService.scheduled[i - 1].scheduledDate,
+                ),
+            isTrue,
+            reason:
+                'Notification $i should be at or after notification ${i - 1}',
+          );
+        }
 
-      // Verify last notification is on startDate + (incubationDays - 1)
-      final lastDate = fakeService.scheduled.last.scheduledDate;
-      final expectedLastDay =
-          startDate.add(const Duration(days: IncubationConstants.incubationPeriodDays - 1));
-      expect(lastDate.year, expectedLastDay.year);
-      expect(lastDate.month, expectedLastDay.month);
-      expect(lastDate.day, expectedLastDay.day);
-    });
+        // Verify first notification is on startDate
+        final firstDate = fakeService.scheduled.first.scheduledDate;
+        expect(firstDate.year, startDate.year);
+        expect(firstDate.month, startDate.month);
+        expect(firstDate.day, startDate.day);
+
+        // Verify last notification is on startDate + (incubationDays - 1)
+        final lastDate = fakeService.scheduled.last.scheduledDate;
+        final expectedLastDay = startDate.add(
+          const Duration(days: IncubationConstants.incubationPeriodDays - 1),
+        );
+        expect(lastDate.year, expectedLastDay.year);
+        expect(lastDate.month, expectedLastDay.month);
+        expect(lastDate.day, expectedLastDay.day);
+      },
+    );
 
     test(
       'scheduleChickCareReminder schedules by interval and duration',
