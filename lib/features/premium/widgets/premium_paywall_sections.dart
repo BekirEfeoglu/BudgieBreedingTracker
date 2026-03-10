@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:budgie_breeding_tracker/core/constants/app_constants.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
@@ -251,7 +253,20 @@ class PremiumPricingSection extends ConsumerWidget {
             const _PremiumGuestAccessCard(),
             const SizedBox(height: AppSpacing.lg),
           ] else if (purchaseIssue != null) ...[
-            _PremiumPurchaseIssueCard(issue: purchaseIssue),
+            _PremiumPurchaseIssueCard(
+              issue: purchaseIssue,
+              onRetry:
+                  purchaseIssue == PremiumPurchaseIssue.offeringsUnavailable
+                  ? () {
+                      ref
+                          .read(purchaseServiceProvider)
+                          .clearStoreUnavailableCache();
+                      ref.invalidate(purchaseServiceReadyProvider);
+                      ref.invalidate(premiumOfferingsProvider);
+                      ref.invalidate(subscriptionInfoProvider);
+                    }
+                  : null,
+            ),
             const SizedBox(height: AppSpacing.lg),
           ],
           PricingCard(
@@ -335,8 +350,9 @@ class PremiumPricingSection extends ConsumerWidget {
 
 class _PremiumPurchaseIssueCard extends StatelessWidget {
   final PremiumPurchaseIssue issue;
+  final VoidCallback? onRetry;
 
-  const _PremiumPurchaseIssueCard({required this.issue});
+  const _PremiumPurchaseIssueCard({required this.issue, this.onRetry});
 
   @override
   Widget build(BuildContext context) {
@@ -370,6 +386,14 @@ class _PremiumPurchaseIssueCard extends StatelessWidget {
               color: theme.colorScheme.onSurfaceVariant,
             ),
           ),
+          if (onRetry != null) ...[
+            const SizedBox(height: AppSpacing.sm),
+            TextButton.icon(
+              onPressed: onRetry,
+              icon: const Icon(LucideIcons.refreshCw, size: 16),
+              label: Text('common.retry'.tr()),
+            ),
+          ],
         ],
       ),
     );
@@ -440,6 +464,29 @@ String _localizedUnavailablePrice(BuildContext context) {
     'de' => 'Store-Preis nicht verfügbar',
     _ => 'Store price unavailable',
   };
+}
+
+Future<void> _openLegalUrl(
+  BuildContext context, {
+  required String url,
+  required String fallbackRoute,
+}) async {
+  final uri = Uri.tryParse(url);
+  if (uri == null) {
+    context.push(fallbackRoute);
+    return;
+  }
+
+  var launched = false;
+  try {
+    launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+  } catch (_) {
+    launched = false;
+  }
+
+  if (!launched && context.mounted) {
+    context.push(fallbackRoute);
+  }
 }
 
 class PremiumRestoreSection extends ConsumerWidget {
@@ -574,7 +621,11 @@ class _PremiumLegalLinksSection extends StatelessWidget {
               child: Text('settings.privacy_policy'.tr()),
             ),
             TextButton(
-              onPressed: () => context.push(AppRoutes.termsOfService),
+              onPressed: () async => _openLegalUrl(
+                context,
+                url: AppConstants.termsOfUseUrl,
+                fallbackRoute: AppRoutes.termsOfService,
+              ),
               child: Text('settings.terms'.tr()),
             ),
           ],

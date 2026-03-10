@@ -332,6 +332,42 @@ void main() {
       },
     );
 
+    test(
+      'clearStoreUnavailableCache allows retrying offerings after billing error',
+      () async {
+        var getOfferingsCalls = 0;
+        var shouldFail = true;
+        await _installHandler((call) async {
+          if (call.method == 'setupPurchases') return null;
+          if (call.method == 'getOfferings') {
+            getOfferingsCalls++;
+            if (shouldFail) {
+              throw PlatformException(
+                code: PurchasesErrorCode.purchaseNotAllowedError.index
+                    .toString(),
+                message: 'Billing service unavailable on device',
+              );
+            }
+            return _offeringsJson();
+          }
+          return null;
+        });
+
+        final service = PurchaseService();
+        await service.initialize(apiKey: 'test_key', userId: 'user-1');
+
+        expect(await service.getOfferings(), isEmpty);
+        expect(getOfferingsCalls, 1);
+
+        shouldFail = false;
+        service.clearStoreUnavailableCache();
+
+        final offerings = await service.getOfferings();
+        expect(getOfferingsCalls, 2);
+        expect(offerings, hasLength(1));
+      },
+    );
+
     test('purchasePackage returns true when premium becomes active', () async {
       await _installHandler((call) async {
         if (call.method == 'setupPurchases') return null;

@@ -205,6 +205,7 @@ void main() {
 
         expect(find.text('Plans are temporarily unavailable'), findsOneWidget);
         expect(find.text('Store price unavailable'), findsNWidgets(3));
+        expect(find.text('common.retry'), findsOneWidget);
       },
     );
   });

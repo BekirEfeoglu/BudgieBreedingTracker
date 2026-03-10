@@ -8,6 +8,7 @@ import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 /// querying subscription status. Uses `purchases_flutter` under the hood.
 class PurchaseService {
   static const String _entitlementId = 'premium';
+  static const Duration _storeUnavailableCooldown = Duration(seconds: 20);
 
   bool _initialized = false;
   Future<bool>? _initializationFuture;
@@ -15,6 +16,7 @@ class PurchaseService {
   String? _configuredUserId;
   bool _storeUnavailable = false;
   String? _storeUnavailableReason;
+  DateTime? _storeUnavailableMarkedAt;
 
   /// Initializes RevenueCat with the API key and user ID.
   ///
@@ -51,6 +53,7 @@ class PurchaseService {
       _initialized = true;
       _configuredApiKey = apiKey;
       _configuredUserId = userId;
+      _clearStoreUnavailable();
       AppLogger.info('RevenueCat initialized for user: $userId');
       return true;
     } catch (e) {
@@ -66,6 +69,7 @@ class PurchaseService {
     try {
       await Purchases.logIn(userId);
       _configuredUserId = userId;
+      _clearStoreUnavailable();
       AppLogger.info('RevenueCat switched to user: $userId');
       return true;
     } catch (e) {
@@ -81,10 +85,11 @@ class PurchaseService {
 
   /// Returns whether the user currently has an active premium entitlement.
   Future<bool> isPremium() async {
-    if (!_initialized || _storeUnavailable) return false;
+    if (!_initialized || _isStoreUnavailableNow()) return false;
 
     try {
       final customerInfo = await Purchases.getCustomerInfo();
+      _clearStoreUnavailable();
       return customerInfo.entitlements.active.containsKey(_entitlementId);
     } on PlatformException catch (e) {
       if (_markStoreUnavailableIfNeeded(e)) {
@@ -102,10 +107,11 @@ class PurchaseService {
 
   /// Fetches all available subscription offerings.
   Future<List<Package>> getOfferings() async {
-    if (!_initialized || _storeUnavailable) return [];
+    if (!_initialized || _isStoreUnavailableNow()) return [];
 
     try {
       final offerings = await Purchases.getOfferings();
+      _clearStoreUnavailable();
       return offerings.current?.availablePackages ?? [];
     } on PlatformException catch (e) {
       if (_markStoreUnavailableIfNeeded(e)) {
@@ -124,7 +130,7 @@ class PurchaseService {
   /// Returns true if purchase succeeded.
   Future<bool> purchasePackage(Package package) async {
     if (!_initialized) return false;
-    if (_storeUnavailable) {
+    if (_isStoreUnavailableNow()) {
       throw PurchaseException(
         'purchase_not_allowed',
         purchasesCode: PurchasesErrorCode.purchaseNotAllowedError,
@@ -185,7 +191,7 @@ class PurchaseService {
   /// Throws [PurchaseException] on restore failures (store/network/config).
   Future<bool> restorePurchases() async {
     if (!_initialized) return false;
-    if (_storeUnavailable) {
+    if (_isStoreUnavailableNow()) {
       throw PurchaseException(
         'purchase_not_allowed',
         purchasesCode: PurchasesErrorCode.purchaseNotAllowedError,
@@ -218,12 +224,13 @@ class PurchaseService {
 
   /// Returns detailed subscription info.
   Future<SubscriptionInfo> getSubscriptionInfo() async {
-    if (!_initialized || _storeUnavailable) {
+    if (!_initialized || _isStoreUnavailableNow()) {
       return const SubscriptionInfo(isActive: false);
     }
 
     try {
       final customerInfo = await Purchases.getCustomerInfo();
+      _clearStoreUnavailable();
       final entitlement = customerInfo.entitlements.active[_entitlementId];
 
       return SubscriptionInfo(
@@ -266,6 +273,30 @@ class PurchaseService {
     _initialized = false;
     _configuredApiKey = null;
     _configuredUserId = null;
+    _clearStoreUnavailable();
+  }
+
+  /// Clears temporary store-unavailable guard so callers can retry immediately.
+  /// Useful after user fixes sandbox account / Store settings and taps retry.
+  void clearStoreUnavailableCache() {
+    _clearStoreUnavailable();
+  }
+
+  bool _isStoreUnavailableNow() {
+    if (!_storeUnavailable) return false;
+    final markedAt = _storeUnavailableMarkedAt;
+    if (markedAt == null) return true;
+    if (DateTime.now().difference(markedAt) < _storeUnavailableCooldown) {
+      return true;
+    }
+    _clearStoreUnavailable();
+    return false;
+  }
+
+  void _clearStoreUnavailable() {
+    _storeUnavailable = false;
+    _storeUnavailableReason = null;
+    _storeUnavailableMarkedAt = null;
   }
 
   bool _markStoreUnavailableIfNeeded(PlatformException e) {
@@ -281,8 +312,9 @@ class PurchaseService {
     if (!_storeUnavailable) {
       _storeUnavailable = true;
       _storeUnavailableReason = e.message ?? e.code;
+      _storeUnavailableMarkedAt = DateTime.now();
       AppLogger.warning(
-        'Billing is unavailable on this device; purchase checks are disabled for this app session',
+        'Billing is unavailable on this device; purchase checks are paused temporarily',
       );
     }
     return true;

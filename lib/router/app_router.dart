@@ -57,6 +57,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           location == AppRoutes.login ||
           location == AppRoutes.register ||
           location == AppRoutes.authCallback ||
+          location == AppRoutes.oauthCallback ||
           location == AppRoutes.emailVerification ||
           location == AppRoutes.forgotPassword ||
           location == AppRoutes.twoFactorVerify;

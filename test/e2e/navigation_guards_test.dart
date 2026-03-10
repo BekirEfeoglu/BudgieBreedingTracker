@@ -21,6 +21,10 @@ void main() {
   ensureE2EBinding();
 
   group('Navigation and Guard E2E', () {
+    setUp(() {
+      _ScrollableBirdTabState.resetPersistedState();
+    });
+
     testWidgets(
       'GIVEN free-tier user WHEN premium route is accessed THEN redirect target is /premium',
       (tester) async {
@@ -101,8 +105,10 @@ void main() {
             ),
           ],
         );
+        addTearDown(router.dispose);
 
         await pumpApp(tester, container, router: router);
+        await tester.pumpAndSettle();
 
         final navBar = tester.widget<NavigationBar>(find.byType(NavigationBar));
         expect(navBar.destinations.length, 5);
@@ -115,27 +121,27 @@ void main() {
           find.byKey(const Key('birds_list')),
           const Offset(0, -1800),
         );
-        await tester.pump(const Duration(milliseconds: 200));
+        await tester.pumpAndSettle();
         expect(find.text('bird_item_40'), findsWidgets);
 
         await tester.tap(find.text('nav.home'));
-        await tester.pump(const Duration(milliseconds: 200));
+        await tester.pumpAndSettle();
         expect(find.text('home_tab'), findsOneWidget);
 
         await tester.tap(find.text('nav.breeding'));
-        await tester.pump(const Duration(milliseconds: 200));
+        await tester.pumpAndSettle();
         expect(find.text('breeding_tab'), findsOneWidget);
 
         await tester.tap(find.text('nav.calendar'));
-        await tester.pump(const Duration(milliseconds: 200));
+        await tester.pumpAndSettle();
         expect(find.text('calendar_tab'), findsOneWidget);
 
         await tester.tap(find.text('nav.more'));
-        await tester.pump(const Duration(milliseconds: 200));
+        await tester.pumpAndSettle();
         expect(find.text('more_tab'), findsOneWidget);
 
         await tester.tap(find.text('nav.birds'));
-        await tester.pump(const Duration(milliseconds: 200));
+        await tester.pumpAndSettle();
 
         expect(find.text('typed:persisted'), findsOneWidget);
         expect(find.text('bird_item_40'), findsWidgets);
@@ -157,11 +163,13 @@ void main() {
             ),
           ],
         );
+        addTearDown(router.dispose);
 
         final container = createTestContainer(isAuthenticated: true);
         addTearDown(container.dispose);
 
         await pumpApp(tester, container, router: router);
+        await tester.pumpAndSettle();
 
         expect(find.text('bird_detail_123'), findsOneWidget);
       },
@@ -192,6 +200,11 @@ class _ScrollableBirdTabState extends State<_ScrollableBirdTab>
     with AutomaticKeepAliveClientMixin<_ScrollableBirdTab> {
   static String _persistedQuery = '';
   static double _persistedOffset = 0;
+
+  static void resetPersistedState() {
+    _persistedQuery = '';
+    _persistedOffset = 0;
+  }
 
   late final TextEditingController _searchController;
   late final ScrollController _scrollController;

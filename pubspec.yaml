@@ -78,6 +78,7 @@ dependencies:
   # Icons
   lucide_icons: ^0.257.0
   flutter_svg: ^2.0.10+1
+  sign_in_with_apple: ^7.0.1
 
 dev_dependencies:
   flutter_test:

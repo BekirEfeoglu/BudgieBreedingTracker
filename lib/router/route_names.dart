@@ -6,6 +6,7 @@ abstract class AppRoutes {
   static const login = '/login';
   static const register = '/register';
   static const authCallback = '/auth/callback';
+  static const oauthCallback = '/login-callback';
   static const emailVerification = '/email-verification';
   static const forgotPassword = '/forgot-password';
 

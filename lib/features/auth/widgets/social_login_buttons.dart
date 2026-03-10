@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../core/theme/app_spacing.dart';
 
@@ -23,7 +24,6 @@ class SocialLoginButtons extends StatefulWidget {
 
 class _SocialLoginButtonsState extends State<SocialLoginButtons> {
   bool _googlePressed = false;
-  bool _applePressed = false;
 
   @override
   Widget build(BuildContext context) {
@@ -51,41 +51,46 @@ class _SocialLoginButtonsState extends State<SocialLoginButtons> {
         // Google button
         _PressScaleButton(
           isPressed: _googlePressed,
-          onTapDown: widget.isLoading ? null : () => setState(() => _googlePressed = true),
+          onTapDown: widget.isLoading
+              ? null
+              : () => setState(() => _googlePressed = true),
           onTapUp: () => setState(() => _googlePressed = false),
           onTap: widget.isLoading ? null : widget.onGoogleTap,
           child: OutlinedButton.icon(
             onPressed: widget.isLoading ? null : widget.onGoogleTap,
-            icon: Text(
-              'G',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: widget.isLoading
-                    ? theme.colorScheme.onSurface.withValues(alpha: 0.38)
-                    : theme.colorScheme.onSurface,
-              ),
+            icon: SvgPicture.asset(
+              'assets/icons/general/google_logo.svg',
+              width: 18,
+              height: 18,
             ),
             label: Text('auth.sign_in_with_google'.tr()),
             style: OutlinedButton.styleFrom(
-              minimumSize: const Size(double.infinity, AppSpacing.touchTargetMd),
+              backgroundColor: Colors.white,
+              foregroundColor: Colors.black87,
+              minimumSize: const Size(
+                double.infinity,
+                AppSpacing.touchTargetMd,
+              ),
+              side: BorderSide(
+                color: theme.colorScheme.outline.withValues(alpha: 0.8),
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
             ),
           ),
         ),
         const SizedBox(height: AppSpacing.md),
         // Apple button
-        _PressScaleButton(
-          isPressed: _applePressed,
-          onTapDown: widget.isLoading ? null : () => setState(() => _applePressed = true),
-          onTapUp: () => setState(() => _applePressed = false),
-          onTap: widget.isLoading ? null : widget.onAppleTap,
-          child: OutlinedButton.icon(
+        SizedBox(
+          width: double.infinity,
+          child: SignInWithAppleButton(
             onPressed: widget.isLoading ? null : widget.onAppleTap,
-            icon: const Icon(LucideIcons.apple, size: 20),
-            label: Text('auth.sign_in_with_apple'.tr()),
-            style: OutlinedButton.styleFrom(
-              minimumSize: const Size(double.infinity, AppSpacing.touchTargetMd),
-            ),
+            text: 'auth.sign_in_with_apple'.tr(),
+            height: AppSpacing.touchTargetMd,
+            style: theme.brightness == Brightness.dark
+                ? SignInWithAppleButtonStyle.white
+                : SignInWithAppleButtonStyle.black,
           ),
         ),
       ],

@@ -1,0 +1,182 @@
+[
+  {
+    "id": 3875,
+    "suite": "/Users/rentamac/Downloads/BudgieBreedingTracker/test/features/birds/widgets/bird_form_sections_test.dart",
+    "name": "BirdFormIdentitySection shows ring number field",
+    "line": 292
+  },
+  {
+    "id": 3876,
+    "suite": "/Users/rentamac/Downloads/BudgieBreedingTracker/test/features/birds/widgets/bird_form_sections_test.dart",
+    "name": "BirdFormIdentitySection shows cage number field",
+    "line": 309
+  },
+  {
+    "id": 3878,
+    "suite": "/Users/rentamac/Downloads/BudgieBreedingTracker/test/features/birds/widgets/bird_form_sections_test.dart",
+    "name": "BirdFormIdentitySection shows birth date picker field",
+    "line": 326
+  },
+  {
+    "id": 4467,
+    "suite": "/Users/rentamac/Downloads/BudgieBreedingTracker/test/golden/widgets/primary_button_golden_test.dart",
+    "name": "PrimaryButton golden tests default state",
+    "line": 12
+  },
+  {
+    "id": 4486,
+    "suite": "/Users/rentamac/Downloads/BudgieBreedingTracker/test/golden/widgets/primary_button_golden_test.dart",
+    "name": "PrimaryButton golden tests with icon",
+    "line": 30
+  },
+  {
+    "id": 4490,
+    "suite": "/Users/rentamac/Downloads/BudgieBreedingTracker/test/golden/widgets/primary_button_golden_test.dart",
+    "name": "PrimaryButton golden tests disabled state",
+    "line": 68
+  },
+  {
+    "id": 4480,
+    "suite": "/Users/rentamac/Downloads/BudgieBreedingTracker/test/golden/widgets/status_badge_golden_test.dart",
+    "name": "StatusBadge golden tests alive status",
+    "line": 12
+  },
+  {
+    "id": 4491,
+    "suite": "/Users/rentamac/Downloads/BudgieBreedingTracker/test/golden/widgets/primary_button_golden_test.dart",
+    "name": "PrimaryButton golden tests dark mode",
+    "line": 86
+  },
+  {
+    "id": 4492,
+    "suite": "/Users/rentamac/Downloads/BudgieBreedingTracker/test/golden/widgets/status_badge_golden_test.dart",
+    "name": "StatusBadge golden tests sold status",
+    "line": 24
+  },
+  {
+    "id": 4498,
+    "suite": "/Users/rentamac/Downloads/BudgieBreedingTracker/test/golden/widgets/status_badge_golden_test.dart",
+    "name": "StatusBadge golden tests dead status",
+    "line": 36
+  },
+  {
+    "id": 4499,
+    "suite": "/Users/rentamac/Downloads/BudgieBreedingTracker/test/golden/widgets/status_badge_golden_test.dart",
+    "name": "StatusBadge golden tests with icon",
+    "line": 48
+  },
+  {
+    "id": 4500,
+    "suite": "/Users/rentamac/Downloads/BudgieBreedingTracker/test/golden/widgets/status_badge_golden_test.dart",
+    "name": "StatusBadge golden tests dark mode",
+    "line": 64
+  },
+  {
+    "id": 4497,
+    "suite": "/Users/rentamac/Downloads/BudgieBreedingTracker/test/golden/widgets/empty_state_golden_test.dart",
+    "name": "EmptyState golden tests with action button",
+    "line": 12
+  },
+  {
+    "id": 4506,
+    "suite": "/Users/rentamac/Downloads/BudgieBreedingTracker/test/golden/widgets/empty_state_golden_test.dart",
+    "name": "EmptyState golden tests without action (search results)",
+    "line": 30
+  },
+  {
+    "id": 4514,
+    "suite": "/Users/rentamac/Downloads/BudgieBreedingTracker/test/golden/widgets/empty_state_golden_test.dart",
+    "name": "EmptyState golden tests title only (minimal)",
+    "line": 46
+  },
+  {
+    "id": 4503,
+    "suite": "/Users/rentamac/Downloads/BudgieBreedingTracker/test/golden/widgets/stat_card_golden_test.dart",
+    "name": "StatCard golden tests vertical layout with icon",
+    "line": 12
+  },
+  {
+    "id": 4515,
+    "suite": "/Users/rentamac/Downloads/BudgieBreedingTracker/test/golden/widgets/empty_state_golden_test.dart",
+    "name": "EmptyState golden tests dark mode",
+    "line": 61
+  },
+  {
+    "id": 4516,
+    "suite": "/Users/rentamac/Downloads/BudgieBreedingTracker/test/golden/widgets/stat_card_golden_test.dart",
+    "name": "StatCard golden tests horizontal layout with icon",
+    "line": 33
+  },
+  {
+    "id": 4519,
+    "suite": "/Users/rentamac/Downloads/BudgieBreedingTracker/test/golden/widgets/stat_card_golden_test.dart",
+    "name": "StatCard golden tests with trend indicator",
+    "line": 55
+  },
+  {
+    "id": 4513,
+    "suite": "/Users/rentamac/Downloads/BudgieBreedingTracker/test/golden/widgets/info_card_golden_test.dart",
+    "name": "InfoCard golden tests with icon and subtitle",
+    "line": 12
+  },
+  {
+    "id": 4522,
+    "suite": "/Users/rentamac/Downloads/BudgieBreedingTracker/test/golden/widgets/stat_card_golden_test.dart",
+    "name": "StatCard golden tests without icon",
+    "line": 78
+  },
+  {
+    "id": 4523,
+    "suite": "/Users/rentamac/Downloads/BudgieBreedingTracker/test/golden/widgets/info_card_golden_test.dart",
+    "name": "InfoCard golden tests title only",
+    "line": 31
+  },
+  {
+    "id": 4526,
+    "suite": "/Users/rentamac/Downloads/BudgieBreedingTracker/test/golden/widgets/stat_card_golden_test.dart",
+    "name": "StatCard golden tests dark mode",
+    "line": 98
+  },
+  {
+    "id": 4527,
+    "suite": "/Users/rentamac/Downloads/BudgieBreedingTracker/test/golden/widgets/info_card_golden_test.dart",
+    "name": "InfoCard golden tests with trailing widget",
+    "line": 46
+  },
+  {
+    "id": 4530,
+    "suite": "/Users/rentamac/Downloads/BudgieBreedingTracker/test/golden/widgets/info_card_golden_test.dart",
+    "name": "InfoCard golden tests dark mode",
+    "line": 66
+  },
+  {
+    "id": 4547,
+    "suite": "/Users/rentamac/Downloads/BudgieBreedingTracker/test/e2e/navigation_guards_test.dart",
+    "name": "Navigation and Guard E2E GIVEN logged-in user in home shell WHEN all 5 tabs are opened THEN each tab is reachable and tab state persists",
+    "line": 42
+  },
+  {
+    "id": 4556,
+    "suite": "/Users/rentamac/Downloads/BudgieBreedingTracker/test/e2e/navigation_guards_test.dart",
+    "name": "Navigation and Guard E2E GIVEN deep-link request WHEN /birds/123 is opened THEN detail screen loads directly",
+    "line": 146
+  },
+  {
+    "id": 4686,
+    "suite": "/Users/rentamac/Downloads/BudgieBreedingTracker/test/e2e/error_edge_cases_test.dart",
+    "name": "Error & Edge Cases E2E GIVEN bird form WHEN save is tapped with empty name THEN required-field error appears and submit is blocked",
+    "line": 156
+  },
+  {
+    "id": 4925,
+    "suite": "/Users/rentamac/Downloads/BudgieBreedingTracker/test/e2e/error_edge_cases_test.dart",
+    "name": "Error & Edge Cases E2E GIVEN half-filled bird form draft WHEN app goes background and returns THEN draft state remains in Riverpod provider",
+    "line": 224
+  },
+  {
+    "id": 7175,
+    "suite": "/Users/rentamac/Downloads/BudgieBreedingTracker/test/router/app_router_test.dart",
+    "name": "router redirect redirects non-premium deep links to premium for genetics reverse/compare",
+    "line": 402
+  }
+]

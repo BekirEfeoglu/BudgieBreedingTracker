@@ -19,15 +19,30 @@ class AppHaptics {
   static Future<bool> _isEnabled() async {
     final cached = _enabledCache;
     if (cached != null) return cached;
-    final prefs = await SharedPreferences.getInstance();
-    final enabled = prefs.getBool(AppPreferences.keyHapticFeedback) ?? true;
-    _enabledCache = enabled;
-    return enabled;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final enabled = prefs.getBool(AppPreferences.keyHapticFeedback) ?? true;
+      _enabledCache = enabled;
+      return enabled;
+    } on MissingPluginException {
+      // Shared preferences may be unavailable in unit/widget test environments.
+      _enabledCache = true;
+      return true;
+    } on PlatformException {
+      _enabledCache = true;
+      return true;
+    }
   }
 
   static Future<void> _run(Future<void> Function() callback) async {
-    if (await _isEnabled()) {
-      await callback();
+    try {
+      if (await _isEnabled()) {
+        await callback();
+      }
+    } on MissingPluginException {
+      // Ignore when haptics platform channel is unavailable (tests/web).
+    } on PlatformException {
+      // Ignore platform-specific haptics failures.
     }
   }
 
@@ -47,4 +62,3 @@ class AppHaptics {
     unawaited(_run(HapticFeedback.selectionClick));
   }
 }
-

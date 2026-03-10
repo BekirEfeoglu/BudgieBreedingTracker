@@ -46,6 +46,7 @@ class _BudgieLoginScreenState extends ConsumerState<BudgieLoginScreen>
   late final AnimationController _cardEnterCtrl;
   Timer? _peekTimer;
   Timer? _blinkTimer;
+  Timer? _errorResetTimer;
   Timer? _oAuthTimeoutTimer;
   bool _isPeeking = false;
   bool _isBlinking = false;
@@ -96,6 +97,7 @@ class _BudgieLoginScreenState extends ConsumerState<BudgieLoginScreen>
     _cardEnterCtrl.dispose();
     _peekTimer?.cancel();
     _blinkTimer?.cancel();
+    _errorResetTimer?.cancel();
     _oAuthTimeoutTimer?.cancel();
     super.dispose();
   }
@@ -185,7 +187,8 @@ class _BudgieLoginScreenState extends ConsumerState<BudgieLoginScreen>
           )
           .timeout(
             const Duration(seconds: 30),
-            onTimeout: () => throw const SocketException('Connection timed out'),
+            onTimeout: () =>
+                throw const SocketException('Connection timed out'),
           );
       if (!mounted) return;
 
@@ -221,7 +224,11 @@ class _BudgieLoginScreenState extends ConsumerState<BudgieLoginScreen>
           // The user is already authenticated. appInitializationProvider
           // will re-run _checkPendingMfa and the router will redirect to
           // the 2FA verify screen if the session is still at AAL1.
-          AppLogger.error('[Login] 2FA check failed, proceeding to home', e, st);
+          AppLogger.error(
+            '[Login] 2FA check failed, proceeding to home',
+            e,
+            st,
+          );
           Sentry.captureException(e, stackTrace: st);
           if (!mounted) return;
           context.go(AppRoutes.home);
@@ -246,7 +253,11 @@ class _BudgieLoginScreenState extends ConsumerState<BudgieLoginScreen>
       if (!mounted) return;
       _showError(mapAuthError(e));
     } catch (e, st) {
-      AppLogger.error('[Login] signInWithEmail failed: ${e.runtimeType}: $e', e, st);
+      AppLogger.error(
+        '[Login] signInWithEmail failed: ${e.runtimeType}: $e',
+        e,
+        st,
+      );
       Sentry.captureException(e, stackTrace: st);
       if (!mounted) return;
       if (e is SocketException || e is HandshakeException) {
@@ -265,7 +276,8 @@ class _BudgieLoginScreenState extends ConsumerState<BudgieLoginScreen>
         ..duration = const Duration(seconds: 4);
     });
     context.showSnackBar(message, isError: true);
-    Future.delayed(const Duration(seconds: 3), () {
+    _errorResetTimer?.cancel();
+    _errorResetTimer = Timer(const Duration(seconds: 3), () {
       if (mounted && _loginState == LoginState.error) {
         setState(() {
           _loginState = LoginState.idle;
@@ -280,6 +292,18 @@ class _BudgieLoginScreenState extends ConsumerState<BudgieLoginScreen>
   Future<void> _handleOAuth(OAuthProvider provider) async {
     setState(() => _loginState = LoginState.loading);
     try {
+      if (!ref.read(supabaseInitializedProvider)) {
+        final initialized = await ensureSupabaseInitialized(
+          timeout: const Duration(seconds: 12),
+        );
+        if (!mounted) return;
+        if (!initialized) {
+          AppLogger.error('[Login] Supabase not initialized before OAuth');
+          _showError('auth.error_service_unavailable'.tr());
+          return;
+        }
+      }
+
       final auth = ref.read(authActionsProvider);
       final launched = await auth.signInWithOAuth(provider);
       if (!launched && mounted) {
@@ -348,13 +372,16 @@ class _BudgieLoginScreenState extends ConsumerState<BudgieLoginScreen>
                       ),
                     SizedBox(height: isSmall ? AppSpacing.sm : AppSpacing.lg),
                     SlideTransition(
-                      position: Tween<Offset>(
-                        begin: const Offset(0, 0.25),
-                        end: Offset.zero,
-                      ).animate(CurvedAnimation(
-                        parent: _cardEnterCtrl,
-                        curve: Curves.easeOutBack,
-                      )),
+                      position:
+                          Tween<Offset>(
+                            begin: const Offset(0, 0.25),
+                            end: Offset.zero,
+                          ).animate(
+                            CurvedAnimation(
+                              parent: _cardEnterCtrl,
+                              curve: Curves.easeOutBack,
+                            ),
+                          ),
                       child: FadeTransition(
                         opacity: CurvedAnimation(
                           parent: _cardEnterCtrl,
@@ -372,7 +399,8 @@ class _BudgieLoginScreenState extends ConsumerState<BudgieLoginScreen>
                             passwordFocusNode: _passwordFocus,
                             loginState: _loginState,
                             onSubmit: _handleLogin,
-                            onGoogleTap: () => _handleOAuth(OAuthProvider.google),
+                            onGoogleTap: () =>
+                                _handleOAuth(OAuthProvider.google),
                             onAppleTap: () => _handleOAuth(OAuthProvider.apple),
                             onForgotPassword: () =>
                                 context.push(AppRoutes.forgotPassword),

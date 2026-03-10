@@ -1,0 +1,32 @@
+/Users/rentamac/Downloads/BudgieBreedingTracker/test/features/feedback/providers/feedback_form_providers_test.dart: FeedbackFormNotifier submit sets loading then success on success
+/Users/rentamac/Downloads/BudgieBreedingTracker/test/features/birds/widgets/bird_form_sections_test.dart: BirdFormIdentitySection shows ring number field
+/Users/rentamac/Downloads/BudgieBreedingTracker/test/features/birds/widgets/bird_form_sections_test.dart: BirdFormIdentitySection shows cage number field
+/Users/rentamac/Downloads/BudgieBreedingTracker/test/features/birds/widgets/bird_form_sections_test.dart: BirdFormIdentitySection shows birth date picker field
+/Users/rentamac/Downloads/BudgieBreedingTracker/test/golden/widgets/primary_button_golden_test.dart: PrimaryButton golden tests default state
+/Users/rentamac/Downloads/BudgieBreedingTracker/test/golden/widgets/primary_button_golden_test.dart: PrimaryButton golden tests with icon
+/Users/rentamac/Downloads/BudgieBreedingTracker/test/golden/widgets/primary_button_golden_test.dart: PrimaryButton golden tests disabled state
+/Users/rentamac/Downloads/BudgieBreedingTracker/test/golden/widgets/status_badge_golden_test.dart: StatusBadge golden tests alive status
+/Users/rentamac/Downloads/BudgieBreedingTracker/test/golden/widgets/primary_button_golden_test.dart: PrimaryButton golden tests dark mode
+/Users/rentamac/Downloads/BudgieBreedingTracker/test/golden/widgets/status_badge_golden_test.dart: StatusBadge golden tests sold status
+/Users/rentamac/Downloads/BudgieBreedingTracker/test/golden/widgets/status_badge_golden_test.dart: StatusBadge golden tests dead status
+/Users/rentamac/Downloads/BudgieBreedingTracker/test/golden/widgets/status_badge_golden_test.dart: StatusBadge golden tests with icon
+/Users/rentamac/Downloads/BudgieBreedingTracker/test/golden/widgets/status_badge_golden_test.dart: StatusBadge golden tests dark mode
+/Users/rentamac/Downloads/BudgieBreedingTracker/test/golden/widgets/empty_state_golden_test.dart: EmptyState golden tests with action button
+/Users/rentamac/Downloads/BudgieBreedingTracker/test/golden/widgets/empty_state_golden_test.dart: EmptyState golden tests without action (search results)
+/Users/rentamac/Downloads/BudgieBreedingTracker/test/golden/widgets/empty_state_golden_test.dart: EmptyState golden tests title only (minimal)
+/Users/rentamac/Downloads/BudgieBreedingTracker/test/golden/widgets/stat_card_golden_test.dart: StatCard golden tests vertical layout with icon
+/Users/rentamac/Downloads/BudgieBreedingTracker/test/golden/widgets/empty_state_golden_test.dart: EmptyState golden tests dark mode
+/Users/rentamac/Downloads/BudgieBreedingTracker/test/golden/widgets/stat_card_golden_test.dart: StatCard golden tests horizontal layout with icon
+/Users/rentamac/Downloads/BudgieBreedingTracker/test/golden/widgets/stat_card_golden_test.dart: StatCard golden tests with trend indicator
+/Users/rentamac/Downloads/BudgieBreedingTracker/test/golden/widgets/info_card_golden_test.dart: InfoCard golden tests with icon and subtitle
+/Users/rentamac/Downloads/BudgieBreedingTracker/test/golden/widgets/stat_card_golden_test.dart: StatCard golden tests without icon
+/Users/rentamac/Downloads/BudgieBreedingTracker/test/golden/widgets/info_card_golden_test.dart: InfoCard golden tests title only
+/Users/rentamac/Downloads/BudgieBreedingTracker/test/golden/widgets/stat_card_golden_test.dart: StatCard golden tests dark mode
+/Users/rentamac/Downloads/BudgieBreedingTracker/test/golden/widgets/info_card_golden_test.dart: InfoCard golden tests with trailing widget
+/Users/rentamac/Downloads/BudgieBreedingTracker/test/golden/widgets/info_card_golden_test.dart: InfoCard golden tests dark mode
+/Users/rentamac/Downloads/BudgieBreedingTracker/test/e2e/navigation_guards_test.dart: Navigation and Guard E2E GIVEN logged-in user in home shell WHEN all 5 tabs are opened THEN each tab is reachable and tab state persists
+/Users/rentamac/Downloads/BudgieBreedingTracker/test/e2e/navigation_guards_test.dart: Navigation and Guard E2E GIVEN free-tier user WHEN premium route is accessed THEN redirect target is /premium
+/Users/rentamac/Downloads/BudgieBreedingTracker/test/e2e/navigation_guards_test.dart: Navigation and Guard E2E GIVEN deep-link request WHEN /birds/123 is opened THEN detail screen loads directly
+/Users/rentamac/Downloads/BudgieBreedingTracker/test/e2e/error_edge_cases_test.dart: Error & Edge Cases E2E GIVEN bird form WHEN save is tapped with empty name THEN required-field error appears and submit is blocked
+/Users/rentamac/Downloads/BudgieBreedingTracker/test/e2e/error_edge_cases_test.dart: Error & Edge Cases E2E GIVEN half-filled bird form draft WHEN app goes background and returns THEN draft state remains in Riverpod provider
+/Users/rentamac/Downloads/BudgieBreedingTracker/test/router/app_router_test.dart: router redirect redirects non-premium deep links to premium for genetics reverse/compare
