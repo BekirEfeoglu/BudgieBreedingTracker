@@ -26,14 +26,22 @@ class BirdSelectorField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final validSelectedId =
+        selectedId != null && birds.any((bird) => bird.id == selectedId)
+        ? selectedId
+        : null;
+
     return DropdownButtonFormField<String>(
-      initialValue: selectedId,
+      key: ValueKey(validSelectedId),
+      initialValue: validSelectedId,
       decoration: InputDecoration(
         labelText: label,
         border: const OutlineInputBorder(),
         prefixIcon: AppIcon(
           gender == BirdGender.male ? AppIcons.male : AppIcons.female,
-          color: gender == BirdGender.male ? AppColors.genderMale : AppColors.genderFemale,
+          color: gender == BirdGender.male
+              ? AppColors.genderMale
+              : AppColors.genderFemale,
         ),
       ),
       items: birds.map((bird) {
@@ -41,19 +49,14 @@ class BirdSelectorField extends StatelessWidget {
           value: bird.id,
           child: Row(
             children: [
-              Flexible(
-                child: Text(
-                  bird.name,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
+              Flexible(child: Text(bird.name, overflow: TextOverflow.ellipsis)),
               if (bird.ringNumber != null) ...[
                 const SizedBox(width: AppSpacing.sm),
                 Text(
                   '(${bird.ringNumber})',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
                 ),
               ],
             ],
@@ -62,7 +65,9 @@ class BirdSelectorField extends StatelessWidget {
       }).toList(),
       onChanged: onChanged,
       validator: (value) {
-        if (value == null || value.isEmpty) return 'validation.field_required'.tr(args: [label]);
+        if (value == null || value.isEmpty) {
+          return 'validation.field_required'.tr(args: [label]);
+        }
         return null;
       },
       isExpanded: true,

@@ -6,7 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_icons.dart';
 import '../../../core/widgets/app_icon.dart';
 import '../../../router/route_names.dart';
-import '../providers/settings_providers.dart';
+import '../../notifications/providers/notification_settings_providers.dart';
 import 'settings_navigation_tile.dart';
 import 'settings_section_header.dart';
 import 'settings_toggle_tile.dart';
@@ -16,7 +16,8 @@ class NotificationsSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final masterEnabled = ref.watch(notificationsMasterProvider);
+    final settings = ref.watch(notificationToggleSettingsProvider);
+    final settingsNotifier = ref.read(notificationToggleSettingsProvider.notifier);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -29,9 +30,9 @@ class NotificationsSection extends ConsumerWidget {
           title: 'settings.notifications_master'.tr(),
           subtitle: 'settings.notifications_master_desc'.tr(),
           icon: const AppIcon(AppIcons.notification),
-          value: masterEnabled,
-          onChanged: (_) {
-            ref.read(notificationsMasterProvider.notifier).toggle();
+          value: settings.allEnabled,
+          onChanged: (value) {
+            settingsNotifier.setAll(value);
           },
         ),
         SettingsNavigationTile(

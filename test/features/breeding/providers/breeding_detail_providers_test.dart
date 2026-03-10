@@ -169,4 +169,56 @@ void main() {
       expect(result!.name, 'Tweety');
     });
   });
+
+  group('selectPrimaryIncubation', () {
+    test('prefers most recent active incubation', () {
+      final incubations = [
+        Incubation(
+          id: 'inc-old-active',
+          userId: 'u1',
+          status: IncubationStatus.active,
+          startDate: DateTime(2024, 1, 1),
+        ),
+        Incubation(
+          id: 'inc-new-completed',
+          userId: 'u1',
+          status: IncubationStatus.completed,
+          startDate: DateTime(2024, 2, 1),
+        ),
+        Incubation(
+          id: 'inc-new-active',
+          userId: 'u1',
+          status: IncubationStatus.active,
+          startDate: DateTime(2024, 3, 1),
+        ),
+      ];
+
+      final selected = selectPrimaryIncubation(incubations);
+      expect(selected?.id, 'inc-new-active');
+    });
+
+    test('falls back to most recent incubation when none is active', () {
+      final incubations = [
+        Incubation(
+          id: 'inc-1',
+          userId: 'u1',
+          status: IncubationStatus.completed,
+          startDate: DateTime(2024, 1, 1),
+        ),
+        Incubation(
+          id: 'inc-2',
+          userId: 'u1',
+          status: IncubationStatus.cancelled,
+          startDate: DateTime(2024, 4, 1),
+        ),
+      ];
+
+      final selected = selectPrimaryIncubation(incubations);
+      expect(selected?.id, 'inc-2');
+    });
+
+    test('returns null for empty list', () {
+      expect(selectPrimaryIncubation(const []), isNull);
+    });
+  });
 }

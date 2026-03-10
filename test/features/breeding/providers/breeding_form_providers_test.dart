@@ -326,6 +326,31 @@ void main() {
       expect(state.isBreedingLimitReached, isFalse);
     });
 
+    test('counts ongoing pairs toward breeding limit', () async {
+      final pairs = List.generate(
+        AppConstants.freeTierMaxBreedingPairs,
+        (i) => _pair(id: 'pair-$i', status: BreedingStatus.ongoing),
+      );
+      when(() => mockPairRepo.getAll(any())).thenAnswer((_) async => pairs);
+
+      final container = createContainer(isPremium: false);
+      addTearDown(container.dispose);
+
+      await container
+          .read(breedingFormStateProvider.notifier)
+          .createBreeding(
+            userId: 'user-1',
+            maleId: 'male-1',
+            femaleId: 'female-1',
+            pairingDate: DateTime(2025, 1, 1),
+          );
+
+      final state = container.read(breedingFormStateProvider);
+      expect(state.isBreedingLimitReached, isTrue);
+      expect(state.isSuccess, isFalse);
+      verifyNever(() => mockPairRepo.save(any()));
+    });
+
     test('ignores completed incubations in limit count', () async {
       when(() => mockPairRepo.getAll(any())).thenAnswer((_) async => [_pair()]);
       // 3 incubations but only 2 active — should pass

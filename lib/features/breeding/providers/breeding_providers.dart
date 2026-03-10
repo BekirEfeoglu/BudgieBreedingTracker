@@ -17,16 +17,16 @@ export 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.d
 /// All breeding pairs for the current user (live stream).
 final breedingPairsStreamProvider =
     StreamProvider.family<List<BreedingPair>, String>((ref, userId) {
-  final repo = ref.watch(breedingPairRepositoryProvider);
-  return repo.watchAll(userId);
-});
+      final repo = ref.watch(breedingPairRepositoryProvider);
+      return repo.watchAll(userId);
+    });
 
 /// Active breeding pairs only (live stream).
 final activeBreedingPairsProvider =
     StreamProvider.family<List<BreedingPair>, String>((ref, userId) {
-  final repo = ref.watch(breedingPairRepositoryProvider);
-  return repo.watchActive(userId);
-});
+      final repo = ref.watch(breedingPairRepositoryProvider);
+      return repo.watchActive(userId);
+    });
 
 /// Notifier for breeding list filter.
 class BreedingFilterNotifier extends Notifier<BreedingFilter> {
@@ -36,26 +36,26 @@ class BreedingFilterNotifier extends Notifier<BreedingFilter> {
 
 /// Filter state for the breeding list.
 final breedingFilterProvider =
-    NotifierProvider<BreedingFilterNotifier, BreedingFilter>(BreedingFilterNotifier.new);
+    NotifierProvider<BreedingFilterNotifier, BreedingFilter>(
+      BreedingFilterNotifier.new,
+    );
 
 /// Filtered breeding pairs based on the current filter selection.
 final filteredBreedingPairsProvider =
-    Provider.family<List<BreedingPair>, List<BreedingPair>>(
-  (ref, pairs) {
-    final filter = ref.watch(breedingFilterProvider);
-    return switch (filter) {
-      BreedingFilter.all => pairs,
-      BreedingFilter.active =>
-        pairs.where((p) => p.status == BreedingStatus.active).toList(),
-      BreedingFilter.ongoing =>
-        pairs.where((p) => p.status == BreedingStatus.ongoing).toList(),
-      BreedingFilter.completed =>
-        pairs.where((p) => p.status == BreedingStatus.completed).toList(),
-      BreedingFilter.cancelled =>
-        pairs.where((p) => p.status == BreedingStatus.cancelled).toList(),
-    };
-  },
-);
+    Provider.family<List<BreedingPair>, List<BreedingPair>>((ref, pairs) {
+      final filter = ref.watch(breedingFilterProvider);
+      return switch (filter) {
+        BreedingFilter.all => pairs,
+        BreedingFilter.active =>
+          pairs.where((p) => p.status == BreedingStatus.active).toList(),
+        BreedingFilter.ongoing =>
+          pairs.where((p) => p.status == BreedingStatus.ongoing).toList(),
+        BreedingFilter.completed =>
+          pairs.where((p) => p.status == BreedingStatus.completed).toList(),
+        BreedingFilter.cancelled =>
+          pairs.where((p) => p.status == BreedingStatus.cancelled).toList(),
+      };
+    });
 
 /// Notifier for breeding list search query.
 class BreedingSearchQueryNotifier extends Notifier<String> {
@@ -64,77 +64,90 @@ class BreedingSearchQueryNotifier extends Notifier<String> {
 }
 
 /// Search query state for breeding list.
-final breedingSearchQueryProvider = NotifierProvider<BreedingSearchQueryNotifier, String>(BreedingSearchQueryNotifier.new);
+final breedingSearchQueryProvider =
+    NotifierProvider<BreedingSearchQueryNotifier, String>(
+      BreedingSearchQueryNotifier.new,
+    );
 
 /// Searched and filtered breeding pairs (filter first, then search by cage number + bird names).
 final searchedAndFilteredBreedingPairsProvider =
-    Provider.family<List<BreedingPair>, List<BreedingPair>>(
-  (ref, pairs) {
-    final filtered = ref.watch(filteredBreedingPairsProvider(pairs));
-    final query = ref.watch(breedingSearchQueryProvider).toLowerCase().trim();
-    if (query.isEmpty) return filtered;
+    Provider.family<List<BreedingPair>, List<BreedingPair>>((ref, pairs) {
+      final filtered = ref.watch(filteredBreedingPairsProvider(pairs));
+      final query = ref.watch(breedingSearchQueryProvider).toLowerCase().trim();
+      if (query.isEmpty) return filtered;
+      if (filtered.isEmpty) return const <BreedingPair>[];
 
-    // Build bird ID → name lookup from current user's birds
-    final userId = ref.watch(currentUserIdProvider);
-    final birds = ref.watch(birdsStreamProvider(userId)).value ?? <Bird>[];
-    final birdNameMap = <String, String>{
-      for (final bird in birds) bird.id: bird.name.toLowerCase(),
-    };
+      final hasBirdReferences = filtered.any(
+        (pair) => pair.maleId != null || pair.femaleId != null,
+      );
+      if (!hasBirdReferences) {
+        return filtered.where((pair) {
+          return pair.cageNumber?.toLowerCase().contains(query) ?? false;
+        }).toList();
+      }
 
-    return filtered.where((pair) {
-      // Match cage number
-      if (pair.cageNumber?.toLowerCase().contains(query) ?? false) return true;
-      // Match male bird name
-      if (pair.maleId != null &&
-          (birdNameMap[pair.maleId!]?.contains(query) ?? false)) {
-        return true;
-      }
-      // Match female bird name
-      if (pair.femaleId != null &&
-          (birdNameMap[pair.femaleId!]?.contains(query) ?? false)) {
-        return true;
-      }
-      return false;
-    }).toList();
-  },
-);
+      // Build bird ID → name lookup from current user's birds
+      final userId = ref.watch(currentUserIdProvider);
+      final birds = ref.watch(birdsStreamProvider(userId)).value ?? <Bird>[];
+      final birdNameMap = <String, String>{
+        for (final bird in birds) bird.id: bird.name.toLowerCase(),
+      };
+
+      return filtered.where((pair) {
+        // Match cage number
+        if (pair.cageNumber?.toLowerCase().contains(query) ?? false) {
+          return true;
+        }
+        // Match male bird name
+        if (pair.maleId != null &&
+            (birdNameMap[pair.maleId!]?.contains(query) ?? false)) {
+          return true;
+        }
+        // Match female bird name
+        if (pair.femaleId != null &&
+            (birdNameMap[pair.femaleId!]?.contains(query) ?? false)) {
+          return true;
+        }
+        return false;
+      }).toList();
+    });
 
 /// All incubations for the current user, indexed by breedingPairId (live stream).
 /// Used by breeding list to avoid per-card FutureProvider lookups.
 final allIncubationsStreamProvider =
     StreamProvider.family<List<Incubation>, String>((ref, userId) {
-  final repo = ref.watch(incubationRepositoryProvider);
-  return repo.watchAll(userId);
-});
+      final repo = ref.watch(incubationRepositoryProvider);
+      return repo.watchAll(userId);
+    });
 
 /// Map of breedingPairId → first Incubation (derived from allIncubationsStreamProvider).
 final incubationByPairMapProvider =
     Provider.family<Map<String, Incubation>, String>((ref, userId) {
-  final incubations =
-      ref.watch(allIncubationsStreamProvider(userId)).value ??
+      final incubations =
+          ref.watch(allIncubationsStreamProvider(userId)).value ??
           <Incubation>[];
-  final map = <String, Incubation>{};
-  for (final inc in incubations) {
-    if (inc.breedingPairId != null && !map.containsKey(inc.breedingPairId)) {
-      map[inc.breedingPairId!] = inc;
-    }
-  }
-  return map;
-});
+      final map = <String, Incubation>{};
+      for (final inc in incubations) {
+        if (inc.breedingPairId != null &&
+            !map.containsKey(inc.breedingPairId)) {
+          map[inc.breedingPairId!] = inc;
+        }
+      }
+      return map;
+    });
 
 /// Map of incubationId → List<Egg> (derived from eggsStreamProvider).
 final eggsByIncubationMapProvider =
     Provider.family<Map<String, List<Egg>>, String>((ref, userId) {
-  final eggs =
-      ref.watch(eggsStreamProvider(userId)).value ?? <Egg>[];
-  final map = <String, List<Egg>>{};
-  for (final egg in eggs) {
-    if (egg.incubationId != null) {
-      map.putIfAbsent(egg.incubationId!, () => []).add(egg);
-    }
-  }
-  return map;
-});
+      final eggs = ref.watch(eggsStreamProvider(userId)).value ?? <Egg>[];
+      final map = <String, List<Egg>>{};
+      for (final egg in eggs) {
+        if (egg.incubationId != null) {
+          map.putIfAbsent(egg.incubationId!, () => []).add(egg);
+        }
+      }
+      return map;
+    });
 
 /// Filter options for the breeding list.
 enum BreedingFilter {
@@ -145,10 +158,10 @@ enum BreedingFilter {
   cancelled;
 
   String get label => switch (this) {
-        BreedingFilter.all => 'common.all'.tr(),
-        BreedingFilter.active => 'breeding.status_active'.tr(),
-        BreedingFilter.ongoing => 'breeding.status_ongoing'.tr(),
-        BreedingFilter.completed => 'breeding.status_completed'.tr(),
-        BreedingFilter.cancelled => 'breeding.status_cancelled'.tr(),
-      };
+    BreedingFilter.all => 'common.all'.tr(),
+    BreedingFilter.active => 'breeding.status_active'.tr(),
+    BreedingFilter.ongoing => 'breeding.status_ongoing'.tr(),
+    BreedingFilter.completed => 'breeding.status_completed'.tr(),
+    BreedingFilter.cancelled => 'breeding.status_cancelled'.tr(),
+  };
 }

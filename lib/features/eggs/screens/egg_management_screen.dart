@@ -40,13 +40,13 @@ class EggManagementScreen extends ConsumerWidget {
         body: ErrorState(message: e.toString()),
       ),
       data: (incubations) {
-        if (incubations.isEmpty) {
+        final incubation = selectPrimaryIncubation(incubations);
+        if (incubation == null) {
           return Scaffold(
             appBar: AppBar(title: Text('eggs.management'.tr())),
             body: ErrorState(message: 'eggs.incubation_not_found'.tr()),
           );
         }
-        final incubation = incubations.first;
         return _EggManagementContent(incubationId: incubation.id);
       },
     );
@@ -93,8 +93,7 @@ class _EggManagementContent extends ConsumerWidget {
               title: 'eggs.no_eggs'.tr(),
               subtitle: 'eggs.no_eggs_hint'.tr(),
               actionLabel: 'eggs.add_egg'.tr(),
-              onAction: () =>
-                  _showAddEggSheet(context, ref, eggs),
+              onAction: () => _showAddEggSheet(context, ref, eggs),
             );
           }
 
@@ -125,16 +124,17 @@ class _EggManagementContent extends ConsumerWidget {
               else
                 Expanded(
                   child: ListView.builder(
-                    padding: const EdgeInsets.only(
-                        bottom: AppSpacing.xxxl * 2),
+                    padding: const EdgeInsets.only(bottom: AppSpacing.xxxl * 2),
                     itemCount: activeEggs.length,
                     itemBuilder: (context, index) {
                       final egg = activeEggs[index];
                       return EggListItem(
                         egg: egg,
                         onStatusUpdate: () async {
-                          final newStatus =
-                              await showEggStatusUpdateSheet(context, egg);
+                          final newStatus = await showEggStatusUpdateSheet(
+                            context,
+                            egg,
+                          );
                           if (newStatus != null) {
                             ref
                                 .read(eggActionsProvider.notifier)
@@ -154,9 +154,8 @@ class _EggManagementContent extends ConsumerWidget {
         icon: const AppIcon(AppIcons.add),
         tooltip: 'eggs.add_egg'.tr(),
         onPressed: () {
-          final eggs = ref
-              .read(eggsForIncubationProvider(incubationId))
-              .value ?? [];
+          final eggs =
+              ref.read(eggsForIncubationProvider(incubationId)).value ?? [];
           _showAddEggSheet(context, ref, eggs);
         },
       ),
@@ -169,8 +168,7 @@ class _EggManagementContent extends ConsumerWidget {
     List<Egg> existingEggs,
   ) {
     DateTime layDate = DateTime.now();
-    final nextEggNumber =
-        IncubationCalculator.getNextEggNumber(existingEggs);
+    final nextEggNumber = IncubationCalculator.getNextEggNumber(existingEggs);
     final notesController = TextEditingController();
 
     showModalBottomSheet(
@@ -200,10 +198,9 @@ class _EggManagementContent extends ConsumerWidget {
                       width: 40,
                       height: 4,
                       decoration: BoxDecoration(
-                        color: Theme.of(context)
-                            .colorScheme
-                            .onSurfaceVariant
-                            .withValues(alpha: 0.4),
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),
@@ -227,8 +224,7 @@ class _EggManagementContent extends ConsumerWidget {
                   DatePickerField(
                     label: 'eggs.lay_date'.tr(),
                     value: layDate,
-                    onChanged: (date) =>
-                        setSheetState(() => layDate = date),
+                    onChanged: (date) => setSheetState(() => layDate = date),
                   ),
                   const SizedBox(height: AppSpacing.lg),
                   TextFormField(
@@ -243,7 +239,9 @@ class _EggManagementContent extends ConsumerWidget {
                   const SizedBox(height: AppSpacing.xxl),
                   FilledButton(
                     onPressed: () {
-                      ref.read(eggActionsProvider.notifier).addEgg(
+                      ref
+                          .read(eggActionsProvider.notifier)
+                          .addEgg(
                             incubationId: incubationId,
                             layDate: layDate,
                             eggNumber: nextEggNumber,
@@ -275,8 +273,9 @@ class _EggManagementContent extends ConsumerWidget {
     final confirmed = await showConfirmDialog(
       context,
       title: 'eggs.delete_egg'.tr(),
-      message:
-          'eggs.delete_confirm_number'.tr(namedArgs: {'number': '${egg.eggNumber ?? '?'}'}),
+      message: 'eggs.delete_confirm_number'.tr(
+        namedArgs: {'number': '${egg.eggNumber ?? '?'}'},
+      ),
       confirmLabel: 'common.delete'.tr(),
       isDestructive: true,
     );
