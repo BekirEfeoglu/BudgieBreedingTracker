@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -15,10 +16,23 @@ const _compileTimeSentryEnv = String.fromEnvironment(
   'SENTRY_ENVIRONMENT',
   defaultValue: 'production',
 );
-const _compileTimeRevenueCatIos =
-    String.fromEnvironment('REVENUECAT_API_KEY_IOS');
-const _compileTimeRevenueCatAndroid =
-    String.fromEnvironment('REVENUECAT_API_KEY_ANDROID');
+const _compileTimeRevenueCatIos = String.fromEnvironment(
+  'REVENUECAT_API_KEY_IOS',
+);
+const _compileTimeRevenueCatAndroid = String.fromEnvironment(
+  'REVENUECAT_API_KEY_ANDROID',
+);
+
+const _nativeConfigChannel = MethodChannel(
+  'com.budgiebreeding.budgie_breeding_tracker/config',
+);
+
+String _resolvedSupabaseUrl = _compileTimeSupabaseUrl;
+String _resolvedAnonKey = _compileTimeAnonKey;
+String _resolvedSentryDsn = _compileTimeSentryDsn;
+String _resolvedSentryEnv = _compileTimeSentryEnv;
+String _resolvedRevenueCatIos = _compileTimeRevenueCatIos;
+String _resolvedRevenueCatAndroid = _compileTimeRevenueCatAndroid;
 
 /// Resolved RevenueCat API keys — accessible from providers after bootstrap.
 String revenueCatApiKeyIos = '';
@@ -35,7 +49,7 @@ bool _isSupabaseInitialized() {
 
 /// Returns true if required Supabase compile-time credentials are present.
 bool get hasSupabaseCredentials =>
-    _compileTimeSupabaseUrl.isNotEmpty && _compileTimeAnonKey.isNotEmpty;
+    _resolvedSupabaseUrl.isNotEmpty && _resolvedAnonKey.isNotEmpty;
 
 /// Ensures Supabase is initialized, retrying on demand when bootstrap timed out.
 Future<bool> ensureSupabaseInitialized({
@@ -70,6 +84,9 @@ Future<void> bootstrapPreInit() async {
       DeviceOrientation.portraitDown,
     ]);
 
+    // Android fallback: read config injected from Gradle (env/local.properties/.env).
+    await _resolveAndroidBuildConfigFallbacks();
+
     // Supabase init — apply timeout to prevent indefinite hang on network issues.
     await ensureSupabaseInitialized(timeout: const Duration(seconds: 10));
 
@@ -83,13 +100,13 @@ Future<void> bootstrapPreInit() async {
 /// Phase 2: Run the app with optional Sentry wrapping.
 /// Always ensures [runApp] is called even if Sentry initialization fails.
 Future<void> bootstrapRun(FutureOr<Widget> Function() appBuilder) async {
-  if (_compileTimeSentryDsn.isNotEmpty) {
+  if (_resolvedSentryDsn.isNotEmpty) {
     try {
       await SentryFlutter.init(
         (options) {
-          options.dsn = _compileTimeSentryDsn;
+          options.dsn = _resolvedSentryDsn;
           options.tracesSampleRate = 0.3;
-          options.environment = _compileTimeSentryEnv;
+          options.environment = _resolvedSentryEnv;
           options.sendDefaultPii = false;
         },
         appRunner: () async {
@@ -97,7 +114,11 @@ Future<void> bootstrapRun(FutureOr<Widget> Function() appBuilder) async {
         },
       );
     } catch (e, st) {
-      AppLogger.error('Sentry initialization failed, launching without it', e, st);
+      AppLogger.error(
+        'Sentry initialization failed, launching without it',
+        e,
+        st,
+      );
       runApp(await appBuilder());
     }
   } else {
@@ -109,22 +130,26 @@ Future<void> bootstrapRun(FutureOr<Widget> Function() appBuilder) async {
 Future<void> _initSupabase() async {
   AppLogger.info(
     'Supabase credentials — '
-    'URL: ${_compileTimeSupabaseUrl.isNotEmpty ? 'present' : 'MISSING'}, '
-    'Key: ${_compileTimeAnonKey.isNotEmpty ? 'present' : 'MISSING'}',
+    'URL: ${_resolvedSupabaseUrl.isNotEmpty ? 'present' : 'MISSING'}, '
+    'Key: ${_resolvedAnonKey.isNotEmpty ? 'present' : 'MISSING'}',
   );
 
   if (hasSupabaseCredentials) {
     try {
       await Supabase.initialize(
-        url: _compileTimeSupabaseUrl,
-        anonKey: _compileTimeAnonKey,
+        url: _resolvedSupabaseUrl,
+        anonKey: _resolvedAnonKey,
         authOptions: const FlutterAuthClientOptions(
           authFlowType: AuthFlowType.pkce,
         ),
       );
       AppLogger.info('Supabase initialized successfully');
     } catch (e, st) {
-      AppLogger.error('Supabase initialization failed: ${e.runtimeType}: $e', e, st);
+      AppLogger.error(
+        'Supabase initialization failed: ${e.runtimeType}: $e',
+        e,
+        st,
+      );
     }
   } else {
     AppLogger.warning(
@@ -135,6 +160,50 @@ Future<void> _initSupabase() async {
 }
 
 void _resolveRevenueCatKeys() {
-  revenueCatApiKeyIos = _compileTimeRevenueCatIos;
-  revenueCatApiKeyAndroid = _compileTimeRevenueCatAndroid;
+  revenueCatApiKeyIos = _resolvedRevenueCatIos;
+  revenueCatApiKeyAndroid = _resolvedRevenueCatAndroid;
+}
+
+Future<void> _resolveAndroidBuildConfigFallbacks() async {
+  if (!Platform.isAndroid) return;
+
+  try {
+    final config = await _nativeConfigChannel.invokeMapMethod<String, dynamic>(
+      'getConfig',
+    );
+    if (config == null || config.isEmpty) return;
+
+    _resolvedSupabaseUrl = _preferNonEmpty(
+      _resolvedSupabaseUrl,
+      config['SUPABASE_URL'],
+    );
+    _resolvedAnonKey = _preferNonEmpty(
+      _resolvedAnonKey,
+      config['SUPABASE_ANON_KEY'],
+    );
+    _resolvedSentryDsn = _preferNonEmpty(
+      _resolvedSentryDsn,
+      config['SENTRY_DSN'],
+    );
+    _resolvedSentryEnv = _preferNonEmpty(
+      _resolvedSentryEnv,
+      config['SENTRY_ENVIRONMENT'],
+    );
+    _resolvedRevenueCatIos = _preferNonEmpty(
+      _resolvedRevenueCatIos,
+      config['REVENUECAT_API_KEY_IOS'],
+    );
+    _resolvedRevenueCatAndroid = _preferNonEmpty(
+      _resolvedRevenueCatAndroid,
+      config['REVENUECAT_API_KEY_ANDROID'],
+    );
+  } catch (e) {
+    AppLogger.warning('[Bootstrap] Android config fallback unavailable: $e');
+  }
+}
+
+String _preferNonEmpty(String primary, Object? fallback) {
+  final trimmedPrimary = primary.trim();
+  if (trimmedPrimary.isNotEmpty) return trimmedPrimary;
+  return fallback?.toString().trim() ?? '';
 }

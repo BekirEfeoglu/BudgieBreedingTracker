@@ -35,6 +35,8 @@ class NotificationService {
   final FlutterLocalNotificationsPlugin _plugin;
 
   bool _isInitialized = false;
+  bool _exactAlarmPermissionChecked = false;
+  bool _canScheduleExactAlarms = true;
 
   /// Whether the notification service has been initialized.
   bool get isInitialized => _isInitialized;
@@ -110,20 +112,10 @@ class NotificationService {
   /// Returns `true` if allowed or not applicable (iOS / older Android).
   /// Logs a warning if not allowed — scheduled notifications may fire late.
   Future<bool> checkExactAlarmPermission() async {
-    final androidImpl = _plugin
-        .resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin
-        >();
-    if (androidImpl == null) return true;
-
-    final canSchedule = await androidImpl.canScheduleExactNotifications();
-    if (canSchedule != true) {
-      AppLogger.warning(
-        '[NotificationService] Exact alarm permission not granted. '
-        'Scheduled notifications may not fire at precise times.',
-      );
-    }
-    return canSchedule ?? true;
+    return _resolveExactAlarmPermission(
+      forceRefresh: true,
+      logWhenDenied: true,
+    );
   }
 
   /// Sets up the timezone database so [tz.TZDateTime.from] works correctly.
@@ -213,6 +205,13 @@ class NotificationService {
     _ensureInitialized();
 
     final details = _buildNotificationDetails(channelId);
+    final canScheduleExact = await _resolveExactAlarmPermission(
+      forceRefresh: true,
+      logWhenDenied: true,
+    );
+    final scheduleMode = canScheduleExact
+        ? AndroidScheduleMode.exactAllowWhileIdle
+        : AndroidScheduleMode.inexactAllowWhileIdle;
 
     await _plugin.zonedSchedule(
       id: id,
@@ -220,7 +219,7 @@ class NotificationService {
       body: body,
       scheduledDate: tz.TZDateTime.from(scheduledDate, tz.local),
       notificationDetails: details,
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      androidScheduleMode: scheduleMode,
       payload: payload,
     );
   }
@@ -336,5 +335,37 @@ class NotificationService {
         'Call init() first.',
       );
     }
+  }
+
+  Future<bool> _resolveExactAlarmPermission({
+    bool forceRefresh = false,
+    bool logWhenDenied = false,
+  }) async {
+    if (_exactAlarmPermissionChecked && !forceRefresh) {
+      return _canScheduleExactAlarms;
+    }
+
+    final androidImpl = _plugin
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
+    if (androidImpl == null) {
+      _exactAlarmPermissionChecked = true;
+      _canScheduleExactAlarms = true;
+      return true;
+    }
+
+    final canSchedule = await androidImpl.canScheduleExactNotifications();
+    _exactAlarmPermissionChecked = true;
+    _canScheduleExactAlarms = canSchedule ?? true;
+
+    if (!_canScheduleExactAlarms && logWhenDenied) {
+      AppLogger.warning(
+        '[NotificationService] Exact alarm permission not granted. '
+        'Using inexact scheduling mode on Android.',
+      );
+    }
+
+    return _canScheduleExactAlarms;
   }
 }

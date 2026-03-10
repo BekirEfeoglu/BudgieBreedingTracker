@@ -24,7 +24,7 @@ dependencies:
 
   # Local Database
   drift: ^2.31.0
-  sqlite3_flutter_libs: ^0.6.0+eol
+  sqlite3_flutter_libs: ^0.5.41
   path: ^1.9.0
 
   # Data Classes
