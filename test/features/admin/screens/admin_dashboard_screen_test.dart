@@ -58,15 +58,7 @@ void main() {
       );
       await tester.pump();
 
-      // DashboardStatCard GridView overflows in test viewport (childAspectRatio)
-      // and unoverridden providers (systemHealth, alerts) may also produce render warnings.
-      // Consume all render exceptions so the widget assertion can run.
-      var ex = tester.takeException();
-      while (ex != null) {
-        ex = tester.takeException();
-      }
-
-      // 'admin.quick_actions' is outside the overflowing GridView — always visible
+      expect(tester.takeException(), isNull);
       expect(find.text('admin.quick_actions'), findsOneWidget);
     });
 

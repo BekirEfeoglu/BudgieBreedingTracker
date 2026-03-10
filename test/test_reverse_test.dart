@@ -3,18 +3,15 @@ import 'package:budgie_breeding_tracker/domain/services/genetics/reverse_calcula
 
 void main() {
   test('Reverse Calculator tests', () {
-    final calculator = ReverseCalculator();
+    const calculator = ReverseCalculator();
     final results = calculator.calculateParents({'blue', 'ino'});
-
-    print('Found ${results.length} possible parent combinations.');
-    for (var i = 0; i < 5 && i < results.length; i++) {
-      final r = results[i];
-      print('Option ${i + 1} : ${r.maxProbability * 100}%');
-      print('  Father: ${r.father.mutations}');
-      print('  Mother: ${r.mother.mutations}');
-    }
+    expect(results, isNotEmpty);
+    expect(
+      results.any((result) => result.maxProbability > 0),
+      isTrue,
+    );
 
     final resultsBlue = calculator.calculateParents({'blue'});
-    print('Blue only: ${resultsBlue.length}');
+    expect(resultsBlue, isNotEmpty);
   });
 }

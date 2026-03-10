@@ -3,7 +3,7 @@ import 'package:budgie_breeding_tracker/domain/services/genetics/parent_genotype
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 
 void main() {
-  final calc = MendelianCalculator();
+  const calc = MendelianCalculator();
   final parentA = ParentGenotype(
     gender: BirdGender.male,
     mutations: {'blue': AlleleState.visual},
@@ -13,12 +13,12 @@ void main() {
     mutations: {'blue': AlleleState.visual},
   );
   
-  final offspring = calc.calculateFromGenotypes(father: parentA, mother: parentB);
-  
-  for (final res in offspring) {
-    print('Phenotype: \${res.phenotype}');
-    print('Visual Mutations: \${res.visualMutations}');
-    print('Is Carrier: \${res.isCarrier}');
-    print('Carried: \${res.carriedMutations}');
+  final offspring = calc.calculateFromGenotypes(
+    father: parentA,
+    mother: parentB,
+  );
+
+  if (offspring.isEmpty) {
+    throw StateError('No Mendelian offspring results generated.');
   }
 }

@@ -5,7 +5,7 @@ import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 
 void main() {
   test('Mendelian test', () {
-    final calc = const MendelianCalculator();
+    const calc = MendelianCalculator();
     final parentA = ParentGenotype(
       gender: BirdGender.male,
       mutations: {'blue': AlleleState.visual},
@@ -15,13 +15,15 @@ void main() {
       mutations: {'blue': AlleleState.visual},
     );
     
-    final offspring = calc.calculateFromGenotypes(father: parentA, mother: parentB);
-    
-    for (final res in offspring) {
-      print('Phenotype: ${res.phenotype}');
-      print('Visual Mutations: ${res.visualMutations}');
-      print('Is Carrier: ${res.isCarrier}');
-      print('Carried: ${res.carriedMutations}');
-    }
+    final offspring = calc.calculateFromGenotypes(
+      father: parentA,
+      mother: parentB,
+    );
+
+    expect(offspring, isNotEmpty);
+    expect(
+      offspring.any((result) => result.visualMutations.contains('blue')),
+      isTrue,
+    );
   });
 }
