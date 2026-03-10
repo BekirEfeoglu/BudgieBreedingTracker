@@ -162,6 +162,7 @@
     "female": "Female",
     "unknown": "Unknown",
     "ring_number": "Ring Number",
+    "ring_number_not_unique": "Ring number must be unique",
     "birth_date": "Birth Date",
     "species": "Species",
     "budgie": "Budgie",

@@ -11,9 +11,11 @@ import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
 import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
 import 'package:budgie_breeding_tracker/features/birds/providers/bird_form_providers.dart';
+import 'package:budgie_breeding_tracker/features/birds/providers/bird_providers.dart';
 import 'package:budgie_breeding_tracker/features/birds/screens/bird_detail_screen.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_detail_providers.dart';
 import 'package:budgie_breeding_tracker/features/genealogy/providers/genealogy_providers.dart';
+import 'package:budgie_breeding_tracker/features/health_records/providers/health_record_providers.dart';
 import 'package:budgie_breeding_tracker/features/notifications/providers/notification_list_providers.dart';
 import 'package:budgie_breeding_tracker/features/profile/providers/profile_providers.dart';
 
@@ -56,6 +58,8 @@ void main() {
 
   Widget createSubject({
     required Stream<Bird?> birdStream,
+    Stream<List<Bird>> birdsStream = const Stream.empty(),
+    Stream<List<String>> photosStream = const Stream.empty(),
     BirdFormState formState = const BirdFormState(),
   }) {
     return ProviderScope(
@@ -67,6 +71,9 @@ void main() {
           'test-user',
         ).overrideWith((_) => Stream.value([])),
         birdByIdProvider('bird-1').overrideWith((_) => birdStream),
+        birdsStreamProvider.overrideWith((_, __) => birdsStream),
+        birdPhotosProvider.overrideWith((_, __) => photosStream),
+        healthRecordsByBirdProvider.overrideWith((_, __) => Stream.value([])),
         birdFormStateProvider.overrideWith(() {
           final notifier = BirdFormNotifier();
           return notifier;
