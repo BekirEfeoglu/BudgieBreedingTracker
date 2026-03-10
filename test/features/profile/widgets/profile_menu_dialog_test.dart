@@ -579,6 +579,96 @@ void main() {
       expect(find.byType(AlertDialog), findsOneWidget);
     });
 
+    testWidgets('confirming logout signs out and navigates to login', (
+      tester,
+    ) async {
+      var signOutCalls = 0;
+      final authActions = _FakeAuthActions(onSignOut: () => signOutCalls++);
+
+      final router = GoRouter(
+        initialLocation: '/host',
+        routes: [
+          GoRoute(
+            path: '/host',
+            builder: (_, __) => ProviderScope(
+              overrides: [
+                currentUserIdProvider.overrideWithValue('user-1'),
+                currentUserProvider.overrideWith((_) => null),
+                isFounderProvider.overrideWithValue(const AsyncData(false)),
+                isPremiumProvider.overrideWithValue(false),
+                authActionsProvider.overrideWith((_) => authActions),
+                appInfoProvider.overrideWith((_) async {
+                  throw UnimplementedError();
+                }),
+              ],
+              child: Scaffold(
+                body: Builder(
+                  builder: (ctx) => TextButton(
+                    onPressed: () {
+                      showGeneralDialog(
+                        context: ctx,
+                        barrierDismissible: true,
+                        barrierLabel: MaterialLocalizations.of(
+                          ctx,
+                        ).modalBarrierDismissLabel,
+                        pageBuilder: (_, __, ___) => ProviderScope(
+                          overrides: [
+                            currentUserIdProvider.overrideWithValue('user-1'),
+                            currentUserProvider.overrideWith((_) => null),
+                            isFounderProvider.overrideWithValue(
+                              const AsyncData(false),
+                            ),
+                            isPremiumProvider.overrideWithValue(false),
+                            authActionsProvider.overrideWith(
+                              (_) => authActions,
+                            ),
+                            appInfoProvider.overrideWith((_) async {
+                              throw UnimplementedError();
+                            }),
+                          ],
+                          child: ProfileMenuDialog(
+                            profile: _fakeProfile(),
+                            email: 'test@example.com',
+                          ),
+                        ),
+                      );
+                    },
+                    child: const Text('open'),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          GoRoute(
+            path: '/login',
+            builder: (_, __) => const Scaffold(body: Text('login_screen')),
+          ),
+        ],
+      );
+
+      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+      await tester.pump();
+      _consumeOverflowExceptions(tester);
+
+      await tester.tap(find.text('open'));
+      await tester.pumpAndSettle();
+      _consumeOverflowExceptions(tester);
+
+      await tester.tap(find.text('auth.logout').first);
+      await tester.pumpAndSettle();
+      _consumeOverflowExceptions(tester);
+
+      expect(find.byType(AlertDialog), findsOneWidget);
+
+      await tester.tap(find.widgetWithText(FilledButton, 'auth.logout'));
+      await tester.pumpAndSettle();
+      _consumeOverflowExceptions(tester);
+
+      expect(signOutCalls, 1);
+      expect(router.state.uri.path, '/login');
+      expect(find.text('login_screen'), findsOneWidget);
+    });
+
     testWidgets('ProfileAppVersionLabel shows nothing when appInfo fails', (
       tester,
     ) async {
@@ -655,8 +745,14 @@ void main() {
 // -- Fake AuthActions --
 
 class _FakeAuthActions implements AuthActions {
+  _FakeAuthActions({this.onSignOut});
+
+  final VoidCallback? onSignOut;
+
   @override
-  Future<void> signOut() async {}
+  Future<void> signOut() async {
+    onSignOut?.call();
+  }
 
   @override
   Future<void> changePassword({
