@@ -37,14 +37,22 @@ class SceneDelegate: FlutterSceneDelegate {
       binaryMessenger: engine.binaryMessenger
     )
     channel.setMethodCallHandler { (call: FlutterMethodCall, result: @escaping FlutterResult) in
-      guard call.method == "makeFlutterWindowKey" else {
+      switch call.method {
+      case "makeFlutterWindowKey":
+        if let fw = SceneDelegate.flutterWindow, !fw.isKeyWindow {
+          fw.makeKeyAndVisible()
+        }
+        result(nil)
+      case "suspendWindowReclaim":
+        let seconds = (call.arguments as? [String: Any])?["seconds"] as? Int ?? 90
+        AppDelegate.setWindowReclaimSuspended(for: TimeInterval(seconds))
+        result(nil)
+      case "resumeWindowReclaim":
+        AppDelegate.clearWindowReclaimSuspension()
+        result(nil)
+      default:
         result(FlutterMethodNotImplemented)
-        return
       }
-      if let fw = SceneDelegate.flutterWindow, !fw.isKeyWindow {
-        fw.makeKeyAndVisible()
-      }
-      result(nil)
     }
     keyboardFixChannel = channel
   }

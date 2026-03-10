@@ -4,6 +4,29 @@ import UserNotifications
 
 @main
 @objc class AppDelegate: FlutterAppDelegate, FlutterImplicitEngineDelegate {
+  // Temporary kill-switch for key-window reclaim during OAuth. Some iOS
+  // versions present auth UI in window/controller types that are not matched
+  // by class-name heuristics, which can otherwise lead to a blank OAuth page.
+  private static var windowReclaimSuspendedUntil: Date?
+
+  static func setWindowReclaimSuspended(for duration: TimeInterval) {
+    let clamped = max(1, duration)
+    windowReclaimSuspendedUntil = Date().addingTimeInterval(clamped)
+  }
+
+  static func clearWindowReclaimSuspension() {
+    windowReclaimSuspendedUntil = nil
+  }
+
+  private static var isWindowReclaimSuspended: Bool {
+    guard let until = windowReclaimSuspendedUntil else { return false }
+    if until > Date() {
+      return true
+    }
+    windowReclaimSuspendedUntil = nil
+    return false
+  }
+
   override func application(
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
@@ -38,6 +61,7 @@ import UserNotifications
     // If Flutter's own window became key, nothing to do.
     if let fw = SceneDelegate.flutterWindow, newKey === fw { return }
     if UIApplication.shared.applicationState != .active { return }
+    if AppDelegate.isWindowReclaimSuspended { return }
     if shouldIgnoreWindowReclaim(for: newKey) { return }
 
     // A non-Flutter window became key. Restore Flutter's window after a

@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -24,8 +27,7 @@ String mapAuthError(AuthException e) {
       msg.contains('invalid credentials')) {
     return 'auth.error_invalid_credentials'.tr();
   }
-  if (msg.contains('email not confirmed') ||
-      msg.contains('not confirmed')) {
+  if (msg.contains('email not confirmed') || msg.contains('not confirmed')) {
     return 'auth.error_email_not_confirmed'.tr();
   }
   if (msg.contains('rate limit') || msg.contains('too many requests')) {
@@ -37,8 +39,7 @@ String mapAuthError(AuthException e) {
     // Attacker should not learn whether an email is registered.
     return 'auth.error_registration_failed'.tr();
   }
-  if (msg.contains('weak password') ||
-      msg.contains('password should be')) {
+  if (msg.contains('weak password') || msg.contains('password should be')) {
     return 'auth.error_weak_password'.tr();
   }
 
@@ -51,21 +52,22 @@ String mapAuthError(AuthException e) {
   // Secondary heuristic: message pattern matching for common dart:io errors.
   // iOS typically raises HandshakeException, OS Error, errno messages.
   // Android typically raises SocketException. Both are wrapped by gotrue.
-  final isNetworkByMessage = msg.contains('network') ||
+  final isNetworkByMessage =
+      msg.contains('network') ||
       msg.contains('connection') ||
       msg.contains('socket') ||
       msg.contains('timeout') ||
       msg.contains('host lookup') ||
       msg.contains('failed to connect') ||
-      msg.contains('handshake') ||        // iOS TLS/SSL failures
-      msg.contains('tls') ||              // TLS-level errors
-      msg.contains('certificate') ||      // Certificate validation failures
-      msg.contains('os error') ||         // dart:io OS-level errors (iOS)
-      msg.contains('no route') ||         // No route to host
-      msg.contains('unreachable') ||      // Network unreachable
-      msg.contains('errno') ||            // Low-level errno messages
-      msg.contains('clientexception') ||  // dart:io ClientException
-      msg.contains('connection refused');  // Connection refused errors
+      msg.contains('handshake') || // iOS TLS/SSL failures
+      msg.contains('tls') || // TLS-level errors
+      msg.contains('certificate') || // Certificate validation failures
+      msg.contains('os error') || // dart:io OS-level errors (iOS)
+      msg.contains('no route') || // No route to host
+      msg.contains('unreachable') || // Network unreachable
+      msg.contains('errno') || // Low-level errno messages
+      msg.contains('clientexception') || // dart:io ClientException
+      msg.contains('connection refused'); // Connection refused errors
 
   if (isNetworkByStatusCode || isNetworkByMessage) {
     return 'auth.error_network'.tr();
@@ -92,6 +94,13 @@ class AuthActions {
 
   final SupabaseClient _client;
 
+  static const _oAuthRedirectTo =
+      'io.supabase.budgiebreeding://login-callback/';
+  static const _iosWindowGuardChannel = MethodChannel(
+    'com.budgie/ios_keyboard_fix',
+  );
+  static const _iosWindowGuardSuspendDuration = Duration(seconds: 90);
+
   /// Redirect URL for email verification and password reset links.
   static const _emailRedirectTo =
       'https://budgiebreedingtracker.online/auth/callback/';
@@ -101,10 +110,7 @@ class AuthActions {
     required String email,
     required String password,
   }) async {
-    return _client.auth.signInWithPassword(
-      email: email,
-      password: password,
-    );
+    return _client.auth.signInWithPassword(email: email, password: password);
   }
 
   /// Sign up with email and password.
@@ -123,10 +129,45 @@ class AuthActions {
 
   /// Sign in with OAuth provider (Google, Apple, etc.).
   Future<bool> signInWithOAuth(OAuthProvider provider) async {
-    return _client.auth.signInWithOAuth(
-      provider,
-      redirectTo: 'io.supabase.budgiebreeding://login-callback/',
-    );
+    final isIos = Platform.isIOS;
+    if (isIos) {
+      await _suspendIosWindowReclaim();
+    }
+
+    try {
+      final launched = await _client.auth.signInWithOAuth(
+        provider,
+        redirectTo: _oAuthRedirectTo,
+        authScreenLaunchMode: LaunchMode.externalApplication,
+      );
+      if (!launched && isIos) {
+        await _resumeIosWindowReclaim();
+      }
+      return launched;
+    } catch (_) {
+      if (isIos) {
+        await _resumeIosWindowReclaim();
+      }
+      rethrow;
+    }
+  }
+
+  Future<void> _suspendIosWindowReclaim() async {
+    try {
+      await _iosWindowGuardChannel.invokeMethod<void>('suspendWindowReclaim', {
+        'seconds': _iosWindowGuardSuspendDuration.inSeconds,
+      });
+    } catch (_) {
+      // Channel may be unavailable during startup; keep OAuth flow best-effort.
+    }
+  }
+
+  Future<void> _resumeIosWindowReclaim() async {
+    try {
+      await _iosWindowGuardChannel.invokeMethod<void>('resumeWindowReclaim');
+    } catch (_) {
+      // Ignore channel errors; guard will auto-resume after timeout.
+    }
   }
 
   /// Send password reset email.
@@ -164,9 +205,7 @@ class AuthActions {
     );
 
     // Update to new password
-    await _client.auth.updateUser(
-      UserAttributes(password: newPassword),
-    );
+    await _client.auth.updateUser(UserAttributes(password: newPassword));
   }
 
   /// Sign out current session.
@@ -220,8 +259,9 @@ class AuthActions {
     final userId = _client.auth.currentUser?.id;
     if (userId == null) throw const AuthException('No authenticated user');
 
-    await _client.rpc('request_account_deletion', params: {
-      'p_user_id': userId,
-    });
+    await _client.rpc(
+      'request_account_deletion',
+      params: {'p_user_id': userId},
+    );
   }
 }

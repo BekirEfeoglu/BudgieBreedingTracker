@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../router/route_names.dart';
@@ -10,16 +13,29 @@ class AuthCallbackScreen extends ConsumerStatefulWidget {
   const AuthCallbackScreen({super.key});
 
   @override
-  ConsumerState<AuthCallbackScreen> createState() =>
-      _AuthCallbackScreenState();
+  ConsumerState<AuthCallbackScreen> createState() => _AuthCallbackScreenState();
 }
 
 class _AuthCallbackScreenState extends ConsumerState<AuthCallbackScreen> {
+  static const _iosWindowGuardChannel = MethodChannel(
+    'com.budgie/ios_keyboard_fix',
+  );
+
   @override
   void initState() {
     super.initState();
+    _resumeIosWindowReclaimGuard();
     // Give Supabase a moment to process the callback, then redirect.
     Future.delayed(const Duration(seconds: 1), _handleCallback);
+  }
+
+  Future<void> _resumeIosWindowReclaimGuard() async {
+    if (!Platform.isIOS) return;
+    try {
+      await _iosWindowGuardChannel.invokeMethod<void>('resumeWindowReclaim');
+    } catch (_) {
+      // Best-effort only.
+    }
   }
 
   void _handleCallback() {
@@ -34,10 +50,6 @@ class _AuthCallbackScreenState extends ConsumerState<AuthCallbackScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(
-        child: CircularProgressIndicator(),
-      ),
-    );
+    return const Scaffold(body: Center(child: CircularProgressIndicator()));
   }
 }

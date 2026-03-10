@@ -4,7 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
+import '../../../core/constants/app_constants.dart';
 import '../../../core/constants/app_icons.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_icon.dart';
@@ -77,7 +79,23 @@ class AboutSection extends ConsumerWidget {
         SettingsNavigationTile(
           title: 'settings.contact_support'.tr(),
           icon: const Icon(LucideIcons.messageCircle),
-          onTap: () => context.push(AppRoutes.feedback),
+          onTap: () async {
+            final uri = Uri.tryParse(AppConstants.supportUrl);
+            if (uri != null) {
+              try {
+                final launched = await launchUrl(
+                  uri,
+                  mode: LaunchMode.externalApplication,
+                );
+                if (launched) return;
+              } catch (_) {
+                // Fallback to in-app feedback if URL launch fails.
+              }
+            }
+            if (context.mounted) {
+              context.push(AppRoutes.feedback);
+            }
+          },
         ),
       ],
     );
@@ -209,21 +227,21 @@ class _ChangelogEntry extends StatelessWidget {
               ),
             ),
           ),
-          ...section.items.map((item) => Padding(
-                padding: const EdgeInsets.only(
-                  left: AppSpacing.sm,
-                  bottom: AppSpacing.xs,
-                ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('  \u2022  ', style: theme.textTheme.bodySmall),
-                    Expanded(
-                      child: Text(item, style: theme.textTheme.bodySmall),
-                    ),
-                  ],
-                ),
-              )),
+          ...section.items.map(
+            (item) => Padding(
+              padding: const EdgeInsets.only(
+                left: AppSpacing.sm,
+                bottom: AppSpacing.xs,
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('  \u2022  ', style: theme.textTheme.bodySmall),
+                  Expanded(child: Text(item, style: theme.textTheme.bodySmall)),
+                ],
+              ),
+            ),
+          ),
           const SizedBox(height: AppSpacing.sm),
         ],
       ],

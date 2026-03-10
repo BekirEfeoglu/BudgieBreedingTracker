@@ -1,8 +1,12 @@
 abstract class AppConstants {
   static const String appName = 'BudgieBreedingTracker';
   static const String appVersion = '1.0.0';
+  static const String privacyPolicyUrl =
+      'https://budgiebreedingtracker.online/privacy-policy.html';
   static const String termsOfUseUrl =
       'https://www.apple.com/legal/internet-services/itunes/dev/stdeula/';
+  static const String supportUrl =
+      'https://budgiebreedingtracker.online/support/';
   static const List<String> supportedLanguages = ['tr', 'en', 'de'];
   static const String defaultLanguage = 'tr';
   static const Duration syncInterval = Duration(minutes: 15);
