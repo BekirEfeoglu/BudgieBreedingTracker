@@ -85,6 +85,29 @@ void main() {
       expect(find.text('birds.add_photo'), findsOneWidget);
     });
 
+    testWidgets('shows gallery and camera options when add photo tapped', (
+      tester,
+    ) async {
+      final bird = createTestBird();
+
+      await _pump(
+        tester,
+        BirdDetailPhotos(bird: bird),
+        overrides: [
+          birdPhotosProvider.overrideWith(
+            (ref, id) => Stream.value(<String>[]),
+          ),
+        ],
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('birds.add_photo'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('birds.photo_source_gallery'), findsOneWidget);
+      expect(find.text('birds.photo_source_camera'), findsOneWidget);
+    });
+
     testWidgets('shows error state with add photo button on error', (
       tester,
     ) async {

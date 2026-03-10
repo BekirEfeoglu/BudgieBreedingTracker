@@ -201,6 +201,8 @@
     "age_days": "{days} Tage",
     "photos": "Fotos",
     "add_photo": "Foto hinzufügen",
+    "photo_source_gallery": "Aus Galerie wählen",
+    "photo_source_camera": "Foto aufnehmen",
     "photo_upload_error": "Fehler beim Hochladen des Fotos",
     "photos_load_error": "Fotos konnten nicht geladen werden",
     "uploading_photo": "Wird hochgeladen...",

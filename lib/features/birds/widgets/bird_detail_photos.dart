@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import 'package:uuid/uuid.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
@@ -45,13 +46,12 @@ class _BirdDetailPhotosState extends ConsumerState<BirdDetailPhotos> {
             Text(
               'birds.photos_load_error'.tr(),
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.error,
-                  ),
+                color: Theme.of(context).colorScheme.error,
+              ),
             ),
             const SizedBox(height: AppSpacing.sm),
             OutlinedButton.icon(
-              onPressed:
-                  _isUploading ? null : () => _addPhoto(context, ref),
+              onPressed: _isUploading ? null : () => _addPhoto(context, ref),
               icon: _isUploading
                   ? const SizedBox(
                       width: 18,
@@ -59,9 +59,11 @@ class _BirdDetailPhotosState extends ConsumerState<BirdDetailPhotos> {
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
                   : const AppIcon(AppIcons.photo, size: 18),
-              label: Text(_isUploading
-                  ? 'birds.uploading_photo'.tr()
-                  : 'birds.add_photo'.tr()),
+              label: Text(
+                _isUploading
+                    ? 'birds.uploading_photo'.tr()
+                    : 'birds.add_photo'.tr(),
+              ),
             ),
           ],
         ),
@@ -77,8 +79,7 @@ class _BirdDetailPhotosState extends ConsumerState<BirdDetailPhotos> {
           Padding(
             padding: AppSpacing.screenPadding,
             child: OutlinedButton.icon(
-              onPressed:
-                  _isUploading ? null : () => _addPhoto(context, ref),
+              onPressed: _isUploading ? null : () => _addPhoto(context, ref),
               icon: _isUploading
                   ? const SizedBox(
                       width: 18,
@@ -86,9 +87,11 @@ class _BirdDetailPhotosState extends ConsumerState<BirdDetailPhotos> {
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
                   : const AppIcon(AppIcons.photo, size: 18),
-              label: Text(_isUploading
-                  ? 'birds.uploading_photo'.tr()
-                  : 'birds.add_photo'.tr()),
+              label: Text(
+                _isUploading
+                    ? 'birds.uploading_photo'.tr()
+                    : 'birds.add_photo'.tr(),
+              ),
             ),
           ),
         ],
@@ -136,9 +139,9 @@ class _BirdDetailPhotosState extends ConsumerState<BirdDetailPhotos> {
     try {
       await photoRepo.remove(photo.id);
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('birds.photo_deleted'.tr())),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('birds.photo_deleted'.tr())));
       }
     } catch (_) {
       if (context.mounted) {
@@ -150,13 +153,28 @@ class _BirdDetailPhotosState extends ConsumerState<BirdDetailPhotos> {
   }
 
   Future<void> _addPhoto(BuildContext context, WidgetRef ref) async {
+    final source = await _pickPhotoSource(context);
+    if (source == null) return;
+
     final picker = ImagePicker();
-    final picked = await picker.pickImage(
-      source: ImageSource.gallery,
-      maxWidth: 1920,
-      maxHeight: 1920,
-      imageQuality: 85,
-    );
+    XFile? picked;
+    try {
+      picked = await picker.pickImage(
+        source: source,
+        maxWidth: 1920,
+        maxHeight: 1920,
+        imageQuality: 85,
+      );
+    } catch (e) {
+      AppLogger.warning('Failed to pick bird photo: $e');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('birds.photo_upload_error'.tr())),
+        );
+      }
+      return;
+    }
+
     if (picked == null) return;
 
     setState(() => _isUploading = true);
@@ -172,14 +190,16 @@ class _BirdDetailPhotosState extends ConsumerState<BirdDetailPhotos> {
       );
 
       final photoRepo = ref.read(photoRepositoryProvider);
-      await photoRepo.save(Photo(
-        id: const Uuid().v4(),
-        userId: userId,
-        entityType: PhotoEntityType.bird,
-        entityId: widget.bird.id,
-        fileName: picked.name,
-        filePath: url,
-      ));
+      await photoRepo.save(
+        Photo(
+          id: const Uuid().v4(),
+          userId: userId,
+          entityType: PhotoEntityType.bird,
+          entityId: widget.bird.id,
+          fileName: picked.name,
+          filePath: url,
+        ),
+      );
     } catch (_) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -191,5 +211,59 @@ class _BirdDetailPhotosState extends ConsumerState<BirdDetailPhotos> {
         setState(() => _isUploading = false);
       }
     }
+  }
+
+  Future<ImageSource?> _pickPhotoSource(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return showModalBottomSheet<ImageSource>(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppSpacing.radiusXl),
+        ),
+      ),
+      builder: (sheetContext) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.onSurfaceVariant.withValues(
+                      alpha: 0.4,
+                    ),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              Text(
+                'birds.add_photo'.tr(),
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.md),
+              ListTile(
+                leading: const AppIcon(AppIcons.photo),
+                title: Text('birds.photo_source_gallery'.tr()),
+                onTap: () =>
+                    Navigator.of(sheetContext).pop(ImageSource.gallery),
+              ),
+              ListTile(
+                leading: const Icon(LucideIcons.camera),
+                title: Text('birds.photo_source_camera'.tr()),
+                onTap: () => Navigator.of(sheetContext).pop(ImageSource.camera),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }

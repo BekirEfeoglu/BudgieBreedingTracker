@@ -201,6 +201,8 @@
     "age_days": "{days} gün",
     "photos": "Fotoğraflar",
     "add_photo": "Fotoğraf Ekle",
+    "photo_source_gallery": "Galeriden Seç",
+    "photo_source_camera": "Kameradan Çek",
     "photo_upload_error": "Fotoğraf yüklenirken hata oluştu",
     "photos_load_error": "Fotoğraflar yüklenemedi",
     "uploading_photo": "Yükleniyor...",

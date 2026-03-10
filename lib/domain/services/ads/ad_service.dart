@@ -226,12 +226,34 @@ class AdService {
 /// Provides a singleton [AdService] that preloads ads on creation.
 final adServiceProvider = Provider<AdService>((ref) {
   final service = AdService();
-  // Fire-and-forget: lazily initializes MobileAds SDK then loads ads.
-  // Deliberately not awaited — Provider cannot be async.
-  // ignore: discarded_futures
-  service.loadAd();
-  // ignore: discarded_futures
-  service.loadRewardedAd();
-  ref.onDispose(service.dispose);
+  var disposed = false;
+
+  Future<void> preloadAds() async {
+    if (disposed) return;
+    await service.loadAd();
+    if (disposed) return;
+    await service.loadRewardedAd();
+  }
+
+  // Android can stutter if the Mobile Ads SDK initializes during the first
+  // frame. Delay only on Android so startup stays responsive.
+  if (Platform.isAndroid) {
+    // ignore: discarded_futures
+    Future<void>.delayed(const Duration(seconds: 2)).then((_) {
+      if (disposed) return;
+      // ignore: discarded_futures
+      preloadAds();
+    });
+  } else {
+    // Fire-and-forget: lazily initializes MobileAds SDK then loads ads.
+    // Deliberately not awaited — Provider cannot be async.
+    // ignore: discarded_futures
+    preloadAds();
+  }
+
+  ref.onDispose(() {
+    disposed = true;
+    service.dispose();
+  });
   return service;
 });
