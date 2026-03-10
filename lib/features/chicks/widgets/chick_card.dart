@@ -17,9 +17,17 @@ import 'development_stage_badge.dart';
 /// Card displaying a chick's summary in the list.
 class ChickCard extends ConsumerWidget {
   final Chick chick;
+  final ChickParentsInfo? parents;
+  final bool resolveParents;
   final VoidCallback? onTap;
 
-  const ChickCard({super.key, required this.chick, this.onTap});
+  const ChickCard({
+    super.key,
+    required this.chick,
+    this.parents,
+    this.resolveParents = true,
+    this.onTap,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -27,7 +35,11 @@ class ChickCard extends ConsumerWidget {
     final age = chick.age;
     final stage = chick.developmentStage;
     final stageColor = developmentStageColor(stage);
-    final parentsAsync = ref.watch(chickParentsProvider(chick.eggId));
+    final parentsAsync = !resolveParents
+        ? const AsyncData<ChickParentsInfo?>(null)
+        : parents != null
+        ? AsyncValue.data(parents)
+        : ref.watch(chickParentsProvider(chick.eggId));
 
     return Card(
       margin: const EdgeInsets.symmetric(
@@ -46,7 +58,11 @@ class ChickCard extends ConsumerWidget {
                 child: CircleAvatar(
                   radius: 24,
                   backgroundColor: stageColor.withValues(alpha: 0.1),
-                  child: developmentStageIconWidget(stage, size: 28, color: stageColor),
+                  child: developmentStageIconWidget(
+                    stage,
+                    size: 28,
+                    color: stageColor,
+                  ),
                 ),
               ),
               const SizedBox(width: AppSpacing.md),
@@ -92,13 +108,19 @@ class ChickCard extends ConsumerWidget {
                       error: (_, __) => const SizedBox.shrink(),
                       data: (parents) {
                         if (parents == null) return const SizedBox.shrink();
-                        final maleName = parents.maleName ?? 'chicks.unknown_gender'.tr();
-                        final femaleName = parents.femaleName ?? 'chicks.unknown_gender'.tr();
+                        final maleName =
+                            parents.maleName ?? 'chicks.unknown_gender'.tr();
+                        final femaleName =
+                            parents.femaleName ?? 'chicks.unknown_gender'.tr();
                         return Padding(
                           padding: const EdgeInsets.only(top: 2),
                           child: Row(
                             children: [
-                              const AppIcon(AppIcons.male, size: 14, color: AppColors.genderMale),
+                              const AppIcon(
+                                AppIcons.male,
+                                size: 14,
+                                color: AppColors.genderMale,
+                              ),
                               const SizedBox(width: 2),
                               Flexible(
                                 child: Text(
@@ -110,7 +132,11 @@ class ChickCard extends ConsumerWidget {
                                 ),
                               ),
                               const SizedBox(width: AppSpacing.xs),
-                              const AppIcon(AppIcons.female, size: 14, color: AppColors.genderFemale),
+                              const AppIcon(
+                                AppIcons.female,
+                                size: 14,
+                                color: AppColors.genderFemale,
+                              ),
                               const SizedBox(width: 2),
                               Flexible(
                                 child: Text(
@@ -141,7 +167,9 @@ class ChickCard extends ConsumerWidget {
 
   String _formatAge(({int weeks, int days, int totalDays}) age) {
     if (age.weeks > 0) {
-      return 'chicks.age_weeks_days_short'.tr(args: [age.weeks.toString(), age.days.toString()]);
+      return 'chicks.age_weeks_days_short'.tr(
+        args: [age.weeks.toString(), age.days.toString()],
+      );
     }
     return 'chicks.age_days_only_short'.tr(args: [age.totalDays.toString()]);
   }

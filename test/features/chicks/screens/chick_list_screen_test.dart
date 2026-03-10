@@ -86,6 +86,7 @@ void main() {
             'test-user',
           ).overrideWith((_) => Stream.value([])),
           chicksStreamProvider('test-user').overrideWith((_) => chicksStream),
+          chickParentsByEggProvider('test-user').overrideWith((_) async => {}),
           adServiceProvider.overrideWithValue(_FakeAdService()),
           isPremiumProvider.overrideWithValue(true),
         ],

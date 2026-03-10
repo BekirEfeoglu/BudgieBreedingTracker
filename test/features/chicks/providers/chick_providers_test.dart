@@ -22,6 +22,7 @@ Chick _chick({
   ChickHealthStatus healthStatus = ChickHealthStatus.healthy,
   DateTime? hatchDate,
   DateTime? weanDate,
+  String? birdId,
   String? name,
   String? ring,
 }) {
@@ -31,6 +32,7 @@ Chick _chick({
     healthStatus: healthStatus,
     hatchDate: hatchDate ?? DateTime(2024, 1, 1),
     weanDate: weanDate,
+    birdId: birdId,
     name: name,
     ringNumber: ring,
     createdAt: DateTime(2024, 1, 1),
@@ -135,6 +137,16 @@ void main() {
       expect(container.read(filteredChicksProvider(chicks)).map((e) => e.id), [
         'deceased',
       ]);
+
+      container.read(chickFilterProvider.notifier).state = ChickFilter.unweaned;
+      final unweanedChicks = [
+        _chick(id: 'unweaned'),
+        _chick(id: 'promoted', birdId: 'bird-1'),
+      ];
+      expect(
+        container.read(filteredChicksProvider(unweanedChicks)).map((e) => e.id),
+        ['unweaned'],
+      );
     });
 
     test('searchedAndFilteredChicksProvider applies query', () {

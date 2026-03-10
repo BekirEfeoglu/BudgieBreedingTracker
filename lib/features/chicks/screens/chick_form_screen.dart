@@ -11,6 +11,7 @@ import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/core/widgets/buttons/primary_button.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:budgie_breeding_tracker/core/widgets/date_picker_field.dart';
+import 'package:budgie_breeding_tracker/core/widgets/error_state.dart';
 import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
 import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_providers.dart';
@@ -38,38 +39,27 @@ class _ChickFormScreenState extends ConsumerState<ChickFormScreen> {
   ChickHealthStatus _healthStatus = ChickHealthStatus.healthy;
   DateTime? _hatchDate;
   bool _isEdit = false;
+  bool _didPopulateFromExisting = false;
   Chick? _existingChick;
 
   @override
   void initState() {
     super.initState();
-    if (widget.editChickId != null) {
-      _isEdit = true;
-      _loadExistingChick();
-    }
+    _isEdit = widget.editChickId != null;
   }
 
-  void _loadExistingChick() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final chickAsync =
-          ref.read(chickByIdProvider(widget.editChickId!));
-      chickAsync.whenData((chick) {
-        if (chick != null && mounted) {
-          setState(() {
-            _existingChick = chick;
-            _nameController.text = chick.name ?? '';
-            _gender = chick.gender;
-            _healthStatus = chick.healthStatus;
-            _ringController.text = chick.ringNumber ?? '';
-            _hatchDate = chick.hatchDate;
-            _hatchWeightController.text = chick.hatchWeight != null
-                ? chick.hatchWeight!.toStringAsFixed(1)
-                : '';
-            _notesController.text = chick.notes ?? '';
-          });
-        }
-      });
-    });
+  void _populateFromExisting(Chick chick) {
+    _existingChick = chick;
+    _nameController.text = chick.name ?? '';
+    _gender = chick.gender;
+    _healthStatus = chick.healthStatus;
+    _ringController.text = chick.ringNumber ?? '';
+    _hatchDate = chick.hatchDate;
+    _hatchWeightController.text = chick.hatchWeight != null
+        ? chick.hatchWeight!.toStringAsFixed(1)
+        : '';
+    _notesController.text = chick.notes ?? '';
+    _didPopulateFromExisting = true;
   }
 
   @override
@@ -91,22 +81,56 @@ class _ChickFormScreenState extends ConsumerState<ChickFormScreen> {
         context.pop();
       }
       if (state.error != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(state.error!)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(state.error!)));
       }
     });
 
-    if (_isEdit && _existingChick == null) {
-      return Scaffold(
-        appBar: AppBar(title: Text('common.loading'.tr())),
-        body: const LoadingState(),
+    if (_isEdit) {
+      final editId = widget.editChickId!;
+      final existingAsync = ref.watch(chickByIdProvider(editId));
+
+      return existingAsync.when(
+        loading: () => Scaffold(
+          appBar: AppBar(title: Text('common.loading'.tr())),
+          body: const LoadingState(),
+        ),
+        error: (error, _) => Scaffold(
+          appBar: AppBar(title: Text('common.error'.tr())),
+          body: ErrorState(
+            message: '${'common.data_load_error'.tr()}: $error',
+            onRetry: () => ref.invalidate(chickByIdProvider(editId)),
+          ),
+        ),
+        data: (existing) {
+          if (existing == null) {
+            return Scaffold(
+              appBar: AppBar(title: Text('common.not_found'.tr())),
+              body: ErrorState(
+                message: 'chicks.not_found'.tr(),
+                onRetry: () => ref.invalidate(chickByIdProvider(editId)),
+              ),
+            );
+          }
+
+          if (!_didPopulateFromExisting) {
+            _populateFromExisting(existing);
+          }
+          return _buildFormScaffold(context, formState);
+        },
       );
     }
 
+    return _buildFormScaffold(context, formState);
+  }
+
+  Scaffold _buildFormScaffold(BuildContext context, ChickFormState formState) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(_isEdit ? 'chicks.edit_chick'.tr() : 'chicks.new_chick'.tr()),
+        title: Text(
+          _isEdit ? 'chicks.edit_chick'.tr() : 'chicks.new_chick'.tr(),
+        ),
       ),
       body: Form(
         key: _formKey,
@@ -194,8 +218,7 @@ class _ChickFormScreenState extends ConsumerState<ChickFormScreen> {
               DatePickerField(
                 label: 'chicks.hatch_date_required'.tr(),
                 value: _hatchDate,
-                onChanged: (date) =>
-                    setState(() => _hatchDate = date),
+                onChanged: (date) => setState(() => _hatchDate = date),
                 firstDate: DateTime(2020),
                 lastDate: DateTime.now(),
               ),
@@ -209,8 +232,9 @@ class _ChickFormScreenState extends ConsumerState<ChickFormScreen> {
                   border: const OutlineInputBorder(),
                   prefixIcon: const AppIcon(AppIcons.weight),
                 ),
-                keyboardType:
-                    const TextInputType.numberWithOptions(decimal: true),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
                 textInputAction: TextInputAction.next,
               ),
               const SizedBox(height: AppSpacing.lg),
@@ -257,9 +281,9 @@ class _ChickFormScreenState extends ConsumerState<ChickFormScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     if (_hatchDate == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('chicks.hatch_date_select'.tr())),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('chicks.hatch_date_select'.tr())));
       return;
     }
     HapticFeedback.lightImpact();
@@ -267,40 +291,42 @@ class _ChickFormScreenState extends ConsumerState<ChickFormScreen> {
     final userId = ref.read(currentUserIdProvider);
     final notifier = ref.read(chickFormStateProvider.notifier);
 
-    if (_isEdit && _existingChick != null) {
-      notifier.updateChick(_existingChick!.copyWith(
-        name: _nameController.text.isEmpty
-            ? null
-            : _nameController.text.trim(),
-        gender: _gender,
-        healthStatus: _healthStatus,
-        hatchDate: _hatchDate,
-        hatchWeight: _parseOptional(_hatchWeightController.text),
-        ringNumber: _ringController.text.isEmpty
-            ? null
-            : _ringController.text.trim(),
-        notes: _notesController.text.isEmpty
-            ? null
-            : _notesController.text.trim(),
-      ));
-    } else {
-      notifier.createChick(
-        userId: userId,
-        name: _nameController.text.isEmpty
-            ? null
-            : _nameController.text.trim(),
-        gender: _gender,
-        healthStatus: _healthStatus,
-        hatchDate: _hatchDate!,
-        hatchWeight: _parseOptional(_hatchWeightController.text),
-        ringNumber: _ringController.text.isEmpty
-            ? null
-            : _ringController.text.trim(),
-        notes: _notesController.text.isEmpty
-            ? null
-            : _notesController.text.trim(),
+    if (_isEdit) {
+      if (_existingChick == null) return;
+      notifier.updateChick(
+        _existingChick!.copyWith(
+          name: _nameController.text.isEmpty
+              ? null
+              : _nameController.text.trim(),
+          gender: _gender,
+          healthStatus: _healthStatus,
+          hatchDate: _hatchDate,
+          hatchWeight: _parseOptional(_hatchWeightController.text),
+          ringNumber: _ringController.text.isEmpty
+              ? null
+              : _ringController.text.trim(),
+          notes: _notesController.text.isEmpty
+              ? null
+              : _notesController.text.trim(),
+        ),
       );
+      return;
     }
+
+    notifier.createChick(
+      userId: userId,
+      name: _nameController.text.isEmpty ? null : _nameController.text.trim(),
+      gender: _gender,
+      healthStatus: _healthStatus,
+      hatchDate: _hatchDate!,
+      hatchWeight: _parseOptional(_hatchWeightController.text),
+      ringNumber: _ringController.text.isEmpty
+          ? null
+          : _ringController.text.trim(),
+      notes: _notesController.text.isEmpty
+          ? null
+          : _notesController.text.trim(),
+    );
   }
 
   double? _parseOptional(String text) {

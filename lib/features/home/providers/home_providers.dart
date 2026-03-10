@@ -8,41 +8,46 @@ import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
 import 'package:budgie_breeding_tracker/data/models/statistics_models.dart';
 
 /// Lightweight count streams for dashboard (SQL COUNT instead of full list).
-final birdCountProvider =
-    StreamProvider.family<int, String>((ref, userId) {
+final birdCountProvider = StreamProvider.family<int, String>((ref, userId) {
   return ref.watch(birdsDaoProvider).watchCount(userId);
 });
 
-final eggCountProvider =
-    StreamProvider.family<int, String>((ref, userId) {
+final eggCountProvider = StreamProvider.family<int, String>((ref, userId) {
   return ref.watch(eggsDaoProvider).watchCount(userId);
 });
 
-final chickCountProvider =
-    StreamProvider.family<int, String>((ref, userId) {
+final chickCountProvider = StreamProvider.family<int, String>((ref, userId) {
   return ref.watch(chicksDaoProvider).watchCount(userId);
 });
 
-final activeBreedingCountProvider =
-    StreamProvider.family<int, String>((ref, userId) {
+final activeBreedingCountProvider = StreamProvider.family<int, String>((
+  ref,
+  userId,
+) {
   return ref.watch(breedingPairsDaoProvider).watchActiveCount(userId);
 });
 
-final incubatingEggCountProvider =
-    StreamProvider.family<int, String>((ref, userId) {
+final incubatingEggCountProvider = StreamProvider.family<int, String>((
+  ref,
+  userId,
+) {
   return ref.watch(eggsDaoProvider).watchIncubatingCount(userId);
 });
 
 /// Active incubation count for free tier limit display.
-final activeIncubationCountProvider =
-    StreamProvider.family<int, String>((ref, userId) {
+final activeIncubationCountProvider = StreamProvider.family<int, String>((
+  ref,
+  userId,
+) {
   return ref.watch(incubationsDaoProvider).watchActiveCount(userId);
 });
 
 /// Dashboard statistics computed from lightweight count streams.
 /// Uses SQL COUNT queries instead of loading full entity lists.
-final dashboardStatsProvider =
-    Provider.family<AsyncValue<DashboardStats>, String>((ref, userId) {
+final dashboardStatsProvider = Provider.family<AsyncValue<DashboardStats>, String>((
+  ref,
+  userId,
+) {
   final birdsCount = ref.watch(birdCountProvider(userId));
   final eggsCount = ref.watch(eggCountProvider(userId));
   final chicksCount = ref.watch(chickCountProvider(userId));
@@ -65,30 +70,56 @@ final dashboardStatsProvider =
     return value.value ?? 0;
   }
 
-  return AsyncData(DashboardStats(
-    totalBirds: countOrZero(birdsCount, 'birds'),
-    totalEggs: countOrZero(eggsCount, 'eggs'),
-    totalChicks: countOrZero(chicksCount, 'chicks'),
-    activeBreedings: countOrZero(abCount, 'activeBreeding'),
-    incubatingEggs: countOrZero(ieCount, 'incubatingEggs'),
-  ));
+  return AsyncData(
+    DashboardStats(
+      totalBirds: countOrZero(birdsCount, 'birds'),
+      totalEggs: countOrZero(eggsCount, 'eggs'),
+      totalChicks: countOrZero(chicksCount, 'chicks'),
+      activeBreedings: countOrZero(abCount, 'activeBreeding'),
+      incubatingEggs: countOrZero(ieCount, 'incubatingEggs'),
+    ),
+  );
 });
 
 /// Recent chicks sorted by hatch date (max 5) — DAO-level SQL LIMIT.
-final recentChicksProvider =
-    StreamProvider.family<List<Chick>, String>((ref, userId) {
+final recentChicksProvider = StreamProvider.family<List<Chick>, String>((
+  ref,
+  userId,
+) {
   return ref.watch(chicksDaoProvider).watchRecent(userId, limit: 5);
 });
 
 /// Active breeding pairs (active + ongoing) — DAO-level SQL LIMIT.
 final activeBreedingsForDashboardProvider =
     StreamProvider.family<List<BreedingPair>, String>((ref, userId) {
-  return ref.watch(breedingPairsDaoProvider).watchActiveLimited(userId, limit: 3);
+      return ref
+          .watch(breedingPairsDaoProvider)
+          .watchActiveLimited(userId, limit: 3);
+    });
+
+Stream<DateTime> _midnightTicker() async* {
+  yield DateTime.now();
+  while (true) {
+    final now = DateTime.now();
+    final nextMidnight = DateTime(now.year, now.month, now.day + 1);
+    // Re-evaluate date-based counts after calendar day rollover.
+    await Future<void>.delayed(
+      nextMidnight.difference(now) + const Duration(seconds: 1),
+    );
+    yield DateTime.now();
+  }
+}
+
+final _unweanedCountRefreshProvider = StreamProvider<DateTime>((ref) {
+  return _midnightTicker();
 });
 
 /// Count of chicks ready to move to birds (60+ days old and not yet moved) — SQL COUNT.
-final unweanedChicksCountProvider =
-    StreamProvider.family<int, String>((ref, userId) {
+final unweanedChicksCountProvider = StreamProvider.family<int, String>((
+  ref,
+  userId,
+) {
+  ref.watch(_unweanedCountRefreshProvider);
   return ref.watch(chicksDaoProvider).watchUnweanedCount(userId);
 });
 
@@ -101,25 +132,28 @@ class IncubatingEggSummary {
 }
 
 final incubatingEggsSummaryProvider =
-    Provider.family<AsyncValue<List<IncubatingEggSummary>>, String>(
-        (ref, userId) {
-  final eggsAsync = ref.watch(incubatingEggsLimitedProvider(userId));
+    Provider.family<AsyncValue<List<IncubatingEggSummary>>, String>((
+      ref,
+      userId,
+    ) {
+      final eggsAsync = ref.watch(incubatingEggsLimitedProvider(userId));
 
-  return eggsAsync.whenData((eggs) {
-    final now = DateTime.now();
-    return eggs.map((e) {
-      final expectedHatch = e.layDate.add(
-        const Duration(days: IncubationConstants.incubationPeriodDays),
-      );
-      final remaining = expectedHatch.difference(now).inDays;
-      return IncubatingEggSummary(egg: e, daysRemaining: remaining);
-    }).toList()
-      ..sort((a, b) => a.daysRemaining.compareTo(b.daysRemaining));
-  });
-});
+      return eggsAsync.whenData((eggs) {
+        final now = DateTime.now();
+        return eggs.map((e) {
+          final expectedHatch = e.layDate.add(
+            const Duration(days: IncubationConstants.incubationPeriodDays),
+          );
+          final remaining = expectedHatch.difference(now).inDays;
+          return IncubatingEggSummary(egg: e, daysRemaining: remaining);
+        }).toList()..sort((a, b) => a.daysRemaining.compareTo(b.daysRemaining));
+      });
+    });
 
 /// Incubating eggs with SQL LIMIT (for dashboard).
-final incubatingEggsLimitedProvider =
-    StreamProvider.family<List<Egg>, String>((ref, userId) {
+final incubatingEggsLimitedProvider = StreamProvider.family<List<Egg>, String>((
+  ref,
+  userId,
+) {
   return ref.watch(eggsDaoProvider).watchIncubatingLimited(userId, limit: 3);
 });

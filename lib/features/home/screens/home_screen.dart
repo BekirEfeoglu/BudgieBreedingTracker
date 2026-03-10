@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
+import 'package:budgie_breeding_tracker/features/chicks/providers/chick_providers.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_providers.dart';
 import 'package:budgie_breeding_tracker/features/home/providers/home_providers.dart';
 import 'package:budgie_breeding_tracker/features/home/widgets/active_breedings_section.dart';
@@ -54,6 +55,7 @@ class HomeScreen extends ConsumerWidget {
           await ref.read(syncOrchestratorProvider).forceFullSync();
           ref.invalidate(dashboardStatsProvider(userId));
           ref.invalidate(recentChicksProvider(userId));
+          ref.invalidate(chickParentsByEggProvider(userId));
           ref.invalidate(activeBreedingsForDashboardProvider(userId));
           ref.invalidate(unweanedChicksCountProvider(userId));
           ref.invalidate(incubatingEggsSummaryProvider(userId));
@@ -80,7 +82,9 @@ class HomeScreen extends ConsumerWidget {
               const SizedBox(height: AppSpacing.lg),
               _RecentChicksSection(userId: userId),
               const SizedBox(height: AppSpacing.lg),
-              Center(child: AdBannerWidget(isPremiumProvider: isPremiumProvider)),
+              Center(
+                child: AdBannerWidget(isPremiumProvider: isPremiumProvider),
+              ),
               const SizedBox(height: AppSpacing.xxxl * 2),
             ],
           ),
@@ -137,8 +141,7 @@ class _ActiveBreedingsSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final pairsAsync =
-        ref.watch(activeBreedingsForDashboardProvider(userId));
+    final pairsAsync = ref.watch(activeBreedingsForDashboardProvider(userId));
 
     return pairsAsync.when(
       loading: () => const Padding(
@@ -166,7 +169,7 @@ class _RecentChicksSection extends ConsumerWidget {
         child: Center(child: CircularProgressIndicator()),
       ),
       error: (_, __) => const SizedBox.shrink(),
-      data: (chicks) => RecentChicksSection(chicks: chicks),
+      data: (chicks) => RecentChicksSection(chicks: chicks, userId: userId),
     );
   }
 }
