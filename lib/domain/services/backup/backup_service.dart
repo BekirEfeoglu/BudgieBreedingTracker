@@ -55,48 +55,45 @@ class BackupService {
     required PhotoRepository photoRepo,
     SupabaseClient? supabaseClient,
     EncryptionService? encryptionService,
-  })  : _collector = BackupDataCollector(
-          birdRepo: birdRepo,
-          breedingRepo: breedingRepo,
-          eggRepo: eggRepo,
-          chickRepo: chickRepo,
-          healthRepo: healthRepo,
-          eventRepo: eventRepo,
-          incubationRepo: incubationRepo,
-          growthRepo: growthRepo,
-          notificationRepo: notificationRepo,
-          clutchRepo: clutchRepo,
-          nestRepo: nestRepo,
-          photoRepo: photoRepo,
-          encryptionService: encryptionService,
-        ),
-        _restorer = BackupRestorer(
-          birdRepo: birdRepo,
-          breedingRepo: breedingRepo,
-          eggRepo: eggRepo,
-          chickRepo: chickRepo,
-          healthRepo: healthRepo,
-          eventRepo: eventRepo,
-          incubationRepo: incubationRepo,
-          growthRepo: growthRepo,
-          notificationRepo: notificationRepo,
-          clutchRepo: clutchRepo,
-          nestRepo: nestRepo,
-          photoRepo: photoRepo,
-          encryptionService: encryptionService,
-        ),
-        _supabaseClient = supabaseClient,
-        _encryptionService = encryptionService;
+  }) : _collector = BackupDataCollector(
+         birdRepo: birdRepo,
+         breedingRepo: breedingRepo,
+         eggRepo: eggRepo,
+         chickRepo: chickRepo,
+         healthRepo: healthRepo,
+         eventRepo: eventRepo,
+         incubationRepo: incubationRepo,
+         growthRepo: growthRepo,
+         notificationRepo: notificationRepo,
+         clutchRepo: clutchRepo,
+         nestRepo: nestRepo,
+         photoRepo: photoRepo,
+         encryptionService: encryptionService,
+       ),
+       _restorer = BackupRestorer(
+         birdRepo: birdRepo,
+         breedingRepo: breedingRepo,
+         eggRepo: eggRepo,
+         chickRepo: chickRepo,
+         healthRepo: healthRepo,
+         eventRepo: eventRepo,
+         incubationRepo: incubationRepo,
+         growthRepo: growthRepo,
+         notificationRepo: notificationRepo,
+         clutchRepo: clutchRepo,
+         nestRepo: nestRepo,
+         photoRepo: photoRepo,
+         encryptionService: encryptionService,
+       ),
+       _supabaseClient = supabaseClient,
+       _encryptionService = encryptionService;
 
   /// Create a full backup of user data as JSON file.
   ///
   /// When [encrypt] is `true` and an [EncryptionService] is available,
   /// the JSON content is encrypted with AES-256-CBC before writing.
   /// Encrypted files use `.enc.json` extension.
-  Future<BackupResult> createBackup(
-    String userId, {
-    bool encrypt = false,
-  }) {
+  Future<BackupResult> createBackup(String userId, {bool encrypt = false}) {
     return _collector.createBackup(userId, encrypt: encrypt);
   }
 
@@ -123,6 +120,7 @@ class BackupService {
       return BackupResult.failure('Supabase client not available');
     }
 
+    File? tempEncryptedFile;
     try {
       final file = File(filePath);
       if (!await file.exists()) {
@@ -149,34 +147,40 @@ class BackupService {
           '${dir.path}/upload_encrypted_$timestamp.enc.json',
         );
         await encFile.writeAsString(encryptedContent);
+        tempEncryptedFile = encFile;
         fileToUpload = encFile;
         AppLogger.info('$_tag Backup content encrypted for upload');
       } else {
         fileToUpload = file;
       }
 
-      final extension =
-          (shouldEncrypt || isAlreadyEncrypted) ? '.enc.json' : '.json';
+      final extension = (shouldEncrypt || isAlreadyEncrypted)
+          ? '.enc.json'
+          : '.json';
       final remotePath = '$userId/backup_$timestamp$extension';
 
       await _supabaseClient.storage
           .from(_backupBucket)
           .upload(remotePath, fileToUpload);
 
-      // Clean up temporary encrypted file
-      if (shouldEncrypt && fileToUpload.path != file.path) {
-        await fileToUpload.delete().catchError((_) => fileToUpload);
-      }
-
       AppLogger.info('$_tag Backup uploaded: $remotePath');
 
-      return BackupResult.success(
-        filePath: remotePath,
-        recordCount: 0,
-      );
+      return BackupResult.success(filePath: remotePath, recordCount: 0);
     } catch (e, st) {
       AppLogger.error('$_tag Backup upload failed', e, st);
       return BackupResult.failure(e.toString());
+    } finally {
+      if (tempEncryptedFile != null) {
+        try {
+          if (await tempEncryptedFile.exists()) {
+            await tempEncryptedFile.delete();
+          }
+        } catch (e) {
+          AppLogger.warning(
+            '$_tag Failed to clean temporary encrypted upload file: $e',
+          );
+        }
+      }
     }
   }
 

@@ -100,7 +100,7 @@ void main() {
       expect(value, isA<AsyncLoading<DashboardStats>>());
     });
 
-    test('returns AsyncError when a source errors', () async {
+    test('falls back to 0 when a source errors', () async {
       final container = ProviderContainer(
         overrides: [
           birdCountProvider(userId).overrideWith((_) => Stream.value(1)),
@@ -134,7 +134,13 @@ void main() {
       );
 
       final value = container.read(dashboardStatsProvider(userId));
-      expect(value.hasError, isTrue);
+      expect(value.hasValue, isTrue);
+      final stats = value.requireValue;
+      expect(stats.totalBirds, 1);
+      expect(stats.totalEggs, 0);
+      expect(stats.totalChicks, 3);
+      expect(stats.activeBreedings, 4);
+      expect(stats.incubatingEggs, 5);
     });
 
     test('returns AsyncData when all counts are ready', () async {

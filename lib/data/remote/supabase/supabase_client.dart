@@ -1,5 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+
+import 'package:budgie_breeding_tracker/bootstrap.dart';
 
 /// Returns `true` when Supabase singleton has been initialized.
 ///
@@ -14,6 +18,40 @@ bool isSupabaseClientAvailable() {
   }
 }
 
+const _fallbackSupabaseUrl = 'https://example.invalid';
+const _fallbackSupabaseAnonKey = 'offline-anon-key';
+const _fallbackRecheckDelay = Duration(seconds: 5);
+const _maxFallbackRechecks = 12;
+
+final SupabaseClient _fallbackSupabaseClient = SupabaseClient(
+  _fallbackSupabaseUrl,
+  _fallbackSupabaseAnonKey,
+);
+
+int _fallbackRecheckAttempts = 0;
+bool _fallbackRecheckScheduled = false;
+
+void _scheduleFallbackRecheck(Ref ref) {
+  if (!hasSupabaseCredentials) return;
+  if (_fallbackRecheckScheduled) return;
+  if (_fallbackRecheckAttempts >= _maxFallbackRechecks) return;
+
+  _fallbackRecheckScheduled = true;
+  _fallbackRecheckAttempts++;
+
+  Timer(_fallbackRecheckDelay, () {
+    _fallbackRecheckScheduled = false;
+    if (!ref.mounted) return;
+    ref.invalidate(supabaseClientProvider);
+  });
+}
+
 final supabaseClientProvider = Provider<SupabaseClient>((ref) {
-  return Supabase.instance.client;
+  if (isSupabaseClientAvailable()) {
+    _fallbackRecheckAttempts = 0;
+    return Supabase.instance.client;
+  }
+
+  _scheduleFallbackRecheck(ref);
+  return _fallbackSupabaseClient;
 });

@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:budgie_breeding_tracker/core/constants/incubation_constants.dart';
+import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/data/local/database/dao_providers.dart';
 import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
 import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
@@ -48,25 +49,28 @@ final dashboardStatsProvider =
   final abCount = ref.watch(activeBreedingCountProvider(userId));
   final ieCount = ref.watch(incubatingEggCountProvider(userId));
 
-  // Return loading if any count is still loading
-  if (birdsCount.isLoading || eggsCount.isLoading ||
-      chicksCount.isLoading || abCount.isLoading ||
-      ieCount.isLoading) {
+  final all = [birdsCount, eggsCount, chicksCount, abCount, ieCount];
+
+  // Keep loading only while waiting for the first value and no fallback has been applied.
+  if (all.any((c) => c.isLoading && !c.hasValue && !c.hasError)) {
     return const AsyncLoading();
   }
 
-  // Return first error encountered
-  final all = [birdsCount, eggsCount, chicksCount, abCount, ieCount];
-  for (final c in all) {
-    if (c.hasError) return AsyncError(c.error!, c.stackTrace!);
+  int countOrZero(AsyncValue<int> value, String label) {
+    if (value.hasError) {
+      AppLogger.warning(
+        '[dashboardStatsProvider] $label count failed, using 0 fallback: ${value.error}',
+      );
+    }
+    return value.value ?? 0;
   }
 
   return AsyncData(DashboardStats(
-    totalBirds: birdsCount.requireValue,
-    totalEggs: eggsCount.requireValue,
-    totalChicks: chicksCount.requireValue,
-    activeBreedings: abCount.requireValue,
-    incubatingEggs: ieCount.requireValue,
+    totalBirds: countOrZero(birdsCount, 'birds'),
+    totalEggs: countOrZero(eggsCount, 'eggs'),
+    totalChicks: countOrZero(chicksCount, 'chicks'),
+    activeBreedings: countOrZero(abCount, 'activeBreeding'),
+    incubatingEggs: countOrZero(ieCount, 'incubatingEggs'),
   ));
 });
 

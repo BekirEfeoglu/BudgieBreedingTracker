@@ -51,6 +51,13 @@ void main() {
       final gteKeys = selectBuilder.gteCalls
           .map((entry) => '${entry.key}:${entry.value}')
           .toList();
+      final eqKeys = selectBuilder.eqCalls
+          .map((entry) => '${entry.key}:${entry.value}')
+          .toList();
+
+      expect(eqKeys, contains('user_id:user-1'));
+      // Notifications table has no is_deleted column.
+      expect(eqKeys, isNot(contains('is_deleted:false')));
       expect(gteKeys, contains('updated_at:${since.toIso8601String()}'));
     });
 

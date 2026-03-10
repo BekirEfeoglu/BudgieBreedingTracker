@@ -206,5 +206,29 @@ void main() {
         () => mockFunctions.invoke('system-health', body: null, headers: null),
       ).called(1);
     });
+
+    test(
+      'checkSystemHealth returns failure when function is not deployed (404)',
+      () async {
+        when(
+          () => mockFunctions.invoke(
+            'system-health',
+            body: null,
+            headers: null,
+          ),
+        ).thenThrow(
+          const FunctionException(
+            status: 404,
+            details: {'code': 'NOT_FOUND'},
+            reasonPhrase: 'Not Found',
+          ),
+        );
+
+        final result = await client.checkSystemHealth();
+
+        expect(result.success, isFalse);
+        expect(result.error, contains('status: 404'));
+      },
+    );
   });
 }

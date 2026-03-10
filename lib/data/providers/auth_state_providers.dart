@@ -5,6 +5,9 @@ import 'package:budgie_breeding_tracker/data/remote/supabase/supabase_client.dar
 
 /// Whether Supabase was successfully initialized during bootstrap.
 final supabaseInitializedProvider = Provider<bool>((ref) {
+  // Depend on supabaseClientProvider so this value refreshes when the
+  // client provider invalidates itself during delayed initialization checks.
+  ref.watch(supabaseClientProvider);
   try {
     Supabase.instance.client;
     return true;

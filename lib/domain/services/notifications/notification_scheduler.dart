@@ -35,6 +35,10 @@ class NotificationScheduler {
   /// Base ID offset for chick care notifications.
   /// Range: 400000–499999
   static const chickCareBaseId = 400000;
+  static const _idsPerEntitySlot = 100;
+
+  @visibleForTesting
+  static int get idsPerEntitySlot => _idsPerEntitySlot;
 
   /// Generates a stable notification ID for an entity within a category.
   ///
@@ -42,6 +46,16 @@ class NotificationScheduler {
   /// preventing collisions between different entities in the same category.
   @visibleForTesting
   static int notificationId(int baseId, String entityId, int offset) {
+    if (offset < 0 || offset >= _idsPerEntitySlot) {
+      throw RangeError.range(
+        offset,
+        0,
+        _idsPerEntitySlot - 1,
+        'offset',
+        'Offset must stay within entity slot size ($_idsPerEntitySlot)',
+      );
+    }
+
     // FNV-1a hash for better distribution than hashCode
     var hash = 0x811c9dc5;
     for (var i = 0; i < entityId.length; i++) {
@@ -91,16 +105,21 @@ class NotificationScheduler {
         if (scheduledDate.isBefore(now)) continue;
 
         final notificationId = NotificationScheduler.notificationId(
-            eggTurningBaseId, eggId, day * 3 + t);
+          eggTurningBaseId,
+          eggId,
+          day * 3 + t,
+        );
 
-        futures.add(_service.scheduleNotification(
-          id: notificationId,
-          title: 'notifications.egg_turning_title'.tr(),
-          body: '$eggLabel - ${turningHours[t]}',
-          scheduledDate: scheduledDate,
-          channelId: NotificationService.eggTurningChannelId,
-          payload: 'egg_turning:$eggId',
-        ));
+        futures.add(
+          _service.scheduleNotification(
+            id: notificationId,
+            title: 'notifications.egg_turning_title'.tr(),
+            body: '$eggLabel - ${turningHours[t]}',
+            scheduledDate: scheduledDate,
+            channelId: NotificationService.eggTurningChannelId,
+            payload: 'egg_turning:$eggId',
+          ),
+        );
       }
     }
     await Future.wait(futures);
@@ -139,8 +158,8 @@ class NotificationScheduler {
           'notifications.incubation_sensitive_period'.tr(),
       IncubationConstants.expectedHatchDay:
           'notifications.incubation_expected_hatch'.tr(),
-      IncubationConstants.lateHatchDay:
-          'notifications.incubation_late_hatch'.tr(),
+      IncubationConstants.lateHatchDay: 'notifications.incubation_late_hatch'
+          .tr(),
     };
 
     final hour = preferredHour.clamp(0, 23);
@@ -156,21 +175,26 @@ class NotificationScheduler {
       }
 
       final notificationId = NotificationScheduler.notificationId(
-          incubationBaseId, incubationId, index);
+        incubationBaseId,
+        incubationId,
+        index,
+      );
 
-      futures.add(_service.scheduleNotification(
-        id: notificationId,
-        title: entry.value,
-        body: 'notifications.milestone_day'.tr(args: [label, '${entry.key}']),
-        scheduledDate: DateTime(
-          scheduledDate.year,
-          scheduledDate.month,
-          scheduledDate.day,
-          hour,
+      futures.add(
+        _service.scheduleNotification(
+          id: notificationId,
+          title: entry.value,
+          body: 'notifications.milestone_day'.tr(args: [label, '${entry.key}']),
+          scheduledDate: DateTime(
+            scheduledDate.year,
+            scheduledDate.month,
+            scheduledDate.day,
+            hour,
+          ),
+          channelId: NotificationService.incubationChannelId,
+          payload: 'incubation:$incubationId',
         ),
-        channelId: NotificationService.incubationChannelId,
-        payload: 'incubation:$incubationId',
-      ));
+      );
       index++;
     }
     await Future.wait(futures);
@@ -199,28 +223,35 @@ class NotificationScheduler {
 
     final now = DateTime.now();
     final futures = <Future<void>>[];
-
-    for (var day = 0; day < durationDays; day++) {
-      final scheduledDate = DateTime(
-        now.year,
-        now.month,
-        now.day + day,
-        hour,
+    final safeDurationDays = durationDays.clamp(0, _idsPerEntitySlot) as int;
+    if (safeDurationDays < durationDays) {
+      AppLogger.warning(
+        '[NotificationScheduler] Health check duration capped '
+        'to $safeDurationDays day(s) for $birdName',
       );
+    }
+
+    for (var day = 0; day < safeDurationDays; day++) {
+      final scheduledDate = DateTime(now.year, now.month, now.day + day, hour);
 
       if (scheduledDate.isBefore(now)) continue;
 
-      final notificationId =
-          NotificationScheduler.notificationId(healthCheckBaseId, birdId, day);
+      final notificationId = NotificationScheduler.notificationId(
+        healthCheckBaseId,
+        birdId,
+        day,
+      );
 
-      futures.add(_service.scheduleNotification(
-        id: notificationId,
-        title: 'notifications.health_check_title'.tr(),
-        body: 'notifications.health_check_body'.tr(args: [birdName]),
-        scheduledDate: scheduledDate,
-        channelId: NotificationService.healthCheckChannelId,
-        payload: 'health_check:$birdId',
-      ));
+      futures.add(
+        _service.scheduleNotification(
+          id: notificationId,
+          title: 'notifications.health_check_title'.tr(),
+          body: 'notifications.health_check_body'.tr(args: [birdName]),
+          scheduledDate: scheduledDate,
+          channelId: NotificationService.healthCheckChannelId,
+          payload: 'health_check:$birdId',
+        ),
+      );
     }
     await Future.wait(futures);
 
@@ -247,12 +278,34 @@ class NotificationScheduler {
       return;
     }
 
+    if (intervalHours <= 0 || intervalHours > 24) {
+      AppLogger.warning(
+        '[NotificationScheduler] Invalid chick care intervalHours=$intervalHours '
+        'for $chickLabel',
+      );
+      return;
+    }
+
     final remindersPerDay = 24 ~/ intervalHours;
+    if (remindersPerDay <= 0) {
+      AppLogger.warning(
+        '[NotificationScheduler] Invalid remindersPerDay=$remindersPerDay '
+        'for $chickLabel',
+      );
+      return;
+    }
+
     final now = DateTime.now();
     final futures = <Future<void>>[];
+    var offset = 0;
 
+    outer:
     for (var day = 0; day < durationDays; day++) {
       for (var r = 0; r < remindersPerDay; r++) {
+        if (offset >= _idsPerEntitySlot) {
+          break outer;
+        }
+
         final scheduledDate = DateTime(
           startDate.year,
           startDate.month,
@@ -265,20 +318,30 @@ class NotificationScheduler {
         final notificationId = NotificationScheduler.notificationId(
           chickCareBaseId,
           chickId,
-          day * remindersPerDay + r,
+          offset,
         );
 
-        futures.add(_service.scheduleNotification(
-          id: notificationId,
-          title: 'notifications.chick_care_title'.tr(),
-          body: 'notifications.chick_care_body'.tr(args: [chickLabel]),
-          scheduledDate: scheduledDate,
-          channelId: NotificationService.chickCareChannelId,
-          payload: 'chick_care:$chickId',
-        ));
+        futures.add(
+          _service.scheduleNotification(
+            id: notificationId,
+            title: 'notifications.chick_care_title'.tr(),
+            body: 'notifications.chick_care_body'.tr(args: [chickLabel]),
+            scheduledDate: scheduledDate,
+            channelId: NotificationService.chickCareChannelId,
+            payload: 'chick_care:$chickId',
+          ),
+        );
+        offset++;
       }
     }
     await Future.wait(futures);
+
+    if (offset >= _idsPerEntitySlot) {
+      AppLogger.warning(
+        '[NotificationScheduler] Chick care reminders capped at '
+        '$_idsPerEntitySlot per chick ($chickLabel)',
+      );
+    }
 
     AppLogger.info(
       '[NotificationScheduler] Chick care reminders for $chickLabel',
@@ -347,9 +410,13 @@ class NotificationScheduler {
   }
 
   /// Cancels health check reminders for a specific bird.
-  Future<void> cancelHealthCheckReminders(String birdId, {int maxDays = 365}) async {
+  Future<void> cancelHealthCheckReminders(
+    String birdId, {
+    int maxDays = 365,
+  }) async {
+    final safeMaxDays = maxDays.clamp(0, _idsPerEntitySlot) as int;
     final futures = <Future<void>>[];
-    for (var day = 0; day < maxDays; day++) {
+    for (var day = 0; day < safeMaxDays; day++) {
       final id = notificationId(healthCheckBaseId, birdId, day);
       futures.add(_service.cancel(id));
     }
@@ -365,16 +432,23 @@ class NotificationScheduler {
     int intervalHours = 4,
     int durationDays = 30,
   }) async {
+    if (intervalHours <= 0 || intervalHours > 24) return;
     final remindersPerDay = 24 ~/ intervalHours;
+    if (remindersPerDay <= 0) return;
+
     final futures = <Future<void>>[];
+    var offset = 0;
+
+    outer:
     for (var day = 0; day < durationDays; day++) {
       for (var r = 0; r < remindersPerDay; r++) {
-        final id = notificationId(
-          chickCareBaseId,
-          chickId,
-          day * remindersPerDay + r,
-        );
+        if (offset >= _idsPerEntitySlot) {
+          break outer;
+        }
+
+        final id = notificationId(chickCareBaseId, chickId, offset);
         futures.add(_service.cancel(id));
+        offset++;
       }
     }
     await Future.wait(futures);

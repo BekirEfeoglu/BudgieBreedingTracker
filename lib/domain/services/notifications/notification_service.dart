@@ -26,7 +26,7 @@ void _onBackgroundNotificationTapped(NotificationResponse response) {
 /// Set [onNotificationTap] to handle deep-link navigation.
 class NotificationService {
   NotificationService({FlutterLocalNotificationsPlugin? plugin})
-      : _plugin = plugin ?? FlutterLocalNotificationsPlugin();
+    : _plugin = plugin ?? FlutterLocalNotificationsPlugin();
 
   /// Callback invoked when user taps a notification.
   /// Set this before calling [init] so the app can navigate accordingly.
@@ -75,7 +75,8 @@ class NotificationService {
     await _plugin.initialize(
       settings: settings,
       onDidReceiveNotificationResponse: _onNotificationTapped,
-      onDidReceiveBackgroundNotificationResponse: _onBackgroundNotificationTapped,
+      onDidReceiveBackgroundNotificationResponse:
+          _onBackgroundNotificationTapped,
     );
 
     _isInitialized = true;
@@ -88,8 +89,10 @@ class NotificationService {
   /// Logs a warning if permission is denied — notifications will be silently
   /// dropped by the OS until the user grants permission in system settings.
   Future<bool> requestAndroidPermission() async {
-    final androidImpl = _plugin.resolvePlatformSpecificImplementation<
-        AndroidFlutterLocalNotificationsPlugin>();
+    final androidImpl = _plugin
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
     if (androidImpl == null) return true;
 
     final granted = await androidImpl.requestNotificationsPermission();
@@ -107,8 +110,10 @@ class NotificationService {
   /// Returns `true` if allowed or not applicable (iOS / older Android).
   /// Logs a warning if not allowed — scheduled notifications may fire late.
   Future<bool> checkExactAlarmPermission() async {
-    final androidImpl = _plugin.resolvePlatformSpecificImplementation<
-        AndroidFlutterLocalNotificationsPlugin>();
+    final androidImpl = _plugin
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
     if (androidImpl == null) return true;
 
     final canSchedule = await androidImpl.canScheduleExactNotifications();
@@ -187,7 +192,13 @@ class NotificationService {
 
     final details = _buildNotificationDetails(channelId);
 
-    await _plugin.show(id: id, title: title, body: body, notificationDetails: details, payload: payload);
+    await _plugin.show(
+      id: id,
+      title: title,
+      body: body,
+      notificationDetails: details,
+      payload: payload,
+    );
   }
 
   /// Schedules a notification at a specific date and time.
@@ -287,9 +298,7 @@ class NotificationService {
   }
 
   void _onNotificationTapped(NotificationResponse response) {
-    AppLogger.info(
-      '[NotificationService] Tapped: ${response.payload}',
-    );
+    AppLogger.info('[NotificationService] Tapped: ${response.payload}');
     onNotificationTap?.call(response.payload);
   }
 
@@ -310,7 +319,9 @@ class NotificationService {
       'breeding' || 'incubation' => '/breeding/$id',
       'bird' => '/birds/$id',
       'chick' || 'chick_care' => '/chicks/$id',
-      'egg' || 'egg_turning' => '/breeding/$id/eggs',
+      // Egg-related payloads currently carry egg IDs, not pair IDs. Route to
+      // breeding list instead of an invalid pair-detail path.
+      'egg' || 'egg_turning' => '/breeding',
       'health_check' => '/health-records/$id',
       'event' || 'event_reminder' || 'calendar' => '/calendar',
       'notification' => '/notifications',
