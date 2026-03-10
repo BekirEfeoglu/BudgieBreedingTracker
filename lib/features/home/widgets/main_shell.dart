@@ -1,5 +1,5 @@
+import 'package:budgie_breeding_tracker/core/utils/app_haptics.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -57,7 +57,7 @@ class MainShell extends ConsumerWidget {
       bottomNavigationBar: NavigationBar(
         selectedIndex: _calculateIndex(GoRouterState.of(context).matchedLocation),
         onDestinationSelected: (index) {
-          HapticFeedback.lightImpact();
+          AppHaptics.lightImpact();
           context.go(_navItems[index].path);
         },
         destinations: _navItems.map((item) {

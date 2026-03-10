@@ -1,6 +1,6 @@
+import 'package:budgie_breeding_tracker/core/utils/app_haptics.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
@@ -34,7 +34,7 @@ class CommunityPostActions extends ConsumerWidget {
             color: post.isLikedByMe ? likedColor : defaultColor,
           ),
           onTap: () {
-            HapticFeedback.lightImpact();
+            AppHaptics.lightImpact();
             ref.read(likeToggleProvider.notifier).toggleLike(post.id);
           },
         ),
@@ -63,7 +63,7 @@ class CommunityPostActions extends ConsumerWidget {
             color: post.isBookmarkedByMe ? likedColor : defaultColor,
           ),
           onTap: () {
-            HapticFeedback.lightImpact();
+            AppHaptics.lightImpact();
             ref
                 .read(bookmarkToggleProvider.notifier)
                 .toggleBookmark(post.id);

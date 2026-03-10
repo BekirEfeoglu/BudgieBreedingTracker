@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:budgie_breeding_tracker/core/widgets/date_picker_field.dart';
@@ -6,12 +7,14 @@ import 'package:budgie_breeding_tracker/core/widgets/date_picker_field.dart';
 void main() {
   testWidgets('renders formatted initial date value', (tester) async {
     await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(
-          body: DatePickerField(
-            label: 'Lay date',
-            value: DateTime(2024, 1, 5),
-            onChanged: (_) {},
+      ProviderScope(
+        child: MaterialApp(
+          home: Scaffold(
+            body: DatePickerField(
+              label: 'Lay date',
+              value: DateTime(2024, 1, 5),
+              onChanged: (_) {},
+            ),
           ),
         ),
       ),
@@ -23,12 +26,14 @@ void main() {
 
   testWidgets('renders empty input when value is null', (tester) async {
     await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(
-          body: DatePickerField(
-            label: 'Lay date',
-            value: null,
-            onChanged: (_) {},
+      ProviderScope(
+        child: MaterialApp(
+          home: Scaffold(
+            body: DatePickerField(
+              label: 'Lay date',
+              value: null,
+              onChanged: (_) {},
+            ),
           ),
         ),
       ),
@@ -43,14 +48,16 @@ void main() {
     final fixedDate = DateTime(2024, 2, 10);
 
     await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(
-          body: DatePickerField(
-            label: 'Lay date',
-            value: fixedDate,
-            firstDate: DateTime(2024, 1, 1),
-            lastDate: DateTime(2024, 12, 31),
-            onChanged: (date) => selected = date,
+      ProviderScope(
+        child: MaterialApp(
+          home: Scaffold(
+            body: DatePickerField(
+              label: 'Lay date',
+              value: fixedDate,
+              firstDate: DateTime(2024, 1, 1),
+              lastDate: DateTime(2024, 12, 31),
+              onChanged: (date) => selected = date,
+            ),
           ),
         ),
       ),

@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+
+import 'package:budgie_breeding_tracker/core/utils/app_haptics.dart';
 
 class ConfirmDialog extends StatelessWidget {
   final String title;
@@ -30,7 +31,7 @@ class ConfirmDialog extends StatelessWidget {
         ),
         TextButton(
           onPressed: () {
-            if (isDestructive) HapticFeedback.heavyImpact();
+            if (isDestructive) AppHaptics.heavyImpact();
             Navigator.of(context).pop(true);
           },
           style: isDestructive

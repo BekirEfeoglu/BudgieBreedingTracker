@@ -5,6 +5,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../core/constants/app_icons.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/utils/app_haptics.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_icon.dart';
 import '../../../data/models/profile_model.dart';
@@ -99,7 +100,7 @@ class AccountInfoCard extends StatelessWidget {
 
   void _copyEmail(BuildContext context, String email) {
     Clipboard.setData(ClipboardData(text: email));
-    HapticFeedback.lightImpact();
+    AppHaptics.lightImpact();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('profile.email_copied'.tr()),

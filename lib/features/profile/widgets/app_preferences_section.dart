@@ -1,11 +1,11 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../core/constants/app_icons.dart';
+import '../../../core/utils/app_haptics.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_icon.dart';
 import '../../../router/route_names.dart';
@@ -124,7 +124,7 @@ class _ThemeModeTile extends ConsumerWidget {
               ],
               selected: {themeMode},
               onSelectionChanged: (s) {
-                HapticFeedback.lightImpact();
+                AppHaptics.lightImpact();
                 ref.read(themeModeProvider.notifier).setThemeMode(s.first);
               },
             ),
@@ -196,7 +196,7 @@ class _LanguageTile extends ConsumerWidget {
       builder: (ctx) => _LanguagePickerSheet(
         currentLocale: currentLocale,
         onSelect: (locale) {
-          HapticFeedback.lightImpact();
+          AppHaptics.lightImpact();
           Navigator.of(ctx).pop();
           ref
               .read(appLocaleProvider.notifier)

@@ -26,6 +26,7 @@ const _maxFallbackRechecks = 12;
 final SupabaseClient _fallbackSupabaseClient = SupabaseClient(
   _fallbackSupabaseUrl,
   _fallbackSupabaseAnonKey,
+  authOptions: const AuthClientOptions(autoRefreshToken: false),
 );
 
 int _fallbackRecheckAttempts = 0;

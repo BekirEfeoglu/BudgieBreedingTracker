@@ -1,6 +1,6 @@
+import 'package:budgie_breeding_tracker/core/utils/app_haptics.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
@@ -130,7 +130,7 @@ class CommunityPostCard extends ConsumerWidget {
               CommunityMediaGallery(
                 imageUrls: allImages,
                 onDoubleTap: () {
-                  HapticFeedback.mediumImpact();
+                  AppHaptics.mediumImpact();
                   ref.read(likeToggleProvider.notifier).toggleLike(post.id);
                 },
                 onOpenImage: (imageUrl) =>
@@ -235,4 +235,3 @@ class CommunityPostCard extends ConsumerWidget {
     );
   }
 }
-

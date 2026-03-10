@@ -252,7 +252,9 @@ bool _isAnonymousAllowedRoute(String location) {
       location == AppRoutes.more ||
       location == AppRoutes.healthRecords ||
       location == AppRoutes.premium ||
-      location == AppRoutes.userGuide) {
+      location == AppRoutes.userGuide ||
+      location == AppRoutes.privacyPolicy ||
+      location == AppRoutes.termsOfService) {
     return true;
   }
 

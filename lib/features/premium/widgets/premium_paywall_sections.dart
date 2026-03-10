@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
@@ -571,27 +570,16 @@ class _PremiumLegalLinksSection extends StatelessWidget {
           spacing: AppSpacing.sm,
           children: [
             TextButton(
-              onPressed: () => _openExternal(
-                'https://budgiebreedingtracker.online/privacy-policy.html',
-              ),
+              onPressed: () => context.push(AppRoutes.privacyPolicy),
               child: Text('settings.privacy_policy'.tr()),
             ),
             TextButton(
-              onPressed: () => _openExternal(
-                'https://budgiebreedingtracker.online/terms-of-service.html',
-              ),
+              onPressed: () => context.push(AppRoutes.termsOfService),
               child: Text('settings.terms'.tr()),
             ),
           ],
         ),
       ],
     );
-  }
-
-  Future<void> _openExternal(String url) async {
-    final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    }
   }
 }

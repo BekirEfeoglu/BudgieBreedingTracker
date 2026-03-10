@@ -9,6 +9,7 @@ import '../../features/genetics/screens/genetics_history_screen.dart';
 import '../../features/profile/screens/profile_screen.dart';
 import '../../features/settings/screens/settings_screen.dart';
 import '../../features/settings/screens/backup_screen.dart';
+import '../../features/settings/screens/legal_document_screen.dart';
 import '../../features/more/screens/user_guide_screen.dart';
 import '../../features/notifications/screens/notification_list_screen.dart';
 import '../../features/notifications/screens/notification_settings_screen.dart';
@@ -87,6 +88,18 @@ List<RouteBase> buildUserRoutes() => [
       GoRoute(
         path: AppRoutes.feedback,
         builder: (context, state) => const FeedbackScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.privacyPolicy,
+        builder: (context, state) => const LegalDocumentScreen(
+          type: LegalDocumentType.privacyPolicy,
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.termsOfService,
+        builder: (context, state) => const LegalDocumentScreen(
+          type: LegalDocumentType.termsOfService,
+        ),
       ),
 
       // Two-Factor Authentication routes

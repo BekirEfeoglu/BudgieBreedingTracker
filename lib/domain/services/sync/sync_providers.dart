@@ -2,7 +2,9 @@ import 'dart:async';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
+import 'package:budgie_breeding_tracker/data/local/preferences/app_preferences.dart';
 import 'package:budgie_breeding_tracker/data/local/database/dao_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/sync/network_status_provider.dart';
 import 'package:budgie_breeding_tracker/domain/services/sync/retry_scheduler.dart';
@@ -27,7 +29,20 @@ final isSyncingProvider = NotifierProvider<IsSyncingNotifier, bool>(IsSyncingNot
 /// Notifier for last successful sync timestamp (initialized from SharedPreferences).
 class LastSyncTimeNotifier extends Notifier<DateTime?> {
   @override
-  DateTime? build() => null;
+  DateTime? build() {
+    _loadFromPrefs();
+    return null;
+  }
+
+  Future<void> _loadFromPrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(AppPreferences.keyLastSyncedAt);
+    if (raw == null) return;
+    final parsed = DateTime.tryParse(raw);
+    if (parsed != null) {
+      state = parsed;
+    }
+  }
 }
 
 /// Last successful sync timestamp (initialized from SharedPreferences).

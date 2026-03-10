@@ -1,6 +1,6 @@
+import 'package:budgie_breeding_tracker/core/utils/app_haptics.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
@@ -286,7 +286,7 @@ class _ChickFormScreenState extends ConsumerState<ChickFormScreen> {
       ).showSnackBar(SnackBar(content: Text('chicks.hatch_date_select'.tr())));
       return;
     }
-    HapticFeedback.lightImpact();
+    AppHaptics.lightImpact();
 
     final userId = ref.read(currentUserIdProvider);
     final notifier = ref.read(chickFormStateProvider.notifier);

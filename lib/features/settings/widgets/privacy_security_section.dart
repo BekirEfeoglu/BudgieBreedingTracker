@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/constants/app_icons.dart';
 import '../../../core/theme/app_spacing.dart';
@@ -55,14 +54,12 @@ class PrivacySecuritySection extends ConsumerWidget {
         SettingsNavigationTile(
           title: 'settings.privacy_policy'.tr(),
           icon: const Icon(LucideIcons.fileText),
-          trailing: const Icon(LucideIcons.externalLink, size: 18),
-          onTap: () => _launchUrl('https://budgiebreedingtracker.online/privacy-policy.html'),
+          onTap: () => context.push(AppRoutes.privacyPolicy),
         ),
         SettingsNavigationTile(
           title: 'settings.terms'.tr(),
           icon: const Icon(LucideIcons.scale),
-          trailing: const Icon(LucideIcons.externalLink, size: 18),
-          onTap: () => _launchUrl('https://budgiebreedingtracker.online/terms-of-service.html'),
+          onTap: () => context.push(AppRoutes.termsOfService),
         ),
         SettingsActionTile(
           title: 'settings.delete_account'.tr(),
@@ -198,11 +195,4 @@ class PrivacySecuritySection extends ConsumerWidget {
 
   Future<void> _showDeleteAccountDialog(BuildContext context, WidgetRef ref) =>
       confirmAndDeleteAccount(context, ref);
-
-  Future<void> _launchUrl(String url) async {
-    final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    }
-  }
 }

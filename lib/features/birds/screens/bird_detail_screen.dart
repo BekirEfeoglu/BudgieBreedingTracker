@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:flutter/services.dart';
+import 'package:budgie_breeding_tracker/core/utils/app_haptics.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
@@ -158,7 +158,7 @@ class _DetailContent extends ConsumerWidget {
           isDestructive: true,
         );
         if (confirmed == true) {
-          HapticFeedback.heavyImpact();
+          AppHaptics.heavyImpact();
           await notifier.markAsDead(bird.id);
         }
       case 'sold':
@@ -171,7 +171,7 @@ class _DetailContent extends ConsumerWidget {
           confirmLabel: 'common.yes'.tr(),
         );
         if (confirmed == true) {
-          HapticFeedback.mediumImpact();
+          AppHaptics.mediumImpact();
           await notifier.markAsSold(bird.id);
         }
       case 'delete':
@@ -185,7 +185,7 @@ class _DetailContent extends ConsumerWidget {
           isDestructive: true,
         );
         if (confirmed == true) {
-          HapticFeedback.heavyImpact();
+          AppHaptics.heavyImpact();
           await notifier.deleteBird(bird.id);
           if (context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(

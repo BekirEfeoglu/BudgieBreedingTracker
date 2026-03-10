@@ -2,10 +2,10 @@ import 'dart:io';
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:budgie_breeding_tracker/core/utils/app_haptics.dart';
 
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
@@ -253,7 +253,7 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen>
   void _submit() {
     if (!_formKey.currentState!.validate()) return;
 
-    HapticFeedback.lightImpact();
+    AppHaptics.lightImpact();
 
     final email = _emailController.text.trim();
     ref.read(feedbackFormStateProvider.notifier).submit(

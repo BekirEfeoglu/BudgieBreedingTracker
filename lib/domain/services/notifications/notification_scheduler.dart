@@ -223,7 +223,7 @@ class NotificationScheduler {
 
     final now = DateTime.now();
     final futures = <Future<void>>[];
-    final safeDurationDays = durationDays.clamp(0, _idsPerEntitySlot) as int;
+    final safeDurationDays = durationDays.clamp(0, _idsPerEntitySlot);
     if (safeDurationDays < durationDays) {
       AppLogger.warning(
         '[NotificationScheduler] Health check duration capped '
@@ -414,7 +414,7 @@ class NotificationScheduler {
     String birdId, {
     int maxDays = 365,
   }) async {
-    final safeMaxDays = maxDays.clamp(0, _idsPerEntitySlot) as int;
+    final safeMaxDays = maxDays.clamp(0, _idsPerEntitySlot);
     final futures = <Future<void>>[];
     for (var day = 0; day < safeMaxDays; day++) {
       final id = notificationId(healthCheckBaseId, birdId, day);

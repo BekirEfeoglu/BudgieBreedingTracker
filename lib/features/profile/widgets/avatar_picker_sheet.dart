@@ -1,11 +1,11 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../core/constants/app_icons.dart';
+import '../../../core/utils/app_haptics.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_icon.dart';
 import '../providers/profile_providers.dart';
@@ -115,7 +115,7 @@ class _AvatarPickerContent extends StatelessWidget {
     );
 
     if (file != null) {
-      HapticFeedback.lightImpact();
+      AppHaptics.lightImpact();
       ref.read(avatarUploadStateProvider.notifier).uploadAvatar(file);
     }
   }

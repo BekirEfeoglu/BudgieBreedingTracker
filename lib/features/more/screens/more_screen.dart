@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
@@ -96,18 +95,12 @@ class MoreScreen extends ConsumerWidget {
           _MoreTile(
             icon: const Icon(LucideIcons.fileText),
             title: 'settings.privacy_policy'.tr(),
-            trailing: const Icon(LucideIcons.externalLink, size: 18),
-            onTap: () => _openExternal(
-              'https://budgiebreedingtracker.online/privacy-policy.html',
-            ),
+            onTap: () => context.push(AppRoutes.privacyPolicy),
           ),
           _MoreTile(
             icon: const Icon(LucideIcons.scale),
             title: 'settings.terms'.tr(),
-            trailing: const Icon(LucideIcons.externalLink, size: 18),
-            onTap: () => _openExternal(
-              'https://budgiebreedingtracker.online/terms-of-service.html',
-            ),
+            onTap: () => context.push(AppRoutes.termsOfService),
           ),
           const Divider(height: 1, indent: 16, endIndent: 16),
           // Settings
@@ -153,12 +146,6 @@ class MoreScreen extends ConsumerWidget {
     );
   }
 
-  Future<void> _openExternal(String url) async {
-    final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    }
-  }
 }
 
 class _MoreTile extends StatelessWidget {

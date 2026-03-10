@@ -7,6 +7,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 
 import 'package:budgie_breeding_tracker/domain/services/sync/sync_orchestrator.dart';
 import 'package:budgie_breeding_tracker/domain/services/sync/sync_providers.dart';
+import 'package:budgie_breeding_tracker/features/notifications/providers/notification_settings_providers.dart';
 import 'package:budgie_breeding_tracker/features/settings/providers/settings_providers.dart';
 import 'package:budgie_breeding_tracker/features/settings/screens/settings_screen.dart';
 import 'package:budgie_breeding_tracker/features/settings/widgets/about_section.dart';
@@ -20,6 +21,22 @@ import 'package:budgie_breeding_tracker/features/settings/widgets/privacy_securi
 import '../../../helpers/test_settings_notifiers.dart';
 
 class MockSyncOrchestrator extends Mock implements SyncOrchestrator {}
+
+class _TestNotificationToggleSettingsNotifier
+    extends NotificationToggleSettingsNotifier {
+  @override
+  NotificationToggleSettings build() => const NotificationToggleSettings();
+
+  @override
+  Future<void> setAll(bool value) async {
+    state = state.copyWith(
+      eggTurning: value,
+      incubation: value,
+      chickCare: value,
+      healthCheck: value,
+    );
+  }
+}
 
 void main() {
   late GoRouter router;
@@ -57,8 +74,8 @@ void main() {
         themeModeProvider.overrideWith(TestThemeModeNotifier.new),
         fontScaleProvider.overrideWith(TestFontScaleNotifier.new),
         appLocaleProvider.overrideWith(TestAppLocaleNotifier.new),
-        notificationsMasterProvider.overrideWith(
-          TestNotificationsMasterNotifier.new,
+        notificationToggleSettingsProvider.overrideWith(
+          _TestNotificationToggleSettingsNotifier.new,
         ),
         compactViewProvider.overrideWith(TestCompactViewNotifier.new),
         autoSyncProvider.overrideWith(TestAutoSyncNotifier.new),
