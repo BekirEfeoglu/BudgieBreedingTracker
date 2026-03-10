@@ -1,9 +1,9 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_spacing.dart';
+import '../../../core/utils/app_haptics.dart';
 import '../../../core/utils/logger.dart';
 import '../../../data/models/profile_model.dart';
 import '../../../data/repositories/repository_providers.dart';
@@ -118,7 +118,7 @@ class _EditProfileSheetState extends ConsumerState<EditProfileSheet> {
       await repo.save(updatedProfile);
 
       if (mounted) {
-        HapticFeedback.mediumImpact();
+        AppHaptics.mediumImpact();
         Navigator.of(context).pop();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('common.saved_successfully'.tr())),

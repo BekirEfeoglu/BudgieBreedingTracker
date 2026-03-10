@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:budgie_breeding_tracker/features/settings/providers/export_providers.dart';
 import 'package:budgie_breeding_tracker/features/settings/screens/backup_screen.dart';
@@ -10,6 +11,7 @@ void main() {
   late GoRouter router;
 
   setUp(() {
+    SharedPreferences.setMockInitialValues({});
     router = GoRouter(
       initialLocation: '/backup',
       routes: [

@@ -1,10 +1,10 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/constants/app_icons.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/utils/app_haptics.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_icon.dart';
 import '../../../domain/services/sync/sync_orchestrator.dart';
@@ -122,11 +122,11 @@ class SyncStatusTile extends ConsumerWidget {
   }
 
   Future<void> _triggerSync(WidgetRef ref) async {
-    HapticFeedback.lightImpact();
+    AppHaptics.lightImpact();
     final orchestrator = ref.read(syncOrchestratorProvider);
     final result = await orchestrator.forceFullSync();
     if (result == SyncResult.success) {
-      HapticFeedback.mediumImpact();
+      AppHaptics.mediumImpact();
       ref.read(syncErrorProvider.notifier).state = false;
     }
   }

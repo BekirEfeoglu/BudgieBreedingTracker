@@ -54,6 +54,8 @@ abstract class AppRoutes {
   static const notificationSettings = '/notification-settings';
   static const backup = '/backup';
   static const feedback = '/feedback';
+  static const privacyPolicy = '/privacy-policy';
+  static const termsOfService = '/terms-of-service';
   static const twoFactorSetup = '/2fa-setup';
   static const twoFactorVerify = '/2fa-verify';
 

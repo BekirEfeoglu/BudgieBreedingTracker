@@ -16,6 +16,7 @@ import '../../../features/auth/providers/auth_providers.dart';
 import '../../../domain/services/ads/ad_reward_providers.dart';
 import '../../../features/premium/providers/premium_providers.dart';
 import '../../../router/route_names.dart';
+import '../providers/settings_providers.dart';
 import '../providers/export_providers.dart';
 
 /// Screen for exporting data as PDF or Excel.
@@ -26,13 +27,14 @@ class BackupScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isLoading = ref.watch(exportLoadingProvider);
     final lastExport = ref.watch(lastExportDateProvider);
+    final dateFormat = ref.watch(dateFormatProvider);
 
     return Scaffold(
       appBar: AppBar(title: Text('backup.title'.tr())),
       body: ListView(
         padding: AppSpacing.screenPadding,
         children: [
-          _InfoCard(lastExport: lastExport),
+          _InfoCard(lastExport: lastExport, dateFormat: dateFormat),
           const SizedBox(height: AppSpacing.xl),
           _SectionHeader(title: 'backup.export_data'.tr()),
           const SizedBox(height: AppSpacing.md),
@@ -173,11 +175,6 @@ class BackupScreen extends ConsumerWidget {
       _showPremiumDialog(context, 'premium.export_required'.tr());
       return;
     }
-    // Consume reward use if not premium
-    if (!isPremium && hasExportReward) {
-      ref.read(isExportRewardActiveProvider.notifier).consume();
-    }
-
     final actions = ref.read(exportActionsProvider);
     try {
       switch (type) {
@@ -188,6 +185,12 @@ class BackupScreen extends ConsumerWidget {
         case 'birds_pdf':
           await actions.exportBirdsPdf();
       }
+
+      // Consume reward only after a successful export.
+      if (!isPremium && hasExportReward) {
+        ref.read(isExportRewardActiveProvider.notifier).consume();
+      }
+
       if (context.mounted) {
         context.showSnackBar('backup.export_success'.tr());
       }
@@ -201,15 +204,16 @@ class BackupScreen extends ConsumerWidget {
 }
 
 class _InfoCard extends StatelessWidget {
-  const _InfoCard({this.lastExport});
+  const _InfoCard({this.lastExport, required this.dateFormat});
 
   final DateTime? lastExport;
+  final AppDateFormat dateFormat;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final dateText = lastExport != null
-        ? DateFormat('dd.MM.yyyy HH:mm').format(lastExport!)
+        ? dateFormat.formatter(withTime: true).format(lastExport!)
         : 'backup.never'.tr();
 
     return Card(

@@ -1,10 +1,12 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
+import 'package:budgie_breeding_tracker/features/settings/providers/settings_providers.dart';
 
 /// A read-only text field that opens a date picker on tap.
-class DatePickerField extends StatefulWidget {
+class DatePickerField extends ConsumerStatefulWidget {
   final DateTime? value;
   final String label;
   final ValueChanged<DateTime> onChanged;
@@ -23,28 +25,16 @@ class DatePickerField extends StatefulWidget {
   });
 
   @override
-  State<DatePickerField> createState() => _DatePickerFieldState();
+  ConsumerState<DatePickerField> createState() => _DatePickerFieldState();
 }
 
-class _DatePickerFieldState extends State<DatePickerField> {
+class _DatePickerFieldState extends ConsumerState<DatePickerField> {
   late final TextEditingController _controller;
-  final _formatter = DateFormat('dd.MM.yyyy');
 
   @override
   void initState() {
     super.initState();
-    _controller = TextEditingController(
-      text: widget.value != null ? _formatter.format(widget.value!) : '',
-    );
-  }
-
-  @override
-  void didUpdateWidget(covariant DatePickerField oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.value != widget.value) {
-      _controller.text =
-          widget.value != null ? _formatter.format(widget.value!) : '';
-    }
+    _controller = TextEditingController();
   }
 
   @override
@@ -55,6 +45,16 @@ class _DatePickerFieldState extends State<DatePickerField> {
 
   @override
   Widget build(BuildContext context) {
+    final formatter = ref.watch(dateFormatProvider).formatter();
+    final formattedValue =
+        widget.value != null ? formatter.format(widget.value!) : '';
+    if (_controller.text != formattedValue) {
+      _controller.value = TextEditingValue(
+        text: formattedValue,
+        selection: TextSelection.collapsed(offset: formattedValue.length),
+      );
+    }
+
     return TextFormField(
       controller: _controller,
       readOnly: true,

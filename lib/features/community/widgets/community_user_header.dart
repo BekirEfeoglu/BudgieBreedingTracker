@@ -1,7 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:budgie_breeding_tracker/core/utils/app_haptics.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_colors.dart';
@@ -130,7 +130,7 @@ class CommunityUserHeader extends StatelessWidget {
               child: isFollowing
                   ? OutlinedButton(
                       onPressed: () {
-                        HapticFeedback.lightImpact();
+                        AppHaptics.lightImpact();
                         onFollowToggle?.call();
                       },
                       style: OutlinedButton.styleFrom(
@@ -143,7 +143,7 @@ class CommunityUserHeader extends StatelessWidget {
                     )
                   : FilledButton.tonal(
                       onPressed: () {
-                        HapticFeedback.lightImpact();
+                        AppHaptics.lightImpact();
                         onFollowToggle?.call();
                       },
                       style: FilledButton.styleFrom(

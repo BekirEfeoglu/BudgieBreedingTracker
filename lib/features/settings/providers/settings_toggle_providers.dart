@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../core/utils/app_haptics.dart';
 import '../../../data/local/preferences/app_preferences.dart';
 
 // Re-export sync settings from domain layer so existing feature imports work.
@@ -76,10 +77,12 @@ class HapticFeedbackNotifier extends Notifier<bool> {
   Future<void> _loadFromPrefs() async {
     final prefs = await SharedPreferences.getInstance();
     state = prefs.getBool(AppPreferences.keyHapticFeedback) ?? true;
+    AppHaptics.setEnabled(state);
   }
 
   Future<void> toggle() async {
     state = !state;
+    AppHaptics.setEnabled(state);
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(AppPreferences.keyHapticFeedback, state);
   }

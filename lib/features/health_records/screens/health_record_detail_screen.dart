@@ -1,6 +1,6 @@
+import 'package:budgie_breeding_tracker/core/utils/app_haptics.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -198,7 +198,7 @@ class _DetailContent extends ConsumerWidget {
   }
 
   void _onDelete(BuildContext context, WidgetRef ref) async {
-    HapticFeedback.lightImpact();
+    AppHaptics.lightImpact();
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(

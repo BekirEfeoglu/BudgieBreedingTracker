@@ -165,6 +165,7 @@ class _DataStorageSectionState extends ConsumerState<DataStorageSection> {
         }
       }
       ref.invalidate(cacheSizeProvider);
+      ref.invalidate(imageStorageSizeProvider);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('settings.cache_cleared'.tr())),
@@ -243,7 +244,19 @@ class _DataStorageSectionState extends ConsumerState<DataStorageSection> {
       builder: (_) => Consumer(
         builder: (ctx, dialogRef, _) {
           final cacheSizeAsync = dialogRef.watch(cacheSizeProvider);
+          final databaseSizeAsync = dialogRef.watch(databaseSizeProvider);
+          final imageSizeAsync = dialogRef.watch(imageStorageSizeProvider);
           final cacheText = cacheSizeAsync.when(
+            data: (bytes) => _formatBytes(bytes),
+            loading: () => 'settings.storage_calculating'.tr(),
+            error: (_, __) => '-',
+          );
+          final dbText = databaseSizeAsync.when(
+            data: (bytes) => _formatBytes(bytes),
+            loading: () => 'settings.storage_calculating'.tr(),
+            error: (_, __) => '-',
+          );
+          final imageText = imageSizeAsync.when(
             data: (bytes) => _formatBytes(bytes),
             loading: () => 'settings.storage_calculating'.tr(),
             error: (_, __) => '-',
@@ -256,6 +269,7 @@ class _DataStorageSectionState extends ConsumerState<DataStorageSection> {
               children: [
                 _StorageInfoRow(
                   label: 'settings.storage_database'.tr(),
+                  value: dbText,
                   icon: AppIcon(AppIcons.database, size: 20, color: theme.colorScheme.onSurfaceVariant),
                   theme: theme,
                 ),
@@ -269,6 +283,7 @@ class _DataStorageSectionState extends ConsumerState<DataStorageSection> {
                 const Divider(height: 1),
                 _StorageInfoRow(
                   label: 'settings.storage_images'.tr(),
+                  value: imageText,
                   icon: AppIcon(AppIcons.photo, size: 20, color: theme.colorScheme.onSurfaceVariant),
                   theme: theme,
                 ),

@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:budgie_breeding_tracker/features/settings/providers/settings_providers.dart';
+import 'package:budgie_breeding_tracker/features/notifications/providers/notification_settings_providers.dart';
 import 'package:budgie_breeding_tracker/features/settings/widgets/notifications_section.dart';
 import 'package:budgie_breeding_tracker/features/settings/widgets/settings_navigation_tile.dart';
 import 'package:budgie_breeding_tracker/features/settings/widgets/settings_section_header.dart';
@@ -12,16 +11,27 @@ import 'package:budgie_breeding_tracker/features/settings/widgets/settings_toggl
 
 // -- Test Notifier --
 
-class _FakeNotificationsMasterNotifier extends NotificationsMasterNotifier {
+class _FakeNotificationToggleSettingsNotifier
+    extends NotificationToggleSettingsNotifier {
   final bool _initial;
-  _FakeNotificationsMasterNotifier(this._initial);
+  _FakeNotificationToggleSettingsNotifier(this._initial);
 
   @override
-  bool build() => _initial;
+  NotificationToggleSettings build() => NotificationToggleSettings(
+        eggTurning: _initial,
+        incubation: _initial,
+        chickCare: _initial,
+        healthCheck: _initial,
+      );
 
   @override
-  Future<void> toggle() async {
-    state = !state;
+  Future<void> setAll(bool value) async {
+    state = state.copyWith(
+      eggTurning: value,
+      incubation: value,
+      chickCare: value,
+      healthCheck: value,
+    );
   }
 }
 
@@ -29,7 +39,6 @@ void main() {
   late GoRouter router;
 
   setUp(() {
-    SharedPreferences.setMockInitialValues({});
     router = GoRouter(
       initialLocation: '/settings',
       routes: [
@@ -50,8 +59,8 @@ void main() {
   Widget buildSubject({bool masterEnabled = true}) {
     return ProviderScope(
       overrides: [
-        notificationsMasterProvider.overrideWith(
-          () => _FakeNotificationsMasterNotifier(masterEnabled),
+        notificationToggleSettingsProvider.overrideWith(
+          () => _FakeNotificationToggleSettingsNotifier(masterEnabled),
         ),
       ],
       child: MaterialApp.router(routerConfig: router),
@@ -116,10 +125,10 @@ void main() {
       final container = ProviderScope.containerOf(
         tester.element(find.byType(NotificationsSection)),
       );
-      container.read(notificationsMasterProvider.notifier).toggle();
+      container.read(notificationToggleSettingsProvider.notifier).setAll(false);
       await tester.pump(const Duration(milliseconds: 100));
 
-      expect(container.read(notificationsMasterProvider), isFalse);
+      expect(container.read(notificationToggleSettingsProvider).allEnabled, isFalse);
     });
 
     testWidgets('bildirim kategorileri tile tiklama GoRouter push calisir', (

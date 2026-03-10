@@ -1,6 +1,6 @@
+import 'package:budgie_breeding_tracker/core/utils/app_haptics.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
@@ -232,7 +232,7 @@ class FeedbackFormNotifier extends Notifier<FeedbackFormState> {
       // Refresh history so newly submitted feedback appears immediately
       ref.invalidate(feedbackHistoryProvider);
 
-      HapticFeedback.lightImpact();
+      AppHaptics.lightImpact();
       state = state.copyWith(isLoading: false, isSuccess: true);
     } catch (e, st) {
       AppLogger.error('FeedbackFormNotifier', e, st);

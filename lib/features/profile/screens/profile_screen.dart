@@ -1,12 +1,12 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../core/utils/app_haptics.dart';
 import '../../../core/widgets/error_state.dart';
 import '../../../data/models/profile_model.dart';
 import '../../../router/route_names.dart';
@@ -72,7 +72,7 @@ class ProfileScreen extends ConsumerWidget {
             onRefresh: () async {
               ref.invalidate(userProfileProvider);
               ref.invalidate(profileStatsProvider(userId));
-              HapticFeedback.mediumImpact();
+              AppHaptics.mediumImpact();
               if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
