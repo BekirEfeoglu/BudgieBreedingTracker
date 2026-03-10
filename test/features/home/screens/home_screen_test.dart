@@ -8,6 +8,7 @@ import 'package:budgie_breeding_tracker/data/models/statistics_models.dart';
 import 'package:budgie_breeding_tracker/domain/services/sync/sync_orchestrator.dart';
 import 'package:budgie_breeding_tracker/domain/services/sync/sync_providers.dart';
 import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
+import 'package:budgie_breeding_tracker/features/chicks/providers/chick_providers.dart';
 import 'package:budgie_breeding_tracker/features/home/providers/home_providers.dart';
 import 'package:budgie_breeding_tracker/features/home/screens/home_screen.dart';
 import 'package:budgie_breeding_tracker/features/home/widgets/dashboard_stats_grid.dart';
@@ -62,6 +63,7 @@ void main() {
           recentChicksProvider(
             'test-user',
           ).overrideWith((_) => Stream.value([])),
+          chickParentsByEggProvider('test-user').overrideWith((_) async => {}),
           activeBreedingsForDashboardProvider(
             'test-user',
           ).overrideWith((_) => Stream.value([])),

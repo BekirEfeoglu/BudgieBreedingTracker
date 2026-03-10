@@ -40,6 +40,7 @@ class _ChickListScreenState extends ConsumerState<ChickListScreen> {
   Widget build(BuildContext context) {
     final userId = ref.watch(currentUserIdProvider);
     final chicksAsync = ref.watch(chicksStreamProvider(userId));
+    final parentsByEggAsync = ref.watch(chickParentsByEggProvider(userId));
     final query = ref.watch(chickSearchQueryProvider);
 
     // Sync controller when query is cleared externally
@@ -53,11 +54,13 @@ class _ChickListScreenState extends ConsumerState<ChickListScreen> {
         context.push(route);
         return;
       }
-      ref.read(adServiceProvider).showInterstitialAd(
-        onAdClosed: () {
-          if (context.mounted) context.push(route);
-        },
-      );
+      ref
+          .read(adServiceProvider)
+          .showInterstitialAd(
+            onAdClosed: () {
+              if (context.mounted) context.push(route);
+            },
+          );
     }
 
     return Scaffold(
@@ -114,39 +117,48 @@ class _ChickListScreenState extends ConsumerState<ChickListScreen> {
                         icon: const Icon(LucideIcons.x),
                         onPressed: () {
                           _searchController.clear();
-                          ref
-                              .read(chickSearchQueryProvider.notifier)
-                              .state = '';
+                          ref.read(chickSearchQueryProvider.notifier).state =
+                              '';
                         },
                       )
                     : null,
                 border: const OutlineInputBorder(),
                 contentPadding: const EdgeInsets.symmetric(
-                    vertical: AppSpacing.md),
+                  vertical: AppSpacing.md,
+                ),
               ),
               onChanged: (value) {
                 ref.read(chickSearchQueryProvider.notifier).state = value;
               },
             ),
           ),
-          const Divider(height: 1, indent: AppSpacing.lg, endIndent: AppSpacing.lg),
+          const Divider(
+            height: 1,
+            indent: AppSpacing.lg,
+            endIndent: AppSpacing.lg,
+          ),
           const SizedBox(height: AppSpacing.xs),
           const ChickFilterBar(),
           const SizedBox(height: AppSpacing.sm),
           Center(child: AdBannerWidget(isPremiumProvider: isPremiumProvider)),
           Expanded(
             child: chicksAsync.when(
-              loading: () => const Center(
-                child: CircularProgressIndicator(),
-              ),
+              loading: () => const Center(child: CircularProgressIndicator()),
               error: (error, _) => ErrorState(
                 message: '${'common.data_load_error'.tr()}: $error',
-                onRetry: () =>
-                    ref.invalidate(chicksStreamProvider(userId)),
+                onRetry: () {
+                  ref.invalidate(chicksStreamProvider(userId));
+                  ref.invalidate(chickParentsByEggProvider(userId));
+                },
               ),
               data: (allChicks) {
                 final chicks = ref.watch(
-                    searchedAndFilteredChicksProvider(allChicks));
+                  searchedAndFilteredChicksProvider(allChicks),
+                );
+                final parentsByEgg = switch (parentsByEggAsync) {
+                  AsyncData(:final value) => value,
+                  _ => const <String, ChickParentsInfo>{},
+                };
 
                 if (allChicks.isEmpty) {
                   return EmptyState(
@@ -167,8 +179,10 @@ class _ChickListScreenState extends ConsumerState<ChickListScreen> {
                 }
 
                 return RefreshIndicator(
-                  onRefresh: () async =>
-                      ref.invalidate(chicksStreamProvider(userId)),
+                  onRefresh: () async {
+                    ref.invalidate(chicksStreamProvider(userId));
+                    ref.invalidate(chickParentsByEggProvider(userId));
+                  },
                   child: ListView.builder(
                     physics: const AlwaysScrollableScrollPhysics(),
                     padding: const EdgeInsets.only(
@@ -180,7 +194,12 @@ class _ChickListScreenState extends ConsumerState<ChickListScreen> {
                       return ChickCard(
                         key: ValueKey(chicks[index].id),
                         chick: chicks[index],
-                        onTap: () => navigateWithAd('/chicks/${chicks[index].id}'),
+                        resolveParents: false,
+                        parents: chicks[index].eggId == null
+                            ? null
+                            : parentsByEgg[chicks[index].eggId!],
+                        onTap: () =>
+                            navigateWithAd('/chicks/${chicks[index].id}'),
                       );
                     },
                   ),

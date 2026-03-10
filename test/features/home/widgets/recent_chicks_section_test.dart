@@ -18,8 +18,9 @@ void main() {
       routes: [
         GoRoute(
           path: '/',
-          builder: (_, __) =>
-              Scaffold(body: RecentChicksSection(chicks: chicks)),
+          builder: (_, __) => Scaffold(
+            body: RecentChicksSection(chicks: chicks, userId: 'user-1'),
+          ),
         ),
         GoRoute(
           path: '/chicks',
@@ -35,9 +36,7 @@ void main() {
 
     return ProviderScope(
       overrides: [
-        chickParentsProvider(null).overrideWith((_) async => null),
-        chickParentsProvider('egg-1').overrideWith((_) async => null),
-        chickParentsProvider('egg-2').overrideWith((_) async => null),
+        chickParentsByEggProvider('user-1').overrideWith((_) async => {}),
       ],
       child: MaterialApp.router(routerConfig: router),
     );

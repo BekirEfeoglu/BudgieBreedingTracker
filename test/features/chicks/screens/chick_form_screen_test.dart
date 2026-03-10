@@ -114,8 +114,6 @@ void main() {
     testWidgets('title changes for edit mode when editChickId is provided', (
       tester,
     ) async {
-      // Without an actual editChickId stream we can only verify the loading
-      // state which shows 'common.loading' when isEdit && existingChick == null.
       final editRouter = GoRouter(
         initialLocation: '/chicks/form',
         routes: [
@@ -147,8 +145,9 @@ void main() {
       );
       await tester.pump();
 
-      // In edit mode with no existing chick loaded → shows loading title
-      expect(find.text('common.loading'), findsOneWidget);
+      // In edit mode with null stream result -> shows not found state.
+      expect(find.text('common.not_found'), findsOneWidget);
+      expect(find.text('chicks.not_found'), findsOneWidget);
     });
   });
 }

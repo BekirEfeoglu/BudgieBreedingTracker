@@ -246,7 +246,11 @@ class ChickFormNotifier extends Notifier<ChickFormState> {
 
       await birdRepo.save(bird);
       await chickRepo.save(
-        chick.copyWith(birdId: birdId, updatedAt: DateTime.now()),
+        chick.copyWith(
+          birdId: birdId,
+          weanDate: chick.weanDate ?? DateTime.now(),
+          updatedAt: DateTime.now(),
+        ),
       );
 
       state = state.copyWith(isLoading: false, isSuccess: true);
