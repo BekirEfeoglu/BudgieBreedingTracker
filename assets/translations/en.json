@@ -201,6 +201,8 @@
     "age_days": "{days} d",
     "photos": "Photos",
     "add_photo": "Add Photo",
+    "photo_source_gallery": "Choose from Gallery",
+    "photo_source_camera": "Take a Photo",
     "photo_upload_error": "Failed to upload photo",
     "photos_load_error": "Failed to load photos",
     "uploading_photo": "Uploading...",

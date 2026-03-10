@@ -101,6 +101,41 @@ void main() {
       expect(find.text('birds.species'), findsAtLeastNWidgets(1));
     });
 
+    testWidgets('species dropdown only includes budgie option', (tester) async {
+      final nameCtrl = TextEditingController();
+      final colorCtrl = TextEditingController();
+
+      await _pumpSimple(
+        tester,
+        BirdFormBasicInfoSection(
+          nameController: nameCtrl,
+          gender: BirdGender.male,
+          species: Species.canary,
+          colorMutation: null,
+          colorNoteController: colorCtrl,
+          onGenderChanged: (_) {},
+          onSpeciesChanged: (_) {},
+          onColorChanged: (_) {},
+        ),
+      );
+
+      final speciesDropdownFinder = find.byWidgetPredicate(
+        (widget) => widget is DropdownButton<Species>,
+      );
+      expect(speciesDropdownFinder, findsOneWidget);
+
+      final speciesDropdown = tester.widget<DropdownButton<Species>>(
+        speciesDropdownFinder,
+      );
+      final speciesValues = speciesDropdown.items!
+          .map((item) => item.value)
+          .whereType<Species>()
+          .toList();
+
+      expect(speciesDropdown.value, Species.budgie);
+      expect(speciesValues, equals([Species.budgie]));
+    });
+
     testWidgets(
       'color dropdown excludes unknown option and normalizes unknown value',
       (tester) async {

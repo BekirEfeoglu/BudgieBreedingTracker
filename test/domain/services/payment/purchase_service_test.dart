@@ -307,6 +307,31 @@ void main() {
       expect(await service.getOfferings(), isEmpty);
     });
 
+    test(
+      'getOfferings disables repeated billing calls after not-allowed error',
+      () async {
+        var getOfferingsCalls = 0;
+        await _installHandler((call) async {
+          if (call.method == 'setupPurchases') return null;
+          if (call.method == 'getOfferings') {
+            getOfferingsCalls++;
+            throw PlatformException(
+              code: PurchasesErrorCode.purchaseNotAllowedError.index.toString(),
+              message: 'Billing service unavailable on device',
+            );
+          }
+          return null;
+        });
+
+        final service = PurchaseService();
+        await service.initialize(apiKey: 'test_key', userId: 'user-1');
+
+        expect(await service.getOfferings(), isEmpty);
+        expect(await service.getOfferings(), isEmpty);
+        expect(getOfferingsCalls, 1);
+      },
+    );
+
     test('purchasePackage returns true when premium becomes active', () async {
       await _installHandler((call) async {
         if (call.method == 'setupPurchases') return null;
@@ -476,6 +501,47 @@ void main() {
         ),
       );
     });
+
+    test(
+      'purchasePackage short-circuits when billing is unavailable in session',
+      () async {
+        var purchaseCalls = 0;
+        await _installHandler((call) async {
+          if (call.method == 'setupPurchases') return null;
+          if (call.method == 'getCustomerInfo') {
+            throw PlatformException(
+              code: PurchasesErrorCode.purchaseNotAllowedError.index.toString(),
+              message: 'Billing service unavailable on device',
+            );
+          }
+          if (call.method == 'purchasePackage') {
+            purchaseCalls++;
+            return {
+              'customerInfo': _customerInfo(premiumActive: true),
+              'transaction': _transactionJson(productId: 'premium_monthly'),
+            };
+          }
+          return null;
+        });
+
+        final service = PurchaseService();
+        final package = Package.fromJson(_monthlyPackageJson());
+        await service.initialize(apiKey: 'test_key', userId: 'user-1');
+
+        expect(await service.isPremium(), isFalse);
+        expect(
+          () => service.purchasePackage(package),
+          throwsA(
+            isA<PurchaseException>().having(
+              (e) => e.code,
+              'code',
+              'purchase_not_allowed',
+            ),
+          ),
+        );
+        expect(purchaseCalls, 0);
+      },
+    );
 
     test('restorePurchases returns true when entitlement is active', () async {
       await _installHandler((call) async {

@@ -40,6 +40,10 @@ class BirdFormBasicInfoSection extends StatelessWidget {
     final normalizedColorMutation = colorMutation == BirdColor.unknown
         ? null
         : colorMutation;
+    const selectableSpecies = <Species>[Species.budgie];
+    final selectedSpecies = selectableSpecies.contains(species)
+        ? species
+        : Species.budgie;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -95,17 +99,16 @@ class BirdFormBasicInfoSection extends StatelessWidget {
         ),
         const SizedBox(height: AppSpacing.md),
         DropdownButtonFormField<Species>(
-          initialValue: species,
+          initialValue: selectedSpecies,
           decoration: InputDecoration(
             labelText: 'birds.species'.tr(),
             border: const OutlineInputBorder(),
             prefixIcon: Padding(
               padding: const EdgeInsets.all(AppSpacing.md),
-              child: speciesIconWidget(species, size: 20),
+              child: speciesIconWidget(selectedSpecies, size: 20),
             ),
           ),
-          items: Species.values
-              .where((s) => s != Species.unknown)
+          items: selectableSpecies
               .map(
                 (s) => DropdownMenuItem(
                   value: s,

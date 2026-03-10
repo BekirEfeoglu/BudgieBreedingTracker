@@ -13,6 +13,8 @@ class PurchaseService {
   Future<bool>? _initializationFuture;
   String? _configuredApiKey;
   String? _configuredUserId;
+  bool _storeUnavailable = false;
+  String? _storeUnavailableReason;
 
   /// Initializes RevenueCat with the API key and user ID.
   ///
@@ -79,11 +81,19 @@ class PurchaseService {
 
   /// Returns whether the user currently has an active premium entitlement.
   Future<bool> isPremium() async {
-    if (!_initialized) return false;
+    if (!_initialized || _storeUnavailable) return false;
 
     try {
       final customerInfo = await Purchases.getCustomerInfo();
       return customerInfo.entitlements.active.containsKey(_entitlementId);
+    } on PlatformException catch (e) {
+      if (_markStoreUnavailableIfNeeded(e)) {
+        return false;
+      }
+      AppLogger.warning(
+        'Failed to check premium status: ${e.message ?? e.code}',
+      );
+      return false;
     } catch (e) {
       AppLogger.warning('Failed to check premium status: $e');
       return false;
@@ -92,11 +102,17 @@ class PurchaseService {
 
   /// Fetches all available subscription offerings.
   Future<List<Package>> getOfferings() async {
-    if (!_initialized) return [];
+    if (!_initialized || _storeUnavailable) return [];
 
     try {
       final offerings = await Purchases.getOfferings();
       return offerings.current?.availablePackages ?? [];
+    } on PlatformException catch (e) {
+      if (_markStoreUnavailableIfNeeded(e)) {
+        return [];
+      }
+      AppLogger.warning('Failed to get offerings: ${e.message ?? e.code}');
+      return [];
     } catch (e) {
       AppLogger.warning('Failed to get offerings: $e');
       return [];
@@ -108,6 +124,13 @@ class PurchaseService {
   /// Returns true if purchase succeeded.
   Future<bool> purchasePackage(Package package) async {
     if (!_initialized) return false;
+    if (_storeUnavailable) {
+      throw PurchaseException(
+        'purchase_not_allowed',
+        purchasesCode: PurchasesErrorCode.purchaseNotAllowedError,
+        message: _storeUnavailableReason,
+      );
+    }
 
     try {
       final result = await Purchases.purchase(PurchaseParams.package(package));
@@ -124,6 +147,7 @@ class PurchaseService {
       return isActive;
     } on PlatformException catch (e) {
       final errorCode = PurchasesErrorHelper.getErrorCode(e);
+      _markStoreUnavailableIfNeeded(e);
       if (errorCode == PurchasesErrorCode.purchaseCancelledError) {
         AppLogger.info('Purchase cancelled by user');
         return false;
@@ -161,6 +185,13 @@ class PurchaseService {
   /// Throws [PurchaseException] on restore failures (store/network/config).
   Future<bool> restorePurchases() async {
     if (!_initialized) return false;
+    if (_storeUnavailable) {
+      throw PurchaseException(
+        'purchase_not_allowed',
+        purchasesCode: PurchasesErrorCode.purchaseNotAllowedError,
+        message: _storeUnavailableReason,
+      );
+    }
 
     try {
       final customerInfo = await Purchases.restorePurchases();
@@ -170,6 +201,7 @@ class PurchaseService {
       AppLogger.info('Restore result: premium=$isActive');
       return isActive;
     } on PlatformException catch (e) {
+      _markStoreUnavailableIfNeeded(e);
       final errorCode = PurchasesErrorHelper.getErrorCode(e);
       final mappedCode = _mapPurchaseErrorCode(errorCode);
       AppLogger.warning('Restore error [$mappedCode]: ${e.message ?? e.code}');
@@ -186,7 +218,7 @@ class PurchaseService {
 
   /// Returns detailed subscription info.
   Future<SubscriptionInfo> getSubscriptionInfo() async {
-    if (!_initialized) {
+    if (!_initialized || _storeUnavailable) {
       return const SubscriptionInfo(isActive: false);
     }
 
@@ -203,6 +235,14 @@ class PurchaseService {
         productId: entitlement?.productIdentifier,
         isTrial: entitlement?.periodType == PeriodType.trial,
       );
+    } on PlatformException catch (e) {
+      if (_markStoreUnavailableIfNeeded(e)) {
+        return const SubscriptionInfo(isActive: false);
+      }
+      AppLogger.warning(
+        'Failed to get subscription info: ${e.message ?? e.code}',
+      );
+      return const SubscriptionInfo(isActive: false);
     } catch (e) {
       AppLogger.warning('Failed to get subscription info: $e');
       return const SubscriptionInfo(isActive: false);
@@ -226,6 +266,26 @@ class PurchaseService {
     _initialized = false;
     _configuredApiKey = null;
     _configuredUserId = null;
+  }
+
+  bool _markStoreUnavailableIfNeeded(PlatformException e) {
+    final errorCode = PurchasesErrorHelper.getErrorCode(e);
+    final message = (e.message ?? e.code).toUpperCase();
+    final unavailable =
+        errorCode == PurchasesErrorCode.purchaseNotAllowedError ||
+        message.contains('BILLING_UNAVAILABLE') ||
+        message.contains('BILLING SERVICE UNAVAILABLE');
+
+    if (!unavailable) return false;
+
+    if (!_storeUnavailable) {
+      _storeUnavailable = true;
+      _storeUnavailableReason = e.message ?? e.code;
+      AppLogger.warning(
+        'Billing is unavailable on this device; purchase checks are disabled for this app session',
+      );
+    }
+    return true;
   }
 
   String _mapPurchaseErrorCode(PurchasesErrorCode errorCode) {
