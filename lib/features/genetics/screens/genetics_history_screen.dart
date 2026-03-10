@@ -54,12 +54,14 @@ class _GeneticsHistoryScreenState extends ConsumerState<GeneticsHistoryScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(isSelectionMode
-            ? '${_selectedIds.length} ${'common.selected'.tr()}'
-            : 'genetics.history'.tr()),
+        title: Text(
+          isSelectionMode
+              ? '${_selectedIds.length} ${'common.selected'.tr()}'
+              : 'genetics.history'.tr(),
+        ),
         leading: isSelectionMode
             ? IconButton(
-                icon: const Icon(Icons.close),
+                icon: const Icon(LucideIcons.x),
                 onPressed: _clearSelection,
               )
             : null,

@@ -36,10 +36,7 @@ class BirdColorSimulation extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.bottomLeft,
           end: Alignment.topRight,
-          colors: [
-            colors.bodyColor,
-            _lighten(colors.bodyColor, 0.15),
-          ],
+          colors: [colors.bodyColor, _lighten(colors.bodyColor, 0.15)],
         ),
       ),
       clipBehavior: Clip.antiAlias,
@@ -97,7 +94,9 @@ class BirdColorSimulation extends StatelessWidget {
   Color _lighten(Color c, [double amount = .1]) {
     assert(amount >= 0 && amount <= 1);
     final hsl = HSLColor.fromColor(c);
-    final hslLight = hsl.withLightness((hsl.lightness + amount).clamp(0.0, 1.0));
+    final hslLight = hsl.withLightness(
+      (hsl.lightness + amount).clamp(0.0, 1.0),
+    );
     return hslLight.toColor();
   }
 
@@ -107,7 +106,7 @@ class BirdColorSimulation extends StatelessWidget {
     // Default: Green series
     Color body = AppColors.budgieGreen;
     Color mask = AppColors.birdYellow;
-    Color wing = Colors.black87;
+    Color wing = AppColors.neutral900;
 
     final isBlueSeries =
         visualMutations.contains('blue') ||
@@ -120,19 +119,24 @@ class BirdColorSimulation extends StatelessWidget {
     // 1. Base Series
     if (isBlueSeries) {
       body = AppColors.budgieBlue;
-      mask = AppColors.birdWhite; 
+      mask = AppColors.birdWhite;
     }
 
     // 2. Yellowface on Blue series
     if (isBlueSeries) {
-      if (visualMutations.contains('goldenface') || lowerPheno.contains('goldenface')) {
-        mask = AppColors.birdYellow; // Deeper yellow usually, but standard yellow is fine
+      if (visualMutations.contains('goldenface') ||
+          lowerPheno.contains('goldenface')) {
+        mask = AppColors
+            .birdYellow; // Deeper yellow usually, but standard yellow is fine
         body = _mixColor(body, AppColors.birdYellow, 0.4); // Bleeds into body
-      } else if (visualMutations.contains('yellowface_type2') || lowerPheno.contains('yellowface type ii')) {
+      } else if (visualMutations.contains('yellowface_type2') ||
+          lowerPheno.contains('yellowface type ii')) {
         mask = AppColors.birdYellow;
         body = _mixColor(body, AppColors.birdYellow, 0.2); // Mild bleed
-      } else if (visualMutations.contains('yellowface_type1') || lowerPheno.contains('yellowface type i')) {
-        mask = AppColors.birdYellow; // DF might be whiteface, but simple simulation
+      } else if (visualMutations.contains('yellowface_type1') ||
+          lowerPheno.contains('yellowface type i')) {
+        mask = AppColors
+            .birdYellow; // DF might be whiteface, but simple simulation
       }
       if (lowerPheno.contains('whitefaced')) {
         mask = AppColors.birdWhite;
@@ -140,7 +144,9 @@ class BirdColorSimulation extends StatelessWidget {
     }
 
     // 3. Dark Factors & Violet & Grey
-    if (visualMutations.contains('dark_factor') || lowerPheno.contains('dark') || lowerPheno.contains('cobalt')) {
+    if (visualMutations.contains('dark_factor') ||
+        lowerPheno.contains('dark') ||
+        lowerPheno.contains('cobalt')) {
       body = _mixColor(body, Colors.black, 0.25);
     }
     if (lowerPheno.contains('olive') || lowerPheno.contains('mauve')) {
@@ -157,7 +163,10 @@ class BirdColorSimulation extends StatelessWidget {
     }
 
     // 4. Ino (Albino/Lutino/Creamino)
-    if (visualMutations.contains('ino') || lowerPheno.contains('albino') || lowerPheno.contains('lutino') || lowerPheno.contains('creamino')) {
+    if (visualMutations.contains('ino') ||
+        lowerPheno.contains('albino') ||
+        lowerPheno.contains('lutino') ||
+        lowerPheno.contains('creamino')) {
       wing = Colors.transparent;
       if (lowerPheno.contains('albino')) {
         body = AppColors.birdWhite;
@@ -167,7 +176,7 @@ class BirdColorSimulation extends StatelessWidget {
         mask = AppColors.birdYellow;
       } else if (lowerPheno.contains('creamino')) {
         body = AppColors.birdYellow;
-        mask = AppColors.birdYellow; 
+        mask = AppColors.birdYellow;
       }
     }
 
@@ -186,48 +195,57 @@ class BirdColorSimulation extends StatelessWidget {
     }
 
     // 6. Cinnamon
-    if (visualMutations.contains('cinnamon') || lowerPheno.contains('cinnamon')) {
+    if (visualMutations.contains('cinnamon') ||
+        lowerPheno.contains('cinnamon')) {
       wing = AppColors.birdCinnamon; // Brown wings instead of black
     }
-    
+
     // 7. Spangle
     if (visualMutations.contains('spangle') || lowerPheno.contains('spangle')) {
       wing = body; // Wing edges body color
-      if (lowerPheno.contains('double factor spangle') || lowerPheno.contains('df spangle')) {
-         // DF Spangle is pure yellow or pure white depending on base
-         body = isBlueSeries ? AppColors.birdWhite : AppColors.birdYellow;
-         mask = body;
-         wing = Colors.transparent;
+      if (lowerPheno.contains('double factor spangle') ||
+          lowerPheno.contains('df spangle')) {
+        // DF Spangle is pure yellow or pure white depending on base
+        body = isBlueSeries ? AppColors.birdWhite : AppColors.birdYellow;
+        mask = body;
+        wing = Colors.transparent;
       }
     }
 
     // 8. Dilutions (Greywing, Clearwing, Dilute)
-    if (visualMutations.contains('greywing') || lowerPheno.contains('greywing')) {
+    if (visualMutations.contains('greywing') ||
+        lowerPheno.contains('greywing')) {
       body = _lighten(body, 0.2);
-      wing = Colors.grey;
+      wing = AppColors.birdGrey;
     }
-    if (visualMutations.contains('clearwing') || lowerPheno.contains('clearwing')) {
+    if (visualMutations.contains('clearwing') ||
+        lowerPheno.contains('clearwing')) {
       body = _lighten(body, 0.1);
       wing = AppColors.birdWhite;
     }
     if (visualMutations.contains('dilute') || lowerPheno.contains('dilute')) {
       body = _lighten(body, 0.4);
-      wing = Colors.grey.withValues(alpha: 0.3);
+      wing = AppColors.birdGrey.withValues(alpha: 0.3);
     }
 
     // 9. Blackface
-    if (visualMutations.contains('blackface') || lowerPheno.contains('blackface')) {
-      mask = Colors.black87;
+    if (visualMutations.contains('blackface') ||
+        lowerPheno.contains('blackface')) {
+      mask = AppColors.neutral900;
     }
 
     // 10. Pied
     if (lowerPheno.contains('pied') || lowerPheno.contains('clearflight')) {
-      body = _mixColor(body, mask, 0.3); // Mix body with base mask color for pied splotches
+      body = _mixColor(
+        body,
+        mask,
+        0.3,
+      ); // Mix body with base mask color for pied splotches
     }
     if (lowerPheno.contains('dark-eyed clear')) {
-       body = isBlueSeries ? AppColors.birdWhite : AppColors.birdYellow;
-       mask = body;
-       wing = Colors.transparent;
+      body = isBlueSeries ? AppColors.birdWhite : AppColors.birdYellow;
+      mask = body;
+      wing = Colors.transparent;
     }
 
     return _BirdColors(bodyColor: body, maskColor: mask, wingColor: wing);

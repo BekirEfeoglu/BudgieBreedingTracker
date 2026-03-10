@@ -21,8 +21,14 @@ List<OffspringResult> _combineResults(List<_RawResult> rawResults) {
         sex: r.sex,
         isCarrier: r.isCarrier || existing.isCarrier,
         genotype: r.genotype ?? existing.genotype,
-        expressedMutationIds: [...existing.expressedMutationIds, ...r.expressedMutationIds].toSet().toList(),
-        carriedMutationIds: [...existing.carriedMutationIds, ...r.carriedMutationIds].toSet().toList(),
+        expressedMutationIds: {
+          ...existing.expressedMutationIds,
+          ...r.expressedMutationIds,
+        }.toList(),
+        carriedMutationIds: {
+          ...existing.carriedMutationIds,
+          ...r.carriedMutationIds,
+        }.toList(),
       );
     } else {
       grouped[key] = r;
@@ -38,15 +44,17 @@ List<OffspringResult> _combineResults(List<_RawResult> rawResults) {
 
   return sorted
       .where((r) => r.probability * normalizer > 0.001)
-      .map((r) => OffspringResult(
-            phenotype: r.phenotype,
-            probability: r.probability * normalizer,
-            sex: r.sex,
-            isCarrier: r.isCarrier,
-            genotype: r.genotype,
-            visualMutations: r.expressedMutationIds,
-            carriedMutations: r.carriedMutationIds,
-          ))
+      .map(
+        (r) => OffspringResult(
+          phenotype: r.phenotype,
+          probability: r.probability * normalizer,
+          sex: r.sex,
+          isCarrier: r.isCarrier,
+          genotype: r.genotype,
+          visualMutations: r.expressedMutationIds,
+          carriedMutations: r.carriedMutationIds,
+        ),
+      )
       .toList();
 }
 
@@ -71,18 +79,20 @@ List<_MultiLocusResult> _crossAllLoci(
 ) {
   final loci = perLocusResults.keys.toList();
   var combined = perLocusResults[loci[0]]!
-      .map((r) => _MultiLocusResult(
-            phenotypes: r.phenotype == 'Normal' ? [] : [r.phenotype],
-            probability: r.probability,
-            sex: r.sex,
-            carriedMutations: [
-              if (r.isCarrier && r.carriedMutationIds.isEmpty)
-                r.phenotype.replaceAll(' (carrier)', ''),
-              ...r.carriedMutationIds,
-            ],
-            genotypes: r.genotype != null ? [r.genotype!] : [],
-            expressedMutationIds: [...r.expressedMutationIds],
-          ))
+      .map(
+        (r) => _MultiLocusResult(
+          phenotypes: r.phenotype == 'Normal' ? [] : [r.phenotype],
+          probability: r.probability,
+          sex: r.sex,
+          carriedMutations: [
+            if (r.isCarrier && r.carriedMutationIds.isEmpty)
+              r.phenotype.replaceAll(' (carrier)', ''),
+            ...r.carriedMutationIds,
+          ],
+          genotypes: r.genotype != null ? [r.genotype!] : [],
+          expressedMutationIds: [...r.expressedMutationIds],
+        ),
+      )
       .toList();
 
   // Cross with each subsequent locus
@@ -118,14 +128,16 @@ List<_MultiLocusResult> _crossAllLoci(
           ...locusResult.expressedMutationIds,
         ];
 
-        newCombined.add(_MultiLocusResult(
-          phenotypes: phenotypes,
-          probability: existing.probability * locusResult.probability,
-          sex: mergedSex,
-          carriedMutations: carried,
-          genotypes: genotypes,
-          expressedMutationIds: expressedIds,
-        ));
+        newCombined.add(
+          _MultiLocusResult(
+            phenotypes: phenotypes,
+            probability: existing.probability * locusResult.probability,
+            sex: mergedSex,
+            carriedMutations: carried,
+            genotypes: genotypes,
+            expressedMutationIds: expressedIds,
+          ),
+        );
       }
     }
 
@@ -256,9 +268,10 @@ Map<String, OffspringResult> _resolveEpistasisForCombined(
 
 /// Normalizes offspring result probabilities to sum to 1.0, filters entries
 /// below 0.1% threshold, and sorts by descending probability.
-List<OffspringResult> _normalizeAndSort(Map<String, OffspringResult> resultMap) {
-  final total =
-      resultMap.values.fold(0.0, (sum, r) => sum + r.probability);
+List<OffspringResult> _normalizeAndSort(
+  Map<String, OffspringResult> resultMap,
+) {
+  final total = resultMap.values.fold(0.0, (sum, r) => sum + r.probability);
   final normalizer = total > 0 ? 1.0 / total : 1.0;
 
   final sorted = resultMap.values.toList()
@@ -266,17 +279,19 @@ List<OffspringResult> _normalizeAndSort(Map<String, OffspringResult> resultMap) 
 
   return sorted
       .where((r) => r.probability * normalizer > 0.001)
-      .map((r) => OffspringResult(
-            phenotype: r.phenotype,
-            probability: r.probability * normalizer,
-            sex: r.sex,
-            isCarrier: r.isCarrier,
-            genotype: r.genotype,
-            visualMutations: r.visualMutations,
-            compoundPhenotype: r.compoundPhenotype,
-            carriedMutations: r.carriedMutations,
-            maskedMutations: r.maskedMutations,
-          ))
+      .map(
+        (r) => OffspringResult(
+          phenotype: r.phenotype,
+          probability: r.probability * normalizer,
+          sex: r.sex,
+          isCarrier: r.isCarrier,
+          genotype: r.genotype,
+          visualMutations: r.visualMutations,
+          compoundPhenotype: r.compoundPhenotype,
+          carriedMutations: r.carriedMutations,
+          maskedMutations: r.maskedMutations,
+        ),
+      )
       .toList();
 }
 
