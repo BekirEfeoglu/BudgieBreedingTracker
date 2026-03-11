@@ -268,6 +268,45 @@ class _BudgieLoginScreenState extends ConsumerState<BudgieLoginScreen>
     }
   }
 
+  Future<void> _handleGuestLogin() async {
+    setState(() => _loginState = LoginState.loading);
+    try {
+      if (!ref.read(supabaseInitializedProvider)) {
+        final initialized = await ensureSupabaseInitialized(
+          timeout: const Duration(seconds: 12),
+        );
+        if (!mounted) return;
+        if (!initialized) {
+          AppLogger.error('[Login] Supabase not initialized before Guest Login');
+          _showError('auth.error_service_unavailable'.tr());
+          return;
+        }
+      }
+
+      final auth = ref.read(authActionsProvider);
+      await auth.signInAnonymously();
+      if (!mounted) return;
+
+      setState(() {
+        _loginState = LoginState.success;
+        _isPeeking = true;
+        _eggWobbleCtrl.stop();
+      });
+      _hopCtrl.forward(from: 0).then((_) => _hopCtrl.reverse());
+
+      Future.delayed(const Duration(milliseconds: 1200), () {
+        if (!mounted) return;
+        context.go(AppRoutes.home);
+      });
+    } on AuthException catch (e) {
+      if (mounted) _showError(mapAuthError(e));
+    } catch (e, st) {
+      AppLogger.error('[Login] Guest Login failed', e, st);
+      Sentry.captureException(e, stackTrace: st);
+      if (mounted) _showError('auth.error_unknown'.tr());
+    }
+  }
+
   void _showError(String message) {
     setState(() {
       _loginState = LoginState.error;
@@ -305,6 +344,24 @@ class _BudgieLoginScreenState extends ConsumerState<BudgieLoginScreen>
       }
 
       final auth = ref.read(authActionsProvider);
+      
+      if (provider == OAuthProvider.apple) {
+        // Native Apple Sign In
+        await auth.signInWithApple();
+        if (mounted) {
+           // On success, state changes will handle routing
+           // Just wait for stream to realize login
+        }
+        return;
+      }
+
+      if (provider == OAuthProvider.google) {
+        // Native Google Sign In
+        await auth.signInWithGoogle();
+        if (mounted) {}
+        return;
+      }
+
       final launched = await auth.signInWithOAuth(provider);
       if (!launched && mounted) {
         _resetToIdle();
@@ -318,6 +375,10 @@ class _BudgieLoginScreenState extends ConsumerState<BudgieLoginScreen>
         });
       }
     } on AuthException catch (e) {
+      if (e.message == 'Canceled') {
+        if (mounted) _resetToIdle();
+        return;
+      }
       if (mounted) _showError(mapAuthError(e));
     } catch (e, st) {
       AppLogger.error('[Login] OAuth failed', e, st);
@@ -387,26 +448,32 @@ class _BudgieLoginScreenState extends ConsumerState<BudgieLoginScreen>
                           parent: _cardEnterCtrl,
                           curve: Curves.easeIn,
                         ),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: AppSpacing.xxl,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: AppSpacing.xxl,
+                            ),
+                            child: Center(
+                              child: ConstrainedBox(
+                                constraints: const BoxConstraints(maxWidth: 440),
+                                child: BudgieLoginCard(
+                                  formKey: _formKey,
+                                  emailController: _emailCtrl,
+                                  passwordController: _passwordCtrl,
+                                  emailFocusNode: _emailFocus,
+                                  passwordFocusNode: _passwordFocus,
+                                  loginState: _loginState,
+                                  onSubmit: _handleLogin,
+                                  onGoogleTap: () =>
+                                      _handleOAuth(OAuthProvider.google),
+                                  onAppleTap: () => _handleOAuth(OAuthProvider.apple),
+                                  onGuestTap: _handleGuestLogin,
+                                  onForgotPassword: () =>
+                                      context.push(AppRoutes.forgotPassword),
+                                  onRegister: () => context.push(AppRoutes.register),
+                                ),
+                              ),
+                            ),
                           ),
-                          child: BudgieLoginCard(
-                            formKey: _formKey,
-                            emailController: _emailCtrl,
-                            passwordController: _passwordCtrl,
-                            emailFocusNode: _emailFocus,
-                            passwordFocusNode: _passwordFocus,
-                            loginState: _loginState,
-                            onSubmit: _handleLogin,
-                            onGoogleTap: () =>
-                                _handleOAuth(OAuthProvider.google),
-                            onAppleTap: () => _handleOAuth(OAuthProvider.apple),
-                            onForgotPassword: () =>
-                                context.push(AppRoutes.forgotPassword),
-                            onRegister: () => context.push(AppRoutes.register),
-                          ),
-                        ),
                       ),
                     ),
                     SizedBox(height: isSmall ? AppSpacing.md : AppSpacing.xxl),

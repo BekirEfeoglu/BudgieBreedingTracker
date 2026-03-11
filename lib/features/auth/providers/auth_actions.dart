@@ -1,10 +1,16 @@
+import 'dart:convert';
 import 'dart:io';
+
+import 'package:crypto/crypto.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../core/constants/app_constants.dart';
 import '../../../core/utils/logger.dart';
 import '../../../data/remote/supabase/supabase_client.dart';
 
@@ -150,6 +156,97 @@ class AuthActions {
       }
       rethrow;
     }
+  }
+
+  bool _isGoogleInitialized = false;
+
+  /// Sign in with Google natively.
+  Future<AuthResponse> signInWithGoogle() async {
+    try {
+      final webClientId = AppConstants.googleWebClientId;
+      final iosClientId = AppConstants.googleIosClientId;
+
+      if (!_isGoogleInitialized) {
+        await GoogleSignIn.instance.initialize(
+          clientId: Platform.isIOS ? (iosClientId.isEmpty ? null : iosClientId) : null,
+          serverClientId: webClientId.isEmpty ? null : webClientId,
+        );
+        _isGoogleInitialized = true;
+      }
+
+      final googleUser = await GoogleSignIn.instance.authenticate();
+      final googleAuth = googleUser.authentication;
+      final idToken = googleAuth.idToken;
+
+      if (idToken == null) {
+        throw const AuthException('No ID Token found for Google Sign In.');
+      }
+
+      // In google_sign_in 7.0+, you obtain access tokens via authorizationClient if needed.
+      // Supabase signInWithIdToken only strongly requires idToken for Google.
+      String? accessToken;
+      try {
+        final authz = await googleUser.authorizationClient.authorizationForScopes([]);
+        accessToken = authz?.accessToken;
+      } catch (_) {
+        // ignore authorization fetch error
+      }
+
+      return _client.auth.signInWithIdToken(
+        provider: OAuthProvider.google,
+        idToken: idToken,
+        accessToken: accessToken,
+      );
+    } catch (e) {
+      if (e is AuthException) rethrow;
+      if (e is GoogleSignInException && e.code == GoogleSignInExceptionCode.canceled) {
+        throw const AuthException('Canceled');
+      }
+      if (e is PlatformException && e.code == 'sign_in_canceled') {
+         throw const AuthException('Canceled');
+      }
+      AppLogger.error('[AuthActions] Google sign-in failed: $e');
+      rethrow;
+    }
+  }
+
+  /// Sign in with Apple natively.
+  Future<AuthResponse> signInWithApple() async {
+    try {
+      final rawNonce = _client.auth.generateRawNonce();
+      final hashedNonce = sha256.convert(utf8.encode(rawNonce)).toString();
+
+      final credential = await SignInWithApple.getAppleIDCredential(
+        scopes: [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName,
+        ],
+        nonce: hashedNonce,
+      );
+
+      final idToken = credential.identityToken;
+      if (idToken == null) {
+        throw const AuthException('No ID Token found for Apple Sign In.');
+      }
+
+      return _client.auth.signInWithIdToken(
+        provider: OAuthProvider.apple,
+        idToken: idToken,
+        nonce: rawNonce,
+      );
+    } catch (e) {
+      if (e is SignInWithAppleAuthorizationException &&
+          e.code == AuthorizationErrorCode.canceled) {
+        // Just return or throw a handled exception
+        throw const AuthException('Canceled');
+      }
+      rethrow;
+    }
+  }
+
+  /// Sign in anonymously.
+  Future<AuthResponse> signInAnonymously() async {
+    return _client.auth.signInAnonymously();
   }
 
   Future<void> _suspendIosWindowReclaim() async {

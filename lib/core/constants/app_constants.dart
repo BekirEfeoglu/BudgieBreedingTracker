@@ -16,4 +16,9 @@ abstract class AppConstants {
   static const int freeTierMaxBirds = 15;
   static const int freeTierMaxBreedingPairs = 5;
   static const int freeTierMaxActiveIncubations = 3;
+
+  // Social Login Credentials
+  // TODO(User): Fill these with your actual Google Client IDs
+  static const String googleWebClientId = const String.fromEnvironment('GOOGLE_WEB_CLIENT_ID', defaultValue: '');
+  static const String googleIosClientId = const String.fromEnvironment('GOOGLE_IOS_CLIENT_ID', defaultValue: '');
 }
