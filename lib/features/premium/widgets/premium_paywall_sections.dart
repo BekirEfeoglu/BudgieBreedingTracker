@@ -605,32 +605,45 @@ class _PremiumLegalLinksSection extends StatelessWidget {
     return Column(
       children: [
         Text(
-          'premium.legal_links_note'.tr(),
+          'premium.terms_note'.tr(), // "Subscription auto-renews..."
           style: theme.textTheme.bodySmall?.copyWith(
             color: theme.colorScheme.onSurfaceVariant,
           ),
           textAlign: TextAlign.center,
         ),
-        const SizedBox(height: AppSpacing.xs),
+        const SizedBox(height: AppSpacing.sm),
         Wrap(
           alignment: WrapAlignment.center,
-          spacing: AppSpacing.sm,
+          spacing: AppSpacing.md,
+          runSpacing: AppSpacing.xs,
           children: [
-            TextButton(
-              onPressed: () async => _openLegalUrl(
-                context,
-                url: AppConstants.privacyPolicyUrl,
-                fallbackRoute: AppRoutes.privacyPolicy,
-              ),
-              child: Text('settings.privacy_policy'.tr()),
-            ),
             TextButton(
               onPressed: () async => _openLegalUrl(
                 context,
                 url: AppConstants.termsOfUseUrl,
                 fallbackRoute: AppRoutes.termsOfService,
               ),
-              child: Text('settings.terms'.tr()),
+              child: Text(
+                '${'settings.terms'.tr()} (EULA)',
+                style: const TextStyle(
+                  decoration: TextDecoration.underline,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: () async => _openLegalUrl(
+                context,
+                url: AppConstants.privacyPolicyUrl,
+                fallbackRoute: AppRoutes.privacyPolicy,
+              ),
+              child: Text(
+                'settings.privacy_policy'.tr(),
+                style: const TextStyle(
+                  decoration: TextDecoration.underline,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
           ],
         ),

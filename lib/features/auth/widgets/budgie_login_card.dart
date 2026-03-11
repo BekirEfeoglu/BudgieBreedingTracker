@@ -24,6 +24,7 @@ class BudgieLoginCard extends StatelessWidget {
   final VoidCallback onSubmit;
   final VoidCallback onGoogleTap;
   final VoidCallback onAppleTap;
+  final VoidCallback onGuestTap;
   final VoidCallback onForgotPassword;
   final VoidCallback onRegister;
 
@@ -38,6 +39,7 @@ class BudgieLoginCard extends StatelessWidget {
     required this.onSubmit,
     required this.onGoogleTap,
     required this.onAppleTap,
+    required this.onGuestTap,
     required this.onForgotPassword,
     required this.onRegister,
   });
@@ -212,6 +214,13 @@ class BudgieLoginCard extends StatelessWidget {
                 isLoading: _isLoading,
                 onGoogleTap: onGoogleTap,
                 onAppleTap: onAppleTap,
+              ),
+              const SizedBox(height: AppSpacing.md),
+              
+              // Misafir Girisi
+              TextButton(
+                onPressed: _isLoading ? null : onGuestTap,
+                child: Text('auth.continue_as_guest'.tr()),
               ),
             ],
           ),

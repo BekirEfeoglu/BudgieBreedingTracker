@@ -90,6 +90,7 @@
     "register_illustration": "Illustration eines schlüpfenden Wellensittichs",
     "sign_in_with_google": "Mit Google anmelden",
     "sign_in_with_apple": "Mit Apple anmelden",
+    "continue_as_guest": "Als Gast fortfahren",
     "reset_password": "Passwort zurücksetzen",
     "reset_password_desc": "Geben Sie Ihre E-Mail-Adresse ein und wir senden Ihnen einen Link zum Zurücksetzen des Passworts.",
     "reset_link_sent": "Link zum Zurücksetzen gesendet!",

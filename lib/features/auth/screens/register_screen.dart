@@ -188,6 +188,21 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
       }
 
       final auth = ref.read(authActionsProvider);
+
+      if (provider == OAuthProvider.apple) {
+        // Native Apple Sign In
+        await auth.signInWithApple();
+        // Return without changing _loading flag, stream will navigate user away
+        return;
+      }
+
+      if (provider == OAuthProvider.google) {
+        // Native Google Sign In
+        await auth.signInWithGoogle();
+        // Return without changing _loading flag, stream will navigate user away
+        return;
+      }
+
       final launched = await auth.signInWithOAuth(provider);
       if (!launched && mounted) {
         setState(() => _loading = false);
@@ -200,6 +215,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
         });
       }
     } on AuthException catch (e) {
+      if (e.message == 'Canceled') {
+        if (mounted) setState(() => _loading = false);
+        return;
+      }
       AppLogger.error(
         '[Register] OAuth AuthException: ${e.message} (status=${e.statusCode})',
         e,
@@ -256,18 +275,23 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
                       padding: const EdgeInsets.symmetric(
                         horizontal: AppSpacing.xxl,
                       ),
-                      child: _RegisterCard(
-                        formKey: _formKey,
-                        nameCtrl: _nameCtrl,
-                        emailCtrl: _emailCtrl,
-                        passwordCtrl: _passwordCtrl,
-                        confirmCtrl: _confirmCtrl,
-                        isLoading: _loading,
-                        onSubmit: _submit,
-                        onGoogleTap: () =>
-                            _signInWithOAuth(OAuthProvider.google),
-                        onAppleTap: () => _signInWithOAuth(OAuthProvider.apple),
-                        onLoginTap: () => context.pop(),
+                      child: Center(
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 440),
+                          child: _RegisterCard(
+                            formKey: _formKey,
+                            nameCtrl: _nameCtrl,
+                            emailCtrl: _emailCtrl,
+                            passwordCtrl: _passwordCtrl,
+                            confirmCtrl: _confirmCtrl,
+                            isLoading: _loading,
+                            onSubmit: _submit,
+                            onGoogleTap: () =>
+                                _signInWithOAuth(OAuthProvider.google),
+                            onAppleTap: () => _signInWithOAuth(OAuthProvider.apple),
+                            onLoginTap: () => context.pop(),
+                          ),
+                        ),
                       ),
                     ),
                     SizedBox(height: isSmall ? AppSpacing.md : AppSpacing.xxl),
