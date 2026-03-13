@@ -1,23 +1,28 @@
 import 'package:flutter/material.dart';
-import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
+import 'package:budgie_breeding_tracker/features/genetics/utils/budgie_color_resolver.dart';
 
 /// Predicts budgie colors based on mutations and renders a stylized premium simulation.
 class BirdColorSimulation extends StatelessWidget {
   final List<String> visualMutations;
+  final List<String> carriedMutations;
   final String phenotype;
   final double size;
 
   const BirdColorSimulation({
     super.key,
     required this.visualMutations,
+    this.carriedMutations = const [],
     required this.phenotype,
     this.size = 56.0,
   });
 
   @override
   Widget build(BuildContext context) {
-    // Determine colors
-    final colors = _resolveColors();
+    final appearance = BudgieColorResolver.resolve(
+      visualMutations: visualMutations,
+      carriedMutations: carriedMutations,
+      phenotype: phenotype,
+    );
 
     return Container(
       width: size,
@@ -36,12 +41,27 @@ class BirdColorSimulation extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.bottomLeft,
           end: Alignment.topRight,
-          colors: [colors.bodyColor, _lighten(colors.bodyColor, 0.15)],
+          colors: [appearance.bodyColor, _lighten(appearance.bodyColor, 0.15)],
         ),
       ),
       clipBehavior: Clip.antiAlias,
       child: Stack(
         children: [
+          if (appearance.showCarrierAccent)
+            Positioned.fill(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: appearance.carrierAccentColor.withValues(
+                      alpha: 0.95,
+                    ),
+                    width: size * 0.055,
+                  ),
+                ),
+              ),
+            ),
+
           // Mask/Face color (Top area)
           Positioned(
             top: -size * 0.1,
@@ -50,7 +70,7 @@ class BirdColorSimulation extends StatelessWidget {
             height: size * 0.6,
             child: Container(
               decoration: BoxDecoration(
-                color: colors.maskColor.withValues(alpha: 0.85),
+                color: appearance.maskColor.withValues(alpha: 0.88),
                 borderRadius: BorderRadius.only(
                   bottomLeft: Radius.circular(size),
                   bottomRight: Radius.circular(size),
@@ -59,22 +79,105 @@ class BirdColorSimulation extends StatelessWidget {
             ),
           ),
 
-          // Wing markings (Right side arc)
-          Positioned(
-            bottom: size * 0.1,
-            right: -size * 0.2,
-            width: size * 0.6,
-            height: size * 0.7,
-            child: Container(
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: colors.wingColor.withValues(alpha: 0.6),
-                  width: 3,
+          if (appearance.showMantleHighlight)
+            Positioned(
+              top: size * 0.18,
+              left: size * 0.12,
+              right: size * 0.26,
+              height: size * 0.26,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: _lighten(
+                    appearance.bodyColor,
+                    0.08,
+                  ).withValues(alpha: 0.45),
+                  borderRadius: BorderRadius.circular(size),
                 ),
-                borderRadius: BorderRadius.circular(size),
               ),
             ),
-          ),
+
+          if (appearance.showPiedPatch)
+            Positioned(
+              bottom: size * 0.16,
+              left: size * 0.08,
+              width: size * 0.28,
+              height: size * 0.24,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: appearance.piedPatchColor.withValues(alpha: 0.95),
+                  borderRadius: BorderRadius.circular(size),
+                ),
+              ),
+            ),
+
+          if (appearance.wingFillColor.alpha > 0)
+            Positioned(
+              bottom: size * 0.1,
+              right: -size * 0.15,
+              width: size * 0.58,
+              height: size * 0.68,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: appearance.wingFillColor,
+                  borderRadius: BorderRadius.circular(size),
+                ),
+              ),
+            ),
+
+          // Wing markings (Right side arc)
+          if (!appearance.hideWingMarkings)
+            Positioned(
+              bottom: size * 0.1,
+              right: -size * 0.2,
+              width: size * 0.6,
+              height: size * 0.7,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: appearance.wingMarkingColor.withValues(alpha: 0.72),
+                    width: 3,
+                  ),
+                  borderRadius: BorderRadius.circular(size),
+                ),
+              ),
+            ),
+
+          if (appearance.showCheekPatch)
+            Positioned(
+              top: size * 0.34,
+              right: size * 0.08,
+              width: size * 0.18,
+              height: size * 0.18,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: appearance.cheekPatchColor.withValues(alpha: 0.92),
+                  shape: BoxShape.circle,
+                ),
+              ),
+            ),
+
+          if (appearance.showCarrierAccent)
+            Positioned(
+              top: size * 0.08,
+              left: size * 0.10,
+              width: size * 0.16,
+              height: size * 0.16,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: appearance.carrierAccentColor,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: appearance.carrierAccentColor.withValues(
+                        alpha: 0.30,
+                      ),
+                      blurRadius: 8,
+                      spreadRadius: 1,
+                    ),
+                  ],
+                ),
+              ),
+            ),
 
           // Inner highlight for premium glassmorphism touch
           Container(
@@ -90,180 +193,11 @@ class BirdColorSimulation extends StatelessWidget {
       ),
     );
   }
-
-  Color _lighten(Color c, [double amount = .1]) {
-    assert(amount >= 0 && amount <= 1);
-    final hsl = HSLColor.fromColor(c);
-    final hslLight = hsl.withLightness(
-      (hsl.lightness + amount).clamp(0.0, 1.0),
-    );
-    return hslLight.toColor();
-  }
-
-  _BirdColors _resolveColors() {
-    final lowerPheno = phenotype.toLowerCase();
-
-    // Default: Green series
-    Color body = AppColors.budgieGreen;
-    Color mask = AppColors.birdYellow;
-    Color wing = AppColors.neutral900;
-
-    final isBlueSeries =
-        visualMutations.contains('blue') ||
-        visualMutations.contains('aqua') ||
-        visualMutations.contains('turquoise') ||
-        visualMutations.contains('bluefactor_1') ||
-        visualMutations.contains('bluefactor_2') ||
-        lowerPheno.contains('blue');
-
-    // 1. Base Series
-    if (isBlueSeries) {
-      body = AppColors.budgieBlue;
-      mask = AppColors.birdWhite;
-    }
-
-    // 2. Yellowface on Blue series
-    if (isBlueSeries) {
-      if (visualMutations.contains('goldenface') ||
-          lowerPheno.contains('goldenface')) {
-        mask = AppColors
-            .birdYellow; // Deeper yellow usually, but standard yellow is fine
-        body = _mixColor(body, AppColors.birdYellow, 0.4); // Bleeds into body
-      } else if (visualMutations.contains('yellowface_type2') ||
-          lowerPheno.contains('yellowface type ii')) {
-        mask = AppColors.birdYellow;
-        body = _mixColor(body, AppColors.birdYellow, 0.2); // Mild bleed
-      } else if (visualMutations.contains('yellowface_type1') ||
-          lowerPheno.contains('yellowface type i')) {
-        mask = AppColors
-            .birdYellow; // DF might be whiteface, but simple simulation
-      }
-      if (lowerPheno.contains('whitefaced')) {
-        mask = AppColors.birdWhite;
-      }
-    }
-
-    // 3. Dark Factors & Violet & Grey
-    if (visualMutations.contains('dark_factor') ||
-        lowerPheno.contains('dark') ||
-        lowerPheno.contains('cobalt')) {
-      body = _mixColor(body, Colors.black, 0.25);
-    }
-    if (lowerPheno.contains('olive') || lowerPheno.contains('mauve')) {
-      body = _mixColor(body, Colors.black, 0.45);
-    }
-    if (visualMutations.contains('violet') || lowerPheno.contains('violet')) {
-      body = AppColors.birdViolet;
-    }
-    if (visualMutations.contains('grey') || lowerPheno.contains('grey')) {
-      body = AppColors.birdGrey;
-    }
-    if (visualMutations.contains('slate') || lowerPheno.contains('slate')) {
-      body = AppColors.phenotypeSlate;
-    }
-
-    // 4. Ino (Albino/Lutino/Creamino)
-    if (visualMutations.contains('ino') ||
-        lowerPheno.contains('albino') ||
-        lowerPheno.contains('lutino') ||
-        lowerPheno.contains('creamino')) {
-      wing = Colors.transparent;
-      if (lowerPheno.contains('albino')) {
-        body = AppColors.birdWhite;
-        mask = AppColors.birdWhite;
-      } else if (lowerPheno.contains('lutino')) {
-        body = AppColors.birdYellow;
-        mask = AppColors.birdYellow;
-      } else if (lowerPheno.contains('creamino')) {
-        body = AppColors.birdYellow;
-        mask = AppColors.birdYellow;
-      }
-    }
-
-    // 5. Lacewing / Pallid
-    if (lowerPheno.contains('lacewing') || lowerPheno.contains('pallid')) {
-      wing = AppColors.birdCinnamon; // Light brown wings
-      if (lowerPheno.contains('lacewing')) {
-        if (isBlueSeries && !lowerPheno.contains('yellowface')) {
-          body = AppColors.birdWhite;
-          mask = AppColors.birdWhite;
-        } else {
-          body = AppColors.birdYellow;
-          mask = AppColors.birdYellow;
-        }
-      }
-    }
-
-    // 6. Cinnamon
-    if (visualMutations.contains('cinnamon') ||
-        lowerPheno.contains('cinnamon')) {
-      wing = AppColors.birdCinnamon; // Brown wings instead of black
-    }
-
-    // 7. Spangle
-    if (visualMutations.contains('spangle') || lowerPheno.contains('spangle')) {
-      wing = body; // Wing edges body color
-      if (lowerPheno.contains('double factor spangle') ||
-          lowerPheno.contains('df spangle')) {
-        // DF Spangle is pure yellow or pure white depending on base
-        body = isBlueSeries ? AppColors.birdWhite : AppColors.birdYellow;
-        mask = body;
-        wing = Colors.transparent;
-      }
-    }
-
-    // 8. Dilutions (Greywing, Clearwing, Dilute)
-    if (visualMutations.contains('greywing') ||
-        lowerPheno.contains('greywing')) {
-      body = _lighten(body, 0.2);
-      wing = AppColors.birdGrey;
-    }
-    if (visualMutations.contains('clearwing') ||
-        lowerPheno.contains('clearwing')) {
-      body = _lighten(body, 0.1);
-      wing = AppColors.birdWhite;
-    }
-    if (visualMutations.contains('dilute') || lowerPheno.contains('dilute')) {
-      body = _lighten(body, 0.4);
-      wing = AppColors.birdGrey.withValues(alpha: 0.3);
-    }
-
-    // 9. Blackface
-    if (visualMutations.contains('blackface') ||
-        lowerPheno.contains('blackface')) {
-      mask = AppColors.neutral900;
-    }
-
-    // 10. Pied
-    if (lowerPheno.contains('pied') || lowerPheno.contains('clearflight')) {
-      body = _mixColor(
-        body,
-        mask,
-        0.3,
-      ); // Mix body with base mask color for pied splotches
-    }
-    if (lowerPheno.contains('dark-eyed clear')) {
-      body = isBlueSeries ? AppColors.birdWhite : AppColors.birdYellow;
-      mask = body;
-      wing = Colors.transparent;
-    }
-
-    return _BirdColors(bodyColor: body, maskColor: mask, wingColor: wing);
-  }
-
-  Color _mixColor(Color c1, Color c2, double amount) {
-    return Color.lerp(c1, c2, amount) ?? c1;
-  }
 }
 
-class _BirdColors {
-  final Color bodyColor;
-  final Color maskColor;
-  final Color wingColor;
-
-  _BirdColors({
-    required this.bodyColor,
-    required this.maskColor,
-    required this.wingColor,
-  });
+Color _lighten(Color c, [double amount = .1]) {
+  assert(amount >= 0 && amount <= 1);
+  final hsl = HSLColor.fromColor(c);
+  final hslLight = hsl.withLightness((hsl.lightness + amount).clamp(0.0, 1.0));
+  return hslLight.toColor();
 }

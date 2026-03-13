@@ -44,6 +44,7 @@ abstract class AppRoutes {
   static const geneticsHistory = '/genetics/history';
   static const geneticsCompare = '/genetics/compare';
   static const geneticsReverse = '/genetics/reverse';
+  static const geneticsColorAudit = '/dev/genetics-color-audit';
 
   // User
   static const profile = '/profile';

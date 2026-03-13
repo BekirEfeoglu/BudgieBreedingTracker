@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -36,10 +37,15 @@ import 'routes/user_routes.dart';
 final routerProvider = Provider<GoRouter>((ref) {
   final notifier = ref.watch(routerNotifierProvider);
   String? lastConsumedGeneticsRewardLocation;
+  const enableGeneticsColorAudit = bool.fromEnvironment('GENETICS_COLOR_AUDIT');
+  final initialLocation = kDebugMode && enableGeneticsColorAudit
+      ? AppRoutes.geneticsColorAudit
+      : AppRoutes.home;
 
   return GoRouter(
     navigatorKey: rootNavigatorKey,
-    initialLocation: AppRoutes.home,
+    initialLocation: initialLocation,
+    overridePlatformDefaultLocation: kDebugMode && enableGeneticsColorAudit,
     refreshListenable: notifier,
     observers: [SentryNavigatorObserver()],
     debugLogDiagnostics: false,
@@ -255,7 +261,8 @@ bool _isAnonymousAllowedRoute(String location) {
       location == AppRoutes.premium ||
       location == AppRoutes.userGuide ||
       location == AppRoutes.privacyPolicy ||
-      location == AppRoutes.termsOfService) {
+      location == AppRoutes.termsOfService ||
+      (kDebugMode && location == AppRoutes.geneticsColorAudit)) {
     return true;
   }
 

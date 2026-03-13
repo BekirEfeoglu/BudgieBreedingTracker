@@ -60,6 +60,7 @@ class OffspringPrediction extends StatelessWidget {
               // Color indicator
               BirdColorSimulation(
                 visualMutations: result.visualMutations,
+                carriedMutations: result.carriedMutations,
                 phenotype: result.compoundPhenotype ?? result.phenotype,
                 size: showGenotype ? 64 : 48,
               ),
