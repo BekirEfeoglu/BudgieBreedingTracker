@@ -100,6 +100,18 @@ class GeneticsColorAuditScreen extends StatelessWidget {
       visualMutations: ['slate'],
     ),
     _AuditSample(
+      title: 'Green Slate',
+      note: 'Muted grey-green',
+      phenotype: 'Light Green Slate',
+      visualMutations: ['slate'],
+    ),
+    _AuditSample(
+      title: 'SF Anthracite',
+      note: 'Deeper green, not charcoal',
+      phenotype: 'Light Green Single Factor Anthracite',
+      visualMutations: ['anthracite'],
+    ),
+    _AuditSample(
       title: 'Blackface',
       note: 'Black mask',
       phenotype: 'Blackface Light Green',
@@ -154,7 +166,8 @@ class GeneticsAdvancedColorAuditBoard extends StatelessWidget {
   Widget build(BuildContext context) {
     return const GeneticsColorAuditBoard(
       title: 'Advanced mutation audit board',
-      subtitle: 'Violet, mauve, slate, blackface, and DF spangle checks',
+      subtitle:
+          'Violet, mauve, slate, anthracite, blackface, and DF spangle checks',
       samples: GeneticsColorAuditScreen._advancedSamples,
       minTileWidth: 106,
       birdSize: 62,

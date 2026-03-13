@@ -8,10 +8,13 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'bootstrap.dart';
+import 'core/enums/bird_enums.dart';
 import 'core/theme/app_theme.dart';
 import 'core/utils/logger.dart';
 import 'domain/services/sync/sync_providers.dart';
+import 'domain/services/genetics/parent_genotype.dart';
 import 'features/auth/providers/auth_providers.dart';
+import 'features/genetics/providers/genetics_providers.dart';
 import 'features/premium/providers/premium_providers.dart';
 import 'features/settings/providers/settings_providers.dart';
 import 'router/app_router.dart';
@@ -26,7 +29,8 @@ class BudgieBreedingApp extends ConsumerStatefulWidget {
 
 class _BudgieBreedingAppState extends ConsumerState<BudgieBreedingApp> {
   late final AppLifecycleListener _lifecycleListener;
-  bool _didOpenDebugAuditRoute = false;
+  bool _didApplyDebugStartupRoute = false;
+  bool _didApplyDebugGeneticsFixture = false;
 
   @override
   void initState() {
@@ -36,7 +40,8 @@ class _BudgieBreedingAppState extends ConsumerState<BudgieBreedingApp> {
     SchedulerBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         ref.read(appLocaleProvider.notifier).syncFromContext(context);
-        _openDebugAuditRouteIfNeeded();
+        _applyDebugGeneticsFixtureIfNeeded();
+        _openDebugStartupRouteIfNeeded();
       }
     });
 
@@ -70,14 +75,62 @@ class _BudgieBreedingAppState extends ConsumerState<BudgieBreedingApp> {
     }
   }
 
-  void _openDebugAuditRouteIfNeeded() {
-    if (_didOpenDebugAuditRoute || !kDebugMode) return;
+  void _applyDebugGeneticsFixtureIfNeeded() {
+    if (_didApplyDebugGeneticsFixture || !kDebugMode) return;
+
+    const debugFixture = String.fromEnvironment('DEBUG_GENETICS_FIXTURE');
+    switch (debugFixture.trim()) {
+      case 'screenshot_2026_03_14':
+        _didApplyDebugGeneticsFixture = true;
+
+        ref.read(fatherGenotypeProvider.notifier).state = ParentGenotype(
+          gender: BirdGender.male,
+          mutations: const {
+            // Matches screenshot pattern: all daughters get Texas visual, sons carry.
+            'texas_clearbody': AlleleState.visual,
+            // Adds 50% split on crest display (shown as carrier in current model).
+            'crested_half_circular': AlleleState.carrier,
+            // Adds single-factor darkening branch seen as "Tek Faktör" outcomes.
+            'anthracite': AlleleState.carrier,
+          },
+        );
+
+        ref.read(motherGenotypeProvider.notifier).state = ParentGenotype(
+          gender: BirdGender.female,
+          mutations: const {
+            // Matches screenshot pattern: sons carry slate, daughters are normal at slate locus.
+            'slate': AlleleState.visual,
+          },
+        );
+
+        ref.read(selectedFatherBirdNameProvider.notifier).state = null;
+        ref.read(selectedMotherBirdNameProvider.notifier).state = null;
+        ref.read(selectedPunnettLocusProvider.notifier).state = null;
+        ref.read(showSexSpecificProvider.notifier).state = true;
+        ref.read(showGenotypeProvider.notifier).state = true;
+        ref.read(wizardStepProvider.notifier).state = 2;
+        return;
+      default:
+        return;
+    }
+  }
+
+  void _openDebugStartupRouteIfNeeded() {
+    if (_didApplyDebugStartupRoute || !kDebugMode) return;
+
+    const debugStartRoute = String.fromEnvironment('DEBUG_START_ROUTE');
+    if (debugStartRoute.trim().isNotEmpty) {
+      _didApplyDebugStartupRoute = true;
+      ref.read(routerProvider).go(debugStartRoute);
+      return;
+    }
+
     const enableGeneticsColorAudit = bool.fromEnvironment(
       'GENETICS_COLOR_AUDIT',
     );
     if (!enableGeneticsColorAudit) return;
 
-    _didOpenDebugAuditRoute = true;
+    _didApplyDebugStartupRoute = true;
     ref.read(routerProvider).go(AppRoutes.geneticsColorAudit);
   }
 
