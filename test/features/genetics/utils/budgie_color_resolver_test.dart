@@ -151,6 +151,41 @@ void main() {
       );
     });
 
+    test('keeps green-series slate and anthracite green-toned', () {
+      final lightGreenSlate = BudgieColorResolver.resolve(
+        visualMutations: const ['slate'],
+        phenotype: 'Light Green Slate',
+      );
+      final lightGreenAnthracite = BudgieColorResolver.resolve(
+        visualMutations: const ['anthracite'],
+        phenotype: 'Light Green Single Factor Anthracite',
+      );
+
+      expect(
+        lightGreenSlate.bodyColor,
+        Color.lerp(
+          BudgiePhenotypePalette.lightGreen,
+          BudgiePhenotypePalette.greyGreen,
+          0.42,
+        ),
+      );
+      expect(
+        lightGreenAnthracite.bodyColor,
+        BudgiePhenotypePalette.anthraciteGreenSingle,
+      );
+      expect(lightGreenSlate.bodyColor, isNot(BudgiePhenotypePalette.slate));
+      expect(
+        lightGreenAnthracite.bodyColor,
+        isNot(BudgiePhenotypePalette.anthraciteSingle),
+      );
+      expect(
+        lightGreenAnthracite.cheekPatchColor,
+        isNot(BudgiePhenotypePalette.anthraciteGreenSingle),
+      );
+      expect(lightGreenSlate.maskColor, BudgiePhenotypePalette.maskYellow);
+      expect(lightGreenAnthracite.maskColor, BudgiePhenotypePalette.maskYellow);
+    });
+
     test('shows pied patches and clearbody separation', () {
       final pied = BudgieColorResolver.resolve(
         visualMutations: const ['dominant_pied'],

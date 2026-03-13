@@ -20,6 +20,8 @@ abstract final class BudgiePhenotypePalette {
   static const slate = Color(0xFF647E90);
   static const anthraciteSingle = Color(0xFF57646E);
   static const anthraciteDouble = Color(0xFF3F474F);
+  static const anthraciteGreenSingle = Color(0xFF4F8120);
+  static const anthraciteGreenDouble = Color(0xFF4B5A24);
 
   static const aqua = Color(0xFF67C9B7);
   static const turquoise = Color(0xFF4FB8C5);
@@ -150,6 +152,9 @@ abstract final class BudgieColorResolver {
     final isCreamino = lower.contains('creamino');
     final isLacewing =
         lower.contains('lacewing') || lower.contains('pallidino');
+    final isDoubleAnthracite =
+        lower.contains('double factor anthracite') ||
+        lower.contains('df anthracite');
 
     var body = _resolveBaseBodyColor(
       ids: ids,
@@ -344,7 +349,15 @@ abstract final class BudgieColorResolver {
       }
 
       if (hasAnthracite) {
-        cheekPatch = body;
+        cheekPatch = isDoubleAnthracite
+            ? body
+            : _mix(
+                cheekPatch,
+                isBlueSeries
+                    ? BudgiePhenotypePalette.anthraciteSingle
+                    : BudgiePhenotypePalette.anthraciteGreenSingle,
+                0.18,
+              );
       } else if (hasGrey || lower.contains('grey-green')) {
         cheekPatch = hasDominantClearbody
             ? BudgiePhenotypePalette.cheekSmokeGrey
@@ -403,15 +416,19 @@ abstract final class BudgieColorResolver {
     final hasSlate = ids.contains('slate');
     final hasAnthracite = ids.contains('anthracite');
     final hasViolet = ids.contains('violet');
+    final isDoubleAnthracite =
+        lower.contains('double factor anthracite') ||
+        lower.contains('df anthracite');
 
-    if (lower.contains('double factor anthracite')) {
-      return BudgiePhenotypePalette.anthraciteDouble;
-    }
-    if (lower.contains('single factor anthracite') || hasAnthracite) {
-      return BudgiePhenotypePalette.anthraciteSingle;
+    if (lower.contains('double factor anthracite') || hasAnthracite) {
+      return _resolveAnthraciteBodyColor(
+        lower: lower,
+        isBlueSeries: isBlueSeries,
+        isDoubleFactor: isDoubleAnthracite,
+      );
     }
     if (lower.contains('slate') || hasSlate) {
-      return BudgiePhenotypePalette.slate;
+      return _resolveSlateBodyColor(lower: lower, isBlueSeries: isBlueSeries);
     }
     if (lower.contains('visual violet')) {
       return BudgiePhenotypePalette.violet;
@@ -459,6 +476,71 @@ abstract final class BudgieColorResolver {
       return BudgiePhenotypePalette.greyGreen;
     }
     return BudgiePhenotypePalette.lightGreen;
+  }
+
+  static Color _resolveSlateBodyColor({
+    required String lower,
+    required bool isBlueSeries,
+  }) {
+    if (isBlueSeries) {
+      if (lower.contains('mauve')) {
+        return _mix(
+          BudgiePhenotypePalette.mauve,
+          BudgiePhenotypePalette.slate,
+          0.72,
+        );
+      }
+      if (lower.contains('cobalt')) {
+        return _mix(
+          BudgiePhenotypePalette.cobalt,
+          BudgiePhenotypePalette.slate,
+          0.74,
+        );
+      }
+      return BudgiePhenotypePalette.slate;
+    }
+
+    if (lower.contains('olive')) {
+      return _mix(
+        BudgiePhenotypePalette.olive,
+        BudgiePhenotypePalette.anthraciteGreenDouble,
+        0.16,
+      );
+    }
+    if (lower.contains('dark green')) {
+      return _mix(
+        BudgiePhenotypePalette.darkGreen,
+        BudgiePhenotypePalette.greyGreen,
+        0.44,
+      );
+    }
+    return _mix(
+      BudgiePhenotypePalette.lightGreen,
+      BudgiePhenotypePalette.greyGreen,
+      0.42,
+    );
+  }
+
+  static Color _resolveAnthraciteBodyColor({
+    required String lower,
+    required bool isBlueSeries,
+    required bool isDoubleFactor,
+  }) {
+    if (isBlueSeries) {
+      if (isDoubleFactor) {
+        return BudgiePhenotypePalette.anthraciteDouble;
+      }
+      return _mix(
+        BudgiePhenotypePalette.cobalt,
+        BudgiePhenotypePalette.anthraciteSingle,
+        0.26,
+      );
+    }
+
+    if (isDoubleFactor) {
+      return BudgiePhenotypePalette.anthraciteGreenDouble;
+    }
+    return BudgiePhenotypePalette.anthraciteGreenSingle;
   }
 
   static Color _resolveBaseCheekPatch({
@@ -672,6 +754,7 @@ abstract final class BudgieColorResolver {
     'cobalt',
     'mauve',
     'blue',
+    'anthracite',
     'albino',
     'creamino',
     'whitefaced',

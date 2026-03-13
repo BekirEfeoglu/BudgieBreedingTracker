@@ -37,15 +37,21 @@ import 'routes/user_routes.dart';
 final routerProvider = Provider<GoRouter>((ref) {
   final notifier = ref.watch(routerNotifierProvider);
   String? lastConsumedGeneticsRewardLocation;
+  const debugStartRoute = String.fromEnvironment('DEBUG_START_ROUTE');
+  final normalizedDebugStartRoute = debugStartRoute.trim();
   const enableGeneticsColorAudit = bool.fromEnvironment('GENETICS_COLOR_AUDIT');
-  final initialLocation = kDebugMode && enableGeneticsColorAudit
-      ? AppRoutes.geneticsColorAudit
-      : AppRoutes.home;
+  final hasDebugStartRoute = normalizedDebugStartRoute.isNotEmpty;
+  final initialLocation = kDebugMode && hasDebugStartRoute
+      ? normalizedDebugStartRoute
+      : (kDebugMode && enableGeneticsColorAudit
+            ? AppRoutes.geneticsColorAudit
+            : AppRoutes.home);
 
   return GoRouter(
     navigatorKey: rootNavigatorKey,
     initialLocation: initialLocation,
-    overridePlatformDefaultLocation: kDebugMode && enableGeneticsColorAudit,
+    overridePlatformDefaultLocation:
+        kDebugMode && (hasDebugStartRoute || enableGeneticsColorAudit),
     refreshListenable: notifier,
     observers: [SentryNavigatorObserver()],
     debugLogDiagnostics: false,
@@ -88,7 +94,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       // Initialization guard: show splash while profile syncs from Supabase
       final isInitError = appInit.hasError && !initSkipped;
       if (isLoggedIn && !isAppReady && !isSplashRoute) return AppRoutes.splash;
-      if (isSplashRoute && isAppReady && !isInitError) return AppRoutes.home;
+      if (isSplashRoute && isAppReady && !isInitError) {
+        if (kDebugMode && hasDebugStartRoute) return normalizedDebugStartRoute;
+        return AppRoutes.home;
+      }
 
       final isGeneticsRoute =
           location == AppRoutes.genetics ||
