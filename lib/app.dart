@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -14,6 +15,7 @@ import 'features/auth/providers/auth_providers.dart';
 import 'features/premium/providers/premium_providers.dart';
 import 'features/settings/providers/settings_providers.dart';
 import 'router/app_router.dart';
+import 'router/route_names.dart';
 
 class BudgieBreedingApp extends ConsumerStatefulWidget {
   const BudgieBreedingApp({super.key});
@@ -24,6 +26,7 @@ class BudgieBreedingApp extends ConsumerStatefulWidget {
 
 class _BudgieBreedingAppState extends ConsumerState<BudgieBreedingApp> {
   late final AppLifecycleListener _lifecycleListener;
+  bool _didOpenDebugAuditRoute = false;
 
   @override
   void initState() {
@@ -33,6 +36,7 @@ class _BudgieBreedingAppState extends ConsumerState<BudgieBreedingApp> {
     SchedulerBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         ref.read(appLocaleProvider.notifier).syncFromContext(context);
+        _openDebugAuditRouteIfNeeded();
       }
     });
 
@@ -64,6 +68,17 @@ class _BudgieBreedingAppState extends ConsumerState<BudgieBreedingApp> {
         return false;
       });
     }
+  }
+
+  void _openDebugAuditRouteIfNeeded() {
+    if (_didOpenDebugAuditRoute || !kDebugMode) return;
+    const enableGeneticsColorAudit = bool.fromEnvironment(
+      'GENETICS_COLOR_AUDIT',
+    );
+    if (!enableGeneticsColorAudit) return;
+
+    _didOpenDebugAuditRoute = true;
+    ref.read(routerProvider).go(AppRoutes.geneticsColorAudit);
   }
 
   @override
@@ -135,8 +150,9 @@ class _BudgieBreedingAppState extends ConsumerState<BudgieBreedingApp> {
         ),
       ),
       themeMode: themeMode,
-      themeAnimationDuration:
-          reduceAnimations ? Duration.zero : kThemeAnimationDuration,
+      themeAnimationDuration: reduceAnimations
+          ? Duration.zero
+          : kThemeAnimationDuration,
       localizationsDelegates: context.localizationDelegates,
       supportedLocales: context.supportedLocales,
       locale: context.locale,
@@ -144,9 +160,7 @@ class _BudgieBreedingAppState extends ConsumerState<BudgieBreedingApp> {
       builder: (context, child) {
         final scale = fontScale.scaleFactor;
         return MediaQuery(
-          data: MediaQuery.of(
-            context,
-          ).copyWith(
+          data: MediaQuery.of(context).copyWith(
             textScaler: TextScaler.linear(scale),
             disableAnimations: reduceAnimations,
           ),
