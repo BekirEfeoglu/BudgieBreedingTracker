@@ -65,8 +65,8 @@ class _SocialLoginButtonsState extends State<SocialLoginButtons> {
             ),
             label: Text('auth.sign_in_with_google'.tr()),
             style: OutlinedButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: Colors.black87,
+              backgroundColor: theme.colorScheme.surface,
+              foregroundColor: theme.colorScheme.onSurface,
               minimumSize: const Size(
                 double.infinity,
                 AppSpacing.touchTargetMd,
