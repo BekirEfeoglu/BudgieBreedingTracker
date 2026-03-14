@@ -24,6 +24,10 @@ subprojects {
                 }
             }
         }
+
+        project.tasks.withType<JavaCompile>().configureEach {
+            options.compilerArgs.addAll(listOf("-Xlint:none", "-nowarn"))
+        }
     }
 }
 subprojects {
