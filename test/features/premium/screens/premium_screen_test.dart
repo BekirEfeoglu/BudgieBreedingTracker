@@ -74,7 +74,7 @@ void main() {
 
       expect(find.text('premium.account_required_title'), findsOneWidget);
       expect(find.text('settings.privacy_policy'), findsOneWidget);
-      expect(find.text('settings.terms'), findsOneWidget);
+      expect(find.text('settings.terms (EULA)'), findsOneWidget);
     });
   });
 }

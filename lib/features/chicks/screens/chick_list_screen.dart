@@ -145,7 +145,7 @@ class _ChickListScreenState extends ConsumerState<ChickListScreen> {
             child: chicksAsync.when(
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (error, _) => ErrorState(
-                message: '${'common.data_load_error'.tr()}: $error',
+                message: 'common.data_load_error'.tr(),
                 onRetry: () {
                   ref.invalidate(chicksStreamProvider(userId));
                   ref.invalidate(chickParentsByEggProvider(userId));

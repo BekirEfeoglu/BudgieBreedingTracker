@@ -8,6 +8,7 @@ import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/mendelian_calculator.dart';
 import 'package:budgie_breeding_tracker/features/genetics/utils/phenotype_localizer.dart';
 import 'package:budgie_breeding_tracker/features/genetics/widgets/bird_color_simulation.dart';
+import 'package:budgie_breeding_tracker/features/genetics/widgets/z_linked_badge.dart';
 
 /// Card showing a predicted offspring phenotype with probability,
 /// sex indicator, carrier status, compound phenotype name,
@@ -77,6 +78,7 @@ class OffspringPrediction extends StatelessWidget {
                   children: [
                     // Primary name
                     Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Flexible(
                           child: Text(
@@ -85,6 +87,7 @@ class OffspringPrediction extends StatelessWidget {
                               fontWeight: FontWeight.bold,
                             ),
                             overflow: TextOverflow.ellipsis,
+                            maxLines: 2,
                           ),
                         ),
                         if (result.isCarrier) ...[
@@ -109,6 +112,10 @@ class OffspringPrediction extends StatelessWidget {
                               ),
                             ),
                           ),
+                        ],
+                        if (hasLinkedSexLinkedMutations(result)) ...[
+                          const SizedBox(width: AppSpacing.xs),
+                          ZLinkedBadge(linkedIds: getLinkedIds(result)),
                         ],
                         if (result.lethalCombinationIds.isNotEmpty) ...[
                           const SizedBox(width: AppSpacing.xs),
@@ -216,8 +223,9 @@ class OffspringPrediction extends StatelessWidget {
                   children: [
                     CircularProgressIndicator(
                       value: result.probability,
-                      backgroundColor: AppColors.neutral200,
-                      color: AppColors.primary,
+                      backgroundColor:
+                          theme.colorScheme.surfaceContainerHighest,
+                      color: theme.colorScheme.primary,
                       strokeWidth: 5,
                     ),
                     Text(
@@ -246,13 +254,13 @@ class _SexIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return switch (sex) {
-      OffspringSex.male => const Icon(
-        LucideIcons.arrowUpRight,
+      OffspringSex.male => const AppIcon(
+        AppIcons.male,
         size: 16,
         color: AppColors.genderMale,
       ),
-      OffspringSex.female => const Icon(
-        LucideIcons.arrowDownRight,
+      OffspringSex.female => const AppIcon(
+        AppIcons.female,
         size: 16,
         color: AppColors.genderFemale,
       ),

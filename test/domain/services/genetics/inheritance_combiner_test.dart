@@ -47,12 +47,56 @@ void main() {
 
       expect(results, isNotEmpty);
       expect(total, closeTo(1.0, 0.0001));
-      expect(
-        results.any(
-          (r) => r.carriedMutations.toSet().length == r.carriedMutations.length,
-        ),
-        isTrue,
-      );
+      for (final r in results) {
+        expect(
+          r.carriedMutations.toSet().length,
+          r.carriedMutations.length,
+          reason:
+              '${r.phenotype} has duplicate carriedMutations: '
+              '${r.carriedMutations}',
+        );
+      }
     });
+
+    test(
+      'multi-locus carrier mutations never contain duplicates',
+      () {
+        // Sex-linked carrier (pearly) + autosomal carrier (blue) + spangle
+        // This combination previously caused Pearly to appear twice:
+        // once from phenotype name and once from mutation ID.
+        final father = ParentGenotype(
+          gender: BirdGender.male,
+          mutations: {
+            'pearly': AlleleState.carrier,
+            'blue': AlleleState.carrier,
+            'spangle': AlleleState.visual,
+          },
+        );
+        final mother = ParentGenotype(
+          gender: BirdGender.female,
+          mutations: {
+            'pearly': AlleleState.visual,
+            'blue': AlleleState.carrier,
+          },
+        );
+
+        final results = calculator.calculateFromGenotypes(
+          father: father,
+          mother: mother,
+        );
+
+        expect(results, isNotEmpty);
+
+        for (final r in results) {
+          expect(
+            r.carriedMutations.toSet().length,
+            r.carriedMutations.length,
+            reason:
+                '${r.compoundPhenotype ?? r.phenotype} has duplicate '
+                'carriedMutations: ${r.carriedMutations}',
+          );
+        }
+      },
+    );
   });
 }

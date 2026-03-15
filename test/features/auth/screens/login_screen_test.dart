@@ -171,9 +171,10 @@ void main() {
       // Google uses OutlinedButton, Apple uses official SignInWithAppleButton
       expect(find.byType(OutlinedButton), findsOneWidget);
       expect(find.byType(SignInWithAppleButton), findsOneWidget);
-      // Verify labels (keys returned in test context)
+      // Verify Google label (key returned in test context)
       expect(find.text('auth.sign_in_with_google'), findsOneWidget);
-      expect(find.text('auth.sign_in_with_apple'), findsOneWidget);
+      // Note: SignInWithAppleButton renders its own internal label,
+      // not our localized 'auth.sign_in_with_apple' text.
     });
   });
 }

@@ -99,7 +99,7 @@ class BirdListScreen extends ConsumerWidget {
                 child: SizedBox(
                   height: MediaQuery.of(context).size.height * 0.5,
                   child: ErrorState(
-                    message: '${'common.data_load_error'.tr()}: $error',
+                    message: 'common.data_load_error'.tr(),
                     onRetry: () =>
                         ref.invalidate(birdsStreamProvider(userId)),
                   ),

@@ -96,10 +96,10 @@ class InbreedingWarning extends StatelessWidget {
 
   Widget _riskIconWidget(InbreedingRisk risk, Color color) => switch (risk) {
         InbreedingRisk.none => Icon(LucideIcons.checkCircle, size: 20, color: color),
-        InbreedingRisk.minimal => AppIcon(AppIcons.info, size: 20, color: color, semanticsLabel: 'Minimal risk'),
-        InbreedingRisk.low => AppIcon(AppIcons.info, size: 20, color: color, semanticsLabel: 'Low risk'),
-        InbreedingRisk.moderate => AppIcon(AppIcons.warning, size: 20, color: color, semanticsLabel: 'Moderate risk'),
-        InbreedingRisk.high => AppIcon(AppIcons.warning, size: 20, color: color, semanticsLabel: 'High risk'),
+        InbreedingRisk.minimal => AppIcon(AppIcons.info, size: 20, color: color, semanticsLabel: 'genetics.risk_minimal'.tr()),
+        InbreedingRisk.low => AppIcon(AppIcons.info, size: 20, color: color, semanticsLabel: 'genetics.risk_low'.tr()),
+        InbreedingRisk.moderate => AppIcon(AppIcons.warning, size: 20, color: color, semanticsLabel: 'genetics.risk_moderate'.tr()),
+        InbreedingRisk.high => AppIcon(AppIcons.warning, size: 20, color: color, semanticsLabel: 'genetics.risk_high'.tr()),
         InbreedingRisk.critical => Icon(LucideIcons.alertOctagon, size: 20, color: color),
       };
 

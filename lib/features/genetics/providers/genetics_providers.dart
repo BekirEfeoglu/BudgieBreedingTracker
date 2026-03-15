@@ -1,12 +1,11 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
-import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/epistasis_engine.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/lethal_combination_database.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/mendelian_calculator.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/mutation_database.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/parent_genotype.dart';
+import 'package:budgie_breeding_tracker/features/genetics/utils/phenotype_colors.dart';
 import 'package:budgie_breeding_tracker/features/genetics/widgets/genetic_charts.dart';
 
 /// Father genotype with allele states per mutation.
@@ -235,7 +234,9 @@ final offspringChartDataProvider = Provider<List<GeneticChartItem>>((ref) {
     return GeneticChartItem(
       label: r.phenotype,
       value: r.probability * 100,
-      color: phenotypeColor(r.phenotype),
+      color: r.visualMutations.isNotEmpty
+          ? phenotypeColorFromMutations(r.visualMutations)
+          : phenotypeColor(r.phenotype),
     );
   }).toList();
 });
@@ -273,8 +274,13 @@ final enrichedOffspringResultsProvider = Provider<List<OffspringResult>?>((
 
   return results.map((result) {
     final comboIds = analysis.warnings
-        .where((w) => identical(w.offspring, result))
+        .where(
+          (w) =>
+              w.offspring.phenotype == result.phenotype &&
+              w.offspring.sex == result.sex,
+        )
         .map((w) => w.combination.id)
+        .toSet()
         .toList();
     if (comboIds.isEmpty) return result;
     return OffspringResult(
@@ -325,50 +331,6 @@ final epistasisInteractionsProvider = Provider<List<EpistaticInteraction>>((
     ..sort((a, b) => b.prob.compareTo(a.prob));
   return sorted.map((entry) => entry.interaction).toList();
 });
-
-/// Ordered keyword→color mapping for phenotype indicators.
-/// Specific terms before substrings (e.g. 'greywing' before 'grey').
-final _phenotypeColorMap = <(String, Color)>[
-  ('albino', AppColors.phenotypeAlbino),
-  ('lutino', AppColors.phenotypeLutino),
-  ('lacewing', AppColors.phenotypeLacewing),
-  ('pallid', AppColors.phenotypeLacewing),
-  ('creamino', AppColors.phenotypeLutino),
-  ('cinnamon', AppColors.phenotypeCinnamon),
-  ('opaline', AppColors.phenotypeOpaline),
-  ('pearly', AppColors.phenotypeSpangle),
-  ('spangle', AppColors.phenotypeSpangle),
-  ('greywing', AppColors.phenotypeGreywing),
-  ('clearwing', AppColors.phenotypeClearwing),
-  ('pied', AppColors.phenotypePied),
-  ('dark factor', AppColors.phenotypeDarkFactor),
-  ('violet', AppColors.phenotypeViolet),
-  ('turquoise', AppColors.phenotypeViolet),
-  ('aqua', AppColors.phenotypeViolet),
-  ('goldenface', AppColors.phenotypeLutino),
-  ('blue factor', AppColors.budgieBlue),
-  ('grey', AppColors.phenotypeGrey),
-  ('anthracite', AppColors.phenotypeGrey),
-  ('blue', AppColors.budgieBlue),
-  ('green', AppColors.budgieGreen),
-  ('dilute', AppColors.phenotypeDilute),
-  ('fallow', AppColors.phenotypeFallow),
-  ('slate', AppColors.phenotypeSlate),
-  ('crested', AppColors.phenotypeCrested),
-  ('saddleback', AppColors.phenotypeSaddleback),
-  ('texas', AppColors.phenotypeTexas),
-  ('carrier', AppColors.neutral400),
-  ('normal', AppColors.neutral500),
-];
-
-/// Maps phenotype keywords to indicator colors.
-Color phenotypeColor(String phenotype) {
-  final lower = phenotype.toLowerCase();
-  for (final (keyword, color) in _phenotypeColorMap) {
-    if (lower.contains(keyword)) return color;
-  }
-  return AppColors.neutral500;
-}
 
 const _punnettLocusDisplayName = <String, String>{
   'blue_series': 'Blue Series',

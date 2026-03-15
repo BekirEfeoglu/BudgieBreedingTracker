@@ -109,7 +109,7 @@ class _BreedingListScreenState extends ConsumerState<BreedingListScreen> {
                 child: CircularProgressIndicator(),
               ),
               error: (error, _) => ErrorState(
-                message: '${'common.data_load_error'.tr()}: $error',
+                message: 'common.data_load_error'.tr(),
                 onRetry: () =>
                     ref.invalidate(breedingPairsStreamProvider(userId)),
               ),

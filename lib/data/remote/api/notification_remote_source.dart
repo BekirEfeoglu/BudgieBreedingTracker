@@ -77,9 +77,15 @@ class NotificationRemoteSource extends BaseRemoteSource<AppNotification> {
   }
 
   /// Upserts notification settings.
+  ///
+  /// NotificationSettings is primarily local-only but settings are
+  /// synced to Supabase for cross-device consistency.
   Future<void> upsertSettings(NotificationSettings settings) async {
+    final json = settings.toJson();
+    json.remove('created_at');
+    json.remove('updated_at');
     await client
         .from(SupabaseConstants.notificationSettingsTable)
-        .upsert(settings.toSupabase());
+        .upsert(json);
   }
 }

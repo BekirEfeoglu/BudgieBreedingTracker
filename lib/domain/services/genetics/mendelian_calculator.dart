@@ -1,6 +1,7 @@
-import 'package:budgie_breeding_tracker/domain/services/genetics/epistasis_engine.dart';
 import 'package:budgie_breeding_tracker/core/constants/genetics_constants.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
+import 'package:budgie_breeding_tracker/core/utils/logger.dart';
+import 'package:budgie_breeding_tracker/domain/services/genetics/epistasis_engine.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/mutation_database.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/parent_genotype.dart';
 
@@ -65,11 +66,13 @@ class MendelianCalculator {
   /// Allelic series: mutations sharing the same [BudgieMutationRecord.locusId]
   /// are grouped and calculated together (e.g., greywing/clearwing/dilute).
   ///
-  /// Sex-linked linkage: Cinnamon and Ino (~3 cM apart on Z) are calculated
-  /// as linked loci when the father carries both. Opaline-Cinnamon (~34 cM)
-  /// and Opaline-Ino (~30 cM) linkage is also modelled.
-  /// For double-heterozygous males, both linkage phases are supported:
-  /// coupling (carrier) and repulsion (split).
+  /// Sex-linked linkage on Z chromosome (gene order: O — C — I — Slate):
+  /// Ino-Slate (~2 cM), Cin-Ino (~3 cM), Cin-Slate (~5 cM),
+  /// Op-Ino (~30 cM), Op-Cin (~34 cM), Op-Slate (~40 cM).
+  /// When the father carries two linked mutations as heterozygous, they
+  /// are calculated as a linked pair (tightest linkage prioritised).
+  /// Both linkage phases are supported: coupling (carrier) and
+  /// repulsion (split).
   List<OffspringResult> calculateFromGenotypes({
     required ParentGenotype father,
     required ParentGenotype mother,
@@ -106,84 +109,67 @@ class MendelianCalculator {
     }
 
     // 1. Check for sex-linked linkage pairs on the Z chromosome.
-    //    Priority: Cin-Ino (3 cM, tight) → Op-Cin (34 cM) → Op-Ino (30 cM).
-    //    Only one pair per mutation is handled; remainder stay independent.
+    //    Gene order on Z: Opaline — Cinnamon — Ino — Slate.
+    //    Priority (tightest linkage first):
+    //    Ino-Slate (2 cM) → Cin-Ino (3 cM) → Cin-Slate (5 cM) →
+    //    Op-Ino (30 cM) → Op-Cin (34 cM) → Op-Slate (40 cM).
+    //    Each mutation consumed once paired; remainder stay independent.
     final hasCinnamon = allIds.contains('cinnamon');
     final hasInoAllele = allIds.contains('ino');
     final hasOpaline = allIds.contains('opaline');
+    final hasSlate = allIds.contains('slate');
 
-    // 1a. Cinnamon-Ino linkage (~3 cM — highest priority)
-    final fatherHasBothCinInoAsHet =
-        hasCinnamon &&
-        hasInoAllele &&
-        fatherIsHeterozygousAt('cinnamon') &&
-        fatherIsHeterozygousAt('ino');
+    final consumedSexLinked = <String>{};
 
-    if (fatherHasBothCinInoAsHet) {
+    void tryLinkPair(String id1, String id2, double rate) {
+      if (consumedSexLinked.contains(id1) ||
+          consumedSexLinked.contains(id2)) {
+        return;
+      }
+      if (!fatherIsHeterozygousAt(id1) || !fatherIsHeterozygousAt(id2)) {
+        return;
+      }
       final linkedResults = _calculateGenericLinkedPair(
-        mutId1: 'cinnamon',
-        mutId2: 'ino',
-        recombinationRate: GeneticsConstants.cinnamonInoRecombination,
+        mutId1: id1,
+        mutId2: id2,
+        recombinationRate: rate,
         father: father,
         mother: mother,
       );
-      if (linkedResults.isNotEmpty) {
-        perLocusResults['linked:cinnamon_ino'] = linkedResults;
-        independentIds.remove('cinnamon');
-        allelicGroups.remove(GeneticsConstants.locusIno);
-      }
+      if (linkedResults.isEmpty) return;
+
+      perLocusResults['linked:${id1}_$id2'] = linkedResults;
+      consumedSexLinked.addAll([id1, id2]);
+      independentIds.remove(id1);
+      independentIds.remove(id2);
+      // Remove allelic series groups for consumed mutations (e.g. ino_locus).
+      final r1 = MutationDatabase.getById(id1);
+      final r2 = MutationDatabase.getById(id2);
+      if (r1?.locusId != null) allelicGroups.remove(r1!.locusId);
+      if (r2?.locusId != null) allelicGroups.remove(r2!.locusId);
     }
 
-    // 1b. Opaline-Cinnamon linkage (~34 cM)
-    //     Only if cinnamon wasn't consumed by Cin-Ino linkage above.
-    final cinConsumed = perLocusResults.containsKey('linked:cinnamon_ino');
-    final fatherHasBothOpCinAsHet =
-        hasOpaline &&
-        hasCinnamon &&
-        !cinConsumed &&
-        fatherIsHeterozygousAt('opaline') &&
-        fatherIsHeterozygousAt('cinnamon');
-
-    if (fatherHasBothOpCinAsHet) {
-      final linkedResults = _calculateGenericLinkedPair(
-        mutId1: 'opaline',
-        mutId2: 'cinnamon',
-        recombinationRate: GeneticsConstants.opalineCinnamonRecombination,
-        father: father,
-        mother: mother,
-      );
-      if (linkedResults.isNotEmpty) {
-        perLocusResults['linked:opaline_cinnamon'] = linkedResults;
-        independentIds.remove('opaline');
-        independentIds.remove('cinnamon');
-      }
+    // Ordered by recombination rate (tightest first).
+    if (hasInoAllele && hasSlate) {
+      tryLinkPair('ino', 'slate', GeneticsConstants.inoSlateRecombination);
     }
-
-    // 1c. Opaline-Ino linkage (~30 cM)
-    //     Only if neither opaline nor ino was consumed by steps above.
-    final opConsumed = perLocusResults.containsKey('linked:opaline_cinnamon');
-    final inoConsumed = cinConsumed;
-    final fatherHasBothOpInoAsHet =
-        hasOpaline &&
-        hasInoAllele &&
-        !opConsumed &&
-        !inoConsumed &&
-        fatherIsHeterozygousAt('opaline') &&
-        fatherIsHeterozygousAt('ino');
-
-    if (fatherHasBothOpInoAsHet) {
-      final linkedResults = _calculateGenericLinkedPair(
-        mutId1: 'opaline',
-        mutId2: 'ino',
-        recombinationRate: GeneticsConstants.opalineInoRecombination,
-        father: father,
-        mother: mother,
-      );
-      if (linkedResults.isNotEmpty) {
-        perLocusResults['linked:opaline_ino'] = linkedResults;
-        independentIds.remove('opaline');
-        allelicGroups.remove(GeneticsConstants.locusIno);
-      }
+    if (hasCinnamon && hasInoAllele) {
+      tryLinkPair('cinnamon', 'ino', GeneticsConstants.cinnamonInoRecombination);
+    }
+    if (hasCinnamon && hasSlate) {
+      tryLinkPair(
+          'cinnamon', 'slate', GeneticsConstants.cinnamonSlateRecombination);
+    }
+    if (hasOpaline && hasInoAllele) {
+      tryLinkPair('opaline', 'ino', GeneticsConstants.opalineInoRecombination);
+    }
+    if (hasOpaline && hasCinnamon) {
+      tryLinkPair('opaline', 'cinnamon',
+          GeneticsConstants.opalineCinnamonRecombination);
+    }
+    if (hasOpaline && hasSlate) {
+      tryLinkPair(
+          'opaline', 'slate', GeneticsConstants.opalineSlateRecombination);
     }
 
     // 2. Allelic series loci

@@ -14,6 +14,7 @@ import 'package:budgie_breeding_tracker/domain/services/genetics/parent_genotype
 import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
 import 'package:budgie_breeding_tracker/features/genetics/providers/genetics_history_providers.dart';
 import 'package:budgie_breeding_tracker/features/genetics/providers/genetics_providers.dart';
+import 'package:budgie_breeding_tracker/features/genetics/utils/phenotype_colors.dart';
 
 class MockGeneticsHistoryDao extends Mock implements GeneticsHistoryDao {}
 
@@ -214,6 +215,99 @@ void main() {
       expect(phenotypeColor('Albino'), AppColors.phenotypeAlbino);
       expect(phenotypeColor('Blue'), isNotNull);
       expect(phenotypeColor('UnknownPhenotype'), isNotNull);
+    });
+
+    test('phenotypeColorFromMutations detects compound phenotypes', () {
+      // Ino + Blue = Albino color
+      expect(
+        phenotypeColorFromMutations(['ino', 'blue']),
+        AppColors.phenotypeAlbino,
+      );
+      // Ino without blue = Lutino color
+      expect(
+        phenotypeColorFromMutations(['ino']),
+        AppColors.phenotypeLutino,
+      );
+      // Cinnamon + Ino = Lacewing color
+      expect(
+        phenotypeColorFromMutations(['cinnamon', 'ino']),
+        AppColors.phenotypeLacewing,
+      );
+      // Pallid + Ino = PallidIno (Lacewing) color
+      expect(
+        phenotypeColorFromMutations(['pallid', 'ino']),
+        AppColors.phenotypeLacewing,
+      );
+      // Ino + Yellowface II + Blue = Creamino (Albino color)
+      expect(
+        phenotypeColorFromMutations(['ino', 'yellowface_type2', 'blue']),
+        AppColors.phenotypeAlbino,
+      );
+      // Ino + Goldenface + Blue = Creamino (Albino color)
+      expect(
+        phenotypeColorFromMutations(['ino', 'goldenface', 'blue']),
+        AppColors.phenotypeAlbino,
+      );
+    });
+
+    test('phenotypeColorFromMutations detects visual violet and grey', () {
+      // Violet + Blue = Visual Violet
+      expect(
+        phenotypeColorFromMutations(['violet', 'blue']),
+        AppColors.phenotypeViolet,
+      );
+      // Grey + Blue = Grey
+      expect(
+        phenotypeColorFromMutations(['grey', 'blue']),
+        AppColors.phenotypeGrey,
+      );
+      // Grey alone = Grey-Green
+      expect(
+        phenotypeColorFromMutations(['grey']),
+        AppColors.phenotypeGrey,
+      );
+    });
+
+    test('phenotypeColorFromMutations maps individual mutations', () {
+      expect(
+        phenotypeColorFromMutations(['blue']),
+        AppColors.budgieBlue,
+      );
+      expect(
+        phenotypeColorFromMutations(['opaline']),
+        AppColors.phenotypeOpaline,
+      );
+      expect(
+        phenotypeColorFromMutations(['dark_factor']),
+        AppColors.phenotypeDarkFactor,
+      );
+      expect(
+        phenotypeColorFromMutations(['spangle']),
+        AppColors.phenotypeSpangle,
+      );
+      expect(
+        phenotypeColorFromMutations(['recessive_pied']),
+        AppColors.phenotypePied,
+      );
+      expect(
+        phenotypeColorFromMutations(['slate']),
+        AppColors.phenotypeSlate,
+      );
+      expect(
+        phenotypeColorFromMutations(['fallow_english']),
+        AppColors.phenotypeFallow,
+      );
+      expect(
+        phenotypeColorFromMutations(['saddleback']),
+        AppColors.phenotypeSaddleback,
+      );
+    });
+
+    test('phenotypeColorFromMutations returns default for empty list', () {
+      expect(
+        phenotypeColorFromMutations([]),
+        AppColors.neutral500,
+      );
     });
 
     test('parent mutation providers include only visual mutations', () {

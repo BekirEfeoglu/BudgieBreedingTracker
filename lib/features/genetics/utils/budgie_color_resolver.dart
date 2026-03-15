@@ -16,7 +16,7 @@ abstract final class BudgiePhenotypePalette {
   static const cobalt = Color(0xFF60AFDD);
   static const mauve = Color(0xFF9BA3B7);
   static const violet = Color(0xFF5D63C7);
-  static const grey = Color(0xFFD1CEC6);
+  static const grey = Color(0xFF8A9098);
   static const slate = Color(0xFF647E90);
   static const anthraciteSingle = Color(0xFF57646E);
   static const anthraciteDouble = Color(0xFF3F474F);
@@ -195,9 +195,8 @@ abstract final class BudgieColorResolver {
         body = _mix(body, BudgiePhenotypePalette.maskYellow, 0.30);
       } else if (hasYf2 || hasBlueFactor2) {
         body = _mix(body, BudgiePhenotypePalette.maskYellow, 0.22);
-      } else if (hasYf1 || hasBlueFactor1) {
-        body = _mix(body, BudgiePhenotypePalette.maskYellow, 0.10);
       }
+      // YF1 / Blue Factor I: yellow confined to mask only, no body suffusion.
     }
 
     if (isDarkEyedClear) {
@@ -258,7 +257,7 @@ abstract final class BudgieColorResolver {
         mask = isBlueSeries
             ? BudgiePhenotypePalette.maskWhite
             : BudgiePhenotypePalette.maskYellow;
-        wingMarkings = BudgiePhenotypePalette.wingPaleBlack;
+        wingMarkings = BudgiePhenotypePalette.wingBlack;
       } else if (hasDominantClearbody) {
         body = _mix(
           isBlueSeries

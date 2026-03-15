@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
+import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/data/local/database/dao_providers.dart';
 import 'package:budgie_breeding_tracker/data/models/genetics_history_model.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/mendelian_calculator.dart';
@@ -147,7 +148,8 @@ List<OffspringResult> parseHistoryResults(String resultsJson) {
       );
     }
     return parsed;
-  } catch (_) {
+  } catch (e, st) {
+    AppLogger.error('[GeneticsHistory] Failed to parse history results', e, st);
     return [];
   }
 }

@@ -226,7 +226,7 @@ abstract class MutationData {
       visualEffect:
           'Softened markings with diluted melanin and clearer body tone',
       locusId: 'ino_locus',
-      dominanceRank: 3,
+      dominanceRank: 2,
     ),
     BudgieMutationRecord(
       id: 'ino',
@@ -262,13 +262,19 @@ abstract class MutationData {
       name: 'Pearly',
       localizationKey: 'genetics.mutation_pearly',
       description:
-          'Sex-linked pattern modifier producing pearled edging on wing markings',
+          'Ino-locus allele (ino^py) producing pearled edging on wing markings',
       inheritanceType: InheritanceType.sexLinkedRecessive,
       dominance: Dominance.recessive,
       alleleSymbol: 'prl',
       alleles: ['prl+', 'prl'],
-      category: 'Pattern',
+      category: 'Ino',
+      // MUTAVI: Pearly Ino (ino^py) is an allele at the ino locus.
+      // Dominance hierarchy: ino+ > tcb > pearly > pallid > ino.
+      // Linkage rates equal ino locus: Cin ~3 cM, Op ~30 cM, Slate ~2 cM.
+      // Reference: MUTAVI clearbody article, Inte Onsman 2006.
       visualEffect: 'Pearled wing pattern with softened edging',
+      locusId: 'ino_locus',
+      dominanceRank: 3,
     ),
     BudgieMutationRecord(
       id: 'cinnamon',
@@ -292,10 +298,9 @@ abstract class MutationData {
       alleleSymbol: 'sl',
       alleles: ['sl+', 'sl'],
       category: 'Melanin Modifier',
-      // Note: Slate is on the Z chromosome but its map distance to
-      // Opaline/Cinnamon/Ino is not well-characterised in literature.
-      // Linkage is assumed independent until reliable recombination
-      // data becomes available.
+      // Slate is on the Z chromosome. Gene order: O — C — I — Slate.
+      // Linkage rates: Cin-Slate ~5 cM, Ino-Slate ~2 cM, Op-Slate ~40 cM.
+      // Reference: MUTAVI research data, test-mating studies.
       visualEffect: 'Dark slate-blue body color',
     ),
 
@@ -399,7 +404,7 @@ abstract class MutationData {
       category: 'Clearbody',
       visualEffect: 'Bright body color with normal dark wing markings',
       locusId: 'ino_locus',
-      dominanceRank: 2,
+      dominanceRank: 4,
     ),
     BudgieMutationRecord(
       id: 'dominant_clearbody',

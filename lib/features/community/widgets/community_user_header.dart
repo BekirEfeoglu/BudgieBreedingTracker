@@ -19,6 +19,7 @@ class CommunityUserHeader extends StatelessWidget {
   final bool isFollowing;
   final VoidCallback? onDelete;
   final VoidCallback? onReport;
+  final VoidCallback? onBlock;
   final VoidCallback? onFollowToggle;
 
   const CommunityUserHeader({
@@ -31,6 +32,7 @@ class CommunityUserHeader extends StatelessWidget {
     this.isFollowing = false,
     this.onDelete,
     this.onReport,
+    this.onBlock,
     this.onFollowToggle,
   });
 
@@ -156,11 +158,12 @@ class CommunityUserHeader extends StatelessWidget {
                     ),
             ),
           ),
-        if (isOwnPost || onReport != null)
+        if (isOwnPost || onReport != null || onBlock != null)
           PopupMenuButton<String>(
             onSelected: (value) {
               if (value == 'delete') onDelete?.call();
               if (value == 'report') onReport?.call();
+              if (value == 'block') onBlock?.call();
             },
             itemBuilder: (context) => [
               if (isOwnPost)
@@ -172,6 +175,11 @@ class CommunityUserHeader extends StatelessWidget {
                 PopupMenuItem(
                   value: 'report',
                   child: Text('community.report_post'.tr()),
+                ),
+              if (!isOwnPost && onBlock != null)
+                PopupMenuItem(
+                  value: 'block',
+                  child: Text('community.block_user'.tr()),
                 ),
             ],
           ),

@@ -151,6 +151,7 @@ supabase/.temp/
 *.key
 secrets/
 config/local_config.dart
+ios/Flutter/DartDefines.xcconfig
 lib/config/supabase_config.dart
 
 # --------------------------------------------------

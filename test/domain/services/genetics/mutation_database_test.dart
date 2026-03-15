@@ -140,14 +140,18 @@ void main() {
           'bluefactor_2',
         }),
       );
-      expect(inoLocus, containsAll({'ino', 'pallid', 'texas_clearbody'}));
+      expect(
+        inoLocus,
+        containsAll({'ino', 'pallid', 'texas_clearbody', 'pearly'}),
+      );
     });
 
-    test('includes pearly mutation as sex-linked pattern entry', () {
+    test('includes pearly mutation as sex-linked ino-locus entry', () {
       final pearly = MutationDatabase.getById('pearly');
       expect(pearly, isNotNull);
       expect(pearly!.inheritanceType, InheritanceType.sexLinkedRecessive);
-      expect(pearly.category, 'Pattern');
+      expect(pearly.category, 'Ino');
+      expect(pearly.locusId, 'ino_locus');
     });
   });
 

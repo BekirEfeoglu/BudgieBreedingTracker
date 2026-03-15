@@ -21,6 +21,23 @@ abstract class MutationDatabase {
     return _index ??= {for (final m in allMutations) m.id: m};
   }
 
+  /// Index for fast locus ID lookup (lazily built).
+  static Map<String, List<BudgieMutationRecord>>? _locusIndex;
+
+  static Map<String, List<BudgieMutationRecord>> get _mutationLocusIndex {
+    if (_locusIndex != null) return _locusIndex!;
+    final index = <String, List<BudgieMutationRecord>>{};
+    for (final m in allMutations) {
+      if (m.locusId != null) {
+        index.putIfAbsent(m.locusId!, () => []).add(m);
+      }
+    }
+    return _locusIndex = index;
+  }
+
+  /// Cached allelic locus IDs (lazily built).
+  static Set<String>? _allelicLocusIds;
+
   /// Get all mutations.
   static List<BudgieMutationRecord> getAll() => allMutations;
 
@@ -77,16 +94,17 @@ abstract class MutationDatabase {
   static int get count => allMutations.length;
 
   /// Returns all mutations belonging to the given allelic series [locusId].
+  ///
+  /// Uses a lazy index for O(1) lookup instead of scanning all mutations.
   static List<BudgieMutationRecord> getByLocusId(String locusId) {
-    return allMutations.where((m) => m.locusId == locusId).toList();
+    return _mutationLocusIndex[locusId] ?? const [];
   }
 
   /// Returns all unique allelic series locus IDs in the database.
+  ///
+  /// Cached after first call — subsequent calls are O(1).
   static Set<String> getAllelicLocusIds() {
-    return allMutations
-        .where((m) => m.locusId != null)
-        .map((m) => m.locusId!)
-        .toSet();
+    return _allelicLocusIds ??= _mutationLocusIndex.keys.toSet();
   }
 
   /// Resolves a potentially legacy ID to the current canonical ID.

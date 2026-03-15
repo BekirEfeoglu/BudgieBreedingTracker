@@ -122,6 +122,12 @@ class _MutationDetailContent extends StatelessWidget {
               ),
             ),
           ],
+
+          // Z-chromosome linkage info (sex-linked mutations only)
+          if (mutation.isSexLinked) ...[
+            const SizedBox(height: AppSpacing.lg),
+            _ZLinkageSection(mutationId: mutation.id),
+          ],
           const SizedBox(height: AppSpacing.xl),
         ],
       ),
@@ -174,3 +180,120 @@ class _DetailRow extends StatelessWidget {
     );
   }
 }
+
+/// Shows Z-chromosome linkage info for sex-linked mutations.
+class _ZLinkageSection extends StatelessWidget {
+  final String mutationId;
+
+  const _ZLinkageSection({required this.mutationId});
+
+  @override
+  Widget build(BuildContext context) {
+    final linkages = _linkageMap[mutationId];
+    if (linkages == null || linkages.isEmpty) return const SizedBox.shrink();
+
+    final theme = Theme.of(context);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'genetics.z_linkage'.tr(),
+          style: theme.textTheme.labelMedium?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.xs),
+        Container(
+          width: double.infinity,
+          padding: AppSpacing.cardPadding,
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surfaceContainerHighest
+                .withValues(alpha: 0.5),
+            borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'genetics.z_gene_order'.tr(),
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              ...linkages.map(
+                (l) => Padding(
+                  padding: const EdgeInsets.only(bottom: 2),
+                  child: Row(
+                    children: [
+                      Text(
+                        l.label,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const Spacer(),
+                      Text(
+                        'genetics.z_linkage_rate'.tr(
+                          args: [l.centiMorgans.toString()],
+                        ),
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.primary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Z-chromosome linkage rates for sex-linked mutations.
+/// Gene order: Opaline — Cinnamon — Ino — Slate.
+typedef _LinkageEntry = ({String label, int centiMorgans});
+
+const _linkageMap = <String, List<_LinkageEntry>>{
+  'opaline': [
+    (label: 'Ino', centiMorgans: 30),
+    (label: 'Cinnamon', centiMorgans: 34),
+    (label: 'Slate', centiMorgans: 40),
+  ],
+  'cinnamon': [
+    (label: 'Ino', centiMorgans: 3),
+    (label: 'Slate', centiMorgans: 5),
+    (label: 'Opaline', centiMorgans: 34),
+  ],
+  'ino': [
+    (label: 'Slate', centiMorgans: 2),
+    (label: 'Cinnamon', centiMorgans: 3),
+    (label: 'Opaline', centiMorgans: 30),
+  ],
+  'slate': [
+    (label: 'Ino', centiMorgans: 2),
+    (label: 'Cinnamon', centiMorgans: 5),
+    (label: 'Opaline', centiMorgans: 40),
+  ],
+  // Pearly, Pallid & Texas Clearbody share the ino locus position.
+  'pearly': [
+    (label: 'Slate', centiMorgans: 2),
+    (label: 'Cinnamon', centiMorgans: 3),
+    (label: 'Opaline', centiMorgans: 30),
+  ],
+  'pallid': [
+    (label: 'Slate', centiMorgans: 2),
+    (label: 'Cinnamon', centiMorgans: 3),
+    (label: 'Opaline', centiMorgans: 30),
+  ],
+  'texas_clearbody': [
+    (label: 'Slate', centiMorgans: 2),
+    (label: 'Cinnamon', centiMorgans: 3),
+    (label: 'Opaline', centiMorgans: 30),
+  ],
+};

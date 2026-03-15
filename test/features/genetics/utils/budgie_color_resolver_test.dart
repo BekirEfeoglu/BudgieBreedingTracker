@@ -13,7 +13,7 @@ void main() {
       expect(BudgiePhenotypePalette.skyBlue, const Color(0xFF72D1DD));
       expect(BudgiePhenotypePalette.cobalt, const Color(0xFF60AFDD));
       expect(BudgiePhenotypePalette.mauve, const Color(0xFF9BA3B7));
-      expect(BudgiePhenotypePalette.grey, const Color(0xFFD1CEC6));
+      expect(BudgiePhenotypePalette.grey, const Color(0xFF8A9098));
     });
 
     test('keeps wild-type and carrier-only birds in the green series', () {
@@ -218,7 +218,7 @@ void main() {
       expect(texasClearbody.bodyColor, isNot(BudgiePhenotypePalette.skyBlue));
       expect(
         texasClearbody.wingMarkingColor,
-        BudgiePhenotypePalette.wingPaleBlack,
+        BudgiePhenotypePalette.wingBlack,
       );
       expect(
         texasClearbody.cheekPatchColor,

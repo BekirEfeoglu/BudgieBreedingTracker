@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
@@ -88,6 +89,10 @@ class AdService {
 
   Future<void> _initializeSdk() async {
     try {
+      // Request ATT permission on iOS 14+ before initializing ads SDK.
+      // This is required by Apple App Store guidelines for IDFA access.
+      if (Platform.isIOS) await _requestIOSTrackingPermission();
+
       await MobileAds.instance.initialize();
       _sdkInitialized = true;
       AppLogger.info('$_tag: SDK initialized');
@@ -95,6 +100,20 @@ class AdService {
       AppLogger.warning('$_tag: SDK initialization failed - $e');
     } finally {
       _sdkInitializationFuture = null;
+    }
+  }
+
+  /// Requests App Tracking Transparency authorization on iOS 14+.
+  ///
+  /// Uses the native ATTrackingManager API via MethodChannel.
+  /// If denied, AdMob automatically serves non-personalized ads.
+  static Future<void> _requestIOSTrackingPermission() async {
+    try {
+      const channel = MethodChannel('com.budgiebreeding.tracker/att');
+      await channel.invokeMethod<void>('requestTracking');
+    } catch (e) {
+      // ATT API not available (iOS < 14.5) or channel not set up — continue
+      AppLogger.info('$_tag: ATT request skipped - $e');
     }
   }
 
@@ -235,21 +254,15 @@ final adServiceProvider = Provider<AdService>((ref) {
     await service.loadRewardedAd();
   }
 
-  // Android can stutter if the Mobile Ads SDK initializes during the first
-  // frame. Delay only on Android so startup stays responsive.
-  if (Platform.isAndroid) {
-    // ignore: discarded_futures
-    Future<void>.delayed(const Duration(seconds: 2)).then((_) {
-      if (disposed) return;
-      // ignore: discarded_futures
-      preloadAds();
-    });
-  } else {
-    // Fire-and-forget: lazily initializes MobileAds SDK then loads ads.
-    // Deliberately not awaited — Provider cannot be async.
+  // Delay ad SDK initialization to avoid startup jank.
+  // On iOS the delay also gives ATT dialog time to display after the first
+  // frame so the prompt is not shown during the auth flow.
+  // ignore: discarded_futures
+  Future<void>.delayed(const Duration(seconds: 2)).then((_) {
+    if (disposed) return;
     // ignore: discarded_futures
     preloadAds();
-  }
+  });
 
   ref.onDispose(() {
     disposed = true;

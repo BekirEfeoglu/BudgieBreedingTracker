@@ -87,6 +87,8 @@ val sentryDsnFromConfig = resolveRuntimeConfigValue("SENTRY_DSN")
 val sentryEnvironmentFromConfig = resolveRuntimeConfigValue("SENTRY_ENVIRONMENT", "production")
 val revenueCatIosFromConfig = resolveRuntimeConfigValue("REVENUECAT_API_KEY_IOS")
 val revenueCatAndroidFromConfig = resolveRuntimeConfigValue("REVENUECAT_API_KEY_ANDROID")
+val googleWebClientIdFromConfig = resolveRuntimeConfigValue("GOOGLE_WEB_CLIENT_ID")
+val googleIosClientIdFromConfig = resolveRuntimeConfigValue("GOOGLE_IOS_CLIENT_ID")
 
 android {
     namespace = "com.budgiebreeding.budgie_breeding_tracker"
@@ -143,6 +145,16 @@ android {
             "String",
             "REVENUECAT_API_KEY_ANDROID",
             "\"${escapeForBuildConfig(revenueCatAndroidFromConfig)}\""
+        )
+        buildConfigField(
+            "String",
+            "GOOGLE_WEB_CLIENT_ID",
+            "\"${escapeForBuildConfig(googleWebClientIdFromConfig)}\""
+        )
+        buildConfigField(
+            "String",
+            "GOOGLE_IOS_CLIENT_ID",
+            "\"${escapeForBuildConfig(googleIosClientIdFromConfig)}\""
         )
     }
 

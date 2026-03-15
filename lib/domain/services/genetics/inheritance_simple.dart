@@ -45,6 +45,7 @@ List<_RawResult> _autosomalRecessive(
         phenotype: name,
         probability: 1.0,
         genotype: '$sym/$sym',
+        expressedMutationIds: [record.id],
       ),
     ];
   }
@@ -56,12 +57,14 @@ List<_RawResult> _autosomalRecessive(
       phenotype: name,
       probability: 0.50,
       genotype: '$sym/$sym',
+      expressedMutationIds: [record.id],
     ),
     _RawResult(
       phenotype: '$name (carrier)',
       probability: 0.50,
       isCarrier: true,
       genotype: '$sym+/$sym',
+      carriedMutationIds: [record.id],
     ),
   ];
 }
@@ -82,11 +85,13 @@ List<_RawResult> _autosomalDominant(
         phenotype: '$name (homozygous)',
         probability: 0.25,
         genotype: '$sym/$sym',
+        expressedMutationIds: [record.id],
       ),
       _RawResult(
         phenotype: name,
         probability: 0.50,
         genotype: '$sym+/$sym',
+        expressedMutationIds: [record.id],
       ),
       _RawResult(
         phenotype: 'Normal',
@@ -102,6 +107,7 @@ List<_RawResult> _autosomalDominant(
       phenotype: name,
       probability: 0.50,
       genotype: '$sym+/$sym',
+      expressedMutationIds: [record.id],
     ),
     _RawResult(
       phenotype: 'Normal',
@@ -128,11 +134,13 @@ List<_RawResult> _autosomalIncompleteDominant(
         phenotype: '$name (double)',
         probability: 0.25,
         genotype: '$sym/$sym',
+        expressedMutationIds: [record.id],
       ),
       _RawResult(
         phenotype: '$name (single)',
         probability: 0.50,
         genotype: '$sym+/$sym',
+        expressedMutationIds: [record.id],
       ),
       _RawResult(
         phenotype: 'Normal',
@@ -148,6 +156,7 @@ List<_RawResult> _autosomalIncompleteDominant(
       phenotype: '$name (single)',
       probability: 0.50,
       genotype: '$sym+/$sym',
+      expressedMutationIds: [record.id],
     ),
     _RawResult(
       phenotype: 'Normal',
@@ -182,12 +191,14 @@ List<_RawResult> _calculateSexLinked(
         probability: 0.50,
         sex: OffspringSex.male,
         genotype: 'Z${sym}Z$sym',
+        expressedMutationIds: [record.id],
       ),
       _RawResult(
         phenotype: name,
         probability: 0.50,
         sex: OffspringSex.female,
         genotype: 'Z${sym}W',
+        expressedMutationIds: [record.id],
       ),
     ];
   }
@@ -203,12 +214,14 @@ List<_RawResult> _calculateSexLinked(
         sex: OffspringSex.male,
         isCarrier: true,
         genotype: 'Z${sym}Z+',
+        carriedMutationIds: [record.id],
       ),
       _RawResult(
         phenotype: name,
         probability: 0.50,
         sex: OffspringSex.female,
         genotype: 'Z${sym}W',
+        expressedMutationIds: [record.id],
       ),
     ];
   }
@@ -225,6 +238,7 @@ List<_RawResult> _calculateSexLinked(
         sex: OffspringSex.male,
         isCarrier: true,
         genotype: 'Z+Z$sym',
+        carriedMutationIds: [record.id],
       ),
       const _RawResult(
         phenotype: 'Normal',

@@ -31,7 +31,11 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final userId = ref.watch(currentUserIdProvider);
 
-    // Show a one-time SnackBar when Android notification permission is denied
+    // Request notification permission after the user sees the home screen.
+    // Deferred by 3 seconds so the dialog doesn't appear immediately.
+    ref.watch(deferredNotificationPermissionProvider);
+
+    // Show a one-time SnackBar when notification permission is denied
     ref.listen<bool>(notificationPermissionGrantedProvider, (prev, granted) {
       if (prev != false && !granted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -148,7 +152,15 @@ class _ActiveBreedingsSection extends ConsumerWidget {
         padding: EdgeInsets.all(AppSpacing.lg),
         child: Center(child: CircularProgressIndicator()),
       ),
-      error: (_, __) => const SizedBox.shrink(),
+      error: (_, __) => Padding(
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+        child: Text(
+          'common.data_load_error'.tr(),
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Theme.of(context).colorScheme.error,
+              ),
+        ),
+      ),
       data: (pairs) => ActiveBreedingsSection(pairs: pairs),
     );
   }
@@ -168,7 +180,15 @@ class _RecentChicksSection extends ConsumerWidget {
         padding: EdgeInsets.all(AppSpacing.lg),
         child: Center(child: CircularProgressIndicator()),
       ),
-      error: (_, __) => const SizedBox.shrink(),
+      error: (_, __) => Padding(
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+        child: Text(
+          'common.data_load_error'.tr(),
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Theme.of(context).colorScheme.error,
+              ),
+        ),
+      ),
       data: (chicks) => RecentChicksSection(chicks: chicks, userId: userId),
     );
   }
@@ -185,7 +205,15 @@ class _IncubationSummarySection extends ConsumerWidget {
 
     return summaryAsync.when(
       loading: () => const SizedBox.shrink(),
-      error: (_, __) => const SizedBox.shrink(),
+      error: (_, __) => Padding(
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+        child: Text(
+          'common.data_load_error'.tr(),
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Theme.of(context).colorScheme.error,
+              ),
+        ),
+      ),
       data: (eggs) => IncubationSummarySection(eggs: eggs),
     );
   }

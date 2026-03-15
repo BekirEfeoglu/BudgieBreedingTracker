@@ -122,5 +122,104 @@ void main() {
         expect(genotype.clear().isEmpty, isTrue);
       },
     );
+
+    test(
+      'toggleState with unknown gender falls back to autosomal toggle for sex-linked',
+      () {
+        final genotype = ParentGenotype(
+          gender: BirdGender.unknown,
+          mutations: {'opaline': AlleleState.visual},
+        );
+
+        // Unknown gender should NOT enter the male 3-state cycle
+        final toggled = genotype.toggleState('opaline', isSexLinked: true);
+        expect(toggled.getState('opaline'), AlleleState.carrier);
+
+        // Second toggle goes back to visual (autosomal 2-state cycle)
+        final toggled2 = toggled.toggleState('opaline', isSexLinked: true);
+        expect(toggled2.getState('opaline'), AlleleState.visual);
+      },
+    );
+
+    group('canAddMutation', () {
+      test('allows adding independent mutation without limit', () {
+        final genotype = ParentGenotype(
+          gender: BirdGender.male,
+          mutations: {
+            'blue': AlleleState.visual,
+            'opaline': AlleleState.visual,
+            'cinnamon': AlleleState.visual,
+          },
+        );
+        // 'grey' has no locusId (independent) → always allowed
+        expect(genotype.canAddMutation('grey'), isTrue);
+      });
+
+      test('allows updating existing mutation at same locus', () {
+        final genotype = ParentGenotype(
+          gender: BirdGender.male,
+          mutations: {
+            'greywing': AlleleState.visual,
+            'clearwing': AlleleState.visual,
+          },
+        );
+        // greywing is already selected → updating is allowed
+        expect(genotype.canAddMutation('greywing'), isTrue);
+      });
+
+      test('blocks third mutation at same allelic locus', () {
+        final genotype = ParentGenotype(
+          gender: BirdGender.male,
+          mutations: {
+            'greywing': AlleleState.visual,
+            'clearwing': AlleleState.visual,
+          },
+        );
+        // dilute is at 'dilution' locus, same as greywing/clearwing → blocked
+        expect(genotype.canAddMutation('dilute'), isFalse);
+      });
+
+      test('female limited to 1 allele at sex-linked locus', () {
+        final genotype = ParentGenotype(
+          gender: BirdGender.female,
+          mutations: {'ino': AlleleState.visual},
+        );
+        // pallid is at 'ino_locus' (sex-linked), female already has ino → blocked
+        expect(genotype.canAddMutation('pallid'), isFalse);
+      });
+
+      test('male allows 2 alleles at sex-linked locus', () {
+        final genotype = ParentGenotype(
+          gender: BirdGender.male,
+          mutations: {'ino': AlleleState.visual},
+        );
+        // pallid is at 'ino_locus' (sex-linked), male can have 2 → allowed
+        expect(genotype.canAddMutation('pallid'), isTrue);
+      });
+    });
+
+    group('withMutationIfValid', () {
+      test('adds mutation when valid', () {
+        const genotype = ParentGenotype.empty(gender: BirdGender.male);
+        final updated =
+            genotype.withMutationIfValid('blue', AlleleState.visual);
+        expect(updated.hasVisual('blue'), isTrue);
+      });
+
+      test('returns same instance when locus limit exceeded', () {
+        final genotype = ParentGenotype(
+          gender: BirdGender.male,
+          mutations: {
+            'greywing': AlleleState.visual,
+            'clearwing': AlleleState.visual,
+          },
+        );
+        final result =
+            genotype.withMutationIfValid('dilute', AlleleState.visual);
+        // Should return unchanged genotype
+        expect(result.mutations.containsKey('dilute'), isFalse);
+        expect(result.mutations.length, 2);
+      });
+    });
   });
 }

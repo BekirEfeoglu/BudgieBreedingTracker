@@ -58,10 +58,6 @@ extension AppNotificationSupabase on AppNotification {
   Map<String, dynamic> toSupabase() => _stripServerFields(toJson());
 }
 
-extension NotificationSettingsSupabase on NotificationSettings {
-  Map<String, dynamic> toSupabase() => _stripServerFields(toJson());
-}
-
 extension ProfileSupabase on Profile {
   Map<String, dynamic> toSupabase() => _stripServerFields(toJson());
 }

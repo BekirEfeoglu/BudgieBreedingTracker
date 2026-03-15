@@ -199,6 +199,98 @@ void main() {
     });
   });
 
+  group('Z-chromosome linkage section', () {
+    testWidgets('shows linkage section for sex-linked mutation with data', (
+      tester,
+    ) async {
+      final cinnamon = MutationDatabase.getById('cinnamon')!;
+      await tester.pumpWidget(_contentWrap(cinnamon));
+      await tester.pump();
+
+      await tester.tap(find.text('open'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+
+      var ex = tester.takeException();
+      while (ex != null) {
+        ex = tester.takeException();
+      }
+
+      // Linkage header should appear
+      expect(find.text('genetics.z_linkage'), findsOneWidget);
+      // Gene order should appear
+      expect(find.text('genetics.z_gene_order'), findsOneWidget);
+      // Linkage partners should appear (Ino, Slate, Opaline)
+      expect(find.text('Ino'), findsAtLeastNWidgets(1));
+      expect(find.text('Slate'), findsAtLeastNWidgets(1));
+      expect(find.text('Opaline'), findsAtLeastNWidgets(1));
+    });
+
+    testWidgets('does not show linkage section for autosomal mutation', (
+      tester,
+    ) async {
+      final blue = MutationDatabase.getById('blue')!;
+      await tester.pumpWidget(_contentWrap(blue));
+      await tester.pump();
+
+      await tester.tap(find.text('open'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+
+      var ex = tester.takeException();
+      while (ex != null) {
+        ex = tester.takeException();
+      }
+
+      expect(find.text('genetics.z_linkage'), findsNothing);
+    });
+
+    testWidgets(
+      'does not show linkage section for sex-linked mutation without data',
+      (tester) async {
+        // Create a sex-linked mutation not in the linkage map.
+        final custom = _makeMutation(
+          id: 'custom_sl',
+          type: InheritanceType.sexLinkedRecessive,
+        );
+        await tester.pumpWidget(_contentWrap(custom));
+        await tester.pump();
+
+        await tester.tap(find.text('open'));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
+
+        var ex = tester.takeException();
+        while (ex != null) {
+          ex = tester.takeException();
+        }
+
+        // Sex-linked but no linkage data → section hidden
+        expect(find.text('genetics.z_linkage'), findsNothing);
+      },
+    );
+
+    testWidgets('shows linkage for pearly (ino locus position)', (
+      tester,
+    ) async {
+      final pearly = MutationDatabase.getById('pearly')!;
+      await tester.pumpWidget(_contentWrap(pearly));
+      await tester.pump();
+
+      await tester.tap(find.text('open'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+
+      var ex = tester.takeException();
+      while (ex != null) {
+        ex = tester.takeException();
+      }
+
+      expect(find.text('genetics.z_linkage'), findsOneWidget);
+      expect(find.text('Cinnamon'), findsAtLeastNWidgets(1));
+    });
+  });
+
   group('MutationDatabase real mutations', () {
     test('blue mutation exists', () {
       final mutation = MutationDatabase.getById('blue');

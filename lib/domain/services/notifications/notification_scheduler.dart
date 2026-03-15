@@ -76,6 +76,7 @@ class NotificationScheduler {
     required DateTime startDate,
     required String eggLabel,
     NotificationToggleSettings? settings,
+    @visibleForTesting DateTime? now,
   }) async {
     if (settings != null && !settings.eggTurning) {
       AppLogger.info(
@@ -86,7 +87,7 @@ class NotificationScheduler {
 
     const turningHours = IncubationConstants.eggTurningHours;
     const days = IncubationConstants.incubationPeriodDays;
-    final now = DateTime.now();
+    final now0 = now ?? DateTime.now();
     final futures = <Future<void>>[];
 
     for (var day = 0; day < days; day++) {
@@ -102,7 +103,7 @@ class NotificationScheduler {
           minute,
         );
 
-        if (scheduledDate.isBefore(now)) continue;
+        if (scheduledDate.isBefore(now0)) continue;
 
         final notificationId = NotificationScheduler.notificationId(
           eggTurningBaseId,
@@ -142,6 +143,7 @@ class NotificationScheduler {
     required String label,
     int preferredHour = 8,
     NotificationToggleSettings? settings,
+    @visibleForTesting DateTime? now,
   }) async {
     if (settings != null && !settings.incubation) {
       AppLogger.info(
@@ -163,13 +165,13 @@ class NotificationScheduler {
     };
 
     final hour = preferredHour.clamp(0, 23);
-    final now = DateTime.now();
+    final now0 = now ?? DateTime.now();
     final futures = <Future<void>>[];
 
     var index = 0;
     for (final entry in milestones.entries) {
       final scheduledDate = startDate.add(Duration(days: entry.key));
-      if (scheduledDate.isBefore(now)) {
+      if (scheduledDate.isBefore(now0)) {
         index++;
         continue;
       }
@@ -213,6 +215,7 @@ class NotificationScheduler {
     required int hour,
     required int durationDays,
     NotificationToggleSettings? settings,
+    @visibleForTesting DateTime? now,
   }) async {
     if (settings != null && !settings.healthCheck) {
       AppLogger.info(
@@ -221,7 +224,7 @@ class NotificationScheduler {
       return;
     }
 
-    final now = DateTime.now();
+    final now0 = now ?? DateTime.now();
     final futures = <Future<void>>[];
     final safeDurationDays = durationDays.clamp(0, _idsPerEntitySlot);
     if (safeDurationDays < durationDays) {
@@ -232,9 +235,9 @@ class NotificationScheduler {
     }
 
     for (var day = 0; day < safeDurationDays; day++) {
-      final scheduledDate = DateTime(now.year, now.month, now.day + day, hour);
+      final scheduledDate = DateTime(now0.year, now0.month, now0.day + day, hour);
 
-      if (scheduledDate.isBefore(now)) continue;
+      if (scheduledDate.isBefore(now0)) continue;
 
       final notificationId = NotificationScheduler.notificationId(
         healthCheckBaseId,
@@ -270,6 +273,7 @@ class NotificationScheduler {
     required int intervalHours,
     required int durationDays,
     NotificationToggleSettings? settings,
+    @visibleForTesting DateTime? now,
   }) async {
     if (settings != null && !settings.chickCare) {
       AppLogger.info(
@@ -295,7 +299,7 @@ class NotificationScheduler {
       return;
     }
 
-    final now = DateTime.now();
+    final now0 = now ?? DateTime.now();
     final futures = <Future<void>>[];
     var offset = 0;
 
@@ -313,7 +317,7 @@ class NotificationScheduler {
           intervalHours * r,
         );
 
-        if (scheduledDate.isBefore(now)) continue;
+        if (scheduledDate.isBefore(now0)) continue;
 
         final notificationId = NotificationScheduler.notificationId(
           chickCareBaseId,

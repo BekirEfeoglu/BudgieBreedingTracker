@@ -29,6 +29,13 @@ List<String> _getAllelesAtLocus(
 
   // 2 mutations selected at same locus = compound heterozygote
   // (e.g., greywing + clearwing → Full-Body Greywing)
+  // Only the first two are biologically meaningful (diploid organism).
+  if (selectedAtLocus.length > 2) {
+    AppLogger.warning(
+      '[AlleleResolver] More than 2 mutations selected at locus $locusId: '
+      '${selectedAtLocus.length} found, using first 2',
+    );
+  }
   return [selectedAtLocus[0], selectedAtLocus[1]];
 }
 
@@ -400,6 +407,36 @@ _AllelicPhenotypeResult _resolveInoCompound(
       phenotype: 'Pallid Texas Clearbody',
       genotype: 'pal/tcb',
       expressedIds: ['pallid', 'texas_clearbody'],
+      carriedIds: [],
+    );
+  }
+
+  // pearly + ino = Pearly (ino carried, pearly > ino)
+  if (alleles.contains('pearly') && alleles.contains('ino')) {
+    return const _AllelicPhenotypeResult(
+      phenotype: 'Pearly',
+      genotype: 'prl/ino',
+      expressedIds: ['pearly'],
+      carriedIds: ['ino'],
+    );
+  }
+
+  // texas_clearbody + pearly = Texas Clearbody (pearly carried, tcb > pearly)
+  if (alleles.contains('texas_clearbody') && alleles.contains('pearly')) {
+    return const _AllelicPhenotypeResult(
+      phenotype: 'Texas Clearbody',
+      genotype: 'tcb/prl',
+      expressedIds: ['texas_clearbody'],
+      carriedIds: ['pearly'],
+    );
+  }
+
+  // pearly + pallid = Pallid Pearly (both expressed, adjacent in hierarchy)
+  if (alleles.contains('pearly') && alleles.contains('pallid')) {
+    return const _AllelicPhenotypeResult(
+      phenotype: 'Pallid Pearly',
+      genotype: 'prl/pal',
+      expressedIds: ['pearly', 'pallid'],
       carriedIds: [],
     );
   }

@@ -116,8 +116,10 @@ class AllelicSeriesChips extends StatelessWidget {
                                       InheritanceType.autosomalDominant
                               ? AlleleState.carrier
                               : AlleleState.visual;
-                          final updated =
-                              genotype.withMutation(mutation.id, defaultState);
+                          final updated = genotype.withMutationIfValid(
+                            mutation.id,
+                            defaultState,
+                          );
                           onGenotypeChanged(updated);
                         } else {
                           final updated =
@@ -248,9 +250,9 @@ class _AlleleStateBadge extends StatelessWidget {
     final String label;
     if (isDosageBased) {
       label = switch (state) {
-        AlleleState.visual => 'DF',
-        AlleleState.carrier => 'SF',
-        AlleleState.split => 'SF',
+        AlleleState.visual => 'genetics.allele_df_short'.tr(),
+        AlleleState.carrier => 'genetics.allele_sf_short'.tr(),
+        AlleleState.split => 'genetics.allele_sf_short'.tr(),
       };
     } else {
       label = switch (state) {

@@ -83,7 +83,7 @@ class _BirdPickerDialogState extends ConsumerState<BirdPickerDialog> {
               child: birdsAsync.when(
                 loading: () => const Center(child: CircularProgressIndicator()),
                 error: (e, _) =>
-                    Center(child: Text('${'common.data_load_error'.tr()}: $e')),
+                    Center(child: Text('common.data_load_error'.tr())),
                 data: (birds) {
                   // Filter by gender and alive status
                   var filtered = birds

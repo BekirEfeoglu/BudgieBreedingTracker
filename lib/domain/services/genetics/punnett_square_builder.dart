@@ -43,12 +43,7 @@ PunnettSquareData _buildAllelicSeriesPunnett(
     cells.add(row);
   }
 
-  final locusName = switch (locusId) {
-    'dilution' => 'Dilution',
-    'blue_series' => 'Blue Series',
-    'ino_locus' => 'Ino Locus',
-    _ => locusId,
-  };
+  final locusName = _locusDisplayName(locusId);
 
   return PunnettSquareData(
     mutationName: locusName,

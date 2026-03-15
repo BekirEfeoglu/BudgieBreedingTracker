@@ -22,6 +22,12 @@ const _compileTimeRevenueCatIos = String.fromEnvironment(
 const _compileTimeRevenueCatAndroid = String.fromEnvironment(
   'REVENUECAT_API_KEY_ANDROID',
 );
+const _compileTimeGoogleWebClientId = String.fromEnvironment(
+  'GOOGLE_WEB_CLIENT_ID',
+);
+const _compileTimeGoogleIosClientId = String.fromEnvironment(
+  'GOOGLE_IOS_CLIENT_ID',
+);
 
 const _nativeConfigChannel = MethodChannel(
   'com.budgiebreeding.budgie_breeding_tracker/config',
@@ -33,10 +39,16 @@ String _resolvedSentryDsn = _compileTimeSentryDsn;
 String _resolvedSentryEnv = _compileTimeSentryEnv;
 String _resolvedRevenueCatIos = _compileTimeRevenueCatIos;
 String _resolvedRevenueCatAndroid = _compileTimeRevenueCatAndroid;
+String _resolvedGoogleWebClientId = _compileTimeGoogleWebClientId;
+String _resolvedGoogleIosClientId = _compileTimeGoogleIosClientId;
 
 /// Resolved RevenueCat API keys — accessible from providers after bootstrap.
 String revenueCatApiKeyIos = '';
 String revenueCatApiKeyAndroid = '';
+
+/// Resolved Google OAuth client IDs — accessible from providers after bootstrap.
+String googleWebClientIdResolved = '';
+String googleIosClientIdResolved = '';
 
 bool _isSupabaseInitialized() {
   try {
@@ -162,6 +174,8 @@ Future<void> _initSupabase() async {
 void _resolveRevenueCatKeys() {
   revenueCatApiKeyIos = _resolvedRevenueCatIos;
   revenueCatApiKeyAndroid = _resolvedRevenueCatAndroid;
+  googleWebClientIdResolved = _resolvedGoogleWebClientId;
+  googleIosClientIdResolved = _resolvedGoogleIosClientId;
 }
 
 Future<void> _resolveAndroidBuildConfigFallbacks() async {
@@ -196,6 +210,14 @@ Future<void> _resolveAndroidBuildConfigFallbacks() async {
     _resolvedRevenueCatAndroid = _preferNonEmpty(
       _resolvedRevenueCatAndroid,
       config['REVENUECAT_API_KEY_ANDROID'],
+    );
+    _resolvedGoogleWebClientId = _preferNonEmpty(
+      _resolvedGoogleWebClientId,
+      config['GOOGLE_WEB_CLIENT_ID'],
+    );
+    _resolvedGoogleIosClientId = _preferNonEmpty(
+      _resolvedGoogleIosClientId,
+      config['GOOGLE_IOS_CLIENT_ID'],
     );
   } catch (e) {
     AppLogger.warning('[Bootstrap] Android config fallback unavailable: $e');

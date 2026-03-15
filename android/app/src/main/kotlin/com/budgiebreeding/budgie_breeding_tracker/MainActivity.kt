@@ -25,6 +25,8 @@ class MainActivity : FlutterActivity() {
                                 "SENTRY_ENVIRONMENT" to BuildConfig.SENTRY_ENVIRONMENT,
                                 "REVENUECAT_API_KEY_IOS" to BuildConfig.REVENUECAT_API_KEY_IOS,
                                 "REVENUECAT_API_KEY_ANDROID" to BuildConfig.REVENUECAT_API_KEY_ANDROID,
+                                "GOOGLE_WEB_CLIENT_ID" to BuildConfig.GOOGLE_WEB_CLIENT_ID,
+                                "GOOGLE_IOS_CLIENT_ID" to BuildConfig.GOOGLE_IOS_CLIENT_ID,
                             )
                         )
                     }

@@ -1,12 +1,24 @@
+import '../../bootstrap.dart';
+
 abstract class AppConstants {
   static const String appName = 'BudgieBreedingTracker';
   static const String appVersion = '1.0.0';
   static const String privacyPolicyUrl =
       'https://budgiebreedingtracker.online/privacy-policy.html';
   static const String termsOfUseUrl =
-      'https://www.apple.com/legal/internet-services/itunes/dev/stdeula/';
+      'https://budgiebreedingtracker.online/terms-of-use.html';
   static const String supportUrl =
       'https://budgiebreedingtracker.online/support/';
+  static const String communityGuidelinesUrl =
+      'https://budgiebreedingtracker.online/community-guidelines.html';
+
+  /// Apple App Store product page URL for "Write a Review" deep link.
+  static const String appStoreUrl =
+      'https://apps.apple.com/app/id6740091218?action=write-review';
+
+  /// Google Play Store listing URL.
+  static const String playStoreUrl =
+      'https://play.google.com/store/apps/details?id=com.budgiebreeding.tracker';
   static const List<String> supportedLanguages = ['tr', 'en', 'de'];
   static const String defaultLanguage = 'tr';
   static const Duration syncInterval = Duration(minutes: 15);
@@ -17,8 +29,7 @@ abstract class AppConstants {
   static const int freeTierMaxBreedingPairs = 5;
   static const int freeTierMaxActiveIncubations = 3;
 
-  // Social Login Credentials
-  // TODO(User): Fill these with your actual Google Client IDs
-  static const String googleWebClientId = const String.fromEnvironment('GOOGLE_WEB_CLIENT_ID', defaultValue: '');
-  static const String googleIosClientId = const String.fromEnvironment('GOOGLE_IOS_CLIENT_ID', defaultValue: '');
+  // Social Login Credentials — resolved at runtime from .env / BuildConfig / --dart-define.
+  static String get googleWebClientId => googleWebClientIdResolved;
+  static String get googleIosClientId => googleIosClientIdResolved;
 }

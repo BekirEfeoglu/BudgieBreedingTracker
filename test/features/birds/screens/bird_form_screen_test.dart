@@ -98,7 +98,7 @@ void main() {
     testWidgets('prefills automatic bird name', (tester) async {
       await tester.pumpWidget(buildSubject());
       await tester.pumpAndSettle();
-      expect(find.text('Kuş-1'), findsOneWidget);
+      expect(find.text('birds.default_name_prefix1'), findsOneWidget);
     });
 
     testWidgets('shows a Form widget', (tester) async {

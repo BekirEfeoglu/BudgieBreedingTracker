@@ -1,5 +1,6 @@
 import Flutter
 import UIKit
+import AppTrackingTransparency
 
 class SceneDelegate: FlutterSceneDelegate {
 
@@ -7,8 +8,9 @@ class SceneDelegate: FlutterSceneDelegate {
   // key-window guard can restore it reliably.
   static weak var flutterWindow: UIWindow?
 
-  // Strong reference to keep the MethodChannel alive for the app's lifetime.
+  // Strong references to keep MethodChannels alive for the app's lifetime.
   private var keyboardFixChannel: FlutterMethodChannel?
+  private var attChannel: FlutterMethodChannel?
 
   override func scene(
     _ scene: UIScene,
@@ -19,6 +21,7 @@ class SceneDelegate: FlutterSceneDelegate {
     // After super runs, self.window is set by FlutterSceneDelegate.
     SceneDelegate.flutterWindow = window
     setupKeyboardFixChannel()
+    setupATTChannel()
   }
 
   /// Sets up the MethodChannel that Dart calls on every text-field tap
@@ -55,6 +58,34 @@ class SceneDelegate: FlutterSceneDelegate {
       }
     }
     keyboardFixChannel = channel
+  }
+
+  /// Sets up the ATT (App Tracking Transparency) MethodChannel.
+  ///
+  /// Called by AdService before initializing Google Mobile Ads SDK so the
+  /// user sees the tracking consent dialog before any IDFA-dependent ads load.
+  private func setupATTChannel() {
+    guard let flutterVC = window?.rootViewController as? FlutterViewController else { return }
+    let engine = flutterVC.engine
+
+    let channel = FlutterMethodChannel(
+      name: "com.budgiebreeding.tracker/att",
+      binaryMessenger: engine.binaryMessenger
+    )
+    channel.setMethodCallHandler { (call: FlutterMethodCall, result: @escaping FlutterResult) in
+      guard call.method == "requestTracking" else {
+        result(FlutterMethodNotImplemented)
+        return
+      }
+      if #available(iOS 14, *) {
+        ATTrackingManager.requestTrackingAuthorization { _ in
+          DispatchQueue.main.async { result(nil) }
+        }
+      } else {
+        result(nil)
+      }
+    }
+    attChannel = channel
   }
 
   // Required for supabase_flutter (app_links) to process deep link callbacks on iOS 13+.

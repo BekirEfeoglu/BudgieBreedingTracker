@@ -67,9 +67,10 @@ class _BirdFormScreenState extends ConsumerState<BirdFormScreen> {
 
   Future<void> _setDefaultBirdName() async {
     final userId = ref.read(currentUserIdProvider);
+    final prefix = 'birds.default_name_prefix'.tr();
     if (userId.isEmpty || userId == 'anonymous') {
       if (_nameController.text.trim().isEmpty) {
-        _nameController.text = 'Kuş-1';
+        _nameController.text = '${prefix}1';
       }
       return;
     }
@@ -77,8 +78,7 @@ class _BirdFormScreenState extends ConsumerState<BirdFormScreen> {
     try {
       final repo = ref.read(birdRepositoryProvider);
       final birds = await repo.getAll(userId);
-      const prefix = 'Kuş-';
-      final regex = RegExp(r'^Kuş-(\d+)$');
+      final regex = RegExp('^${RegExp.escape(prefix)}(\\d+)\$');
       var maxNumber = 0;
 
       for (final bird in birds) {
@@ -94,7 +94,7 @@ class _BirdFormScreenState extends ConsumerState<BirdFormScreen> {
       _nameController.text = '$prefix${maxNumber + 1}';
     } catch (_) {
       if (mounted && _nameController.text.trim().isEmpty) {
-        _nameController.text = 'Kuş-1';
+        _nameController.text = '${prefix}1';
       }
     }
   }

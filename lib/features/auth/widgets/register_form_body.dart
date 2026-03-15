@@ -1,7 +1,10 @@
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:url_launcher/url_launcher.dart';
 
+import '../../../core/constants/app_constants.dart';
 import '../../../core/constants/app_icons.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_icon.dart';
@@ -125,7 +128,95 @@ class RegisterFormBody extends StatelessWidget {
             return null;
           },
         ),
-        const SizedBox(height: AppSpacing.xxl),
+        const SizedBox(height: AppSpacing.lg),
+
+        // Age confirmation checkbox (COPPA)
+        FormField<bool>(
+          initialValue: false,
+          validator: (v) =>
+              v != true ? 'auth.age_confirm_required'.tr() : null,
+          builder: (state) => Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              InkWell(
+                onTap: isLoading
+                    ? null
+                    : () => state.didChange(!(state.value ?? false)),
+                borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Checkbox(
+                      value: state.value ?? false,
+                      onChanged: isLoading ? null : (v) => state.didChange(v),
+                    ),
+                    Expanded(
+                      child: Text(
+                        'auth.age_confirm'.tr(),
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (state.hasError)
+                Padding(
+                  padding: const EdgeInsets.only(left: AppSpacing.xl * 2),
+                  child: Text(
+                    state.errorText!,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Theme.of(context).colorScheme.error,
+                        ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+        const SizedBox(height: AppSpacing.sm),
+
+        // Terms & Privacy consent checkbox
+        FormField<bool>(
+          initialValue: false,
+          validator: (v) =>
+              v != true ? 'auth.consent_required'.tr() : null,
+          builder: (state) => Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              InkWell(
+                onTap: isLoading
+                    ? null
+                    : () => state.didChange(!(state.value ?? false)),
+                borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Checkbox(
+                      value: state.value ?? false,
+                      onChanged: isLoading ? null : (v) => state.didChange(v),
+                    ),
+                    Expanded(
+                      child: Text(
+                        'auth.consent_checkbox'.tr(),
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (state.hasError)
+                Padding(
+                  padding: const EdgeInsets.only(left: AppSpacing.xl * 2),
+                  child: Text(
+                    state.errorText!,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Theme.of(context).colorScheme.error,
+                        ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+        const SizedBox(height: AppSpacing.lg),
 
         // Register button
         FilledButton(
@@ -151,11 +242,20 @@ class RegisterFormBody extends StatelessWidget {
         ),
         const SizedBox(height: AppSpacing.xxl),
 
+        // Legal links (Privacy Policy & Terms of Service)
+        _LegalLinksText(),
+        const SizedBox(height: AppSpacing.md),
+
         // Login link
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text('auth.have_account'.tr()),
+            Flexible(
+              child: Text(
+                'auth.have_account'.tr(),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
             TextButton(
               onPressed: isLoading ? null : onLoginTap,
               child: Text('auth.login'.tr()),
@@ -163,6 +263,51 @@ class RegisterFormBody extends StatelessWidget {
           ],
         ),
       ],
+    );
+  }
+}
+
+/// Clickable Terms of Service & Privacy Policy text for auth screens.
+class _LegalLinksText extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final linkStyle = theme.textTheme.bodySmall?.copyWith(
+      color: theme.colorScheme.primary,
+      decoration: TextDecoration.underline,
+    );
+    final normalStyle = theme.textTheme.bodySmall?.copyWith(
+      color: theme.colorScheme.onSurfaceVariant,
+    );
+
+    return RichText(
+      textAlign: TextAlign.center,
+      text: TextSpan(
+        style: normalStyle,
+        children: [
+          TextSpan(text: 'auth.agree_terms_prefix'.tr()),
+          TextSpan(
+            text: 'auth.terms_of_service'.tr(),
+            style: linkStyle,
+            recognizer: TapGestureRecognizer()
+              ..onTap = () => launchUrl(
+                    Uri.parse(AppConstants.termsOfUseUrl),
+                    mode: LaunchMode.externalApplication,
+                  ),
+          ),
+          TextSpan(text: 'auth.agree_terms_and'.tr()),
+          TextSpan(
+            text: 'auth.privacy_policy'.tr(),
+            style: linkStyle,
+            recognizer: TapGestureRecognizer()
+              ..onTap = () => launchUrl(
+                    Uri.parse(AppConstants.privacyPolicyUrl),
+                    mode: LaunchMode.externalApplication,
+                  ),
+          ),
+          TextSpan(text: 'auth.agree_terms_suffix'.tr()),
+        ],
+      ),
     );
   }
 }
