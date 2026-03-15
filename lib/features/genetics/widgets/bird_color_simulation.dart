@@ -110,7 +110,7 @@ class BirdColorSimulation extends StatelessWidget {
               ),
             ),
 
-          if (appearance.wingFillColor.alpha > 0)
+          if (appearance.wingFillColor.a > 0)
             Positioned(
               bottom: size * 0.1,
               right: -size * 0.15,
