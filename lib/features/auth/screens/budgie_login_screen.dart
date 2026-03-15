@@ -286,18 +286,7 @@ class _BudgieLoginScreenState extends ConsumerState<BudgieLoginScreen>
       final auth = ref.read(authActionsProvider);
       await auth.signInAnonymously();
       if (!mounted) return;
-
-      setState(() {
-        _loginState = LoginState.success;
-        _isPeeking = true;
-        _eggWobbleCtrl.stop();
-      });
-      _hopCtrl.forward(from: 0).then((_) => _hopCtrl.reverse());
-
-      Future.delayed(const Duration(milliseconds: 1200), () {
-        if (!mounted) return;
-        context.go(AppRoutes.home);
-      });
+      _handleAuthSuccess();
     } on AuthException catch (e) {
       if (mounted) _showError(mapAuthError(e));
     } catch (e, st) {
@@ -305,6 +294,19 @@ class _BudgieLoginScreenState extends ConsumerState<BudgieLoginScreen>
       Sentry.captureException(e, stackTrace: st);
       if (mounted) _showError('auth.error_unknown'.tr());
     }
+  }
+
+  void _handleAuthSuccess() {
+    setState(() {
+      _loginState = LoginState.success;
+      _isPeeking = true;
+      _eggWobbleCtrl.stop();
+    });
+    _hopCtrl.forward(from: 0).then((_) => _hopCtrl.reverse());
+    Future.delayed(const Duration(milliseconds: 1200), () {
+      if (!mounted) return;
+      context.go(AppRoutes.home);
+    });
   }
 
   void _showError(String message) {
@@ -344,29 +346,42 @@ class _BudgieLoginScreenState extends ConsumerState<BudgieLoginScreen>
       }
 
       final auth = ref.read(authActionsProvider);
-      
+
+      // Try native sign-in first, fall back to browser OAuth on failure
       if (provider == OAuthProvider.apple) {
-        // Native Apple Sign In
-        await auth.signInWithApple();
-        if (mounted) {
-           // On success, state changes will handle routing
-           // Just wait for stream to realize login
+        try {
+          await auth.signInWithApple();
+          if (!mounted) return;
+          _handleAuthSuccess();
+          return;
+        } on AuthException catch (e) {
+          if (e.message == 'Canceled') rethrow;
+          AppLogger.warning(
+            '[Login] Native Apple sign-in unavailable, trying browser: ${e.message}',
+          );
         }
-        return;
       }
 
       if (provider == OAuthProvider.google) {
-        // Native Google Sign In
-        await auth.signInWithGoogle();
-        if (mounted) {}
-        return;
+        try {
+          await auth.signInWithGoogle();
+          if (!mounted) return;
+          _handleAuthSuccess();
+          return;
+        } on AuthException catch (e) {
+          if (e.message == 'Canceled') rethrow;
+          AppLogger.warning(
+            '[Login] Native Google sign-in unavailable, trying browser: ${e.message}',
+          );
+        }
       }
 
+      // Browser-based OAuth (fallback or primary for other providers)
+      if (!mounted) return;
       final launched = await auth.signInWithOAuth(provider);
       if (!launched && mounted) {
         _resetToIdle();
       } else if (launched && mounted) {
-        // OAuth tarayici acildi — 30 sn timeout koruması
         _oAuthTimeoutTimer?.cancel();
         _oAuthTimeoutTimer = Timer(const Duration(seconds: 30), () {
           if (mounted && _loginState == LoginState.loading) {

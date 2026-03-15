@@ -176,5 +176,140 @@ void main() {
       // Note: SignInWithAppleButton renders its own internal label,
       // not our localized 'auth.sign_in_with_apple' text.
     });
+
+    testWidgets('calls signInWithGoogle on Google button tap', (tester) async {
+      when(() => mockAuth.signInWithGoogle())
+          .thenAnswer((_) async => AuthResponse());
+
+      await tester.pumpWidget(buildSubject());
+      await tester.pump(const Duration(milliseconds: 500));
+
+      final googleBtn = find.byType(OutlinedButton);
+      await tester.ensureVisible(googleBtn);
+      await tester.pump(const Duration(milliseconds: 100));
+      await tester.tap(googleBtn);
+      await tester.pump(const Duration(milliseconds: 500));
+
+      verify(() => mockAuth.signInWithGoogle()).called(1);
+
+      // Advance past success delay + blink timers to dispose cleanly
+      await tester.pump(const Duration(seconds: 2));
+      await tester.pump();
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 3));
+      await tester.pump(const Duration(milliseconds: 500));
+    });
+
+    testWidgets('calls signInWithApple on Apple button tap', (tester) async {
+      when(() => mockAuth.signInWithApple())
+          .thenAnswer((_) async => AuthResponse());
+
+      await tester.pumpWidget(buildSubject());
+      await tester.pump(const Duration(milliseconds: 500));
+
+      final appleBtn = find.byType(SignInWithAppleButton);
+      await tester.ensureVisible(appleBtn);
+      await tester.pump(const Duration(milliseconds: 100));
+      await tester.tap(appleBtn);
+      await tester.pump(const Duration(milliseconds: 500));
+
+      verify(() => mockAuth.signInWithApple()).called(1);
+
+      await tester.pump(const Duration(seconds: 2));
+      await tester.pump();
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 3));
+      await tester.pump(const Duration(milliseconds: 500));
+    });
+
+    testWidgets('calls signInAnonymously on guest button tap', (tester) async {
+      when(() => mockAuth.signInAnonymously())
+          .thenAnswer((_) async => AuthResponse());
+
+      await tester.pumpWidget(buildSubject());
+      await tester.pump(const Duration(milliseconds: 500));
+
+      final guestBtn = find.text('auth.continue_as_guest');
+      await tester.ensureVisible(guestBtn);
+      await tester.pump(const Duration(milliseconds: 100));
+      await tester.tap(guestBtn);
+      await tester.pump(const Duration(milliseconds: 500));
+
+      verify(() => mockAuth.signInAnonymously()).called(1);
+
+      await tester.pump(const Duration(seconds: 2));
+      await tester.pump();
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 3));
+      await tester.pump(const Duration(milliseconds: 500));
+    });
+
+    testWidgets('falls back to browser OAuth when native Google fails',
+        (tester) async {
+      when(() => mockAuth.signInWithGoogle())
+          .thenThrow(
+            const AuthException('Google sign-in not configured', statusCode: '400'),
+          );
+
+      await tester.pumpWidget(buildSubject());
+      await tester.pump(const Duration(milliseconds: 500));
+
+      final googleBtn = find.byType(OutlinedButton);
+      await tester.ensureVisible(googleBtn);
+      await tester.pump(const Duration(milliseconds: 100));
+      await tester.tap(googleBtn);
+      await tester.pump(const Duration(milliseconds: 500));
+
+      // Native failed → browser OAuth should be attempted
+      verify(() => mockAuth.signInWithGoogle()).called(1);
+      verify(() => mockAuth.signInWithOAuth(OAuthProvider.google)).called(1);
+
+      await tester.pump(const Duration(seconds: 31));
+      await tester.pump(const Duration(seconds: 5));
+      await tester.pump(const Duration(milliseconds: 500));
+    });
+
+    testWidgets('Google OAuth cancel resets to idle', (tester) async {
+      when(() => mockAuth.signInWithGoogle())
+          .thenThrow(const AuthException('Canceled'));
+
+      await tester.pumpWidget(buildSubject());
+      await tester.pump(const Duration(milliseconds: 500));
+
+      final googleBtn = find.byType(OutlinedButton);
+      await tester.ensureVisible(googleBtn);
+      await tester.pump(const Duration(milliseconds: 100));
+      await tester.tap(googleBtn);
+      await tester.pump(const Duration(milliseconds: 500));
+
+      // Canceled should not show error and should NOT fall back to browser
+      expect(find.text('auth.login'), findsOneWidget);
+      verifyNever(() => mockAuth.signInWithOAuth(any()));
+
+      await tester.pump(const Duration(seconds: 5));
+      await tester.pump(const Duration(milliseconds: 500));
+    });
+
+    testWidgets('guest login error shows snackbar', (tester) async {
+      when(() => mockAuth.signInAnonymously())
+          .thenThrow(
+            const AuthException('Anonymous sign-ins are disabled'),
+          );
+
+      await tester.pumpWidget(buildSubject());
+      await tester.pump(const Duration(milliseconds: 500));
+
+      final guestBtn = find.text('auth.continue_as_guest');
+      await tester.ensureVisible(guestBtn);
+      await tester.pump(const Duration(milliseconds: 100));
+      await tester.tap(guestBtn);
+      await tester.pump(const Duration(milliseconds: 500));
+
+      // Error snackbar should appear
+      expect(find.byType(SnackBar), findsOneWidget);
+
+      await tester.pump(const Duration(seconds: 5));
+      await tester.pump(const Duration(milliseconds: 500));
+    });
   });
 }

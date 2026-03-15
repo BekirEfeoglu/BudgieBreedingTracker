@@ -48,6 +48,20 @@ String mapAuthError(AuthException e) {
   if (msg.contains('weak password') || msg.contains('password should be')) {
     return 'auth.error_weak_password'.tr();
   }
+  if (msg.contains('anonymous') &&
+      (msg.contains('disabled') || msg.contains('not allowed'))) {
+    return 'auth.error_anonymous_disabled'.tr();
+  }
+  if (msg.contains('signups not allowed') ||
+      msg.contains('sign up not allowed') ||
+      msg.contains('signup is disabled')) {
+    return 'auth.error_anonymous_disabled'.tr();
+  }
+  if (msg.contains('not configured') ||
+      msg.contains('google sign-in failed') ||
+      msg.contains('apple sign-in failed')) {
+    return 'auth.error_oauth_unavailable'.tr();
+  }
 
   // Network / connectivity errors.
   // Primary heuristic: gotrue sets statusCode = null for all network-level
@@ -166,6 +180,13 @@ class AuthActions {
       final webClientId = AppConstants.googleWebClientId;
       final iosClientId = AppConstants.googleIosClientId;
 
+      if (webClientId.isEmpty && iosClientId.isEmpty) {
+        throw const AuthException(
+          'Google sign-in not configured',
+          statusCode: '400',
+        );
+      }
+
       if (!_isGoogleInitialized) {
         await GoogleSignIn.instance.initialize(
           clientId: Platform.isIOS ? (iosClientId.isEmpty ? null : iosClientId) : null,
@@ -206,7 +227,10 @@ class AuthActions {
          throw const AuthException('Canceled');
       }
       AppLogger.error('[AuthActions] Google sign-in failed: $e');
-      rethrow;
+      throw AuthException(
+        'Google sign-in failed: $e',
+        statusCode: '400',
+      );
     }
   }
 
@@ -235,12 +259,16 @@ class AuthActions {
         nonce: rawNonce,
       );
     } catch (e) {
+      if (e is AuthException) rethrow;
       if (e is SignInWithAppleAuthorizationException &&
           e.code == AuthorizationErrorCode.canceled) {
-        // Just return or throw a handled exception
         throw const AuthException('Canceled');
       }
-      rethrow;
+      AppLogger.error('[AuthActions] Apple sign-in failed: $e');
+      throw AuthException(
+        'Apple sign-in failed: $e',
+        statusCode: '400',
+      );
     }
   }
 

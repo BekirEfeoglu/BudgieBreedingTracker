@@ -8,13 +8,13 @@ import 'package:budgie_breeding_tracker/features/genetics/utils/bird_genotype_ma
 void main() {
   group('BirdGenotypeMapper.birdToGenotype', () {
     test('resolves legacy mutation IDs to canonical IDs', () {
-      final bird = Bird(
+      const bird = Bird(
         id: 'bird-1',
         name: 'Legacy',
         gender: BirdGender.male,
         userId: 'user-1',
-        mutations: const ['lutino'],
-        genotypeInfo: const {'lutino': 'carrier'},
+        mutations: ['lutino'],
+        genotypeInfo: {'lutino': 'carrier'},
       );
 
       final genotype = BirdGenotypeMapper.birdToGenotype(bird);
@@ -26,13 +26,13 @@ void main() {
     test(
       'uses canonical genotypeInfo key when mutation list has legacy key',
       () {
-        final bird = Bird(
+        const bird = Bird(
           id: 'bird-1',
           name: 'Legacy',
           gender: BirdGender.male,
           userId: 'user-1',
-          mutations: const ['lutino'],
-          genotypeInfo: const {'ino': 'split'},
+          mutations: ['lutino'],
+          genotypeInfo: {'ino': 'split'},
         );
 
         final genotype = BirdGenotypeMapper.birdToGenotype(bird);
@@ -42,13 +42,13 @@ void main() {
     );
 
     test('prefers canonical key when canonical and legacy collide', () {
-      final bird = Bird(
+      const bird = Bird(
         id: 'bird-1',
         name: 'Legacy',
         gender: BirdGender.male,
         userId: 'user-1',
-        mutations: const ['lutino', 'ino'],
-        genotypeInfo: const {'lutino': 'carrier', 'ino': 'visual'},
+        mutations: ['lutino', 'ino'],
+        genotypeInfo: {'lutino': 'carrier', 'ino': 'visual'},
       );
 
       final genotype = BirdGenotypeMapper.birdToGenotype(bird);

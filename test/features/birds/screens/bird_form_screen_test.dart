@@ -212,13 +212,13 @@ void main() {
     testWidgets('normalizes female legacy sex-linked genotype on update', (
       tester,
     ) async {
-      final existing = Bird(
+      const existing = Bird(
         id: 'bird-legacy',
         name: 'Luna',
         gender: BirdGender.female,
         userId: 'test-user',
-        mutations: const ['lutino'],
-        genotypeInfo: const {'lutino': 'carrier'},
+        mutations: ['lutino'],
+        genotypeInfo: {'lutino': 'carrier'},
       );
 
       await tester.pumpWidget(

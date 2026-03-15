@@ -477,10 +477,10 @@ packages:
     dependency: "direct main"
     description:
       name: fl_chart
-      sha256: "7ca9a40f4eb85949190e54087be8b4d6ac09dc4c54238d782a34cf1f7c011de9"
+      sha256: b938f77d042cbcd822936a7a359a7235bad8bd72070de1f827efc2cc297ac888
       url: "https://pub.dev"
     source: hosted
-    version: "1.1.1"
+    version: "1.2.0"
   flutter:
     dependency: "direct main"
     description: flutter
@@ -572,10 +572,10 @@ packages:
     dependency: "direct main"
     description:
       name: flutter_riverpod
-      sha256: e2026c72738a925a60db30258ff1f29974e40716749f3c9850aabf34ffc1a14c
+      sha256: "4e166be88e1dbbaa34a280bdb744aeae73b7ef25fdf8db7a3bb776760a3648e2"
       url: "https://pub.dev"
     source: hosted
-    version: "3.2.1"
+    version: "3.3.1"
   flutter_secure_storage:
     dependency: "direct main"
     description:
@@ -649,10 +649,10 @@ packages:
     dependency: "direct main"
     description:
       name: flutter_timezone
-      sha256: "978192f2f9ea6d019a4de4f0211d76a9af955ca24865828fa98ca4e20cf0cb3c"
+      sha256: e8d63f50f2806a3a71a08697286a0369e1d8f0902961327810459871c0bb01c2
       url: "https://pub.dev"
     source: hosted
-    version: "5.0.1"
+    version: "5.0.2"
   flutter_web_plugins:
     dependency: transitive
     description: flutter
@@ -1280,10 +1280,10 @@ packages:
     dependency: "direct main"
     description:
       name: purchases_flutter
-      sha256: "3074eb68e8766bceabfbd7e8f5281304e0bb2e1f70004a5ad97747125117493d"
+      sha256: "88bd00ac44273d4782abc09453dffd8314be39764bc8f67f68a26325ea68b91f"
       url: "https://pub.dev"
     source: hosted
-    version: "9.13.1"
+    version: "9.14.0"
   qr:
     dependency: transitive
     description:

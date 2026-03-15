@@ -277,6 +277,12 @@ void main() {
       expect(result, isNotEmpty);
     });
 
+    test('maps anonymous sign-ins disabled', () {
+      const error = AuthException('Anonymous sign-ins are disabled');
+      final result = mapAuthError(error);
+      expect(result, isNotEmpty);
+    });
+
     test('maps unknown error', () {
       const error = AuthException('Something went wrong');
       final result = mapAuthError(error);
