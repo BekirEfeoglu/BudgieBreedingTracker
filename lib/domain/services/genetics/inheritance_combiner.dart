@@ -5,6 +5,10 @@ part of 'mendelian_calculator.dart';
 // ---------------------------------------------------------------------------
 
 /// Combines raw results, merging duplicate phenotypes.
+///
+/// Also resolves compound phenotype names via [EpistasisEngine] so that
+/// even single-locus results get correct epistatic naming (e.g., Ino alone
+/// on green series → "Lutino").
 List<OffspringResult> _combineResults(List<_RawResult> rawResults) {
   if (rawResults.isEmpty) return [];
 
@@ -42,19 +46,30 @@ List<OffspringResult> _combineResults(List<_RawResult> rawResults) {
   final sorted = grouped.values.toList()
     ..sort((a, b) => b.probability.compareTo(a.probability));
 
+  // Resolve compound phenotype names via EpistasisEngine
+  const epistasis = EpistasisEngine();
+
   return sorted
       .where((r) => r.probability * normalizer > 0.001)
-      .map(
-        (r) => OffspringResult(
+      .map((r) {
+        final visualIds = r.expressedMutationIds.toSet();
+        final CompoundPhenotypeResult? compound =
+            visualIds.isNotEmpty
+                ? epistasis.resolveCompoundPhenotypeDetailed(visualIds)
+                : null;
+
+        return OffspringResult(
           phenotype: r.phenotype,
           probability: r.probability * normalizer,
           sex: r.sex,
           isCarrier: r.isCarrier,
           genotype: r.genotype,
           visualMutations: r.expressedMutationIds,
+          compoundPhenotype: compound?.name,
           carriedMutations: r.carriedMutationIds,
-        ),
-      )
+          maskedMutations: compound?.maskedMutations ?? const [],
+        );
+      })
       .toList();
 }
 
@@ -86,7 +101,7 @@ List<_MultiLocusResult> _crossAllLoci(
           sex: r.sex,
           carriedMutations: [
             if (r.isCarrier && r.carriedMutationIds.isEmpty)
-              r.phenotype.replaceAll(' (carrier)', ''),
+              _nameToId(r.phenotype.replaceAll(' (carrier)', '')),
             ...r.carriedMutationIds,
           ],
           genotypes: r.genotype != null ? [r.genotype!] : [],
@@ -114,7 +129,9 @@ List<_MultiLocusResult> _crossAllLoci(
 
         final carried = [...existing.carriedMutations];
         if (locusResult.isCarrier && locusResult.carriedMutationIds.isEmpty) {
-          carried.add(locusResult.phenotype.replaceAll(' (carrier)', ''));
+          carried.add(
+            _nameToId(locusResult.phenotype.replaceAll(' (carrier)', '')),
+          );
         }
         carried.addAll(locusResult.carriedMutationIds);
 
@@ -224,8 +241,11 @@ Map<String, OffspringResult> _resolveEpistasisForCombined(
         .where((p) => p.contains('(carrier)'))
         .map((p) => p.replaceAll(' (carrier)', ''))
         .toList();
-    final allCarried = [...carrierNames, ...c.carriedMutations];
-    // Deduplicate carrier names
+    // Normalize phenotype names to mutation IDs for consistent deduplication
+    final carrierIds = carrierNames.map((name) {
+      return MutationDatabase.getByName(name)?.id ?? name;
+    }).toList();
+    final allCarried = [...carrierIds, ...c.carriedMutations];
     final uniqueCarried = allCarried.toSet().toList();
     final phenotypeLabel = _buildPhenotypeLabel(compoundName, uniqueCarried);
 
@@ -241,7 +261,10 @@ Map<String, OffspringResult> _resolveEpistasisForCombined(
         genotype: existing.genotype,
         visualMutations: visualMutIds.toList(),
         compoundPhenotype: compoundName,
-        carriedMutations: uniqueCarried,
+        carriedMutations: {
+          ...existing.carriedMutations,
+          ...uniqueCarried,
+        }.toList(),
         maskedMutations: maskedMuts,
       );
     } else {
@@ -298,6 +321,10 @@ List<OffspringResult> _normalizeAndSort(
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
+
+/// Converts a phenotype display name to its mutation ID.
+/// Falls back to [name] when no matching record is found.
+String _nameToId(String name) => MutationDatabase.getByName(name)?.id ?? name;
 
 bool _sexCompatible(OffspringSex a, OffspringSex b) {
   if (a == OffspringSex.both || b == OffspringSex.both) return true;

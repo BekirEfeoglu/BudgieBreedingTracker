@@ -1,3 +1,5 @@
+import 'package:budgie_breeding_tracker/core/constants/genetics_constants.dart';
+
 /// Result of compound phenotype resolution, including masked mutations.
 class CompoundPhenotypeResult {
   /// The resolved compound phenotype name (e.g., "Albino", "Cobalt Opaline").
@@ -120,8 +122,8 @@ class EpistasisEngine {
       if (visualMutations.contains('greywing')) masked.add('Greywing');
       if (visualMutations.contains('pearly')) masked.add('Pearly');
       if (visualMutations.contains('pallid')) masked.add('Pallid');
-      // Cinnamon is NOT masked when Lacewing (already in phenotype name)
-      if (!hasCinnamon && visualMutations.contains('cinnamon')) {
+      // Cinnamon is masked by Ino unless it's already part of the Lacewing name
+      if (hasCinnamon && !parts.contains('Lacewing')) {
         masked.add('Cinnamon');
       }
     }
@@ -190,10 +192,19 @@ class EpistasisEngine {
     if (!hasIno) {
       // Only name base color if not Ino (Ino overrides everything)
       if (hasGrey) {
+        // Grey with dark factor naming:
+        // Green: Light Grey-Green (0DF), Dark Grey-Green (1DF), Olive Grey-Green (2DF)
+        // Blue: Grey (0DF), Dark Grey (1DF), Mauve Grey (2DF)
+        final greyPrefix = switch (darkFactorCount) {
+          0 => '',
+          1 => isBlue ? 'Dark ' : 'Dark ',
+          >= 2 => isBlue ? 'Mauve ' : 'Olive ',
+          _ => '',
+        };
         if (isBlue) {
-          parts.add('Grey');
+          parts.add('${greyPrefix}Grey');
         } else {
-          parts.add('Grey-Green');
+          parts.add('${greyPrefix}Grey-Green');
         }
       }
 
@@ -205,14 +216,15 @@ class EpistasisEngine {
         parts.add('Violet');
       }
 
-      // Base color + dark factor naming
-      final baseName = _resolveBaseColorName(
-        baseColor,
-        darkFactorCount,
-        hasGrey,
-      );
-      if (baseName != null) {
-        parts.add(baseName);
+      // Base color + dark factor naming (skipped for Grey — already handled above)
+      if (!hasGrey) {
+        final baseName = _resolveBaseColorName(
+          baseColor,
+          darkFactorCount,
+        );
+        if (baseName != null) {
+          parts.add(baseName);
+        }
       }
     }
 
@@ -303,8 +315,9 @@ class EpistasisEngine {
     }
 
     // 13. Feather structure (crested compound heterozygote detection)
-    final crestedIds = ['crested_tufted', 'crested_half_circular', 'crested_full_circular'];
-    final activeCrested = crestedIds.where(visualMutations.contains).toList();
+    final activeCrested = GeneticsConstants.crestedAlleleIds
+        .where(visualMutations.contains)
+        .toList();
     if (activeCrested.length >= 2) {
       // Compound heterozygote: two different crested alleles
       final labels = activeCrested.map((id) => switch (id) {
@@ -592,8 +605,9 @@ class EpistasisEngine {
     }
 
     // Crested compound heterozygote
-    final crestedIds = ['crested_tufted', 'crested_half_circular', 'crested_full_circular'];
-    final activeCrested = crestedIds.where(mutations.contains).toList();
+    final activeCrested = GeneticsConstants.crestedAlleleIds
+        .where(mutations.contains)
+        .toList();
     if (activeCrested.length >= 2) {
       interactions.add(
         EpistaticInteraction(
@@ -614,13 +628,7 @@ class EpistasisEngine {
   String? _resolveBaseColorName(
     _BaseColor base,
     int darkFactorCount,
-    bool hasGrey,
   ) {
-    if (hasGrey) {
-      // Grey overrides normal base color naming
-      return null;
-    }
-
     return switch ((base, darkFactorCount)) {
       (_BaseColor.green, 0) => 'Light Green',
       (_BaseColor.green, 1) => 'Dark Green',

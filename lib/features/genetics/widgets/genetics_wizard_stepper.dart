@@ -95,50 +95,53 @@ class _StepDot extends StatelessWidget {
 
     return GestureDetector(
       onTap: onTap,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 28,
-            height: 28,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: isActive
-                  ? theme.colorScheme.primary
-                  : isCompleted
-                      ? theme.colorScheme.primary.withValues(alpha: 0.2)
-                      : theme.colorScheme.surfaceContainerHighest,
-              border: Border.all(color: color, width: 2),
-            ),
-            child: Center(
-              child: isCompleted
-                  ? Icon(
-                      LucideIcons.check,
-                      size: 14,
-                      color: theme.colorScheme.primary,
-                    )
-                  : Text(
-                      '${step + 1}',
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        color: isActive
-                            ? theme.colorScheme.onPrimary
-                            : color,
-                        fontWeight: FontWeight.bold,
+      behavior: HitTestBehavior.opaque,
+      child: SizedBox(
+        width: AppSpacing.touchTargetMin,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 28,
+              height: 28,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: isActive
+                    ? theme.colorScheme.primary
+                    : isCompleted
+                        ? theme.colorScheme.primary.withValues(alpha: 0.2)
+                        : theme.colorScheme.surfaceContainerHighest,
+                border: Border.all(color: color, width: 2),
+              ),
+              child: Center(
+                child: isCompleted
+                    ? Icon(
+                        LucideIcons.check,
+                        size: 14,
+                        color: theme.colorScheme.primary,
+                      )
+                    : Text(
+                        '${step + 1}',
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: isActive
+                              ? theme.colorScheme.onPrimary
+                              : color,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
+              ),
             ),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            label,
-            style: theme.textTheme.labelSmall?.copyWith(
-              color: isActive || isCompleted
-                  ? theme.colorScheme.primary
-                  : theme.colorScheme.onSurfaceVariant,
-              fontSize: 10,
+            const SizedBox(height: AppSpacing.xxs),
+            Text(
+              label,
+              style: theme.textTheme.labelSmall?.copyWith(
+                color: isActive || isCompleted
+                    ? theme.colorScheme.primary
+                    : theme.colorScheme.onSurfaceVariant,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

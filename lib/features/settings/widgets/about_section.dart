@@ -52,10 +52,14 @@ class AboutSection extends ConsumerWidget {
           title: 'settings.rate_app'.tr(),
           subtitle: 'settings.rate_app_desc'.tr(),
           icon: const Icon(LucideIcons.star),
-          onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('settings.rate_app_thanks'.tr())),
-            );
+          onTap: () async {
+            final storeUrl = Theme.of(context).platform == TargetPlatform.iOS
+                ? AppConstants.appStoreUrl
+                : AppConstants.playStoreUrl;
+            final uri = Uri.parse(storeUrl);
+            if (await canLaunchUrl(uri)) {
+              await launchUrl(uri, mode: LaunchMode.externalApplication);
+            }
           },
         ),
         SettingsNavigationTile(

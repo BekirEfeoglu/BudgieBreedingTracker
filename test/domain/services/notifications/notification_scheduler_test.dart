@@ -215,12 +215,14 @@ void main() {
     test(
       'scheduleIncubationMilestones schedules 5 milestone reminders',
       () async {
-        final startDate = DateTime.now().add(const Duration(days: 1));
+        final fixedNow = DateTime(2026, 1, 10, 8, 0);
+        final startDate = fixedNow.add(const Duration(days: 1));
 
         await scheduler.scheduleIncubationMilestones(
           incubationId: 'inc-1',
           startDate: startDate,
           label: 'Pair A',
+          now: fixedNow,
         );
 
         expect(fakeService.scheduled.length, 5);
@@ -238,12 +240,14 @@ void main() {
     );
 
     test('scheduleEggTurningReminders schedules 3 reminders per day', () async {
-      final startDate = DateTime.now().add(const Duration(days: 1));
+      final fixedNow = DateTime(2026, 1, 10, 8, 0);
+      final startDate = fixedNow.add(const Duration(days: 1));
 
       await scheduler.scheduleEggTurningReminders(
         eggId: 'egg-1',
         startDate: startDate,
         eggLabel: 'Egg #1',
+        now: fixedNow,
       );
 
       final expectedCount =
@@ -265,12 +269,14 @@ void main() {
     test(
       'scheduleEggTurningReminders dates are chronologically ordered',
       () async {
-        final startDate = DateTime.now().add(const Duration(days: 1));
+        final fixedNow = DateTime(2026, 1, 10, 8, 0);
+        final startDate = fixedNow.add(const Duration(days: 1));
 
         await scheduler.scheduleEggTurningReminders(
           eggId: 'egg-order',
           startDate: startDate,
           eggLabel: 'Egg Order Test',
+          now: fixedNow,
         );
 
         // Verify dates are in non-decreasing order
@@ -308,7 +314,8 @@ void main() {
     test(
       'scheduleChickCareReminder schedules by interval and duration',
       () async {
-        final startDate = DateTime.now().add(const Duration(days: 1));
+        final fixedNow = DateTime(2026, 1, 10, 8, 0);
+        final startDate = fixedNow.add(const Duration(days: 1));
 
         await scheduler.scheduleChickCareReminder(
           chickId: 'chick-1',
@@ -316,6 +323,7 @@ void main() {
           startDate: startDate,
           intervalHours: 6,
           durationDays: 2,
+          now: fixedNow,
         );
 
         // 24 / 6 = 4 reminders/day, for 2 days => 8 reminders
@@ -330,11 +338,16 @@ void main() {
     );
 
     test('scheduleHealthCheckReminder schedules for each day', () async {
+      // Fix now to a known time so the hour=23 schedule is always in the future
+      // for day 0, regardless of the real wall-clock time.
+      final fixedNow = DateTime(2026, 1, 10, 8, 0);
+
       await scheduler.scheduleHealthCheckReminder(
         birdId: 'bird-1',
         birdName: 'Tweety',
-        hour: 23, // late hour ensures day 0 is always in the future
+        hour: 23,
         durationDays: 5,
+        now: fixedNow,
       );
 
       expect(fakeService.scheduled.length, 5);
@@ -358,7 +371,8 @@ void main() {
 
   group('NotificationScheduler settings toggle', () {
     test('skips egg turning when settings.eggTurning is false', () async {
-      final startDate = DateTime.now().add(const Duration(days: 1));
+      final fixedNow = DateTime(2026, 1, 10, 8, 0);
+      final startDate = fixedNow.add(const Duration(days: 1));
       const settings = NotificationToggleSettings(eggTurning: false);
 
       await scheduler.scheduleEggTurningReminders(
@@ -372,7 +386,8 @@ void main() {
     });
 
     test('skips incubation when settings.incubation is false', () async {
-      final startDate = DateTime.now().add(const Duration(days: 1));
+      final fixedNow = DateTime(2026, 1, 10, 8, 0);
+      final startDate = fixedNow.add(const Duration(days: 1));
       const settings = NotificationToggleSettings(incubation: false);
 
       await scheduler.scheduleIncubationMilestones(
@@ -386,7 +401,8 @@ void main() {
     });
 
     test('skips chick care when settings.chickCare is false', () async {
-      final startDate = DateTime.now().add(const Duration(days: 1));
+      final fixedNow = DateTime(2026, 1, 10, 8, 0);
+      final startDate = fixedNow.add(const Duration(days: 1));
       const settings = NotificationToggleSettings(chickCare: false);
 
       await scheduler.scheduleChickCareReminder(
@@ -416,13 +432,15 @@ void main() {
     });
 
     test('schedules when settings is null (backwards compatible)', () async {
-      final startDate = DateTime.now().add(const Duration(days: 1));
+      final fixedNow = DateTime(2026, 1, 10, 8, 0);
+      final startDate = fixedNow.add(const Duration(days: 1));
 
       await scheduler.scheduleIncubationMilestones(
         incubationId: 'inc-1',
         startDate: startDate,
         label: 'Pair A',
         settings: null,
+        now: fixedNow,
       );
 
       expect(fakeService.scheduled, isNotEmpty);
@@ -481,12 +499,14 @@ void main() {
     });
 
     test('cancel IDs are deterministic and match schedule IDs', () async {
-      final startDate = DateTime.now().add(const Duration(days: 1));
+      final fixedNow = DateTime(2026, 1, 10, 8, 0);
+      final startDate = fixedNow.add(const Duration(days: 1));
 
       await scheduler.scheduleIncubationMilestones(
         incubationId: 'inc-x',
         startDate: startDate,
         label: 'Test',
+        now: fixedNow,
       );
       final scheduledIds = fakeService.scheduled.map((n) => n.id).toSet();
 

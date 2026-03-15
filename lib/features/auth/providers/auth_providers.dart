@@ -188,17 +188,18 @@ Future<void> _syncAuthMetadataToProfile(Ref ref, String userId) async {
   }
 }
 
-/// Initializes local + push notification services and rate limiter.
+/// Initializes local notification services and rate limiter.
+///
+/// Does NOT request notification permissions here — that is deferred to
+/// [deferredNotificationPermissionProvider] on the home screen so the
+/// permission dialog appears after the user sees the app (App Store
+/// guideline compliance).
 Future<void> _initNotifications(Ref ref) async {
   try {
     final notifService = ref.read(notificationServiceProvider);
     await notifService.init();
-    // Request Android 13+ POST_NOTIFICATIONS permission and track result
-    final granted = await notifService.requestAndroidPermission();
-    if (!granted) {
-      ref.read(notificationPermissionGrantedProvider.notifier).state = false;
-    }
     // Verify exact alarm permission (Android 12+) — warns if not granted
+    // (this is a silent check, no user-facing dialog)
     await notifService.checkExactAlarmPermission();
   } catch (e, st) {
     AppLogger.warning('[AppInit] Local notification init failed: $e');

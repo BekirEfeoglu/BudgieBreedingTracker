@@ -99,7 +99,7 @@ class _ChickFormScreenState extends ConsumerState<ChickFormScreen> {
         error: (error, _) => Scaffold(
           appBar: AppBar(title: Text('common.error'.tr())),
           body: ErrorState(
-            message: '${'common.data_load_error'.tr()}: $error',
+            message: 'common.data_load_error'.tr(),
             onRetry: () => ref.invalidate(chickByIdProvider(editId)),
           ),
         ),

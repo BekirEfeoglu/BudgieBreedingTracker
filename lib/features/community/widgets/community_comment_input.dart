@@ -61,8 +61,11 @@ class _CommunityCommentInputState
               child: TextField(
                 controller: _controller,
                 enabled: !formState.isLoading,
+                maxLength: 1000,
+                maxLines: null,
                 decoration: InputDecoration(
                   hintText: 'community.add_comment'.tr(),
+                  counterText: '',
                   border: OutlineInputBorder(
                     borderRadius:
                         BorderRadius.circular(AppSpacing.radiusXl),

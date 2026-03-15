@@ -24,7 +24,7 @@ void main() {
   });
 
   group('fetchByPost', () {
-    test('queries by post_id with ascending order', () async {
+    test('queries by post_id with is_deleted filter and ascending order', () async {
       commentsSelect.result = [
         {
           'id': 'c1',
@@ -47,8 +47,14 @@ void main() {
       expect(result, hasLength(2));
       expect(result[0]['content'], 'Nice!');
       expect(result[1]['content'], 'Thanks!');
-      expect(commentsSelect.eqCalls.first.key, 'post_id');
-      expect(commentsSelect.eqCalls.first.value, 'p1');
+
+      final eqCalls = commentsSelect.eqCalls;
+      expect(eqCalls, hasLength(2));
+      expect(eqCalls[0].key, 'post_id');
+      expect(eqCalls[0].value, 'p1');
+      expect(eqCalls[1].key, 'is_deleted');
+      expect(eqCalls[1].value, false);
+
       expect(commentsSelect.orderCalls, contains('created_at'));
       expect(client.requestedTables, contains('community_comments'));
     });
@@ -88,11 +94,11 @@ void main() {
     });
   });
 
-  group('delete', () {
-    test('deletes by comment id and user id', () async {
-      await source.delete('c1', 'u1');
+  group('softDelete', () {
+    test('soft-deletes by comment id and user id', () async {
+      await source.softDelete('c1', 'u1');
 
-      final eqCalls = commentsQuery.deleteBuilder.eqCalls;
+      final eqCalls = commentsQuery.updateBuilder.eqCalls;
       expect(eqCalls, hasLength(2));
       expect(eqCalls[0].key, 'id');
       expect(eqCalls[0].value, 'c1');

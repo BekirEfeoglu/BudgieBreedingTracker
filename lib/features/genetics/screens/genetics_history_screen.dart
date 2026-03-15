@@ -7,13 +7,14 @@ import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
+import 'package:budgie_breeding_tracker/core/widgets/empty_state.dart';
 import 'package:budgie_breeding_tracker/core/widgets/error_state.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/data/models/genetics_history_model.dart';
-import 'package:budgie_breeding_tracker/domain/services/genetics/mutation_database.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_providers.dart';
 import 'package:budgie_breeding_tracker/features/genetics/providers/genetics_history_providers.dart';
 import 'package:budgie_breeding_tracker/features/genetics/providers/genetics_providers.dart';
+import 'package:budgie_breeding_tracker/features/genetics/utils/phenotype_colors.dart';
 import 'package:budgie_breeding_tracker/features/genetics/utils/phenotype_localizer.dart';
 import 'package:budgie_breeding_tracker/router/route_names.dart';
 
@@ -49,7 +50,6 @@ class _GeneticsHistoryScreenState extends ConsumerState<GeneticsHistoryScreen> {
   Widget build(BuildContext context) {
     final userId = ref.watch(currentUserIdProvider);
     final historyAsync = ref.watch(geneticsHistoryStreamProvider(userId));
-    final theme = Theme.of(context);
     final isSelectionMode = _selectedIds.isNotEmpty;
 
     return Scaffold(
@@ -69,29 +69,17 @@ class _GeneticsHistoryScreenState extends ConsumerState<GeneticsHistoryScreen> {
       body: historyAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => ErrorState(
-          message: '${'common.data_load_error'.tr()}: $e',
+          message: 'common.data_load_error'.tr(),
           onRetry: () => ref.invalidate(geneticsHistoryStreamProvider(userId)),
         ),
         data: (entries) {
           if (entries.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  AppIcon(
-                    AppIcons.calculator,
-                    size: 48,
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
-                  const SizedBox(height: AppSpacing.lg),
-                  Text(
-                    'genetics.no_history'.tr(),
-                    style: theme.textTheme.bodyLarge?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                ],
-              ),
+            return EmptyState(
+              icon: const AppIcon(AppIcons.calculator),
+              title: 'genetics.no_history'.tr(),
+              subtitle: 'genetics.no_history_hint'.tr(),
+              actionLabel: 'genetics.start_calculation'.tr(),
+              onAction: () => context.pop(),
             );
           }
 
@@ -163,8 +151,8 @@ class _HistoryCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final results = parseHistoryResults(entry.resultsJson);
-    final fatherMutations = _mutationNames(entry.fatherGenotype);
-    final motherMutations = _mutationNames(entry.motherGenotype);
+    final fatherMutations = PhenotypeLocalizer.localizeGenotypeKeys(entry.fatherGenotype);
+    final motherMutations = PhenotypeLocalizer.localizeGenotypeKeys(entry.motherGenotype);
 
     return Card(
       margin: const EdgeInsets.symmetric(
@@ -299,9 +287,14 @@ class _HistoryCard extends ConsumerWidget {
                         ),
                         materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                         visualDensity: VisualDensity.compact,
-                        backgroundColor: phenotypeColor(
-                          r.compoundPhenotype ?? r.phenotype,
-                        ).withValues(alpha: 0.15),
+                        backgroundColor: (r.visualMutations.isNotEmpty
+                                ? phenotypeColorFromMutations(
+                                    r.visualMutations,
+                                  )
+                                : phenotypeColor(
+                                    r.compoundPhenotype ?? r.phenotype,
+                                  ))
+                            .withValues(alpha: 0.15),
                       );
                     }).toList(),
                   ),
@@ -363,7 +356,7 @@ class _HistoryCard extends ConsumerWidget {
     );
 
     if (confirmed == true && context.mounted) {
-      ref.read(geneticsHistorySaveProvider.notifier).deleteEntry(entry.id);
+      await ref.read(geneticsHistorySaveProvider.notifier).deleteEntry(entry.id);
     }
   }
 
@@ -376,13 +369,6 @@ class _HistoryCard extends ConsumerWidget {
         '${date.minute.toString().padLeft(2, '0')}';
   }
 
-  List<String> _mutationNames(Map<String, String> genotype) {
-    return genotype.keys.map((id) {
-      final record = MutationDatabase.getById(id);
-      return record?.localizationKey.tr() ??
-          PhenotypeLocalizer.localizeMutation(id);
-    }).toList();
-  }
 }
 
 /// Compact chip showing parent mutations.

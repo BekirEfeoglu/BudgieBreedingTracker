@@ -1,7 +1,10 @@
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:url_launcher/url_launcher.dart';
 
+import '../../../core/constants/app_constants.dart';
 import '../../../core/constants/app_icons.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_icon.dart';
@@ -103,9 +106,12 @@ class BudgieLoginCard extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(
-                    'auth.no_account'.tr(),
-                    style: theme.textTheme.bodyMedium,
+                  Flexible(
+                    child: Text(
+                      'auth.no_account'.tr(),
+                      style: theme.textTheme.bodyMedium,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
                   TextButton(
                     onPressed: _isLoading ? null : onRegister,
@@ -222,9 +228,66 @@ class BudgieLoginCard extends StatelessWidget {
                 onPressed: _isLoading ? null : onGuestTap,
                 child: Text('auth.continue_as_guest'.tr()),
               ),
+              Text(
+                'auth.guest_limitation_hint'.tr(),
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: AppSpacing.lg),
+
+              // Legal links (Privacy Policy & Terms of Service)
+              _LoginLegalLinks(theme: theme),
             ],
           ),
         ),
+    );
+  }
+}
+
+class _LoginLegalLinks extends StatelessWidget {
+  final ThemeData theme;
+  const _LoginLegalLinks({required this.theme});
+
+  @override
+  Widget build(BuildContext context) {
+    final linkStyle = theme.textTheme.bodySmall?.copyWith(
+      color: theme.colorScheme.primary,
+      decoration: TextDecoration.underline,
+    );
+    final normalStyle = theme.textTheme.bodySmall?.copyWith(
+      color: theme.colorScheme.onSurfaceVariant,
+    );
+
+    return RichText(
+      textAlign: TextAlign.center,
+      text: TextSpan(
+        style: normalStyle,
+        children: [
+          TextSpan(text: 'auth.agree_terms_prefix'.tr()),
+          TextSpan(
+            text: 'auth.terms_of_service'.tr(),
+            style: linkStyle,
+            recognizer: TapGestureRecognizer()
+              ..onTap = () => launchUrl(
+                    Uri.parse(AppConstants.termsOfUseUrl),
+                    mode: LaunchMode.externalApplication,
+                  ),
+          ),
+          TextSpan(text: 'auth.agree_terms_and'.tr()),
+          TextSpan(
+            text: 'auth.privacy_policy'.tr(),
+            style: linkStyle,
+            recognizer: TapGestureRecognizer()
+              ..onTap = () => launchUrl(
+                    Uri.parse(AppConstants.privacyPolicyUrl),
+                    mode: LaunchMode.externalApplication,
+                  ),
+          ),
+          TextSpan(text: 'auth.agree_terms_suffix'.tr()),
+        ],
+      ),
     );
   }
 }

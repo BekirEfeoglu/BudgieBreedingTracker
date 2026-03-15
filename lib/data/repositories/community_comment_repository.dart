@@ -64,7 +64,7 @@ class CommunityCommentRepository {
     required String commentId,
     required String userId,
   }) async {
-    await _commentSource.delete(commentId, userId);
+    await _commentSource.softDelete(commentId, userId);
   }
 
   CommunityComment? _parseComment(

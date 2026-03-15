@@ -83,13 +83,15 @@ class _TreeContentState extends ConsumerState<TreeContent> {
             calculateAncestorStats(widget.entityId, ancestors, maxDepth: maxDepth);
         final inbreedingData = inbreedingAsync.value ??
             calculateInbreedingForBird(widget.entityId, ancestors);
-        final screenHeight = MediaQuery.of(context).size.height;
+        final screenSize = MediaQuery.of(context).size;
+        final isLandscape = screenSize.width > screenSize.height;
         final viewMode = ref.watch(treeViewModeProvider);
-        // Dynamic height based on depth
+        // Dynamic height based on depth — adapt for iPad landscape
+        final baseHeight = isLandscape ? screenSize.height * 0.85 : screenSize.height;
         final treeMaxHeight = switch (maxDepth) {
-          <= 3 => screenHeight * 0.45,
-          <= 5 => screenHeight * 0.60,
-          _ => screenHeight * 0.70,
+          <= 3 => baseHeight * 0.45,
+          <= 5 => baseHeight * 0.60,
+          _ => baseHeight * 0.70,
         };
 
         return SingleChildScrollView(

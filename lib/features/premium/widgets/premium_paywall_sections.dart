@@ -93,12 +93,21 @@ class PremiumHeaderSection extends StatelessWidget {
   }
 }
 
-class PremiumTrialBannerSection extends StatelessWidget {
+class PremiumTrialBannerSection extends ConsumerWidget {
   const PremiumTrialBannerSection({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final packages = ref.watch(premiumOfferingsProvider).value ?? [];
+    final monthlyPackage = matchPackageForPlan(packages, PremiumPlan.monthly);
+
+    // Show price after trial: "7-day free trial, then $4.99/month"
+    final trialPriceText = monthlyPackage != null
+        ? 'premium.trial_subtitle'.tr(args: [
+            '${monthlyPackage.storeProduct.priceString}${'premium.period_monthly'.tr()}',
+          ])
+        : 'premium.trial_subtitle_fallback'.tr();
 
     return Padding(
       padding: AppSpacing.screenPadding,
@@ -131,7 +140,7 @@ class PremiumTrialBannerSection extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.xs),
             Text(
-              'premium.trial_subtitle'.tr(),
+              trialPriceText,
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
               ),
@@ -220,6 +229,7 @@ class PremiumPricingSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
     final actionState = ref.watch(purchaseActionProvider);
     final packages = ref.watch(premiumOfferingsProvider).value ?? [];
     final isGuest = ref.watch(currentUserIdProvider) == 'anonymous';
@@ -326,7 +336,25 @@ class PremiumPricingSection extends ConsumerWidget {
                     plan: PremiumPlan.lifetime,
                   ),
           ),
-          const SizedBox(height: AppSpacing.lg),
+          const SizedBox(height: AppSpacing.md),
+          // Auto-renewal disclosure — must be prominent and close to
+          // subscribe buttons per App Store Review Guidelines.
+          Container(
+            padding: const EdgeInsets.all(AppSpacing.md),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surfaceContainerHighest
+                  .withValues(alpha: 0.5),
+              borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+            ),
+            child: Text(
+              'premium.terms_note'.tr(),
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
           const _PremiumLegalLinksSection(),
         ],
       ),
@@ -544,15 +572,6 @@ class PremiumRestoreSection extends ConsumerWidget {
               isGuest ? 'auth.login'.tr() : 'premium.restore_purchases'.tr(),
             ),
           ),
-          const SizedBox(height: AppSpacing.lg),
-          Text(
-            'premium.terms_note'.tr(),
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
-              fontSize: 11,
-            ),
-            textAlign: TextAlign.center,
-          ),
         ],
       ),
     );
@@ -600,18 +619,8 @@ class _PremiumLegalLinksSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Column(
       children: [
-        Text(
-          'premium.terms_note'.tr(), // "Subscription auto-renews..."
-          style: theme.textTheme.bodySmall?.copyWith(
-            color: theme.colorScheme.onSurfaceVariant,
-          ),
-          textAlign: TextAlign.center,
-        ),
-        const SizedBox(height: AppSpacing.sm),
         Wrap(
           alignment: WrapAlignment.center,
           spacing: AppSpacing.md,

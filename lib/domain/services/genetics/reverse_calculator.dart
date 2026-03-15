@@ -209,12 +209,12 @@ class ReverseCalculator {
     String locusId,
     BirdGender gender,
   ) {
-    final records = MutationDatabase.getByLocusId(locusId);
+    var records = MutationDatabase.getByLocusId(locusId);
     if (records.isEmpty) {
       // In case the locusId was an independent mutation ID that didn't have locusId set
       final singleRecord = MutationDatabase.getById(locusId);
       if (singleRecord == null) return [{}];
-      records.add(singleRecord); // Convert to iterable basically
+      records = [singleRecord];
     }
 
     final isSexLinked = records.first.isSexLinked;

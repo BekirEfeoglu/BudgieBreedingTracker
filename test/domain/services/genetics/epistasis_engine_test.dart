@@ -128,6 +128,33 @@ void main() {
       expect(result, contains('Pearly'));
     });
 
+    test('pearly on green series shows Pearly without base color override', () {
+      final result = engine.resolveCompoundPhenotype({'pearly'});
+      expect(result, contains('Pearly'));
+    });
+
+    test('pearly + opaline shows both pattern modifiers', () {
+      final result = engine.resolveCompoundPhenotype({'pearly', 'opaline'});
+      expect(result, contains('Pearly'));
+      expect(result, contains('Opaline'));
+    });
+
+    test('pearly + cinnamon shows both mutations', () {
+      final result = engine.resolveCompoundPhenotype({'pearly', 'cinnamon'});
+      expect(result, contains('Pearly'));
+      expect(result, contains('Cinnamon'));
+    });
+
+    test('ino masks pearly when both visual', () {
+      final detailed = engine.resolveCompoundPhenotypeDetailed(
+        {'ino', 'pearly'},
+      );
+      // Ino masks pearly; pearly is listed in masked mutations
+      expect(detailed.maskedMutations, contains('Pearly'));
+      // Result should be Lutino (green series + ino)
+      expect(detailed.name, contains('Lutino'));
+    });
+
     test('labels anthracite dose using double factor marker', () {
       final sf = engine.resolveCompoundPhenotypeDetailed({'anthracite'});
       final df = engine.resolveCompoundPhenotypeDetailed(
@@ -137,6 +164,54 @@ void main() {
 
       expect(sf.name, contains('Single Factor Anthracite'));
       expect(df.name, contains('Double Factor Anthracite'));
+    });
+
+    // ── Grey + Dark Factor naming ──
+
+    test('Grey green without DF shows Grey-Green', () {
+      final result = engine.resolveCompoundPhenotype({'grey'});
+      expect(result, contains('Grey-Green'));
+      expect(result, isNot(contains('Dark')));
+      expect(result, isNot(contains('Olive')));
+    });
+
+    test('Grey green + 1DF shows Dark Grey-Green', () {
+      final result = engine.resolveCompoundPhenotype({'grey', 'dark_factor'});
+      expect(result, contains('Dark Grey-Green'));
+    });
+
+    test('Grey green + 2DF shows Olive Grey-Green', () {
+      final result = engine.resolveCompoundPhenotypeDetailed(
+        {'grey', 'dark_factor'},
+        doubleFactorIds: {'dark_factor'},
+      );
+      expect(result.name, contains('Olive Grey-Green'));
+    });
+
+    test('Grey blue without DF shows Grey', () {
+      final result = engine.resolveCompoundPhenotype({'grey', 'blue'});
+      expect(result, contains('Grey'));
+      expect(result, isNot(contains('Grey-Green')));
+      expect(result, isNot(contains('Dark')));
+    });
+
+    test('Grey blue + 1DF shows Dark Grey', () {
+      final result = engine.resolveCompoundPhenotype({
+        'grey',
+        'blue',
+        'dark_factor',
+      });
+      expect(result, contains('Dark Grey'));
+      expect(result, isNot(contains('Grey-Green')));
+    });
+
+    test('Grey blue + 2DF shows Mauve Grey', () {
+      final result = engine.resolveCompoundPhenotypeDetailed(
+        {'grey', 'blue', 'dark_factor'},
+        doubleFactorIds: {'dark_factor'},
+      );
+      expect(result.name, contains('Mauve Grey'));
+      expect(result.name, isNot(contains('Grey-Green')));
     });
   });
 
@@ -152,6 +227,27 @@ void main() {
       expect(detailed.name, contains('Albino'));
       expect(detailed.maskedMutations, contains('Opaline'));
       expect(detailed.maskedMutations, contains('Dark Factor (Single)'));
+    });
+
+    test('PallidIno + Cinnamon lists Cinnamon as masked', () {
+      final detailed = engine.resolveCompoundPhenotypeDetailed({
+        'ino',
+        'pallid',
+        'cinnamon',
+      });
+
+      expect(detailed.name, contains('PallidIno'));
+      expect(detailed.maskedMutations, contains('Cinnamon'));
+    });
+
+    test('Lacewing does NOT list Cinnamon as masked', () {
+      final detailed = engine.resolveCompoundPhenotypeDetailed({
+        'ino',
+        'cinnamon',
+      });
+
+      expect(detailed.name, contains('Lacewing'));
+      expect(detailed.maskedMutations, isNot(contains('Cinnamon')));
     });
 
     test('doubleFactorIds affects Yellowface Type I naming', () {

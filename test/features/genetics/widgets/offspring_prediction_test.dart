@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/mendelian_calculator.dart';
 import 'package:budgie_breeding_tracker/features/genetics/widgets/offspring_prediction.dart';
 
@@ -146,8 +147,8 @@ void main() {
         ex = tester.takeException();
       }
 
-      // Icon widget is present (sex icon)
-      expect(find.byType(Icon), findsAtLeastNWidgets(1));
+      // AppIcon widget is present (sex icon uses SVG AppIcon)
+      expect(find.byType(AppIcon), findsAtLeastNWidgets(1));
     });
 
     testWidgets('shows compound phenotype name when provided', (tester) async {

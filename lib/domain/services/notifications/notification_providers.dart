@@ -57,6 +57,25 @@ final notificationPermissionGrantedProvider =
   NotificationPermissionNotifier.new,
 );
 
+/// Deferred notification permission request.
+///
+/// Waits a few seconds after the home screen renders, then requests
+/// notification permission. This ensures the user sees the app before
+/// the OS permission dialog appears — required by App Store guidelines.
+///
+/// Watch this provider from [HomeScreen] to trigger the request.
+final deferredNotificationPermissionProvider =
+    FutureProvider<void>((ref) async {
+  // Give the user time to see the home screen before the dialog appears.
+  await Future<void>.delayed(const Duration(seconds: 3));
+  final notifService = ref.read(notificationServiceProvider);
+  if (!notifService.isInitialized) return;
+  final granted = await notifService.requestPermission();
+  if (!granted) {
+    ref.read(notificationPermissionGrantedProvider.notifier).state = false;
+  }
+});
+
 /// Provides the singleton [NotificationService] instance.
 ///
 /// The service must be initialized (via [NotificationService.init])

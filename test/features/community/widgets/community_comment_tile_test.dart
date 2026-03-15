@@ -5,6 +5,7 @@ import 'package:mocktail/mocktail.dart';
 
 import 'package:budgie_breeding_tracker/data/models/community_comment_model.dart';
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
+import 'package:budgie_breeding_tracker/core/enums/community_enums.dart';
 import 'package:budgie_breeding_tracker/data/repositories/community_comment_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/community_social_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
@@ -45,6 +46,8 @@ void main() {
   setUp(() {
     mockCommentRepo = MockCommunityCommentRepository();
     mockSocialRepo = MockCommunitySocialRepository();
+
+    registerFallbackValue(CommunityReportReason.spam);
   });
 
   Widget createSubject(
@@ -120,7 +123,7 @@ void main() {
       expect(find.text('0'), findsNothing);
     });
 
-    testWidgets('long press does nothing for other user comments',
+    testWidgets('long press shows report dialog for other user comments',
         (tester) async {
       await tester.pumpWidget(createSubject(
         _testComment(userId: 'user-1'),
@@ -131,8 +134,9 @@ void main() {
       await tester.longPress(find.text('Test comment'));
       await tester.pumpAndSettle();
 
-      // No dialog should appear
-      expect(find.byType(AlertDialog), findsNothing);
+      // Report dialog should appear (SimpleDialog, not AlertDialog)
+      expect(find.byType(SimpleDialog), findsOneWidget);
+      expect(find.text('community.report_comment'), findsOneWidget);
     });
 
     testWidgets('long press shows delete dialog for own comment',
@@ -216,6 +220,57 @@ void main() {
       verify(() => mockCommentRepo.delete(
             commentId: 'c-2',
             userId: 'my-user',
+          )).called(1);
+    });
+
+    testWidgets('report dialog shows reason options', (tester) async {
+      await tester.pumpWidget(createSubject(
+        _testComment(userId: 'user-1'),
+        currentUserId: 'other-user',
+      ));
+      await tester.pump();
+
+      await tester.longPress(find.text('Test comment'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('community.report_reason_spam'), findsOneWidget);
+      expect(find.text('community.report_reason_harassment'), findsOneWidget);
+      expect(
+          find.text('community.report_reason_inappropriate'), findsOneWidget);
+      expect(
+          find.text('community.report_reason_misinformation'), findsOneWidget);
+      expect(find.text('community.report_reason_other'), findsOneWidget);
+    });
+
+    testWidgets('report submits and shows snackbar on success',
+        (tester) async {
+      when(() => mockSocialRepo.reportContent(
+            userId: any(named: 'userId'),
+            targetId: any(named: 'targetId'),
+            targetType: any(named: 'targetType'),
+            reason: any(named: 'reason'),
+          )).thenAnswer((_) async {});
+
+      await tester.pumpWidget(createSubject(
+        _testComment(userId: 'user-1', id: 'c-rep'),
+        currentUserId: 'reporter',
+      ));
+      await tester.pump();
+
+      await tester.longPress(find.text('Test comment'));
+      await tester.pumpAndSettle();
+
+      // Select spam reason
+      await tester.tap(find.text('community.report_reason_spam'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('community.report_submitted'), findsOneWidget);
+
+      verify(() => mockSocialRepo.reportContent(
+            userId: 'reporter',
+            targetId: 'c-rep',
+            targetType: 'comment',
+            reason: CommunityReportReason.spam,
           )).called(1);
     });
   });

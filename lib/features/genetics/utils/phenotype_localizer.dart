@@ -197,5 +197,13 @@ abstract final class PhenotypeLocalizer {
         .toList();
   }
 
+  /// Localize mutation IDs from a stored genotype map to display names.
+  static List<String> localizeGenotypeKeys(Map<String, String> genotype) {
+    return genotype.keys.map((id) {
+      final record = MutationDatabase.getById(id);
+      return record?.localizationKey.tr() ?? localizeMutation(id);
+    }).toList();
+  }
+
   static String _defaultTranslate(String key) => key.tr();
 }

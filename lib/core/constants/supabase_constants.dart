@@ -54,6 +54,31 @@ abstract class SupabaseConstants {
   static const String adminRateLimitsTable = 'admin_rate_limits';
   static const String backupSettingsTable = 'backup_settings';
 
+  // Push notification tables (server-side, no client remote source yet)
+  static const String fcmTokensTable = 'fcm_tokens';
+  static const String webPushSubscriptionsTable = 'web_push_subscriptions';
+  static const String notificationHistoryTable = 'notification_history';
+  static const String notificationRateLimitsTable = 'notification_rate_limits';
+
+  // Archive tables (no client remote source yet)
+  static const String archivedBirdsTable = 'archived_birds';
+  static const String archivedBreedingPairsTable = 'archived_breeding_pairs';
+  static const String archivedClutchesTable = 'archived_clutches';
+  static const String archivedEggsTable = 'archived_eggs';
+  static const String archivedChicksTable = 'archived_chicks';
+  static const String archiveJobsTable = 'archive_jobs';
+  static const String archiveSettingsTable = 'archive_settings';
+
+  // Privacy & audit tables (no client remote source yet)
+  static const String privacySettingsTable = 'privacy_settings';
+  static const String privacyAuditLogsTable = 'privacy_audit_logs';
+  static const String auditLogsTable = 'audit_logs';
+
+  // Server-side logging & backup (no client remote source yet)
+  static const String errorLogsTable = 'error_logs';
+  static const String backupHistoryTable = 'backup_history';
+  static const String configBackupsTable = 'config_backups';
+
   // Storage Buckets
   static const String birdPhotosBucket = 'bird-photos';
   static const String eggPhotosBucket = 'egg-photos';

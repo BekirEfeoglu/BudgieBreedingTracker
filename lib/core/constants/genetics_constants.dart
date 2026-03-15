@@ -29,6 +29,27 @@ abstract final class GeneticsConstants {
   /// Reference: MUTAVI/WBO Z chromosome gene map.
   static const double opalineInoRecombination = 0.30;
 
+  /// Recombination rate between Cinnamon and Slate loci on the Z chromosome.
+  ///
+  /// ~5 cM apart, approximately 5% of gametes will be recombinant.
+  /// Gene order on Z: Opaline — Cinnamon — Ino — Slate.
+  /// Reference: MUTAVI research data, test-mating studies.
+  static const double cinnamonSlateRecombination = 0.05;
+
+  /// Recombination rate between Opaline and Slate loci on the Z chromosome.
+  ///
+  /// ~40 cM apart, approximately 40% of gametes will be recombinant.
+  /// Derived from gene order: O–C (34 cM) + C–S (5 cM) ≈ 39–40 cM.
+  /// Reference: MUTAVI Z chromosome gene map.
+  static const double opalineSlateRecombination = 0.40;
+
+  /// Recombination rate between Ino and Slate loci on the Z chromosome.
+  ///
+  /// ~2 cM apart (estimated), approximately 2% of gametes will be
+  /// recombinant. Derived from gene order: C–S (5 cM) − C–I (3 cM) ≈ 2 cM.
+  /// Reference: Estimated from MUTAVI Z chromosome gene map distances.
+  static const double inoSlateRecombination = 0.02;
+
   // ── Allelic series locus IDs ──
   /// Mutations sharing a locusId are alleles of the same gene.
   static const String locusDilution = 'dilution';

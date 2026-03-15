@@ -67,7 +67,7 @@ class HealthRecordListScreen extends ConsumerWidget {
                     const Center(child: CircularProgressIndicator()),
                 error: (error, _) => ErrorState(
                   message:
-                      '${'common.data_load_error'.tr()}: $error',
+                      'common.data_load_error'.tr(),
                   onRetry: () =>
                       ref.invalidate(healthRecordsStreamProvider(userId)),
                 ),

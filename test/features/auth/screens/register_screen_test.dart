@@ -128,5 +128,64 @@ void main() {
         ),
       );
     });
+
+    testWidgets('shows age confirmation and consent checkboxes', (
+      tester,
+    ) async {
+      await tester.pumpWidget(createSubject());
+      await tester.pump(const Duration(milliseconds: 500));
+
+      // Should find 2 checkboxes for age and consent
+      expect(find.byType(Checkbox), findsNWidgets(2));
+      expect(find.text('auth.age_confirm'), findsOneWidget);
+      expect(find.text('auth.consent_checkbox'), findsOneWidget);
+    });
+
+    testWidgets('unchecked checkboxes block form submission', (
+      tester,
+    ) async {
+      await tester.pumpWidget(createSubject());
+      await tester.pump(const Duration(milliseconds: 500));
+
+      // Fill in all text fields
+      await tester.enterText(
+        find.byType(TextFormField).at(0),
+        'Test User',
+      );
+      await tester.enterText(
+        find.byType(TextFormField).at(1),
+        'test@example.com',
+      );
+      await tester.enterText(
+        find.byType(TextFormField).at(2),
+        'Test123!@#',
+      );
+      await tester.enterText(
+        find.byType(TextFormField).at(3),
+        'Test123!@#',
+      );
+      await tester.pump();
+
+      // Scroll down to make submit button visible
+      await tester.drag(
+        find.byType(SingleChildScrollView).first,
+        const Offset(0, -400),
+      );
+      await tester.pump();
+
+      // Submit without checking checkboxes
+      final submitBtn = find.byType(FilledButton).first;
+      await tester.tap(submitBtn, warnIfMissed: false);
+      await tester.pump(const Duration(milliseconds: 300));
+
+      // Should not call signUp because checkboxes are unchecked
+      verifyNever(
+        () => mockAuth.signUpWithEmail(
+          email: any(named: 'email'),
+          password: any(named: 'password'),
+          data: any(named: 'data'),
+        ),
+      );
+    });
   });
 }

@@ -7,7 +7,6 @@ import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/core/widgets/error_state.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/data/models/genetics_history_model.dart';
-import 'package:budgie_breeding_tracker/domain/services/genetics/mutation_database.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_providers.dart';
 import 'package:budgie_breeding_tracker/features/genetics/providers/genetics_history_providers.dart';
 import 'package:budgie_breeding_tracker/features/genetics/utils/phenotype_localizer.dart';
@@ -41,7 +40,7 @@ class GeneticsCompareScreen extends ConsumerWidget {
       body: historyAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => ErrorState(
-          message: '${'common.data_load_error'.tr()}: $e',
+          message: 'common.data_load_error'.tr(),
           onRetry: () => ref.invalidate(geneticsHistoryStreamProvider(userId)),
         ),
         data: (entries) {
@@ -107,7 +106,9 @@ class _CompareTable extends StatelessWidget {
             DataColumn(
               label: Text(
                 'genetics.phenotype'.tr(),
-                style: const TextStyle(fontWeight: FontWeight.bold),
+                style: theme.textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
             ...entries.map((e) {
@@ -169,7 +170,9 @@ class _CompareTable extends StatelessWidget {
                   return DataCell(
                     Text(
                       '${(prob * 100).toStringAsFixed(1)}%',
-                      style: const TextStyle(fontWeight: FontWeight.w600),
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   );
                 }),
@@ -190,8 +193,8 @@ class _EntryHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final fatherMutations = _mutationNames(entry.fatherGenotype);
-    final motherMutations = _mutationNames(entry.motherGenotype);
+    final fatherMutations = PhenotypeLocalizer.localizeGenotypeKeys(entry.fatherGenotype);
+    final motherMutations = PhenotypeLocalizer.localizeGenotypeKeys(entry.motherGenotype);
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -239,11 +242,4 @@ class _EntryHeader extends StatelessWidget {
     );
   }
 
-  List<String> _mutationNames(Map<String, String> genotype) {
-    return genotype.keys.map((id) {
-      final record = MutationDatabase.getById(id);
-      return record?.localizationKey.tr() ??
-          PhenotypeLocalizer.localizeMutation(id);
-    }).toList();
-  }
 }

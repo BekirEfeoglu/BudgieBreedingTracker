@@ -1,7 +1,10 @@
+import 'dart:io';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
@@ -74,6 +77,13 @@ class PremiumScreen extends ConsumerWidget {
 
 /// Body displayed when user is already premium.
 class _ActivePremiumBody extends ConsumerWidget {
+  void _openSubscriptionManagement() {
+    final url = Platform.isIOS
+        ? 'https://apps.apple.com/account/subscriptions'
+        : 'https://play.google.com/store/account/subscriptions';
+    launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
@@ -153,6 +163,22 @@ class _ActivePremiumBody extends ConsumerWidget {
                 ),
               ),
               data: (info) => SubscriptionInfoCard(subscriptionInfo: info),
+            ),
+          ),
+
+          const SizedBox(height: AppSpacing.lg),
+
+          // Manage subscription button
+          Padding(
+            padding: AppSpacing.screenPadding,
+            child: OutlinedButton.icon(
+              onPressed: () => _openSubscriptionManagement(),
+              icon: const Icon(LucideIcons.settings, size: 18),
+              label: Text('premium.manage_subscription'.tr()),
+              style: OutlinedButton.styleFrom(
+                minimumSize:
+                    const Size(double.infinity, AppSpacing.touchTargetMin),
+              ),
             ),
           ),
 
@@ -259,6 +285,7 @@ class _RewardedAdSection extends ConsumerWidget {
           else
             RewardedAdButton(
               label: 'ads.watch_for_statistics'.tr(),
+              subtitle: 'ads.reward_duration_24h'.tr(),
               onRewarded: () =>
                   ref.read(isStatisticsRewardActiveProvider.notifier).unlock(),
             ),
@@ -268,6 +295,7 @@ class _RewardedAdSection extends ConsumerWidget {
           else
             RewardedAdButton(
               label: 'ads.watch_for_genetics'.tr(),
+              subtitle: 'ads.reward_duration_session'.tr(),
               onRewarded: () =>
                   ref.read(isGeneticsRewardActiveProvider.notifier).unlock(),
             ),
@@ -277,6 +305,7 @@ class _RewardedAdSection extends ConsumerWidget {
           else
             RewardedAdButton(
               label: 'ads.watch_for_export'.tr(),
+              subtitle: 'ads.reward_duration_session'.tr(),
               onRewarded: () =>
                   ref.read(isExportRewardActiveProvider.notifier).unlock(),
             ),

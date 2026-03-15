@@ -230,7 +230,7 @@ void main() {
 
       _consumeExceptions(tester);
 
-      expect(find.text('DF'), findsOneWidget);
+      expect(find.text('genetics.allele_df_short'), findsOneWidget);
     });
 
     testWidgets('uses real blue mutation from database', (tester) async {

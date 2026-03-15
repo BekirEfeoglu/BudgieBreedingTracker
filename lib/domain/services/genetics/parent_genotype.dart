@@ -73,12 +73,34 @@ class ParentGenotype {
   /// Gets the allele state for a mutation, or null if not present.
   AlleleState? getState(String mutationId) => mutations[mutationId];
 
+  /// Whether adding [mutationId] would exceed the allelic locus limit.
+  ///
+  /// Diploid organisms have at most 2 alleles per locus.
+  /// Females are hemizygous at sex-linked loci (max 1 allele).
+  bool canAddMutation(String mutationId) {
+    if (mutations.containsKey(mutationId)) return true; // updating existing
+    final record = MutationDatabase.getById(mutationId);
+    if (record?.locusId == null) return true; // independent mutation
+    final currentAtLocus = getMutationsAtLocus(record!.locusId!);
+    final maxAlleles =
+        (record.isSexLinked && gender == BirdGender.female) ? 1 : 2;
+    return currentAtLocus.length < maxAlleles;
+  }
+
   /// Returns a copy with the given mutation added or updated.
   ParentGenotype withMutation(String mutationId, AlleleState state) {
     return ParentGenotype(
       mutations: {...mutations, mutationId: state},
       gender: gender,
     );
+  }
+
+  /// Returns a copy with the mutation added only if locus limit allows.
+  ///
+  /// Returns `this` unchanged if adding would violate the 2-allele limit.
+  ParentGenotype withMutationIfValid(String mutationId, AlleleState state) {
+    if (!canAddMutation(mutationId)) return this;
+    return withMutation(mutationId, state);
   }
 
   /// Returns a copy with the given mutation removed.
@@ -92,6 +114,9 @@ class ParentGenotype {
   /// For autosomal recessive: visual (aa) → carrier (Aa) → visual
   /// For autosomal dominant/incomplete dominant: visual (DF/AA) → carrier (SF/Aa) → visual
   /// For sex-linked male: visual → carrier → split → visual
+  ///
+  /// Birds with [BirdGender.unknown] are treated as autosomal-only
+  /// (sex-linked toggle falls back to visual↔carrier).
   ParentGenotype toggleState(String mutationId, {bool isSexLinked = false}) {
     final current = mutations[mutationId];
     if (current == null) return this;
@@ -104,11 +129,11 @@ class ParentGenotype {
         AlleleState.carrier => AlleleState.split,
         AlleleState.split => AlleleState.visual,
       };
-    } else if (gender == BirdGender.female && isSexLinked) {
+    } else if (isSexLinked && gender == BirdGender.female) {
       // Females are hemizygous for sex-linked: always visual
       next = AlleleState.visual;
     } else {
-      // Autosomal: toggle between visual and carrier
+      // Autosomal (or unknown gender fallback): toggle between visual and carrier
       next = switch (current) {
         AlleleState.visual => AlleleState.carrier,
         AlleleState.carrier => AlleleState.visual,

@@ -35,7 +35,7 @@ class StorageService {
     required String birdId,
     required XFile file,
   }) async {
-    final ext = file.name.split('.').last;
+    final ext = _safeExtension(file.name);
     final timestamp = DateTime.now().millisecondsSinceEpoch;
     final path = '$userId/$birdId/$timestamp.$ext';
 
@@ -54,7 +54,7 @@ class StorageService {
     required String userId,
     required XFile file,
   }) async {
-    final ext = file.name.split('.').last;
+    final ext = _safeExtension(file.name);
     final path = '$userId/avatar.$ext';
 
     return _uploadFile(
@@ -102,7 +102,7 @@ class StorageService {
     required String postId,
     required XFile file,
   }) async {
-    final ext = file.name.split('.').last;
+    final ext = _safeExtension(file.name);
     final timestamp = DateTime.now().millisecondsSinceEpoch;
     final path = '$userId/$postId/$timestamp.$ext';
 
@@ -242,6 +242,13 @@ class StorageService {
     if (filePaths.isNotEmpty) {
       await _client.storage.from(bucket).remove(filePaths);
     }
+  }
+
+  /// Extracts file extension safely, falling back to 'jpg' if no dot is found.
+  static String _safeExtension(String filename) {
+    final dotIndex = filename.lastIndexOf('.');
+    if (dotIndex < 0 || dotIndex == filename.length - 1) return 'jpg';
+    return filename.substring(dotIndex + 1).toLowerCase();
   }
 
   String _getMimeType(String filename) {

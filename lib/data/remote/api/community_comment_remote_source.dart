@@ -17,6 +17,7 @@ class CommunityCommentRemoteSource {
           .from(SupabaseConstants.communityCommentsTable)
           .select()
           .eq('post_id', postId)
+          .eq('is_deleted', false)
           .order('created_at', ascending: true);
 
       final rows = List<Map<String, dynamic>>.from(result);
@@ -38,15 +39,15 @@ class CommunityCommentRemoteSource {
     }
   }
 
-  Future<void> delete(String commentId, String userId) async {
+  Future<void> softDelete(String commentId, String userId) async {
     try {
       await _client
           .from(SupabaseConstants.communityCommentsTable)
-          .delete()
+          .update({'is_deleted': true})
           .eq('id', commentId)
           .eq('user_id', userId);
     } catch (e, st) {
-      AppLogger.error('CommunityCommentRemoteSource.delete', e, st);
+      AppLogger.error('CommunityCommentRemoteSource.softDelete', e, st);
       rethrow;
     }
   }

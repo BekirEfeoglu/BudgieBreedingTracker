@@ -79,6 +79,9 @@ class CommunityPostCard extends ConsumerWidget {
                     onReport: isOwnPost
                         ? null
                         : () => _handleReport(context, ref),
+                    onBlock: isOwnPost
+                        ? null
+                        : () => _handleBlock(context, ref),
                     onFollowToggle: isOwnPost
                         ? null
                         : () => ref
@@ -224,6 +227,23 @@ class CommunityPostCard extends ConsumerWidget {
           SnackBar(content: Text('community.report_error'.tr())),
         );
       }
+    }
+  }
+
+  void _handleBlock(BuildContext context, WidgetRef ref) async {
+    final confirmed = await showConfirmDialog(
+      context,
+      title: 'community.block_user_confirm'.tr(),
+      message: 'community.block_user_hint'.tr(args: [post.username]),
+      confirmLabel: 'community.block_user'.tr(),
+      isDestructive: true,
+    );
+    if (confirmed != true || !context.mounted) return;
+    await ref.read(blockedUsersProvider.notifier).block(post.userId);
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('community.user_blocked'.tr())),
+      );
     }
   }
 

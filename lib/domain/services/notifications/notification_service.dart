@@ -64,10 +64,13 @@ class NotificationService {
     const androidSettings = AndroidInitializationSettings(
       '@drawable/ic_notification',
     );
+    // Do NOT request permissions during init — this would show the permission
+    // dialog at splash/startup, causing App Store rejection.  Permissions are
+    // requested later via [requestPermission] once the user sees the home screen.
     const iosSettings = DarwinInitializationSettings(
-      requestAlertPermission: true,
-      requestBadgePermission: true,
-      requestSoundPermission: true,
+      requestAlertPermission: false,
+      requestBadgePermission: false,
+      requestSoundPermission: false,
     );
     const settings = InitializationSettings(
       android: androidSettings,
@@ -83,6 +86,38 @@ class NotificationService {
 
     _isInitialized = true;
     AppLogger.info('[NotificationService] Initialized');
+  }
+
+  /// Requests notification permission on both iOS and Android.
+  ///
+  /// On iOS: requests alert, badge, and sound permissions via the Darwin plugin.
+  /// On Android 13+ (API 33): requests POST_NOTIFICATIONS runtime permission.
+  /// Returns `true` if granted or not applicable (older OS versions).
+  ///
+  /// Call this AFTER the user has seen the home screen — never during splash
+  /// or app initialization (App Store guideline compliance).
+  Future<bool> requestPermission() async {
+    // iOS / macOS
+    final iosImpl = _plugin
+        .resolvePlatformSpecificImplementation<
+          IOSFlutterLocalNotificationsPlugin
+        >();
+    if (iosImpl != null) {
+      final granted = await iosImpl.requestPermissions(
+        alert: true,
+        badge: true,
+        sound: true,
+      );
+      if (granted != true) {
+        AppLogger.warning(
+          '[NotificationService] iOS notification permission denied.',
+        );
+      }
+      return granted ?? false;
+    }
+
+    // Android 13+
+    return requestAndroidPermission();
   }
 
   /// Requests the POST_NOTIFICATIONS runtime permission on Android 13+ (API 33).

@@ -99,12 +99,18 @@ class InbreedingCalculator {
     String id,
     Map<String, Bird> allAncestors,
     Map<String, List<int>> collected,
-    int depth,
-  ) {
+    int depth, [
+    Set<String>? pathVisited,
+  ]) {
     if (depth > 10) return; // Safety limit
 
     final bird = allAncestors[id];
     if (bird == null) return;
+
+    // Guard against cyclic pedigree data (bird listed as its own ancestor)
+    final visited = pathVisited ?? <String>{};
+    if (visited.contains(id)) return;
+    final nextVisited = {...visited, id};
 
     // Store ALL paths to each ancestor (not just shortest)
     collected.putIfAbsent(id, () => []).add(depth);
@@ -115,6 +121,7 @@ class InbreedingCalculator {
         allAncestors,
         collected,
         depth + 1,
+        nextVisited,
       );
     }
     if (bird.motherId != null) {
@@ -123,6 +130,7 @@ class InbreedingCalculator {
         allAncestors,
         collected,
         depth + 1,
+        nextVisited,
       );
     }
   }

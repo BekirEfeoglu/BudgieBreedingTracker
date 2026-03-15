@@ -1,14 +1,17 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:budgie_breeding_tracker/core/utils/app_haptics.dart';
+import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 
 import '../../../core/constants/app_icons.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_icon.dart';
 import '../../../core/widgets/dialogs/confirm_dialog.dart';
 import '../../../data/providers/auth_state_providers.dart';
+import '../../../data/repositories/repository_providers.dart';
 import '../providers/community_comment_providers.dart';
 import '../providers/community_providers.dart';
 
@@ -25,9 +28,9 @@ class CommunityCommentTile extends ConsumerWidget {
     final isOwnComment = comment.userId == currentUserId;
 
     return GestureDetector(
-      onLongPress: isOwnComment
-          ? () => _showDeleteDialog(context, ref)
-          : null,
+      onLongPress: () => isOwnComment
+          ? _showDeleteDialog(context, ref)
+          : _showReportDialog(context, ref),
       child: Padding(
         padding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.lg,
@@ -151,4 +154,57 @@ class CommunityCommentTile extends ConsumerWidget {
     }
   }
 
+  void _showReportDialog(BuildContext context, WidgetRef ref) async {
+    final reason = await showDialog<CommunityReportReason>(
+      context: context,
+      builder: (ctx) => SimpleDialog(
+        title: Text('community.report_comment'.tr()),
+        children: CommunityReportReason.values
+            .where((r) => r != CommunityReportReason.unknown)
+            .map((reason) {
+          final label = switch (reason) {
+            CommunityReportReason.spam =>
+              'community.report_reason_spam'.tr(),
+            CommunityReportReason.harassment =>
+              'community.report_reason_harassment'.tr(),
+            CommunityReportReason.inappropriate =>
+              'community.report_reason_inappropriate'.tr(),
+            CommunityReportReason.misinformation =>
+              'community.report_reason_misinformation'.tr(),
+            CommunityReportReason.other =>
+              'community.report_reason_other'.tr(),
+            CommunityReportReason.unknown => '',
+          };
+          return SimpleDialogOption(
+            onPressed: () => Navigator.pop(ctx, reason),
+            child: Text(label),
+          );
+        }).toList(),
+      ),
+    );
+    if (reason == null || !context.mounted) return;
+    try {
+      final userId = ref.read(currentUserIdProvider);
+      final repo = ref.read(communitySocialRepositoryProvider);
+      await repo.reportContent(
+        userId: userId,
+        targetId: comment.id,
+        targetType: 'comment',
+        reason: reason,
+      );
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('community.report_submitted'.tr())),
+        );
+      }
+    } catch (e, st) {
+      AppLogger.error('CommunityCommentTile._showReportDialog', e, st);
+      Sentry.captureException(e, stackTrace: st);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('community.report_error'.tr())),
+        );
+      }
+    }
+  }
 }

@@ -34,7 +34,7 @@ class HealthRecordDetailScreen extends ConsumerWidget {
       error: (error, _) => Scaffold(
         appBar: AppBar(),
         body: ErrorState(
-          message: '${'common.data_load_error'.tr()}: $error',
+          message: 'common.data_load_error'.tr(),
           onRetry: () => ref.invalidate(healthRecordByIdProvider(recordId)),
         ),
       ),

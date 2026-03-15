@@ -59,8 +59,8 @@ List<_RawResult> _autosomalRecessiveGenotype(
         genotype: '$sym/$sym',
         expressedMutationIds: [record.id],
       ));
-    } else if (geno == 'Aa' || geno == 'aA') {
-      // Carrier
+    } else if (geno == 'Aa') {
+      // Carrier (heterozygous — _sortAlleles always puts uppercase first)
       results.add(_RawResult(
         phenotype: '$name (carrier)',
         probability: prob,
@@ -114,7 +114,7 @@ List<_RawResult> _autosomalDominantGenotype(
         genotype: '$sym/$sym',
         expressedMutationIds: [record.id],
       ));
-    } else if (geno == 'Aa' || geno == 'aA') {
+    } else if (geno == 'Aa') {
       results.add(_RawResult(
         phenotype: name,
         probability: prob,
@@ -166,7 +166,7 @@ List<_RawResult> _autosomalIncompleteDominantGenotype(
         genotype: '$sym/$sym',
         expressedMutationIds: [record.id],
       ));
-    } else if (geno == 'Aa' || geno == 'aA') {
+    } else if (geno == 'Aa') {
       results.add(_RawResult(
         phenotype: '$name (single)',
         probability: prob,

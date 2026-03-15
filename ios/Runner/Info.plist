@@ -64,6 +64,10 @@
 	<string>This app needs camera access to take photos of your birds and eggs.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>This app needs photo library access to select photos of your birds and eggs.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>This app needs permission to save bird and egg photos to your photo library for backup and sharing.</string>
+	<key>NSUserTrackingUsageDescription</key>
+	<string>We use this to show you relevant ads. You can decline and still use the app with generic ads.</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>fetch</string>

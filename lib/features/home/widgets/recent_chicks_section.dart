@@ -130,8 +130,8 @@ class _ChickTile extends StatelessWidget {
                 backgroundColor: developmentStageColor(
                   stage,
                 ).withValues(alpha: 0.15),
-                child: Icon(
-                  developmentStageIcon(stage),
+                child: developmentStageIconWidget(
+                  stage,
                   size: 18,
                   color: developmentStageColor(stage),
                 ),

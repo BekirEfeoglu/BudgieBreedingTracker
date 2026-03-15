@@ -139,14 +139,62 @@ class _WizardNavBar extends ConsumerWidget {
   });
 
   Future<void> _saveCalculation(BuildContext context, WidgetRef ref) async {
+    final notes = await _showNoteDialog(context);
+    if (notes == null) return; // User cancelled
+
     final saved = await ref
         .read(geneticsHistorySaveProvider.notifier)
-        .saveCurrentCalculation();
-    if (saved && context.mounted) {
+        .saveCurrentCalculation(notes: notes.isEmpty ? null : notes);
+    if (!context.mounted) return;
+
+    if (saved) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('genetics.calculation_saved'.tr())),
+        SnackBar(
+          content: Text('genetics.calculation_saved'.tr()),
+          action: SnackBarAction(
+            label: 'genetics.history'.tr(),
+            onPressed: () {
+              if (context.mounted) {
+                context.push(AppRoutes.geneticsHistory);
+              }
+            },
+          ),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('genetics.save_error'.tr())),
       );
     }
+  }
+
+  Future<String?> _showNoteDialog(BuildContext context) {
+    final controller = TextEditingController();
+    return showDialog<String?>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('genetics.save_note_title'.tr()),
+        content: TextField(
+          controller: controller,
+          decoration: InputDecoration(
+            hintText: 'genetics.save_note_hint'.tr(),
+            border: const OutlineInputBorder(),
+          ),
+          maxLines: 3,
+          textCapitalization: TextCapitalization.sentences,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(null),
+            child: Text('common.cancel'.tr()),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(controller.text),
+            child: Text('common.save'.tr()),
+          ),
+        ],
+      ),
+    );
   }
 
   @override

@@ -54,9 +54,7 @@ class ResultsSummaryBanner extends StatelessWidget {
             flex: 2,
             child: _StatColumn(
               value: '${(topResult.probability * 100).toStringAsFixed(0)}%',
-              label: localizedTopLabel.length > 20
-                  ? '${localizedTopLabel.substring(0, 18)}...'
-                  : localizedTopLabel,
+              label: localizedTopLabel,
               theme: theme,
             ),
           ),
@@ -108,7 +106,7 @@ class _StatColumn extends StatelessWidget {
           ),
           textAlign: TextAlign.center,
           overflow: TextOverflow.ellipsis,
-          maxLines: 1,
+          maxLines: 2,
         ),
       ],
     );

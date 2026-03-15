@@ -35,6 +35,7 @@ class AppPreferences {
   static const keyRewardStatisticsUnlockedAt = 'pref_reward_statistics_unlocked_at';
   static const keyRewardGeneticsUses = 'pref_reward_genetics_uses';
   static const keyRewardExportUses = 'pref_reward_export_uses';
+  static const keyBlockedUserIds = 'pref_blocked_user_ids';
 
   // ── Theme ──
 
@@ -285,6 +286,29 @@ class AppPreferences {
 
   /// Remove a key.
   Future<bool> remove(String key) => _prefs.remove(key);
+
+  // ── Blocked Users ──
+
+  /// Get list of blocked user IDs.
+  List<String> get blockedUserIds =>
+      _prefs.getStringList(keyBlockedUserIds) ?? [];
+
+  /// Block a user — adds their ID to the blocked list.
+  Future<bool> addBlockedUser(String userId) {
+    final current = blockedUserIds;
+    if (current.contains(userId)) return Future.value(true);
+    return _prefs.setStringList(keyBlockedUserIds, [...current, userId]);
+  }
+
+  /// Unblock a user — removes their ID from the blocked list.
+  Future<bool> removeBlockedUser(String userId) {
+    final current = blockedUserIds;
+    current.remove(userId);
+    return _prefs.setStringList(keyBlockedUserIds, current);
+  }
+
+  /// Check if a user is blocked.
+  bool isUserBlocked(String userId) => blockedUserIds.contains(userId);
 
   /// Clear all preferences.
   Future<bool> clear() => _prefs.clear();

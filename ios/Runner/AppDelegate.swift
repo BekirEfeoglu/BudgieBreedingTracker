@@ -1,6 +1,7 @@
 import Flutter
 import UIKit
 import UserNotifications
+import AppTrackingTransparency
 
 @main
 @objc class AppDelegate: FlutterAppDelegate, FlutterImplicitEngineDelegate {
@@ -123,9 +124,10 @@ import UserNotifications
 
   func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
     GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
-    // NOTE: The keyboard-fix MethodChannel is set up in SceneDelegate
-    // (not here) because engineBridge.pluginRegistry.registrar(forPlugin:)
-    // returns nil for ad-hoc plugin keys in the implicit-engine pattern.
+    // NOTE: The keyboard-fix and ATT MethodChannels are set up in
+    // SceneDelegate (not here) because engineBridge.pluginRegistry
+    // .registrar(forPlugin:) returns nil for ad-hoc plugin keys in the
+    // implicit-engine pattern.
   }
 
   // Fallback URL handler for non-scene apps or when scene-based handling is bypassed.

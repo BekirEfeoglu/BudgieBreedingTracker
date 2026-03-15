@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/utils/logger.dart';
+import '../../../data/local/preferences/app_preferences.dart';
 import '../../../data/providers/auth_state_providers.dart';
 import '../../../data/repositories/repository_providers.dart';
 import 'community_providers.dart';
@@ -189,6 +191,44 @@ final communityFeedProvider =
     );
 
 // ---------------------------------------------------------------------------
+// Blocked users (local-only, SharedPreferences-backed)
+// ---------------------------------------------------------------------------
+
+/// Blocked user IDs list — notifier to allow reactive updates.
+class BlockedUsersNotifier extends Notifier<List<String>> {
+  @override
+  List<String> build() => [];
+
+  /// Loads blocked user IDs from SharedPreferences.
+  Future<void> load() async {
+    final prefs = await SharedPreferences.getInstance();
+    state = prefs.getStringList(AppPreferences.keyBlockedUserIds) ?? [];
+  }
+
+  /// Block a user and persist to SharedPreferences.
+  Future<void> block(String userId) async {
+    if (state.contains(userId)) return;
+    final prefs = await SharedPreferences.getInstance();
+    final updated = [...state, userId];
+    await prefs.setStringList(AppPreferences.keyBlockedUserIds, updated);
+    state = updated;
+  }
+
+  /// Unblock a user and persist to SharedPreferences.
+  Future<void> unblock(String userId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final updated = state.where((id) => id != userId).toList();
+    await prefs.setStringList(AppPreferences.keyBlockedUserIds, updated);
+    state = updated;
+  }
+}
+
+final blockedUsersProvider =
+    NotifierProvider<BlockedUsersNotifier, List<String>>(
+  BlockedUsersNotifier.new,
+);
+
+// ---------------------------------------------------------------------------
 // Filtered + sorted feed (per tab) — cached at provider level
 // ---------------------------------------------------------------------------
 
@@ -196,18 +236,24 @@ final communityVisiblePostsProvider =
     Provider.family<List<CommunityPost>, CommunityFeedTab>((ref, tab) {
       final posts = ref.watch(communityFeedProvider).posts;
       final currentUserId = ref.watch(currentUserIdProvider);
+      final blockedUserIds = ref.watch(blockedUsersProvider);
+
+      // Filter out blocked users' posts
+      final unblocked = blockedUserIds.isEmpty
+          ? posts
+          : posts.where((p) => !blockedUserIds.contains(p.userId)).toList();
 
       // Filter by tab
       final filtered = switch (tab) {
-        CommunityFeedTab.explore => posts,
+        CommunityFeedTab.explore => unblocked,
         CommunityFeedTab.following =>
-          posts
+          unblocked
               .where((p) => p.isFollowingAuthor && p.userId != currentUserId)
               .toList(),
         CommunityFeedTab.guides =>
-          posts.where((p) => p.postType == CommunityPostType.guide).toList(),
+          unblocked.where((p) => p.postType == CommunityPostType.guide).toList(),
         CommunityFeedTab.questions =>
-          posts.where((p) => p.postType == CommunityPostType.question).toList(),
+          unblocked.where((p) => p.postType == CommunityPostType.question).toList(),
       };
 
       // Sort
