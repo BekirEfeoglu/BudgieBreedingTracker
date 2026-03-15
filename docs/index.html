@@ -306,9 +306,11 @@
         </a>
 
         <!-- Nav Links (desktop) -->
-        <div class="hidden md:flex items-center gap-8">
+        <div class="hidden md:flex items-center gap-6">
           <a href="#features" class="text-sm font-medium text-gray-500 hover:text-primary-700 transition-colors duration-200" data-i18n="nav_features">Ozellikler</a>
+          <a href="#how-it-works" class="text-sm font-medium text-gray-500 hover:text-primary-700 transition-colors duration-200" data-i18n="nav_how">Nasil Calisir?</a>
           <a href="#screenshots" class="text-sm font-medium text-gray-500 hover:text-primary-700 transition-colors duration-200" data-i18n="nav_screenshots">Ekran Goruntuleri</a>
+          <a href="#faq" class="text-sm font-medium text-gray-500 hover:text-primary-700 transition-colors duration-200" data-i18n="faq_badge">SSS</a>
           <a href="#cta" class="text-sm font-semibold text-white bg-primary-800 px-4 py-2 rounded-lg hover:bg-primary-700 transition-all duration-200 shadow-sm hover:shadow-md" data-i18n="nav_download">Indir</a>
         </div>
 
@@ -829,6 +831,56 @@
     </div>
   </section>
 
+  <!-- Testimonials Section -->
+  <section class="py-20 sm:py-28 bg-gradient-to-b from-white to-gray-50/50">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-16 reveal">
+        <div class="inline-flex items-center gap-2 px-3 py-1.5 bg-budgie-50 rounded-full mb-4">
+          <span class="text-xs font-semibold text-budgie-600 uppercase tracking-wider" data-i18n="testimonials_badge">Kullanici Yorumlari</span>
+        </div>
+        <h2 class="text-3xl sm:text-4xl lg:text-5xl font-black text-gray-900 mb-4 tracking-tight" data-i18n="testimonials_title">Yetistiriciler Ne Diyor?</h2>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
+        <div class="bg-white rounded-2xl p-7 border border-gray-100 shadow-sm reveal-scale" style="transition-delay: 0.05s;">
+          <div class="flex gap-0.5 mb-4 text-amber-400 text-lg">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+          <p class="text-gray-600 text-sm leading-relaxed mb-5" data-i18n="testimonial_1_text">"Kuslarimi takip etmek hic bu kadar kolay olmamisti. Genetik hesaplayici ile hangi mutasyonlarin cikacagini onceden gorebiliyorum."</p>
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center text-primary-700 font-bold text-sm">AY</div>
+            <div>
+              <div class="font-semibold text-gray-900 text-sm" data-i18n="testimonial_1_name">Ahmet Y.</div>
+              <div class="text-gray-400 text-xs" data-i18n="testimonial_1_role">Hobi Yetistiricisi</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl p-7 border border-gray-100 shadow-sm reveal-scale" style="transition-delay: 0.15s;">
+          <div class="flex gap-0.5 mb-4 text-amber-400 text-lg">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+          <p class="text-gray-600 text-sm leading-relaxed mb-5" data-i18n="testimonial_2_text">"Offline calismasi harika. Kus evinde internet yok ama tum kayitlarimi aninda girebiliyorum. Eve gelince otomatik senkronize oluyor."</p>
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-budgie-100 rounded-full flex items-center justify-center text-budgie-700 font-bold text-sm">FK</div>
+            <div>
+              <div class="font-semibold text-gray-900 text-sm" data-i18n="testimonial_2_name">Fatma K.</div>
+              <div class="text-gray-400 text-xs" data-i18n="testimonial_2_role">Profesyonel Yetistirici</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl p-7 border border-gray-100 shadow-sm reveal-scale" style="transition-delay: 0.25s;">
+          <div class="flex gap-0.5 mb-4 text-amber-400 text-lg">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+          <p class="text-gray-600 text-sm leading-relaxed mb-5" data-i18n="testimonial_3_text">"Soy agaci ozelligi sayesinde akraba ciftlestirmelerden kacinabiliyorum. Istatistikler de ureme basarimi artirmamda cok yardimci oldu."</p>
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center text-purple-700 font-bold text-sm">MO</div>
+            <div>
+              <div class="font-semibold text-gray-900 text-sm" data-i18n="testimonial_3_name">Mehmet O.</div>
+              <div class="text-gray-400 text-xs" data-i18n="testimonial_3_role">Kus Kulubu Uyesi</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- FAQ Section -->
   <section id="faq" class="py-20 sm:py-28 bg-white">
     <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -888,7 +940,7 @@
         </div>
 
         <!-- Q5 -->
-        <div class="faq-item py-5" style="border-bottom: none;">
+        <div class="faq-item py-5">
           <button class="faq-question flex items-center justify-between w-full text-left gap-4 py-1" onclick="toggleFaq(this)">
             <span class="font-semibold text-gray-900" data-i18n="faq_q5">Hangi platformlarda çalışıyor?</span>
             <svg class="faq-icon w-5 h-5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
@@ -898,6 +950,79 @@
           </div>
         </div>
 
+        <!-- Q6 -->
+        <div class="faq-item py-5">
+          <button class="faq-question flex items-center justify-between w-full text-left gap-4 py-1" onclick="toggleFaq(this)">
+            <span class="font-semibold text-gray-900" data-i18n="faq_q6">Genetik hesaplayici nasil calisiyor?</span>
+            <svg class="faq-icon w-5 h-5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+          </button>
+          <div class="faq-answer">
+            <p class="pt-3 pb-1 text-gray-500 text-sm leading-relaxed" data-i18n="faq_a6">Anne ve baba kusun mutasyonlarini secin, uygulama Punnett karesi ile olasi yavru renk ve genotiplerini hesaplasin. Sonuclari kaydedebilir ve gecmis hesaplamalari goruntuleyebilirsiniz.</p>
+          </div>
+        </div>
+
+        <!-- Q7 -->
+        <div class="faq-item py-5" style="border-bottom: none;">
+          <button class="faq-question flex items-center justify-between w-full text-left gap-4 py-1" onclick="toggleFaq(this)">
+            <span class="font-semibold text-gray-900" data-i18n="faq_q7">Verilerimi baska cihaza aktarabilir miyim?</span>
+            <svg class="faq-icon w-5 h-5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+          </button>
+          <div class="faq-answer">
+            <p class="pt-3 pb-1 text-gray-500 text-sm leading-relaxed" data-i18n="faq_a7">Evet! Ayni hesapla giris yaptiginizda verileriniz otomatik senkronize edilir. Ayrica sifreli yedekleme dosyasi olusturup baska cihazda geri yukleyebilirsiniz. PDF ve Excel olarak da disa aktarim yapabilirsiniz.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Premium Comparison Section -->
+  <section id="premium" class="py-20 sm:py-28 bg-gradient-to-b from-white to-gray-50/50">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-16 reveal">
+        <div class="inline-flex items-center gap-2 px-3 py-1.5 bg-amber-50 rounded-full mb-4">
+          <span class="text-xs font-semibold text-amber-600 uppercase tracking-wider" data-i18n="premium_badge">Planlar</span>
+        </div>
+        <h2 class="text-3xl sm:text-4xl lg:text-5xl font-black text-gray-900 mb-4 tracking-tight" data-i18n="premium_title">Ucretsiz Baslayin, Premium'la Buyuyun</h2>
+        <p class="text-lg text-gray-500 max-w-2xl mx-auto leading-relaxed" data-i18n="premium_subtitle">Temel ozellikler tamamen ucretsiz. Profesyonel araclar icin Premium'a gecin.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 reveal-scale" style="transition-delay: 0.1s;">
+        <!-- Free Plan -->
+        <div class="bg-white rounded-2xl p-8 border border-gray-200 shadow-sm">
+          <div class="text-sm font-bold text-gray-500 uppercase tracking-wider mb-2" data-i18n="plan_free_label">Ucretsiz</div>
+          <div class="text-4xl font-black text-gray-900 mb-6">$0</div>
+          <ul class="space-y-3 mb-8">
+            <li class="flex items-center gap-3 text-sm text-gray-600"><svg class="w-5 h-5 text-budgie-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg><span data-i18n="plan_free_1">15 kus kaydi</span></li>
+            <li class="flex items-center gap-3 text-sm text-gray-600"><svg class="w-5 h-5 text-budgie-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg><span data-i18n="plan_free_2">5 ciftlestirme cifti</span></li>
+            <li class="flex items-center gap-3 text-sm text-gray-600"><svg class="w-5 h-5 text-budgie-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg><span data-i18n="plan_free_3">Yumurta & yavru takibi</span></li>
+            <li class="flex items-center gap-3 text-sm text-gray-600"><svg class="w-5 h-5 text-budgie-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg><span data-i18n="plan_free_4">Takvim & hatirlaticilar</span></li>
+            <li class="flex items-center gap-3 text-sm text-gray-600"><svg class="w-5 h-5 text-budgie-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg><span data-i18n="plan_free_5">Offline calisma & senkronizasyon</span></li>
+          </ul>
+          <a href="#cta" class="block w-full text-center py-3 px-6 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-all text-sm" data-i18n="plan_free_cta">Ucretsiz Basla</a>
+        </div>
+
+        <!-- Premium Plan -->
+        <div class="bg-gradient-to-br from-primary-800 to-primary-900 rounded-2xl p-8 border border-primary-700 shadow-xl relative overflow-hidden">
+          <div class="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+          <div class="relative">
+            <div class="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-400/20 rounded-full mb-3">
+              <span class="text-amber-300 text-xs">&#9733;</span>
+              <span class="text-xs font-bold text-amber-300 uppercase tracking-wider">Premium</span>
+            </div>
+            <div class="text-4xl font-black text-white mb-1">$2.99<span class="text-lg font-medium text-primary-200" data-i18n="plan_premium_period">/ay</span></div>
+            <p class="text-primary-200 text-xs mb-6" data-i18n="plan_premium_note">veya yillik %40 indirim</p>
+            <ul class="space-y-3 mb-8">
+              <li class="flex items-center gap-3 text-sm text-primary-100"><svg class="w-5 h-5 text-amber-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg><span data-i18n="plan_premium_1">Sinirsiz kus & cift kaydi</span></li>
+              <li class="flex items-center gap-3 text-sm text-primary-100"><svg class="w-5 h-5 text-amber-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg><span data-i18n="plan_premium_2">Genetik hesaplayici (Punnett)</span></li>
+              <li class="flex items-center gap-3 text-sm text-primary-100"><svg class="w-5 h-5 text-amber-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg><span data-i18n="plan_premium_3">Istatistikler & analitik raporlar</span></li>
+              <li class="flex items-center gap-3 text-sm text-primary-100"><svg class="w-5 h-5 text-amber-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg><span data-i18n="plan_premium_4">Soy agaci gorsellestirme</span></li>
+              <li class="flex items-center gap-3 text-sm text-primary-100"><svg class="w-5 h-5 text-amber-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg><span data-i18n="plan_premium_5">PDF & Excel disa aktarma</span></li>
+              <li class="flex items-center gap-3 text-sm text-primary-100"><svg class="w-5 h-5 text-amber-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg><span data-i18n="plan_premium_6">Reklamsiz deneyim</span></li>
+            </ul>
+            <a href="#cta" class="block w-full text-center py-3 px-6 bg-white text-primary-800 font-bold rounded-xl hover:bg-primary-50 transition-all text-sm shadow-lg" data-i18n="plan_premium_cta">Premium'a Gec</a>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -975,6 +1100,7 @@
           <a href="#cta" class="hover:text-white transition-colors duration-200" data-i18n="nav_download">Indir</a>
           <a href="https://github.com/BekirEfeoglu/BudgieBreedingTracker" target="_blank" rel="noopener noreferrer" class="hover:text-white transition-colors duration-200">GitHub</a>
           <a href="privacy-policy.html" class="hover:text-white transition-colors duration-200" data-i18n="footer_privacy">Gizlilik Politikasi</a>
+          <a href="support/" class="hover:text-white transition-colors duration-200" data-i18n="footer_support">Destek</a>
         </div>
 
         <!-- Contact -->
@@ -1123,6 +1249,41 @@
         cta_email_placeholder: 'e-posta@adresiniz.com',
         cta_email_btn: 'Haberdar Et',
         cta_email_thanks: 'Teşekkürler! Size haber vereceğiz 🎉',
+        testimonials_badge: 'Kullanıcı Yorumları',
+        testimonials_title: 'Yetiştiriciler Ne Diyor?',
+        testimonial_1_text: '"Kuşlarımı takip etmek hiç bu kadar kolay olmamıştı. Genetik hesaplayıcı ile hangi mutasyonların çıkacağını önceden görebiliyorum."',
+        testimonial_1_name: 'Ahmet Y.',
+        testimonial_1_role: 'Hobi Yetiştiricisi',
+        testimonial_2_text: '"Offline çalışması harika. Kuş evinde internet yok ama tüm kayıtlarımı anında girebiliyorum. Eve gelince otomatik senkronize oluyor."',
+        testimonial_2_name: 'Fatma K.',
+        testimonial_2_role: 'Profesyonel Yetiştirici',
+        testimonial_3_text: '"Soy ağacı özelliği sayesinde akraba çiftleştirmelerden kaçınabiliyorum. İstatistikler de üreme başarımı artırmamda çok yardımcı oldu."',
+        testimonial_3_name: 'Mehmet O.',
+        testimonial_3_role: 'Kuş Kulübü Üyesi',
+        premium_badge: 'Planlar',
+        premium_title: 'Ücretsiz Başlayın, Premium\'la Büyüyün',
+        premium_subtitle: 'Temel özellikler tamamen ücretsiz. Profesyonel araçlar için Premium\'a geçin.',
+        plan_free_label: 'Ücretsiz',
+        plan_free_1: '15 kuş kaydı',
+        plan_free_2: '5 çiftleştirme çifti',
+        plan_free_3: 'Yumurta & yavru takibi',
+        plan_free_4: 'Takvim & hatırlatıcılar',
+        plan_free_5: 'Offline çalışma & senkronizasyon',
+        plan_free_cta: 'Ücretsiz Başla',
+        plan_premium_period: '/ay',
+        plan_premium_note: 'veya yıllık %40 indirim',
+        plan_premium_1: 'Sınırsız kuş & çift kaydı',
+        plan_premium_2: 'Genetik hesaplayıcı (Punnett)',
+        plan_premium_3: 'İstatistikler & analitik raporlar',
+        plan_premium_4: 'Soy ağacı görselleştirme',
+        plan_premium_5: 'PDF & Excel dışa aktarma',
+        plan_premium_6: 'Reklamsız deneyim',
+        plan_premium_cta: 'Premium\'a Geç',
+        faq_q6: 'Genetik hesaplayıcı nasıl çalışıyor?',
+        faq_a6: 'Anne ve baba kuşun mutasyonlarını seçin, uygulama Punnett karesi ile olası yavru renk ve genotiplerini hesaplasın. Sonuçları kaydedebilir ve geçmiş hesaplamaları görüntüleyebilirsiniz.',
+        faq_q7: 'Verilerimi başka cihaza aktarabilir miyim?',
+        faq_a7: 'Evet! Aynı hesapla giriş yaptığınızda verileriniz otomatik senkronize edilir. Ayrıca şifreli yedekleme dosyası oluşturup başka cihazda geri yükleyebilirsiniz.',
+        footer_support: 'Destek',
       },
       en: {
         nav_features: 'Features',
@@ -1234,6 +1395,41 @@
         cta_email_placeholder: 'your@email.com',
         cta_email_btn: 'Notify Me',
         cta_email_thanks: 'Thank you! We\'ll keep you posted 🎉',
+        testimonials_badge: 'User Reviews',
+        testimonials_title: 'What Breeders Say',
+        testimonial_1_text: '"Tracking my birds has never been this easy. With the genetics calculator, I can predict which mutations will appear."',
+        testimonial_1_name: 'Ahmet Y.',
+        testimonial_1_role: 'Hobby Breeder',
+        testimonial_2_text: '"The offline feature is amazing. There\'s no internet in the bird room, but I can enter all records instantly. They sync automatically when I get home."',
+        testimonial_2_name: 'Fatma K.',
+        testimonial_2_role: 'Professional Breeder',
+        testimonial_3_text: '"Thanks to the family tree feature, I can avoid inbreeding. The statistics have been very helpful in improving my breeding success."',
+        testimonial_3_name: 'Mehmet O.',
+        testimonial_3_role: 'Bird Club Member',
+        premium_badge: 'Plans',
+        premium_title: 'Start Free, Grow with Premium',
+        premium_subtitle: 'Core features are completely free. Upgrade to Premium for professional tools.',
+        plan_free_label: 'Free',
+        plan_free_1: '15 bird records',
+        plan_free_2: '5 breeding pairs',
+        plan_free_3: 'Egg & chick tracking',
+        plan_free_4: 'Calendar & reminders',
+        plan_free_5: 'Offline mode & sync',
+        plan_free_cta: 'Get Started Free',
+        plan_premium_period: '/mo',
+        plan_premium_note: 'or save 40% annually',
+        plan_premium_1: 'Unlimited bird & pair records',
+        plan_premium_2: 'Genetics calculator (Punnett)',
+        plan_premium_3: 'Statistics & analytics reports',
+        plan_premium_4: 'Family tree visualization',
+        plan_premium_5: 'PDF & Excel export',
+        plan_premium_6: 'Ad-free experience',
+        plan_premium_cta: 'Go Premium',
+        faq_q6: 'How does the genetics calculator work?',
+        faq_a6: 'Select the mutations of the parent birds, and the app calculates possible offspring colors and genotypes using a Punnett square. You can save results and view past calculations.',
+        faq_q7: 'Can I transfer my data to another device?',
+        faq_a7: 'Yes! Your data syncs automatically when you log in with the same account. You can also create encrypted backups to restore on another device, or export as PDF and Excel.',
+        footer_support: 'Support',
       },
       de: {
         nav_features: 'Funktionen',
@@ -1345,6 +1541,41 @@
         cta_email_placeholder: 'ihre@email.de',
         cta_email_btn: 'Benachrichtigen',
         cta_email_thanks: 'Danke! Wir halten Sie auf dem Laufenden 🎉',
+        testimonials_badge: 'Nutzerbewertungen',
+        testimonials_title: 'Was Züchter sagen',
+        testimonial_1_text: '"Meine Vögel zu verfolgen war noch nie so einfach. Mit dem Genetikrechner kann ich vorhersagen, welche Mutationen auftreten werden."',
+        testimonial_1_name: 'Ahmet Y.',
+        testimonial_1_role: 'Hobbyzüchter',
+        testimonial_2_text: '"Die Offline-Funktion ist großartig. Im Vogelzimmer gibt es kein Internet, aber ich kann alle Einträge sofort eingeben. Sie synchronisieren sich automatisch."',
+        testimonial_2_name: 'Fatma K.',
+        testimonial_2_role: 'Professionelle Züchterin',
+        testimonial_3_text: '"Dank der Stammbaum-Funktion kann ich Inzucht vermeiden. Die Statistiken haben mir sehr geholfen, meinen Zuchterfolg zu verbessern."',
+        testimonial_3_name: 'Mehmet O.',
+        testimonial_3_role: 'Vogelclub-Mitglied',
+        premium_badge: 'Pläne',
+        premium_title: 'Kostenlos starten, mit Premium wachsen',
+        premium_subtitle: 'Kernfunktionen sind völlig kostenlos. Upgrade auf Premium für professionelle Werkzeuge.',
+        plan_free_label: 'Kostenlos',
+        plan_free_1: '15 Vogeleinträge',
+        plan_free_2: '5 Zuchtpaare',
+        plan_free_3: 'Ei- & Kükenverfolgung',
+        plan_free_4: 'Kalender & Erinnerungen',
+        plan_free_5: 'Offline-Modus & Sync',
+        plan_free_cta: 'Kostenlos starten',
+        plan_premium_period: '/Mo.',
+        plan_premium_note: 'oder 40% jährlich sparen',
+        plan_premium_1: 'Unbegrenzte Vogel- & Paareinträge',
+        plan_premium_2: 'Genetikrechner (Punnett)',
+        plan_premium_3: 'Statistiken & Analyseberichte',
+        plan_premium_4: 'Stammbaum-Visualisierung',
+        plan_premium_5: 'PDF- & Excel-Export',
+        plan_premium_6: 'Werbefreies Erlebnis',
+        plan_premium_cta: 'Premium werden',
+        faq_q6: 'Wie funktioniert der Genetikrechner?',
+        faq_a6: 'Wählen Sie die Mutationen der Elternvögel aus, und die App berechnet mögliche Nachwuchsfarben und Genotypen mit einem Punnett-Quadrat. Ergebnisse können gespeichert werden.',
+        faq_q7: 'Kann ich meine Daten auf ein anderes Gerät übertragen?',
+        faq_a7: 'Ja! Ihre Daten werden automatisch synchronisiert, wenn Sie sich mit demselben Konto anmelden. Sie können auch verschlüsselte Backups erstellen oder als PDF und Excel exportieren.',
+        footer_support: 'Support',
       },
     };
 
