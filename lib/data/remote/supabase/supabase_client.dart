@@ -32,15 +32,15 @@ final SupabaseClient _fallbackSupabaseClient = SupabaseClient(
 int _fallbackRecheckAttempts = 0;
 bool _fallbackRecheckScheduled = false;
 
-void _scheduleFallbackRecheck(Ref ref) {
-  if (!hasSupabaseCredentials) return;
-  if (_fallbackRecheckScheduled) return;
-  if (_fallbackRecheckAttempts >= _maxFallbackRechecks) return;
+Timer? _scheduleFallbackRecheck(Ref ref) {
+  if (!hasSupabaseCredentials) return null;
+  if (_fallbackRecheckScheduled) return null;
+  if (_fallbackRecheckAttempts >= _maxFallbackRechecks) return null;
 
   _fallbackRecheckScheduled = true;
   _fallbackRecheckAttempts++;
 
-  Timer(_fallbackRecheckDelay, () {
+  return Timer(_fallbackRecheckDelay, () {
     _fallbackRecheckScheduled = false;
     if (!ref.mounted) return;
     ref.invalidate(supabaseClientProvider);
@@ -53,6 +53,7 @@ final supabaseClientProvider = Provider<SupabaseClient>((ref) {
     return Supabase.instance.client;
   }
 
-  _scheduleFallbackRecheck(ref);
+  final timer = _scheduleFallbackRecheck(ref);
+  ref.onDispose(() => timer?.cancel());
   return _fallbackSupabaseClient;
 });

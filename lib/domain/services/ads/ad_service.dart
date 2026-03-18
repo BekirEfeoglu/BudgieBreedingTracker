@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
@@ -257,8 +258,7 @@ final adServiceProvider = Provider<AdService>((ref) {
   // Delay ad SDK initialization to avoid startup jank.
   // On iOS the delay also gives ATT dialog time to display after the first
   // frame so the prompt is not shown during the auth flow.
-  // ignore: discarded_futures
-  Future<void>.delayed(const Duration(seconds: 2)).then((_) {
+  final delayTimer = Timer(const Duration(seconds: 2), () {
     if (disposed) return;
     // ignore: discarded_futures
     preloadAds();
@@ -266,6 +266,7 @@ final adServiceProvider = Provider<AdService>((ref) {
 
   ref.onDispose(() {
     disposed = true;
+    delayTimer.cancel();
     service.dispose();
   });
   return service;

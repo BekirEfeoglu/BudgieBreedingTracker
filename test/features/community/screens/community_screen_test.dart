@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:budgie_breeding_tracker/core/widgets/empty_state.dart';
+import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 import 'package:budgie_breeding_tracker/features/community/providers/community_providers.dart';
 import 'package:budgie_breeding_tracker/features/community/providers/community_feed_providers.dart';
 import 'package:budgie_breeding_tracker/features/community/screens/community_screen.dart';
@@ -11,6 +12,7 @@ void main() {
   Widget createSubject({bool communityEnabled = false, FeedState? feedState}) {
     return ProviderScope(
       overrides: [
+        supabaseInitializedProvider.overrideWithValue(false),
         isCommunityEnabledProvider.overrideWithValue(communityEnabled),
         if (communityEnabled && feedState != null)
           communityFeedProvider.overrideWith(

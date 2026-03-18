@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:budgie_breeding_tracker/features/admin/providers/admin_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/notifications/notification_providers.dart';
 import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
 import 'package:budgie_breeding_tracker/features/home/providers/home_providers.dart';
 import 'package:budgie_breeding_tracker/features/premium/providers/premium_providers.dart';
@@ -36,6 +37,7 @@ ProviderContainer _createContainer({
 }) {
   return ProviderContainer(
     overrides: [
+      supabaseInitializedProvider.overrideWithValue(false),
       isAuthenticatedProvider.overrideWithValue(isLoggedIn),
       isAdminProvider.overrideWith(isAdminBuilder ?? (_) => false),
       isPremiumProvider.overrideWithValue(isPremium),
@@ -48,6 +50,7 @@ ProviderContainer _createContainer({
       unweanedChicksCountProvider.overrideWith((ref, userId) {
         return Stream<int>.value(0);
       }),
+      deferredNotificationPermissionProvider.overrideWith((_) async {}),
     ],
   );
 }
@@ -407,9 +410,9 @@ void main() {
       );
     });
 
-    testWidgets(
+    test(
       'redirects non-premium deep links to premium for genetics reverse/compare',
-      (tester) async {
+      () async {
         final container = _createContainer(
           isLoggedIn: true,
           isPremium: false,
@@ -417,28 +420,18 @@ void main() {
         );
         addTearDown(container.dispose);
 
-        final router = container.read(routerProvider);
-        await tester.pumpWidget(
-          UncontrolledProviderScope(
-            container: container,
-            child: MaterialApp.router(routerConfig: router),
-          ),
+        // Verify via _resolveLocation (same logic used by routerProvider redirect)
+        final reverseResolved = await _resolveLocation(
+          container,
+          AppRoutes.geneticsReverse,
         );
-        await tester.pump(const Duration(milliseconds: 200));
+        expect(reverseResolved, AppRoutes.premium);
 
-        router.go(AppRoutes.geneticsReverse);
-        await tester.pump(const Duration(milliseconds: 200));
-        expect(
-          router.routeInformationProvider.value.uri.path,
-          AppRoutes.premium,
+        final compareResolved = await _resolveLocation(
+          container,
+          AppRoutes.geneticsCompare,
         );
-
-        router.go(AppRoutes.geneticsCompare);
-        await tester.pump(const Duration(milliseconds: 200));
-        expect(
-          router.routeInformationProvider.value.uri.path,
-          AppRoutes.premium,
-        );
+        expect(compareResolved, AppRoutes.premium);
       },
     );
   });

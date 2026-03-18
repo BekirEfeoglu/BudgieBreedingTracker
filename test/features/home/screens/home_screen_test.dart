@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:budgie_breeding_tracker/data/models/statistics_models.dart';
+import 'package:budgie_breeding_tracker/domain/services/notifications/notification_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/sync/sync_orchestrator.dart';
 import 'package:budgie_breeding_tracker/domain/services/sync/sync_providers.dart';
 import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
@@ -50,6 +51,7 @@ void main() {
     }) {
       return ProviderScope(
         overrides: [
+          supabaseInitializedProvider.overrideWithValue(false),
           currentUserIdProvider.overrideWithValue('test-user'),
           currentUserProvider.overrideWith((_) => null),
           userProfileProvider.overrideWith((_) => Stream.value(null)),
@@ -73,6 +75,7 @@ void main() {
           birdCountProvider('test-user').overrideWith((_) => Stream.value(0)),
           isPremiumProvider.overrideWithValue(false),
           syncOrchestratorProvider.overrideWithValue(mockSync),
+          deferredNotificationPermissionProvider.overrideWith((_) async {}),
         ],
         child: MaterialApp.router(routerConfig: router),
       );

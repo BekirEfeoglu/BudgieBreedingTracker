@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
@@ -67,7 +69,10 @@ final notificationPermissionGrantedProvider =
 final deferredNotificationPermissionProvider =
     FutureProvider<void>((ref) async {
   // Give the user time to see the home screen before the dialog appears.
-  await Future<void>.delayed(const Duration(seconds: 3));
+  final completer = Completer<void>();
+  final timer = Timer(const Duration(seconds: 3), completer.complete);
+  ref.onDispose(timer.cancel);
+  await completer.future;
   final notifService = ref.read(notificationServiceProvider);
   if (!notifService.isInitialized) return;
   final granted = await notifService.requestPermission();

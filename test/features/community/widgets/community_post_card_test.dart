@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 import 'package:budgie_breeding_tracker/features/community/providers/community_providers.dart';
 import 'package:budgie_breeding_tracker/features/community/widgets/community_post_card.dart';
 
@@ -29,6 +30,9 @@ CommunityPost createTestPost({
 void main() {
   Widget createSubject(CommunityPost post) {
     return ProviderScope(
+      overrides: [
+        supabaseInitializedProvider.overrideWithValue(false),
+      ],
       child: MaterialApp(
         home: Scaffold(
           body: SingleChildScrollView(child: CommunityPostCard(post: post)),

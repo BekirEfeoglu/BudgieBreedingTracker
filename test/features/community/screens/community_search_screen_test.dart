@@ -25,6 +25,7 @@ void main() {
   ProviderScope buildScope({List<CommunityPost>? posts}) {
     return ProviderScope(
       overrides: [
+        supabaseInitializedProvider.overrideWithValue(false),
         currentUserIdProvider.overrideWithValue('me'),
         communityFeedProvider
             .overrideWith(() => _FakeFeedNotifier(posts: posts ?? const [])),

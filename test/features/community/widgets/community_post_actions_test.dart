@@ -45,6 +45,7 @@ void main() {
   }) {
     return ProviderScope(
       overrides: [
+        supabaseInitializedProvider.overrideWithValue(false),
         currentUserIdProvider.overrideWithValue(currentUserId),
         communitySocialRepositoryProvider.overrideWithValue(mockSocialRepo),
       ],
