@@ -179,8 +179,9 @@ jobs:
       - name: Generate code
         run: dart run build_runner build --delete-conflicting-outputs
 
-      - name: Update CocoaPods repo
-        run: pod repo update
+      - name: Resolve iOS CocoaPods dependencies
+        working-directory: ios
+        run: pod install --repo-update
 
       - name: Build iOS (no codesign)
         run: |
