@@ -71,28 +71,25 @@ class PremiumNotifier extends Notifier<bool> {
     final prefs = await SharedPreferences.getInstance();
     if (!_isLatestLoad(loadToken)) return;
 
-    if (userId == 'anonymous') {
-      state = false;
-      try {
-        await ref.read(purchaseServiceProvider).logout();
-      } catch (_) {
-        // Best-effort cleanup only.
-      }
-      await prefs.remove('is_premium');
-      return;
-    }
-
     final cacheKey = _cacheKey(userId);
-    final legacyValue = prefs.getBool('is_premium');
-    final cachedValue = prefs.getBool(cacheKey) ?? legacyValue ?? false;
-    state = cachedValue;
 
-    if (legacyValue != null && !prefs.containsKey(cacheKey)) {
-      await prefs.setBool(cacheKey, legacyValue);
-      await prefs.remove('is_premium');
+    if (userId == 'anonymous') {
+      // Anonymous users can still have premium via RevenueCat anonymous ID
+      // (Apple Guideline 5.1.1v: no registration required for IAP)
+      final anonymousCached = prefs.getBool(cacheKey) ?? false;
+      state = anonymousCached;
+    } else {
+      final legacyValue = prefs.getBool('is_premium');
+      final cachedValue = prefs.getBool(cacheKey) ?? legacyValue ?? false;
+      state = cachedValue;
+
+      if (legacyValue != null && !prefs.containsKey(cacheKey)) {
+        await prefs.setBool(cacheKey, legacyValue);
+        await prefs.remove('is_premium');
+      }
     }
 
-    // Also check RevenueCat if available
+    // Check RevenueCat if available (works for both anonymous and authenticated)
     final service = ref.read(purchaseServiceProvider);
     try {
       final isPremium = await service.isPremium();
@@ -114,13 +111,12 @@ class PremiumNotifier extends Notifier<bool> {
     state = value;
     final prefs = await SharedPreferences.getInstance();
     final userId = ref.read(currentUserIdProvider);
-    if (userId == 'anonymous') {
-      await prefs.remove('is_premium');
-      return;
-    }
 
     await prefs.setBool(_cacheKey(userId), value);
-    await prefs.remove('is_premium');
+    // Clean up legacy key
+    if (prefs.containsKey('is_premium')) {
+      await prefs.remove('is_premium');
+    }
   }
 
   /// Re-checks premium status from RevenueCat (e.g., on app resume).
@@ -271,10 +267,6 @@ final premiumPurchaseIssueProvider = Provider<PremiumPurchaseIssue?>((ref) {
     return PremiumPurchaseIssue.missingApiKey;
   }
 
-  if (ref.watch(currentUserIdProvider) == 'anonymous') {
-    return null;
-  }
-
   final offerings = ref.watch(premiumOfferingsProvider);
   if (offerings.isLoading) {
     return null;
@@ -332,7 +324,10 @@ Package? matchPackageForPlan(List<Package> offerings, PremiumPlan plan) {
   return null;
 }
 
-/// Ensures RevenueCat is initialized for the current authenticated user.
+/// Ensures RevenueCat is initialized for the current user (authenticated or anonymous).
+///
+/// Anonymous users get a RevenueCat-generated anonymous ID ($RCAnonymousID),
+/// allowing purchases without sign-in (Apple Guideline 5.1.1v).
 final purchaseServiceReadyProvider = FutureProvider<bool>((ref) async {
   final apiKey = Platform.isIOS ? revenueCatApiKeyIos : revenueCatApiKeyAndroid;
   if (apiKey.isEmpty) {
@@ -341,13 +336,6 @@ final purchaseServiceReadyProvider = FutureProvider<bool>((ref) async {
   }
 
   final userId = ref.watch(currentUserIdProvider);
-  if (userId == 'anonymous') {
-    AppLogger.warning(
-      '[Premium] Purchase requested without authenticated user',
-    );
-    return false;
-  }
-
   final service = ref.watch(purchaseServiceProvider);
   return service.initialize(apiKey: apiKey, userId: userId);
 });

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
@@ -11,10 +12,12 @@ import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/core/widgets/rewarded_ad_button.dart';
 import 'package:budgie_breeding_tracker/domain/services/ads/ad_reward_providers.dart';
+import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
 import 'package:budgie_breeding_tracker/features/premium/providers/premium_providers.dart';
 import 'package:budgie_breeding_tracker/features/premium/widgets/feature_comparison.dart';
 import 'package:budgie_breeding_tracker/features/premium/widgets/premium_paywall_sections.dart';
 import 'package:budgie_breeding_tracker/features/premium/widgets/subscription_info_card.dart';
+import 'package:budgie_breeding_tracker/router/route_names.dart';
 
 /// Paywall screen showing premium features and pricing plans.
 /// When the user is already premium, shows subscription info instead.
@@ -24,6 +27,8 @@ class PremiumScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isPremium = ref.watch(isPremiumProvider);
+
+    final isGuest = ref.watch(currentUserIdProvider) == 'anonymous';
 
     // Listen for purchase action side effects
     ref.listen<PurchaseActionState>(purchaseActionProvider, (_, state) {
@@ -35,6 +40,10 @@ class PremiumScreen extends ConsumerWidget {
             backgroundColor: AppColors.success,
           ),
         );
+        // Suggest sign-in to sync purchase across devices
+        if (isGuest && context.mounted) {
+          _showSignInSuggestionDialog(context);
+        }
       }
       if (state.error != null) {
         final errorMsg = switch (state.error!) {
@@ -71,6 +80,34 @@ class PremiumScreen extends ConsumerWidget {
       body: isPremium
           ? _ActivePremiumBody()
           : _PaywallBody(),
+    );
+  }
+
+  void _showSignInSuggestionDialog(BuildContext context) {
+    final theme = Theme.of(context);
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        icon: const Icon(LucideIcons.userPlus, size: 32),
+        title: Text('premium.sign_in_suggestion_title'.tr()),
+        content: Text(
+          'premium.sign_in_suggestion_body'.tr(),
+          style: theme.textTheme.bodyMedium,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text('common.later'.tr()),
+          ),
+          FilledButton(
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              context.push(AppRoutes.login);
+            },
+            child: Text('auth.login'.tr()),
+          ),
+        ],
+      ),
     );
   }
 }

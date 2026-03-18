@@ -94,29 +94,38 @@ void main() {
 
   group('PremiumTrialBannerSection', () {
     testWidgets('renders without crashing', (tester) async {
-      await tester.pumpWidget(_wrap(const PremiumTrialBannerSection()));
-      await tester.pump();
+      await tester.pumpWidget(
+        _wrapWithProviders(const PremiumTrialBannerSection()),
+      );
+      await tester.pumpAndSettle();
 
       expect(find.byType(PremiumTrialBannerSection), findsOneWidget);
     });
 
     testWidgets('shows trial badge text', (tester) async {
-      await tester.pumpWidget(_wrap(const PremiumTrialBannerSection()));
-      await tester.pump();
+      await tester.pumpWidget(
+        _wrapWithProviders(const PremiumTrialBannerSection()),
+      );
+      await tester.pumpAndSettle();
 
       expect(find.text('premium.trial_badge'), findsOneWidget);
     });
 
-    testWidgets('shows trial subtitle text', (tester) async {
-      await tester.pumpWidget(_wrap(const PremiumTrialBannerSection()));
-      await tester.pump();
+    testWidgets('shows trial subtitle fallback when no offerings',
+        (tester) async {
+      await tester.pumpWidget(
+        _wrapWithProviders(const PremiumTrialBannerSection()),
+      );
+      await tester.pumpAndSettle();
 
-      expect(find.text('premium.trial_subtitle'), findsOneWidget);
+      expect(find.text('premium.trial_subtitle_fallback'), findsOneWidget);
     });
 
     testWidgets('shows value proposition text', (tester) async {
-      await tester.pumpWidget(_wrap(const PremiumTrialBannerSection()));
-      await tester.pump();
+      await tester.pumpWidget(
+        _wrapWithProviders(const PremiumTrialBannerSection()),
+      );
+      await tester.pumpAndSettle();
 
       expect(find.text('premium.value_proposition'), findsOneWidget);
     });
@@ -203,9 +212,82 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        expect(find.text('Plans are temporarily unavailable'), findsOneWidget);
-        expect(find.text('Store price unavailable'), findsNWidgets(3));
+        expect(
+          find.text('premium.offerings_unavailable_title'),
+          findsOneWidget,
+        );
+        expect(find.text('premium.price_unavailable'), findsNWidgets(3));
         expect(find.text('common.retry'), findsOneWidget);
+      },
+    );
+  });
+
+  group('PremiumPricingSection responsive layout', () {
+    testWidgets(
+      'shows Column layout on narrow screens (phone)',
+      (tester) async {
+        tester.view.physicalSize = const Size(375, 812);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+
+        await tester.pumpWidget(
+          _wrapWithProviders(const PremiumPricingSection()),
+        );
+        await tester.pumpAndSettle();
+
+        // On narrow screens, pricing cards should be in a Column (no Row)
+        // Find the LayoutBuilder's output — should NOT have Row with 3 Expanded
+        final rows = tester.widgetList<Row>(find.byType(Row));
+        final hasThreeExpandedRow = rows.any((row) {
+          final expandedCount =
+              row.children.whereType<Expanded>().length;
+          return expandedCount == 3;
+        });
+        expect(hasThreeExpandedRow, isFalse);
+      },
+    );
+
+    testWidgets(
+      'shows Row layout on wide screens (tablet)',
+      (tester) async {
+        tester.view.physicalSize = const Size(768, 1024);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+
+        await tester.pumpWidget(
+          _wrapWithProviders(const PremiumPricingSection()),
+        );
+        await tester.pumpAndSettle();
+
+        // On wide screens, pricing cards should be in a Row with 3 Expanded
+        final rows = tester.widgetList<Row>(find.byType(Row));
+        final hasThreeExpandedRow = rows.any((row) {
+          final expandedCount =
+              row.children.whereType<Expanded>().length;
+          return expandedCount == 3;
+        });
+        expect(hasThreeExpandedRow, isTrue);
+      },
+    );
+
+    testWidgets(
+      'guest user sees info card instead of purchase issue card',
+      (tester) async {
+        await tester.pumpWidget(
+          _wrapWithProviders(
+            const PremiumPricingSection(),
+            userId: 'anonymous',
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        // Guest info card should be visible
+        expect(
+          find.text('premium.sign_in_for_multi_device'),
+          findsOneWidget,
+        );
       },
     );
   });

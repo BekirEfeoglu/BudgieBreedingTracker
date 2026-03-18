@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -133,6 +135,42 @@ void main() {
       );
 
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    });
+
+    testWidgets('has Semantics label with plan, price, and period', (
+      tester,
+    ) async {
+      await pumpWidgetSimple(
+        tester,
+        PricingCard(
+          planName: 'Monthly',
+          price: '\$4.99',
+          period: '/month',
+          onSubscribe: () {},
+        ),
+      );
+
+      expect(
+        find.bySemanticsLabel('Monthly, \$4.99 /month'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('Semantics marks card as button', (tester) async {
+      await pumpWidgetSimple(
+        tester,
+        PricingCard(
+          planName: 'Yearly',
+          price: '\$34.99',
+          period: '/year',
+          onSubscribe: () {},
+        ),
+      );
+
+      final semantics = tester.getSemantics(
+        find.bySemanticsLabel('Yearly, \$34.99 /year'),
+      );
+      expect(semantics.hasFlag(SemanticsFlag.isButton), isTrue);
     });
 
     testWidgets('highlighted card renders without error', (tester) async {

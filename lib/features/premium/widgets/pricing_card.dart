@@ -36,7 +36,10 @@ class PricingCard extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    return Card(
+    return Semantics(
+      label: '$planName, $price $period',
+      button: true,
+      child: Card(
       elevation: isHighlighted ? 4 : 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
@@ -172,6 +175,7 @@ class PricingCard extends StatelessWidget {
               ),
             ),
         ],
+      ),
       ),
     );
   }

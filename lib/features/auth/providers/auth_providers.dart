@@ -61,11 +61,18 @@ final initSkippedProvider = NotifierProvider<InitSkippedNotifier, bool>(
 
 /// Global auth side effects.
 ///
-/// Ensures premium-related local/session state is reset when the user becomes
-/// anonymous (sign-out or expired session).
+/// When user signs out, RevenueCat is re-initialized with anonymous ID
+/// so premium purchases are still accessible without sign-in
+/// (Apple Guideline 5.1.1v). Premium state is reset and re-evaluated.
 final authSessionSideEffectsProvider = Provider<void>((ref) {
   ref.listen<String>(currentUserIdProvider, (previous, next) {
-    if (next != 'anonymous') return;
+    if (next != 'anonymous') {
+      // User signed in: merge anonymous purchases to identified user
+      final service = ref.read(purchaseServiceProvider);
+      unawaited(service.logInIdentifiedUser(next));
+      return;
+    }
+    // User signed out: logout from RevenueCat (will get new anonymous ID on next init)
     unawaited(ref.read(purchaseServiceProvider).logout());
     unawaited(ref.read(localPremiumProvider.notifier).setPremium(false));
   });

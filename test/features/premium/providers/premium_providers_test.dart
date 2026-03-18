@@ -73,7 +73,7 @@ class FakePurchaseService extends PurchaseService {
   @override
   Future<bool> initialize({
     required String apiKey,
-    required String userId,
+    String? userId,
   }) async {
     initializeCallCount++;
     lastInitializedApiKey = apiKey;
@@ -244,9 +244,35 @@ void main() {
     });
 
     test(
-      'anonymous user clears premium state and logs out RevenueCat',
+      'anonymous user can have premium via RevenueCat anonymous ID',
       () async {
-        SharedPreferences.setMockInitialValues({'is_premium': true});
+        SharedPreferences.setMockInitialValues({
+          'is_premium_anonymous': true,
+        });
+        service.isPremiumResult = true;
+
+        final container = ProviderContainer(
+          overrides: [
+            currentUserIdProvider.overrideWithValue('anonymous'),
+            purchaseServiceProvider.overrideWithValue(service),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        // Cached value is loaded first
+        expect(container.read(localPremiumProvider), isFalse);
+        await _flushAsync();
+
+        // After async load, cached + RevenueCat check
+        expect(container.read(localPremiumProvider), isTrue);
+      },
+    );
+
+    test(
+      'anonymous user without cached premium defaults to false',
+      () async {
+        SharedPreferences.setMockInitialValues({});
+        service.isPremiumResult = false;
 
         final container = ProviderContainer(
           overrides: [
@@ -258,11 +284,7 @@ void main() {
 
         expect(container.read(localPremiumProvider), isFalse);
         await _flushAsync();
-
-        final prefs = await SharedPreferences.getInstance();
         expect(container.read(localPremiumProvider), isFalse);
-        expect(service.logoutCallCount, 1);
-        expect(prefs.getBool('is_premium'), isNull);
       },
     );
   });
@@ -543,6 +565,76 @@ void main() {
       expect(container.read(purchaseActionProvider).error, 'purchase_pending');
     });
 
+    test(
+      'purchasePlan surfaces purchase_not_activated when entitlement delayed',
+      () async {
+        final monthly = MockPackage();
+        _stubPackage(
+          monthly,
+          packageType: PackageType.monthly,
+          identifier: 'monthly',
+          productIdentifier: 'budgie_premium_monthly',
+        );
+        service.offeringsResult = [monthly];
+        service.purchaseError = const PurchaseException(
+          'purchase_not_activated',
+        );
+
+        final container = _containerWithService(service);
+        addTearDown(container.dispose);
+
+        await container
+            .read(purchaseActionProvider.notifier)
+            .purchasePlan(PremiumPlan.monthly);
+
+        final state = container.read(purchaseActionProvider);
+        expect(state.isSuccess, isFalse);
+        expect(state.error, 'purchase_not_activated');
+      },
+    );
+
+    test(
+      'purchasePlan succeeds on retry after purchase_not_activated',
+      () async {
+        final monthly = MockPackage();
+        _stubPackage(
+          monthly,
+          packageType: PackageType.monthly,
+          identifier: 'monthly',
+          productIdentifier: 'budgie_premium_monthly',
+        );
+        service.offeringsResult = [monthly];
+        service.purchaseError = const PurchaseException(
+          'purchase_not_activated',
+        );
+
+        final container = _containerWithService(service);
+        addTearDown(container.dispose);
+
+        // First attempt fails
+        await container
+            .read(purchaseActionProvider.notifier)
+            .purchasePlan(PremiumPlan.monthly);
+        expect(
+          container.read(purchaseActionProvider).error,
+          'purchase_not_activated',
+        );
+
+        // Reset and retry with success
+        container.read(purchaseActionProvider.notifier).reset();
+        service.purchaseError = null;
+        service.purchaseResult = true;
+
+        await container
+            .read(purchaseActionProvider.notifier)
+            .purchasePlan(PremiumPlan.monthly);
+
+        final state = container.read(purchaseActionProvider);
+        expect(state.isSuccess, isTrue);
+        expect(state.error, isNull);
+      },
+    );
+
     test('reset clears loading/error/success flags', () async {
       final monthly = MockPackage();
       _stubPackage(
@@ -586,6 +678,60 @@ void main() {
         expect(service.initializeCallCount, 1);
         expect(service.lastInitializedApiKey, 'android_test_key');
         expect(service.lastInitializedUserId, 'user-1');
+      },
+    );
+
+    test(
+      'purchaseServiceReadyProvider initializes for anonymous user',
+      () async {
+        final container = ProviderContainer(
+          overrides: [
+            currentUserIdProvider.overrideWithValue('anonymous'),
+            purchaseServiceProvider.overrideWithValue(service),
+          ],
+          retry: (_, __) => null,
+        );
+        addTearDown(container.dispose);
+
+        final isReady = await container.read(
+          purchaseServiceReadyProvider.future,
+        );
+        expect(isReady, isTrue);
+        expect(service.initializeCallCount, 1);
+        // Anonymous userId is passed; PurchaseService converts to null internally
+        expect(service.lastInitializedUserId, 'anonymous');
+      },
+    );
+
+    test(
+      'anonymous user can complete a purchase flow',
+      () async {
+        final monthly = MockPackage();
+        _stubPackage(
+          monthly,
+          packageType: PackageType.monthly,
+          identifier: 'monthly',
+          productIdentifier: 'budgie_premium_monthly',
+        );
+        service.offeringsResult = [monthly];
+        service.purchaseResult = true;
+
+        final container = ProviderContainer(
+          overrides: [
+            currentUserIdProvider.overrideWithValue('anonymous'),
+            purchaseServiceProvider.overrideWithValue(service),
+          ],
+          retry: (_, __) => null,
+        );
+        addTearDown(container.dispose);
+
+        await container
+            .read(purchaseActionProvider.notifier)
+            .purchasePlan(PremiumPlan.monthly);
+
+        final state = container.read(purchaseActionProvider);
+        expect(state.isSuccess, isTrue);
+        expect(state.error, isNull);
       },
     );
 

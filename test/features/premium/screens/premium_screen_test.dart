@@ -72,7 +72,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('premium.account_required_title'), findsOneWidget);
+      expect(find.text('premium.sign_in_for_multi_device'), findsOneWidget);
       expect(find.text('settings.privacy_policy'), findsOneWidget);
       expect(find.text('settings.terms (EULA)'), findsOneWidget);
     });

@@ -18,17 +18,20 @@ class PurchaseService {
   String? _storeUnavailableReason;
   DateTime? _storeUnavailableMarkedAt;
 
-  /// Initializes RevenueCat with the API key and user ID.
+  /// Initializes RevenueCat with the API key and optional user ID.
   ///
-  /// Call once at app startup (after auth).
-  /// [apiKey] should come from environment config, not hardcoded.
+  /// Call once at app startup. When [userId] is null or 'anonymous',
+  /// RevenueCat creates its own anonymous ID ($RCAnonymousID), allowing
+  /// guest users to purchase without signing in (Apple Guideline 5.1.1v).
   Future<bool> initialize({
     required String apiKey,
-    required String userId,
+    String? userId,
   }) async {
+    final effectiveUserId = (userId == 'anonymous') ? null : userId;
+
     if (_initialized &&
         _configuredApiKey == apiKey &&
-        _configuredUserId == userId) {
+        _configuredUserId == effectiveUserId) {
       return true;
     }
     if (_initializationFuture != null) {
@@ -36,16 +39,26 @@ class PurchaseService {
     }
 
     final initialization = _initialized && _configuredApiKey == apiKey
-        ? _switchUser(userId)
-        : _configure(apiKey: apiKey, userId: userId);
+        ? (effectiveUserId != null
+            ? _switchUser(effectiveUserId)
+            : Future.value(true))
+        : _configure(apiKey: apiKey, userId: effectiveUserId);
     _initializationFuture = initialization;
     final success = await initialization;
     return success;
   }
 
+  /// Logs in an identified user, merging any anonymous purchases.
+  ///
+  /// Call after a guest user signs in to transfer their purchases.
+  Future<bool> logInIdentifiedUser(String userId) async {
+    if (!_initialized) return false;
+    return _switchUser(userId);
+  }
+
   Future<bool> _configure({
     required String apiKey,
-    required String userId,
+    String? userId,
   }) async {
     try {
       final config = PurchasesConfiguration(apiKey)..appUserID = userId;
@@ -54,7 +67,9 @@ class PurchaseService {
       _configuredApiKey = apiKey;
       _configuredUserId = userId;
       _clearStoreUnavailable();
-      AppLogger.info('RevenueCat initialized for user: $userId');
+      AppLogger.info(
+        'RevenueCat initialized for user: ${userId ?? 'anonymous'}',
+      );
       return true;
     } catch (e) {
       _clearIdentity();

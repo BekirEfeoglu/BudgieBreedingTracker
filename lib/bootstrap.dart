@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
@@ -120,6 +121,7 @@ Future<void> bootstrapRun(FutureOr<Widget> Function() appBuilder) async {
           options.tracesSampleRate = 0.3;
           options.environment = _resolvedSentryEnv;
           options.sendDefaultPii = false;
+          options.beforeSend = _beforeSendSentry;
         },
         appRunner: () async {
           runApp(await appBuilder());
@@ -222,6 +224,32 @@ Future<void> _resolveAndroidBuildConfigFallbacks() async {
   } catch (e) {
     AppLogger.warning('[Bootstrap] Android config fallback unavailable: $e');
   }
+}
+
+/// Filters out noisy Sentry events that are expected in sandbox/debug.
+///
+/// - Purchase errors caused by sandbox testing (store problem, billing
+///   unavailable, not activated) are dropped to avoid polluting dashboards.
+/// - Debug builds are excluded entirely.
+SentryEvent? _beforeSendSentry(SentryEvent event, Hint hint) {
+  // Drop all events in debug mode
+  if (kDebugMode) return null;
+
+  final exceptions = event.exceptions ?? [];
+  for (final ex in exceptions) {
+    final value = (ex.value ?? '').toString();
+    // Sandbox IAP errors — expected during App Store review testing
+    if (value.contains('purchase_not_activated') ||
+        value.contains('BILLING_UNAVAILABLE') ||
+        value.contains('BILLING SERVICE UNAVAILABLE') ||
+        value.contains('purchase_store_problem') ||
+        value.contains('STOREKIT_ERROR')) {
+      AppLogger.info('[Sentry] Filtered sandbox purchase error: $value');
+      return null;
+    }
+  }
+
+  return event;
 }
 
 String _preferNonEmpty(String primary, Object? fallback) {
