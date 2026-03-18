@@ -14,7 +14,8 @@
 *.swp
 .AppleDouble
 .LSOverride
-Icon?
+# macOS custom icon files (Icon\r) — anchored to avoid matching assets/icons/
+/Icon?
 
 # --------------------------------------------------
 # Windows
