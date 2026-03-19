@@ -4,8 +4,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 import 'package:budgie_breeding_tracker/core/widgets/ad_banner_widget.dart';
-import 'package:budgie_breeding_tracker/domain/services/ads/ad_service.dart';
 import 'package:budgie_breeding_tracker/features/premium/providers/premium_providers.dart';
+
+/// A stub loader that returns a test ad unit ID without initializing the SDK.
+Future<String> _testAdBannerLoader() async => 'ca-app-pub-test/test-banner';
 
 void main() {
   group('AdBannerWidget', () {
@@ -14,10 +16,12 @@ void main() {
         ProviderScope(
           overrides: [
             isPremiumProvider.overrideWithValue(true),
-            adServiceProvider.overrideWithValue(AdService()),
           ],
           child: MaterialApp(
-            home: Scaffold(body: AdBannerWidget(isPremiumProvider: isPremiumProvider)),
+            home: Scaffold(body: AdBannerWidget(
+              isPremiumProvider: isPremiumProvider,
+              adBannerLoader: _testAdBannerLoader,
+            )),
           ),
         ),
       );
@@ -33,10 +37,12 @@ void main() {
         ProviderScope(
           overrides: [
             isPremiumProvider.overrideWithValue(false),
-            adServiceProvider.overrideWithValue(AdService()),
           ],
           child: MaterialApp(
-            home: Scaffold(body: AdBannerWidget(isPremiumProvider: isPremiumProvider)),
+            home: Scaffold(body: AdBannerWidget(
+              isPremiumProvider: isPremiumProvider,
+              adBannerLoader: _testAdBannerLoader,
+            )),
           ),
         ),
       );
@@ -52,10 +58,12 @@ void main() {
         ProviderScope(
           overrides: [
             isPremiumProvider.overrideWithValue(false),
-            adServiceProvider.overrideWithValue(AdService()),
           ],
           child: MaterialApp(
-            home: Scaffold(body: AdBannerWidget(isPremiumProvider: isPremiumProvider)),
+            home: Scaffold(body: AdBannerWidget(
+              isPremiumProvider: isPremiumProvider,
+              adBannerLoader: _testAdBannerLoader,
+            )),
           ),
         ),
       );
@@ -65,7 +73,6 @@ void main() {
         ProviderScope(
           overrides: [
             isPremiumProvider.overrideWithValue(false),
-            adServiceProvider.overrideWithValue(AdService()),
           ],
           child: const MaterialApp(
             home: Scaffold(body: SizedBox()),

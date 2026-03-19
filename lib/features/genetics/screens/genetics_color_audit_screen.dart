@@ -5,74 +5,74 @@ import 'package:budgie_breeding_tracker/features/genetics/widgets/bird_color_sim
 class GeneticsColorAuditScreen extends StatelessWidget {
   const GeneticsColorAuditScreen({super.key});
 
-  static const _primarySamples = <_AuditSample>[
-    _AuditSample(
+  static const _primarySamples = <AuditSample>[
+    AuditSample(
       title: 'Light Green',
       note: 'WBO 375',
       phenotype: 'Light Green',
       visualMutations: [],
     ),
-    _AuditSample(
+    AuditSample(
       title: 'Grey-Green',
       note: 'Grey cheek',
       phenotype: 'Grey-Green',
       visualMutations: ['grey'],
     ),
-    _AuditSample(
+    AuditSample(
       title: 'Skyblue',
       note: 'WBO 310',
       phenotype: 'Skyblue',
       visualMutations: ['blue'],
     ),
-    _AuditSample(
+    AuditSample(
       title: 'Cobalt',
       note: 'WBO 2915',
       phenotype: 'Cobalt',
       visualMutations: ['blue', 'dark_factor'],
     ),
-    _AuditSample(
+    AuditSample(
       title: 'Grey',
       note: 'Grey cheek',
       phenotype: 'Grey',
       visualMutations: ['blue', 'grey'],
     ),
-    _AuditSample(
+    AuditSample(
       title: 'Anthracite DF',
       note: 'Dark cheek/body',
       phenotype: 'Double Factor Anthracite',
       visualMutations: ['anthracite'],
     ),
-    _AuditSample(
+    AuditSample(
       title: 'Cinnamon Skyblue',
       note: '50% body depth',
       phenotype: 'Cinnamon Skyblue',
       visualMutations: ['blue', 'cinnamon'],
     ),
-    _AuditSample(
+    AuditSample(
       title: 'Greywing Skyblue',
       note: '50% + pale cheek',
       phenotype: 'Skyblue Greywing',
       visualMutations: ['blue', 'greywing'],
     ),
-    _AuditSample(
+    AuditSample(
       title: 'Dom. Clearbody',
       note: 'Smoky grey cheek',
       phenotype: 'Dominant Clearbody Skyblue',
       visualMutations: ['blue', 'dominant_clearbody'],
     ),
-    _AuditSample(
+    AuditSample(
       title: 'Texas Clearbody',
       note: 'Pale body suffusion',
       phenotype: 'Skyblue Texas Clearbody',
       visualMutations: ['blue', 'texas_clearbody'],
     ),
-    _AuditSample(
+    AuditSample(
       title: 'Lutino',
       note: 'White cheek',
       phenotype: 'Lutino',
       visualMutations: ['ino'],
     ),
-    _AuditSample(
+    AuditSample(
       title: 'Albino',
       note: 'White cheek',
       phenotype: 'Albino',
@@ -80,44 +80,44 @@ class GeneticsColorAuditScreen extends StatelessWidget {
     ),
   ];
 
-  static const _advancedSamples = <_AuditSample>[
-    _AuditSample(
+  static const _advancedSamples = <AuditSample>[
+    AuditSample(
       title: 'Visual Violet',
       note: 'Series violet',
       phenotype: 'Visual Violet Skyblue',
       visualMutations: ['blue', 'violet'],
     ),
-    _AuditSample(
+    AuditSample(
       title: 'Mauve',
       note: 'Dark factor blue',
       phenotype: 'Mauve',
       visualMutations: ['blue', 'dark_factor'],
     ),
-    _AuditSample(
+    AuditSample(
       title: 'Slate',
       note: 'Deep violet cheek',
       phenotype: 'Slate',
       visualMutations: ['slate'],
     ),
-    _AuditSample(
+    AuditSample(
       title: 'Green Slate',
       note: 'Muted grey-green',
       phenotype: 'Light Green Slate',
       visualMutations: ['slate'],
     ),
-    _AuditSample(
+    AuditSample(
       title: 'SF Anthracite',
       note: 'Deeper green, not charcoal',
       phenotype: 'Light Green Single Factor Anthracite',
       visualMutations: ['anthracite'],
     ),
-    _AuditSample(
+    AuditSample(
       title: 'Blackface',
       note: 'Black mask',
       phenotype: 'Blackface Light Green',
       visualMutations: ['blackface'],
     ),
-    _AuditSample(
+    AuditSample(
       title: 'DF Spangle',
       note: 'Silver-white cheek',
       phenotype: 'Double Factor Spangle',
@@ -178,7 +178,7 @@ class GeneticsAdvancedColorAuditBoard extends StatelessWidget {
 class GeneticsColorAuditBoard extends StatelessWidget {
   final String title;
   final String subtitle;
-  final List<_AuditSample> samples;
+  final List<AuditSample> samples;
   final double minTileWidth;
   final double birdSize;
 
@@ -251,7 +251,7 @@ class GeneticsColorAuditBoard extends StatelessWidget {
 }
 
 class _AuditSampleCard extends StatelessWidget {
-  final _AuditSample sample;
+  final AuditSample sample;
   final double birdSize;
 
   const _AuditSampleCard({required this.sample, required this.birdSize});
@@ -315,13 +315,13 @@ class _AuditSampleCard extends StatelessWidget {
   }
 }
 
-class _AuditSample {
+class AuditSample {
   final String title;
   final String note;
   final String phenotype;
   final List<String> visualMutations;
 
-  const _AuditSample({
+  const AuditSample({
     required this.title,
     required this.note,
     required this.phenotype,

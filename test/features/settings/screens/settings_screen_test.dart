@@ -2,10 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mocktail/mocktail.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
-import 'package:budgie_breeding_tracker/domain/services/sync/sync_orchestrator.dart';
 import 'package:budgie_breeding_tracker/domain/services/sync/sync_providers.dart';
 import 'package:budgie_breeding_tracker/features/notifications/providers/notification_settings_providers.dart';
 import 'package:budgie_breeding_tracker/features/settings/providers/settings_providers.dart';
@@ -19,8 +17,7 @@ import 'package:budgie_breeding_tracker/features/settings/widgets/notifications_
 import 'package:budgie_breeding_tracker/features/settings/widgets/privacy_security_section.dart';
 
 import '../../../helpers/test_settings_notifiers.dart';
-
-class MockSyncOrchestrator extends Mock implements SyncOrchestrator {}
+import '../../../helpers/mocks.dart';
 
 class _TestNotificationToggleSettingsNotifier
     extends NotificationToggleSettingsNotifier {

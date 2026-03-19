@@ -6,10 +6,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
+import 'package:budgie_breeding_tracker/core/extensions/context_extensions.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
-import 'package:budgie_breeding_tracker/core/widgets/rewarded_ad_button.dart';
+import 'package:budgie_breeding_tracker/domain/services/payment/purchase_service.dart';
+import 'package:budgie_breeding_tracker/features/premium/widgets/rewarded_ad_button.dart';
 import 'package:budgie_breeding_tracker/domain/services/ads/ad_reward_providers.dart';
 import 'package:budgie_breeding_tracker/features/premium/providers/premium_providers.dart';
 import 'package:budgie_breeding_tracker/features/premium/widgets/feature_comparison.dart';
@@ -29,39 +31,40 @@ class PremiumScreen extends ConsumerWidget {
     ref.listen<PurchaseActionState>(purchaseActionProvider, (_, state) {
       if (state.isSuccess) {
         ref.read(purchaseActionProvider.notifier).reset();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('premium.purchase_success'.tr()),
-            backgroundColor: AppColors.success,
-          ),
+        context.showSnackBar(
+          'premium.purchase_success'.tr(),
+          isSuccess: true,
         );
       }
       if (state.error != null) {
         final errorMsg = switch (state.error!) {
-          'purchase_cancelled' => 'premium.purchase_cancelled'.tr(),
-          'restore_no_purchases' => 'premium.restore_no_purchases'.tr(),
-          'package_not_found' => 'premium.package_not_found'.tr(),
-          'no_offerings' => 'premium.no_offerings'.tr(),
-          'purchase_pending' => 'premium.purchase_pending'.tr(),
-          'purchase_already_owned' => 'premium.purchase_already_owned'.tr(),
-          'purchase_store_problem' => 'premium.purchase_store_problem'.tr(),
-          'purchase_not_allowed' => 'premium.purchase_not_allowed'.tr(),
-          'purchase_product_unavailable' =>
+          PurchaseErrorCodes.cancelled => 'premium.purchase_cancelled'.tr(),
+          PurchaseErrorCodes.restoreNoPurchases =>
+            'premium.restore_no_purchases'.tr(),
+          PurchaseErrorCodes.packageNotFound =>
+            'premium.package_not_found'.tr(),
+          PurchaseErrorCodes.noOfferings => 'premium.no_offerings'.tr(),
+          PurchaseErrorCodes.pending => 'premium.purchase_pending'.tr(),
+          PurchaseErrorCodes.alreadyOwned =>
+            'premium.purchase_already_owned'.tr(),
+          PurchaseErrorCodes.storeProblem =>
+            'premium.purchase_store_problem'.tr(),
+          PurchaseErrorCodes.notAllowed =>
+            'premium.purchase_not_allowed'.tr(),
+          PurchaseErrorCodes.productUnavailable =>
             'premium.purchase_product_unavailable'.tr(),
-          'purchase_network_error' => 'premium.purchase_network_error'.tr(),
-          'purchase_in_progress' => 'premium.purchase_in_progress'.tr(),
-          'purchase_configuration_error' =>
+          PurchaseErrorCodes.networkError =>
+            'premium.purchase_network_error'.tr(),
+          PurchaseErrorCodes.inProgress =>
+            'premium.purchase_in_progress'.tr(),
+          PurchaseErrorCodes.configurationError =>
             'premium.purchase_configuration_error'.tr(),
-          'purchase_not_activated' => 'premium.purchase_not_activated'.tr(),
-          'restore_failed' => 'premium.purchase_error'.tr(),
+          PurchaseErrorCodes.notActivated =>
+            'premium.purchase_not_activated'.tr(),
+          PurchaseErrorCodes.restoreFailed => 'premium.purchase_error'.tr(),
           _ => 'premium.purchase_error'.tr(),
         };
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(errorMsg),
-            backgroundColor: AppColors.error,
-          ),
-        );
+        context.showSnackBar(errorMsg, isError: true);
         ref.read(purchaseActionProvider.notifier).reset();
       }
     });
@@ -70,7 +73,7 @@ class PremiumScreen extends ConsumerWidget {
       appBar: AppBar(title: Text('premium.title'.tr())),
       body: isPremium
           ? _ActivePremiumBody()
-          : _PaywallBody(),
+          : const _PaywallBody(),
     );
   }
 }
@@ -210,34 +213,29 @@ class _ActivePremiumBody extends ConsumerWidget {
 }
 
 /// Body displayed as paywall when user is not premium.
-class _PaywallBody extends ConsumerWidget {
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final hasOfferings =
-        ref.watch(premiumOfferingsProvider).value?.isNotEmpty ?? false;
+class _PaywallBody extends StatelessWidget {
+  const _PaywallBody();
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.only(bottom: AppSpacing.xxxl * 2),
+  @override
+  Widget build(BuildContext context) {
+    return const SingleChildScrollView(
+      padding: EdgeInsets.only(bottom: AppSpacing.xxxl * 2),
       child: Column(
         children: [
-          const PremiumHeaderSection(),
-          const SizedBox(height: AppSpacing.lg),
-          if (hasOfferings) ...[
-            const PremiumTrialBannerSection(),
-            const SizedBox(height: AppSpacing.xl),
-          ],
-          const PremiumFeatureListSection(),
-          const SizedBox(height: AppSpacing.xxl),
-          const _RewardedAdSection(),
-          const SizedBox(height: AppSpacing.xxl),
-          const PremiumPricingSection(),
-          const SizedBox(height: AppSpacing.xxl),
-          const Padding(
+          PremiumHeaderSection(),
+          SizedBox(height: AppSpacing.xl),
+          PremiumPricingSection(),
+          SizedBox(height: AppSpacing.xxl),
+          PremiumFeatureListSection(),
+          SizedBox(height: AppSpacing.xxl),
+          _RewardedAdSection(),
+          SizedBox(height: AppSpacing.xxl),
+          Padding(
             padding: AppSpacing.screenPadding,
             child: FeatureComparison(),
           ),
-          const SizedBox(height: AppSpacing.xxl),
-          const PremiumRestoreSection(),
+          SizedBox(height: AppSpacing.xxl),
+          PremiumRestoreSection(),
         ],
       ),
     );

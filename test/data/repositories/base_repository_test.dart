@@ -5,10 +5,10 @@ import 'package:budgie_breeding_tracker/data/local/database/daos/sync_metadata_d
 import 'package:budgie_breeding_tracker/data/models/sync_metadata_model.dart';
 import 'package:budgie_breeding_tracker/data/repositories/base_repository.dart';
 
+import '../../helpers/mocks.dart';
+
 const _tableName = 'test_entities';
 const _userId = 'user-1';
-
-class MockSyncMetadataDao extends Mock implements SyncMetadataDao {}
 
 class _TestEntity {
   const _TestEntity({required this.id, required this.userId});

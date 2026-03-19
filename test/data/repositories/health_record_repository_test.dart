@@ -2,19 +2,17 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/health_records_dao.dart';
-import 'package:budgie_breeding_tracker/data/local/database/daos/sync_metadata_dao.dart';
 import 'package:budgie_breeding_tracker/data/models/health_record_model.dart';
 import 'package:budgie_breeding_tracker/data/remote/api/health_record_remote_source.dart';
 import 'package:budgie_breeding_tracker/data/repositories/health_record_repository.dart';
 
+import '../../helpers/mocks.dart';
 import '../../helpers/test_fixtures.dart';
 
 class MockHealthRecordsDao extends Mock implements HealthRecordsDao {}
 
 class MockHealthRecordRemoteSource extends Mock
     implements HealthRecordRemoteSource {}
-
-class MockSyncMetadataDao extends Mock implements SyncMetadataDao {}
 
 HealthRecord _sampleHealthRecord({
   String id = 'health-1',

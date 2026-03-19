@@ -79,7 +79,10 @@ void main() {
           ),
         ],
       );
-      await tester.pumpAndSettle();
+      // Use pump() instead of pumpAndSettle() to avoid timeout from
+      // CachedNetworkImage scheduling infinite frames.
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
 
       expect(find.byType(BirdPhotoGallery), findsOneWidget);
       expect(find.text('birds.add_photo'), findsOneWidget);

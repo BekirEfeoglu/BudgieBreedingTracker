@@ -3,11 +3,13 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../data/local/preferences/app_preferences.dart';
-
 /// Centralized haptic helper that respects the app-level haptic setting.
 class AppHaptics {
   AppHaptics._();
+
+  /// SharedPreferences key for the haptic feedback setting.
+  /// Mirrors [AppPreferences.keyHapticFeedback] to avoid core/ -> data/ import.
+  static const _keyHapticFeedback = 'pref_haptic_feedback';
 
   static bool? _enabledCache;
 
@@ -21,7 +23,7 @@ class AppHaptics {
     if (cached != null) return cached;
     try {
       final prefs = await SharedPreferences.getInstance();
-      final enabled = prefs.getBool(AppPreferences.keyHapticFeedback) ?? true;
+      final enabled = prefs.getBool(_keyHapticFeedback) ?? true;
       _enabledCache = enabled;
       return enabled;
     } on MissingPluginException {

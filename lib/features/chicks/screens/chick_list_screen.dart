@@ -140,7 +140,10 @@ class _ChickListScreenState extends ConsumerState<ChickListScreen> {
           const SizedBox(height: AppSpacing.xs),
           const ChickFilterBar(),
           const SizedBox(height: AppSpacing.sm),
-          Center(child: AdBannerWidget(isPremiumProvider: isPremiumProvider)),
+          Center(child: AdBannerWidget(
+            isPremiumProvider: isPremiumProvider,
+            adBannerLoader: () => defaultAdBannerLoader(ref),
+          )),
           Expanded(
             child: chicksAsync.when(
               loading: () => const Center(child: CircularProgressIndicator()),

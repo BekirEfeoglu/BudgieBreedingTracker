@@ -6,6 +6,8 @@ export 'package:budgie_breeding_tracker/data/models/community_comment_model.dart
 export 'package:budgie_breeding_tracker/core/enums/community_enums.dart';
 
 /// Whether the community feature is enabled.
+/// Content moderation (Apple Guideline 1.2) enforced via
+/// [ContentModerationService] in create/comment providers.
 final isCommunityEnabledProvider = Provider<bool>((ref) => true);
 
 /// Tab enum for the community screen.

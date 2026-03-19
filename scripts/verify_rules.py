@@ -192,7 +192,7 @@ def main():
     track(check_rule_claim("Theme dosya sayisi", 4,
                            count_files(LIB / "core" / "theme"), tolerance=2))
 
-    track(check_rule_claim("Utils dosya sayisi", 2,
+    track(check_rule_claim("Utils dosya sayisi", 3,
                            count_files(LIB / "core" / "utils")))
 
     track(check_rule_claim("Extensions dosya sayisi", 1,
@@ -205,7 +205,7 @@ def main():
     print(f"\n{Colors.BOLD}6. Router{Colors.RESET}")
 
     route_names = LIB / "router" / "route_names.dart"
-    track(check_rule_claim("Route sabiti sayisi", 52,
+    track(check_rule_claim("Route sabiti sayisi", 58,
                            count_route_consts(route_names), tolerance=2))
 
     track(check_rule_claim("Guard dosya sayisi", 2,
@@ -215,7 +215,7 @@ def main():
     print(f"\n{Colors.BOLD}7. Database{Colors.RESET}")
 
     app_db = LIB / "data" / "local" / "database" / "app_database.dart"
-    track(check_rule_claim("Schema version", 12, get_schema_version(app_db)))
+    track(check_rule_claim("Schema version", 14, get_schema_version(app_db)))
 
     # --- 8. Translations ---
     print(f"\n{Colors.BOLD}8. Translations{Colors.RESET}")
@@ -224,9 +224,9 @@ def main():
     en_keys = count_json_keys(ASSETS / "translations" / "en.json")
     de_keys = count_json_keys(ASSETS / "translations" / "de.json")
 
-    track(check_rule_claim("TR ceviri anahtar sayisi (~1732)", 1732, tr_keys, tolerance=50))
-    track(check_rule_claim("EN ceviri anahtar sayisi (~1732)", 1732, en_keys, tolerance=50))
-    track(check_rule_claim("DE ceviri anahtar sayisi (~1732)", 1732, de_keys, tolerance=50))
+    track(check_rule_claim("TR ceviri anahtar sayisi (~1989)", 1989, tr_keys, tolerance=50))
+    track(check_rule_claim("EN ceviri anahtar sayisi (~1989)", 1989, en_keys, tolerance=50))
+    track(check_rule_claim("DE ceviri anahtar sayisi (~1989)", 1989, de_keys, tolerance=50))
 
     tr_en_diff = abs(tr_keys - en_keys)
     tr_de_diff = abs(tr_keys - de_keys)

@@ -7,7 +7,7 @@ import 'package:budgie_breeding_tracker/domain/services/sync/sync_orchestrator.d
 import 'package:budgie_breeding_tracker/domain/services/sync/sync_providers.dart';
 import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
 
-class MockSyncOrchestrator extends Mock implements SyncOrchestrator {}
+import '../../../helpers/mocks.dart';
 
 void main() {
   group('syncStatusProvider', () {

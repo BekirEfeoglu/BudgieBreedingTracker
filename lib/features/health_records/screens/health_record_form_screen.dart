@@ -10,6 +10,7 @@ import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/core/widgets/buttons/primary_button.dart';
 import 'package:budgie_breeding_tracker/core/widgets/date_picker_field.dart';
 import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
+import 'package:budgie_breeding_tracker/features/settings/providers/settings_providers.dart';
 import 'package:budgie_breeding_tracker/data/models/health_record_model.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_providers.dart';
 import 'package:budgie_breeding_tracker/features/birds/providers/bird_providers.dart';
@@ -195,6 +196,7 @@ class _HealthRecordFormScreenState
                 onChanged: (date) => setState(() => _date = date),
                 firstDate: DateTime(2015),
                 lastDate: DateTime.now(),
+                dateFormatter: ref.watch(dateFormatProvider).formatter(),
               ),
               const SizedBox(height: AppSpacing.lg),
 
@@ -305,6 +307,7 @@ class _HealthRecordFormScreenState
                 firstDate: DateTime.now(),
                 lastDate: DateTime.now().add(const Duration(days: 365)),
                 isRequired: false,
+                dateFormatter: ref.watch(dateFormatProvider).formatter(),
               ),
               const SizedBox(height: AppSpacing.lg),
 

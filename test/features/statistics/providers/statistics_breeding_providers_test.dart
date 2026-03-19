@@ -4,11 +4,10 @@ import 'package:mocktail/mocktail.dart';
 
 import 'package:budgie_breeding_tracker/core/enums/breeding_enums.dart';
 import 'package:budgie_breeding_tracker/data/models/incubation_model.dart';
-import 'package:budgie_breeding_tracker/data/repositories/incubation_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/features/statistics/providers/statistics_breeding_providers.dart';
 
-class MockIncubationRepository extends Mock implements IncubationRepository {}
+import '../../../helpers/mocks.dart';
 
 void main() {
   late MockIncubationRepository repo;

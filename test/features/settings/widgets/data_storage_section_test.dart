@@ -11,9 +11,7 @@ import 'package:budgie_breeding_tracker/domain/services/sync/sync_providers.dart
 import 'package:budgie_breeding_tracker/features/settings/providers/settings_providers.dart';
 import 'package:budgie_breeding_tracker/features/settings/widgets/data_storage_section.dart';
 
-// -- Mocks --
-
-class MockSyncOrchestrator extends Mock implements SyncOrchestrator {}
+import '../../../helpers/mocks.dart';
 
 /// A simple AutoSyncNotifier that doesn't touch SharedPreferences.
 class _TestAutoSyncNotifier extends AutoSyncNotifier {

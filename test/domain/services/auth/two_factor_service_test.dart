@@ -4,13 +4,9 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:budgie_breeding_tracker/domain/services/auth/two_factor_service.dart';
 
-class MockSupabaseClient extends Mock implements SupabaseClient {}
-
-class MockGoTrueClient extends Mock implements GoTrueClient {}
+import '../../../helpers/mocks.dart';
 
 class MockGoTrueMFAApi extends Mock implements GoTrueMFAApi {}
-
-class MockUser extends Mock implements User {}
 
 AuthMFAVerifyResponse _verifyResponse(User user) {
   return AuthMFAVerifyResponse(

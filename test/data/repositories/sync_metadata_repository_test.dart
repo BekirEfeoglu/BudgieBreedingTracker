@@ -1,12 +1,10 @@
-import 'package:budgie_breeding_tracker/data/local/database/daos/sync_metadata_dao.dart';
 import 'package:budgie_breeding_tracker/data/models/sync_metadata_model.dart';
 import 'package:budgie_breeding_tracker/data/repositories/sync_metadata_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
+import '../../helpers/mocks.dart';
 import '../../helpers/test_fixtures.dart';
-
-class MockSyncMetadataDao extends Mock implements SyncMetadataDao {}
 
 void main() {
   late MockSyncMetadataDao localDao;

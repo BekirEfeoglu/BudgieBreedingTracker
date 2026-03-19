@@ -9,6 +9,13 @@
 ## Google Play Core (deferred components)
 -dontwarn com.google.android.play.core.**
 
+## Google Sign-In / Credential Manager (google_sign_in 7.x)
+-keep class androidx.credentials.** { *; }
+-keep class com.google.android.libraries.identity.** { *; }
+-keep class com.google.android.gms.auth.** { *; }
+-keep class com.google.android.gms.common.** { *; }
+-dontwarn com.google.android.libraries.identity.**
+
 ## Supabase / GoTrue / Realtime
 -keep class io.supabase.** { *; }
 -dontwarn io.supabase.**

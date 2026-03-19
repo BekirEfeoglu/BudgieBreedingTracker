@@ -5,12 +5,11 @@ import 'package:mocktail/mocktail.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_constants.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
-import 'package:budgie_breeding_tracker/data/repositories/bird_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/features/birds/providers/bird_form_providers.dart';
 import 'package:budgie_breeding_tracker/features/premium/providers/premium_providers.dart';
 
-class MockBirdRepository extends Mock implements BirdRepository {}
+import '../../../helpers/mocks.dart';
 
 void main() {
   late MockBirdRepository repo;

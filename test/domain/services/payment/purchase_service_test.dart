@@ -120,6 +120,71 @@ Map<String, dynamic> _offeringsJson() {
   };
 }
 
+/// Offerings with no "current" set, but a named offering has packages.
+Map<String, dynamic> _offeringsNoCurrent() {
+  final monthly = _monthlyPackageJson();
+  return {
+    'all': {
+      'premium_plans': {
+        'identifier': 'premium_plans',
+        'serverDescription': 'Premium plans offering',
+        'metadata': <String, Object>{},
+        'availablePackages': [monthly],
+        'monthly': monthly,
+      },
+    },
+    'current': null,
+  };
+}
+
+/// Offerings where current exists but has no packages.
+Map<String, dynamic> _offeringsCurrentEmpty() {
+  final monthly = _monthlyPackageJson();
+  return {
+    'all': {
+      'default': {
+        'identifier': 'default',
+        'serverDescription': 'Default offering',
+        'metadata': <String, Object>{},
+        'availablePackages': <Map<String, dynamic>>[],
+      },
+      'premium_plans': {
+        'identifier': 'premium_plans',
+        'serverDescription': 'Premium plans offering',
+        'metadata': <String, Object>{},
+        'availablePackages': [monthly],
+        'monthly': monthly,
+      },
+    },
+    'current': {
+      'identifier': 'default',
+      'serverDescription': 'Default offering',
+      'metadata': <String, Object>{},
+      'availablePackages': <Map<String, dynamic>>[],
+    },
+  };
+}
+
+/// All offerings exist but none have packages.
+Map<String, dynamic> _offeringsAllEmpty() {
+  return {
+    'all': {
+      'default': {
+        'identifier': 'default',
+        'serverDescription': 'Default offering',
+        'metadata': <String, Object>{},
+        'availablePackages': <Map<String, dynamic>>[],
+      },
+    },
+    'current': {
+      'identifier': 'default',
+      'serverDescription': 'Default offering',
+      'metadata': <String, Object>{},
+      'availablePackages': <Map<String, dynamic>>[],
+    },
+  };
+}
+
 Future<void> _installHandler(
   Future<dynamic> Function(MethodCall call) handler,
 ) async {
@@ -290,6 +355,52 @@ void main() {
       expect(offerings, hasLength(1));
       expect(offerings.first.packageType, PackageType.monthly);
       expect(offerings.first.storeProduct.identifier, 'premium_monthly');
+    });
+
+    test('getOfferings falls back to all offerings when current is null',
+        () async {
+      await _installHandler((call) async {
+        if (call.method == 'setupPurchases') return null;
+        if (call.method == 'getOfferings') return _offeringsNoCurrent();
+        return null;
+      });
+
+      final service = PurchaseService();
+      await service.initialize(apiKey: 'test_key', userId: 'user-1');
+
+      final offerings = await service.getOfferings();
+      expect(offerings, hasLength(1));
+      expect(offerings.first.storeProduct.identifier, 'premium_monthly');
+    });
+
+    test(
+        'getOfferings falls back to all offerings when current has no packages',
+        () async {
+      await _installHandler((call) async {
+        if (call.method == 'setupPurchases') return null;
+        if (call.method == 'getOfferings') return _offeringsCurrentEmpty();
+        return null;
+      });
+
+      final service = PurchaseService();
+      await service.initialize(apiKey: 'test_key', userId: 'user-1');
+
+      final offerings = await service.getOfferings();
+      expect(offerings, hasLength(1));
+      expect(offerings.first.storeProduct.identifier, 'premium_monthly');
+    });
+
+    test('getOfferings returns empty when no offering has packages', () async {
+      await _installHandler((call) async {
+        if (call.method == 'setupPurchases') return null;
+        if (call.method == 'getOfferings') return _offeringsAllEmpty();
+        return null;
+      });
+
+      final service = PurchaseService();
+      await service.initialize(apiKey: 'test_key', userId: 'user-1');
+
+      expect(await service.getOfferings(), isEmpty);
     });
 
     test('getOfferings returns empty list on plugin errors', () async {

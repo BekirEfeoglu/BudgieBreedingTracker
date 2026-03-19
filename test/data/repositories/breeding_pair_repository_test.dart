@@ -2,18 +2,16 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/breeding_pairs_dao.dart';
-import 'package:budgie_breeding_tracker/data/local/database/daos/sync_metadata_dao.dart';
 import 'package:budgie_breeding_tracker/data/remote/api/breeding_pair_remote_source.dart';
 import 'package:budgie_breeding_tracker/data/repositories/breeding_pair_repository.dart';
 
+import '../../helpers/mocks.dart';
 import '../../helpers/test_fixtures.dart';
 
 class MockBreedingPairsDao extends Mock implements BreedingPairsDao {}
 
 class MockBreedingPairRemoteSource extends Mock
     implements BreedingPairRemoteSource {}
-
-class MockSyncMetadataDao extends Mock implements SyncMetadataDao {}
 
 void main() {
   late MockBreedingPairsDao localDao;

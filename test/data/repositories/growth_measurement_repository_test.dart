@@ -5,20 +5,18 @@ import 'package:mocktail/mocktail.dart';
 import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
 import 'package:budgie_breeding_tracker/core/errors/app_exception.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/growth_measurements_dao.dart';
-import 'package:budgie_breeding_tracker/data/local/database/daos/sync_metadata_dao.dart';
 import 'package:budgie_breeding_tracker/data/models/growth_measurement_model.dart';
 import 'package:budgie_breeding_tracker/data/models/sync_metadata_model.dart';
 import 'package:budgie_breeding_tracker/data/remote/api/growth_measurement_remote_source.dart';
 import 'package:budgie_breeding_tracker/data/repositories/growth_measurement_repository.dart';
 
+import '../../helpers/mocks.dart';
 import '../../helpers/test_fixtures.dart';
 
 class MockGrowthMeasurementsDao extends Mock implements GrowthMeasurementsDao {}
 
 class MockGrowthMeasurementRemoteSource extends Mock
     implements GrowthMeasurementRemoteSource {}
-
-class MockSyncMetadataDao extends Mock implements SyncMetadataDao {}
 
 GrowthMeasurement _makeMeasurement({
   String id = 'gm-1',

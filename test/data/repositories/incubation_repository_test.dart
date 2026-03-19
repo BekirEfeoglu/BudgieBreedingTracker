@@ -4,21 +4,16 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
 import 'package:budgie_breeding_tracker/core/errors/app_exception.dart';
-import 'package:budgie_breeding_tracker/data/local/database/daos/incubations_dao.dart';
-import 'package:budgie_breeding_tracker/data/local/database/daos/sync_metadata_dao.dart';
 import 'package:budgie_breeding_tracker/data/models/incubation_model.dart';
 import 'package:budgie_breeding_tracker/data/models/sync_metadata_model.dart';
 import 'package:budgie_breeding_tracker/data/remote/api/incubation_remote_source.dart';
 import 'package:budgie_breeding_tracker/data/repositories/incubation_repository.dart';
 
+import '../../helpers/mocks.dart';
 import '../../helpers/test_fixtures.dart';
-
-class MockIncubationsDao extends Mock implements IncubationsDao {}
 
 class MockIncubationRemoteSource extends Mock
     implements IncubationRemoteSource {}
-
-class MockSyncMetadataDao extends Mock implements SyncMetadataDao {}
 
 Incubation _makeIncubation({String id = 'inc-1', String userId = 'user-1'}) {
   return Incubation(

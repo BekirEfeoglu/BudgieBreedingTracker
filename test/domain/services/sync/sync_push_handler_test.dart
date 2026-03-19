@@ -5,68 +5,16 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
 import 'package:budgie_breeding_tracker/data/local/database/dao_providers.dart';
-import 'package:budgie_breeding_tracker/data/local/database/daos/sync_metadata_dao.dart';
 import 'package:budgie_breeding_tracker/data/repositories/base_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/bird_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/breeding_pair_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/chick_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/clutch_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/egg_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/event_reminder_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/event_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/growth_measurement_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/health_record_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/incubation_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/nest_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/notification_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/notification_schedule_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/photo_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/profile_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/sync/sync_push_handler.dart';
+
+import '../../../helpers/mocks.dart';
 
 // Local provider so SyncPushHandler receives a proper Riverpod Ref
 final _syncPushHandlerProvider = Provider<SyncPushHandler>(
   (ref) => SyncPushHandler(ref),
 );
-
-class MockBirdRepository extends Mock implements BirdRepository {}
-
-class MockNestRepository extends Mock implements NestRepository {}
-
-class MockBreedingPairRepository extends Mock
-    implements BreedingPairRepository {}
-
-class MockClutchRepository extends Mock implements ClutchRepository {}
-
-class MockIncubationRepository extends Mock implements IncubationRepository {}
-
-class MockEggRepository extends Mock implements EggRepository {}
-
-class MockChickRepository extends Mock implements ChickRepository {}
-
-class MockHealthRecordRepository extends Mock
-    implements HealthRecordRepository {}
-
-class MockGrowthMeasurementRepository extends Mock
-    implements GrowthMeasurementRepository {}
-
-class MockEventRepository extends Mock implements EventRepository {}
-
-class MockNotificationRepository extends Mock
-    implements NotificationRepository {}
-
-class MockNotificationScheduleRepository extends Mock
-    implements NotificationScheduleRepository {}
-
-class MockPhotoRepository extends Mock implements PhotoRepository {}
-
-class MockEventReminderRepository extends Mock
-    implements EventReminderRepository {}
-
-class MockProfileRepository extends Mock implements ProfileRepository {}
-
-class MockSyncMetadataDao extends Mock implements SyncMetadataDao {}
 
 const _userId = 'user-1';
 

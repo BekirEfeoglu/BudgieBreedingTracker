@@ -4,11 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:budgie_breeding_tracker/data/remote/supabase/edge_function_client.dart';
 
-class MockSupabaseClient extends Mock implements SupabaseClient {}
-
-class MockFunctionsClient extends Mock implements FunctionsClient {}
-
-class MockGoTrueClient extends Mock implements GoTrueClient {}
+import '../../../helpers/mocks.dart';
 
 void main() {
   late MockSupabaseClient mockClient;

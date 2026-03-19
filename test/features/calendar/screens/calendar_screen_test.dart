@@ -5,15 +5,22 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:budgie_breeding_tracker/core/widgets/error_state.dart';
+import 'package:budgie_breeding_tracker/domain/services/ads/ad_service.dart';
 import 'package:budgie_breeding_tracker/data/models/event_model.dart';
 import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
 import 'package:budgie_breeding_tracker/features/calendar/providers/calendar_providers.dart';
 import 'package:budgie_breeding_tracker/features/calendar/screens/calendar_screen.dart';
 import 'package:budgie_breeding_tracker/features/notifications/providers/notification_list_providers.dart';
 import 'package:budgie_breeding_tracker/features/profile/providers/profile_providers.dart';
+
+class _MockAdService extends Mock implements AdService {
+  @override
+  Future<void> ensureSdkInitialized() async {}
+}
 
 /// Minimal asset loader that returns empty translations so context.locale
 /// is available in tests without loading actual translation assets.
@@ -52,6 +59,7 @@ void main() {
           ).overrideWith((_) => Stream.value([])),
           userProfileProvider.overrideWith((_) => Stream.value(null)),
           currentUserProvider.overrideWith((_) => null),
+          adServiceProvider.overrideWithValue(_MockAdService()),
         ],
         child: const MaterialApp(home: CalendarScreen()),
       ),

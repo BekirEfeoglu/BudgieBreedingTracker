@@ -1,8 +1,8 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
+import '../models/sync_conflict.dart';
 import '../theme/app_spacing.dart';
-import '../../domain/services/sync/sync_providers.dart';
 
 /// Bottom sheet displaying conflict resolution history.
 class SyncConflictSheet extends StatelessWidget {

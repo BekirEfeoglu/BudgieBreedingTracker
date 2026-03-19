@@ -6,16 +6,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:budgie_breeding_tracker/core/enums/chick_enums.dart';
 import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
 import 'package:budgie_breeding_tracker/data/models/growth_measurement_model.dart';
-import 'package:budgie_breeding_tracker/data/repositories/chick_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/growth_measurement_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/features/chicks/providers/chick_providers.dart';
 import 'package:budgie_breeding_tracker/features/chicks/providers/growth_measurement_providers.dart';
 
-class MockChickRepository extends Mock implements ChickRepository {}
-
-class MockGrowthMeasurementRepository extends Mock
-    implements GrowthMeasurementRepository {}
+import '../../../helpers/mocks.dart';
 
 Chick _chick({
   required String id,

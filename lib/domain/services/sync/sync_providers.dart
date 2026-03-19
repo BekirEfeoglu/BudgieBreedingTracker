@@ -3,8 +3,11 @@ import 'dart:async';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:budgie_breeding_tracker/core/models/sync_conflict.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/data/local/preferences/app_preferences.dart';
+
+export 'package:budgie_breeding_tracker/core/models/sync_conflict.dart';
 import 'package:budgie_breeding_tracker/data/local/database/dao_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/sync/network_status_provider.dart';
 import 'package:budgie_breeding_tracker/domain/services/sync/retry_scheduler.dart';
@@ -244,21 +247,6 @@ final staleErrorCountProvider = FutureProvider<int>((ref) {
 // ---------------------------------------------------------------------------
 // Conflict History (in-memory, max 50 entries, FIFO)
 // ---------------------------------------------------------------------------
-
-/// Represents a detected sync conflict where server data overwrote local data.
-class SyncConflict {
-  final String table;
-  final String recordId;
-  final DateTime detectedAt;
-  final String description;
-
-  const SyncConflict({
-    required this.table,
-    required this.recordId,
-    required this.detectedAt,
-    required this.description,
-  });
-}
 
 class ConflictHistoryNotifier extends Notifier<List<SyncConflict>> {
   static const _maxEntries = 50;

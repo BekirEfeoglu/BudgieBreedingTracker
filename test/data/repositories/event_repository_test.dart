@@ -3,18 +3,16 @@ import 'package:mocktail/mocktail.dart';
 import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
 import 'package:budgie_breeding_tracker/core/enums/event_enums.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/events_dao.dart';
-import 'package:budgie_breeding_tracker/data/local/database/daos/sync_metadata_dao.dart';
 import 'package:budgie_breeding_tracker/data/models/event_model.dart';
 import 'package:budgie_breeding_tracker/data/remote/api/event_remote_source.dart';
 import 'package:budgie_breeding_tracker/data/repositories/event_repository.dart';
 
+import '../../helpers/mocks.dart';
 import '../../helpers/test_fixtures.dart';
 
 class MockEventsDao extends Mock implements EventsDao {}
 
 class MockEventRemoteSource extends Mock implements EventRemoteSource {}
-
-class MockSyncMetadataDao extends Mock implements SyncMetadataDao {}
 
 Event _sampleEvent({String id = 'event-1', String userId = 'user-1'}) {
   return Event(

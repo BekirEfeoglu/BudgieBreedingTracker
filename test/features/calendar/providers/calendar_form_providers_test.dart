@@ -4,11 +4,10 @@ import 'package:mocktail/mocktail.dart';
 
 import 'package:budgie_breeding_tracker/core/enums/event_enums.dart';
 import 'package:budgie_breeding_tracker/data/models/event_model.dart';
-import 'package:budgie_breeding_tracker/data/repositories/event_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/features/calendar/providers/calendar_form_providers.dart';
 
-class MockEventRepository extends Mock implements EventRepository {}
+import '../../../helpers/mocks.dart';
 
 void main() {
   late MockEventRepository repo;

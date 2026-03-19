@@ -3,10 +3,9 @@ import 'package:mocktail/mocktail.dart';
 
 import 'package:budgie_breeding_tracker/core/enums/event_enums.dart';
 import 'package:budgie_breeding_tracker/data/models/event_model.dart';
-import 'package:budgie_breeding_tracker/data/repositories/event_repository.dart';
 import 'package:budgie_breeding_tracker/domain/services/calendar/calendar_event_generator.dart';
 
-class MockEventRepository extends Mock implements EventRepository {}
+import '../../../helpers/mocks.dart';
 
 Event _dummyEvent() => Event(
   id: 'id',

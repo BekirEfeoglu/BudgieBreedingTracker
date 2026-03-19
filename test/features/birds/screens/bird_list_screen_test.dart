@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
+import 'package:budgie_breeding_tracker/domain/services/ads/ad_service.dart';
 import 'package:budgie_breeding_tracker/core/widgets/empty_state.dart';
 import 'package:budgie_breeding_tracker/core/widgets/error_state.dart';
 import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
@@ -15,6 +16,7 @@ import 'package:budgie_breeding_tracker/features/birds/widgets/bird_card.dart';
 import 'package:budgie_breeding_tracker/features/notifications/providers/notification_list_providers.dart';
 import 'package:budgie_breeding_tracker/features/profile/providers/profile_providers.dart';
 
+import '../../../helpers/mocks.dart';
 import '../../../helpers/test_helpers.dart';
 
 void main() {
@@ -55,6 +57,7 @@ void main() {
             'test-user',
           ).overrideWith((_) => Stream.value([])),
           birdsStreamProvider('test-user').overrideWith((_) => birdsStream),
+          adServiceProvider.overrideWithValue(MockAdService()),
         ],
         child: MaterialApp.router(routerConfig: router),
       );
@@ -65,13 +68,12 @@ void main() {
     ) async {
       // Use a StreamController to control when data arrives
       final controller = StreamController<List<Bird>>();
+      addTearDown(controller.close);
 
       await tester.pumpWidget(createSubject(birdsStream: controller.stream));
 
       // Should show loading indicator
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
-
-      controller.close();
     });
 
     testWidgets('shows empty state when no birds', (tester) async {
