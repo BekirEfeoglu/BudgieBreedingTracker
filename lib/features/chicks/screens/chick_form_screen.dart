@@ -17,6 +17,7 @@ import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_providers.dart';
 import 'package:budgie_breeding_tracker/features/chicks/providers/chick_providers.dart';
 import 'package:budgie_breeding_tracker/features/chicks/providers/chick_form_providers.dart';
+import 'package:budgie_breeding_tracker/features/settings/providers/settings_providers.dart';
 
 /// Form screen for creating or editing a chick.
 class ChickFormScreen extends ConsumerStatefulWidget {
@@ -221,6 +222,7 @@ class _ChickFormScreenState extends ConsumerState<ChickFormScreen> {
                 onChanged: (date) => setState(() => _hatchDate = date),
                 firstDate: DateTime(2020),
                 lastDate: DateTime.now(),
+                dateFormatter: ref.watch(dateFormatProvider).formatter(),
               ),
               const SizedBox(height: AppSpacing.lg),
 
@@ -236,6 +238,14 @@ class _ChickFormScreenState extends ConsumerState<ChickFormScreen> {
                   decimal: true,
                 ),
                 textInputAction: TextInputAction.next,
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) return null;
+                  final parsed = double.tryParse(value.trim());
+                  if (parsed == null || parsed <= 0) {
+                    return 'chicks.invalid_number'.tr();
+                  }
+                  return null;
+                },
               ),
               const SizedBox(height: AppSpacing.lg),
 

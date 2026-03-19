@@ -2,26 +2,18 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/chicks_dao.dart';
-import 'package:budgie_breeding_tracker/data/local/database/daos/clutches_dao.dart';
-import 'package:budgie_breeding_tracker/data/local/database/daos/eggs_dao.dart';
-import 'package:budgie_breeding_tracker/data/local/database/daos/sync_metadata_dao.dart';
 import 'package:budgie_breeding_tracker/data/models/clutch_model.dart';
 import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
 import 'package:budgie_breeding_tracker/data/models/sync_metadata_model.dart';
 import 'package:budgie_breeding_tracker/data/remote/api/chick_remote_source.dart';
 import 'package:budgie_breeding_tracker/data/repositories/chick_repository.dart';
 
+import '../../helpers/mocks.dart';
 import '../../helpers/test_fixtures.dart';
 
 class MockChicksDao extends Mock implements ChicksDao {}
 
 class MockChickRemoteSource extends Mock implements ChickRemoteSource {}
-
-class MockSyncMetadataDao extends Mock implements SyncMetadataDao {}
-
-class MockEggsDao extends Mock implements EggsDao {}
-
-class MockClutchesDao extends Mock implements ClutchesDao {}
 
 Egg _sampleEgg({String id = 'egg-1', String userId = 'user-1'}) {
   return TestFixtures.sampleEgg(id: id, userId: userId);

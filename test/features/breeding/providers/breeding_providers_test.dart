@@ -8,23 +8,12 @@ import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
 import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
 import 'package:budgie_breeding_tracker/data/models/incubation_model.dart';
-import 'package:budgie_breeding_tracker/data/repositories/bird_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/breeding_pair_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/egg_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/incubation_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/features/birds/providers/bird_providers.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_providers.dart';
 import 'package:budgie_breeding_tracker/features/eggs/providers/egg_providers.dart';
 
-class MockBreedingPairRepository extends Mock
-    implements BreedingPairRepository {}
-
-class MockBirdRepository extends Mock implements BirdRepository {}
-
-class MockEggRepository extends Mock implements EggRepository {}
-
-class MockIncubationRepository extends Mock implements IncubationRepository {}
+import '../../../helpers/mocks.dart';
 
 BreedingPair _pair({
   required String id,

@@ -3,18 +3,16 @@ import 'package:mocktail/mocktail.dart';
 import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
 import 'package:budgie_breeding_tracker/core/enums/photo_enums.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/photos_dao.dart';
-import 'package:budgie_breeding_tracker/data/local/database/daos/sync_metadata_dao.dart';
 import 'package:budgie_breeding_tracker/data/models/photo_model.dart';
 import 'package:budgie_breeding_tracker/data/remote/api/photo_remote_source.dart';
 import 'package:budgie_breeding_tracker/data/repositories/photo_repository.dart';
 
+import '../../helpers/mocks.dart';
 import '../../helpers/test_fixtures.dart';
 
 class MockPhotosDao extends Mock implements PhotosDao {}
 
 class MockPhotoRemoteSource extends Mock implements PhotoRemoteSource {}
-
-class MockSyncMetadataDao extends Mock implements SyncMetadataDao {}
 
 Photo _samplePhoto({String id = 'photo-1', String userId = 'user-1'}) {
   return Photo(

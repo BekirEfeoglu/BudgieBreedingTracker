@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
+import 'package:budgie_breeding_tracker/core/utils/logger.dart';
+import 'package:budgie_breeding_tracker/data/models/statistics_models.dart';
 import 'package:budgie_breeding_tracker/features/chicks/providers/chick_providers.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_providers.dart';
 import 'package:budgie_breeding_tracker/features/home/providers/home_providers.dart';
@@ -21,6 +23,7 @@ import 'package:budgie_breeding_tracker/core/widgets/app_brand_title.dart';
 import 'package:budgie_breeding_tracker/features/notifications/widgets/notification_bell_button.dart';
 import 'package:budgie_breeding_tracker/features/profile/widgets/profile_menu_button.dart';
 import 'package:budgie_breeding_tracker/core/widgets/ad_banner_widget.dart';
+import 'package:budgie_breeding_tracker/domain/services/ads/ad_service.dart';
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_providers.dart';
 
 /// Main home dashboard screen.
@@ -87,7 +90,10 @@ class HomeScreen extends ConsumerWidget {
               _RecentChicksSection(userId: userId),
               const SizedBox(height: AppSpacing.lg),
               Center(
-                child: AdBannerWidget(isPremiumProvider: isPremiumProvider),
+                child: AdBannerWidget(
+                  isPremiumProvider: isPremiumProvider,
+                  adBannerLoader: () => defaultAdBannerLoader(ref),
+                ),
               ),
               const SizedBox(height: AppSpacing.xxxl * 2),
             ],
@@ -129,10 +135,18 @@ class _StatsSection extends ConsumerWidget {
         padding: EdgeInsets.all(AppSpacing.xxxl),
         child: Center(child: CircularProgressIndicator()),
       ),
-      error: (error, _) => Padding(
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-        child: Text('common.data_load_error'.tr()),
-      ),
+      error: (error, st) {
+        AppLogger.error('[HomeScreen] Stats error', error, st);
+        return const DashboardStatsGrid(
+          stats: DashboardStats(
+            totalBirds: 0,
+            totalEggs: 0,
+            totalChicks: 0,
+            activeBreedings: 0,
+            incubatingEggs: 0,
+          ),
+        );
+      },
       data: (stats) => DashboardStatsGrid(stats: stats),
     );
   }
@@ -152,15 +166,10 @@ class _ActiveBreedingsSection extends ConsumerWidget {
         padding: EdgeInsets.all(AppSpacing.lg),
         child: Center(child: CircularProgressIndicator()),
       ),
-      error: (_, __) => Padding(
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-        child: Text(
-          'common.data_load_error'.tr(),
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Theme.of(context).colorScheme.error,
-              ),
-        ),
-      ),
+      error: (error, st) {
+        AppLogger.error('[HomeScreen] ActiveBreedings error', error, st);
+        return const ActiveBreedingsSection(pairs: []);
+      },
       data: (pairs) => ActiveBreedingsSection(pairs: pairs),
     );
   }
@@ -180,15 +189,10 @@ class _RecentChicksSection extends ConsumerWidget {
         padding: EdgeInsets.all(AppSpacing.lg),
         child: Center(child: CircularProgressIndicator()),
       ),
-      error: (_, __) => Padding(
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-        child: Text(
-          'common.data_load_error'.tr(),
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Theme.of(context).colorScheme.error,
-              ),
-        ),
-      ),
+      error: (error, st) {
+        AppLogger.error('[HomeScreen] RecentChicks error', error, st);
+        return RecentChicksSection(chicks: const [], userId: userId);
+      },
       data: (chicks) => RecentChicksSection(chicks: chicks, userId: userId),
     );
   }
@@ -205,15 +209,10 @@ class _IncubationSummarySection extends ConsumerWidget {
 
     return summaryAsync.when(
       loading: () => const SizedBox.shrink(),
-      error: (_, __) => Padding(
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-        child: Text(
-          'common.data_load_error'.tr(),
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Theme.of(context).colorScheme.error,
-              ),
-        ),
-      ),
+      error: (error, st) {
+        AppLogger.error('[HomeScreen] IncubationSummary error', error, st);
+        return const IncubationSummarySection(eggs: []);
+      },
       data: (eggs) => IncubationSummarySection(eggs: eggs),
     );
   }

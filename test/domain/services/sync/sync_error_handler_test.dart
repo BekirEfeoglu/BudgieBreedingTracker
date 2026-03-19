@@ -4,32 +4,21 @@ import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:budgie_breeding_tracker/data/local/database/dao_providers.dart';
-import 'package:budgie_breeding_tracker/data/local/database/daos/sync_metadata_dao.dart';
 import 'package:budgie_breeding_tracker/data/models/sync_metadata_model.dart'
     as sync_model;
-import 'package:budgie_breeding_tracker/data/repositories/bird_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/profile_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
-import 'package:budgie_breeding_tracker/data/repositories/sync_metadata_repository.dart';
 import 'package:budgie_breeding_tracker/domain/services/sync/retry_scheduler.dart';
 import 'package:budgie_breeding_tracker/domain/services/sync/sync_error_handler.dart';
 import 'package:budgie_breeding_tracker/domain/services/sync/sync_push_handler.dart';
 import 'package:budgie_breeding_tracker/data/repositories/base_repository.dart';
 
-class MockSyncMetadataDao extends Mock implements SyncMetadataDao {}
+import '../../../helpers/mocks.dart';
 
 // Local providers to obtain handlers with a proper Ref inside ProviderContainer
 final _syncErrorHandlerProvider = Provider<SyncErrorHandler>((ref) {
   final pushHandler = SyncPushHandler(ref);
   return SyncErrorHandler(ref, pushHandler);
 });
-
-class MockSyncMetadataRepository extends Mock
-    implements SyncMetadataRepository {}
-
-class MockBirdRepository extends Mock implements BirdRepository {}
-
-class MockProfileRepository extends Mock implements ProfileRepository {}
 
 const _userId = 'user-1';
 

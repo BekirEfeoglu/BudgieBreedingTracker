@@ -48,6 +48,9 @@ class PurchaseService {
     required String userId,
   }) async {
     try {
+      final maskedKey =
+          apiKey.length > 8 ? '${apiKey.substring(0, 8)}...' : '***';
+      AppLogger.info('Configuring RevenueCat (key=$maskedKey, user=$userId)');
       final config = PurchasesConfiguration(apiKey)..appUserID = userId;
       await Purchases.configure(config);
       _initialized = true;
@@ -56,9 +59,9 @@ class PurchaseService {
       _clearStoreUnavailable();
       AppLogger.info('RevenueCat initialized for user: $userId');
       return true;
-    } catch (e) {
+    } catch (e, st) {
       _clearIdentity();
-      AppLogger.error('RevenueCat init failed: $e');
+      AppLogger.error('RevenueCat init failed', e, st);
       return false;
     } finally {
       _initializationFuture = null;
@@ -106,13 +109,39 @@ class PurchaseService {
   }
 
   /// Fetches all available subscription offerings.
+  ///
+  /// Tries the "current" (default) offering first. If that is empty, falls
+  /// back to the first offering in [Offerings.all] that has packages.
+  /// This handles RevenueCat configurations where a current offering is not
+  /// explicitly set but named offerings exist.
   Future<List<Package>> getOfferings() async {
     if (!_initialized || _isStoreUnavailableNow()) return [];
 
     try {
       final offerings = await Purchases.getOfferings();
       _clearStoreUnavailable();
-      return offerings.current?.availablePackages ?? [];
+
+      // Primary: current (default) offering
+      final current = offerings.current?.availablePackages ?? [];
+      if (current.isNotEmpty) return current;
+
+      // Fallback: first offering with packages from all offerings
+      for (final offering in offerings.all.values) {
+        if (offering.availablePackages.isNotEmpty) {
+          AppLogger.info(
+            'No current offering; using "${offering.identifier}" '
+            '(${offering.availablePackages.length} packages)',
+          );
+          return offering.availablePackages;
+        }
+      }
+
+      AppLogger.warning(
+        'RevenueCat returned ${offerings.all.length} offering(s), '
+        'none with packages. Current offering: '
+        '${offerings.current?.identifier ?? 'null'}',
+      );
+      return [];
     } on PlatformException catch (e) {
       if (_markStoreUnavailableIfNeeded(e)) {
         return [];
@@ -132,7 +161,7 @@ class PurchaseService {
     if (!_initialized) return false;
     if (_isStoreUnavailableNow()) {
       throw PurchaseException(
-        'purchase_not_allowed',
+        PurchaseErrorCodes.notAllowed,
         purchasesCode: PurchasesErrorCode.purchaseNotAllowedError,
         message: _storeUnavailableReason,
       );
@@ -147,7 +176,7 @@ class PurchaseService {
         AppLogger.warning(
           'Purchase completed but premium entitlement is still inactive',
         );
-        throw const PurchaseException('purchase_not_activated');
+        throw const PurchaseException(PurchaseErrorCodes.notActivated);
       }
       AppLogger.info('Purchase result: premium=$isActive');
       return isActive;
@@ -193,7 +222,7 @@ class PurchaseService {
     if (!_initialized) return false;
     if (_isStoreUnavailableNow()) {
       throw PurchaseException(
-        'purchase_not_allowed',
+        PurchaseErrorCodes.notAllowed,
         purchasesCode: PurchasesErrorCode.purchaseNotAllowedError,
         message: _storeUnavailableReason,
       );
@@ -218,7 +247,7 @@ class PurchaseService {
       );
     } catch (e) {
       AppLogger.warning('Restore failed: $e');
-      throw const PurchaseException('restore_failed');
+      throw const PurchaseException(PurchaseErrorCodes.restoreFailed);
     }
   }
 
@@ -322,27 +351,56 @@ class PurchaseService {
 
   String _mapPurchaseErrorCode(PurchasesErrorCode errorCode) {
     return switch (errorCode) {
-      PurchasesErrorCode.storeProblemError => 'purchase_store_problem',
-      PurchasesErrorCode.purchaseNotAllowedError => 'purchase_not_allowed',
+      PurchasesErrorCode.storeProblemError =>
+        PurchaseErrorCodes.storeProblem,
+      PurchasesErrorCode.purchaseNotAllowedError =>
+        PurchaseErrorCodes.notAllowed,
       PurchasesErrorCode.productNotAvailableForPurchaseError =>
-        'purchase_product_unavailable',
+        PurchaseErrorCodes.productUnavailable,
       PurchasesErrorCode.productAlreadyPurchasedError =>
-        'purchase_already_owned',
-      PurchasesErrorCode.paymentPendingError => 'purchase_pending',
+        PurchaseErrorCodes.alreadyOwned,
+      PurchasesErrorCode.paymentPendingError =>
+        PurchaseErrorCodes.pending,
       PurchasesErrorCode.networkError ||
-      PurchasesErrorCode.offlineConnectionError => 'purchase_network_error',
+      PurchasesErrorCode.offlineConnectionError =>
+        PurchaseErrorCodes.networkError,
       PurchasesErrorCode.operationAlreadyInProgressError =>
-        'purchase_in_progress',
+        PurchaseErrorCodes.inProgress,
       PurchasesErrorCode.configurationError ||
       PurchasesErrorCode.invalidCredentialsError ||
       PurchasesErrorCode.invalidReceiptError ||
       PurchasesErrorCode.missingReceiptFileError ||
       PurchasesErrorCode.receiptAlreadyInUseError ||
       PurchasesErrorCode.receiptInUseByOtherSubscriberError =>
-        'purchase_configuration_error',
-      _ => 'purchase_error',
+        PurchaseErrorCodes.configurationError,
+      _ => PurchaseErrorCodes.genericError,
     };
   }
+}
+
+/// Centralized error code constants for purchase operations.
+///
+/// Used by [PurchaseService], [PurchaseActionNotifier], and premium UI
+/// to keep error code strings in sync across layers.
+abstract final class PurchaseErrorCodes {
+  // Store/platform errors (mapped from RevenueCat)
+  static const storeProblem = 'purchase_store_problem';
+  static const notAllowed = 'purchase_not_allowed';
+  static const productUnavailable = 'purchase_product_unavailable';
+  static const alreadyOwned = 'purchase_already_owned';
+  static const pending = 'purchase_pending';
+  static const networkError = 'purchase_network_error';
+  static const inProgress = 'purchase_in_progress';
+  static const configurationError = 'purchase_configuration_error';
+  static const notActivated = 'purchase_not_activated';
+  static const genericError = 'purchase_error';
+
+  // App-level errors
+  static const cancelled = 'purchase_cancelled';
+  static const noOfferings = 'no_offerings';
+  static const packageNotFound = 'package_not_found';
+  static const restoreNoPurchases = 'restore_no_purchases';
+  static const restoreFailed = 'restore_failed';
 }
 
 class PurchaseException implements Exception {

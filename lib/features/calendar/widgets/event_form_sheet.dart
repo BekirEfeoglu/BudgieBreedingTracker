@@ -10,6 +10,7 @@ import 'package:budgie_breeding_tracker/core/widgets/date_picker_field.dart';
 import 'package:budgie_breeding_tracker/data/models/event_model.dart';
 import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
 import 'package:budgie_breeding_tracker/features/calendar/providers/calendar_form_providers.dart';
+import 'package:budgie_breeding_tracker/features/settings/providers/settings_providers.dart';
 import 'package:budgie_breeding_tracker/features/calendar/widgets/event_card.dart';
 
 /// Opens the event form as a modal bottom sheet.
@@ -191,6 +192,7 @@ class _EventFormContentState extends ConsumerState<_EventFormContent> {
                 onChanged: (date) => setState(() => _eventDate = date),
                 firstDate: DateTime(2020),
                 lastDate: DateTime.now().add(const Duration(days: 730)),
+                dateFormatter: ref.watch(dateFormatProvider).formatter(),
               ),
               const SizedBox(height: AppSpacing.lg),
 

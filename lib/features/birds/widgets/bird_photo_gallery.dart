@@ -4,8 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
+import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 
 /// Horizontal photo strip for bird detail; tapping opens a full-screen gallery.
 class BirdPhotoGallery extends StatelessWidget {
@@ -42,7 +44,7 @@ class BirdPhotoGallery extends StatelessWidget {
               itemBuilder: (context, index) => _PhotoThumbnail(
                 url: photoUrls[index],
                 onTap: () => _openGallery(context, index),
-                onLongPress: onDeletePhoto != null
+                onDelete: onDeletePhoto != null
                     ? () => onDeletePhoto!(photoUrls[index])
                     : null,
               ),
@@ -68,34 +70,97 @@ class BirdPhotoGallery extends StatelessWidget {
 class _PhotoThumbnail extends StatelessWidget {
   final String url;
   final VoidCallback onTap;
-  final VoidCallback? onLongPress;
+  final VoidCallback? onDelete;
 
   const _PhotoThumbnail({
     required this.url,
     required this.onTap,
-    this.onLongPress,
+    this.onDelete,
   });
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return GestureDetector(
       onTap: onTap,
-      onLongPress: onLongPress,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-        child: CachedNetworkImage(
-          imageUrl: url,
-          width: 120,
-          height: 120,
-          memCacheWidth: 240,
-          memCacheHeight: 240,
-          fit: BoxFit.cover,
-          errorWidget: (_, __, ___) => Container(
-            width: 120,
-            height: 120,
-            color: Theme.of(context).colorScheme.surfaceContainerHighest,
-            child: const Icon(LucideIcons.imageOff, size: 32),
-          ),
+      child: SizedBox(
+        width: 120,
+        height: 120,
+        child: Stack(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+              child: CachedNetworkImage(
+                imageUrl: url,
+                width: 120,
+                height: 120,
+                memCacheWidth: 240,
+                memCacheHeight: 240,
+                fit: BoxFit.cover,
+                placeholder: (_, __) => Container(
+                  color: theme.colorScheme.surfaceContainerHighest,
+                  child: const Center(
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                ),
+                errorWidget: (_, __, ___) => Container(
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.surfaceContainerHighest,
+                    border: Border.all(
+                      color: theme.colorScheme.outlineVariant,
+                    ),
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      AppIcon(
+                        AppIcons.bird,
+                        size: 36,
+                        color: theme.colorScheme.onSurfaceVariant
+                            .withValues(alpha: 0.4),
+                      ),
+                      const SizedBox(height: AppSpacing.xs),
+                      Icon(
+                        LucideIcons.wifiOff,
+                        size: 14,
+                        color: theme.colorScheme.onSurfaceVariant
+                            .withValues(alpha: 0.3),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            if (onDelete != null)
+              Positioned(
+                top: 4,
+                right: 4,
+                child: GestureDetector(
+                  onTap: onDelete,
+                  child: Container(
+                    width: 28,
+                    height: 28,
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.surface
+                          .withValues(alpha: 0.85),
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.15),
+                          blurRadius: 4,
+                        ),
+                      ],
+                    ),
+                    child: Icon(
+                      LucideIcons.x,
+                      size: 16,
+                      color: theme.colorScheme.error,
+                    ),
+                  ),
+                ),
+              ),
+          ],
         ),
       ),
     );

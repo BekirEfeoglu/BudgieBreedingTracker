@@ -5,7 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:budgie_breeding_tracker/domain/services/backup/backup_scheduler.dart';
 import 'package:budgie_breeding_tracker/domain/services/backup/backup_service.dart';
 
-class MockBackupService extends Mock implements BackupService {}
+import '../../../helpers/mocks.dart';
 
 void main() {
   late MockBackupService mockBackupService;

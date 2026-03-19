@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 
@@ -94,10 +95,12 @@ class EdgeFunctionClient {
         );
       } else {
         AppLogger.error('$_tag Error invoking $functionName', e, st);
+        Sentry.captureException(e, stackTrace: st);
       }
       return EdgeFunctionResult.failure(e.toString());
     } catch (e, st) {
       AppLogger.error('$_tag Error invoking $functionName', e, st);
+      Sentry.captureException(e, stackTrace: st);
       return EdgeFunctionResult.failure(e.toString());
     }
   }

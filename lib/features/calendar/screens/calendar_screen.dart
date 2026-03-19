@@ -96,7 +96,10 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
       ),
       body: Column(
         children: [
-          Center(child: AdBannerWidget(isPremiumProvider: isPremiumProvider)),
+          Center(child: AdBannerWidget(
+            isPremiumProvider: isPremiumProvider,
+            adBannerLoader: () => defaultAdBannerLoader(ref),
+          )),
           Expanded(
             child: GestureDetector(
         onHorizontalDragEnd: (details) =>

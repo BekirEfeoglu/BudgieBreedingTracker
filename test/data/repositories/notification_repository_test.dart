@@ -2,20 +2,18 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/notifications_dao.dart';
-import 'package:budgie_breeding_tracker/data/local/database/daos/sync_metadata_dao.dart';
 import 'package:budgie_breeding_tracker/data/models/notification_model.dart';
 import 'package:budgie_breeding_tracker/data/models/sync_metadata_model.dart';
 import 'package:budgie_breeding_tracker/data/remote/api/notification_remote_source.dart';
 import 'package:budgie_breeding_tracker/data/repositories/notification_repository.dart';
 
+import '../../helpers/mocks.dart';
 import '../../helpers/test_fixtures.dart';
 
 class MockNotificationsDao extends Mock implements NotificationsDao {}
 
 class MockNotificationRemoteSource extends Mock
     implements NotificationRemoteSource {}
-
-class MockSyncMetadataDao extends Mock implements SyncMetadataDao {}
 
 AppNotification _sampleNotification({
   String id = 'notification-1',

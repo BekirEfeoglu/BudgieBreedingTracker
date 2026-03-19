@@ -6,7 +6,9 @@ import '../../../core/utils/logger.dart';
 import '../../../data/models/community_comment_model.dart';
 import '../../../data/providers/auth_state_providers.dart';
 import '../../../data/repositories/repository_providers.dart';
+import '../../../domain/services/moderation/content_moderation_service.dart';
 import 'community_feed_providers.dart';
+import 'community_moderation_providers.dart';
 
 // ---------------------------------------------------------------------------
 // Comments for a post
@@ -69,6 +71,18 @@ class CommentFormNotifier extends Notifier<CommentFormState> {
         state = state.copyWith(
           isLoading: false,
           error: 'community.not_authenticated'.tr(),
+        );
+        return;
+      }
+
+      // Content moderation check (Apple Guideline 1.2)
+      final moderationService = ref.read(contentModerationServiceProvider);
+      final modResult = await moderationService.checkText(content);
+      if (!modResult.isAllowed) {
+        state = state.copyWith(
+          isLoading: false,
+          error: ContentModerationService.localizedError(
+              modResult.rejectionReason),
         );
         return;
       }

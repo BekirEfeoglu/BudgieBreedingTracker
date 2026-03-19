@@ -4,8 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mocktail/mocktail.dart';
 
 import 'package:budgie_breeding_tracker/core/enums/breeding_enums.dart';
+import 'package:budgie_breeding_tracker/domain/services/ads/ad_service.dart';
 import 'package:budgie_breeding_tracker/core/widgets/empty_state.dart';
 import 'package:budgie_breeding_tracker/core/widgets/error_state.dart';
 import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
@@ -16,6 +18,11 @@ import 'package:budgie_breeding_tracker/features/breeding/widgets/breeding_card.
 import 'package:budgie_breeding_tracker/features/eggs/providers/egg_providers.dart';
 import 'package:budgie_breeding_tracker/features/notifications/providers/notification_list_providers.dart';
 import 'package:budgie_breeding_tracker/features/profile/providers/profile_providers.dart';
+
+class _MockAdService extends Mock implements AdService {
+  @override
+  Future<void> ensureSdkInitialized() async {}
+}
 
 void main() {
   BreedingPair makePair({
@@ -74,6 +81,7 @@ void main() {
           'test-user',
         ).overrideWith((_) => Stream.value([])),
         eggsStreamProvider('test-user').overrideWith((_) => Stream.value([])),
+        adServiceProvider.overrideWithValue(_MockAdService()),
       ],
       child: MaterialApp.router(routerConfig: router),
     );

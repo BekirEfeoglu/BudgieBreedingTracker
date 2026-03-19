@@ -8,7 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
 import 'package:budgie_breeding_tracker/features/profile/widgets/danger_zone_section.dart';
 
-class MockAuthActions extends Mock implements AuthActions {}
+import '../../../helpers/mocks.dart';
 
 Future<void> _pump(WidgetTester tester, {MockAuthActions? authActions}) async {
   final mockActions = authActions ?? MockAuthActions();

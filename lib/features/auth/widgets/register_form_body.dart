@@ -1,15 +1,13 @@
 import 'package:easy_localization/easy_localization.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-import 'package:url_launcher/url_launcher.dart';
 
-import '../../../core/constants/app_constants.dart';
 import '../../../core/constants/app_icons.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_icon.dart';
 import '../../../domain/services/auth/password_policy.dart';
 import 'auth_form_field.dart';
+import 'legal_links_text.dart';
 import 'password_strength_meter.dart';
 import 'social_login_buttons.dart';
 
@@ -243,7 +241,7 @@ class RegisterFormBody extends StatelessWidget {
         const SizedBox(height: AppSpacing.xxl),
 
         // Legal links (Privacy Policy & Terms of Service)
-        _LegalLinksText(),
+        const LegalLinksText(),
         const SizedBox(height: AppSpacing.md),
 
         // Login link
@@ -267,47 +265,3 @@ class RegisterFormBody extends StatelessWidget {
   }
 }
 
-/// Clickable Terms of Service & Privacy Policy text for auth screens.
-class _LegalLinksText extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final linkStyle = theme.textTheme.bodySmall?.copyWith(
-      color: theme.colorScheme.primary,
-      decoration: TextDecoration.underline,
-    );
-    final normalStyle = theme.textTheme.bodySmall?.copyWith(
-      color: theme.colorScheme.onSurfaceVariant,
-    );
-
-    return RichText(
-      textAlign: TextAlign.center,
-      text: TextSpan(
-        style: normalStyle,
-        children: [
-          TextSpan(text: 'auth.agree_terms_prefix'.tr()),
-          TextSpan(
-            text: 'auth.terms_of_service'.tr(),
-            style: linkStyle,
-            recognizer: TapGestureRecognizer()
-              ..onTap = () => launchUrl(
-                    Uri.parse(AppConstants.termsOfUseUrl),
-                    mode: LaunchMode.externalApplication,
-                  ),
-          ),
-          TextSpan(text: 'auth.agree_terms_and'.tr()),
-          TextSpan(
-            text: 'auth.privacy_policy'.tr(),
-            style: linkStyle,
-            recognizer: TapGestureRecognizer()
-              ..onTap = () => launchUrl(
-                    Uri.parse(AppConstants.privacyPolicyUrl),
-                    mode: LaunchMode.externalApplication,
-                  ),
-          ),
-          TextSpan(text: 'auth.agree_terms_suffix'.tr()),
-        ],
-      ),
-    );
-  }
-}

@@ -270,3 +270,12 @@ final adServiceProvider = Provider<AdService>((ref) {
   });
   return service;
 });
+
+/// Reusable [AdBannerLoader] callback that initializes the ad SDK
+/// and returns the banner ad unit ID. Use with [AdBannerWidget] to
+/// avoid repeating the same closure in every screen.
+Future<String> defaultAdBannerLoader(WidgetRef ref) async {
+  final adService = ref.read(adServiceProvider);
+  await adService.ensureSdkInitialized();
+  return AdService.bannerAdUnitId;
+}

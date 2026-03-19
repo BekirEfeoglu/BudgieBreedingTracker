@@ -12,6 +12,7 @@ import 'package:budgie_breeding_tracker/core/widgets/error_state.dart';
 import 'package:budgie_breeding_tracker/core/widgets/buttons/fab_button.dart';
 import 'package:budgie_breeding_tracker/core/widgets/date_picker_field.dart';
 import 'package:budgie_breeding_tracker/core/widgets/dialogs/confirm_dialog.dart';
+import 'package:budgie_breeding_tracker/features/settings/providers/settings_providers.dart';
 import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
 import 'package:budgie_breeding_tracker/domain/services/incubation/incubation_calculator.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_detail_providers.dart';
@@ -225,6 +226,7 @@ class _EggManagementContent extends ConsumerWidget {
                     label: 'eggs.lay_date'.tr(),
                     value: layDate,
                     onChanged: (date) => setSheetState(() => layDate = date),
+                    dateFormatter: ref.read(dateFormatProvider).formatter(),
                   ),
                   const SizedBox(height: AppSpacing.lg),
                   TextFormField(

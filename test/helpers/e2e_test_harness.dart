@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:ui' as ui;
 
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:drift/native.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -32,43 +31,19 @@ import 'package:budgie_breeding_tracker/data/models/incubation_model.dart';
 import 'package:budgie_breeding_tracker/data/models/notification_model.dart';
 import 'package:budgie_breeding_tracker/data/models/profile_model.dart';
 import 'package:budgie_breeding_tracker/data/models/sync_metadata_model.dart';
-import 'package:budgie_breeding_tracker/data/remote/storage/storage_service.dart';
-import 'package:budgie_breeding_tracker/data/repositories/bird_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/breeding_pair_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/chick_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/clutch_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/egg_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/event_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/event_reminder_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/growth_measurement_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/health_record_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/incubation_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/nest_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/notification_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/notification_schedule_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/photo_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/profile_repository.dart';
-import 'package:budgie_breeding_tracker/data/local/database/daos/sync_metadata_dao.dart';
-import 'package:budgie_breeding_tracker/data/repositories/sync_metadata_repository.dart';
+import 'package:budgie_breeding_tracker/domain/services/ads/ad_service.dart';
 import 'package:budgie_breeding_tracker/domain/services/auth/two_factor_service.dart';
-import 'package:budgie_breeding_tracker/features/auth/providers/two_factor_providers.dart';
-import 'package:budgie_breeding_tracker/domain/services/backup/backup_service.dart';
-import 'package:budgie_breeding_tracker/domain/services/calendar/calendar_event_generator.dart';
-import 'package:budgie_breeding_tracker/domain/services/export/excel_export_service.dart';
-import 'package:budgie_breeding_tracker/domain/services/export/pdf_export_service.dart';
-import 'package:budgie_breeding_tracker/domain/services/genetics/mendelian_calculator.dart';
-import 'package:budgie_breeding_tracker/domain/services/import/data_import_service.dart';
-import 'package:budgie_breeding_tracker/domain/services/notifications/notification_scheduler.dart';
-import 'package:budgie_breeding_tracker/domain/services/notifications/notification_service.dart';
-import 'package:budgie_breeding_tracker/domain/services/payment/purchase_service.dart';
-import 'package:budgie_breeding_tracker/domain/services/sync/sync_orchestrator.dart';
 import 'package:budgie_breeding_tracker/features/admin/providers/admin_providers.dart';
 import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
+import 'package:budgie_breeding_tracker/features/auth/providers/two_factor_providers.dart';
 import 'package:budgie_breeding_tracker/features/health_records/providers/health_record_providers.dart';
 import 'package:budgie_breeding_tracker/features/home/providers/home_providers.dart';
 import 'package:budgie_breeding_tracker/features/notifications/providers/notification_settings_providers.dart'
     as notif_settings;
 import 'package:budgie_breeding_tracker/features/premium/providers/premium_providers.dart';
+
+import 'mocks.dart';
+export 'mocks.dart';
 
 const e2eTimeout = Timeout(Duration(seconds: 30));
 
@@ -268,6 +243,7 @@ ProviderContainer createTestContainer({
       authActionsProvider.overrideWithValue(effectiveAuthActions),
       twoFactorServiceProvider.overrideWithValue(effectiveTwoFactorService),
       supabaseInitializedProvider.overrideWithValue(true),
+      adServiceProvider.overrideWithValue(MockAdService()),
       birdCountProvider.overrideWith((_, __) => Stream.value(defaultBirdCount)),
       activeBreedingCountProvider.overrideWith(
         (_, __) => Stream.value(defaultActiveBreedingCount),
@@ -367,75 +343,4 @@ Future<String> resolveRedirectFor(
   return resolved.uri.toString();
 }
 
-// Requested core mocks
-class MockAuthActions extends Mock implements AuthActions {}
-
-class MockTwoFactorService extends Mock implements TwoFactorService {}
-
-class MockBirdRepository extends Mock implements BirdRepository {}
-
-class MockBreedingPairRepository extends Mock
-    implements BreedingPairRepository {}
-
-class MockEggRepository extends Mock implements EggRepository {}
-
-class MockChickRepository extends Mock implements ChickRepository {}
-
-class MockIncubationRepository extends Mock implements IncubationRepository {}
-
-class MockClutchRepository extends Mock implements ClutchRepository {}
-
-class MockHealthRecordRepository extends Mock
-    implements HealthRecordRepository {}
-
-class MockGrowthMeasurementRepository extends Mock
-    implements GrowthMeasurementRepository {}
-
-class MockNotificationRepository extends Mock
-    implements NotificationRepository {}
-
-class MockEventRepository extends Mock implements EventRepository {}
-
-class MockEventReminderRepository extends Mock
-    implements EventReminderRepository {}
-
-class MockProfileRepository extends Mock implements ProfileRepository {}
-
-class MockSyncMetadataRepository extends Mock
-    implements SyncMetadataRepository {}
-
-class MockSyncMetadataDao extends Mock implements SyncMetadataDao {}
-
-class MockNestRepository extends Mock implements NestRepository {}
-
-class MockPhotoRepository extends Mock implements PhotoRepository {}
-
-class MockNotificationScheduleRepository extends Mock
-    implements NotificationScheduleRepository {}
-
-class MockStorageService extends Mock implements StorageService {}
-
-class MockSyncOrchestrator extends Mock implements SyncOrchestrator {}
-
-class MockNotificationService extends Mock implements NotificationService {}
-
-class MockNotificationScheduler extends Mock implements NotificationScheduler {}
-
-class MockPurchaseService extends Mock implements PurchaseService {}
-
-class MockPdfExportService extends Mock implements PdfExportService {}
-
-class MockExcelExportService extends Mock implements ExcelExportService {}
-
-class MockMendelianCalculator extends Mock implements MendelianCalculator {}
-
-class MockBackupService extends Mock implements BackupService {}
-
-class MockCalendarEventGenerator extends Mock
-    implements CalendarEventGenerator {}
-
-class MockDataImportService extends Mock implements DataImportService {}
-
-typedef ConnectivityPlus = Connectivity;
-
-class MockConnectivity extends Mock implements ConnectivityPlus {}
+// All mock classes are centralized in mocks.dart and re-exported above.

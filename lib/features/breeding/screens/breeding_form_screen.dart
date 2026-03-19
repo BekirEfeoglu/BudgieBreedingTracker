@@ -11,6 +11,7 @@ import 'package:budgie_breeding_tracker/core/widgets/buttons/primary_button.dart
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:budgie_breeding_tracker/core/widgets/date_picker_field.dart';
 import 'package:budgie_breeding_tracker/core/widgets/empty_state.dart';
+import 'package:budgie_breeding_tracker/features/settings/providers/settings_providers.dart';
 import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
 import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
 import 'package:budgie_breeding_tracker/features/birds/providers/bird_providers.dart';
@@ -188,6 +189,7 @@ class _BreedingFormScreenState extends ConsumerState<BreedingFormScreen> {
                     label: 'breeding.pairing_date'.tr(),
                     value: _pairingDate,
                     onChanged: (date) => setState(() => _pairingDate = date),
+                    dateFormatter: ref.watch(dateFormatProvider).formatter(),
                   ),
                   const SizedBox(height: AppSpacing.lg),
                   TextFormField(

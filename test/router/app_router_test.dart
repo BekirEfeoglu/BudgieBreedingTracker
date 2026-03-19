@@ -9,6 +9,9 @@ import 'package:mocktail/mocktail.dart';
 import 'package:budgie_breeding_tracker/features/admin/providers/admin_providers.dart';
 import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
 import 'package:budgie_breeding_tracker/features/home/providers/home_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/ads/ad_reward_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/ads/ad_service.dart';
+import 'package:budgie_breeding_tracker/domain/services/notifications/notification_providers.dart';
 import 'package:budgie_breeding_tracker/features/premium/providers/premium_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/sync/sync_providers.dart';
 import 'package:budgie_breeding_tracker/router/app_router.dart';
@@ -27,6 +30,21 @@ class _TestInitSkippedNotifier extends InitSkippedNotifier {
   bool build() => _initial;
 }
 
+class _FalseGeneticsRewardNotifier extends GeneticsRewardNotifier {
+  @override
+  bool build() => false;
+}
+
+class _FalseStatisticsRewardNotifier extends StatisticsRewardNotifier {
+  @override
+  bool build() => false;
+}
+
+class _MockAdService extends Mock implements AdService {
+  @override
+  Future<void> ensureSdkInitialized() async {}
+}
+
 ProviderContainer _createContainer({
   required bool isLoggedIn,
   required bool isPremium,
@@ -43,6 +61,10 @@ ProviderContainer _createContainer({
       initSkippedProvider.overrideWith(
         () => _TestInitSkippedNotifier(initSkipped),
       ),
+      isGeneticsRewardActiveProvider.overrideWith(_FalseGeneticsRewardNotifier.new),
+      isStatisticsRewardActiveProvider.overrideWith(_FalseStatisticsRewardNotifier.new),
+      adServiceProvider.overrideWithValue(_MockAdService()),
+      deferredNotificationPermissionProvider.overrideWith((_) async {}),
       periodicSyncProvider.overrideWith((ref) {}),
       networkAwareSyncProvider.overrideWith((ref) {}),
       unweanedChicksCountProvider.overrideWith((ref, userId) {

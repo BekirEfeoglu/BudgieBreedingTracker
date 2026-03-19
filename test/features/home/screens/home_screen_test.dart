@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:budgie_breeding_tracker/data/models/statistics_models.dart';
+import 'package:budgie_breeding_tracker/domain/services/ads/ad_service.dart';
+import 'package:budgie_breeding_tracker/domain/services/notifications/notification_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/sync/sync_orchestrator.dart';
 import 'package:budgie_breeding_tracker/domain/services/sync/sync_providers.dart';
 import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
@@ -72,6 +74,8 @@ void main() {
           ).overrideWithValue(const AsyncData([])),
           birdCountProvider('test-user').overrideWith((_) => Stream.value(0)),
           isPremiumProvider.overrideWithValue(false),
+          adServiceProvider.overrideWithValue(MockAdService()),
+          deferredNotificationPermissionProvider.overrideWith((_) async {}),
           syncOrchestratorProvider.overrideWithValue(mockSync),
         ],
         child: MaterialApp.router(routerConfig: router),
@@ -130,10 +134,8 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // _StatsSection shows 'common.data_load_error'.tr() on error
-      // In test context without EasyLocalization, .tr() returns the key itself
-      expect(find.text('common.data_load_error'), findsOneWidget);
-      expect(find.byType(DashboardStatsGrid), findsNothing);
+      // _StatsSection shows fallback DashboardStatsGrid with zeroed stats on error
+      expect(find.byType(DashboardStatsGrid), findsOneWidget);
     });
 
     testWidgets('has RefreshIndicator for pull-to-refresh', (tester) async {

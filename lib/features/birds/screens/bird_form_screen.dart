@@ -15,6 +15,7 @@ import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_pro
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_detail_providers.dart';
 import 'package:budgie_breeding_tracker/features/birds/providers/bird_form_providers.dart';
 import 'package:budgie_breeding_tracker/features/birds/widgets/bird_form_sections.dart';
+import 'package:budgie_breeding_tracker/features/settings/providers/settings_providers.dart';
 import 'package:budgie_breeding_tracker/features/birds/widgets/bird_form_helpers.dart';
 import 'package:budgie_breeding_tracker/features/genetics/utils/bird_genotype_mapper.dart';
 import 'package:budgie_breeding_tracker/router/route_names.dart';
@@ -316,6 +317,7 @@ class _BirdFormScreenState extends ConsumerState<BirdFormScreen> {
                 cageController: _cageController,
                 birthDate: _birthDate,
                 onBirthDateChanged: (d) => setState(() => _birthDate = d),
+                dateFormatter: ref.watch(dateFormatProvider).formatter(),
               ),
               const SizedBox(height: AppSpacing.xl),
               BirdFormParentsSection(

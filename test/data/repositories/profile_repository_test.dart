@@ -2,19 +2,17 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/profiles_dao.dart';
-import 'package:budgie_breeding_tracker/data/local/database/daos/sync_metadata_dao.dart';
 import 'package:budgie_breeding_tracker/data/models/profile_model.dart';
 import 'package:budgie_breeding_tracker/data/models/sync_metadata_model.dart';
 import 'package:budgie_breeding_tracker/data/remote/api/profile_remote_source.dart';
 import 'package:budgie_breeding_tracker/data/repositories/profile_repository.dart';
 
+import '../../helpers/mocks.dart';
 import '../../helpers/test_fixtures.dart';
 
 class MockProfilesDao extends Mock implements ProfilesDao {}
 
 class MockProfileRemoteSource extends Mock implements ProfileRemoteSource {}
-
-class MockSyncMetadataDao extends Mock implements SyncMetadataDao {}
 
 Profile _sampleProfile({String id = 'user-1', String email = 'a@b.com'}) {
   return Profile(id: id, email: email);

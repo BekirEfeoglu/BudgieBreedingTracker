@@ -2,7 +2,6 @@ import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
 import 'package:budgie_breeding_tracker/core/enums/notification_enums.dart';
 import 'package:budgie_breeding_tracker/core/errors/app_exception.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/notification_schedules_dao.dart';
-import 'package:budgie_breeding_tracker/data/local/database/daos/sync_metadata_dao.dart';
 import 'package:budgie_breeding_tracker/data/models/notification_schedule_model.dart';
 import 'package:budgie_breeding_tracker/data/models/sync_metadata_model.dart';
 import 'package:budgie_breeding_tracker/data/remote/api/notification_schedule_remote_source.dart';
@@ -10,6 +9,7 @@ import 'package:budgie_breeding_tracker/data/repositories/notification_schedule_
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
+import '../../helpers/mocks.dart';
 import '../../helpers/test_fixtures.dart';
 
 class MockNotificationSchedulesDao extends Mock
@@ -17,8 +17,6 @@ class MockNotificationSchedulesDao extends Mock
 
 class MockNotificationScheduleRemoteSource extends Mock
     implements NotificationScheduleRemoteSource {}
-
-class MockSyncMetadataDao extends Mock implements SyncMetadataDao {}
 
 NotificationSchedule _sampleSchedule({
   String id = 'schedule-1',

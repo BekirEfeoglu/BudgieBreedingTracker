@@ -2,18 +2,16 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/nests_dao.dart';
-import 'package:budgie_breeding_tracker/data/local/database/daos/sync_metadata_dao.dart';
 import 'package:budgie_breeding_tracker/data/models/nest_model.dart';
 import 'package:budgie_breeding_tracker/data/remote/api/nest_remote_source.dart';
 import 'package:budgie_breeding_tracker/data/repositories/nest_repository.dart';
 
+import '../../helpers/mocks.dart';
 import '../../helpers/test_fixtures.dart';
 
 class MockNestsDao extends Mock implements NestsDao {}
 
 class MockNestRemoteSource extends Mock implements NestRemoteSource {}
-
-class MockSyncMetadataDao extends Mock implements SyncMetadataDao {}
 
 Nest _sampleNest({String id = 'nest-1', String userId = 'user-1'}) {
   return Nest(id: id, userId: userId);

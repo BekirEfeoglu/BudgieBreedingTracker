@@ -2,21 +2,28 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
-import 'package:budgie_breeding_tracker/domain/services/ads/ad_service.dart';
+/// Callback that initializes the ad SDK and returns the banner ad unit ID.
+typedef AdBannerLoader = Future<String> Function();
 
 /// Displays a banner ad for free-tier users.
 /// Renders [SizedBox.shrink] when the user is premium or ad fails to load.
 ///
 /// Premium status is injected via [isPremiumProvider] to avoid
 /// core/ -> features/ layer violation.
+/// Ad loading is driven by [adBannerLoader] to avoid core/ -> domain/ import.
 class AdBannerWidget extends ConsumerStatefulWidget {
   final AdSize adSize;
   final Provider<bool> isPremiumProvider;
+
+  /// Callback that ensures the ad SDK is initialized and returns the banner
+  /// ad unit ID. Injected by the caller to keep core/ free of domain/ imports.
+  final AdBannerLoader adBannerLoader;
 
   const AdBannerWidget({
     super.key,
     this.adSize = AdSize.banner,
     required this.isPremiumProvider,
+    required this.adBannerLoader,
   });
 
   @override
@@ -34,13 +41,12 @@ class _AdBannerWidgetState extends ConsumerState<AdBannerWidget> {
   }
 
   Future<void> _loadAd() async {
-    final adService = ref.read(adServiceProvider);
-    await adService.ensureSdkInitialized();
+    final adUnitId = await widget.adBannerLoader();
 
     if (!mounted) return;
 
     _bannerAd = BannerAd(
-      adUnitId: AdService.bannerAdUnitId,
+      adUnitId: adUnitId,
       size: widget.adSize,
       request: const AdRequest(),
       listener: BannerAdListener(

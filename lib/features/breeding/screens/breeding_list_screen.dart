@@ -102,7 +102,10 @@ class _BreedingListScreenState extends ConsumerState<BreedingListScreen> {
           const SizedBox(height: AppSpacing.xs),
           const BreedingFilterBar(),
           const SizedBox(height: AppSpacing.sm),
-          Center(child: AdBannerWidget(isPremiumProvider: isPremiumProvider)),
+          Center(child: AdBannerWidget(
+            isPremiumProvider: isPremiumProvider,
+            adBannerLoader: () => defaultAdBannerLoader(ref),
+          )),
           Expanded(
             child: pairsAsync.when(
               loading: () => const Center(

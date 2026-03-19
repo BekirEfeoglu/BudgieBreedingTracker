@@ -88,7 +88,10 @@ class BirdListScreen extends ConsumerWidget {
           const SizedBox(height: AppSpacing.xs),
           const BirdFilterBar(),
           const SizedBox(height: AppSpacing.sm),
-          Center(child: AdBannerWidget(isPremiumProvider: isPremiumProvider)),
+          Center(child: AdBannerWidget(
+            isPremiumProvider: isPremiumProvider,
+            adBannerLoader: () => defaultAdBannerLoader(ref),
+          )),
           Expanded(
             child: birdsAsync.when(
               loading: () => const Center(

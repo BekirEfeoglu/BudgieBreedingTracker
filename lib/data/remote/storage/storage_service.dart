@@ -25,6 +25,9 @@ class StorageService {
   static const String _avatarsBucket = SupabaseConstants.avatarsBucket;
   static const String _communityPhotosBucket = SupabaseConstants.communityPhotosBucket;
 
+  /// Signed URL expiry: 1 year in seconds.
+  static const int _signedUrlExpiry = 60 * 60 * 24 * 365;
+
   const StorageService(this._client);
 
   /// Uploads a bird photo and returns the public URL.
@@ -137,14 +140,18 @@ class StorageService {
             path: '$userId/$birdId',
           );
 
-      return files
+      final validFiles = files
           .where((f) => f.id != null && f.name != '.emptyFolderPlaceholder')
-          .map((f) {
-        return _client.storage
-            .from(_birdPhotosBucket)
-            .getPublicUrl('$userId/$birdId/${f.name}');
-      }).toList()
-        ..sort((a, b) => b.compareTo(a));
+          .toList();
+
+      final paths =
+          validFiles.map((f) => '$userId/$birdId/${f.name}').toList();
+      final signedUrls = await _client.storage
+          .from(_birdPhotosBucket)
+          .createSignedUrls(paths, _signedUrlExpiry);
+      final urls = signedUrls.map((s) => s.signedUrl).toList();
+      urls.sort((a, b) => b.compareTo(a));
+      return urls;
     } on StorageException catch (e) {
       AppLogger.warning('Failed to list bird photos: ${e.message}');
       return [];
@@ -162,7 +169,7 @@ class StorageService {
 
       return _client.storage
           .from(_avatarsBucket)
-          .getPublicUrl('$userId/${files.first.name}');
+          .createSignedUrl('$userId/${files.first.name}', _signedUrlExpiry);
     } on StorageException catch (e) {
       AppLogger.warning('Failed to get avatar URL: ${e.message}');
       return null;
@@ -192,7 +199,10 @@ class StorageService {
             ),
           );
 
-      return _client.storage.from(bucket).getPublicUrl(path);
+      // Signed URL works for both public and private buckets (1 year expiry)
+      return _client.storage
+          .from(bucket)
+          .createSignedUrl(path, _signedUrlExpiry);
     } on StorageException catch (e) {
       AppLogger.error('Storage upload failed: ${e.message}');
       rethrow;

@@ -14,6 +14,7 @@ class PricingCard extends StatelessWidget {
   final bool isHighlighted;
   final String? badge;
   final String? savingsText;
+  final String? trialText;
   final bool isLoading;
   final bool isEnabled;
   final VoidCallback onSubscribe;
@@ -26,6 +27,7 @@ class PricingCard extends StatelessWidget {
     this.isHighlighted = false,
     this.badge,
     this.savingsText,
+    this.trialText,
     this.isLoading = false,
     this.isEnabled = true,
     required this.onSubscribe,
@@ -60,22 +62,40 @@ class PricingCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: AppSpacing.sm),
-                Text(
-                  price,
-                  style: theme.textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: isHighlighted
-                        ? AppColors.accent
-                        : colorScheme.primary,
+                // Billed amount — most prominent element per App Store Guidelines 3.1.2(c)
+                RichText(
+                  textAlign: TextAlign.center,
+                  text: TextSpan(
+                    children: [
+                      TextSpan(
+                        text: price,
+                        style: theme.textTheme.headlineLarge?.copyWith(
+                          fontWeight: FontWeight.w900,
+                          fontSize: 32,
+                          color: colorScheme.onSurface,
+                        ),
+                      ),
+                      TextSpan(
+                        text: period,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: AppSpacing.xs),
-                Text(
-                  period,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
+                if (trialText != null) ...[
+                  const SizedBox(height: AppSpacing.xs),
+                  Text(
+                    trialText!,
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+                      fontSize: 11,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
-                ),
+                ],
                 if (savingsText != null) ...[
                   const SizedBox(height: AppSpacing.sm),
                   Container(

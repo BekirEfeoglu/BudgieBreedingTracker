@@ -32,7 +32,7 @@ void main() {
         ),
       );
 
-      expect(find.text('399,99₺'), findsOneWidget);
+      expect(find.textContaining('399,99₺', findRichText: true), findsOneWidget);
     });
 
     testWidgets('displays period', (tester) async {
@@ -46,7 +46,7 @@ void main() {
         ),
       );
 
-      expect(find.text('ay'), findsOneWidget);
+      expect(find.textContaining('ay', findRichText: true), findsOneWidget);
     });
 
     testWidgets('renders inside a Card widget', (tester) async {

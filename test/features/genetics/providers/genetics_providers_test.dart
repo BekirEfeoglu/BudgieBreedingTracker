@@ -7,7 +7,6 @@ import 'package:mocktail/mocktail.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
 import 'package:budgie_breeding_tracker/data/local/database/dao_providers.dart';
-import 'package:budgie_breeding_tracker/data/local/database/daos/genetics_history_dao.dart';
 import 'package:budgie_breeding_tracker/data/models/genetics_history_model.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/mendelian_calculator.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/parent_genotype.dart';
@@ -16,7 +15,7 @@ import 'package:budgie_breeding_tracker/features/genetics/providers/genetics_his
 import 'package:budgie_breeding_tracker/features/genetics/providers/genetics_providers.dart';
 import 'package:budgie_breeding_tracker/features/genetics/utils/phenotype_colors.dart';
 
-class MockGeneticsHistoryDao extends Mock implements GeneticsHistoryDao {}
+import '../../../helpers/mocks.dart';
 
 GeneticsHistory _history({String id = 'h1', String resultsJson = '[]'}) {
   return GeneticsHistory(

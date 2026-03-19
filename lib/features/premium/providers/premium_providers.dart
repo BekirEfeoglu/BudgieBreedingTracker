@@ -257,7 +257,21 @@ class PremiumNotifier extends Notifier<bool> {
 }
 
 /// Available premium plan types.
-enum PremiumPlan { monthly, yearly, lifetime }
+enum PremiumPlan {
+  monthly, yearly, lifetime;
+
+  /// Resolves a [PremiumPlan] from a RevenueCat product identifier string.
+  /// Returns `null` if the product ID doesn't match any known plan.
+  static PremiumPlan? fromProductId(String productId) {
+    final id = productId.toLowerCase();
+    if (id.contains('monthly') || id.contains('month')) return monthly;
+    if (id.contains('yearly') || id.contains('annual') || id.contains('year')) {
+      return yearly;
+    }
+    if (id.contains('lifetime') || id.contains('life')) return lifetime;
+    return null;
+  }
+}
 
 enum PremiumPurchaseIssue {
   missingApiKey,
@@ -281,9 +295,10 @@ final premiumPurchaseIssueProvider = Provider<PremiumPurchaseIssue?>((ref) {
   }
 
   final packages = offerings.asData?.value;
-  if (packages == null || packages.isNotEmpty) {
-    return null;
-  }
+  // Offerings not yet resolved or loaded with packages → no issue
+  if (packages == null || packages.isNotEmpty) return null;
+
+  // Offerings resolved but empty → diagnose the issue
 
   if (Platform.isIOS && kDebugMode) {
     return PremiumPurchaseIssue.iosDebugStoreKitRequired;
@@ -353,12 +368,26 @@ final purchaseServiceReadyProvider = FutureProvider<bool>((ref) async {
 });
 
 /// Available RevenueCat offerings.
+///
+/// If the first attempt returns an empty list (e.g. transient StoreKit
+/// failure during app review), a single retry is performed after a short
+/// delay so that sandbox products have time to become available.
 final premiumOfferingsProvider = FutureProvider<List<Package>>((ref) async {
   final isReady = await ref.watch(purchaseServiceReadyProvider.future);
   if (!isReady) return [];
 
   final service = ref.watch(purchaseServiceProvider);
-  return service.getOfferings();
+  final packages = await service.getOfferings();
+  if (packages.isNotEmpty) return packages;
+
+  // Single retry after a short delay — StoreKit sandbox can be slow
+  // to respond on first launch or during App Review (iOS only).
+  if (Platform.isIOS) {
+    await Future<void>.delayed(const Duration(seconds: 2));
+    return service.getOfferings();
+  }
+
+  return packages;
 });
 
 /// Detailed subscription info.
@@ -414,7 +443,7 @@ class PurchaseActionNotifier extends Notifier<PurchaseActionState> {
       if (!ref.mounted) return;
       if (!isReady) {
         AppLogger.warning('Purchase service is not ready');
-        state = const PurchaseActionState(error: 'no_offerings');
+        state = const PurchaseActionState(error: PurchaseErrorCodes.noOfferings);
         return;
       }
 
@@ -423,14 +452,14 @@ class PurchaseActionNotifier extends Notifier<PurchaseActionState> {
 
       if (offerings.isEmpty) {
         AppLogger.warning('No RevenueCat offerings available');
-        state = const PurchaseActionState(error: 'no_offerings');
+        state = const PurchaseActionState(error: PurchaseErrorCodes.noOfferings);
         return;
       }
 
       // Find matching package by plan type
       final package = matchPackageForPlan(offerings, plan);
       if (package == null) {
-        state = const PurchaseActionState(error: 'package_not_found');
+        state = const PurchaseActionState(error: PurchaseErrorCodes.packageNotFound);
         return;
       }
 
@@ -441,7 +470,7 @@ class PurchaseActionNotifier extends Notifier<PurchaseActionState> {
       if (success) {
         state = const PurchaseActionState(isSuccess: true);
       } else {
-        state = const PurchaseActionState(error: 'purchase_cancelled');
+        state = const PurchaseActionState(error: PurchaseErrorCodes.cancelled);
       }
     } on PurchaseException catch (e, st) {
       AppLogger.error('Purchase failed', e, st);
@@ -464,7 +493,7 @@ class PurchaseActionNotifier extends Notifier<PurchaseActionState> {
       if (!ref.mounted) return;
       if (!isReady) {
         AppLogger.warning('Purchase service is not ready for restore');
-        state = const PurchaseActionState(error: 'no_offerings');
+        state = const PurchaseActionState(error: PurchaseErrorCodes.noOfferings);
         return;
       }
 
@@ -473,7 +502,9 @@ class PurchaseActionNotifier extends Notifier<PurchaseActionState> {
       if (success) {
         state = const PurchaseActionState(isSuccess: true);
       } else {
-        state = const PurchaseActionState(error: 'restore_no_purchases');
+        state = const PurchaseActionState(
+          error: PurchaseErrorCodes.restoreNoPurchases,
+        );
       }
     } on PurchaseException catch (e, st) {
       AppLogger.error('Restore failed', e, st);
@@ -482,7 +513,9 @@ class PurchaseActionNotifier extends Notifier<PurchaseActionState> {
     } catch (e, st) {
       AppLogger.error('Restore failed', e, st);
       if (!ref.mounted) return;
-      state = const PurchaseActionState(error: 'restore_failed');
+      state = const PurchaseActionState(
+        error: PurchaseErrorCodes.restoreFailed,
+      );
     }
   }
 

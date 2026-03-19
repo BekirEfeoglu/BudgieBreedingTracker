@@ -5,17 +5,9 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
 
-// -- Mocks --
-
-class MockSupabaseClient extends Mock implements SupabaseClient {}
-
-class MockGoTrueClient extends Mock implements GoTrueClient {}
-
-class MockUser extends Mock implements User {}
+import '../../../helpers/mocks.dart';
 
 class MockSession extends Mock implements Session {}
-
-class MockFunctionsClient extends Mock implements FunctionsClient {}
 
 void main() {
   late MockSupabaseClient mockClient;

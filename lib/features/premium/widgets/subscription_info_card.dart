@@ -6,6 +6,7 @@ import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/domain/services/payment/purchase_service.dart';
+import 'package:budgie_breeding_tracker/features/premium/providers/premium_providers.dart';
 
 /// Displays active subscription details for premium users.
 /// Shows plan type, expiration date, renewal status, and a
@@ -128,12 +129,12 @@ class SubscriptionInfoCard extends StatelessWidget {
   }
 
   String _resolvePlanName(String productId) {
-    if (productId.contains('monthly')) return 'premium.plan_monthly'.tr();
-    if (productId.contains('yearly') || productId.contains('annual')) {
-      return 'premium.plan_yearly'.tr();
-    }
-    if (productId.contains('lifetime')) return 'premium.plan_lifetime'.tr();
-    return productId;
+    return switch (PremiumPlan.fromProductId(productId)) {
+      PremiumPlan.monthly => 'premium.plan_monthly'.tr(),
+      PremiumPlan.yearly => 'premium.plan_yearly'.tr(),
+      PremiumPlan.lifetime => 'premium.plan_lifetime'.tr(),
+      null => productId,
+    };
   }
 
   String _formatDate(DateTime date) {

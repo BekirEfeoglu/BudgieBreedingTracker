@@ -4,7 +4,6 @@ import 'package:budgie_breeding_tracker/core/errors/app_exception.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/event_reminders_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/events_dao.dart';
 import 'package:budgie_breeding_tracker/data/models/event_model.dart';
-import 'package:budgie_breeding_tracker/data/local/database/daos/sync_metadata_dao.dart';
 import 'package:budgie_breeding_tracker/data/models/event_reminder_model.dart';
 import 'package:budgie_breeding_tracker/data/models/sync_metadata_model.dart';
 import 'package:budgie_breeding_tracker/data/remote/api/event_reminder_remote_source.dart';
@@ -12,14 +11,13 @@ import 'package:budgie_breeding_tracker/data/repositories/event_reminder_reposit
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
+import '../../helpers/mocks.dart';
 import '../../helpers/test_fixtures.dart';
 
 class MockEventRemindersDao extends Mock implements EventRemindersDao {}
 
 class MockEventReminderRemoteSource extends Mock
     implements EventReminderRemoteSource {}
-
-class MockSyncMetadataDao extends Mock implements SyncMetadataDao {}
 
 class MockEventsDao extends Mock implements EventsDao {}
 

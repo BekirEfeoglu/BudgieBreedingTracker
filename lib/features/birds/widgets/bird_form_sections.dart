@@ -247,6 +247,7 @@ class BirdFormIdentitySection extends StatelessWidget {
   final TextEditingController cageController;
   final DateTime? birthDate;
   final ValueChanged<DateTime?> onBirthDateChanged;
+  final DateFormat? dateFormatter;
 
   const BirdFormIdentitySection({
     super.key,
@@ -254,6 +255,7 @@ class BirdFormIdentitySection extends StatelessWidget {
     required this.cageController,
     required this.birthDate,
     required this.onBirthDateChanged,
+    this.dateFormatter,
   });
 
   @override
@@ -282,6 +284,7 @@ class BirdFormIdentitySection extends StatelessWidget {
           firstDate: DateTime(2015),
           lastDate: DateTime.now(),
           isRequired: false,
+          dateFormatter: dateFormatter,
         ),
         const SizedBox(height: AppSpacing.md),
         TextFormField(

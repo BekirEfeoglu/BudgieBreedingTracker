@@ -7,89 +7,26 @@ import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/egg_enums.dart';
 import 'package:budgie_breeding_tracker/data/local/database/dao_providers.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/birds_dao.dart';
-import 'package:budgie_breeding_tracker/data/local/database/daos/clutches_dao.dart';
-import 'package:budgie_breeding_tracker/data/local/database/daos/eggs_dao.dart';
-import 'package:budgie_breeding_tracker/data/local/database/daos/incubations_dao.dart';
-import 'package:budgie_breeding_tracker/data/local/database/daos/sync_metadata_dao.dart';
 import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
 import 'package:budgie_breeding_tracker/data/models/sync_metadata_model.dart';
 import 'package:budgie_breeding_tracker/data/remote/api/bird_remote_source.dart';
 import 'package:budgie_breeding_tracker/data/remote/api/egg_remote_source.dart';
 import 'package:budgie_breeding_tracker/data/repositories/bird_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/breeding_pair_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/chick_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/clutch_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/egg_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/event_reminder_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/event_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/growth_measurement_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/health_record_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/incubation_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/nest_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/notification_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/notification_schedule_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/photo_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/profile_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/base_repository.dart';
+import 'package:budgie_breeding_tracker/data/repositories/egg_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
-import 'package:budgie_breeding_tracker/data/repositories/sync_metadata_repository.dart';
 import 'package:budgie_breeding_tracker/domain/services/sync/sync_providers.dart'
     show syncOrchestratorProvider;
 import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
+
+import '../../helpers/mocks.dart';
 
 class MockBirdsDao extends Mock implements BirdsDao {}
 
 class MockBirdRemoteSource extends Mock implements BirdRemoteSource {}
 
-class MockSyncMetadataDao extends Mock implements SyncMetadataDao {}
-
-class MockEggsDao extends Mock implements EggsDao {}
-
 class MockEggRemoteSource extends Mock implements EggRemoteSource {}
-
-class MockIncubationsDao extends Mock implements IncubationsDao {}
-
-class MockClutchesDao extends Mock implements ClutchesDao {}
-
-class MockBirdRepository extends Mock implements BirdRepository {}
-
-class MockEggRepository extends Mock implements EggRepository {}
-
-class MockChickRepository extends Mock implements ChickRepository {}
-
-class MockBreedingPairRepository extends Mock
-    implements BreedingPairRepository {}
-
-class MockIncubationRepository extends Mock implements IncubationRepository {}
-
-class MockHealthRecordRepository extends Mock
-    implements HealthRecordRepository {}
-
-class MockGrowthMeasurementRepository extends Mock
-    implements GrowthMeasurementRepository {}
-
-class MockEventRepository extends Mock implements EventRepository {}
-
-class MockNotificationRepository extends Mock
-    implements NotificationRepository {}
-
-class MockClutchRepository extends Mock implements ClutchRepository {}
-
-class MockNestRepository extends Mock implements NestRepository {}
-
-class MockProfileRepository extends Mock implements ProfileRepository {}
-
-class MockPhotoRepository extends Mock implements PhotoRepository {}
-
-class MockEventReminderRepository extends Mock
-    implements EventReminderRepository {}
-
-class MockNotificationScheduleRepository extends Mock
-    implements NotificationScheduleRepository {}
-
-class MockSyncMetadataRepository extends Mock
-    implements SyncMetadataRepository {}
 
 Bird _bird({required String id, String name = 'Bird', DateTime? updatedAt}) {
   return Bird(

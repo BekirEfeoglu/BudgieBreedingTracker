@@ -1,18 +1,22 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
-import 'package:budgie_breeding_tracker/features/settings/providers/settings_providers.dart';
+
+/// Default date format pattern used when no [dateFormatter] is provided.
+const _defaultDatePattern = 'dd.MM.yyyy';
 
 /// A read-only text field that opens a date picker on tap.
-class DatePickerField extends ConsumerStatefulWidget {
+class DatePickerField extends StatefulWidget {
   final DateTime? value;
   final String label;
   final ValueChanged<DateTime> onChanged;
   final DateTime? firstDate;
   final DateTime? lastDate;
   final bool isRequired;
+
+  /// Optional date formatter. When omitted, defaults to `dd.MM.yyyy`.
+  final DateFormat? dateFormatter;
 
   const DatePickerField({
     super.key,
@@ -22,13 +26,14 @@ class DatePickerField extends ConsumerStatefulWidget {
     this.firstDate,
     this.lastDate,
     this.isRequired = true,
+    this.dateFormatter,
   });
 
   @override
-  ConsumerState<DatePickerField> createState() => _DatePickerFieldState();
+  State<DatePickerField> createState() => _DatePickerFieldState();
 }
 
-class _DatePickerFieldState extends ConsumerState<DatePickerField> {
+class _DatePickerFieldState extends State<DatePickerField> {
   late final TextEditingController _controller;
 
   @override
@@ -45,7 +50,7 @@ class _DatePickerFieldState extends ConsumerState<DatePickerField> {
 
   @override
   Widget build(BuildContext context) {
-    final formatter = ref.watch(dateFormatProvider).formatter();
+    final formatter = widget.dateFormatter ?? DateFormat(_defaultDatePattern);
     final formattedValue =
         widget.value != null ? formatter.format(widget.value!) : '';
     if (_controller.text != formattedValue) {
