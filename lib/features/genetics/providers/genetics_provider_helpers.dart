@@ -1,24 +1,17 @@
 part of 'genetics_providers.dart';
 
-const _punnettLocusDisplayName = <String, String>{
-  'blue_series': 'Blue Series',
-  'dilution': 'Dilution',
-  'crested': 'Crested',
-  'ino_locus': 'Ino Locus',
+const _locusSortOrder = <String, int>{
+  GeneticsConstants.locusBlueSeries: 0,
+  GeneticsConstants.locusDilution: 1,
+  GeneticsConstants.locusCrested: 2,
+  GeneticsConstants.locusIno: 3,
 };
 
 String _punnettLocusSortKey(String locusId) {
+  final sortIndex = _locusSortOrder[locusId];
+  if (sortIndex != null) return sortIndex.toString().padLeft(2, '0');
   final record = MutationDatabase.getById(locusId);
-  if (record != null) {
-    return record.name.toLowerCase();
-  }
-
-  final knownLocusName = _punnettLocusDisplayName[locusId];
-  if (knownLocusName != null) {
-    return knownLocusName.toLowerCase();
-  }
-
-  return locusId.toLowerCase();
+  return record?.name.toLowerCase() ?? locusId.toLowerCase();
 }
 
 Set<String> _extractVisualMutationIds(ParentGenotype genotype) {
