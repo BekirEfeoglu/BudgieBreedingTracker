@@ -9,11 +9,13 @@ part 'offspring_result.dart';
 part 'allele_resolver.dart';
 part 'allele_resolver_compounds.dart';
 part 'punnett_square_builder.dart';
+part 'punnett_square_dihybrid.dart';
 part 'inheritance_allelic_series.dart';
 part 'inheritance_linked_pair.dart';
 part 'inheritance_genotype.dart';
 part 'inheritance_simple.dart';
 part 'inheritance_combiner.dart';
+part 'inheritance_combiner_helpers.dart';
 
 /// Mendelian genetics calculator for budgie color mutations.
 ///
