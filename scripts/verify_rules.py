@@ -170,7 +170,7 @@ def main():
     track(check_rule_claim("Feature modul sayisi (features/)", 20,
                            count_dirs(LIB / "features")))
 
-    track(check_rule_claim("Domain service dizin sayisi", 12,
+    track(check_rule_claim("Domain service dizin sayisi", 13,
                            count_dirs(LIB / "domain" / "services")))
 
     # --- 4. Icons ---
@@ -195,7 +195,7 @@ def main():
     track(check_rule_claim("Utils dosya sayisi", 3,
                            count_files(LIB / "core" / "utils")))
 
-    track(check_rule_claim("Extensions dosya sayisi", 1,
+    track(check_rule_claim("Extensions dosya sayisi", 2,
                            count_files(LIB / "core" / "extensions")))
 
     track(check_rule_claim("Errors dosya sayisi", 1,
