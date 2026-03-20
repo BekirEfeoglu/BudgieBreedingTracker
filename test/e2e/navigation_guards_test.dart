@@ -107,6 +107,14 @@ void main() {
         );
         addTearDown(router.dispose);
 
+        // Force narrow viewport so MainShell renders NavigationBar (not NavigationRail).
+        tester.view.physicalSize = const Size(400, 800);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(() {
+          tester.view.resetPhysicalSize();
+          tester.view.resetDevicePixelRatio();
+        });
+
         await pumpApp(tester, container, router: router);
         await tester.pumpAndSettle();
 
