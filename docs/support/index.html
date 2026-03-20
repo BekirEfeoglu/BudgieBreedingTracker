@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="tr">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BudgieBreedingTracker Support</title>
-  <meta name="description" content="Get help with BudgieBreedingTracker - account, subscriptions, app usage, and more.">
+  <title>Destek Merkezi — BudgieBreedingTracker</title>
+  <meta name="description" content="BudgieBreedingTracker destek merkezi. Hesap, abonelik, uygulama kullanımı ve daha fazlası için yardım alın.">
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://budgiebreedingtracker.online/support/">
   <link rel="icon" type="image/png" href="../logo.png">
@@ -33,18 +33,29 @@
       background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 40%, #22C55E 100%);
       -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
     }
+    .lang-btn { transition: all 0.2s ease; }
+    .lang-btn.active { background-color: #1E40AF; color: white; box-shadow: 0 2px 8px rgba(30, 64, 175, 0.3); }
+    .lang-btn:not(.active):hover { background-color: #E5E7EB; }
   </style>
 </head>
 <body class="bg-gray-50 text-gray-900 antialiased min-h-screen flex flex-col">
 
   <!-- Header -->
-  <header class="bg-white border-b border-gray-100">
+  <header class="bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-50">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
       <a href="../" class="flex items-center gap-2.5 group">
         <img src="../logo.png" alt="BudgieBreedingTracker" class="w-9 h-9 rounded-lg transition-transform duration-300 group-hover:scale-110">
-        <span class="font-extrabold text-lg text-primary-800 tracking-tight">BudgieBreedingTracker</span>
+        <span class="text-lg font-bold gradient-text hidden sm:inline">BudgieBreedingTracker</span>
       </a>
-      <a href="../" class="text-sm font-medium text-primary-600 hover:text-primary-800 transition-colors">&larr; Back to Home</a>
+      <div class="flex items-center gap-4">
+        <!-- Language Switcher -->
+        <div class="flex items-center gap-1 bg-gray-100/80 rounded-lg p-1">
+          <button onclick="setLanguage('tr')" class="lang-btn px-2.5 py-1 rounded-md text-xs font-semibold active" data-lang="tr">TR</button>
+          <button onclick="setLanguage('en')" class="lang-btn px-2.5 py-1 rounded-md text-xs font-semibold" data-lang="en">EN</button>
+          <button onclick="setLanguage('de')" class="lang-btn px-2.5 py-1 rounded-md text-xs font-semibold" data-lang="de">DE</button>
+        </div>
+        <a href="../" class="text-sm font-medium text-primary-600 hover:text-primary-800 transition-colors" data-i18n="back">&larr; Ana Sayfa</a>
+      </div>
     </div>
   </header>
 
@@ -55,10 +66,10 @@
       <!-- Page Title -->
       <div class="text-center mb-12">
         <div class="inline-flex items-center gap-2 px-3 py-1.5 bg-primary-50 rounded-full mb-4">
-          <span class="text-xs font-semibold text-primary-600 uppercase tracking-wider">Support Center</span>
+          <span class="text-xs font-semibold text-primary-600 uppercase tracking-wider" data-i18n="badge">Destek Merkezi</span>
         </div>
-        <h1 class="text-3xl sm:text-4xl font-black text-gray-900 tracking-tight mb-3">How Can We Help?</h1>
-        <p class="text-gray-500 text-lg max-w-xl mx-auto">Need help with your account, subscriptions, or the app? We're here for you.</p>
+        <h1 class="text-3xl sm:text-4xl font-black text-gray-900 tracking-tight mb-3" data-i18n="title">Nasıl Yardımcı Olabiliriz?</h1>
+        <p class="text-gray-500 text-lg max-w-xl mx-auto" data-i18n="subtitle">Hesabınız, aboneliğiniz veya uygulama hakkında yardıma mı ihtiyacınız var? Yanınızdayız.</p>
       </div>
 
       <!-- Cards Grid -->
@@ -67,8 +78,8 @@
         <!-- Contact Card -->
         <div class="bg-white rounded-2xl p-7 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
           <div class="w-12 h-12 bg-primary-50 rounded-xl flex items-center justify-center text-2xl mb-4">&#x2709;</div>
-          <h2 class="text-lg font-bold text-gray-900 mb-2">Contact Us</h2>
-          <p class="text-gray-500 text-sm mb-4">Reach out via email and include your device model and OS version for faster support.</p>
+          <h2 class="text-lg font-bold text-gray-900 mb-2" data-i18n="contact_title">Bize Ulaşın</h2>
+          <p class="text-gray-500 text-sm mb-4" data-i18n="contact_desc">E-posta ile ulaşın. Daha hızlı destek için cihaz modelinizi ve işletim sistemi sürümünüzü belirtin.</p>
           <a href="mailto:support@budgiebreedingtracker.online" class="inline-flex items-center gap-2 text-primary-600 font-semibold text-sm hover:text-primary-800 transition-colors">
             support@budgiebreedingtracker.online
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
@@ -78,20 +89,20 @@
         <!-- Subscription Card -->
         <div class="bg-white rounded-2xl p-7 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
           <div class="w-12 h-12 bg-amber-50 rounded-xl flex items-center justify-center text-2xl mb-4">&#x2B50;</div>
-          <h2 class="text-lg font-bold text-gray-900 mb-2">Subscription Help</h2>
-          <p class="text-gray-500 text-sm mb-4">Manage or cancel your premium subscription from your device settings.</p>
+          <h2 class="text-lg font-bold text-gray-900 mb-2" data-i18n="sub_title">Abonelik Yardımı</h2>
+          <p class="text-gray-500 text-sm mb-4" data-i18n="sub_desc">Premium aboneliğinizi cihaz ayarlarından yönetin veya iptal edin.</p>
           <ul class="space-y-2 text-sm text-gray-600">
             <li class="flex items-start gap-2">
               <svg class="w-4 h-4 text-budgie-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-              Restore purchases from the Premium screen in the app
+              <span data-i18n="sub_item1">Satın alımları uygulama içi Premium ekranından geri yükleyin</span>
             </li>
             <li class="flex items-start gap-2">
               <svg class="w-4 h-4 text-budgie-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-              Manage subscriptions via Apple ID or Google Play settings
+              <span data-i18n="sub_item2">Abonelikleri Apple ID veya Google Play ayarlarından yönetin</span>
             </li>
             <li class="flex items-start gap-2">
               <svg class="w-4 h-4 text-budgie-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-              Cancellation takes effect at the end of the current billing period
+              <span data-i18n="sub_item3">İptal, mevcut faturalandırma döneminin sonunda geçerli olur</span>
             </li>
           </ul>
         </div>
@@ -99,20 +110,20 @@
         <!-- Data & Privacy Card -->
         <div class="bg-white rounded-2xl p-7 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
           <div class="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center text-2xl mb-4">&#x1F512;</div>
-          <h2 class="text-lg font-bold text-gray-900 mb-2">Data & Privacy</h2>
-          <p class="text-gray-500 text-sm mb-4">Your data is encrypted with AES-256 and stored securely. Only you can access it.</p>
+          <h2 class="text-lg font-bold text-gray-900 mb-2" data-i18n="data_title">Veri ve Gizlilik</h2>
+          <p class="text-gray-500 text-sm mb-4" data-i18n="data_desc">Verileriniz AES-256 ile şifrelenir ve güvenli bir şekilde saklanır. Yalnızca siz erişebilirsiniz.</p>
           <ul class="space-y-2 text-sm text-gray-600">
             <li class="flex items-start gap-2">
               <svg class="w-4 h-4 text-budgie-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-              Export your data anytime (PDF / Excel)
+              <span data-i18n="data_item1">Verilerinizi istediğiniz zaman dışa aktarın (PDF / Excel)</span>
             </li>
             <li class="flex items-start gap-2">
               <svg class="w-4 h-4 text-budgie-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-              Encrypted backups for full data recovery
+              <span data-i18n="data_item2">Tam veri kurtarma için şifreli yedeklemeler</span>
             </li>
             <li class="flex items-start gap-2">
               <svg class="w-4 h-4 text-budgie-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-              Request account deletion via email
+              <span data-i18n="data_item3">E-posta ile hesap silme talebinde bulunun</span>
             </li>
           </ul>
         </div>
@@ -120,20 +131,20 @@
         <!-- Troubleshooting Card -->
         <div class="bg-white rounded-2xl p-7 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
           <div class="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center text-2xl mb-4">&#x1F527;</div>
-          <h2 class="text-lg font-bold text-gray-900 mb-2">Troubleshooting</h2>
-          <p class="text-gray-500 text-sm mb-4">Common issues and quick fixes.</p>
+          <h2 class="text-lg font-bold text-gray-900 mb-2" data-i18n="trouble_title">Sorun Giderme</h2>
+          <p class="text-gray-500 text-sm mb-4" data-i18n="trouble_desc">Sık karşılaşılan sorunlar ve hızlı çözümler.</p>
           <ul class="space-y-2 text-sm text-gray-600">
             <li class="flex items-start gap-2">
               <svg class="w-4 h-4 text-primary-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-              <span><strong>Sync not working?</strong> Check your internet connection and pull to refresh</span>
+              <span data-i18n="trouble_item1"><strong>Senkronizasyon çalışmıyor mu?</strong> İnternet bağlantınızı kontrol edin ve aşağı çekerek yenileyin</span>
             </li>
             <li class="flex items-start gap-2">
               <svg class="w-4 h-4 text-primary-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-              <span><strong>App crashing?</strong> Update to the latest version from the store</span>
+              <span data-i18n="trouble_item2"><strong>Uygulama çöküyor mu?</strong> Mağazadan en son sürüme güncelleyin</span>
             </li>
             <li class="flex items-start gap-2">
               <svg class="w-4 h-4 text-primary-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-              <span><strong>Lost data?</strong> Restore from Settings &gt; Backup in the app</span>
+              <span data-i18n="trouble_item3"><strong>Veri kayboldu mu?</strong> Uygulama içi Ayarlar &gt; Yedekleme bölümünden geri yükleyin</span>
             </li>
           </ul>
         </div>
@@ -142,15 +153,15 @@
 
       <!-- Legal Section -->
       <div class="bg-white rounded-2xl p-7 border border-gray-100 shadow-sm max-w-2xl mx-auto">
-        <h2 class="text-lg font-bold text-gray-900 mb-4">Legal</h2>
+        <h2 class="text-lg font-bold text-gray-900 mb-4" data-i18n="legal_title">Yasal</h2>
         <div class="flex flex-wrap gap-4">
           <a href="https://budgiebreedingtracker.online/privacy-policy.html" class="inline-flex items-center gap-2 px-5 py-2.5 bg-gray-50 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors border border-gray-100">
             <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-            Privacy Policy
+            <span data-i18n="legal_privacy">Gizlilik Politikası</span>
           </a>
-          <a href="https://www.apple.com/legal/internet-services/itunes/dev/stdeula/" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-5 py-2.5 bg-gray-50 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors border border-gray-100">
+          <a href="https://budgiebreedingtracker.online/terms-of-use.html" class="inline-flex items-center gap-2 px-5 py-2.5 bg-gray-50 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors border border-gray-100">
             <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-            Terms of Use (EULA)
+            <span data-i18n="legal_terms">Kullanım Koşulları (EULA)</span>
           </a>
         </div>
       </div>
@@ -165,9 +176,152 @@
         <img src="../logo.png" alt="Logo" class="w-7 h-7 rounded-lg">
         <span class="font-bold text-white text-sm">BudgieBreedingTracker</span>
       </div>
-      <p class="text-xs text-gray-500">&copy; 2025-2026 BudgieBreedingTracker. All rights reserved.</p>
+      <p class="text-xs text-gray-500" data-i18n="footer">&copy; 2025-2026 BudgieBreedingTracker. Tüm hakları saklıdır.</p>
     </div>
   </footer>
+
+  <script>
+    const translations = {
+      tr: {
+        back: '\u2190 Ana Sayfa',
+        badge: 'Destek Merkezi',
+        title: 'Nas\u0131l Yard\u0131mc\u0131 Olabiliriz?',
+        subtitle: 'Hesab\u0131n\u0131z, aboneli\u011finiz veya uygulama hakk\u0131nda yard\u0131ma m\u0131 ihtiyac\u0131n\u0131z var? Yan\u0131n\u0131zday\u0131z.',
+        contact_title: 'Bize Ula\u015f\u0131n',
+        contact_desc: 'E-posta ile ula\u015f\u0131n. Daha h\u0131zl\u0131 destek i\u00e7in cihaz modelinizi ve i\u015fletim sistemi s\u00fcr\u00fcm\u00fcn\u00fc belirtin.',
+        sub_title: 'Abonelik Yard\u0131m\u0131',
+        sub_desc: 'Premium aboneli\u011finizi cihaz ayarlar\u0131ndan y\u00f6netin veya iptal edin.',
+        sub_item1: 'Sat\u0131n al\u0131mlar\u0131 uygulama i\u00e7i Premium ekran\u0131ndan geri y\u00fckleyin',
+        sub_item2: 'Abonelikleri Apple ID veya Google Play ayarlar\u0131ndan y\u00f6netin',
+        sub_item3: '\u0130ptal, mevcut faturaland\u0131rma d\u00f6neminin sonunda ge\u00e7erli olur',
+        data_title: 'Veri ve Gizlilik',
+        data_desc: 'Verileriniz AES-256 ile \u015fifrelenir ve g\u00fcvenli bir \u015fekilde saklan\u0131r. Yaln\u0131zca siz eri\u015febilirsiniz.',
+        data_item1: 'Verilerinizi istedi\u011finiz zaman d\u0131\u015fa aktar\u0131n (PDF / Excel)',
+        data_item2: 'Tam veri kurtarma i\u00e7in \u015fifreli yedeklemeler',
+        data_item3: 'E-posta ile hesap silme talebinde bulunun',
+        trouble_title: 'Sorun Giderme',
+        trouble_desc: 'S\u0131k kar\u015f\u0131la\u015f\u0131lan sorunlar ve h\u0131zl\u0131 \u00e7\u00f6z\u00fcmler.',
+        trouble_item1: '<strong>Senkronizasyon \u00e7al\u0131\u015fm\u0131yor mu?</strong> \u0130nternet ba\u011flant\u0131n\u0131z\u0131 kontrol edin ve a\u015fa\u011f\u0131 \u00e7ekerek yenileyin',
+        trouble_item2: '<strong>Uygulama \u00e7\u00f6k\u00fcyor mu?</strong> Ma\u011fazadan en son s\u00fcr\u00fcme g\u00fcncelleyin',
+        trouble_item3: '<strong>Veri kayboldu mu?</strong> Uygulama i\u00e7i Ayarlar &gt; Yedekleme b\u00f6l\u00fcm\u00fcnden geri y\u00fckleyin',
+        legal_title: 'Yasal',
+        legal_privacy: 'Gizlilik Politikas\u0131',
+        legal_terms: 'Kullan\u0131m Ko\u015fullar\u0131 (EULA)',
+        footer: '\u00a9 2025-2026 BudgieBreedingTracker. T\u00fcm haklar\u0131 sakl\u0131d\u0131r.',
+      },
+      en: {
+        back: '\u2190 Home',
+        badge: 'Support Center',
+        title: 'How Can We Help?',
+        subtitle: 'Need help with your account, subscriptions, or the app? We\'re here for you.',
+        contact_title: 'Contact Us',
+        contact_desc: 'Reach out via email and include your device model and OS version for faster support.',
+        sub_title: 'Subscription Help',
+        sub_desc: 'Manage or cancel your premium subscription from your device settings.',
+        sub_item1: 'Restore purchases from the Premium screen in the app',
+        sub_item2: 'Manage subscriptions via Apple ID or Google Play settings',
+        sub_item3: 'Cancellation takes effect at the end of the current billing period',
+        data_title: 'Data & Privacy',
+        data_desc: 'Your data is encrypted with AES-256 and stored securely. Only you can access it.',
+        data_item1: 'Export your data anytime (PDF / Excel)',
+        data_item2: 'Encrypted backups for full data recovery',
+        data_item3: 'Request account deletion via email',
+        trouble_title: 'Troubleshooting',
+        trouble_desc: 'Common issues and quick fixes.',
+        trouble_item1: '<strong>Sync not working?</strong> Check your internet connection and pull to refresh',
+        trouble_item2: '<strong>App crashing?</strong> Update to the latest version from the store',
+        trouble_item3: '<strong>Lost data?</strong> Restore from Settings &gt; Backup in the app',
+        legal_title: 'Legal',
+        legal_privacy: 'Privacy Policy',
+        legal_terms: 'Terms of Use (EULA)',
+        footer: '\u00a9 2025-2026 BudgieBreedingTracker. All rights reserved.',
+      },
+      de: {
+        back: '\u2190 Startseite',
+        badge: 'Supportcenter',
+        title: 'Wie k\u00f6nnen wir helfen?',
+        subtitle: 'Brauchen Sie Hilfe mit Ihrem Konto, Abonnement oder der App? Wir sind f\u00fcr Sie da.',
+        contact_title: 'Kontakt',
+        contact_desc: 'Kontaktieren Sie uns per E-Mail. F\u00fcr schnelleren Support geben Sie bitte Ihr Ger\u00e4temodell und die Betriebssystemversion an.',
+        sub_title: 'Abonnement-Hilfe',
+        sub_desc: 'Verwalten oder k\u00fcndigen Sie Ihr Premium-Abonnement \u00fcber die Ger\u00e4teeinstellungen.',
+        sub_item1: 'K\u00e4ufe \u00fcber den Premium-Bildschirm in der App wiederherstellen',
+        sub_item2: 'Abonnements \u00fcber Apple ID oder Google Play Einstellungen verwalten',
+        sub_item3: 'Die K\u00fcndigung wird am Ende des aktuellen Abrechnungszeitraums wirksam',
+        data_title: 'Daten & Datenschutz',
+        data_desc: 'Ihre Daten werden mit AES-256 verschl\u00fcsselt und sicher gespeichert. Nur Sie haben Zugriff.',
+        data_item1: 'Exportieren Sie Ihre Daten jederzeit (PDF / Excel)',
+        data_item2: 'Verschl\u00fcsselte Backups f\u00fcr vollst\u00e4ndige Datenwiederherstellung',
+        data_item3: 'Kontol\u00f6schung per E-Mail beantragen',
+        trouble_title: 'Fehlerbehebung',
+        trouble_desc: 'H\u00e4ufige Probleme und schnelle L\u00f6sungen.',
+        trouble_item1: '<strong>Synchronisierung funktioniert nicht?</strong> \u00dcberpr\u00fcfen Sie Ihre Internetverbindung und ziehen Sie zum Aktualisieren nach unten',
+        trouble_item2: '<strong>App st\u00fcrzt ab?</strong> Aktualisieren Sie auf die neueste Version aus dem Store',
+        trouble_item3: '<strong>Daten verloren?</strong> Wiederherstellen \u00fcber Einstellungen &gt; Backup in der App',
+        legal_title: 'Rechtliches',
+        legal_privacy: 'Datenschutzrichtlinie',
+        legal_terms: 'Nutzungsbedingungen (EULA)',
+        footer: '\u00a9 2025-2026 BudgieBreedingTracker. Alle Rechte vorbehalten.',
+      },
+    };
+
+    let currentLang = 'tr';
+
+    function setLanguage(lang) {
+      currentLang = lang;
+      localStorage.setItem('bbt-lang', lang);
+      document.documentElement.lang = lang;
+
+      const t = translations[lang];
+
+      // Update text content
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (t[key]) {
+          // Check if the translation contains HTML
+          if (t[key].includes('<strong>') || t[key].includes('<')) {
+            el.innerHTML = t[key];
+          } else {
+            el.textContent = t[key];
+          }
+        }
+      });
+
+      // Update page title
+      const titles = {
+        tr: 'Destek Merkezi \u2014 BudgieBreedingTracker',
+        en: 'Support Center \u2014 BudgieBreedingTracker',
+        de: 'Supportcenter \u2014 BudgieBreedingTracker',
+      };
+      document.title = titles[lang];
+
+      // Update meta description
+      const descriptions = {
+        tr: 'BudgieBreedingTracker destek merkezi. Hesap, abonelik, uygulama kullan\u0131m\u0131 ve daha fazlas\u0131 i\u00e7in yard\u0131m al\u0131n.',
+        en: 'BudgieBreedingTracker support center. Get help with your account, subscriptions, app usage, and more.',
+        de: 'BudgieBreedingTracker Supportcenter. Erhalten Sie Hilfe zu Ihrem Konto, Abonnements, App-Nutzung und mehr.',
+      };
+      const metaDesc = document.querySelector('meta[name="description"]');
+      if (metaDesc) metaDesc.setAttribute('content', descriptions[lang]);
+
+      // Update language buttons
+      document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('data-lang') === lang);
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const saved = localStorage.getItem('bbt-lang');
+      if (saved && translations[saved]) {
+        setLanguage(saved);
+      } else {
+        const browserLang = (navigator.language || navigator.userLanguage || 'tr').substring(0, 2).toLowerCase();
+        if (translations[browserLang]) {
+          setLanguage(browserLang);
+        }
+      }
+    });
+  </script>
 
 </body>
 </html>
