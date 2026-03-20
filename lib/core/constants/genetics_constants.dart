@@ -69,4 +69,23 @@ abstract final class GeneticsConstants {
     'crested_half_circular',
     'crested_full_circular',
   };
+
+  // ── ReverseCalculator limits ──
+  /// Maximum parent genotype options evaluated per locus in reverse calculation.
+  static const int reverseMaxOptionsPerLocus = 180;
+
+  /// Maximum intermediate combinations during reverse calculation cross-product.
+  static const int reverseMaxIntermediateCombinations = 3000;
+
+  /// Maximum final combinations returned from reverse calculation.
+  static const int reverseMaxFinalCombinations = 500;
+
+  // ── Probability thresholds ──
+  /// Minimum probability for an offspring combination to survive early pruning.
+  /// Below this, combinations are discarded during Cartesian product build.
+  static const double probabilityPruningThreshold = 0.0005;
+
+  /// Minimum probability for an offspring result to appear in the final list.
+  /// Below this, results are filtered as numerical noise.
+  static const double probabilityMinThreshold = 0.001;
 }
