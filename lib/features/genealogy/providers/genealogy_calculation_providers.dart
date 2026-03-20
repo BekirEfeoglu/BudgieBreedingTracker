@@ -15,7 +15,10 @@ InbreedingData calculateInbreedingForBird(
   Map<String, Bird> ancestors,
 ) {
   const calculator = InbreedingCalculator();
-  final coefficient = calculator.calculate(birdId: birdId, ancestors: ancestors);
+  final coefficient = calculator.calculate(
+    birdId: birdId,
+    ancestors: ancestors,
+  );
   final risk = calculator.assessRisk(coefficient);
   final commonIds = calculator.findCommonAncestors(
     birdId: birdId,
@@ -25,16 +28,23 @@ InbreedingData calculateInbreedingForBird(
 }
 
 /// Memoized inbreeding data provider — recomputes only when ancestors change.
-final inbreedingDataProvider = FutureProvider.family<InbreedingData, ({String entityId, bool isChick})>(
-  (ref, params) async {
-    final ancestors = params.isChick
-        ? await ref.watch(chickAncestorsProvider(params.entityId).future)
-        : await ref.watch(ancestorsProvider(params.entityId).future);
-    return calculateInbreedingForBird(params.entityId, ancestors);
-  },
-);
+final inbreedingDataProvider =
+    FutureProvider.family<InbreedingData, ({String entityId, bool isChick})>((
+      ref,
+      params,
+    ) async {
+      final ancestors = params.isChick
+          ? await ref.watch(chickAncestorsProvider(params.entityId).future)
+          : await ref.watch(ancestorsProvider(params.entityId).future);
+      return calculateInbreedingForBird(params.entityId, ancestors);
+    });
 
-typedef AncestorStats = ({int found, int possible, int deepestGeneration, double completeness});
+typedef AncestorStats = ({
+  int found,
+  int possible,
+  int deepestGeneration,
+  double completeness,
+});
 
 /// Calculates ancestor tree statistics from the ancestors map.
 /// [maxDepth] determines possible ancestor count dynamically: sum(2^i, i=1..depth).
@@ -80,12 +90,18 @@ AncestorStats calculateAncestorStats(
 }
 
 /// Memoized ancestor stats provider — recomputes only when ancestors/depth change.
-final ancestorStatsProvider = FutureProvider.family<AncestorStats, ({String entityId, bool isChick})>(
-  (ref, params) async {
-    final ancestors = params.isChick
-        ? await ref.watch(chickAncestorsProvider(params.entityId).future)
-        : await ref.watch(ancestorsProvider(params.entityId).future);
-    final maxDepth = ref.watch(pedigreeDepthProvider);
-    return calculateAncestorStats(params.entityId, ancestors, maxDepth: maxDepth);
-  },
-);
+final ancestorStatsProvider =
+    FutureProvider.family<AncestorStats, ({String entityId, bool isChick})>((
+      ref,
+      params,
+    ) async {
+      final ancestors = params.isChick
+          ? await ref.watch(chickAncestorsProvider(params.entityId).future)
+          : await ref.watch(ancestorsProvider(params.entityId).future);
+      final maxDepth = ref.watch(pedigreeDepthProvider);
+      return calculateAncestorStats(
+        params.entityId,
+        ancestors,
+        maxDepth: maxDepth,
+      );
+    });

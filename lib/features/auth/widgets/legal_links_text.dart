@@ -22,14 +22,14 @@ class _LegalLinksTextState extends State<LegalLinksText> {
     super.initState();
     _termsRecognizer = TapGestureRecognizer()
       ..onTap = () => launchUrl(
-            Uri.parse(AppConstants.termsOfUseUrl),
-            mode: LaunchMode.externalApplication,
-          );
+        Uri.parse(AppConstants.termsOfUseUrl),
+        mode: LaunchMode.externalApplication,
+      );
     _privacyRecognizer = TapGestureRecognizer()
       ..onTap = () => launchUrl(
-            Uri.parse(AppConstants.privacyPolicyUrl),
-            mode: LaunchMode.externalApplication,
-          );
+        Uri.parse(AppConstants.privacyPolicyUrl),
+        mode: LaunchMode.externalApplication,
+      );
   }
 
   @override

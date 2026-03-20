@@ -20,8 +20,13 @@ class MilestoneTimeline extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         for (int i = 0; i < milestones.length; i++) ...[
-          _buildMilestoneItem(context, theme, dateFormat, milestones[i],
-              isLast: i == milestones.length - 1),
+          _buildMilestoneItem(
+            context,
+            theme,
+            dateFormat,
+            milestones[i],
+            isLast: i == milestones.length - 1,
+          ),
         ],
       ],
     );
@@ -34,7 +39,9 @@ class MilestoneTimeline extends StatelessWidget {
     IncubationMilestone milestone, {
     required bool isLast,
   }) {
-    final dotColor = milestone.isPassed ? AppColors.success : AppColors.neutral300;
+    final dotColor = milestone.isPassed
+        ? AppColors.success
+        : AppColors.neutral300;
     final lineColor = milestone.isPassed
         ? AppColors.success.withValues(alpha: 0.3)
         : AppColors.neutral200;
@@ -59,13 +66,15 @@ class MilestoneTimeline extends StatelessWidget {
                         : Border.all(color: AppColors.neutral300, width: 2),
                   ),
                   child: milestone.isPassed
-                      ? Icon(LucideIcons.check, size: 10, color: Theme.of(context).colorScheme.onPrimary)
+                      ? Icon(
+                          LucideIcons.check,
+                          size: 10,
+                          color: Theme.of(context).colorScheme.onPrimary,
+                        )
                       : null,
                 ),
                 if (!isLast)
-                  Expanded(
-                    child: Container(width: 2, color: lineColor),
-                  ),
+                  Expanded(child: Container(width: 2, color: lineColor)),
               ],
             ),
           ),

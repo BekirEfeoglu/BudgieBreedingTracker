@@ -36,18 +36,15 @@ class CalendarEventListSliver extends StatelessWidget {
     }
 
     return SliverList(
-      delegate: SliverChildBuilderDelegate(
-        (context, index) {
-          final event = events[index];
-          return EventCard(
-            event: event,
-            onTap: onEventTap != null ? () => onEventTap!(event) : null,
-            onEdit: () => onEditEvent(event),
-            onDelete: () => onDeleteEvent(event),
-          );
-        },
-        childCount: events.length,
-      ),
+      delegate: SliverChildBuilderDelegate((context, index) {
+        final event = events[index];
+        return EventCard(
+          event: event,
+          onTap: onEventTap != null ? () => onEventTap!(event) : null,
+          onEdit: () => onEditEvent(event),
+          onDelete: () => onDeleteEvent(event),
+        );
+      }, childCount: events.length),
     );
   }
 }

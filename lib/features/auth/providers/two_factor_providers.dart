@@ -20,5 +20,5 @@ class PendingMfaFactorIdNotifier extends Notifier<String?> {
 
 final pendingMfaFactorIdProvider =
     NotifierProvider<PendingMfaFactorIdNotifier, String?>(
-  PendingMfaFactorIdNotifier.new,
-);
+      PendingMfaFactorIdNotifier.new,
+    );

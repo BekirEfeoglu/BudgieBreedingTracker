@@ -108,8 +108,9 @@ class NotificationRateLimiter {
       final prefs = await SharedPreferences.getInstance();
       final serializable = <String, List<String>>{};
       for (final entry in _recentNotifications.entries) {
-        serializable[entry.key] =
-            entry.value.map((ts) => ts.toIso8601String()).toList();
+        serializable[entry.key] = entry.value
+            .map((ts) => ts.toIso8601String())
+            .toList();
       }
       await prefs.setString(_prefsKey, jsonEncode(serializable));
     } catch (e) {
@@ -167,7 +168,10 @@ class NotificationRateLimiter {
   }
 
   /// Updates Do Not Disturb hours and persists to SharedPreferences.
-  Future<void> setDndHours({required int startHour, required int endHour}) async {
+  Future<void> setDndHours({
+    required int startHour,
+    required int endHour,
+  }) async {
     _dndStartHour = startHour.clamp(0, 23);
     _dndEndHour = endHour.clamp(0, 23);
     try {

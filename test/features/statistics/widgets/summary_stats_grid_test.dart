@@ -49,7 +49,8 @@ void main() {
       consumeExceptions(tester);
 
       final gridView = tester.widget<GridView>(find.byType(GridView));
-      final delegate = gridView.gridDelegate as SliverGridDelegateWithFixedCrossAxisCount;
+      final delegate =
+          gridView.gridDelegate as SliverGridDelegateWithFixedCrossAxisCount;
       expect(delegate.crossAxisCount, 2);
     });
 
@@ -129,9 +130,7 @@ void main() {
     });
 
     testWidgets('handles zero data gracefully', (tester) async {
-      await tester.pumpWidget(
-        buildSubject(stats: const SummaryStats()),
-      );
+      await tester.pumpWidget(buildSubject(stats: const SummaryStats()));
       await tester.pump(const Duration(seconds: 1));
       consumeExceptions(tester);
 
@@ -180,10 +179,7 @@ void main() {
 
     testWidgets('renders without trends when trends is null', (tester) async {
       await tester.pumpWidget(
-        buildSubject(
-          stats: const SummaryStats(totalBirds: 5),
-          trends: null,
-        ),
+        buildSubject(stats: const SummaryStats(totalBirds: 5), trends: null),
       );
       await tester.pump();
       consumeExceptions(tester);
@@ -194,10 +190,7 @@ void main() {
     testWidgets('handles 100% rates correctly', (tester) async {
       await tester.pumpWidget(
         buildSubject(
-          stats: const SummaryStats(
-            fertilityRate: 1.0,
-            chickSurvivalRate: 1.0,
-          ),
+          stats: const SummaryStats(fertilityRate: 1.0, chickSurvivalRate: 1.0),
         ),
       );
       await tester.pump(const Duration(seconds: 1));

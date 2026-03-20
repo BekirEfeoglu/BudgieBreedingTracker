@@ -107,19 +107,13 @@ void main() {
     });
 
     test('Blue Factor I + Blue + Ino resolves to Creamino', () {
-      final result = engine.resolveCompoundPhenotype({
-        'bluefactor_1',
-        'ino',
-      });
+      final result = engine.resolveCompoundPhenotype({'bluefactor_1', 'ino'});
 
       expect(result, contains('Creamino'));
     });
 
     test('Blue Factor II + Blue + Ino resolves to Creamino', () {
-      final result = engine.resolveCompoundPhenotype({
-        'bluefactor_2',
-        'ino',
-      });
+      final result = engine.resolveCompoundPhenotype({'bluefactor_2', 'ino'});
 
       expect(result, contains('Creamino'));
     });
@@ -393,15 +387,17 @@ void main() {
       expect(result, contains('Melanistic Spangle'));
     });
 
-    test('Blackface + Double Factor Spangle resolves to Melanistic DF Spangle',
-        () {
-      final result = engine.resolveCompoundPhenotypeDetailed(
-        {'blue', 'blackface', 'spangle'},
-        doubleFactorIds: {'spangle'},
-      );
+    test(
+      'Blackface + Double Factor Spangle resolves to Melanistic DF Spangle',
+      () {
+        final result = engine.resolveCompoundPhenotypeDetailed(
+          {'blue', 'blackface', 'spangle'},
+          doubleFactorIds: {'spangle'},
+        );
 
-      expect(result.name, contains('Melanistic Double Factor Spangle'));
-    });
+        expect(result.name, contains('Melanistic Double Factor Spangle'));
+      },
+    );
 
     test('Blackface without Spangle shows Blackface label', () {
       final result = engine.resolveCompoundPhenotype({'blue', 'blackface'});
@@ -473,15 +469,17 @@ void main() {
       expect(result, contains('Double Dominant Pied'));
     });
 
-    test('Dutch Pied + Clearflight Pied resolves to Dutch Clearflight Pied',
-        () {
-      final result = engine.resolveCompoundPhenotype({
-        'dutch_pied',
-        'clearflight_pied',
-      });
+    test(
+      'Dutch Pied + Clearflight Pied resolves to Dutch Clearflight Pied',
+      () {
+        final result = engine.resolveCompoundPhenotype({
+          'dutch_pied',
+          'clearflight_pied',
+        });
 
-      expect(result, contains('Dutch Clearflight Pied'));
-    });
+        expect(result, contains('Dutch Clearflight Pied'));
+      },
+    );
 
     test('standalone Recessive Pied shows Recessive Pied', () {
       final result = engine.resolveCompoundPhenotype({'recessive_pied'});
@@ -547,10 +545,7 @@ void main() {
     });
 
     test('Goldenface on blue shows Goldenface label', () {
-      final result = engine.resolveCompoundPhenotype({
-        'blue',
-        'goldenface',
-      });
+      final result = engine.resolveCompoundPhenotype({'blue', 'goldenface'});
 
       expect(result, contains('Goldenface'));
     });
@@ -776,19 +771,13 @@ void main() {
     });
 
     test('Ino masks Dilute', () {
-      final result = engine.resolveCompoundPhenotypeDetailed({
-        'ino',
-        'dilute',
-      });
+      final result = engine.resolveCompoundPhenotypeDetailed({'ino', 'dilute'});
 
       expect(result.maskedMutations, contains('Dilute'));
     });
 
     test('Ino masks Slate', () {
-      final result = engine.resolveCompoundPhenotypeDetailed({
-        'ino',
-        'slate',
-      });
+      final result = engine.resolveCompoundPhenotypeDetailed({'ino', 'slate'});
 
       expect(result.maskedMutations, contains('Slate'));
     });
@@ -812,10 +801,7 @@ void main() {
     });
 
     test('Ino masks Pearly', () {
-      final result = engine.resolveCompoundPhenotypeDetailed({
-        'ino',
-        'pearly',
-      });
+      final result = engine.resolveCompoundPhenotypeDetailed({'ino', 'pearly'});
 
       expect(result.name, contains('Lutino'));
       expect(result.maskedMutations, contains('Pearly'));
@@ -908,28 +894,19 @@ void main() {
     test('detects Albino interaction (Ino + Blue)', () {
       final interactions = engine.getInteractions({'ino', 'blue'});
 
-      expect(
-        interactions.any((i) => i.resultName == 'Albino'),
-        isTrue,
-      );
+      expect(interactions.any((i) => i.resultName == 'Albino'), isTrue);
     });
 
     test('detects Lutino interaction (Ino on green)', () {
       final interactions = engine.getInteractions({'ino'});
 
-      expect(
-        interactions.any((i) => i.resultName == 'Lutino'),
-        isTrue,
-      );
+      expect(interactions.any((i) => i.resultName == 'Lutino'), isTrue);
     });
 
     test('detects Lacewing interaction (Ino + Cinnamon)', () {
       final interactions = engine.getInteractions({'ino', 'cinnamon'});
 
-      expect(
-        interactions.any((i) => i.resultName == 'Lacewing'),
-        isTrue,
-      );
+      expect(interactions.any((i) => i.resultName == 'Lacewing'), isTrue);
     });
 
     test('detects PallidIno interaction (Ino + Pallid)', () {
@@ -948,10 +925,7 @@ void main() {
         'yellowface_type2',
       });
 
-      expect(
-        interactions.any((i) => i.resultName == 'Creamino'),
-        isTrue,
-      );
+      expect(interactions.any((i) => i.resultName == 'Creamino'), isTrue);
     });
 
     test('detects Full-Body Greywing interaction', () {
@@ -979,28 +953,19 @@ void main() {
         'dark_factor',
       });
 
-      expect(
-        interactions.any((i) => i.resultName == 'Visual Violet'),
-        isTrue,
-      );
+      expect(interactions.any((i) => i.resultName == 'Visual Violet'), isTrue);
     });
 
     test('detects Grey-Green interaction on green series', () {
       final interactions = engine.getInteractions({'grey'});
 
-      expect(
-        interactions.any((i) => i.resultName == 'Grey-Green'),
-        isTrue,
-      );
+      expect(interactions.any((i) => i.resultName == 'Grey-Green'), isTrue);
     });
 
     test('no Grey-Green interaction on blue series', () {
       final interactions = engine.getInteractions({'grey', 'blue'});
 
-      expect(
-        interactions.any((i) => i.resultName == 'Grey-Green'),
-        isFalse,
-      );
+      expect(interactions.any((i) => i.resultName == 'Grey-Green'), isFalse);
     });
 
     test('detects Dark-Eyed Clear interaction', () {
@@ -1051,28 +1016,19 @@ void main() {
     test('detects Aqua Ino interaction', () {
       final interactions = engine.getInteractions({'ino', 'aqua'});
 
-      expect(
-        interactions.any((i) => i.resultName == 'Aqua Ino'),
-        isTrue,
-      );
+      expect(interactions.any((i) => i.resultName == 'Aqua Ino'), isTrue);
     });
 
     test('detects Turquoise Ino interaction', () {
       final interactions = engine.getInteractions({'ino', 'turquoise'});
 
-      expect(
-        interactions.any((i) => i.resultName == 'Turquoise Ino'),
-        isTrue,
-      );
+      expect(interactions.any((i) => i.resultName == 'Turquoise Ino'), isTrue);
     });
 
     test('detects Opaline Pearly interaction', () {
       final interactions = engine.getInteractions({'pearly', 'opaline'});
 
-      expect(
-        interactions.any((i) => i.resultName == 'Opaline Pearly'),
-        isTrue,
-      );
+      expect(interactions.any((i) => i.resultName == 'Opaline Pearly'), isTrue);
     });
 
     test('detects Cinnamon Pearly interaction', () {
@@ -1105,10 +1061,7 @@ void main() {
         'clearflight_pied',
       });
 
-      expect(
-        interactions.any((i) => i.resultName == 'Visual Violet'),
-        isTrue,
-      );
+      expect(interactions.any((i) => i.resultName == 'Visual Violet'), isTrue);
       expect(
         interactions.any((i) => i.resultName == 'Dark-Eyed Clear'),
         isTrue,
@@ -1130,8 +1083,9 @@ void main() {
         'goldenface',
       });
 
-      final creamino =
-          interactions.firstWhere((i) => i.resultName == 'Creamino');
+      final creamino = interactions.firstWhere(
+        (i) => i.resultName == 'Creamino',
+      );
       expect(creamino.mutationIds, contains('goldenface'));
       expect(creamino.mutationIds, contains('ino'));
     });
@@ -1185,13 +1139,7 @@ void main() {
     });
 
     test('result is deterministic across multiple calls', () {
-      const mutations = {
-        'blue',
-        'violet',
-        'dark_factor',
-        'opaline',
-        'spangle',
-      };
+      const mutations = {'blue', 'violet', 'dark_factor', 'opaline', 'spangle'};
 
       final result1 = engine.resolveCompoundPhenotype(mutations);
       final result2 = engine.resolveCompoundPhenotype(mutations);

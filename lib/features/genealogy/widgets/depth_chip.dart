@@ -23,8 +23,11 @@ class DepthChip extends StatelessWidget {
           child: Row(
             children: [
               if (value == depth)
-                Icon(LucideIcons.check,
-                    size: 16, color: theme.colorScheme.primary)
+                Icon(
+                  LucideIcons.check,
+                  size: 16,
+                  color: theme.colorScheme.primary,
+                )
               else
                 const SizedBox(width: 16),
               const SizedBox(width: AppSpacing.sm),
@@ -44,10 +47,7 @@ class DepthChip extends StatelessWidget {
         ),
         child: Chip(
           avatar: const Icon(LucideIcons.layers, size: 16),
-          label: Text(
-            '$depth',
-            style: theme.textTheme.labelMedium,
-          ),
+          label: Text('$depth', style: theme.textTheme.labelMedium),
           visualDensity: VisualDensity.compact,
           materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
         ),

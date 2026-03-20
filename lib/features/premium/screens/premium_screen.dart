@@ -31,10 +31,7 @@ class PremiumScreen extends ConsumerWidget {
     ref.listen<PurchaseActionState>(purchaseActionProvider, (_, state) {
       if (state.isSuccess) {
         ref.read(purchaseActionProvider.notifier).reset();
-        context.showSnackBar(
-          'premium.purchase_success'.tr(),
-          isSuccess: true,
-        );
+        context.showSnackBar('premium.purchase_success'.tr(), isSuccess: true);
       }
       if (state.error != null) {
         final errorMsg = switch (state.error!) {
@@ -49,14 +46,12 @@ class PremiumScreen extends ConsumerWidget {
             'premium.purchase_already_owned'.tr(),
           PurchaseErrorCodes.storeProblem =>
             'premium.purchase_store_problem'.tr(),
-          PurchaseErrorCodes.notAllowed =>
-            'premium.purchase_not_allowed'.tr(),
+          PurchaseErrorCodes.notAllowed => 'premium.purchase_not_allowed'.tr(),
           PurchaseErrorCodes.productUnavailable =>
             'premium.purchase_product_unavailable'.tr(),
           PurchaseErrorCodes.networkError =>
             'premium.purchase_network_error'.tr(),
-          PurchaseErrorCodes.inProgress =>
-            'premium.purchase_in_progress'.tr(),
+          PurchaseErrorCodes.inProgress => 'premium.purchase_in_progress'.tr(),
           PurchaseErrorCodes.configurationError =>
             'premium.purchase_configuration_error'.tr(),
           PurchaseErrorCodes.notActivated =>
@@ -71,9 +66,7 @@ class PremiumScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(title: Text('premium.title'.tr())),
-      body: isPremium
-          ? _ActivePremiumBody()
-          : const _PaywallBody(),
+      body: isPremium ? _ActivePremiumBody() : const _PaywallBody(),
     );
   }
 }
@@ -142,16 +135,16 @@ class _ActivePremiumBody extends ConsumerWidget {
           Padding(
             padding: AppSpacing.screenPadding,
             child: subscriptionInfoAsync.when(
-              loading: () => const Center(
-                child: CircularProgressIndicator(),
-              ),
+              loading: () => const Center(child: CircularProgressIndicator()),
               error: (_, __) => Card(
                 child: Padding(
                   padding: AppSpacing.cardPadding,
                   child: Row(
                     children: [
-                      const Icon(LucideIcons.checkCircle2,
-                          color: AppColors.success),
+                      const Icon(
+                        LucideIcons.checkCircle2,
+                        color: AppColors.success,
+                      ),
                       const SizedBox(width: AppSpacing.md),
                       Expanded(
                         child: Text(
@@ -179,8 +172,10 @@ class _ActivePremiumBody extends ConsumerWidget {
               icon: const Icon(LucideIcons.settings, size: 18),
               label: Text('premium.manage_subscription'.tr()),
               style: OutlinedButton.styleFrom(
-                minimumSize:
-                    const Size(double.infinity, AppSpacing.touchTargetMin),
+                minimumSize: const Size(
+                  double.infinity,
+                  AppSpacing.touchTargetMin,
+                ),
               ),
             ),
           ),
@@ -260,7 +255,11 @@ class _RewardedAdSection extends ConsumerWidget {
         children: [
           Row(
             children: [
-              Icon(LucideIcons.gift, size: 20, color: theme.colorScheme.primary),
+              Icon(
+                LucideIcons.gift,
+                size: 20,
+                color: theme.colorScheme.primary,
+              ),
               const SizedBox(width: AppSpacing.sm),
               Text(
                 'ads.free_access_title'.tr(),
@@ -334,7 +333,11 @@ class _RewardStatusChip extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const Icon(LucideIcons.checkCircle2, size: 18, color: AppColors.success),
+          const Icon(
+            LucideIcons.checkCircle2,
+            size: 18,
+            color: AppColors.success,
+          ),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Text(

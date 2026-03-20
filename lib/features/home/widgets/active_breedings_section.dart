@@ -61,14 +61,11 @@ class _SectionHeader extends StatelessWidget {
       children: [
         Text(
           title,
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
         ),
-        TextButton(
-          onPressed: onViewAll,
-          child: Text('common.view_all'.tr()),
-        ),
+        TextButton(onPressed: onViewAll, child: Text('common.view_all'.tr())),
       ],
     );
   }
@@ -81,8 +78,9 @@ class _BreedingPairTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final maleAsync =
-        pair.maleId != null ? ref.watch(birdByIdProvider(pair.maleId!)) : null;
+    final maleAsync = pair.maleId != null
+        ? ref.watch(birdByIdProvider(pair.maleId!))
+        : null;
     final femaleAsync = pair.femaleId != null
         ? ref.watch(birdByIdProvider(pair.femaleId!))
         : null;
@@ -131,9 +129,8 @@ class _BreedingPairTile extends ConsumerWidget {
                           children: [
                             Text(
                               '$maleName \u2642 - $femaleName \u2640',
-                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                    fontWeight: FontWeight.w600,
-                                  ),
+                              style: Theme.of(context).textTheme.bodyMedium
+                                  ?.copyWith(fontWeight: FontWeight.w600),
                             ),
                             if (dateDisplay.isNotEmpty) ...[
                               const SizedBox(height: AppSpacing.xs),
@@ -161,17 +158,17 @@ class _BreedingPairTile extends ConsumerWidget {
   }
 
   String _statusLabel(BreedingStatus status) => switch (status) {
-        BreedingStatus.active => 'breeding.active'.tr(),
-        BreedingStatus.ongoing => 'breeding.in_progress'.tr(),
-        BreedingStatus.completed => 'breeding.completed'.tr(),
-        BreedingStatus.cancelled => 'breeding.cancelled'.tr(),
-        BreedingStatus.unknown => 'common.unknown'.tr(),
-      };
+    BreedingStatus.active => 'breeding.active'.tr(),
+    BreedingStatus.ongoing => 'breeding.in_progress'.tr(),
+    BreedingStatus.completed => 'breeding.completed'.tr(),
+    BreedingStatus.cancelled => 'breeding.cancelled'.tr(),
+    BreedingStatus.unknown => 'common.unknown'.tr(),
+  };
 
   Color _statusColor(BreedingStatus status) => switch (status) {
-        BreedingStatus.active => AppColors.success,
-        BreedingStatus.ongoing => AppColors.warning,
-        BreedingStatus.completed => AppColors.primaryLight,
-        BreedingStatus.cancelled || BreedingStatus.unknown => AppColors.neutral400,
-      };
+    BreedingStatus.active => AppColors.success,
+    BreedingStatus.ongoing => AppColors.warning,
+    BreedingStatus.completed => AppColors.primaryLight,
+    BreedingStatus.cancelled || BreedingStatus.unknown => AppColors.neutral400,
+  };
 }

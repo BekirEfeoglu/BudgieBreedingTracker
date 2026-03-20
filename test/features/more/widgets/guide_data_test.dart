@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/features/more/widgets/guide_data.dart';
 
 void main() {
@@ -39,6 +40,10 @@ void main() {
       );
     });
 
+    test('has exactly 7 categories', () {
+      expect(GuideCategory.values.length, 7);
+    });
+
     test('all category except "all" can be used as filter', () {
       final filterCategories = GuideCategory.values
           .where((c) => c != GuideCategory.all)
@@ -47,6 +52,22 @@ void main() {
       // Each non-all category has distinct name
       final names = filterCategories.map((c) => c.name).toSet();
       expect(names.length, filterCategories.length);
+    });
+
+    test('maps correct icon assets per category', () {
+      expect(GuideCategory.all.iconAsset, AppIcons.guide);
+      expect(GuideCategory.gettingStarted.iconAsset, AppIcons.onboarding);
+      expect(GuideCategory.birdManagement.iconAsset, AppIcons.bird);
+      expect(GuideCategory.breedingProcess.iconAsset, AppIcons.breeding);
+      expect(GuideCategory.tools.iconAsset, AppIcons.calendar);
+      expect(GuideCategory.dataManagement.iconAsset, AppIcons.backup);
+      expect(GuideCategory.accountSettings.iconAsset, AppIcons.settings);
+    });
+
+    test('labelKey follows user_guide.category_ prefix pattern', () {
+      for (final category in GuideCategory.values) {
+        expect(category.labelKey, startsWith('user_guide.category_'));
+      }
     });
   });
 
@@ -106,6 +127,31 @@ void main() {
         ]),
       );
     });
+
+    test('only genealogy/genetics topic is marked as premium', () {
+      final premiumTopics = guideTopics.where((t) => t.isPremium).toList();
+      expect(premiumTopics.length, 1);
+      expect(
+        premiumTopics.first.titleKey,
+        'user_guide.topics.genealogy_genetics.title',
+      );
+    });
+
+    test('isPremium defaults to false for standard topics', () {
+      final nonPremium = guideTopics.where((t) => !t.isPremium).toList();
+      expect(nonPremium.length, 14);
+    });
+
+    test('constructor provides correct defaults', () {
+      const topic = GuideTopic(
+        titleKey: 'test.title',
+        iconAsset: 'assets/icons/test.svg',
+        category: GuideCategory.tools,
+        blocks: [GuideBlock.text('test.intro')],
+      );
+      expect(topic.isPremium, false);
+      expect(topic.blocks.length, 1);
+    });
   });
 
   group('GuideBlock factory constructors', () {
@@ -150,6 +196,19 @@ void main() {
   group('GuideBlockType', () {
     test('enum has 5 values', () {
       expect(GuideBlockType.values.length, 5);
+    });
+
+    test('contains all expected block types', () {
+      expect(
+        GuideBlockType.values,
+        containsAll([
+          GuideBlockType.text,
+          GuideBlockType.tip,
+          GuideBlockType.warning,
+          GuideBlockType.steps,
+          GuideBlockType.premiumNote,
+        ]),
+      );
     });
   });
 }

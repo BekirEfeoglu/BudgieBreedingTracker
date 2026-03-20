@@ -14,8 +14,9 @@ const _legacyLocaleKey = 'app_locale';
 // ---------------------------------------------------------------------------
 
 /// Provides the current [ThemeMode], persisted in SharedPreferences.
-final themeModeProvider =
-    NotifierProvider<ThemeModeNotifier, ThemeMode>(ThemeModeNotifier.new);
+final themeModeProvider = NotifierProvider<ThemeModeNotifier, ThemeMode>(
+  ThemeModeNotifier.new,
+);
 
 /// Manages [ThemeMode] state and persists it locally.
 class ThemeModeNotifier extends Notifier<ThemeMode> {
@@ -68,32 +69,32 @@ enum AppLocale {
 
   /// The [Locale] instance for this enum value.
   Locale get locale => switch (this) {
-        AppLocale.turkish => const Locale('tr'),
-        AppLocale.english => const Locale('en'),
-        AppLocale.german => const Locale('de'),
-      };
+    AppLocale.turkish => const Locale('tr'),
+    AppLocale.english => const Locale('en'),
+    AppLocale.german => const Locale('de'),
+  };
 
   /// Localization key for the language label.
   String get labelKey => switch (this) {
-        AppLocale.turkish => 'settings.language_turkish',
-        AppLocale.english => 'settings.language_english',
-        AppLocale.german => 'settings.language_german',
-      };
+    AppLocale.turkish => 'settings.language_turkish',
+    AppLocale.english => 'settings.language_english',
+    AppLocale.german => 'settings.language_german',
+  };
 
   /// Native (untranslated) label – always displayed in the target language.
   String get nativeLabel => switch (this) {
-        AppLocale.turkish => 'Türkçe',
-        AppLocale.english => 'English',
-        AppLocale.german => 'Deutsch',
-      };
+    AppLocale.turkish => 'Türkçe',
+    AppLocale.english => 'English',
+    AppLocale.german => 'Deutsch',
+  };
 
   /// Resolves an [AppLocale] from a language code string.
   static AppLocale fromCode(String code) => switch (code) {
-        'tr' => AppLocale.turkish,
-        'en' => AppLocale.english,
-        'de' => AppLocale.german,
-        _ => AppLocale.turkish,
-      };
+    'tr' => AppLocale.turkish,
+    'en' => AppLocale.english,
+    'de' => AppLocale.german,
+    _ => AppLocale.turkish,
+  };
 }
 
 /// Provides the current [AppLocale], persisted in SharedPreferences.
@@ -107,8 +108,9 @@ enum AppLocale {
 /// ```dart
 /// ref.read(appLocaleProvider.notifier).setLocale(AppLocale.english, context);
 /// ```
-final appLocaleProvider =
-    NotifierProvider<AppLocaleNotifier, AppLocale>(AppLocaleNotifier.new);
+final appLocaleProvider = NotifierProvider<AppLocaleNotifier, AppLocale>(
+  AppLocaleNotifier.new,
+);
 
 /// Manages [AppLocale] state and persists the selection in SharedPreferences.
 ///
@@ -148,7 +150,10 @@ class AppLocaleNotifier extends Notifier<AppLocale> {
     state = locale;
     context.setLocale(locale.locale);
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(AppPreferences.keyLanguage, locale.locale.languageCode);
+    await prefs.setString(
+      AppPreferences.keyLanguage,
+      locale.locale.languageCode,
+    );
   }
 
   /// Initializes the provider state from the current easy_localization locale.
@@ -172,22 +177,23 @@ enum AppFontScale {
   extraLarge;
 
   String get labelKey => switch (this) {
-        AppFontScale.small => 'settings.font_small',
-        AppFontScale.normal => 'settings.font_normal',
-        AppFontScale.large => 'settings.font_large',
-        AppFontScale.extraLarge => 'settings.font_extra_large',
-      };
+    AppFontScale.small => 'settings.font_small',
+    AppFontScale.normal => 'settings.font_normal',
+    AppFontScale.large => 'settings.font_large',
+    AppFontScale.extraLarge => 'settings.font_extra_large',
+  };
 
   double get scaleFactor => switch (this) {
-        AppFontScale.small => 0.85,
-        AppFontScale.normal => 1.0,
-        AppFontScale.large => 1.15,
-        AppFontScale.extraLarge => 1.3,
-      };
+    AppFontScale.small => 0.85,
+    AppFontScale.normal => 1.0,
+    AppFontScale.large => 1.15,
+    AppFontScale.extraLarge => 1.3,
+  };
 }
 
-final fontScaleProvider =
-    NotifierProvider<FontScaleNotifier, AppFontScale>(FontScaleNotifier.new);
+final fontScaleProvider = NotifierProvider<FontScaleNotifier, AppFontScale>(
+  FontScaleNotifier.new,
+);
 
 class FontScaleNotifier extends Notifier<AppFontScale> {
   @override

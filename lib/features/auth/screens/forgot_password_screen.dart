@@ -42,9 +42,9 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
       if (mounted) setState(() => _sent = true);
     } on AuthException catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(mapAuthError(e))),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(mapAuthError(e))));
       }
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -56,9 +56,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text('auth.reset_password'.tr()),
-      ),
+      appBar: AppBar(title: Text('auth.reset_password'.tr())),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -74,11 +72,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(
-          LucideIcons.mailCheck,
-          size: 64,
-          color: theme.colorScheme.primary,
-        ),
+        Icon(LucideIcons.mailCheck, size: 64, color: theme.colorScheme.primary),
         const SizedBox(height: AppSpacing.lg),
         Text(
           'auth.reset_link_sent'.tr(),

@@ -10,15 +10,14 @@ import '../golden_test_helper.dart';
 void main() {
   group('PrimaryButton golden tests', () {
     testWidgets('default state', (tester) async {
-      await tester.pumpWidget(buildGoldenWidget(
-        SizedBox(
-          width: 320,
-          child: PrimaryButton(
-            label: 'Kaydet',
-            onPressed: () {},
+      await tester.pumpWidget(
+        buildGoldenWidget(
+          SizedBox(
+            width: 320,
+            child: PrimaryButton(label: 'Kaydet', onPressed: () {}),
           ),
         ),
-      ));
+      );
       await tester.pumpAndSettle();
 
       await expectLater(
@@ -28,16 +27,18 @@ void main() {
     });
 
     testWidgets('with icon', (tester) async {
-      await tester.pumpWidget(buildGoldenWidget(
-        SizedBox(
-          width: 320,
-          child: PrimaryButton(
-            label: 'Kus Ekle',
-            icon: const Icon(Icons.add),
-            onPressed: () {},
+      await tester.pumpWidget(
+        buildGoldenWidget(
+          SizedBox(
+            width: 320,
+            child: PrimaryButton(
+              label: 'Kus Ekle',
+              icon: const Icon(Icons.add),
+              onPressed: () {},
+            ),
           ),
         ),
-      ));
+      );
       await tester.pumpAndSettle();
 
       await expectLater(
@@ -47,15 +48,14 @@ void main() {
     });
 
     testWidgets('loading state', (tester) async {
-      await tester.pumpWidget(buildGoldenWidget(
-        const SizedBox(
-          width: 320,
-          child: PrimaryButton(
-            label: 'Kaydediliyor',
-            isLoading: true,
+      await tester.pumpWidget(
+        buildGoldenWidget(
+          const SizedBox(
+            width: 320,
+            child: PrimaryButton(label: 'Kaydediliyor', isLoading: true),
           ),
         ),
-      ));
+      );
       // pump once — pumpAndSettle times out due to CircularProgressIndicator animation
       await tester.pump();
 
@@ -66,15 +66,14 @@ void main() {
     });
 
     testWidgets('disabled state', (tester) async {
-      await tester.pumpWidget(buildGoldenWidget(
-        const SizedBox(
-          width: 320,
-          child: PrimaryButton(
-            label: 'Devre Disi',
-            onPressed: null,
+      await tester.pumpWidget(
+        buildGoldenWidget(
+          const SizedBox(
+            width: 320,
+            child: PrimaryButton(label: 'Devre Disi', onPressed: null),
           ),
         ),
-      ));
+      );
       await tester.pumpAndSettle();
 
       await expectLater(
@@ -84,16 +83,15 @@ void main() {
     });
 
     testWidgets('dark mode', (tester) async {
-      await tester.pumpWidget(buildGoldenWidget(
-        SizedBox(
-          width: 320,
-          child: PrimaryButton(
-            label: 'Kaydet',
-            onPressed: () {},
+      await tester.pumpWidget(
+        buildGoldenWidget(
+          SizedBox(
+            width: 320,
+            child: PrimaryButton(label: 'Kaydet', onPressed: () {}),
           ),
+          themeMode: ThemeMode.dark,
         ),
-        themeMode: ThemeMode.dark,
-      ));
+      );
       await tester.pumpAndSettle();
 
       await expectLater(

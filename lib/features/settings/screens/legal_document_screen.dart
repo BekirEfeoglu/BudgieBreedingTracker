@@ -3,17 +3,10 @@ import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_spacing.dart';
 
-enum LegalDocumentType {
-  privacyPolicy,
-  termsOfService,
-  communityGuidelines,
-}
+enum LegalDocumentType { privacyPolicy, termsOfService, communityGuidelines }
 
 class LegalDocumentScreen extends StatelessWidget {
-  const LegalDocumentScreen({
-    super.key,
-    required this.type,
-  });
+  const LegalDocumentScreen({super.key, required this.type});
 
   final LegalDocumentType type;
 
@@ -23,14 +16,12 @@ class LegalDocumentScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          switch (type) {
-            LegalDocumentType.privacyPolicy => 'settings.privacy_policy'.tr(),
-            LegalDocumentType.termsOfService => 'settings.terms'.tr(),
-            LegalDocumentType.communityGuidelines =>
-              'legal.community_guidelines_title'.tr(),
-          },
-        ),
+        title: Text(switch (type) {
+          LegalDocumentType.privacyPolicy => 'settings.privacy_policy'.tr(),
+          LegalDocumentType.termsOfService => 'settings.terms'.tr(),
+          LegalDocumentType.communityGuidelines =>
+            'legal.community_guidelines_title'.tr(),
+        }),
       ),
       body: ListView(
         padding: AppSpacing.screenPadding,
@@ -38,15 +29,12 @@ class LegalDocumentScreen extends StatelessWidget {
           Text(
             'legal.last_updated'.tr(),
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
           ),
           const SizedBox(height: AppSpacing.lg),
           for (final section in sections) ...[
-            _LegalSectionCard(
-              title: section.$1,
-              body: section.$2,
-            ),
+            _LegalSectionCard(title: section.$1, body: section.$2),
             const SizedBox(height: AppSpacing.md),
           ],
         ],
@@ -57,10 +45,16 @@ class LegalDocumentScreen extends StatelessWidget {
   List<(String, String)> _buildSections() {
     if (type == LegalDocumentType.privacyPolicy) {
       return [
-        ('legal.privacy_collected_title'.tr(), 'legal.privacy_collected_body'.tr()),
+        (
+          'legal.privacy_collected_title'.tr(),
+          'legal.privacy_collected_body'.tr(),
+        ),
         ('legal.privacy_usage_title'.tr(), 'legal.privacy_usage_body'.tr()),
         ('legal.privacy_ads_title'.tr(), 'legal.privacy_ads_body'.tr()),
-        ('legal.privacy_security_title'.tr(), 'legal.privacy_security_body'.tr()),
+        (
+          'legal.privacy_security_title'.tr(),
+          'legal.privacy_security_body'.tr(),
+        ),
         ('legal.privacy_contact_title'.tr(), 'legal.privacy_contact_body'.tr()),
       ];
     }
@@ -77,17 +71,17 @@ class LegalDocumentScreen extends StatelessWidget {
     return [
       ('legal.terms_acceptance_title'.tr(), 'legal.terms_acceptance_body'.tr()),
       ('legal.terms_account_title'.tr(), 'legal.terms_account_body'.tr()),
-      ('legal.terms_subscription_title'.tr(), 'legal.terms_subscription_body'.tr()),
+      (
+        'legal.terms_subscription_title'.tr(),
+        'legal.terms_subscription_body'.tr(),
+      ),
       ('legal.terms_contact_title'.tr(), 'legal.terms_contact_body'.tr()),
     ];
   }
 }
 
 class _LegalSectionCard extends StatelessWidget {
-  const _LegalSectionCard({
-    required this.title,
-    required this.body,
-  });
+  const _LegalSectionCard({required this.title, required this.body});
 
   final String title;
   final String body;

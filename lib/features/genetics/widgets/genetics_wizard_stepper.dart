@@ -109,8 +109,8 @@ class _StepDot extends StatelessWidget {
                 color: isActive
                     ? theme.colorScheme.primary
                     : isCompleted
-                        ? theme.colorScheme.primary.withValues(alpha: 0.2)
-                        : theme.colorScheme.surfaceContainerHighest,
+                    ? theme.colorScheme.primary.withValues(alpha: 0.2)
+                    : theme.colorScheme.surfaceContainerHighest,
                 border: Border.all(color: color, width: 2),
               ),
               child: Center(
@@ -123,9 +123,7 @@ class _StepDot extends StatelessWidget {
                     : Text(
                         '${step + 1}',
                         style: theme.textTheme.labelSmall?.copyWith(
-                          color: isActive
-                              ? theme.colorScheme.onPrimary
-                              : color,
+                          color: isActive ? theme.colorScheme.onPrimary : color,
                           fontWeight: FontWeight.bold,
                         ),
                       ),

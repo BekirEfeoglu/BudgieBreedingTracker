@@ -38,10 +38,7 @@ void main() {
       await tester.pump();
 
       expect(find.text('premium.active_badge'), findsOneWidget);
-      expect(
-        find.text('premium.subscription_active_subtitle'),
-        findsOneWidget,
-      );
+      expect(find.text('premium.subscription_active_subtitle'), findsOneWidget);
     });
 
     testWidgets('shows trial badge for trial subscription', (tester) async {

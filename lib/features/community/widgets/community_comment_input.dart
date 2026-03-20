@@ -17,8 +17,7 @@ class CommunityCommentInput extends ConsumerStatefulWidget {
       _CommunityCommentInputState();
 }
 
-class _CommunityCommentInputState
-    extends ConsumerState<CommunityCommentInput> {
+class _CommunityCommentInputState extends ConsumerState<CommunityCommentInput> {
   final _controller = TextEditingController();
 
   @override
@@ -31,10 +30,9 @@ class _CommunityCommentInputState
     final text = _controller.text.trim();
     if (text.isEmpty) return;
 
-    ref.read(commentFormProvider.notifier).addComment(
-          postId: widget.postId,
-          content: text,
-        );
+    ref
+        .read(commentFormProvider.notifier)
+        .addComment(postId: widget.postId, content: text);
     _controller.clear();
   }
 
@@ -50,9 +48,7 @@ class _CommunityCommentInputState
       ),
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
-        border: Border(
-          top: BorderSide(color: theme.dividerColor),
-        ),
+        border: Border(top: BorderSide(color: theme.dividerColor)),
       ),
       child: SafeArea(
         child: Row(
@@ -67,8 +63,7 @@ class _CommunityCommentInputState
                   hintText: 'community.add_comment'.tr(),
                   counterText: '',
                   border: OutlineInputBorder(
-                    borderRadius:
-                        BorderRadius.circular(AppSpacing.radiusXl),
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
                   ),
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: AppSpacing.lg,

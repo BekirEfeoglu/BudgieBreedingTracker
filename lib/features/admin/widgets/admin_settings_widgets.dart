@@ -7,8 +7,12 @@ import '../../../core/theme/app_spacing.dart';
 String _relativeTime(DateTime dateTime) {
   final diff = DateTime.now().toUtc().difference(dateTime.toUtc());
   if (diff.inMinutes < 1) return 'admin.just_now'.tr();
-  if (diff.inMinutes < 60) return 'admin.minutes_ago'.tr(args: [diff.inMinutes.toString()]);
-  if (diff.inHours < 24) return 'admin.hours_ago'.tr(args: [diff.inHours.toString()]);
+  if (diff.inMinutes < 60) {
+    return 'admin.minutes_ago'.tr(args: [diff.inMinutes.toString()]);
+  }
+  if (diff.inHours < 24) {
+    return 'admin.hours_ago'.tr(args: [diff.inHours.toString()]);
+  }
   return 'admin.days_ago'.tr(args: [diff.inDays.toString()]);
 }
 
@@ -57,10 +61,9 @@ class SettingsOverviewBanner extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'admin.settings_active_count'.tr(args: [
-                      activeCount.toString(),
-                      totalCount.toString(),
-                    ]),
+                    'admin.settings_active_count'.tr(
+                      args: [activeCount.toString(), totalCount.toString()],
+                    ),
                     style: theme.textTheme.titleSmall?.copyWith(
                       color: theme.colorScheme.onPrimaryContainer,
                       fontWeight: FontWeight.w600,
@@ -68,9 +71,13 @@ class SettingsOverviewBanner extends StatelessWidget {
                   ),
                   if (lastUpdatedAt != null)
                     Text(
-                      'admin.settings_last_updated'.tr(args: [_relativeTime(lastUpdatedAt!)]),
+                      'admin.settings_last_updated'.tr(
+                        args: [_relativeTime(lastUpdatedAt!)],
+                      ),
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onPrimaryContainer.withValues(alpha: 0.7),
+                        color: theme.colorScheme.onPrimaryContainer.withValues(
+                          alpha: 0.7,
+                        ),
                       ),
                     ),
                 ],
@@ -118,7 +125,10 @@ class AccentSettingsSection extends StatelessWidget {
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(
-                AppSpacing.lg, AppSpacing.lg, AppSpacing.lg, AppSpacing.sm,
+                AppSpacing.lg,
+                AppSpacing.lg,
+                AppSpacing.lg,
+                AppSpacing.sm,
               ),
               child: Row(
                 children: [
@@ -131,19 +141,32 @@ class AccentSettingsSection extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(title, style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
+                        Text(
+                          title,
+                          style: theme.textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                         if (description != null)
-                          Text(description!, style: theme.textTheme.bodySmall?.copyWith(
-                            color: theme.colorScheme.onSurfaceVariant,
-                          )),
+                          Text(
+                            description!,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.colorScheme.onSurfaceVariant,
+                            ),
+                          ),
                       ],
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: 2),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.sm,
+                      vertical: 2,
+                    ),
                     decoration: BoxDecoration(
                       color: accentColor.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+                      borderRadius: BorderRadius.circular(
+                        AppSpacing.radiusFull,
+                      ),
                     ),
                     child: Text(
                       '$activeCount/$totalCount',
@@ -192,7 +215,10 @@ class EnhancedToggleSetting extends StatelessWidget {
     return Column(
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.md),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.lg,
+            vertical: AppSpacing.md,
+          ),
           child: Row(
             children: [
               Container(
@@ -210,20 +236,33 @@ class EnhancedToggleSetting extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(title, style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500)),
+                    Text(
+                      title,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
                     Text(subtitle, style: theme.textTheme.bodySmall),
                     if (lastUpdated != null)
                       Padding(
                         padding: const EdgeInsets.only(top: 2),
-                        child: Text(lastUpdated!, style: theme.textTheme.labelSmall?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
-                        )),
+                        child: Text(
+                          lastUpdated!,
+                          style: theme.textTheme.labelSmall?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant
+                                .withValues(alpha: 0.6),
+                          ),
+                        ),
                       ),
                   ],
                 ),
               ),
               if (isUpdating)
-                const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2))
+                const SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
               else
                 Switch(value: value, onChanged: onChanged),
             ],
@@ -254,11 +293,24 @@ class ResetDefaultsButton extends StatelessWidget {
       child: OutlinedButton.icon(
         onPressed: isLoading ? null : onPressed,
         icon: isLoading
-            ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
-            : Icon(LucideIcons.rotateCcw, color: theme.colorScheme.error, size: 20),
-        label: Text('admin.reset_defaults'.tr(), style: TextStyle(color: theme.colorScheme.error)),
+            ? const SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+            : Icon(
+                LucideIcons.rotateCcw,
+                color: theme.colorScheme.error,
+                size: 20,
+              ),
+        label: Text(
+          'admin.reset_defaults'.tr(),
+          style: TextStyle(color: theme.colorScheme.error),
+        ),
         style: OutlinedButton.styleFrom(
-          side: BorderSide(color: theme.colorScheme.error.withValues(alpha: 0.5)),
+          side: BorderSide(
+            color: theme.colorScheme.error.withValues(alpha: 0.5),
+          ),
           padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
         ),
       ),

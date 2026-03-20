@@ -26,7 +26,9 @@ class SyncErrorHandler {
     final retryable = RetryScheduler.getRetryableRecords(errors);
     if (retryable.isEmpty) return;
 
-    final readyRecords = retryable.where(RetryScheduler.isReadyForRetry).toList();
+    final readyRecords = retryable
+        .where(RetryScheduler.isReadyForRetry)
+        .toList();
     if (readyRecords.isEmpty) return;
 
     AppLogger.info(

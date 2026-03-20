@@ -78,7 +78,6 @@ class PremiumPricingSection extends ConsumerWidget {
             planName: 'premium.plan_yearly'.tr(),
             price: yearlyPrice,
             period: 'premium.period_yearly'.tr(),
-            trialText: monthlyTrialText,
             isHighlighted: true,
             badge: 'premium.best_value'.tr(),
             savingsText: 'premium.save_percent'.tr(args: ['50']),
@@ -120,8 +119,9 @@ class PremiumPricingSection extends ConsumerWidget {
           Container(
             padding: const EdgeInsets.all(AppSpacing.md),
             decoration: BoxDecoration(
-              color: theme.colorScheme.surfaceContainerHighest
-                  .withValues(alpha: 0.5),
+              color: theme.colorScheme.surfaceContainerHighest.withValues(
+                alpha: 0.5,
+              ),
               borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
             ),
             child: Text(
@@ -220,8 +220,7 @@ String _purchaseIssueTitleKey(PremiumPurchaseIssue issue) {
 
 String _purchaseIssueBodyKey(PremiumPurchaseIssue issue) {
   return switch (issue) {
-    PremiumPurchaseIssue.missingApiKey =>
-      'premium.purchase_setup_missing_body',
+    PremiumPurchaseIssue.missingApiKey => 'premium.purchase_setup_missing_body',
     PremiumPurchaseIssue.iosDebugStoreKitRequired =>
       'premium.ios_debug_purchase_body',
     PremiumPurchaseIssue.offeringsUnavailable =>

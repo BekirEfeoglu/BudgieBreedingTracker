@@ -47,8 +47,7 @@ class CommunitySectionBar extends StatelessWidget {
                 label: 'community.sort_newest'.tr(),
                 icon: LucideIcons.clock3,
                 isSelected: exploreSort == CommunityExploreSort.newest,
-                onTap: () =>
-                    onExploreSortChanged(CommunityExploreSort.newest),
+                onTap: () => onExploreSortChanged(CommunityExploreSort.newest),
               ),
               const SizedBox(width: AppSpacing.sm),
               _FilterChip(

@@ -28,7 +28,8 @@ class EventCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final timeFormat = DateFormat.Hm();
-    final isDimmed = event.status == EventStatus.completed ||
+    final isDimmed =
+        event.status == EventStatus.completed ||
         event.status == EventStatus.cancelled;
 
     return Opacity(
@@ -87,8 +88,7 @@ class EventCard extends StatelessWidget {
                           ],
                         ],
                       ),
-                      if (event.notes != null &&
-                          event.notes!.isNotEmpty) ...[
+                      if (event.notes != null && event.notes!.isNotEmpty) ...[
                         const SizedBox(height: AppSpacing.xs),
                         Text(
                           event.notes!,
@@ -129,11 +129,7 @@ class _EventTypeIcon extends StatelessWidget {
         color: color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
       ),
-      child: Icon(
-        eventTypeIcon(type),
-        size: 20,
-        color: color,
-      ),
+      child: Icon(eventTypeIcon(type), size: 20, color: color),
     );
   }
 }
@@ -219,7 +215,9 @@ IconData eventTypeIcon(EventType type) {
     EventType.feeding => LucideIcons.wheat,
     EventType.cleaning || EventType.cageChange => LucideIcons.sparkles,
     EventType.weightCheck => LucideIcons.scale,
-    EventType.custom || EventType.other || EventType.unknown => LucideIcons.calendar,
+    EventType.custom ||
+    EventType.other ||
+    EventType.unknown => LucideIcons.calendar,
   };
 }
 
@@ -231,14 +229,14 @@ String eventTypeLabel(EventType type) {
     EventType.egg || EventType.eggLaying => 'calendar.egg_laid'.tr(),
     EventType.hatching || EventType.chick => 'calendar.expected_hatch'.tr(),
     EventType.vaccination => 'calendar.vaccination'.tr(),
-    EventType.healthCheck ||
-    EventType.health => 'calendar.health_check'.tr(),
+    EventType.healthCheck || EventType.health => 'calendar.health_check'.tr(),
     EventType.medication => 'calendar.medication'.tr(),
     EventType.feeding => 'calendar.feeding'.tr(),
-    EventType.cleaning ||
-    EventType.cageChange => 'calendar.cleaning'.tr(),
+    EventType.cleaning || EventType.cageChange => 'calendar.cleaning'.tr(),
     EventType.weightCheck => 'calendar.weight_check'.tr(),
-    EventType.custom || EventType.other || EventType.unknown => 'calendar.general'.tr(),
+    EventType.custom ||
+    EventType.other ||
+    EventType.unknown => 'calendar.general'.tr(),
   };
 }
 
@@ -318,6 +316,8 @@ Color eventTypeColor(EventType type) {
     EventType.feeding => EventTypeColors.feeding,
     EventType.cleaning || EventType.cageChange => EventTypeColors.cleaning,
     EventType.weightCheck => EventTypeColors.weight,
-    EventType.custom || EventType.other || EventType.unknown => EventTypeColors.general,
+    EventType.custom ||
+    EventType.other ||
+    EventType.unknown => EventTypeColors.general,
   };
 }

@@ -11,19 +11,19 @@ enum BackupFrequency {
 
   /// Duration between backups.
   Duration get interval => switch (this) {
-        BackupFrequency.daily => const Duration(days: 1),
-        BackupFrequency.weekly => const Duration(days: 7),
-        BackupFrequency.monthly => const Duration(days: 30),
-        BackupFrequency.never => Duration.zero,
-      };
+    BackupFrequency.daily => const Duration(days: 1),
+    BackupFrequency.weekly => const Duration(days: 7),
+    BackupFrequency.monthly => const Duration(days: 30),
+    BackupFrequency.never => Duration.zero,
+  };
 
   /// Localization key for UI.
   String get labelKey => switch (this) {
-        BackupFrequency.daily => 'settings.backup_daily',
-        BackupFrequency.weekly => 'settings.backup_weekly',
-        BackupFrequency.monthly => 'settings.backup_monthly',
-        BackupFrequency.never => 'settings.backup_never',
-      };
+    BackupFrequency.daily => 'settings.backup_daily',
+    BackupFrequency.weekly => 'settings.backup_weekly',
+    BackupFrequency.monthly => 'settings.backup_monthly',
+    BackupFrequency.never => 'settings.backup_never',
+  };
 }
 
 /// Manages automatic backup scheduling via SharedPreferences.

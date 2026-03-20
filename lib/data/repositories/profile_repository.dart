@@ -25,9 +25,9 @@ class ProfileRepository {
     required ProfilesDao localDao,
     required ProfileRemoteSource remoteSource,
     required SyncMetadataDao syncDao,
-  })  : _localDao = localDao,
-        _remoteSource = remoteSource,
-        _syncDao = syncDao;
+  }) : _localDao = localDao,
+       _remoteSource = remoteSource,
+       _syncDao = syncDao;
 
   /// Watches the current user's profile as a live stream.
   Stream<Profile?> watchProfile(String userId) =>
@@ -63,7 +63,10 @@ class ProfileRepository {
             await _syncDao.deleteByRecord(_table, localProfile.id);
           } catch (e, st) {
             AppLogger.error(
-                '[ProfileRepository] Push-before-pull failed', e, st);
+              '[ProfileRepository] Push-before-pull failed',
+              e,
+              st,
+            );
             // Push failed — keep local data intact, skip pull to avoid data loss
             return;
           }
@@ -95,8 +98,7 @@ class ProfileRepository {
   /// Pushes pending profile changes (called by SyncOrchestrator).
   Future<void> pushPending(String userId) async {
     final pending = await _syncDao.getPending(userId);
-    final profilePending =
-        pending.where((m) => m.table == _table).toList();
+    final profilePending = pending.where((m) => m.table == _table).toList();
     for (final meta in profilePending) {
       final profile = await _localDao.getById(meta.recordId ?? '');
       if (profile != null) {
@@ -112,29 +114,32 @@ class ProfileRepository {
   Future<void> _markPending(String recordId) async {
     final existing = await _syncDao.getByRecord(_table, recordId);
     if (existing != null) {
-      await _syncDao.updateItem(existing.copyWith(
-        status: SyncStatus.pending,
-        errorMessage: null,
-      ));
+      await _syncDao.updateItem(
+        existing.copyWith(status: SyncStatus.pending, errorMessage: null),
+      );
     } else {
-      await _syncDao.insertItem(SyncMetadata(
-        id: const Uuid().v4(),
-        table: _table,
-        userId: recordId, // profile.id == userId
-        status: SyncStatus.pending,
-        recordId: recordId,
-      ));
+      await _syncDao.insertItem(
+        SyncMetadata(
+          id: const Uuid().v4(),
+          table: _table,
+          userId: recordId, // profile.id == userId
+          status: SyncStatus.pending,
+          recordId: recordId,
+        ),
+      );
     }
   }
 
   Future<void> _markError(String recordId, String message) async {
     final existing = await _syncDao.getByRecord(_table, recordId);
     if (existing != null) {
-      await _syncDao.updateItem(existing.copyWith(
-        status: SyncStatus.error,
-        errorMessage: message,
-        retryCount: (existing.retryCount ?? 0) + 1,
-      ));
+      await _syncDao.updateItem(
+        existing.copyWith(
+          status: SyncStatus.error,
+          errorMessage: message,
+          retryCount: (existing.retryCount ?? 0) + 1,
+        ),
+      );
     }
   }
 }

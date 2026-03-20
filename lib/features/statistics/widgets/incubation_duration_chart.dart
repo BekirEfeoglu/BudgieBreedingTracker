@@ -33,100 +33,100 @@ class IncubationDurationChart extends StatelessWidget {
           height: 200,
           child: RepaintBoundary(
             child: BarChart(
-            BarChartData(
-              alignment: BarChartAlignment.spaceAround,
-              maxY: maxVal + 3,
-              barTouchData: BarTouchData(
-                touchTooltipData: BarTouchTooltipData(
-                  getTooltipItem: (group, groupIndex, rod, rodIndex) {
-                    final item = data[group.x.toInt()];
-                    return BarTooltipItem(
-                      '${item.actualDays} ${'statistics.actual_days'.tr()}',
-                      theme.textTheme.labelSmall!.copyWith(
-                        color: AppColors.chartText(context),
-                      ),
-                    );
-                  },
-                ),
-              ),
-              titlesData: FlTitlesData(
-                show: true,
-                topTitles: const AxisTitles(
-                  sideTitles: SideTitles(showTitles: false),
-                ),
-                rightTitles: const AxisTitles(
-                  sideTitles: SideTitles(showTitles: false),
-                ),
-                leftTitles: AxisTitles(
-                  sideTitles: SideTitles(
-                    showTitles: true,
-                    reservedSize: 28,
-                    interval: 3,
-                    getTitlesWidget: (value, meta) {
-                      if (value % 3 != 0) return const SizedBox.shrink();
-                      return Text(
-                        value.toInt().toString(),
-                        style: theme.textTheme.labelSmall,
+              BarChartData(
+                alignment: BarChartAlignment.spaceAround,
+                maxY: maxVal + 3,
+                barTouchData: BarTouchData(
+                  touchTooltipData: BarTouchTooltipData(
+                    getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                      final item = data[group.x.toInt()];
+                      return BarTooltipItem(
+                        '${item.actualDays} ${'statistics.actual_days'.tr()}',
+                        theme.textTheme.labelSmall!.copyWith(
+                          color: AppColors.chartText(context),
+                        ),
                       );
                     },
                   ),
                 ),
-                bottomTitles: AxisTitles(
-                  sideTitles: SideTitles(
-                    showTitles: true,
-                    reservedSize: 28,
-                    getTitlesWidget: (value, meta) {
-                      final index = value.toInt();
-                      if (index < 0 || index >= data.length) {
-                        return const SizedBox.shrink();
-                      }
-                      return Text(
-                        '#${index + 1}',
-                        style: theme.textTheme.labelSmall,
-                      );
-                    },
+                titlesData: FlTitlesData(
+                  show: true,
+                  topTitles: const AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
                   ),
-                ),
-              ),
-              gridData: const FlGridData(show: false),
-              borderData: FlBorderData(show: false),
-              extraLinesData: ExtraLinesData(
-                horizontalLines: [
-                  HorizontalLine(
-                    y: 18,
-                    color: AppColors.info,
-                    strokeWidth: 2,
-                    dashArray: [5, 5],
-                    label: HorizontalLineLabel(
-                      show: true,
-                      alignment: Alignment.topRight,
-                      style: theme.textTheme.labelSmall!.copyWith(
-                        color: AppColors.info,
-                      ),
-                      labelResolver: (_) =>
-                          '18 ${'statistics.expected_days'.tr()}',
+                  rightTitles: const AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
+                  leftTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      reservedSize: 28,
+                      interval: 3,
+                      getTitlesWidget: (value, meta) {
+                        if (value % 3 != 0) return const SizedBox.shrink();
+                        return Text(
+                          value.toInt().toString(),
+                          style: theme.textTheme.labelSmall,
+                        );
+                      },
                     ),
                   ),
-                ],
-              ),
-              barGroups: List.generate(data.length, (index) {
-                final item = data[index];
-                return BarChartGroupData(
-                  x: index,
-                  barRods: [
-                    BarChartRodData(
-                      toY: item.actualDays.toDouble(),
-                      color: _barColor(item.actualDays),
-                      width: 16,
-                      borderRadius: const BorderRadius.vertical(
-                        top: Radius.circular(AppSpacing.radiusSm),
+                  bottomTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      reservedSize: 28,
+                      getTitlesWidget: (value, meta) {
+                        final index = value.toInt();
+                        if (index < 0 || index >= data.length) {
+                          return const SizedBox.shrink();
+                        }
+                        return Text(
+                          '#${index + 1}',
+                          style: theme.textTheme.labelSmall,
+                        );
+                      },
+                    ),
+                  ),
+                ),
+                gridData: const FlGridData(show: false),
+                borderData: FlBorderData(show: false),
+                extraLinesData: ExtraLinesData(
+                  horizontalLines: [
+                    HorizontalLine(
+                      y: 18,
+                      color: AppColors.info,
+                      strokeWidth: 2,
+                      dashArray: [5, 5],
+                      label: HorizontalLineLabel(
+                        show: true,
+                        alignment: Alignment.topRight,
+                        style: theme.textTheme.labelSmall!.copyWith(
+                          color: AppColors.info,
+                        ),
+                        labelResolver: (_) =>
+                            '18 ${'statistics.expected_days'.tr()}',
                       ),
                     ),
                   ],
-                );
-              }),
+                ),
+                barGroups: List.generate(data.length, (index) {
+                  final item = data[index];
+                  return BarChartGroupData(
+                    x: index,
+                    barRods: [
+                      BarChartRodData(
+                        toY: item.actualDays.toDouble(),
+                        color: _barColor(item.actualDays),
+                        width: 16,
+                        borderRadius: const BorderRadius.vertical(
+                          top: Radius.circular(AppSpacing.radiusSm),
+                        ),
+                      ),
+                    ],
+                  );
+                }),
+              ),
             ),
-          ),
           ),
         ),
         const SizedBox(height: AppSpacing.sm),

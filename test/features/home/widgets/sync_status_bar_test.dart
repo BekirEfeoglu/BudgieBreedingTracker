@@ -14,8 +14,9 @@ void main() {
 
   setUp(() {
     mockOrchestrator = MockSyncOrchestrator();
-    when(() => mockOrchestrator.fullSync())
-        .thenAnswer((_) async => SyncResult.success);
+    when(
+      () => mockOrchestrator.fullSync(),
+    ).thenAnswer((_) async => SyncResult.success);
   });
 
   Widget createSubject({SyncDisplayStatus status = SyncDisplayStatus.synced}) {
@@ -37,38 +38,28 @@ void main() {
     });
 
     testWidgets('shows synced label when idle', (tester) async {
-      await tester.pumpWidget(
-        createSubject(status: SyncDisplayStatus.synced),
-      );
+      await tester.pumpWidget(createSubject(status: SyncDisplayStatus.synced));
       await tester.pump();
 
       expect(find.text('sync.synced'), findsOneWidget);
     });
 
     testWidgets('shows cloud_done icon when synced', (tester) async {
-      await tester.pumpWidget(
-        createSubject(status: SyncDisplayStatus.synced),
-      );
+      await tester.pumpWidget(createSubject(status: SyncDisplayStatus.synced));
       await tester.pump();
 
       expect(find.byIcon(Icons.cloud_done), findsOneWidget);
     });
 
-    testWidgets('shows syncing label when sync is in progress', (
-      tester,
-    ) async {
-      await tester.pumpWidget(
-        createSubject(status: SyncDisplayStatus.syncing),
-      );
+    testWidgets('shows syncing label when sync is in progress', (tester) async {
+      await tester.pumpWidget(createSubject(status: SyncDisplayStatus.syncing));
       await tester.pump();
 
       expect(find.text('sync.syncing'), findsOneWidget);
     });
 
     testWidgets('shows sync icon with rotation when syncing', (tester) async {
-      await tester.pumpWidget(
-        createSubject(status: SyncDisplayStatus.syncing),
-      );
+      await tester.pumpWidget(createSubject(status: SyncDisplayStatus.syncing));
       await tester.pump();
 
       expect(find.byIcon(Icons.sync), findsOneWidget);
@@ -83,36 +74,28 @@ void main() {
     });
 
     testWidgets('shows offline label when offline', (tester) async {
-      await tester.pumpWidget(
-        createSubject(status: SyncDisplayStatus.offline),
-      );
+      await tester.pumpWidget(createSubject(status: SyncDisplayStatus.offline));
       await tester.pump();
 
       expect(find.text('sync.offline'), findsOneWidget);
     });
 
     testWidgets('shows cloud_off icon when offline', (tester) async {
-      await tester.pumpWidget(
-        createSubject(status: SyncDisplayStatus.offline),
-      );
+      await tester.pumpWidget(createSubject(status: SyncDisplayStatus.offline));
       await tester.pump();
 
       expect(find.byIcon(Icons.cloud_off), findsOneWidget);
     });
 
     testWidgets('shows error label when sync has error', (tester) async {
-      await tester.pumpWidget(
-        createSubject(status: SyncDisplayStatus.error),
-      );
+      await tester.pumpWidget(createSubject(status: SyncDisplayStatus.error));
       await tester.pump();
 
       expect(find.text('sync.sync_error'), findsOneWidget);
     });
 
     testWidgets('shows cloud_off icon when error', (tester) async {
-      await tester.pumpWidget(
-        createSubject(status: SyncDisplayStatus.error),
-      );
+      await tester.pumpWidget(createSubject(status: SyncDisplayStatus.error));
       await tester.pump();
 
       expect(find.byIcon(Icons.cloud_off), findsOneWidget);
@@ -121,9 +104,7 @@ void main() {
     testWidgets('does not show RotationTransition when not syncing', (
       tester,
     ) async {
-      await tester.pumpWidget(
-        createSubject(status: SyncDisplayStatus.synced),
-      );
+      await tester.pumpWidget(createSubject(status: SyncDisplayStatus.synced));
       await tester.pump();
 
       // Only check within SyncStatusBar scope to avoid MaterialApp internals
@@ -144,9 +125,7 @@ void main() {
     });
 
     testWidgets('has Semantics with correct label', (tester) async {
-      await tester.pumpWidget(
-        createSubject(status: SyncDisplayStatus.synced),
-      );
+      await tester.pumpWidget(createSubject(status: SyncDisplayStatus.synced));
       await tester.pump();
 
       expect(find.byType(Semantics), findsAtLeastNWidgets(1));

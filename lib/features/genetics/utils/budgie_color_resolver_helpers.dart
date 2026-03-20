@@ -332,9 +332,7 @@ Color _mix(Color a, Color b, double amount) {
 
 Color _lighten(Color color, double amount) {
   final hsl = HSLColor.fromColor(color);
-  return hsl
-      .withLightness((hsl.lightness + amount).clamp(0.0, 1.0))
-      .toColor();
+  return hsl.withLightness((hsl.lightness + amount).clamp(0.0, 1.0)).toColor();
 }
 
 Color _saturate(Color color, double amount) {

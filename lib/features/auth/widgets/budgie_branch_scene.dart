@@ -2,8 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
-import '../screens/budgie_login_screen.dart'
-    show LoginState;
+import '../screens/budgie_login_screen.dart' show LoginState;
 import 'budgie_character.dart';
 import 'budgie_login_colors.dart';
 
@@ -235,8 +234,9 @@ class BudgieBranchScene extends StatelessWidget {
             isBlinking: isBlinking,
             isLeft: false,
             wingFlapValue: state == LoginState.idle ? wingFlap.value : 0,
-            bodyWobbleValue:
-                state == LoginState.idle ? (birdWobble.value + 0.25) : 0,
+            bodyWobbleValue: state == LoginState.idle
+                ? (birdWobble.value + 0.25)
+                : 0,
           );
         },
       ),

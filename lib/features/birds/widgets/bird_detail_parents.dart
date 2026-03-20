@@ -75,16 +75,10 @@ class _ParentCard extends ConsumerWidget {
     final parentAsync = ref.watch(birdByIdProvider(parentId));
 
     return parentAsync.when(
-      loading: () => InfoCard(
-        icon: icon,
-        title: 'common.loading'.tr(),
-        subtitle: label,
-      ),
-      error: (_, __) => InfoCard(
-        icon: icon,
-        title: 'birds.unknown'.tr(),
-        subtitle: label,
-      ),
+      loading: () =>
+          InfoCard(icon: icon, title: 'common.loading'.tr(), subtitle: label),
+      error: (_, __) =>
+          InfoCard(icon: icon, title: 'birds.unknown'.tr(), subtitle: label),
       data: (parent) => InfoCard(
         icon: icon,
         title: parent?.name ?? 'birds.unknown'.tr(),

@@ -275,6 +275,7 @@ bool _isAnonymousAllowedRoute(String location) {
       location == AppRoutes.userGuide ||
       location == AppRoutes.privacyPolicy ||
       location == AppRoutes.termsOfService ||
+      location == AppRoutes.communityGuidelines ||
       (kDebugMode && location == AppRoutes.geneticsColorAudit)) {
     return true;
   }

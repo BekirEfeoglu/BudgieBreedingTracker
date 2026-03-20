@@ -22,8 +22,10 @@ class DatabaseContent extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final totalRows =
-        tables.fold<int>(0, (sum, t) => sum + (t.rowCount > 0 ? t.rowCount : 0));
+    final totalRows = tables.fold<int>(
+      0,
+      (sum, t) => sum + (t.rowCount > 0 ? t.rowCount : 0),
+    );
 
     ref.listen<AdminActionState>(adminActionsProvider, (prev, next) {
       final messenger = ScaffoldMessenger.of(context);
@@ -59,9 +61,9 @@ class DatabaseContent extends ConsumerWidget {
           const SizedBox(height: AppSpacing.lg),
           Text(
             'admin.tables'.tr(),
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: AppSpacing.md),
           DatabaseTableList(tables: tables),
@@ -108,18 +110,11 @@ class DatabaseSummaryCard extends StatelessWidget {
                       color: AppColors.primary,
                     ),
                   ),
-                  Text(
-                    'admin.tables'.tr(),
-                    style: theme.textTheme.bodySmall,
-                  ),
+                  Text('admin.tables'.tr(), style: theme.textTheme.bodySmall),
                 ],
               ),
             ),
-            Container(
-              width: 1,
-              height: 48,
-              color: theme.dividerColor,
-            ),
+            Container(width: 1, height: 48, color: theme.dividerColor),
             Expanded(
               child: Column(
                 children: [
@@ -223,9 +218,11 @@ class DatabaseGlobalActionsBar extends ConsumerWidget {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(result == SyncResult.success
-                ? 'sync.sync_success'.tr()
-                : 'sync.sync_failed'.tr()),
+            content: Text(
+              result == SyncResult.success
+                  ? 'sync.sync_success'.tr()
+                  : 'sync.sync_failed'.tr(),
+            ),
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -265,9 +262,7 @@ class DatabaseActionButton extends StatelessWidget {
             vertical: AppSpacing.md,
           ),
           decoration: BoxDecoration(
-            border: Border(
-              top: BorderSide(color: color, width: 3),
-            ),
+            border: Border(top: BorderSide(color: color, width: 3)),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,

@@ -24,9 +24,7 @@ class HealthRecordListScreen extends ConsumerWidget {
     final recordsAsync = ref.watch(healthRecordsStreamProvider(userId));
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text('health_records.title'.tr()),
-      ),
+      appBar: AppBar(title: Text('health_records.title'.tr())),
       body: Column(
         children: [
           // Search bar
@@ -52,7 +50,11 @@ class HealthRecordListScreen extends ConsumerWidget {
             ),
           ),
           // Filter bar
-          const Divider(height: 1, indent: AppSpacing.lg, endIndent: AppSpacing.lg),
+          const Divider(
+            height: 1,
+            indent: AppSpacing.lg,
+            endIndent: AppSpacing.lg,
+          ),
           const SizedBox(height: AppSpacing.xs),
           const HealthRecordFilterBar(),
           const SizedBox(height: AppSpacing.sm),
@@ -63,17 +65,16 @@ class HealthRecordListScreen extends ConsumerWidget {
                 ref.invalidate(healthRecordsStreamProvider(userId));
               },
               child: recordsAsync.when(
-                loading: () =>
-                    const Center(child: CircularProgressIndicator()),
+                loading: () => const Center(child: CircularProgressIndicator()),
                 error: (error, _) => ErrorState(
-                  message:
-                      'common.data_load_error'.tr(),
+                  message: 'common.data_load_error'.tr(),
                   onRetry: () =>
                       ref.invalidate(healthRecordsStreamProvider(userId)),
                 ),
                 data: (allRecords) {
                   final records = ref.watch(
-                      searchedAndFilteredHealthRecordsProvider(allRecords));
+                    searchedAndFilteredHealthRecordsProvider(allRecords),
+                  );
 
                   if (allRecords.isEmpty) {
                     return EmptyState(
@@ -93,31 +94,37 @@ class HealthRecordListScreen extends ConsumerWidget {
                     );
                   }
 
-                  final animalCache =
-                      ref.watch(animalNameCacheProvider(userId));
+                  final animalCache = ref.watch(
+                    animalNameCacheProvider(userId),
+                  );
 
-                  return ListView.builder(
-                    padding: const EdgeInsets.only(
-                      top: AppSpacing.sm,
-                      bottom: AppSpacing.xxxl * 2,
+                  return Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 800),
+                      child: ListView.builder(
+                        padding: const EdgeInsets.only(
+                          top: AppSpacing.sm,
+                          bottom: AppSpacing.xxxl * 2,
+                        ),
+                        itemCount: records.length,
+                        itemBuilder: (context, index) {
+                          final r = records[index];
+                          final animal = r.birdId != null
+                              ? animalCache[r.birdId!]
+                              : null;
+                          final displayName = animal != null
+                              ? (animal.ringNumber != null
+                                    ? '${animal.name} (${animal.ringNumber})'
+                                    : animal.name)
+                              : null;
+                          return HealthRecordCard(
+                            key: ValueKey(r.id),
+                            record: r,
+                            animalName: displayName,
+                          );
+                        },
+                      ),
                     ),
-                    itemCount: records.length,
-                    itemBuilder: (context, index) {
-                      final r = records[index];
-                      final animal = r.birdId != null
-                          ? animalCache[r.birdId!]
-                          : null;
-                      final displayName = animal != null
-                          ? (animal.ringNumber != null
-                              ? '${animal.name} (${animal.ringNumber})'
-                              : animal.name)
-                          : null;
-                      return HealthRecordCard(
-                        key: ValueKey(r.id),
-                        record: r,
-                        animalName: displayName,
-                      );
-                    },
                   );
                 },
               ),

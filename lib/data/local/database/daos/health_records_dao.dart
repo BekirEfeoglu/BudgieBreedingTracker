@@ -14,8 +14,7 @@ class HealthRecordsDao extends DatabaseAccessor<AppDatabase>
   /// Watches all non-deleted health records for a user, ordered by date descending.
   Stream<List<HealthRecord>> watchAll(String userId) {
     return (select(healthRecordsTable)
-          ..where(
-              (t) => t.userId.equals(userId) & t.isDeleted.equals(false))
+          ..where((t) => t.userId.equals(userId) & t.isDeleted.equals(false))
           ..orderBy([(t) => OrderingTerm.desc(t.date)]))
         .watch()
         .map((rows) => rows.map((r) => r.toModel()).toList());
@@ -30,25 +29,23 @@ class HealthRecordsDao extends DatabaseAccessor<AppDatabase>
 
   /// Gets all non-deleted health records for a user.
   Future<List<HealthRecord>> getAll(String userId) async {
-    final rows = await (select(healthRecordsTable)
-          ..where(
-              (t) => t.userId.equals(userId) & t.isDeleted.equals(false)))
-        .get();
+    final rows = await (select(
+      healthRecordsTable,
+    )..where((t) => t.userId.equals(userId) & t.isDeleted.equals(false))).get();
     return rows.map((r) => r.toModel()).toList();
   }
 
   /// Gets a single health record by id.
   Future<HealthRecord?> getById(String id) async {
-    final row = await (select(healthRecordsTable)
-          ..where((t) => t.id.equals(id)))
-        .getSingleOrNull();
+    final row = await (select(
+      healthRecordsTable,
+    )..where((t) => t.id.equals(id))).getSingleOrNull();
     return row?.toModel();
   }
 
   /// Inserts or updates a health record.
   Future<void> insertItem(HealthRecord model) {
-    return into(healthRecordsTable)
-        .insertOnConflictUpdate(model.toCompanion());
+    return into(healthRecordsTable).insertOnConflictUpdate(model.toCompanion());
   }
 
   /// Batch inserts health records.
@@ -87,8 +84,9 @@ class HealthRecordsDao extends DatabaseAccessor<AppDatabase>
     return (selectOnly(healthRecordsTable)
           ..addColumns([countExpr])
           ..where(
-              healthRecordsTable.userId.equals(userId) &
-              healthRecordsTable.isDeleted.equals(false)))
+            healthRecordsTable.userId.equals(userId) &
+                healthRecordsTable.isDeleted.equals(false),
+          ))
         .watchSingle()
         .map((row) => row.read(countExpr) ?? 0);
   }
@@ -96,21 +94,21 @@ class HealthRecordsDao extends DatabaseAccessor<AppDatabase>
   /// Watches non-deleted health records for a specific bird.
   Stream<List<HealthRecord>> watchByBird(String birdId) {
     return (select(healthRecordsTable)
-          ..where(
-              (t) => t.birdId.equals(birdId) & t.isDeleted.equals(false)))
+          ..where((t) => t.birdId.equals(birdId) & t.isDeleted.equals(false)))
         .watch()
         .map((rows) => rows.map((r) => r.toModel()).toList());
   }
 
   /// Gets the latest health records for a specific bird, ordered by date descending.
-  Future<List<HealthRecord>> getLatest(String birdId,
-      {int limit = 5}) async {
-    final rows = await (select(healthRecordsTable)
-          ..where(
-              (t) => t.birdId.equals(birdId) & t.isDeleted.equals(false))
-          ..orderBy([(t) => OrderingTerm.desc(t.date)])
-          ..limit(limit))
-        .get();
+  Future<List<HealthRecord>> getLatest(String birdId, {int limit = 5}) async {
+    final rows =
+        await (select(healthRecordsTable)
+              ..where(
+                (t) => t.birdId.equals(birdId) & t.isDeleted.equals(false),
+              )
+              ..orderBy([(t) => OrderingTerm.desc(t.date)])
+              ..limit(limit))
+            .get();
     return rows.map((r) => r.toModel()).toList();
   }
 }

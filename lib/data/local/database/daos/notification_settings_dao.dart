@@ -19,20 +19,21 @@ class NotificationSettingsDao extends DatabaseAccessor<AppDatabase>
   }
 
   Future<NotificationSettings?> getByUser(String userId) async {
-    final row = await (select(notificationSettingsTable)
-          ..where((t) => t.userId.equals(userId)))
-        .getSingleOrNull();
+    final row = await (select(
+      notificationSettingsTable,
+    )..where((t) => t.userId.equals(userId))).getSingleOrNull();
     return row?.toModel();
   }
 
   Future<void> upsert(NotificationSettings model) {
-    return into(notificationSettingsTable)
-        .insertOnConflictUpdate(model.toCompanion());
+    return into(
+      notificationSettingsTable,
+    ).insertOnConflictUpdate(model.toCompanion());
   }
 
   Future<void> hardDelete(String id) {
-    return (delete(notificationSettingsTable)
-          ..where((t) => t.id.equals(id)))
-        .go();
+    return (delete(
+      notificationSettingsTable,
+    )..where((t) => t.id.equals(id))).go();
   }
 }

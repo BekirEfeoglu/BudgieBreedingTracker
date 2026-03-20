@@ -103,8 +103,9 @@ class _CategoryCard extends StatelessWidget {
                 category.description,
                 style: theme.textTheme.bodySmall?.copyWith(
                   fontSize: 10,
-                  color: theme.colorScheme.onSurfaceVariant
-                      .withValues(alpha: 0.7),
+                  color: theme.colorScheme.onSurfaceVariant.withValues(
+                    alpha: 0.7,
+                  ),
                 ),
                 textAlign: TextAlign.center,
                 maxLines: 2,

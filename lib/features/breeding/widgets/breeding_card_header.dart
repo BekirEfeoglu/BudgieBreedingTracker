@@ -21,15 +21,15 @@ class BreedingCardHeader extends ConsumerWidget {
     final theme = Theme.of(context);
 
     final maleName = pair.maleId != null
-        ? ref.watch(birdByIdProvider(pair.maleId!)).whenOrNull(
-              data: (bird) => bird?.name,
-            )
+        ? ref
+              .watch(birdByIdProvider(pair.maleId!))
+              .whenOrNull(data: (bird) => bird?.name)
         : null;
 
     final femaleName = pair.femaleId != null
-        ? ref.watch(birdByIdProvider(pair.femaleId!)).whenOrNull(
-              data: (bird) => bird?.name,
-            )
+        ? ref
+              .watch(birdByIdProvider(pair.femaleId!))
+              .whenOrNull(data: (bird) => bird?.name)
         : null;
 
     return Row(
@@ -40,7 +40,11 @@ class BreedingCardHeader extends ConsumerWidget {
             children: [
               Row(
                 children: [
-                  const AppIcon(AppIcons.male, size: 16, color: AppColors.genderMale),
+                  const AppIcon(
+                    AppIcons.male,
+                    size: 16,
+                    color: AppColors.genderMale,
+                  ),
                   const SizedBox(width: AppSpacing.xs),
                   Flexible(
                     child: Text(
@@ -50,9 +54,16 @@ class BreedingCardHeader extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(width: AppSpacing.sm),
-                  const Text('×', style: TextStyle(fontWeight: FontWeight.bold)),
+                  const Text(
+                    '×',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
                   const SizedBox(width: AppSpacing.sm),
-                  const AppIcon(AppIcons.female, size: 16, color: AppColors.genderFemale),
+                  const AppIcon(
+                    AppIcons.female,
+                    size: 16,
+                    color: AppColors.genderFemale,
+                  ),
                   const SizedBox(width: AppSpacing.xs),
                   Flexible(
                     child: Text(
@@ -101,7 +112,8 @@ class BreedingCardHeader extends ConsumerWidget {
       BreedingStatus.active => AppColors.primaryLight,
       BreedingStatus.ongoing => AppColors.warning,
       BreedingStatus.completed => AppColors.success,
-      BreedingStatus.cancelled || BreedingStatus.unknown => AppColors.neutral400,
+      BreedingStatus.cancelled ||
+      BreedingStatus.unknown => AppColors.neutral400,
     };
   }
 }

@@ -39,11 +39,23 @@ class EggStatusChip extends StatelessWidget {
     return switch (status) {
       EggStatus.laid => (AppColors.stageNew, 'eggs.status_laid'.tr()),
       EggStatus.fertile => (AppColors.success, 'eggs.status_fertile'.tr()),
-      EggStatus.infertile => (AppColors.neutral400, 'eggs.status_infertile'.tr()),
-      EggStatus.incubating => (AppColors.stageOngoing, 'eggs.status_incubating'.tr()),
-      EggStatus.hatched => (AppColors.stageCompleted, 'eggs.status_hatched'.tr()),
+      EggStatus.infertile => (
+        AppColors.neutral400,
+        'eggs.status_infertile'.tr(),
+      ),
+      EggStatus.incubating => (
+        AppColors.stageOngoing,
+        'eggs.status_incubating'.tr(),
+      ),
+      EggStatus.hatched => (
+        AppColors.stageCompleted,
+        'eggs.status_hatched'.tr(),
+      ),
       EggStatus.damaged => (AppColors.error, 'eggs.status_damaged'.tr()),
-      EggStatus.discarded => (AppColors.neutral500, 'eggs.status_discarded'.tr()),
+      EggStatus.discarded => (
+        AppColors.neutral500,
+        'eggs.status_discarded'.tr(),
+      ),
       EggStatus.empty => (AppColors.neutral300, 'eggs.status_empty'.tr()),
       EggStatus.unknown => (AppColors.neutral300, 'eggs.status_unknown'.tr()),
     };

@@ -20,22 +20,23 @@ class SyncMetadataDao extends DatabaseAccessor<AppDatabase>
   }
 
   Future<List<SyncMetadata>> getAll(String userId) async {
-    final rows = await (select(syncMetadataTable)
-          ..where((t) => t.userId.equals(userId)))
-        .get();
+    final rows = await (select(
+      syncMetadataTable,
+    )..where((t) => t.userId.equals(userId))).get();
     return rows.map((r) => r.toModel()).toList();
   }
 
   Future<SyncMetadata?> getById(String id) async {
-    final row =
-        await (select(syncMetadataTable)..where((t) => t.id.equals(id)))
-            .getSingleOrNull();
+    final row = await (select(
+      syncMetadataTable,
+    )..where((t) => t.id.equals(id))).getSingleOrNull();
     return row?.toModel();
   }
 
   Future<void> insertItem(SyncMetadata metadata) {
-    return into(syncMetadataTable)
-        .insertOnConflictUpdate(metadata.toCompanion());
+    return into(
+      syncMetadataTable,
+    ).insertOnConflictUpdate(metadata.toCompanion());
   }
 
   Future<void> insertAll(List<SyncMetadata> items) {
@@ -56,11 +57,13 @@ class SyncMetadataDao extends DatabaseAccessor<AppDatabase>
   }
 
   Future<List<SyncMetadata>> getPending(String userId) async {
-    final rows = await (select(syncMetadataTable)
-          ..where((t) =>
-              t.userId.equals(userId) &
-              t.status.equalsValue(SyncStatus.pending)))
-        .get();
+    final rows =
+        await (select(syncMetadataTable)..where(
+              (t) =>
+                  t.userId.equals(userId) &
+                  t.status.equalsValue(SyncStatus.pending),
+            ))
+            .get();
     return rows.map((r) => r.toModel()).toList();
   }
 
@@ -72,13 +75,15 @@ class SyncMetadataDao extends DatabaseAccessor<AppDatabase>
     String userId,
     String tableName,
   ) async {
-    final rows = await (select(syncMetadataTable)
-          ..where((t) =>
-              t.userId.equals(userId) &
-              (t.status.equalsValue(SyncStatus.pending) |
-                  t.status.equalsValue(SyncStatus.pendingDelete)) &
-              t.tableName_.equals(tableName)))
-        .get();
+    final rows =
+        await (select(syncMetadataTable)..where(
+              (t) =>
+                  t.userId.equals(userId) &
+                  (t.status.equalsValue(SyncStatus.pending) |
+                      t.status.equalsValue(SyncStatus.pendingDelete)) &
+                  t.tableName_.equals(tableName),
+            ))
+            .get();
     return rows.map((r) => r.toModel()).toList();
   }
 
@@ -87,12 +92,14 @@ class SyncMetadataDao extends DatabaseAccessor<AppDatabase>
     String userId,
     String tableName,
   ) async {
-    final rows = await (select(syncMetadataTable)
-          ..where((t) =>
-              t.userId.equals(userId) &
-              t.status.equalsValue(SyncStatus.error) &
-              t.tableName_.equals(tableName)))
-        .get();
+    final rows =
+        await (select(syncMetadataTable)..where(
+              (t) =>
+                  t.userId.equals(userId) &
+                  t.status.equalsValue(SyncStatus.error) &
+                  t.tableName_.equals(tableName),
+            ))
+            .get();
     return rows.map((r) => r.toModel()).toList();
   }
 
@@ -103,16 +110,15 @@ class SyncMetadataDao extends DatabaseAccessor<AppDatabase>
   /// [SyncStatus.error] records — error records are items that failed to push
   /// and must not be deleted during full reconciliation.
   Future<Set<String>> getPendingRecordIds(String userId) async {
-    final rows = await (select(syncMetadataTable)
-          ..where((t) =>
-              t.userId.equals(userId) &
-              (t.status.equalsValue(SyncStatus.pending) |
-                  t.status.equalsValue(SyncStatus.error))))
-        .get();
-    return rows
-        .map((r) => r.recordId)
-        .whereType<String>()
-        .toSet();
+    final rows =
+        await (select(syncMetadataTable)..where(
+              (t) =>
+                  t.userId.equals(userId) &
+                  (t.status.equalsValue(SyncStatus.pending) |
+                      t.status.equalsValue(SyncStatus.error)),
+            ))
+            .get();
+    return rows.map((r) => r.recordId).whereType<String>().toSet();
   }
 
   /// Returns the set of table names that have pending sync records.
@@ -120,12 +126,15 @@ class SyncMetadataDao extends DatabaseAccessor<AppDatabase>
   /// Used by [SyncOrchestrator] to skip layers with no pending changes,
   /// avoiding unnecessary repository reads and empty push cycles.
   Future<Set<String>> getPendingTableNames(String userId) async {
-    final rows = await (selectOnly(syncMetadataTable)
-          ..addColumns([syncMetadataTable.tableName_])
-          ..where(syncMetadataTable.userId.equals(userId) &
-              syncMetadataTable.status.equalsValue(SyncStatus.pending))
-          ..groupBy([syncMetadataTable.tableName_]))
-        .get();
+    final rows =
+        await (selectOnly(syncMetadataTable)
+              ..addColumns([syncMetadataTable.tableName_])
+              ..where(
+                syncMetadataTable.userId.equals(userId) &
+                    syncMetadataTable.status.equalsValue(SyncStatus.pending),
+              )
+              ..groupBy([syncMetadataTable.tableName_]))
+            .get();
     return rows
         .map((row) => row.read(syncMetadataTable.tableName_))
         .whereType<String>()
@@ -135,20 +144,25 @@ class SyncMetadataDao extends DatabaseAccessor<AppDatabase>
   /// Counts pending sync records for a user (lightweight — no row mapping).
   Future<int> countPending(String userId) async {
     final count = syncMetadataTable.id.count();
-    final row = await (selectOnly(syncMetadataTable)
-          ..addColumns([count])
-          ..where(syncMetadataTable.userId.equals(userId) &
-              syncMetadataTable.status.equalsValue(SyncStatus.pending)))
-        .getSingle();
+    final row =
+        await (selectOnly(syncMetadataTable)
+              ..addColumns([count])
+              ..where(
+                syncMetadataTable.userId.equals(userId) &
+                    syncMetadataTable.status.equalsValue(SyncStatus.pending),
+              ))
+            .getSingle();
     return row.read(count) ?? 0;
   }
 
   Future<List<SyncMetadata>> getErrors(String userId) async {
-    final rows = await (select(syncMetadataTable)
-          ..where((t) =>
-              t.userId.equals(userId) &
-              t.status.equalsValue(SyncStatus.error)))
-        .get();
+    final rows =
+        await (select(syncMetadataTable)..where(
+              (t) =>
+                  t.userId.equals(userId) &
+                  t.status.equalsValue(SyncStatus.error),
+            ))
+            .get();
     return rows.map((r) => r.toModel()).toList();
   }
 
@@ -165,18 +179,22 @@ class SyncMetadataDao extends DatabaseAccessor<AppDatabase>
   /// Uses get() + firstOrNull instead of getSingleOrNull to handle
   /// duplicate records gracefully (avoids "more than one result" crash).
   Future<SyncMetadata?> getByRecord(String tableName, String recordId) async {
-    final rows = await (select(syncMetadataTable)
-          ..where((t) =>
-              t.tableName_.equals(tableName) & t.recordId.equals(recordId))
-          ..limit(1))
-        .get();
+    final rows =
+        await (select(syncMetadataTable)
+              ..where(
+                (t) =>
+                    t.tableName_.equals(tableName) &
+                    t.recordId.equals(recordId),
+              )
+              ..limit(1))
+            .get();
     return rows.isEmpty ? null : rows.first.toModel();
   }
 
   Future<void> deleteByRecord(String tableName, String recordId) {
-    return (delete(syncMetadataTable)
-          ..where((t) =>
-              t.tableName_.equals(tableName) & t.recordId.equals(recordId)))
+    return (delete(syncMetadataTable)..where(
+          (t) => t.tableName_.equals(tableName) & t.recordId.equals(recordId),
+        ))
         .go();
   }
 
@@ -185,8 +203,10 @@ class SyncMetadataDao extends DatabaseAccessor<AppDatabase>
     final count = syncMetadataTable.id.count();
     return (selectOnly(syncMetadataTable)
           ..addColumns([count])
-          ..where(syncMetadataTable.userId.equals(userId) &
-              syncMetadataTable.status.equalsValue(SyncStatus.pending)))
+          ..where(
+            syncMetadataTable.userId.equals(userId) &
+                syncMetadataTable.status.equalsValue(SyncStatus.pending),
+          ))
         .watchSingle()
         .map((row) => row.read(count) ?? 0);
   }
@@ -199,13 +219,18 @@ class SyncMetadataDao extends DatabaseAccessor<AppDatabase>
   ) async {
     final count = syncMetadataTable.id.count();
     final cutoff = DateTime.now().subtract(maxAge);
-    final row = await (selectOnly(syncMetadataTable)
-          ..addColumns([count])
-          ..where(syncMetadataTable.userId.equals(userId) &
-              syncMetadataTable.status.equalsValue(SyncStatus.error) &
-              syncMetadataTable.createdAt.isSmallerOrEqualValue(cutoff) &
-              syncMetadataTable.retryCount.isBiggerOrEqualValue(minRetries)))
-        .getSingle();
+    final row =
+        await (selectOnly(syncMetadataTable)
+              ..addColumns([count])
+              ..where(
+                syncMetadataTable.userId.equals(userId) &
+                    syncMetadataTable.status.equalsValue(SyncStatus.error) &
+                    syncMetadataTable.createdAt.isSmallerOrEqualValue(cutoff) &
+                    syncMetadataTable.retryCount.isBiggerOrEqualValue(
+                      minRetries,
+                    ),
+              ))
+            .getSingle();
     return row.read(count) ?? 0;
   }
 
@@ -217,12 +242,13 @@ class SyncMetadataDao extends DatabaseAccessor<AppDatabase>
     int minRetries,
   ) async {
     final cutoff = DateTime.now().subtract(maxAge);
-    return (delete(syncMetadataTable)
-          ..where((t) =>
+    return (delete(syncMetadataTable)..where(
+          (t) =>
               t.userId.equals(userId) &
               t.status.equalsValue(SyncStatus.error) &
               t.createdAt.isSmallerOrEqualValue(cutoff) &
-              t.retryCount.isBiggerOrEqualValue(minRetries)))
+              t.retryCount.isBiggerOrEqualValue(minRetries),
+        ))
         .go();
   }
 }

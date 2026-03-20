@@ -41,11 +41,7 @@ void main() async {
 
   await bootstrapRun(() {
     return EasyLocalization(
-      supportedLocales: const [
-        Locale('tr'),
-        Locale('en'),
-        Locale('de'),
-      ],
+      supportedLocales: const [Locale('tr'), Locale('en'), Locale('de')],
       path: 'assets/translations',
       fallbackLocale: const Locale('tr'),
       child: ProviderScope(

@@ -57,7 +57,9 @@ void main() {
     when(() => localDao.deleteByEntity(any())).thenAnswer((_) async {});
 
     when(() => remoteSource.upsert(any())).thenAnswer((_) async {});
-    when(() => remoteSource.deleteById(any(), userId: any(named: 'userId'))).thenAnswer((_) async {});
+    when(
+      () => remoteSource.deleteById(any(), userId: any(named: 'userId')),
+    ).thenAnswer((_) async {});
     when(() => remoteSource.fetchAll(any())).thenAnswer((_) async => []);
     when(
       () => remoteSource.fetchUpdatedSince(any(), any()),
@@ -93,7 +95,9 @@ void main() {
 
       verify(() => localDao.hardDelete('photo-1')).called(1);
       verify(() => syncDao.insertItem(any())).called(1);
-      verify(() => remoteSource.deleteById('photo-1', userId: userId)).called(1);
+      verify(
+        () => remoteSource.deleteById('photo-1', userId: userId),
+      ).called(1);
     });
 
     test('pushAll cleans orphan metadata and pushes existing items', () async {

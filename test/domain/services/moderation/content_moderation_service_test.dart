@@ -8,9 +8,11 @@ class _FakeEdgeFunctionClient extends EdgeFunctionClient {
   final EdgeFunctionResult? _fixedResult;
   final bool shouldThrow;
 
-  _FakeEdgeFunctionClient({EdgeFunctionResult? fixedResult, this.shouldThrow = false})
-      : _fixedResult = fixedResult,
-        super(MockSupabaseClient());
+  _FakeEdgeFunctionClient({
+    EdgeFunctionResult? fixedResult,
+    this.shouldThrow = false,
+  }) : _fixedResult = fixedResult,
+       super(MockSupabaseClient());
 
   @override
   Future<EdgeFunctionResult> invoke(
@@ -19,7 +21,8 @@ class _FakeEdgeFunctionClient extends EdgeFunctionClient {
     Map<String, String>? headers,
   }) async {
     if (shouldThrow) throw Exception('Network error');
-    return _fixedResult ?? const EdgeFunctionResult(success: true, data: {'allowed': true});
+    return _fixedResult ??
+        const EdgeFunctionResult(success: true, data: {'allowed': true});
   }
 }
 
@@ -85,9 +88,7 @@ void main() {
     });
 
     test('rejects spam patterns — Turkish spam', () async {
-      final result = await service.checkText(
-        'Hemen tıkla kazan, bedava para!',
-      );
+      final result = await service.checkText('Hemen tıkla kazan, bedava para!');
       expect(result.isAllowed, isFalse);
       expect(result.rejectionReason, 'content_violation');
     });
@@ -114,9 +115,7 @@ void main() {
     });
 
     test('rejects repeated character spam', () async {
-      final result = await service.checkText(
-        'This is greeeeeeeeeeat content',
-      );
+      final result = await service.checkText('This is greeeeeeeeeeat content');
       expect(result.isAllowed, isFalse);
       expect(result.rejectionReason, 'spam_detected');
     });
@@ -145,9 +144,7 @@ void main() {
           data: {'allowed': true},
         ),
       );
-      final service = ContentModerationService(
-        edgeFunctionClient: edgeClient,
-      );
+      final service = ContentModerationService(edgeFunctionClient: edgeClient);
 
       final result = await service.checkText('Nice budgie photo!');
       expect(result.isAllowed, isTrue);
@@ -160,38 +157,34 @@ void main() {
           data: {'allowed': false, 'reason': 'inappropriate_language'},
         ),
       );
-      final service = ContentModerationService(
-        edgeFunctionClient: edgeClient,
-      );
+      final service = ContentModerationService(edgeFunctionClient: edgeClient);
 
       final result = await service.checkText('Some content here');
       expect(result.isAllowed, isFalse);
       expect(result.rejectionReason, 'inappropriate_language');
     });
 
-    test('allows content when edge function is unavailable', () async {
+    test('flags content for review when edge function is unavailable', () async {
       final edgeClient = _FakeEdgeFunctionClient(
         fixedResult: const EdgeFunctionResult(
           success: false,
           error: 'Function not deployed',
         ),
       );
-      final service = ContentModerationService(
-        edgeFunctionClient: edgeClient,
-      );
+      final service = ContentModerationService(edgeFunctionClient: edgeClient);
 
       final result = await service.checkText('Some content');
       expect(result.isAllowed, isTrue);
+      expect(result.needsReview, isTrue);
     });
 
-    test('allows content when edge function throws', () async {
+    test('flags content for review when edge function throws', () async {
       final edgeClient = _FakeEdgeFunctionClient(shouldThrow: true);
-      final service = ContentModerationService(
-        edgeFunctionClient: edgeClient,
-      );
+      final service = ContentModerationService(edgeFunctionClient: edgeClient);
 
       final result = await service.checkText('Some content');
       expect(result.isAllowed, isTrue);
+      expect(result.needsReview, isTrue);
     });
 
     test('client-side filter runs before server-side', () async {
@@ -202,9 +195,7 @@ void main() {
           data: {'allowed': true},
         ),
       );
-      final service = ContentModerationService(
-        edgeFunctionClient: edgeClient,
-      );
+      final service = ContentModerationService(edgeFunctionClient: edgeClient);
 
       final result = await service.checkText('I will kill you');
       expect(result.isAllowed, isFalse);
@@ -215,9 +206,7 @@ void main() {
       final edgeClient = _FakeEdgeFunctionClient(
         fixedResult: const EdgeFunctionResult(success: true, data: null),
       );
-      final service = ContentModerationService(
-        edgeFunctionClient: edgeClient,
-      );
+      final service = ContentModerationService(edgeFunctionClient: edgeClient);
 
       final result = await service.checkText('Normal content');
       expect(result.isAllowed, isTrue);
@@ -230,9 +219,7 @@ void main() {
           data: {'some_other_field': 'value'},
         ),
       );
-      final service = ContentModerationService(
-        edgeFunctionClient: edgeClient,
-      );
+      final service = ContentModerationService(edgeFunctionClient: edgeClient);
 
       final result = await service.checkText('Normal content');
       expect(result.isAllowed, isTrue);
@@ -244,12 +231,21 @@ void main() {
       const result = ModerationResult.allowed();
       expect(result.isAllowed, isTrue);
       expect(result.rejectionReason, isNull);
+      expect(result.needsReview, isFalse);
     });
 
     test('rejected factory creates rejected result with reason', () {
       const result = ModerationResult.rejected('spam');
       expect(result.isAllowed, isFalse);
       expect(result.rejectionReason, 'spam');
+      expect(result.needsReview, isFalse);
+    });
+
+    test('pendingReview factory creates review-flagged result', () {
+      const result = ModerationResult.pendingReview();
+      expect(result.isAllowed, isTrue);
+      expect(result.rejectionReason, isNull);
+      expect(result.needsReview, isTrue);
     });
   });
 }

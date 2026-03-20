@@ -57,16 +57,16 @@ abstract class AppColors {
   static const stageOverdue = Color(0xFFEF4444);
 
   // Category Colors
-  static const medication = Color(0xFF9333EA);   // purple
-  static const feature = Color(0xFFF59E0B);       // amber
-  static const teal = Color(0xFF14B8A6);           // teal
-  static const amber = Color(0xFFF59E0B);          // amber
+  static const medication = Color(0xFF9333EA); // purple
+  static const feature = Color(0xFFF59E0B); // amber
+  static const teal = Color(0xFF14B8A6); // teal
+  static const amber = Color(0xFFF59E0B); // amber
 
   // Health / Event Domain Colors
-  static const injury = Color(0xFFF97316);          // orange
-  static const vaccination = Color(0xFF9C27B0);     // purple
-  static const feeding = Color(0xFF795548);          // brown
-  static const deepOrange = Color(0xFFFF5722);       // deep orange
+  static const injury = Color(0xFFF97316); // orange
+  static const vaccination = Color(0xFF9C27B0); // purple
+  static const feeding = Color(0xFF795548); // brown
+  static const deepOrange = Color(0xFFFF5722); // deep orange
 
   // Premium Badge Text
   static const premiumBadgeText = Color(0xFF3E2723); // dark brown
@@ -190,30 +190,40 @@ abstract class AppColors {
   /// Allele visual color (adaptive).
   static Color alleleVisualAdaptive(BuildContext context) {
     return Theme.of(context).brightness == Brightness.dark
-        ? alleleVisualDark : alleleVisual;
+        ? alleleVisualDark
+        : alleleVisual;
   }
 
   /// Allele carrier color (adaptive).
   static Color alleleCarrierAdaptive(BuildContext context) {
     return Theme.of(context).brightness == Brightness.dark
-        ? alleleCarrierDark : alleleCarrier;
+        ? alleleCarrierDark
+        : alleleCarrier;
   }
 
   /// Allele split color (adaptive).
   static Color alleleSplitAdaptive(BuildContext context) {
     return Theme.of(context).brightness == Brightness.dark
-        ? alleleSplitDark : alleleSplit;
+        ? alleleSplitDark
+        : alleleSplit;
   }
 
   /// Inheritance type color (adaptive for dark mode).
   static Color inheritanceColor(BuildContext context, String type) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return switch (type) {
-      'autosomalRecessive' => isDark ? inheritAutosomalRecessiveDark : inheritAutosomalRecessive,
-      'autosomalDominant' => isDark ? inheritAutosomalDominantDark : inheritAutosomalDominant,
-      'autosomalIncompleteDominant' => isDark ? inheritAutosomalIncompleteDominantDark : inheritAutosomalIncompleteDominant,
-      'sexLinkedRecessive' => isDark ? inheritSexLinkedRecessiveDark : inheritSexLinkedRecessive,
-      'sexLinkedCodominant' => isDark ? inheritSexLinkedCodominantDark : inheritSexLinkedCodominant,
+      'autosomalRecessive' =>
+        isDark ? inheritAutosomalRecessiveDark : inheritAutosomalRecessive,
+      'autosomalDominant' =>
+        isDark ? inheritAutosomalDominantDark : inheritAutosomalDominant,
+      'autosomalIncompleteDominant' =>
+        isDark
+            ? inheritAutosomalIncompleteDominantDark
+            : inheritAutosomalIncompleteDominant,
+      'sexLinkedRecessive' =>
+        isDark ? inheritSexLinkedRecessiveDark : inheritSexLinkedRecessive,
+      'sexLinkedCodominant' =>
+        isDark ? inheritSexLinkedCodominantDark : inheritSexLinkedCodominant,
       _ => neutral400,
     };
   }

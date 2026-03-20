@@ -4,22 +4,22 @@ import 'package:budgie_breeding_tracker/data/models/notification_schedule_model.
 
 extension NotificationScheduleRowMapper on NotificationScheduleRow {
   NotificationSchedule toModel() => NotificationSchedule(
-        id: id,
-        userId: userId,
-        type: type,
-        title: title,
-        message: message,
-        scheduledAt: scheduledAt,
-        isActive: isActive,
-        isRecurring: isRecurring,
-        intervalMinutes: intervalMinutes,
-        relatedEntityId: relatedEntityId,
-        priority: priority,
-        metadata: metadata,
-        processedAt: processedAt,
-        createdAt: createdAt,
-        updatedAt: updatedAt,
-      );
+    id: id,
+    userId: userId,
+    type: type,
+    title: title,
+    message: message,
+    scheduledAt: scheduledAt,
+    isActive: isActive,
+    isRecurring: isRecurring,
+    intervalMinutes: intervalMinutes,
+    relatedEntityId: relatedEntityId,
+    priority: priority,
+    metadata: metadata,
+    processedAt: processedAt,
+    createdAt: createdAt,
+    updatedAt: updatedAt,
+  );
 }
 
 extension NotificationScheduleModelMapper on NotificationSchedule {

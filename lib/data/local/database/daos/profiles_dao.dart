@@ -20,9 +20,9 @@ class ProfilesDao extends DatabaseAccessor<AppDatabase>
 
   /// Gets a single profile by id.
   Future<Profile?> getById(String id) async {
-    final row = await (select(profilesTable)
-          ..where((t) => t.id.equals(id)))
-        .getSingleOrNull();
+    final row = await (select(
+      profilesTable,
+    )..where((t) => t.id.equals(id))).getSingleOrNull();
     return row?.toModel();
   }
 

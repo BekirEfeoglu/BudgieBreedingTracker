@@ -207,11 +207,8 @@ void main() {
       'checkSystemHealth returns failure when function is not deployed (404)',
       () async {
         when(
-          () => mockFunctions.invoke(
-            'system-health',
-            body: null,
-            headers: null,
-          ),
+          () =>
+              mockFunctions.invoke('system-health', body: null, headers: null),
         ).thenThrow(
           const FunctionException(
             status: 404,

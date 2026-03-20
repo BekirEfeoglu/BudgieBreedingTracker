@@ -22,8 +22,10 @@ class BirdsTable extends Table {
   DateTimeColumn get createdAt => dateTime().nullable()();
   DateTimeColumn get updatedAt => dateTime().nullable()();
   BoolColumn get isDeleted => boolean().withDefault(const Constant(false))();
+
   /// JSON-encoded list of mutation IDs.
   TextColumn get mutations => text().nullable()();
+
   /// JSON-encoded map of mutationId -> alleleState.
   TextColumn get genotypeInfo => text().nullable()();
 

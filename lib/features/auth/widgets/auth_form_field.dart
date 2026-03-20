@@ -52,8 +52,9 @@ class _AuthFormFieldState extends State<AuthFormField> {
   // SDK that creates its own UIWindow (e.g. google_mobile_ads UMP) can steal
   // key-window status — causing becomeFirstResponder() to silently fail so
   // the keyboard never appears.
-  static const _iosKeyboardChannel =
-      MethodChannel('com.budgie/ios_keyboard_fix');
+  static const _iosKeyboardChannel = MethodChannel(
+    'com.budgie/ios_keyboard_fix',
+  );
 
   Future<void> _ensureFlutterWindowKey() async {
     if (!Platform.isIOS) return;

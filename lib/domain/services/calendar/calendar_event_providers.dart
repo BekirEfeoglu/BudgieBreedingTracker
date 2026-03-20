@@ -4,8 +4,7 @@ import 'package:budgie_breeding_tracker/domain/services/calendar/calendar_event_
 
 /// Provides the [CalendarEventGenerator] for auto-creating calendar
 /// events from breeding, egg, and chick milestones.
-final calendarEventGeneratorProvider =
-    Provider<CalendarEventGenerator>((ref) {
+final calendarEventGeneratorProvider = Provider<CalendarEventGenerator>((ref) {
   final eventRepo = ref.watch(eventRepositoryProvider);
   return CalendarEventGenerator(eventRepo);
 });

@@ -23,8 +23,9 @@ class DihybridPunnettSection extends ConsumerWidget {
     final dihybridPunnett = ref.watch(dihybridPunnettSquareProvider);
 
     // Available loci for second selector (exclude first selected locus)
-    final secondLociOptions =
-        availableLoci.where((l) => l != selectedLocus1).toList();
+    final secondLociOptions = availableLoci
+        .where((l) => l != selectedLocus1)
+        .toList();
     if (secondLociOptions.isEmpty) return const SizedBox.shrink();
 
     return Padding(
@@ -51,9 +52,9 @@ class DihybridPunnettSection extends ConsumerWidget {
                   key: ValueKey('dihybrid_locus2_$selectedLocus2'),
                   initialValue:
                       selectedLocus2 != null &&
-                              secondLociOptions.contains(selectedLocus2)
-                          ? selectedLocus2
-                          : null,
+                          secondLociOptions.contains(selectedLocus2)
+                      ? selectedLocus2
+                      : null,
                   decoration: InputDecoration(
                     isDense: true,
                     contentPadding: const EdgeInsets.symmetric(
@@ -61,8 +62,7 @@ class DihybridPunnettSection extends ConsumerWidget {
                       vertical: AppSpacing.sm,
                     ),
                     border: OutlineInputBorder(
-                      borderRadius:
-                          BorderRadius.circular(AppSpacing.radiusMd),
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
                     ),
                   ),
                   hint: Text(
@@ -79,8 +79,7 @@ class DihybridPunnettSection extends ConsumerWidget {
                       return DropdownMenuItem<String?>(
                         value: id,
                         child: Text(
-                          record?.localizationKey.tr() ??
-                              localizeLocusId(id),
+                          record?.localizationKey.tr() ?? localizeLocusId(id),
                           style: theme.textTheme.bodySmall,
                         ),
                       );
@@ -157,9 +156,9 @@ class PunnettLocusSelector extends ConsumerWidget {
 
 /// Maps raw locus IDs to localized display names.
 String localizeLocusId(String id) => switch (id) {
-      'blue_series' => 'genetics.locus_blue_series'.tr(),
-      'dilution' => 'genetics.locus_dilution'.tr(),
-      'crested' => 'genetics.locus_crested'.tr(),
-      'ino_locus' => 'genetics.locus_ino'.tr(),
-      _ => id,
-    };
+  'blue_series' => 'genetics.locus_blue_series'.tr(),
+  'dilution' => 'genetics.locus_dilution'.tr(),
+  'crested' => 'genetics.locus_crested'.tr(),
+  'ino_locus' => 'genetics.locus_ino'.tr(),
+  _ => id,
+};

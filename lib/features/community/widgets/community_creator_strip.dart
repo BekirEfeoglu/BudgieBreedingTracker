@@ -95,16 +95,14 @@ class _CreatorCard extends StatelessWidget {
       child: InkWell(
         borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
         onTap: () => context.push(
-          AppRoutes.communityUserPosts
-              .replaceFirst(':userId', creator.userId),
+          AppRoutes.communityUserPosts.replaceFirst(':userId', creator.userId),
         ),
         child: Ink(
           decoration: BoxDecoration(
             color: theme.colorScheme.surface,
             borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
             border: Border.all(
-              color:
-                  theme.colorScheme.outlineVariant.withValues(alpha: 0.45),
+              color: theme.colorScheme.outlineVariant.withValues(alpha: 0.45),
             ),
           ),
           child: Padding(
@@ -116,8 +114,9 @@ class _CreatorCard extends StatelessWidget {
                   children: [
                     CircleAvatar(
                       radius: 18,
-                      backgroundColor: theme.colorScheme.primary
-                          .withValues(alpha: 0.12),
+                      backgroundColor: theme.colorScheme.primary.withValues(
+                        alpha: 0.12,
+                      ),
                       foregroundImage: creator.avatarUrl != null
                           ? NetworkImage(creator.avatarUrl!)
                           : null,
@@ -140,8 +139,9 @@ class _CreatorCard extends StatelessWidget {
                         vertical: AppSpacing.xs,
                       ),
                       decoration: BoxDecoration(
-                        color: theme.colorScheme.primary
-                            .withValues(alpha: 0.08),
+                        color: theme.colorScheme.primary.withValues(
+                          alpha: 0.08,
+                        ),
                         borderRadius: BorderRadius.circular(
                           AppSpacing.radiusFull,
                         ),
@@ -176,9 +176,7 @@ class _CreatorCard extends StatelessWidget {
                 ),
                 const SizedBox(height: AppSpacing.xs),
                 Text(
-                  'community.likes_count'.tr(
-                    args: ['${creator.totalLikes}'],
-                  ),
+                  'community.likes_count'.tr(args: ['${creator.totalLikes}']),
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant,
                   ),

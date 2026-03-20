@@ -60,14 +60,11 @@ class _SectionHeader extends StatelessWidget {
       children: [
         Text(
           title,
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
         ),
-        TextButton(
-          onPressed: onViewAll,
-          child: Text('common.view_all'.tr()),
-        ),
+        TextButton(onPressed: onViewAll, child: Text('common.view_all'.tr())),
       ],
     );
   }
@@ -82,7 +79,9 @@ class _IncubatingEggTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isOverdue = summary.daysRemaining < 0;
-    final statusColor = isOverdue ? AppColors.stageOverdue : AppColors.stageOngoing;
+    final statusColor = isOverdue
+        ? AppColors.stageOverdue
+        : AppColors.stageOngoing;
     final daysText = isOverdue
         ? 'home.hatching_in'.tr(args: ['0'])
         : 'home.hatching_in'.tr(args: [summary.daysRemaining.toString()]);
@@ -153,10 +152,10 @@ class _ProgressIndicator extends StatelessWidget {
           Text(
             '${(progress * 100).round()}%',
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  fontSize: 9,
-                  fontWeight: FontWeight.bold,
-                  color: color,
-                ),
+              fontSize: 9,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
           ),
         ],
       ),

@@ -11,8 +11,9 @@ class SelectedDateNotifier extends Notifier<DateTime> {
   DateTime build() => DateTime.now();
 }
 
-final selectedDateProvider =
-    NotifierProvider<SelectedDateNotifier, DateTime>(SelectedDateNotifier.new);
+final selectedDateProvider = NotifierProvider<SelectedDateNotifier, DateTime>(
+  SelectedDateNotifier.new,
+);
 
 /// Calendar view mode.
 enum CalendarViewMode { month, week, day }
@@ -46,11 +47,14 @@ class CalendarViewNotifier extends Notifier<CalendarViewMode> {
 
 final calendarViewProvider =
     NotifierProvider<CalendarViewNotifier, CalendarViewMode>(
-        CalendarViewNotifier.new);
+      CalendarViewNotifier.new,
+    );
 
 /// Events for the current user (all events).
-final eventsStreamProvider =
-    StreamProvider.family<List<Event>, String>((ref, userId) {
+final eventsStreamProvider = StreamProvider.family<List<Event>, String>((
+  ref,
+  userId,
+) {
   final repo = ref.watch(eventRepositoryProvider);
   return repo.watchAll(userId);
 });
@@ -62,33 +66,33 @@ final eventsForSelectedDateProvider = Provider<List<Event>>((ref) {
   final selectedDate = ref.watch(selectedDateProvider);
 
   return eventsAsync.whenData((events) {
-    return events.where((e) {
-      final eventDate = e.eventDate;
-      return eventDate.year == selectedDate.year &&
-          eventDate.month == selectedDate.month &&
-          eventDate.day == selectedDate.day;
-    }).toList();
-  }).value ??
+        return events.where((e) {
+          final eventDate = e.eventDate;
+          return eventDate.year == selectedDate.year &&
+              eventDate.month == selectedDate.month &&
+              eventDate.day == selectedDate.day;
+        }).toList();
+      }).value ??
       [];
 });
 
 /// Events grouped by day for a specific month (for calendar dots).
 final eventsForMonthProvider =
     Provider.family<Map<DateTime, List<Event>>, DateTime>((ref, month) {
-  final userId = ref.watch(currentUserIdProvider);
-  final eventsAsync = ref.watch(eventsStreamProvider(userId));
+      final userId = ref.watch(currentUserIdProvider);
+      final eventsAsync = ref.watch(eventsStreamProvider(userId));
 
-  final events = eventsAsync.value ?? [];
-  final map = <DateTime, List<Event>>{};
-  for (final event in events) {
-    final d = event.eventDate;
-    if (d.month == month.month && d.year == month.year) {
-      final key = DateTime(d.year, d.month, d.day);
-      map.putIfAbsent(key, () => []).add(event);
-    }
-  }
-  return map;
-});
+      final events = eventsAsync.value ?? [];
+      final map = <DateTime, List<Event>>{};
+      for (final event in events) {
+        final d = event.eventDate;
+        if (d.month == month.month && d.year == month.year) {
+          final key = DateTime(d.year, d.month, d.day);
+          map.putIfAbsent(key, () => []).add(event);
+        }
+      }
+      return map;
+    });
 
 /// Currently displayed month on the calendar.
 class DisplayedMonthNotifier extends Notifier<DateTime> {
@@ -101,7 +105,8 @@ class DisplayedMonthNotifier extends Notifier<DateTime> {
 
 final displayedMonthProvider =
     NotifierProvider<DisplayedMonthNotifier, DateTime>(
-        DisplayedMonthNotifier.new);
+      DisplayedMonthNotifier.new,
+    );
 
 /// Events for the week containing the selected date.
 final eventsForWeekProvider = Provider<Map<DateTime, List<Event>>>((ref) {
@@ -111,8 +116,9 @@ final eventsForWeekProvider = Provider<Map<DateTime, List<Event>>>((ref) {
 
   final events = eventsAsync.value ?? [];
   // Get Monday of the selected date's week
-  final monday =
-      selectedDate.subtract(Duration(days: (selectedDate.weekday - 1)));
+  final monday = selectedDate.subtract(
+    Duration(days: (selectedDate.weekday - 1)),
+  );
 
   final map = <DateTime, List<Event>>{};
   for (var i = 0; i < 7; i++) {
@@ -127,8 +133,10 @@ final eventsForWeekProvider = Provider<Map<DateTime, List<Event>>>((ref) {
 });
 
 /// Upcoming events (next 5) for the current user.
-final upcomingEventsProvider =
-    FutureProvider.family<List<Event>, String>((ref, userId) {
+final upcomingEventsProvider = FutureProvider.family<List<Event>, String>((
+  ref,
+  userId,
+) {
   final repo = ref.watch(eventRepositoryProvider);
   return repo.getUpcoming(userId, limit: 5);
 });

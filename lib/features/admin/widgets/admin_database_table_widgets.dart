@@ -71,8 +71,8 @@ class DatabaseTableRow extends ConsumerWidget {
                 color: hasError
                     ? AppColors.error
                     : isProtected
-                        ? AppColors.warning
-                        : theme.colorScheme.primary,
+                    ? AppColors.warning
+                    : theme.colorScheme.primary,
               ),
               const SizedBox(width: AppSpacing.md),
               Expanded(
@@ -110,9 +110,10 @@ class DatabaseTableRow extends ConsumerWidget {
                     vertical: AppSpacing.xs,
                   ),
                   decoration: BoxDecoration(
-                    color: theme.colorScheme.primaryContainer.withValues(alpha: 0.3),
-                    borderRadius:
-                        BorderRadius.circular(AppSpacing.radiusFull),
+                    color: theme.colorScheme.primaryContainer.withValues(
+                      alpha: 0.3,
+                    ),
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
                   ),
                   child: Text(
                     '${table.rowCount}',
@@ -141,6 +142,7 @@ class DatabaseTableRow extends ConsumerWidget {
 
     showModalBottomSheet(
       context: context,
+      constraints: const BoxConstraints(maxWidth: AppSpacing.maxSheetWidth),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(
           top: Radius.circular(AppSpacing.radiusXl),
@@ -163,10 +165,16 @@ class DatabaseTableRow extends ConsumerWidget {
                 ),
                 const SizedBox(height: AppSpacing.lg),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.xl,
+                  ),
                   child: Row(
                     children: [
-                      Icon(LucideIcons.table2, size: 20, color: theme.colorScheme.primary),
+                      Icon(
+                        LucideIcons.table2,
+                        size: 20,
+                        color: theme.colorScheme.primary,
+                      ),
                       const SizedBox(width: AppSpacing.sm),
                       Expanded(
                         child: Text(
@@ -184,7 +192,9 @@ class DatabaseTableRow extends ConsumerWidget {
                         ),
                         decoration: BoxDecoration(
                           color: theme.colorScheme.primaryContainer,
-                          borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+                          borderRadius: BorderRadius.circular(
+                            AppSpacing.radiusFull,
+                          ),
                         ),
                         child: Text(
                           '${table.rowCount} ${'admin.rows'.tr()}',
@@ -199,7 +209,11 @@ class DatabaseTableRow extends ConsumerWidget {
                 const SizedBox(height: AppSpacing.md),
                 const Divider(),
                 ListTile(
-                  leading: const AppIcon(AppIcons.export, color: AppColors.info, semanticsLabel: 'Export'),
+                  leading: const AppIcon(
+                    AppIcons.export,
+                    color: AppColors.info,
+                    semanticsLabel: 'Export',
+                  ),
                   title: Text('admin.backup_table'.tr()),
                   subtitle: Text('admin.backup_table_desc'.tr()),
                   onTap: () {
@@ -209,7 +223,11 @@ class DatabaseTableRow extends ConsumerWidget {
                 ),
                 if (!isProtected)
                   ListTile(
-                    leading: const AppIcon(AppIcons.delete, color: AppColors.error, semanticsLabel: 'Delete'),
+                    leading: const AppIcon(
+                      AppIcons.delete,
+                      color: AppColors.error,
+                      semanticsLabel: 'Delete',
+                    ),
                     title: Text(
                       'admin.reset_table'.tr(),
                       style: const TextStyle(color: AppColors.error),
@@ -223,11 +241,16 @@ class DatabaseTableRow extends ConsumerWidget {
                   )
                 else
                   ListTile(
-                    leading: AppIcon(AppIcons.security, color: AppColors.warning.withValues(alpha: 0.5)),
+                    leading: AppIcon(
+                      AppIcons.security,
+                      color: AppColors.warning.withValues(alpha: 0.5),
+                    ),
                     title: Text(
                       'admin.reset_table'.tr(),
                       style: TextStyle(
-                        color: theme.colorScheme.onSurface.withValues(alpha: 0.38),
+                        color: theme.colorScheme.onSurface.withValues(
+                          alpha: 0.38,
+                        ),
                       ),
                     ),
                     subtitle: Text('admin.protected_table_desc'.tr()),
@@ -267,9 +290,11 @@ class DatabaseTableRow extends ConsumerWidget {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(result == SyncResult.success
-                ? 'sync.sync_success'.tr()
-                : 'sync.sync_failed'.tr()),
+            content: Text(
+              result == SyncResult.success
+                  ? 'sync.sync_success'.tr()
+                  : 'sync.sync_failed'.tr(),
+            ),
             behavior: SnackBarBehavior.floating,
           ),
         );

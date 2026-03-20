@@ -27,31 +27,34 @@ void main() {
   });
 
   group('create', () {
-    test('calls insert with correct post_id, user_id, and trimmed content',
-        () async {
-      when(() => commentSource.insert(any())).thenAnswer((_) async {});
+    test(
+      'calls insert with correct post_id, user_id, and trimmed content',
+      () async {
+        when(() => commentSource.insert(any())).thenAnswer((_) async {});
 
-      await repository.create(
-        postId: 'p1',
-        userId: 'u1',
-        content: '  Hello World  ',
-      );
+        await repository.create(
+          postId: 'p1',
+          userId: 'u1',
+          content: '  Hello World  ',
+        );
 
-      final captured =
-          verify(() => commentSource.insert(captureAny())).captured.single
-              as Map<String, dynamic>;
+        final captured =
+            verify(() => commentSource.insert(captureAny())).captured.single
+                as Map<String, dynamic>;
 
-      expect(captured['post_id'], 'p1');
-      expect(captured['user_id'], 'u1');
-      expect(captured['content'], 'Hello World');
-      expect(captured['id'], isNotEmpty);
-    });
+        expect(captured['post_id'], 'p1');
+        expect(captured['user_id'], 'u1');
+        expect(captured['content'], 'Hello World');
+        expect(captured['id'], isNotEmpty);
+      },
+    );
   });
 
   group('delete', () {
     test('calls softDelete with correct commentId and userId', () async {
-      when(() => commentSource.softDelete(any(), any()))
-          .thenAnswer((_) async {});
+      when(
+        () => commentSource.softDelete(any(), any()),
+      ).thenAnswer((_) async {});
 
       await repository.delete(commentId: 'c1', userId: 'u1');
 
@@ -129,8 +132,7 @@ void main() {
     });
 
     test('returns empty list when no comments', () async {
-      when(() => commentSource.fetchByPost(any()))
-          .thenAnswer((_) async => []);
+      when(() => commentSource.fetchByPost(any())).thenAnswer((_) async => []);
 
       final comments = await repository.getByPost(
         postId: 'p1',

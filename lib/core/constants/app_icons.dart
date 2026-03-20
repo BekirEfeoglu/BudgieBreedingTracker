@@ -23,7 +23,8 @@ abstract final class AppIcons {
   static const birdOther = 'assets/icons/birds/bird_other.svg';
   static const statusDead = 'assets/icons/birds/status_dead.svg';
   static const photo = 'assets/icons/birds/photo.svg';
-  static const budgieNestAnimated = 'assets/icons/birds/budgie_nest_animated.svg';
+  static const budgieNestAnimated =
+      'assets/icons/birds/budgie_nest_animated.svg';
   static const species = 'assets/icons/birds/species.svg';
 
   // ── Breeding ──

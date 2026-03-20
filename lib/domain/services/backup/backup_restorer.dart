@@ -66,19 +66,19 @@ class BackupRestorer {
     required NestRepository nestRepo,
     required PhotoRepository photoRepo,
     EncryptionService? encryptionService,
-  })  : _birdRepo = birdRepo,
-        _breedingRepo = breedingRepo,
-        _eggRepo = eggRepo,
-        _chickRepo = chickRepo,
-        _healthRepo = healthRepo,
-        _eventRepo = eventRepo,
-        _incubationRepo = incubationRepo,
-        _growthRepo = growthRepo,
-        _notificationRepo = notificationRepo,
-        _clutchRepo = clutchRepo,
-        _nestRepo = nestRepo,
-        _photoRepo = photoRepo,
-        _encryptionService = encryptionService;
+  }) : _birdRepo = birdRepo,
+       _breedingRepo = breedingRepo,
+       _eggRepo = eggRepo,
+       _chickRepo = chickRepo,
+       _healthRepo = healthRepo,
+       _eventRepo = eventRepo,
+       _incubationRepo = incubationRepo,
+       _growthRepo = growthRepo,
+       _notificationRepo = notificationRepo,
+       _clutchRepo = clutchRepo,
+       _nestRepo = nestRepo,
+       _photoRepo = photoRepo,
+       _encryptionService = encryptionService;
 
   /// Restore data from a backup JSON file.
   Future<BackupResult> restoreBackup(String userId, String filePath) async {
@@ -106,8 +106,7 @@ class BackupRestorer {
       final backupData = json.decode(content) as Map<String, dynamic>;
 
       final version = backupData['version'] as int?;
-      if (version == null ||
-          version > BackupDataCollector.backupVersion) {
+      if (version == null || version > BackupDataCollector.backupVersion) {
         return BackupResult.failure(
           'Unsupported backup version: $version '
           '(max: ${BackupDataCollector.backupVersion})',
@@ -132,8 +131,7 @@ class BackupRestorer {
       totalRecords += await _restoreEntity<BreedingPair>(
         data: data,
         key: 'breeding_pairs',
-        fromJson: (json) =>
-            BreedingPair.fromJson(json as Map<String, dynamic>),
+        fromJson: (json) => BreedingPair.fromJson(json as Map<String, dynamic>),
         saveAll: (items) => _breedingRepo.saveAll(items),
         onError: () => errorCount++,
       );
@@ -160,8 +158,7 @@ class BackupRestorer {
       totalRecords += await _restoreEntity<HealthRecord>(
         data: data,
         key: 'health_records',
-        fromJson: (json) =>
-            HealthRecord.fromJson(json as Map<String, dynamic>),
+        fromJson: (json) => HealthRecord.fromJson(json as Map<String, dynamic>),
         saveAll: (items) => _healthRepo.saveAll(items),
         onError: () => errorCount++,
       );
@@ -179,8 +176,7 @@ class BackupRestorer {
       totalRecords += await _restoreEntity<Incubation>(
         data: data,
         key: 'incubations',
-        fromJson: (json) =>
-            Incubation.fromJson(json as Map<String, dynamic>),
+        fromJson: (json) => Incubation.fromJson(json as Map<String, dynamic>),
         saveAll: (items) => _incubationRepo.saveAll(items),
         onError: () => errorCount++,
       );

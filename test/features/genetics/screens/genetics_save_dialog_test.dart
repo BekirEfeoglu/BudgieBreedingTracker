@@ -29,9 +29,7 @@ void main() {
     when(
       () => mockHistoryDao.watchAll(any()),
     ).thenAnswer((_) => Stream.value([]));
-    when(
-      () => mockHistoryDao.insertItem(any()),
-    ).thenAnswer((_) async {});
+    when(() => mockHistoryDao.insertItem(any())).thenAnswer((_) async {});
   });
 
   GoRouter buildRouter() {
@@ -44,8 +42,7 @@ void main() {
           routes: [
             GoRoute(
               path: 'history',
-              builder: (_, __) =>
-                  const Scaffold(body: Text('History Screen')),
+              builder: (_, __) => const Scaffold(body: Text('History Screen')),
             ),
           ],
         ),
@@ -62,9 +59,7 @@ void main() {
     mutations: const {'blue': AlleleState.visual},
   );
 
-  const results = [
-    OffspringResult(phenotype: 'Blue', probability: 1.0),
-  ];
+  const results = [OffspringResult(phenotype: 'Blue', probability: 1.0)];
 
   Widget buildSubject({bool onResultsStep = true}) {
     return ProviderScope(
@@ -93,9 +88,7 @@ void main() {
   }
 
   group('Save Calculation Dialog', () {
-    testWidgets('shows note dialog when save button is tapped', (
-      tester,
-    ) async {
+    testWidgets('shows note dialog when save button is tapped', (tester) async {
       await tester.pumpWidget(buildSubject());
       await tester.pumpAndSettle();
 

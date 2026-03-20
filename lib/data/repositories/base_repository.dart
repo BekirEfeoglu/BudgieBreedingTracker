@@ -70,19 +70,23 @@ mixin SyncableRepository<T> on BaseRepository<T> {
   Future<void> markPending(String recordId, String userId) async {
     final existing = await syncDao.getByRecord(syncTableName, recordId);
     if (existing != null) {
-      await syncDao.updateItem(existing.copyWith(
-        status: SyncStatus.pending,
-        errorMessage: null,
-        retryCount: 0,
-      ));
+      await syncDao.updateItem(
+        existing.copyWith(
+          status: SyncStatus.pending,
+          errorMessage: null,
+          retryCount: 0,
+        ),
+      );
     } else {
-      await syncDao.insertItem(SyncMetadata(
-        id: _uuid.v4(),
-        table: syncTableName,
-        userId: userId,
-        status: SyncStatus.pending,
-        recordId: recordId,
-      ));
+      await syncDao.insertItem(
+        SyncMetadata(
+          id: _uuid.v4(),
+          table: syncTableName,
+          userId: userId,
+          status: SyncStatus.pending,
+          recordId: recordId,
+        ),
+      );
     }
   }
 
@@ -90,11 +94,13 @@ mixin SyncableRepository<T> on BaseRepository<T> {
   Future<void> markError(String recordId, String userId, String message) async {
     final existing = await syncDao.getByRecord(syncTableName, recordId);
     if (existing != null) {
-      await syncDao.updateItem(existing.copyWith(
-        status: SyncStatus.error,
-        errorMessage: message,
-        retryCount: (existing.retryCount ?? 0) + 1,
-      ));
+      await syncDao.updateItem(
+        existing.copyWith(
+          status: SyncStatus.error,
+          errorMessage: message,
+          retryCount: (existing.retryCount ?? 0) + 1,
+        ),
+      );
     }
   }
 
@@ -173,7 +179,10 @@ mixin ValidatedSyncMixin<T> on BaseRepository<T>, SyncableRepository<T> {
             '[$syncLogTag] True orphan ${getEntityId(item)}: $orphanReason',
           );
           await markSyncError(
-              getEntityId(item), getEntityUserId(item), orphanReason);
+            getEntityId(item),
+            getEntityUserId(item),
+            orphanReason,
+          );
           orphansCleaned++;
         }
         continue;
@@ -200,9 +209,6 @@ mixin ValidatedSyncMixin<T> on BaseRepository<T>, SyncableRepository<T> {
   }
 
   /// Delegates to [SyncableRepository.markError] for consistency.
-  Future<void> markSyncError(
-    String recordId,
-    String userId,
-    String message,
-  ) => markError(recordId, userId, message);
+  Future<void> markSyncError(String recordId, String userId, String message) =>
+      markError(recordId, userId, message);
 }

@@ -165,60 +165,73 @@ class _BreedingFormScreenState extends ConsumerState<BreedingFormScreen> {
             autovalidateMode: AutovalidateMode.onUserInteraction,
             child: SingleChildScrollView(
               padding: AppSpacing.screenPadding,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  BirdSelectorField(
-                    label: '${'breeding.male_bird'.tr()} (${maleBirds.length})',
-                    birds: maleBirds,
-                    selectedId: _maleId,
-                    onChanged: (id) => setState(() => _maleId = id),
-                    gender: BirdGender.male,
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(
+                    maxWidth: AppSpacing.maxContentWidth,
                   ),
-                  const SizedBox(height: AppSpacing.lg),
-                  BirdSelectorField(
-                    label:
-                        '${'breeding.female_bird'.tr()} (${femaleBirds.length})',
-                    birds: femaleBirds,
-                    selectedId: _femaleId,
-                    onChanged: (id) => setState(() => _femaleId = id),
-                    gender: BirdGender.female,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      BirdSelectorField(
+                        label:
+                            '${'breeding.male_bird'.tr()} (${maleBirds.length})',
+                        birds: maleBirds,
+                        selectedId: _maleId,
+                        onChanged: (id) => setState(() => _maleId = id),
+                        gender: BirdGender.male,
+                      ),
+                      const SizedBox(height: AppSpacing.lg),
+                      BirdSelectorField(
+                        label:
+                            '${'breeding.female_bird'.tr()} (${femaleBirds.length})',
+                        birds: femaleBirds,
+                        selectedId: _femaleId,
+                        onChanged: (id) => setState(() => _femaleId = id),
+                        gender: BirdGender.female,
+                      ),
+                      const SizedBox(height: AppSpacing.lg),
+                      DatePickerField(
+                        label: 'breeding.pairing_date'.tr(),
+                        value: _pairingDate,
+                        onChanged: (date) =>
+                            setState(() => _pairingDate = date),
+                        dateFormatter: ref
+                            .watch(dateFormatProvider)
+                            .formatter(),
+                      ),
+                      const SizedBox(height: AppSpacing.lg),
+                      TextFormField(
+                        controller: _cageController,
+                        decoration: InputDecoration(
+                          labelText: 'breeding.cage_number'.tr(),
+                          border: const OutlineInputBorder(),
+                          prefixIcon: const AppIcon(AppIcons.nest),
+                        ),
+                        textInputAction: TextInputAction.next,
+                      ),
+                      const SizedBox(height: AppSpacing.lg),
+                      TextFormField(
+                        controller: _notesController,
+                        decoration: InputDecoration(
+                          labelText: 'common.notes'.tr(),
+                          border: const OutlineInputBorder(),
+                          prefixIcon: const Icon(LucideIcons.stickyNote),
+                        ),
+                        maxLines: 3,
+                        textInputAction: TextInputAction.done,
+                      ),
+                      const SizedBox(height: AppSpacing.xxl),
+                      PrimaryButton(
+                        label: _isEdit
+                            ? 'common.update'.tr()
+                            : 'common.save'.tr(),
+                        isLoading: formState.isLoading,
+                        onPressed: _submit,
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: AppSpacing.lg),
-                  DatePickerField(
-                    label: 'breeding.pairing_date'.tr(),
-                    value: _pairingDate,
-                    onChanged: (date) => setState(() => _pairingDate = date),
-                    dateFormatter: ref.watch(dateFormatProvider).formatter(),
-                  ),
-                  const SizedBox(height: AppSpacing.lg),
-                  TextFormField(
-                    controller: _cageController,
-                    decoration: InputDecoration(
-                      labelText: 'breeding.cage_number'.tr(),
-                      border: const OutlineInputBorder(),
-                      prefixIcon: const AppIcon(AppIcons.nest),
-                    ),
-                    textInputAction: TextInputAction.next,
-                  ),
-                  const SizedBox(height: AppSpacing.lg),
-                  TextFormField(
-                    controller: _notesController,
-                    decoration: InputDecoration(
-                      labelText: 'common.notes'.tr(),
-                      border: const OutlineInputBorder(),
-                      prefixIcon: const Icon(LucideIcons.stickyNote),
-                    ),
-                    maxLines: 3,
-                    textInputAction: TextInputAction.done,
-                  ),
-                  const SizedBox(height: AppSpacing.xxl),
-                  PrimaryButton(
-                    label: _isEdit ? 'common.update'.tr() : 'common.save'.tr(),
-                    isLoading: formState.isLoading,
-                    onPressed: _submit,
-                  ),
-                ],
+                ),
               ),
             ),
           );

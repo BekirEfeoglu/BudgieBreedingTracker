@@ -55,6 +55,11 @@ post_install do |installer|
       # Strip simulator architectures from release builds to pass App Store validation.
       # Fixes: "executable references an unsupported platform in the arm64 slice"
       config.build_settings['BUILD_LIBRARY_FOR_DISTRIBUTION'] = 'YES'
+      # Override deprecated VALID_ARCHS that causes architecture mismatch on Apple Silicon.
+      # Pods like sign_in_with_apple and google_mobile_ads set this incorrectly.
+      config.build_settings['VALID_ARCHS'] = 'arm64 x86_64'
+      config.build_settings['VALID_ARCHS[sdk=iphonesimulator*]'] = 'arm64 x86_64'
+      config.build_settings['VALID_ARCHS[sdk=iphoneos*]'] = 'arm64'
     end
   end
 

@@ -13,10 +13,7 @@ import 'package:budgie_breeding_tracker/domain/services/genetics/mendelian_calcu
 class PunnettSquareWidget extends StatelessWidget {
   final PunnettSquareData data;
 
-  const PunnettSquareWidget({
-    super.key,
-    required this.data,
-  });
+  const PunnettSquareWidget({super.key, required this.data});
 
   @override
   Widget build(BuildContext context) {
@@ -82,19 +79,12 @@ class PunnettSquareWidget extends StatelessWidget {
           scrollDirection: Axis.horizontal,
           child: Table(
             defaultColumnWidth: const FixedColumnWidth(90),
-            border: TableBorder.all(
-              color: tableBorderColor,
-              width: 1,
-            ),
+            border: TableBorder.all(color: tableBorderColor, width: 1),
             children: [
               _buildHeaderRow(theme),
               ...data.cells.asMap().entries.map(
-                    (entry) => _buildDataRow(
-                      theme,
-                      entry.key,
-                      entry.value,
-                    ),
-                  ),
+                (entry) => _buildDataRow(theme, entry.key, entry.value),
+              ),
             ],
           ),
         ),
@@ -120,32 +110,20 @@ class PunnettSquareWidget extends StatelessWidget {
     );
   }
 
-  TableRow _buildDataRow(
-    ThemeData theme,
-    int rowIndex,
-    List<String> rowData,
-  ) {
+  TableRow _buildDataRow(ThemeData theme, int rowIndex, List<String> rowData) {
     final fatherAllele = rowIndex < data.fatherAlleles.length
         ? data.fatherAlleles[rowIndex]
         : '?';
 
     return TableRow(
       children: [
-        _buildCell(
-          theme,
-          '♂ $fatherAllele',
-          isHeader: true,
-        ),
+        _buildCell(theme, '♂ $fatherAllele', isHeader: true),
         ...rowData.map((cell) => _buildDataCell(theme, cell)),
       ],
     );
   }
 
-  Widget _buildCell(
-    ThemeData theme,
-    String text, {
-    bool isHeader = false,
-  }) {
+  Widget _buildCell(ThemeData theme, String text, {bool isHeader = false}) {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.sm),
       color: isHeader
@@ -201,13 +179,16 @@ class PunnettSquareWidget extends StatelessWidget {
     }
     // Two mutant alleles → visual expression
     final parts = genotype.split('/');
-    if (parts.length == 2 && !parts[0].contains('+') && !parts[1].contains('+')) {
+    if (parts.length == 2 &&
+        !parts[0].contains('+') &&
+        !parts[1].contains('+')) {
       return isDark
           ? AppColors.genotypeHomozygousMutantDark
           : AppColors.genotypeHomozygousMutant;
     }
     // One mutant allele → carrier
-    if (parts.length == 2 && (parts[0].contains('+') != parts[1].contains('+'))) {
+    if (parts.length == 2 &&
+        (parts[0].contains('+') != parts[1].contains('+'))) {
       return isDark
           ? AppColors.genotypeHeterozygousCarrierDark
           : AppColors.genotypeHeterozygousCarrier;

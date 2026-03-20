@@ -28,10 +28,10 @@ class EventReminderRepository extends BaseRepository<EventReminder>
     required EventReminderRemoteSource remoteSource,
     required SyncMetadataDao syncDao,
     required EventsDao eventsDao,
-  })  : _localDao = localDao,
-        _remoteSource = remoteSource,
-        _syncDao = syncDao,
-        _eventsDao = eventsDao;
+  }) : _localDao = localDao,
+       _remoteSource = remoteSource,
+       _syncDao = syncDao,
+       _eventsDao = eventsDao;
 
   static const _table = SupabaseConstants.eventRemindersTable;
 
@@ -81,12 +81,10 @@ class EventReminderRepository extends BaseRepository<EventReminder>
       _localDao.watchAll(userId);
 
   @override
-  Stream<EventReminder?> watchById(String id) =>
-      _localDao.watchById(id);
+  Stream<EventReminder?> watchById(String id) => _localDao.watchById(id);
 
   @override
-  Future<List<EventReminder>> getAll(String userId) =>
-      _localDao.getAll(userId);
+  Future<List<EventReminder>> getAll(String userId) => _localDao.getAll(userId);
 
   @override
   Future<EventReminder?> getById(String id) => _localDao.getById(id);
@@ -102,13 +100,17 @@ class EventReminderRepository extends BaseRepository<EventReminder>
   Future<void> saveAll(List<EventReminder> items) async {
     await _localDao.insertAll(items);
     if (items.isNotEmpty) {
-      final syncEntries = items.map((item) => SyncMetadata(
-        id: _uuid.v4(),
-        table: _table,
-        userId: item.userId,
-        status: SyncStatus.pending,
-        recordId: item.id,
-      )).toList();
+      final syncEntries = items
+          .map(
+            (item) => SyncMetadata(
+              id: _uuid.v4(),
+              table: _table,
+              userId: item.userId,
+              status: SyncStatus.pending,
+              recordId: item.id,
+            ),
+          )
+          .toList();
       await _syncDao.insertAll(syncEntries);
     }
   }
@@ -202,5 +204,4 @@ class EventReminderRepository extends BaseRepository<EventReminder>
   /// Watch reminders for a specific event.
   Stream<List<EventReminder>> watchByEvent(String eventId) =>
       _localDao.watchByEvent(eventId);
-
 }

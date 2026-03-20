@@ -26,8 +26,7 @@ class _CommunityPostDetailScreenState
   @override
   Widget build(BuildContext context) {
     final postAsync = ref.watch(communityPostByIdProvider(widget.postId));
-    final commentsAsync =
-        ref.watch(commentsForPostProvider(widget.postId));
+    final commentsAsync = ref.watch(commentsForPostProvider(widget.postId));
 
     ref.listen<CommentFormState>(commentFormProvider, (_, state) {
       if (state.isSuccess) {
@@ -37,16 +36,14 @@ class _CommunityPostDetailScreenState
         );
       }
       if (state.error != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('community.comment_error'.tr())),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('community.comment_error'.tr())));
       }
     });
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text('community.post_detail'.tr()),
-      ),
+      appBar: AppBar(title: Text('community.post_detail'.tr())),
       body: Column(
         children: [
           Expanded(
@@ -71,7 +68,8 @@ class _CommunityPostDetailScreenState
                         child: app.ErrorState(
                           message: e.toString(),
                           onRetry: () => ref.invalidate(
-                              communityPostByIdProvider(widget.postId)),
+                            communityPostByIdProvider(widget.postId),
+                          ),
                         ),
                       ),
                       data: (post) {
@@ -125,13 +123,11 @@ class _CommunityPostDetailScreenState
                             child: Center(
                               child: Text(
                                 'community.no_comments'.tr(),
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodySmall
+                                style: Theme.of(context).textTheme.bodySmall
                                     ?.copyWith(
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .onSurfaceVariant,
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.onSurfaceVariant,
                                     ),
                               ),
                             ),
@@ -142,8 +138,7 @@ class _CommunityPostDetailScreenState
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
                           itemCount: comments.length,
-                          itemBuilder: (context, index) =>
-                              CommunityCommentTile(
+                          itemBuilder: (context, index) => CommunityCommentTile(
                             key: ValueKey(comments[index].id),
                             comment: comments[index],
                           ),

@@ -5,9 +5,8 @@ import '../remote/api/community_social_remote_source.dart';
 class CommunitySocialRepository {
   final CommunitySocialRemoteSource _source;
 
-  const CommunitySocialRepository({
-    required CommunitySocialRemoteSource source,
-  }) : _source = source;
+  const CommunitySocialRepository({required CommunitySocialRemoteSource source})
+    : _source = source;
 
   Future<void> toggleLike({
     required String userId,
@@ -56,6 +55,19 @@ class CommunitySocialRepository {
       await _source.followUser(userId, targetUserId);
     }
   }
+
+  Future<List<String>> fetchBlockedUserIds(String userId) =>
+      _source.fetchBlockedUserIds(userId);
+
+  Future<void> blockUser({
+    required String userId,
+    required String blockedUserId,
+  }) => _source.blockUser(userId, blockedUserId);
+
+  Future<void> unblockUser({
+    required String userId,
+    required String blockedUserId,
+  }) => _source.unblockUser(userId, blockedUserId);
 
   Future<void> reportContent({
     required String userId,

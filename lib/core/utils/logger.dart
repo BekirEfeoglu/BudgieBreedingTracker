@@ -11,14 +11,18 @@ class AppLogger {
   static void debug(String message) {
     _logger.d(message);
     if (!kReleaseMode) {
-      Sentry.addBreadcrumb(Breadcrumb(message: message, level: SentryLevel.debug));
+      Sentry.addBreadcrumb(
+        Breadcrumb(message: message, level: SentryLevel.debug),
+      );
     }
   }
 
   static void info(String message) {
     _logger.i(message);
     if (!kReleaseMode) {
-      Sentry.addBreadcrumb(Breadcrumb(message: message, level: SentryLevel.info));
+      Sentry.addBreadcrumb(
+        Breadcrumb(message: message, level: SentryLevel.info),
+      );
     }
   }
 

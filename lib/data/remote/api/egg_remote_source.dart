@@ -32,7 +32,10 @@ class EggRemoteSource extends BaseRemoteSource<Egg> {
   }
 
   /// Fetches eggs by incubation id.
-  Future<List<Egg>> fetchByIncubation(String userId, String incubationId) async {
+  Future<List<Egg>> fetchByIncubation(
+    String userId,
+    String incubationId,
+  ) async {
     try {
       final response = await table
           .select()

@@ -106,8 +106,8 @@ class FakeQueryBuilder extends Fake implements SupabaseQueryBuilder {
     required this.deleteBuilder,
     FakeFilterBuilder<dynamic>? insertBuilder,
     FakeFilterBuilder<dynamic>? updateBuilder,
-  })  : insertBuilder = insertBuilder ?? FakeFilterBuilder<dynamic>(),
-        updateBuilder = updateBuilder ?? FakeFilterBuilder<dynamic>();
+  }) : insertBuilder = insertBuilder ?? FakeFilterBuilder<dynamic>(),
+       updateBuilder = updateBuilder ?? FakeFilterBuilder<dynamic>();
 
   final FakeFilterBuilder<PostgrestList> selectBuilder;
   final FakeFilterBuilder<dynamic> upsertBuilder;

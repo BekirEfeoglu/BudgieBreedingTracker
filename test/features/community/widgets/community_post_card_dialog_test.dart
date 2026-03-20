@@ -90,9 +90,7 @@ void main() {
       child: MaterialApp.router(
         routerConfig: buildRouter(
           Scaffold(
-            body: ListView(
-              children: [CommunityPostCard(post: post)],
-            ),
+            body: ListView(children: [CommunityPostCard(post: post)]),
           ),
         ),
       ),
@@ -101,9 +99,9 @@ void main() {
 
   group('CommunityPostCard', () {
     testWidgets('renders username and content', (tester) async {
-      await tester.pumpWidget(createSubject(
-        _testPost(username: 'Alice', content: 'My budgie'),
-      ));
+      await tester.pumpWidget(
+        createSubject(_testPost(username: 'Alice', content: 'My budgie')),
+      );
       await tester.pump();
 
       expect(find.text('Alice'), findsOneWidget);
@@ -111,18 +109,20 @@ void main() {
     });
 
     testWidgets('renders title when present', (tester) async {
-      await tester.pumpWidget(createSubject(
-        _testPost(title: 'Big News', postType: CommunityPostType.guide),
-      ));
+      await tester.pumpWidget(
+        createSubject(
+          _testPost(title: 'Big News', postType: CommunityPostType.guide),
+        ),
+      );
       await tester.pump();
 
       expect(find.text('Big News'), findsOneWidget);
     });
 
     testWidgets('renders tags', (tester) async {
-      await tester.pumpWidget(createSubject(
-        _testPost(tags: ['budgie', 'breeding']),
-      ));
+      await tester.pumpWidget(
+        createSubject(_testPost(tags: ['budgie', 'breeding'])),
+      );
       await tester.pump();
 
       expect(find.text('#budgie'), findsOneWidget);
@@ -130,9 +130,9 @@ void main() {
     });
 
     testWidgets('shows engagement summary when likes > 0', (tester) async {
-      await tester.pumpWidget(createSubject(
-        _testPost(likeCount: 5, commentCount: 3),
-      ));
+      await tester.pumpWidget(
+        createSubject(_testPost(likeCount: 5, commentCount: 3)),
+      );
       await tester.pump();
 
       expect(find.text('5'), findsOneWidget);
@@ -140,9 +140,9 @@ void main() {
     });
 
     testWidgets('hides engagement summary when no engagement', (tester) async {
-      await tester.pumpWidget(createSubject(
-        _testPost(likeCount: 0, commentCount: 0),
-      ));
+      await tester.pumpWidget(
+        createSubject(_testPost(likeCount: 0, commentCount: 0)),
+      );
       await tester.pump();
 
       // EngagementSummary should not render any metric badges
@@ -150,10 +150,9 @@ void main() {
     });
 
     testWidgets('shows delete option in popup for own post', (tester) async {
-      await tester.pumpWidget(createSubject(
-        _testPost(userId: 'me'),
-        currentUserId: 'me',
-      ));
+      await tester.pumpWidget(
+        createSubject(_testPost(userId: 'me'), currentUserId: 'me'),
+      );
       await tester.pump();
 
       // Tap popup menu
@@ -164,10 +163,9 @@ void main() {
     });
 
     testWidgets('shows report option for other user post', (tester) async {
-      await tester.pumpWidget(createSubject(
-        _testPost(userId: 'someone'),
-        currentUserId: 'me',
-      ));
+      await tester.pumpWidget(
+        createSubject(_testPost(userId: 'someone'), currentUserId: 'me'),
+      );
       await tester.pump();
 
       await tester.tap(find.byType(PopupMenuButton<String>));
@@ -177,10 +175,9 @@ void main() {
     });
 
     testWidgets('delete dialog appears and cancel dismisses', (tester) async {
-      await tester.pumpWidget(createSubject(
-        _testPost(userId: 'me'),
-        currentUserId: 'me',
-      ));
+      await tester.pumpWidget(
+        createSubject(_testPost(userId: 'me'), currentUserId: 'me'),
+      );
       await tester.pump();
 
       // Open popup and tap delete
@@ -200,15 +197,19 @@ void main() {
     });
 
     testWidgets('delete dialog confirm calls deletePost', (tester) async {
-      when(() => mockPostRepo.delete(
-            postId: any(named: 'postId'),
-            userId: any(named: 'userId'),
-          )).thenAnswer((_) async {});
+      when(
+        () => mockPostRepo.delete(
+          postId: any(named: 'postId'),
+          userId: any(named: 'userId'),
+        ),
+      ).thenAnswer((_) async {});
 
-      await tester.pumpWidget(createSubject(
-        _testPost(id: 'p-del', userId: 'me'),
-        currentUserId: 'me',
-      ));
+      await tester.pumpWidget(
+        createSubject(
+          _testPost(id: 'p-del', userId: 'me'),
+          currentUserId: 'me',
+        ),
+      );
       await tester.pump();
 
       // Open popup -> delete -> confirm
@@ -219,17 +220,15 @@ void main() {
       await tester.tap(find.widgetWithText(TextButton, 'common.delete'));
       await tester.pumpAndSettle();
 
-      verify(() => mockPostRepo.delete(
-            postId: 'p-del',
-            userId: 'me',
-          )).called(1);
+      verify(
+        () => mockPostRepo.delete(postId: 'p-del', userId: 'me'),
+      ).called(1);
     });
 
     testWidgets('report dialog shows reason options', (tester) async {
-      await tester.pumpWidget(createSubject(
-        _testPost(userId: 'someone'),
-        currentUserId: 'me',
-      ));
+      await tester.pumpWidget(
+        createSubject(_testPost(userId: 'someone'), currentUserId: 'me'),
+      );
       await tester.pump();
 
       // Open popup -> report
@@ -243,19 +242,22 @@ void main() {
       expect(find.text('community.report_reason_harassment'), findsOneWidget);
     });
 
-    testWidgets('report submits and shows snackbar on success',
-        (tester) async {
-      when(() => mockSocialRepo.reportContent(
-            userId: any(named: 'userId'),
-            targetId: any(named: 'targetId'),
-            targetType: any(named: 'targetType'),
-            reason: any(named: 'reason'),
-          )).thenAnswer((_) async {});
+    testWidgets('report submits and shows snackbar on success', (tester) async {
+      when(
+        () => mockSocialRepo.reportContent(
+          userId: any(named: 'userId'),
+          targetId: any(named: 'targetId'),
+          targetType: any(named: 'targetType'),
+          reason: any(named: 'reason'),
+        ),
+      ).thenAnswer((_) async {});
 
-      await tester.pumpWidget(createSubject(
-        _testPost(id: 'p-rep', userId: 'someone'),
-        currentUserId: 'me',
-      ));
+      await tester.pumpWidget(
+        createSubject(
+          _testPost(id: 'p-rep', userId: 'someone'),
+          currentUserId: 'me',
+        ),
+      );
       await tester.pump();
 
       // Open popup -> report -> select reason
@@ -268,12 +270,14 @@ void main() {
 
       expect(find.text('community.report_submitted'), findsOneWidget);
 
-      verify(() => mockSocialRepo.reportContent(
-            userId: 'me',
-            targetId: 'p-rep',
-            targetType: 'post',
-            reason: CommunityReportReason.spam,
-          )).called(1);
+      verify(
+        () => mockSocialRepo.reportContent(
+          userId: 'me',
+          targetId: 'p-rep',
+          targetType: 'post',
+          reason: CommunityReportReason.spam,
+        ),
+      ).called(1);
     });
   });
 }

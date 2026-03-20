@@ -74,13 +74,13 @@ class GeneticsCalculatorScreen extends ConsumerWidget {
           Expanded(
             child: switch (wizardStep) {
               0 => ParentSelectionStep(
-                  fatherGenotype: fatherGenotype,
-                  motherGenotype: motherGenotype,
-                ),
+                fatherGenotype: fatherGenotype,
+                motherGenotype: motherGenotype,
+              ),
               1 => GenotypePreviewStep(
-                  fatherGenotype: fatherGenotype,
-                  motherGenotype: motherGenotype,
-                ),
+                fatherGenotype: fatherGenotype,
+                motherGenotype: motherGenotype,
+              ),
               _ => const GeneticsResultsStep(),
             },
           ),
@@ -133,10 +133,7 @@ class _WizardNavBar extends ConsumerWidget {
   final int currentStep;
   final bool hasSelections;
 
-  const _WizardNavBar({
-    required this.currentStep,
-    required this.hasSelections,
-  });
+  const _WizardNavBar({required this.currentStep, required this.hasSelections});
 
   Future<void> _saveCalculation(BuildContext context, WidgetRef ref) async {
     final notes = await _showNoteDialog(context);
@@ -162,9 +159,9 @@ class _WizardNavBar extends ConsumerWidget {
         ),
       );
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('genetics.save_error'.tr())),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('genetics.save_error'.tr())));
     }
   }
 

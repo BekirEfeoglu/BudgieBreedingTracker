@@ -106,6 +106,11 @@ List<RouteBase> buildUserRoutes() => [
     builder: (context, state) =>
         const LegalDocumentScreen(type: LegalDocumentType.termsOfService),
   ),
+  GoRoute(
+    path: AppRoutes.communityGuidelines,
+    builder: (context, state) =>
+        const LegalDocumentScreen(type: LegalDocumentType.communityGuidelines),
+  ),
 
   // Two-Factor Authentication routes
   GoRoute(

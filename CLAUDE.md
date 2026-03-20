@@ -112,11 +112,11 @@ router/     -> Can import features/ (screens only)
 - **Colors/styles**: always via `Theme.of(context)`, never hardcoded
 - **Icons**: 82 custom SVG icons via `AppIcons` constants + `AppIcon` widget; LucideIcons for generic UI icons
 - **Shared widgets accepting `Widget icon`** (not IconData): EmptyState, InfoCard, StatCard, FabButton, PrimaryButton, StatusBadge
-- **Localization**: `'feature.key'.tr()` — master file is `tr.json` (~1,989 keys, 35 categories)
+- **Localization**: `'feature.key'.tr()` — master file is `tr.json` (~1,995 keys, 35 categories)
 - **Database**: Schema version 14, migration via for-loop + switch pattern
 - **Riverpod 3**: No StateProvider (use NotifierProvider), no `.valueOrNull` (use `.value`)
 - **Freezed 3**: Always add `const Model._()` private constructor
-- **Supabase**: Table/column names via `SupabaseConstants` (76 constants), never hardcoded
+- **Supabase**: Table/column names via `SupabaseConstants` (87 constants), never hardcoded
 - **File limit**: 300 lines per file; split using `part` directive if needed
 - **Error tracking**: Sentry for critical errors, `AppLogger` for all logging
 
@@ -138,7 +138,7 @@ Comprehensive rules are in `.claude/rules/` (auto-loaded as project instructions
 - `providers.md` — Riverpod provider types, dependency chain, ref usage
 - `database.md` — Drift tables/DAOs/mappers, migration pattern, repository
 - `widgets.md` — widget types, AsyncValue handling, form/card/list patterns
-- `navigation.md` — GoRouter routes (58), guards, edit mode, route ordering
+- `navigation.md` — GoRouter routes (59), guards, edit mode, route ordering
 - `localization.md` — easy_localization setup, key structure, sync workflow
 - `supabase_rules.md` — auth, remote source, sync, RLS, storage, edge functions
 - `new-feature-checklist.md` — step-by-step guide for adding new features

@@ -14,10 +14,7 @@ import 'package:budgie_breeding_tracker/features/premium/providers/premium_provi
 class SubscriptionInfoCard extends StatelessWidget {
   final SubscriptionInfo subscriptionInfo;
 
-  const SubscriptionInfoCard({
-    super.key,
-    required this.subscriptionInfo,
-  });
+  const SubscriptionInfoCard({super.key, required this.subscriptionInfo});
 
   @override
   Widget build(BuildContext context) {
@@ -41,45 +38,47 @@ class SubscriptionInfoCard extends StatelessWidget {
             decoration: const BoxDecoration(
               gradient: AppColors.premiumGradientDiagonal,
             ),
-            child: Builder(builder: (context) {
-              final onGold = AppColors.premiumOnGold(context);
-              return Row(
-                children: [
-                  AppIcon(AppIcons.premium, size: 32, color: onGold),
-                  const SizedBox(width: AppSpacing.md),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          subscriptionInfo.isTrial
-                              ? 'premium.trial_active_badge'.tr()
-                              : 'premium.active_badge'.tr(),
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            color: onGold,
-                            fontWeight: FontWeight.bold,
+            child: Builder(
+              builder: (context) {
+                final onGold = AppColors.premiumOnGold(context);
+                return Row(
+                  children: [
+                    AppIcon(AppIcons.premium, size: 32, color: onGold),
+                    const SizedBox(width: AppSpacing.md),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            subscriptionInfo.isTrial
+                                ? 'premium.trial_active_badge'.tr()
+                                : 'premium.active_badge'.tr(),
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              color: onGold,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          subscriptionInfo.isTrial
-                              ? 'premium.trial_subtitle'.tr()
-                              : 'premium.subscription_active_subtitle'.tr(),
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: onGold.withValues(alpha: 0.9),
+                          const SizedBox(height: 2),
+                          Text(
+                            subscriptionInfo.isTrial
+                                ? 'premium.trial_subtitle'.tr()
+                                : 'premium.subscription_active_subtitle'.tr(),
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: onGold.withValues(alpha: 0.9),
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                  Icon(
-                    LucideIcons.checkCircle2,
-                    color: onGold.withValues(alpha: 0.9),
-                    size: 28,
-                  ),
-                ],
-              );
-            }),
+                    Icon(
+                      LucideIcons.checkCircle2,
+                      color: onGold.withValues(alpha: 0.9),
+                      size: 28,
+                    ),
+                  ],
+                );
+              },
+            ),
           ),
 
           // Info rows
@@ -168,7 +167,10 @@ class _InfoRow extends StatelessWidget {
     return Row(
       children: [
         IconTheme(
-          data: IconThemeData(size: 18, color: theme.colorScheme.onSurfaceVariant),
+          data: IconThemeData(
+            size: 18,
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
           child: icon,
         ),
         const SizedBox(width: AppSpacing.md),

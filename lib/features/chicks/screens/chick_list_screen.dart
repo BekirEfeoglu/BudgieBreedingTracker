@@ -140,10 +140,12 @@ class _ChickListScreenState extends ConsumerState<ChickListScreen> {
           const SizedBox(height: AppSpacing.xs),
           const ChickFilterBar(),
           const SizedBox(height: AppSpacing.sm),
-          Center(child: AdBannerWidget(
-            isPremiumProvider: isPremiumProvider,
-            adBannerLoader: () => defaultAdBannerLoader(ref),
-          )),
+          Center(
+            child: AdBannerWidget(
+              isPremiumProvider: isPremiumProvider,
+              adBannerLoader: () => defaultAdBannerLoader(ref),
+            ),
+          ),
           Expanded(
             child: chicksAsync.when(
               loading: () => const Center(child: CircularProgressIndicator()),
@@ -181,30 +183,35 @@ class _ChickListScreenState extends ConsumerState<ChickListScreen> {
                   );
                 }
 
-                return RefreshIndicator(
-                  onRefresh: () async {
-                    ref.invalidate(chicksStreamProvider(userId));
-                    ref.invalidate(chickParentsByEggProvider(userId));
-                  },
-                  child: ListView.builder(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    padding: const EdgeInsets.only(
-                      top: AppSpacing.sm,
-                      bottom: AppSpacing.xxxl * 2,
+                return Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 800),
+                    child: RefreshIndicator(
+                      onRefresh: () async {
+                        ref.invalidate(chicksStreamProvider(userId));
+                        ref.invalidate(chickParentsByEggProvider(userId));
+                      },
+                      child: ListView.builder(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        padding: const EdgeInsets.only(
+                          top: AppSpacing.sm,
+                          bottom: AppSpacing.xxxl * 2,
+                        ),
+                        itemCount: chicks.length,
+                        itemBuilder: (context, index) {
+                          return ChickCard(
+                            key: ValueKey(chicks[index].id),
+                            chick: chicks[index],
+                            resolveParents: false,
+                            parents: chicks[index].eggId == null
+                                ? null
+                                : parentsByEgg[chicks[index].eggId!],
+                            onTap: () =>
+                                navigateWithAd('/chicks/${chicks[index].id}'),
+                          );
+                        },
+                      ),
                     ),
-                    itemCount: chicks.length,
-                    itemBuilder: (context, index) {
-                      return ChickCard(
-                        key: ValueKey(chicks[index].id),
-                        chick: chicks[index],
-                        resolveParents: false,
-                        parents: chicks[index].eggId == null
-                            ? null
-                            : parentsByEgg[chicks[index].eggId!],
-                        onTap: () =>
-                            navigateWithAd('/chicks/${chicks[index].id}'),
-                      );
-                    },
                   ),
                 );
               },

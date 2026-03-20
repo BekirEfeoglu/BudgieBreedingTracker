@@ -63,8 +63,8 @@ class BirdLinkChip extends StatelessWidget {
       onPressed: post.birdId == null
           ? null
           : () => context.push(
-                AppRoutes.birdDetail.replaceFirst(':id', post.birdId!),
-              ),
+              AppRoutes.birdDetail.replaceFirst(':id', post.birdId!),
+            ),
       side: BorderSide(
         color: theme.colorScheme.outlineVariant.withValues(alpha: 0.45),
       ),
@@ -90,15 +90,13 @@ class PostTagWrap extends StatelessWidget {
         for (final mutationTag in post.mutationTags)
           _TagChip(
             label: mutationTag,
-            backgroundColor:
-                theme.colorScheme.tertiary.withValues(alpha: 0.14),
+            backgroundColor: theme.colorScheme.tertiary.withValues(alpha: 0.14),
             foregroundColor: theme.colorScheme.tertiary,
           ),
         for (final tag in post.tags)
           _TagChip(
             label: tag.startsWith('#') ? tag : '#$tag',
-            backgroundColor:
-                theme.colorScheme.primary.withValues(alpha: 0.1),
+            backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.1),
             foregroundColor: theme.colorScheme.primary,
           ),
       ],
@@ -131,9 +129,9 @@ class _TagChip extends StatelessWidget {
       child: Text(
         label,
         style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: foregroundColor,
-              fontWeight: FontWeight.w600,
-            ),
+          color: foregroundColor,
+          fontWeight: FontWeight.w600,
+        ),
       ),
     );
   }

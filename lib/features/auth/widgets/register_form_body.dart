@@ -99,7 +99,9 @@ class RegisterFormBody extends StatelessWidget {
             if (!validation.hasUppercase) return 'auth.rule_uppercase'.tr();
             if (!validation.hasLowercase) return 'auth.rule_lowercase'.tr();
             if (!validation.hasDigit) return 'auth.rule_digit'.tr();
-            if (!validation.hasSpecialChar) return 'auth.rule_special_char'.tr();
+            if (!validation.hasSpecialChar) {
+              return 'auth.rule_special_char'.tr();
+            }
             return null;
           },
         ),
@@ -131,8 +133,7 @@ class RegisterFormBody extends StatelessWidget {
         // Age confirmation checkbox (COPPA)
         FormField<bool>(
           initialValue: false,
-          validator: (v) =>
-              v != true ? 'auth.age_confirm_required'.tr() : null,
+          validator: (v) => v != true ? 'auth.age_confirm_required'.tr() : null,
           builder: (state) => Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -163,8 +164,8 @@ class RegisterFormBody extends StatelessWidget {
                   child: Text(
                     state.errorText!,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Theme.of(context).colorScheme.error,
-                        ),
+                      color: Theme.of(context).colorScheme.error,
+                    ),
                   ),
                 ),
             ],
@@ -175,8 +176,7 @@ class RegisterFormBody extends StatelessWidget {
         // Terms & Privacy consent checkbox
         FormField<bool>(
           initialValue: false,
-          validator: (v) =>
-              v != true ? 'auth.consent_required'.tr() : null,
+          validator: (v) => v != true ? 'auth.consent_required'.tr() : null,
           builder: (state) => Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -207,8 +207,8 @@ class RegisterFormBody extends StatelessWidget {
                   child: Text(
                     state.errorText!,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Theme.of(context).colorScheme.error,
-                        ),
+                      color: Theme.of(context).colorScheme.error,
+                    ),
                   ),
                 ),
             ],
@@ -264,4 +264,3 @@ class RegisterFormBody extends StatelessWidget {
     );
   }
 }
-

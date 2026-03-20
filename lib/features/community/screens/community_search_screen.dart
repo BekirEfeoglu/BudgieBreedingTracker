@@ -48,7 +48,8 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen> {
           title: TextField(
             controller: _controller,
             autofocus: true,
-            onChanged: (value) => ref.read(communitySearchProvider.notifier).setQuery(value),
+            onChanged: (value) =>
+                ref.read(communitySearchProvider.notifier).setQuery(value),
             decoration: InputDecoration(
               hintText: 'community.search_hint'.tr(),
               border: InputBorder.none,
@@ -184,9 +185,7 @@ class _SearchSuggestionsBody extends ConsumerWidget {
                 ),
                 title: Text(user.username),
                 subtitle: Text(
-                  'community.user_posts_count'.tr(
-                    args: ['${user.postCount}'],
-                  ),
+                  'community.user_posts_count'.tr(args: ['${user.postCount}']),
                 ),
                 trailing: const Icon(LucideIcons.chevronRight),
               ),

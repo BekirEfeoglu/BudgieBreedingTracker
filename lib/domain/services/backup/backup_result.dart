@@ -17,17 +17,13 @@ class BackupResult {
   factory BackupResult.success({
     required String filePath,
     required int recordCount,
-  }) =>
-      BackupResult(
-        success: true,
-        filePath: filePath,
-        recordCount: recordCount,
-        timestamp: DateTime.now(),
-      );
+  }) => BackupResult(
+    success: true,
+    filePath: filePath,
+    recordCount: recordCount,
+    timestamp: DateTime.now(),
+  );
 
-  factory BackupResult.failure(String error) => BackupResult(
-        success: false,
-        error: error,
-        timestamp: DateTime.now(),
-      );
+  factory BackupResult.failure(String error) =>
+      BackupResult(success: false, error: error, timestamp: DateTime.now());
 }

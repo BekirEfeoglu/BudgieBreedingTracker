@@ -23,11 +23,7 @@ class FeedbackInfoBanner extends StatelessWidget {
       ),
       child: Row(
         children: [
-          AppIcon(
-            AppIcons.info,
-            size: 20,
-            color: theme.colorScheme.primary,
-          ),
+          AppIcon(AppIcons.info, size: 20, color: theme.colorScheme.primary),
           const SizedBox(width: AppSpacing.md),
           Expanded(
             child: Text(

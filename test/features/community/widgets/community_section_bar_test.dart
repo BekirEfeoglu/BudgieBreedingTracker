@@ -12,12 +12,16 @@ void main() {
 
   group('CommunitySectionBar', () {
     testWidgets('renders explore tab with sort controls', (tester) async {
-      await tester.pumpWidget(wrap(CommunitySectionBar(
-        tab: CommunityFeedTab.explore,
-        visibleCount: 10,
-        exploreSort: CommunityExploreSort.newest,
-        onExploreSortChanged: (_) {},
-      )));
+      await tester.pumpWidget(
+        wrap(
+          CommunitySectionBar(
+            tab: CommunityFeedTab.explore,
+            visibleCount: 10,
+            exploreSort: CommunityExploreSort.newest,
+            onExploreSortChanged: (_) {},
+          ),
+        ),
+      );
       await tester.pumpAndSettle();
 
       expect(find.text('community.tab_explore'), findsOneWidget);
@@ -26,12 +30,16 @@ void main() {
     });
 
     testWidgets('renders following tab without sort controls', (tester) async {
-      await tester.pumpWidget(wrap(CommunitySectionBar(
-        tab: CommunityFeedTab.following,
-        visibleCount: 5,
-        exploreSort: CommunityExploreSort.newest,
-        onExploreSortChanged: (_) {},
-      )));
+      await tester.pumpWidget(
+        wrap(
+          CommunitySectionBar(
+            tab: CommunityFeedTab.following,
+            visibleCount: 5,
+            exploreSort: CommunityExploreSort.newest,
+            onExploreSortChanged: (_) {},
+          ),
+        ),
+      );
       await tester.pumpAndSettle();
 
       expect(find.text('community.tab_following'), findsOneWidget);
@@ -39,12 +47,16 @@ void main() {
     });
 
     testWidgets('shows result count', (tester) async {
-      await tester.pumpWidget(wrap(CommunitySectionBar(
-        tab: CommunityFeedTab.guides,
-        visibleCount: 42,
-        exploreSort: CommunityExploreSort.newest,
-        onExploreSortChanged: (_) {},
-      )));
+      await tester.pumpWidget(
+        wrap(
+          CommunitySectionBar(
+            tab: CommunityFeedTab.guides,
+            visibleCount: 42,
+            exploreSort: CommunityExploreSort.newest,
+            onExploreSortChanged: (_) {},
+          ),
+        ),
+      );
       await tester.pumpAndSettle();
 
       // .tr(args:) without easy_localization returns the key name
@@ -52,12 +64,16 @@ void main() {
     });
 
     testWidgets('sort filter icons are present on explore', (tester) async {
-      await tester.pumpWidget(wrap(CommunitySectionBar(
-        tab: CommunityFeedTab.explore,
-        visibleCount: 0,
-        exploreSort: CommunityExploreSort.trending,
-        onExploreSortChanged: (_) {},
-      )));
+      await tester.pumpWidget(
+        wrap(
+          CommunitySectionBar(
+            tab: CommunityFeedTab.explore,
+            visibleCount: 0,
+            exploreSort: CommunityExploreSort.trending,
+            onExploreSortChanged: (_) {},
+          ),
+        ),
+      );
       await tester.pumpAndSettle();
 
       expect(find.byIcon(LucideIcons.clock3), findsOneWidget);

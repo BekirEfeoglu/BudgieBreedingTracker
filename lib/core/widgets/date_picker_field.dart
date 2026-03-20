@@ -51,8 +51,9 @@ class _DatePickerFieldState extends State<DatePickerField> {
   @override
   Widget build(BuildContext context) {
     final formatter = widget.dateFormatter ?? DateFormat(_defaultDatePattern);
-    final formattedValue =
-        widget.value != null ? formatter.format(widget.value!) : '';
+    final formattedValue = widget.value != null
+        ? formatter.format(widget.value!)
+        : '';
     if (_controller.text != formattedValue) {
       _controller.value = TextEditingValue(
         text: formattedValue,

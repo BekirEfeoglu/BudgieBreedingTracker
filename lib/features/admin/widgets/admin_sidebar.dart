@@ -72,9 +72,7 @@ class AdminSidebar extends StatelessWidget {
           const SizedBox(height: AppSpacing.sm),
           Expanded(
             child: ListView.builder(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.sm,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
               itemCount: _menuItems.length,
               itemBuilder: (context, index) {
                 final item = _menuItems[index];
@@ -159,8 +157,9 @@ class AdminSidebar extends StatelessWidget {
                     item.labelKey.tr(),
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: color,
-                      fontWeight:
-                          isSelected ? FontWeight.w600 : FontWeight.normal,
+                      fontWeight: isSelected
+                          ? FontWeight.w600
+                          : FontWeight.normal,
                     ),
                   ),
                 ),
@@ -170,8 +169,9 @@ class AdminSidebar extends StatelessWidget {
                     height: 20,
                     decoration: BoxDecoration(
                       color: theme.colorScheme.primary,
-                      borderRadius:
-                          BorderRadius.circular(AppSpacing.radiusFull),
+                      borderRadius: BorderRadius.circular(
+                        AppSpacing.radiusFull,
+                      ),
                     ),
                   ),
               ],

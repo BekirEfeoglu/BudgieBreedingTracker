@@ -11,7 +11,10 @@ void main() {
     final router = GoRouter(
       initialLocation: '/test',
       routes: [
-        GoRoute(path: '/test', builder: (_, __) => Scaffold(body: child)),
+        GoRoute(
+          path: '/test',
+          builder: (_, __) => Scaffold(body: child),
+        ),
         GoRoute(
           path: '/community/user/:userId',
           builder: (_, __) => const Scaffold(body: Text('user_posts')),
@@ -38,10 +41,9 @@ void main() {
         ),
       ];
 
-      await tester.pumpWidget(wrap(CommunityStoryStrip(
-        stories: stories,
-        onCreatePost: () {},
-      )));
+      await tester.pumpWidget(
+        wrap(CommunityStoryStrip(stories: stories, onCreatePost: () {})),
+      );
       await tester.pumpAndSettle();
 
       expect(find.byIcon(LucideIcons.plus), findsOneWidget);
@@ -51,17 +53,17 @@ void main() {
     });
 
     testWidgets('renders empty strip with only create button', (tester) async {
-      await tester.pumpWidget(wrap(CommunityStoryStrip(
-        stories: const [],
-        onCreatePost: () {},
-      )));
+      await tester.pumpWidget(
+        wrap(CommunityStoryStrip(stories: const [], onCreatePost: () {})),
+      );
       await tester.pumpAndSettle();
 
       expect(find.byIcon(LucideIcons.plus), findsOneWidget);
     });
 
-    testWidgets('shows initial letters for avatars without URL',
-        (tester) async {
+    testWidgets('shows initial letters for avatars without URL', (
+      tester,
+    ) async {
       final stories = [
         const StoryPreview(
           userId: 'u1',
@@ -71,10 +73,9 @@ void main() {
         ),
       ];
 
-      await tester.pumpWidget(wrap(CommunityStoryStrip(
-        stories: stories,
-        onCreatePost: () {},
-      )));
+      await tester.pumpWidget(
+        wrap(CommunityStoryStrip(stories: stories, onCreatePost: () {})),
+      );
       await tester.pumpAndSettle();
 
       expect(find.text('K'), findsOneWidget);

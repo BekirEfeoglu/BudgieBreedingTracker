@@ -17,11 +17,7 @@ class EventFormState {
     this.isSuccess = false,
   });
 
-  EventFormState copyWith({
-    bool? isLoading,
-    String? error,
-    bool? isSuccess,
-  }) {
+  EventFormState copyWith({bool? isLoading, String? error, bool? isSuccess}) {
     return EventFormState(
       isLoading: isLoading ?? this.isLoading,
       error: error,
@@ -103,10 +99,9 @@ class EventFormNotifier extends Notifier<EventFormState> {
       final repo = ref.read(eventRepositoryProvider);
       final event = await repo.getById(id);
       if (event != null) {
-        await repo.save(event.copyWith(
-          status: newStatus,
-          updatedAt: DateTime.now(),
-        ));
+        await repo.save(
+          event.copyWith(status: newStatus, updatedAt: DateTime.now()),
+        );
       }
       state = state.copyWith(isLoading: false, isSuccess: true);
     } catch (e) {
@@ -123,5 +118,4 @@ class EventFormNotifier extends Notifier<EventFormState> {
 
 /// Form state and actions for creating/editing events.
 final eventFormStateProvider =
-    NotifierProvider<EventFormNotifier, EventFormState>(
-        EventFormNotifier.new);
+    NotifierProvider<EventFormNotifier, EventFormState>(EventFormNotifier.new);

@@ -19,7 +19,8 @@ class AdminDatabaseManager {
     String? error,
     bool? isSuccess,
     String? successMessage,
-  }) _updateState;
+  })
+  _updateState;
 
   AdminDatabaseManager(this._ref, this._updateState);
 
@@ -86,7 +87,11 @@ class AdminDatabaseManager {
         );
       } catch (rpcError) {
         // RPC not available — fall back to client-side SELECT
-        AppLogger.error('AdminDatabaseManager.exportTable RPC unavailable, using fallback', rpcError, StackTrace.current);
+        AppLogger.error(
+          'AdminDatabaseManager.exportTable RPC unavailable, using fallback',
+          rpcError,
+          StackTrace.current,
+        );
         result = await client.from(tableName).select().limit(10000);
       }
 
@@ -95,15 +100,14 @@ class AdminDatabaseManager {
       _updateState(
         isLoading: false,
         isSuccess: true,
-        successMessage: 'admin.export_table_success'.tr(args: [tableName, _formatBytes(jsonStr.length)]),
+        successMessage: 'admin.export_table_success'.tr(
+          args: [tableName, _formatBytes(jsonStr.length)],
+        ),
       );
       return jsonStr;
     } catch (e, st) {
       AppLogger.error('AdminDatabaseManager.exportTable', e, st);
-      _updateState(
-        isLoading: false,
-        error: '${'admin.action_error'.tr()}: $e',
-      );
+      _updateState(isLoading: false, error: '${'admin.action_error'.tr()}: $e');
       return null;
     }
   }
@@ -121,13 +125,21 @@ class AdminDatabaseManager {
         result = await client.rpc('admin_export_all_tables');
       } catch (rpcError) {
         // RPC not available — fall back to exporting each table individually
-        AppLogger.error('AdminDatabaseManager.exportAllTables RPC unavailable, using fallback', rpcError, StackTrace.current);
+        AppLogger.error(
+          'AdminDatabaseManager.exportAllTables RPC unavailable, using fallback',
+          rpcError,
+          StackTrace.current,
+        );
         final allData = <String, dynamic>{};
         for (final table in _allowedTables) {
           try {
             allData[table] = await client.from(table).select().limit(10000);
           } catch (tableError) {
-            AppLogger.error('AdminDatabaseManager.exportAllTables fallback: $table', tableError, StackTrace.current);
+            AppLogger.error(
+              'AdminDatabaseManager.exportAllTables fallback: $table',
+              tableError,
+              StackTrace.current,
+            );
             allData[table] = <dynamic>[];
           }
         }
@@ -139,15 +151,14 @@ class AdminDatabaseManager {
       _updateState(
         isLoading: false,
         isSuccess: true,
-        successMessage: 'admin.export_all_success'.tr(args: [_formatBytes(jsonStr.length)]),
+        successMessage: 'admin.export_all_success'.tr(
+          args: [_formatBytes(jsonStr.length)],
+        ),
       );
       return jsonStr;
     } catch (e, st) {
       AppLogger.error('AdminDatabaseManager.exportAllTables', e, st);
-      _updateState(
-        isLoading: false,
-        error: '${'admin.action_error'.tr()}: $e',
-      );
+      _updateState(isLoading: false, error: '${'admin.action_error'.tr()}: $e');
       return null;
     }
   }
@@ -175,7 +186,11 @@ class AdminDatabaseManager {
         }
       } catch (rpcError) {
         // RPC not available — fall back to client-side DELETE
-        AppLogger.error('AdminDatabaseManager.resetTable RPC unavailable, using fallback', rpcError, StackTrace.current);
+        AppLogger.error(
+          'AdminDatabaseManager.resetTable RPC unavailable, using fallback',
+          rpcError,
+          StackTrace.current,
+        );
         Sentry.captureMessage(
           'Admin resetTable fallback: $tableName',
           level: SentryLevel.warning,
@@ -188,15 +203,14 @@ class AdminDatabaseManager {
       _updateState(
         isLoading: false,
         isSuccess: true,
-        successMessage: 'admin.reset_table_success'.tr(args: [tableName, rowsDeleted.toString()]),
+        successMessage: 'admin.reset_table_success'.tr(
+          args: [tableName, rowsDeleted.toString()],
+        ),
       );
       return true;
     } catch (e, st) {
       AppLogger.error('AdminDatabaseManager.resetTable', e, st);
-      _updateState(
-        isLoading: false,
-        error: '${'admin.action_error'.tr()}: $e',
-      );
+      _updateState(isLoading: false, error: '${'admin.action_error'.tr()}: $e');
       return false;
     }
   }
@@ -217,7 +231,11 @@ class AdminDatabaseManager {
         }
       } catch (rpcError) {
         // RPC not available — fall back to client-side DELETE in FK-safe order
-        AppLogger.error('AdminDatabaseManager.resetAllUserData RPC unavailable, using fallback', rpcError, StackTrace.current);
+        AppLogger.error(
+          'AdminDatabaseManager.resetAllUserData RPC unavailable, using fallback',
+          rpcError,
+          StackTrace.current,
+        );
         Sentry.captureMessage(
           'Admin resetAllUserData fallback triggered',
           level: SentryLevel.warning,
@@ -230,7 +248,11 @@ class AdminDatabaseManager {
               totalDeleted += count;
             }
           } catch (tableError) {
-            AppLogger.error('AdminDatabaseManager.resetAllUserData fallback: $table', tableError, StackTrace.current);
+            AppLogger.error(
+              'AdminDatabaseManager.resetAllUserData fallback: $table',
+              tableError,
+              StackTrace.current,
+            );
           }
         }
       }
@@ -238,15 +260,14 @@ class AdminDatabaseManager {
       _updateState(
         isLoading: false,
         isSuccess: true,
-        successMessage: 'admin.reset_all_success'.tr(args: [totalDeleted.toString()]),
+        successMessage: 'admin.reset_all_success'.tr(
+          args: [totalDeleted.toString()],
+        ),
       );
       return true;
     } catch (e, st) {
       AppLogger.error('AdminDatabaseManager.resetAllUserData', e, st);
-      _updateState(
-        isLoading: false,
-        error: '${'admin.action_error'.tr()}: $e',
-      );
+      _updateState(isLoading: false, error: '${'admin.action_error'.tr()}: $e');
       return false;
     }
   }

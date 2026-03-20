@@ -111,10 +111,7 @@ class _StoryAvatar extends StatelessWidget {
     final theme = Theme.of(context);
     final borderColors = story.hasFreshPhoto
         ? [theme.colorScheme.primary, AppColors.accent]
-        : [
-            theme.colorScheme.outlineVariant,
-            theme.colorScheme.outlineVariant,
-          ];
+        : [theme.colorScheme.outlineVariant, theme.colorScheme.outlineVariant];
 
     return GestureDetector(
       onTap: () => context.push(

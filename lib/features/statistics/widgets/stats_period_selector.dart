@@ -11,16 +11,16 @@ enum StatsPeriod {
   twelveMonths;
 
   String get label => switch (this) {
-        StatsPeriod.threeMonths => 'statistics.period_3_months'.tr(),
-        StatsPeriod.sixMonths => 'statistics.period_6_months'.tr(),
-        StatsPeriod.twelveMonths => 'statistics.period_12_months'.tr(),
-      };
+    StatsPeriod.threeMonths => 'statistics.period_3_months'.tr(),
+    StatsPeriod.sixMonths => 'statistics.period_6_months'.tr(),
+    StatsPeriod.twelveMonths => 'statistics.period_12_months'.tr(),
+  };
 
   int get monthCount => switch (this) {
-        StatsPeriod.threeMonths => 3,
-        StatsPeriod.sixMonths => 6,
-        StatsPeriod.twelveMonths => 12,
-      };
+    StatsPeriod.threeMonths => 3,
+    StatsPeriod.sixMonths => 6,
+    StatsPeriod.twelveMonths => 12,
+  };
 }
 
 /// Segmented button for selecting the statistics time period.
@@ -38,10 +38,7 @@ class StatsPeriodSelector extends ConsumerWidget {
       ),
       child: SegmentedButton<StatsPeriod>(
         segments: StatsPeriod.values
-            .map((p) => ButtonSegment(
-                  value: p,
-                  label: Text(p.label),
-                ))
+            .map((p) => ButtonSegment(value: p, label: Text(p.label)))
             .toList(),
         selected: {period},
         onSelectionChanged: (selected) {

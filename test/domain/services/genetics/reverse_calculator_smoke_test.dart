@@ -6,10 +6,7 @@ void main() {
     const calculator = ReverseCalculator();
     final results = calculator.calculateParents({'blue', 'ino'});
     expect(results, isNotEmpty);
-    expect(
-      results.any((result) => result.maxProbability > 0),
-      isTrue,
-    );
+    expect(results.any((result) => result.maxProbability > 0), isTrue);
 
     final resultsBlue = calculator.calculateParents({'blue'});
     expect(resultsBlue, isNotEmpty);

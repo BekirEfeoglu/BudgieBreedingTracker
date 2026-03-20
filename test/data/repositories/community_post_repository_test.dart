@@ -20,20 +20,19 @@ Map<String, dynamic> _makePostRow({
   int commentCount = 0,
   String postType = 'general',
   String? title,
-}) =>
-    {
-      'id': id,
-      'user_id': userId,
-      'content': content,
-      'username': username,
-      'avatar_url': null,
-      'like_count': likeCount,
-      'comment_count': commentCount,
-      'post_type': postType,
-      'is_deleted': false,
-      'created_at': '2026-03-15T10:00:00Z',
-      if (title != null) 'title': title,
-    };
+}) => {
+  'id': id,
+  'user_id': userId,
+  'content': content,
+  'username': username,
+  'avatar_url': null,
+  'like_count': likeCount,
+  'comment_count': commentCount,
+  'post_type': postType,
+  'is_deleted': false,
+  'created_at': '2026-03-15T10:00:00Z',
+  if (title != null) 'title': title,
+};
 
 void main() {
   late MockCommunityPostRemoteSource postSource;
@@ -51,10 +50,12 @@ void main() {
   });
 
   void stubSocialEmpty() {
-    when(() => socialSource.fetchLikedPostIds(any(), any()))
-        .thenAnswer((_) async => {});
-    when(() => socialSource.fetchBookmarkedPostIds(any(), any()))
-        .thenAnswer((_) async => {});
+    when(
+      () => socialSource.fetchLikedPostIds(any(), any()),
+    ).thenAnswer((_) async => {});
+    when(
+      () => socialSource.fetchBookmarkedPostIds(any(), any()),
+    ).thenAnswer((_) async => {});
   }
 
   group('getFeed', () {
@@ -66,10 +67,12 @@ void main() {
         ],
       );
 
-      when(() => socialSource.fetchLikedPostIds('u1', ['p1', 'p2']))
-          .thenAnswer((_) async => {'p1'});
-      when(() => socialSource.fetchBookmarkedPostIds('u1', ['p1', 'p2']))
-          .thenAnswer((_) async => {'p2'});
+      when(
+        () => socialSource.fetchLikedPostIds('u1', ['p1', 'p2']),
+      ).thenAnswer((_) async => {'p1'});
+      when(
+        () => socialSource.fetchBookmarkedPostIds('u1', ['p1', 'p2']),
+      ).thenAnswer((_) async => {'p2'});
 
       final posts = await repository.getFeed(currentUserId: 'u1');
 
@@ -85,9 +88,9 @@ void main() {
     });
 
     test('skips social enrichment for anonymous user', () async {
-      when(() => postSource.fetchFeed(limit: 20, before: null)).thenAnswer(
-        (_) async => [_makePostRow(id: 'p1')],
-      );
+      when(
+        () => postSource.fetchFeed(limit: 20, before: null),
+      ).thenAnswer((_) async => [_makePostRow(id: 'p1')]);
 
       final posts = await repository.getFeed(currentUserId: 'anonymous');
 
@@ -99,8 +102,9 @@ void main() {
     });
 
     test('returns empty list when no posts', () async {
-      when(() => postSource.fetchFeed(limit: 20, before: null))
-          .thenAnswer((_) async => []);
+      when(
+        () => postSource.fetchFeed(limit: 20, before: null),
+      ).thenAnswer((_) async => []);
 
       final posts = await repository.getFeed(currentUserId: 'u1');
 
@@ -108,13 +112,15 @@ void main() {
     });
 
     test('handles social fetch failure gracefully', () async {
-      when(() => postSource.fetchFeed(limit: 20, before: null)).thenAnswer(
-        (_) async => [_makePostRow(id: 'p1')],
-      );
-      when(() => socialSource.fetchLikedPostIds(any(), any()))
-          .thenThrow(Exception('Network error'));
-      when(() => socialSource.fetchBookmarkedPostIds(any(), any()))
-          .thenThrow(Exception('Network error'));
+      when(
+        () => postSource.fetchFeed(limit: 20, before: null),
+      ).thenAnswer((_) async => [_makePostRow(id: 'p1')]);
+      when(
+        () => socialSource.fetchLikedPostIds(any(), any()),
+      ).thenThrow(Exception('Network error'));
+      when(
+        () => socialSource.fetchBookmarkedPostIds(any(), any()),
+      ).thenThrow(Exception('Network error'));
 
       final posts = await repository.getFeed(currentUserId: 'u1');
 
@@ -126,15 +132,12 @@ void main() {
 
   group('getById', () {
     test('returns post when found', () async {
-      when(() => postSource.fetchById('p1')).thenAnswer(
-        (_) async => _makePostRow(id: 'p1', title: 'Test Title'),
-      );
+      when(
+        () => postSource.fetchById('p1'),
+      ).thenAnswer((_) async => _makePostRow(id: 'p1', title: 'Test Title'));
       stubSocialEmpty();
 
-      final post = await repository.getById(
-        postId: 'p1',
-        currentUserId: 'u1',
-      );
+      final post = await repository.getById(postId: 'p1', currentUserId: 'u1');
 
       expect(post, isNotNull);
       expect(post!.id, 'p1');
@@ -142,8 +145,7 @@ void main() {
     });
 
     test('returns null when not found', () async {
-      when(() => postSource.fetchById('missing'))
-          .thenAnswer((_) async => null);
+      when(() => postSource.fetchById('missing')).thenAnswer((_) async => null);
 
       final post = await repository.getById(
         postId: 'missing',
@@ -176,17 +178,16 @@ void main() {
 
   group('getBookmarked', () {
     test('returns empty for anonymous user', () async {
-      final posts = await repository.getBookmarked(
-        currentUserId: 'anonymous',
-      );
+      final posts = await repository.getBookmarked(currentUserId: 'anonymous');
 
       expect(posts, isEmpty);
       verifyNever(() => socialSource.fetchAllBookmarkedPostIds(any()));
     });
 
     test('returns empty when no bookmarks', () async {
-      when(() => socialSource.fetchAllBookmarkedPostIds('u1'))
-          .thenAnswer((_) async => []);
+      when(
+        () => socialSource.fetchAllBookmarkedPostIds('u1'),
+      ).thenAnswer((_) async => []);
 
       final posts = await repository.getBookmarked(currentUserId: 'u1');
 
@@ -194,20 +195,21 @@ void main() {
     });
 
     test('fetches and sorts bookmarked posts by date descending', () async {
-      when(() => socialSource.fetchAllBookmarkedPostIds('u1'))
-          .thenAnswer((_) async => ['p1', 'p2']);
+      when(
+        () => socialSource.fetchAllBookmarkedPostIds('u1'),
+      ).thenAnswer((_) async => ['p1', 'p2']);
       when(() => postSource.fetchByIds(['p1', 'p2'])).thenAnswer(
         (_) async => [
-          _makePostRow(id: 'p1')
-            ..['created_at'] = '2026-03-14T10:00:00Z',
-          _makePostRow(id: 'p2')
-            ..['created_at'] = '2026-03-15T10:00:00Z',
+          _makePostRow(id: 'p1')..['created_at'] = '2026-03-14T10:00:00Z',
+          _makePostRow(id: 'p2')..['created_at'] = '2026-03-15T10:00:00Z',
         ],
       );
-      when(() => socialSource.fetchLikedPostIds('u1', any()))
-          .thenAnswer((_) async => {});
-      when(() => socialSource.fetchBookmarkedPostIds('u1', any()))
-          .thenAnswer((_) async => {'p1', 'p2'});
+      when(
+        () => socialSource.fetchLikedPostIds('u1', any()),
+      ).thenAnswer((_) async => {});
+      when(
+        () => socialSource.fetchBookmarkedPostIds('u1', any()),
+      ).thenAnswer((_) async => {'p1', 'p2'});
 
       final posts = await repository.getBookmarked(currentUserId: 'u1');
 
@@ -230,8 +232,7 @@ void main() {
 
   group('delete', () {
     test('delegates to postSource.softDelete', () async {
-      when(() => postSource.softDelete(any(), any()))
-          .thenAnswer((_) async {});
+      when(() => postSource.softDelete(any(), any())).thenAnswer((_) async {});
 
       await repository.delete(postId: 'p1', userId: 'u1');
 
@@ -258,8 +259,9 @@ void main() {
     });
 
     test('returns empty for no matches', () async {
-      when(() => postSource.search('xyz123', limit: 30))
-          .thenAnswer((_) async => []);
+      when(
+        () => postSource.search('xyz123', limit: 30),
+      ).thenAnswer((_) async => []);
 
       final posts = await repository.search(
         query: 'xyz123',

@@ -12,7 +12,9 @@ export 'package:budgie_breeding_tracker/domain/services/sync/sync_settings_provi
 // ---------------------------------------------------------------------------
 
 final notificationsMasterProvider =
-    NotifierProvider<NotificationsMasterNotifier, bool>(NotificationsMasterNotifier.new);
+    NotifierProvider<NotificationsMasterNotifier, bool>(
+      NotificationsMasterNotifier.new,
+    );
 
 class NotificationsMasterNotifier extends Notifier<bool> {
   @override
@@ -37,8 +39,9 @@ class NotificationsMasterNotifier extends Notifier<bool> {
 // Compact View
 // ---------------------------------------------------------------------------
 
-final compactViewProvider =
-    NotifierProvider<CompactViewNotifier, bool>(CompactViewNotifier.new);
+final compactViewProvider = NotifierProvider<CompactViewNotifier, bool>(
+  CompactViewNotifier.new,
+);
 
 class CompactViewNotifier extends Notifier<bool> {
   @override
@@ -59,13 +62,13 @@ class CompactViewNotifier extends Notifier<bool> {
   }
 }
 
-
 // ---------------------------------------------------------------------------
 // Haptic Feedback
 // ---------------------------------------------------------------------------
 
-final hapticFeedbackProvider =
-    NotifierProvider<HapticFeedbackNotifier, bool>(HapticFeedbackNotifier.new);
+final hapticFeedbackProvider = NotifierProvider<HapticFeedbackNotifier, bool>(
+  HapticFeedbackNotifier.new,
+);
 
 class HapticFeedbackNotifier extends Notifier<bool> {
   @override
@@ -93,7 +96,9 @@ class HapticFeedbackNotifier extends Notifier<bool> {
 // ---------------------------------------------------------------------------
 
 final reduceAnimationsProvider =
-    NotifierProvider<ReduceAnimationsNotifier, bool>(ReduceAnimationsNotifier.new);
+    NotifierProvider<ReduceAnimationsNotifier, bool>(
+      ReduceAnimationsNotifier.new,
+    );
 
 class ReduceAnimationsNotifier extends Notifier<bool> {
   @override
@@ -119,7 +124,9 @@ class ReduceAnimationsNotifier extends Notifier<bool> {
 // ---------------------------------------------------------------------------
 
 final eggTurningReminderProvider =
-    NotifierProvider<EggTurningReminderNotifier, bool>(EggTurningReminderNotifier.new);
+    NotifierProvider<EggTurningReminderNotifier, bool>(
+      EggTurningReminderNotifier.new,
+    );
 
 class EggTurningReminderNotifier extends Notifier<bool> {
   @override
@@ -140,13 +147,14 @@ class EggTurningReminderNotifier extends Notifier<bool> {
   }
 }
 
-
 // ---------------------------------------------------------------------------
 // Temperature Alert
 // ---------------------------------------------------------------------------
 
 final temperatureAlertProvider =
-    NotifierProvider<TemperatureAlertNotifier, bool>(TemperatureAlertNotifier.new);
+    NotifierProvider<TemperatureAlertNotifier, bool>(
+      TemperatureAlertNotifier.new,
+    );
 
 class TemperatureAlertNotifier extends Notifier<bool> {
   @override

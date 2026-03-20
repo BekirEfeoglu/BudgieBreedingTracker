@@ -15,8 +15,7 @@ class BreedingPairsDao extends DatabaseAccessor<AppDatabase>
   /// Watches all non-deleted breeding pairs for a user.
   Stream<List<BreedingPair>> watchAll(String userId) {
     return (select(breedingPairsTable)
-          ..where(
-              (t) => t.userId.equals(userId) & t.isDeleted.equals(false))
+          ..where((t) => t.userId.equals(userId) & t.isDeleted.equals(false))
           ..orderBy([(t) => OrderingTerm.desc(t.createdAt)]))
         .watch()
         .map((rows) => rows.map((r) => r.toModel()).toList());
@@ -31,18 +30,17 @@ class BreedingPairsDao extends DatabaseAccessor<AppDatabase>
 
   /// Gets all non-deleted breeding pairs for a user.
   Future<List<BreedingPair>> getAll(String userId) async {
-    final rows = await (select(breedingPairsTable)
-          ..where(
-              (t) => t.userId.equals(userId) & t.isDeleted.equals(false)))
-        .get();
+    final rows = await (select(
+      breedingPairsTable,
+    )..where((t) => t.userId.equals(userId) & t.isDeleted.equals(false))).get();
     return rows.map((r) => r.toModel()).toList();
   }
 
   /// Gets a single breeding pair by id.
   Future<BreedingPair?> getById(String id) async {
-    final row = await (select(breedingPairsTable)
-          ..where((t) => t.id.equals(id)))
-        .getSingleOrNull();
+    final row = await (select(
+      breedingPairsTable,
+    )..where((t) => t.id.equals(id))).getSingleOrNull();
     return row?.toModel();
   }
 
@@ -87,44 +85,54 @@ class BreedingPairsDao extends DatabaseAccessor<AppDatabase>
     return (selectOnly(breedingPairsTable)
           ..addColumns([count])
           ..where(
-              breedingPairsTable.userId.equals(userId) &
-              breedingPairsTable.isDeleted.equals(false) &
-              (breedingPairsTable.status.equalsValue(BreedingStatus.active) |
-                  breedingPairsTable.status
-                      .equalsValue(BreedingStatus.ongoing))))
+            breedingPairsTable.userId.equals(userId) &
+                breedingPairsTable.isDeleted.equals(false) &
+                (breedingPairsTable.status.equalsValue(BreedingStatus.active) |
+                    breedingPairsTable.status.equalsValue(
+                      BreedingStatus.ongoing,
+                    )),
+          ))
         .watchSingle()
         .map((row) => row.read(count) ?? 0);
   }
 
   /// Watches active (non-deleted) breeding pairs for a user.
   Stream<List<BreedingPair>> watchActive(String userId) {
-    return (select(breedingPairsTable)
-          ..where((t) =>
+    return (select(breedingPairsTable)..where(
+          (t) =>
               t.userId.equals(userId) &
               t.isDeleted.equals(false) &
-              t.status.equalsValue(BreedingStatus.active)))
+              t.status.equalsValue(BreedingStatus.active),
+        ))
         .watch()
         .map((rows) => rows.map((r) => r.toModel()).toList());
   }
 
   /// Gets breeding pairs where the given bird is either the male or female.
   Future<List<BreedingPair>> getByBirdId(String birdId) async {
-    final rows = await (select(breedingPairsTable)
-          ..where((t) =>
-              (t.maleId.equals(birdId) | t.femaleId.equals(birdId)) &
-              t.isDeleted.equals(false)))
-        .get();
+    final rows =
+        await (select(breedingPairsTable)..where(
+              (t) =>
+                  (t.maleId.equals(birdId) | t.femaleId.equals(birdId)) &
+                  t.isDeleted.equals(false),
+            ))
+            .get();
     return rows.map((r) => r.toModel()).toList();
   }
 
   /// Active + ongoing breeding pairs with SQL LIMIT (for dashboard).
-  Stream<List<BreedingPair>> watchActiveLimited(String userId, {int limit = 3}) {
+  Stream<List<BreedingPair>> watchActiveLimited(
+    String userId, {
+    int limit = 3,
+  }) {
     return (select(breedingPairsTable)
-          ..where((t) =>
-              t.userId.equals(userId) &
-              t.isDeleted.equals(false) &
-              (t.status.equalsValue(BreedingStatus.active) |
-                  t.status.equalsValue(BreedingStatus.ongoing)))
+          ..where(
+            (t) =>
+                t.userId.equals(userId) &
+                t.isDeleted.equals(false) &
+                (t.status.equalsValue(BreedingStatus.active) |
+                    t.status.equalsValue(BreedingStatus.ongoing)),
+          )
           ..orderBy([(t) => OrderingTerm.desc(t.createdAt)])
           ..limit(limit))
         .watch()

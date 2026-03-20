@@ -23,25 +23,19 @@ class UnweanedAlertBanner extends StatelessWidget {
         decoration: BoxDecoration(
           color: AppColors.warning.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-          border: Border.all(
-            color: AppColors.warning.withValues(alpha: 0.3),
-          ),
+          border: Border.all(color: AppColors.warning.withValues(alpha: 0.3)),
         ),
         child: Row(
           children: [
-            const AppIcon(
-              AppIcons.info,
-              color: AppColors.warning,
-              size: 24,
-            ),
+            const AppIcon(AppIcons.info, color: AppColors.warning, size: 24),
             const SizedBox(width: AppSpacing.md),
             Expanded(
               child: Text(
                 'home.unweaned_alert'.tr(args: [count.toString()]),
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.warning,
-                      fontWeight: FontWeight.w500,
-                    ),
+                  color: AppColors.warning,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
             TextButton(

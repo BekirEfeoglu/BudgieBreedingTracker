@@ -43,10 +43,7 @@ Incubation _buildIncubation({
   );
 }
 
-Future<void> _pump(
-  WidgetTester tester,
-  Widget child,
-) async {
+Future<void> _pump(WidgetTester tester, Widget child) async {
   await tester.pumpWidget(
     ProviderScope(
       child: MaterialApp(home: Scaffold(body: child)),
@@ -95,11 +92,7 @@ void main() {
     });
 
     testWidgets('does not show pairing date when null', (tester) async {
-      final pair = _buildPair(
-        maleId: null,
-        femaleId: null,
-        pairingDate: null,
-      );
+      final pair = _buildPair(maleId: null, femaleId: null, pairingDate: null);
 
       await _pump(tester, BreedingCardFooter(pair: pair));
 
@@ -111,8 +104,9 @@ void main() {
       );
     });
 
-    testWidgets('shows expected hatch date when incubation has start date',
-        (tester) async {
+    testWidgets('shows expected hatch date when incubation has start date', (
+      tester,
+    ) async {
       final pair = _buildPair(
         maleId: null,
         femaleId: null,
@@ -132,8 +126,9 @@ void main() {
       expect(find.text('19.02.2026'), findsOneWidget);
     });
 
-    testWidgets('shows egg icon when expected hatch date is available',
-        (tester) async {
+    testWidgets('shows egg icon when expected hatch date is available', (
+      tester,
+    ) async {
       final pair = _buildPair(maleId: null, femaleId: null);
       final incubation = _buildIncubation(
         startDate: DateTime(2026, 2, 1),
@@ -153,8 +148,9 @@ void main() {
       );
     });
 
-    testWidgets('does not show egg icon when incubation has no start date',
-        (tester) async {
+    testWidgets('does not show egg icon when incubation has no start date', (
+      tester,
+    ) async {
       final pair = _buildPair(maleId: null, femaleId: null);
       final incubation = _buildIncubation(startDate: null);
 
@@ -171,8 +167,9 @@ void main() {
       );
     });
 
-    testWidgets('shows remaining days text for active incubation',
-        (tester) async {
+    testWidgets('shows remaining days text for active incubation', (
+      tester,
+    ) async {
       final pair = _buildPair(maleId: null, femaleId: null);
       final incubation = _buildIncubation(
         status: IncubationStatus.active,
@@ -195,8 +192,9 @@ void main() {
       );
     });
 
-    testWidgets('does not show remaining days text for completed incubation',
-        (tester) async {
+    testWidgets('does not show remaining days text for completed incubation', (
+      tester,
+    ) async {
       final pair = _buildPair(maleId: null, femaleId: null);
       final incubation = _buildIncubation(
         status: IncubationStatus.completed,
@@ -219,8 +217,9 @@ void main() {
       );
     });
 
-    testWidgets('does not show remaining days when incubation is null',
-        (tester) async {
+    testWidgets('does not show remaining days when incubation is null', (
+      tester,
+    ) async {
       final pair = _buildPair(
         maleId: null,
         femaleId: null,
@@ -239,16 +238,15 @@ void main() {
       );
     });
 
-    testWidgets('shows both pairing date and expected hatch date together',
-        (tester) async {
+    testWidgets('shows both pairing date and expected hatch date together', (
+      tester,
+    ) async {
       final pair = _buildPair(
         maleId: null,
         femaleId: null,
         pairingDate: DateTime(2026, 3, 10),
       );
-      final incubation = _buildIncubation(
-        startDate: DateTime(2026, 3, 5),
-      );
+      final incubation = _buildIncubation(startDate: DateTime(2026, 3, 5));
 
       await _pump(
         tester,
@@ -275,11 +273,7 @@ void main() {
     });
 
     testWidgets('handles all null date fields gracefully', (tester) async {
-      final pair = _buildPair(
-        maleId: null,
-        femaleId: null,
-        pairingDate: null,
-      );
+      final pair = _buildPair(maleId: null, femaleId: null, pairingDate: null);
 
       await _pump(tester, BreedingCardFooter(pair: pair));
 

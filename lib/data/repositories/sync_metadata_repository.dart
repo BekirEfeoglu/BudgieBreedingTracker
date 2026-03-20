@@ -9,15 +9,14 @@ class SyncMetadataRepository {
   final SyncMetadataDao _localDao;
 
   SyncMetadataRepository({required SyncMetadataDao localDao})
-      : _localDao = localDao;
+    : _localDao = localDao;
 
   /// Watches all sync metadata for a user.
   Stream<List<SyncMetadata>> watchAll(String userId) =>
       _localDao.watchAll(userId);
 
   /// Gets all sync metadata for a user.
-  Future<List<SyncMetadata>> getAll(String userId) =>
-      _localDao.getAll(userId);
+  Future<List<SyncMetadata>> getAll(String userId) => _localDao.getAll(userId);
 
   /// Gets sync metadata by id.
   Future<SyncMetadata?> getById(String id) => _localDao.getById(id);

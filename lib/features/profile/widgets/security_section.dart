@@ -14,10 +14,7 @@ import 'security_score_card.dart';
 
 /// Security section with security score, password change and 2FA options.
 class SecuritySection extends ConsumerWidget {
-  const SecuritySection({
-    super.key,
-    required this.onChangePassword,
-  });
+  const SecuritySection({super.key, required this.onChangePassword});
 
   final VoidCallback onChangePassword;
 
@@ -31,8 +28,7 @@ class SecuritySection extends ConsumerWidget {
         // Security score card
         SecurityScoreCard(
           securityScore: score,
-          onFactorTap: (factor) =>
-              _handleFactorTap(context, factor),
+          onFactorTap: (factor) => _handleFactorTap(context, factor),
         ),
         const SizedBox(height: AppSpacing.sm),
 
@@ -47,7 +43,9 @@ class SecuritySection extends ConsumerWidget {
                 onTap: onChangePassword,
               ),
               const Divider(
-                  height: 1, indent: AppSpacing.lg + 24 + AppSpacing.md),
+                height: 1,
+                indent: AppSpacing.lg + 24 + AppSpacing.md,
+              ),
               ProfileMenuTile(
                 icon: const AppIcon(AppIcons.security, size: 22),
                 label: 'profile.two_factor_auth'.tr(),

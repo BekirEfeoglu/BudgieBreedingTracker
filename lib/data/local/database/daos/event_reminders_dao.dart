@@ -13,8 +13,7 @@ class EventRemindersDao extends DatabaseAccessor<AppDatabase>
 
   Stream<List<EventReminder>> watchAll(String userId) {
     return (select(eventRemindersTable)
-          ..where((t) =>
-              t.userId.equals(userId) & t.isDeleted.equals(false))
+          ..where((t) => t.userId.equals(userId) & t.isDeleted.equals(false))
           ..orderBy([(t) => OrderingTerm.desc(t.createdAt)]))
         .watch()
         .map((rows) => rows.map((r) => r.toModel()).toList());
@@ -22,32 +21,31 @@ class EventRemindersDao extends DatabaseAccessor<AppDatabase>
 
   Stream<List<EventReminder>> watchByEvent(String eventId) {
     return (select(eventRemindersTable)
-          ..where((t) =>
-              t.eventId.equals(eventId) & t.isDeleted.equals(false)))
+          ..where((t) => t.eventId.equals(eventId) & t.isDeleted.equals(false)))
         .watch()
         .map((rows) => rows.map((r) => r.toModel()).toList());
   }
 
   Future<List<EventReminder>> getAll(String userId) async {
-    final rows = await (select(eventRemindersTable)
-          ..where((t) =>
-              t.userId.equals(userId) & t.isDeleted.equals(false)))
-        .get();
+    final rows = await (select(
+      eventRemindersTable,
+    )..where((t) => t.userId.equals(userId) & t.isDeleted.equals(false))).get();
     return rows.map((r) => r.toModel()).toList();
   }
 
   Future<List<EventReminder>> getByEvent(String eventId) async {
-    final rows = await (select(eventRemindersTable)
-          ..where((t) =>
-              t.eventId.equals(eventId) & t.isDeleted.equals(false)))
-        .get();
+    final rows =
+        await (select(eventRemindersTable)..where(
+              (t) => t.eventId.equals(eventId) & t.isDeleted.equals(false),
+            ))
+            .get();
     return rows.map((r) => r.toModel()).toList();
   }
 
   Future<EventReminder?> getById(String id) async {
-    final row =
-        await (select(eventRemindersTable)..where((t) => t.id.equals(id)))
-            .getSingleOrNull();
+    final row = await (select(
+      eventRemindersTable,
+    )..where((t) => t.id.equals(id))).getSingleOrNull();
     return row?.toModel();
   }
 
@@ -62,26 +60,31 @@ class EventRemindersDao extends DatabaseAccessor<AppDatabase>
     final count = eventRemindersTable.id.count();
     final query = selectOnly(eventRemindersTable)
       ..addColumns([count])
-      ..where(eventRemindersTable.userId.equals(userId) &
-          eventRemindersTable.isSent.equals(false) &
-          eventRemindersTable.isDeleted.equals(false));
+      ..where(
+        eventRemindersTable.userId.equals(userId) &
+            eventRemindersTable.isSent.equals(false) &
+            eventRemindersTable.isDeleted.equals(false),
+      );
     final row = await query.getSingle();
     return row.read(count)!;
   }
 
   Future<List<EventReminder>> getUnsent(String userId) async {
-    final rows = await (select(eventRemindersTable)
-          ..where((t) =>
-              t.userId.equals(userId) &
-              t.isSent.equals(false) &
-              t.isDeleted.equals(false)))
-        .get();
+    final rows =
+        await (select(eventRemindersTable)..where(
+              (t) =>
+                  t.userId.equals(userId) &
+                  t.isSent.equals(false) &
+                  t.isDeleted.equals(false),
+            ))
+            .get();
     return rows.map((r) => r.toModel()).toList();
   }
 
   Future<void> insertItem(EventReminder model) {
-    return into(eventRemindersTable)
-        .insertOnConflictUpdate(model.toCompanion());
+    return into(
+      eventRemindersTable,
+    ).insertOnConflictUpdate(model.toCompanion());
   }
 
   Future<void> insertAll(List<EventReminder> models) {
@@ -116,8 +119,8 @@ class EventRemindersDao extends DatabaseAccessor<AppDatabase>
   }
 
   Future<void> deleteByEvent(String eventId) {
-    return (delete(eventRemindersTable)
-          ..where((t) => t.eventId.equals(eventId)))
-        .go();
+    return (delete(
+      eventRemindersTable,
+    )..where((t) => t.eventId.equals(eventId))).go();
   }
 }

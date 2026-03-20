@@ -38,7 +38,11 @@ class AvatarWidget extends StatelessWidget {
               radius: radius,
               backgroundColor: theme.colorScheme.primaryContainer,
               backgroundImage: imageUrl != null
-                  ? CachedNetworkImageProvider(imageUrl!, maxWidth: (radius * 4).toInt(), maxHeight: (radius * 4).toInt())
+                  ? CachedNetworkImageProvider(
+                      imageUrl!,
+                      maxWidth: (radius * 4).toInt(),
+                      maxHeight: (radius * 4).toInt(),
+                    )
                   : null,
               child: imageUrl == null
                   ? AppIcon(

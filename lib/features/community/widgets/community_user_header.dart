@@ -71,7 +71,8 @@ class CommunityUserHeader extends StatelessWidget {
                     : null,
                 child: avatarUrl == null
                     ? Text(
-                        username.isNotEmpty ? username[0].toUpperCase() : '?')
+                        username.isNotEmpty ? username[0].toUpperCase() : '?',
+                      )
                     : null,
               ),
             ),
@@ -105,8 +106,7 @@ class CommunityUserHeader extends StatelessWidget {
                       vertical: AppSpacing.xs,
                     ),
                     decoration: BoxDecoration(
-                      color:
-                          theme.colorScheme.primary.withValues(alpha: 0.08),
+                      color: theme.colorScheme.primary.withValues(alpha: 0.08),
                       borderRadius: BorderRadius.circular(
                         AppSpacing.radiusFull,
                       ),
@@ -186,5 +186,4 @@ class CommunityUserHeader extends StatelessWidget {
       ],
     );
   }
-
 }

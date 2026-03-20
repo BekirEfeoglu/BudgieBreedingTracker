@@ -281,61 +281,68 @@ class _BirdFormScreenState extends ConsumerState<BirdFormScreen> {
         autovalidateMode: AutovalidateMode.onUserInteraction,
         child: SingleChildScrollView(
           padding: AppSpacing.screenPadding,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              BirdFormBasicInfoSection(
-                nameController: _nameController,
-                gender: _gender,
-                species: _species,
-                colorMutation: _colorMutation,
-                colorNoteController: _colorNoteController,
-                onGenderChanged: (g) => setState(() {
-                  _gender = g;
-                  _genotype = normalizeGenotypeForGender(
-                    genotype: _genotype,
-                    gender: g,
-                  );
-                }),
-                onSpeciesChanged: (s) => setState(() => _species = s),
-                onColorChanged: (c) => setState(() => _colorMutation = c),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                maxWidth: AppSpacing.maxContentWidth,
               ),
-              const SizedBox(height: AppSpacing.xl),
-              BirdFormGeneticsSection(
-                gender: _gender,
-                genotype: _genotype,
-                onGenotypeChanged: (genotype) => setState(() {
-                  _genotype = normalizeGenotypeForGender(
-                    genotype: genotype,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  BirdFormBasicInfoSection(
+                    nameController: _nameController,
                     gender: _gender,
-                  );
-                }),
+                    species: _species,
+                    colorMutation: _colorMutation,
+                    colorNoteController: _colorNoteController,
+                    onGenderChanged: (g) => setState(() {
+                      _gender = g;
+                      _genotype = normalizeGenotypeForGender(
+                        genotype: _genotype,
+                        gender: g,
+                      );
+                    }),
+                    onSpeciesChanged: (s) => setState(() => _species = s),
+                    onColorChanged: (c) => setState(() => _colorMutation = c),
+                  ),
+                  const SizedBox(height: AppSpacing.xl),
+                  BirdFormGeneticsSection(
+                    gender: _gender,
+                    genotype: _genotype,
+                    onGenotypeChanged: (genotype) => setState(() {
+                      _genotype = normalizeGenotypeForGender(
+                        genotype: genotype,
+                        gender: _gender,
+                      );
+                    }),
+                  ),
+                  const SizedBox(height: AppSpacing.xl),
+                  BirdFormIdentitySection(
+                    ringController: _ringController,
+                    cageController: _cageController,
+                    birthDate: _birthDate,
+                    onBirthDateChanged: (d) => setState(() => _birthDate = d),
+                    dateFormatter: ref.watch(dateFormatProvider).formatter(),
+                  ),
+                  const SizedBox(height: AppSpacing.xl),
+                  BirdFormParentsSection(
+                    fatherId: _fatherId,
+                    motherId: _motherId,
+                    editBirdId: widget.editBirdId,
+                    onFatherChanged: (id) => setState(() => _fatherId = id),
+                    onMotherChanged: (id) => setState(() => _motherId = id),
+                  ),
+                  const SizedBox(height: AppSpacing.xl),
+                  BirdFormNotesSection(notesController: _notesController),
+                  const SizedBox(height: AppSpacing.xl),
+                  PrimaryButton(
+                    label: _isEdit ? 'common.update'.tr() : 'common.save'.tr(),
+                    isLoading: formState.isLoading,
+                    onPressed: _submit,
+                  ),
+                ],
               ),
-              const SizedBox(height: AppSpacing.xl),
-              BirdFormIdentitySection(
-                ringController: _ringController,
-                cageController: _cageController,
-                birthDate: _birthDate,
-                onBirthDateChanged: (d) => setState(() => _birthDate = d),
-                dateFormatter: ref.watch(dateFormatProvider).formatter(),
-              ),
-              const SizedBox(height: AppSpacing.xl),
-              BirdFormParentsSection(
-                fatherId: _fatherId,
-                motherId: _motherId,
-                editBirdId: widget.editBirdId,
-                onFatherChanged: (id) => setState(() => _fatherId = id),
-                onMotherChanged: (id) => setState(() => _motherId = id),
-              ),
-              const SizedBox(height: AppSpacing.xl),
-              BirdFormNotesSection(notesController: _notesController),
-              const SizedBox(height: AppSpacing.xl),
-              PrimaryButton(
-                label: _isEdit ? 'common.update'.tr() : 'common.save'.tr(),
-                isLoading: formState.isLoading,
-                onPressed: _submit,
-              ),
-            ],
+            ),
           ),
         ),
       ),

@@ -13,9 +13,7 @@ class TwoFactorService {
   ///
   /// Returns the TOTP URI, factor ID, secret, and QR code SVG string.
   Future<({String factorId, String totpUri, String secret, String qrCode})>
-      enroll({
-    String friendlyName = 'Budgie Tracker',
-  }) async {
+  enroll({String friendlyName = 'Budgie Tracker'}) async {
     try {
       final response = await _client.auth.mfa.enroll(
         factorType: FactorType.totp,
@@ -47,9 +45,7 @@ class TwoFactorService {
     required String code,
   }) async {
     try {
-      final challenge = await _client.auth.mfa.challenge(
-        factorId: factorId,
-      );
+      final challenge = await _client.auth.mfa.challenge(factorId: factorId);
 
       await _client.auth.mfa.verify(
         factorId: factorId,
@@ -71,9 +67,7 @@ class TwoFactorService {
     required String code,
   }) async {
     try {
-      final challenge = await _client.auth.mfa.challenge(
-        factorId: factorId,
-      );
+      final challenge = await _client.auth.mfa.challenge(factorId: factorId);
 
       await _client.auth.mfa.verify(
         factorId: factorId,
@@ -120,7 +114,7 @@ class TwoFactorService {
 
   /// Gets the current MFA assurance level.
   Future<AuthMFAGetAuthenticatorAssuranceLevelResponse>
-      getAssuranceLevel() async {
+  getAssuranceLevel() async {
     return _client.auth.mfa.getAuthenticatorAssuranceLevel();
   }
 
@@ -135,7 +129,9 @@ class TwoFactorService {
       return aal.currentLevel == AuthenticatorAssuranceLevels.aal1 &&
           aal.nextLevel == AuthenticatorAssuranceLevels.aal2;
     } catch (e, st) {
-      AppLogger.warning('[TwoFactorService] needsVerification check failed: $e');
+      AppLogger.warning(
+        '[TwoFactorService] needsVerification check failed: $e',
+      );
       Sentry.captureException(e, stackTrace: st);
       return false;
     }

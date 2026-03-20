@@ -3,6 +3,7 @@ import 'package:easy_localization/easy_localization.dart';
 import '../../core/enums/community_enums.dart';
 import '../../core/utils/logger.dart';
 import '../models/community_post_model.dart';
+import '../remote/api/community_post_cache.dart';
 import '../remote/api/community_post_remote_source.dart';
 import '../remote/api/community_social_remote_source.dart';
 
@@ -10,34 +11,50 @@ import '../remote/api/community_social_remote_source.dart';
 ///
 /// Custom implementation (not extending [BaseRepository]) because community
 /// is online-first with no Drift mirror, and queries cross user boundaries.
+/// An optional [CommunityPostCache] reduces redundant Supabase requests for
+/// feed and single-post lookups.
 class CommunityPostRepository {
   final CommunityPostRemoteSource _postSource;
   final CommunitySocialRemoteSource _socialSource;
+  final CommunityPostCache? _cache;
 
   const CommunityPostRepository({
     required CommunityPostRemoteSource postSource,
     required CommunitySocialRemoteSource socialSource,
-  })  : _postSource = postSource,
-        _socialSource = socialSource;
+    CommunityPostCache? cache,
+  }) : _postSource = postSource,
+       _socialSource = socialSource,
+       _cache = cache;
 
   Future<List<CommunityPost>> getFeed({
     required String currentUserId,
     int limit = 20,
     DateTime? before,
   }) async {
+    final cacheKey = 'feed:$currentUserId:$limit:${before?.toIso8601String()}';
+    final cached = _cache?.getFeed(cacheKey);
+    if (cached != null) return cached;
+
     final rows = await _postSource.fetchFeed(limit: limit, before: before);
-    return _enrichPosts(rows, currentUserId);
+    final posts = await _enrichPosts(rows, currentUserId);
+    _cache?.putFeed(cacheKey, posts);
+    return posts;
   }
 
   Future<CommunityPost?> getById({
     required String postId,
     required String currentUserId,
   }) async {
+    final cached = _cache?.getPost(postId);
+    if (cached != null) return cached;
+
     final row = await _postSource.fetchById(postId);
     if (row == null) return null;
 
     final posts = await _enrichPosts([row], currentUserId);
-    return posts.isNotEmpty ? posts.first : null;
+    final post = posts.isNotEmpty ? posts.first : null;
+    if (post != null) _cache?.putPost(post);
+    return post;
   }
 
   Future<List<CommunityPost>> getByUser({
@@ -54,8 +71,9 @@ class CommunityPostRepository {
   }) async {
     if (currentUserId == 'anonymous') return [];
 
-    final bookmarkedIds =
-        await _socialSource.fetchAllBookmarkedPostIds(currentUserId);
+    final bookmarkedIds = await _socialSource.fetchAllBookmarkedPostIds(
+      currentUserId,
+    );
     if (bookmarkedIds.isEmpty) return [];
 
     final rows = await _postSource.fetchByIds(bookmarkedIds);
@@ -72,13 +90,12 @@ class CommunityPostRepository {
 
   Future<void> create(Map<String, dynamic> data) async {
     await _postSource.insert(data);
+    _cache?.invalidateAll();
   }
 
-  Future<void> delete({
-    required String postId,
-    required String userId,
-  }) async {
+  Future<void> delete({required String postId, required String userId}) async {
     await _postSource.softDelete(postId, userId);
+    _cache?.invalidatePost(postId);
   }
 
   Future<List<CommunityPost>> search({

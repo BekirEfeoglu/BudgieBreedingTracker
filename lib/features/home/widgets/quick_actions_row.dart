@@ -59,10 +59,7 @@ class QuickActionsRow extends StatelessWidget {
                   gradient: LinearGradient(
                     begin: Alignment.centerLeft,
                     end: Alignment.centerRight,
-                    colors: [
-                      bgColor.withValues(alpha: 0),
-                      bgColor,
-                    ],
+                    colors: [bgColor.withValues(alpha: 0), bgColor],
                   ),
                 ),
               ),

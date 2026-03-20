@@ -59,8 +59,9 @@ class StatCard extends StatelessWidget {
                           padding: const EdgeInsets.all(AppSpacing.sm),
                           decoration: BoxDecoration(
                             color: cardColor.withValues(alpha: 0.15),
-                            borderRadius:
-                                BorderRadius.circular(AppSpacing.radiusMd),
+                            borderRadius: BorderRadius.circular(
+                              AppSpacing.radiusMd,
+                            ),
                           ),
                           child: IconTheme(
                             data: IconThemeData(size: 28, color: cardColor),
@@ -96,8 +97,9 @@ class StatCard extends StatelessWidget {
                           padding: const EdgeInsets.all(AppSpacing.xs + 2),
                           decoration: BoxDecoration(
                             color: cardColor.withValues(alpha: 0.15),
-                            borderRadius:
-                                BorderRadius.circular(AppSpacing.radiusMd),
+                            borderRadius: BorderRadius.circular(
+                              AppSpacing.radiusMd,
+                            ),
                           ),
                           child: IconTheme(
                             data: IconThemeData(size: 18, color: cardColor),
@@ -108,10 +110,7 @@ class StatCard extends StatelessWidget {
                       _AnimatedStatValue(value: value, color: cardColor),
                       if (trendPercent != null && trendUp != null) ...[
                         const SizedBox(height: 2),
-                        _TrendIndicator(
-                          percent: trendPercent!,
-                          isUp: trendUp!,
-                        ),
+                        _TrendIndicator(percent: trendPercent!, isUp: trendUp!),
                       ],
                       const SizedBox(height: 2),
                       Text(
@@ -147,9 +146,9 @@ class _AnimatedStatValue extends StatelessWidget {
       return Text(
         value,
         style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              color: color,
-              fontWeight: FontWeight.bold,
-            ),
+          color: color,
+          fontWeight: FontWeight.bold,
+        ),
       );
     }
 
@@ -164,9 +163,9 @@ class _AnimatedStatValue extends StatelessWidget {
         return Text(
           isPercent ? '$displayValue%' : displayValue,
           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                color: color,
-                fontWeight: FontWeight.bold,
-              ),
+            color: color,
+            fontWeight: FontWeight.bold,
+          ),
         );
       },
     );
@@ -185,8 +184,8 @@ class _TrendIndicator extends StatelessWidget {
       return Text(
         'statistics.trend_stable'.tr(),
         style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        ),
       );
     }
 
@@ -202,9 +201,9 @@ class _TrendIndicator extends StatelessWidget {
         Text(
           '$sign${percent.toStringAsFixed(0)}%',
           style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                color: trendColor,
-                fontWeight: FontWeight.w600,
-              ),
+            color: trendColor,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ],
     );

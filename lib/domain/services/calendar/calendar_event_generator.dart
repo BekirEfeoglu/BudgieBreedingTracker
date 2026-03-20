@@ -31,9 +31,12 @@ class CalendarEventGenerator {
     try {
       final milestones = <int, String>{
         IncubationConstants.candlingDay: 'calendar.milestone_candling'.tr(),
-        IncubationConstants.secondCheckDay: 'calendar.milestone_second_check'.tr(),
-        IncubationConstants.sensitivePeriodDay: 'calendar.milestone_sensitive'.tr(),
-        IncubationConstants.expectedHatchDay: 'calendar.milestone_expected_hatch'.tr(),
+        IncubationConstants.secondCheckDay: 'calendar.milestone_second_check'
+            .tr(),
+        IncubationConstants.sensitivePeriodDay: 'calendar.milestone_sensitive'
+            .tr(),
+        IncubationConstants.expectedHatchDay:
+            'calendar.milestone_expected_hatch'.tr(),
         IncubationConstants.lateHatchDay: 'calendar.milestone_late_hatch'.tr(),
       };
 
@@ -48,7 +51,9 @@ class CalendarEventGenerator {
           type: EventType.breeding,
           userId: userId,
           breedingPairId: breedingPairId,
-          description: 'calendar.day_milestone'.tr(args: ['${entry.key}', entry.value]),
+          description: 'calendar.day_milestone'.tr(
+            args: ['${entry.key}', entry.value],
+          ),
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
         );
@@ -97,7 +102,9 @@ class CalendarEventGenerator {
           eventDate: hatchDate,
           type: EventType.hatching,
           userId: userId,
-          description: 'calendar.egg_expected_hatch_desc'.tr(args: ['$eggNumber']),
+          description: 'calendar.egg_expected_hatch_desc'.tr(
+            args: ['$eggNumber'],
+          ),
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
         );
@@ -139,7 +146,9 @@ class CalendarEventGenerator {
           eventDate: eventDate,
           type: EventType.chick,
           userId: userId,
-          description: 'calendar.day_milestone'.tr(args: ['${entry.key}', entry.value]),
+          description: 'calendar.day_milestone'.tr(
+            args: ['${entry.key}', entry.value],
+          ),
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
         );

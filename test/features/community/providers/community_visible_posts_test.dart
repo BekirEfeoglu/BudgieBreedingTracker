@@ -55,11 +55,15 @@ void main() {
     List<CommunityPost>? posts,
     String currentUserId = 'me',
   }) {
-    return ProviderContainer(overrides: [
-      communityFeedProvider.overrideWith(
-          () => _FakeFeedNotifier(posts: posts ?? testPosts)),
-      currentUserIdProvider.overrideWithValue(currentUserId),
-    ]);
+    return ProviderContainer(
+      overrides: [
+        communityFeedProvider.overrideWith(
+          () => _FakeFeedNotifier(posts: posts ?? testPosts),
+        ),
+        currentUserIdProvider.overrideWithValue(currentUserId),
+        blockedUsersProvider.overrideWith(_FakeBlockedUsersNotifier.new),
+      ],
+    );
   }
 
   group('communityVisiblePostsProvider', () {
@@ -172,15 +176,17 @@ void main() {
     });
 
     test('returns empty list when no posts match tab', () {
-      final container = createContainer(posts: [
-        CommunityPost(
-          id: 'p1',
-          userId: 'u1',
-          username: 'Ali',
-          postType: CommunityPostType.general,
-          createdAt: now,
-        ),
-      ]);
+      final container = createContainer(
+        posts: [
+          CommunityPost(
+            id: 'p1',
+            userId: 'u1',
+            username: 'Ali',
+            postType: CommunityPostType.general,
+            createdAt: now,
+          ),
+        ],
+      );
       addTearDown(container.dispose);
       container.read(communityFeedProvider);
 
@@ -190,6 +196,11 @@ void main() {
       expect(visible, isEmpty);
     });
   });
+}
+
+class _FakeBlockedUsersNotifier extends BlockedUsersNotifier {
+  @override
+  List<String> build() => [];
 }
 
 class _FakeFeedNotifier extends CommunityFeedNotifier {

@@ -114,8 +114,7 @@ class _SelectionDialogState<T> extends State<_SelectionDialog<T>> {
           children: widget.options.map((option) {
             return RadioListTile<T>(
               title: Text(option.label),
-              subtitle:
-                  option.subtitle != null ? Text(option.subtitle!) : null,
+              subtitle: option.subtitle != null ? Text(option.subtitle!) : null,
               secondary: option.icon,
               value: option.value,
             );

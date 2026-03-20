@@ -20,22 +20,18 @@ Future<void> showAvatarPickerSheet(
 }) {
   return showModalBottomSheet(
     context: context,
+    constraints: const BoxConstraints(maxWidth: AppSpacing.maxSheetWidth),
     shape: const RoundedRectangleBorder(
-      borderRadius:
-          BorderRadius.vertical(top: Radius.circular(AppSpacing.radiusXl)),
+      borderRadius: BorderRadius.vertical(
+        top: Radius.circular(AppSpacing.radiusXl),
+      ),
     ),
-    builder: (ctx) => _AvatarPickerContent(
-      ref: ref,
-      hasAvatar: hasAvatar,
-    ),
+    builder: (ctx) => _AvatarPickerContent(ref: ref, hasAvatar: hasAvatar),
   );
 }
 
 class _AvatarPickerContent extends StatelessWidget {
-  const _AvatarPickerContent({
-    required this.ref,
-    required this.hasAvatar,
-  });
+  const _AvatarPickerContent({required this.ref, required this.hasAvatar});
 
   final WidgetRef ref;
   final bool hasAvatar;
@@ -56,8 +52,9 @@ class _AvatarPickerContent extends StatelessWidget {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: theme.colorScheme.onSurfaceVariant
-                      .withValues(alpha: 0.4),
+                  color: theme.colorScheme.onSurfaceVariant.withValues(
+                    alpha: 0.4,
+                  ),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -67,8 +64,9 @@ class _AvatarPickerContent extends StatelessWidget {
             // Title
             Text(
               'profile.edit_avatar'.tr(),
-              style: theme.textTheme.titleMedium
-                  ?.copyWith(fontWeight: FontWeight.bold),
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: AppSpacing.md),
 
@@ -89,8 +87,10 @@ class _AvatarPickerContent extends StatelessWidget {
             // Remove option (only if avatar exists)
             if (hasAvatar)
               ListTile(
-                leading: AppIcon(AppIcons.delete,
-                    color: theme.colorScheme.error),
+                leading: AppIcon(
+                  AppIcons.delete,
+                  color: theme.colorScheme.error,
+                ),
                 title: Text(
                   'profile.avatar_remove'.tr(),
                   style: TextStyle(color: theme.colorScheme.error),

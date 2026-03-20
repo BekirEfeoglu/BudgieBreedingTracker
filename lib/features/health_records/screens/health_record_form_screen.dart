@@ -66,8 +66,9 @@ class _HealthRecordFormScreenState
 
   void _loadExistingRecord() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final recordAsync =
-          ref.read(healthRecordByIdProvider(widget.editRecordId!));
+      final recordAsync = ref.read(
+        healthRecordByIdProvider(widget.editRecordId!),
+      );
       recordAsync.whenData((record) {
         if (record != null && mounted) {
           setState(() {
@@ -80,10 +81,12 @@ class _HealthRecordFormScreenState
             _treatmentController.text = record.treatment ?? '';
             _vetController.text = record.veterinarian ?? '';
             _notesController.text = record.notes ?? '';
-            _weightController.text =
-                record.weight != null ? record.weight.toString() : '';
-            _costController.text =
-                record.cost != null ? record.cost.toString() : '';
+            _weightController.text = record.weight != null
+                ? record.weight.toString()
+                : '';
+            _costController.text = record.cost != null
+                ? record.cost.toString()
+                : '';
             _followUpDate = record.followUpDate;
           });
         }
@@ -110,16 +113,18 @@ class _HealthRecordFormScreenState
     final birdsAsync = ref.watch(birdsStreamProvider(userId));
     final chicksAsync = ref.watch(chicksStreamProvider(userId));
 
-    ref.listen<HealthRecordFormState>(healthRecordFormStateProvider,
-        (_, state) {
+    ref.listen<HealthRecordFormState>(healthRecordFormStateProvider, (
+      _,
+      state,
+    ) {
       if (state.isSuccess) {
         ref.read(healthRecordFormStateProvider.notifier).reset();
         context.pop();
       }
       if (state.error != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(state.error!)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(state.error!)));
       }
     });
 
@@ -132,207 +137,218 @@ class _HealthRecordFormScreenState
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(_isEdit
-            ? 'health_records.edit_record'.tr()
-            : 'health_records.new_record'.tr()),
+        title: Text(
+          _isEdit
+              ? 'health_records.edit_record'.tr()
+              : 'health_records.new_record'.tr(),
+        ),
       ),
       body: Form(
         key: _formKey,
         autovalidateMode: AutovalidateMode.onUserInteraction,
         child: SingleChildScrollView(
           padding: AppSpacing.screenPadding,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Title
-              TextFormField(
-                controller: _titleController,
-                decoration: InputDecoration(
-                  labelText: 'health_records.record_title'.tr(),
-                  border: const OutlineInputBorder(),
-                  prefixIcon: const Icon(LucideIcons.type),
-                ),
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'health_records.title_required'.tr();
-                  }
-                  return null;
-                },
-                textInputAction: TextInputAction.next,
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                maxWidth: AppSpacing.maxContentWidth,
               ),
-              const SizedBox(height: AppSpacing.lg),
-
-              // Type
-              Text(
-                'common.type'.tr(),
-                style: Theme.of(context).textTheme.titleSmall,
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              Wrap(
-                spacing: AppSpacing.sm,
-                runSpacing: AppSpacing.xs,
-                children: HealthRecordType.values.where((t) => t != HealthRecordType.unknown).map((type) {
-                  final isSelected = _type == type;
-                  return ChoiceChip(
-                    avatar: Icon(
-                      healthRecordTypeIcon(type),
-                      size: 18,
-                      color: isSelected
-                          ? Theme.of(context).colorScheme.onPrimary
-                          : healthRecordTypeColor(type),
-                    ),
-                    label: Text(healthRecordTypeLabel(type)),
-                    selected: isSelected,
-                    onSelected: (_) => setState(() => _type = type),
-                  );
-                }).toList(),
-              ),
-              const SizedBox(height: AppSpacing.lg),
-
-              // Date
-              DatePickerField(
-                label: 'common.date'.tr(),
-                value: _date,
-                onChanged: (date) => setState(() => _date = date),
-                firstDate: DateTime(2015),
-                lastDate: DateTime.now(),
-                dateFormatter: ref.watch(dateFormatProvider).formatter(),
-              ),
-              const SizedBox(height: AppSpacing.lg),
-
-              // Bird / Chick selector
-              HealthRecordAnimalSelector(
-                selectedId: _birdId,
-                birds: birdsAsync.value ?? [],
-                chicks: chicksAsync.value ?? [],
-                isLoading: birdsAsync.isLoading || chicksAsync.isLoading,
-                onChanged: (value) => setState(() => _birdId = value),
-              ),
-              const SizedBox(height: AppSpacing.lg),
-
-              // Description
-              TextFormField(
-                controller: _descriptionController,
-                decoration: InputDecoration(
-                  labelText: 'common.description'.tr(),
-                  border: const OutlineInputBorder(),
-                  prefixIcon: const Icon(LucideIcons.fileText),
-                ),
-                maxLines: 3,
-                textInputAction: TextInputAction.next,
-              ),
-              const SizedBox(height: AppSpacing.lg),
-
-              // Treatment
-              TextFormField(
-                controller: _treatmentController,
-                decoration: InputDecoration(
-                  labelText: 'health_records.treatment'.tr(),
-                  border: const OutlineInputBorder(),
-                  prefixIcon: const AppIcon(AppIcons.health),
-                ),
-                maxLines: 2,
-                textInputAction: TextInputAction.next,
-              ),
-              const SizedBox(height: AppSpacing.lg),
-
-              // Veterinarian
-              TextFormField(
-                controller: _vetController,
-                decoration: InputDecoration(
-                  labelText: 'health_records.veterinarian'.tr(),
-                  border: const OutlineInputBorder(),
-                  prefixIcon: const AppIcon(AppIcons.profile),
-                ),
-                textInputAction: TextInputAction.next,
-              ),
-              const SizedBox(height: AppSpacing.lg),
-
-              // Weight and Cost row
-              Row(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Expanded(
-                    child: TextFormField(
-                      controller: _weightController,
-                      decoration: InputDecoration(
-                        labelText: 'health_records.weight'.tr(),
-                        border: const OutlineInputBorder(),
-                        suffixText: 'g',
-                      ),
-                      keyboardType: const TextInputType.numberWithOptions(
-                          decimal: true),
-                      textInputAction: TextInputAction.next,
-                      validator: (value) {
-                        if (value != null && value.isNotEmpty) {
-                          if (double.tryParse(value.trim()) == null) {
-                            return 'chicks.invalid_number'.tr();
-                          }
-                        }
-                        return null;
-                      },
+                  // Title
+                  TextFormField(
+                    controller: _titleController,
+                    decoration: InputDecoration(
+                      labelText: 'health_records.record_title'.tr(),
+                      border: const OutlineInputBorder(),
+                      prefixIcon: const Icon(LucideIcons.type),
                     ),
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'health_records.title_required'.tr();
+                      }
+                      return null;
+                    },
+                    textInputAction: TextInputAction.next,
                   ),
-                  const SizedBox(width: AppSpacing.md),
-                  Expanded(
-                    child: TextFormField(
-                      controller: _costController,
-                      decoration: InputDecoration(
-                        labelText: 'health_records.cost'.tr(),
-                        border: const OutlineInputBorder(),
-                        suffixText: 'settings.currency_symbol'.tr(),
-                      ),
-                      keyboardType: const TextInputType.numberWithOptions(
-                          decimal: true),
-                      textInputAction: TextInputAction.next,
-                      validator: (value) {
-                        if (value != null && value.isNotEmpty) {
-                          if (double.tryParse(value.trim()) == null) {
-                            return 'chicks.invalid_number'.tr();
-                          }
-                        }
-                        return null;
-                      },
+                  const SizedBox(height: AppSpacing.lg),
+
+                  // Type
+                  Text(
+                    'common.type'.tr(),
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  Wrap(
+                    spacing: AppSpacing.sm,
+                    runSpacing: AppSpacing.xs,
+                    children: HealthRecordType.values
+                        .where((t) => t != HealthRecordType.unknown)
+                        .map((type) {
+                          final isSelected = _type == type;
+                          return ChoiceChip(
+                            avatar: Icon(
+                              healthRecordTypeIcon(type),
+                              size: 18,
+                              color: isSelected
+                                  ? Theme.of(context).colorScheme.onPrimary
+                                  : healthRecordTypeColor(type),
+                            ),
+                            label: Text(healthRecordTypeLabel(type)),
+                            selected: isSelected,
+                            onSelected: (_) => setState(() => _type = type),
+                          );
+                        })
+                        .toList(),
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+
+                  // Date
+                  DatePickerField(
+                    label: 'common.date'.tr(),
+                    value: _date,
+                    onChanged: (date) => setState(() => _date = date),
+                    firstDate: DateTime(2015),
+                    lastDate: DateTime.now(),
+                    dateFormatter: ref.watch(dateFormatProvider).formatter(),
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+
+                  // Bird / Chick selector
+                  HealthRecordAnimalSelector(
+                    selectedId: _birdId,
+                    birds: birdsAsync.value ?? [],
+                    chicks: chicksAsync.value ?? [],
+                    isLoading: birdsAsync.isLoading || chicksAsync.isLoading,
+                    onChanged: (value) => setState(() => _birdId = value),
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+
+                  // Description
+                  TextFormField(
+                    controller: _descriptionController,
+                    decoration: InputDecoration(
+                      labelText: 'common.description'.tr(),
+                      border: const OutlineInputBorder(),
+                      prefixIcon: const Icon(LucideIcons.fileText),
                     ),
+                    maxLines: 3,
+                    textInputAction: TextInputAction.next,
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+
+                  // Treatment
+                  TextFormField(
+                    controller: _treatmentController,
+                    decoration: InputDecoration(
+                      labelText: 'health_records.treatment'.tr(),
+                      border: const OutlineInputBorder(),
+                      prefixIcon: const AppIcon(AppIcons.health),
+                    ),
+                    maxLines: 2,
+                    textInputAction: TextInputAction.next,
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+
+                  // Veterinarian
+                  TextFormField(
+                    controller: _vetController,
+                    decoration: InputDecoration(
+                      labelText: 'health_records.veterinarian'.tr(),
+                      border: const OutlineInputBorder(),
+                      prefixIcon: const AppIcon(AppIcons.profile),
+                    ),
+                    textInputAction: TextInputAction.next,
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+
+                  // Weight and Cost row
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          controller: _weightController,
+                          decoration: InputDecoration(
+                            labelText: 'health_records.weight'.tr(),
+                            border: const OutlineInputBorder(),
+                            suffixText: 'g',
+                          ),
+                          keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true,
+                          ),
+                          textInputAction: TextInputAction.next,
+                          validator: (value) {
+                            if (value != null && value.isNotEmpty) {
+                              if (double.tryParse(value.trim()) == null) {
+                                return 'chicks.invalid_number'.tr();
+                              }
+                            }
+                            return null;
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.md),
+                      Expanded(
+                        child: TextFormField(
+                          controller: _costController,
+                          decoration: InputDecoration(
+                            labelText: 'health_records.cost'.tr(),
+                            border: const OutlineInputBorder(),
+                            suffixText: 'settings.currency_symbol'.tr(),
+                          ),
+                          keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true,
+                          ),
+                          textInputAction: TextInputAction.next,
+                          validator: (value) {
+                            if (value != null && value.isNotEmpty) {
+                              if (double.tryParse(value.trim()) == null) {
+                                return 'chicks.invalid_number'.tr();
+                              }
+                            }
+                            return null;
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+
+                  // Follow-up date
+                  DatePickerField(
+                    label: 'health_records.follow_up'.tr(),
+                    value: _followUpDate,
+                    onChanged: (date) => setState(() => _followUpDate = date),
+                    firstDate: DateTime.now(),
+                    lastDate: DateTime.now().add(const Duration(days: 365)),
+                    isRequired: false,
+                    dateFormatter: ref.watch(dateFormatProvider).formatter(),
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+
+                  // Notes
+                  TextFormField(
+                    controller: _notesController,
+                    decoration: InputDecoration(
+                      labelText: 'common.notes_optional'.tr(),
+                      border: const OutlineInputBorder(),
+                      prefixIcon: const Icon(LucideIcons.stickyNote),
+                    ),
+                    maxLines: 3,
+                    textInputAction: TextInputAction.done,
+                  ),
+                  const SizedBox(height: AppSpacing.xxl),
+
+                  // Submit
+                  PrimaryButton(
+                    label: _isEdit ? 'common.update'.tr() : 'common.save'.tr(),
+                    isLoading: formState.isLoading,
+                    onPressed: _submit,
                   ),
                 ],
               ),
-              const SizedBox(height: AppSpacing.lg),
-
-              // Follow-up date
-              DatePickerField(
-                label: 'health_records.follow_up'.tr(),
-                value: _followUpDate,
-                onChanged: (date) =>
-                    setState(() => _followUpDate = date),
-                firstDate: DateTime.now(),
-                lastDate: DateTime.now().add(const Duration(days: 365)),
-                isRequired: false,
-                dateFormatter: ref.watch(dateFormatProvider).formatter(),
-              ),
-              const SizedBox(height: AppSpacing.lg),
-
-              // Notes
-              TextFormField(
-                controller: _notesController,
-                decoration: InputDecoration(
-                  labelText: 'common.notes_optional'.tr(),
-                  border: const OutlineInputBorder(),
-                  prefixIcon: const Icon(LucideIcons.stickyNote),
-                ),
-                maxLines: 3,
-                textInputAction: TextInputAction.done,
-              ),
-              const SizedBox(height: AppSpacing.xxl),
-
-              // Submit
-              PrimaryButton(
-                label: _isEdit
-                    ? 'common.update'.tr()
-                    : 'common.save'.tr(),
-                isLoading: formState.isLoading,
-                onPressed: _submit,
-              ),
-            ],
+            ),
           ),
         ),
       ),
@@ -354,26 +370,29 @@ class _HealthRecordFormScreenState
         : null;
 
     if (_isEdit && _existingRecord != null) {
-      notifier.updateRecord(_existingRecord!.copyWith(
-        title: _titleController.text.trim(),
-        type: _type,
-        date: _date,
-        birdId: _birdId,
-        description: _descriptionController.text.isEmpty
-            ? null
-            : _descriptionController.text.trim(),
-        treatment: _treatmentController.text.isEmpty
-            ? null
-            : _treatmentController.text.trim(),
-        veterinarian:
-            _vetController.text.isEmpty ? null : _vetController.text.trim(),
-        notes: _notesController.text.isEmpty
-            ? null
-            : _notesController.text.trim(),
-        weight: weight,
-        cost: cost,
-        followUpDate: _followUpDate,
-      ));
+      notifier.updateRecord(
+        _existingRecord!.copyWith(
+          title: _titleController.text.trim(),
+          type: _type,
+          date: _date,
+          birdId: _birdId,
+          description: _descriptionController.text.isEmpty
+              ? null
+              : _descriptionController.text.trim(),
+          treatment: _treatmentController.text.isEmpty
+              ? null
+              : _treatmentController.text.trim(),
+          veterinarian: _vetController.text.isEmpty
+              ? null
+              : _vetController.text.trim(),
+          notes: _notesController.text.isEmpty
+              ? null
+              : _notesController.text.trim(),
+          weight: weight,
+          cost: cost,
+          followUpDate: _followUpDate,
+        ),
+      );
     } else {
       notifier.createRecord(
         userId: userId,
@@ -387,8 +406,9 @@ class _HealthRecordFormScreenState
         treatment: _treatmentController.text.isEmpty
             ? null
             : _treatmentController.text.trim(),
-        veterinarian:
-            _vetController.text.isEmpty ? null : _vetController.text.trim(),
+        veterinarian: _vetController.text.isEmpty
+            ? null
+            : _vetController.text.trim(),
         notes: _notesController.text.isEmpty
             ? null
             : _notesController.text.trim(),

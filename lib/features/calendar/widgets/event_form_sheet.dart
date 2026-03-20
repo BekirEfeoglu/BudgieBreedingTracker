@@ -22,6 +22,7 @@ Future<void> showEventFormSheet(
   return showModalBottomSheet(
     context: context,
     isScrollControlled: true,
+    constraints: const BoxConstraints(maxWidth: AppSpacing.maxSheetWidth),
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(
         top: Radius.circular(AppSpacing.radiusXl),
@@ -38,14 +39,10 @@ class _EventFormContent extends ConsumerStatefulWidget {
   final Event? existingEvent;
   final DateTime? initialDate;
 
-  const _EventFormContent({
-    this.existingEvent,
-    this.initialDate,
-  });
+  const _EventFormContent({this.existingEvent, this.initialDate});
 
   @override
-  ConsumerState<_EventFormContent> createState() =>
-      _EventFormContentState();
+  ConsumerState<_EventFormContent> createState() => _EventFormContentState();
 }
 
 class _EventFormContentState extends ConsumerState<_EventFormContent> {
@@ -105,9 +102,9 @@ class _EventFormContentState extends ConsumerState<_EventFormContent> {
         );
       }
       if (state.error != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(state.error!)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(state.error!)));
       }
     });
 
@@ -132,8 +129,9 @@ class _EventFormContentState extends ConsumerState<_EventFormContent> {
                   width: 40,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: theme.colorScheme.onSurfaceVariant
-                        .withValues(alpha: 0.4),
+                    color: theme.colorScheme.onSurfaceVariant.withValues(
+                      alpha: 0.4,
+                    ),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -160,8 +158,9 @@ class _EventFormContentState extends ConsumerState<_EventFormContent> {
                 textInputAction: TextInputAction.next,
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
-                    return 'validation.field_required'
-                        .tr(args: ['calendar.event_title'.tr()]);
+                    return 'validation.field_required'.tr(
+                      args: ['calendar.event_title'.tr()],
+                    );
                   }
                   return null;
                 },
@@ -226,8 +225,8 @@ class _EventFormContentState extends ConsumerState<_EventFormContent> {
                         ),
                       )
                     : _isEditing
-                        ? const Icon(LucideIcons.save)
-                        : const AppIcon(AppIcons.add),
+                    ? const Icon(LucideIcons.save)
+                    : const AppIcon(AppIcons.add),
                 label: Text(
                   _isEditing
                       ? 'calendar.edit_event'.tr()
@@ -272,9 +271,9 @@ class _EventFormContentState extends ConsumerState<_EventFormContent> {
   }
 
   List<DropdownMenuItem<EventType>> _buildEventTypeItems() {
-    return EventType.values
-        .where((type) => type != EventType.unknown)
-        .map((type) {
+    return EventType.values.where((type) => type != EventType.unknown).map((
+      type,
+    ) {
       return DropdownMenuItem(
         value: type,
         child: Row(

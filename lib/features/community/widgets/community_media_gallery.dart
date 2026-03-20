@@ -63,9 +63,7 @@ class _CommunityMediaGalleryState extends State<CommunityMediaGallery> {
                     child: const SizedBox(
                       height: 320,
                       width: double.infinity,
-                      child: Center(
-                        child: Icon(LucideIcons.image, size: 32),
-                      ),
+                      child: Center(child: Icon(LucideIcons.image, size: 32)),
                     ),
                   ),
                   errorWidget: (_, __, ___) => Container(

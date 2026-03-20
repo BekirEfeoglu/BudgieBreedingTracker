@@ -48,10 +48,12 @@ class PedigreeNode extends StatelessWidget {
     final width = isRoot ? _rootWidth : _normalWidth;
 
     Widget nodeWidget = GestureDetector(
-      onTap: onTap ?? () {
-        if (!NavigationThrottle.canNavigate()) return;
-        context.push('/birds/${bird!.id}');
-      },
+      onTap:
+          onTap ??
+          () {
+            if (!NavigationThrottle.canNavigate()) return;
+            context.push('/birds/${bird!.id}');
+          },
       child: Container(
         width: width,
         padding: const EdgeInsets.all(AppSpacing.sm),
@@ -118,8 +120,9 @@ class PedigreeNode extends StatelessWidget {
                   Text(
                     _ageText!,
                     style: theme.textTheme.labelSmall?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant
-                          .withValues(alpha: 0.7),
+                      color: theme.colorScheme.onSurfaceVariant.withValues(
+                        alpha: 0.7,
+                      ),
                       fontSize: 10,
                     ),
                     textAlign: TextAlign.center,
@@ -151,7 +154,9 @@ class PedigreeNode extends StatelessWidget {
                   color: _statusColor,
                   shape: BoxShape.circle,
                   border: Border.all(
-                      color: theme.colorScheme.surface, width: 1),
+                    color: theme.colorScheme.surface,
+                    width: 1,
+                  ),
                 ),
               ),
             ),
@@ -161,7 +166,10 @@ class PedigreeNode extends StatelessWidget {
                 top: -6,
                 left: -6,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 4,
+                    vertical: 1,
+                  ),
                   decoration: BoxDecoration(
                     color: theme.colorScheme.primaryContainer,
                     borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
@@ -191,7 +199,8 @@ class PedigreeNode extends StatelessWidget {
         tween: Tween(begin: 0.85, end: 1.0),
         duration: const Duration(milliseconds: 1200),
         curve: Curves.easeInOut,
-        builder: (context, value, child) => Opacity(opacity: value, child: child),
+        builder: (context, value, child) =>
+            Opacity(opacity: value, child: child),
         child: nodeWidget,
       );
     }
@@ -254,39 +263,47 @@ class PedigreeNode extends StatelessWidget {
   }
 
   Widget get _genderIconWidget => switch (bird?.gender) {
-        BirdGender.male =>
-          const AppIcon(AppIcons.male, size: 16, color: AppColors.genderMale),
-        BirdGender.female => const AppIcon(AppIcons.female,
-            size: 16, color: AppColors.genderFemale),
-        _ => const Icon(LucideIcons.helpCircle,
-            size: 16, color: AppColors.genderUnknown),
-      };
+    BirdGender.male => const AppIcon(
+      AppIcons.male,
+      size: 16,
+      color: AppColors.genderMale,
+    ),
+    BirdGender.female => const AppIcon(
+      AppIcons.female,
+      size: 16,
+      color: AppColors.genderFemale,
+    ),
+    _ => const Icon(
+      LucideIcons.helpCircle,
+      size: 16,
+      color: AppColors.genderUnknown,
+    ),
+  };
 
   Color get _genderBackgroundColor => switch (bird?.gender) {
-        BirdGender.male => AppColors.genderMale,
-        BirdGender.female => AppColors.genderFemale,
-        _ => AppColors.genderUnknown,
-      };
+    BirdGender.male => AppColors.genderMale,
+    BirdGender.female => AppColors.genderFemale,
+    _ => AppColors.genderUnknown,
+  };
 
   Color get _genderBorderColor => switch (bird?.gender) {
-        BirdGender.male => AppColors.genderMale,
-        BirdGender.female => AppColors.genderFemale,
-        _ => AppColors.neutral400,
-      };
+    BirdGender.male => AppColors.genderMale,
+    BirdGender.female => AppColors.genderFemale,
+    _ => AppColors.neutral400,
+  };
 
   Color get _statusColor => switch (bird?.status) {
-        BirdStatus.alive => AppColors.success,
-        BirdStatus.dead => AppColors.error,
-        BirdStatus.sold => AppColors.warning,
-        _ => AppColors.neutral400,
-      };
+    BirdStatus.alive => AppColors.success,
+    BirdStatus.dead => AppColors.error,
+    BirdStatus.sold => AppColors.warning,
+    _ => AppColors.neutral400,
+  };
 
   String? get _ageText {
     final age = bird?.age;
     if (age == null) return null;
-    return 'genealogy.age_short'.tr(args: [
-      age.years.toString(),
-      age.months.toString(),
-    ]);
+    return 'genealogy.age_short'.tr(
+      args: [age.years.toString(), age.months.toString()],
+    );
   }
 }

@@ -17,7 +17,9 @@ class NotificationsSection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final settings = ref.watch(notificationToggleSettingsProvider);
-    final settingsNotifier = ref.read(notificationToggleSettingsProvider.notifier);
+    final settingsNotifier = ref.read(
+      notificationToggleSettingsProvider.notifier,
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

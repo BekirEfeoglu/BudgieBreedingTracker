@@ -59,40 +59,45 @@ void main() {
 
     group('Terms of Service', () {
       testWidgets('renders without error', (tester) async {
-        await tester
-            .pumpWidget(createSubject(LegalDocumentType.termsOfService));
+        await tester.pumpWidget(
+          createSubject(LegalDocumentType.termsOfService),
+        );
         await tester.pumpAndSettle();
 
         expect(find.byType(LegalDocumentScreen), findsOneWidget);
       });
 
       testWidgets('shows correct AppBar title', (tester) async {
-        await tester
-            .pumpWidget(createSubject(LegalDocumentType.termsOfService));
+        await tester.pumpWidget(
+          createSubject(LegalDocumentType.termsOfService),
+        );
         await tester.pumpAndSettle();
 
         expect(find.text('settings.terms'), findsOneWidget);
       });
 
       testWidgets('contains scrollable ListView', (tester) async {
-        await tester
-            .pumpWidget(createSubject(LegalDocumentType.termsOfService));
+        await tester.pumpWidget(
+          createSubject(LegalDocumentType.termsOfService),
+        );
         await tester.pumpAndSettle();
 
         expect(find.byType(ListView), findsOneWidget);
       });
 
       testWidgets('renders section cards', (tester) async {
-        await tester
-            .pumpWidget(createSubject(LegalDocumentType.termsOfService));
+        await tester.pumpWidget(
+          createSubject(LegalDocumentType.termsOfService),
+        );
         await tester.pumpAndSettle();
 
         expect(find.byType(Card), findsWidgets);
       });
 
       testWidgets('shows last updated text', (tester) async {
-        await tester
-            .pumpWidget(createSubject(LegalDocumentType.termsOfService));
+        await tester.pumpWidget(
+          createSubject(LegalDocumentType.termsOfService),
+        );
         await tester.pumpAndSettle();
 
         expect(find.text('legal.last_updated'), findsOneWidget);
@@ -147,8 +152,9 @@ void main() {
     });
 
     group('common rendering', () {
-      testWidgets('each document type renders different AppBar title',
-          (tester) async {
+      testWidgets('each document type renders different AppBar title', (
+        tester,
+      ) async {
         // Privacy Policy
         await tester.pumpWidget(createSubject(LegalDocumentType.privacyPolicy));
         await tester.pumpAndSettle();
@@ -157,8 +163,9 @@ void main() {
         expect(find.text('legal.community_guidelines_title'), findsNothing);
 
         // Terms of Service
-        await tester
-            .pumpWidget(createSubject(LegalDocumentType.termsOfService));
+        await tester.pumpWidget(
+          createSubject(LegalDocumentType.termsOfService),
+        );
         await tester.pumpAndSettle();
         expect(find.text('settings.terms'), findsOneWidget);
         expect(find.text('settings.privacy_policy'), findsNothing);

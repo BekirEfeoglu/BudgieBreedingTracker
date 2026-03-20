@@ -68,10 +68,7 @@ class LimitApproachingBanner extends ConsumerWidget {
             onPressed: () => context.push(AppRoutes.premium),
             child: Text(
               'premium.try_free_trial'.tr(),
-              style: TextStyle(
-                color: bannerColor,
-                fontWeight: FontWeight.w600,
-              ),
+              style: TextStyle(color: bannerColor, fontWeight: FontWeight.w600),
             ),
           ),
         ],

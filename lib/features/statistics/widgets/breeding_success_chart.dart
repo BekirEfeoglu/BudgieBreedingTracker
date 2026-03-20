@@ -39,55 +39,55 @@ class BreedingSuccessChart extends StatelessWidget {
           height: 200,
           child: RepaintBoundary(
             child: BarChart(
-            BarChartData(
-              alignment: BarChartAlignment.spaceAround,
-              maxY: maxY,
-              barTouchData: const BarTouchData(enabled: false),
-              titlesData: FlTitlesData(
-                show: true,
-                topTitles: const AxisTitles(
-                  sideTitles: SideTitles(showTitles: false),
-                ),
-                rightTitles: const AxisTitles(
-                  sideTitles: SideTitles(showTitles: false),
-                ),
-                leftTitles: AxisTitles(
-                  sideTitles: SideTitles(
-                    showTitles: true,
-                    reservedSize: 28,
-                    interval: 1,
-                    getTitlesWidget: (value, meta) {
-                      if (value % 1 != 0) return const SizedBox.shrink();
-                      return Text(
-                        value.toInt().toString(),
-                        style: theme.textTheme.labelSmall,
-                      );
-                    },
+              BarChartData(
+                alignment: BarChartAlignment.spaceAround,
+                maxY: maxY,
+                barTouchData: const BarTouchData(enabled: false),
+                titlesData: FlTitlesData(
+                  show: true,
+                  topTitles: const AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
+                  rightTitles: const AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
+                  leftTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      reservedSize: 28,
+                      interval: 1,
+                      getTitlesWidget: (value, meta) {
+                        if (value % 1 != 0) return const SizedBox.shrink();
+                        return Text(
+                          value.toInt().toString(),
+                          style: theme.textTheme.labelSmall,
+                        );
+                      },
+                    ),
+                  ),
+                  bottomTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      reservedSize: 28,
+                      getTitlesWidget: (value, meta) {
+                        final index = value.toInt();
+                        if (index < 0 || index >= keys.length) {
+                          return const SizedBox.shrink();
+                        }
+                        final parts = keys[index].split('-');
+                        return Text(
+                          parts[1],
+                          style: theme.textTheme.labelSmall,
+                        );
+                      },
+                    ),
                   ),
                 ),
-                bottomTitles: AxisTitles(
-                  sideTitles: SideTitles(
-                    showTitles: true,
-                    reservedSize: 28,
-                    getTitlesWidget: (value, meta) {
-                      final index = value.toInt();
-                      if (index < 0 || index >= keys.length) {
-                        return const SizedBox.shrink();
-                      }
-                      final parts = keys[index].split('-');
-                      return Text(
-                        parts[1],
-                        style: theme.textTheme.labelSmall,
-                      );
-                    },
-                  ),
-                ),
+                gridData: const FlGridData(show: false),
+                borderData: FlBorderData(show: false),
+                barGroups: _buildBarGroups(keys),
               ),
-              gridData: const FlGridData(show: false),
-              borderData: FlBorderData(show: false),
-              barGroups: _buildBarGroups(keys),
             ),
-          ),
           ),
         ),
         const SizedBox(height: AppSpacing.sm),
@@ -150,20 +150,14 @@ class _Legend extends StatelessWidget {
           label: 'statistics.completed'.tr(),
         ),
         const SizedBox(width: AppSpacing.lg),
-        _LegendItem(
-          color: AppColors.error,
-          label: 'statistics.cancelled'.tr(),
-        ),
+        _LegendItem(color: AppColors.error, label: 'statistics.cancelled'.tr()),
       ],
     );
   }
 }
 
 class _LegendItem extends StatelessWidget {
-  const _LegendItem({
-    required this.color,
-    required this.label,
-  });
+  const _LegendItem({required this.color, required this.label});
 
   final Color color;
   final String label;

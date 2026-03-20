@@ -21,13 +21,14 @@ enum UnitSystem {
   imperial;
 
   String get label => switch (this) {
-        UnitSystem.metric => 'settings.unit_metric'.tr(),
-        UnitSystem.imperial => 'settings.unit_imperial'.tr(),
-      };
+    UnitSystem.metric => 'settings.unit_metric'.tr(),
+    UnitSystem.imperial => 'settings.unit_imperial'.tr(),
+  };
 }
 
-final unitSystemProvider =
-    NotifierProvider<UnitSystemNotifier, UnitSystem>(UnitSystemNotifier.new);
+final unitSystemProvider = NotifierProvider<UnitSystemNotifier, UnitSystem>(
+  UnitSystemNotifier.new,
+);
 
 class UnitSystemNotifier extends Notifier<UnitSystem> {
   @override
@@ -59,16 +60,16 @@ enum AppDateFormat {
   ymd;
 
   String get label => switch (this) {
-        AppDateFormat.dmy => 'GG.AA.YYYY',
-        AppDateFormat.mdy => 'AA/GG/YYYY',
-        AppDateFormat.ymd => 'YYYY-AA-GG',
-      };
+    AppDateFormat.dmy => 'GG.AA.YYYY',
+    AppDateFormat.mdy => 'AA/GG/YYYY',
+    AppDateFormat.ymd => 'YYYY-AA-GG',
+  };
 
   String get intlPattern => switch (this) {
-        AppDateFormat.dmy => 'dd.MM.yyyy',
-        AppDateFormat.mdy => 'MM/dd/yyyy',
-        AppDateFormat.ymd => 'yyyy-MM-dd',
-      };
+    AppDateFormat.dmy => 'dd.MM.yyyy',
+    AppDateFormat.mdy => 'MM/dd/yyyy',
+    AppDateFormat.ymd => 'yyyy-MM-dd',
+  };
 
   DateFormat formatter({bool withTime = false}) {
     final pattern = withTime ? '$intlPattern HH:mm' : intlPattern;
@@ -76,8 +77,9 @@ enum AppDateFormat {
   }
 }
 
-final dateFormatProvider =
-    NotifierProvider<DateFormatNotifier, AppDateFormat>(DateFormatNotifier.new);
+final dateFormatProvider = NotifierProvider<DateFormatNotifier, AppDateFormat>(
+  DateFormatNotifier.new,
+);
 
 class DateFormatNotifier extends Notifier<AppDateFormat> {
   @override
@@ -109,7 +111,9 @@ class DateFormatNotifier extends Notifier<AppDateFormat> {
 // ---------------------------------------------------------------------------
 
 final defaultIncubationDaysProvider =
-    NotifierProvider<DefaultIncubationDaysNotifier, int>(DefaultIncubationDaysNotifier.new);
+    NotifierProvider<DefaultIncubationDaysNotifier, int>(
+      DefaultIncubationDaysNotifier.new,
+    );
 
 class DefaultIncubationDaysNotifier extends Notifier<int> {
   @override
@@ -131,7 +135,9 @@ class DefaultIncubationDaysNotifier extends Notifier<int> {
 }
 
 final defaultClutchSizeProvider =
-    NotifierProvider<DefaultClutchSizeNotifier, int>(DefaultClutchSizeNotifier.new);
+    NotifierProvider<DefaultClutchSizeNotifier, int>(
+      DefaultClutchSizeNotifier.new,
+    );
 
 class DefaultClutchSizeNotifier extends Notifier<int> {
   @override
@@ -186,20 +192,17 @@ final imageStorageSizeProvider = FutureProvider<int>((ref) async {
   if (total > 0) return total;
 
   // Fallback: scan temp folder for common image extensions.
-  return _getDirectorySizeWhere(
-    tempDir,
-    (file) {
-      final lower = file.path.toLowerCase();
-      return lower.endsWith('.jpg') ||
-          lower.endsWith('.jpeg') ||
-          lower.endsWith('.png') ||
-          lower.endsWith('.webp') ||
-          lower.endsWith('.gif') ||
-          lower.endsWith('.heic') ||
-          lower.endsWith('.heif') ||
-          lower.endsWith('.avif');
-    },
-  );
+  return _getDirectorySizeWhere(tempDir, (file) {
+    final lower = file.path.toLowerCase();
+    return lower.endsWith('.jpg') ||
+        lower.endsWith('.jpeg') ||
+        lower.endsWith('.png') ||
+        lower.endsWith('.webp') ||
+        lower.endsWith('.gif') ||
+        lower.endsWith('.heic') ||
+        lower.endsWith('.heif') ||
+        lower.endsWith('.avif');
+  });
 });
 
 Future<int> _getDirectorySize(Directory dir) async {

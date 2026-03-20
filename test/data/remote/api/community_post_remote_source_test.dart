@@ -83,8 +83,10 @@ void main() {
 
       expect(result, isNotNull);
       expect(result!['content'], 'Found');
-      expect(postsSelect.eqCalls.any((e) => e.key == 'id' && e.value == 'p1'),
-          isTrue);
+      expect(
+        postsSelect.eqCalls.any((e) => e.key == 'id' && e.value == 'p1'),
+        isTrue,
+      );
     });
   });
 

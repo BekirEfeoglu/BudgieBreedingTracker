@@ -119,8 +119,9 @@ class GeneticInfoCard extends StatelessWidget {
                     materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     visualDensity: VisualDensity.compact,
                     backgroundColor: m.isVisible
-                        ? theme.colorScheme.primaryContainer
-                            .withValues(alpha: 0.5)
+                        ? theme.colorScheme.primaryContainer.withValues(
+                            alpha: 0.5,
+                          )
                         : theme.colorScheme.surfaceContainerHighest,
                   );
                 }).toList(),

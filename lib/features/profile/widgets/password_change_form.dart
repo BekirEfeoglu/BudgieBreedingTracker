@@ -19,7 +19,8 @@ class PasswordChangeForm extends ConsumerStatefulWidget {
   final Future<void> Function({
     required String currentPassword,
     required String newPassword,
-  }) onSubmit;
+  })
+  onSubmit;
   final bool isLoading;
 
   @override
@@ -83,9 +84,8 @@ class _PasswordChangeFormState extends ConsumerState<PasswordChangeForm> {
           // Strength meter
           ListenableBuilder(
             listenable: _newPasswordController,
-            builder: (context, _) => PasswordStrengthMeter(
-              password: _newPasswordController.text,
-            ),
+            builder: (context, _) =>
+                PasswordStrengthMeter(password: _newPasswordController.text),
           ),
           const SizedBox(height: AppSpacing.lg),
 

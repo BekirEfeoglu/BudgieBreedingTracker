@@ -73,58 +73,58 @@ class EggListItem extends StatelessWidget {
                     ],
                   ),
                 ),
-              const SizedBox(width: AppSpacing.md),
+                const SizedBox(width: AppSpacing.md),
 
-              // Info
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Text(
-                          '${'eggs.egg_label'.tr()} #${egg.eggNumber ?? '?'}',
-                          style: theme.textTheme.titleSmall,
-                        ),
-                        const SizedBox(width: AppSpacing.sm),
-                        EggStatusChip(status: egg.status),
-                      ],
-                    ),
-                    const SizedBox(height: AppSpacing.xs),
-                    Text(
-                      '${'eggs.lay_label'.tr()}: ${dateFormat.format(egg.layDate)}'
-                      '  •  ${'eggs.days_count'.tr(namedArgs: {'count': '${egg.incubationDays}'})}',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
+                // Info
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Text(
+                            '${'eggs.egg_label'.tr()} #${egg.eggNumber ?? '?'}',
+                            style: theme.textTheme.titleSmall,
+                          ),
+                          const SizedBox(width: AppSpacing.sm),
+                          EggStatusChip(status: egg.status),
+                        ],
                       ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // Actions
-              if (onStatusUpdate != null)
-                IconButton(
-                  icon: const Icon(LucideIcons.arrowLeftRight, size: 20),
-                  tooltip: 'eggs.update_status'.tr(),
-                  onPressed: onStatusUpdate,
-                  visualDensity: VisualDensity.compact,
-                ),
-              if (onDelete != null)
-                IconButton(
-                  icon: AppIcon(
-                    AppIcons.delete,
-                    size: 20,
-                    color: theme.colorScheme.error,
+                      const SizedBox(height: AppSpacing.xs),
+                      Text(
+                        '${'eggs.lay_label'.tr()}: ${dateFormat.format(egg.layDate)}'
+                        '  •  ${'eggs.days_count'.tr(namedArgs: {'count': '${egg.incubationDays}'})}',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
                   ),
-                  tooltip: 'common.delete'.tr(),
-                  onPressed: onDelete,
-                  visualDensity: VisualDensity.compact,
                 ),
-            ],
+
+                // Actions
+                if (onStatusUpdate != null)
+                  IconButton(
+                    icon: const Icon(LucideIcons.arrowLeftRight, size: 20),
+                    tooltip: 'eggs.update_status'.tr(),
+                    onPressed: onStatusUpdate,
+                    visualDensity: VisualDensity.compact,
+                  ),
+                if (onDelete != null)
+                  IconButton(
+                    icon: AppIcon(
+                      AppIcons.delete,
+                      size: 20,
+                      color: theme.colorScheme.error,
+                    ),
+                    tooltip: 'common.delete'.tr(),
+                    onPressed: onDelete,
+                    visualDensity: VisualDensity.compact,
+                  ),
+              ],
+            ),
           ),
         ),
-      ),
       ),
     );
   }

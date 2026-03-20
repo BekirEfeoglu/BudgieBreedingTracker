@@ -1,11 +1,7 @@
 part of 'mendelian_calculator.dart';
 
 /// Sex category for offspring results.
-enum OffspringSex {
-  male,
-  female,
-  both;
-}
+enum OffspringSex { male, female, both }
 
 /// Result of an offspring prediction calculation.
 class OffspringResult {

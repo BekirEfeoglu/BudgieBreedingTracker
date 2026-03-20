@@ -234,13 +234,14 @@ void main() {
       var callCount = 0;
       await tester.pumpWidget(
         _buildSheet(
-          onSave: ({
-            required String status,
-            String? adminResponse,
-            required String priority,
-          }) async {
-            callCount++;
-          },
+          onSave:
+              ({
+                required String status,
+                String? adminResponse,
+                required String priority,
+              }) async {
+                callCount++;
+              },
         ),
       );
       await tester.pump();
@@ -257,10 +258,10 @@ void main() {
   group('FeedbackSaveCallback typedef', () {
     test('callback can be defined and called with required params', () async {
       Future<void> callback({
-            required String status,
-            String? adminResponse,
-            required String priority,
-          }) async {}
+        required String status,
+        String? adminResponse,
+        required String priority,
+      }) async {}
 
       await callback(status: 'open', priority: 'normal');
       await callback(
@@ -274,12 +275,12 @@ void main() {
     test('callback works with null adminResponse', () async {
       String? capturedResponse = 'initial';
       Future<void> callback({
-            required String status,
-            String? adminResponse,
-            required String priority,
-          }) async {
-            capturedResponse = adminResponse;
-          }
+        required String status,
+        String? adminResponse,
+        required String priority,
+      }) async {
+        capturedResponse = adminResponse;
+      }
 
       await callback(status: 'open', priority: 'low');
       expect(capturedResponse, isNull);

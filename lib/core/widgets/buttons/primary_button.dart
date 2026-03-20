@@ -32,10 +32,7 @@ class PrimaryButton extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 if (icon != null) ...[
-                  IconTheme(
-                    data: const IconThemeData(size: 20),
-                    child: icon!,
-                  ),
+                  IconTheme(data: const IconThemeData(size: 20), child: icon!),
                   const SizedBox(width: AppSpacing.sm),
                 ],
                 Text(label),

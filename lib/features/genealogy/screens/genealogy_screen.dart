@@ -80,10 +80,8 @@ class _GenealogyScreenState extends ConsumerState<GenealogyScreen> {
         data: (birds) {
           return chicksAsync.when(
             loading: () => const Center(child: CircularProgressIndicator()),
-            error: (_, __) =>
-                _buildContent(context, birds, [], selection),
-            data: (chicks) =>
-                _buildContent(context, birds, chicks, selection),
+            error: (_, __) => _buildContent(context, birds, [], selection),
+            data: (chicks) => _buildContent(context, birds, chicks, selection),
           );
         },
       ),
@@ -141,8 +139,7 @@ class _GenealogyScreenState extends ConsumerState<GenealogyScreen> {
               suffixIcon: IconButton(
                 icon: const Icon(LucideIcons.x, size: 18),
                 onPressed: () {
-                  ref.read(selectedEntityForTreeProvider.notifier).state =
-                      null;
+                  ref.read(selectedEntityForTreeProvider.notifier).state = null;
                 },
               ),
             ),
@@ -179,7 +176,8 @@ class _GenealogyScreenState extends ConsumerState<GenealogyScreen> {
     }
     final chick = chicks.where((c) => c.id == selection.id).firstOrNull;
     if (chick == null) return '?';
-    final name = chick.name ??
+    final name =
+        chick.name ??
         'chicks.unnamed_chick'.tr(
           args: [chick.ringNumber ?? chick.id.substring(0, 6)],
         );
@@ -198,9 +196,7 @@ class _GenealogyScreenState extends ConsumerState<GenealogyScreen> {
 
   void _runRepair(BuildContext context) async {
     final messenger = ScaffoldMessenger.of(context);
-    messenger.showSnackBar(
-      SnackBar(content: Text('genealogy.repairing'.tr())),
-    );
+    messenger.showSnackBar(SnackBar(content: Text('genealogy.repairing'.tr())));
 
     ref.invalidate(repairOrphanBirdsProvider);
     final result = await ref.read(repairOrphanBirdsProvider.future);
@@ -208,9 +204,7 @@ class _GenealogyScreenState extends ConsumerState<GenealogyScreen> {
     messenger.clearSnackBars();
     messenger.showSnackBar(
       SnackBar(
-        content: Text(
-          'genealogy.repair_result'.tr(args: [result.toString()]),
-        ),
+        content: Text('genealogy.repair_result'.tr(args: [result.toString()])),
       ),
     );
 

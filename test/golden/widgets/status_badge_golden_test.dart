@@ -10,9 +10,11 @@ import '../golden_test_helper.dart';
 void main() {
   group('StatusBadge golden tests', () {
     testWidgets('alive status', (tester) async {
-      await tester.pumpWidget(buildGoldenWidget(
-        const StatusBadge(label: 'Canli', color: Colors.green),
-      ));
+      await tester.pumpWidget(
+        buildGoldenWidget(
+          const StatusBadge(label: 'Canli', color: Colors.green),
+        ),
+      );
       await tester.pumpAndSettle();
 
       await expectLater(
@@ -22,9 +24,11 @@ void main() {
     });
 
     testWidgets('sold status', (tester) async {
-      await tester.pumpWidget(buildGoldenWidget(
-        const StatusBadge(label: 'Satildi', color: Colors.orange),
-      ));
+      await tester.pumpWidget(
+        buildGoldenWidget(
+          const StatusBadge(label: 'Satildi', color: Colors.orange),
+        ),
+      );
       await tester.pumpAndSettle();
 
       await expectLater(
@@ -34,9 +38,9 @@ void main() {
     });
 
     testWidgets('dead status', (tester) async {
-      await tester.pumpWidget(buildGoldenWidget(
-        const StatusBadge(label: 'Oldu', color: Colors.red),
-      ));
+      await tester.pumpWidget(
+        buildGoldenWidget(const StatusBadge(label: 'Oldu', color: Colors.red)),
+      );
       await tester.pumpAndSettle();
 
       await expectLater(
@@ -46,13 +50,15 @@ void main() {
     });
 
     testWidgets('with icon', (tester) async {
-      await tester.pumpWidget(buildGoldenWidget(
-        const StatusBadge(
-          label: 'Canli',
-          color: Colors.green,
-          icon: Icon(Icons.check_circle),
+      await tester.pumpWidget(
+        buildGoldenWidget(
+          const StatusBadge(
+            label: 'Canli',
+            color: Colors.green,
+            icon: Icon(Icons.check_circle),
+          ),
         ),
-      ));
+      );
       await tester.pumpAndSettle();
 
       await expectLater(
@@ -62,10 +68,12 @@ void main() {
     });
 
     testWidgets('dark mode', (tester) async {
-      await tester.pumpWidget(buildGoldenWidget(
-        const StatusBadge(label: 'Canli', color: Colors.green),
-        themeMode: ThemeMode.dark,
-      ));
+      await tester.pumpWidget(
+        buildGoldenWidget(
+          const StatusBadge(label: 'Canli', color: Colors.green),
+          themeMode: ThemeMode.dark,
+        ),
+      );
       await tester.pumpAndSettle();
 
       await expectLater(

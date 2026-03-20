@@ -5,11 +5,7 @@ import 'package:flutter/material.dart';
 /// Each section gets a delayed start based on its [index] to create a
 /// cascading entrance effect.
 class AnimatedSection extends StatefulWidget {
-  const AnimatedSection({
-    super.key,
-    required this.child,
-    required this.index,
-  });
+  const AnimatedSection({super.key, required this.child, required this.index});
 
   final Widget child;
 
@@ -42,10 +38,7 @@ class _AnimatedSectionState extends State<AnimatedSection>
     _slideAnimation = Tween<Offset>(
       begin: const Offset(0, 0.08),
       end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeOut,
-    ));
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
 
     // Staggered start
     Future.delayed(Duration(milliseconds: widget.index * 80), () {
@@ -63,10 +56,7 @@ class _AnimatedSectionState extends State<AnimatedSection>
   Widget build(BuildContext context) {
     return FadeTransition(
       opacity: _fadeAnimation,
-      child: SlideTransition(
-        position: _slideAnimation,
-        child: widget.child,
-      ),
+      child: SlideTransition(position: _slideAnimation, child: widget.child),
     );
   }
 }

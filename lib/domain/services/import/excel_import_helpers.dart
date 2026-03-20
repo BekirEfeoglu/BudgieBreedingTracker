@@ -79,17 +79,13 @@ EggStatus parseEggStatus(String? value) {
   if (lower == 'birakildi' || lower == 'laid' || lower == 'gelegt') {
     return EggStatus.laid;
   }
-  if (lower == 'kuluckada' ||
-      lower == 'incubating' ||
-      lower == 'bruetend') {
+  if (lower == 'kuluckada' || lower == 'incubating' || lower == 'bruetend') {
     return EggStatus.incubating;
   }
   if (lower == 'verimli' || lower == 'fertile' || lower == 'befruchtet') {
     return EggStatus.fertile;
   }
-  if (lower == 'verimsiz' ||
-      lower == 'infertile' ||
-      lower == 'unbefruchtet') {
+  if (lower == 'verimsiz' || lower == 'infertile' || lower == 'unbefruchtet') {
     return EggStatus.infertile;
   }
   if (lower == 'cikti' || lower == 'hatched' || lower == 'geschluepft') {
@@ -125,9 +121,7 @@ ChickHealthStatus parseHealthStatus(String? value) {
 HealthRecordType parseHealthRecordType(String? value) {
   if (value == null) return HealthRecordType.checkup;
   final lower = value.toLowerCase().trim();
-  if (lower == 'kontrol' ||
-      lower == 'checkup' ||
-      lower == 'untersuchung') {
+  if (lower == 'kontrol' || lower == 'checkup' || lower == 'untersuchung') {
     return HealthRecordType.checkup;
   }
   if (lower == 'hastalik' || lower == 'illness' || lower == 'krankheit') {

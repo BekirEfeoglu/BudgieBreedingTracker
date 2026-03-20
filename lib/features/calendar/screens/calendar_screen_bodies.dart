@@ -79,9 +79,7 @@ class _CalendarBody extends StatelessWidget {
           onDeleteEvent: onDeleteEvent,
         ),
         // Bottom padding for FAB
-        const SliverToBoxAdapter(
-          child: SizedBox(height: AppSpacing.xxxl * 2),
-        ),
+        const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.xxxl * 2)),
       ],
     );
   }
@@ -144,9 +142,7 @@ class _WeekBody extends StatelessWidget {
           onEditEvent: onEditEvent,
           onDeleteEvent: onDeleteEvent,
         ),
-        const SliverToBoxAdapter(
-          child: SizedBox(height: AppSpacing.xxxl * 2),
-        ),
+        const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.xxxl * 2)),
       ],
     );
   }

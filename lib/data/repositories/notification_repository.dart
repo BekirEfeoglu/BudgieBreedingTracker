@@ -24,9 +24,9 @@ class NotificationRepository extends BaseRepository<AppNotification>
     required NotificationsDao localDao,
     required NotificationRemoteSource remoteSource,
     required SyncMetadataDao syncDao,
-  })  : _localDao = localDao,
-        _remoteSource = remoteSource,
-        _syncDao = syncDao;
+  }) : _localDao = localDao,
+       _remoteSource = remoteSource,
+       _syncDao = syncDao;
 
   static const _table = SupabaseConstants.notificationsTable;
   static const _settingsTable = SupabaseConstants.notificationSettingsTable;
@@ -63,13 +63,17 @@ class NotificationRepository extends BaseRepository<AppNotification>
   Future<void> saveAll(List<AppNotification> items) async {
     await _localDao.insertAll(items);
     if (items.isNotEmpty) {
-      final syncEntries = items.map((item) => SyncMetadata(
-        id: _uuid.v4(),
-        table: _table,
-        userId: item.userId,
-        status: SyncStatus.pending,
-        recordId: item.id,
-      )).toList();
+      final syncEntries = items
+          .map(
+            (item) => SyncMetadata(
+              id: _uuid.v4(),
+              table: _table,
+              userId: item.userId,
+              status: SyncStatus.pending,
+              recordId: item.id,
+            ),
+          )
+          .toList();
       await _syncDao.insertAll(syncEntries);
     }
   }
@@ -80,19 +84,23 @@ class NotificationRepository extends BaseRepository<AppNotification>
     final item = await _localDao.getById(id);
     await _localDao.hardDelete(id);
     if (item != null) {
-      await _syncDao.insertItem(SyncMetadata(
-        id: _uuid.v4(),
-        table: _table,
-        userId: item.userId,
-        status: SyncStatus.pendingDelete,
-        recordId: id,
-      ));
+      await _syncDao.insertItem(
+        SyncMetadata(
+          id: _uuid.v4(),
+          table: _table,
+          userId: item.userId,
+          status: SyncStatus.pendingDelete,
+          recordId: id,
+        ),
+      );
       // Immediate remote delete — falls back to next sync on failure
       try {
         await _remoteSource.deleteById(id, userId: item.userId);
         await _syncDao.deleteByRecord(_table, id);
       } catch (e) {
-        AppLogger.debug('[NotificationRepo] Immediate remote delete failed, will retry on next sync: $e');
+        AppLogger.debug(
+          '[NotificationRepo] Immediate remote delete failed, will retry on next sync: $e',
+        );
       }
     }
   }
@@ -149,13 +157,14 @@ class NotificationRepository extends BaseRepository<AppNotification>
           await _syncDao.deleteByRecord(_table, meta.recordId ?? '');
           pushed++;
         } on AppException catch (e) {
-          await markError(
-              meta.recordId ?? '', userId, e.message);
+          await markError(meta.recordId ?? '', userId, e.message);
         }
       } else {
         final item = await _localDao.getById(meta.recordId ?? '');
         if (item == null) {
-          AppLogger.warning('[NotificationRepo] Orphan sync_metadata cleaned: ${meta.recordId}');
+          AppLogger.warning(
+            '[NotificationRepo] Orphan sync_metadata cleaned: ${meta.recordId}',
+          );
           await _syncDao.deleteByRecord(_table, meta.recordId ?? '');
           orphansCleaned++;
           continue;
@@ -188,13 +197,17 @@ class NotificationRepository extends BaseRepository<AppNotification>
     final items = await _localDao.getAll(userId);
     final readItems = items.where((item) => item.read).toList();
     if (readItems.isNotEmpty) {
-      final syncEntries = readItems.map((item) => SyncMetadata(
-        id: _uuid.v4(),
-        table: _table,
-        userId: userId,
-        status: SyncStatus.pending,
-        recordId: item.id,
-      )).toList();
+      final syncEntries = readItems
+          .map(
+            (item) => SyncMetadata(
+              id: _uuid.v4(),
+              table: _table,
+              userId: userId,
+              status: SyncStatus.pending,
+              recordId: item.id,
+            ),
+          )
+          .toList();
       await _syncDao.insertAll(syncEntries);
     }
   }
@@ -209,16 +222,17 @@ class NotificationRepository extends BaseRepository<AppNotification>
   /// (which refers to the `notifications` table, not `notification_settings`).
   Future<void> upsertSettings(NotificationSettings settings) async {
     await _localDao.upsertSettings(settings);
-    final existing =
-        await _syncDao.getByRecord(_settingsTable, settings.id);
+    final existing = await _syncDao.getByRecord(_settingsTable, settings.id);
     if (existing == null) {
-      await _syncDao.insertItem(SyncMetadata(
-        id: _uuid.v4(),
-        table: _settingsTable,
-        userId: settings.userId,
-        status: SyncStatus.pending,
-        recordId: settings.id,
-      ));
+      await _syncDao.insertItem(
+        SyncMetadata(
+          id: _uuid.v4(),
+          table: _settingsTable,
+          userId: settings.userId,
+          status: SyncStatus.pending,
+          recordId: settings.id,
+        ),
+      );
     } else if (existing.status != SyncStatus.pending) {
       await _syncDao.updateStatus(existing.id, SyncStatus.pending);
     }
@@ -229,8 +243,10 @@ class NotificationRepository extends BaseRepository<AppNotification>
   /// Reads sync metadata for [_settingsTable], then upserts the local
   /// settings to the remote and clears the sync entry on success.
   Future<void> pushSettings(String userId) async {
-    final pendingEntries =
-        await _syncDao.getPendingByTable(userId, _settingsTable);
+    final pendingEntries = await _syncDao.getPendingByTable(
+      userId,
+      _settingsTable,
+    );
     for (final meta in pendingEntries) {
       final settings = await _localDao.getSettings(userId);
       if (settings == null) {
@@ -241,9 +257,7 @@ class NotificationRepository extends BaseRepository<AppNotification>
         await _remoteSource.upsertSettings(settings);
         await _syncDao.deleteByRecord(_settingsTable, settings.id);
       } catch (e, st) {
-        AppLogger.error(
-          '[NotificationRepository] Push settings failed', e, st,
-        );
+        AppLogger.error('[NotificationRepository] Push settings failed', e, st);
         await _syncDao.updateStatus(meta.id, SyncStatus.error);
       }
     }
@@ -257,9 +271,7 @@ class NotificationRepository extends BaseRepository<AppNotification>
         await _localDao.upsertSettings(remote);
       }
     } catch (e, st) {
-      AppLogger.error(
-          '[NotificationRepository] Pull settings failed', e, st);
+      AppLogger.error('[NotificationRepository] Pull settings failed', e, st);
     }
   }
-
 }

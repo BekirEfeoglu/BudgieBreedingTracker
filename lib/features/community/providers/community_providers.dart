@@ -18,11 +18,11 @@ enum CommunityFeedTab {
   questions;
 
   String get label => switch (this) {
-        CommunityFeedTab.explore => 'community.tab_explore'.tr(),
-        CommunityFeedTab.following => 'community.tab_following'.tr(),
-        CommunityFeedTab.guides => 'community.tab_guides'.tr(),
-        CommunityFeedTab.questions => 'community.tab_questions'.tr(),
-      };
+    CommunityFeedTab.explore => 'community.tab_explore'.tr(),
+    CommunityFeedTab.following => 'community.tab_following'.tr(),
+    CommunityFeedTab.guides => 'community.tab_guides'.tr(),
+    CommunityFeedTab.questions => 'community.tab_questions'.tr(),
+  };
 }
 
 /// Sort options for the explore tab.
@@ -36,7 +36,8 @@ class ExploreSortNotifier extends Notifier<CommunityExploreSort> {
 
 final exploreSortProvider =
     NotifierProvider<ExploreSortNotifier, CommunityExploreSort>(
-        ExploreSortNotifier.new);
+      ExploreSortNotifier.new,
+    );
 
 /// Shared relative date formatter for community widgets.
 String formatCommunityDate(DateTime? date) {

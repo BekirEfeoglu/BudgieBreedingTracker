@@ -192,7 +192,9 @@ class _WelcomeHeaderState extends ConsumerState<WelcomeHeader>
                   ),
                   data: (profile) => Text(
                     profile != null
-                        ? 'home.welcome_name'.tr(args: [profile.resolvedDisplayName])
+                        ? 'home.welcome_name'.tr(
+                            args: [profile.resolvedDisplayName],
+                          )
                         : 'home.welcome'.tr(),
                     style: theme.textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.bold,

@@ -23,9 +23,7 @@ class DangerZoneSection extends ConsumerWidget {
       margin: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-        side: BorderSide(
-          color: AppColors.error.withValues(alpha: 0.3),
-        ),
+        side: BorderSide(color: AppColors.error.withValues(alpha: 0.3)),
       ),
       child: Column(
         children: [

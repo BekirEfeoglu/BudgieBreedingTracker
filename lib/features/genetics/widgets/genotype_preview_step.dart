@@ -73,11 +73,11 @@ class GenotypePreviewStep extends ConsumerWidget {
           Container(
             padding: AppSpacing.cardPadding,
             decoration: BoxDecoration(
-              color: theme.colorScheme.secondaryContainer.withValues(alpha: 0.3),
-              borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-              border: Border.all(
-                color: theme.colorScheme.secondaryContainer,
+              color: theme.colorScheme.secondaryContainer.withValues(
+                alpha: 0.3,
               ),
+              borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+              border: Border.all(color: theme.colorScheme.secondaryContainer),
             ),
             child: Row(
               children: [

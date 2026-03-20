@@ -26,7 +26,11 @@ void main() {
 
     test('fetches profiles from Supabase on cache miss', () async {
       selectBuilder.result = [
-        {'id': 'u1', 'display_name': 'Alice', 'avatar_url': 'https://a.com/1.jpg'},
+        {
+          'id': 'u1',
+          'display_name': 'Alice',
+          'avatar_url': 'https://a.com/1.jpg',
+        },
         {'id': 'u2', 'display_name': 'Bob', 'avatar_url': null},
       ];
 
@@ -40,22 +44,24 @@ void main() {
       expect(selectBuilder.inFilterCalls.first.key, 'id');
     });
 
-    test('returns cached profiles without Supabase call on cache hit',
-        () async {
-      selectBuilder.result = [
-        {'id': 'u1', 'display_name': 'Alice', 'avatar_url': null},
-      ];
+    test(
+      'returns cached profiles without Supabase call on cache hit',
+      () async {
+        selectBuilder.result = [
+          {'id': 'u1', 'display_name': 'Alice', 'avatar_url': null},
+        ];
 
-      await cache.getProfiles({'u1'});
-      expect(selectBuilder.inFilterCalls, hasLength(1));
+        await cache.getProfiles({'u1'});
+        expect(selectBuilder.inFilterCalls, hasLength(1));
 
-      // Second call — should use cache, no new Supabase request.
-      final result = await cache.getProfiles({'u1'});
+        // Second call — should use cache, no new Supabase request.
+        final result = await cache.getProfiles({'u1'});
 
-      expect(result, hasLength(1));
-      expect(result['u1']!['display_name'], 'Alice');
-      expect(selectBuilder.inFilterCalls, hasLength(1));
-    });
+        expect(result, hasLength(1));
+        expect(result['u1']!['display_name'], 'Alice');
+        expect(selectBuilder.inFilterCalls, hasLength(1));
+      },
+    );
 
     test('fetches only uncached IDs on partial cache hit', () async {
       selectBuilder.result = [
@@ -135,11 +141,13 @@ void main() {
       final ids = List.generate(50, (i) => 'u$i').toSet();
 
       selectBuilder.result = ids
-          .map((id) => <String, dynamic>{
-                'id': id,
-                'display_name': 'User $id',
-                'avatar_url': null,
-              })
+          .map(
+            (id) => <String, dynamic>{
+              'id': id,
+              'display_name': 'User $id',
+              'avatar_url': null,
+            },
+          )
           .toList();
 
       final result = await cache.getProfiles(ids);
@@ -155,11 +163,13 @@ void main() {
       final ids = List.generate(30, (i) => 'u$i').toSet();
 
       selectBuilder.result = ids
-          .map((id) => <String, dynamic>{
-                'id': id,
-                'display_name': 'User $id',
-                'avatar_url': null,
-              })
+          .map(
+            (id) => <String, dynamic>{
+              'id': id,
+              'display_name': 'User $id',
+              'avatar_url': null,
+            },
+          )
           .toList();
 
       final result = await cache.getProfiles(ids);
@@ -178,7 +188,11 @@ void main() {
 
     test('merges profile data as top-level username and avatar_url', () async {
       selectBuilder.result = [
-        {'id': 'u1', 'display_name': 'Alice', 'avatar_url': 'https://a.com/1.jpg'},
+        {
+          'id': 'u1',
+          'display_name': 'Alice',
+          'avatar_url': 'https://a.com/1.jpg',
+        },
       ];
 
       final rows = [

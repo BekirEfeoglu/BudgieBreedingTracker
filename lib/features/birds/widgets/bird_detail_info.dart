@@ -65,7 +65,9 @@ class BirdDetailInfo extends StatelessWidget {
               Expanded(
                 child: InfoCard(
                   icon: const Icon(LucideIcons.timer),
-                  title: age != null ? formatBirdAge(age) : 'birds.unknown'.tr(),
+                  title: age != null
+                      ? formatBirdAge(age)
+                      : 'birds.unknown'.tr(),
                   subtitle: 'birds.age'.tr(),
                 ),
               ),
@@ -87,8 +89,7 @@ class BirdDetailInfo extends StatelessWidget {
               subtitle: 'birds.cage_number'.tr(),
             ),
           ],
-          if (bird.status == BirdStatus.dead &&
-              bird.deathDate != null) ...[
+          if (bird.status == BirdStatus.dead && bird.deathDate != null) ...[
             const SizedBox(height: AppSpacing.sm),
             InfoCard(
               icon: const AppIcon(AppIcons.statusDead),
@@ -96,8 +97,7 @@ class BirdDetailInfo extends StatelessWidget {
               subtitle: 'birds.death_date'.tr(),
             ),
           ],
-          if (bird.status == BirdStatus.sold &&
-              bird.soldDate != null) ...[
+          if (bird.status == BirdStatus.sold && bird.soldDate != null) ...[
             const SizedBox(height: AppSpacing.sm),
             InfoCard(
               icon: const AppIcon(AppIcons.statusSold),
@@ -111,14 +111,14 @@ class BirdDetailInfo extends StatelessWidget {
   }
 
   Widget get _genderWidget => switch (bird.gender) {
-        BirdGender.male => const AppIcon(AppIcons.male),
-        BirdGender.female => const AppIcon(AppIcons.female),
-        BirdGender.unknown => const Icon(LucideIcons.helpCircle),
-      };
+    BirdGender.male => const AppIcon(AppIcons.male),
+    BirdGender.female => const AppIcon(AppIcons.female),
+    BirdGender.unknown => const Icon(LucideIcons.helpCircle),
+  };
 
   String get _genderLabel => switch (bird.gender) {
-        BirdGender.male => 'birds.male'.tr(),
-        BirdGender.female => 'birds.female'.tr(),
-        BirdGender.unknown => 'birds.unknown'.tr(),
-      };
+    BirdGender.male => 'birds.male'.tr(),
+    BirdGender.female => 'birds.female'.tr(),
+    BirdGender.unknown => 'birds.unknown'.tr(),
+  };
 }

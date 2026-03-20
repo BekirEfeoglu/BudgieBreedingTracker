@@ -10,7 +10,10 @@ void main() {
     final router = GoRouter(
       initialLocation: '/test',
       routes: [
-        GoRoute(path: '/test', builder: (_, __) => Scaffold(body: child)),
+        GoRoute(
+          path: '/test',
+          builder: (_, __) => Scaffold(body: child),
+        ),
         GoRoute(
           path: '/community/user/:userId',
           builder: (_, __) => const Scaffold(body: Text('user_posts')),
@@ -50,9 +53,7 @@ void main() {
     });
 
     testWidgets('renders empty list without crash', (tester) async {
-      await tester.pumpWidget(
-        wrap(const CommunityCreatorStrip(creators: [])),
-      );
+      await tester.pumpWidget(wrap(const CommunityCreatorStrip(creators: [])));
       await tester.pumpAndSettle();
 
       expect(find.text('community.top_creators'), findsOneWidget);

@@ -47,9 +47,9 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            ancestorsProvider(
-              'entity-1',
-            ).overrideWithValue(const AsyncError('Test hata', StackTrace.empty)),
+            ancestorsProvider('entity-1').overrideWithValue(
+              const AsyncError('Test hata', StackTrace.empty),
+            ),
           ],
           child: const MaterialApp(
             home: Scaffold(

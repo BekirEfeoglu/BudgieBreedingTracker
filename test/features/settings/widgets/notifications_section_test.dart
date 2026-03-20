@@ -18,11 +18,11 @@ class _FakeNotificationToggleSettingsNotifier
 
   @override
   NotificationToggleSettings build() => NotificationToggleSettings(
-        eggTurning: _initial,
-        incubation: _initial,
-        chickCare: _initial,
-        healthCheck: _initial,
-      );
+    eggTurning: _initial,
+    incubation: _initial,
+    chickCare: _initial,
+    healthCheck: _initial,
+  );
 
   @override
   Future<void> setAll(bool value) async {
@@ -128,7 +128,10 @@ void main() {
       container.read(notificationToggleSettingsProvider.notifier).setAll(false);
       await tester.pump(const Duration(milliseconds: 100));
 
-      expect(container.read(notificationToggleSettingsProvider).allEnabled, isFalse);
+      expect(
+        container.read(notificationToggleSettingsProvider).allEnabled,
+        isFalse,
+      );
     });
 
     testWidgets('bildirim kategorileri tile tiklama GoRouter push calisir', (

@@ -61,8 +61,12 @@ ProviderContainer _createContainer({
       initSkippedProvider.overrideWith(
         () => _TestInitSkippedNotifier(initSkipped),
       ),
-      isGeneticsRewardActiveProvider.overrideWith(_FalseGeneticsRewardNotifier.new),
-      isStatisticsRewardActiveProvider.overrideWith(_FalseStatisticsRewardNotifier.new),
+      isGeneticsRewardActiveProvider.overrideWith(
+        _FalseGeneticsRewardNotifier.new,
+      ),
+      isStatisticsRewardActiveProvider.overrideWith(
+        _FalseStatisticsRewardNotifier.new,
+      ),
       adServiceProvider.overrideWithValue(_MockAdService()),
       deferredNotificationPermissionProvider.overrideWith((_) async {}),
       periodicSyncProvider.overrideWith((ref) {}),

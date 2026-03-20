@@ -79,8 +79,8 @@ class MonitoringStatusBanner extends StatelessWidget {
             worstRatio < 0.7
                 ? LucideIcons.checkCircle
                 : worstRatio < 0.9
-                    ? LucideIcons.alertTriangle
-                    : LucideIcons.alertOctagon,
+                ? LucideIcons.alertTriangle
+                : LucideIcons.alertOctagon,
             color: color,
           ),
           const SizedBox(width: AppSpacing.md),
@@ -185,7 +185,9 @@ class MonitoringCapacityCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final color = ratio != null ? capacityColor(ratio!, invertColor) : AppColors.info;
+    final color = ratio != null
+        ? capacityColor(ratio!, invertColor)
+        : AppColors.info;
 
     return Card(
       child: Padding(

@@ -24,9 +24,9 @@ class PhotoRepository {
     required PhotosDao localDao,
     required PhotoRemoteSource remoteSource,
     required SyncMetadataDao syncDao,
-  })  : _localDao = localDao,
-        _remoteSource = remoteSource,
-        _syncDao = syncDao;
+  }) : _localDao = localDao,
+       _remoteSource = remoteSource,
+       _syncDao = syncDao;
 
   static const _table = SupabaseConstants.photosTable;
 
@@ -62,7 +62,9 @@ class PhotoRepository {
         await _remoteSource.deleteById(id, userId: item.userId);
         await _syncDao.deleteByRecord(_table, id);
       } catch (e) {
-        AppLogger.debug('[PhotoRepo] Immediate remote delete failed, will retry on next sync: $e');
+        AppLogger.debug(
+          '[PhotoRepo] Immediate remote delete failed, will retry on next sync: $e',
+        );
       }
     }
   }
@@ -129,13 +131,17 @@ class PhotoRepository {
   Future<void> saveAll(List<Photo> items) async {
     await _localDao.insertAll(items);
     if (items.isNotEmpty) {
-      final syncEntries = items.map((item) => SyncMetadata(
-        id: _uuid.v4(),
-        table: _table,
-        userId: item.userId,
-        status: SyncStatus.pending,
-        recordId: item.id,
-      )).toList();
+      final syncEntries = items
+          .map(
+            (item) => SyncMetadata(
+              id: _uuid.v4(),
+              table: _table,
+              userId: item.userId,
+              status: SyncStatus.pending,
+              recordId: item.id,
+            ),
+          )
+          .toList();
       await _syncDao.insertAll(syncEntries);
     }
   }
@@ -143,18 +149,22 @@ class PhotoRepository {
   Future<void> _markPending(String recordId, String userId) async {
     final existing = await _syncDao.getByRecord(_table, recordId);
     if (existing != null) {
-      await _syncDao.updateItem(existing.copyWith(
-        status: SyncStatus.pending,
-        updatedAt: DateTime.now(),
-      ));
+      await _syncDao.updateItem(
+        existing.copyWith(
+          status: SyncStatus.pending,
+          updatedAt: DateTime.now(),
+        ),
+      );
     } else {
-      await _syncDao.insertItem(SyncMetadata(
-        id: _uuid.v4(),
-        table: _table,
-        userId: userId,
-        status: SyncStatus.pending,
-        recordId: recordId,
-      ));
+      await _syncDao.insertItem(
+        SyncMetadata(
+          id: _uuid.v4(),
+          table: _table,
+          userId: userId,
+          status: SyncStatus.pending,
+          recordId: recordId,
+        ),
+      );
     }
   }
 
@@ -165,11 +175,13 @@ class PhotoRepository {
   ) async {
     final existing = await _syncDao.getByRecord(_table, recordId);
     if (existing != null) {
-      await _syncDao.updateItem(existing.copyWith(
-        status: SyncStatus.error,
-        errorMessage: message,
-        retryCount: (existing.retryCount ?? 0) + 1,
-      ));
+      await _syncDao.updateItem(
+        existing.copyWith(
+          status: SyncStatus.error,
+          errorMessage: message,
+          retryCount: (existing.retryCount ?? 0) + 1,
+        ),
+      );
     }
   }
 }

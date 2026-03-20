@@ -35,9 +35,7 @@ class LanguageSection extends ConsumerWidget {
             );
           }).toList(),
           onChanged: (locale) {
-            ref
-                .read(appLocaleProvider.notifier)
-                .setLocale(locale, context);
+            ref.read(appLocaleProvider.notifier).setLocale(locale, context);
           },
         ),
         SettingsSelectionTile<AppDateFormat>(
@@ -45,10 +43,7 @@ class LanguageSection extends ConsumerWidget {
           icon: const AppIcon(AppIcons.calendar),
           currentValue: currentDateFormat,
           options: AppDateFormat.values.map((format) {
-            return SettingsOption(
-              value: format,
-              label: format.label,
-            );
+            return SettingsOption(value: format, label: format.label);
           }).toList(),
           onChanged: (format) {
             ref.read(dateFormatProvider.notifier).setFormat(format);

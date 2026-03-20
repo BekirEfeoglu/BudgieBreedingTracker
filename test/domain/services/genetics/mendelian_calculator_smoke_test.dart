@@ -14,7 +14,7 @@ void main() {
       gender: BirdGender.female,
       mutations: {'blue': AlleleState.visual},
     );
-    
+
     final offspring = calc.calculateFromGenotypes(
       father: parentA,
       mother: parentB,

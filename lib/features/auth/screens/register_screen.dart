@@ -288,7 +288,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
                             onSubmit: _submit,
                             onGoogleTap: () =>
                                 _signInWithOAuth(OAuthProvider.google),
-                            onAppleTap: () => _signInWithOAuth(OAuthProvider.apple),
+                            onAppleTap: () =>
+                                _signInWithOAuth(OAuthProvider.apple),
                             onLoginTap: () => context.pop(),
                           ),
                         ),

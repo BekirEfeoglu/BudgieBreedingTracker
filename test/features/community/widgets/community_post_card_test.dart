@@ -61,9 +61,7 @@ void main() {
       ],
       child: MaterialApp(
         home: Scaffold(
-          body: SingleChildScrollView(
-            child: CommunityPostCard(post: post),
-          ),
+          body: SingleChildScrollView(child: CommunityPostCard(post: post)),
         ),
       ),
     );
@@ -104,20 +102,17 @@ void main() {
 
     testWidgets('does not show title section when title is null and type '
         'is general', (tester) async {
-      await tester.pumpWidget(
-        createSubject(_testPost(title: null)),
-      );
+      await tester.pumpWidget(createSubject(_testPost(title: null)));
       await tester.pump();
 
       // Only content is shown, no title text
       expect(find.text('Test content'), findsOneWidget);
     });
 
-    testWidgets('shows author username via CommunityUserHeader',
-        (tester) async {
-      await tester.pumpWidget(
-        createSubject(_testPost(username: 'JohnDoe')),
-      );
+    testWidgets('shows author username via CommunityUserHeader', (
+      tester,
+    ) async {
+      await tester.pumpWidget(createSubject(_testPost(username: 'JohnDoe')));
       await tester.pump();
 
       expect(find.byType(CommunityUserHeader), findsOneWidget);
@@ -125,9 +120,7 @@ void main() {
     });
 
     testWidgets('shows avatar initial when no avatarUrl', (tester) async {
-      await tester.pumpWidget(
-        createSubject(_testPost(username: 'Alice')),
-      );
+      await tester.pumpWidget(createSubject(_testPost(username: 'Alice')));
       await tester.pump();
 
       expect(find.byType(CircleAvatar), findsOneWidget);
@@ -135,34 +128,29 @@ void main() {
     });
 
     testWidgets('shows question mark when username is empty', (tester) async {
-      await tester.pumpWidget(
-        createSubject(_testPost(username: '')),
-      );
+      await tester.pumpWidget(createSubject(_testPost(username: '')));
       await tester.pump();
 
       expect(find.text('?'), findsOneWidget);
     });
 
     testWidgets('shows like count in engagement summary', (tester) async {
-      await tester.pumpWidget(
-        createSubject(_testPost(likeCount: 42)),
-      );
+      await tester.pumpWidget(createSubject(_testPost(likeCount: 42)));
       await tester.pump();
 
       expect(find.text('42'), findsOneWidget);
     });
 
     testWidgets('shows comment count in engagement summary', (tester) async {
-      await tester.pumpWidget(
-        createSubject(_testPost(commentCount: 7)),
-      );
+      await tester.pumpWidget(createSubject(_testPost(commentCount: 7)));
       await tester.pump();
 
       expect(find.text('7'), findsOneWidget);
     });
 
-    testWidgets('hides engagement summary when both counts are zero',
-        (tester) async {
+    testWidgets('hides engagement summary when both counts are zero', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         createSubject(_testPost(likeCount: 0, commentCount: 0)),
       );
@@ -171,8 +159,7 @@ void main() {
       expect(find.byType(EngagementSummary), findsNothing);
     });
 
-    testWidgets('shows engagement summary when likeCount > 0',
-        (tester) async {
+    testWidgets('shows engagement summary when likeCount > 0', (tester) async {
       await tester.pumpWidget(
         createSubject(_testPost(likeCount: 3, commentCount: 0)),
       );
@@ -181,8 +168,7 @@ void main() {
       expect(find.byType(EngagementSummary), findsOneWidget);
     });
 
-    testWidgets('shows post type badge for non-general types',
-        (tester) async {
+    testWidgets('shows post type badge for non-general types', (tester) async {
       await tester.pumpWidget(
         createSubject(_testPost(postType: CommunityPostType.question)),
       );
@@ -191,8 +177,9 @@ void main() {
       expect(find.byType(PostTypeBadge), findsOneWidget);
     });
 
-    testWidgets('hides post type badge for general type without title',
-        (tester) async {
+    testWidgets('hides post type badge for general type without title', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         createSubject(
           _testPost(postType: CommunityPostType.general, title: null),
@@ -218,18 +205,16 @@ void main() {
       expect(find.byType(InkWell), findsWidgets);
     });
 
-    testWidgets('does not show content section when content is empty',
-        (tester) async {
-      await tester.pumpWidget(
-        createSubject(_testPost(content: '')),
-      );
+    testWidgets('does not show content section when content is empty', (
+      tester,
+    ) async {
+      await tester.pumpWidget(createSubject(_testPost(content: '')));
       await tester.pump();
 
       expect(find.byType(ContentText), findsNothing);
     });
 
-    testWidgets('shows ContentText when content is not empty',
-        (tester) async {
+    testWidgets('shows ContentText when content is not empty', (tester) async {
       await tester.pumpWidget(
         createSubject(_testPost(content: 'Some text here')),
       );
@@ -239,13 +224,11 @@ void main() {
       expect(find.text('Some text here'), findsOneWidget);
     });
 
-    testWidgets('shows my_post badge when post belongs to current user',
-        (tester) async {
+    testWidgets('shows my_post badge when post belongs to current user', (
+      tester,
+    ) async {
       await tester.pumpWidget(
-        createSubject(
-          _testPost(userId: 'my-user'),
-          currentUserId: 'my-user',
-        ),
+        createSubject(_testPost(userId: 'my-user'), currentUserId: 'my-user'),
       );
       await tester.pump();
 
@@ -253,13 +236,11 @@ void main() {
       expect(find.text('community.my_post'), findsOneWidget);
     });
 
-    testWidgets('does not show my_post badge for other users posts',
-        (tester) async {
+    testWidgets('does not show my_post badge for other users posts', (
+      tester,
+    ) async {
       await tester.pumpWidget(
-        createSubject(
-          _testPost(userId: 'user-1'),
-          currentUserId: 'other-user',
-        ),
+        createSubject(_testPost(userId: 'user-1'), currentUserId: 'other-user'),
       );
       await tester.pump();
 

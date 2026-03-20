@@ -15,28 +15,28 @@ class GuideBlock {
   final List<String>? stepKeys;
 
   const GuideBlock.text(this.textKey)
-      : type = GuideBlockType.text,
-        stepsTitle = null,
-        stepKeys = null;
+    : type = GuideBlockType.text,
+      stepsTitle = null,
+      stepKeys = null;
 
   const GuideBlock.tip(this.textKey)
-      : type = GuideBlockType.tip,
-        stepsTitle = null,
-        stepKeys = null;
+    : type = GuideBlockType.tip,
+      stepsTitle = null,
+      stepKeys = null;
 
   const GuideBlock.warning(this.textKey)
-      : type = GuideBlockType.warning,
-        stepsTitle = null,
-        stepKeys = null;
+    : type = GuideBlockType.warning,
+      stepsTitle = null,
+      stepKeys = null;
 
   const GuideBlock.premiumNote(this.textKey)
-      : type = GuideBlockType.premiumNote,
-        stepsTitle = null,
-        stepKeys = null;
+    : type = GuideBlockType.premiumNote,
+      stepsTitle = null,
+      stepKeys = null;
 
   const GuideBlock.steps({required this.stepsTitle, required this.stepKeys})
-      : type = GuideBlockType.steps,
-        textKey = null;
+    : type = GuideBlockType.steps,
+      textKey = null;
 }
 
 // ---------------------------------------------------------------------------
@@ -53,24 +53,24 @@ enum GuideCategory {
   accountSettings;
 
   String get labelKey => switch (this) {
-        GuideCategory.all => 'user_guide.category_all',
-        GuideCategory.gettingStarted => 'user_guide.category_getting_started',
-        GuideCategory.birdManagement => 'user_guide.category_bird_management',
-        GuideCategory.breedingProcess => 'user_guide.category_breeding_process',
-        GuideCategory.tools => 'user_guide.category_tools',
-        GuideCategory.dataManagement => 'user_guide.category_data_management',
-        GuideCategory.accountSettings => 'user_guide.category_account_settings',
-      };
+    GuideCategory.all => 'user_guide.category_all',
+    GuideCategory.gettingStarted => 'user_guide.category_getting_started',
+    GuideCategory.birdManagement => 'user_guide.category_bird_management',
+    GuideCategory.breedingProcess => 'user_guide.category_breeding_process',
+    GuideCategory.tools => 'user_guide.category_tools',
+    GuideCategory.dataManagement => 'user_guide.category_data_management',
+    GuideCategory.accountSettings => 'user_guide.category_account_settings',
+  };
 
   String get iconAsset => switch (this) {
-        GuideCategory.all => AppIcons.guide,
-        GuideCategory.gettingStarted => AppIcons.onboarding,
-        GuideCategory.birdManagement => AppIcons.bird,
-        GuideCategory.breedingProcess => AppIcons.breeding,
-        GuideCategory.tools => AppIcons.calendar,
-        GuideCategory.dataManagement => AppIcons.backup,
-        GuideCategory.accountSettings => AppIcons.settings,
-      };
+    GuideCategory.all => AppIcons.guide,
+    GuideCategory.gettingStarted => AppIcons.onboarding,
+    GuideCategory.birdManagement => AppIcons.bird,
+    GuideCategory.breedingProcess => AppIcons.breeding,
+    GuideCategory.tools => AppIcons.calendar,
+    GuideCategory.dataManagement => AppIcons.backup,
+    GuideCategory.accountSettings => AppIcons.settings,
+  };
 
   String get label => labelKey.tr();
 }
@@ -272,7 +272,9 @@ const guideTopics = <GuideTopic>[
     blocks: [
       GuideBlock.text('user_guide.topics.calendar_notifications.intro'),
       GuideBlock.text('user_guide.topics.calendar_notifications.calendar_info'),
-      GuideBlock.text('user_guide.topics.calendar_notifications.notification_info'),
+      GuideBlock.text(
+        'user_guide.topics.calendar_notifications.notification_info',
+      ),
       GuideBlock.tip('user_guide.topics.calendar_notifications.tip_reminder'),
     ],
   ),
@@ -287,8 +289,12 @@ const guideTopics = <GuideTopic>[
       GuideBlock.text('user_guide.topics.genealogy_genetics.intro'),
       GuideBlock.text('user_guide.topics.genealogy_genetics.family_tree'),
       GuideBlock.text('user_guide.topics.genealogy_genetics.punnett_info'),
-      GuideBlock.premiumNote('user_guide.topics.genealogy_genetics.premium_note'),
-      GuideBlock.warning('user_guide.topics.genealogy_genetics.warning_inbreeding'),
+      GuideBlock.premiumNote(
+        'user_guide.topics.genealogy_genetics.premium_note',
+      ),
+      GuideBlock.warning(
+        'user_guide.topics.genealogy_genetics.warning_inbreeding',
+      ),
     ],
   ),
 

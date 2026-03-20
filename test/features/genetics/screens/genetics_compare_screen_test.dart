@@ -48,21 +48,17 @@ void main() {
     return ProviderScope(
       overrides: [
         currentUserIdProvider.overrideWithValue('test-user'),
-        geneticsHistoryStreamProvider('test-user')
-            .overrideWith((_) => historyStream),
+        geneticsHistoryStreamProvider(
+          'test-user',
+        ).overrideWith((_) => historyStream),
       ],
-      child: MaterialApp(
-        home: GeneticsCompareScreen(historyIds: historyIds),
-      ),
+      child: MaterialApp(home: GeneticsCompareScreen(historyIds: historyIds)),
     );
   }
 
   group('GeneticsCompareScreen', () {
     testWidgets('renders without error', (tester) async {
-      final entries = [
-        makeEntry(id: 'gh-1'),
-        makeEntry(id: 'gh-2'),
-      ];
+      final entries = [makeEntry(id: 'gh-1'), makeEntry(id: 'gh-2')];
 
       await tester.pumpWidget(
         createSubject(
@@ -101,9 +97,7 @@ void main() {
       // with the 'genetics.compare' key rather than fetching stream data.
       await tester.pumpWidget(
         const ProviderScope(
-          child: MaterialApp(
-            home: GeneticsCompareScreen(historyIds: []),
-          ),
+          child: MaterialApp(home: GeneticsCompareScreen(historyIds: [])),
         ),
       );
       await tester.pumpAndSettle();
@@ -114,9 +108,7 @@ void main() {
     testWidgets('shows empty state when historyIds is empty', (tester) async {
       await tester.pumpWidget(
         const ProviderScope(
-          child: MaterialApp(
-            home: GeneticsCompareScreen(historyIds: []),
-          ),
+          child: MaterialApp(home: GeneticsCompareScreen(historyIds: [])),
         ),
       );
       await tester.pumpAndSettle();
@@ -146,10 +138,7 @@ void main() {
       final controller = StreamController<List<GeneticsHistory>>();
 
       await tester.pumpWidget(
-        createSubject(
-          historyIds: ['gh-1'],
-          historyStream: controller.stream,
-        ),
+        createSubject(historyIds: ['gh-1'], historyStream: controller.stream),
       );
 
       // Stream has not emitted yet, so loading should be visible
@@ -173,10 +162,7 @@ void main() {
     testWidgets('renders comparison DataTable when histories exist', (
       tester,
     ) async {
-      final entries = [
-        makeEntry(id: 'gh-1'),
-        makeEntry(id: 'gh-2'),
-      ];
+      final entries = [makeEntry(id: 'gh-1'), makeEntry(id: 'gh-2')];
 
       await tester.pumpWidget(
         createSubject(
@@ -265,9 +251,7 @@ void main() {
       expect(dataTable.columns.length, 3);
     });
 
-    testWidgets('shows dash for missing phenotype in an entry', (
-      tester,
-    ) async {
+    testWidgets('shows dash for missing phenotype in an entry', (tester) async {
       final entry1Results = jsonEncode([
         {
           'phenotype': 'Normal',

@@ -99,9 +99,7 @@ void main() {
       expect(find.byType(RepaintBoundary), findsWidgets);
     });
 
-    testWidgets('chart is wrapped in SizedBox with height 200', (
-      tester,
-    ) async {
+    testWidgets('chart is wrapped in SizedBox with height 200', (tester) async {
       await tester.pumpWidget(
         buildSubject({BirdColor.green: 4, BirdColor.blue: 6}),
       );
@@ -109,17 +107,17 @@ void main() {
       consumeExceptions(tester);
 
       final sizedBox = tester.widget<SizedBox>(
-        find.ancestor(
-          of: find.byType(RepaintBoundary),
-          matching: find.byType(SizedBox),
-        ).first,
+        find
+            .ancestor(
+              of: find.byType(RepaintBoundary),
+              matching: find.byType(SizedBox),
+            )
+            .first,
       );
       expect(sizedBox.height, 200);
     });
 
-    testWidgets('shows bottom axis labels for color mutations', (
-      tester,
-    ) async {
+    testWidgets('shows bottom axis labels for color mutations', (tester) async {
       await tester.pumpWidget(
         buildSubject({
           BirdColor.green: 5,
@@ -131,18 +129,9 @@ void main() {
       consumeExceptions(tester);
 
       // easy_localization returns key strings in test env
-      expect(
-        find.text('statistics.color_short_green'),
-        findsOneWidget,
-      );
-      expect(
-        find.text('statistics.color_short_blue'),
-        findsOneWidget,
-      );
-      expect(
-        find.text('statistics.color_short_lutino'),
-        findsOneWidget,
-      );
+      expect(find.text('statistics.color_short_green'), findsOneWidget);
+      expect(find.text('statistics.color_short_blue'), findsOneWidget);
+      expect(find.text('statistics.color_short_lutino'), findsOneWidget);
     });
 
     testWidgets('renders with all BirdColor values populated', (tester) async {

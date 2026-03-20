@@ -32,8 +32,7 @@ class BreedingNotificationHelper {
           ]);
       if (loadedIncubations.isEmpty) return;
 
-      final loadedEggs =
-          eggs ?? await getEggsForIncubations(loadedIncubations);
+      final loadedEggs = eggs ?? await getEggsForIncubations(loadedIncubations);
 
       final scheduler = _ref.read(notificationSchedulerProvider);
       for (final incubation in loadedIncubations) {
@@ -54,9 +53,7 @@ class BreedingNotificationHelper {
   }
 
   /// Retrieves eggs belonging to the given incubations.
-  Future<List<Egg>> getEggsForIncubations(
-    List<Incubation> incubations,
-  ) async {
+  Future<List<Egg>> getEggsForIncubations(List<Incubation> incubations) async {
     final incubationIds = incubations.map((i) => i.id).toList();
     if (incubationIds.isEmpty) return const <Egg>[];
 

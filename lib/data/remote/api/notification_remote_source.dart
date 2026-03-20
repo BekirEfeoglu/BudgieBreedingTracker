@@ -84,8 +84,6 @@ class NotificationRemoteSource extends BaseRemoteSource<AppNotification> {
     final json = settings.toJson();
     json.remove('created_at');
     json.remove('updated_at');
-    await client
-        .from(SupabaseConstants.notificationSettingsTable)
-        .upsert(json);
+    await client.from(SupabaseConstants.notificationSettingsTable).upsert(json);
   }
 }

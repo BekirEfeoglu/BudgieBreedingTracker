@@ -108,7 +108,9 @@ void main() {
             fileOptions: any(named: 'fileOptions'),
           ),
         ).thenAnswer((_) async => '');
-        when(() => mockFileApi.createSignedUrl(any(), any())).thenAnswer((_) async => 'https://url');
+        when(
+          () => mockFileApi.createSignedUrl(any(), any()),
+        ).thenAnswer((_) async => 'https://url');
 
         await service.uploadBirdPhoto(userId: 'u1', birdId: 'b1', file: file);
 
@@ -130,7 +132,9 @@ void main() {
           capturedPath = invocation.positionalArguments.first as String;
           return '';
         });
-        when(() => mockFileApi.createSignedUrl(any(), any())).thenAnswer((_) async => 'https://url');
+        when(
+          () => mockFileApi.createSignedUrl(any(), any()),
+        ).thenAnswer((_) async => 'https://url');
 
         await service.uploadBirdPhoto(userId: 'u1', birdId: 'b1', file: file);
 
@@ -168,7 +172,9 @@ void main() {
             fileOptions: any(named: 'fileOptions'),
           ),
         ).thenAnswer((_) async => '');
-        when(() => mockFileApi.createSignedUrl(any(), any())).thenAnswer((_) async => 'https://url');
+        when(
+          () => mockFileApi.createSignedUrl(any(), any()),
+        ).thenAnswer((_) async => 'https://url');
 
         await service.uploadAvatar(userId: 'u1', file: file);
 
@@ -190,7 +196,9 @@ void main() {
           capturedPath = invocation.positionalArguments.first as String;
           return '';
         });
-        when(() => mockFileApi.createSignedUrl(any(), any())).thenAnswer((_) async => 'https://url');
+        when(
+          () => mockFileApi.createSignedUrl(any(), any()),
+        ).thenAnswer((_) async => 'https://url');
 
         await service.uploadAvatar(userId: 'u1', file: file);
 
@@ -272,12 +280,18 @@ void main() {
         when(
           () => mockFileApi.list(path: any(named: 'path')),
         ).thenAnswer((_) async => files);
-        when(
-          () => mockFileApi.createSignedUrls(any(), any()),
-        ).thenAnswer((_) async => [
-              const SignedUrl(signedUrl: 'https://cdn.example.com/photo-1.jpg', path: 'u1/b1/a.jpg'),
-              const SignedUrl(signedUrl: 'https://cdn.example.com/photo-0.jpg', path: 'u1/b1/b.jpg'),
-            ]);
+        when(() => mockFileApi.createSignedUrls(any(), any())).thenAnswer(
+          (_) async => [
+            const SignedUrl(
+              signedUrl: 'https://cdn.example.com/photo-1.jpg',
+              path: 'u1/b1/a.jpg',
+            ),
+            const SignedUrl(
+              signedUrl: 'https://cdn.example.com/photo-0.jpg',
+              path: 'u1/b1/b.jpg',
+            ),
+          ],
+        );
 
         final urls = await service.listBirdPhotos(userId: 'u1', birdId: 'b1');
 
@@ -344,6 +358,148 @@ void main() {
         final url = await service.getAvatarUrl(userId: 'u1');
 
         expect(url, isNull);
+      });
+    });
+
+    // -----------------------------------------------------------------------
+    group('file extension validation', () {
+      test('rejects file with disallowed extension (.exe)', () async {
+        final file = makeXFile(name: 'malware.exe');
+
+        await expectLater(
+          () => service.uploadBirdPhoto(userId: 'u1', birdId: 'b1', file: file),
+          throwsA(
+            isA<StorageException>().having(
+              (e) => e.message,
+              'message',
+              contains('not allowed'),
+            ),
+          ),
+        );
+      });
+
+      test('rejects file with disallowed extension (.sh)', () async {
+        final file = makeXFile(name: 'script.sh');
+
+        await expectLater(
+          () => service.uploadAvatar(userId: 'u1', file: file),
+          throwsA(isA<StorageException>()),
+        );
+      });
+
+      test('rejects file with disallowed extension (.pdf)', () async {
+        final file = makeXFile(name: 'document.pdf');
+
+        await expectLater(
+          () => service.uploadCommunityPhoto(
+            userId: 'u1',
+            postId: 'p1',
+            file: file,
+          ),
+          throwsA(isA<StorageException>()),
+        );
+      });
+
+      test('allows file with .jpg extension', () async {
+        final file = makeXFile(name: 'photo.jpg');
+        when(
+          () => mockFileApi.uploadBinary(
+            any(),
+            any(),
+            fileOptions: any(named: 'fileOptions'),
+          ),
+        ).thenAnswer((_) async => '');
+        when(
+          () => mockFileApi.createSignedUrl(any(), any()),
+        ).thenAnswer((_) async => 'https://url');
+
+        final url = await service.uploadBirdPhoto(
+          userId: 'u1',
+          birdId: 'b1',
+          file: file,
+        );
+
+        expect(url, isNotEmpty);
+      });
+
+      test('allows file with .png extension', () async {
+        final file = makeXFile(name: 'image.png');
+        when(
+          () => mockFileApi.uploadBinary(
+            any(),
+            any(),
+            fileOptions: any(named: 'fileOptions'),
+          ),
+        ).thenAnswer((_) async => '');
+        when(
+          () => mockFileApi.createSignedUrl(any(), any()),
+        ).thenAnswer((_) async => 'https://url');
+
+        final url = await service.uploadAvatar(userId: 'u1', file: file);
+
+        expect(url, isNotEmpty);
+      });
+
+      test('allows file with .webp extension', () async {
+        final file = makeXFile(name: 'image.webp');
+        when(
+          () => mockFileApi.uploadBinary(
+            any(),
+            any(),
+            fileOptions: any(named: 'fileOptions'),
+          ),
+        ).thenAnswer((_) async => '');
+        when(
+          () => mockFileApi.createSignedUrl(any(), any()),
+        ).thenAnswer((_) async => 'https://url');
+
+        final url = await service.uploadBirdPhoto(
+          userId: 'u1',
+          birdId: 'b1',
+          file: file,
+        );
+
+        expect(url, isNotEmpty);
+      });
+
+      test('allows file with .heic extension', () async {
+        final file = makeXFile(name: 'photo.heic');
+        when(
+          () => mockFileApi.uploadBinary(
+            any(),
+            any(),
+            fileOptions: any(named: 'fileOptions'),
+          ),
+        ).thenAnswer((_) async => '');
+        when(
+          () => mockFileApi.createSignedUrl(any(), any()),
+        ).thenAnswer((_) async => 'https://url');
+
+        final url = await service.uploadAvatar(userId: 'u1', file: file);
+
+        expect(url, isNotEmpty);
+      });
+
+      test('extension check is case insensitive', () async {
+        final file = makeXFile(name: 'photo.JPG');
+        when(
+          () => mockFileApi.uploadBinary(
+            any(),
+            any(),
+            fileOptions: any(named: 'fileOptions'),
+          ),
+        ).thenAnswer((_) async => '');
+        when(
+          () => mockFileApi.createSignedUrl(any(), any()),
+        ).thenAnswer((_) async => 'https://url');
+
+        final url = await service.uploadBirdPhoto(
+          userId: 'u1',
+          birdId: 'b1',
+          file: file,
+        );
+
+        expect(url, isNotEmpty);
       });
     });
 

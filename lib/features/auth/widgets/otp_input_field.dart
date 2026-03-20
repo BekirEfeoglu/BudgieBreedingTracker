@@ -31,8 +31,10 @@ class _OtpInputFieldState extends State<OtpInputField> {
     super.initState();
     _controllers = List.generate(widget.length, (_) => TextEditingController());
     _focusNodes = List.generate(widget.length, (_) => FocusNode());
-    _keyboardListenerFocusNodes =
-        List.generate(widget.length, (_) => FocusNode());
+    _keyboardListenerFocusNodes = List.generate(
+      widget.length,
+      (_) => FocusNode(),
+    );
   }
 
   @override
@@ -49,8 +51,7 @@ class _OtpInputFieldState extends State<OtpInputField> {
     super.dispose();
   }
 
-  String get _currentCode =>
-      _controllers.map((c) => c.text).join();
+  String get _currentCode => _controllers.map((c) => c.text).join();
 
   void _onChanged(int index, String value) {
     if (value.length == 1 && index < widget.length - 1) {

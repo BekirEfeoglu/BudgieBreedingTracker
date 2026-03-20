@@ -28,9 +28,11 @@ class FamilyStatsSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final totalOffspring = offspringBirds.length + offspringChicks.length;
-    final maleCount = offspringBirds.where((b) => b.gender == BirdGender.male).length +
+    final maleCount =
+        offspringBirds.where((b) => b.gender == BirdGender.male).length +
         offspringChicks.where((c) => c.gender == BirdGender.male).length;
-    final femaleCount = offspringBirds.where((b) => b.gender == BirdGender.female).length +
+    final femaleCount =
+        offspringBirds.where((b) => b.gender == BirdGender.female).length +
         offspringChicks.where((c) => c.gender == BirdGender.female).length;
 
     return Padding(
@@ -55,10 +57,12 @@ class FamilyStatsSection extends StatelessWidget {
                 children: [
                   _StatRow(
                     label: 'genealogy.ancestors_found'.tr(),
-                    value: 'genealogy.ancestors_of_possible'.tr(args: [
-                      ancestorStats.found.toString(),
-                      ancestorStats.possible.toString(),
-                    ]),
+                    value: 'genealogy.ancestors_of_possible'.tr(
+                      args: [
+                        ancestorStats.found.toString(),
+                        ancestorStats.possible.toString(),
+                      ],
+                    ),
                   ),
                   const SizedBox(height: AppSpacing.sm),
                   _StatRow(
@@ -72,7 +76,8 @@ class FamilyStatsSection extends StatelessWidget {
                     child: LinearProgressIndicator(
                       value: (ancestorStats.completeness / 100).clamp(0.0, 1.0),
                       minHeight: 4,
-                      backgroundColor: theme.colorScheme.surfaceContainerHighest,
+                      backgroundColor:
+                          theme.colorScheme.surfaceContainerHighest,
                     ),
                   ),
                   const SizedBox(height: AppSpacing.sm),

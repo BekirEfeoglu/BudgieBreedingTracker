@@ -26,8 +26,9 @@ class ProfileMenuItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final color =
-        isDestructive ? theme.colorScheme.error : theme.colorScheme.onSurface;
+    final color = isDestructive
+        ? theme.colorScheme.error
+        : theme.colorScheme.onSurface;
 
     return Semantics(
       button: true,
@@ -63,8 +64,9 @@ class ProfileMenuItem extends StatelessWidget {
                   Icon(
                     LucideIcons.chevronRight,
                     size: 16,
-                    color: theme.colorScheme.onSurfaceVariant
-                        .withValues(alpha: 0.4),
+                    color: theme.colorScheme.onSurfaceVariant.withValues(
+                      alpha: 0.4,
+                    ),
                   ),
               ],
             ),
@@ -95,8 +97,7 @@ class ProfileAppVersionLabel extends ConsumerWidget {
         data: (info) => Text(
           'v${info.version} (${info.buildNumber})',
           style: theme.textTheme.labelSmall?.copyWith(
-            color: theme.colorScheme.onSurfaceVariant
-                .withValues(alpha: 0.6),
+            color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
           ),
           textAlign: TextAlign.center,
         ),

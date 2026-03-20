@@ -13,8 +13,9 @@ class AdminAuditLimitNotifier extends Notifier<int> {
 }
 
 /// Current limit for audit logs list (increases on "load more").
-final adminAuditLimitProvider =
-    NotifierProvider<AdminAuditLimitNotifier, int>(AdminAuditLimitNotifier.new);
+final adminAuditLimitProvider = NotifierProvider<AdminAuditLimitNotifier, int>(
+  AdminAuditLimitNotifier.new,
+);
 
 // ─── Filter State Classes ───────────────────────────────────────
 
@@ -24,11 +25,7 @@ class AuditLogFilter {
   final DateTime? startDate;
   final DateTime? endDate;
 
-  const AuditLogFilter({
-    this.searchQuery = '',
-    this.startDate,
-    this.endDate,
-  });
+  const AuditLogFilter({this.searchQuery = '', this.startDate, this.endDate});
 
   AuditLogFilter copyWith({
     String? searchQuery,
@@ -36,12 +33,11 @@ class AuditLogFilter {
     DateTime? endDate,
     bool clearStartDate = false,
     bool clearEndDate = false,
-  }) =>
-      AuditLogFilter(
-        searchQuery: searchQuery ?? this.searchQuery,
-        startDate: clearStartDate ? null : (startDate ?? this.startDate),
-        endDate: clearEndDate ? null : (endDate ?? this.endDate),
-      );
+  }) => AuditLogFilter(
+    searchQuery: searchQuery ?? this.searchQuery,
+    startDate: clearStartDate ? null : (startDate ?? this.startDate),
+    endDate: clearEndDate ? null : (endDate ?? this.endDate),
+  );
 
   bool get hasFilter =>
       searchQuery.isNotEmpty || startDate != null || endDate != null;
@@ -52,23 +48,18 @@ class SecurityEventFilter {
   final String searchQuery;
   final SecuritySeverityLevel? severity;
 
-  const SecurityEventFilter({
-    this.searchQuery = '',
-    this.severity,
-  });
+  const SecurityEventFilter({this.searchQuery = '', this.severity});
 
   SecurityEventFilter copyWith({
     String? searchQuery,
     SecuritySeverityLevel? severity,
     bool clearSeverity = false,
-  }) =>
-      SecurityEventFilter(
-        searchQuery: searchQuery ?? this.searchQuery,
-        severity: clearSeverity ? null : (severity ?? this.severity),
-      );
+  }) => SecurityEventFilter(
+    searchQuery: searchQuery ?? this.searchQuery,
+    severity: clearSeverity ? null : (severity ?? this.severity),
+  );
 
-  bool get hasFilter =>
-      searchQuery.isNotEmpty || severity != null;
+  bool get hasFilter => searchQuery.isNotEmpty || severity != null;
 }
 
 // ─── Filter Notifiers ───────────────────────────────────────────
@@ -81,7 +72,9 @@ class AuditLogFilterNotifier extends Notifier<AuditLogFilter> {
 
 /// Audit log filter provider.
 final auditLogFilterProvider =
-    NotifierProvider<AuditLogFilterNotifier, AuditLogFilter>(AuditLogFilterNotifier.new);
+    NotifierProvider<AuditLogFilterNotifier, AuditLogFilter>(
+      AuditLogFilterNotifier.new,
+    );
 
 /// Notifier for security event filter.
 class SecurityEventFilterNotifier extends Notifier<SecurityEventFilter> {
@@ -91,13 +84,14 @@ class SecurityEventFilterNotifier extends Notifier<SecurityEventFilter> {
 
 /// Security event filter provider.
 final securityEventFilterProvider =
-    NotifierProvider<SecurityEventFilterNotifier, SecurityEventFilter>(SecurityEventFilterNotifier.new);
+    NotifierProvider<SecurityEventFilterNotifier, SecurityEventFilter>(
+      SecurityEventFilterNotifier.new,
+    );
 
 // ─── Raw Data Providers ─────────────────────────────────────────
 
 /// Admin audit logs provider (unfiltered).
-final adminAuditLogsProvider =
-    FutureProvider<List<AdminLog>>((ref) async {
+final adminAuditLogsProvider = FutureProvider<List<AdminLog>>((ref) async {
   await requireAdmin(ref);
   final client = ref.watch(supabaseClientProvider);
 
@@ -113,8 +107,9 @@ final adminAuditLogsProvider =
 });
 
 /// Security events provider (unfiltered).
-final adminSecurityEventsProvider =
-    FutureProvider<List<SecurityEvent>>((ref) async {
+final adminSecurityEventsProvider = FutureProvider<List<SecurityEvent>>((
+  ref,
+) async {
   await requireAdmin(ref);
   final client = ref.watch(supabaseClientProvider);
 
@@ -132,33 +127,33 @@ final adminSecurityEventsProvider =
 // ─── Filtered Providers ─────────────────────────────────────────
 
 /// Filtered audit logs provider.
-final filteredAuditLogsProvider =
-    FutureProvider<List<AdminLog>>((ref) async {
+final filteredAuditLogsProvider = FutureProvider<List<AdminLog>>((ref) async {
   await requireAdmin(ref);
   final client = ref.watch(supabaseClientProvider);
   final filter = ref.watch(auditLogFilterProvider);
 
-  var query = client
-      .from(SupabaseConstants.adminLogsTable)
-      .select();
+  var query = client.from(SupabaseConstants.adminLogsTable).select();
 
   if (filter.startDate != null) {
-    query = query.gte('created_at', filter.startDate!.toUtc().toIso8601String());
+    query = query.gte(
+      'created_at',
+      filter.startDate!.toUtc().toIso8601String(),
+    );
   }
   if (filter.endDate != null) {
     final endOfDay = DateTime(
       filter.endDate!.year,
       filter.endDate!.month,
       filter.endDate!.day,
-      23, 59, 59,
+      23,
+      59,
+      59,
     );
     query = query.lte('created_at', endOfDay.toUtc().toIso8601String());
   }
 
   final limit = ref.watch(adminAuditLimitProvider);
-  final result = await query
-      .order('created_at', ascending: false)
-      .limit(limit);
+  final result = await query.order('created_at', ascending: false).limit(limit);
   var logs = (result as List)
       .map((row) => AdminLog.fromJson(row as Map<String, dynamic>))
       .toList();
@@ -166,9 +161,11 @@ final filteredAuditLogsProvider =
   if (filter.searchQuery.isNotEmpty) {
     final q = filter.searchQuery.toLowerCase();
     logs = logs
-        .where((log) =>
-            log.action.toLowerCase().contains(q) ||
-            (log.details?.toLowerCase().contains(q) ?? false))
+        .where(
+          (log) =>
+              log.action.toLowerCase().contains(q) ||
+              (log.details?.toLowerCase().contains(q) ?? false),
+        )
         .toList();
   }
 
@@ -176,8 +173,9 @@ final filteredAuditLogsProvider =
 });
 
 /// Filtered security events provider.
-final filteredSecurityEventsProvider =
-    FutureProvider<List<SecurityEvent>>((ref) async {
+final filteredSecurityEventsProvider = FutureProvider<List<SecurityEvent>>((
+  ref,
+) async {
   await requireAdmin(ref);
   final client = ref.watch(supabaseClientProvider);
   final filter = ref.watch(securityEventFilterProvider);
@@ -203,9 +201,9 @@ final filteredSecurityEventsProvider =
           lower.contains('failed') || lower.contains('rate_limit'),
         SecuritySeverityLevel.low =>
           !lower.contains('suspicious') &&
-          !lower.contains('attack') &&
-          !lower.contains('failed') &&
-          !lower.contains('rate_limit'),
+              !lower.contains('attack') &&
+              !lower.contains('failed') &&
+              !lower.contains('rate_limit'),
         SecuritySeverityLevel.unknown => true,
       };
     }).toList();
@@ -215,10 +213,12 @@ final filteredSecurityEventsProvider =
   if (filter.searchQuery.isNotEmpty) {
     final q = filter.searchQuery.toLowerCase();
     events = events
-        .where((e) =>
-            e.eventType.toLowerCase().contains(q) ||
-            (e.details?.toLowerCase().contains(q) ?? false) ||
-            (e.ipAddress?.contains(q) ?? false))
+        .where(
+          (e) =>
+              e.eventType.toLowerCase().contains(q) ||
+              (e.details?.toLowerCase().contains(q) ?? false) ||
+              (e.ipAddress?.contains(q) ?? false),
+        )
         .toList();
   }
 

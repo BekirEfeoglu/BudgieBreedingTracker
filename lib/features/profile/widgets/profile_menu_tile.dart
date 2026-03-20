@@ -22,8 +22,7 @@ class ProfileMenuTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final color =
-        isDestructive ? AppColors.error : theme.colorScheme.onSurface;
+    final color = isDestructive ? AppColors.error : theme.colorScheme.onSurface;
 
     return InkWell(
       onTap: onTap,
@@ -60,11 +59,7 @@ class ProfileMenuTile extends StatelessWidget {
 
 /// Section title for profile screen sections.
 class ProfileSectionTitle extends StatelessWidget {
-  const ProfileSectionTitle({
-    super.key,
-    required this.label,
-    this.color,
-  });
+  const ProfileSectionTitle({super.key, required this.label, this.color});
 
   final String label;
   final Color? color;
@@ -79,9 +74,9 @@ class ProfileSectionTitle extends StatelessWidget {
       child: Text(
         label,
         style: Theme.of(context).textTheme.titleSmall?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: color ?? Theme.of(context).colorScheme.primary,
-            ),
+          fontWeight: FontWeight.bold,
+          color: color ?? Theme.of(context).colorScheme.primary,
+        ),
       ),
     );
   }
@@ -111,10 +106,7 @@ class ProfileInfoRow extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         IconTheme(
-          data: IconThemeData(
-            size: 20,
-            color: theme.colorScheme.primary,
-          ),
+          data: IconThemeData(size: 20, color: theme.colorScheme.primary),
           child: icon,
         ),
         const SizedBox(width: AppSpacing.md),

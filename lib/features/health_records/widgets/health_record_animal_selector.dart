@@ -30,10 +30,11 @@ class HealthRecordAnimalSelector extends StatelessWidget {
     final theme = Theme.of(context);
     final sortedBirds = List<Bird>.from(birds)
       ..sort((a, b) => a.name.compareTo(b.name));
-    final sortedChicks = chicks
-        .where((c) => c.birdId == null) // Exclude promoted-to-bird chicks
-        .toList()
-      ..sort((a, b) => (a.name ?? '').compareTo(b.name ?? ''));
+    final sortedChicks =
+        chicks
+            .where((c) => c.birdId == null) // Exclude promoted-to-bird chicks
+            .toList()
+          ..sort((a, b) => (a.name ?? '').compareTo(b.name ?? ''));
 
     return DropdownButtonFormField<String>(
       initialValue: selectedId,
@@ -66,12 +67,16 @@ class HealthRecordAnimalSelector extends StatelessWidget {
               ),
             ),
           ),
-          ...sortedBirds.map((bird) => DropdownMenuItem<String>(
-                value: bird.id,
-                child: Text(bird.ringNumber != null
+          ...sortedBirds.map(
+            (bird) => DropdownMenuItem<String>(
+              value: bird.id,
+              child: Text(
+                bird.ringNumber != null
                     ? '${bird.name} (${bird.ringNumber})'
-                    : bird.name),
-              )),
+                    : bird.name,
+              ),
+            ),
+          ),
         ],
         if (sortedChicks.isNotEmpty) ...[
           DropdownMenuItem<String>(
@@ -90,13 +95,16 @@ class HealthRecordAnimalSelector extends StatelessWidget {
             ),
           ),
           ...sortedChicks.map((chick) {
-            final name = chick.name ??
+            final name =
+                chick.name ??
                 '${'chicks.chick_label'.tr()} #${chick.ringNumber ?? chick.id.substring(0, 6)}';
             return DropdownMenuItem<String>(
               value: chick.id,
-              child: Text(chick.ringNumber != null && chick.name != null
-                  ? '$name (${chick.ringNumber})'
-                  : name),
+              child: Text(
+                chick.ringNumber != null && chick.name != null
+                    ? '$name (${chick.ringNumber})'
+                    : name,
+              ),
             );
           }),
         ],

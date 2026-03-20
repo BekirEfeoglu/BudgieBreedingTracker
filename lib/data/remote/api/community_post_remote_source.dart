@@ -82,9 +82,7 @@ class CommunityPostRemoteSource {
 
   Future<void> insert(Map<String, dynamic> data) async {
     try {
-      await _client
-          .from(SupabaseConstants.communityPostsTable)
-          .insert(data);
+      await _client.from(SupabaseConstants.communityPostsTable).insert(data);
     } catch (e, st) {
       AppLogger.error('CommunityPostRemoteSource.insert', e, st);
       rethrow;
@@ -110,9 +108,7 @@ class CommunityPostRemoteSource {
   }) async {
     try {
       // Escape PostgREST ilike wildcards to prevent injection
-      final sanitized = query
-          .replaceAll('%', r'\%')
-          .replaceAll('_', r'\_');
+      final sanitized = query.replaceAll('%', r'\%').replaceAll('_', r'\_');
       final result = await _client
           .from(SupabaseConstants.communityPostsTable)
           .select()
@@ -125,6 +121,40 @@ class CommunityPostRemoteSource {
       return _profileCache.mergeIntoRows(rows);
     } catch (e, st) {
       AppLogger.error('CommunityPostRemoteSource.search', e, st);
+      rethrow;
+    }
+  }
+
+  /// Fetches posts flagged for manual review (admin use only).
+  Future<List<Map<String, dynamic>>> fetchPendingReview({
+    int limit = 50,
+  }) async {
+    try {
+      final result = await _client
+          .from(SupabaseConstants.communityPostsTable)
+          .select()
+          .eq('is_deleted', false)
+          .eq('needs_review', true)
+          .order('created_at', ascending: false)
+          .limit(limit);
+
+      final rows = List<Map<String, dynamic>>.from(result);
+      return _profileCache.mergeIntoRows(rows);
+    } catch (e, st) {
+      AppLogger.error('CommunityPostRemoteSource.fetchPendingReview', e, st);
+      rethrow;
+    }
+  }
+
+  /// Clears the review flag on a post after admin review.
+  Future<void> clearReviewFlag(String postId) async {
+    try {
+      await _client
+          .from(SupabaseConstants.communityPostsTable)
+          .update({'needs_review': false})
+          .eq('id', postId);
+    } catch (e, st) {
+      AppLogger.error('CommunityPostRemoteSource.clearReviewFlag', e, st);
       rethrow;
     }
   }

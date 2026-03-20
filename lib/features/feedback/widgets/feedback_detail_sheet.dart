@@ -24,9 +24,7 @@ class FeedbackStatusBadge extends StatelessWidget {
       decoration: BoxDecoration(
         color: status.color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
-        border: Border.all(
-          color: status.color.withValues(alpha: 0.3),
-        ),
+        border: Border.all(color: status.color.withValues(alpha: 0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -36,10 +34,10 @@ class FeedbackStatusBadge extends StatelessWidget {
           Text(
             status.label,
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: status.color,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 10,
-                ),
+              color: status.color,
+              fontWeight: FontWeight.w600,
+              fontSize: 10,
+            ),
           ),
         ],
       ),
@@ -82,8 +80,9 @@ class FeedbackDetailSheet extends StatelessWidget {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: theme.colorScheme.onSurfaceVariant
-                    .withValues(alpha: 0.4),
+                color: theme.colorScheme.onSurfaceVariant.withValues(
+                  alpha: 0.4,
+                ),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -158,10 +157,7 @@ class FeedbackDetailSheet extends StatelessWidget {
             ),
           ),
           const SizedBox(height: AppSpacing.sm),
-          Text(
-            entry.message,
-            style: theme.textTheme.bodyMedium,
-          ),
+          Text(entry.message, style: theme.textTheme.bodyMedium),
 
           // Admin response
           if (entry.adminResponse != null &&
@@ -191,12 +187,11 @@ class FeedbackDetailSheet extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(AppSpacing.md),
               decoration: BoxDecoration(
-                color: theme.colorScheme.primaryContainer
-                    .withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-                border: Border.all(
-                  color: theme.colorScheme.primaryContainer,
+                color: theme.colorScheme.primaryContainer.withValues(
+                  alpha: 0.2,
                 ),
+                borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                border: Border.all(color: theme.colorScheme.primaryContainer),
               ),
               child: Text(
                 entry.adminResponse!,

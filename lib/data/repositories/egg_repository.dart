@@ -31,11 +31,11 @@ class EggRepository extends BaseRepository<Egg>
     required SyncMetadataDao syncDao,
     required IncubationsDao incubationsDao,
     required ClutchesDao clutchesDao,
-  })  : _localDao = localDao,
-        _remoteSource = remoteSource,
-        _syncDao = syncDao,
-        _incubationsDao = incubationsDao,
-        _clutchesDao = clutchesDao;
+  }) : _localDao = localDao,
+       _remoteSource = remoteSource,
+       _syncDao = syncDao,
+       _incubationsDao = incubationsDao,
+       _clutchesDao = clutchesDao;
 
   static const _table = SupabaseConstants.eggsTable;
 
@@ -119,13 +119,17 @@ class EggRepository extends BaseRepository<Egg>
   Future<void> saveAll(List<Egg> items) async {
     await _localDao.insertAll(items);
     if (items.isNotEmpty) {
-      final syncEntries = items.map((item) => SyncMetadata(
-        id: _uuid.v4(),
-        table: _table,
-        userId: item.userId,
-        status: SyncStatus.pending,
-        recordId: item.id,
-      )).toList();
+      final syncEntries = items
+          .map(
+            (item) => SyncMetadata(
+              id: _uuid.v4(),
+              table: _table,
+              userId: item.userId,
+              status: SyncStatus.pending,
+              recordId: item.id,
+            ),
+          )
+          .toList();
       await _syncDao.insertAll(syncEntries);
     }
   }
@@ -237,5 +241,4 @@ class EggRepository extends BaseRepository<Egg>
   /// Currently incubating eggs.
   Future<List<Egg>> getIncubating(String userId) =>
       _localDao.getIncubating(userId);
-
 }

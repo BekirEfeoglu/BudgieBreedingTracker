@@ -14,10 +14,7 @@ void main() {
         gender: BirdGender.male,
         mutations: {'nonexistent_mutation': AlleleState.visual},
       );
-      final mother = ParentGenotype(
-        gender: BirdGender.female,
-        mutations: {},
-      );
+      final mother = ParentGenotype(gender: BirdGender.female, mutations: {});
 
       final square = calculator.buildPunnettSquareFromGenotypes(
         father: father,
@@ -51,14 +48,8 @@ void main() {
     });
 
     test('handles both parents wild-type for requested locus', () {
-      final father = ParentGenotype(
-        gender: BirdGender.male,
-        mutations: {},
-      );
-      final mother = ParentGenotype(
-        gender: BirdGender.female,
-        mutations: {},
-      );
+      final father = ParentGenotype(gender: BirdGender.male, mutations: {});
+      final mother = ParentGenotype(gender: BirdGender.female, mutations: {});
 
       final square = calculator.buildPunnettSquareFromGenotypes(
         father: father,
@@ -99,28 +90,31 @@ void main() {
       expect(square.motherAlleles, contains('W'));
     });
 
-    test('carrier father x visual mother produces expected offspring ratios', () {
-      final father = ParentGenotype(
-        gender: BirdGender.male,
-        mutations: {'ino': AlleleState.carrier},
-      );
-      final mother = ParentGenotype(
-        gender: BirdGender.female,
-        mutations: {'ino': AlleleState.visual},
-      );
+    test(
+      'carrier father x visual mother produces expected offspring ratios',
+      () {
+        final father = ParentGenotype(
+          gender: BirdGender.male,
+          mutations: {'ino': AlleleState.carrier},
+        );
+        final mother = ParentGenotype(
+          gender: BirdGender.female,
+          mutations: {'ino': AlleleState.visual},
+        );
 
-      final square = calculator.buildPunnettSquareFromGenotypes(
-        father: father,
-        mother: mother,
-        mutationId: GeneticsConstants.locusIno,
-      );
+        final square = calculator.buildPunnettSquareFromGenotypes(
+          father: father,
+          mother: mother,
+          mutationId: GeneticsConstants.locusIno,
+        );
 
-      expect(square, isNotNull);
-      expect(square!.cells, isNotEmpty);
-      // Should have a mix of ino and non-ino outcomes
-      final allCells = square.cells.expand((row) => row).toList();
-      expect(allCells.length, greaterThanOrEqualTo(2));
-    });
+        expect(square, isNotNull);
+        expect(square!.cells, isNotEmpty);
+        // Should have a mix of ino and non-ino outcomes
+        final allCells = square.cells.expand((row) => row).toList();
+        expect(allCells.length, greaterThanOrEqualTo(2));
+      },
+    );
   });
 
   group('MendelianCalculator offspring edge cases', () {
@@ -156,8 +150,10 @@ void main() {
       );
 
       if (results.isNotEmpty) {
-        final totalProbability =
-            results.fold(0.0, (sum, r) => sum + r.probability);
+        final totalProbability = results.fold(
+          0.0,
+          (sum, r) => sum + r.probability,
+        );
         expect(totalProbability, closeTo(1.0, 0.01));
       }
     });

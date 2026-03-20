@@ -37,12 +37,12 @@ enum Species {
 
   String toJson() => name;
   static Species fromJson(String json) => switch (json) {
-        'budgie' || 'muhabbet' => Species.budgie,
-        'canary' || 'kanarya' => Species.canary,
-        'finch' || 'ispinoz' => Species.finch,
-        'other' => Species.other,
-        _ => Species.unknown,
-      };
+    'budgie' || 'muhabbet' => Species.budgie,
+    'canary' || 'kanarya' => Species.canary,
+    'finch' || 'ispinoz' => Species.finch,
+    'other' => Species.other,
+    _ => Species.unknown,
+  };
 }
 
 enum BirdColor {
@@ -79,6 +79,6 @@ Widget speciesIconWidget(Species species, {double? size, Color? color}) =>
       Species.budgie => AppIcon(AppIcons.budgie, size: size, color: color),
       Species.canary => AppIcon(AppIcons.canary, size: size, color: color),
       Species.finch => AppIcon(AppIcons.finch, size: size, color: color),
-      Species.other || Species.unknown =>
-        AppIcon(AppIcons.birdOther, size: size, color: color),
+      Species.other ||
+      Species.unknown => AppIcon(AppIcons.birdOther, size: size, color: color),
     };

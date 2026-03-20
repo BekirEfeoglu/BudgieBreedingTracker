@@ -106,11 +106,11 @@ void main() {
     tempDir = await Directory.systemTemp.createTemp('backup_collector_test_');
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(_pathProviderChannel, (methodCall) async {
-      if (methodCall.method == 'getTemporaryDirectory') {
-        return tempDir.path;
-      }
-      return null;
-    });
+          if (methodCall.method == 'getTemporaryDirectory') {
+            return tempDir.path;
+          }
+          return null;
+        });
   });
 
   tearDown(() async {
@@ -145,8 +145,7 @@ void main() {
           name: 'Mavis',
         );
         stubAllRepositoriesEmpty();
-        when(() => birdRepo.getAll('user-1'))
-            .thenAnswer((_) async => [bird]);
+        when(() => birdRepo.getAll('user-1')).thenAnswer((_) async => [bird]);
 
         final result = await collector.createBackup('user-1');
 
@@ -198,8 +197,7 @@ void main() {
         }
       });
 
-      test('produces correct JSON structure with version and userId',
-          () async {
+      test('produces correct JSON structure with version and userId', () async {
         stubAllRepositoriesEmpty();
 
         final result = await collector.createBackup('user-42');
@@ -247,8 +245,9 @@ void main() {
         final bird2 = createTestBird(id: 'b2', userId: 'user-1', name: 'B');
 
         stubAllRepositoriesEmpty();
-        when(() => birdRepo.getAll('user-1'))
-            .thenAnswer((_) async => [bird1, bird2]);
+        when(
+          () => birdRepo.getAll('user-1'),
+        ).thenAnswer((_) async => [bird1, bird2]);
 
         final result = await collector.createBackup('user-1');
 
@@ -282,14 +281,10 @@ void main() {
         () async {
           stubAllRepositoriesEmpty();
 
-          final result =
-              await collector.createBackup('user-1', encrypt: true);
+          final result = await collector.createBackup('user-1', encrypt: true);
 
           expect(result.success, isFalse);
-          expect(
-            result.error,
-            contains('Encryption service not available'),
-          );
+          expect(result.error, contains('Encryption service not available'));
         },
       );
 
@@ -297,8 +292,9 @@ void main() {
         'creates encrypted backup when encryption service is provided',
         () async {
           final encryptionService = _MockEncryptionService();
-          when(() => encryptionService.encrypt(any()))
-              .thenAnswer((_) async => 'encrypted-content');
+          when(
+            () => encryptionService.encrypt(any()),
+          ).thenAnswer((_) async => 'encrypted-content');
 
           final encryptedCollector = BackupDataCollector(
             birdRepo: birdRepo,
@@ -335,8 +331,9 @@ void main() {
 
       test('returns failure when repository throws exception', () async {
         stubAllRepositoriesEmpty();
-        when(() => birdRepo.getAll(any()))
-            .thenThrow(Exception('DB connection lost'));
+        when(
+          () => birdRepo.getAll(any()),
+        ).thenThrow(Exception('DB connection lost'));
 
         final result = await collector.createBackup('user-1');
 
@@ -351,8 +348,7 @@ void main() {
           name: 'Sari',
         );
         stubAllRepositoriesEmpty();
-        when(() => birdRepo.getAll('user-1'))
-            .thenAnswer((_) async => [bird]);
+        when(() => birdRepo.getAll('user-1')).thenAnswer((_) async => [bird]);
 
         final result = await collector.createBackup('user-1');
 

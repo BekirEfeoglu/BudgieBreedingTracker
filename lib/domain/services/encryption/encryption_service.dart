@@ -27,7 +27,7 @@ class EncryptionService {
   static const String _payloadMagic = 'BBTENC1!';
   static final List<int> _payloadMagicBytes = ascii.encode(_payloadMagic);
 
-  String? _cachedKey;
+  Uint8List? _cachedKeyBytes;
 
   EncryptionService([FlutterSecureStorage? secureStorage])
     : _secureStorage = secureStorage ?? const FlutterSecureStorage();
@@ -171,7 +171,15 @@ class EncryptionService {
   /// **Warning:** This will make all previously encrypted data unreadable.
   Future<void> deleteKey() async {
     await _secureStorage.delete(key: _keyName);
-    _cachedKey = null;
+    _zeroCachedKey();
+  }
+
+  /// Clears the in-memory key cache, overwriting bytes with zeros.
+  void dispose() => _zeroCachedKey();
+
+  void _zeroCachedKey() {
+    _cachedKeyBytes?.fillRange(0, _cachedKeyBytes!.length, 0);
+    _cachedKeyBytes = null;
   }
 
   /// Returns the raw 32-byte key as [Uint8List] for AES-256.
@@ -179,35 +187,33 @@ class EncryptionService {
   /// The stored key is a Base64-encoded string of 32 random bytes.
   /// This method decodes it back to the raw bytes, ensuring exactly
   /// 32 bytes for AES-256 compatibility.
+  ///
+  /// The result is cached as [Uint8List] (not String) so that it can
+  /// be zeroed on [dispose] / [deleteKey].
   Future<Uint8List> _getOrCreateKeyBytes() async {
-    final keyString = await _getOrCreateKey();
+    if (_cachedKeyBytes != null) return _cachedKeyBytes!;
+
+    var keyString = await _secureStorage.read(key: _keyName);
+    if (keyString == null) {
+      keyString = _generateKey();
+      await _secureStorage.write(key: _keyName, value: keyString);
+      AppLogger.info('Encryption key generated and stored');
+    }
+
     final decoded = base64Decode(keyString);
 
     // Ensure exactly 32 bytes for AES-256
     if (decoded.length >= _keyLength) {
-      return Uint8List.fromList(decoded.sublist(0, _keyLength));
+      _cachedKeyBytes = Uint8List.fromList(decoded.sublist(0, _keyLength));
+    } else {
+      // Pad with zeros if somehow shorter (should not happen with _generateKey)
+      final padded = Uint8List(_keyLength);
+      for (int i = 0; i < decoded.length; i++) {
+        padded[i] = decoded[i];
+      }
+      _cachedKeyBytes = padded;
     }
-
-    // Pad with zeros if somehow shorter (should not happen with _generateKey)
-    final padded = Uint8List(_keyLength);
-    for (int i = 0; i < decoded.length; i++) {
-      padded[i] = decoded[i];
-    }
-    return padded;
-  }
-
-  Future<String> _getOrCreateKey() async {
-    if (_cachedKey != null) return _cachedKey!;
-
-    var key = await _secureStorage.read(key: _keyName);
-    if (key == null) {
-      key = _generateKey();
-      await _secureStorage.write(key: _keyName, value: key);
-      AppLogger.info('Encryption key generated and stored');
-    }
-
-    _cachedKey = key;
-    return key;
+    return _cachedKeyBytes!;
   }
 
   String _generateKey() {

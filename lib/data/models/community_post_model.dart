@@ -30,6 +30,7 @@ abstract class CommunityPost with _$CommunityPost {
     @JsonKey(includeFromJson: false) @Default(false) bool isBookmarkedByMe,
     @JsonKey(includeFromJson: false) @Default(false) bool isFollowingAuthor,
     @Default(false) bool isDeleted,
+    @Default(false) bool needsReview,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) = _CommunityPost;
@@ -39,8 +40,10 @@ abstract class CommunityPost with _$CommunityPost {
 }
 
 extension CommunityPostX on CommunityPost {
-  List<String> get allImageUrls =>
-      [if (imageUrl != null) imageUrl!, ...imageUrls];
+  List<String> get allImageUrls => [
+    if (imageUrl != null) imageUrl!,
+    ...imageUrls,
+  ];
 
   String? get primaryImageUrl =>
       allImageUrls.isNotEmpty ? allImageUrls.first : null;

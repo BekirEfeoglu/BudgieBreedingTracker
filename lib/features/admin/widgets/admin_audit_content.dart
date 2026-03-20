@@ -63,9 +63,7 @@ class AuditContent extends StatelessWidget {
             child: AuditSummary(totalLogs: logs.length),
           ),
         ),
-        const SliverToBoxAdapter(
-          child: SizedBox(height: AppSpacing.lg),
-        ),
+        const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.lg)),
         SliverPadding(
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
           sliver: SliverList(
@@ -88,9 +86,7 @@ class AuditContent extends StatelessWidget {
               ),
             ),
           ),
-        const SliverToBoxAdapter(
-          child: SizedBox(height: AppSpacing.xxxl),
-        ),
+        const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.xxxl)),
       ],
     );
   }
@@ -225,9 +221,27 @@ class AuditLogItem extends StatelessWidget {
 
   Widget _iconForAction(String action) {
     final lower = action.toLowerCase();
-    if (lower.contains('delete')) return const AppIcon(AppIcons.delete, size: 18, semanticsLabel: 'Delete action');
-    if (lower.contains('create')) return const AppIcon(AppIcons.add, size: 18, semanticsLabel: 'Create action');
-    if (lower.contains('update')) return const AppIcon(AppIcons.edit, size: 18, semanticsLabel: 'Update action');
+    if (lower.contains('delete')) {
+      return const AppIcon(
+        AppIcons.delete,
+        size: 18,
+        semanticsLabel: 'Delete action',
+      );
+    }
+    if (lower.contains('create')) {
+      return const AppIcon(
+        AppIcons.add,
+        size: 18,
+        semanticsLabel: 'Create action',
+      );
+    }
+    if (lower.contains('update')) {
+      return const AppIcon(
+        AppIcons.edit,
+        size: 18,
+        semanticsLabel: 'Update action',
+      );
+    }
     if (lower.contains('login')) return const Icon(LucideIcons.logIn, size: 18);
     if (lower.contains('ban') || lower.contains('block')) {
       return const Icon(LucideIcons.ban, size: 18);

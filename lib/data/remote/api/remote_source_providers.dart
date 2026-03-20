@@ -35,32 +35,34 @@ final chickRemoteSourceProvider = Provider<ChickRemoteSource>((ref) {
   return ChickRemoteSource(ref.watch(supabaseClientProvider));
 });
 
-final incubationRemoteSourceProvider =
-    Provider<IncubationRemoteSource>((ref) {
+final incubationRemoteSourceProvider = Provider<IncubationRemoteSource>((ref) {
   return IncubationRemoteSource(ref.watch(supabaseClientProvider));
 });
 
-final breedingPairRemoteSourceProvider =
-    Provider<BreedingPairRemoteSource>((ref) {
+final breedingPairRemoteSourceProvider = Provider<BreedingPairRemoteSource>((
+  ref,
+) {
   return BreedingPairRemoteSource(ref.watch(supabaseClientProvider));
 });
 
-final healthRecordRemoteSourceProvider =
-    Provider<HealthRecordRemoteSource>((ref) {
+final healthRecordRemoteSourceProvider = Provider<HealthRecordRemoteSource>((
+  ref,
+) {
   return HealthRecordRemoteSource(ref.watch(supabaseClientProvider));
 });
 
 final growthMeasurementRemoteSourceProvider =
     Provider<GrowthMeasurementRemoteSource>((ref) {
-  return GrowthMeasurementRemoteSource(ref.watch(supabaseClientProvider));
-});
+      return GrowthMeasurementRemoteSource(ref.watch(supabaseClientProvider));
+    });
 
 final eventRemoteSourceProvider = Provider<EventRemoteSource>((ref) {
   return EventRemoteSource(ref.watch(supabaseClientProvider));
 });
 
-final notificationRemoteSourceProvider =
-    Provider<NotificationRemoteSource>((ref) {
+final notificationRemoteSourceProvider = Provider<NotificationRemoteSource>((
+  ref,
+) {
   return NotificationRemoteSource(ref.watch(supabaseClientProvider));
 });
 
@@ -80,23 +82,26 @@ final photoRemoteSourceProvider = Provider<PhotoRemoteSource>((ref) {
   return PhotoRemoteSource(ref.watch(supabaseClientProvider));
 });
 
-final eventReminderRemoteSourceProvider =
-    Provider<EventReminderRemoteSource>((ref) {
+final eventReminderRemoteSourceProvider = Provider<EventReminderRemoteSource>((
+  ref,
+) {
   return EventReminderRemoteSource(ref.watch(supabaseClientProvider));
 });
 
 final notificationScheduleRemoteSourceProvider =
     Provider<NotificationScheduleRemoteSource>((ref) {
-  return NotificationScheduleRemoteSource(ref.watch(supabaseClientProvider));
-});
+      return NotificationScheduleRemoteSource(
+        ref.watch(supabaseClientProvider),
+      );
+    });
 
-final communityProfileCacheProvider =
-    Provider<CommunityProfileCache>((ref) {
+final communityProfileCacheProvider = Provider<CommunityProfileCache>((ref) {
   return CommunityProfileCache(ref.watch(supabaseClientProvider));
 });
 
-final communityPostRemoteSourceProvider =
-    Provider<CommunityPostRemoteSource>((ref) {
+final communityPostRemoteSourceProvider = Provider<CommunityPostRemoteSource>((
+  ref,
+) {
   return CommunityPostRemoteSource(
     ref.watch(supabaseClientProvider),
     ref.watch(communityProfileCacheProvider),
@@ -105,16 +110,16 @@ final communityPostRemoteSourceProvider =
 
 final communityCommentRemoteSourceProvider =
     Provider<CommunityCommentRemoteSource>((ref) {
-  return CommunityCommentRemoteSource(
-    ref.watch(supabaseClientProvider),
-    ref.watch(communityProfileCacheProvider),
-  );
-});
+      return CommunityCommentRemoteSource(
+        ref.watch(supabaseClientProvider),
+        ref.watch(communityProfileCacheProvider),
+      );
+    });
 
 final communitySocialRemoteSourceProvider =
     Provider<CommunitySocialRemoteSource>((ref) {
-  return CommunitySocialRemoteSource(ref.watch(supabaseClientProvider));
-});
+      return CommunitySocialRemoteSource(ref.watch(supabaseClientProvider));
+    });
 
 final feedbackRemoteSourceProvider = Provider<FeedbackRemoteSource>((ref) {
   return FeedbackRemoteSource(ref.watch(supabaseClientProvider));

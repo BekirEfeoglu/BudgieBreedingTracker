@@ -57,18 +57,13 @@ void main() {
     return ProviderScope(
       overrides: [
         currentUserIdProvider.overrideWithValue(currentUserId),
-        communityCommentRepositoryProvider
-            .overrideWithValue(mockCommentRepo),
-        communitySocialRepositoryProvider
-            .overrideWithValue(mockSocialRepo),
-        communityFeedProvider
-            .overrideWith(() => _FakeFeedNotifier()),
+        communityCommentRepositoryProvider.overrideWithValue(mockCommentRepo),
+        communitySocialRepositoryProvider.overrideWithValue(mockSocialRepo),
+        communityFeedProvider.overrideWith(() => _FakeFeedNotifier()),
       ],
       child: MaterialApp(
         home: Scaffold(
-          body: ListView(
-            children: [CommunityCommentTile(comment: comment)],
-          ),
+          body: ListView(children: [CommunityCommentTile(comment: comment)]),
         ),
       ),
     );
@@ -76,9 +71,9 @@ void main() {
 
   group('CommunityCommentTile', () {
     testWidgets('renders username and content', (tester) async {
-      await tester.pumpWidget(createSubject(
-        _testComment(username: 'Alice', content: 'Hello world'),
-      ));
+      await tester.pumpWidget(
+        createSubject(_testComment(username: 'Alice', content: 'Hello world')),
+      );
       await tester.pump();
 
       expect(find.text('Alice'), findsOneWidget);
@@ -86,9 +81,7 @@ void main() {
     });
 
     testWidgets('shows avatar initial when no avatarUrl', (tester) async {
-      await tester.pumpWidget(createSubject(
-        _testComment(username: 'Bob'),
-      ));
+      await tester.pumpWidget(createSubject(_testComment(username: 'Bob')));
       await tester.pump();
 
       expect(find.byType(CircleAvatar), findsOneWidget);
@@ -96,18 +89,14 @@ void main() {
     });
 
     testWidgets('shows like count when > 0', (tester) async {
-      await tester.pumpWidget(createSubject(
-        _testComment(likeCount: 3),
-      ));
+      await tester.pumpWidget(createSubject(_testComment(likeCount: 3)));
       await tester.pump();
 
       expect(find.text('3'), findsOneWidget);
     });
 
     testWidgets('renders like button', (tester) async {
-      await tester.pumpWidget(createSubject(
-        _testComment(isLikedByMe: false),
-      ));
+      await tester.pumpWidget(createSubject(_testComment(isLikedByMe: false)));
       await tester.pump();
 
       // Like button is the InkWell in the tile
@@ -115,20 +104,21 @@ void main() {
     });
 
     testWidgets('hides like count when 0', (tester) async {
-      await tester.pumpWidget(createSubject(
-        _testComment(likeCount: 0),
-      ));
+      await tester.pumpWidget(createSubject(_testComment(likeCount: 0)));
       await tester.pump();
 
       expect(find.text('0'), findsNothing);
     });
 
-    testWidgets('long press shows report dialog for other user comments',
-        (tester) async {
-      await tester.pumpWidget(createSubject(
-        _testComment(userId: 'user-1'),
-        currentUserId: 'other-user',
-      ));
+    testWidgets('long press shows report dialog for other user comments', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        createSubject(
+          _testComment(userId: 'user-1'),
+          currentUserId: 'other-user',
+        ),
+      );
       await tester.pump();
 
       await tester.longPress(find.text('Test comment'));
@@ -139,12 +129,15 @@ void main() {
       expect(find.text('community.report_comment'), findsOneWidget);
     });
 
-    testWidgets('long press shows delete dialog for own comment',
-        (tester) async {
-      await tester.pumpWidget(createSubject(
-        _testComment(userId: 'my-user'),
-        currentUserId: 'my-user',
-      ));
+    testWidgets('long press shows delete dialog for own comment', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        createSubject(
+          _testComment(userId: 'my-user'),
+          currentUserId: 'my-user',
+        ),
+      );
       await tester.pump();
 
       await tester.longPress(find.text('Test comment'));
@@ -154,10 +147,12 @@ void main() {
     });
 
     testWidgets('cancel button dismisses delete dialog', (tester) async {
-      await tester.pumpWidget(createSubject(
-        _testComment(userId: 'my-user'),
-        currentUserId: 'my-user',
-      ));
+      await tester.pumpWidget(
+        createSubject(
+          _testComment(userId: 'my-user'),
+          currentUserId: 'my-user',
+        ),
+      );
       await tester.pump();
 
       await tester.longPress(find.text('Test comment'));
@@ -170,17 +165,22 @@ void main() {
       expect(find.byType(AlertDialog), findsNothing);
     });
 
-    testWidgets('confirm delete calls notifier and shows snackbar on error',
-        (tester) async {
-      when(() => mockCommentRepo.delete(
-            commentId: any(named: 'commentId'),
-            userId: any(named: 'userId'),
-          )).thenThrow(Exception('Network error'));
+    testWidgets('confirm delete calls notifier and shows snackbar on error', (
+      tester,
+    ) async {
+      when(
+        () => mockCommentRepo.delete(
+          commentId: any(named: 'commentId'),
+          userId: any(named: 'userId'),
+        ),
+      ).thenThrow(Exception('Network error'));
 
-      await tester.pumpWidget(createSubject(
-        _testComment(userId: 'my-user', id: 'c-1', postId: 'p-1'),
-        currentUserId: 'my-user',
-      ));
+      await tester.pumpWidget(
+        createSubject(
+          _testComment(userId: 'my-user', id: 'c-1', postId: 'p-1'),
+          currentUserId: 'my-user',
+        ),
+      );
       await tester.pump();
 
       // Long press to show dialog
@@ -197,15 +197,19 @@ void main() {
     });
 
     testWidgets('confirm delete succeeds silently', (tester) async {
-      when(() => mockCommentRepo.delete(
-            commentId: any(named: 'commentId'),
-            userId: any(named: 'userId'),
-          )).thenAnswer((_) async {});
+      when(
+        () => mockCommentRepo.delete(
+          commentId: any(named: 'commentId'),
+          userId: any(named: 'userId'),
+        ),
+      ).thenAnswer((_) async {});
 
-      await tester.pumpWidget(createSubject(
-        _testComment(userId: 'my-user', id: 'c-2', postId: 'p-2'),
-        currentUserId: 'my-user',
-      ));
+      await tester.pumpWidget(
+        createSubject(
+          _testComment(userId: 'my-user', id: 'c-2', postId: 'p-2'),
+          currentUserId: 'my-user',
+        ),
+      );
       await tester.pump();
 
       await tester.longPress(find.text('Test comment'));
@@ -217,17 +221,18 @@ void main() {
       // No error snackbar
       expect(find.byType(SnackBar), findsNothing);
 
-      verify(() => mockCommentRepo.delete(
-            commentId: 'c-2',
-            userId: 'my-user',
-          )).called(1);
+      verify(
+        () => mockCommentRepo.delete(commentId: 'c-2', userId: 'my-user'),
+      ).called(1);
     });
 
     testWidgets('report dialog shows reason options', (tester) async {
-      await tester.pumpWidget(createSubject(
-        _testComment(userId: 'user-1'),
-        currentUserId: 'other-user',
-      ));
+      await tester.pumpWidget(
+        createSubject(
+          _testComment(userId: 'user-1'),
+          currentUserId: 'other-user',
+        ),
+      );
       await tester.pump();
 
       await tester.longPress(find.text('Test comment'));
@@ -236,25 +241,32 @@ void main() {
       expect(find.text('community.report_reason_spam'), findsOneWidget);
       expect(find.text('community.report_reason_harassment'), findsOneWidget);
       expect(
-          find.text('community.report_reason_inappropriate'), findsOneWidget);
+        find.text('community.report_reason_inappropriate'),
+        findsOneWidget,
+      );
       expect(
-          find.text('community.report_reason_misinformation'), findsOneWidget);
+        find.text('community.report_reason_misinformation'),
+        findsOneWidget,
+      );
       expect(find.text('community.report_reason_other'), findsOneWidget);
     });
 
-    testWidgets('report submits and shows snackbar on success',
-        (tester) async {
-      when(() => mockSocialRepo.reportContent(
-            userId: any(named: 'userId'),
-            targetId: any(named: 'targetId'),
-            targetType: any(named: 'targetType'),
-            reason: any(named: 'reason'),
-          )).thenAnswer((_) async {});
+    testWidgets('report submits and shows snackbar on success', (tester) async {
+      when(
+        () => mockSocialRepo.reportContent(
+          userId: any(named: 'userId'),
+          targetId: any(named: 'targetId'),
+          targetType: any(named: 'targetType'),
+          reason: any(named: 'reason'),
+        ),
+      ).thenAnswer((_) async {});
 
-      await tester.pumpWidget(createSubject(
-        _testComment(userId: 'user-1', id: 'c-rep'),
-        currentUserId: 'reporter',
-      ));
+      await tester.pumpWidget(
+        createSubject(
+          _testComment(userId: 'user-1', id: 'c-rep'),
+          currentUserId: 'reporter',
+        ),
+      );
       await tester.pump();
 
       await tester.longPress(find.text('Test comment'));
@@ -266,12 +278,14 @@ void main() {
 
       expect(find.text('community.report_submitted'), findsOneWidget);
 
-      verify(() => mockSocialRepo.reportContent(
-            userId: 'reporter',
-            targetId: 'c-rep',
-            targetType: 'comment',
-            reason: CommunityReportReason.spam,
-          )).called(1);
+      verify(
+        () => mockSocialRepo.reportContent(
+          userId: 'reporter',
+          targetId: 'c-rep',
+          targetType: 'comment',
+          reason: CommunityReportReason.spam,
+        ),
+      ).called(1);
     });
   });
 }

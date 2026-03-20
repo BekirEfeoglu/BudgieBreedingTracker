@@ -86,37 +86,45 @@ class EnvironmentMonitor {
 
     if (reading.temperature < IncubationConstants.temperatureMin) {
       messages.add(
-        'environment.temp_too_low'.tr(args: [
-          reading.temperature.toString(),
-          IncubationConstants.temperatureMin.toString(),
-          IncubationConstants.temperatureMax.toString(),
-        ]),
+        'environment.temp_too_low'.tr(
+          args: [
+            reading.temperature.toString(),
+            IncubationConstants.temperatureMin.toString(),
+            IncubationConstants.temperatureMax.toString(),
+          ],
+        ),
       );
     } else if (reading.temperature > IncubationConstants.temperatureMax) {
       messages.add(
-        'environment.temp_too_high'.tr(args: [
-          reading.temperature.toString(),
-          IncubationConstants.temperatureMin.toString(),
-          IncubationConstants.temperatureMax.toString(),
-        ]),
+        'environment.temp_too_high'.tr(
+          args: [
+            reading.temperature.toString(),
+            IncubationConstants.temperatureMin.toString(),
+            IncubationConstants.temperatureMax.toString(),
+          ],
+        ),
       );
     }
 
     if (reading.humidity < IncubationConstants.humidityMin) {
       messages.add(
-        'environment.humidity_too_low'.tr(args: [
-          reading.humidity.toString(),
-          IncubationConstants.humidityMin.toString(),
-          IncubationConstants.humidityMax.toString(),
-        ]),
+        'environment.humidity_too_low'.tr(
+          args: [
+            reading.humidity.toString(),
+            IncubationConstants.humidityMin.toString(),
+            IncubationConstants.humidityMax.toString(),
+          ],
+        ),
       );
     } else if (reading.humidity > IncubationConstants.humidityMax) {
       messages.add(
-        'environment.humidity_too_high'.tr(args: [
-          reading.humidity.toString(),
-          IncubationConstants.humidityMin.toString(),
-          IncubationConstants.humidityMax.toString(),
-        ]),
+        'environment.humidity_too_high'.tr(
+          args: [
+            reading.humidity.toString(),
+            IncubationConstants.humidityMin.toString(),
+            IncubationConstants.humidityMax.toString(),
+          ],
+        ),
       );
     }
 
@@ -147,10 +155,8 @@ class EnvironmentMonitor {
       return IncubationAlertSeverity.normal;
     }
 
-    if (humidity <
-            IncubationConstants.humidityMin - _humidityCriticalMargin ||
-        humidity >
-            IncubationConstants.humidityMax + _humidityCriticalMargin) {
+    if (humidity < IncubationConstants.humidityMin - _humidityCriticalMargin ||
+        humidity > IncubationConstants.humidityMax + _humidityCriticalMargin) {
       return IncubationAlertSeverity.critical;
     }
 

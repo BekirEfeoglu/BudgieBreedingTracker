@@ -5,11 +5,12 @@ import 'package:lucide_icons/lucide_icons.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 
-typedef FeedbackSaveCallback = Future<void> Function({
-  required String status,
-  String? adminResponse,
-  required String priority,
-});
+typedef FeedbackSaveCallback =
+    Future<void> Function({
+      required String status,
+      String? adminResponse,
+      required String priority,
+    });
 
 class FeedbackDetailSheet extends StatefulWidget {
   final Map<String, dynamic> item;
@@ -82,8 +83,9 @@ class _FeedbackDetailSheetState extends State<FeedbackDetailSheet> {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color:
-                      theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.3),
+                  color: theme.colorScheme.onSurfaceVariant.withValues(
+                    alpha: 0.3,
+                  ),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -91,8 +93,9 @@ class _FeedbackDetailSheetState extends State<FeedbackDetailSheet> {
             const SizedBox(height: AppSpacing.lg),
             Text(
               'admin.feedback_detail'.tr(),
-              style: theme.textTheme.titleMedium
-                  ?.copyWith(fontWeight: FontWeight.w600),
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
             ),
             const SizedBox(height: AppSpacing.lg),
 
@@ -147,16 +150,16 @@ class _FeedbackDetailSheetState extends State<FeedbackDetailSheet> {
                 ButtonSegment(
                   value: 'high',
                   label: Text('admin.feedback_priority_high'.tr()),
-                  icon: const Icon(LucideIcons.alertCircle,
-                      size: 14, color: AppColors.error),
+                  icon: const Icon(
+                    LucideIcons.alertCircle,
+                    size: 14,
+                    color: AppColors.error,
+                  ),
                 ),
               ],
               selected: {_priority},
-              onSelectionChanged: (s) =>
-                  setState(() => _priority = s.first),
-              style: const ButtonStyle(
-                visualDensity: VisualDensity.compact,
-              ),
+              onSelectionChanged: (s) => setState(() => _priority = s.first),
+              style: const ButtonStyle(visualDensity: VisualDensity.compact),
             ),
 
             const SizedBox(height: AppSpacing.lg),
@@ -185,9 +188,7 @@ class _FeedbackDetailSheetState extends State<FeedbackDetailSheet> {
               ],
               selected: {_status},
               onSelectionChanged: (s) => setState(() => _status = s.first),
-              style: const ButtonStyle(
-                visualDensity: VisualDensity.compact,
-              ),
+              style: const ButtonStyle(visualDensity: VisualDensity.compact),
             ),
 
             const SizedBox(height: AppSpacing.lg),
@@ -216,7 +217,9 @@ class _FeedbackDetailSheetState extends State<FeedbackDetailSheet> {
                       width: 16,
                       height: 16,
                       child: CircularProgressIndicator(
-                          strokeWidth: 2, color: Colors.white),
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
                     )
                   : const Icon(LucideIcons.save, size: 16),
               label: Text('admin.feedback_save'.tr()),

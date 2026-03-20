@@ -49,9 +49,7 @@ void main() {
         communitySocialRepositoryProvider.overrideWithValue(mockSocialRepo),
       ],
       child: MaterialApp(
-        home: Scaffold(
-          body: CommunityPostActions(post: post),
-        ),
+        home: Scaffold(body: CommunityPostActions(post: post)),
       ),
     );
   }
@@ -66,10 +64,12 @@ void main() {
     });
 
     testWidgets('tap like button calls toggleLike', (tester) async {
-      when(() => mockSocialRepo.toggleLike(
-            userId: any(named: 'userId'),
-            postId: any(named: 'postId'),
-          )).thenAnswer((_) async {});
+      when(
+        () => mockSocialRepo.toggleLike(
+          userId: any(named: 'userId'),
+          postId: any(named: 'postId'),
+        ),
+      ).thenAnswer((_) async {});
 
       await tester.pumpWidget(createSubject(_testPost(id: 'p-1')));
       await tester.pump();
@@ -79,17 +79,18 @@ void main() {
       await tester.tap(inkWells.first);
       await tester.pumpAndSettle();
 
-      verify(() => mockSocialRepo.toggleLike(
-            userId: 'test-user',
-            postId: 'p-1',
-          )).called(1);
+      verify(
+        () => mockSocialRepo.toggleLike(userId: 'test-user', postId: 'p-1'),
+      ).called(1);
     });
 
     testWidgets('tap bookmark button calls toggleBookmark', (tester) async {
-      when(() => mockSocialRepo.toggleBookmark(
-            userId: any(named: 'userId'),
-            postId: any(named: 'postId'),
-          )).thenAnswer((_) async {});
+      when(
+        () => mockSocialRepo.toggleBookmark(
+          userId: any(named: 'userId'),
+          postId: any(named: 'postId'),
+        ),
+      ).thenAnswer((_) async {});
 
       await tester.pumpWidget(createSubject(_testPost(id: 'p-2')));
       await tester.pump();
@@ -99,51 +100,54 @@ void main() {
       await tester.tap(inkWells.last);
       await tester.pumpAndSettle();
 
-      verify(() => mockSocialRepo.toggleBookmark(
-            userId: 'test-user',
-            postId: 'p-2',
-          )).called(1);
+      verify(
+        () => mockSocialRepo.toggleBookmark(userId: 'test-user', postId: 'p-2'),
+      ).called(1);
     });
 
     testWidgets('anonymous user like does nothing', (tester) async {
-      await tester.pumpWidget(createSubject(
-        _testPost(id: 'p-3'),
-        currentUserId: 'anonymous',
-      ));
+      await tester.pumpWidget(
+        createSubject(_testPost(id: 'p-3'), currentUserId: 'anonymous'),
+      );
       await tester.pump();
 
       final inkWells = find.byType(InkWell);
       await tester.tap(inkWells.first);
       await tester.pumpAndSettle();
 
-      verifyNever(() => mockSocialRepo.toggleLike(
-            userId: any(named: 'userId'),
-            postId: any(named: 'postId'),
-          ));
+      verifyNever(
+        () => mockSocialRepo.toggleLike(
+          userId: any(named: 'userId'),
+          postId: any(named: 'postId'),
+        ),
+      );
     });
 
     testWidgets('anonymous user bookmark does nothing', (tester) async {
-      await tester.pumpWidget(createSubject(
-        _testPost(id: 'p-4'),
-        currentUserId: 'anonymous',
-      ));
+      await tester.pumpWidget(
+        createSubject(_testPost(id: 'p-4'), currentUserId: 'anonymous'),
+      );
       await tester.pump();
 
       final inkWells = find.byType(InkWell);
       await tester.tap(inkWells.last);
       await tester.pumpAndSettle();
 
-      verifyNever(() => mockSocialRepo.toggleBookmark(
-            userId: any(named: 'userId'),
-            postId: any(named: 'postId'),
-          ));
+      verifyNever(
+        () => mockSocialRepo.toggleBookmark(
+          userId: any(named: 'userId'),
+          postId: any(named: 'postId'),
+        ),
+      );
     });
 
     testWidgets('like button handles error gracefully', (tester) async {
-      when(() => mockSocialRepo.toggleLike(
-            userId: any(named: 'userId'),
-            postId: any(named: 'postId'),
-          )).thenThrow(Exception('Server error'));
+      when(
+        () => mockSocialRepo.toggleLike(
+          userId: any(named: 'userId'),
+          postId: any(named: 'postId'),
+        ),
+      ).thenThrow(Exception('Server error'));
 
       await tester.pumpWidget(createSubject(_testPost(id: 'p-5')));
       await tester.pump();

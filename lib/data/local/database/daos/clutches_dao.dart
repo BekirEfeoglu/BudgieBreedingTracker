@@ -13,8 +13,7 @@ class ClutchesDao extends DatabaseAccessor<AppDatabase>
 
   Stream<List<Clutch>> watchAll(String userId) {
     return (select(clutchesTable)
-          ..where(
-              (t) => t.userId.equals(userId) & t.isDeleted.equals(false))
+          ..where((t) => t.userId.equals(userId) & t.isDeleted.equals(false))
           ..orderBy([(t) => OrderingTerm.desc(t.createdAt)]))
         .watch()
         .map((rows) => rows.map((r) => r.toModel()).toList());
@@ -27,16 +26,16 @@ class ClutchesDao extends DatabaseAccessor<AppDatabase>
   }
 
   Future<List<Clutch>> getAll(String userId) async {
-    final rows = await (select(clutchesTable)
-          ..where(
-              (t) => t.userId.equals(userId) & t.isDeleted.equals(false)))
-        .get();
+    final rows = await (select(
+      clutchesTable,
+    )..where((t) => t.userId.equals(userId) & t.isDeleted.equals(false))).get();
     return rows.map((r) => r.toModel()).toList();
   }
 
   Future<Clutch?> getById(String id) async {
-    final row = await (select(clutchesTable)..where((t) => t.id.equals(id)))
-        .getSingleOrNull();
+    final row = await (select(
+      clutchesTable,
+    )..where((t) => t.id.equals(id))).getSingleOrNull();
     return row?.toModel();
   }
 
@@ -67,10 +66,12 @@ class ClutchesDao extends DatabaseAccessor<AppDatabase>
   }
 
   Future<List<Clutch>> getByBreeding(String breedingId) async {
-    final rows = await (select(clutchesTable)
-          ..where((t) =>
-              t.breedingId.equals(breedingId) & t.isDeleted.equals(false)))
-        .get();
+    final rows =
+        await (select(clutchesTable)..where(
+              (t) =>
+                  t.breedingId.equals(breedingId) & t.isDeleted.equals(false),
+            ))
+            .get();
     return rows.map((r) => r.toModel()).toList();
   }
 }

@@ -22,9 +22,9 @@ class HealthRecordRepository extends BaseRepository<HealthRecord>
     required HealthRecordsDao localDao,
     required HealthRecordRemoteSource remoteSource,
     required SyncMetadataDao syncDao,
-  })  : _localDao = localDao,
-        _remoteSource = remoteSource,
-        _syncDao = syncDao;
+  }) : _localDao = localDao,
+       _remoteSource = remoteSource,
+       _syncDao = syncDao;
 
   static const _table = SupabaseConstants.healthRecordsTable;
 
@@ -46,8 +46,7 @@ class HealthRecordRepository extends BaseRepository<HealthRecord>
   Stream<HealthRecord?> watchById(String id) => _localDao.watchById(id);
 
   @override
-  Future<List<HealthRecord>> getAll(String userId) =>
-      _localDao.getAll(userId);
+  Future<List<HealthRecord>> getAll(String userId) => _localDao.getAll(userId);
 
   @override
   Future<HealthRecord?> getById(String id) => _localDao.getById(id);
@@ -63,13 +62,17 @@ class HealthRecordRepository extends BaseRepository<HealthRecord>
   Future<void> saveAll(List<HealthRecord> items) async {
     await _localDao.insertAll(items);
     if (items.isNotEmpty) {
-      final syncEntries = items.map((item) => SyncMetadata(
-        id: _uuid.v4(),
-        table: _table,
-        userId: item.userId,
-        status: SyncStatus.pending,
-        recordId: item.id,
-      )).toList();
+      final syncEntries = items
+          .map(
+            (item) => SyncMetadata(
+              id: _uuid.v4(),
+              table: _table,
+              userId: item.userId,
+              status: SyncStatus.pending,
+              recordId: item.id,
+            ),
+          )
+          .toList();
       await _syncDao.insertAll(syncEntries);
     }
   }
@@ -164,7 +167,9 @@ class HealthRecordRepository extends BaseRepository<HealthRecord>
     for (final meta in tablePending) {
       final item = await _localDao.getById(meta.recordId ?? '');
       if (item == null) {
-        AppLogger.warning('[HealthRecordRepo] Orphan sync_metadata cleaned: ${meta.recordId}');
+        AppLogger.warning(
+          '[HealthRecordRepo] Orphan sync_metadata cleaned: ${meta.recordId}',
+        );
         await _syncDao.deleteByRecord(_table, meta.recordId ?? '');
         orphansCleaned++;
         continue;
@@ -182,5 +187,4 @@ class HealthRecordRepository extends BaseRepository<HealthRecord>
   /// Latest health records for a bird.
   Future<List<HealthRecord>> getLatest(String birdId, {int limit = 5}) =>
       _localDao.getLatest(birdId, limit: limit);
-
 }

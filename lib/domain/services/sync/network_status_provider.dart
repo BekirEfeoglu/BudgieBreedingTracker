@@ -11,7 +11,9 @@ class DebugOfflineModeNotifier extends Notifier<bool> {
 }
 
 final debugOfflineModeProvider =
-    NotifierProvider<DebugOfflineModeNotifier, bool>(DebugOfflineModeNotifier.new);
+    NotifierProvider<DebugOfflineModeNotifier, bool>(
+      DebugOfflineModeNotifier.new,
+    );
 
 /// Provides current network connectivity status as a live stream.
 ///
@@ -38,8 +40,9 @@ final networkStatusProvider = StreamProvider<bool>((ref) {
 /// `false` otherwise (captive portal, no internet, etc.).
 Future<bool> _verifyInternetAccess() async {
   try {
-    final result = await InternetAddress.lookup('dns.google')
-        .timeout(const Duration(seconds: 3));
+    final result = await InternetAddress.lookup(
+      'dns.google',
+    ).timeout(const Duration(seconds: 3));
     return result.isNotEmpty && result[0].rawAddress.isNotEmpty;
   } catch (_) {
     return false;

@@ -143,10 +143,7 @@ class CommunityCommentTile extends ConsumerWidget {
     if (confirmed != true || !context.mounted) return;
     final success = await ref
         .read(commentDeleteProvider.notifier)
-        .deleteComment(
-          commentId: comment.id,
-          postId: comment.postId,
-        );
+        .deleteComment(commentId: comment.id, postId: comment.postId);
     if (!success && context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('community.delete_comment_error'.tr())),
@@ -162,24 +159,25 @@ class CommunityCommentTile extends ConsumerWidget {
         children: CommunityReportReason.values
             .where((r) => r != CommunityReportReason.unknown)
             .map((reason) {
-          final label = switch (reason) {
-            CommunityReportReason.spam =>
-              'community.report_reason_spam'.tr(),
-            CommunityReportReason.harassment =>
-              'community.report_reason_harassment'.tr(),
-            CommunityReportReason.inappropriate =>
-              'community.report_reason_inappropriate'.tr(),
-            CommunityReportReason.misinformation =>
-              'community.report_reason_misinformation'.tr(),
-            CommunityReportReason.other =>
-              'community.report_reason_other'.tr(),
-            CommunityReportReason.unknown => '',
-          };
-          return SimpleDialogOption(
-            onPressed: () => Navigator.pop(ctx, reason),
-            child: Text(label),
-          );
-        }).toList(),
+              final label = switch (reason) {
+                CommunityReportReason.spam =>
+                  'community.report_reason_spam'.tr(),
+                CommunityReportReason.harassment =>
+                  'community.report_reason_harassment'.tr(),
+                CommunityReportReason.inappropriate =>
+                  'community.report_reason_inappropriate'.tr(),
+                CommunityReportReason.misinformation =>
+                  'community.report_reason_misinformation'.tr(),
+                CommunityReportReason.other =>
+                  'community.report_reason_other'.tr(),
+                CommunityReportReason.unknown => '',
+              };
+              return SimpleDialogOption(
+                onPressed: () => Navigator.pop(ctx, reason),
+                child: Text(label),
+              );
+            })
+            .toList(),
       ),
     );
     if (reason == null || !context.mounted) return;
@@ -201,9 +199,9 @@ class CommunityCommentTile extends ConsumerWidget {
       AppLogger.error('CommunityCommentTile._showReportDialog', e, st);
       Sentry.captureException(e, stackTrace: st);
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('community.report_error'.tr())),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('community.report_error'.tr())));
       }
     }
   }

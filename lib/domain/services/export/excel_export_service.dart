@@ -91,7 +91,9 @@ class ExcelExportService {
             .cell(
               CellIndex.indexByColumnRow(columnIndex: col, rowIndex: row + 1),
             )
-            .value = TextCellValue(values[col]);
+            .value = TextCellValue(
+          values[col],
+        );
       }
     }
   }
@@ -127,9 +129,7 @@ class ExcelExportService {
         p.cageNumber ?? '',
         p.status.name,
         p.pairingDate != null ? _dateFormat.format(p.pairingDate!) : '',
-        p.separationDate != null
-            ? _dateFormat.format(p.separationDate!)
-            : '',
+        p.separationDate != null ? _dateFormat.format(p.separationDate!) : '',
         p.notes ?? '',
       ];
       for (var col = 0; col < values.length; col++) {
@@ -137,7 +137,9 @@ class ExcelExportService {
             .cell(
               CellIndex.indexByColumnRow(columnIndex: col, rowIndex: row + 1),
             )
-            .value = TextCellValue(values[col]);
+            .value = TextCellValue(
+          values[col],
+        );
       }
     }
   }
@@ -181,7 +183,9 @@ class ExcelExportService {
             .cell(
               CellIndex.indexByColumnRow(columnIndex: col, rowIndex: row + 1),
             )
-            .value = TextCellValue(values[col]);
+            .value = TextCellValue(
+          values[col],
+        );
       }
     }
   }
@@ -225,21 +229,23 @@ class ExcelExportService {
             .cell(
               CellIndex.indexByColumnRow(columnIndex: col, rowIndex: row + 1),
             )
-            .value = TextCellValue(values[col]);
+            .value = TextCellValue(
+          values[col],
+        );
       }
     }
   }
 
   String _genderLabel(String name) => switch (name) {
-        'male' => 'export.gender_male'.tr(),
-        'female' => 'export.gender_female'.tr(),
-        _ => 'export.gender_unknown'.tr(),
-      };
+    'male' => 'export.gender_male'.tr(),
+    'female' => 'export.gender_female'.tr(),
+    _ => 'export.gender_unknown'.tr(),
+  };
 
   String _statusLabel(String name) => switch (name) {
-        'alive' => 'export.status_alive'.tr(),
-        'dead' => 'export.status_dead'.tr(),
-        'sold' => 'export.status_sold'.tr(),
-        _ => name,
-      };
+    'alive' => 'export.status_alive'.tr(),
+    'dead' => 'export.status_dead'.tr(),
+    'sold' => 'export.status_sold'.tr(),
+    _ => name,
+  };
 }

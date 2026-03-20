@@ -10,21 +10,21 @@ import 'egg_status_chip.dart';
 /// Shows a bottom sheet for updating an egg's status.
 ///
 /// Returns the selected [EggStatus] or null if dismissed.
-Future<EggStatus?> showEggStatusUpdateSheet(
-  BuildContext context,
-  Egg egg,
-) {
-  final transitions = IncubationCalculator.getValidStatusTransitions(egg.status);
+Future<EggStatus?> showEggStatusUpdateSheet(BuildContext context, Egg egg) {
+  final transitions = IncubationCalculator.getValidStatusTransitions(
+    egg.status,
+  );
 
   if (transitions.isEmpty) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('eggs.transition_not_allowed'.tr())),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('eggs.transition_not_allowed'.tr())));
     return Future.value(null);
   }
 
   return showModalBottomSheet<EggStatus>(
     context: context,
+    constraints: const BoxConstraints(maxWidth: AppSpacing.maxSheetWidth),
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(
         top: Radius.circular(AppSpacing.radiusXl),
@@ -43,8 +43,9 @@ Future<EggStatus?> showEggStatusUpdateSheet(
                   width: 40,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant
-                        .withValues(alpha: 0.4),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),

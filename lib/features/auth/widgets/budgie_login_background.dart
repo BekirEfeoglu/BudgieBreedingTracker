@@ -61,19 +61,28 @@ class _BudgieLoginBackgroundState extends State<BudgieLoginBackground>
             Positioned(
               top: -60 + b1y,
               left: -50,
-              child: _blob(200, BudgieLoginPalette.blobGreen.withValues(alpha: 0.45)),
+              child: _blob(
+                200,
+                BudgieLoginPalette.blobGreen.withValues(alpha: 0.45),
+              ),
             ),
             // Sag ust mavi blob
             Positioned(
               top: -30,
               right: -40 + b2x,
-              child: _blob(160, BudgieLoginPalette.blobBlue.withValues(alpha: 0.35)),
+              child: _blob(
+                160,
+                BudgieLoginPalette.blobBlue.withValues(alpha: 0.35),
+              ),
             ),
             // Alt ortada kucuk yesil blob
             Positioned(
               bottom: -40 + b3y,
               left: 60,
-              child: _blob(120, BudgieLoginPalette.blobGreen.withValues(alpha: 0.3)),
+              child: _blob(
+                120,
+                BudgieLoginPalette.blobGreen.withValues(alpha: 0.3),
+              ),
             ),
           ],
         );
@@ -82,8 +91,8 @@ class _BudgieLoginBackgroundState extends State<BudgieLoginBackground>
   }
 
   Widget _blob(double size, Color color) => Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(shape: BoxShape.circle, color: color),
-      );
+    width: size,
+    height: size,
+    decoration: BoxDecoration(shape: BoxShape.circle, color: color),
+  );
 }

@@ -24,34 +24,38 @@ void main() {
 
   group('CommunityBookmarksScreen', () {
     testWidgets('shows app bar with bookmarks title', (tester) async {
-      await tester.pumpWidget(ProviderScope(
-        overrides: [
-          currentUserIdProvider.overrideWithValue('user-1'),
-          bookmarkedPostsProvider.overrideWith(
-            (ref) async => <CommunityPost>[],
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            currentUserIdProvider.overrideWithValue('user-1'),
+            bookmarkedPostsProvider.overrideWith(
+              (ref) async => <CommunityPost>[],
+            ),
+          ],
+          child: MaterialApp.router(
+            routerConfig: buildRouter(const CommunityBookmarksScreen()),
           ),
-        ],
-        child: MaterialApp.router(
-          routerConfig: buildRouter(const CommunityBookmarksScreen()),
         ),
-      ));
+      );
       await tester.pumpAndSettle();
 
       expect(find.text('community.bookmarks'), findsOneWidget);
     });
 
     testWidgets('shows empty state when no bookmarks', (tester) async {
-      await tester.pumpWidget(ProviderScope(
-        overrides: [
-          currentUserIdProvider.overrideWithValue('user-1'),
-          bookmarkedPostsProvider.overrideWith(
-            (ref) async => <CommunityPost>[],
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            currentUserIdProvider.overrideWithValue('user-1'),
+            bookmarkedPostsProvider.overrideWith(
+              (ref) async => <CommunityPost>[],
+            ),
+          ],
+          child: MaterialApp.router(
+            routerConfig: buildRouter(const CommunityBookmarksScreen()),
           ),
-        ],
-        child: MaterialApp.router(
-          routerConfig: buildRouter(const CommunityBookmarksScreen()),
         ),
-      ));
+      );
       await tester.pumpAndSettle();
 
       expect(find.text('community.no_bookmarks'), findsOneWidget);

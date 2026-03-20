@@ -15,8 +15,7 @@ class BreedingPairRemoteSource extends BaseRemoteSource<BreedingPair> {
       BreedingPair.fromJson(json);
 
   @override
-  Map<String, dynamic> toSupabaseJson(BreedingPair model) =>
-      model.toSupabase();
+  Map<String, dynamic> toSupabaseJson(BreedingPair model) => model.toSupabase();
 
   /// Fetches active breeding pairs for a user.
   Future<List<BreedingPair>> fetchActive(String userId) async {

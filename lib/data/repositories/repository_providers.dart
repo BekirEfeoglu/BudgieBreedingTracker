@@ -17,6 +17,7 @@ import 'package:budgie_breeding_tracker/data/repositories/nest_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/photo_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/event_reminder_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/notification_schedule_repository.dart';
+import 'package:budgie_breeding_tracker/data/remote/api/community_post_cache.dart';
 import 'package:budgie_breeding_tracker/data/repositories/community_post_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/community_comment_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/community_social_repository.dart';
@@ -62,8 +63,7 @@ final incubationRepositoryProvider = Provider<IncubationRepository>((ref) {
   );
 });
 
-final breedingPairRepositoryProvider =
-    Provider<BreedingPairRepository>((ref) {
+final breedingPairRepositoryProvider = Provider<BreedingPairRepository>((ref) {
   return BreedingPairRepository(
     localDao: ref.watch(breedingPairsDaoProvider),
     remoteSource: ref.watch(breedingPairRemoteSourceProvider),
@@ -71,8 +71,7 @@ final breedingPairRepositoryProvider =
   );
 });
 
-final healthRecordRepositoryProvider =
-    Provider<HealthRecordRepository>((ref) {
+final healthRecordRepositoryProvider = Provider<HealthRecordRepository>((ref) {
   return HealthRecordRepository(
     localDao: ref.watch(healthRecordsDaoProvider),
     remoteSource: ref.watch(healthRecordRemoteSourceProvider),
@@ -82,12 +81,12 @@ final healthRecordRepositoryProvider =
 
 final growthMeasurementRepositoryProvider =
     Provider<GrowthMeasurementRepository>((ref) {
-  return GrowthMeasurementRepository(
-    localDao: ref.watch(growthMeasurementsDaoProvider),
-    remoteSource: ref.watch(growthMeasurementRemoteSourceProvider),
-    syncDao: ref.watch(syncMetadataDaoProvider),
-  );
-});
+      return GrowthMeasurementRepository(
+        localDao: ref.watch(growthMeasurementsDaoProvider),
+        remoteSource: ref.watch(growthMeasurementRemoteSourceProvider),
+        syncDao: ref.watch(syncMetadataDaoProvider),
+      );
+    });
 
 final eventRepositoryProvider = Provider<EventRepository>((ref) {
   return EventRepository(
@@ -97,8 +96,7 @@ final eventRepositoryProvider = Provider<EventRepository>((ref) {
   );
 });
 
-final notificationRepositoryProvider =
-    Provider<NotificationRepository>((ref) {
+final notificationRepositoryProvider = Provider<NotificationRepository>((ref) {
   return NotificationRepository(
     localDao: ref.watch(notificationsDaoProvider),
     remoteSource: ref.watch(notificationRemoteSourceProvider),
@@ -114,11 +112,8 @@ final profileRepositoryProvider = Provider<ProfileRepository>((ref) {
   );
 });
 
-final syncMetadataRepositoryProvider =
-    Provider<SyncMetadataRepository>((ref) {
-  return SyncMetadataRepository(
-    localDao: ref.watch(syncMetadataDaoProvider),
-  );
+final syncMetadataRepositoryProvider = Provider<SyncMetadataRepository>((ref) {
+  return SyncMetadataRepository(localDao: ref.watch(syncMetadataDaoProvider));
 });
 
 final clutchRepositoryProvider = Provider<ClutchRepository>((ref) {
@@ -145,8 +140,9 @@ final photoRepositoryProvider = Provider<PhotoRepository>((ref) {
   );
 });
 
-final eventReminderRepositoryProvider =
-    Provider<EventReminderRepository>((ref) {
+final eventReminderRepositoryProvider = Provider<EventReminderRepository>((
+  ref,
+) {
   return EventReminderRepository(
     localDao: ref.watch(eventRemindersDaoProvider),
     remoteSource: ref.watch(eventReminderRemoteSourceProvider),
@@ -157,31 +153,39 @@ final eventReminderRepositoryProvider =
 
 final notificationScheduleRepositoryProvider =
     Provider<NotificationScheduleRepository>((ref) {
-  return NotificationScheduleRepository(
-    localDao: ref.watch(notificationSchedulesDaoProvider),
-    remoteSource: ref.watch(notificationScheduleRemoteSourceProvider),
-    syncDao: ref.watch(syncMetadataDaoProvider),
-  );
+      return NotificationScheduleRepository(
+        localDao: ref.watch(notificationSchedulesDaoProvider),
+        remoteSource: ref.watch(notificationScheduleRemoteSourceProvider),
+        syncDao: ref.watch(syncMetadataDaoProvider),
+      );
+    });
+
+final communityPostCacheProvider = Provider<CommunityPostCache>((ref) {
+  return CommunityPostCache();
 });
 
-final communityPostRepositoryProvider =
-    Provider<CommunityPostRepository>((ref) {
+final communityPostRepositoryProvider = Provider<CommunityPostRepository>((
+  ref,
+) {
   return CommunityPostRepository(
     postSource: ref.watch(communityPostRemoteSourceProvider),
     socialSource: ref.watch(communitySocialRemoteSourceProvider),
+    cache: ref.watch(communityPostCacheProvider),
   );
 });
 
-final communityCommentRepositoryProvider =
-    Provider<CommunityCommentRepository>((ref) {
-  return CommunityCommentRepository(
-    commentSource: ref.watch(communityCommentRemoteSourceProvider),
-    socialSource: ref.watch(communitySocialRemoteSourceProvider),
-  );
-});
+final communityCommentRepositoryProvider = Provider<CommunityCommentRepository>(
+  (ref) {
+    return CommunityCommentRepository(
+      commentSource: ref.watch(communityCommentRemoteSourceProvider),
+      socialSource: ref.watch(communitySocialRemoteSourceProvider),
+    );
+  },
+);
 
-final communitySocialRepositoryProvider =
-    Provider<CommunitySocialRepository>((ref) {
+final communitySocialRepositoryProvider = Provider<CommunitySocialRepository>((
+  ref,
+) {
   return CommunitySocialRepository(
     source: ref.watch(communitySocialRemoteSourceProvider),
   );

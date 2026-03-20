@@ -13,8 +13,7 @@ class EventsDao extends DatabaseAccessor<AppDatabase> with _$EventsDaoMixin {
   /// Watches all non-deleted events for a user.
   Stream<List<Event>> watchAll(String userId) {
     return (select(eventsTable)
-          ..where(
-              (t) => t.userId.equals(userId) & t.isDeleted.equals(false))
+          ..where((t) => t.userId.equals(userId) & t.isDeleted.equals(false))
           ..orderBy([(t) => OrderingTerm.desc(t.createdAt)]))
         .watch()
         .map((rows) => rows.map((r) => r.toModel()).toList());
@@ -29,17 +28,17 @@ class EventsDao extends DatabaseAccessor<AppDatabase> with _$EventsDaoMixin {
 
   /// Gets all non-deleted events for a user.
   Future<List<Event>> getAll(String userId) async {
-    final rows = await (select(eventsTable)
-          ..where(
-              (t) => t.userId.equals(userId) & t.isDeleted.equals(false)))
-        .get();
+    final rows = await (select(
+      eventsTable,
+    )..where((t) => t.userId.equals(userId) & t.isDeleted.equals(false))).get();
     return rows.map((r) => r.toModel()).toList();
   }
 
   /// Gets a single event by id.
   Future<Event?> getById(String id) async {
-    final row = await (select(eventsTable)..where((t) => t.id.equals(id)))
-        .getSingleOrNull();
+    final row = await (select(
+      eventsTable,
+    )..where((t) => t.id.equals(id))).getSingleOrNull();
     return row?.toModel();
   }
 
@@ -84,34 +83,37 @@ class EventsDao extends DatabaseAccessor<AppDatabase> with _$EventsDaoMixin {
     DateTime start,
     DateTime end,
   ) {
-    return (select(eventsTable)
-          ..where((t) =>
+    return (select(eventsTable)..where(
+          (t) =>
               t.userId.equals(userId) &
               t.isDeleted.equals(false) &
               t.eventDate.isBiggerOrEqualValue(start) &
-              t.eventDate.isSmallerOrEqualValue(end)))
+              t.eventDate.isSmallerOrEqualValue(end),
+        ))
         .watch()
         .map((rows) => rows.map((r) => r.toModel()).toList());
   }
 
   /// Gets upcoming events for a user, ordered by event date ascending.
   Future<List<Event>> getUpcoming(String userId, {int limit = 10}) async {
-    final rows = await (select(eventsTable)
-          ..where((t) =>
-              t.userId.equals(userId) &
-              t.isDeleted.equals(false) &
-              t.eventDate.isBiggerOrEqualValue(DateTime.now()))
-          ..orderBy([(t) => OrderingTerm.asc(t.eventDate)])
-          ..limit(limit))
-        .get();
+    final rows =
+        await (select(eventsTable)
+              ..where(
+                (t) =>
+                    t.userId.equals(userId) &
+                    t.isDeleted.equals(false) &
+                    t.eventDate.isBiggerOrEqualValue(DateTime.now()),
+              )
+              ..orderBy([(t) => OrderingTerm.asc(t.eventDate)])
+              ..limit(limit))
+            .get();
     return rows.map((r) => r.toModel()).toList();
   }
 
   /// Watches non-deleted events for a specific bird.
   Stream<List<Event>> watchByBird(String birdId) {
     return (select(eventsTable)
-          ..where(
-              (t) => t.birdId.equals(birdId) & t.isDeleted.equals(false)))
+          ..where((t) => t.birdId.equals(birdId) & t.isDeleted.equals(false)))
         .watch()
         .map((rows) => rows.map((r) => r.toModel()).toList());
   }

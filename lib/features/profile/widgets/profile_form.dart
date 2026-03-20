@@ -25,9 +25,7 @@ class ProfileForm extends ConsumerStatefulWidget {
   final String? initialFullName;
   final String? initialAvatarUrl;
   final String? email;
-  final Future<void> Function({
-    required String fullName,
-  }) onSave;
+  final Future<void> Function({required String fullName}) onSave;
   final bool isLoading;
   final bool isAvatarUploading;
   final VoidCallback? onAvatarTap;
@@ -103,8 +101,9 @@ class _ProfileFormState extends ConsumerState<ProfileForm> {
                 border: const OutlineInputBorder(),
                 prefixIcon: const Icon(LucideIcons.mail),
                 filled: true,
-                fillColor: theme.colorScheme.surfaceContainerHighest
-                    .withValues(alpha: 0.3),
+                fillColor: theme.colorScheme.surfaceContainerHighest.withValues(
+                  alpha: 0.3,
+                ),
               ),
             ),
           const SizedBox(height: AppSpacing.xxl),
@@ -122,8 +121,6 @@ class _ProfileFormState extends ConsumerState<ProfileForm> {
 
   void _submit() {
     if (!_formKey.currentState!.validate()) return;
-    widget.onSave(
-      fullName: _fullNameController.text.trim(),
-    );
+    widget.onSave(fullName: _fullNameController.text.trim());
   }
 }

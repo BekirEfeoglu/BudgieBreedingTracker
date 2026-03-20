@@ -13,9 +13,7 @@ void main() {
         'Supabase is available', () {
       final mockClient = MockSupabaseClient();
       final container = ProviderContainer(
-        overrides: [
-          supabaseClientProvider.overrideWithValue(mockClient),
-        ],
+        overrides: [supabaseClientProvider.overrideWithValue(mockClient)],
       );
       addTearDown(container.dispose);
 
@@ -43,16 +41,17 @@ void main() {
     test('returned service is a ContentModerationService instance', () {
       final mockClient = MockSupabaseClient();
       final container = ProviderContainer(
-        overrides: [
-          supabaseClientProvider.overrideWithValue(mockClient),
-        ],
+        overrides: [supabaseClientProvider.overrideWithValue(mockClient)],
       );
       addTearDown(container.dispose);
 
       final service = container.read(contentModerationServiceProvider);
 
       expect(service, isNotNull);
-      expect(service.runtimeType.toString(), contains('ContentModerationService'));
+      expect(
+        service.runtimeType.toString(),
+        contains('ContentModerationService'),
+      );
     });
   });
 }

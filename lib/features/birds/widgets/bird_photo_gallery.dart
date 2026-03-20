@@ -39,8 +39,7 @@ class BirdPhotoGallery extends StatelessWidget {
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               itemCount: photoUrls.length,
-              separatorBuilder: (_, __) =>
-                  const SizedBox(width: AppSpacing.sm),
+              separatorBuilder: (_, __) => const SizedBox(width: AppSpacing.sm),
               itemBuilder: (context, index) => _PhotoThumbnail(
                 url: photoUrls[index],
                 onTap: () => _openGallery(context, index),
@@ -107,9 +106,7 @@ class _PhotoThumbnail extends StatelessWidget {
                 errorWidget: (_, __, ___) => Container(
                   decoration: BoxDecoration(
                     color: theme.colorScheme.surfaceContainerHighest,
-                    border: Border.all(
-                      color: theme.colorScheme.outlineVariant,
-                    ),
+                    border: Border.all(color: theme.colorScheme.outlineVariant),
                   ),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -117,15 +114,17 @@ class _PhotoThumbnail extends StatelessWidget {
                       AppIcon(
                         AppIcons.bird,
                         size: 36,
-                        color: theme.colorScheme.onSurfaceVariant
-                            .withValues(alpha: 0.4),
+                        color: theme.colorScheme.onSurfaceVariant.withValues(
+                          alpha: 0.4,
+                        ),
                       ),
                       const SizedBox(height: AppSpacing.xs),
                       Icon(
                         LucideIcons.wifiOff,
                         size: 14,
-                        color: theme.colorScheme.onSurfaceVariant
-                            .withValues(alpha: 0.3),
+                        color: theme.colorScheme.onSurfaceVariant.withValues(
+                          alpha: 0.3,
+                        ),
                       ),
                     ],
                   ),
@@ -142,8 +141,7 @@ class _PhotoThumbnail extends StatelessWidget {
                     width: 28,
                     height: 28,
                     decoration: BoxDecoration(
-                      color: theme.colorScheme.surface
-                          .withValues(alpha: 0.85),
+                      color: theme.colorScheme.surface.withValues(alpha: 0.85),
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
@@ -228,9 +226,8 @@ class _FullScreenGalleryState extends State<_FullScreenGallery> {
         },
         scrollPhysics: const BouncingScrollPhysics(),
         backgroundDecoration: BoxDecoration(color: bgColor),
-        loadingBuilder: (_, __) => const Center(
-          child: CircularProgressIndicator(),
-        ),
+        loadingBuilder: (_, __) =>
+            const Center(child: CircularProgressIndicator()),
       ),
     );
   }

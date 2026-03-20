@@ -22,9 +22,9 @@ class BreedingPairRepository extends BaseRepository<BreedingPair>
     required BreedingPairsDao localDao,
     required BreedingPairRemoteSource remoteSource,
     required SyncMetadataDao syncDao,
-  })  : _localDao = localDao,
-        _remoteSource = remoteSource,
-        _syncDao = syncDao;
+  }) : _localDao = localDao,
+       _remoteSource = remoteSource,
+       _syncDao = syncDao;
 
   static const _table = SupabaseConstants.breedingPairsTable;
 
@@ -46,8 +46,7 @@ class BreedingPairRepository extends BaseRepository<BreedingPair>
   Stream<BreedingPair?> watchById(String id) => _localDao.watchById(id);
 
   @override
-  Future<List<BreedingPair>> getAll(String userId) =>
-      _localDao.getAll(userId);
+  Future<List<BreedingPair>> getAll(String userId) => _localDao.getAll(userId);
 
   @override
   Future<BreedingPair?> getById(String id) => _localDao.getById(id);
@@ -63,13 +62,17 @@ class BreedingPairRepository extends BaseRepository<BreedingPair>
   Future<void> saveAll(List<BreedingPair> items) async {
     await _localDao.insertAll(items);
     if (items.isNotEmpty) {
-      final syncEntries = items.map((item) => SyncMetadata(
-        id: _uuid.v4(),
-        table: _table,
-        userId: item.userId,
-        status: SyncStatus.pending,
-        recordId: item.id,
-      )).toList();
+      final syncEntries = items
+          .map(
+            (item) => SyncMetadata(
+              id: _uuid.v4(),
+              table: _table,
+              userId: item.userId,
+              status: SyncStatus.pending,
+              recordId: item.id,
+            ),
+          )
+          .toList();
       await _syncDao.insertAll(syncEntries);
     }
   }
@@ -164,7 +167,9 @@ class BreedingPairRepository extends BaseRepository<BreedingPair>
     for (final meta in tablePending) {
       final item = await _localDao.getById(meta.recordId ?? '');
       if (item == null) {
-        AppLogger.warning('[BreedingPairRepo] Orphan sync_metadata cleaned: ${meta.recordId}');
+        AppLogger.warning(
+          '[BreedingPairRepo] Orphan sync_metadata cleaned: ${meta.recordId}',
+        );
         await _syncDao.deleteByRecord(_table, meta.recordId ?? '');
         orphansCleaned++;
         continue;
@@ -182,5 +187,4 @@ class BreedingPairRepository extends BaseRepository<BreedingPair>
   /// Breeding pairs containing a specific bird.
   Future<List<BreedingPair>> getByBirdId(String birdId) =>
       _localDao.getByBirdId(birdId);
-
 }

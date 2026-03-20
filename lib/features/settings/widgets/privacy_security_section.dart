@@ -61,10 +61,18 @@ class PrivacySecuritySection extends ConsumerWidget {
           icon: const Icon(LucideIcons.scale),
           onTap: () => context.push(AppRoutes.termsOfService),
         ),
+        SettingsNavigationTile(
+          title: 'settings.community_guidelines'.tr(),
+          icon: const Icon(LucideIcons.users),
+          onTap: () => context.push(AppRoutes.communityGuidelines),
+        ),
         SettingsActionTile(
           title: 'settings.delete_account'.tr(),
           subtitle: 'settings.delete_account_desc'.tr(),
-          icon: AppIcon(AppIcons.delete, color: Theme.of(context).colorScheme.error),
+          icon: AppIcon(
+            AppIcons.delete,
+            color: Theme.of(context).colorScheme.error,
+          ),
           onTap: () => _showDeleteAccountDialog(context, ref),
         ),
       ],
@@ -78,28 +86,36 @@ class PrivacySecuritySection extends ConsumerWidget {
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.lg),
           child: PasswordChangeForm(
-            onSubmit: ({
-              required String currentPassword,
-              required String newPassword,
-            }) async {
-              final messenger = ScaffoldMessenger.of(context);
-              final navigator = Navigator.of(context);
-              try {
-                await ref.read(authActionsProvider).changePassword(
-                      currentPassword: currentPassword,
-                      newPassword: newPassword,
+            onSubmit:
+                ({
+                  required String currentPassword,
+                  required String newPassword,
+                }) async {
+                  final messenger = ScaffoldMessenger.of(context);
+                  final navigator = Navigator.of(context);
+                  try {
+                    await ref
+                        .read(authActionsProvider)
+                        .changePassword(
+                          currentPassword: currentPassword,
+                          newPassword: newPassword,
+                        );
+                    navigator.pop();
+                    messenger.showSnackBar(
+                      SnackBar(content: Text('settings.password_changed'.tr())),
                     );
-                navigator.pop();
-                messenger.showSnackBar(
-                  SnackBar(content: Text('settings.password_changed'.tr())),
-                );
-              } catch (e) {
-                AppLogger.error('[PrivacySecurity] Password change failed', e);
-                messenger.showSnackBar(
-                  SnackBar(content: Text('settings.password_change_error'.tr())),
-                );
-              }
-            },
+                  } catch (e) {
+                    AppLogger.error(
+                      '[PrivacySecurity] Password change failed',
+                      e,
+                    );
+                    messenger.showSnackBar(
+                      SnackBar(
+                        content: Text('settings.password_change_error'.tr()),
+                      ),
+                    );
+                  }
+                },
           ),
         ),
       ),

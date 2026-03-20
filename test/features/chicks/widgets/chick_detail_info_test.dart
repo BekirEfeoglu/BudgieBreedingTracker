@@ -25,9 +25,7 @@ Future<void> _pumpChickDetailInfo(
       ],
       child: MaterialApp(
         home: Scaffold(
-          body: SingleChildScrollView(
-            child: ChickDetailInfo(chick: chick),
-          ),
+          body: SingleChildScrollView(child: ChickDetailInfo(chick: chick)),
         ),
       ),
     ),
@@ -182,9 +180,7 @@ void main() {
       expect(find.text('chicks.mother'), findsOneWidget);
     });
 
-    testWidgets('shows fallback name when parent name is null', (
-      tester,
-    ) async {
+    testWidgets('shows fallback name when parent name is null', (tester) async {
       final chick = _createTestChick(eggId: 'egg-1');
       const parents = (
         maleName: null,
@@ -209,9 +205,7 @@ void main() {
       expect(find.text('chicks.weaning'), findsOneWidget);
     });
 
-    testWidgets('shows not yet label when chick is not weaned', (
-      tester,
-    ) async {
+    testWidgets('shows not yet label when chick is not weaned', (tester) async {
       final chick = _createTestChick(weanDate: null);
 
       await _pumpChickDetailInfo(tester, chick);
@@ -232,9 +226,7 @@ void main() {
     });
 
     testWidgets('does not show death date for healthy chick', (tester) async {
-      final chick = _createTestChick(
-        healthStatus: ChickHealthStatus.healthy,
-      );
+      final chick = _createTestChick(healthStatus: ChickHealthStatus.healthy);
 
       await _pumpChickDetailInfo(tester, chick);
 
@@ -290,9 +282,7 @@ void main() {
     testWidgets('renders notes text', (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
-          home: Scaffold(
-            body: ChickDetailNotes(notes: 'A healthy chick.'),
-          ),
+          home: Scaffold(body: ChickDetailNotes(notes: 'A healthy chick.')),
         ),
       );
 
@@ -302,9 +292,7 @@ void main() {
     testWidgets('shows notes section title', (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
-          home: Scaffold(
-            body: ChickDetailNotes(notes: 'Some notes'),
-          ),
+          home: Scaffold(body: ChickDetailNotes(notes: 'Some notes')),
         ),
       );
 

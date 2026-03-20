@@ -46,18 +46,18 @@ final communitySearchProvider =
 
 final communitySearchResultsProvider =
     FutureProvider.family<List<CommunityPost>, String>((ref, query) async {
-  if (query.trim().isEmpty) return [];
+      if (query.trim().isEmpty) return [];
 
-  final repo = ref.watch(communityPostRepositoryProvider);
-  final userId = ref.watch(currentUserIdProvider);
+      final repo = ref.watch(communityPostRepositoryProvider);
+      final userId = ref.watch(currentUserIdProvider);
 
-  try {
-    return await repo.search(query: query, currentUserId: userId);
-  } catch (e, st) {
-    AppLogger.error('communitySearchResultsProvider', e, st);
-    return [];
-  }
-});
+      try {
+        return await repo.search(query: query, currentUserId: userId);
+      } catch (e, st) {
+        AppLogger.error('communitySearchResultsProvider', e, st);
+        return [];
+      }
+    });
 
 // ---------------------------------------------------------------------------
 // Search posts (derived from server-side results)
@@ -105,10 +105,10 @@ class CommunitySearchUserResult {
 // Local search (from feed) for users and tags
 // ---------------------------------------------------------------------------
 
-final communitySearchUsersProvider =
-    Provider<List<CommunitySearchUserResult>>((ref) {
-  final query =
-      ref.watch(communitySearchProvider).query.trim().toLowerCase();
+final communitySearchUsersProvider = Provider<List<CommunitySearchUserResult>>((
+  ref,
+) {
+  final query = ref.watch(communitySearchProvider).query.trim().toLowerCase();
   final posts = ref.watch(communityFeedProvider).posts;
   final users = _aggregateUsers(posts);
 
@@ -120,8 +120,7 @@ final communitySearchUsersProvider =
 });
 
 final communitySearchTagsProvider = Provider<List<String>>((ref) {
-  final query =
-      ref.watch(communitySearchProvider).query.trim().toLowerCase();
+  final query = ref.watch(communitySearchProvider).query.trim().toLowerCase();
   if (query.isEmpty) return const [];
 
   final tags = _extractTags(ref.watch(communityFeedProvider).posts);
@@ -131,22 +130,20 @@ final communitySearchTagsProvider = Provider<List<String>>((ref) {
 });
 
 final communityPopularTagsProvider = Provider<List<String>>((ref) {
-  return _extractTags(ref.watch(communityFeedProvider).posts)
-      .take(12)
-      .toList();
+  return _extractTags(ref.watch(communityFeedProvider).posts).take(12).toList();
 });
 
 final communitySuggestedUsersProvider =
     Provider<List<CommunitySearchUserResult>>((ref) {
-  final users =
-      _aggregateUsers(ref.watch(communityFeedProvider).posts).toList()
-        ..sort((a, b) {
-          final byPosts = b.postCount.compareTo(a.postCount);
-          if (byPosts != 0) return byPosts;
-          return b.totalLikes.compareTo(a.totalLikes);
-        });
-  return users.take(8).toList(growable: false);
-});
+      final users =
+          _aggregateUsers(ref.watch(communityFeedProvider).posts).toList()
+            ..sort((a, b) {
+              final byPosts = b.postCount.compareTo(a.postCount);
+              if (byPosts != 0) return byPosts;
+              return b.totalLikes.compareTo(a.totalLikes);
+            });
+      return users.take(8).toList(growable: false);
+    });
 
 // ---------------------------------------------------------------------------
 // Helpers

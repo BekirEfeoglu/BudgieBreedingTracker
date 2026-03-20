@@ -35,7 +35,9 @@ class ConfirmDialog extends StatelessWidget {
             Navigator.of(context).pop(true);
           },
           style: isDestructive
-              ? TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.error)
+              ? TextButton.styleFrom(
+                  foregroundColor: Theme.of(context).colorScheme.error,
+                )
               : null,
           child: Text(confirmLabel ?? 'common.confirm'.tr()),
         ),

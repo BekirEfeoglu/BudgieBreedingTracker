@@ -218,6 +218,7 @@ class _BirdDetailPhotosState extends ConsumerState<BirdDetailPhotos> {
 
     return showModalBottomSheet<ImageSource>(
       context: context,
+      constraints: const BoxConstraints(maxWidth: AppSpacing.maxSheetWidth),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(
           top: Radius.circular(AppSpacing.radiusXl),

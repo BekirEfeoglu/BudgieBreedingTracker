@@ -35,6 +35,7 @@ void _collectMaskedMutations(
     masked.add('Cinnamon');
   }
 }
+
 /// Adds yellowface-related naming to parts list.
 void _addYellowfaceNaming(
   List<String> parts, {
@@ -93,6 +94,7 @@ void _addYellowfaceNaming(
     if (hasBlueFactor2 && !isBlue) parts.add('Blue Factor II');
   }
 }
+
 /// Adds base color naming with grey, violet, and dark factor logic.
 void _addBaseColorNaming(
   List<String> parts, {
@@ -136,6 +138,7 @@ void _addBaseColorNaming(
     }
   }
 }
+
 /// Adds pattern mutations, melanin modifiers, pied, fallow, crest,
 /// clearbody, and saddleback naming (steps 9-15).
 void _addPatternAndModifierNaming(
@@ -229,6 +232,7 @@ void _addPatternAndModifierNaming(
     parts.add('Blackface');
   }
 }
+
 /// Adds pied mutation naming including Dark-Eyed Clear detection.
 void _addPiedNaming(List<String> parts, Set<String> visualMutations) {
   final hasRecessivePied = visualMutations.contains('recessive_pied');
@@ -255,6 +259,7 @@ void _addPiedNaming(List<String> parts, Set<String> visualMutations) {
     if (hasDutchPied) parts.add('Dutch Pied');
   }
 }
+
 /// Adds crested mutation naming with compound heterozygote detection.
 void _addCrestedNaming(List<String> parts, Set<String> visualMutations) {
   final activeCrested = GeneticsConstants.crestedAlleleIds
@@ -262,12 +267,16 @@ void _addCrestedNaming(List<String> parts, Set<String> visualMutations) {
       .toList();
   if (activeCrested.length >= 2) {
     // Compound heterozygote: two different crested alleles
-    final labels = activeCrested.map((id) => switch (id) {
-      'crested_tufted' => 'Tufted',
-      'crested_half_circular' => 'Half-Circular',
-      'crested_full_circular' => 'Full-Circular',
-      _ => id,
-    }).toList();
+    final labels = activeCrested
+        .map(
+          (id) => switch (id) {
+            'crested_tufted' => 'Tufted',
+            'crested_half_circular' => 'Half-Circular',
+            'crested_full_circular' => 'Full-Circular',
+            _ => id,
+          },
+        )
+        .toList();
     parts.add('${labels.join('/')} Compound Crest');
   } else {
     if (visualMutations.contains('crested_tufted')) {
@@ -283,10 +292,7 @@ void _addCrestedNaming(List<String> parts, Set<String> visualMutations) {
 }
 
 /// Resolves base color name from base color series and dark factor count.
-String? _resolveBaseColorName(
-  _BaseColor base,
-  int darkFactorCount,
-) {
+String? _resolveBaseColorName(_BaseColor base, int darkFactorCount) {
   return switch ((base, darkFactorCount)) {
     (_BaseColor.green, 0) => 'Light Green',
     (_BaseColor.green, 1) => 'Dark Green',

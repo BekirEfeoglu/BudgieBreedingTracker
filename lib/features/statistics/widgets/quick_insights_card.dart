@@ -71,10 +71,12 @@ class _InsightsCardContent extends StatelessWidget {
               ],
             ),
             const SizedBox(height: AppSpacing.md),
-            ...insights.map((insight) => Padding(
-                  padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                  child: _InsightRow(insight: insight),
-                )),
+            ...insights.map(
+              (insight) => Padding(
+                padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                child: _InsightRow(insight: insight),
+              ),
+            ),
           ],
         ),
       ),
@@ -93,26 +95,27 @@ class _InsightRow extends StatelessWidget {
 
     final (Widget icon, Color color) = switch (insight.sentiment) {
       InsightSentiment.positive => (
-          const AppIcon(AppIcons.growth, size: 14, color: AppColors.success),
-          AppColors.success,
-        ),
+        const AppIcon(AppIcons.growth, size: 14, color: AppColors.success),
+        AppColors.success,
+      ),
       InsightSentiment.negative => (
-          const Icon(LucideIcons.trendingDown, size: 14, color: AppColors.error),
-          AppColors.error,
-        ),
+        const Icon(LucideIcons.trendingDown, size: 14, color: AppColors.error),
+        AppColors.error,
+      ),
       InsightSentiment.neutral => (
-          AppIcon(AppIcons.info, size: 14, color: theme.colorScheme.onSurfaceVariant),
-          theme.colorScheme.onSurfaceVariant,
+        AppIcon(
+          AppIcons.info,
+          size: 14,
+          color: theme.colorScheme.onSurfaceVariant,
         ),
+        theme.colorScheme.onSurfaceVariant,
+      ),
     };
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.only(top: 2),
-          child: icon,
-        ),
+        Padding(padding: const EdgeInsets.only(top: 2), child: icon),
         const SizedBox(width: AppSpacing.sm),
         Expanded(
           child: Text(

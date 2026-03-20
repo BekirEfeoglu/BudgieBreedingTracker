@@ -27,19 +27,13 @@ void main() {
     testWidgets('shows correct title text', (tester) async {
       await tester.pumpWidget(createSubject());
 
-      expect(
-        find.text('notifications.no_notifications'),
-        findsOneWidget,
-      );
+      expect(find.text('notifications.no_notifications'), findsOneWidget);
     });
 
     testWidgets('shows correct subtitle text', (tester) async {
       await tester.pumpWidget(createSubject());
 
-      expect(
-        find.text('notifications.no_notifications_hint'),
-        findsOneWidget,
-      );
+      expect(find.text('notifications.no_notifications_hint'), findsOneWidget);
     });
 
     testWidgets('shows bellOff icon', (tester) async {

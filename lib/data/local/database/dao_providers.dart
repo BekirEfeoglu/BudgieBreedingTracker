@@ -60,8 +60,9 @@ final notificationsDaoProvider = Provider<NotificationsDao>((ref) {
   return ref.watch(appDatabaseProvider).notificationsDao;
 });
 
-final notificationSettingsDaoProvider =
-    Provider<NotificationSettingsDao>((ref) {
+final notificationSettingsDaoProvider = Provider<NotificationSettingsDao>((
+  ref,
+) {
   return ref.watch(appDatabaseProvider).notificationSettingsDao;
 });
 
@@ -93,8 +94,9 @@ final eventRemindersDaoProvider = Provider<EventRemindersDao>((ref) {
   return ref.watch(appDatabaseProvider).eventRemindersDao;
 });
 
-final notificationSchedulesDaoProvider =
-    Provider<NotificationSchedulesDao>((ref) {
+final notificationSchedulesDaoProvider = Provider<NotificationSchedulesDao>((
+  ref,
+) {
   return ref.watch(appDatabaseProvider).notificationSchedulesDao;
 });
 

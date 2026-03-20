@@ -39,8 +39,9 @@ class HealthRecordCard extends StatelessWidget {
             children: [
               CircleAvatar(
                 radius: 22,
-                backgroundColor:
-                    healthRecordTypeColor(record.type).withValues(alpha: 0.15),
+                backgroundColor: healthRecordTypeColor(
+                  record.type,
+                ).withValues(alpha: 0.15),
                 child: Icon(
                   healthRecordTypeIcon(record.type),
                   size: 22,
@@ -133,33 +134,33 @@ class HealthRecordCard extends StatelessWidget {
 
 /// Returns the icon for a health record type.
 IconData healthRecordTypeIcon(HealthRecordType type) => switch (type) {
-      HealthRecordType.checkup => LucideIcons.stethoscope,
-      HealthRecordType.illness => LucideIcons.thermometer,
-      HealthRecordType.injury => LucideIcons.heartPulse,
-      HealthRecordType.vaccination => LucideIcons.syringe,
-      HealthRecordType.medication => LucideIcons.pill,
-      HealthRecordType.death => LucideIcons.heartOff,
-      HealthRecordType.unknown => LucideIcons.helpCircle,
-    };
+  HealthRecordType.checkup => LucideIcons.stethoscope,
+  HealthRecordType.illness => LucideIcons.thermometer,
+  HealthRecordType.injury => LucideIcons.heartPulse,
+  HealthRecordType.vaccination => LucideIcons.syringe,
+  HealthRecordType.medication => LucideIcons.pill,
+  HealthRecordType.death => LucideIcons.heartOff,
+  HealthRecordType.unknown => LucideIcons.helpCircle,
+};
 
 /// Returns the color for a health record type.
 Color healthRecordTypeColor(HealthRecordType type) => switch (type) {
-      HealthRecordType.checkup => AppColors.info,
-      HealthRecordType.illness => AppColors.warning,
-      HealthRecordType.injury => AppColors.error,
-      HealthRecordType.vaccination => AppColors.success,
-      HealthRecordType.medication => AppColors.medication,
-      HealthRecordType.death => AppColors.neutral400,
-      HealthRecordType.unknown => AppColors.neutral400,
-    };
+  HealthRecordType.checkup => AppColors.info,
+  HealthRecordType.illness => AppColors.warning,
+  HealthRecordType.injury => AppColors.error,
+  HealthRecordType.vaccination => AppColors.success,
+  HealthRecordType.medication => AppColors.medication,
+  HealthRecordType.death => AppColors.neutral400,
+  HealthRecordType.unknown => AppColors.neutral400,
+};
 
 /// Returns the localized label for a health record type.
 String healthRecordTypeLabel(HealthRecordType type) => switch (type) {
-      HealthRecordType.checkup => 'health_records.type_checkup'.tr(),
-      HealthRecordType.illness => 'health_records.type_illness'.tr(),
-      HealthRecordType.injury => 'health_records.type_injury'.tr(),
-      HealthRecordType.vaccination => 'health_records.type_vaccination'.tr(),
-      HealthRecordType.medication => 'health_records.type_medication'.tr(),
-      HealthRecordType.death => 'health_records.type_death'.tr(),
-      HealthRecordType.unknown => 'health_records.type_unknown'.tr(),
-    };
+  HealthRecordType.checkup => 'health_records.type_checkup'.tr(),
+  HealthRecordType.illness => 'health_records.type_illness'.tr(),
+  HealthRecordType.injury => 'health_records.type_injury'.tr(),
+  HealthRecordType.vaccination => 'health_records.type_vaccination'.tr(),
+  HealthRecordType.medication => 'health_records.type_medication'.tr(),
+  HealthRecordType.death => 'health_records.type_death'.tr(),
+  HealthRecordType.unknown => 'health_records.type_unknown'.tr(),
+};

@@ -68,18 +68,21 @@ void main() {
       expect(single.maskColor, duplicate.maskColor);
     });
 
-    test('resolves complex multi-mutation combination: cinnamon + spangle + blue', () {
-      final appearance = BudgieColorResolver.resolve(
-        visualMutations: const ['blue', 'cinnamon', 'spangle'],
-        phenotype: 'Skyblue Cinnamon Spangle',
-      );
+    test(
+      'resolves complex multi-mutation combination: cinnamon + spangle + blue',
+      () {
+        final appearance = BudgieColorResolver.resolve(
+          visualMutations: const ['blue', 'cinnamon', 'spangle'],
+          phenotype: 'Skyblue Cinnamon Spangle',
+        );
 
-      // Cinnamon should affect body color
-      expect(appearance.bodyColor, isNot(BudgiePhenotypePalette.skyBlue));
-      // Spangle should create wing fill
-      expect(appearance.wingFillColor, isNot(Colors.transparent));
-      expect(appearance.maskColor, BudgiePhenotypePalette.maskWhite);
-    });
+        // Cinnamon should affect body color
+        expect(appearance.bodyColor, isNot(BudgiePhenotypePalette.skyBlue));
+        // Spangle should create wing fill
+        expect(appearance.wingFillColor, isNot(Colors.transparent));
+        expect(appearance.maskColor, BudgiePhenotypePalette.maskWhite);
+      },
+    );
 
     test('resolves 4+ mutation combination without error', () {
       final appearance = BudgieColorResolver.resolve(

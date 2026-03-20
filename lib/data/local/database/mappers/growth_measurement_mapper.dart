@@ -4,18 +4,18 @@ import 'package:budgie_breeding_tracker/data/models/growth_measurement_model.dar
 
 extension GrowthMeasurementRowMapper on GrowthMeasurementRow {
   GrowthMeasurement toModel() => GrowthMeasurement(
-        id: id,
-        chickId: chickId,
-        weight: weight,
-        measurementDate: measurementDate,
-        userId: userId,
-        height: height,
-        wingLength: wingLength,
-        tailLength: tailLength,
-        notes: notes,
-        createdAt: createdAt,
-        updatedAt: updatedAt,
-      );
+    id: id,
+    chickId: chickId,
+    weight: weight,
+    measurementDate: measurementDate,
+    userId: userId,
+    height: height,
+    wingLength: wingLength,
+    tailLength: tailLength,
+    notes: notes,
+    createdAt: createdAt,
+    updatedAt: updatedAt,
+  );
 }
 
 extension GrowthMeasurementModelMapper on GrowthMeasurement {

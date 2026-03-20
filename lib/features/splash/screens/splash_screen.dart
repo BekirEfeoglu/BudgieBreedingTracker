@@ -49,9 +49,10 @@ class _LoadingBodyState extends ConsumerState<_LoadingBody>
       vsync: this,
       duration: const Duration(milliseconds: 800),
     );
-    _scaleAnimation = Tween<double>(begin: 0.8, end: 1.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOutBack),
-    );
+    _scaleAnimation = Tween<double>(
+      begin: 0.8,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutBack));
     _controller.forward();
   }
 
@@ -75,10 +76,8 @@ class _LoadingBodyState extends ConsumerState<_LoadingBody>
     return Center(
       child: AnimatedBuilder(
         animation: _controller,
-        builder: (context, child) => Transform.scale(
-          scale: _scaleAnimation.value,
-          child: child,
-        ),
+        builder: (context, child) =>
+            Transform.scale(scale: _scaleAnimation.value, child: child),
         child: const AppBrandTitle(size: AppBrandSize.large),
       ),
     );

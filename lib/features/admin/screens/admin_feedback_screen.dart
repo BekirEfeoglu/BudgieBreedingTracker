@@ -76,25 +76,33 @@ class AdminFeedbackScreen extends ConsumerWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(LucideIcons.inbox,
-              size: 48,
-              color: Theme.of(context)
-                  .colorScheme
-                  .onSurface
-                  .withValues(alpha: 0.3)),
+          Icon(
+            LucideIcons.inbox,
+            size: 48,
+            color: Theme.of(
+              context,
+            ).colorScheme.onSurface.withValues(alpha: 0.3),
+          ),
           const SizedBox(height: AppSpacing.md),
-          Text('admin.no_feedback'.tr(),
-              style: Theme.of(context).textTheme.titleMedium),
+          Text(
+            'admin.no_feedback'.tr(),
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
           const SizedBox(height: AppSpacing.xs),
-          Text('admin.no_feedback_desc'.tr(),
-              style: Theme.of(context).textTheme.bodySmall),
+          Text(
+            'admin.no_feedback_desc'.tr(),
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
         ],
       ),
     );
   }
 
   void _showDetail(
-      BuildContext context, WidgetRef ref, Map<String, dynamic> item) {
+    BuildContext context,
+    WidgetRef ref,
+    Map<String, dynamic> item,
+  ) {
     final client = ref.read(supabaseClientProvider);
 
     Future<void> onSave({
@@ -123,9 +131,9 @@ class AdminFeedbackScreen extends ConsumerWidget {
       } catch (e, st) {
         AppLogger.error('AdminFeedback.save', e, st);
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('admin.action_error'.tr())),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('admin.action_error'.tr())));
         }
       }
     }
@@ -133,9 +141,11 @@ class AdminFeedbackScreen extends ConsumerWidget {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      constraints: const BoxConstraints(maxWidth: AppSpacing.maxSheetWidth),
       shape: const RoundedRectangleBorder(
-        borderRadius:
-            BorderRadius.vertical(top: Radius.circular(AppSpacing.radiusXl)),
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppSpacing.radiusXl),
+        ),
       ),
       builder: (_) => FeedbackDetailSheet(item: item, onSave: onSave),
     );
@@ -163,11 +173,13 @@ class _StatusFilterBar extends StatelessWidget {
     ];
     return Container(
       padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.lg, vertical: AppSpacing.sm),
+        horizontal: AppSpacing.lg,
+        vertical: AppSpacing.sm,
+      ),
       decoration: BoxDecoration(
         border: Border(
-            bottom:
-                BorderSide(color: theme.colorScheme.outlineVariant, width: 1)),
+          bottom: BorderSide(color: theme.colorScheme.outlineVariant, width: 1),
+        ),
       ),
       child: Row(
         children: [
@@ -218,8 +230,9 @@ class _FeedbackTile extends StatelessWidget {
     final email = item['email'] as String?;
     final createdAt = item['created_at'] as String?;
     final date = createdAt != null
-        ? DateFormat('dd.MM.yyyy HH:mm')
-            .format(DateTime.parse(createdAt).toLocal())
+        ? DateFormat(
+            'dd.MM.yyyy HH:mm',
+          ).format(DateTime.parse(createdAt).toLocal())
         : '';
 
     final typeColor = switch (type) {
@@ -241,7 +254,9 @@ class _FeedbackTile extends StatelessWidget {
 
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.lg, vertical: AppSpacing.xs),
+        horizontal: AppSpacing.lg,
+        vertical: AppSpacing.xs,
+      ),
       onTap: onTap,
       leading: CircleAvatar(
         backgroundColor: typeColor.withValues(alpha: 0.12),
@@ -250,15 +265,21 @@ class _FeedbackTile extends StatelessWidget {
       title: Row(
         children: [
           Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: 2),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.sm,
+              vertical: 2,
+            ),
             decoration: BoxDecoration(
               color: typeColor.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
             ),
-            child: Text(typeLabel,
-                style: theme.textTheme.labelSmall
-                    ?.copyWith(color: typeColor, fontWeight: FontWeight.w600)),
+            child: Text(
+              typeLabel,
+              style: theme.textTheme.labelSmall?.copyWith(
+                color: typeColor,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ),
           if (priority == 'high') ...[
             const SizedBox(width: AppSpacing.xs),
@@ -266,21 +287,27 @@ class _FeedbackTile extends StatelessWidget {
           ],
           const SizedBox(width: AppSpacing.sm),
           Expanded(
-            child: Text(subject,
-                overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.bodyMedium),
+            child: Text(
+              subject,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.bodyMedium,
+            ),
           ),
         ],
       ),
       subtitle: Text(
         email ?? date,
-        style: theme.textTheme.bodySmall
-            ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+        style: theme.textTheme.bodySmall?.copyWith(
+          color: theme.colorScheme.onSurfaceVariant,
+        ),
         overflow: TextOverflow.ellipsis,
       ),
       trailing: isResolved
-          ? const Icon(LucideIcons.checkCircle2,
-              size: 18, color: AppColors.success)
+          ? const Icon(
+              LucideIcons.checkCircle2,
+              size: 18,
+              color: AppColors.success,
+            )
           : const Icon(LucideIcons.circle, size: 18, color: AppColors.warning),
     );
   }

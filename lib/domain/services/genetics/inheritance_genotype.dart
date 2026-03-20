@@ -17,7 +17,10 @@ List<_RawResult> _calculateAutosomalGenotype(
       return _autosomalDominantGenotype(record, fatherState, motherState);
     case InheritanceType.autosomalIncompleteDominant:
       return _autosomalIncompleteDominantGenotype(
-          record, fatherState, motherState);
+        record,
+        fatherState,
+        motherState,
+      );
     case InheritanceType.sexLinkedRecessive:
     case InheritanceType.sexLinkedCodominant:
       return const []; // Handled separately
@@ -53,28 +56,34 @@ List<_RawResult> _autosomalRecessiveGenotype(
 
     if (geno == 'aa') {
       // Visual
-      results.add(_RawResult(
-        phenotype: name,
-        probability: prob,
-        genotype: '$sym/$sym',
-        expressedMutationIds: [record.id],
-      ));
+      results.add(
+        _RawResult(
+          phenotype: name,
+          probability: prob,
+          genotype: '$sym/$sym',
+          expressedMutationIds: [record.id],
+        ),
+      );
     } else if (geno == 'Aa') {
       // Carrier (heterozygous — _sortAlleles always puts uppercase first)
-      results.add(_RawResult(
-        phenotype: '$name (carrier)',
-        probability: prob,
-        isCarrier: true,
-        genotype: '$sym+/$sym',
-        carriedMutationIds: [record.id],
-      ));
+      results.add(
+        _RawResult(
+          phenotype: '$name (carrier)',
+          probability: prob,
+          isCarrier: true,
+          genotype: '$sym+/$sym',
+          carriedMutationIds: [record.id],
+        ),
+      );
     } else {
       // Normal (AA)
-      results.add(_RawResult(
-        phenotype: 'Normal',
-        probability: prob,
-        genotype: '$sym+/$sym+',
-      ));
+      results.add(
+        _RawResult(
+          phenotype: 'Normal',
+          probability: prob,
+          genotype: '$sym+/$sym+',
+        ),
+      );
     }
   }
 
@@ -108,25 +117,31 @@ List<_RawResult> _autosomalDominantGenotype(
     final prob = entry.value;
 
     if (geno == 'AA') {
-      results.add(_RawResult(
-        phenotype: '$name (homozygous)',
-        probability: prob,
-        genotype: '$sym/$sym',
-        expressedMutationIds: [record.id],
-      ));
+      results.add(
+        _RawResult(
+          phenotype: '$name (homozygous)',
+          probability: prob,
+          genotype: '$sym/$sym',
+          expressedMutationIds: [record.id],
+        ),
+      );
     } else if (geno == 'Aa') {
-      results.add(_RawResult(
-        phenotype: name,
-        probability: prob,
-        genotype: '$sym+/$sym',
-        expressedMutationIds: [record.id],
-      ));
+      results.add(
+        _RawResult(
+          phenotype: name,
+          probability: prob,
+          genotype: '$sym+/$sym',
+          expressedMutationIds: [record.id],
+        ),
+      );
     } else {
-      results.add(_RawResult(
-        phenotype: 'Normal',
-        probability: prob,
-        genotype: '$sym+/$sym+',
-      ));
+      results.add(
+        _RawResult(
+          phenotype: 'Normal',
+          probability: prob,
+          genotype: '$sym+/$sym+',
+        ),
+      );
     }
   }
 
@@ -160,25 +175,31 @@ List<_RawResult> _autosomalIncompleteDominantGenotype(
     final prob = entry.value;
 
     if (geno == 'AA') {
-      results.add(_RawResult(
-        phenotype: '$name (double)',
-        probability: prob,
-        genotype: '$sym/$sym',
-        expressedMutationIds: [record.id],
-      ));
+      results.add(
+        _RawResult(
+          phenotype: '$name (double)',
+          probability: prob,
+          genotype: '$sym/$sym',
+          expressedMutationIds: [record.id],
+        ),
+      );
     } else if (geno == 'Aa') {
-      results.add(_RawResult(
-        phenotype: '$name (single)',
-        probability: prob,
-        genotype: '$sym+/$sym',
-        expressedMutationIds: [record.id],
-      ));
+      results.add(
+        _RawResult(
+          phenotype: '$name (single)',
+          probability: prob,
+          genotype: '$sym+/$sym',
+          expressedMutationIds: [record.id],
+        ),
+      );
     } else {
-      results.add(_RawResult(
-        phenotype: 'Normal',
-        probability: prob,
-        genotype: '$sym+/$sym+',
-      ));
+      results.add(
+        _RawResult(
+          phenotype: 'Normal',
+          probability: prob,
+          genotype: '$sym+/$sym+',
+        ),
+      );
     }
   }
 
@@ -244,20 +265,24 @@ List<_RawResult> _calculateSexLinkedGenotype(
     if (second == 'W') {
       // Female offspring (Z/W)
       if (first.contains(sym)) {
-        results.add(_RawResult(
-          phenotype: name,
-          probability: prob,
-          sex: OffspringSex.female,
-          genotype: '${first}W',
-          expressedMutationIds: [record.id],
-        ));
+        results.add(
+          _RawResult(
+            phenotype: name,
+            probability: prob,
+            sex: OffspringSex.female,
+            genotype: '${first}W',
+            expressedMutationIds: [record.id],
+          ),
+        );
       } else {
-        results.add(_RawResult(
-          phenotype: 'Normal',
-          probability: prob,
-          sex: OffspringSex.female,
-          genotype: 'Z+W',
-        ));
+        results.add(
+          _RawResult(
+            phenotype: 'Normal',
+            probability: prob,
+            sex: OffspringSex.female,
+            genotype: 'Z+W',
+          ),
+        );
       }
     } else {
       // Male offspring (Z/Z)
@@ -266,31 +291,37 @@ List<_RawResult> _calculateSexLinkedGenotype(
 
       if (hasFirst && hasSecond) {
         // Homozygous visual male
-        results.add(_RawResult(
-          phenotype: name,
-          probability: prob,
-          sex: OffspringSex.male,
-          genotype: 'Z${sym}Z$sym',
-          expressedMutationIds: [record.id],
-        ));
+        results.add(
+          _RawResult(
+            phenotype: name,
+            probability: prob,
+            sex: OffspringSex.male,
+            genotype: 'Z${sym}Z$sym',
+            expressedMutationIds: [record.id],
+          ),
+        );
       } else if (hasFirst || hasSecond) {
         // Heterozygous carrier male
-        results.add(_RawResult(
-          phenotype: '$name (carrier)',
-          probability: prob,
-          sex: OffspringSex.male,
-          isCarrier: true,
-          genotype: 'Z${sym}Z+',
-          carriedMutationIds: [record.id],
-        ));
+        results.add(
+          _RawResult(
+            phenotype: '$name (carrier)',
+            probability: prob,
+            sex: OffspringSex.male,
+            isCarrier: true,
+            genotype: 'Z${sym}Z+',
+            carriedMutationIds: [record.id],
+          ),
+        );
       } else {
         // Normal male
-        results.add(_RawResult(
-          phenotype: 'Normal',
-          probability: prob,
-          sex: OffspringSex.male,
-          genotype: 'Z+Z+',
-        ));
+        results.add(
+          _RawResult(
+            phenotype: 'Normal',
+            probability: prob,
+            sex: OffspringSex.male,
+            genotype: 'Z+Z+',
+          ),
+        );
       }
     }
   }

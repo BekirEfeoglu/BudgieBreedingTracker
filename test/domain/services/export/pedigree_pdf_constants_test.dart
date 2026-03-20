@@ -79,9 +79,18 @@ void main() {
     });
 
     test('gender backgrounds are distinct from each other', () {
-      expect(PedigreePdfColors.maleBg, isNot(equals(PedigreePdfColors.femaleBg)));
-      expect(PedigreePdfColors.maleBg, isNot(equals(PedigreePdfColors.unknownBg)));
-      expect(PedigreePdfColors.femaleBg, isNot(equals(PedigreePdfColors.unknownBg)));
+      expect(
+        PedigreePdfColors.maleBg,
+        isNot(equals(PedigreePdfColors.femaleBg)),
+      );
+      expect(
+        PedigreePdfColors.maleBg,
+        isNot(equals(PedigreePdfColors.unknownBg)),
+      );
+      expect(
+        PedigreePdfColors.femaleBg,
+        isNot(equals(PedigreePdfColors.unknownBg)),
+      );
     });
   });
 
@@ -89,22 +98,34 @@ void main() {
     group('dateFormat', () {
       test('formats a date in dd.MM.yyyy pattern', () {
         final date = DateTime(2024, 5, 1);
-        expect(PedigreePdfHelpers.dateFormat.format(date), equals('01.05.2024'));
+        expect(
+          PedigreePdfHelpers.dateFormat.format(date),
+          equals('01.05.2024'),
+        );
       });
 
       test('formats single-digit day and month with leading zeros', () {
         final date = DateTime(2023, 1, 3);
-        expect(PedigreePdfHelpers.dateFormat.format(date), equals('03.01.2023'));
+        expect(
+          PedigreePdfHelpers.dateFormat.format(date),
+          equals('03.01.2023'),
+        );
       });
 
       test('formats December 31 correctly', () {
         final date = DateTime(2025, 12, 31);
-        expect(PedigreePdfHelpers.dateFormat.format(date), equals('31.12.2025'));
+        expect(
+          PedigreePdfHelpers.dateFormat.format(date),
+          equals('31.12.2025'),
+        );
       });
 
       test('formats leap year date correctly', () {
         final date = DateTime(2024, 2, 29);
-        expect(PedigreePdfHelpers.dateFormat.format(date), equals('29.02.2024'));
+        expect(
+          PedigreePdfHelpers.dateFormat.format(date),
+          equals('29.02.2024'),
+        );
       });
     });
 

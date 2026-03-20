@@ -79,7 +79,9 @@ void main() {
       () => remoteSource.fetchUpdatedSince(any(), any()),
     ).thenAnswer((_) async => []);
     when(() => remoteSource.upsert(any())).thenAnswer((_) async {});
-    when(() => remoteSource.deleteById(any(), userId: any(named: 'userId'))).thenAnswer((_) async {});
+    when(
+      () => remoteSource.deleteById(any(), userId: any(named: 'userId')),
+    ).thenAnswer((_) async {});
 
     when(() => syncDao.insertItem(any())).thenAnswer((_) async {});
     when(() => syncDao.insertAll(any())).thenAnswer((_) async {});
@@ -214,7 +216,9 @@ void main() {
 
       verify(() => localDao.hardDelete('missing')).called(1);
       verifyNever(() => syncDao.insertItem(any()));
-      verifyNever(() => remoteSource.deleteById(any(), userId: any(named: 'userId')));
+      verifyNever(
+        () => remoteSource.deleteById(any(), userId: any(named: 'userId')),
+      );
     });
 
     test('hardRemove delegates to DAO', () async {

@@ -49,7 +49,9 @@ void main() {
       expect(find.text('Enter your email'), findsOneWidget);
     });
 
-    testWidgets('validates required field via custom validator', (tester) async {
+    testWidgets('validates required field via custom validator', (
+      tester,
+    ) async {
       final formKey = GlobalKey<FormState>();
 
       await pumpWidgetSimple(
@@ -76,7 +78,9 @@ void main() {
       expect(find.text('Field is required'), findsOneWidget);
     });
 
-    testWidgets('shows password toggle when isPassword is true', (tester) async {
+    testWidgets('shows password toggle when isPassword is true', (
+      tester,
+    ) async {
       await pumpWidgetSimple(
         tester,
         AuthFormField(
@@ -91,7 +95,9 @@ void main() {
       expect(find.byIcon(LucideIcons.eye), findsNothing);
     });
 
-    testWidgets('does not show password toggle when isPassword is false', (tester) async {
+    testWidgets('does not show password toggle when isPassword is false', (
+      tester,
+    ) async {
       await pumpWidgetSimple(
         tester,
         AuthFormField(controller: controller, label: 'Email'),
@@ -177,7 +183,9 @@ void main() {
       expect(find.byIcon(LucideIcons.mail), findsOneWidget);
     });
 
-    testWidgets('passes no validation error when field is valid', (tester) async {
+    testWidgets('passes no validation error when field is valid', (
+      tester,
+    ) async {
       final formKey = GlobalKey<FormState>();
 
       await pumpWidgetSimple(

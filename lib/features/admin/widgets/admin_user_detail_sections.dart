@@ -16,8 +16,12 @@ class UserDetailActivityLogSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('admin.activity_log'.tr(),
-            style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
+        Text(
+          'admin.activity_log'.tr(),
+          style: theme.textTheme.titleSmall?.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
+        ),
         const SizedBox(height: AppSpacing.md),
         if (logs.isEmpty)
           Text('admin.no_activity'.tr(), style: theme.textTheme.bodyMedium)
@@ -26,10 +30,8 @@ class UserDetailActivityLogSection extends StatelessWidget {
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: logs.length,
-            itemBuilder: (_, i) => _LogItem(
-              key: ValueKey(logs[i].id),
-              log: logs[i],
-            ),
+            itemBuilder: (_, i) =>
+                _LogItem(key: ValueKey(logs[i].id), log: logs[i]),
           ),
       ],
     );
@@ -56,16 +58,20 @@ class _LogItem extends StatelessWidget {
               children: [
                 Text(log.action, style: theme.textTheme.bodySmall),
                 if (log.details != null)
-                  Text(log.details!, style: theme.textTheme.labelSmall?.copyWith(
-                    color: theme.colorScheme.outline,
-                  )),
+                  Text(
+                    log.details!,
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: theme.colorScheme.outline,
+                    ),
+                  ),
               ],
             ),
           ),
           Text(
-            DateFormat('dd MMM HH:mm',
-                    Localizations.localeOf(context).languageCode)
-                .format(log.createdAt),
+            DateFormat(
+              'dd MMM HH:mm',
+              Localizations.localeOf(context).languageCode,
+            ).format(log.createdAt),
             style: theme.textTheme.labelSmall,
           ),
         ],

@@ -27,7 +27,9 @@ class IsSyncingNotifier extends Notifier<bool> {
 }
 
 /// Whether a sync is currently running.
-final isSyncingProvider = NotifierProvider<IsSyncingNotifier, bool>(IsSyncingNotifier.new);
+final isSyncingProvider = NotifierProvider<IsSyncingNotifier, bool>(
+  IsSyncingNotifier.new,
+);
 
 /// Notifier for last successful sync timestamp (initialized from SharedPreferences).
 class LastSyncTimeNotifier extends Notifier<DateTime?> {
@@ -49,7 +51,9 @@ class LastSyncTimeNotifier extends Notifier<DateTime?> {
 }
 
 /// Last successful sync timestamp (initialized from SharedPreferences).
-final lastSyncTimeProvider = NotifierProvider<LastSyncTimeNotifier, DateTime?>(LastSyncTimeNotifier.new);
+final lastSyncTimeProvider = NotifierProvider<LastSyncTimeNotifier, DateTime?>(
+  LastSyncTimeNotifier.new,
+);
 
 /// Notifier for whether the last sync had an error.
 class SyncErrorNotifier extends Notifier<bool> {
@@ -58,7 +62,9 @@ class SyncErrorNotifier extends Notifier<bool> {
 }
 
 /// Whether the last sync had an error.
-final syncErrorProvider = NotifierProvider<SyncErrorNotifier, bool>(SyncErrorNotifier.new);
+final syncErrorProvider = NotifierProvider<SyncErrorNotifier, bool>(
+  SyncErrorNotifier.new,
+);
 
 /// Sync interval for periodic sync (15 minutes).
 const _syncInterval = Duration(minutes: 15);
@@ -263,4 +269,5 @@ class ConflictHistoryNotifier extends Notifier<List<SyncConflict>> {
 
 final conflictHistoryProvider =
     NotifierProvider<ConflictHistoryNotifier, List<SyncConflict>>(
-        ConflictHistoryNotifier.new);
+      ConflictHistoryNotifier.new,
+    );

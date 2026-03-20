@@ -1,4 +1,4 @@
-﻿import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/chick_enums.dart';
@@ -276,5 +276,3 @@ final eggActionsProvider =
     NotifierProvider<EggActionsNotifier, EggActionsState>(
       EggActionsNotifier.new,
     );
-
-

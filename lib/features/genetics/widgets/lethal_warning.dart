@@ -15,10 +15,7 @@ import 'package:budgie_breeding_tracker/domain/services/genetics/lethal_combinat
 class LethalWarning extends StatelessWidget {
   final LethalAnalysisResult analysis;
 
-  const LethalWarning({
-    super.key,
-    required this.analysis,
-  });
+  const LethalWarning({super.key, required this.analysis});
 
   @override
   Widget build(BuildContext context) {
@@ -85,9 +82,11 @@ class LethalWarning extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.xs),
           Text(
-            'genetics.lethal_affected_ratio'.tr(args: [
-              (analysis.totalAffectedProbability * 100).toStringAsFixed(0),
-            ]),
+            'genetics.lethal_affected_ratio'.tr(
+              args: [
+                (analysis.totalAffectedProbability * 100).toStringAsFixed(0),
+              ],
+            ),
             style: theme.textTheme.labelSmall?.copyWith(
               color: colors.text.withValues(alpha: 0.7),
             ),
@@ -106,12 +105,21 @@ class LethalWarning extends StatelessWidget {
 
   Widget _severityIcon(LethalSeverity severity, Color color) =>
       switch (severity) {
-        LethalSeverity.lethal =>
-          Icon(LucideIcons.skull, size: 20, color: color),
-        LethalSeverity.semiLethal =>
-          Icon(LucideIcons.alertOctagon, size: 20, color: color),
-        LethalSeverity.subVital =>
-          AppIcon(AppIcons.warning, size: 20, color: color),
+        LethalSeverity.lethal => Icon(
+          LucideIcons.skull,
+          size: 20,
+          color: color,
+        ),
+        LethalSeverity.semiLethal => Icon(
+          LucideIcons.alertOctagon,
+          size: 20,
+          color: color,
+        ),
+        LethalSeverity.subVital => AppIcon(
+          AppIcons.warning,
+          size: 20,
+          color: color,
+        ),
       };
 
   _SeverityColors _severityColors(
@@ -123,26 +131,26 @@ class LethalWarning extends StatelessWidget {
 
     return switch (severity) {
       LethalSeverity.lethal => _SeverityColors(
-          background: AppColors.error.withValues(alpha: 0.15),
-          border: AppColors.error.withValues(alpha: 0.4),
-          icon: AppColors.error,
-          text: AppColors.error,
-          badge: AppColors.error,
-        ),
+        background: AppColors.error.withValues(alpha: 0.15),
+        border: AppColors.error.withValues(alpha: 0.4),
+        icon: AppColors.error,
+        text: AppColors.error,
+        badge: AppColors.error,
+      ),
       LethalSeverity.semiLethal => _SeverityColors(
-          background: AppColors.stageOverdue.withValues(alpha: 0.12),
-          border: AppColors.stageOverdue.withValues(alpha: 0.35),
-          icon: AppColors.stageOverdue,
-          text: isDark ? AppColors.neutral100 : AppColors.neutral800,
-          badge: AppColors.stageOverdue,
-        ),
+        background: AppColors.stageOverdue.withValues(alpha: 0.12),
+        border: AppColors.stageOverdue.withValues(alpha: 0.35),
+        icon: AppColors.stageOverdue,
+        text: isDark ? AppColors.neutral100 : AppColors.neutral800,
+        badge: AppColors.stageOverdue,
+      ),
       LethalSeverity.subVital => _SeverityColors(
-          background: AppColors.warning.withValues(alpha: 0.1),
-          border: AppColors.warning.withValues(alpha: 0.3),
-          icon: AppColors.warning,
-          text: neutralText,
-          badge: AppColors.warning,
-        ),
+        background: AppColors.warning.withValues(alpha: 0.1),
+        border: AppColors.warning.withValues(alpha: 0.3),
+        icon: AppColors.warning,
+        text: neutralText,
+        badge: AppColors.warning,
+      ),
     };
   }
 }
@@ -151,10 +159,7 @@ class _CombinationRow extends StatelessWidget {
   final LethalCombination combo;
   final _SeverityColors colors;
 
-  const _CombinationRow({
-    required this.combo,
-    required this.colors,
-  });
+  const _CombinationRow({required this.combo, required this.colors});
 
   @override
   Widget build(BuildContext context) {

@@ -24,40 +24,43 @@ void main() {
   });
 
   group('fetchByPost', () {
-    test('queries by post_id with is_deleted filter and ascending order', () async {
-      commentsSelect.result = [
-        {
-          'id': 'c1',
-          'post_id': 'p1',
-          'user_id': 'u1',
-          'content': 'Nice!',
-          'like_count': 0,
-        },
-        {
-          'id': 'c2',
-          'post_id': 'p1',
-          'user_id': 'u2',
-          'content': 'Thanks!',
-          'like_count': 3,
-        },
-      ];
+    test(
+      'queries by post_id with is_deleted filter and ascending order',
+      () async {
+        commentsSelect.result = [
+          {
+            'id': 'c1',
+            'post_id': 'p1',
+            'user_id': 'u1',
+            'content': 'Nice!',
+            'like_count': 0,
+          },
+          {
+            'id': 'c2',
+            'post_id': 'p1',
+            'user_id': 'u2',
+            'content': 'Thanks!',
+            'like_count': 3,
+          },
+        ];
 
-      final result = await source.fetchByPost('p1');
+        final result = await source.fetchByPost('p1');
 
-      expect(result, hasLength(2));
-      expect(result[0]['content'], 'Nice!');
-      expect(result[1]['content'], 'Thanks!');
+        expect(result, hasLength(2));
+        expect(result[0]['content'], 'Nice!');
+        expect(result[1]['content'], 'Thanks!');
 
-      final eqCalls = commentsSelect.eqCalls;
-      expect(eqCalls, hasLength(2));
-      expect(eqCalls[0].key, 'post_id');
-      expect(eqCalls[0].value, 'p1');
-      expect(eqCalls[1].key, 'is_deleted');
-      expect(eqCalls[1].value, false);
+        final eqCalls = commentsSelect.eqCalls;
+        expect(eqCalls, hasLength(2));
+        expect(eqCalls[0].key, 'post_id');
+        expect(eqCalls[0].value, 'p1');
+        expect(eqCalls[1].key, 'is_deleted');
+        expect(eqCalls[1].value, false);
 
-      expect(commentsSelect.orderCalls, contains('created_at'));
-      expect(client.requestedTables, contains('community_comments'));
-    });
+        expect(commentsSelect.orderCalls, contains('created_at'));
+        expect(client.requestedTables, contains('community_comments'));
+      },
+    );
 
     test('triggers profile lookup', () async {
       commentsSelect.result = [

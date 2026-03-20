@@ -10,19 +10,14 @@ import 'package:budgie_breeding_tracker/features/premium/providers/premium_provi
 void main() {
   const testUserId = 'test-user-id';
 
-  Widget createSubject({
-    required int birdCount,
-    bool isPremium = false,
-  }) {
+  Widget createSubject({required int birdCount, bool isPremium = false}) {
     final router = GoRouter(
       initialLocation: '/',
       routes: [
         GoRoute(
           path: '/',
           pageBuilder: (_, __) => const NoTransitionPage(
-            child: Scaffold(
-              body: LimitApproachingBanner(userId: testUserId),
-            ),
+            child: Scaffold(body: LimitApproachingBanner(userId: testUserId)),
           ),
         ),
         GoRoute(
@@ -36,9 +31,9 @@ void main() {
     return ProviderScope(
       overrides: [
         isPremiumProvider.overrideWithValue(isPremium),
-        birdCountProvider(testUserId).overrideWith(
-          (_) => Stream.value(birdCount),
-        ),
+        birdCountProvider(
+          testUserId,
+        ).overrideWith((_) => Stream.value(birdCount)),
       ],
       child: MaterialApp.router(routerConfig: router),
     );
@@ -106,21 +101,15 @@ void main() {
     });
 
     testWidgets('hides banner for premium users', (tester) async {
-      await tester.pumpWidget(
-        createSubject(birdCount: 14, isPremium: true),
-      );
+      await tester.pumpWidget(createSubject(birdCount: 14, isPremium: true));
       await tester.pumpAndSettle();
 
       expect(find.text('premium.limit_approaching'), findsNothing);
       expect(find.text('premium.try_free_trial'), findsNothing);
     });
 
-    testWidgets('hides banner for premium users even at limit', (
-      tester,
-    ) async {
-      await tester.pumpWidget(
-        createSubject(birdCount: 15, isPremium: true),
-      );
+    testWidgets('hides banner for premium users even at limit', (tester) async {
+      await tester.pumpWidget(createSubject(birdCount: 15, isPremium: true));
       await tester.pumpAndSettle();
 
       expect(find.text('premium.limit_approaching'), findsNothing);

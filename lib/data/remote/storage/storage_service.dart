@@ -23,7 +23,18 @@ class StorageService {
 
   static const String _birdPhotosBucket = SupabaseConstants.birdPhotosBucket;
   static const String _avatarsBucket = SupabaseConstants.avatarsBucket;
-  static const String _communityPhotosBucket = SupabaseConstants.communityPhotosBucket;
+  static const String _communityPhotosBucket =
+      SupabaseConstants.communityPhotosBucket;
+
+  /// Allowed image file extensions for upload.
+  static const _allowedExtensions = {
+    'jpg',
+    'jpeg',
+    'png',
+    'gif',
+    'webp',
+    'heic',
+  };
 
   /// Signed URL expiry: 1 year in seconds.
   static const int _signedUrlExpiry = 60 * 60 * 24 * 365;
@@ -42,11 +53,7 @@ class StorageService {
     final timestamp = DateTime.now().millisecondsSinceEpoch;
     final path = '$userId/$birdId/$timestamp.$ext';
 
-    return _uploadFile(
-      bucket: _birdPhotosBucket,
-      path: path,
-      file: file,
-    );
+    return _uploadFile(bucket: _birdPhotosBucket, path: path, file: file);
   }
 
   /// Uploads a user avatar and returns the public URL.
@@ -69,9 +76,7 @@ class StorageService {
   }
 
   /// Deletes a bird photo by its storage path.
-  Future<void> deleteBirdPhoto({
-    required String storagePath,
-  }) async {
+  Future<void> deleteBirdPhoto({required String storagePath}) async {
     try {
       await _client.storage.from(_birdPhotosBucket).remove([storagePath]);
     } on StorageException catch (e) {
@@ -83,9 +88,9 @@ class StorageService {
   /// Deletes a user avatar.
   Future<void> deleteAvatar({required String userId}) async {
     try {
-      final files = await _client.storage.from(_avatarsBucket).list(
-            path: userId,
-          );
+      final files = await _client.storage
+          .from(_avatarsBucket)
+          .list(path: userId);
 
       if (files.isNotEmpty) {
         final paths = files.map((f) => '$userId/${f.name}').toList();
@@ -109,17 +114,11 @@ class StorageService {
     final timestamp = DateTime.now().millisecondsSinceEpoch;
     final path = '$userId/$postId/$timestamp.$ext';
 
-    return _uploadFile(
-      bucket: _communityPhotosBucket,
-      path: path,
-      file: file,
-    );
+    return _uploadFile(bucket: _communityPhotosBucket, path: path, file: file);
   }
 
   /// Deletes a community post photo by its storage path.
-  Future<void> deleteCommunityPhoto({
-    required String storagePath,
-  }) async {
+  Future<void> deleteCommunityPhoto({required String storagePath}) async {
     try {
       await _client.storage.from(_communityPhotosBucket).remove([storagePath]);
     } on StorageException catch (e) {
@@ -136,16 +135,15 @@ class StorageService {
     required String birdId,
   }) async {
     try {
-      final files = await _client.storage.from(_birdPhotosBucket).list(
-            path: '$userId/$birdId',
-          );
+      final files = await _client.storage
+          .from(_birdPhotosBucket)
+          .list(path: '$userId/$birdId');
 
       final validFiles = files
           .where((f) => f.id != null && f.name != '.emptyFolderPlaceholder')
           .toList();
 
-      final paths =
-          validFiles.map((f) => '$userId/$birdId/${f.name}').toList();
+      final paths = validFiles.map((f) => '$userId/$birdId/${f.name}').toList();
       final signedUrls = await _client.storage
           .from(_birdPhotosBucket)
           .createSignedUrls(paths, _signedUrlExpiry);
@@ -161,9 +159,9 @@ class StorageService {
   /// Gets the avatar URL for a user, or null if not set.
   Future<String?> getAvatarUrl({required String userId}) async {
     try {
-      final files = await _client.storage.from(_avatarsBucket).list(
-            path: userId,
-          );
+      final files = await _client.storage
+          .from(_avatarsBucket)
+          .list(path: userId);
 
       if (files.isEmpty) return null;
 
@@ -183,6 +181,14 @@ class StorageService {
     bool upsert = false,
   }) async {
     try {
+      final ext = _safeExtension(file.name);
+      if (!_allowedExtensions.contains(ext)) {
+        throw StorageException(
+          'File type .$ext is not allowed. '
+          'Allowed: ${_allowedExtensions.join(', ')}',
+        );
+      }
+
       final bytes = await file.readAsBytes();
 
       if (bytes.length > AppConstants.maxUploadSizeBytes) {
@@ -190,13 +196,12 @@ class StorageService {
       }
       final mimeType = _getMimeType(file.name);
 
-      await _client.storage.from(bucket).uploadBinary(
+      await _client.storage
+          .from(bucket)
+          .uploadBinary(
             path,
             bytes,
-            fileOptions: FileOptions(
-              contentType: mimeType,
-              upsert: upsert,
-            ),
+            fileOptions: FileOptions(contentType: mimeType, upsert: upsert),
           );
 
       // Signed URL works for both public and private buckets (1 year expiry)

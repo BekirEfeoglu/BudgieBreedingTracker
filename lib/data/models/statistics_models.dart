@@ -151,10 +151,7 @@ enum InsightSentiment { positive, negative, neutral }
 
 /// A single quick insight text with icon and sentiment.
 class QuickInsight {
-  const QuickInsight({
-    required this.text,
-    required this.sentiment,
-  });
+  const QuickInsight({required this.text, required this.sentiment});
 
   final String text;
   final InsightSentiment sentiment;

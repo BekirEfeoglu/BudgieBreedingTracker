@@ -27,10 +27,8 @@ class ProfileMenuButton extends ConsumerWidget {
         ),
       ),
       error: (_, __) => _AvatarButton(profile: null, email: user?.email),
-      data: (profile) => _AvatarButton(
-        profile: profile,
-        email: user?.email ?? profile?.email,
-      ),
+      data: (profile) =>
+          _AvatarButton(profile: profile, email: user?.email ?? profile?.email),
     );
   }
 }
@@ -61,8 +59,11 @@ class _AvatarButton extends StatelessWidget {
               radius: 18,
               backgroundColor: theme.colorScheme.primary,
               backgroundImage: profile?.avatarUrl != null
-                  ? CachedNetworkImageProvider(profile!.avatarUrl!,
-                      maxWidth: 72, maxHeight: 72)
+                  ? CachedNetworkImageProvider(
+                      profile!.avatarUrl!,
+                      maxWidth: 72,
+                      maxHeight: 72,
+                    )
                   : null,
               child: profile?.avatarUrl == null
                   ? Text(
@@ -84,8 +85,7 @@ class _AvatarButton extends StatelessWidget {
     showGeneralDialog(
       context: context,
       barrierDismissible: true,
-      barrierLabel:
-          MaterialLocalizations.of(context).modalBarrierDismissLabel,
+      barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
       barrierColor: Colors.black.withValues(alpha: 0.15),
       transitionDuration: const Duration(milliseconds: 200),
       transitionBuilder: (context, animation, secondaryAnimation, child) {
@@ -109,9 +109,7 @@ class _AvatarButton extends StatelessWidget {
 
   String _getInitials(String name) {
     final parts = name.trim().split(' ');
-    if (parts.length >= 2 &&
-        parts.first.isNotEmpty &&
-        parts.last.isNotEmpty) {
+    if (parts.length >= 2 && parts.first.isNotEmpty && parts.last.isNotEmpty) {
       return '${parts.first[0]}${parts.last[0]}'.toUpperCase();
     }
     return name.isNotEmpty ? name[0].toUpperCase() : '?';

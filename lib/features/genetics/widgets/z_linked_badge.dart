@@ -8,8 +8,13 @@ import 'package:budgie_breeding_tracker/features/genetics/utils/phenotype_locali
 
 /// Z-chromosome sex-linked mutation IDs with known linkage.
 const _linkedSexLinkedIds = {
-  'opaline', 'cinnamon', 'ino', 'slate',
-  'pallid', 'texas_clearbody', 'pearly',
+  'opaline',
+  'cinnamon',
+  'ino',
+  'slate',
+  'pallid',
+  'texas_clearbody',
+  'pearly',
 };
 
 /// Returns true when 2+ visual mutations are from linked sex-linked loci.
@@ -22,9 +27,7 @@ bool hasLinkedSexLinkedMutations(OffspringResult result) {
 
 /// Returns linked sex-linked mutation IDs from an offspring result.
 List<String> getLinkedIds(OffspringResult result) {
-  return result.visualMutations
-      .where(_linkedSexLinkedIds.contains)
-      .toList();
+  return result.visualMutations.where(_linkedSexLinkedIds.contains).toList();
 }
 
 /// Linkage rates between Z-chromosome loci (centiMorgans).
@@ -68,11 +71,7 @@ class ZLinkedBadge extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              LucideIcons.link,
-              size: 8,
-              color: theme.colorScheme.tertiary,
-            ),
+            Icon(LucideIcons.link, size: 8, color: theme.colorScheme.tertiary),
             const SizedBox(width: 2),
             Text(
               'genetics.z_linked'.tr(),
@@ -98,9 +97,7 @@ class ZLinkedBadge extends StatelessWidget {
         final b = linkedIds[j];
         final cM = _linkageRates[a]?[b] ?? _linkageRates[b]?[a];
         if (cM != null) {
-          pairs.add(
-            '${_linkageMutName(a)} ↔ ${_linkageMutName(b)}: ~$cM cM',
-          );
+          pairs.add('${_linkageMutName(a)} ↔ ${_linkageMutName(b)}: ~$cM cM');
         }
       }
     }

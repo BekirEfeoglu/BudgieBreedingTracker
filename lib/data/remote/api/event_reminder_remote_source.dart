@@ -19,7 +19,10 @@ class EventReminderRemoteSource extends BaseRemoteSource<EventReminder> {
       model.toSupabase();
 
   /// Fetches reminders for a specific event.
-  Future<List<EventReminder>> fetchByEvent(String userId, String eventId) async {
+  Future<List<EventReminder>> fetchByEvent(
+    String userId,
+    String eventId,
+  ) async {
     final response = await table
         .select()
         .eq('user_id', userId)

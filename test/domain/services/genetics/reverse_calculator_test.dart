@@ -37,26 +37,28 @@ void main() {
     });
 
     group('semantic correctness', () {
-      test('autosomal recessive target requires both parents to carry allele',
-          () {
-        // Blue is autosomal recessive — both parents must carry or express it
-        final results = calculator.calculateParents({'blue'});
-        expect(results, isNotEmpty);
+      test(
+        'autosomal recessive target requires both parents to carry allele',
+        () {
+          // Blue is autosomal recessive — both parents must carry or express it
+          final results = calculator.calculateParents({'blue'});
+          expect(results, isNotEmpty);
 
-        for (final result in results) {
-          final fatherHasBlue =
-              result.father.mutations.containsKey('blue') ||
-                  _hasBlueSeriesAllele(result.father);
-          final motherHasBlue =
-              result.mother.mutations.containsKey('blue') ||
-                  _hasBlueSeriesAllele(result.mother);
-          expect(
-            fatherHasBlue && motherHasBlue,
-            isTrue,
-            reason: 'Both parents must carry blue for recessive offspring',
-          );
-        }
-      });
+          for (final result in results) {
+            final fatherHasBlue =
+                result.father.mutations.containsKey('blue') ||
+                _hasBlueSeriesAllele(result.father);
+            final motherHasBlue =
+                result.mother.mutations.containsKey('blue') ||
+                _hasBlueSeriesAllele(result.mother);
+            expect(
+              fatherHasBlue && motherHasBlue,
+              isTrue,
+              reason: 'Both parents must carry blue for recessive offspring',
+            );
+          }
+        },
+      );
 
       test('sex-linked target produces correct sex-specific probabilities', () {
         // Opaline is sex-linked recessive
@@ -66,8 +68,7 @@ void main() {
         // At least one result should have different male/female probabilities
         // because sex-linked mutations segregate differently by sex
         final hasSexDifference = results.any(
-          (r) =>
-              (r.probabilityMale - r.probabilityFemale).abs() > 0.001,
+          (r) => (r.probabilityMale - r.probabilityFemale).abs() > 0.001,
         );
         expect(
           hasSexDifference,
@@ -109,8 +110,9 @@ void main() {
       });
 
       test('unknown mutation returns empty results', () {
-        final results =
-            calculator.calculateParents({'nonexistent_mutation_xyz'});
+        final results = calculator.calculateParents({
+          'nonexistent_mutation_xyz',
+        });
         expect(results, isEmpty);
       });
 

@@ -19,8 +19,9 @@ import 'package:budgie_breeding_tracker/features/chicks/widgets/chick_detail_inf
 /// Returns a display name for a chick (shared utility).
 String chickDisplayName(Chick chick) {
   if (chick.name != null && chick.name!.isNotEmpty) return chick.name!;
-  return 'chicks.unnamed_chick'
-      .tr(args: [chick.ringNumber ?? chick.id.substring(0, 6)]);
+  return 'chicks.unnamed_chick'.tr(
+    args: [chick.ringNumber ?? chick.id.substring(0, 6)],
+  );
 }
 
 /// Detail screen for a single chick.
@@ -69,9 +70,9 @@ class _DetailContent extends ConsumerWidget {
         ref.read(chickFormStateProvider.notifier).reset();
       }
       if (state.error != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(state.error!)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(state.error!)));
       }
     });
 
@@ -82,19 +83,14 @@ class _DetailContent extends ConsumerWidget {
           IconButton(
             icon: const AppIcon(AppIcons.edit),
             tooltip: 'common.edit'.tr(),
-            onPressed: () =>
-                context.push('/chicks/form?editId=${chick.id}'),
+            onPressed: () => context.push('/chicks/form?editId=${chick.id}'),
           ),
           PopupMenuButton<String>(
-            onSelected: (value) =>
-                _handleMenuAction(context, ref, value),
+            onSelected: (value) => _handleMenuAction(context, ref, value),
             itemBuilder: (context) => [
               if (!chick.isWeaned &&
                   chick.healthStatus != ChickHealthStatus.deceased)
-                PopupMenuItem(
-                  value: 'wean',
-                  child: Text('chicks.wean'.tr()),
-                ),
+                PopupMenuItem(value: 'wean', child: Text('chicks.wean'.tr())),
               if (chick.birdId == null &&
                   chick.healthStatus != ChickHealthStatus.deceased)
                 PopupMenuItem(
@@ -112,10 +108,7 @@ class _DetailContent extends ConsumerWidget {
                   value: 'deceased',
                   child: Text('chicks.mark_dead'.tr()),
                 ),
-              PopupMenuItem(
-                value: 'delete',
-                child: Text('common.delete'.tr()),
-              ),
+              PopupMenuItem(value: 'delete', child: Text('common.delete'.tr())),
             ],
           ),
         ],
@@ -155,9 +148,9 @@ class _DetailContent extends ConsumerWidget {
         if (confirmed == true) {
           await notifier.markAsWeaned(chick.id);
           if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('chicks.wean_success'.tr())),
-            );
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text('chicks.wean_success'.tr())));
           }
         }
       case 'promote':
