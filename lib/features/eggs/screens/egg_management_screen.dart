@@ -264,7 +264,7 @@ class _EggManagementContent extends ConsumerWidget {
         );
       },
     ).then((_) {
-      notesController.dispose();
+      WidgetsBinding.instance.addPostFrameCallback((_) => notesController.dispose());
     });
   }
 
