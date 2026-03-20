@@ -77,10 +77,15 @@ class _CompareTable extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
+    // Pre-parse all results once per build, not per row.
+    final parsedResults = <String, List<OffspringResult>>{
+      for (final e in entries) e.id: parseHistoryResults(e.resultsJson),
+    };
+
     // Extract all unique phenotypes across all entries
     final allPhenotypes = <String>{};
     for (final entry in entries) {
-      final results = parseHistoryResults(entry.resultsJson);
+      final results = parsedResults[entry.id]!;
       for (final r in results) {
         allPhenotypes.add(
           r.compoundPhenotype ??
@@ -138,7 +143,7 @@ class _CompareTable extends StatelessWidget {
                   ),
                 ),
                 ...entries.map((e) {
-                  final results = parseHistoryResults(e.resultsJson);
+                  final results = parsedResults[e.id]!;
                   final match = results.firstWhere(
                     (r) {
                       final p =
