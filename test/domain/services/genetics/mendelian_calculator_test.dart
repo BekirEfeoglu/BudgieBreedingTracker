@@ -4,6 +4,13 @@ import 'package:budgie_breeding_tracker/domain/services/genetics/mutation_databa
 import 'package:budgie_breeding_tracker/domain/services/genetics/parent_genotype.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+ParentGenotype _toGenotype(Set<String> ids, BirdGender gender) {
+  return ParentGenotype(
+    mutations: {for (final id in ids) id: AlleleState.visual},
+    gender: gender,
+  );
+}
+
 void main() {
   late MendelianCalculator calculator;
 
@@ -11,20 +18,20 @@ void main() {
     calculator = const MendelianCalculator();
   });
 
-  group('MendelianCalculator.calculateOffspring', () {
+  group('MendelianCalculator.calculateFromGenotypes (legacy set behavior)', () {
     test('returns empty when both mutation sets are empty', () {
-      final results = calculator.calculateOffspring(
-        fatherMutations: {},
-        motherMutations: {},
+      final results = calculator.calculateFromGenotypes(
+        father: _toGenotype({}, BirdGender.male),
+        mother: _toGenotype({}, BirdGender.female),
       );
 
       expect(results, isEmpty);
     });
 
     test('autosomal recessive with both visual parents gives 100% visual', () {
-      final results = calculator.calculateOffspring(
-        fatherMutations: {'blue'},
-        motherMutations: {'blue'},
+      final results = calculator.calculateFromGenotypes(
+        father: _toGenotype({'blue'}, BirdGender.male),
+        mother: _toGenotype({'blue'}, BirdGender.female),
       );
 
       expect(results, hasLength(1));
@@ -34,28 +41,37 @@ void main() {
     });
 
     test(
-      'autosomal recessive with single visual parent includes carrier outcome',
+      'autosomal recessive visual father and carrier mother includes visual and carrier outcome',
       () {
-        final results = calculator.calculateOffspring(
-          fatherMutations: {'blue'},
-          motherMutations: {},
+        final results = calculator.calculateFromGenotypes(
+          father: _toGenotype({'blue'}, BirdGender.male),
+          mother: ParentGenotype(
+            gender: BirdGender.female,
+            mutations: {'blue': AlleleState.carrier},
+          ),
         );
 
         final visual = results.firstWhere((r) => r.phenotype == 'Blue');
         final carrier = results.firstWhere((r) => r.isCarrier);
 
         expect(visual.probability, closeTo(0.5, 0.0001));
-        expect(carrier.phenotype, contains('carrier'));
+        expect(carrier.isCarrier, isTrue);
         expect(carrier.probability, closeTo(0.5, 0.0001));
       },
     );
 
     test(
-      'autosomal dominant with both visual parents gives 25/50/25 split',
+      'autosomal dominant with both carrier parents gives 25/50/25 split',
       () {
-        final results = calculator.calculateOffspring(
-          fatherMutations: {'dominant_pied'},
-          motherMutations: {'dominant_pied'},
+        final results = calculator.calculateFromGenotypes(
+          father: ParentGenotype(
+            gender: BirdGender.male,
+            mutations: {'dominant_pied': AlleleState.carrier},
+          ),
+          mother: ParentGenotype(
+            gender: BirdGender.female,
+            mutations: {'dominant_pied': AlleleState.carrier},
+          ),
         );
 
         final homozygous = results.firstWhere(
@@ -73,11 +89,14 @@ void main() {
     );
 
     test(
-      'autosomal dominant with one visual parent gives 50 visual 50 normal',
+      'autosomal dominant with one carrier parent gives 50 visual 50 normal',
       () {
-        final results = calculator.calculateOffspring(
-          fatherMutations: {'dominant_pied'},
-          motherMutations: {},
+        final results = calculator.calculateFromGenotypes(
+          father: ParentGenotype(
+            gender: BirdGender.male,
+            mutations: {'dominant_pied': AlleleState.carrier},
+          ),
+          mother: _toGenotype({}, BirdGender.female),
         );
 
         final visual = results.firstWhere(
@@ -90,10 +109,16 @@ void main() {
       },
     );
 
-    test('incomplete dominant single x single gives 25/50/25 split', () {
-      final results = calculator.calculateOffspring(
-        fatherMutations: {'dark_factor'},
-        motherMutations: {'dark_factor'},
+    test('incomplete dominant carrier x carrier gives 25/50/25 split', () {
+      final results = calculator.calculateFromGenotypes(
+        father: ParentGenotype(
+          gender: BirdGender.male,
+          mutations: {'dark_factor': AlleleState.carrier},
+        ),
+        mother: ParentGenotype(
+          gender: BirdGender.female,
+          mutations: {'dark_factor': AlleleState.carrier},
+        ),
       );
 
       final doubleFactor = results.firstWhere(
@@ -110,9 +135,9 @@ void main() {
     });
 
     test('sex-linked visual father and visual mother produce all visual', () {
-      final results = calculator.calculateOffspring(
-        fatherMutations: {'opaline'},
-        motherMutations: {'opaline'},
+      final results = calculator.calculateFromGenotypes(
+        father: _toGenotype({'opaline'}, BirdGender.male),
+        mother: _toGenotype({'opaline'}, BirdGender.female),
       );
 
       expect(results, hasLength(2));
@@ -127,9 +152,9 @@ void main() {
     test(
       'sex-linked visual father and normal mother gives carrier males and visual females',
       () {
-        final results = calculator.calculateOffspring(
-          fatherMutations: {'opaline'},
-          motherMutations: {},
+        final results = calculator.calculateFromGenotypes(
+          father: _toGenotype({'opaline'}, BirdGender.male),
+          mother: _toGenotype({}, BirdGender.female),
         );
 
         final maleCarrier = results.firstWhere(
@@ -147,9 +172,9 @@ void main() {
     test(
       'sex-linked normal father and visual mother gives carrier males and normal females',
       () {
-        final results = calculator.calculateOffspring(
-          fatherMutations: {},
-          motherMutations: {'opaline'},
+        final results = calculator.calculateFromGenotypes(
+          father: _toGenotype({}, BirdGender.male),
+          mother: _toGenotype({'opaline'}, BirdGender.female),
         );
 
         final maleCarrier = results.firstWhere(
@@ -165,9 +190,9 @@ void main() {
     );
 
     test('results are normalized and sorted by probability descending', () {
-      final results = calculator.calculateOffspring(
-        fatherMutations: {'blue', 'dominant_pied'},
-        motherMutations: {'blue', 'dominant_pied'},
+      final results = calculator.calculateFromGenotypes(
+        father: _toGenotype({'blue', 'dominant_pied'}, BirdGender.male),
+        mother: _toGenotype({'blue', 'dominant_pied'}, BirdGender.female),
       );
 
       final sum = results.fold<double>(0.0, (acc, r) => acc + r.probability);
@@ -408,20 +433,21 @@ void main() {
     });
   });
 
-  group('MendelianCalculator.buildPunnettSquare', () {
+  group('MendelianCalculator.buildPunnettSquareFromGenotypes (additional)', () {
     test('returns null for empty mutation sets', () {
-      final square = calculator.buildPunnettSquare(
-        fatherMutations: {},
-        motherMutations: {},
+      final square = calculator.buildPunnettSquareFromGenotypes(
+        father: _toGenotype({}, BirdGender.male),
+        mother: _toGenotype({}, BirdGender.female),
       );
 
       expect(square, isNull);
     });
 
     test('returns sex-linked square for ino', () {
-      final square = calculator.buildPunnettSquare(
-        fatherMutations: {'ino'},
-        motherMutations: {},
+      final square = calculator.buildPunnettSquareFromGenotypes(
+        father: _toGenotype({'ino'}, BirdGender.male),
+        mother: _toGenotype({}, BirdGender.female),
+        mutationId: 'ino',
       );
 
       expect(square, isNotNull);
