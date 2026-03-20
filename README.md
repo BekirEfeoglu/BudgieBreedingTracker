@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  Bird records, pairing, incubation, chick growth, genetics, pedigree, reminders, backups, and cloud sync in one workflow.
+  Bird records, pairing, incubation, chick growth, genetics, pedigree, community, reminders, backups, and cloud sync in one workflow.
 </p>
 
 <p align="center">
@@ -29,16 +29,16 @@
 
 <p align="center">
   <a href="#overview">Overview</a>
-  ·
+  &middot;
   <a href="#feature-set">Feature Set</a>
-  ·
+  &middot;
   <a href="#screenshots">Screenshots</a>
-  ·
+  &middot;
   <a href="#tech-stack">Tech Stack</a>
-  ·
+  &middot;
+  <a href="#architecture">Architecture</a>
+  &middot;
   <a href="#getting-started">Getting Started</a>
-  ·
-  <a href="#project-structure">Project Structure</a>
 </p>
 
 ---
@@ -49,50 +49,75 @@ BudgieBreedingTracker is a production Flutter application built for breeders who
 
 The repository includes the main mobile app, localized content in Turkish, English, and German, CI workflows, website assets, and promotional material used around the product.
 
+### Project at a Glance
+
+| Metric | Value |
+| --- | --- |
+| Source files | 603 Dart files |
+| Test suite | 5,300+ tests (unit, widget, golden, e2e) |
+| Feature modules | 20 |
+| Drift tables | 19 |
+| Routes | 59 |
+| Custom SVG icons | 83 |
+| Localization keys | ~2,000 per language (TR, EN, DE) |
+| Domain services | 13 |
+| DB schema version | 14 |
+
 ## Feature Set
 
 ### Breeding workflow
 
 - Bird registry with mutation, color, ring number, photos, notes, and status tracking
 - Pair management for breeding setup, clutch history, and nesting progress
-- Egg and incubation monitoring with hatch timing, milestones, and reminders
-- Chick management with growth measurements and development history
+- Egg and incubation monitoring with hatch timing, milestones, and environment tracking
+- Chick management with growth measurements, development stages, and weaning alerts
 - Health record tracking for treatments, observations, and follow-ups
+- Nest management and breeding calendar integration
 
 ### Genetics and analysis
 
-- Punnett square based genetics calculator
-- Genotype helpers and reverse calculation tools
-- Pedigree and family tree views for lineage tracking
-- Statistics and breeding performance dashboards
+- Punnett square based genetics calculator with epistasis engine
+- Genotype helpers, reverse calculation, and color audit tools
+- Dihybrid cross support and Z-linked inheritance modeling
+- Inbreeding coefficient calculation and lethal combination warnings
+- Pedigree and family tree views with configurable depth
+- Statistics dashboards with breeding success, fertility trends, and egg production charts
 - Calendar-driven planning for breeding and care events
+
+### Community
+
+- Social feed with posts, photos, and multi-media galleries
+- Comment system with nested replies
+- Bookmarks, search, and user profile pages
+- Content moderation with automated image safety checks
 
 ### Operations and platform
 
-- Offline-first architecture backed by Drift and SQLite
-- Supabase integration for auth, storage, and sync workflows
-- Local notifications for incubation and event reminders
-- Export and backup flows using PDF and Excel generation
-- Premium and admin modules for gated features and operational controls
-- Sentry integration for crash reporting and runtime monitoring
+- Offline-first architecture backed by Drift (SQLite) with background cloud sync
+- Supabase integration for auth (email, OAuth, 2FA), storage, and edge functions
+- Local notifications with rate limiting and do-not-disturb scheduling
+- Export and backup flows using PDF and Excel generation with AES-256 encryption
+- Premium subscription management via RevenueCat
+- Admin panel with user management, audit logs, security monitoring, and system metrics
+- Sentry integration for crash reporting and performance monitoring
 - Multi-language UI: Turkish, English, and German
 
 ## Screenshots
 
 <p align="center">
-  <img src="docs/screenshots/home-dashboard.png" alt="Home dashboard" width="160" />
-  <img src="docs/screenshots/bird-list.png" alt="Bird list" width="160" />
-  <img src="docs/screenshots/bird-detail.png" alt="Bird detail" width="160" />
-  <img src="docs/screenshots/breeding-list.png" alt="Breeding list" width="160" />
-  <img src="docs/screenshots/breeding-detail.png" alt="Breeding detail" width="160" />
+  <img src="docs/screenshots/1.png" alt="Screenshot 1" width="160" />
+  <img src="docs/screenshots/2.png" alt="Screenshot 2" width="160" />
+  <img src="docs/screenshots/3.png" alt="Screenshot 3" width="160" />
+  <img src="docs/screenshots/4.png" alt="Screenshot 4" width="160" />
+  <img src="docs/screenshots/5.png" alt="Screenshot 5" width="160" />
 </p>
 
 <p align="center">
-  <img src="docs/screenshots/genetics-calculator.png" alt="Genetics calculator" width="160" />
-  <img src="docs/screenshots/chick-list.png" alt="Chick list" width="160" />
-  <img src="docs/screenshots/calendar.png" alt="Calendar" width="160" />
-  <img src="docs/screenshots/statistics.png" alt="Statistics" width="160" />
-  <img src="docs/screenshots/genealogy.png" alt="Genealogy" width="160" />
+  <img src="docs/screenshots/6.png" alt="Screenshot 6" width="160" />
+  <img src="docs/screenshots/7.png" alt="Screenshot 7" width="160" />
+  <img src="docs/screenshots/8.png" alt="Screenshot 8" width="160" />
+  <img src="docs/screenshots/9.png" alt="Screenshot 9" width="160" />
+  <img src="docs/screenshots/10.png" alt="Screenshot 10" width="160" />
 </p>
 
 <p align="center">
@@ -103,17 +128,62 @@ The repository includes the main mobile app, localized content in Turkish, Engli
 
 | Area | Tools |
 | --- | --- |
-| App framework | Flutter, Dart |
-| State management | Riverpod |
-| Navigation | GoRouter |
-| Data models | Freezed, json_serializable |
-| Local storage | Drift, SQLite |
-| Backend | Supabase |
-| Localization | easy_localization |
+| App framework | Flutter 3.16+, Dart 3.8+ |
+| State management | Riverpod 3 (code generation) |
+| Navigation | GoRouter 17+ |
+| Data models | Freezed 3, json_serializable |
+| Local storage | Drift 2.31+, SQLite |
+| Backend | Supabase (PostgreSQL, Auth, Storage, Edge Functions) |
+| Localization | easy_localization (TR, EN, DE) |
+| Icons | 83 custom SVGs (flutter_svg) + Lucide Icons |
+| Charts | fl_chart |
 | Notifications | flutter_local_notifications, timezone |
 | Reporting | pdf, excel, share_plus |
+| Encryption | encrypt (AES-256-CBC) |
+| Payments | purchases_flutter (RevenueCat) |
 | Monitoring | sentry_flutter |
-| Payments | purchases_flutter |
+
+## Architecture
+
+### Data Flow
+
+```
+UI (ConsumerWidget)
+  → ref.watch(provider)
+    → Repository
+      → DAO (Drift/SQLite)        ← local-first writes
+      → RemoteSource (Supabase)   ← background sync
+```
+
+All writes go to local SQLite first. A background sync orchestrator pushes pending changes to Supabase and pulls remote updates using server-wins conflict resolution.
+
+### Layer Hierarchy
+
+```
+core/       → Shared constants, theme, utilities, widgets (no feature imports)
+data/       → Models, Drift tables/DAOs/mappers, Supabase sources, repositories
+domain/     → Business services (genetics, sync, backup, export, notifications)
+features/   → 20 self-contained modules (providers + screens + widgets)
+router/     → GoRouter config (59 routes), auth/admin/premium guards
+```
+
+Import rules are enforced: `core/` never imports from `data/` or `features/`, `data/` never imports from `features/`.
+
+### Sync Architecture
+
+- Push order follows FK dependencies across 8 layers (Profile → Birds → Pairs → Clutches → Eggs → Chicks → ...)
+- Periodic sync every 15 minutes, full reconciliation every 6 hours
+- Automatic retry with exponential backoff (30s → 10min cap)
+- Network reconnection triggers immediate sync
+
+### Key Patterns
+
+| Pattern | Usage |
+| --- | --- |
+| Entity data path | Freezed Model → Drift Table → Converter → Mapper → DAO → RemoteSource → Repository → Provider → Widget |
+| Provider chain | StreamProvider (raw) → NotifierProvider (filter) → Provider.family (computed) |
+| Form pattern | NotifierProvider with isLoading/error/isSuccess + ref.listen for side effects |
+| Offline-first | DAO write → SyncMetadata mark → background push → server-wins pull |
 
 ## Getting Started
 
@@ -121,7 +191,7 @@ The repository includes the main mobile app, localized content in Turkish, Engli
 
 | Requirement | Notes |
 | --- | --- |
-| Flutter SDK | Stable channel |
+| Flutter SDK | Stable channel (3.16+) |
 | Dart SDK | `>=3.8.0 <4.0.0` |
 | Android Studio / Xcode / VS Code | Any standard Flutter setup |
 | Supabase project | Required for auth, sync, and storage features |
@@ -169,54 +239,54 @@ The app can still boot without Supabase credentials, but authentication, sync, a
 | Command | Purpose |
 | --- | --- |
 | `flutter pub get` | Install dependencies |
-| `dart run build_runner build --delete-conflicting-outputs` | Generate code |
+| `dart run build_runner build --delete-conflicting-outputs` | Generate code (Freezed, Drift, Riverpod) |
 | `dart run build_runner watch --delete-conflicting-outputs` | Watch and regenerate files |
 | `flutter analyze --no-fatal-infos` | Static analysis |
-| `flutter test --exclude-tags "golden || e2e"` | Fast local test run |
-| `flutter test test/golden --tags golden` | Golden tests |
+| `flutter test --exclude-tags golden` | Run all tests (excl. golden) |
+| `flutter test test/golden --tags golden` | Golden snapshot tests |
 | `python scripts/check_l10n_sync.py` | Verify translation key parity |
-| `python scripts/verify_code_quality.py` | Run project rule scan |
-
-## Architecture Notes
-
-- The app follows a feature-first structure under `lib/features/`.
-- Shared foundations live in `lib/core/`.
-- Local and remote data access live in `lib/data/`.
-- Cross-feature services such as sync, genetics, backup, export, notifications, and payments live in `lib/domain/services/`.
-- Navigation, guards, and route definitions live in `lib/router/`.
-- The main data flow is local-first: write to SQLite, mark for sync, then reconcile with Supabase when available.
+| `python scripts/verify_code_quality.py` | Anti-pattern scan (17 categories) |
+| `python scripts/verify_rules.py` | Validate rule claims against codebase |
 
 ## Project Structure
 
 ```text
 BudgieBreedingTracker/
-├── assets/                 # Images, icons, translations, fonts
-├── docs/                   # Website files, privacy policy, screenshots
+├── assets/
+│   ├── icons/              # 83 custom SVG icons (10 categories)
+│   ├── images/             # App icons and static images
+│   └── translations/       # tr.json, en.json, de.json (~2,000 keys each)
+├── docs/                   # Website, legal pages, screenshots
 ├── lib/
-│   ├── core/               # Shared constants, theme, utilities, widgets
-│   ├── data/               # Drift DB, Supabase sources, repositories, models
-│   ├── domain/services/    # Sync, genetics, export, backup, notifications
-│   ├── features/           # Admin, auth, birds, breeding, chicks, etc.
-│   └── router/             # Route definitions and guards
-├── scripts/                # Localization and code quality helpers
-├── test/                   # Widget, unit, golden, and end-to-end tests
-├── promo-video/            # Promo video assets
-└── remotion-promo/         # Remotion-based promo project
+│   ├── core/               # Constants, enums, theme, utilities, shared widgets
+│   ├── data/
+│   │   ├── models/         # 22 Freezed model files
+│   │   ├── local/          # Drift DB: 19 tables, 19 DAOs, 19 mappers
+│   │   ├── remote/         # Supabase: 19 remote sources, storage, edge functions
+│   │   └── repositories/   # 18 entity repositories + base + sync metadata
+│   ├── domain/services/    # 13 service modules (sync, genetics, export, ...)
+│   ├── features/           # 20 feature modules (admin, auth, birds, ...)
+│   └── router/             # 59 routes, auth/admin/premium guards
+├── scripts/                # L10n sync, code quality, and rule validation
+├── test/                   # 545 test files (unit, widget, golden, e2e)
+└── remotion-promo/         # Remotion-based promo video project
 ```
 
 ## Quality and Delivery
 
-GitHub Actions is configured for:
+GitHub Actions CI pipeline runs on every PR:
 
-- static analysis
-- automated tests with coverage upload
-- golden test verification
-- localization sync checks
-- code quality scanning
-- Android debug builds
-- iOS no-codesign builds
+| Check | Description |
+| --- | --- |
+| Flutter Analyze | Static analysis with `--no-fatal-infos` |
+| Flutter Test | 5,300+ tests with coverage upload to Codecov |
+| Golden Tests | Pixel-level widget regression checks |
+| L10n Sync | Verifies TR/EN/DE translation key parity |
+| Code Quality | Anti-pattern scan across 17 categories |
+| Android Build | Debug APK build verification |
+| iOS Build | No-codesign build verification |
 
-See [`.github/workflows/ci.yml`](.github/workflows/ci.yml) for the current pipeline.
+See [`.github/workflows/ci.yml`](.github/workflows/ci.yml) for the full pipeline configuration.
 
 ## Contributing
 
@@ -225,6 +295,8 @@ Contributions should follow the repository conventions for architecture, localiz
 - Contribution guide: [`CONTRIBUTING.md`](CONTRIBUTING.md)
 - Security policy: [`SECURITY.md`](SECURITY.md)
 - Privacy policy: [`docs/privacy-policy.html`](docs/privacy-policy.html)
+- Terms of use: [`docs/terms-of-use.html`](docs/terms-of-use.html)
+- Community guidelines: [`docs/community-guidelines.html`](docs/community-guidelines.html)
 
 ## License
 
