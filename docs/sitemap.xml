@@ -26,8 +26,14 @@
   </url>
   <url>
     <loc>https://budgiebreedingtracker.online/support/</loc>
-    <lastmod>2026-03-15</lastmod>
+    <lastmod>2026-03-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://budgiebreedingtracker.online/promo/</loc>
+    <lastmod>2026-03-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.4</priority>
   </url>
 </urlset>

@@ -3,7 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BudgieBreedingTracker - Promo Video</title>
+<title>BudgieBreedingTracker - Promo</title>
+<meta name="description" content="Muhabbet kuşu yetiştiricileri için kapsamlı üreme takip uygulaması. Kuş yönetimi, genetik analiz, kuluçka takibi ve daha fazlası.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://budgiebreedingtracker.online/promo/">
+<meta property="og:title" content="BudgieBreedingTracker - Promo">
+<meta property="og:description" content="Muhabbet kuşu yetiştiricileri için kapsamlı üreme takip uygulaması. Kuş yönetimi, genetik analiz, kuluçka takibi ve daha fazlası.">
+<meta property="og:image" content="https://budgiebreedingtracker.online/og-image.svg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="BudgieBreedingTracker - Promo">
+<meta name="twitter:description" content="Muhabbet kuşu yetiştiricileri için kapsamlı üreme takip uygulaması.">
+<meta name="twitter:image" content="https://budgiebreedingtracker.online/og-image.svg">
+<link rel="icon" type="image/png" href="../logo.png">
+<link rel="canonical" href="https://budgiebreedingtracker.online/promo/">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
 
@@ -547,6 +561,11 @@
     color: var(--text-light);
   }
 
+  .lang-btn.active-lang {
+    background: var(--primary) !important;
+    border-color: var(--primary-light) !important;
+  }
+
   /* Hide controls during autoplay recording */
   body.recording .controls { display: none; }
   body.recording .scene-indicator { display: none; }
@@ -563,7 +582,10 @@
 </div>
 
 <!-- Progress bar -->
-<div class="progress-bar" id="progressBar"></div>
+<div class="progress-bar" id="progressBar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="10"></div>
+
+<!-- Live region for screen readers -->
+<div id="liveRegion" class="sr-only" aria-live="polite" aria-atomic="true" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);"></div>
 
 <!-- Scene indicator dots -->
 <div class="scene-indicator" id="sceneIndicator"></div>
@@ -571,26 +593,26 @@
 <!-- ==================== SCENE 1: HOOK ==================== -->
 <div class="scene" id="scene1">
   <div class="hook-emoji">🐦</div>
-  <div class="hook-title">Muhabbet Kuşu<br>Yetiştiriciliği</div>
-  <div class="hook-subtitle">artık dijital!</div>
+  <div class="hook-title" data-i18n-html="s1_title">Muhabbet Kuşu<br>Yetiştiriciliği</div>
+  <div class="hook-subtitle" data-i18n="s1_subtitle">artık dijital!</div>
 </div>
 
 <!-- ==================== SCENE 2: PROBLEM ==================== -->
 <div class="scene" id="scene2">
   <div class="problem-icon">📝</div>
-  <div class="problem-text">Hâlâ kağıtla mı<br>takip ediyorsunuz?</div>
+  <div class="problem-text" data-i18n-html="s2_title">Hâlâ kağıtla mı<br>takip ediyorsunuz?</div>
   <div class="problem-items">
     <div class="problem-item">
       <span class="x-mark">✕</span>
-      <span>Hangi kuş kimle eşleşti?</span>
+      <span data-i18n="s2_item1">Hangi kuş kimle eşleşti?</span>
     </div>
     <div class="problem-item">
       <span class="x-mark">✕</span>
-      <span>Yumurta ne zaman çatlayacak?</span>
+      <span data-i18n="s2_item2">Yumurta ne zaman çatlayacak?</span>
     </div>
     <div class="problem-item">
       <span class="x-mark">✕</span>
-      <span>Yavruların genetiği ne?</span>
+      <span data-i18n="s2_item3">Yavruların genetiği ne?</span>
     </div>
   </div>
 </div>
@@ -604,69 +626,69 @@
   <div class="app-name">
     <span class="budgie">Budgie</span><span class="breeding">Breeding</span><span class="tracker">Tracker</span>
   </div>
-  <div class="app-tagline">ile tanışın</div>
+  <div class="app-tagline" data-i18n="s3_tagline">ile tanışın</div>
 </div>
 
 <!-- ==================== SCENE 4: DASHBOARD ==================== -->
 <div class="scene feature-scene" id="scene4">
-  <div class="feature-badge badge-blue">📊 ANA SAYFA</div>
-  <div class="feature-title">Tek Bakışta<br>Her Şey</div>
-  <div class="feature-desc">Toplam kuşlar, aktif üremeler, kuluçkadaki yumurtalar ve yeni yavrular</div>
+  <div class="feature-badge badge-blue" data-i18n="s4_badge">📊 ANA SAYFA</div>
+  <div class="feature-title" data-i18n-html="s4_title">Tek Bakışta<br>Her Şey</div>
+  <div class="feature-desc" data-i18n="s4_desc">Toplam kuşlar, aktif üremeler, kuluçkadaki yumurtalar ve yeni yavrular</div>
   <div class="phone-mockup">
     <div class="phone-screen">
-      <img src="../screenshots/home-dashboard.png" alt="Dashboard">
+      <img src="../screenshots/1.png" alt="Dashboard" loading="lazy">
     </div>
   </div>
 </div>
 
 <!-- ==================== SCENE 5: BIRDS ==================== -->
 <div class="scene feature-scene" id="scene5">
-  <div class="feature-badge badge-blue">🐤 KUŞ YÖNETİMİ</div>
-  <div class="feature-title">Tüm Kuşlarınız<br>Bir Arada</div>
-  <div class="feature-desc">Detaylı profiller, fotoğraflar, filtreleme ve anında arama</div>
+  <div class="feature-badge badge-blue" data-i18n="s5_badge">🐤 KUŞ YÖNETİMİ</div>
+  <div class="feature-title" data-i18n-html="s5_title">Tüm Kuşlarınız<br>Bir Arada</div>
+  <div class="feature-desc" data-i18n="s5_desc">Detaylı profiller, fotoğraflar, filtreleme ve anında arama</div>
   <div class="phone-mockup">
     <div class="phone-screen">
-      <img src="../screenshots/bird-list.png" alt="Bird List">
+      <img src="../screenshots/2.png" alt="Bird List" loading="lazy">
     </div>
   </div>
   <div class="feature-highlights">
-    <div class="highlight-chip">🔍 Arama</div>
-    <div class="highlight-chip">🏷️ Filtre</div>
-    <div class="highlight-chip">📸 Fotoğraf</div>
+    <div class="highlight-chip" data-i18n="s5_chip1">🔍 Arama</div>
+    <div class="highlight-chip" data-i18n="s5_chip2">🏷️ Filtre</div>
+    <div class="highlight-chip" data-i18n="s5_chip3">📸 Fotoğraf</div>
   </div>
 </div>
 
 <!-- ==================== SCENE 6: BREEDING ==================== -->
 <div class="scene feature-scene" id="scene6">
-  <div class="feature-badge badge-pink">💕 ÜREME TAKİBİ</div>
-  <div class="feature-title">Çiftleştirme &<br>Kuluçka</div>
-  <div class="feature-desc">Yumurta takibi, otomatik kuluçka sayacı, geri sayım</div>
+  <div class="feature-badge badge-pink" data-i18n="s6_badge">💕 ÜREME TAKİBİ</div>
+  <div class="feature-title" data-i18n-html="s6_title">Çiftleştirme &<br>Kuluçka</div>
+  <div class="feature-desc" data-i18n="s6_desc">Yumurta takibi, otomatik kuluçka sayacı, geri sayım</div>
   <div class="phone-mockup">
     <div class="phone-screen">
-      <img src="../screenshots/breeding-list.png" alt="Breeding">
+      <img src="../screenshots/3.png" alt="Breeding" loading="lazy">
     </div>
   </div>
   <div class="feature-highlights">
-    <div class="highlight-chip">🥚 Yumurta</div>
-    <div class="highlight-chip">⏱️ Sayaç</div>
-    <div class="highlight-chip">📅 Gün/18</div>
+    <div class="highlight-chip" data-i18n="s6_chip1">🥚 Yumurta</div>
+    <div class="highlight-chip" data-i18n="s6_chip2">⏱️ Sayaç</div>
+    <div class="highlight-chip" data-i18n="s6_chip3">📅 Gün/18</div>
   </div>
 </div>
 
 <!-- ==================== SCENE 7: GENETICS + GENEALOGY ==================== -->
 <div class="scene feature-scene" id="scene7">
-  <div class="feature-badge badge-orange">🧬 GENETİK & SOY AĞACI</div>
-  <div class="feature-title">Bilimsel<br>Genetik Analiz</div>
-  <div class="feature-desc">Punnett karesi ile mutasyon tahmini ve nesiller boyu soy ağacı</div>
+  <div class="feature-badge badge-orange" data-i18n="s7_badge">🧬 GENETİK & SOY AĞACI</div>
+  <div class="feature-title" data-i18n-html="s7_title">Bilimsel<br>Genetik Analiz</div>
+  <div class="feature-desc" data-i18n="s7_desc">Punnett karesi ile mutasyon tahmini ve nesiller boyu soy ağacı</div>
   <div class="dual-phone-row">
     <div class="phone-mockup">
       <div class="phone-screen">
-        <img src="../screenshots/genetics-calculator.png" alt="Genetics">
+        <img src="../screenshots/9.png" alt="Genetics" loading="lazy">
       </div>
     </div>
     <div class="phone-mockup">
       <div class="phone-screen">
-        <img src="../screenshots/genealogy.png" alt="Genealogy">
+        <img src="../screenshots/8.png" alt="Genealogy" loading="lazy">
       </div>
     </div>
   </div>
@@ -674,18 +696,18 @@
 
 <!-- ==================== SCENE 8: STATISTICS + CALENDAR ==================== -->
 <div class="scene feature-scene" id="scene8">
-  <div class="feature-badge badge-green">📈 ANALİZ & TAKVİM</div>
-  <div class="feature-title">Veriye Dayalı<br>Yetiştiriclik</div>
-  <div class="feature-desc">Detaylı istatistikler, grafikler ve takvim hatırlatıcıları</div>
+  <div class="feature-badge badge-green" data-i18n="s8_badge">📈 ANALİZ & TAKVİM</div>
+  <div class="feature-title" data-i18n-html="s8_title">Veriye Dayalı<br>Yetiştiriclik</div>
+  <div class="feature-desc" data-i18n="s8_desc">Detaylı istatistikler, grafikler ve takvim hatırlatıcıları</div>
   <div class="dual-phone-row">
     <div class="phone-mockup">
       <div class="phone-screen">
-        <img src="../screenshots/statistics.png" alt="Statistics">
+        <img src="../screenshots/7.png" alt="Statistics" loading="lazy">
       </div>
     </div>
     <div class="phone-mockup">
       <div class="phone-screen">
-        <img src="../screenshots/calendar.png" alt="Calendar">
+        <img src="../screenshots/5.png" alt="Calendar" loading="lazy">
       </div>
     </div>
   </div>
@@ -693,38 +715,38 @@
 
 <!-- ==================== SCENE 9: FEATURES GRID ==================== -->
 <div class="scene" id="scene9" style="background: var(--bg-gradient);">
-  <div class="feature-title" style="margin-bottom: 10px; animation: slideUp 0.5s ease-out both;">Daha Fazlası</div>
-  <div class="feature-desc" style="animation: slideUp 0.5s ease-out 0.1s both;">Profesyonel yetiştiriciliğin tüm araçları</div>
+  <div class="feature-title" data-i18n="s9_title" style="margin-bottom: 10px; animation: slideUp 0.5s ease-out both;">Daha Fazlası</div>
+  <div class="feature-desc" data-i18n="s9_desc" style="animation: slideUp 0.5s ease-out 0.1s both;">Profesyonel yetiştiriciliğin tüm araçları</div>
   <div class="features-grid">
     <div class="feature-card">
       <div class="feature-card-icon">🐣</div>
-      <div class="feature-card-title">Yavru Takibi</div>
-      <div class="feature-card-desc">Büyüme, tüylenme, sütten kesme</div>
+      <div class="feature-card-title" data-i18n="s9_c1_title">Yavru Takibi</div>
+      <div class="feature-card-desc" data-i18n="s9_c1_desc">Büyüme, tüylenme, sütten kesme</div>
     </div>
     <div class="feature-card">
       <div class="feature-card-icon">💊</div>
-      <div class="feature-card-title">Sağlık Kayıtları</div>
-      <div class="feature-card-desc">Aşı, tedavi, kontrol</div>
+      <div class="feature-card-title" data-i18n="s9_c2_title">Sağlık Kayıtları</div>
+      <div class="feature-card-desc" data-i18n="s9_c2_desc">Aşı, tedavi, kontrol</div>
     </div>
     <div class="feature-card">
       <div class="feature-card-icon">📴</div>
-      <div class="feature-card-title">Offline Çalışır</div>
-      <div class="feature-card-desc">İnternetsiz kullan, otomatik senkronize et</div>
+      <div class="feature-card-title" data-i18n="s9_c3_title">Offline Çalışır</div>
+      <div class="feature-card-desc" data-i18n="s9_c3_desc">İnternetsiz kullan, otomatik senkronize et</div>
     </div>
     <div class="feature-card">
       <div class="feature-card-icon">👥</div>
-      <div class="feature-card-title">Topluluk</div>
-      <div class="feature-card-desc">Yetiştiricilerle bağlantı kur</div>
+      <div class="feature-card-title" data-i18n="s9_c4_title">Topluluk</div>
+      <div class="feature-card-desc" data-i18n="s9_c4_desc">Yetiştiricilerle bağlantı kur</div>
     </div>
     <div class="feature-card">
       <div class="feature-card-icon">🔔</div>
-      <div class="feature-card-title">Bildirimler</div>
-      <div class="feature-card-desc">Önemli tarihleri kaçırma</div>
+      <div class="feature-card-title" data-i18n="s9_c5_title">Bildirimler</div>
+      <div class="feature-card-desc" data-i18n="s9_c5_desc">Önemli tarihleri kaçırma</div>
     </div>
     <div class="feature-card">
       <div class="feature-card-icon">🌍</div>
-      <div class="feature-card-title">3 Dil Desteği</div>
-      <div class="feature-card-desc">Türkçe, İngilizce, Almanca</div>
+      <div class="feature-card-title" data-i18n="s9_c6_title">3 Dil Desteği</div>
+      <div class="feature-card-desc" data-i18n="s9_c6_desc">Türkçe, İngilizce, Almanca</div>
     </div>
   </div>
 </div>
@@ -732,25 +754,25 @@
 <!-- ==================== SCENE 10: CTA ==================== -->
 <div class="scene" id="scene-cta">
   <img class="cta-logo" src="../logo.png" alt="Logo">
-  <div class="cta-title">Profesyonel<br>Yetiştiricilik<br>Başlasın!</div>
-  <div class="cta-subtitle">Ücretsiz indir, hemen kullanmaya başla</div>
-  <button class="cta-button">Hemen İndir</button>
+  <div class="cta-title" data-i18n-html="cta_title">Profesyonel<br>Yetiştiricilik<br>Başlasın!</div>
+  <div class="cta-subtitle" data-i18n="cta_subtitle">Ücretsiz indir, hemen kullanmaya başla</div>
+  <button class="cta-button" data-i18n="cta_button">Hemen İndir</button>
   <div class="cta-features-row">
     <div class="cta-feature-item">
       <span>🐦</span>
-      <span>Sınırsız Kuş</span>
+      <span data-i18n="cta_f1">Sınırsız Kuş</span>
     </div>
     <div class="cta-feature-item">
       <span>🧬</span>
-      <span>Genetik</span>
+      <span data-i18n="cta_f2">Genetik</span>
     </div>
     <div class="cta-feature-item">
       <span>📊</span>
-      <span>İstatistik</span>
+      <span data-i18n="cta_f3">İstatistik</span>
     </div>
     <div class="cta-feature-item">
       <span>☁️</span>
-      <span>Bulut Sync</span>
+      <span data-i18n="cta_f4">Bulut Sync</span>
     </div>
   </div>
   <div class="cta-langs">
@@ -761,11 +783,16 @@
 </div>
 
 <!-- ==================== CONTROLS ==================== -->
-<div class="controls">
-  <button id="prevBtn" onclick="prevScene()">◀ Geri</button>
-  <div class="scene-counter"><span id="counterText">1 / 10</span></div>
-  <button id="nextBtn" onclick="nextScene()">İleri ▶</button>
-  <button id="autoBtn" onclick="toggleAutoplay()">▶ Otomatik</button>
+<div class="controls" role="toolbar" aria-label="Presentation controls">
+  <button id="prevBtn" onclick="prevScene()" data-i18n="ctrl_prev" aria-label="Previous slide">◀ Geri</button>
+  <div class="scene-counter" aria-live="polite"><span id="counterText">1 / 10</span></div>
+  <button id="nextBtn" onclick="nextScene()" data-i18n="ctrl_next" aria-label="Next slide">İleri ▶</button>
+  <button id="autoBtn" onclick="toggleAutoplay()" data-i18n="ctrl_auto" aria-label="Toggle autoplay" aria-pressed="false">▶ Otomatik</button>
+  <div class="lang-switcher" role="group" aria-label="Language" style="display:flex;gap:4px;margin-left:8px;">
+    <button onclick="setLanguage('tr')" class="lang-btn active-lang" id="langTr" aria-label="Türkçe" aria-pressed="true" style="padding:6px 12px;font-size:13px;">TR</button>
+    <button onclick="setLanguage('en')" class="lang-btn" id="langEn" aria-label="English" aria-pressed="false" style="padding:6px 12px;font-size:13px;">EN</button>
+    <button onclick="setLanguage('de')" class="lang-btn" id="langDe" aria-label="Deutsch" aria-pressed="false" style="padding:6px 12px;font-size:13px;">DE</button>
+  </div>
 </div>
 
 <script>
@@ -781,11 +808,17 @@
 
   // Build scene indicator dots
   const indicator = document.getElementById('sceneIndicator');
+  indicator.setAttribute('role', 'navigation');
+  indicator.setAttribute('aria-label', 'Slide navigation');
   scenes.forEach((_, i) => {
     const dot = document.createElement('div');
     dot.className = 'scene-dot' + (i === 0 ? ' active' : '');
     dot.onclick = () => goToScene(i);
     dot.style.cursor = 'pointer';
+    dot.setAttribute('role', 'button');
+    dot.setAttribute('tabindex', '0');
+    dot.setAttribute('aria-label', 'Slide ' + (i + 1));
+    if (i === 0) dot.setAttribute('aria-current', 'step');
     indicator.appendChild(dot);
   });
 
@@ -807,16 +840,23 @@
     }
 
     // Update progress
-    const progress = ((current + 1) / scenes.length) * 100;
-    document.getElementById('progressBar').style.width = progress + '%';
+    const progress = Math.round(((current + 1) / scenes.length) * 100);
+    const progressBar = document.getElementById('progressBar');
+    progressBar.style.width = progress + '%';
+    progressBar.setAttribute('aria-valuenow', progress);
 
     // Update dots
     document.querySelectorAll('.scene-dot').forEach((dot, i) => {
       dot.classList.toggle('active', i === current);
+      dot.setAttribute('aria-current', i === current ? 'step' : 'false');
     });
 
     // Update counter
     document.getElementById('counterText').textContent = (current + 1) + ' / ' + scenes.length;
+
+    // Announce to screen readers
+    const liveRegion = document.getElementById('liveRegion');
+    if (liveRegion) liveRegion.textContent = (current + 1) + ' / ' + scenes.length;
   }
 
   function replayAnimations(el) {
@@ -847,8 +887,10 @@
 
   function startAutoplay() {
     isAutoplaying = true;
-    document.getElementById('autoBtn').textContent = '⏸ Durdur';
-    document.getElementById('autoBtn').classList.add('active-btn');
+    const autoBtn = document.getElementById('autoBtn');
+    autoBtn.textContent = '⏸ Durdur';
+    autoBtn.classList.add('active-btn');
+    autoBtn.setAttribute('aria-pressed', 'true');
     goToScene(0);
     scheduleNext();
   }
@@ -868,8 +910,10 @@
   function stopAutoplay() {
     isAutoplaying = false;
     clearTimeout(autoplayTimer);
-    document.getElementById('autoBtn').textContent = '▶ Otomatik';
-    document.getElementById('autoBtn').classList.remove('active-btn');
+    const autoBtn = document.getElementById('autoBtn');
+    autoBtn.textContent = '▶ Otomatik';
+    autoBtn.classList.remove('active-btn');
+    autoBtn.setAttribute('aria-pressed', 'false');
   }
 
   // Keyboard controls
@@ -881,6 +925,208 @@
       document.body.classList.toggle('recording');
     }
   });
+
+  // ==================== i18n ====================
+  const translations = {
+    tr: {
+      // Scene 1
+      s1_title: 'Muhabbet Kuşu<br>Yetiştiriciliği',
+      s1_subtitle: 'artık dijital!',
+      // Scene 2
+      s2_title: 'Hâlâ kağıtla mı<br>takip ediyorsunuz?',
+      s2_item1: 'Hangi kuş kimle eşleşti?',
+      s2_item2: 'Yumurta ne zaman çatlayacak?',
+      s2_item3: 'Yavruların genetiği ne?',
+      // Scene 3
+      s3_tagline: 'ile tanışın',
+      // Scene 4
+      s4_badge: '📊 ANA SAYFA',
+      s4_title: 'Tek Bakışta<br>Her Şey',
+      s4_desc: 'Toplam kuşlar, aktif üremeler, kuluçkadaki yumurtalar ve yeni yavrular',
+      // Scene 5
+      s5_badge: '🐤 KUŞ YÖNETİMİ',
+      s5_title: 'Tüm Kuşlarınız<br>Bir Arada',
+      s5_desc: 'Detaylı profiller, fotoğraflar, filtreleme ve anında arama',
+      s5_chip1: '🔍 Arama',
+      s5_chip2: '🏷️ Filtre',
+      s5_chip3: '📸 Fotoğraf',
+      // Scene 6
+      s6_badge: '💕 ÜREME TAKİBİ',
+      s6_title: 'Çiftleştirme &<br>Kuluçka',
+      s6_desc: 'Yumurta takibi, otomatik kuluçka sayacı, geri sayım',
+      s6_chip1: '🥚 Yumurta',
+      s6_chip2: '⏱️ Sayaç',
+      s6_chip3: '📅 Gün/18',
+      // Scene 7
+      s7_badge: '🧬 GENETİK & SOY AĞACI',
+      s7_title: 'Bilimsel<br>Genetik Analiz',
+      s7_desc: 'Punnett karesi ile mutasyon tahmini ve nesiller boyu soy ağacı',
+      // Scene 8
+      s8_badge: '📈 ANALİZ & TAKVİM',
+      s8_title: 'Veriye Dayalı<br>Yetiştiriclik',
+      s8_desc: 'Detaylı istatistikler, grafikler ve takvim hatırlatıcıları',
+      // Scene 9
+      s9_title: 'Daha Fazlası',
+      s9_desc: 'Profesyonel yetiştiriciliğin tüm araçları',
+      s9_c1_title: 'Yavru Takibi', s9_c1_desc: 'Büyüme, tüylenme, sütten kesme',
+      s9_c2_title: 'Sağlık Kayıtları', s9_c2_desc: 'Aşı, tedavi, kontrol',
+      s9_c3_title: 'Offline Çalışır', s9_c3_desc: 'İnternetsiz kullan, otomatik senkronize et',
+      s9_c4_title: 'Topluluk', s9_c4_desc: 'Yetiştiricilerle bağlantı kur',
+      s9_c5_title: 'Bildirimler', s9_c5_desc: 'Önemli tarihleri kaçırma',
+      s9_c6_title: '3 Dil Desteği', s9_c6_desc: 'Türkçe, İngilizce, Almanca',
+      // CTA
+      cta_title: 'Profesyonel<br>Yetiştiricilik<br>Başlasın!',
+      cta_subtitle: 'Ücretsiz indir, hemen kullanmaya başla',
+      cta_button: 'Hemen İndir',
+      cta_f1: 'Sınırsız Kuş', cta_f2: 'Genetik', cta_f3: 'İstatistik', cta_f4: 'Bulut Sync',
+      // Controls
+      ctrl_prev: '◀ Geri',
+      ctrl_next: 'İleri ▶',
+      ctrl_auto: '▶ Otomatik',
+      ctrl_stop: '⏸ Durdur',
+    },
+    en: {
+      s1_title: 'Budgie<br>Breeding',
+      s1_subtitle: 'now digital!',
+      s2_title: 'Still tracking<br>on paper?',
+      s2_item1: 'Which bird paired with whom?',
+      s2_item2: 'When will the egg hatch?',
+      s2_item3: "What's the chick's genetics?",
+      s3_tagline: 'meet',
+      s4_badge: '📊 DASHBOARD',
+      s4_title: 'Everything<br>at a Glance',
+      s4_desc: 'Total birds, active breedings, incubating eggs and new chicks',
+      s5_badge: '🐤 BIRD MANAGEMENT',
+      s5_title: 'All Your Birds<br>in One Place',
+      s5_desc: 'Detailed profiles, photos, filtering and instant search',
+      s5_chip1: '🔍 Search',
+      s5_chip2: '🏷️ Filter',
+      s5_chip3: '📸 Photos',
+      s6_badge: '💕 BREEDING TRACKER',
+      s6_title: 'Pairing &<br>Incubation',
+      s6_desc: 'Egg tracking, automatic incubation counter, countdown',
+      s6_chip1: '🥚 Eggs',
+      s6_chip2: '⏱️ Counter',
+      s6_chip3: '📅 Day/18',
+      s7_badge: '🧬 GENETICS & PEDIGREE',
+      s7_title: 'Scientific<br>Genetic Analysis',
+      s7_desc: 'Mutation prediction with Punnett square and multi-generation pedigree',
+      s8_badge: '📈 ANALYTICS & CALENDAR',
+      s8_title: 'Data-Driven<br>Breeding',
+      s8_desc: 'Detailed statistics, charts and calendar reminders',
+      s9_title: 'And More',
+      s9_desc: 'All tools for professional breeding',
+      s9_c1_title: 'Chick Tracking', s9_c1_desc: 'Growth, feathering, weaning',
+      s9_c2_title: 'Health Records', s9_c2_desc: 'Vaccination, treatment, checkup',
+      s9_c3_title: 'Works Offline', s9_c3_desc: 'Use without internet, auto-sync',
+      s9_c4_title: 'Community', s9_c4_desc: 'Connect with breeders',
+      s9_c5_title: 'Notifications', s9_c5_desc: "Don't miss important dates",
+      s9_c6_title: '3 Languages', s9_c6_desc: 'Turkish, English, German',
+      cta_title: 'Start<br>Professional<br>Breeding!',
+      cta_subtitle: 'Download free, start using now',
+      cta_button: 'Download Now',
+      cta_f1: 'Unlimited Birds', cta_f2: 'Genetics', cta_f3: 'Statistics', cta_f4: 'Cloud Sync',
+      ctrl_prev: '◀ Prev',
+      ctrl_next: 'Next ▶',
+      ctrl_auto: '▶ Auto',
+      ctrl_stop: '⏸ Stop',
+    },
+    de: {
+      s1_title: 'Wellensittich-<br>Zucht',
+      s1_subtitle: 'jetzt digital!',
+      s2_title: 'Verfolgen Sie noch<br>auf Papier?',
+      s2_item1: 'Welcher Vogel wurde mit wem gepaart?',
+      s2_item2: 'Wann schlüpft das Ei?',
+      s2_item3: 'Was ist die Genetik der Küken?',
+      s3_tagline: 'lernen Sie kennen',
+      s4_badge: '📊 STARTSEITE',
+      s4_title: 'Alles auf<br>einen Blick',
+      s4_desc: 'Gesamte Vögel, aktive Bruten, bebrütete Eier und neue Küken',
+      s5_badge: '🐤 VOGELVERWALTUNG',
+      s5_title: 'Alle Ihre Vögel<br>an einem Ort',
+      s5_desc: 'Detaillierte Profile, Fotos, Filterung und Sofortsuche',
+      s5_chip1: '🔍 Suche',
+      s5_chip2: '🏷️ Filter',
+      s5_chip3: '📸 Fotos',
+      s6_badge: '💕 ZUCHTVERFOLGUNG',
+      s6_title: 'Verpaarung &<br>Bebrütung',
+      s6_desc: 'Ei-Tracking, automatischer Brutzähler, Countdown',
+      s6_chip1: '🥚 Eier',
+      s6_chip2: '⏱️ Zähler',
+      s6_chip3: '📅 Tag/18',
+      s7_badge: '🧬 GENETIK & STAMMBAUM',
+      s7_title: 'Wissenschaftliche<br>Genetik-Analyse',
+      s7_desc: 'Mutationsvorhersage mit Punnett-Quadrat und mehrgenerationen Stammbaum',
+      s8_badge: '📈 ANALYSE & KALENDER',
+      s8_title: 'Datengestützte<br>Zucht',
+      s8_desc: 'Detaillierte Statistiken, Diagramme und Kalender-Erinnerungen',
+      s9_title: 'Und Mehr',
+      s9_desc: 'Alle Werkzeuge für professionelle Zucht',
+      s9_c1_title: 'Küken-Tracking', s9_c1_desc: 'Wachstum, Befiederung, Entwöhnung',
+      s9_c2_title: 'Gesundheitsdaten', s9_c2_desc: 'Impfung, Behandlung, Kontrolle',
+      s9_c3_title: 'Offline nutzbar', s9_c3_desc: 'Ohne Internet nutzen, auto-sync',
+      s9_c4_title: 'Gemeinschaft', s9_c4_desc: 'Mit Züchtern verbinden',
+      s9_c5_title: 'Benachrichtigungen', s9_c5_desc: 'Wichtige Termine nicht verpassen',
+      s9_c6_title: '3 Sprachen', s9_c6_desc: 'Türkisch, Englisch, Deutsch',
+      cta_title: 'Professionelle<br>Zucht<br>beginnt jetzt!',
+      cta_subtitle: 'Kostenlos herunterladen, sofort loslegen',
+      cta_button: 'Jetzt Herunterladen',
+      cta_f1: 'Unbegrenzte Vögel', cta_f2: 'Genetik', cta_f3: 'Statistik', cta_f4: 'Cloud Sync',
+      ctrl_prev: '◀ Zurück',
+      ctrl_next: 'Weiter ▶',
+      ctrl_auto: '▶ Auto',
+      ctrl_stop: '⏸ Stopp',
+    }
+  };
+
+  let currentLang = localStorage.getItem('bbt-lang') || (navigator.language.startsWith('de') ? 'de' : navigator.language.startsWith('en') ? 'en' : 'tr');
+
+  function setLanguage(lang) {
+    currentLang = lang;
+    localStorage.setItem('bbt-lang', lang);
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const key = el.getAttribute('data-i18n');
+      if (translations[lang] && translations[lang][key]) {
+        el.textContent = translations[lang][key];
+      }
+    });
+    document.querySelectorAll('[data-i18n-html]').forEach(el => {
+      const key = el.getAttribute('data-i18n-html');
+      if (translations[lang] && translations[lang][key]) {
+        el.innerHTML = translations[lang][key];
+      }
+    });
+    // Update active lang button
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+      btn.classList.remove('active-lang');
+      btn.setAttribute('aria-pressed', 'false');
+    });
+    const activeBtn = document.getElementById('lang' + lang.charAt(0).toUpperCase() + lang.slice(1));
+    if (activeBtn) {
+      activeBtn.classList.add('active-lang');
+      activeBtn.setAttribute('aria-pressed', 'true');
+    }
+    // Update autoplay button text based on state
+    const autoBtn = document.getElementById('autoBtn');
+    if (isAutoplaying) {
+      autoBtn.textContent = translations[lang].ctrl_stop;
+    }
+  }
+
+  // Override startAutoplay/stopAutoplay to use translated text
+  const _origStartAutoplay = startAutoplay;
+  startAutoplay = function() {
+    _origStartAutoplay();
+    document.getElementById('autoBtn').textContent = translations[currentLang].ctrl_stop;
+  };
+  const _origStopAutoplay = stopAutoplay;
+  stopAutoplay = function() {
+    _origStopAutoplay();
+    document.getElementById('autoBtn').textContent = translations[currentLang].ctrl_auto;
+  };
+
+  // Apply saved language on load
+  setLanguage(currentLang);
 
   // Start at first scene
   goToScene(0);

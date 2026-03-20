@@ -1,31 +1,25 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="tr">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Page Not Found - BudgieBreedingTracker</title>
   <link rel="icon" type="image/png" href="/logo.png">
   <link rel="apple-touch-icon" href="/logo.png">
-
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            primary: { 50: '#EFF6FF', 100: '#DBEAFE', 500: '#3B82F6', 600: '#2563EB', 700: '#1D4ED8', 800: '#1E40AF' },
-            budgie: { 50: '#F0FDF4', 500: '#22C55E', 600: '#16A34A' },
-          },
-          fontFamily: { sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'] },
-        },
-      },
-    }
-  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
   <style>
-    body { font-family: 'Inter', system-ui, sans-serif; }
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: linear-gradient(to bottom, #F9FAFB, #FFFFFF);
+      color: #111827;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
     .gradient-text {
       background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 40%, #22C55E 100%);
       -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
@@ -34,41 +28,268 @@
       0%, 100% { transform: translateY(0px); }
       50% { transform: translateY(-12px); }
     }
-    .animate-float { animation: float 4s ease-in-out infinite; }
+
+    /* Header */
+    header {
+      background: rgba(255,255,255,0.8);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border-bottom: 1px solid rgba(243,244,246,0.8);
+    }
+    .header-inner {
+      max-width: 896px;
+      margin: 0 auto;
+      padding: 16px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    @media (min-width: 640px) { .header-inner { padding: 16px 24px; } }
+    .logo-link {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+    .logo-img {
+      width: 36px; height: 36px;
+      border-radius: 8px;
+      transition: transform 0.3s;
+    }
+    .logo-link:hover .logo-img { transform: scale(1.1); }
+    .logo-text {
+      font-weight: 800;
+      font-size: 18px;
+      color: #1E40AF;
+      letter-spacing: -0.025em;
+    }
+    .lang-group { display: flex; gap: 4px; }
+    .lang-btn {
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 700;
+      border: 1px solid #E5E7EB;
+      background: transparent;
+      color: #4B5563;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .lang-btn:hover { border-color: #3B82F6; }
+    .lang-btn.active { background: #1E40AF; color: white; border-color: #1E40AF; }
+
+    /* Main */
+    main {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 64px 16px;
+    }
+    .content { text-align: center; max-width: 448px; }
+    .bird-emoji {
+      font-size: 96px;
+      margin-bottom: 24px;
+      animation: float 4s ease-in-out infinite;
+    }
+    .title-404 {
+      font-size: 60px;
+      font-weight: 900;
+      margin-bottom: 16px;
+    }
+    @media (min-width: 640px) { .title-404 { font-size: 72px; } }
+    .subtitle {
+      font-size: 20px;
+      font-weight: 700;
+      color: #111827;
+      margin-bottom: 12px;
+    }
+    @media (min-width: 640px) { .subtitle { font-size: 24px; } }
+    .desc {
+      color: #6B7280;
+      margin-bottom: 32px;
+      line-height: 1.625;
+    }
+    .home-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 16px 32px;
+      background: #1E40AF;
+      color: white;
+      font-weight: 700;
+      border-radius: 16px;
+      text-decoration: none;
+      transition: all 0.2s;
+      box-shadow: 0 10px 15px -3px rgba(30,64,175,0.25);
+    }
+    .home-btn:hover {
+      background: #1D4ED8;
+      box-shadow: 0 20px 25px -5px rgba(30,64,175,0.3);
+      transform: scale(1.02);
+    }
+    .home-btn svg { width: 20px; height: 20px; }
+
+    /* Quick Links */
+    .quick-links {
+      margin-top: 40px;
+      padding-top: 32px;
+      border-top: 1px solid #E5E7EB;
+    }
+    .quick-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #9CA3AF;
+      margin-bottom: 16px;
+    }
+    .links-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+    }
+    .quick-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      background: #F3F4F6;
+      color: #4B5563;
+      font-size: 14px;
+      font-weight: 600;
+      border-radius: 12px;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .quick-link:hover {
+      background: #EFF6FF;
+      color: #1D4ED8;
+    }
+    .quick-link svg { width: 16px; height: 16px; }
+
+    /* Footer */
+    footer {
+      padding: 24px 0;
+      text-align: center;
+    }
+    footer p {
+      font-size: 12px;
+      color: #9CA3AF;
+    }
   </style>
 </head>
-<body class="bg-gradient-to-b from-gray-50 to-white text-gray-900 antialiased min-h-screen flex flex-col">
+<body>
 
   <!-- Header -->
-  <header class="bg-white/80 backdrop-blur-xl border-b border-gray-100/80">
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-center">
-      <a href="/" class="flex items-center gap-2.5 group">
-        <img src="/logo.png" alt="BudgieBreedingTracker" class="w-9 h-9 rounded-lg transition-transform duration-300 group-hover:scale-110">
-        <span class="font-extrabold text-lg text-primary-800 tracking-tight">BudgieBreedingTracker</span>
+  <header>
+    <div class="header-inner">
+      <a href="/" class="logo-link">
+        <img src="/logo.png" alt="BudgieBreedingTracker" class="logo-img">
+        <span class="logo-text">BudgieBreedingTracker</span>
       </a>
+      <div class="lang-group">
+        <button onclick="setLanguage('tr')" class="lang-btn active" id="langTr">TR</button>
+        <button onclick="setLanguage('en')" class="lang-btn" id="langEn">EN</button>
+        <button onclick="setLanguage('de')" class="lang-btn" id="langDe">DE</button>
+      </div>
     </div>
   </header>
 
   <!-- 404 Content -->
-  <main class="flex-1 flex items-center justify-center px-4 py-16">
-    <div class="text-center max-w-md">
-      <div class="text-8xl mb-6 animate-float">&#x1F426;</div>
-      <h1 class="text-6xl sm:text-7xl font-black gradient-text mb-4">404</h1>
-      <h2 class="text-xl sm:text-2xl font-bold text-gray-900 mb-3">Page Not Found</h2>
-      <p class="text-gray-500 mb-8 leading-relaxed">
-        Oops! This page seems to have flown away. Let's get you back on track.
+  <main>
+    <div class="content">
+      <div class="bird-emoji">&#x1F426;</div>
+      <h1 class="title-404 gradient-text">404</h1>
+      <h2 class="subtitle" data-i18n="title">Sayfa Bulunamadı</h2>
+      <p class="desc" data-i18n="desc">
+        Hay aksi! Bu sayfa uçup gitmiş gibi görünüyor. Sizi doğru yere yönlendirelim.
       </p>
-      <a href="/" class="inline-flex items-center gap-2 px-8 py-4 bg-primary-800 text-white font-bold rounded-2xl hover:bg-primary-700 transition-all shadow-lg shadow-primary-800/25 hover:shadow-xl hover:scale-[1.02]">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-        Go to Homepage
+      <a href="/" class="home-btn">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+        <span data-i18n="button">Ana Sayfaya Git</span>
       </a>
+
+      <!-- Quick Links -->
+      <div class="quick-links">
+        <p class="quick-title" data-i18n="quick_title">Popüler Sayfalar</p>
+        <div class="links-row">
+          <a href="/support/" class="quick-link">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+            <span data-i18n="link_support">Destek</span>
+          </a>
+          <a href="/privacy-policy.html" class="quick-link">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+            <span data-i18n="link_privacy">Gizlilik Politikası</span>
+          </a>
+          <a href="/terms-of-use.html" class="quick-link">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            <span data-i18n="link_terms">Kullanım Koşulları</span>
+          </a>
+          <a href="/community-guidelines.html" class="quick-link">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            <span data-i18n="link_community">Topluluk Kuralları</span>
+          </a>
+        </div>
+      </div>
     </div>
   </main>
 
   <!-- Footer -->
-  <footer class="py-6 text-center">
-    <p class="text-xs text-gray-400">&copy; 2025-2026 BudgieBreedingTracker</p>
+  <footer>
+    <p>&copy; 2025-2026 BudgieBreedingTracker</p>
   </footer>
+
+  <script>
+    const translations = {
+      tr: {
+        title: 'Sayfa Bulunamadı',
+        desc: 'Hay aksi! Bu sayfa uçup gitmiş gibi görünüyor. Sizi doğru yere yönlendirelim.',
+        button: 'Ana Sayfaya Git',
+        quick_title: 'Popüler Sayfalar',
+        link_support: 'Destek',
+        link_privacy: 'Gizlilik Politikası',
+        link_terms: 'Kullanım Koşulları',
+        link_community: 'Topluluk Kuralları',
+      },
+      en: {
+        title: 'Page Not Found',
+        desc: "Oops! This page seems to have flown away. Let's get you back on track.",
+        button: 'Go to Homepage',
+        quick_title: 'Popular Pages',
+        link_support: 'Support',
+        link_privacy: 'Privacy Policy',
+        link_terms: 'Terms of Use',
+        link_community: 'Community Guidelines',
+      },
+      de: {
+        title: 'Seite nicht gefunden',
+        desc: 'Hoppla! Diese Seite scheint davongeflogen zu sein. Lassen Sie uns Sie zurückbringen.',
+        button: 'Zur Startseite',
+        quick_title: 'Beliebte Seiten',
+        link_support: 'Support',
+        link_privacy: 'Datenschutzrichtlinie',
+        link_terms: 'Nutzungsbedingungen',
+        link_community: 'Community-Richtlinien',
+      }
+    };
+
+    function setLanguage(lang) {
+      localStorage.setItem('bbt-lang', lang);
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (translations[lang] && translations[lang][key]) {
+          el.textContent = translations[lang][key];
+        }
+      });
+      document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+      const activeBtn = document.getElementById('lang' + lang.charAt(0).toUpperCase() + lang.slice(1));
+      if (activeBtn) activeBtn.classList.add('active');
+    }
+
+    // Auto-detect language
+    const savedLang = localStorage.getItem('bbt-lang') || (navigator.language.startsWith('de') ? 'de' : navigator.language.startsWith('en') ? 'en' : 'tr');
+    setLanguage(savedLang);
+  </script>
 
 </body>
 </html>
