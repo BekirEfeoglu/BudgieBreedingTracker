@@ -40,9 +40,28 @@ dart fix --apply
 ### Quality Scripts (Python)
 ```bash
 python scripts/check_l10n_sync.py       # Verify tr/en/de translation keys are in sync
-python scripts/verify_code_quality.py    # Anti-pattern scan (17 categories)
+python scripts/verify_code_quality.py    # Anti-pattern scan (11 automated categories)
 python scripts/verify_rules.py          # Validate .claude/rules numeric claims against codebase
 ```
+
+## Codebase Stats
+
+| Metric | Value |
+| --- | --- |
+| Source files (lib/) | 603 Dart files |
+| Test files (test/) | 554 test files, 5,300+ individual tests |
+| Feature modules | 20 |
+| Drift tables / DAOs / Mappers | 19 each |
+| Repositories | 18 entity + base + sync_metadata |
+| Remote sources | 19 entity + base |
+| Freezed models | 20 model files + statistics_models + supabase_extensions |
+| Domain services | 13 directories |
+| Routes | 59 |
+| Custom SVG icons | 82 constants, 83 files on disk |
+| Shared widgets | 17 (12 root + 5 in subdirs) |
+| Enum files | 11 |
+| L10n keys | ~1,999 per language, 35 categories |
+| DB schema version | 14 |
 
 ## Architecture Overview
 
@@ -83,6 +102,7 @@ router/     -> Can import features/ (screens only)
 - Conflict resolution: server-wins via `insertOnConflictUpdate()`
 - ProfileRepository is special: push-before-pull (single-record)
 - SyncOrchestrator runs every 15 min, full reconciliation every 6h
+- Retry: max 5 retries, exponential backoff (30s → 10min cap)
 
 ### Code Generation (build.yaml)
 - `json_serializable`: `field_rename: snake`, `explicit_to_json: true`
@@ -112,13 +132,14 @@ router/     -> Can import features/ (screens only)
 - **Colors/styles**: always via `Theme.of(context)`, never hardcoded
 - **Icons**: 82 custom SVG icons via `AppIcons` constants + `AppIcon` widget; LucideIcons for generic UI icons
 - **Shared widgets accepting `Widget icon`** (not IconData): EmptyState, InfoCard, StatCard, FabButton, PrimaryButton, StatusBadge
-- **Localization**: `'feature.key'.tr()` — master file is `tr.json` (~1,995 keys, 35 categories)
+- **Localization**: `'feature.key'.tr()` — master file is `tr.json` (~1,999 keys, 35 categories)
 - **Database**: Schema version 14, migration via for-loop + switch pattern
 - **Riverpod 3**: No StateProvider (use NotifierProvider), no `.valueOrNull` (use `.value`)
 - **Freezed 3**: Always add `const Model._()` private constructor
-- **Supabase**: Table/column names via `SupabaseConstants` (87 constants), never hardcoded
+- **Supabase**: Table/column names via `SupabaseConstants` (77 constants), never hardcoded
 - **File limit**: 300 lines per file; split using `part` directive if needed
 - **Error tracking**: Sentry for critical errors, `AppLogger` for all logging
+- **Responsive**: `NavigationBar` (< 600px) / `NavigationRail` (>= 600px) in MainShell
 
 ## CI Pipeline
 
@@ -129,6 +150,34 @@ Four required checks on PRs to `main`:
 4. **Code Quality** — `python scripts/verify_code_quality.py`
 
 Golden tests are tagged and excluded from CI (platform-dependent).
+
+## Key File Locations
+
+```
+Providers:     lib/features/<feature>/providers/
+Screens:       lib/features/<feature>/screens/
+Widgets:       lib/features/<feature>/widgets/
+Models:        lib/data/models/                 (20 Freezed models + statistics_models + supabase_extensions)
+Enums:         lib/core/enums/                  (11 enum files)
+Extensions:    lib/core/extensions/             (context_extensions, num_extensions)
+Tables:        lib/data/local/database/tables/  (19 Drift tables)
+DAOs:          lib/data/local/database/daos/    (19 DAOs)
+Mappers:       lib/data/local/database/mappers/ (19 mappers)
+Repos:         lib/data/repositories/           (18 entity repos + base + sync_metadata)
+Remote:        lib/data/remote/api/             (19 entity sources + base + community_post_cache)
+Services:      lib/domain/services/             (13 dirs: ads, auth, backup, calendar, encryption, export,
+                                                 genetics, import, incubation, moderation, notifications,
+                                                 payment, sync)
+Router:        lib/router/                      (59 routes, 2 guards: admin, premium; auth inline)
+Theme:         lib/core/theme/                  (4 files: colors, spacing, typography, theme)
+Shared UI:     lib/core/widgets/                (17 widgets: 12 root + 2 buttons + 2 cards + 1 dialog)
+Icons:         lib/core/constants/app_icons.dart (82 SVG path constants)
+SVG Assets:    assets/icons/                    (10 subdirectories, 83 SVG files)
+Preferences:   lib/data/local/preferences/      (AppPreferences)
+EdgeFunctions: lib/data/remote/supabase/        (EdgeFunctionClient)
+Translations:  assets/translations/             (~1,999 leaf keys per language, 35 categories)
+Database:      schemaVersion 14 (switch-based migration, 30+ perf indexes)
+```
 
 ## Detailed Rules
 
