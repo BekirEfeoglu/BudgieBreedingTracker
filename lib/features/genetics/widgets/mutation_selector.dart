@@ -5,6 +5,12 @@ import 'package:budgie_breeding_tracker/domain/services/genetics/mutation_databa
 import 'package:budgie_breeding_tracker/domain/services/genetics/parent_genotype.dart';
 import 'package:budgie_breeding_tracker/features/genetics/widgets/mutation_chip_widgets.dart';
 
+// Computed once at module load — MutationDatabase data is immutable.
+final _cachedMutationsByCategory = <String, List<BudgieMutationRecord>>{
+  for (final category in MutationDatabase.getCategories())
+    category: MutationDatabase.getByCategory(category),
+};
+
 /// Widget with categorized [ExpansionTile] groups for selecting budgie mutations.
 ///
 /// Uses [MutationDatabase] to list all curated mutations, grouped by category.
@@ -28,7 +34,7 @@ class MutationSelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final categories = MutationDatabase.getCategories();
+    final categories = _cachedMutationsByCategory.keys.toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -72,7 +78,7 @@ class MutationSelector extends StatelessWidget {
         ...categories.map(
           (category) => _CategoryGroup(
             category: category,
-            mutations: MutationDatabase.getByCategory(category),
+            mutations: _cachedMutationsByCategory[category]!,
             genotype: genotype,
             onGenotypeChanged: onGenotypeChanged,
           ),
