@@ -165,33 +165,37 @@ class _WizardNavBar extends ConsumerWidget {
     }
   }
 
-  Future<String?> _showNoteDialog(BuildContext context) {
+  Future<String?> _showNoteDialog(BuildContext context) async {
     final controller = TextEditingController();
-    return showDialog<String?>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text('genetics.save_note_title'.tr()),
-        content: TextField(
-          controller: controller,
-          decoration: InputDecoration(
-            hintText: 'genetics.save_note_hint'.tr(),
-            border: const OutlineInputBorder(),
+    try {
+      return await showDialog<String?>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text('genetics.save_note_title'.tr()),
+          content: TextField(
+            controller: controller,
+            decoration: InputDecoration(
+              hintText: 'genetics.save_note_hint'.tr(),
+              border: const OutlineInputBorder(),
+            ),
+            maxLines: 3,
+            textCapitalization: TextCapitalization.sentences,
           ),
-          maxLines: 3,
-          textCapitalization: TextCapitalization.sentences,
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(null),
+              child: Text('common.cancel'.tr()),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(ctx).pop(controller.text),
+              child: Text('common.save'.tr()),
+            ),
+          ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(null),
-            child: Text('common.cancel'.tr()),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(ctx).pop(controller.text),
-            child: Text('common.save'.tr()),
-          ),
-        ],
-      ),
-    );
+      );
+    } finally {
+      controller.dispose();
+    }
   }
 
   @override
