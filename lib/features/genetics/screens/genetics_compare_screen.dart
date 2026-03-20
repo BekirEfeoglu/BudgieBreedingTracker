@@ -68,24 +68,44 @@ class GeneticsCompareScreen extends ConsumerWidget {
   }
 }
 
-class _CompareTable extends StatelessWidget {
+class _CompareTable extends StatefulWidget {
   final List<GeneticsHistory> entries;
 
   const _CompareTable({required this.entries});
 
   @override
+  State<_CompareTable> createState() => _CompareTableState();
+}
+
+class _CompareTableState extends State<_CompareTable> {
+  late Map<String, List<OffspringResult>> _parsedResults;
+
+  @override
+  void initState() {
+    super.initState();
+    _parsedResults = {
+      for (final e in widget.entries) e.id: parseHistoryResults(e.resultsJson),
+    };
+  }
+
+  @override
+  void didUpdateWidget(_CompareTable oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.entries != widget.entries) {
+      _parsedResults = {
+        for (final e in widget.entries) e.id: parseHistoryResults(e.resultsJson),
+      };
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    // Pre-parse all results once per build, not per row.
-    final parsedResults = <String, List<OffspringResult>>{
-      for (final e in entries) e.id: parseHistoryResults(e.resultsJson),
-    };
-
     // Extract all unique phenotypes across all entries
     final allPhenotypes = <String>{};
-    for (final entry in entries) {
-      final results = parsedResults[entry.id]!;
+    for (final entry in widget.entries) {
+      final results = _parsedResults[entry.id]!;
       for (final r in results) {
         allPhenotypes.add(
           r.compoundPhenotype ??
@@ -116,7 +136,7 @@ class _CompareTable extends StatelessWidget {
                 ),
               ),
             ),
-            ...entries.map((e) {
+            ...widget.entries.map((e) {
               return DataColumn(label: _EntryHeader(entry: e));
             }),
           ],
@@ -142,8 +162,8 @@ class _CompareTable extends StatelessWidget {
                     ],
                   ),
                 ),
-                ...entries.map((e) {
-                  final results = parsedResults[e.id]!;
+                ...widget.entries.map((e) {
+                  final results = _parsedResults[e.id]!;
                   final match = results.firstWhere(
                     (r) {
                       final p =
