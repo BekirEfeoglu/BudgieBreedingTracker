@@ -150,10 +150,6 @@ class ParentGenotype {
   /// Returns a copy with all mutations cleared.
   ParentGenotype clear() => ParentGenotype.empty(gender: gender);
 
-  /// Converts to legacy Set<String> format (only visual mutations).
-  /// For backward compatibility with old calculateOffspring API.
-  Set<String> toLegacySet() => visualMutations;
-
   /// Returns the mutation IDs belonging to the given allelic series [locusId].
   /// Useful for checking how many alleles the user selected at one locus.
   List<String> getMutationsAtLocus(String locusId) {

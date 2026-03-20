@@ -108,7 +108,7 @@ void main() {
     });
 
     test(
-      'clear removes all mutations and toLegacySet returns visuals only',
+      'clear removes all mutations and visualMutations returns visuals only',
       () {
         final genotype = ParentGenotype(
           gender: BirdGender.male,
@@ -118,7 +118,7 @@ void main() {
           },
         );
 
-        expect(genotype.toLegacySet(), {'blue'});
+        expect(genotype.visualMutations, {'blue'});
         expect(genotype.clear().isEmpty, isTrue);
       },
     );

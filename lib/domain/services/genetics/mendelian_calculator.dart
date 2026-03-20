@@ -24,43 +24,6 @@ part 'inheritance_combiner_helpers.dart';
 class MendelianCalculator {
   const MendelianCalculator();
 
-  /// Calculates offspring predictions from parent mutation IDs.
-  ///
-  /// [fatherMutations] and [motherMutations] are sets of mutation IDs
-  /// from [MutationDatabase] (e.g., `{'blue', 'opaline'}`).
-  /// Both parents are assumed homozygous visual for selected mutations.
-  @Deprecated(
-    'Use calculateFromGenotypes instead for explicit allele state support',
-  )
-  List<OffspringResult> calculateOffspring({
-    required Set<String> fatherMutations,
-    required Set<String> motherMutations,
-  }) {
-    if (fatherMutations.isEmpty && motherMutations.isEmpty) return [];
-
-    final results = <_RawResult>[];
-
-    // Separate autosomal and sex-linked mutations
-    final allIds = {...fatherMutations, ...motherMutations};
-
-    for (final mutationId in allIds) {
-      final record = MutationDatabase.getById(mutationId);
-      if (record == null) continue;
-
-      final inFather = fatherMutations.contains(mutationId);
-      final inMother = motherMutations.contains(mutationId);
-
-      if (record.isSexLinked) {
-        results.addAll(_calculateSexLinked(record, inFather, inMother));
-      } else {
-        results.addAll(_calculateAutosomal(record, inFather, inMother));
-      }
-    }
-
-    // Combine and normalize results
-    return _combineResults(results);
-  }
-
   /// Advanced calculation using [ParentGenotype] with explicit allele states.
   ///
   /// This method supports carrier/visual distinction per mutation,
@@ -305,20 +268,6 @@ class MendelianCalculator {
       sym,
       fatherState,
       motherState,
-    );
-  }
-
-  /// Returns Punnett square data for a single mutation locus.
-  ///
-  /// Returns a map with 'headers' (father/mother alleles) and 'cells'.
-  @Deprecated('Use buildPunnettSquareFromGenotypes instead')
-  PunnettSquareData? buildPunnettSquare({
-    required Set<String> fatherMutations,
-    required Set<String> motherMutations,
-  }) {
-    return _buildPunnettSquareSimple(
-      fatherMutations: fatherMutations,
-      motherMutations: motherMutations,
     );
   }
 

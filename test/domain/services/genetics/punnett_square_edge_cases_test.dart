@@ -5,6 +5,13 @@ import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/mendelian_calculator.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/parent_genotype.dart';
 
+ParentGenotype _toGenotype(Set<String> ids, BirdGender gender) {
+  return ParentGenotype(
+    mutations: {for (final id in ids) id: AlleleState.visual},
+    gender: gender,
+  );
+}
+
 void main() {
   const calculator = MendelianCalculator();
 
@@ -119,20 +126,18 @@ void main() {
 
   group('MendelianCalculator offspring edge cases', () {
     test('returns empty list when both parents have no mutations', () {
-      // ignore: deprecated_member_use_from_same_package
-      final results = calculator.calculateOffspring(
-        fatherMutations: {},
-        motherMutations: {},
+      final results = calculator.calculateFromGenotypes(
+        father: _toGenotype({}, BirdGender.male),
+        mother: _toGenotype({}, BirdGender.female),
       );
 
       expect(results, isEmpty);
     });
 
     test('handles single mutation in one parent', () {
-      // ignore: deprecated_member_use_from_same_package
-      final results = calculator.calculateOffspring(
-        fatherMutations: {'blue'},
-        motherMutations: {},
+      final results = calculator.calculateFromGenotypes(
+        father: _toGenotype({'blue'}, BirdGender.male),
+        mother: _toGenotype({}, BirdGender.female),
       );
 
       expect(results, isNotEmpty);
@@ -143,10 +148,9 @@ void main() {
     });
 
     test('probabilities sum to approximately 1.0', () {
-      // ignore: deprecated_member_use_from_same_package
-      final results = calculator.calculateOffspring(
-        fatherMutations: {'blue', 'opaline'},
-        motherMutations: {'blue'},
+      final results = calculator.calculateFromGenotypes(
+        father: _toGenotype({'blue', 'opaline'}, BirdGender.male),
+        mother: _toGenotype({'blue'}, BirdGender.female),
       );
 
       if (results.isNotEmpty) {

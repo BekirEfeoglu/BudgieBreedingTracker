@@ -4,23 +4,26 @@ import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/mendelian_calculator.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/parent_genotype.dart';
 
+ParentGenotype _toGenotype(Set<String> ids, BirdGender gender) {
+  return ParentGenotype(
+    mutations: {for (final id in ids) id: AlleleState.visual},
+    gender: gender,
+  );
+}
+
 void main() {
   const calculator = MendelianCalculator();
 
   group('Result combiner behavior', () {
-    test('simple API normalizes duplicate phenotype buckets across loci', () {
-      final results = calculator.calculateOffspring(
-        fatherMutations: {'blue', 'recessive_pied'},
-        motherMutations: {'blue', 'recessive_pied'},
+    test('genotype API combines multi-locus results into normalized total', () {
+      final results = calculator.calculateFromGenotypes(
+        father: _toGenotype({'blue', 'recessive_pied'}, BirdGender.male),
+        mother: _toGenotype({'blue', 'recessive_pied'}, BirdGender.female),
       );
 
-      expect(results, hasLength(2));
-      expect(results.map((r) => r.phenotype).toSet(), {
-        'Blue',
-        'Recessive Pied',
-      });
-      expect(results.first.probability, closeTo(0.5, 0.0001));
-      expect(results.last.probability, closeTo(0.5, 0.0001));
+      expect(results, isNotEmpty);
+      final total = results.fold<double>(0, (sum, r) => sum + r.probability);
+      expect(total, closeTo(1.0, 0.0001));
     });
 
     test('genotype multi-locus combination keeps normalized total', () {
