@@ -21,8 +21,7 @@ class TwoFactorVerifyScreen extends ConsumerStatefulWidget {
       _TwoFactorVerifyScreenState();
 }
 
-class _TwoFactorVerifyScreenState
-    extends ConsumerState<TwoFactorVerifyScreen> {
+class _TwoFactorVerifyScreenState extends ConsumerState<TwoFactorVerifyScreen> {
   static const _maxAttempts = 5;
   static const _lockoutDuration = Duration(minutes: 2);
 
@@ -70,7 +69,9 @@ class _TwoFactorVerifyScreenState
       }
       setState(() {
         _error = _isLockedOut
-            ? 'auth.2fa_too_many_attempts'.tr(args: ['${_lockoutDuration.inSeconds}'])
+            ? 'auth.2fa_too_many_attempts'.tr(
+                args: ['${_lockoutDuration.inSeconds}'],
+              )
             : 'auth.2fa_invalid_code'.tr();
         _isVerifying = false;
       });
@@ -82,9 +83,7 @@ class _TwoFactorVerifyScreenState
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text('auth.2fa_verify'.tr()),
-      ),
+      appBar: AppBar(title: Text('auth.2fa_verify'.tr())),
       body: Center(
         child: SingleChildScrollView(
           padding: AppSpacing.screenPadding,

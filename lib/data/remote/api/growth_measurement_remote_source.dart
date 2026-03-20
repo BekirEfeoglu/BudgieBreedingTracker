@@ -23,7 +23,10 @@ class GrowthMeasurementRemoteSource
       model.toSupabase();
 
   /// Fetches growth measurements for a specific chick.
-  Future<List<GrowthMeasurement>> fetchByChick(String userId, String chickId) async {
+  Future<List<GrowthMeasurement>> fetchByChick(
+    String userId,
+    String chickId,
+  ) async {
     final response = await table
         .select()
         .eq('user_id', userId)

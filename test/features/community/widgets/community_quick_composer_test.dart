@@ -11,40 +11,56 @@ void main() {
 
   group('CommunityQuickComposer', () {
     testWidgets('renders without crashing', (tester) async {
-      await tester.pumpWidget(wrap(CommunityQuickComposer(
-        currentUserId: 'user-123',
-        onCreatePost: () {},
-      )));
+      await tester.pumpWidget(
+        wrap(
+          CommunityQuickComposer(
+            currentUserId: 'user-123',
+            onCreatePost: () {},
+          ),
+        ),
+      );
       await tester.pumpAndSettle();
 
       expect(find.byType(CommunityQuickComposer), findsOneWidget);
     });
 
     testWidgets('shows user initial in avatar', (tester) async {
-      await tester.pumpWidget(wrap(CommunityQuickComposer(
-        currentUserId: 'user-123',
-        onCreatePost: () {},
-      )));
+      await tester.pumpWidget(
+        wrap(
+          CommunityQuickComposer(
+            currentUserId: 'user-123',
+            onCreatePost: () {},
+          ),
+        ),
+      );
       await tester.pumpAndSettle();
 
       expect(find.text('U'), findsOneWidget);
     });
 
     testWidgets('shows content label hint', (tester) async {
-      await tester.pumpWidget(wrap(CommunityQuickComposer(
-        currentUserId: 'user-123',
-        onCreatePost: () {},
-      )));
+      await tester.pumpWidget(
+        wrap(
+          CommunityQuickComposer(
+            currentUserId: 'user-123',
+            onCreatePost: () {},
+          ),
+        ),
+      );
       await tester.pumpAndSettle();
 
       expect(find.text('community.content_label'), findsOneWidget);
     });
 
     testWidgets('shows photo and create buttons', (tester) async {
-      await tester.pumpWidget(wrap(CommunityQuickComposer(
-        currentUserId: 'user-123',
-        onCreatePost: () {},
-      )));
+      await tester.pumpWidget(
+        wrap(
+          CommunityQuickComposer(
+            currentUserId: 'user-123',
+            onCreatePost: () {},
+          ),
+        ),
+      );
       await tester.pumpAndSettle();
 
       expect(find.text('community.add_photo'), findsOneWidget);
@@ -55,10 +71,14 @@ void main() {
 
     testWidgets('calls onCreatePost when hint area is tapped', (tester) async {
       var called = false;
-      await tester.pumpWidget(wrap(CommunityQuickComposer(
-        currentUserId: 'user-123',
-        onCreatePost: () => called = true,
-      )));
+      await tester.pumpWidget(
+        wrap(
+          CommunityQuickComposer(
+            currentUserId: 'user-123',
+            onCreatePost: () => called = true,
+          ),
+        ),
+      );
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('community.content_label'));

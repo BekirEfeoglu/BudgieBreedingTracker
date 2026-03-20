@@ -7,8 +7,9 @@ import 'package:budgie_breeding_tracker/data/local/preferences/app_preferences.d
 // Auto Sync
 // ---------------------------------------------------------------------------
 
-final autoSyncProvider =
-    NotifierProvider<AutoSyncNotifier, bool>(AutoSyncNotifier.new);
+final autoSyncProvider = NotifierProvider<AutoSyncNotifier, bool>(
+  AutoSyncNotifier.new,
+);
 
 class AutoSyncNotifier extends Notifier<bool> {
   @override
@@ -33,8 +34,9 @@ class AutoSyncNotifier extends Notifier<bool> {
 // WiFi-Only Sync
 // ---------------------------------------------------------------------------
 
-final wifiOnlySyncProvider =
-    NotifierProvider<WifiOnlySyncNotifier, bool>(WifiOnlySyncNotifier.new);
+final wifiOnlySyncProvider = NotifierProvider<WifiOnlySyncNotifier, bool>(
+  WifiOnlySyncNotifier.new,
+);
 
 class WifiOnlySyncNotifier extends Notifier<bool> {
   @override

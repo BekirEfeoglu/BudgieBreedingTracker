@@ -40,12 +40,11 @@ class AvatarUploadState {
     bool? isUploading,
     String? error,
     bool? isSuccess,
-  }) =>
-      AvatarUploadState(
-        isUploading: isUploading ?? this.isUploading,
-        error: error,
-        isSuccess: isSuccess ?? this.isSuccess,
-      );
+  }) => AvatarUploadState(
+    isUploading: isUploading ?? this.isUploading,
+    error: error,
+    isSuccess: isSuccess ?? this.isSuccess,
+  );
 }
 
 class AvatarUploadNotifier extends Notifier<AvatarUploadState> {
@@ -107,7 +106,9 @@ class AvatarUploadNotifier extends Notifier<AvatarUploadState> {
 }
 
 final avatarUploadStateProvider =
-    NotifierProvider<AvatarUploadNotifier, AvatarUploadState>(AvatarUploadNotifier.new);
+    NotifierProvider<AvatarUploadNotifier, AvatarUploadState>(
+      AvatarUploadNotifier.new,
+    );
 
 // ---------------------------------------------------------------------------
 // Password Change
@@ -128,12 +129,11 @@ class PasswordChangeState {
     bool? isLoading,
     String? error,
     bool? isSuccess,
-  }) =>
-      PasswordChangeState(
-        isLoading: isLoading ?? this.isLoading,
-        error: error,
-        isSuccess: isSuccess ?? this.isSuccess,
-      );
+  }) => PasswordChangeState(
+    isLoading: isLoading ?? this.isLoading,
+    error: error,
+    isSuccess: isSuccess ?? this.isSuccess,
+  );
 }
 
 class PasswordChangeNotifier extends Notifier<PasswordChangeState> {
@@ -168,7 +168,9 @@ class PasswordChangeNotifier extends Notifier<PasswordChangeState> {
 }
 
 final passwordChangeStateProvider =
-    NotifierProvider<PasswordChangeNotifier, PasswordChangeState>(PasswordChangeNotifier.new);
+    NotifierProvider<PasswordChangeNotifier, PasswordChangeState>(
+      PasswordChangeNotifier.new,
+    );
 
 // ---------------------------------------------------------------------------
 // Profile Completion
@@ -189,16 +191,17 @@ class ProfileCompletion {
 }
 
 /// Calculates profile completion from 6 factors.
-final profileCompletionProvider =
-    Provider.family<ProfileCompletion, String>((ref, userId) {
+final profileCompletionProvider = Provider.family<ProfileCompletion, String>((
+  ref,
+  userId,
+) {
   final profile = ref.watch(userProfileProvider).value;
   final stats = ref.watch(profileStatsProvider(userId)).value;
 
   final items = [
     CompletionItem(
       labelKey: 'profile.completion_name',
-      isCompleted:
-          profile?.fullName != null && profile!.fullName!.isNotEmpty,
+      isCompleted: profile?.fullName != null && profile!.fullName!.isNotEmpty,
     ),
     CompletionItem(
       labelKey: 'profile.completion_avatar',
@@ -277,14 +280,15 @@ class SecurityScore {
 }
 
 /// Computes account security score from multiple factors.
-final securityScoreProvider =
-    Provider.family<SecurityScore, String>((ref, userId) {
+final securityScoreProvider = Provider.family<SecurityScore, String>((
+  ref,
+  userId,
+) {
   final profile = ref.watch(userProfileProvider).value;
   final user = ref.watch(currentUserProvider);
 
   final emailVerified = user?.emailConfirmedAt != null;
-  final hasProfile =
-      profile?.fullName != null && profile!.fullName!.isNotEmpty;
+  final hasProfile = profile?.fullName != null && profile!.fullName!.isNotEmpty;
   final hasAvatar = profile?.avatarUrl != null;
 
   final factors = [
@@ -315,8 +319,9 @@ final securityScoreProvider =
     ),
   ];
 
-  final score =
-      factors.where((f) => f.isCompleted).fold(0, (sum, f) => sum + f.points);
+  final score = factors
+      .where((f) => f.isCompleted)
+      .fold(0, (sum, f) => sum + f.points);
 
   return SecurityScore(score: score, factors: factors);
 });
@@ -327,8 +332,10 @@ final securityScoreProvider =
 
 /// Provides bird/pair/egg/chick counts for the profile header.
 /// Uses SQL COUNT queries (via home_providers) instead of full entity lists.
-final profileStatsProvider =
-    Provider.family<AsyncValue<ProfileStats>, String>((ref, userId) {
+final profileStatsProvider = Provider.family<AsyncValue<ProfileStats>, String>((
+  ref,
+  userId,
+) {
   final birdsCount = ref.watch(birdCountProvider(userId));
   final pairsCount = ref.watch(activeBreedingCountProvider(userId));
   final eggsCount = ref.watch(eggCountProvider(userId));
@@ -346,12 +353,14 @@ final profileStatsProvider =
         data: (eggs) => chicksCount.when(
           loading: () => const AsyncLoading(),
           error: (e, st) => AsyncError(e, st),
-          data: (chicks) => AsyncData(ProfileStats(
-            totalBirds: birds,
-            totalPairs: pairs,
-            totalEggs: eggs,
-            totalChicks: chicks,
-          )),
+          data: (chicks) => AsyncData(
+            ProfileStats(
+              totalBirds: birds,
+              totalPairs: pairs,
+              totalEggs: eggs,
+              totalChicks: chicks,
+            ),
+          ),
         ),
       ),
     ),

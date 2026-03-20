@@ -14,8 +14,8 @@ class CommunityCommentRepository {
   const CommunityCommentRepository({
     required CommunityCommentRemoteSource commentSource,
     required CommunitySocialRemoteSource socialSource,
-  })  : _commentSource = commentSource,
-        _socialSource = socialSource;
+  }) : _commentSource = commentSource,
+       _socialSource = socialSource;
 
   Future<List<CommunityComment>> getByPost({
     required String postId,
@@ -51,12 +51,14 @@ class CommunityCommentRepository {
     required String postId,
     required String userId,
     required String content,
+    bool needsReview = false,
   }) async {
     await _commentSource.insert({
       'id': const Uuid().v4(),
       'post_id': postId,
       'user_id': userId,
       'content': content.trim(),
+      if (needsReview) 'needs_review': true,
     });
   }
 
@@ -92,8 +94,9 @@ class CommunityCommentRepository {
         : int.tryParse(row['like_count']?.toString() ?? '') ?? 0;
 
     final createdAtStr = row['created_at']?.toString();
-    final createdAt =
-        createdAtStr != null ? DateTime.tryParse(createdAtStr) : null;
+    final createdAt = createdAtStr != null
+        ? DateTime.tryParse(createdAtStr)
+        : null;
 
     return CommunityComment(
       id: id,

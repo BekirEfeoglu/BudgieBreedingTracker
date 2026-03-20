@@ -268,4 +268,3 @@ class _GeneticsReverseScreenState extends ConsumerState<GeneticsReverseScreen> {
     );
   }
 }
-

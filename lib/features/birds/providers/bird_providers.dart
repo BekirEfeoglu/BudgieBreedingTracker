@@ -5,8 +5,10 @@ import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 
 /// All birds for a user (live stream).
-final birdsStreamProvider =
-    StreamProvider.family<List<Bird>, String>((ref, userId) {
+final birdsStreamProvider = StreamProvider.family<List<Bird>, String>((
+  ref,
+  userId,
+) {
   final repo = ref.watch(birdRepositoryProvider);
   return repo.watchAll(userId);
 });
@@ -18,8 +20,9 @@ class BirdFilterNotifier extends Notifier<BirdFilter> {
 }
 
 /// Current filter selection for the bird list.
-final birdFilterProvider =
-    NotifierProvider<BirdFilterNotifier, BirdFilter>(BirdFilterNotifier.new);
+final birdFilterProvider = NotifierProvider<BirdFilterNotifier, BirdFilter>(
+  BirdFilterNotifier.new,
+);
 
 /// Notifier for bird list search query.
 class BirdSearchQueryNotifier extends Notifier<String> {
@@ -28,7 +31,10 @@ class BirdSearchQueryNotifier extends Notifier<String> {
 }
 
 /// Current search query for the bird list.
-final birdSearchQueryProvider = NotifierProvider<BirdSearchQueryNotifier, String>(BirdSearchQueryNotifier.new);
+final birdSearchQueryProvider =
+    NotifierProvider<BirdSearchQueryNotifier, String>(
+      BirdSearchQueryNotifier.new,
+    );
 
 /// Notifier for bird list sort selection.
 class BirdSortNotifier extends Notifier<BirdSort> {
@@ -37,49 +43,51 @@ class BirdSortNotifier extends Notifier<BirdSort> {
 }
 
 /// Current sort selection for the bird list.
-final birdSortProvider =
-    NotifierProvider<BirdSortNotifier, BirdSort>(BirdSortNotifier.new);
+final birdSortProvider = NotifierProvider<BirdSortNotifier, BirdSort>(
+  BirdSortNotifier.new,
+);
 
 /// Filtered birds based on the current filter selection.
-final filteredBirdsProvider =
-    Provider.family<List<Bird>, List<Bird>>((ref, birds) {
+final filteredBirdsProvider = Provider.family<List<Bird>, List<Bird>>((
+  ref,
+  birds,
+) {
   final filter = ref.watch(birdFilterProvider);
   return switch (filter) {
     BirdFilter.all => birds,
-    BirdFilter.male =>
-      birds.where((b) => b.gender == BirdGender.male).toList(),
+    BirdFilter.male => birds.where((b) => b.gender == BirdGender.male).toList(),
     BirdFilter.female =>
       birds.where((b) => b.gender == BirdGender.female).toList(),
     BirdFilter.alive =>
       birds.where((b) => b.status == BirdStatus.alive).toList(),
-    BirdFilter.dead =>
-      birds.where((b) => b.status == BirdStatus.dead).toList(),
-    BirdFilter.sold =>
-      birds.where((b) => b.status == BirdStatus.sold).toList(),
+    BirdFilter.dead => birds.where((b) => b.status == BirdStatus.dead).toList(),
+    BirdFilter.sold => birds.where((b) => b.status == BirdStatus.sold).toList(),
   };
 });
 
 /// Searched and filtered birds (applies search on top of filter).
 final searchedAndFilteredBirdsProvider =
     Provider.family<List<Bird>, List<Bird>>((ref, birds) {
-  final filtered = ref.watch(filteredBirdsProvider(birds));
-  final query = ref.watch(birdSearchQueryProvider).toLowerCase().trim();
+      final filtered = ref.watch(filteredBirdsProvider(birds));
+      final query = ref.watch(birdSearchQueryProvider).toLowerCase().trim();
 
-  if (query.isEmpty) return filtered;
+      if (query.isEmpty) return filtered;
 
-  return filtered.where((bird) {
-    final nameMatch = bird.name.toLowerCase().contains(query);
-    final ringMatch =
-        bird.ringNumber?.toLowerCase().contains(query) ?? false;
-    final cageMatch =
-        bird.cageNumber?.toLowerCase().contains(query) ?? false;
-    return nameMatch || ringMatch || cageMatch;
-  }).toList();
-});
+      return filtered.where((bird) {
+        final nameMatch = bird.name.toLowerCase().contains(query);
+        final ringMatch =
+            bird.ringNumber?.toLowerCase().contains(query) ?? false;
+        final cageMatch =
+            bird.cageNumber?.toLowerCase().contains(query) ?? false;
+        return nameMatch || ringMatch || cageMatch;
+      }).toList();
+    });
 
 /// Sorted, searched and filtered birds (final display list).
-final sortedAndFilteredBirdsProvider =
-    Provider.family<List<Bird>, List<Bird>>((ref, birds) {
+final sortedAndFilteredBirdsProvider = Provider.family<List<Bird>, List<Bird>>((
+  ref,
+  birds,
+) {
   final searched = ref.watch(searchedAndFilteredBirdsProvider(birds));
   final sort = ref.watch(birdSortProvider);
 
@@ -90,26 +98,42 @@ final sortedAndFilteredBirdsProvider =
     case BirdSort.nameDesc:
       sorted.sort((a, b) => b.name.compareTo(a.name));
     case BirdSort.ageNewest:
-      sorted.sort((a, b) => (b.birthDate ?? DateTime(1900))
-          .compareTo(a.birthDate ?? DateTime(1900)));
+      sorted.sort(
+        (a, b) => (b.birthDate ?? DateTime(1900)).compareTo(
+          a.birthDate ?? DateTime(1900),
+        ),
+      );
     case BirdSort.ageOldest:
-      sorted.sort((a, b) => (a.birthDate ?? DateTime(1900))
-          .compareTo(b.birthDate ?? DateTime(1900)));
+      sorted.sort(
+        (a, b) => (a.birthDate ?? DateTime(1900)).compareTo(
+          b.birthDate ?? DateTime(1900),
+        ),
+      );
     case BirdSort.dateNewest:
-      sorted.sort((a, b) => (b.createdAt ?? DateTime(1900))
-          .compareTo(a.createdAt ?? DateTime(1900)));
+      sorted.sort(
+        (a, b) => (b.createdAt ?? DateTime(1900)).compareTo(
+          a.createdAt ?? DateTime(1900),
+        ),
+      );
     case BirdSort.dateOldest:
-      sorted.sort((a, b) => (a.createdAt ?? DateTime(1900))
-          .compareTo(b.createdAt ?? DateTime(1900)));
+      sorted.sort(
+        (a, b) => (a.createdAt ?? DateTime(1900)).compareTo(
+          b.createdAt ?? DateTime(1900),
+        ),
+      );
   }
   return sorted;
 });
 
 /// Photo URLs for a bird (from local Photo DB, offline-first).
-final birdPhotosProvider =
-    StreamProvider.family<List<String>, String>((ref, birdId) {
+final birdPhotosProvider = StreamProvider.family<List<String>, String>((
+  ref,
+  birdId,
+) {
   final repo = ref.watch(photoRepositoryProvider);
-  return repo.watchByEntity(birdId).map(
+  return repo
+      .watchByEntity(birdId)
+      .map(
         (photos) => photos
             .where((p) => p.filePath != null && p.filePath!.isNotEmpty)
             .map((p) => p.filePath!)
@@ -127,13 +151,13 @@ enum BirdFilter {
   sold;
 
   String get label => switch (this) {
-        BirdFilter.all => 'common.all'.tr(),
-        BirdFilter.male => 'birds.male'.tr(),
-        BirdFilter.female => 'birds.female'.tr(),
-        BirdFilter.alive => 'birds.status_alive'.tr(),
-        BirdFilter.dead => 'birds.status_dead'.tr(),
-        BirdFilter.sold => 'birds.status_sold'.tr(),
-      };
+    BirdFilter.all => 'common.all'.tr(),
+    BirdFilter.male => 'birds.male'.tr(),
+    BirdFilter.female => 'birds.female'.tr(),
+    BirdFilter.alive => 'birds.status_alive'.tr(),
+    BirdFilter.dead => 'birds.status_dead'.tr(),
+    BirdFilter.sold => 'birds.status_sold'.tr(),
+  };
 }
 
 /// Sort options for the bird list.
@@ -146,11 +170,11 @@ enum BirdSort {
   dateOldest;
 
   String get label => switch (this) {
-        BirdSort.nameAsc => 'birds.sort_name_asc'.tr(),
-        BirdSort.nameDesc => 'birds.sort_name_desc'.tr(),
-        BirdSort.ageNewest => 'birds.sort_age_newest'.tr(),
-        BirdSort.ageOldest => 'birds.sort_age_oldest'.tr(),
-        BirdSort.dateNewest => 'birds.sort_date_newest'.tr(),
-        BirdSort.dateOldest => 'birds.sort_date_oldest'.tr(),
-      };
+    BirdSort.nameAsc => 'birds.sort_name_asc'.tr(),
+    BirdSort.nameDesc => 'birds.sort_name_desc'.tr(),
+    BirdSort.ageNewest => 'birds.sort_age_newest'.tr(),
+    BirdSort.ageOldest => 'birds.sort_age_oldest'.tr(),
+    BirdSort.dateNewest => 'birds.sort_date_newest'.tr(),
+    BirdSort.dateOldest => 'birds.sort_date_oldest'.tr(),
+  };
 }

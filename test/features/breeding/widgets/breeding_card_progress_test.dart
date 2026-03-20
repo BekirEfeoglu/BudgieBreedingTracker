@@ -60,8 +60,9 @@ void main() {
       expect(find.byType(AppProgressBar), findsOneWidget);
     });
 
-    testWidgets('progress bar has correct value for active incubation',
-        (tester) async {
+    testWidgets('progress bar has correct value for active incubation', (
+      tester,
+    ) async {
       final incubation = _buildIncubation(
         status: IncubationStatus.active,
         startDate: DateTime(2026, 2, 1),
@@ -76,8 +77,9 @@ void main() {
       expect(progressBar.value, incubation.percentageComplete);
     });
 
-    testWidgets('shows correct stage label for active incubation',
-        (tester) async {
+    testWidgets('shows correct stage label for active incubation', (
+      tester,
+    ) async {
       final incubation = _buildIncubation(
         status: IncubationStatus.active,
         startDate: DateTime(2026, 2, 1),
@@ -92,8 +94,9 @@ void main() {
       expect(find.text(expectedLabel), findsOneWidget);
     });
 
-    testWidgets('stage label has correct color for active incubation',
-        (tester) async {
+    testWidgets('stage label has correct color for active incubation', (
+      tester,
+    ) async {
       final incubation = _buildIncubation(
         status: IncubationStatus.active,
         startDate: DateTime(2026, 2, 1),
@@ -148,8 +151,9 @@ void main() {
       expect(find.text(dayProgressText), findsOneWidget);
     });
 
-    testWidgets('shows completed label for completed incubation',
-        (tester) async {
+    testWidgets('shows completed label for completed incubation', (
+      tester,
+    ) async {
       final incubation = _buildIncubation(
         status: IncubationStatus.completed,
         startDate: DateTime(2026, 2, 1),
@@ -161,8 +165,9 @@ void main() {
       expect(find.text('breeding.completed'.tr()), findsOneWidget);
     });
 
-    testWidgets('uses completed stage color for completed incubation',
-        (tester) async {
+    testWidgets('uses completed stage color for completed incubation', (
+      tester,
+    ) async {
       final incubation = _buildIncubation(
         status: IncubationStatus.completed,
         startDate: DateTime(2026, 2, 1),
@@ -177,8 +182,9 @@ void main() {
       expect(progressBar.color, AppColors.stageCompleted);
     });
 
-    testWidgets('completed incubation shows clamped progress value at 1.0',
-        (tester) async {
+    testWidgets('completed incubation shows clamped progress value at 1.0', (
+      tester,
+    ) async {
       final incubation = _buildIncubation(
         status: IncubationStatus.completed,
         startDate: DateTime(2026, 2, 1),
@@ -195,9 +201,7 @@ void main() {
     });
 
     testWidgets('shows zero progress when start date is null', (tester) async {
-      final incubation = _buildIncubation(
-        startDate: null,
-      );
+      final incubation = _buildIncubation(startDate: null);
 
       await _pump(tester, BreedingCardProgress(incubation: incubation));
 

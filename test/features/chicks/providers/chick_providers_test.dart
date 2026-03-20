@@ -5,10 +5,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:budgie_breeding_tracker/core/enums/chick_enums.dart';
 import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
-import 'package:budgie_breeding_tracker/data/models/growth_measurement_model.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/features/chicks/providers/chick_providers.dart';
-import 'package:budgie_breeding_tracker/features/chicks/providers/growth_measurement_providers.dart';
 
 import '../../../helpers/mocks.dart';
 
@@ -35,27 +33,13 @@ Chick _chick({
   );
 }
 
-GrowthMeasurement _measurement({required String id, required String chickId}) {
-  return GrowthMeasurement(
-    id: id,
-    chickId: chickId,
-    userId: 'user-1',
-    weight: 12.5,
-    measurementDate: DateTime(2024, 1, 2),
-    createdAt: DateTime(2024, 1, 2),
-    updatedAt: DateTime(2024, 1, 2),
-  );
-}
-
 void main() {
   late MockChickRepository chickRepo;
-  late MockGrowthMeasurementRepository growthRepo;
 
   ProviderContainer makeContainer() {
     return ProviderContainer(
       overrides: [
         chickRepositoryProvider.overrideWithValue(chickRepo),
-        growthMeasurementRepositoryProvider.overrideWithValue(growthRepo),
       ],
     );
   }
@@ -63,7 +47,6 @@ void main() {
   setUp(() {
     SharedPreferences.setMockInitialValues({});
     chickRepo = MockChickRepository();
-    growthRepo = MockGrowthMeasurementRepository();
 
     when(() => chickRepo.watchAll(any())).thenAnswer(
       (_) => Stream.value([
@@ -81,15 +64,6 @@ void main() {
         ),
       ]),
     );
-    when(() => growthRepo.watchByChick(any())).thenAnswer(
-      (_) => Stream.value([
-        _measurement(id: 'm1', chickId: 'c1'),
-        _measurement(id: 'm2', chickId: 'c1'),
-      ]),
-    );
-    when(
-      () => growthRepo.getLatest(any()),
-    ).thenAnswer((_) async => _measurement(id: 'm2', chickId: 'c1'));
   });
 
   group('chicksStreamProvider', () {
@@ -157,36 +131,6 @@ void main() {
 
       final result = container.read(searchedAndFilteredChicksProvider(chicks));
       expect(result.single.id, 'c2');
-    });
-  });
-
-  group('growth measurement providers', () {
-    test(
-      'growthMeasurementsStreamProvider delegates to watchByChick',
-      () async {
-        final container = makeContainer();
-        addTearDown(container.dispose);
-
-        container.listen(growthMeasurementsStreamProvider('c1'), (_, __) {});
-        final result = await container.read(
-          growthMeasurementsStreamProvider('c1').future,
-        );
-
-        expect(result, hasLength(2));
-        verify(() => growthRepo.watchByChick('c1')).called(1);
-      },
-    );
-
-    test('latestMeasurementProvider delegates to getLatest', () async {
-      final container = makeContainer();
-      addTearDown(container.dispose);
-
-      final latest = await container.read(
-        latestMeasurementProvider('c1').future,
-      );
-
-      expect(latest?.id, 'm2');
-      verify(() => growthRepo.getLatest('c1')).called(1);
     });
   });
 }

@@ -64,8 +64,8 @@ class DisplaySection extends ConsumerWidget {
   }
 
   IconData _themeIcon(ThemeMode mode) => switch (mode) {
-        ThemeMode.light => LucideIcons.sun,
-        ThemeMode.dark => LucideIcons.moon,
-        ThemeMode.system => LucideIcons.monitor,
-      };
+    ThemeMode.light => LucideIcons.sun,
+    ThemeMode.dark => LucideIcons.moon,
+    ThemeMode.system => LucideIcons.monitor,
+  };
 }

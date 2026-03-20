@@ -61,16 +61,16 @@ class _EmailVerificationScreenState
       final auth = ref.read(authActionsProvider);
       await auth.resendVerification(email);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('auth.resend_success'.tr())),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('auth.resend_success'.tr())));
         _startCooldown();
       }
     } on AuthException catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(mapAuthError(e))),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(mapAuthError(e))));
       }
     } finally {
       if (mounted) setState(() => _resending = false);
@@ -147,8 +147,9 @@ class _EmailVerificationScreenState
                           )
                         : Text(
                             _cooldownSeconds > 0
-                                ? 'auth.resend_email_countdown'
-                                    .tr(args: [_cooldownSeconds.toString()])
+                                ? 'auth.resend_email_countdown'.tr(
+                                    args: [_cooldownSeconds.toString()],
+                                  )
                                 : 'auth.resend_email'.tr(),
                           ),
                   ),

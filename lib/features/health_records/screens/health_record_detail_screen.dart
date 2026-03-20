@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:budgie_breeding_tracker/core/extensions/num_extensions.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/cards/info_card.dart';
 import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
@@ -61,8 +62,10 @@ class _DetailContent extends ConsumerWidget {
     final theme = Theme.of(context);
     final dateFormat = DateFormat('dd MMMM yyyy', context.locale.languageCode);
 
-    ref.listen<HealthRecordFormState>(healthRecordFormStateProvider,
-        (_, state) {
+    ref.listen<HealthRecordFormState>(healthRecordFormStateProvider, (
+      _,
+      state,
+    ) {
       if (state.isSuccess) {
         ref.read(healthRecordFormStateProvider.notifier).reset();
         context.pop();
@@ -107,8 +110,7 @@ class _DetailContent extends ConsumerWidget {
 
             // Info cards
             Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -167,7 +169,7 @@ class _DetailContent extends ConsumerWidget {
                     InfoCard(
                       icon: const Icon(LucideIcons.creditCard),
                       title: 'health_records.cost'.tr(),
-                      subtitle: '${record.cost!.toStringAsFixed(2)} ${'settings.currency_symbol'.tr()}',
+                      subtitle: record.cost!.formatCurrency(context),
                     ),
                   ],
                   if (record.followUpDate != null) ...[
@@ -178,8 +180,7 @@ class _DetailContent extends ConsumerWidget {
                       subtitle: dateFormat.format(record.followUpDate!),
                     ),
                   ],
-                  if (record.notes != null &&
-                      record.notes!.isNotEmpty) ...[
+                  if (record.notes != null && record.notes!.isNotEmpty) ...[
                     const SizedBox(height: AppSpacing.sm),
                     InfoCard(
                       icon: const Icon(LucideIcons.stickyNote),
@@ -243,8 +244,9 @@ class _HeaderSection extends StatelessWidget {
         children: [
           CircleAvatar(
             radius: 32,
-            backgroundColor:
-                healthRecordTypeColor(record.type).withValues(alpha: 0.2),
+            backgroundColor: healthRecordTypeColor(
+              record.type,
+            ).withValues(alpha: 0.2),
             child: Icon(
               healthRecordTypeIcon(record.type),
               size: 32,
@@ -294,14 +296,11 @@ class _AnimalInfoCard extends ConsumerWidget {
         : 'health_records.bird_label'.tr();
 
     return InfoCard(
-      icon: AppIcon(
-        animal.isChick ? AppIcons.chick : AppIcons.bird,
-      ),
+      icon: AppIcon(animal.isChick ? AppIcons.chick : AppIcons.bird),
       title: typeLabel,
       subtitle: displayName,
-      onTap: () => context.push(
-        animal.isChick ? '/chicks/$birdId' : '/birds/$birdId',
-      ),
+      onTap: () =>
+          context.push(animal.isChick ? '/chicks/$birdId' : '/birds/$birdId'),
     );
   }
 }

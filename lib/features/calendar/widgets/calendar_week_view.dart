@@ -22,12 +22,16 @@ class CalendarWeekView extends StatelessWidget {
     final theme = Theme.of(context);
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
-    final selected =
-        DateTime(selectedDate.year, selectedDate.month, selectedDate.day);
+    final selected = DateTime(
+      selectedDate.year,
+      selectedDate.month,
+      selectedDate.day,
+    );
 
     // Get Monday of the selected date's week
-    final monday =
-        selectedDate.subtract(Duration(days: (selectedDate.weekday - 1)));
+    final monday = selectedDate.subtract(
+      Duration(days: (selectedDate.weekday - 1)),
+    );
 
     final weekdays = [
       'calendar.mon'.tr(),
@@ -80,9 +84,8 @@ class CalendarWeekView extends StatelessWidget {
                         color: isSelected
                             ? theme.colorScheme.primary
                             : isToday
-                                ? theme.colorScheme.primary
-                                    .withValues(alpha: 0.15)
-                                : null,
+                            ? theme.colorScheme.primary.withValues(alpha: 0.15)
+                            : null,
                       ),
                       alignment: Alignment.center,
                       child: Text(
@@ -94,8 +97,8 @@ class CalendarWeekView extends StatelessWidget {
                           color: isSelected
                               ? theme.colorScheme.onPrimary
                               : isToday
-                                  ? theme.colorScheme.primary
-                                  : null,
+                              ? theme.colorScheme.primary
+                              : null,
                         ),
                       ),
                     ),

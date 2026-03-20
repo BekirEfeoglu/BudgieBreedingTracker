@@ -104,17 +104,19 @@ class _OffspringSectionState extends State<OffspringSection> {
               ),
             ),
             const SizedBox(height: AppSpacing.sm),
-            ...filteredBirds.map((bird) => _OffspringCard(
-                  name: bird.name,
-                  ringNumber: bird.ringNumber,
-                  gender: bird.gender,
-                  status: bird.status,
-                  age: bird.age,
-                  onTap: () {
-                    if (!NavigationThrottle.canNavigate()) return;
-                    context.push('/birds/${bird.id}');
-                  },
-                )),
+            ...filteredBirds.map(
+              (bird) => _OffspringCard(
+                name: bird.name,
+                ringNumber: bird.ringNumber,
+                gender: bird.gender,
+                status: bird.status,
+                age: bird.age,
+                onTap: () {
+                  if (!NavigationThrottle.canNavigate()) return;
+                  context.push('/birds/${bird.id}');
+                },
+              ),
+            ),
           ],
           // Chick offspring
           if (filteredChicks.isNotEmpty) ...[
@@ -127,7 +129,8 @@ class _OffspringSectionState extends State<OffspringSection> {
             ),
             const SizedBox(height: AppSpacing.sm),
             ...filteredChicks.map((chick) {
-              final name = chick.name ??
+              final name =
+                  chick.name ??
                   'chicks.unnamed_chick'.tr(
                     args: [chick.ringNumber ?? chick.id.substring(0, 6)],
                   );
@@ -218,10 +221,9 @@ class _OffspringCard extends StatelessWidget {
               ),
               if (age != null)
                 Text(
-                  'genealogy.age_short'.tr(args: [
-                    age!.years.toString(),
-                    age!.months.toString(),
-                  ]),
+                  'genealogy.age_short'.tr(
+                    args: [age!.years.toString(), age!.months.toString()],
+                  ),
                   style: theme.textTheme.labelSmall?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant,
                   ),
@@ -245,9 +247,9 @@ class _OffspringCard extends StatelessWidget {
   }
 
   Color get _statusColor => switch (status) {
-        BirdStatus.alive => AppColors.success,
-        BirdStatus.dead => AppColors.error,
-        BirdStatus.sold => AppColors.warning,
-        _ => AppColors.neutral400,
-      };
+    BirdStatus.alive => AppColors.success,
+    BirdStatus.dead => AppColors.error,
+    BirdStatus.sold => AppColors.warning,
+    _ => AppColors.neutral400,
+  };
 }

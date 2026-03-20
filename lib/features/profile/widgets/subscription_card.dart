@@ -46,15 +46,17 @@ class _PremiumStatusCard extends StatelessWidget {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
           color: AppColors.success.withValues(alpha: 0.08),
-          border:
-              Border.all(color: AppColors.success.withValues(alpha: 0.3)),
+          border: Border.all(color: AppColors.success.withValues(alpha: 0.3)),
         ),
         child: Column(
           children: [
             Row(
               children: [
                 const AppIcon(
-                    AppIcons.premium, size: 24, color: AppColors.success),
+                  AppIcons.premium,
+                  size: 24,
+                  color: AppColors.success,
+                ),
                 const SizedBox(width: AppSpacing.md),
                 Expanded(
                   child: Column(
@@ -69,8 +71,9 @@ class _PremiumStatusCard extends StatelessWidget {
                       ),
                       if (daysRemaining != null && daysRemaining > 0)
                         Text(
-                          'profile.subscription_days_remaining'
-                              .tr(args: ['$daysRemaining']),
+                          'profile.subscription_days_remaining'.tr(
+                            args: ['$daysRemaining'],
+                          ),
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: theme.colorScheme.onSurfaceVariant,
                           ),
@@ -160,9 +163,7 @@ class _UpsellCard extends StatelessWidget {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
-          border: Border.all(
-            color: AppColors.primary.withValues(alpha: 0.3),
-          ),
+          border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
         ),
         padding: const EdgeInsets.all(AppSpacing.lg),
         child: Column(
@@ -171,7 +172,10 @@ class _UpsellCard extends StatelessWidget {
             Row(
               children: [
                 const AppIcon(
-                    AppIcons.premium, size: 24, color: AppColors.accent),
+                  AppIcons.premium,
+                  size: 24,
+                  color: AppColors.accent,
+                ),
                 const SizedBox(width: AppSpacing.md),
                 Expanded(
                   child: Text(
@@ -186,12 +190,9 @@ class _UpsellCard extends StatelessWidget {
             const SizedBox(height: AppSpacing.md),
 
             // Benefits list
-            _BenefitRow(
-                label: 'profile.subscription_benefit_stats'.tr()),
-            _BenefitRow(
-                label: 'profile.subscription_benefit_genealogy'.tr()),
-            _BenefitRow(
-                label: 'profile.subscription_benefit_genetics'.tr()),
+            _BenefitRow(label: 'profile.subscription_benefit_stats'.tr()),
+            _BenefitRow(label: 'profile.subscription_benefit_genealogy'.tr()),
+            _BenefitRow(label: 'profile.subscription_benefit_genetics'.tr()),
             const SizedBox(height: AppSpacing.lg),
 
             // CTA Button
@@ -225,12 +226,7 @@ class _BenefitRow extends StatelessWidget {
         children: [
           const Icon(LucideIcons.check, size: 16, color: AppColors.success),
           const SizedBox(width: AppSpacing.sm),
-          Expanded(
-            child: Text(
-              label,
-              style: theme.textTheme.bodySmall,
-            ),
-          ),
+          Expanded(child: Text(label, style: theme.textTheme.bodySmall)),
         ],
       ),
     );

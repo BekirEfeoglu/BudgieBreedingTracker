@@ -49,28 +49,24 @@ List<OffspringResult> _combineResults(List<_RawResult> rawResults) {
   // Resolve compound phenotype names via EpistasisEngine
   const epistasis = EpistasisEngine();
 
-  return sorted
-      .where((r) => r.probability * normalizer > 0.001)
-      .map((r) {
-        final visualIds = r.expressedMutationIds.toSet();
-        final CompoundPhenotypeResult? compound =
-            visualIds.isNotEmpty
-                ? epistasis.resolveCompoundPhenotypeDetailed(visualIds)
-                : null;
+  return sorted.where((r) => r.probability * normalizer > 0.001).map((r) {
+    final visualIds = r.expressedMutationIds.toSet();
+    final CompoundPhenotypeResult? compound = visualIds.isNotEmpty
+        ? epistasis.resolveCompoundPhenotypeDetailed(visualIds)
+        : null;
 
-        return OffspringResult(
-          phenotype: r.phenotype,
-          probability: r.probability * normalizer,
-          sex: r.sex,
-          isCarrier: r.isCarrier,
-          genotype: r.genotype,
-          visualMutations: r.expressedMutationIds,
-          compoundPhenotype: compound?.name,
-          carriedMutations: r.carriedMutationIds,
-          maskedMutations: compound?.maskedMutations ?? const [],
-        );
-      })
-      .toList();
+    return OffspringResult(
+      phenotype: r.phenotype,
+      probability: r.probability * normalizer,
+      sex: r.sex,
+      isCarrier: r.isCarrier,
+      genotype: r.genotype,
+      visualMutations: r.expressedMutationIds,
+      compoundPhenotype: compound?.name,
+      carriedMutations: r.carriedMutationIds,
+      maskedMutations: compound?.maskedMutations ?? const [],
+    );
+  }).toList();
 }
 
 /// Combines results across multiple independent loci by multiplying

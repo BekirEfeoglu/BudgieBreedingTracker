@@ -13,8 +13,7 @@ class NestsDao extends DatabaseAccessor<AppDatabase> with _$NestsDaoMixin {
 
   Stream<List<Nest>> watchAll(String userId) {
     return (select(nestsTable)
-          ..where(
-              (t) => t.userId.equals(userId) & t.isDeleted.equals(false))
+          ..where((t) => t.userId.equals(userId) & t.isDeleted.equals(false))
           ..orderBy([(t) => OrderingTerm.desc(t.createdAt)]))
         .watch()
         .map((rows) => rows.map((r) => r.toModel()).toList());
@@ -27,16 +26,16 @@ class NestsDao extends DatabaseAccessor<AppDatabase> with _$NestsDaoMixin {
   }
 
   Future<List<Nest>> getAll(String userId) async {
-    final rows = await (select(nestsTable)
-          ..where(
-              (t) => t.userId.equals(userId) & t.isDeleted.equals(false)))
-        .get();
+    final rows = await (select(
+      nestsTable,
+    )..where((t) => t.userId.equals(userId) & t.isDeleted.equals(false))).get();
     return rows.map((r) => r.toModel()).toList();
   }
 
   Future<Nest?> getById(String id) async {
-    final row = await (select(nestsTable)..where((t) => t.id.equals(id)))
-        .getSingleOrNull();
+    final row = await (select(
+      nestsTable,
+    )..where((t) => t.id.equals(id))).getSingleOrNull();
     return row?.toModel();
   }
 
@@ -67,12 +66,14 @@ class NestsDao extends DatabaseAccessor<AppDatabase> with _$NestsDaoMixin {
   }
 
   Future<List<Nest>> getAvailable(String userId) async {
-    final rows = await (select(nestsTable)
-          ..where((t) =>
-              t.userId.equals(userId) &
-              t.status.equalsValue(NestStatus.available) &
-              t.isDeleted.equals(false)))
-        .get();
+    final rows =
+        await (select(nestsTable)..where(
+              (t) =>
+                  t.userId.equals(userId) &
+                  t.status.equalsValue(NestStatus.available) &
+                  t.isDeleted.equals(false),
+            ))
+            .get();
     return rows.map((r) => r.toModel()).toList();
   }
 }

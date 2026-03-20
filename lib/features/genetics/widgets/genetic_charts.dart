@@ -103,9 +103,7 @@ class MutationDistributionPieChart extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: data.map((item) {
                         return Padding(
-                          padding: const EdgeInsets.only(
-                            bottom: AppSpacing.xs,
-                          ),
+                          padding: const EdgeInsets.only(bottom: AppSpacing.xs),
                           child: Row(
                             children: [
                               Container(
@@ -257,8 +255,9 @@ class OffspringProbabilityBarChart extends StatelessWidget {
                       horizontalInterval: 25,
                       drawVerticalLine: false,
                       getDrawingHorizontalLine: (value) => FlLine(
-                        color: theme.colorScheme.outlineVariant
-                            .withValues(alpha: 0.3),
+                        color: theme.colorScheme.outlineVariant.withValues(
+                          alpha: 0.3,
+                        ),
                         strokeWidth: 1,
                       ),
                     ),

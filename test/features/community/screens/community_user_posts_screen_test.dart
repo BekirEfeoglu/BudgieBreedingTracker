@@ -24,38 +24,42 @@ void main() {
 
   group('CommunityUserPostsScreen', () {
     testWidgets('shows app bar with user posts title', (tester) async {
-      await tester.pumpWidget(ProviderScope(
-        overrides: [
-          currentUserIdProvider.overrideWithValue('me'),
-          userPostsProvider('target-user').overrideWith(
-            (ref) async => <CommunityPost>[],
-          ),
-        ],
-        child: MaterialApp.router(
-          routerConfig: buildRouter(
-            const CommunityUserPostsScreen(userId: 'target-user'),
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            currentUserIdProvider.overrideWithValue('me'),
+            userPostsProvider(
+              'target-user',
+            ).overrideWith((ref) async => <CommunityPost>[]),
+          ],
+          child: MaterialApp.router(
+            routerConfig: buildRouter(
+              const CommunityUserPostsScreen(userId: 'target-user'),
+            ),
           ),
         ),
-      ));
+      );
       await tester.pumpAndSettle();
 
       expect(find.text('community.user_posts'), findsOneWidget);
     });
 
     testWidgets('shows empty state when no posts', (tester) async {
-      await tester.pumpWidget(ProviderScope(
-        overrides: [
-          currentUserIdProvider.overrideWithValue('me'),
-          userPostsProvider('target-user').overrideWith(
-            (ref) async => <CommunityPost>[],
-          ),
-        ],
-        child: MaterialApp.router(
-          routerConfig: buildRouter(
-            const CommunityUserPostsScreen(userId: 'target-user'),
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            currentUserIdProvider.overrideWithValue('me'),
+            userPostsProvider(
+              'target-user',
+            ).overrideWith((ref) async => <CommunityPost>[]),
+          ],
+          child: MaterialApp.router(
+            routerConfig: buildRouter(
+              const CommunityUserPostsScreen(userId: 'target-user'),
+            ),
           ),
         ),
-      ));
+      );
       await tester.pumpAndSettle();
 
       expect(find.text('community.no_user_posts'), findsOneWidget);

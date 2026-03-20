@@ -52,11 +52,7 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen>
           Expanded(
             child: TabBarView(
               controller: _tabController,
-              children: const [
-                OverviewTab(),
-                BreedingTab(),
-                HealthTab(),
-              ],
+              children: const [OverviewTab(), BreedingTab(), HealthTab()],
             ),
           ),
         ],

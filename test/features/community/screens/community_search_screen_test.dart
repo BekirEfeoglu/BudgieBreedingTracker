@@ -26,8 +26,9 @@ void main() {
     return ProviderScope(
       overrides: [
         currentUserIdProvider.overrideWithValue('me'),
-        communityFeedProvider
-            .overrideWith(() => _FakeFeedNotifier(posts: posts ?? const [])),
+        communityFeedProvider.overrideWith(
+          () => _FakeFeedNotifier(posts: posts ?? const []),
+        ),
       ],
       child: MaterialApp.router(
         routerConfig: buildRouter(const CommunitySearchScreen()),

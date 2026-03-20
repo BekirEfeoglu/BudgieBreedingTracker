@@ -11,11 +11,7 @@ class BreedingCardFooter extends StatelessWidget {
   final BreedingPair pair;
   final Incubation? incubation;
 
-  const BreedingCardFooter({
-    super.key,
-    required this.pair,
-    this.incubation,
-  });
+  const BreedingCardFooter({super.key, required this.pair, this.incubation});
 
   @override
   Widget build(BuildContext context) {
@@ -28,15 +24,21 @@ class BreedingCardFooter extends StatelessWidget {
     return Row(
       children: [
         if (pair.pairingDate != null) ...[
-          AppIcon(AppIcons.calendar, size: 12,
-              color: theme.colorScheme.onSurfaceVariant),
+          AppIcon(
+            AppIcons.calendar,
+            size: 12,
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
           const SizedBox(width: AppSpacing.xs),
           Text(dateFormat.format(pair.pairingDate!), style: subtitleStyle),
         ],
         if (incubation?.computedExpectedHatchDate != null) ...[
           const SizedBox(width: AppSpacing.md),
-          AppIcon(AppIcons.egg, size: 12,
-              color: theme.colorScheme.onSurfaceVariant),
+          AppIcon(
+            AppIcons.egg,
+            size: 12,
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
           const SizedBox(width: AppSpacing.xs),
           Text(
             dateFormat.format(incubation!.computedExpectedHatchDate!),
@@ -46,7 +48,9 @@ class BreedingCardFooter extends StatelessWidget {
         const Spacer(),
         if (incubation != null && incubation!.isActive) ...[
           Text(
-            'breeding.days_remaining'.tr(args: [incubation!.daysRemaining.toString()]),
+            'breeding.days_remaining'.tr(
+              args: [incubation!.daysRemaining.toString()],
+            ),
             style: theme.textTheme.bodySmall?.copyWith(
               fontWeight: FontWeight.w600,
               color: theme.colorScheme.primary,

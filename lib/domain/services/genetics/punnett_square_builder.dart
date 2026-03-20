@@ -5,9 +5,9 @@ PunnettSquareData _buildAllelicSeriesPunnett(
   ParentGenotype father,
   ParentGenotype mother,
 ) {
-  final mutIds = MutationDatabase.getByLocusId(locusId)
-      .map((r) => r.id)
-      .toSet();
+  final mutIds = MutationDatabase.getByLocusId(
+    locusId,
+  ).map((r) => r.id).toSet();
 
   // Detect if this locus is sex-linked
   final sampleRecord = MutationDatabase.getByLocusId(locusId).firstOrNull;
@@ -16,8 +16,7 @@ PunnettSquareData _buildAllelicSeriesPunnett(
   final fatherAlleles = _getAllelesAtLocus(locusId, mutIds, father);
   final List<String> motherAlleles;
   if (isSexLinked) {
-    motherAlleles =
-        _getSexLinkedMotherAllelesAtLocus(locusId, mutIds, mother);
+    motherAlleles = _getSexLinkedMotherAllelesAtLocus(locusId, mutIds, mother);
   } else {
     motherAlleles = _getAllelesAtLocus(locusId, mutIds, mother);
   }
@@ -287,23 +286,21 @@ PunnettSquareData _buildSexLinkedPunnettSimple(
 /// Resolves the two alleles for a parent at a given locus/mutation.
 ///
 /// Returns display-ready allele strings (e.g., ['Sp+', 'Sp'] or ['Z_ino', 'Z+']).
-List<String> _resolveLocusAlleles(
-  String locusOrMutId,
-  ParentGenotype parent,
-) {
+List<String> _resolveLocusAlleles(String locusOrMutId, ParentGenotype parent) {
   final allelicLocusIds = MutationDatabase.getAllelicLocusIds();
 
   if (allelicLocusIds.contains(locusOrMutId)) {
     // Allelic series locus
-    final mutIds =
-        MutationDatabase.getByLocusId(locusOrMutId).map((r) => r.id).toSet();
-    final sampleRecord =
-        MutationDatabase.getByLocusId(locusOrMutId).firstOrNull;
+    final mutIds = MutationDatabase.getByLocusId(
+      locusOrMutId,
+    ).map((r) => r.id).toSet();
+    final sampleRecord = MutationDatabase.getByLocusId(
+      locusOrMutId,
+    ).firstOrNull;
     final isSexLinked = sampleRecord?.isSexLinked ?? false;
 
     List<String> raw;
-    if (isSexLinked &&
-        parent.gender == BirdGender.female) {
+    if (isSexLinked && parent.gender == BirdGender.female) {
       raw = _getSexLinkedMotherAllelesAtLocus(locusOrMutId, mutIds, parent);
     } else {
       raw = _getAllelesAtLocus(locusOrMutId, mutIds, parent);
@@ -421,8 +418,7 @@ PunnettSquareData? _buildDihybridPunnett({
       // Parse gamete components and recombine
       final fParts = fg.split('; ');
       final mParts = mg.split('; ');
-      final cell =
-          '${fParts[0]}/${mParts[0]}, ${fParts[1]}/${mParts[1]}';
+      final cell = '${fParts[0]}/${mParts[0]}, ${fParts[1]}/${mParts[1]}';
       row.add(cell);
     }
     cells.add(row);
@@ -432,9 +428,11 @@ PunnettSquareData? _buildDihybridPunnett({
   final name2 = _locusDisplayName(locusId2);
 
   // Either locus might be sex-linked
-  final isSL1 = MutationDatabase.getByLocusId(locusId1).firstOrNull?.isSexLinked ??
+  final isSL1 =
+      MutationDatabase.getByLocusId(locusId1).firstOrNull?.isSexLinked ??
       (MutationDatabase.getById(locusId1)?.isSexLinked ?? false);
-  final isSL2 = MutationDatabase.getByLocusId(locusId2).firstOrNull?.isSexLinked ??
+  final isSL2 =
+      MutationDatabase.getByLocusId(locusId2).firstOrNull?.isSexLinked ??
       (MutationDatabase.getById(locusId2)?.isSexLinked ?? false);
 
   return PunnettSquareData(

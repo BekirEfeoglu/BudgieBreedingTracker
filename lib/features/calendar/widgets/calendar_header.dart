@@ -40,9 +40,7 @@ class CalendarHeader extends ConsumerWidget {
                 minHeight: AppSpacing.touchTargetMin,
               ),
               child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.md,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
                 child: Center(
                   child: Text(
                     monthLabel,
@@ -74,8 +72,10 @@ class CalendarHeader extends ConsumerWidget {
 
   void _goToToday(WidgetRef ref) {
     final now = DateTime.now();
-    ref.read(displayedMonthProvider.notifier).state =
-        DateTime(now.year, now.month);
+    ref.read(displayedMonthProvider.notifier).state = DateTime(
+      now.year,
+      now.month,
+    );
     ref.read(selectedDateProvider.notifier).state = now;
   }
 }

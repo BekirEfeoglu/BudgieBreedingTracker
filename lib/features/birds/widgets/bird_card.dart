@@ -38,7 +38,9 @@ class BirdCard extends StatelessWidget {
                 tag: 'bird_${bird.id}',
                 child: CircleAvatar(
                   radius: 24,
-                  backgroundColor: birdGenderColor(bird.gender).withValues(alpha: 0.1),
+                  backgroundColor: birdGenderColor(
+                    bird.gender,
+                  ).withValues(alpha: 0.1),
                   child: bird.photoUrl != null
                       ? ClipOval(
                           child: CachedNetworkImage(
@@ -96,9 +98,11 @@ class BirdCard extends StatelessWidget {
                       const SizedBox(height: 2),
                       Row(
                         children: [
-                          speciesIconWidget(bird.species,
-                              size: 14,
-                              color: theme.colorScheme.onSurfaceVariant),
+                          speciesIconWidget(
+                            bird.species,
+                            size: 14,
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
                           const SizedBox(width: 4),
                           Text(
                             speciesLabel(bird.species),

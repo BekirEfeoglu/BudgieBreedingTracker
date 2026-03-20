@@ -54,8 +54,8 @@ class NotificationPermissionNotifier extends Notifier<bool> {
 
 final notificationPermissionGrantedProvider =
     NotifierProvider<NotificationPermissionNotifier, bool>(
-  NotificationPermissionNotifier.new,
-);
+      NotificationPermissionNotifier.new,
+    );
 
 /// Deferred notification permission request.
 ///
@@ -64,8 +64,9 @@ final notificationPermissionGrantedProvider =
 /// the OS permission dialog appears — required by App Store guidelines.
 ///
 /// Watch this provider from [HomeScreen] to trigger the request.
-final deferredNotificationPermissionProvider =
-    FutureProvider<void>((ref) async {
+final deferredNotificationPermissionProvider = FutureProvider<void>((
+  ref,
+) async {
   // Give the user time to see the home screen before the dialog appears.
   await Future<void>.delayed(const Duration(seconds: 3));
   final notifService = ref.read(notificationServiceProvider);
@@ -113,8 +114,9 @@ final notificationServiceProvider = Provider<NotificationService>((ref) {
 /// notification spam and enforce Do Not Disturb hours.
 /// Persisted data (DND hours, rate-limit counts) is loaded eagerly and
 /// the [Future] is stored so callers can await it if needed.
-final notificationRateLimiterProvider =
-    Provider<NotificationRateLimiter>((ref) {
+final notificationRateLimiterProvider = Provider<NotificationRateLimiter>((
+  ref,
+) {
   final limiter = NotificationRateLimiter();
   // Store future so notification init can await it before first use
   ref.onDispose(() => limiter.dispose());

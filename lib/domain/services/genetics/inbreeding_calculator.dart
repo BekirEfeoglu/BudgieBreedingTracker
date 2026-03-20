@@ -70,9 +70,7 @@ class InbreedingCalculator {
     _collectAncestors(bird.fatherId!, ancestors, fatherAncestors, 0);
     _collectAncestors(bird.motherId!, ancestors, motherAncestors, 0);
 
-    return fatherAncestors.keys
-        .where(motherAncestors.containsKey)
-        .toSet();
+    return fatherAncestors.keys.where(motherAncestors.containsKey).toSet();
   }
 
   /// Returns a human-readable risk level for the given coefficient.
@@ -147,11 +145,11 @@ enum InbreedingRisk {
 
   /// Localization key for the risk label.
   String get labelKey => switch (this) {
-        InbreedingRisk.none => 'genetics.risk_none',
-        InbreedingRisk.minimal => 'genetics.risk_minimal',
-        InbreedingRisk.low => 'genetics.risk_low',
-        InbreedingRisk.moderate => 'genetics.risk_moderate',
-        InbreedingRisk.high => 'genetics.risk_high',
-        InbreedingRisk.critical => 'genetics.risk_critical',
-      };
+    InbreedingRisk.none => 'genetics.risk_none',
+    InbreedingRisk.minimal => 'genetics.risk_minimal',
+    InbreedingRisk.low => 'genetics.risk_low',
+    InbreedingRisk.moderate => 'genetics.risk_moderate',
+    InbreedingRisk.high => 'genetics.risk_high',
+    InbreedingRisk.critical => 'genetics.risk_critical',
+  };
 }

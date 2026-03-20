@@ -134,30 +134,30 @@ void main() {
   });
 
   void stubAllSaveAll() {
-    when(() => birdRepo.saveAll(any<List<Bird>>()))
-        .thenAnswer((_) async {});
-    when(() => breedingRepo.saveAll(any<List<BreedingPair>>()))
-        .thenAnswer((_) async {});
-    when(() => eggRepo.saveAll(any<List<Egg>>()))
-        .thenAnswer((_) async {});
-    when(() => chickRepo.saveAll(any<List<Chick>>()))
-        .thenAnswer((_) async {});
-    when(() => healthRepo.saveAll(any<List<HealthRecord>>()))
-        .thenAnswer((_) async {});
-    when(() => eventRepo.saveAll(any<List<Event>>()))
-        .thenAnswer((_) async {});
-    when(() => incubationRepo.saveAll(any<List<Incubation>>()))
-        .thenAnswer((_) async {});
-    when(() => growthRepo.saveAll(any<List<GrowthMeasurement>>()))
-        .thenAnswer((_) async {});
-    when(() => notificationRepo.saveAll(any<List<AppNotification>>()))
-        .thenAnswer((_) async {});
-    when(() => clutchRepo.saveAll(any<List<Clutch>>()))
-        .thenAnswer((_) async {});
-    when(() => nestRepo.saveAll(any<List<Nest>>()))
-        .thenAnswer((_) async {});
-    when(() => photoRepo.saveAll(any<List<Photo>>()))
-        .thenAnswer((_) async {});
+    when(() => birdRepo.saveAll(any<List<Bird>>())).thenAnswer((_) async {});
+    when(
+      () => breedingRepo.saveAll(any<List<BreedingPair>>()),
+    ).thenAnswer((_) async {});
+    when(() => eggRepo.saveAll(any<List<Egg>>())).thenAnswer((_) async {});
+    when(() => chickRepo.saveAll(any<List<Chick>>())).thenAnswer((_) async {});
+    when(
+      () => healthRepo.saveAll(any<List<HealthRecord>>()),
+    ).thenAnswer((_) async {});
+    when(() => eventRepo.saveAll(any<List<Event>>())).thenAnswer((_) async {});
+    when(
+      () => incubationRepo.saveAll(any<List<Incubation>>()),
+    ).thenAnswer((_) async {});
+    when(
+      () => growthRepo.saveAll(any<List<GrowthMeasurement>>()),
+    ).thenAnswer((_) async {});
+    when(
+      () => notificationRepo.saveAll(any<List<AppNotification>>()),
+    ).thenAnswer((_) async {});
+    when(
+      () => clutchRepo.saveAll(any<List<Clutch>>()),
+    ).thenAnswer((_) async {});
+    when(() => nestRepo.saveAll(any<List<Nest>>())).thenAnswer((_) async {});
+    when(() => photoRepo.saveAll(any<List<Photo>>())).thenAnswer((_) async {});
   }
 
   Future<File> writeBackupFile(
@@ -227,10 +227,7 @@ void main() {
       test('handles empty entity lists without calling saveAll', () async {
         final file = await writeBackupFile('empty_lists.json', {
           'version': 2,
-          'data': {
-            'birds': <dynamic>[],
-            'eggs': <dynamic>[],
-          },
+          'data': {'birds': <dynamic>[], 'eggs': <dynamic>[]},
         });
 
         final result = await restorer.restoreBackup('user-1', file.path);
@@ -260,8 +257,7 @@ void main() {
 
         expect(result.success, isTrue);
         expect(result.recordCount, 1);
-        final captured =
-            verify(() => birdRepo.saveAll(captureAny())).captured;
+        final captured = verify(() => birdRepo.saveAll(captureAny())).captured;
         expect(captured.single, isA<List<Bird>>());
         final savedBirds = captured.single as List<Bird>;
         expect(savedBirds.length, 1);
@@ -269,8 +265,7 @@ void main() {
         expect(savedBirds.first.name, 'Mavis');
       });
 
-      test('restores multiple entity types to correct repositories',
-          () async {
+      test('restores multiple entity types to correct repositories', () async {
         stubAllSaveAll();
         final bird = createTestBird(
           id: 'bird-1',
@@ -294,8 +289,7 @@ void main() {
 
         expect(result.success, isTrue);
         expect(result.recordCount, 2);
-        final captured =
-            verify(() => birdRepo.saveAll(captureAny())).captured;
+        final captured = verify(() => birdRepo.saveAll(captureAny())).captured;
         final savedBirds = captured.single as List<Bird>;
         expect(savedBirds.length, 2);
       });
@@ -322,8 +316,7 @@ void main() {
 
         expect(result.success, isTrue);
         expect(result.recordCount, 1);
-        final captured =
-            verify(() => birdRepo.saveAll(captureAny())).captured;
+        final captured = verify(() => birdRepo.saveAll(captureAny())).captured;
         final savedBirds = captured.single as List<Bird>;
         expect(savedBirds.length, 1);
         expect(savedBirds.first.id, 'bird-valid');
@@ -338,24 +331,26 @@ void main() {
         expect(result.error, isNotNull);
       });
 
-      test('does not call saveAll when all items in a key are malformed',
-          () async {
-        final file = await writeBackupFile('all_bad.json', {
-          'version': 2,
-          'data': {
-            'birds': [
-              {'garbage': true},
-              {'also': 'garbage'},
-            ],
-          },
-        });
+      test(
+        'does not call saveAll when all items in a key are malformed',
+        () async {
+          final file = await writeBackupFile('all_bad.json', {
+            'version': 2,
+            'data': {
+              'birds': [
+                {'garbage': true},
+                {'also': 'garbage'},
+              ],
+            },
+          });
 
-        final result = await restorer.restoreBackup('user-1', file.path);
+          final result = await restorer.restoreBackup('user-1', file.path);
 
-        expect(result.success, isTrue);
-        expect(result.recordCount, 0);
-        verifyNever(() => birdRepo.saveAll(any()));
-      });
+          expect(result.success, isTrue);
+          expect(result.recordCount, 0);
+          verifyNever(() => birdRepo.saveAll(any()));
+        },
+      );
 
       test('handles v1 backup without v2 entity keys', () async {
         stubAllSaveAll();
@@ -383,26 +378,20 @@ void main() {
         verifyNever(() => photoRepo.saveAll(any()));
       });
 
-      test(
-        'requires encryption service for .enc.json files',
-        () async {
-          final file = await writeRawFile(
-            'encrypted.enc.json',
-            'encrypted-content',
-          );
+      test('requires encryption service for .enc.json files', () async {
+        final file = await writeRawFile(
+          'encrypted.enc.json',
+          'encrypted-content',
+        );
 
-          final result =
-              await restorer.restoreBackup('user-1', file.path);
+        final result = await restorer.restoreBackup('user-1', file.path);
 
-          expect(result.success, isFalse);
-          expect(
-            result.error,
-            contains(
-              'Encryption service required to restore encrypted backup',
-            ),
-          );
-        },
-      );
+        expect(result.success, isFalse);
+        expect(
+          result.error,
+          contains('Encryption service required to restore encrypted backup'),
+        );
+      });
 
       test(
         'requires encryption service when content looks encrypted',
@@ -412,54 +401,53 @@ void main() {
             'base64-encoded-not-json',
           );
 
-          final result =
-              await restorer.restoreBackup('user-1', file.path);
+          final result = await restorer.restoreBackup('user-1', file.path);
 
           expect(result.success, isFalse);
           expect(
             result.error,
-            contains(
-              'Encryption service required to restore encrypted backup',
-            ),
+            contains('Encryption service required to restore encrypted backup'),
           );
         },
       );
 
-      test('decrypts encrypted backup when encryption service is provided',
-          () async {
-        final encryptionService = _MockEncryptionService();
-        when(() => encryptionService.decrypt('ciphertext')).thenAnswer(
-          (_) async => jsonEncode({
-            'version': 2,
-            'data': <String, dynamic>{},
-          }),
-        );
+      test(
+        'decrypts encrypted backup when encryption service is provided',
+        () async {
+          final encryptionService = _MockEncryptionService();
+          when(() => encryptionService.decrypt('ciphertext')).thenAnswer(
+            (_) async =>
+                jsonEncode({'version': 2, 'data': <String, dynamic>{}}),
+          );
 
-        final encryptedRestorer = BackupRestorer(
-          birdRepo: birdRepo,
-          breedingRepo: breedingRepo,
-          eggRepo: eggRepo,
-          chickRepo: chickRepo,
-          healthRepo: healthRepo,
-          eventRepo: eventRepo,
-          incubationRepo: incubationRepo,
-          growthRepo: growthRepo,
-          notificationRepo: notificationRepo,
-          clutchRepo: clutchRepo,
-          nestRepo: nestRepo,
-          photoRepo: photoRepo,
-          encryptionService: encryptionService,
-        );
+          final encryptedRestorer = BackupRestorer(
+            birdRepo: birdRepo,
+            breedingRepo: breedingRepo,
+            eggRepo: eggRepo,
+            chickRepo: chickRepo,
+            healthRepo: healthRepo,
+            eventRepo: eventRepo,
+            incubationRepo: incubationRepo,
+            growthRepo: growthRepo,
+            notificationRepo: notificationRepo,
+            clutchRepo: clutchRepo,
+            nestRepo: nestRepo,
+            photoRepo: photoRepo,
+            encryptionService: encryptionService,
+          );
 
-        final file = await writeRawFile('restore.enc.json', 'ciphertext');
+          final file = await writeRawFile('restore.enc.json', 'ciphertext');
 
-        final result =
-            await encryptedRestorer.restoreBackup('user-1', file.path);
+          final result = await encryptedRestorer.restoreBackup(
+            'user-1',
+            file.path,
+          );
 
-        expect(result.success, isTrue);
-        expect(result.recordCount, 0);
-        verify(() => encryptionService.decrypt('ciphertext')).called(1);
-      });
+          expect(result.success, isTrue);
+          expect(result.recordCount, 0);
+          verify(() => encryptionService.decrypt('ciphertext')).called(1);
+        },
+      );
 
       test('returns success with correct filePath', () async {
         final file = await writeBackupFile('path_check.json', {
@@ -477,8 +465,9 @@ void main() {
         'continues restoring other entities when one entity type fails',
         () async {
           stubAllSaveAll();
-          when(() => birdRepo.saveAll(any<List<Bird>>()))
-              .thenThrow(Exception('DB error'));
+          when(
+            () => birdRepo.saveAll(any<List<Bird>>()),
+          ).thenThrow(Exception('DB error'));
 
           final bird = createTestBird(
             id: 'bird-1',

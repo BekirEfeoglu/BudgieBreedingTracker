@@ -70,13 +70,12 @@ class AllelicSeriesChips extends StatelessWidget {
             final isFemale = genotype.gender == BirdGender.female;
             final canBeCarrier = !isFemale || !mutation.isSexLinked;
             // Disable if max alleles at locus reached and this one isn't selected
-            final isDisabled = !isSelected && selectedAtLocus.length >= maxAlleles;
+            final isDisabled =
+                !isSelected && selectedAtLocus.length >= maxAlleles;
 
             return GestureDetector(
-              onLongPress: () => showMutationDetailSheet(
-                context,
-                mutation: mutation,
-              ),
+              onLongPress: () =>
+                  showMutationDetailSheet(context, mutation: mutation),
               child: FilterChip(
                 label: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -89,7 +88,8 @@ class AllelicSeriesChips extends StatelessWidget {
                       _AlleleStateBadge(
                         state: alleleState,
                         canToggle: canBeCarrier,
-                        isDosageBased: mutation.inheritanceType ==
+                        isDosageBased:
+                            mutation.inheritanceType ==
                                 InheritanceType.autosomalIncompleteDominant ||
                             mutation.inheritanceType ==
                                 InheritanceType.autosomalDominant,
@@ -109,7 +109,8 @@ class AllelicSeriesChips extends StatelessWidget {
                     ? null
                     : (value) {
                         if (value) {
-                          final defaultState = mutation.inheritanceType ==
+                          final defaultState =
+                              mutation.inheritanceType ==
                                       InheritanceType
                                           .autosomalIncompleteDominant ||
                                   mutation.inheritanceType ==
@@ -122,19 +123,18 @@ class AllelicSeriesChips extends StatelessWidget {
                           );
                           onGenotypeChanged(updated);
                         } else {
-                          final updated =
-                              genotype.withoutMutation(mutation.id);
+                          final updated = genotype.withoutMutation(mutation.id);
                           onGenotypeChanged(updated);
                         }
                       },
                 showCheckmark: false,
                 tooltip: isDisabled
                     ? (isSexLinked && isFemaleParent)
-                        ? 'genetics.female_one_z_allele'.tr()
-                        : 'genetics.max_alleles_at_locus'.tr()
+                          ? 'genetics.female_one_z_allele'.tr()
+                          : 'genetics.max_alleles_at_locus'.tr()
                     : mutation.isSexLinked
-                        ? 'genetics.sex_linked'.tr()
-                        : null,
+                    ? 'genetics.sex_linked'.tr()
+                    : null,
               ),
             );
           }).toList(),
@@ -165,10 +165,7 @@ class IndependentMutationChip extends StatelessWidget {
     final canBeCarrier = !isFemale || !mutation.isSexLinked;
 
     return GestureDetector(
-      onLongPress: () => showMutationDetailSheet(
-        context,
-        mutation: mutation,
-      ),
+      onLongPress: () => showMutationDetailSheet(context, mutation: mutation),
       child: FilterChip(
         label: Row(
           mainAxisSize: MainAxisSize.min,
@@ -181,7 +178,8 @@ class IndependentMutationChip extends StatelessWidget {
               _AlleleStateBadge(
                 state: alleleState,
                 canToggle: canBeCarrier,
-                isDosageBased: mutation.inheritanceType ==
+                isDosageBased:
+                    mutation.inheritanceType ==
                         InheritanceType.autosomalIncompleteDominant ||
                     mutation.inheritanceType ==
                         InheritanceType.autosomalDominant,
@@ -199,14 +197,14 @@ class IndependentMutationChip extends StatelessWidget {
         selected: isSelected,
         onSelected: (value) {
           if (value) {
-            final defaultState = mutation.inheritanceType ==
+            final defaultState =
+                mutation.inheritanceType ==
                         InheritanceType.autosomalIncompleteDominant ||
                     mutation.inheritanceType ==
                         InheritanceType.autosomalDominant
                 ? AlleleState.carrier
                 : AlleleState.visual;
-            final updated =
-                genotype.withMutation(mutation.id, defaultState);
+            final updated = genotype.withMutation(mutation.id, defaultState);
             onGenotypeChanged(updated);
           } else {
             final updated = genotype.withoutMutation(mutation.id);
@@ -214,9 +212,7 @@ class IndependentMutationChip extends StatelessWidget {
           }
         },
         showCheckmark: false,
-        tooltip: mutation.isSexLinked
-            ? 'genetics.sex_linked'.tr()
-            : null,
+        tooltip: mutation.isSexLinked ? 'genetics.sex_linked'.tr() : null,
       ),
     );
   }
@@ -283,8 +279,10 @@ class _AlleleStateBadge extends StatelessWidget {
               decoration: BoxDecoration(
                 color: color.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-                border:
-                    Border.all(color: color.withValues(alpha: 0.5), width: 1),
+                border: Border.all(
+                  color: color.withValues(alpha: 0.5),
+                  width: 1,
+                ),
               ),
               child: Text(
                 label,

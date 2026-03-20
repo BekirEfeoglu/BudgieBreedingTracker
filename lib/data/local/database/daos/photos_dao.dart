@@ -20,39 +20,43 @@ class PhotosDao extends DatabaseAccessor<AppDatabase> with _$PhotosDaoMixin {
   }
 
   Stream<List<Photo>> watchByEntity(String entityId) {
-    return (select(photosTable)
-          ..where((t) => t.entityId.equals(entityId)))
+    return (select(photosTable)..where((t) => t.entityId.equals(entityId)))
         .watch()
         .map((rows) => rows.map((r) => r.toModel()).toList());
   }
 
   Future<List<Photo>> getAll(String userId) async {
-    final rows = await (select(photosTable)
-          ..where((t) => t.userId.equals(userId)))
-        .get();
+    final rows = await (select(
+      photosTable,
+    )..where((t) => t.userId.equals(userId))).get();
     return rows.map((r) => r.toModel()).toList();
   }
 
   Future<Photo?> getById(String id) async {
-    final row = await (select(photosTable)..where((t) => t.id.equals(id)))
-        .getSingleOrNull();
+    final row = await (select(
+      photosTable,
+    )..where((t) => t.id.equals(id))).getSingleOrNull();
     return row?.toModel();
   }
 
   Future<List<Photo>> getByEntity(String entityId) async {
-    final rows = await (select(photosTable)
-          ..where((t) => t.entityId.equals(entityId)))
-        .get();
+    final rows = await (select(
+      photosTable,
+    )..where((t) => t.entityId.equals(entityId))).get();
     return rows.map((r) => r.toModel()).toList();
   }
 
   Future<List<Photo>> getByEntityType(
-      String userId, PhotoEntityType entityType) async {
-    final rows = await (select(photosTable)
-          ..where((t) =>
-              t.userId.equals(userId) &
-              t.entityType.equalsValue(entityType)))
-        .get();
+    String userId,
+    PhotoEntityType entityType,
+  ) async {
+    final rows =
+        await (select(photosTable)..where(
+              (t) =>
+                  t.userId.equals(userId) &
+                  t.entityType.equalsValue(entityType),
+            ))
+            .get();
     return rows.map((r) => r.toModel()).toList();
   }
 
@@ -74,7 +78,8 @@ class PhotosDao extends DatabaseAccessor<AppDatabase> with _$PhotosDaoMixin {
   }
 
   Future<void> deleteByEntity(String entityId) {
-    return (delete(photosTable)..where((t) => t.entityId.equals(entityId)))
-        .go();
+    return (delete(
+      photosTable,
+    )..where((t) => t.entityId.equals(entityId))).go();
   }
 }

@@ -1,6 +1,10 @@
 import 'package:flutter/services.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
+import 'package:budgie_breeding_tracker/domain/services/payment/purchase_models.dart';
+
+export 'package:budgie_breeding_tracker/domain/services/payment/purchase_models.dart';
 
 /// Wraps RevenueCat for managing premium subscriptions.
 ///
@@ -48,8 +52,9 @@ class PurchaseService {
     required String userId,
   }) async {
     try {
-      final maskedKey =
-          apiKey.length > 8 ? '${apiKey.substring(0, 8)}...' : '***';
+      final maskedKey = apiKey.length > 8
+          ? '${apiKey.substring(0, 8)}...'
+          : '***';
       AppLogger.info('Configuring RevenueCat (key=$maskedKey, user=$userId)');
       final config = PurchasesConfiguration(apiKey)..appUserID = userId;
       await Purchases.configure(config);
@@ -62,6 +67,7 @@ class PurchaseService {
     } catch (e, st) {
       _clearIdentity();
       AppLogger.error('RevenueCat init failed', e, st);
+      Sentry.captureException(e, stackTrace: st);
       return false;
     } finally {
       _initializationFuture = null;
@@ -70,16 +76,29 @@ class PurchaseService {
 
   Future<bool> _switchUser(String userId) async {
     try {
+      Sentry.addBreadcrumb(Breadcrumb(
+        message: 'PurchaseService: Merging identified user purchases',
+        data: {'userId': userId},
+        category: 'payment.merge',
+        level: SentryLevel.info,
+      ));
       await Purchases.logIn(userId);
       _configuredUserId = userId;
       _clearStoreUnavailable();
+      Sentry.addBreadcrumb(Breadcrumb(
+        message: 'PurchaseService: User merge completed',
+        data: {'userId': userId},
+        category: 'payment.merge',
+        level: SentryLevel.info,
+      ));
       AppLogger.info('RevenueCat switched to user: $userId');
       return true;
-    } catch (e) {
+    } catch (e, st) {
       // User switch failed: clear in-memory identity to avoid stale entitlements
       // from the previous user leaking into subsequent checks.
       _clearIdentity();
       AppLogger.error('RevenueCat user switch failed: $e');
+      Sentry.captureException(e, stackTrace: st);
       return false;
     } finally {
       _initializationFuture = null;
@@ -207,6 +226,7 @@ class PurchaseService {
 
       final mappedCode = _mapPurchaseErrorCode(errorCode);
       AppLogger.warning('Purchase error [$mappedCode]: ${e.message ?? e.code}');
+      Sentry.captureException(e, stackTrace: StackTrace.current);
       throw PurchaseException(
         mappedCode,
         purchasesCode: errorCode,
@@ -240,13 +260,15 @@ class PurchaseService {
       final errorCode = PurchasesErrorHelper.getErrorCode(e);
       final mappedCode = _mapPurchaseErrorCode(errorCode);
       AppLogger.warning('Restore error [$mappedCode]: ${e.message ?? e.code}');
+      Sentry.captureException(e, stackTrace: StackTrace.current);
       throw PurchaseException(
         mappedCode,
         purchasesCode: errorCode,
         message: e.message,
       );
-    } catch (e) {
+    } catch (e, st) {
       AppLogger.warning('Restore failed: $e');
+      Sentry.captureException(e, stackTrace: st);
       throw const PurchaseException(PurchaseErrorCodes.restoreFailed);
     }
   }
@@ -351,16 +373,14 @@ class PurchaseService {
 
   String _mapPurchaseErrorCode(PurchasesErrorCode errorCode) {
     return switch (errorCode) {
-      PurchasesErrorCode.storeProblemError =>
-        PurchaseErrorCodes.storeProblem,
+      PurchasesErrorCode.storeProblemError => PurchaseErrorCodes.storeProblem,
       PurchasesErrorCode.purchaseNotAllowedError =>
         PurchaseErrorCodes.notAllowed,
       PurchasesErrorCode.productNotAvailableForPurchaseError =>
         PurchaseErrorCodes.productUnavailable,
       PurchasesErrorCode.productAlreadyPurchasedError =>
         PurchaseErrorCodes.alreadyOwned,
-      PurchasesErrorCode.paymentPendingError =>
-        PurchaseErrorCodes.pending,
+      PurchasesErrorCode.paymentPendingError => PurchaseErrorCodes.pending,
       PurchasesErrorCode.networkError ||
       PurchasesErrorCode.offlineConnectionError =>
         PurchaseErrorCodes.networkError,
@@ -376,57 +396,4 @@ class PurchaseService {
       _ => PurchaseErrorCodes.genericError,
     };
   }
-}
-
-/// Centralized error code constants for purchase operations.
-///
-/// Used by [PurchaseService], [PurchaseActionNotifier], and premium UI
-/// to keep error code strings in sync across layers.
-abstract final class PurchaseErrorCodes {
-  // Store/platform errors (mapped from RevenueCat)
-  static const storeProblem = 'purchase_store_problem';
-  static const notAllowed = 'purchase_not_allowed';
-  static const productUnavailable = 'purchase_product_unavailable';
-  static const alreadyOwned = 'purchase_already_owned';
-  static const pending = 'purchase_pending';
-  static const networkError = 'purchase_network_error';
-  static const inProgress = 'purchase_in_progress';
-  static const configurationError = 'purchase_configuration_error';
-  static const notActivated = 'purchase_not_activated';
-  static const genericError = 'purchase_error';
-
-  // App-level errors
-  static const cancelled = 'purchase_cancelled';
-  static const noOfferings = 'no_offerings';
-  static const packageNotFound = 'package_not_found';
-  static const restoreNoPurchases = 'restore_no_purchases';
-  static const restoreFailed = 'restore_failed';
-}
-
-class PurchaseException implements Exception {
-  final String code;
-  final PurchasesErrorCode? purchasesCode;
-  final String? message;
-
-  const PurchaseException(this.code, {this.purchasesCode, this.message});
-
-  @override
-  String toString() => message?.isNotEmpty == true ? '$code: $message' : code;
-}
-
-/// Immutable subscription status info.
-class SubscriptionInfo {
-  final bool isActive;
-  final DateTime? expirationDate;
-  final bool willRenew;
-  final String? productId;
-  final bool isTrial;
-
-  const SubscriptionInfo({
-    required this.isActive,
-    this.expirationDate,
-    this.willRenew = false,
-    this.productId,
-    this.isTrial = false,
-  });
 }

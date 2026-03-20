@@ -26,12 +26,9 @@ void main() {
     return ProviderScope(
       overrides: [
         currentUserIdProvider.overrideWithValue('me'),
-        communityPostByIdProvider('post-1')
-            .overrideWith((ref) async => null),
-        commentsForPostProvider('post-1')
-            .overrideWith((ref) async => []),
-        commentFormProvider
-            .overrideWith(() => _FakeCommentFormNotifier()),
+        communityPostByIdProvider('post-1').overrideWith((ref) async => null),
+        commentsForPostProvider('post-1').overrideWith((ref) async => []),
+        commentFormProvider.overrideWith(() => _FakeCommentFormNotifier()),
       ],
       child: MaterialApp.router(routerConfig: buildRouter(child)),
     );

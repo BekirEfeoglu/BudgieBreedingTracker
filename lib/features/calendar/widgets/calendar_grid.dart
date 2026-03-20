@@ -184,21 +184,19 @@ class _DayCell extends StatelessWidget {
                 color: isSelected
                     ? theme.colorScheme.primary
                     : isToday
-                        ? theme.colorScheme.primary
-                            .withValues(alpha: 0.15)
-                        : null,
+                    ? theme.colorScheme.primary.withValues(alpha: 0.15)
+                    : null,
               ),
               alignment: Alignment.center,
               child: Text(
                 '$day',
                 style: theme.textTheme.bodySmall?.copyWith(
-                  fontWeight:
-                      isToday || isSelected ? FontWeight.w700 : null,
+                  fontWeight: isToday || isSelected ? FontWeight.w700 : null,
                   color: isSelected
                       ? theme.colorScheme.onPrimary
                       : isToday
-                          ? theme.colorScheme.primary
-                          : null,
+                      ? theme.colorScheme.primary
+                      : null,
                 ),
               ),
             ),
@@ -210,11 +208,7 @@ class _DayCell extends StatelessWidget {
                   (i) => Container(
                     width: 4,
                     height: 4,
-                    margin: const EdgeInsets.only(
-                      top: 2,
-                      left: 1,
-                      right: 1,
-                    ),
+                    margin: const EdgeInsets.only(top: 2, left: 1, right: 1),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: isSelected

@@ -53,7 +53,8 @@ extension IncubationX on Incubation {
 
   DateTime? get computedExpectedHatchDate {
     if (startDate == null) return null;
-    return startDate!
-        .add(const Duration(days: IncubationConstants.incubationPeriodDays));
+    return startDate!.add(
+      const Duration(days: IncubationConstants.incubationPeriodDays),
+    );
   }
 }

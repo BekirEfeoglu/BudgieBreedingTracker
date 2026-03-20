@@ -75,7 +75,9 @@ class _CommunityCreatePostScreenState
       return;
     }
 
-    ref.read(createPostProvider.notifier).createPost(
+    ref
+        .read(createPostProvider.notifier)
+        .createPost(
           content: content,
           postType: _postType,
           title: _titleController.text.trim().isNotEmpty
@@ -95,14 +97,14 @@ class _CommunityCreatePostScreenState
       if (state.isSuccess) {
         ref.read(createPostProvider.notifier).reset();
         context.pop();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('community.post_success'.tr())),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('community.post_success'.tr())));
       }
       if (state.error != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('community.post_error'.tr())),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('community.post_error'.tr())));
       }
     });
 
@@ -192,8 +194,9 @@ class _CommunityCreatePostScreenState
                     .map(
                       (tag) => Chip(
                         label: Text(tag),
-                        onDeleted:
-                            formState.isLoading ? null : () => _removeTag(tag),
+                        onDeleted: formState.isLoading
+                            ? null
+                            : () => _removeTag(tag),
                       ),
                     )
                     .toList(),

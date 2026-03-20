@@ -62,10 +62,13 @@ void main() {
     ];
 
     setUp(() {
-      container = ProviderContainer(overrides: [
-        communityFeedProvider.overrideWith(
-            () => _FakeFeedNotifier(posts: testPosts)),
-      ]);
+      container = ProviderContainer(
+        overrides: [
+          communityFeedProvider.overrideWith(
+            () => _FakeFeedNotifier(posts: testPosts),
+          ),
+        ],
+      );
       // Access provider to trigger build
       container.read(communityFeedProvider);
     });
@@ -170,11 +173,7 @@ void main() {
     });
 
     test('primaryImageUrl returns first image', () {
-      const post = CommunityPost(
-        id: 'p1',
-        userId: 'u1',
-        imageUrl: 'first.jpg',
-      );
+      const post = CommunityPost(id: 'p1', userId: 'u1', imageUrl: 'first.jpg');
       expect(post.primaryImageUrl, 'first.jpg');
     });
 

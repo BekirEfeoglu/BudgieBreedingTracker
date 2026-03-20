@@ -178,8 +178,9 @@ void main() {
     });
 
     testWidgets('calls signInWithGoogle on Google button tap', (tester) async {
-      when(() => mockAuth.signInWithGoogle())
-          .thenAnswer((_) async => AuthResponse());
+      when(
+        () => mockAuth.signInWithGoogle(),
+      ).thenAnswer((_) async => AuthResponse());
 
       await tester.pumpWidget(buildSubject());
       await tester.pump(const Duration(milliseconds: 500));
@@ -201,8 +202,9 @@ void main() {
     });
 
     testWidgets('calls signInWithApple on Apple button tap', (tester) async {
-      when(() => mockAuth.signInWithApple())
-          .thenAnswer((_) async => AuthResponse());
+      when(
+        () => mockAuth.signInWithApple(),
+      ).thenAnswer((_) async => AuthResponse());
 
       await tester.pumpWidget(buildSubject());
       await tester.pump(const Duration(milliseconds: 500));
@@ -223,8 +225,9 @@ void main() {
     });
 
     testWidgets('calls signInAnonymously on guest button tap', (tester) async {
-      when(() => mockAuth.signInAnonymously())
-          .thenAnswer((_) async => AuthResponse());
+      when(
+        () => mockAuth.signInAnonymously(),
+      ).thenAnswer((_) async => AuthResponse());
 
       await tester.pumpWidget(buildSubject());
       await tester.pump(const Duration(milliseconds: 500));
@@ -244,12 +247,12 @@ void main() {
       await tester.pump(const Duration(milliseconds: 500));
     });
 
-    testWidgets('falls back to browser OAuth when native Google fails',
-        (tester) async {
-      when(() => mockAuth.signInWithGoogle())
-          .thenThrow(
-            const AuthException('Google sign-in not configured', statusCode: '400'),
-          );
+    testWidgets('falls back to browser OAuth when native Google fails', (
+      tester,
+    ) async {
+      when(() => mockAuth.signInWithGoogle()).thenThrow(
+        const AuthException('Google sign-in not configured', statusCode: '400'),
+      );
 
       await tester.pumpWidget(buildSubject());
       await tester.pump(const Duration(milliseconds: 500));
@@ -270,8 +273,9 @@ void main() {
     });
 
     testWidgets('Google OAuth cancel resets to idle', (tester) async {
-      when(() => mockAuth.signInWithGoogle())
-          .thenThrow(const AuthException('Canceled'));
+      when(
+        () => mockAuth.signInWithGoogle(),
+      ).thenThrow(const AuthException('Canceled'));
 
       await tester.pumpWidget(buildSubject());
       await tester.pump(const Duration(milliseconds: 500));
@@ -291,10 +295,9 @@ void main() {
     });
 
     testWidgets('guest login error shows snackbar', (tester) async {
-      when(() => mockAuth.signInAnonymously())
-          .thenThrow(
-            const AuthException('Anonymous sign-ins are disabled'),
-          );
+      when(
+        () => mockAuth.signInAnonymously(),
+      ).thenThrow(const AuthException('Anonymous sign-ins are disabled'));
 
       await tester.pumpWidget(buildSubject());
       await tester.pump(const Duration(milliseconds: 500));

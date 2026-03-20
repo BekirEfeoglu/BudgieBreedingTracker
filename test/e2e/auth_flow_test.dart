@@ -270,7 +270,9 @@ void main() {
         );
         loginBtn.onPressed!();
         await tester.pump(); // resolve thrown exception
-        await tester.pump(const Duration(milliseconds: 500)); // SnackBar animation
+        await tester.pump(
+          const Duration(milliseconds: 500),
+        ); // SnackBar animation
 
         expect(find.byType(BudgieLoginScreen), findsOneWidget);
         expect(find.text('auth.error_invalid_credentials'), findsOneWidget);

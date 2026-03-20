@@ -21,8 +21,7 @@ class AdminMonitoringScreen extends ConsumerStatefulWidget {
       _AdminMonitoringScreenState();
 }
 
-class _AdminMonitoringScreenState
-    extends ConsumerState<AdminMonitoringScreen> {
+class _AdminMonitoringScreenState extends ConsumerState<AdminMonitoringScreen> {
   Timer? _refreshTimer;
 
   @override

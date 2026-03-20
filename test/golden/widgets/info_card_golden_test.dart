@@ -10,16 +10,18 @@ import '../golden_test_helper.dart';
 void main() {
   group('InfoCard golden tests', () {
     testWidgets('with icon and subtitle', (tester) async {
-      await tester.pumpWidget(buildGoldenWidget(
-        const SizedBox(
-          width: 360,
-          child: InfoCard(
-            icon: Icon(Icons.pets),
-            title: 'Toplam Kuslar',
-            subtitle: '42 kus kayitli',
+      await tester.pumpWidget(
+        buildGoldenWidget(
+          const SizedBox(
+            width: 360,
+            child: InfoCard(
+              icon: Icon(Icons.pets),
+              title: 'Toplam Kuslar',
+              subtitle: '42 kus kayitli',
+            ),
           ),
         ),
-      ));
+      );
       await tester.pumpAndSettle();
 
       await expectLater(
@@ -29,12 +31,11 @@ void main() {
     });
 
     testWidgets('title only', (tester) async {
-      await tester.pumpWidget(buildGoldenWidget(
-        const SizedBox(
-          width: 360,
-          child: InfoCard(title: 'Basit Bilgi'),
+      await tester.pumpWidget(
+        buildGoldenWidget(
+          const SizedBox(width: 360, child: InfoCard(title: 'Basit Bilgi')),
         ),
-      ));
+      );
       await tester.pumpAndSettle();
 
       await expectLater(
@@ -44,17 +45,19 @@ void main() {
     });
 
     testWidgets('with trailing widget', (tester) async {
-      await tester.pumpWidget(buildGoldenWidget(
-        const SizedBox(
-          width: 360,
-          child: InfoCard(
-            icon: Icon(Icons.calendar_today),
-            title: 'Son Kontrol',
-            subtitle: '2 gun once',
-            trailing: Icon(Icons.chevron_right),
+      await tester.pumpWidget(
+        buildGoldenWidget(
+          const SizedBox(
+            width: 360,
+            child: InfoCard(
+              icon: Icon(Icons.calendar_today),
+              title: 'Son Kontrol',
+              subtitle: '2 gun once',
+              trailing: Icon(Icons.chevron_right),
+            ),
           ),
         ),
-      ));
+      );
       await tester.pumpAndSettle();
 
       await expectLater(
@@ -64,17 +67,19 @@ void main() {
     });
 
     testWidgets('dark mode', (tester) async {
-      await tester.pumpWidget(buildGoldenWidget(
-        const SizedBox(
-          width: 360,
-          child: InfoCard(
-            icon: Icon(Icons.pets),
-            title: 'Toplam Kuslar',
-            subtitle: '42 kus kayitli',
+      await tester.pumpWidget(
+        buildGoldenWidget(
+          const SizedBox(
+            width: 360,
+            child: InfoCard(
+              icon: Icon(Icons.pets),
+              title: 'Toplam Kuslar',
+              subtitle: '42 kus kayitli',
+            ),
           ),
+          themeMode: ThemeMode.dark,
         ),
-        themeMode: ThemeMode.dark,
-      ));
+      );
       await tester.pumpAndSettle();
 
       await expectLater(

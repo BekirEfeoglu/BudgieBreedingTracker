@@ -26,7 +26,9 @@ class NotFoundScreen extends StatelessWidget {
               Icon(
                 LucideIcons.fileQuestion,
                 size: 80,
-                color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                color: theme.colorScheme.onSurfaceVariant.withValues(
+                  alpha: 0.5,
+                ),
               ),
               const SizedBox(height: AppSpacing.xl),
               Text(
@@ -48,7 +50,9 @@ class NotFoundScreen extends StatelessWidget {
               Text(
                 'error.page_not_found_hint'.tr(),
                 style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+                  color: theme.colorScheme.onSurfaceVariant.withValues(
+                    alpha: 0.7,
+                  ),
                 ),
                 textAlign: TextAlign.center,
               ),

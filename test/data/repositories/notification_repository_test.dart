@@ -65,7 +65,9 @@ void main() {
     when(() => localDao.upsertSettings(any())).thenAnswer((_) async {});
 
     when(() => remoteSource.upsert(any())).thenAnswer((_) async {});
-    when(() => remoteSource.deleteById(any(), userId: any(named: 'userId'))).thenAnswer((_) async {});
+    when(
+      () => remoteSource.deleteById(any(), userId: any(named: 'userId')),
+    ).thenAnswer((_) async {});
     when(() => remoteSource.fetchAll(any())).thenAnswer((_) async => []);
     when(
       () => remoteSource.fetchUpdatedSince(any(), any()),
@@ -115,7 +117,9 @@ void main() {
             verify(() => syncDao.insertItem(captureAny())).captured.single
                 as SyncMetadata;
         expect(inserted.status, SyncStatus.pendingDelete);
-        verify(() => remoteSource.deleteById('notification-1', userId: userId)).called(1);
+        verify(
+          () => remoteSource.deleteById('notification-1', userId: userId),
+        ).called(1);
       },
     );
 
@@ -135,7 +139,9 @@ void main() {
 
       await repository.pushAll(userId);
 
-      verify(() => remoteSource.deleteById('notification-1', userId: userId)).called(1);
+      verify(
+        () => remoteSource.deleteById('notification-1', userId: userId),
+      ).called(1);
       verify(
         () => syncDao.deleteByRecord(
           SupabaseConstants.notificationsTable,

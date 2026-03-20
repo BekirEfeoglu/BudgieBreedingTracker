@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/data/local/database/dao_providers.dart';
@@ -44,15 +45,25 @@ class SyncPushHandler {
     }
 
     // Layer 1: root entities (birds, nests)
-    if (_anyPending(pending, [SupabaseConstants.birdsTable, SupabaseConstants.nestsTable])) {
+    if (_anyPending(pending, [
+      SupabaseConstants.birdsTable,
+      SupabaseConstants.nestsTable,
+    ])) {
       final results = await _safeParallelPush([
         if (pending.contains(SupabaseConstants.birdsTable))
           () => _ref.read(birdRepositoryProvider).pushAll(userId),
         if (pending.contains(SupabaseConstants.nestsTable))
           () => _ref.read(nestRepositoryProvider).pushAll(userId),
       ], 'L1 (birds/nests)');
-      for (final r in results) { totalPushed += r.pushed; totalOrphans += r.orphansCleaned; }
-      if (results.isEmpty && _anyPending(pending, [SupabaseConstants.birdsTable, SupabaseConstants.nestsTable])) {
+      for (final r in results) {
+        totalPushed += r.pushed;
+        totalOrphans += r.orphansCleaned;
+      }
+      if (results.isEmpty &&
+          _anyPending(pending, [
+            SupabaseConstants.birdsTable,
+            SupabaseConstants.nestsTable,
+          ])) {
         layerErrors++;
         l1Failed = true;
       }
@@ -60,32 +71,53 @@ class SyncPushHandler {
 
     // Layer 2: depends on birds
     if (l1Failed) {
-      AppLogger.warning('[SyncOrchestrator] Push L2 skipped: parent layer L1 failed');
+      AppLogger.warning(
+        '[SyncOrchestrator] Push L2 skipped: parent layer L1 failed',
+      );
       l2Failed = true;
     } else if (pending.contains(SupabaseConstants.breedingPairsTable)) {
       try {
-        final r = await _ref.read(breedingPairRepositoryProvider).pushAll(userId);
-        totalPushed += r.pushed; totalOrphans += r.orphansCleaned;
+        final r = await _ref
+            .read(breedingPairRepositoryProvider)
+            .pushAll(userId);
+        totalPushed += r.pushed;
+        totalOrphans += r.orphansCleaned;
       } catch (e, st) {
         layerErrors++;
         l2Failed = true;
-        AppLogger.error('[SyncOrchestrator] Push L2 (breeding_pairs) failed', e, st);
+        AppLogger.error(
+          '[SyncOrchestrator] Push L2 (breeding_pairs) failed',
+          e,
+          st,
+        );
       }
     }
 
     // Layer 3: depends on breeding_pairs (independent of each other)
     if (l2Failed) {
-      AppLogger.warning('[SyncOrchestrator] Push L3 skipped: parent layer L2 failed');
+      AppLogger.warning(
+        '[SyncOrchestrator] Push L3 skipped: parent layer L2 failed',
+      );
       l3Failed = true;
-    } else if (_anyPending(pending, [SupabaseConstants.clutchesTable, SupabaseConstants.incubationsTable])) {
+    } else if (_anyPending(pending, [
+      SupabaseConstants.clutchesTable,
+      SupabaseConstants.incubationsTable,
+    ])) {
       final results = await _safeParallelPush([
         if (pending.contains(SupabaseConstants.clutchesTable))
           () => _ref.read(clutchRepositoryProvider).pushAll(userId),
         if (pending.contains(SupabaseConstants.incubationsTable))
           () => _ref.read(incubationRepositoryProvider).pushAll(userId),
       ], 'L3 (clutches/incubations)');
-      for (final r in results) { totalPushed += r.pushed; totalOrphans += r.orphansCleaned; }
-      if (results.isEmpty && _anyPending(pending, [SupabaseConstants.clutchesTable, SupabaseConstants.incubationsTable])) {
+      for (final r in results) {
+        totalPushed += r.pushed;
+        totalOrphans += r.orphansCleaned;
+      }
+      if (results.isEmpty &&
+          _anyPending(pending, [
+            SupabaseConstants.clutchesTable,
+            SupabaseConstants.incubationsTable,
+          ])) {
         layerErrors++;
         l3Failed = true;
       }
@@ -93,12 +125,15 @@ class SyncPushHandler {
 
     // Layer 4: depends on clutches + incubations
     if (l3Failed) {
-      AppLogger.warning('[SyncOrchestrator] Push L4 skipped: parent layer L3 failed');
+      AppLogger.warning(
+        '[SyncOrchestrator] Push L4 skipped: parent layer L3 failed',
+      );
       l4Failed = true;
     } else if (pending.contains(SupabaseConstants.eggsTable)) {
       try {
         final r = await _ref.read(eggRepositoryProvider).pushAll(userId);
-        totalPushed += r.pushed; totalOrphans += r.orphansCleaned;
+        totalPushed += r.pushed;
+        totalOrphans += r.orphansCleaned;
       } catch (e, st) {
         layerErrors++;
         l4Failed = true;
@@ -108,11 +143,14 @@ class SyncPushHandler {
 
     // Layer 5: depends on eggs
     if (l4Failed) {
-      AppLogger.warning('[SyncOrchestrator] Push L5 skipped: parent layer L4 failed');
+      AppLogger.warning(
+        '[SyncOrchestrator] Push L5 skipped: parent layer L4 failed',
+      );
     } else if (pending.contains(SupabaseConstants.chicksTable)) {
       try {
         final r = await _ref.read(chickRepositoryProvider).pushAll(userId);
-        totalPushed += r.pushed; totalOrphans += r.orphansCleaned;
+        totalPushed += r.pushed;
+        totalOrphans += r.orphansCleaned;
       } catch (e, st) {
         layerErrors++;
         AppLogger.error('[SyncOrchestrator] Push L5 (chicks) failed', e, st);
@@ -121,9 +159,12 @@ class SyncPushHandler {
 
     // Layer 6: leaf entities (all independent — parallel push)
     if (_anyPending(pending, [
-      SupabaseConstants.healthRecordsTable, SupabaseConstants.growthMeasurementsTable,
-      SupabaseConstants.eventsTable, SupabaseConstants.notificationsTable,
-      SupabaseConstants.notificationSchedulesTable, SupabaseConstants.photosTable,
+      SupabaseConstants.healthRecordsTable,
+      SupabaseConstants.growthMeasurementsTable,
+      SupabaseConstants.eventsTable,
+      SupabaseConstants.notificationsTable,
+      SupabaseConstants.notificationSchedulesTable,
+      SupabaseConstants.photosTable,
     ])) {
       final results = await _safeParallelPush([
         if (pending.contains(SupabaseConstants.healthRecordsTable))
@@ -135,11 +176,15 @@ class SyncPushHandler {
         if (pending.contains(SupabaseConstants.notificationsTable))
           () => _ref.read(notificationRepositoryProvider).pushAll(userId),
         if (pending.contains(SupabaseConstants.notificationSchedulesTable))
-          () => _ref.read(notificationScheduleRepositoryProvider).pushAll(userId),
+          () =>
+              _ref.read(notificationScheduleRepositoryProvider).pushAll(userId),
         if (pending.contains(SupabaseConstants.photosTable))
           () => _ref.read(photoRepositoryProvider).pushAll(userId),
       ], 'L6 (leaf entities)');
-      for (final r in results) { totalPushed += r.pushed; totalOrphans += r.orphansCleaned; }
+      for (final r in results) {
+        totalPushed += r.pushed;
+        totalOrphans += r.orphansCleaned;
+      }
       if (results.isEmpty) {
         layerErrors++;
         l6Failed = true;
@@ -148,18 +193,43 @@ class SyncPushHandler {
 
     // Layer 7: depends on events
     if (l6Failed) {
-      AppLogger.warning('[SyncOrchestrator] Push L7 skipped: parent layer L6 failed');
+      AppLogger.warning(
+        '[SyncOrchestrator] Push L7 skipped: parent layer L6 failed',
+      );
     } else if (pending.contains(SupabaseConstants.eventRemindersTable)) {
       try {
-        final r = await _ref.read(eventReminderRepositoryProvider).pushAll(userId);
-        totalPushed += r.pushed; totalOrphans += r.orphansCleaned;
+        final r = await _ref
+            .read(eventReminderRepositoryProvider)
+            .pushAll(userId);
+        totalPushed += r.pushed;
+        totalOrphans += r.orphansCleaned;
       } catch (e, st) {
         layerErrors++;
-        AppLogger.error('[SyncOrchestrator] Push L7 (event_reminders) failed', e, st);
+        AppLogger.error(
+          '[SyncOrchestrator] Push L7 (event_reminders) failed',
+          e,
+          st,
+        );
       }
     }
 
-    final orphanInfo = totalOrphans > 0 ? ', $totalOrphans orphans cleaned' : '';
+    final orphanInfo = totalOrphans > 0
+        ? ', $totalOrphans orphans cleaned'
+        : '';
+
+    // Report sync metrics to Sentry for observability.
+    Sentry.addBreadcrumb(Breadcrumb(
+      message: 'SyncPush completed',
+      data: {
+        'pushed': totalPushed,
+        'orphansCleaned': totalOrphans,
+        'layerErrors': layerErrors,
+        'success': layerErrors == 0,
+      },
+      category: 'sync.push',
+      level: layerErrors > 0 ? SentryLevel.warning : SentryLevel.info,
+    ));
+
     if (layerErrors > 0) {
       AppLogger.warning(
         '[SyncOrchestrator] Push completed with $layerErrors layer error(s): '
@@ -205,11 +275,15 @@ class SyncPushHandler {
         case SupabaseConstants.eventRemindersTable:
           await _ref.read(eventReminderRepositoryProvider).pushAll(userId);
         case SupabaseConstants.notificationSchedulesTable:
-          await _ref.read(notificationScheduleRepositoryProvider).pushAll(userId);
+          await _ref
+              .read(notificationScheduleRepositoryProvider)
+              .pushAll(userId);
         case SupabaseConstants.profilesTable:
           await _ref.read(profileRepositoryProvider).pushPending(userId);
         default:
-          AppLogger.warning('[SyncOrchestrator] Unknown table for retry: $table');
+          AppLogger.warning(
+            '[SyncOrchestrator] Unknown table for retry: $table',
+          );
       }
     } catch (e, st) {
       AppLogger.error('[SyncOrchestrator] Retry push failed for $table', e, st);
@@ -226,7 +300,11 @@ class SyncPushHandler {
       try {
         return await task();
       } catch (e, st) {
-        AppLogger.error('[SyncOrchestrator] Push $layerLabel partial failure', e, st);
+        AppLogger.error(
+          '[SyncOrchestrator] Push $layerLabel partial failure',
+          e,
+          st,
+        );
         return null;
       }
     });

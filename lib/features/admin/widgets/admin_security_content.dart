@@ -30,9 +30,7 @@ class SecurityContent extends StatelessWidget {
       slivers: [
         SliverPadding(
           padding: const EdgeInsets.all(AppSpacing.lg),
-          sliver: SliverToBoxAdapter(
-            child: SecuritySummary(events: events),
-          ),
+          sliver: SliverToBoxAdapter(child: SecuritySummary(events: events)),
         ),
         const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.lg)),
         SliverPadding(
@@ -130,7 +128,11 @@ class SecuritySummaryCard extends StatelessWidget {
                 color: color,
               ),
             ),
-            Text(label, style: theme.textTheme.bodySmall, textAlign: TextAlign.center),
+            Text(
+              label,
+              style: theme.textTheme.bodySmall,
+              textAlign: TextAlign.center,
+            ),
           ],
         ),
       ),
@@ -146,12 +148,24 @@ class SecurityEventItem extends ConsumerWidget {
   ({IconData icon, Color color, String label}) _severity(BuildContext context) {
     final lower = event.eventType.toLowerCase();
     if (lower.contains('suspicious') || lower.contains('attack')) {
-      return (icon: LucideIcons.alertOctagon, color: AppColors.error, label: 'admin.severity_high'.tr());
+      return (
+        icon: LucideIcons.alertOctagon,
+        color: AppColors.error,
+        label: 'admin.severity_high'.tr(),
+      );
     }
     if (lower.contains('failed') || lower.contains('rate_limit')) {
-      return (icon: LucideIcons.alertTriangle, color: AppColors.warning, label: 'admin.severity_medium'.tr());
+      return (
+        icon: LucideIcons.alertTriangle,
+        color: AppColors.warning,
+        label: 'admin.severity_medium'.tr(),
+      );
     }
-    return (icon: LucideIcons.info, color: AppColors.info, label: 'admin.severity_low'.tr());
+    return (
+      icon: LucideIcons.info,
+      color: AppColors.info,
+      label: 'admin.severity_low'.tr(),
+    );
   }
 
   @override
@@ -172,11 +186,16 @@ class SecurityEventItem extends ConsumerWidget {
                 Expanded(
                   child: Text(
                     event.eventType,
-                    style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.sm,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
                     color: sev.color.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
@@ -207,7 +226,12 @@ class SecurityEventItem extends ConsumerWidget {
             ),
             if (event.details != null) ...[
               const SizedBox(height: AppSpacing.sm),
-              Text(event.details!, style: theme.textTheme.bodySmall, maxLines: 2, overflow: TextOverflow.ellipsis),
+              Text(
+                event.details!,
+                style: theme.textTheme.bodySmall,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
             ],
             const SizedBox(height: AppSpacing.sm),
             SecurityMetadataRow(event: event),
@@ -226,13 +250,18 @@ class SecurityMetadataRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final outline = Theme.of(context).colorScheme.outline;
-    final style = Theme.of(context).textTheme.labelSmall?.copyWith(color: outline);
+    final style = Theme.of(
+      context,
+    ).textTheme.labelSmall?.copyWith(color: outline);
     return Row(
       children: [
         if (event.ipAddress != null) ...[
           Icon(LucideIcons.globe, size: 12, color: outline),
           const SizedBox(width: AppSpacing.xs),
-          Text(_maskIp(event.ipAddress!), style: style?.copyWith(fontFamily: 'monospace')),
+          Text(
+            _maskIp(event.ipAddress!),
+            style: style?.copyWith(fontFamily: 'monospace'),
+          ),
           const SizedBox(width: AppSpacing.md),
         ],
         Icon(LucideIcons.clock, size: 12, color: outline),

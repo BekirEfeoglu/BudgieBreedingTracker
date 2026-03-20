@@ -27,8 +27,7 @@ class BirdFamilyInfo extends ConsumerWidget {
       error: (_, __) => const SizedBox.shrink(),
       data: (allBirds) {
         final offspring = allBirds
-            .where((b) =>
-                b.fatherId == bird.id || b.motherId == bird.id)
+            .where((b) => b.fatherId == bird.id || b.motherId == bird.id)
             .toList();
 
         final siblings = _findSiblings(allBirds);
@@ -76,10 +75,8 @@ class BirdFamilyInfo extends ConsumerWidget {
     return allBirds.where((b) {
       if (b.id == bird.id) return false;
       // Share at least one parent
-      final sameFather =
-          bird.fatherId != null && b.fatherId == bird.fatherId;
-      final sameMother =
-          bird.motherId != null && b.motherId == bird.motherId;
+      final sameFather = bird.fatherId != null && b.fatherId == bird.fatherId;
+      final sameMother = bird.motherId != null && b.motherId == bird.motherId;
       return sameFather || sameMother;
     }).toList();
   }
@@ -106,17 +103,11 @@ class _FamilySubSection extends StatelessWidget {
         Row(
           children: [
             IconTheme(
-              data: IconThemeData(
-                size: 16,
-                color: theme.colorScheme.primary,
-              ),
+              data: IconThemeData(size: 16, color: theme.colorScheme.primary),
               child: icon,
             ),
             const SizedBox(width: AppSpacing.xs),
-            Text(
-              '$title (${birds.length})',
-              style: theme.textTheme.titleSmall,
-            ),
+            Text('$title (${birds.length})', style: theme.textTheme.titleSmall),
           ],
         ),
         const SizedBox(height: AppSpacing.sm),

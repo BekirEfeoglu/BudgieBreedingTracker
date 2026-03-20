@@ -12,6 +12,7 @@ Future<void> showMutationDetailSheet(
   return showModalBottomSheet(
     context: context,
     isScrollControlled: true,
+    constraints: const BoxConstraints(maxWidth: AppSpacing.maxSheetWidth),
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(
         top: Radius.circular(AppSpacing.radiusXl),
@@ -47,7 +48,9 @@ class _MutationDetailContent extends StatelessWidget {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+                color: theme.colorScheme.onSurfaceVariant.withValues(
+                  alpha: 0.4,
+                ),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -112,8 +115,9 @@ class _MutationDetailContent extends StatelessWidget {
               width: double.infinity,
               padding: AppSpacing.cardPadding,
               decoration: BoxDecoration(
-                color: theme.colorScheme.surfaceContainerHighest
-                    .withValues(alpha: 0.5),
+                color: theme.colorScheme.surfaceContainerHighest.withValues(
+                  alpha: 0.5,
+                ),
                 borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
               ),
               child: Text(
@@ -208,8 +212,9 @@ class _ZLinkageSection extends StatelessWidget {
           width: double.infinity,
           padding: AppSpacing.cardPadding,
           decoration: BoxDecoration(
-            color: theme.colorScheme.surfaceContainerHighest
-                .withValues(alpha: 0.5),
+            color: theme.colorScheme.surfaceContainerHighest.withValues(
+              alpha: 0.5,
+            ),
             borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
           ),
           child: Column(

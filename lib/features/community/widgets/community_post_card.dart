@@ -85,8 +85,8 @@ class CommunityPostCard extends ConsumerWidget {
                     onFollowToggle: isOwnPost
                         ? null
                         : () => ref
-                            .read(followToggleProvider.notifier)
-                            .toggleFollow(post.userId),
+                              .read(followToggleProvider.notifier)
+                              .toggleFollow(post.userId),
                   ),
                   if (post.postType != CommunityPostType.general ||
                       post.title != null) ...[
@@ -121,8 +121,7 @@ class CommunityPostCard extends ConsumerWidget {
                     const SizedBox(height: AppSpacing.md),
                     BirdLinkChip(post: post),
                   ],
-                  if (post.mutationTags.isNotEmpty ||
-                      post.tags.isNotEmpty) ...[
+                  if (post.mutationTags.isNotEmpty || post.tags.isNotEmpty) ...[
                     const SizedBox(height: AppSpacing.md),
                     PostTagWrap(post: post),
                   ],
@@ -136,8 +135,7 @@ class CommunityPostCard extends ConsumerWidget {
                   AppHaptics.mediumImpact();
                   ref.read(likeToggleProvider.notifier).toggleLike(post.id);
                 },
-                onOpenImage: (imageUrl) =>
-                    _openImageViewer(context, imageUrl),
+                onOpenImage: (imageUrl) => _openImageViewer(context, imageUrl),
               ),
             Padding(
               padding: const EdgeInsets.fromLTRB(
@@ -183,24 +181,25 @@ class CommunityPostCard extends ConsumerWidget {
         children: CommunityReportReason.values
             .where((r) => r != CommunityReportReason.unknown)
             .map((reason) {
-          final label = switch (reason) {
-            CommunityReportReason.spam =>
-              'community.report_reason_spam'.tr(),
-            CommunityReportReason.harassment =>
-              'community.report_reason_harassment'.tr(),
-            CommunityReportReason.inappropriate =>
-              'community.report_reason_inappropriate'.tr(),
-            CommunityReportReason.misinformation =>
-              'community.report_reason_misinformation'.tr(),
-            CommunityReportReason.other =>
-              'community.report_reason_other'.tr(),
-            CommunityReportReason.unknown => '',
-          };
-          return SimpleDialogOption(
-            onPressed: () => Navigator.pop(ctx, reason),
-            child: Text(label),
-          );
-        }).toList(),
+              final label = switch (reason) {
+                CommunityReportReason.spam =>
+                  'community.report_reason_spam'.tr(),
+                CommunityReportReason.harassment =>
+                  'community.report_reason_harassment'.tr(),
+                CommunityReportReason.inappropriate =>
+                  'community.report_reason_inappropriate'.tr(),
+                CommunityReportReason.misinformation =>
+                  'community.report_reason_misinformation'.tr(),
+                CommunityReportReason.other =>
+                  'community.report_reason_other'.tr(),
+                CommunityReportReason.unknown => '',
+              };
+              return SimpleDialogOption(
+                onPressed: () => Navigator.pop(ctx, reason),
+                child: Text(label),
+              );
+            })
+            .toList(),
       ),
     );
     if (reason == null || !context.mounted) return;
@@ -223,9 +222,9 @@ class CommunityPostCard extends ConsumerWidget {
       AppLogger.error('CommunityPostCard._handleReport', e, st);
       Sentry.captureException(e, stackTrace: st);
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('community.report_error'.tr())),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('community.report_error'.tr())));
       }
     }
   }
@@ -241,9 +240,9 @@ class CommunityPostCard extends ConsumerWidget {
     if (confirmed != true || !context.mounted) return;
     await ref.read(blockedUsersProvider.notifier).block(post.userId);
     if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('community.user_blocked'.tr())),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('community.user_blocked'.tr())));
     }
   }
 

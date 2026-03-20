@@ -92,8 +92,7 @@ class _HealthRecordSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final healthAsync =
-        ref.watch(healthRecordTypeDistributionProvider(userId));
+    final healthAsync = ref.watch(healthRecordTypeDistributionProvider(userId));
 
     return ChartCard(
       title: 'statistics.health_type_distribution'.tr(),

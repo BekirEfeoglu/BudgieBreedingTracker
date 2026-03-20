@@ -16,16 +16,16 @@ import 'community_moderation_providers.dart';
 
 final commentsForPostProvider =
     FutureProvider.family<List<CommunityComment>, String>((ref, postId) async {
-  final repo = ref.watch(communityCommentRepositoryProvider);
-  final userId = ref.watch(currentUserIdProvider);
+      final repo = ref.watch(communityCommentRepositoryProvider);
+      final userId = ref.watch(currentUserIdProvider);
 
-  try {
-    return await repo.getByPost(postId: postId, currentUserId: userId);
-  } catch (e, st) {
-    AppLogger.error('commentsForPostProvider', e, st);
-    return [];
-  }
-});
+      try {
+        return await repo.getByPost(postId: postId, currentUserId: userId);
+      } catch (e, st) {
+        AppLogger.error('commentsForPostProvider', e, st);
+        return [];
+      }
+    });
 
 // ---------------------------------------------------------------------------
 // Comment form
@@ -42,11 +42,7 @@ class CommentFormState {
     this.isSuccess = false,
   });
 
-  CommentFormState copyWith({
-    bool? isLoading,
-    String? error,
-    bool? isSuccess,
-  }) {
+  CommentFormState copyWith({bool? isLoading, String? error, bool? isSuccess}) {
     return CommentFormState(
       isLoading: isLoading ?? this.isLoading,
       error: error,
@@ -82,7 +78,8 @@ class CommentFormNotifier extends Notifier<CommentFormState> {
         state = state.copyWith(
           isLoading: false,
           error: ContentModerationService.localizedError(
-              modResult.rejectionReason),
+            modResult.rejectionReason,
+          ),
         );
         return;
       }
@@ -92,6 +89,7 @@ class CommentFormNotifier extends Notifier<CommentFormState> {
         postId: postId,
         userId: userId,
         content: content,
+        needsReview: modResult.needsReview,
       );
 
       ref.read(communityFeedProvider.notifier).incrementCommentCount(postId);
@@ -110,7 +108,8 @@ class CommentFormNotifier extends Notifier<CommentFormState> {
 
 final commentFormProvider =
     NotifierProvider<CommentFormNotifier, CommentFormState>(
-        CommentFormNotifier.new);
+      CommentFormNotifier.new,
+    );
 
 // ---------------------------------------------------------------------------
 // Comment delete
@@ -141,8 +140,9 @@ class CommentDeleteNotifier extends Notifier<void> {
   }
 }
 
-final commentDeleteProvider =
-    NotifierProvider<CommentDeleteNotifier, void>(CommentDeleteNotifier.new);
+final commentDeleteProvider = NotifierProvider<CommentDeleteNotifier, void>(
+  CommentDeleteNotifier.new,
+);
 
 // ---------------------------------------------------------------------------
 // Comment like toggle
@@ -172,4 +172,5 @@ class CommentLikeToggleNotifier extends Notifier<void> {
 
 final commentLikeToggleProvider =
     NotifierProvider<CommentLikeToggleNotifier, void>(
-        CommentLikeToggleNotifier.new);
+      CommentLikeToggleNotifier.new,
+    );

@@ -13,8 +13,7 @@ class EggsDao extends DatabaseAccessor<AppDatabase> with _$EggsDaoMixin {
 
   Stream<List<Egg>> watchAll(String userId) {
     return (select(eggsTable)
-          ..where(
-              (t) => t.userId.equals(userId) & t.isDeleted.equals(false))
+          ..where((t) => t.userId.equals(userId) & t.isDeleted.equals(false))
           ..orderBy([(t) => OrderingTerm.desc(t.createdAt)]))
         .watch()
         .map((rows) => rows.map((r) => r.toModel()).toList());
@@ -27,16 +26,16 @@ class EggsDao extends DatabaseAccessor<AppDatabase> with _$EggsDaoMixin {
   }
 
   Future<List<Egg>> getAll(String userId) async {
-    final rows = await (select(eggsTable)
-          ..where(
-              (t) => t.userId.equals(userId) & t.isDeleted.equals(false)))
-        .get();
+    final rows = await (select(
+      eggsTable,
+    )..where((t) => t.userId.equals(userId) & t.isDeleted.equals(false))).get();
     return rows.map((r) => r.toModel()).toList();
   }
 
   Future<Egg?> getById(String id) async {
-    final row = await (select(eggsTable)..where((t) => t.id.equals(id)))
-        .getSingleOrNull();
+    final row = await (select(
+      eggsTable,
+    )..where((t) => t.id.equals(id))).getSingleOrNull();
     return row?.toModel();
   }
 
@@ -76,8 +75,8 @@ class EggsDao extends DatabaseAccessor<AppDatabase> with _$EggsDaoMixin {
     return (selectOnly(eggsTable)
           ..addColumns([count])
           ..where(
-              eggsTable.userId.equals(userId) &
-              eggsTable.isDeleted.equals(false)))
+            eggsTable.userId.equals(userId) & eggsTable.isDeleted.equals(false),
+          ))
         .watchSingle()
         .map((row) => row.read(count) ?? 0);
   }
@@ -88,66 +87,75 @@ class EggsDao extends DatabaseAccessor<AppDatabase> with _$EggsDaoMixin {
     return (selectOnly(eggsTable)
           ..addColumns([count])
           ..where(
-              eggsTable.userId.equals(userId) &
-              eggsTable.status.equalsValue(EggStatus.incubating) &
-              eggsTable.isDeleted.equals(false)))
+            eggsTable.userId.equals(userId) &
+                eggsTable.status.equalsValue(EggStatus.incubating) &
+                eggsTable.isDeleted.equals(false),
+          ))
         .watchSingle()
         .map((row) => row.read(count) ?? 0);
   }
 
   Stream<List<Egg>> watchByClutch(String clutchId) {
-    return (select(eggsTable)
-          ..where((t) =>
-              t.clutchId.equals(clutchId) & t.isDeleted.equals(false)))
+    return (select(eggsTable)..where(
+          (t) => t.clutchId.equals(clutchId) & t.isDeleted.equals(false),
+        ))
         .watch()
         .map((rows) => rows.map((r) => r.toModel()).toList());
   }
 
   Stream<List<Egg>> watchByIncubation(String incubationId) {
-    return (select(eggsTable)
-          ..where((t) =>
-              t.incubationId.equals(incubationId) &
-              t.isDeleted.equals(false)))
+    return (select(eggsTable)..where(
+          (t) =>
+              t.incubationId.equals(incubationId) & t.isDeleted.equals(false),
+        ))
         .watch()
         .map((rows) => rows.map((r) => r.toModel()).toList());
   }
 
   Future<List<Egg>> getByIncubation(String incubationId) async {
-    final rows = await (select(eggsTable)
-          ..where((t) =>
-              t.incubationId.equals(incubationId) &
-              t.isDeleted.equals(false)))
-        .get();
+    final rows =
+        await (select(eggsTable)..where(
+              (t) =>
+                  t.incubationId.equals(incubationId) &
+                  t.isDeleted.equals(false),
+            ))
+            .get();
     return rows.map((r) => r.toModel()).toList();
   }
 
   Future<List<Egg>> getByIncubationIds(List<String> incubationIds) async {
     if (incubationIds.isEmpty) return [];
-    final rows = await (select(eggsTable)
-          ..where((t) =>
-              t.incubationId.isIn(incubationIds) &
-              t.isDeleted.equals(false)))
-        .get();
+    final rows =
+        await (select(eggsTable)..where(
+              (t) =>
+                  t.incubationId.isIn(incubationIds) &
+                  t.isDeleted.equals(false),
+            ))
+            .get();
     return rows.map((r) => r.toModel()).toList();
   }
 
   Future<List<Egg>> getIncubating(String userId) async {
-    final rows = await (select(eggsTable)
-          ..where((t) =>
-              t.userId.equals(userId) &
-              t.status.equalsValue(EggStatus.incubating) &
-              t.isDeleted.equals(false)))
-        .get();
+    final rows =
+        await (select(eggsTable)..where(
+              (t) =>
+                  t.userId.equals(userId) &
+                  t.status.equalsValue(EggStatus.incubating) &
+                  t.isDeleted.equals(false),
+            ))
+            .get();
     return rows.map((r) => r.toModel()).toList();
   }
 
   /// Incubating eggs sorted by lay date with SQL LIMIT (for dashboard).
   Stream<List<Egg>> watchIncubatingLimited(String userId, {int limit = 3}) {
     return (select(eggsTable)
-          ..where((t) =>
-              t.userId.equals(userId) &
-              t.status.equalsValue(EggStatus.incubating) &
-              t.isDeleted.equals(false))
+          ..where(
+            (t) =>
+                t.userId.equals(userId) &
+                t.status.equalsValue(EggStatus.incubating) &
+                t.isDeleted.equals(false),
+          )
           ..orderBy([(t) => OrderingTerm.asc(t.layDate)])
           ..limit(limit))
         .watch()

@@ -14,8 +14,9 @@ void main() {
   group('Ad reward providers', () {
     test('statistics reward is active inside 24h window', () async {
       SharedPreferences.setMockInitialValues({
-        AppPreferences.keyRewardStatisticsUnlockedAt:
-            DateTime.now().subtract(const Duration(hours: 23)).toIso8601String(),
+        AppPreferences.keyRewardStatisticsUnlockedAt: DateTime.now()
+            .subtract(const Duration(hours: 23))
+            .toIso8601String(),
       });
 
       final container = ProviderContainer();
@@ -28,8 +29,9 @@ void main() {
 
     test('statistics reward expires after 24h', () async {
       SharedPreferences.setMockInitialValues({
-        AppPreferences.keyRewardStatisticsUnlockedAt:
-            DateTime.now().subtract(const Duration(hours: 25)).toIso8601String(),
+        AppPreferences.keyRewardStatisticsUnlockedAt: DateTime.now()
+            .subtract(const Duration(hours: 25))
+            .toIso8601String(),
       });
 
       final container = ProviderContainer();

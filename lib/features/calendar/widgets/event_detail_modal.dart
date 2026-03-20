@@ -20,6 +20,7 @@ Future<void> showEventDetailModal(
   return showModalBottomSheet(
     context: context,
     isScrollControlled: true,
+    constraints: const BoxConstraints(maxWidth: AppSpacing.maxSheetWidth),
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(
         top: Radius.circular(AppSpacing.radiusXl),

@@ -82,10 +82,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(
-        find.textContaining('genetics.mutation'),
-        findsAtLeastNWidgets(1),
-      );
+      expect(find.textContaining('genetics.mutation'), findsAtLeastNWidgets(1));
     });
 
     testWidgets('shows carrier_ratio when carrier results exist', (

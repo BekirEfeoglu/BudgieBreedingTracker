@@ -13,9 +13,7 @@ Widget buildGoldenWidget(
     darkTheme: AppTheme.dark(),
     themeMode: themeMode,
     debugShowCheckedModeBanner: false,
-    home: Scaffold(
-      body: Center(child: child),
-    ),
+    home: Scaffold(body: Center(child: child)),
   );
 
   if (surfaceSize != null) {

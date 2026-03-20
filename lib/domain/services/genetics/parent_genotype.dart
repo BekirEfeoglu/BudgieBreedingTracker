@@ -35,8 +35,10 @@ class ParentGenotype {
   final BirdGender gender;
 
   /// Creates a genotype wrapping the given mutations in an unmodifiable view.
-  ParentGenotype({required Map<String, AlleleState> mutations, required this.gender})
-      : mutations = UnmodifiableMapView(Map.of(mutations));
+  ParentGenotype({
+    required Map<String, AlleleState> mutations,
+    required this.gender,
+  }) : mutations = UnmodifiableMapView(Map.of(mutations));
 
   /// Creates an empty genotype for the given gender.
   const ParentGenotype.empty({required this.gender}) : mutations = const {};
@@ -82,8 +84,9 @@ class ParentGenotype {
     final record = MutationDatabase.getById(mutationId);
     if (record?.locusId == null) return true; // independent mutation
     final currentAtLocus = getMutationsAtLocus(record!.locusId!);
-    final maxAlleles =
-        (record.isSexLinked && gender == BirdGender.female) ? 1 : 2;
+    final maxAlleles = (record.isSexLinked && gender == BirdGender.female)
+        ? 1
+        : 2;
     return currentAtLocus.length < maxAlleles;
   }
 

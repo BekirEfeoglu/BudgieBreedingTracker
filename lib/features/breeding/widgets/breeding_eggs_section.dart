@@ -57,8 +57,7 @@ class BreedingEggsSection extends ConsumerWidget {
             children: [
               Text('breeding.eggs'.tr(), style: theme.textTheme.titleMedium),
               TextButton.icon(
-                onPressed: () =>
-                    context.push('/breeding/$pairId/eggs'),
+                onPressed: () => context.push('/breeding/$pairId/eggs'),
                 icon: const AppIcon(AppIcons.add, size: 18),
                 label: Text('breeding.manage'.tr()),
               ),
@@ -92,29 +91,35 @@ class BreedingEggsSection extends ConsumerWidget {
               children: [
                 Padding(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.lg),
+                    horizontal: AppSpacing.lg,
+                  ),
                   child: EggSummaryRow(eggs: eggs),
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 if (activeEggs.isEmpty)
                   Padding(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.lg),
+                      horizontal: AppSpacing.lg,
+                    ),
                     child: Container(
                       width: double.infinity,
                       padding: AppSpacing.cardPadding,
                       decoration: BoxDecoration(
                         color: AppColors.success.withValues(alpha: 0.08),
-                        borderRadius:
-                            BorderRadius.circular(AppSpacing.radiusMd),
+                        borderRadius: BorderRadius.circular(
+                          AppSpacing.radiusMd,
+                        ),
                         border: Border.all(
                           color: AppColors.success.withValues(alpha: 0.3),
                         ),
                       ),
                       child: Row(
                         children: [
-                          const Icon(LucideIcons.checkCircle2,
-                              color: AppColors.success, size: 20),
+                          const Icon(
+                            LucideIcons.checkCircle2,
+                            color: AppColors.success,
+                            size: 20,
+                          ),
                           const SizedBox(width: AppSpacing.sm),
                           Expanded(
                             child: Text(
@@ -133,8 +138,10 @@ class BreedingEggsSection extends ConsumerWidget {
                     (egg) => EggListItem(
                       egg: egg,
                       onStatusUpdate: () async {
-                        final newStatus =
-                            await showEggStatusUpdateSheet(context, egg);
+                        final newStatus = await showEggStatusUpdateSheet(
+                          context,
+                          egg,
+                        );
                         if (newStatus != null) {
                           ref
                               .read(eggActionsProvider.notifier)
@@ -192,7 +199,10 @@ class BreedingNotesSection extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: AppSpacing.md),
-          Text('common.notes'.tr(), style: Theme.of(context).textTheme.titleMedium),
+          Text(
+            'common.notes'.tr(),
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
           const SizedBox(height: AppSpacing.sm),
           Text(notes, style: Theme.of(context).textTheme.bodyMedium),
         ],

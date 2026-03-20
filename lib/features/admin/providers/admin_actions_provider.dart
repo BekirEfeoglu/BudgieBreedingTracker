@@ -27,13 +27,12 @@ class AdminActionState {
     String? error,
     bool? isSuccess,
     String? successMessage,
-  }) =>
-      AdminActionState(
-        isLoading: isLoading ?? this.isLoading,
-        error: error,
-        isSuccess: isSuccess ?? this.isSuccess,
-        successMessage: successMessage,
-      );
+  }) => AdminActionState(
+    isLoading: isLoading ?? this.isLoading,
+    error: error,
+    isSuccess: isSuccess ?? this.isSuccess,
+    successMessage: successMessage,
+  );
 }
 
 /// Notifier for admin actions (user management, event dismissal, log clearing,
@@ -121,7 +120,10 @@ class AdminActionsNotifier extends Notifier<AdminActionState> {
       state = state.copyWith(isLoading: false, isSuccess: true);
     } catch (e, st) {
       AppLogger.error('AdminActions.dismissSecurityEvent', e, st);
-      state = state.copyWith(isLoading: false, error: 'admin.action_error'.tr());
+      state = state.copyWith(
+        isLoading: false,
+        error: 'admin.action_error'.tr(),
+      );
     }
   }
 
@@ -131,7 +133,8 @@ class AdminActionsNotifier extends Notifier<AdminActionState> {
     try {
       await requireAdmin(ref);
       final client = ref.read(supabaseClientProvider);
-      final cutoff = before ?? DateTime.now().subtract(const Duration(days: 90));
+      final cutoff =
+          before ?? DateTime.now().subtract(const Duration(days: 90));
 
       await client
           .from(SupabaseConstants.adminLogsTable)
@@ -146,7 +149,10 @@ class AdminActionsNotifier extends Notifier<AdminActionState> {
       state = state.copyWith(isLoading: false, isSuccess: true);
     } catch (e, st) {
       AppLogger.error('AdminActions.clearAuditLogs', e, st);
-      state = state.copyWith(isLoading: false, error: 'admin.action_error'.tr());
+      state = state.copyWith(
+        isLoading: false,
+        error: 'admin.action_error'.tr(),
+      );
     }
   }
 
@@ -178,4 +184,6 @@ class AdminActionsNotifier extends Notifier<AdminActionState> {
 
 /// Admin actions provider.
 final adminActionsProvider =
-    NotifierProvider<AdminActionsNotifier, AdminActionState>(AdminActionsNotifier.new);
+    NotifierProvider<AdminActionsNotifier, AdminActionState>(
+      AdminActionsNotifier.new,
+    );

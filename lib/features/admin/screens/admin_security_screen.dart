@@ -35,14 +35,14 @@ class _AdminSecurityScreenState extends ConsumerState<AdminSecurityScreen> {
       if (state.isSuccess) {
         ref.read(adminActionsProvider.notifier).reset();
         ref.invalidate(filteredSecurityEventsProvider);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('admin.event_dismissed'.tr())),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('admin.event_dismissed'.tr())));
       }
       if (state.error != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('admin.action_error'.tr())),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('admin.action_error'.tr())));
       }
     });
 
@@ -52,14 +52,13 @@ class _AdminSecurityScreenState extends ConsumerState<AdminSecurityScreen> {
           SecurityFilterBar(
             controller: _searchController,
             filter: filter,
-            onSearchChanged: (q) => ref
-                .read(securityEventFilterProvider.notifier)
-                .state = filter.copyWith(searchQuery: q),
-            onSeverityChanged: (s) => ref
-                .read(securityEventFilterProvider.notifier)
-                .state = s == null
-                    ? filter.copyWith(clearSeverity: true)
-                    : filter.copyWith(severity: s),
+            onSearchChanged: (q) =>
+                ref.read(securityEventFilterProvider.notifier).state = filter
+                    .copyWith(searchQuery: q),
+            onSeverityChanged: (s) =>
+                ref.read(securityEventFilterProvider.notifier).state = s == null
+                ? filter.copyWith(clearSeverity: true)
+                : filter.copyWith(severity: s),
           ),
           Expanded(
             child: RefreshIndicator(
@@ -69,8 +68,7 @@ class _AdminSecurityScreenState extends ConsumerState<AdminSecurityScreen> {
                 loading: () => const LoadingState(),
                 error: (error, _) => ErrorState(
                   message: 'common.data_load_error'.tr(),
-                  onRetry: () =>
-                      ref.invalidate(filteredSecurityEventsProvider),
+                  onRetry: () => ref.invalidate(filteredSecurityEventsProvider),
                 ),
                 data: (events) => SecurityContent(events: events),
               ),

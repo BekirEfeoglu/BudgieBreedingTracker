@@ -90,10 +90,7 @@ void main() {
       'showRewardedAd with no callback does not throw when no ad loaded',
       () async {
         final service = AdService();
-        await expectLater(
-          service.showRewardedAd(onRewarded: () {}),
-          completes,
-        );
+        await expectLater(service.showRewardedAd(onRewarded: () {}), completes);
       },
     );
   });

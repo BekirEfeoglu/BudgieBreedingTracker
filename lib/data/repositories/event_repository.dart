@@ -22,9 +22,9 @@ class EventRepository extends BaseRepository<Event>
     required EventsDao localDao,
     required EventRemoteSource remoteSource,
     required SyncMetadataDao syncDao,
-  })  : _localDao = localDao,
-        _remoteSource = remoteSource,
-        _syncDao = syncDao;
+  }) : _localDao = localDao,
+       _remoteSource = remoteSource,
+       _syncDao = syncDao;
 
   static const _table = SupabaseConstants.eventsTable;
 
@@ -61,13 +61,17 @@ class EventRepository extends BaseRepository<Event>
   Future<void> saveAll(List<Event> items) async {
     await _localDao.insertAll(items);
     if (items.isNotEmpty) {
-      final syncEntries = items.map((item) => SyncMetadata(
-        id: _uuid.v4(),
-        table: _table,
-        userId: item.userId,
-        status: SyncStatus.pending,
-        recordId: item.id,
-      )).toList();
+      final syncEntries = items
+          .map(
+            (item) => SyncMetadata(
+              id: _uuid.v4(),
+              table: _table,
+              userId: item.userId,
+              status: SyncStatus.pending,
+              recordId: item.id,
+            ),
+          )
+          .toList();
       await _syncDao.insertAll(syncEntries);
     }
   }
@@ -162,7 +166,9 @@ class EventRepository extends BaseRepository<Event>
     for (final meta in tablePending) {
       final item = await _localDao.getById(meta.recordId ?? '');
       if (item == null) {
-        AppLogger.warning('[EventRepo] Orphan sync_metadata cleaned: ${meta.recordId}');
+        AppLogger.warning(
+          '[EventRepo] Orphan sync_metadata cleaned: ${meta.recordId}',
+        );
         await _syncDao.deleteByRecord(_table, meta.recordId ?? '');
         orphansCleaned++;
         continue;
@@ -178,8 +184,7 @@ class EventRepository extends BaseRepository<Event>
     String userId,
     DateTime start,
     DateTime end,
-  ) =>
-      _localDao.watchByDateRange(userId, start, end);
+  ) => _localDao.watchByDateRange(userId, start, end);
 
   /// Upcoming events.
   Future<List<Event>> getUpcoming(String userId, {int limit = 10}) =>
@@ -188,5 +193,4 @@ class EventRepository extends BaseRepository<Event>
   /// Events for a specific bird (live stream).
   Stream<List<Event>> watchByBird(String birdId) =>
       _localDao.watchByBird(birdId);
-
 }

@@ -22,12 +22,11 @@ class HealthRecordFormState {
     bool? isLoading,
     String? error,
     bool? isSuccess,
-  }) =>
-      HealthRecordFormState(
-        isLoading: isLoading ?? this.isLoading,
-        error: error,
-        isSuccess: isSuccess ?? this.isSuccess,
-      );
+  }) => HealthRecordFormState(
+    isLoading: isLoading ?? this.isLoading,
+    error: error,
+    isSuccess: isSuccess ?? this.isSuccess,
+  );
 }
 
 /// Notifier for health record form actions.
@@ -145,4 +144,5 @@ class HealthRecordFormNotifier extends Notifier<HealthRecordFormState> {
 /// Provider for health record form state.
 final healthRecordFormStateProvider =
     NotifierProvider<HealthRecordFormNotifier, HealthRecordFormState>(
-        HealthRecordFormNotifier.new);
+      HealthRecordFormNotifier.new,
+    );

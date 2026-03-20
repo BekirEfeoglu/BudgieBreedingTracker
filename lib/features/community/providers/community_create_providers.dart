@@ -29,11 +29,7 @@ class CreatePostState {
     this.isSuccess = false,
   });
 
-  CreatePostState copyWith({
-    bool? isLoading,
-    String? error,
-    bool? isSuccess,
-  }) {
+  CreatePostState copyWith({bool? isLoading, String? error, bool? isSuccess}) {
     return CreatePostState(
       isLoading: isLoading ?? this.isLoading,
       error: error,
@@ -80,19 +76,40 @@ class CreatePostNotifier extends Notifier<CreatePostState> {
         state = state.copyWith(
           isLoading: false,
           error: ContentModerationService.localizedError(
-              modResult.rejectionReason),
+            modResult.rejectionReason,
+          ),
         );
         return;
       }
+      final textNeedsReview = modResult.needsReview;
 
       final postId = const Uuid().v4();
       final imageUrls = <String>[];
+      var imageNeedsReview = false;
 
-      // Upload images
+      // Upload images (with safety scan)
       if (images.isNotEmpty) {
         final client = ref.read(supabaseClientProvider);
         final storageService = StorageService(client);
+        final imageSafety = ref.read(imageSafetyServiceProvider);
+
         for (final image in images) {
+          // Image safety scan before upload (Apple Guideline 1.2)
+          final bytes = await image.readAsBytes();
+          final mimeType = _getMimeType(image.name);
+          final safetyResult = await imageSafety.scanImage(
+            bytes: bytes,
+            mimeType: mimeType,
+          );
+          if (!safetyResult.isSafe) {
+            state = state.copyWith(
+              isLoading: false,
+              error: 'community.image_rejected'.tr(),
+            );
+            return;
+          }
+          if (safetyResult.needsReview) imageNeedsReview = true;
+
           final url = await storageService.uploadCommunityPhoto(
             userId: userId,
             postId: postId,
@@ -101,6 +118,8 @@ class CreatePostNotifier extends Notifier<CreatePostState> {
           imageUrls.add(url);
         }
       }
+
+      final needsReview = textNeedsReview || imageNeedsReview;
 
       final data = <String, dynamic>{
         'id': postId,
@@ -112,6 +131,7 @@ class CreatePostNotifier extends Notifier<CreatePostState> {
         if (tags.isNotEmpty) 'tags': tags,
         if (imageUrls.isNotEmpty) 'image_url': imageUrls.first,
         if (imageUrls.length > 1) 'images': imageUrls,
+        if (needsReview) 'needs_review': true,
       };
 
       final repo = ref.read(communityPostRepositoryProvider);
@@ -132,4 +152,17 @@ class CreatePostNotifier extends Notifier<CreatePostState> {
 
 final createPostProvider =
     NotifierProvider<CreatePostNotifier, CreatePostState>(
-        CreatePostNotifier.new);
+      CreatePostNotifier.new,
+    );
+
+String _getMimeType(String filename) {
+  final ext = filename.split('.').last.toLowerCase();
+  return switch (ext) {
+    'jpg' || 'jpeg' => 'image/jpeg',
+    'png' => 'image/png',
+    'gif' => 'image/gif',
+    'webp' => 'image/webp',
+    'heic' => 'image/heic',
+    _ => 'application/octet-stream',
+  };
+}

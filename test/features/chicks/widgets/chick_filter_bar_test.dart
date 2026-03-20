@@ -20,8 +20,9 @@ void main() {
       expect(find.byType(ChickFilterBar), findsOneWidget);
     });
 
-    testWidgets('renders ChoiceChip for each ChickFilter value',
-        (tester) async {
+    testWidgets('renders ChoiceChip for each ChickFilter value', (
+      tester,
+    ) async {
       await tester.pumpWidget(_wrap(const ChickFilterBar()));
       await tester.pump();
 
@@ -78,8 +79,9 @@ void main() {
       }
     });
 
-    testWidgets('total chip count matches ChickFilter.values.length',
-        (tester) async {
+    testWidgets('total chip count matches ChickFilter.values.length', (
+      tester,
+    ) async {
       // Use a very wide surface to ensure all 9 chips are rendered
       await tester.binding.setSurfaceSize(const Size(4000, 600));
       addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -87,14 +89,12 @@ void main() {
       await tester.pumpWidget(_wrap(const ChickFilterBar()));
       await tester.pump();
 
-      expect(
-        find.byType(ChoiceChip),
-        findsNWidgets(ChickFilter.values.length),
-      );
+      expect(find.byType(ChoiceChip), findsNWidgets(ChickFilter.values.length));
     });
 
-    testWidgets('selecting sick filter updates provider to sick',
-        (tester) async {
+    testWidgets('selecting sick filter updates provider to sick', (
+      tester,
+    ) async {
       await tester.pumpWidget(_wrap(const ChickFilterBar()));
       await tester.pump();
 
@@ -108,8 +108,9 @@ void main() {
       expect(container.read(chickFilterProvider), ChickFilter.sick);
     });
 
-    testWidgets('selecting deceased filter updates provider to deceased',
-        (tester) async {
+    testWidgets('selecting deceased filter updates provider to deceased', (
+      tester,
+    ) async {
       await tester.pumpWidget(_wrap(const ChickFilterBar()));
       await tester.pump();
 
@@ -117,8 +118,7 @@ void main() {
         tester.element(find.byType(ChickFilterBar)),
       );
 
-      container.read(chickFilterProvider.notifier).state =
-          ChickFilter.deceased;
+      container.read(chickFilterProvider.notifier).state = ChickFilter.deceased;
       await tester.pump();
 
       expect(container.read(chickFilterProvider), ChickFilter.deceased);

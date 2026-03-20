@@ -60,13 +60,13 @@ class ProfileScreen extends ConsumerWidget {
           onRetry: () => ref.invalidate(userProfileProvider),
         ),
         data: (profile) {
-          final displayName = profile?.resolvedDisplayName ??
+          final displayName =
+              profile?.resolvedDisplayName ??
               user?.email?.split('@').first ??
               '';
           final email = user?.email ?? profile?.email ?? '';
           final statsAsync = ref.watch(profileStatsProvider(userId));
-          final completion =
-              ref.watch(profileCompletionProvider(userId));
+          final completion = ref.watch(profileCompletionProvider(userId));
 
           return RefreshIndicator(
             onRefresh: () async {
@@ -86,17 +86,12 @@ class ProfileScreen extends ConsumerWidget {
               physics: const AlwaysScrollableScrollPhysics(),
               slivers: [
                 // Pinned AppBar (title only)
-                SliverAppBar(
-                  pinned: true,
-                  title: Text('profile.title'.tr()),
-                ),
+                SliverAppBar(pinned: true, title: Text('profile.title'.tr())),
 
                 // Profile header (self-sizing — no fixed height)
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.only(
-                      top: AppSpacing.sm,
-                    ),
+                    padding: const EdgeInsets.only(top: AppSpacing.sm),
                     child: ProfileHeader(
                       profile: profile,
                       displayName: displayName,
@@ -121,8 +116,7 @@ class ProfileScreen extends ConsumerWidget {
 
                 // Content sections
                 SliverPadding(
-                  padding: const EdgeInsets.symmetric(
-                      vertical: AppSpacing.lg),
+                  padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
                   sliver: SliverList.list(
                     children: [
                       // Set name banner
@@ -156,8 +150,7 @@ class ProfileScreen extends ConsumerWidget {
                       if (completion.percentage < 1.0)
                         CompletionChecklist(
                           completion: completion,
-                          onItemTap: (item) =>
-                              _handleCompletionTap(
+                          onItemTap: (item) => _handleCompletionTap(
                             context,
                             ref,
                             item,
@@ -173,9 +166,9 @@ class ProfileScreen extends ConsumerWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             ProfileSectionTitle(
-                                label: 'profile.account_info'.tr()),
-                            AccountInfoCard(
-                                profile: profile, email: email),
+                              label: 'profile.account_info'.tr(),
+                            ),
+                            AccountInfoCard(profile: profile, email: email),
                             const SizedBox(height: AppSpacing.md),
                             SubscriptionCard(profile: profile),
                           ],
@@ -190,8 +183,8 @@ class ProfileScreen extends ConsumerWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             ProfileSectionTitle(
-                                label:
-                                    'profile.app_preferences'.tr()),
+                              label: 'profile.app_preferences'.tr(),
+                            ),
                             const AppPreferencesSection(),
                           ],
                         ),
@@ -204,12 +197,10 @@ class ProfileScreen extends ConsumerWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            ProfileSectionTitle(
-                                label: 'profile.security'.tr()),
+                            ProfileSectionTitle(label: 'profile.security'.tr()),
                             SecuritySection(
                               onChangePassword: () =>
-                                  showPasswordChangeSheet(context,
-                                      ref: ref),
+                                  showPasswordChangeSheet(context, ref: ref),
                             ),
                           ],
                         ),
@@ -241,8 +232,6 @@ class ProfileScreen extends ConsumerWidget {
       ),
     );
   }
-
-
 
   void _handleCompletionTap(
     BuildContext context,

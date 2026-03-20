@@ -61,8 +61,8 @@ class AuditFilterBar extends StatelessWidget {
                 child: AuditDateChip(
                   label: filter.startDate != null
                       ? DateFormat.yMd(
-                              Localizations.localeOf(context).languageCode)
-                          .format(filter.startDate!)
+                          Localizations.localeOf(context).languageCode,
+                        ).format(filter.startDate!)
                       : 'admin.start_date'.tr(),
                   isActive: filter.startDate != null,
                   onTap: () async {
@@ -81,8 +81,8 @@ class AuditFilterBar extends StatelessWidget {
                 child: AuditDateChip(
                   label: filter.endDate != null
                       ? DateFormat.yMd(
-                              Localizations.localeOf(context).languageCode)
-                          .format(filter.endDate!)
+                          Localizations.localeOf(context).languageCode,
+                        ).format(filter.endDate!)
                       : 'admin.end_date'.tr(),
                   isActive: filter.endDate != null,
                   onTap: () async {

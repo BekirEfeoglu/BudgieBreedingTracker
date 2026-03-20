@@ -19,14 +19,18 @@ class EggSummaryRow extends StatelessWidget {
       return Text(
         'eggs.summary_no_eggs'.tr(),
         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        ),
       );
     }
 
     final hatched = eggs.where((e) => e.status == EggStatus.hatched).length;
-    final fertile = eggs.where((e) =>
-        e.status == EggStatus.fertile || e.status == EggStatus.incubating).length;
+    final fertile = eggs
+        .where(
+          (e) =>
+              e.status == EggStatus.fertile || e.status == EggStatus.incubating,
+        )
+        .length;
 
     return Row(
       children: [
@@ -48,8 +52,8 @@ class EggSummaryRow extends StatelessWidget {
           '${hatched > 0 ? ' • ${'eggs.summary_hatched'.tr(namedArgs: {'count': '$hatched'})}' : ''}'
           '${fertile > 0 ? ' • ${'eggs.summary_fertile'.tr(namedArgs: {'count': '$fertile'})}' : ''}',
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
         ),
       ],
     );

@@ -44,25 +44,25 @@ class _SyncStatusBarState extends ConsumerState<SyncStatusBar>
 
     final (IconData icon, Color color, String label) = switch (status) {
       SyncDisplayStatus.synced => (
-          Icons.cloud_done,
-          colorScheme.primary,
-          'sync.synced'.tr(),
-        ),
+        Icons.cloud_done,
+        colorScheme.primary,
+        'sync.synced'.tr(),
+      ),
       SyncDisplayStatus.syncing => (
-          Icons.sync,
-          colorScheme.tertiary,
-          'sync.syncing'.tr(),
-        ),
+        Icons.sync,
+        colorScheme.tertiary,
+        'sync.syncing'.tr(),
+      ),
       SyncDisplayStatus.offline => (
-          Icons.cloud_off,
-          colorScheme.error,
-          'sync.offline'.tr(),
-        ),
+        Icons.cloud_off,
+        colorScheme.error,
+        'sync.offline'.tr(),
+      ),
       SyncDisplayStatus.error => (
-          Icons.cloud_off,
-          colorScheme.error,
-          'sync.sync_error'.tr(),
-        ),
+        Icons.cloud_off,
+        colorScheme.error,
+        'sync.sync_error'.tr(),
+      ),
     };
 
     final theme = Theme.of(context);

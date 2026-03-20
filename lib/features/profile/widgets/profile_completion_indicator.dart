@@ -90,7 +90,10 @@ class ProfileCompletionIndicator extends StatelessWidget {
     }
     if (value < 0.66) {
       return Color.lerp(
-          AppColors.warning, AppColors.success, (value - 0.33) / 0.33)!;
+        AppColors.warning,
+        AppColors.success,
+        (value - 0.33) / 0.33,
+      )!;
     }
     return AppColors.success;
   }

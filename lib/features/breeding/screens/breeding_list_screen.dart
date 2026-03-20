@@ -49,11 +49,13 @@ class _BreedingListScreenState extends ConsumerState<BreedingListScreen> {
         context.push(route);
         return;
       }
-      ref.read(adServiceProvider).showInterstitialAd(
-        onAdClosed: () {
-          if (context.mounted) context.push(route);
-        },
-      );
+      ref
+          .read(adServiceProvider)
+          .showInterstitialAd(
+            onAdClosed: () {
+              if (context.mounted) context.push(route);
+            },
+          );
     }
 
     return Scaffold(
@@ -98,19 +100,23 @@ class _BreedingListScreenState extends ConsumerState<BreedingListScreen> {
               },
             ),
           ),
-          const Divider(height: 1, indent: AppSpacing.lg, endIndent: AppSpacing.lg),
+          const Divider(
+            height: 1,
+            indent: AppSpacing.lg,
+            endIndent: AppSpacing.lg,
+          ),
           const SizedBox(height: AppSpacing.xs),
           const BreedingFilterBar(),
           const SizedBox(height: AppSpacing.sm),
-          Center(child: AdBannerWidget(
-            isPremiumProvider: isPremiumProvider,
-            adBannerLoader: () => defaultAdBannerLoader(ref),
-          )),
+          Center(
+            child: AdBannerWidget(
+              isPremiumProvider: isPremiumProvider,
+              adBannerLoader: () => defaultAdBannerLoader(ref),
+            ),
+          ),
           Expanded(
             child: pairsAsync.when(
-              loading: () => const Center(
-                child: CircularProgressIndicator(),
-              ),
+              loading: () => const Center(child: CircularProgressIndicator()),
               error: (error, _) => ErrorState(
                 message: 'common.data_load_error'.tr(),
                 onRetry: () =>
@@ -118,7 +124,8 @@ class _BreedingListScreenState extends ConsumerState<BreedingListScreen> {
               ),
               data: (allPairs) {
                 final pairs = ref.watch(
-                    searchedAndFilteredBreedingPairsProvider(allPairs));
+                  searchedAndFilteredBreedingPairsProvider(allPairs),
+                );
 
                 if (allPairs.isEmpty) {
                   return EmptyState(
@@ -139,38 +146,43 @@ class _BreedingListScreenState extends ConsumerState<BreedingListScreen> {
                 }
 
                 // Bulk-fetch incubation and egg maps (single stream each)
-                final incubationMap =
-                    ref.watch(incubationByPairMapProvider(userId));
-                final eggMap =
-                    ref.watch(eggsByIncubationMapProvider(userId));
+                final incubationMap = ref.watch(
+                  incubationByPairMapProvider(userId),
+                );
+                final eggMap = ref.watch(eggsByIncubationMapProvider(userId));
 
-                return RefreshIndicator(
-                  onRefresh: () async {
-                    ref.invalidate(breedingPairsStreamProvider(userId));
-                    ref.invalidate(allIncubationsStreamProvider(userId));
-                    ref.invalidate(eggsStreamProvider(userId));
-                  },
-                  child: ListView.builder(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    padding: const EdgeInsets.only(
-                      top: AppSpacing.sm,
-                      bottom: AppSpacing.xxxl * 2,
+                return Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 800),
+                    child: RefreshIndicator(
+                      onRefresh: () async {
+                        ref.invalidate(breedingPairsStreamProvider(userId));
+                        ref.invalidate(allIncubationsStreamProvider(userId));
+                        ref.invalidate(eggsStreamProvider(userId));
+                      },
+                      child: ListView.builder(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        padding: const EdgeInsets.only(
+                          top: AppSpacing.sm,
+                          bottom: AppSpacing.xxxl * 2,
+                        ),
+                        itemCount: pairs.length,
+                        itemBuilder: (context, index) {
+                          final pair = pairs[index];
+                          final incubation = incubationMap[pair.id];
+                          final eggs = incubation != null
+                              ? eggMap[incubation.id] ?? const <Egg>[]
+                              : const <Egg>[];
+                          return BreedingCard(
+                            key: ValueKey(pair.id),
+                            pair: pair,
+                            incubation: incubation,
+                            eggs: eggs,
+                            onTap: () => navigateWithAd('/breeding/${pair.id}'),
+                          );
+                        },
+                      ),
                     ),
-                    itemCount: pairs.length,
-                    itemBuilder: (context, index) {
-                      final pair = pairs[index];
-                      final incubation = incubationMap[pair.id];
-                      final eggs = incubation != null
-                          ? eggMap[incubation.id] ?? const <Egg>[]
-                          : const <Egg>[];
-                      return BreedingCard(
-                        key: ValueKey(pair.id),
-                        pair: pair,
-                        incubation: incubation,
-                        eggs: eggs,
-                        onTap: () => navigateWithAd('/breeding/${pair.id}'),
-                      );
-                    },
                   ),
                 );
               },
@@ -186,4 +198,3 @@ class _BreedingListScreenState extends ConsumerState<BreedingListScreen> {
     );
   }
 }
-

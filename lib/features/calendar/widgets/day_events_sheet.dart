@@ -18,11 +18,7 @@ class DayEventsSheet extends ConsumerWidget {
   final DateTime date;
   final List<Event> events;
 
-  const DayEventsSheet({
-    super.key,
-    required this.date,
-    required this.events,
-  });
+  const DayEventsSheet({super.key, required this.date, required this.events});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -47,8 +43,9 @@ class DayEventsSheet extends ConsumerWidget {
                 height: 4,
                 margin: const EdgeInsets.only(top: AppSpacing.md),
                 decoration: BoxDecoration(
-                  color: theme.colorScheme.onSurfaceVariant
-                      .withValues(alpha: 0.4),
+                  color: theme.colorScheme.onSurfaceVariant.withValues(
+                    alpha: 0.4,
+                  ),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -102,9 +99,7 @@ class DayEventsSheet extends ConsumerWidget {
                     )
                   : ListView.builder(
                       controller: scrollController,
-                      padding: const EdgeInsets.only(
-                        bottom: AppSpacing.xxl,
-                      ),
+                      padding: const EdgeInsets.only(bottom: AppSpacing.xxl),
                       itemCount: events.length,
                       itemBuilder: (context, index) {
                         final event = events[index];
@@ -112,16 +107,9 @@ class DayEventsSheet extends ConsumerWidget {
                           event: event,
                           onEdit: () {
                             Navigator.of(context).pop();
-                            showEventFormSheet(
-                              context,
-                              existingEvent: event,
-                            );
+                            showEventFormSheet(context, existingEvent: event);
                           },
-                          onDelete: () => _confirmDelete(
-                            context,
-                            ref,
-                            event,
-                          ),
+                          onDelete: () => _confirmDelete(context, ref, event),
                         );
                       },
                     ),
@@ -159,6 +147,7 @@ Future<void> showDayEventsSheet(
   return showModalBottomSheet(
     context: context,
     isScrollControlled: true,
+    constraints: const BoxConstraints(maxWidth: AppSpacing.maxSheetWidth),
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(
         top: Radius.circular(AppSpacing.radiusXl),

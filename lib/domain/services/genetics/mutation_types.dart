@@ -4,6 +4,7 @@ enum InheritanceType {
   autosomalDominant,
   autosomalIncompleteDominant,
   sexLinkedRecessive,
+
   /// Codominant sex-linked inheritance.
   /// Reserved for future mutations where both alleles on Z are
   /// independently expressed (no known budgie mutation uses this yet).
@@ -13,7 +14,8 @@ enum InheritanceType {
   String get labelKey => switch (this) {
     InheritanceType.autosomalRecessive => 'genetics.autosomal_recessive',
     InheritanceType.autosomalDominant => 'genetics.autosomal_dominant',
-    InheritanceType.autosomalIncompleteDominant => 'genetics.autosomal_incomplete_dominant',
+    InheritanceType.autosomalIncompleteDominant =>
+      'genetics.autosomal_incomplete_dominant',
     InheritanceType.sexLinkedRecessive => 'genetics.sex_linked_recessive',
     InheritanceType.sexLinkedCodominant => 'genetics.sex_linked_codominant',
   };
@@ -29,12 +31,7 @@ enum InheritanceType {
 }
 
 /// Dominance pattern for a mutation allele.
-enum Dominance {
-  dominant,
-  recessive,
-  incompleteDominant,
-  codominant;
-}
+enum Dominance { dominant, recessive, incompleteDominant, codominant }
 
 /// Detailed budgie mutation record in the reference catalog.
 class BudgieMutationRecord {

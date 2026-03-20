@@ -64,9 +64,7 @@ class CommunityPostActions extends ConsumerWidget {
           ),
           onTap: () {
             AppHaptics.lightImpact();
-            ref
-                .read(bookmarkToggleProvider.notifier)
-                .toggleBookmark(post.id);
+            ref.read(bookmarkToggleProvider.notifier).toggleBookmark(post.id);
           },
         ),
       ],

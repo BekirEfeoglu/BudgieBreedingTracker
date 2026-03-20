@@ -85,17 +85,19 @@ class _GenderPieChartState extends State<GenderPieChart> {
     void addSection(int count, Color color) {
       if (count > 0) {
         final isTouched = index == _touchedIndex;
-        sections.add(PieChartSectionData(
-          color: color,
-          value: count.toDouble(),
-          title: '${(count / total * 100).round()}%',
-          radius: isTouched ? 60 : 50,
-          titleStyle: TextStyle(
-            fontSize: isTouched ? 14 : 12,
-            fontWeight: FontWeight.bold,
-            color: AppColors.chartTitle(context),
+        sections.add(
+          PieChartSectionData(
+            color: color,
+            value: count.toDouble(),
+            title: '${(count / total * 100).round()}%',
+            radius: isTouched ? 60 : 50,
+            titleStyle: TextStyle(
+              fontSize: isTouched ? 14 : 12,
+              fontWeight: FontWeight.bold,
+              color: AppColors.chartTitle(context),
+            ),
           ),
-        ));
+        );
       }
       index++;
     }
@@ -152,16 +154,10 @@ class _LegendItem extends StatelessWidget {
         Container(
           width: AppSpacing.md,
           height: AppSpacing.md,
-          decoration: BoxDecoration(
-            color: color,
-            shape: BoxShape.circle,
-          ),
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         ),
         const SizedBox(width: AppSpacing.xs),
-        Text(
-          '$label ($count)',
-          style: Theme.of(context).textTheme.labelSmall,
-        ),
+        Text('$label ($count)', style: Theme.of(context).textTheme.labelSmall),
       ],
     );
   }

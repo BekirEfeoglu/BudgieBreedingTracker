@@ -36,20 +36,23 @@ class BirdListScreen extends ConsumerWidget {
         context.push(route);
         return;
       }
-      ref.read(adServiceProvider).showInterstitialAd(
-        onAdClosed: () {
-          if (context.mounted) context.push(route);
-        },
-      );
+      ref
+          .read(adServiceProvider)
+          .showInterstitialAd(
+            onAdClosed: () {
+              if (context.mounted) context.push(route);
+            },
+          );
     }
 
     return Scaffold(
       appBar: AppBar(
-        title: birdsAsync.whenOrNull(
-          data: (allBirds) => Text(
-            '${'birds.title'.tr()} (${allBirds.length})',
-          ),
-        ) ?? Text('birds.title'.tr()),
+        title:
+            birdsAsync.whenOrNull(
+              data: (allBirds) =>
+                  Text('${'birds.title'.tr()} (${allBirds.length})'),
+            ) ??
+            Text('birds.title'.tr()),
         actions: [
           PopupMenuButton<BirdSort>(
             icon: const Icon(LucideIcons.arrowUpDown),
@@ -84,33 +87,37 @@ class BirdListScreen extends ConsumerWidget {
       body: Column(
         children: [
           const BirdSearchBar(),
-          const Divider(height: 1, indent: AppSpacing.lg, endIndent: AppSpacing.lg),
+          const Divider(
+            height: 1,
+            indent: AppSpacing.lg,
+            endIndent: AppSpacing.lg,
+          ),
           const SizedBox(height: AppSpacing.xs),
           const BirdFilterBar(),
           const SizedBox(height: AppSpacing.sm),
-          Center(child: AdBannerWidget(
-            isPremiumProvider: isPremiumProvider,
-            adBannerLoader: () => defaultAdBannerLoader(ref),
-          )),
+          Center(
+            child: AdBannerWidget(
+              isPremiumProvider: isPremiumProvider,
+              adBannerLoader: () => defaultAdBannerLoader(ref),
+            ),
+          ),
           Expanded(
             child: birdsAsync.when(
-              loading: () => const Center(
-                child: CircularProgressIndicator(),
-              ),
+              loading: () => const Center(child: CircularProgressIndicator()),
               error: (error, _) => SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
                 child: SizedBox(
                   height: MediaQuery.of(context).size.height * 0.5,
                   child: ErrorState(
                     message: 'common.data_load_error'.tr(),
-                    onRetry: () =>
-                        ref.invalidate(birdsStreamProvider(userId)),
+                    onRetry: () => ref.invalidate(birdsStreamProvider(userId)),
                   ),
                 ),
               ),
               data: (allBirds) {
                 final birds = ref.watch(
-                    sortedAndFilteredBirdsProvider(allBirds));
+                  sortedAndFilteredBirdsProvider(allBirds),
+                );
 
                 if (allBirds.isEmpty) {
                   return EmptyState(
@@ -130,24 +137,30 @@ class BirdListScreen extends ConsumerWidget {
                   );
                 }
 
-                return RefreshIndicator(
-                  onRefresh: () async {
-                    ref.invalidate(birdsStreamProvider(userId));
-                  },
-                  child: ListView.builder(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    padding: const EdgeInsets.only(
-                      top: AppSpacing.sm,
-                      bottom: AppSpacing.xxxl * 2,
+                return Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 800),
+                    child: RefreshIndicator(
+                      onRefresh: () async {
+                        ref.invalidate(birdsStreamProvider(userId));
+                      },
+                      child: ListView.builder(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        padding: const EdgeInsets.only(
+                          top: AppSpacing.sm,
+                          bottom: AppSpacing.xxxl * 2,
+                        ),
+                        itemCount: birds.length,
+                        itemBuilder: (context, index) {
+                          return BirdCard(
+                            key: ValueKey(birds[index].id),
+                            bird: birds[index],
+                            onTap: () =>
+                                navigateWithAd('/birds/${birds[index].id}'),
+                          );
+                        },
+                      ),
                     ),
-                    itemCount: birds.length,
-                    itemBuilder: (context, index) {
-                      return BirdCard(
-                        key: ValueKey(birds[index].id),
-                        bird: birds[index],
-                        onTap: () => navigateWithAd('/birds/${birds[index].id}'),
-                      );
-                    },
                   ),
                 );
               },

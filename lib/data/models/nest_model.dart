@@ -14,7 +14,8 @@ abstract class Nest with _$Nest {
     String? name,
     String? location,
     @JsonKey(unknownEnumValue: NestStatus.unknown)
-    @Default(NestStatus.available) NestStatus status,
+    @Default(NestStatus.available)
+    NestStatus status,
     String? notes,
     @Default(false) bool isDeleted,
     DateTime? createdAt,

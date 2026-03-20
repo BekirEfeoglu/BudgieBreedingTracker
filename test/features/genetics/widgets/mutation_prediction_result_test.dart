@@ -18,9 +18,7 @@ void main() {
         probability: 0.5,
       );
 
-      await tester.pumpWidget(
-        _wrap(const OffspringPrediction(result: result)),
-      );
+      await tester.pumpWidget(_wrap(const OffspringPrediction(result: result)));
       await tester.pump();
 
       expect(find.byType(OffspringPrediction), findsOneWidget);
@@ -32,9 +30,7 @@ void main() {
         probability: 0.25,
       );
 
-      await tester.pumpWidget(
-        _wrap(const OffspringPrediction(result: result)),
-      );
+      await tester.pumpWidget(_wrap(const OffspringPrediction(result: result)));
       await tester.pump();
 
       var ex = tester.takeException();
@@ -43,10 +39,7 @@ void main() {
       }
 
       // PhenotypeLocalizer converts 'Normal Blue' to localization keys
-      expect(
-        find.textContaining('genetics.mutation'),
-        findsAtLeastNWidgets(1),
-      );
+      expect(find.textContaining('genetics.mutation'), findsAtLeastNWidgets(1));
     });
 
     testWidgets('shows probability percentage for 50%', (tester) async {
@@ -55,9 +48,7 @@ void main() {
         probability: 0.5,
       );
 
-      await tester.pumpWidget(
-        _wrap(const OffspringPrediction(result: result)),
-      );
+      await tester.pumpWidget(_wrap(const OffspringPrediction(result: result)));
       await tester.pump();
 
       var ex = tester.takeException();
@@ -74,9 +65,7 @@ void main() {
         probability: 0.25,
       );
 
-      await tester.pumpWidget(
-        _wrap(const OffspringPrediction(result: result)),
-      );
+      await tester.pumpWidget(_wrap(const OffspringPrediction(result: result)));
       await tester.pump();
 
       var ex = tester.takeException();
@@ -93,9 +82,7 @@ void main() {
         probability: 1.0,
       );
 
-      await tester.pumpWidget(
-        _wrap(const OffspringPrediction(result: result)),
-      );
+      await tester.pumpWidget(_wrap(const OffspringPrediction(result: result)));
       await tester.pump();
 
       var ex = tester.takeException();
@@ -114,9 +101,7 @@ void main() {
         probability: 0.75,
       );
 
-      await tester.pumpWidget(
-        _wrap(const OffspringPrediction(result: result)),
-      );
+      await tester.pumpWidget(_wrap(const OffspringPrediction(result: result)));
       await tester.pump();
 
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
@@ -128,9 +113,7 @@ void main() {
         probability: 0.5,
       );
 
-      await tester.pumpWidget(
-        _wrap(const OffspringPrediction(result: result)),
-      );
+      await tester.pumpWidget(_wrap(const OffspringPrediction(result: result)));
       await tester.pump();
 
       expect(find.byType(Card), findsOneWidget);
@@ -144,9 +127,7 @@ void main() {
         carriedMutations: ['Blue'],
       );
 
-      await tester.pumpWidget(
-        _wrap(const OffspringPrediction(result: result)),
-      );
+      await tester.pumpWidget(_wrap(const OffspringPrediction(result: result)));
       await tester.pump();
 
       var ex = tester.takeException();
@@ -163,9 +144,7 @@ void main() {
         probability: 0.5,
       );
 
-      await tester.pumpWidget(
-        _wrap(const OffspringPrediction(result: result)),
-      );
+      await tester.pumpWidget(_wrap(const OffspringPrediction(result: result)));
       await tester.pump();
 
       var ex = tester.takeException();
@@ -185,9 +164,7 @@ void main() {
         lethalCombinationIds: ['df_crested'],
       );
 
-      await tester.pumpWidget(
-        _wrap(const OffspringPrediction(result: result)),
-      );
+      await tester.pumpWidget(_wrap(const OffspringPrediction(result: result)));
       await tester.pump();
 
       var ex = tester.takeException();
@@ -206,9 +183,7 @@ void main() {
         probability: 0.5,
       );
 
-      await tester.pumpWidget(
-        _wrap(const OffspringPrediction(result: result)),
-      );
+      await tester.pumpWidget(_wrap(const OffspringPrediction(result: result)));
       await tester.pump();
 
       var ex = tester.takeException();
@@ -229,9 +204,7 @@ void main() {
       );
 
       await tester.pumpWidget(
-        _wrap(
-          const OffspringPrediction(result: result, showGenotype: true),
-        ),
+        _wrap(const OffspringPrediction(result: result, showGenotype: true)),
       );
       await tester.pump();
 
@@ -252,9 +225,7 @@ void main() {
         genotype: '+/+ bl/bl',
       );
 
-      await tester.pumpWidget(
-        _wrap(const OffspringPrediction(result: result)),
-      );
+      await tester.pumpWidget(_wrap(const OffspringPrediction(result: result)));
       await tester.pump();
 
       var ex = tester.takeException();
@@ -273,9 +244,7 @@ void main() {
         carriedMutations: ['Blue'],
       );
 
-      await tester.pumpWidget(
-        _wrap(const OffspringPrediction(result: result)),
-      );
+      await tester.pumpWidget(_wrap(const OffspringPrediction(result: result)));
       await tester.pump();
 
       var ex = tester.takeException();
@@ -296,9 +265,7 @@ void main() {
         maskedMutations: ['Opaline'],
       );
 
-      await tester.pumpWidget(
-        _wrap(const OffspringPrediction(result: result)),
-      );
+      await tester.pumpWidget(_wrap(const OffspringPrediction(result: result)));
       await tester.pump();
 
       var ex = tester.takeException();
@@ -306,10 +273,7 @@ void main() {
         ex = tester.takeException();
       }
 
-      expect(
-        find.text('genetics.masked_mutations'),
-        findsAtLeastNWidgets(1),
-      );
+      expect(find.text('genetics.masked_mutations'), findsAtLeastNWidgets(1));
     });
 
     testWidgets('has Semantics wrapper for accessibility', (tester) async {
@@ -318,9 +282,7 @@ void main() {
         probability: 0.5,
       );
 
-      await tester.pumpWidget(
-        _wrap(const OffspringPrediction(result: result)),
-      );
+      await tester.pumpWidget(_wrap(const OffspringPrediction(result: result)));
       await tester.pump();
 
       expect(find.byType(Semantics), findsAtLeastNWidgets(1));
@@ -333,9 +295,7 @@ void main() {
         compoundPhenotype: 'Opaline Blue',
       );
 
-      await tester.pumpWidget(
-        _wrap(const OffspringPrediction(result: result)),
-      );
+      await tester.pumpWidget(_wrap(const OffspringPrediction(result: result)));
       await tester.pump();
 
       var ex = tester.takeException();
@@ -356,9 +316,7 @@ void main() {
         sex: OffspringSex.male,
       );
 
-      await tester.pumpWidget(
-        _wrap(const OffspringPrediction(result: result)),
-      );
+      await tester.pumpWidget(_wrap(const OffspringPrediction(result: result)));
       await tester.pump();
 
       var ex = tester.takeException();
@@ -376,9 +334,7 @@ void main() {
         sex: OffspringSex.female,
       );
 
-      await tester.pumpWidget(
-        _wrap(const OffspringPrediction(result: result)),
-      );
+      await tester.pumpWidget(_wrap(const OffspringPrediction(result: result)));
       await tester.pump();
 
       var ex = tester.takeException();
@@ -395,9 +351,7 @@ void main() {
         probability: 0.0,
       );
 
-      await tester.pumpWidget(
-        _wrap(const OffspringPrediction(result: result)),
-      );
+      await tester.pumpWidget(_wrap(const OffspringPrediction(result: result)));
       await tester.pump();
 
       var ex = tester.takeException();

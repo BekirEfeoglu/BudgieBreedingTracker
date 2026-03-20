@@ -11,8 +11,7 @@ abstract class Bird with _$Bird {
   const factory Bird({
     required String id,
     required String name,
-    @JsonKey(unknownEnumValue: BirdGender.unknown)
-    required BirdGender gender,
+    @JsonKey(unknownEnumValue: BirdGender.unknown) required BirdGender gender,
     required String userId,
     @Default(BirdStatus.alive)
     @JsonKey(unknownEnumValue: BirdStatus.unknown)
@@ -24,8 +23,7 @@ abstract class Bird with _$Bird {
     String? photoUrl,
     String? fatherId,
     String? motherId,
-    @JsonKey(unknownEnumValue: BirdColor.unknown)
-    BirdColor? colorMutation,
+    @JsonKey(unknownEnumValue: BirdColor.unknown) BirdColor? colorMutation,
     String? cageNumber,
     String? notes,
     DateTime? birthDate,
@@ -34,8 +32,10 @@ abstract class Bird with _$Bird {
     DateTime? createdAt,
     DateTime? updatedAt,
     @Default(false) bool isDeleted,
+
     /// JSON-encoded list of mutation IDs (e.g., ['blue', 'opaline']).
     List<String>? mutations,
+
     /// JSON-encoded map of mutationId -> alleleState (e.g., {'blue': 'visual'}).
     Map<String, String>? genotypeInfo,
   }) = _Bird;
@@ -70,5 +70,4 @@ extension BirdX on Bird {
   bool get isAlive => status == BirdStatus.alive;
   bool get isMale => gender == BirdGender.male;
   bool get isFemale => gender == BirdGender.female;
-
 }

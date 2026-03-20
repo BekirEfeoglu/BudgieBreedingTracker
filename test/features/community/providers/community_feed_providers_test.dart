@@ -60,7 +60,11 @@ void main() {
   });
 
   group('CommunityFeedNotifier (unit)', () {
-    CommunityPost makePost(String id, {bool liked = false, bool bookmarked = false}) {
+    CommunityPost makePost(
+      String id, {
+      bool liked = false,
+      bool bookmarked = false,
+    }) {
       return CommunityPost(
         id: id,
         userId: 'u1',
@@ -76,10 +80,9 @@ void main() {
     test('optimisticLikeToggle toggles like state and count', () {
       final container = ProviderContainer(
         overrides: [
-          communityFeedProvider.overrideWith(() => _TestFeedNotifier([
-                makePost('1'),
-                makePost('2'),
-              ])),
+          communityFeedProvider.overrideWith(
+            () => _TestFeedNotifier([makePost('1'), makePost('2')]),
+          ),
         ],
       );
       addTearDown(container.dispose);
@@ -106,9 +109,9 @@ void main() {
     test('optimisticBookmarkToggle toggles bookmark state', () {
       final container = ProviderContainer(
         overrides: [
-          communityFeedProvider.overrideWith(() => _TestFeedNotifier([
-                makePost('1'),
-              ])),
+          communityFeedProvider.overrideWith(
+            () => _TestFeedNotifier([makePost('1')]),
+          ),
         ],
       );
       addTearDown(container.dispose);
@@ -126,10 +129,9 @@ void main() {
     test('incrementCommentCount increments for correct post', () {
       final container = ProviderContainer(
         overrides: [
-          communityFeedProvider.overrideWith(() => _TestFeedNotifier([
-                makePost('1'),
-                makePost('2'),
-              ])),
+          communityFeedProvider.overrideWith(
+            () => _TestFeedNotifier([makePost('1'), makePost('2')]),
+          ),
         ],
       );
       addTearDown(container.dispose);
@@ -146,11 +148,13 @@ void main() {
     test('removePost removes post from list', () {
       final container = ProviderContainer(
         overrides: [
-          communityFeedProvider.overrideWith(() => _TestFeedNotifier([
-                makePost('1'),
-                makePost('2'),
-                makePost('3'),
-              ])),
+          communityFeedProvider.overrideWith(
+            () => _TestFeedNotifier([
+              makePost('1'),
+              makePost('2'),
+              makePost('3'),
+            ]),
+          ),
         ],
       );
       addTearDown(container.dispose);
@@ -173,9 +177,6 @@ class _TestFeedNotifier extends CommunityFeedNotifier {
   _TestFeedNotifier(this._initialPosts);
 
   @override
-  FeedState build() => FeedState(
-        posts: _initialPosts,
-        isLoading: false,
-        hasMore: false,
-      );
+  FeedState build() =>
+      FeedState(posts: _initialPosts, isLoading: false, hasMore: false);
 }

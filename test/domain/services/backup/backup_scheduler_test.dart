@@ -97,4 +97,36 @@ void main() {
       expect(await scheduler.getLastBackupTime(), isNull);
     });
   });
+
+  group('BackupFrequency', () {
+    test('has all expected values', () {
+      expect(BackupFrequency.values, hasLength(4));
+      expect(BackupFrequency.values, containsAll([
+        BackupFrequency.daily,
+        BackupFrequency.weekly,
+        BackupFrequency.monthly,
+        BackupFrequency.never,
+      ]));
+    });
+
+    test('interval returns correct durations', () {
+      expect(BackupFrequency.daily.interval, const Duration(days: 1));
+      expect(BackupFrequency.weekly.interval, const Duration(days: 7));
+      expect(BackupFrequency.monthly.interval, const Duration(days: 30));
+      expect(BackupFrequency.never.interval, Duration.zero);
+    });
+
+    test('labelKey returns localization keys', () {
+      expect(BackupFrequency.daily.labelKey, 'settings.backup_daily');
+      expect(BackupFrequency.weekly.labelKey, 'settings.backup_weekly');
+      expect(BackupFrequency.monthly.labelKey, 'settings.backup_monthly');
+      expect(BackupFrequency.never.labelKey, 'settings.backup_never');
+    });
+
+    test('all labelKeys start with settings.backup_', () {
+      for (final freq in BackupFrequency.values) {
+        expect(freq.labelKey, startsWith('settings.backup_'));
+      }
+    });
+  });
 }

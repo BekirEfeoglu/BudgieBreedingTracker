@@ -12,40 +12,52 @@ void main() {
 
   group('CommunityMediaGallery', () {
     testWidgets('renders PageView with images', (tester) async {
-      await tester.pumpWidget(wrap(CommunityMediaGallery(
-        imageUrls: const [
-          'https://example.com/1.jpg',
-          'https://example.com/2.jpg',
-        ],
-        onDoubleTap: () {},
-        onOpenImage: (_) {},
-      )));
+      await tester.pumpWidget(
+        wrap(
+          CommunityMediaGallery(
+            imageUrls: const [
+              'https://example.com/1.jpg',
+              'https://example.com/2.jpg',
+            ],
+            onDoubleTap: () {},
+            onOpenImage: (_) {},
+          ),
+        ),
+      );
       await tester.pump();
 
       expect(find.byType(PageView), findsOneWidget);
     });
 
     testWidgets('shows page indicator for multiple images', (tester) async {
-      await tester.pumpWidget(wrap(CommunityMediaGallery(
-        imageUrls: const [
-          'https://example.com/1.jpg',
-          'https://example.com/2.jpg',
-          'https://example.com/3.jpg',
-        ],
-        onDoubleTap: () {},
-        onOpenImage: (_) {},
-      )));
+      await tester.pumpWidget(
+        wrap(
+          CommunityMediaGallery(
+            imageUrls: const [
+              'https://example.com/1.jpg',
+              'https://example.com/2.jpg',
+              'https://example.com/3.jpg',
+            ],
+            onDoubleTap: () {},
+            onOpenImage: (_) {},
+          ),
+        ),
+      );
       await tester.pump();
 
       expect(find.text('1/3'), findsOneWidget);
     });
 
     testWidgets('hides page indicator for single image', (tester) async {
-      await tester.pumpWidget(wrap(CommunityMediaGallery(
-        imageUrls: const ['https://example.com/1.jpg'],
-        onDoubleTap: () {},
-        onOpenImage: (_) {},
-      )));
+      await tester.pumpWidget(
+        wrap(
+          CommunityMediaGallery(
+            imageUrls: const ['https://example.com/1.jpg'],
+            onDoubleTap: () {},
+            onOpenImage: (_) {},
+          ),
+        ),
+      );
       await tester.pump();
 
       expect(find.text('1/1'), findsNothing);
@@ -53,11 +65,15 @@ void main() {
 
     testWidgets('calls onDoubleTap callback', (tester) async {
       var doubleTapped = false;
-      await tester.pumpWidget(wrap(CommunityMediaGallery(
-        imageUrls: const ['https://example.com/1.jpg'],
-        onDoubleTap: () => doubleTapped = true,
-        onOpenImage: (_) {},
-      )));
+      await tester.pumpWidget(
+        wrap(
+          CommunityMediaGallery(
+            imageUrls: const ['https://example.com/1.jpg'],
+            onDoubleTap: () => doubleTapped = true,
+            onOpenImage: (_) {},
+          ),
+        ),
+      );
       await tester.pump();
 
       // GestureDetector onDoubleTap requires two quick taps
@@ -69,14 +85,19 @@ void main() {
       expect(doubleTapped, isTrue);
     });
 
-    testWidgets('calls onOpenImage on single tap after timeout',
-        (tester) async {
+    testWidgets('calls onOpenImage on single tap after timeout', (
+      tester,
+    ) async {
       String? openedUrl;
-      await tester.pumpWidget(wrap(CommunityMediaGallery(
-        imageUrls: const ['https://example.com/1.jpg'],
-        onDoubleTap: () {},
-        onOpenImage: (url) => openedUrl = url,
-      )));
+      await tester.pumpWidget(
+        wrap(
+          CommunityMediaGallery(
+            imageUrls: const ['https://example.com/1.jpg'],
+            onDoubleTap: () {},
+            onOpenImage: (url) => openedUrl = url,
+          ),
+        ),
+      );
       await tester.pump();
 
       await tester.tap(find.byType(GestureDetector).first);
@@ -88,11 +109,15 @@ void main() {
     });
 
     testWidgets('has fixed height of 320', (tester) async {
-      await tester.pumpWidget(wrap(CommunityMediaGallery(
-        imageUrls: const ['https://example.com/1.jpg'],
-        onDoubleTap: () {},
-        onOpenImage: (_) {},
-      )));
+      await tester.pumpWidget(
+        wrap(
+          CommunityMediaGallery(
+            imageUrls: const ['https://example.com/1.jpg'],
+            onDoubleTap: () {},
+            onOpenImage: (_) {},
+          ),
+        ),
+      );
       await tester.pump();
 
       final sizedBox = tester.widget<SizedBox>(find.byType(SizedBox).first);
@@ -100,11 +125,15 @@ void main() {
     });
 
     testWidgets('renders empty SizedBox for empty imageUrls', (tester) async {
-      await tester.pumpWidget(wrap(CommunityMediaGallery(
-        imageUrls: const [],
-        onDoubleTap: () {},
-        onOpenImage: (_) {},
-      )));
+      await tester.pumpWidget(
+        wrap(
+          CommunityMediaGallery(
+            imageUrls: const [],
+            onDoubleTap: () {},
+            onOpenImage: (_) {},
+          ),
+        ),
+      );
       await tester.pump();
 
       expect(find.byType(PageView), findsNothing);
@@ -112,11 +141,15 @@ void main() {
     });
 
     testWidgets('shows placeholder icon while loading', (tester) async {
-      await tester.pumpWidget(wrap(CommunityMediaGallery(
-        imageUrls: const ['https://example.com/1.jpg'],
-        onDoubleTap: () {},
-        onOpenImage: (_) {},
-      )));
+      await tester.pumpWidget(
+        wrap(
+          CommunityMediaGallery(
+            imageUrls: const ['https://example.com/1.jpg'],
+            onDoubleTap: () {},
+            onOpenImage: (_) {},
+          ),
+        ),
+      );
       await tester.pump();
 
       expect(find.byIcon(LucideIcons.image), findsOneWidget);

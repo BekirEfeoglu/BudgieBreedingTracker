@@ -145,7 +145,6 @@ class MoreScreen extends ConsumerWidget {
       applicationIcon: const AppIcon(AppIcons.bird, size: 48),
     );
   }
-
 }
 
 class _MoreTile extends StatelessWidget {

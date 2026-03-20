@@ -88,9 +88,30 @@ class _MonitoringTableHeader extends StatelessWidget {
       child: Row(
         children: [
           Expanded(flex: 3, child: Text('admin.tables'.tr(), style: style)),
-          Expanded(flex: 2, child: Text('admin.table_size'.tr(), style: style, textAlign: TextAlign.end)),
-          Expanded(flex: 2, child: Text('admin.table_rows'.tr(), style: style, textAlign: TextAlign.end)),
-          Expanded(flex: 2, child: Text('admin.dead_tuples'.tr(), style: style, textAlign: TextAlign.end)),
+          Expanded(
+            flex: 2,
+            child: Text(
+              'admin.table_size'.tr(),
+              style: style,
+              textAlign: TextAlign.end,
+            ),
+          ),
+          Expanded(
+            flex: 2,
+            child: Text(
+              'admin.table_rows'.tr(),
+              style: style,
+              textAlign: TextAlign.end,
+            ),
+          ),
+          Expanded(
+            flex: 2,
+            child: Text(
+              'admin.dead_tuples'.tr(),
+              style: style,
+              textAlign: TextAlign.end,
+            ),
+          ),
         ],
       ),
     );
@@ -114,8 +135,8 @@ class _MonitoringTableRow extends StatelessWidget {
     final deadColor = table.deadTupleRatio > 10
         ? AppColors.error
         : table.deadTupleRatio > 5
-            ? AppColors.warning
-            : null;
+        ? AppColors.warning
+        : null;
 
     return Container(
       color: isEven
@@ -170,7 +191,10 @@ class _MonitoringTableRow extends StatelessWidget {
 String formatBytes(int bytes) {
   if (bytes <= 0) return '0 B';
   const units = ['B', 'KB', 'MB', 'GB', 'TB'];
-  final i = (math.log(bytes) / math.log(1024)).floor().clamp(0, units.length - 1);
+  final i = (math.log(bytes) / math.log(1024)).floor().clamp(
+    0,
+    units.length - 1,
+  );
   final value = bytes / math.pow(1024, i);
   return '${value.toStringAsFixed(value >= 100 ? 0 : 1)} ${units[i]}';
 }

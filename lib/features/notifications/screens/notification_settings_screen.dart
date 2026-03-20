@@ -25,13 +25,9 @@ class NotificationSettingsScreen extends ConsumerWidget {
     final notifier = ref.read(notificationToggleSettingsProvider.notifier);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text('notifications.title'.tr()),
-      ),
+      appBar: AppBar(title: Text('notifications.title'.tr())),
       body: ListView(
-        padding: const EdgeInsets.symmetric(
-          vertical: AppSpacing.lg,
-        ),
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
         children: [
           const _NotificationHeader(),
           const Divider(),
@@ -131,8 +127,8 @@ class _NotificationHeader extends StatelessWidget {
             child: Text(
               'notifications.settings_description'.tr(),
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ),
           ),
         ],
@@ -194,10 +190,7 @@ class _NotificationToggle extends StatelessWidget {
 
 /// Cleanup duration configuration section.
 class _CleanupSection extends StatelessWidget {
-  const _CleanupSection({
-    required this.daysOld,
-    required this.onChanged,
-  });
+  const _CleanupSection({required this.daysOld, required this.onChanged});
 
   final int daysOld;
   final Future<void> Function(int) onChanged;
@@ -255,9 +248,7 @@ class _CleanupSection extends StatelessWidget {
                 .map(
                   (d) => ButtonSegment<int>(
                     value: d,
-                    label: Text(
-                      'notifications.cleanup_days'.tr(args: ['$d']),
-                    ),
+                    label: Text('notifications.cleanup_days'.tr(args: ['$d'])),
                   ),
                 )
                 .toList(),

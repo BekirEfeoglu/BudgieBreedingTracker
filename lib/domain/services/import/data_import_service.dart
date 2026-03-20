@@ -58,12 +58,10 @@ class DataImportService {
       label: 'Birds',
       sheetNotFoundError: 'import.sheet_not_found'.tr(),
       parseRow: (row, uid) => ExcelRowParsers.parseBirdRow(row, uid),
-      onSkip: (_, rowIndex) =>
-          'import.row_name_empty'.tr(args: ['$rowIndex']),
+      onSkip: (_, rowIndex) => 'import.row_name_empty'.tr(args: ['$rowIndex']),
       onError: (error, rowIndex) {
         if (error is _BirdLimitExceededException) {
-          return 'premium.bird_limit_reached'
-              .tr(args: ['${error.maxBirds}']);
+          return 'premium.bird_limit_reached'.tr(args: ['${error.maxBirds}']);
         }
         return 'import.row_error'.tr(args: ['$rowIndex', '$error']);
       },
@@ -104,8 +102,9 @@ class DataImportService {
       parseRow: (row, uid) => ExcelRowParsers.parseBreedingPairRow(row, uid),
       onError: (error, rowIndex) {
         if (error is _BreedingPairLimitExceededException) {
-          return 'premium.breeding_limit_reached'
-              .tr(args: ['${error.maxPairs}']);
+          return 'premium.breeding_limit_reached'.tr(
+            args: ['${error.maxPairs}'],
+          );
         }
         return 'import.row_error'.tr(args: ['$rowIndex', '$error']);
       },

@@ -45,45 +45,51 @@ class ChickSurvivalChart extends StatelessWidget {
     final sections = <PieChartSectionData>[];
 
     if (data.healthy > 0) {
-      sections.add(PieChartSectionData(
-        color: AppColors.success,
-        value: data.healthy.toDouble(),
-        title: '${(data.healthy / total * 100).round()}%',
-        radius: 50,
-        titleStyle: TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.bold,
-          color: AppColors.chartTitle(context),
+      sections.add(
+        PieChartSectionData(
+          color: AppColors.success,
+          value: data.healthy.toDouble(),
+          title: '${(data.healthy / total * 100).round()}%',
+          radius: 50,
+          titleStyle: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+            color: AppColors.chartTitle(context),
+          ),
         ),
-      ));
+      );
     }
 
     if (data.sick > 0) {
-      sections.add(PieChartSectionData(
-        color: AppColors.warning,
-        value: data.sick.toDouble(),
-        title: '${(data.sick / total * 100).round()}%',
-        radius: 50,
-        titleStyle: TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.bold,
-          color: AppColors.chartTitle(context),
+      sections.add(
+        PieChartSectionData(
+          color: AppColors.warning,
+          value: data.sick.toDouble(),
+          title: '${(data.sick / total * 100).round()}%',
+          radius: 50,
+          titleStyle: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+            color: AppColors.chartTitle(context),
+          ),
         ),
-      ));
+      );
     }
 
     if (data.deceased > 0) {
-      sections.add(PieChartSectionData(
-        color: AppColors.error,
-        value: data.deceased.toDouble(),
-        title: '${(data.deceased / total * 100).round()}%',
-        radius: 50,
-        titleStyle: TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.bold,
-          color: AppColors.chartTitle(context),
+      sections.add(
+        PieChartSectionData(
+          color: AppColors.error,
+          value: data.deceased.toDouble(),
+          title: '${(data.deceased / total * 100).round()}%',
+          radius: 50,
+          titleStyle: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+            color: AppColors.chartTitle(context),
+          ),
         ),
-      ));
+      );
     }
 
     return sections;
@@ -134,16 +140,10 @@ class _LegendItem extends StatelessWidget {
         Container(
           width: AppSpacing.md,
           height: AppSpacing.md,
-          decoration: BoxDecoration(
-            color: color,
-            shape: BoxShape.circle,
-          ),
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         ),
         const SizedBox(width: AppSpacing.xs),
-        Text(
-          '$label ($count)',
-          style: Theme.of(context).textTheme.labelSmall,
-        ),
+        Text('$label ($count)', style: Theme.of(context).textTheme.labelSmall),
       ],
     );
   }

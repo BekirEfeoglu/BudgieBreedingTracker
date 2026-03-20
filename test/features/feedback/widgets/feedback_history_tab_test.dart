@@ -92,7 +92,9 @@ void main() {
 
     testWidgets('error state shows retry button', (tester) async {
       await tester.pumpWidget(
-        buildSubject(historyValue: const AsyncError('timeout', StackTrace.empty)),
+        buildSubject(
+          historyValue: const AsyncError('timeout', StackTrace.empty),
+        ),
       );
       await tester.pump();
 

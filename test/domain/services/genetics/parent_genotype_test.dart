@@ -201,8 +201,10 @@ void main() {
     group('withMutationIfValid', () {
       test('adds mutation when valid', () {
         const genotype = ParentGenotype.empty(gender: BirdGender.male);
-        final updated =
-            genotype.withMutationIfValid('blue', AlleleState.visual);
+        final updated = genotype.withMutationIfValid(
+          'blue',
+          AlleleState.visual,
+        );
         expect(updated.hasVisual('blue'), isTrue);
       });
 
@@ -214,8 +216,10 @@ void main() {
             'clearwing': AlleleState.visual,
           },
         );
-        final result =
-            genotype.withMutationIfValid('dilute', AlleleState.visual);
+        final result = genotype.withMutationIfValid(
+          'dilute',
+          AlleleState.visual,
+        );
         // Should return unchanged genotype
         expect(result.mutations.containsKey('dilute'), isFalse);
         expect(result.mutations.length, 2);

@@ -13,8 +13,7 @@ class ChicksDao extends DatabaseAccessor<AppDatabase> with _$ChicksDaoMixin {
 
   Stream<List<Chick>> watchAll(String userId) {
     return (select(chicksTable)
-          ..where(
-              (t) => t.userId.equals(userId) & t.isDeleted.equals(false))
+          ..where((t) => t.userId.equals(userId) & t.isDeleted.equals(false))
           ..orderBy([(t) => OrderingTerm.desc(t.createdAt)]))
         .watch()
         .map((rows) => rows.map((r) => r.toModel()).toList());
@@ -27,16 +26,16 @@ class ChicksDao extends DatabaseAccessor<AppDatabase> with _$ChicksDaoMixin {
   }
 
   Future<List<Chick>> getAll(String userId) async {
-    final rows = await (select(chicksTable)
-          ..where(
-              (t) => t.userId.equals(userId) & t.isDeleted.equals(false)))
-        .get();
+    final rows = await (select(
+      chicksTable,
+    )..where((t) => t.userId.equals(userId) & t.isDeleted.equals(false))).get();
     return rows.map((r) => r.toModel()).toList();
   }
 
   Future<Chick?> getById(String id) async {
-    final row = await (select(chicksTable)..where((t) => t.id.equals(id)))
-        .getSingleOrNull();
+    final row = await (select(
+      chicksTable,
+    )..where((t) => t.id.equals(id))).getSingleOrNull();
     return row?.toModel();
   }
 
@@ -76,52 +75,53 @@ class ChicksDao extends DatabaseAccessor<AppDatabase> with _$ChicksDaoMixin {
     return (selectOnly(chicksTable)
           ..addColumns([count])
           ..where(
-              chicksTable.userId.equals(userId) &
-              chicksTable.isDeleted.equals(false)))
+            chicksTable.userId.equals(userId) &
+                chicksTable.isDeleted.equals(false),
+          ))
         .watchSingle()
         .map((row) => row.read(count) ?? 0);
   }
 
   Stream<List<Chick>> watchByClutch(String clutchId) {
-    return (select(chicksTable)
-          ..where((t) =>
-              t.clutchId.equals(clutchId) & t.isDeleted.equals(false)))
+    return (select(chicksTable)..where(
+          (t) => t.clutchId.equals(clutchId) & t.isDeleted.equals(false),
+        ))
         .watch()
         .map((rows) => rows.map((r) => r.toModel()).toList());
   }
 
   Future<Chick?> getByEggId(String eggId) async {
-    final row = await (select(chicksTable)
-          ..where(
-              (t) => t.eggId.equals(eggId) & t.isDeleted.equals(false)))
-        .getSingleOrNull();
+    final row =
+        await (select(chicksTable)
+              ..where((t) => t.eggId.equals(eggId) & t.isDeleted.equals(false)))
+            .getSingleOrNull();
     return row?.toModel();
   }
 
   Future<List<Chick>> getByEggIds(List<String> eggIds) async {
     if (eggIds.isEmpty) return [];
-    final rows = await (select(chicksTable)
-          ..where((t) =>
-              t.eggId.isIn(eggIds) & t.isDeleted.equals(false)))
-        .get();
+    final rows = await (select(
+      chicksTable,
+    )..where((t) => t.eggId.isIn(eggIds) & t.isDeleted.equals(false))).get();
     return rows.map((r) => r.toModel()).toList();
   }
 
   Future<List<Chick>> getUnweaned(String userId) async {
-    final rows = await (select(chicksTable)
-          ..where((t) =>
-              t.userId.equals(userId) &
-              t.weanDate.isNull() &
-              t.isDeleted.equals(false)))
-        .get();
+    final rows =
+        await (select(chicksTable)..where(
+              (t) =>
+                  t.userId.equals(userId) &
+                  t.weanDate.isNull() &
+                  t.isDeleted.equals(false),
+            ))
+            .get();
     return rows.map((r) => r.toModel()).toList();
   }
 
   /// Recent chicks sorted by hatch date descending (SQL LIMIT).
   Stream<List<Chick>> watchRecent(String userId, {int limit = 5}) {
     return (select(chicksTable)
-          ..where(
-              (t) => t.userId.equals(userId) & t.isDeleted.equals(false))
+          ..where((t) => t.userId.equals(userId) & t.isDeleted.equals(false))
           ..orderBy([(t) => OrderingTerm.desc(t.hatchDate)])
           ..limit(limit))
         .watch()
@@ -135,11 +135,14 @@ class ChicksDao extends DatabaseAccessor<AppDatabase> with _$ChicksDaoMixin {
     return (selectOnly(chicksTable)
           ..addColumns([count])
           ..where(
-              chicksTable.userId.equals(userId) &
-              chicksTable.isDeleted.equals(false) &
-              chicksTable.birdId.isNull() &
-              chicksTable.healthStatus.equalsValue(ChickHealthStatus.healthy) &
-              chicksTable.hatchDate.isSmallerOrEqualValue(cutoff)))
+            chicksTable.userId.equals(userId) &
+                chicksTable.isDeleted.equals(false) &
+                chicksTable.birdId.isNull() &
+                chicksTable.healthStatus.equalsValue(
+                  ChickHealthStatus.healthy,
+                ) &
+                chicksTable.hatchDate.isSmallerOrEqualValue(cutoff),
+          ))
         .watchSingle()
         .map((row) => row.read(count) ?? 0);
   }

@@ -16,7 +16,9 @@ class GenerationLabel extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
         decoration: BoxDecoration(
-          color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.6),
+          color: theme.colorScheme.surfaceContainerHighest.withValues(
+            alpha: 0.6,
+          ),
           borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
         ),
         child: Text(
@@ -75,18 +77,15 @@ class OffspringConnectorPainter extends CustomPainter {
 
       for (int i = 0; i < childCount; i++) {
         final y = firstY + i * spacing;
-        canvas.drawLine(
-          Offset(0, y),
-          Offset(size.width / 2, y),
-          paint,
-        );
+        canvas.drawLine(Offset(0, y), Offset(size.width / 2, y), paint);
       }
     }
   }
 
   @override
   bool shouldRepaint(covariant OffspringConnectorPainter oldDelegate) =>
-      oldDelegate.childCount != childCount || oldDelegate.lineColor != lineColor;
+      oldDelegate.childCount != childCount ||
+      oldDelegate.lineColor != lineColor;
 }
 
 /// Paints curved connecting lines from parent (left) to ancestors (right).

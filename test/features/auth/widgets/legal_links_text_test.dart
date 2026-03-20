@@ -24,8 +24,9 @@ void main() {
       expect(textSpan.children, hasLength(5));
 
       // In test context .tr() returns the key itself
-      final spanTexts =
-          textSpan.children!.map((s) => (s as TextSpan).text).toList();
+      final spanTexts = textSpan.children!
+          .map((s) => (s as TextSpan).text)
+          .toList();
       expect(spanTexts[0], 'auth.agree_terms_prefix');
       expect(spanTexts[1], 'auth.terms_of_service');
       expect(spanTexts[2], 'auth.agree_terms_and');

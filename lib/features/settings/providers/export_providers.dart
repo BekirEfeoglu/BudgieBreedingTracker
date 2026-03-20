@@ -17,8 +17,9 @@ class ExportLoadingNotifier extends Notifier<bool> {
 }
 
 /// Whether an export operation is currently in progress.
-final exportLoadingProvider =
-    NotifierProvider<ExportLoadingNotifier, bool>(ExportLoadingNotifier.new);
+final exportLoadingProvider = NotifierProvider<ExportLoadingNotifier, bool>(
+  ExportLoadingNotifier.new,
+);
 
 /// Notifier for last export date.
 class LastExportDateNotifier extends Notifier<DateTime?> {
@@ -28,7 +29,9 @@ class LastExportDateNotifier extends Notifier<DateTime?> {
 
 /// Last export date, persisted only in memory for current session.
 final lastExportDateProvider =
-    NotifierProvider<LastExportDateNotifier, DateTime?>(LastExportDateNotifier.new);
+    NotifierProvider<LastExportDateNotifier, DateTime?>(
+      LastExportDateNotifier.new,
+    );
 
 /// Service providers.
 final pdfExportServiceProvider = Provider<PdfExportService>((ref) {

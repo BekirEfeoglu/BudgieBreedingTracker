@@ -3,11 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_spacing.dart';
 
 class SettingsSectionHeader extends StatelessWidget {
-  const SettingsSectionHeader({
-    super.key,
-    required this.title,
-    this.icon,
-  });
+  const SettingsSectionHeader({super.key, required this.title, this.icon});
 
   final String title;
   final Widget? icon;

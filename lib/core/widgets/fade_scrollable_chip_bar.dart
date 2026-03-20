@@ -12,11 +12,7 @@ class FadeScrollableChipBar extends StatelessWidget {
   /// Bar height. Defaults to [AppSpacing.touchTargetMd].
   final double? height;
 
-  const FadeScrollableChipBar({
-    super.key,
-    required this.children,
-    this.height,
-  });
+  const FadeScrollableChipBar({super.key, required this.children, this.height});
 
   @override
   Widget build(BuildContext context) {
@@ -44,10 +40,7 @@ class FadeScrollableChipBar extends StatelessWidget {
                 width: 48,
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [
-                      bgColor.withValues(alpha: 0),
-                      bgColor,
-                    ],
+                    colors: [bgColor.withValues(alpha: 0), bgColor],
                   ),
                 ),
               ),

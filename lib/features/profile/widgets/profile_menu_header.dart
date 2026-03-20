@@ -9,9 +9,7 @@ import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 /// Extracts initials from a display name (first+last or single letter).
 String getProfileInitials(String name) {
   final parts = name.trim().split(' ');
-  if (parts.length >= 2 &&
-      parts.first.isNotEmpty &&
-      parts.last.isNotEmpty) {
+  if (parts.length >= 2 && parts.first.isNotEmpty && parts.last.isNotEmpty) {
     return '${parts.first[0]}${parts.last[0]}'.toUpperCase();
   }
   return name.isNotEmpty ? name[0].toUpperCase() : '?';
@@ -41,8 +39,7 @@ class ProfileMenuHeader extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Container(
-      color: theme.colorScheme.surfaceContainerHighest
-          .withValues(alpha: 0.35),
+      color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.35),
       padding: const EdgeInsets.all(AppSpacing.xl),
       child: Row(
         children: [
@@ -54,8 +51,11 @@ class ProfileMenuHeader extends StatelessWidget {
               radius: 24,
               backgroundColor: theme.colorScheme.primary,
               backgroundImage: profile?.avatarUrl != null
-                  ? CachedNetworkImageProvider(profile!.avatarUrl!,
-                      maxWidth: 96, maxHeight: 96)
+                  ? CachedNetworkImageProvider(
+                      profile!.avatarUrl!,
+                      maxWidth: 96,
+                      maxHeight: 96,
+                    )
                   : null,
               child: profile?.avatarUrl == null
                   ? Text(
@@ -75,8 +75,9 @@ class ProfileMenuHeader extends StatelessWidget {
               children: [
                 Text(
                   displayName,
-                  style: theme.textTheme.titleMedium
-                      ?.copyWith(fontWeight: FontWeight.w600),
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
                   overflow: TextOverflow.ellipsis,
                   maxLines: 1,
                 ),
@@ -124,11 +125,7 @@ class ProfileMenuHeader extends StatelessWidget {
 
 /// Small colored badge chip (e.g. Premium, Founder, Admin).
 class ProfileMenuBadge extends StatelessWidget {
-  const ProfileMenuBadge({
-    super.key,
-    required this.label,
-    required this.color,
-  });
+  const ProfileMenuBadge({super.key, required this.label, required this.color});
 
   final String label;
   final Color color;
@@ -137,7 +134,9 @@ class ProfileMenuBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.sm + 2, vertical: 3),
+        horizontal: AppSpacing.sm + 2,
+        vertical: 3,
+      ),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(AppSpacing.radiusFull),

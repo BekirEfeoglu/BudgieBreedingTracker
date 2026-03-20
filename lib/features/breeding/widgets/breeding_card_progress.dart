@@ -37,7 +37,12 @@ class BreedingCardProgress extends StatelessWidget {
               ),
             ),
             Text(
-              'breeding.day_progress'.tr(args: [daysElapsed.toString(), IncubationConstants.incubationPeriodDays.toString()]),
+              'breeding.day_progress'.tr(
+                args: [
+                  daysElapsed.toString(),
+                  IncubationConstants.incubationPeriodDays.toString(),
+                ],
+              ),
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
               ),
@@ -45,10 +50,7 @@ class BreedingCardProgress extends StatelessWidget {
           ],
         ),
         const SizedBox(height: AppSpacing.xs),
-        AppProgressBar(
-          value: incubation.percentageComplete,
-          color: stageColor,
-        ),
+        AppProgressBar(value: incubation.percentageComplete, color: stageColor),
       ],
     );
   }

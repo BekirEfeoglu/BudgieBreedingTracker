@@ -216,10 +216,7 @@ void main() {
       );
       expect(texasClearbody.hideWingMarkings, isFalse);
       expect(texasClearbody.bodyColor, isNot(BudgiePhenotypePalette.skyBlue));
-      expect(
-        texasClearbody.wingMarkingColor,
-        BudgiePhenotypePalette.wingBlack,
-      );
+      expect(texasClearbody.wingMarkingColor, BudgiePhenotypePalette.wingBlack);
       expect(
         texasClearbody.cheekPatchColor,
         BudgiePhenotypePalette.cheekViolet,

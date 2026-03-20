@@ -45,9 +45,9 @@ class AncestorListView extends StatelessWidget {
             initiallyExpanded: gen <= 1,
             title: Text(
               '$label (${birds.length})',
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
             ),
             children: birds.map((bird) {
               final isCommon = commonAncestorIds.contains(bird.id);
@@ -79,12 +79,12 @@ class AncestorListView extends StatelessWidget {
   }
 
   String _generationLabel(int gen) => switch (gen) {
-        0 => 'genealogy.root'.tr(),
-        1 => 'genealogy.parents_gen'.tr(),
-        2 => 'genealogy.grandparents'.tr(),
-        3 => 'genealogy.great_grandparents'.tr(),
-        _ => 'genealogy.generation'.tr(args: [gen.toString()]),
-      };
+    0 => 'genealogy.root'.tr(),
+    1 => 'genealogy.parents_gen'.tr(),
+    2 => 'genealogy.grandparents'.tr(),
+    3 => 'genealogy.great_grandparents'.tr(),
+    _ => 'genealogy.generation'.tr(args: [gen.toString()]),
+  };
 }
 
 class _AncestorListTile extends StatelessWidget {

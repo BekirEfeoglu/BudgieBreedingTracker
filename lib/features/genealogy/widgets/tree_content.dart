@@ -24,7 +24,9 @@ class TreeViewModeNotifier extends Notifier<TreeViewMode> {
 }
 
 final treeViewModeProvider =
-    NotifierProvider<TreeViewModeNotifier, TreeViewMode>(TreeViewModeNotifier.new);
+    NotifierProvider<TreeViewModeNotifier, TreeViewMode>(
+      TreeViewModeNotifier.new,
+    );
 
 /// Main tree content: tree view + stats + offspring + export.
 class TreeContent extends ConsumerStatefulWidget {
@@ -46,8 +48,9 @@ class _TreeContentState extends ConsumerState<TreeContent> {
         ? ref.watch(chickAncestorsProvider(widget.entityId))
         : ref.watch(ancestorsProvider(widget.entityId));
 
-    final offspringAsync =
-        widget.isChick ? null : ref.watch(offspringProvider(widget.entityId));
+    final offspringAsync = widget.isChick
+        ? null
+        : ref.watch(offspringProvider(widget.entityId));
 
     return ancestorsAsync.when(
       loading: () => const _GenealogySkeletonLoader(),
@@ -76,18 +79,29 @@ class _TreeContentState extends ConsumerState<TreeContent> {
         );
 
         final maxDepth = ref.watch(pedigreeDepthProvider);
-        final entityParams = (entityId: widget.entityId, isChick: widget.isChick);
+        final entityParams = (
+          entityId: widget.entityId,
+          isChick: widget.isChick,
+        );
         final statsAsync = ref.watch(ancestorStatsProvider(entityParams));
         final inbreedingAsync = ref.watch(inbreedingDataProvider(entityParams));
-        final ancestorStats = statsAsync.value ??
-            calculateAncestorStats(widget.entityId, ancestors, maxDepth: maxDepth);
-        final inbreedingData = inbreedingAsync.value ??
+        final ancestorStats =
+            statsAsync.value ??
+            calculateAncestorStats(
+              widget.entityId,
+              ancestors,
+              maxDepth: maxDepth,
+            );
+        final inbreedingData =
+            inbreedingAsync.value ??
             calculateInbreedingForBird(widget.entityId, ancestors);
         final screenSize = MediaQuery.of(context).size;
         final isLandscape = screenSize.width > screenSize.height;
         final viewMode = ref.watch(treeViewModeProvider);
         // Dynamic height based on depth — adapt for iPad landscape
-        final baseHeight = isLandscape ? screenSize.height * 0.85 : screenSize.height;
+        final baseHeight = isLandscape
+            ? screenSize.height * 0.85
+            : screenSize.height;
         final treeMaxHeight = switch (maxDepth) {
           <= 3 => baseHeight * 0.45,
           <= 5 => baseHeight * 0.60,
@@ -116,9 +130,8 @@ class _TreeContentState extends ConsumerState<TreeContent> {
                     ),
                   ],
                   selected: {viewMode},
-                  onSelectionChanged: (s) => ref
-                      .read(treeViewModeProvider.notifier)
-                      .state = s.first,
+                  onSelectionChanged: (s) =>
+                      ref.read(treeViewModeProvider.notifier).state = s.first,
                 ),
               ),
               const SizedBox(height: AppSpacing.sm),
@@ -161,16 +174,16 @@ class _TreeContentState extends ConsumerState<TreeContent> {
                 offspringChicks: offspringChicks ?? [],
               ),
               // Genetic info (if bird has mutation data)
-              if (rootBird.mutations != null &&
-                  rootBird.mutations!.isNotEmpty)
+              if (rootBird.mutations != null && rootBird.mutations!.isNotEmpty)
                 GeneticInfoCard(
                   mutations: rootBird.mutations!
-                      .map((m) => GeneticMutation(
-                            name: m,
-                            allele: rootBird.genotypeInfo?[m],
-                            isVisible:
-                                rootBird.genotypeInfo?[m] == 'visual',
-                          ))
+                      .map(
+                        (m) => GeneticMutation(
+                          name: m,
+                          allele: rootBird.genotypeInfo?[m],
+                          isVisible: rootBird.genotypeInfo?[m] == 'visual',
+                        ),
+                      )
                       .toList(),
                 ),
               // Offspring section
@@ -208,7 +221,9 @@ class _TreeContentState extends ConsumerState<TreeContent> {
                 ancestors: ancestors,
                 maxDepth: maxDepth,
                 onCaptureImage: viewMode == TreeViewMode.tree
-                    ? () => _treeViewKey.currentState?.captureTreeImage() ?? Future.value(null)
+                    ? () =>
+                          _treeViewKey.currentState?.captureTreeImage() ??
+                          Future.value(null)
                     : null,
               ),
             ],
@@ -237,7 +252,11 @@ class _GenealogySkeletonLoader extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               // Root node
-              SkeletonLoader(width: 130, height: 70, borderRadius: AppSpacing.radiusMd),
+              SkeletonLoader(
+                width: 130,
+                height: 70,
+                borderRadius: AppSpacing.radiusMd,
+              ),
               SizedBox(width: AppSpacing.md),
               // Branch lines placeholder
               SkeletonLoader(width: 40, height: 2),
@@ -245,9 +264,17 @@ class _GenealogySkeletonLoader extends StatelessWidget {
               // Parent nodes
               Column(
                 children: [
-                  SkeletonLoader(width: 110, height: 60, borderRadius: AppSpacing.radiusMd),
+                  SkeletonLoader(
+                    width: 110,
+                    height: 60,
+                    borderRadius: AppSpacing.radiusMd,
+                  ),
                   SizedBox(height: AppSpacing.lg),
-                  SkeletonLoader(width: 110, height: 60, borderRadius: AppSpacing.radiusMd),
+                  SkeletonLoader(
+                    width: 110,
+                    height: 60,
+                    borderRadius: AppSpacing.radiusMd,
+                  ),
                 ],
               ),
             ],

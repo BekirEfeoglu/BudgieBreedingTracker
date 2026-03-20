@@ -30,9 +30,7 @@ class CommunityCommentRemoteSource {
 
   Future<void> insert(Map<String, dynamic> data) async {
     try {
-      await _client
-          .from(SupabaseConstants.communityCommentsTable)
-          .insert(data);
+      await _client.from(SupabaseConstants.communityCommentsTable).insert(data);
     } catch (e, st) {
       AppLogger.error('CommunityCommentRemoteSource.insert', e, st);
       rethrow;

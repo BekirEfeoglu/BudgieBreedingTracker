@@ -79,8 +79,9 @@ class FeedbackHistoryCard extends StatelessWidget {
                     vertical: AppSpacing.xs,
                   ),
                   decoration: BoxDecoration(
-                    color: theme.colorScheme.primaryContainer
-                        .withValues(alpha: 0.3),
+                    color: theme.colorScheme.primaryContainer.withValues(
+                      alpha: 0.3,
+                    ),
                     borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
                   ),
                   child: Row(
@@ -116,8 +117,7 @@ class FeedbackHistoryCard extends StatelessWidget {
                     ),
                     decoration: BoxDecoration(
                       color: entry.category.color.withValues(alpha: 0.1),
-                      borderRadius:
-                          BorderRadius.circular(AppSpacing.radiusSm),
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
                     ),
                     child: Text(
                       entry.category.label,
@@ -132,8 +132,9 @@ class FeedbackHistoryCard extends StatelessWidget {
                     Text(
                       _formatDate(entry.createdAt!),
                       style: theme.textTheme.labelSmall?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant
-                            .withValues(alpha: 0.6),
+                        color: theme.colorScheme.onSurfaceVariant.withValues(
+                          alpha: 0.6,
+                        ),
                       ),
                     ),
                 ],
@@ -149,6 +150,7 @@ class FeedbackHistoryCard extends StatelessWidget {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      constraints: const BoxConstraints(maxWidth: AppSpacing.maxSheetWidth),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(
           top: Radius.circular(AppSpacing.radiusXl),

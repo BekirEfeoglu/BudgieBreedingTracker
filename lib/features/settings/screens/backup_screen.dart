@@ -147,10 +147,12 @@ class BackupScreen extends ConsumerWidget {
           context.showSnackBar(importResult.errors.first, isError: true);
         } else {
           context.showSnackBar(
-            'backup.import_success'.tr(namedArgs: {
-              'count': '${importResult.importedCount}',
-              'total': '${importResult.totalRows}',
-            }),
+            'backup.import_success'.tr(
+              namedArgs: {
+                'count': '${importResult.importedCount}',
+                'total': '${importResult.totalRows}',
+              },
+            ),
           );
         }
       }

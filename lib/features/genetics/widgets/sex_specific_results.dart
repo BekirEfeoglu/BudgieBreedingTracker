@@ -48,8 +48,9 @@ class _SexSpecificResultsState extends State<SexSpecificResults>
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final hasSexSpecific =
-        widget.results.any((r) => r.sex != OffspringSex.both);
+    final hasSexSpecific = widget.results.any(
+      (r) => r.sex != OffspringSex.both,
+    );
 
     // If no sex-specific results, just show all
     if (!hasSexSpecific) {
@@ -92,19 +93,19 @@ class _SexSpecificResultsState extends State<SexSpecificResults>
   Widget _buildCurrentTab() {
     return switch (_tabController.index) {
       1 => _ResultsList(
-          results: _filterBySex(widget.results, OffspringSex.male),
-          showGenotype: widget.showGenotype,
-          emptyMessage: 'genetics.no_male_results'.tr(),
-        ),
+        results: _filterBySex(widget.results, OffspringSex.male),
+        showGenotype: widget.showGenotype,
+        emptyMessage: 'genetics.no_male_results'.tr(),
+      ),
       2 => _ResultsList(
-          results: _filterBySex(widget.results, OffspringSex.female),
-          showGenotype: widget.showGenotype,
-          emptyMessage: 'genetics.no_female_results'.tr(),
-        ),
+        results: _filterBySex(widget.results, OffspringSex.female),
+        showGenotype: widget.showGenotype,
+        emptyMessage: 'genetics.no_female_results'.tr(),
+      ),
       _ => _ResultsList(
-          results: widget.results,
-          showGenotype: widget.showGenotype,
-        ),
+        results: widget.results,
+        showGenotype: widget.showGenotype,
+      ),
     };
   }
 
@@ -181,8 +182,9 @@ class _ResultsListState extends State<_ResultsList> {
               label: Text(
                 _expanded
                     ? 'genetics.show_less_results'.tr()
-                    : 'genetics.show_more_results'
-                        .tr(args: [widget.results.length.toString()]),
+                    : 'genetics.show_more_results'.tr(
+                        args: [widget.results.length.toString()],
+                      ),
               ),
             ),
           ),

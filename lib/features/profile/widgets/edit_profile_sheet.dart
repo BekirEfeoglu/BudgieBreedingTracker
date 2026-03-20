@@ -22,14 +22,13 @@ void openEditProfileSheet(
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
+    constraints: const BoxConstraints(maxWidth: AppSpacing.maxSheetWidth),
     shape: const RoundedRectangleBorder(
-      borderRadius:
-          BorderRadius.vertical(top: Radius.circular(AppSpacing.radiusXl)),
+      borderRadius: BorderRadius.vertical(
+        top: Radius.circular(AppSpacing.radiusXl),
+      ),
     ),
-    builder: (ctx) => EditProfileSheet(
-      profile: profile,
-      email: email,
-    ),
+    builder: (ctx) => EditProfileSheet(profile: profile, email: email),
   );
 }
 
@@ -71,8 +70,9 @@ class _EditProfileSheetState extends ConsumerState<EditProfileSheet> {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: theme.colorScheme.onSurfaceVariant
-                    .withValues(alpha: 0.4),
+                color: theme.colorScheme.onSurfaceVariant.withValues(
+                  alpha: 0.4,
+                ),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -80,8 +80,9 @@ class _EditProfileSheetState extends ConsumerState<EditProfileSheet> {
           const SizedBox(height: AppSpacing.lg),
           Text(
             'profile.edit_profile'.tr(),
-            style: theme.textTheme.titleMedium
-                ?.copyWith(fontWeight: FontWeight.bold),
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const SizedBox(height: AppSpacing.lg),
           ProfileForm(
@@ -112,8 +113,8 @@ class _EditProfileSheetState extends ConsumerState<EditProfileSheet> {
       final current = widget.profile;
       final updatedProfile =
           (current ?? Profile(id: userId, email: widget.email)).copyWith(
-        fullName: fullName.isNotEmpty ? fullName : null,
-      );
+            fullName: fullName.isNotEmpty ? fullName : null,
+          );
 
       await repo.save(updatedProfile);
 
@@ -128,9 +129,9 @@ class _EditProfileSheetState extends ConsumerState<EditProfileSheet> {
       AppLogger.error('EditProfileSheet', e, StackTrace.current);
       if (mounted) {
         setState(() => _isLoading = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('common.data_load_error'.tr())),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('common.data_load_error'.tr())));
       }
     }
   }

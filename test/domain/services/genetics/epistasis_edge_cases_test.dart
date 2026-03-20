@@ -94,10 +94,13 @@ void main() {
       expect(result, isNotEmpty);
     });
 
-    test('getInteractions returns empty for single non-interactive mutation', () {
-      final interactions = engine.getInteractions({'opaline'});
-      expect(interactions, isEmpty);
-    });
+    test(
+      'getInteractions returns empty for single non-interactive mutation',
+      () {
+        final interactions = engine.getInteractions({'opaline'});
+        expect(interactions, isEmpty);
+      },
+    );
 
     test('getInteractions handles empty set', () {
       final interactions = engine.getInteractions({});

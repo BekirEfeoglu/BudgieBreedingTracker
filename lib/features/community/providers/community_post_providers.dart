@@ -11,18 +11,19 @@ import 'community_feed_providers.dart';
 // Single post detail
 // ---------------------------------------------------------------------------
 
-final communityPostByIdProvider =
-    FutureProvider.family<CommunityPost?, String>((ref, postId) async {
-  final repo = ref.watch(communityPostRepositoryProvider);
-  final userId = ref.watch(currentUserIdProvider);
+final communityPostByIdProvider = FutureProvider.family<CommunityPost?, String>(
+  (ref, postId) async {
+    final repo = ref.watch(communityPostRepositoryProvider);
+    final userId = ref.watch(currentUserIdProvider);
 
-  try {
-    return await repo.getById(postId: postId, currentUserId: userId);
-  } catch (e, st) {
-    AppLogger.error('communityPostByIdProvider', e, st);
-    return null;
-  }
-});
+    try {
+      return await repo.getById(postId: postId, currentUserId: userId);
+    } catch (e, st) {
+      AppLogger.error('communityPostByIdProvider', e, st);
+      return null;
+    }
+  },
+);
 
 // ---------------------------------------------------------------------------
 // Like toggle
@@ -49,8 +50,9 @@ class LikeToggleNotifier extends Notifier<void> {
   }
 }
 
-final likeToggleProvider =
-    NotifierProvider<LikeToggleNotifier, void>(LikeToggleNotifier.new);
+final likeToggleProvider = NotifierProvider<LikeToggleNotifier, void>(
+  LikeToggleNotifier.new,
+);
 
 // ---------------------------------------------------------------------------
 // Bookmark toggle
@@ -64,26 +66,22 @@ class BookmarkToggleNotifier extends Notifier<void> {
     final userId = ref.read(currentUserIdProvider);
     if (userId == 'anonymous') return;
 
-    ref
-        .read(communityFeedProvider.notifier)
-        .optimisticBookmarkToggle(postId);
+    ref.read(communityFeedProvider.notifier).optimisticBookmarkToggle(postId);
 
     try {
       final repo = ref.read(communitySocialRepositoryProvider);
       await repo.toggleBookmark(userId: userId, postId: postId);
     } catch (e, st) {
-      ref
-          .read(communityFeedProvider.notifier)
-          .optimisticBookmarkToggle(postId);
+      ref.read(communityFeedProvider.notifier).optimisticBookmarkToggle(postId);
       AppLogger.error('BookmarkToggleNotifier', e, st);
       Sentry.captureException(e, stackTrace: st);
     }
   }
 }
 
-final bookmarkToggleProvider =
-    NotifierProvider<BookmarkToggleNotifier, void>(
-        BookmarkToggleNotifier.new);
+final bookmarkToggleProvider = NotifierProvider<BookmarkToggleNotifier, void>(
+  BookmarkToggleNotifier.new,
+);
 
 // ---------------------------------------------------------------------------
 // Post delete
@@ -109,8 +107,9 @@ class PostDeleteNotifier extends Notifier<void> {
   }
 }
 
-final postDeleteProvider =
-    NotifierProvider<PostDeleteNotifier, void>(PostDeleteNotifier.new);
+final postDeleteProvider = NotifierProvider<PostDeleteNotifier, void>(
+  PostDeleteNotifier.new,
+);
 
 // ---------------------------------------------------------------------------
 // Follow toggle
@@ -141,15 +140,17 @@ class FollowToggleNotifier extends Notifier<void> {
   }
 }
 
-final followToggleProvider =
-    NotifierProvider<FollowToggleNotifier, void>(FollowToggleNotifier.new);
+final followToggleProvider = NotifierProvider<FollowToggleNotifier, void>(
+  FollowToggleNotifier.new,
+);
 
 // ---------------------------------------------------------------------------
 // Bookmarked posts
 // ---------------------------------------------------------------------------
 
-final bookmarkedPostsProvider =
-    FutureProvider<List<CommunityPost>>((ref) async {
+final bookmarkedPostsProvider = FutureProvider<List<CommunityPost>>((
+  ref,
+) async {
   final repo = ref.watch(communityPostRepositoryProvider);
   final userId = ref.watch(currentUserIdProvider);
   if (userId == 'anonymous') return [];
@@ -166,9 +167,10 @@ final bookmarkedPostsProvider =
 // User posts
 // ---------------------------------------------------------------------------
 
-final userPostsProvider =
-    FutureProvider.family<List<CommunityPost>, String>(
-        (ref, targetUserId) async {
+final userPostsProvider = FutureProvider.family<List<CommunityPost>, String>((
+  ref,
+  targetUserId,
+) async {
   final repo = ref.watch(communityPostRepositoryProvider);
   final currentUserId = ref.watch(currentUserIdProvider);
 

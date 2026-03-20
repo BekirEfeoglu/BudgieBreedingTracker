@@ -85,4 +85,3 @@ extension NotificationScheduleSupabase on NotificationSchedule {
 // Community models use custom serialization (not standard toJson)
 // because they have fields populated from joins (username, avatarUrl, etc.)
 // See CommunityPostRemoteSource for the serialization logic.
-

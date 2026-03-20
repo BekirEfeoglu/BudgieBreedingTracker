@@ -16,7 +16,10 @@ class BirdDetailNotes extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: AppSpacing.md),
-          Text('common.notes'.tr(), style: Theme.of(context).textTheme.titleMedium),
+          Text(
+            'common.notes'.tr(),
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
           const SizedBox(height: AppSpacing.sm),
           Text(notes, style: Theme.of(context).textTheme.bodyMedium),
         ],

@@ -14,14 +14,14 @@ void main() {
     testWidgets('renders SizedBox.shrink when premium', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
-          overrides: [
-            isPremiumProvider.overrideWithValue(true),
-          ],
+          overrides: [isPremiumProvider.overrideWithValue(true)],
           child: MaterialApp(
-            home: Scaffold(body: AdBannerWidget(
-              isPremiumProvider: isPremiumProvider,
-              adBannerLoader: _testAdBannerLoader,
-            )),
+            home: Scaffold(
+              body: AdBannerWidget(
+                isPremiumProvider: isPremiumProvider,
+                adBannerLoader: _testAdBannerLoader,
+              ),
+            ),
           ),
         ),
       );
@@ -31,18 +31,19 @@ void main() {
       expect(find.byType(AdWidget), findsNothing);
     });
 
-    testWidgets('renders SizedBox.shrink when ad not loaded (non-premium)',
-        (tester) async {
+    testWidgets('renders SizedBox.shrink when ad not loaded (non-premium)', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         ProviderScope(
-          overrides: [
-            isPremiumProvider.overrideWithValue(false),
-          ],
+          overrides: [isPremiumProvider.overrideWithValue(false)],
           child: MaterialApp(
-            home: Scaffold(body: AdBannerWidget(
-              isPremiumProvider: isPremiumProvider,
-              adBannerLoader: _testAdBannerLoader,
-            )),
+            home: Scaffold(
+              body: AdBannerWidget(
+                isPremiumProvider: isPremiumProvider,
+                adBannerLoader: _testAdBannerLoader,
+              ),
+            ),
           ),
         ),
       );
@@ -56,14 +57,14 @@ void main() {
     testWidgets('disposes without error', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
-          overrides: [
-            isPremiumProvider.overrideWithValue(false),
-          ],
+          overrides: [isPremiumProvider.overrideWithValue(false)],
           child: MaterialApp(
-            home: Scaffold(body: AdBannerWidget(
-              isPremiumProvider: isPremiumProvider,
-              adBannerLoader: _testAdBannerLoader,
-            )),
+            home: Scaffold(
+              body: AdBannerWidget(
+                isPremiumProvider: isPremiumProvider,
+                adBannerLoader: _testAdBannerLoader,
+              ),
+            ),
           ),
         ),
       );
@@ -71,12 +72,8 @@ void main() {
       // Navigate away to trigger dispose
       await tester.pumpWidget(
         ProviderScope(
-          overrides: [
-            isPremiumProvider.overrideWithValue(false),
-          ],
-          child: const MaterialApp(
-            home: Scaffold(body: SizedBox()),
-          ),
+          overrides: [isPremiumProvider.overrideWithValue(false)],
+          child: const MaterialApp(home: Scaffold(body: SizedBox())),
         ),
       );
 

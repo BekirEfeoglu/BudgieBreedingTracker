@@ -36,7 +36,8 @@ class PasswordStrengthMeter extends StatelessWidget {
                     child: LinearProgressIndicator(
                       value: strength.progressValue,
                       minHeight: 6,
-                      backgroundColor: theme.colorScheme.surfaceContainerHighest,
+                      backgroundColor:
+                          theme.colorScheme.surfaceContainerHighest,
                       color: _strengthColor(strength),
                     ),
                   ),
@@ -52,29 +53,29 @@ class PasswordStrengthMeter extends StatelessWidget {
               ],
             ),
           ),
-        const SizedBox(height: AppSpacing.sm),
+          const SizedBox(height: AppSpacing.sm),
 
-        // Rule checklist
-        _RuleCheck(
-          passed: validation.hasMinLength,
-          label: 'auth.rule_min_length'.tr(),
-        ),
-        _RuleCheck(
-          passed: validation.hasUppercase,
-          label: 'auth.rule_uppercase'.tr(),
-        ),
-        _RuleCheck(
-          passed: validation.hasLowercase,
-          label: 'auth.rule_lowercase'.tr(),
-        ),
-        _RuleCheck(
-          passed: validation.hasDigit,
-          label: 'auth.rule_digit'.tr(),
-        ),
-        _RuleCheck(
-          passed: validation.hasSpecialChar,
-          label: 'auth.rule_special_char'.tr(),
-        ),
+          // Rule checklist
+          _RuleCheck(
+            passed: validation.hasMinLength,
+            label: 'auth.rule_min_length'.tr(),
+          ),
+          _RuleCheck(
+            passed: validation.hasUppercase,
+            label: 'auth.rule_uppercase'.tr(),
+          ),
+          _RuleCheck(
+            passed: validation.hasLowercase,
+            label: 'auth.rule_lowercase'.tr(),
+          ),
+          _RuleCheck(
+            passed: validation.hasDigit,
+            label: 'auth.rule_digit'.tr(),
+          ),
+          _RuleCheck(
+            passed: validation.hasSpecialChar,
+            label: 'auth.rule_special_char'.tr(),
+          ),
         ],
       ),
     );

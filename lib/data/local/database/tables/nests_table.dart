@@ -7,7 +7,9 @@ class NestsTable extends Table {
   TextColumn get userId => text()();
   TextColumn get name => text().nullable()();
   TextColumn get location => text().nullable()();
-  TextColumn get status => text().map(nestStatusConverter).withDefault(const Constant('available'))();
+  TextColumn get status => text()
+      .map(nestStatusConverter)
+      .withDefault(const Constant('available'))();
   TextColumn get notes => text().nullable()();
   BoolColumn get isDeleted => boolean().withDefault(const Constant(false))();
   DateTimeColumn get createdAt => dateTime().nullable()();

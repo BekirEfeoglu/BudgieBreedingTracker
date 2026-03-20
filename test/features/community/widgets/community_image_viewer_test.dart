@@ -6,11 +6,14 @@ import 'package:budgie_breeding_tracker/features/community/widgets/community_ima
 
 void main() {
   group('CommunityImageViewer', () {
-    testWidgets('renders with black background and close button',
-        (tester) async {
-      await tester.pumpWidget(const MaterialApp(
-        home: CommunityImageViewer(imageUrl: 'https://example.com/photo.jpg'),
-      ));
+    testWidgets('renders with black background and close button', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: CommunityImageViewer(imageUrl: 'https://example.com/photo.jpg'),
+        ),
+      );
       await tester.pump();
 
       expect(find.byType(CommunityImageViewer), findsOneWidget);
@@ -18,9 +21,11 @@ void main() {
     });
 
     testWidgets('has InteractiveViewer for zoom', (tester) async {
-      await tester.pumpWidget(const MaterialApp(
-        home: CommunityImageViewer(imageUrl: 'https://example.com/photo.jpg'),
-      ));
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: CommunityImageViewer(imageUrl: 'https://example.com/photo.jpg'),
+        ),
+      );
       await tester.pump();
 
       expect(find.byType(InteractiveViewer), findsOneWidget);
@@ -28,25 +33,27 @@ void main() {
 
     testWidgets('close button pops navigation', (tester) async {
       var popped = false;
-      await tester.pumpWidget(MaterialApp(
-        home: Builder(
-          builder: (context) => Scaffold(
-            body: ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute<void>(
-                    builder: (_) => const CommunityImageViewer(
-                      imageUrl: 'https://example.com/photo.jpg',
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Builder(
+            builder: (context) => Scaffold(
+              body: ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute<void>(
+                      builder: (_) => const CommunityImageViewer(
+                        imageUrl: 'https://example.com/photo.jpg',
+                      ),
                     ),
-                  ),
-                ).then((_) => popped = true);
-              },
-              child: const Text('open'),
+                  ).then((_) => popped = true);
+                },
+                child: const Text('open'),
+              ),
             ),
           ),
         ),
-      ));
+      );
 
       await tester.tap(find.text('open'));
       await tester.pumpAndSettle();
@@ -58,9 +65,11 @@ void main() {
     });
 
     testWidgets('extends body behind app bar', (tester) async {
-      await tester.pumpWidget(const MaterialApp(
-        home: CommunityImageViewer(imageUrl: 'https://example.com/photo.jpg'),
-      ));
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: CommunityImageViewer(imageUrl: 'https://example.com/photo.jpg'),
+        ),
+      );
       await tester.pump();
 
       final scaffold = tester.widget<Scaffold>(find.byType(Scaffold));

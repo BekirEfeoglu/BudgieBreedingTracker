@@ -84,87 +84,79 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                 ),
               ],
               selected: {viewMode},
-              onSelectionChanged: (s) => ref
-                  .read(calendarViewProvider.notifier)
-                  .setViewMode(s.first),
-              style: const ButtonStyle(
-                visualDensity: VisualDensity.compact,
-              ),
+              onSelectionChanged: (s) =>
+                  ref.read(calendarViewProvider.notifier).setViewMode(s.first),
+              style: const ButtonStyle(visualDensity: VisualDensity.compact),
             ),
           ),
         ),
       ),
       body: Column(
         children: [
-          Center(child: AdBannerWidget(
-            isPremiumProvider: isPremiumProvider,
-            adBannerLoader: () => defaultAdBannerLoader(ref),
-          )),
+          Center(
+            child: AdBannerWidget(
+              isPremiumProvider: isPremiumProvider,
+              adBannerLoader: () => defaultAdBannerLoader(ref),
+            ),
+          ),
           Expanded(
             child: GestureDetector(
-        onHorizontalDragEnd: (details) =>
-            _onSwipe(details, viewMode),
-        child: RefreshIndicator(
-          onRefresh: () async {
-            ref.invalidate(eventsStreamProvider(userId));
-          },
-          child: eventsAsync.when(
-            loading: () => const Center(
-              child: CircularProgressIndicator(),
-            ),
-            error: (error, _) => ErrorState(
-              message: 'calendar.load_error'.tr(),
-              onRetry: () => ref.invalidate(
-                eventsStreamProvider(userId),
+              onHorizontalDragEnd: (details) => _onSwipe(details, viewMode),
+              child: RefreshIndicator(
+                onRefresh: () async {
+                  ref.invalidate(eventsStreamProvider(userId));
+                },
+                child: eventsAsync.when(
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
+                  error: (error, _) => ErrorState(
+                    message: 'calendar.load_error'.tr(),
+                    onRetry: () => ref.invalidate(eventsStreamProvider(userId)),
+                  ),
+                  data: (_) => switch (viewMode) {
+                    CalendarViewMode.month => _CalendarBody(
+                      displayedMonth: displayedMonth,
+                      selectedDate: selectedDate,
+                      eventsMap: eventsMap,
+                      selectedEvents: selectedEvents,
+                      onDateSelected: (date) => _selectDate(date),
+                      onDateLongPress: (date) => _showDaySheet(
+                        date,
+                        eventsMap[DateTime(date.year, date.month, date.day)] ??
+                            [],
+                      ),
+                      onEventTap: (event) => _showEventDetail(event),
+                      onEditEvent: (event) =>
+                          showEventFormSheet(context, existingEvent: event),
+                      onDeleteEvent: (event) => _confirmDelete(event),
+                    ),
+                    CalendarViewMode.week => _WeekBody(
+                      selectedDate: selectedDate,
+                      weekEvents: weekEvents,
+                      selectedEvents: selectedEvents,
+                      onDateSelected: (date) => _selectDate(date),
+                      onEventTap: (event) => _showEventDetail(event),
+                      onEditEvent: (event) =>
+                          showEventFormSheet(context, existingEvent: event),
+                      onDeleteEvent: (event) => _confirmDelete(event),
+                    ),
+                    CalendarViewMode.day => CalendarDayView(
+                      selectedDate: selectedDate,
+                      events: selectedEvents,
+                      onEventTap: (event) => _showEventDetail(event),
+                      onEditEvent: (event) =>
+                          showEventFormSheet(context, existingEvent: event),
+                      onDeleteEvent: (event) => _confirmDelete(event),
+                    ),
+                  },
+                ),
               ),
             ),
-            data: (_) => switch (viewMode) {
-              CalendarViewMode.month => _CalendarBody(
-                  displayedMonth: displayedMonth,
-                  selectedDate: selectedDate,
-                  eventsMap: eventsMap,
-                  selectedEvents: selectedEvents,
-                  onDateSelected: (date) => _selectDate(date),
-                  onDateLongPress: (date) => _showDaySheet(
-                    date,
-                    eventsMap[DateTime(date.year, date.month, date.day)] ??
-                        [],
-                  ),
-                  onEventTap: (event) => _showEventDetail(event),
-                  onEditEvent: (event) =>
-                      showEventFormSheet(context, existingEvent: event),
-                  onDeleteEvent: (event) => _confirmDelete(event),
-                ),
-              CalendarViewMode.week => _WeekBody(
-                  selectedDate: selectedDate,
-                  weekEvents: weekEvents,
-                  selectedEvents: selectedEvents,
-                  onDateSelected: (date) => _selectDate(date),
-                  onEventTap: (event) => _showEventDetail(event),
-                  onEditEvent: (event) =>
-                      showEventFormSheet(context, existingEvent: event),
-                  onDeleteEvent: (event) => _confirmDelete(event),
-                ),
-              CalendarViewMode.day => CalendarDayView(
-                  selectedDate: selectedDate,
-                  events: selectedEvents,
-                  onEventTap: (event) => _showEventDetail(event),
-                  onEditEvent: (event) =>
-                      showEventFormSheet(context, existingEvent: event),
-                  onDeleteEvent: (event) => _confirmDelete(event),
-                ),
-            },
-          ),
-        ),
-      ),
           ),
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => showEventFormSheet(
-          context,
-          initialDate: selectedDate,
-        ),
+        onPressed: () => showEventFormSheet(context, initialDate: selectedDate),
         tooltip: 'calendar.add_event'.tr(),
         child: const AppIcon(AppIcons.add),
       ),
@@ -177,8 +169,10 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
 
   void _goToToday() {
     final now = DateTime.now();
-    ref.read(displayedMonthProvider.notifier).state =
-        DateTime(now.year, now.month);
+    ref.read(displayedMonthProvider.notifier).state = DateTime(
+      now.year,
+      now.month,
+    );
     ref.read(selectedDateProvider.notifier).state = now;
   }
 
@@ -208,14 +202,16 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
 
   void _changeWeek(int delta) {
     final current = ref.read(selectedDateProvider);
-    ref.read(selectedDateProvider.notifier).state =
-        current.add(Duration(days: 7 * delta));
+    ref.read(selectedDateProvider.notifier).state = current.add(
+      Duration(days: 7 * delta),
+    );
   }
 
   void _changeDay(int delta) {
     final current = ref.read(selectedDateProvider);
-    ref.read(selectedDateProvider.notifier).state =
-        current.add(Duration(days: delta));
+    ref.read(selectedDateProvider.notifier).state = current.add(
+      Duration(days: delta),
+    );
   }
 
   void _showDaySheet(DateTime date, List<Event> events) {
@@ -228,11 +224,13 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
       _openEventDetail(event);
       return;
     }
-    ref.read(adServiceProvider).showInterstitialAd(
-      onAdClosed: () {
-        if (mounted) _openEventDetail(event);
-      },
-    );
+    ref
+        .read(adServiceProvider)
+        .showInterstitialAd(
+          onAdClosed: () {
+            if (mounted) _openEventDetail(event);
+          },
+        );
   }
 
   void _openEventDetail(Event event) {
@@ -241,8 +239,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
       event: event,
       onEdit: () => showEventFormSheet(context, existingEvent: event),
       onDelete: () => _confirmDelete(event),
-      onStatusChange: (status) =>
-          _changeEventStatus(event.id, status),
+      onStatusChange: (status) => _changeEventStatus(event.id, status),
     );
   }
 

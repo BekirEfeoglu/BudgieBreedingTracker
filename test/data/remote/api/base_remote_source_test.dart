@@ -62,8 +62,10 @@ void main() {
 
         expect(result, hasLength(2));
         expect(result.first['id'], '1');
-        expect(selectBuilder.eqCalls.map((e) => '${e.key}:${e.value}'),
-            containsAll(['user_id:user-1', 'is_deleted:false']));
+        expect(
+          selectBuilder.eqCalls.map((e) => '${e.key}:${e.value}'),
+          containsAll(['user_id:user-1', 'is_deleted:false']),
+        );
         expect(selectBuilder.orderCalls, contains('created_at'));
       });
 
@@ -76,7 +78,9 @@ void main() {
       test('throws NetworkException on failure', () async {
         selectBuilder.error = Exception('network fail');
         expect(
-            () => source.fetchAll('user-1'), throwsA(isA<NetworkException>()));
+          () => source.fetchAll('user-1'),
+          throwsA(isA<NetworkException>()),
+        );
       });
     });
 
@@ -110,8 +114,10 @@ void main() {
             .map((e) => '${e.key}:${e.value}')
             .toList();
         expect(gteKeys, contains('updated_at:${since.toIso8601String()}'));
-        expect(selectBuilder.eqCalls.map((e) => '${e.key}:${e.value}'),
-            containsAll(['user_id:user-1', 'is_deleted:false']));
+        expect(
+          selectBuilder.eqCalls.map((e) => '${e.key}:${e.value}'),
+          containsAll(['user_id:user-1', 'is_deleted:false']),
+        );
       });
     });
 
@@ -186,9 +192,7 @@ void main() {
       final result = await noSdSource.fetchAll('user-1');
 
       expect(result, hasLength(1));
-      final eqKeys = stack.selectBuilder.eqCalls
-          .map((e) => e.key)
-          .toList();
+      final eqKeys = stack.selectBuilder.eqCalls.map((e) => e.key).toList();
       expect(eqKeys, contains('user_id'));
       expect(eqKeys, isNot(contains('is_deleted')));
     });
@@ -200,9 +204,7 @@ void main() {
 
       await noSdSource.fetchUpdatedSince('user-1', DateTime(2025, 6, 1));
 
-      final eqKeys = stack.selectBuilder.eqCalls
-          .map((e) => e.key)
-          .toList();
+      final eqKeys = stack.selectBuilder.eqCalls.map((e) => e.key).toList();
       expect(eqKeys, contains('user_id'));
       expect(eqKeys, isNot(contains('is_deleted')));
     });

@@ -19,9 +19,7 @@ class CommunityBookmarksScreen extends ConsumerWidget {
     final postsAsync = ref.watch(bookmarkedPostsProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text('community.bookmarks'.tr()),
-      ),
+      appBar: AppBar(title: Text('community.bookmarks'.tr())),
       body: postsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(
@@ -42,8 +40,7 @@ class CommunityBookmarksScreen extends ConsumerWidget {
           }
 
           return RefreshIndicator(
-            onRefresh: () async =>
-                ref.invalidate(bookmarkedPostsProvider),
+            onRefresh: () async => ref.invalidate(bookmarkedPostsProvider),
             child: ListView.builder(
               padding: const EdgeInsets.only(
                 top: AppSpacing.sm,

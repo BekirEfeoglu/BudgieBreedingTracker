@@ -32,10 +32,14 @@ class EnumConverter<T extends Enum> extends TypeConverter<T, String> {
 }
 
 // Bird enums
-const birdGenderConverter =
-    EnumConverter<BirdGender>(BirdGender.values, BirdGender.unknown);
-const birdStatusConverter =
-    EnumConverter<BirdStatus>(BirdStatus.values, BirdStatus.unknown);
+const birdGenderConverter = EnumConverter<BirdGender>(
+  BirdGender.values,
+  BirdGender.unknown,
+);
+const birdStatusConverter = EnumConverter<BirdStatus>(
+  BirdStatus.values,
+  BirdStatus.unknown,
+);
 const speciesConverter = _SpeciesConverter();
 
 /// Custom converter for [Species] that handles backward-compat aliases
@@ -49,53 +53,84 @@ class _SpeciesConverter extends TypeConverter<Species, String> {
   @override
   String toSql(Species value) => value.toJson();
 }
-const birdColorConverter =
-    EnumConverter<BirdColor>(BirdColor.values, BirdColor.unknown);
+
+const birdColorConverter = EnumConverter<BirdColor>(
+  BirdColor.values,
+  BirdColor.unknown,
+);
 
 // Egg enums
-const eggStatusConverter =
-    EnumConverter<EggStatus>(EggStatus.values, EggStatus.laid);
+const eggStatusConverter = EnumConverter<EggStatus>(
+  EggStatus.values,
+  EggStatus.laid,
+);
 
 // Breeding enums
-const breedingStatusConverter =
-    EnumConverter<BreedingStatus>(BreedingStatus.values, BreedingStatus.active);
+const breedingStatusConverter = EnumConverter<BreedingStatus>(
+  BreedingStatus.values,
+  BreedingStatus.active,
+);
 const incubationStatusConverter = EnumConverter<IncubationStatus>(
-    IncubationStatus.values, IncubationStatus.active);
-const nestStatusConverter =
-    EnumConverter<NestStatus>(NestStatus.values, NestStatus.available);
+  IncubationStatus.values,
+  IncubationStatus.active,
+);
+const nestStatusConverter = EnumConverter<NestStatus>(
+  NestStatus.values,
+  NestStatus.available,
+);
 
 // Chick enums
 const chickHealthStatusConverter = EnumConverter<ChickHealthStatus>(
-    ChickHealthStatus.values, ChickHealthStatus.healthy);
+  ChickHealthStatus.values,
+  ChickHealthStatus.healthy,
+);
 
 // Event enums
-const eventTypeConverter =
-    EnumConverter<EventType>(EventType.values, EventType.custom);
-const eventStatusConverter =
-    EnumConverter<EventStatus>(EventStatus.values, EventStatus.active);
+const eventTypeConverter = EnumConverter<EventType>(
+  EventType.values,
+  EventType.custom,
+);
+const eventStatusConverter = EnumConverter<EventStatus>(
+  EventStatus.values,
+  EventStatus.active,
+);
 
 // Notification enums
 const notificationTypeConverter = EnumConverter<NotificationType>(
-    NotificationType.values, NotificationType.custom);
+  NotificationType.values,
+  NotificationType.custom,
+);
 const notificationPriorityConverter = EnumConverter<NotificationPriority>(
-    NotificationPriority.values, NotificationPriority.normal);
+  NotificationPriority.values,
+  NotificationPriority.normal,
+);
 
 // Subscription enums
 const subscriptionStatusConverter = EnumConverter<SubscriptionStatus>(
-    SubscriptionStatus.values, SubscriptionStatus.free);
+  SubscriptionStatus.values,
+  SubscriptionStatus.free,
+);
 
 // Health record enums
 const healthRecordTypeConverter = EnumConverter<HealthRecordType>(
-    HealthRecordType.values, HealthRecordType.unknown);
+  HealthRecordType.values,
+  HealthRecordType.unknown,
+);
 
 // Photo enums
 const photoEntityTypeConverter = EnumConverter<PhotoEntityType>(
-    PhotoEntityType.values, PhotoEntityType.bird);
+  PhotoEntityType.values,
+  PhotoEntityType.bird,
+);
 
 // Reminder enums
 const reminderTypeConverter = EnumConverter<ReminderType>(
-    ReminderType.values, ReminderType.notification);
+  ReminderType.values,
+  ReminderType.notification,
+);
 
 // Sync enums
-const syncStatusConverter =
-    EnumConverter<SyncStatus>(SyncStatus.values, SyncStatus.pending);
+const syncStatusConverter = EnumConverter<SyncStatus>(
+  SyncStatus.values,
+  SyncStatus.pending,
+);

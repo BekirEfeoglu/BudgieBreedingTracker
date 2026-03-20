@@ -35,10 +35,7 @@ class SyncStatusTile extends ConsumerWidget {
       child: Row(
         children: [
           IconTheme(
-            data: IconThemeData(
-              size: 22,
-              color: _statusColor(syncStatus),
-            ),
+            data: IconThemeData(size: 22, color: _statusColor(syncStatus)),
             child: const AppIcon(AppIcons.sync),
           ),
           const SizedBox(width: AppSpacing.md),
@@ -91,20 +88,30 @@ class SyncStatusTile extends ConsumerWidget {
   }
 
   Color _statusColor(SyncDisplayStatus status) => switch (status) {
-        SyncDisplayStatus.synced => AppColors.success,
-        SyncDisplayStatus.syncing => AppColors.warning,
-        SyncDisplayStatus.offline => AppColors.neutral500,
-        SyncDisplayStatus.error => AppColors.error,
-      };
+    SyncDisplayStatus.synced => AppColors.success,
+    SyncDisplayStatus.syncing => AppColors.warning,
+    SyncDisplayStatus.offline => AppColors.neutral500,
+    SyncDisplayStatus.error => AppColors.error,
+  };
 
-  String _statusSubtitle(SyncDisplayStatus status, DateTime? lastSync, int pendingCount) {
+  String _statusSubtitle(
+    SyncDisplayStatus status,
+    DateTime? lastSync,
+    int pendingCount,
+  ) {
     final pendingSuffix = pendingCount > 0
         ? ' — ${pendingCount == 1 ? 'sync.pending_one'.tr() : 'sync.pending_count'.tr(args: ['$pendingCount'])}'
         : '';
 
-    if (status == SyncDisplayStatus.syncing) return 'sync.syncing'.tr() + pendingSuffix;
-    if (status == SyncDisplayStatus.offline) return 'sync.offline'.tr() + pendingSuffix;
-    if (status == SyncDisplayStatus.error) return 'profile.sync_error'.tr() + pendingSuffix;
+    if (status == SyncDisplayStatus.syncing) {
+      return 'sync.syncing'.tr() + pendingSuffix;
+    }
+    if (status == SyncDisplayStatus.offline) {
+      return 'sync.offline'.tr() + pendingSuffix;
+    }
+    if (status == SyncDisplayStatus.error) {
+      return 'profile.sync_error'.tr() + pendingSuffix;
+    }
     if (lastSync == null) return 'profile.sync_never'.tr();
     return '${'profile.last_synced'.tr()}: ${_relativeTime(lastSync)}$pendingSuffix';
   }

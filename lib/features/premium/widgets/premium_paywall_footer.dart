@@ -102,44 +102,46 @@ class _PremiumLegalLinksSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return RepaintBoundary(child: Column(
-      children: [
-        Wrap(
-          alignment: WrapAlignment.center,
-          spacing: AppSpacing.md,
-          runSpacing: AppSpacing.xs,
-          children: [
-            TextButton(
-              onPressed: () async => _openLegalUrl(
-                context,
-                url: AppConstants.termsOfUseUrl,
-                fallbackRoute: AppRoutes.termsOfService,
-              ),
-              child: Text(
-                '${'settings.terms'.tr()} (EULA)',
-                style: const TextStyle(
-                  decoration: TextDecoration.underline,
-                  fontWeight: FontWeight.bold,
+    return RepaintBoundary(
+      child: Column(
+        children: [
+          Wrap(
+            alignment: WrapAlignment.center,
+            spacing: AppSpacing.md,
+            runSpacing: AppSpacing.xs,
+            children: [
+              TextButton(
+                onPressed: () async => _openLegalUrl(
+                  context,
+                  url: AppConstants.termsOfUseUrl,
+                  fallbackRoute: AppRoutes.termsOfService,
+                ),
+                child: Text(
+                  '${'settings.terms'.tr()} (EULA)',
+                  style: const TextStyle(
+                    decoration: TextDecoration.underline,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
-            ),
-            TextButton(
-              onPressed: () async => _openLegalUrl(
-                context,
-                url: AppConstants.privacyPolicyUrl,
-                fallbackRoute: AppRoutes.privacyPolicy,
-              ),
-              child: Text(
-                'settings.privacy_policy'.tr(),
-                style: const TextStyle(
-                  decoration: TextDecoration.underline,
-                  fontWeight: FontWeight.bold,
+              TextButton(
+                onPressed: () async => _openLegalUrl(
+                  context,
+                  url: AppConstants.privacyPolicyUrl,
+                  fallbackRoute: AppRoutes.privacyPolicy,
+                ),
+                child: Text(
+                  'settings.privacy_policy'.tr(),
+                  style: const TextStyle(
+                    decoration: TextDecoration.underline,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
-            ),
-          ],
-        ),
-      ],
-    ));
+            ],
+          ),
+        ],
+      ),
+    );
   }
 }

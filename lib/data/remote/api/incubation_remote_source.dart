@@ -13,12 +13,10 @@ class IncubationRemoteSource extends BaseRemoteSourceNoSoftDelete<Incubation> {
   String get tableName => SupabaseConstants.incubationsTable;
 
   @override
-  Incubation fromJson(Map<String, dynamic> json) =>
-      Incubation.fromJson(json);
+  Incubation fromJson(Map<String, dynamic> json) => Incubation.fromJson(json);
 
   @override
-  Map<String, dynamic> toSupabaseJson(Incubation model) =>
-      model.toSupabase();
+  Map<String, dynamic> toSupabaseJson(Incubation model) => model.toSupabase();
 
   /// Fetches active incubations for a user.
   Future<List<Incubation>> fetchActive(String userId) async {
@@ -31,7 +29,10 @@ class IncubationRemoteSource extends BaseRemoteSourceNoSoftDelete<Incubation> {
   }
 
   /// Fetches incubations by breeding pair id.
-  Future<List<Incubation>> fetchByBreedingPair(String userId, String pairId) async {
+  Future<List<Incubation>> fetchByBreedingPair(
+    String userId,
+    String pairId,
+  ) async {
     final response = await table
         .select()
         .eq('user_id', userId)

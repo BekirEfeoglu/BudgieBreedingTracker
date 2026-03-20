@@ -18,13 +18,11 @@ class CommunityProfileCache {
   static const _defaultTtl = Duration(seconds: 30);
   static const _chunkSize = 40;
 
-  CommunityProfileCache(this._client)
-      : _ttl = _defaultTtl,
-        _now = _defaultNow;
+  CommunityProfileCache(this._client) : _ttl = _defaultTtl, _now = _defaultNow;
 
   @visibleForTesting
   CommunityProfileCache.withClock(this._client, this._now, {Duration? ttl})
-      : _ttl = ttl ?? _defaultTtl;
+    : _ttl = ttl ?? _defaultTtl;
 
   static DateTime _defaultNow() => DateTime.now();
 

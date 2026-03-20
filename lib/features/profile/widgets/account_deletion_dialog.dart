@@ -18,7 +18,10 @@ import '../../auth/providers/auth_providers.dart';
 /// account deletion flow via [performAccountDeletion].
 ///
 /// Use this from any widget that needs a "delete account" action.
-Future<void> confirmAndDeleteAccount(BuildContext context, WidgetRef ref) async {
+Future<void> confirmAndDeleteAccount(
+  BuildContext context,
+  WidgetRef ref,
+) async {
   final confirmed = await AccountDeletionDialog.show(context);
   if (!confirmed || !context.mounted) return;
   await performAccountDeletion(context, ref);
@@ -31,10 +34,7 @@ Future<void> confirmAndDeleteAccount(BuildContext context, WidgetRef ref) async 
 /// Local cleanup always completes even if the server-side RPC fails.
 ///
 /// Call this after the user confirms deletion via [AccountDeletionDialog].
-Future<void> performAccountDeletion(
-  BuildContext context,
-  WidgetRef ref,
-) async {
+Future<void> performAccountDeletion(BuildContext context, WidgetRef ref) async {
   final messenger = ScaffoldMessenger.of(context);
   final userId = ref.read(currentUserIdProvider);
 
@@ -179,7 +179,11 @@ class _AccountDeletionDialogState extends State<AccountDeletionDialog> {
     return AlertDialog(
       title: Row(
         children: [
-          AppIcon(AppIcons.warning, color: theme.colorScheme.error, semanticsLabel: 'Warning'),
+          AppIcon(
+            AppIcons.warning,
+            color: theme.colorScheme.error,
+            semanticsLabel: 'Warning',
+          ),
           const SizedBox(width: AppSpacing.sm),
           Text('profile.delete_account'.tr()),
         ],
@@ -194,9 +198,7 @@ class _AccountDeletionDialogState extends State<AccountDeletionDialog> {
           ),
           const SizedBox(height: AppSpacing.lg),
           Text(
-            'profile.delete_account_confirm_hint'.tr(
-              args: [_displayPhrase],
-            ),
+            'profile.delete_account_confirm_hint'.tr(args: [_displayPhrase]),
             style: theme.textTheme.bodySmall?.copyWith(
               color: theme.colorScheme.onSurfaceVariant,
             ),

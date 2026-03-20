@@ -22,8 +22,16 @@ abstract class AppSpacing {
   static const double radiusXl = 16;
   static const double radiusFull = 999;
 
+  // Responsive breakpoints
+  static const double tabletBreakpoint = 600;
+  static const double maxContentWidth = 768;
+  static const double maxSheetWidth = 640;
+
   // Screen padding
   static const EdgeInsets screenPadding = EdgeInsets.all(16);
   static const EdgeInsets cardPadding = EdgeInsets.all(16);
-  static const EdgeInsets listItemPadding = EdgeInsets.symmetric(horizontal: 16, vertical: 12);
+  static const EdgeInsets listItemPadding = EdgeInsets.symmetric(
+    horizontal: 16,
+    vertical: 12,
+  );
 }

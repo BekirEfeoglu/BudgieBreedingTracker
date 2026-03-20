@@ -15,31 +15,27 @@ class BirdStatusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return StatusBadge(
-      label: _label,
-      color: _color,
-      icon: _icon,
-    );
+    return StatusBadge(label: _label, color: _color, icon: _icon);
   }
 
   String get _label => switch (status) {
-        BirdStatus.alive => 'birds.status_alive'.tr(),
-        BirdStatus.dead => 'birds.status_dead'.tr(),
-        BirdStatus.sold => 'birds.status_sold'.tr(),
-        BirdStatus.unknown => 'birds.unknown'.tr(),
-      };
+    BirdStatus.alive => 'birds.status_alive'.tr(),
+    BirdStatus.dead => 'birds.status_dead'.tr(),
+    BirdStatus.sold => 'birds.status_sold'.tr(),
+    BirdStatus.unknown => 'birds.unknown'.tr(),
+  };
 
   Color get _color => switch (status) {
-        BirdStatus.alive => AppColors.success,
-        BirdStatus.dead => AppColors.error,
-        BirdStatus.sold => AppColors.warning,
-        BirdStatus.unknown => AppColors.neutral400,
-      };
+    BirdStatus.alive => AppColors.success,
+    BirdStatus.dead => AppColors.error,
+    BirdStatus.sold => AppColors.warning,
+    BirdStatus.unknown => AppColors.neutral400,
+  };
 
   Widget get _icon => switch (status) {
-        BirdStatus.alive => const AppIcon(AppIcons.statusAlive),
-        BirdStatus.dead => const AppIcon(AppIcons.statusDead),
-        BirdStatus.sold => const AppIcon(AppIcons.statusSold),
-        BirdStatus.unknown => const Icon(LucideIcons.helpCircle, size: 16),
-      };
+    BirdStatus.alive => const AppIcon(AppIcons.statusAlive),
+    BirdStatus.dead => const AppIcon(AppIcons.statusDead),
+    BirdStatus.sold => const AppIcon(AppIcons.statusSold),
+    BirdStatus.unknown => const Icon(LucideIcons.helpCircle, size: 16),
+  };
 }

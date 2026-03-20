@@ -28,10 +28,12 @@ void main() {
 
   group('toggleLike', () {
     test('calls unlikePost when post is already liked', () async {
-      when(() => mockSource.isPostLiked(userId, postId))
-          .thenAnswer((_) async => true);
-      when(() => mockSource.unlikePost(userId, postId))
-          .thenAnswer((_) async {});
+      when(
+        () => mockSource.isPostLiked(userId, postId),
+      ).thenAnswer((_) async => true);
+      when(
+        () => mockSource.unlikePost(userId, postId),
+      ).thenAnswer((_) async {});
 
       await repository.toggleLike(userId: userId, postId: postId);
 
@@ -41,10 +43,10 @@ void main() {
     });
 
     test('calls likePost when post is not liked', () async {
-      when(() => mockSource.isPostLiked(userId, postId))
-          .thenAnswer((_) async => false);
-      when(() => mockSource.likePost(userId, postId))
-          .thenAnswer((_) async {});
+      when(
+        () => mockSource.isPostLiked(userId, postId),
+      ).thenAnswer((_) async => false);
+      when(() => mockSource.likePost(userId, postId)).thenAnswer((_) async {});
 
       await repository.toggleLike(userId: userId, postId: postId);
 
@@ -56,10 +58,12 @@ void main() {
 
   group('toggleBookmark', () {
     test('calls unbookmarkPost when post is already bookmarked', () async {
-      when(() => mockSource.isPostBookmarked(userId, postId))
-          .thenAnswer((_) async => true);
-      when(() => mockSource.unbookmarkPost(userId, postId))
-          .thenAnswer((_) async {});
+      when(
+        () => mockSource.isPostBookmarked(userId, postId),
+      ).thenAnswer((_) async => true);
+      when(
+        () => mockSource.unbookmarkPost(userId, postId),
+      ).thenAnswer((_) async {});
 
       await repository.toggleBookmark(userId: userId, postId: postId);
 
@@ -69,10 +73,12 @@ void main() {
     });
 
     test('calls bookmarkPost when post is not bookmarked', () async {
-      when(() => mockSource.isPostBookmarked(userId, postId))
-          .thenAnswer((_) async => false);
-      when(() => mockSource.bookmarkPost(userId, postId))
-          .thenAnswer((_) async {});
+      when(
+        () => mockSource.isPostBookmarked(userId, postId),
+      ).thenAnswer((_) async => false);
+      when(
+        () => mockSource.bookmarkPost(userId, postId),
+      ).thenAnswer((_) async {});
 
       await repository.toggleBookmark(userId: userId, postId: postId);
 
@@ -84,15 +90,14 @@ void main() {
 
   group('toggleCommentLike', () {
     test('calls unlikeComment when comment is already liked', () async {
-      when(() => mockSource.isCommentLiked(userId, commentId))
-          .thenAnswer((_) async => true);
-      when(() => mockSource.unlikeComment(userId, commentId))
-          .thenAnswer((_) async {});
+      when(
+        () => mockSource.isCommentLiked(userId, commentId),
+      ).thenAnswer((_) async => true);
+      when(
+        () => mockSource.unlikeComment(userId, commentId),
+      ).thenAnswer((_) async {});
 
-      await repository.toggleCommentLike(
-        userId: userId,
-        commentId: commentId,
-      );
+      await repository.toggleCommentLike(userId: userId, commentId: commentId);
 
       verify(() => mockSource.isCommentLiked(userId, commentId)).called(1);
       verify(() => mockSource.unlikeComment(userId, commentId)).called(1);
@@ -100,15 +105,14 @@ void main() {
     });
 
     test('calls likeComment when comment is not liked', () async {
-      when(() => mockSource.isCommentLiked(userId, commentId))
-          .thenAnswer((_) async => false);
-      when(() => mockSource.likeComment(userId, commentId))
-          .thenAnswer((_) async {});
+      when(
+        () => mockSource.isCommentLiked(userId, commentId),
+      ).thenAnswer((_) async => false);
+      when(
+        () => mockSource.likeComment(userId, commentId),
+      ).thenAnswer((_) async {});
 
-      await repository.toggleCommentLike(
-        userId: userId,
-        commentId: commentId,
-      );
+      await repository.toggleCommentLike(userId: userId, commentId: commentId);
 
       verify(() => mockSource.isCommentLiked(userId, commentId)).called(1);
       verify(() => mockSource.likeComment(userId, commentId)).called(1);
@@ -118,15 +122,14 @@ void main() {
 
   group('toggleFollow', () {
     test('calls unfollowUser when already following', () async {
-      when(() => mockSource.isFollowing(userId, targetUserId))
-          .thenAnswer((_) async => true);
-      when(() => mockSource.unfollowUser(userId, targetUserId))
-          .thenAnswer((_) async {});
+      when(
+        () => mockSource.isFollowing(userId, targetUserId),
+      ).thenAnswer((_) async => true);
+      when(
+        () => mockSource.unfollowUser(userId, targetUserId),
+      ).thenAnswer((_) async {});
 
-      await repository.toggleFollow(
-        userId: userId,
-        targetUserId: targetUserId,
-      );
+      await repository.toggleFollow(userId: userId, targetUserId: targetUserId);
 
       verify(() => mockSource.isFollowing(userId, targetUserId)).called(1);
       verify(() => mockSource.unfollowUser(userId, targetUserId)).called(1);
@@ -134,15 +137,14 @@ void main() {
     });
 
     test('calls followUser when not following', () async {
-      when(() => mockSource.isFollowing(userId, targetUserId))
-          .thenAnswer((_) async => false);
-      when(() => mockSource.followUser(userId, targetUserId))
-          .thenAnswer((_) async {});
+      when(
+        () => mockSource.isFollowing(userId, targetUserId),
+      ).thenAnswer((_) async => false);
+      when(
+        () => mockSource.followUser(userId, targetUserId),
+      ).thenAnswer((_) async {});
 
-      await repository.toggleFollow(
-        userId: userId,
-        targetUserId: targetUserId,
-      );
+      await repository.toggleFollow(userId: userId, targetUserId: targetUserId);
 
       verify(() => mockSource.isFollowing(userId, targetUserId)).called(1);
       verify(() => mockSource.followUser(userId, targetUserId)).called(1);

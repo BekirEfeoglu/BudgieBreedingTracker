@@ -40,7 +40,11 @@ class PasswordValidationResult {
 
   /// Whether all rules pass.
   bool get isValid =>
-      hasMinLength && hasUppercase && hasLowercase && hasDigit && hasSpecialChar;
+      hasMinLength &&
+      hasUppercase &&
+      hasLowercase &&
+      hasDigit &&
+      hasSpecialChar;
 
   /// Number of passing rules (0-5).
   int get passedCount => [
@@ -65,7 +69,9 @@ abstract class PasswordPolicy {
       hasUppercase: password.contains(RegExp(r'[A-Z]')),
       hasLowercase: password.contains(RegExp(r'[a-z]')),
       hasDigit: password.contains(RegExp(r'[0-9]')),
-      hasSpecialChar: password.contains(RegExp(r'[!@#$%^&*()_+\-=\[\]{}|;:,.<>?/~`]')),
+      hasSpecialChar: password.contains(
+        RegExp(r'[!@#$%^&*()_+\-=\[\]{}|;:,.<>?/~`]'),
+      ),
     );
   }
 

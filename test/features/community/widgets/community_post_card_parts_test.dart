@@ -8,9 +8,7 @@ import 'package:budgie_breeding_tracker/features/community/widgets/community_pos
 
 void main() {
   Widget wrap(Widget child) {
-    return MaterialApp(
-      home: Scaffold(body: child),
-    );
+    return MaterialApp(home: Scaffold(body: child));
   }
 
   Widget createContentText({
@@ -82,9 +80,7 @@ void main() {
     }
 
     testWidgets('shows nothing when both counts are zero', (tester) async {
-      await tester.pumpWidget(
-        wrap(EngagementSummary(post: createPost())),
-      );
+      await tester.pumpWidget(wrap(EngagementSummary(post: createPost())));
       await tester.pump();
 
       expect(find.byIcon(LucideIcons.heart), findsNothing);
@@ -133,8 +129,7 @@ void main() {
       expect(find.byIcon(LucideIcons.messageCircle), findsOneWidget);
     });
 
-    testWidgets('hides comment icon when commentCount is zero',
-        (tester) async {
+    testWidgets('hides comment icon when commentCount is zero', (tester) async {
       await tester.pumpWidget(
         wrap(EngagementSummary(post: createPost(likes: 1))),
       );
@@ -171,8 +166,9 @@ void main() {
       expect(find.text('community.read_more'), findsOneWidget);
     });
 
-    testWidgets('text with few newlines does not show read more',
-        (tester) async {
+    testWidgets('text with few newlines does not show read more', (
+      tester,
+    ) async {
       const twoLines = 'Line 1\nLine 2';
       await tester.pumpWidget(createContentText(content: twoLines));
       await tester.pump();
@@ -180,8 +176,9 @@ void main() {
       expect(find.text('community.read_more'), findsNothing);
     });
 
-    testWidgets('showFull displays full content without truncation',
-        (tester) async {
+    testWidgets('showFull displays full content without truncation', (
+      tester,
+    ) async {
       final longContent = 'B' * 200;
       await tester.pumpWidget(
         createContentText(content: longContent, showFull: true),
@@ -196,9 +193,7 @@ void main() {
     testWidgets('maxLines parameter is respected', (tester) async {
       // With maxLines=1, threshold is 45 chars
       const content = 'This is a medium length text for testing purposes here.';
-      await tester.pumpWidget(
-        createContentText(content: content, maxLines: 1),
-      );
+      await tester.pumpWidget(createContentText(content: content, maxLines: 1));
       await tester.pump();
 
       expect(find.text('community.read_more'), findsOneWidget);
@@ -211,8 +206,7 @@ void main() {
       expect(find.text('community.read_more'), findsNothing);
     });
 
-    testWidgets('exactly at threshold does not show read more',
-        (tester) async {
+    testWidgets('exactly at threshold does not show read more', (tester) async {
       // maxLines * 45 = 135 chars — exactly at threshold should not show
       final exactContent = 'C' * 135;
       await tester.pumpWidget(createContentText(content: exactContent));
@@ -246,11 +240,7 @@ void main() {
     });
 
     testWidgets('shows fallback label when birdName is null', (tester) async {
-      const post = CommunityPost(
-        id: 'p1',
-        userId: 'u1',
-        birdId: 'bird-1',
-      );
+      const post = CommunityPost(id: 'p1', userId: 'u1', birdId: 'bird-1');
       await tester.pumpWidget(wrap(const BirdLinkChip(post: post)));
       await tester.pump();
 
@@ -327,10 +317,7 @@ void main() {
     });
 
     testWidgets('renders empty when no tags', (tester) async {
-      const post = CommunityPost(
-        id: 'p1',
-        userId: 'u1',
-      );
+      const post = CommunityPost(id: 'p1', userId: 'u1');
       await tester.pumpWidget(wrap(const PostTagWrap(post: post)));
       await tester.pump();
 

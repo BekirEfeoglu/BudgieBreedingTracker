@@ -36,7 +36,11 @@ class NotificationCard extends StatelessWidget {
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: AppSpacing.lg),
         color: theme.colorScheme.error,
-        child: AppIcon(AppIcons.delete, color: theme.colorScheme.onError, semanticsLabel: 'Delete'),
+        child: AppIcon(
+          AppIcons.delete,
+          color: theme.colorScheme.onError,
+          semanticsLabel: 'Delete',
+        ),
       ),
       child: Card(
         margin: const EdgeInsets.symmetric(
@@ -85,8 +89,9 @@ class NotificationCard extends StatelessWidget {
                             child: Text(
                               notification.title,
                               style: theme.textTheme.titleSmall?.copyWith(
-                                fontWeight:
-                                    isUnread ? FontWeight.bold : FontWeight.w500,
+                                fontWeight: isUnread
+                                    ? FontWeight.bold
+                                    : FontWeight.w500,
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -110,8 +115,9 @@ class NotificationCard extends StatelessWidget {
                       Text(
                         _formatTimeAgo(notification.createdAt),
                         style: theme.textTheme.labelSmall?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant
-                              .withValues(alpha: 0.7),
+                          color: theme.colorScheme.onSurfaceVariant.withValues(
+                            alpha: 0.7,
+                          ),
                         ),
                       ),
                     ],
@@ -126,7 +132,8 @@ class NotificationCard extends StatelessWidget {
                     child: AppIcon(
                       AppIcons.warning,
                       size: 16,
-                      color: notification.priority == NotificationPriority.critical
+                      color:
+                          notification.priority == NotificationPriority.critical
                           ? theme.colorScheme.error
                           : AppColors.warning,
                       semanticsLabel: 'High priority',
@@ -164,33 +171,62 @@ class NotificationCard extends StatelessWidget {
 /// Uses SVG [AppIcon] where available, falls back to [Icon] with LucideIcons.
 Widget notificationTypeWidget(NotificationType type, Color color) =>
     switch (type) {
-      NotificationType.eggTurning => Icon(LucideIcons.rotateCw, size: 20, color: color),
-      NotificationType.temperatureAlert => Icon(LucideIcons.thermometer, size: 20, color: color),
-      NotificationType.humidityAlert => Icon(LucideIcons.droplets, size: 20, color: color),
-      NotificationType.feedingReminder => Icon(LucideIcons.utensils, size: 20, color: color),
-      NotificationType.incubationReminder => AppIcon(AppIcons.incubation, size: 20, color: color),
-      NotificationType.healthCheck => AppIcon(AppIcons.health, size: 20, color: color),
-      NotificationType.custom || NotificationType.unknown => AppIcon(AppIcons.notification, size: 20, color: color),
+      NotificationType.eggTurning => Icon(
+        LucideIcons.rotateCw,
+        size: 20,
+        color: color,
+      ),
+      NotificationType.temperatureAlert => Icon(
+        LucideIcons.thermometer,
+        size: 20,
+        color: color,
+      ),
+      NotificationType.humidityAlert => Icon(
+        LucideIcons.droplets,
+        size: 20,
+        color: color,
+      ),
+      NotificationType.feedingReminder => Icon(
+        LucideIcons.utensils,
+        size: 20,
+        color: color,
+      ),
+      NotificationType.incubationReminder => AppIcon(
+        AppIcons.incubation,
+        size: 20,
+        color: color,
+      ),
+      NotificationType.healthCheck => AppIcon(
+        AppIcons.health,
+        size: 20,
+        color: color,
+      ),
+      NotificationType.custom || NotificationType.unknown => AppIcon(
+        AppIcons.notification,
+        size: 20,
+        color: color,
+      ),
     };
 
 /// Returns the color for a notification type.
 Color notificationTypeColor(NotificationType type) => switch (type) {
-      NotificationType.eggTurning => AppColors.warning,
-      NotificationType.temperatureAlert => AppColors.error,
-      NotificationType.humidityAlert => AppColors.info,
-      NotificationType.feedingReminder => AppColors.success,
-      NotificationType.incubationReminder => AppColors.medication,
-      NotificationType.healthCheck => AppColors.teal,
-      NotificationType.custom || NotificationType.unknown => AppColors.neutral400,
-    };
+  NotificationType.eggTurning => AppColors.warning,
+  NotificationType.temperatureAlert => AppColors.error,
+  NotificationType.humidityAlert => AppColors.info,
+  NotificationType.feedingReminder => AppColors.success,
+  NotificationType.incubationReminder => AppColors.medication,
+  NotificationType.healthCheck => AppColors.teal,
+  NotificationType.custom || NotificationType.unknown => AppColors.neutral400,
+};
 
 /// Returns a localized label for a notification type.
 String notificationTypeLabel(NotificationType type) => switch (type) {
-      NotificationType.eggTurning => 'notifications.egg_turning'.tr(),
-      NotificationType.temperatureAlert => 'notifications.temperature_alert'.tr(),
-      NotificationType.humidityAlert => 'notifications.humidity_alert'.tr(),
-      NotificationType.feedingReminder => 'notifications.feeding_reminder'.tr(),
-      NotificationType.incubationReminder => 'notifications.incubation'.tr(),
-      NotificationType.healthCheck => 'notifications.health_check'.tr(),
-      NotificationType.custom || NotificationType.unknown => 'notifications.custom'.tr(),
-    };
+  NotificationType.eggTurning => 'notifications.egg_turning'.tr(),
+  NotificationType.temperatureAlert => 'notifications.temperature_alert'.tr(),
+  NotificationType.humidityAlert => 'notifications.humidity_alert'.tr(),
+  NotificationType.feedingReminder => 'notifications.feeding_reminder'.tr(),
+  NotificationType.incubationReminder => 'notifications.incubation'.tr(),
+  NotificationType.healthCheck => 'notifications.health_check'.tr(),
+  NotificationType.custom ||
+  NotificationType.unknown => 'notifications.custom'.tr(),
+};

@@ -65,10 +65,7 @@ void main() {
       );
 
       expect(appearance.showCarrierAccent, isTrue);
-      expect(
-        appearance.carrierAccentColor,
-        BudgiePhenotypePalette.skyBlue,
-      );
+      expect(appearance.carrierAccentColor, BudgiePhenotypePalette.skyBlue);
     });
 
     test('resolves no carrier mutations without carrier accent', () {
@@ -116,10 +113,7 @@ void main() {
         phenotype: 'Cinnamon Green',
       );
 
-      expect(
-        appearance.wingMarkingColor,
-        BudgiePhenotypePalette.cinnamon,
-      );
+      expect(appearance.wingMarkingColor, BudgiePhenotypePalette.cinnamon);
     });
 
     test('resolves grey mutation with grey cheek patch', () {

@@ -45,9 +45,7 @@ class BreedingCard extends ConsumerWidget {
         onTap: onTap ?? () => context.push('/breeding/${pair.id}'),
         child: Container(
           decoration: BoxDecoration(
-            border: Border(
-              left: BorderSide(color: stageColor, width: 4),
-            ),
+            border: Border(left: BorderSide(color: stageColor, width: 4)),
           ),
           child: Padding(
             padding: AppSpacing.cardPadding,

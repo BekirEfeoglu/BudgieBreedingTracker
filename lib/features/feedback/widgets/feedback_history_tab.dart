@@ -79,7 +79,9 @@ class FeedbackHistoryEmpty extends StatelessWidget {
             Text(
               'feedback.no_submissions_hint'.tr(),
               style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+                color: theme.colorScheme.onSurfaceVariant.withValues(
+                  alpha: 0.7,
+                ),
               ),
               textAlign: TextAlign.center,
             ),

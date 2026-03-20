@@ -49,11 +49,14 @@ abstract class BaseRemoteSource<T> {
   /// Fetches all non-deleted records for a user.
   Future<List<T>> fetchAll(String userId) async {
     try {
-      final response = await _timed('fetchAll', () => table
-          .select()
-          .eq('user_id', userId)
-          .eq('is_deleted', false)
-          .order('created_at'));
+      final response = await _timed(
+        'fetchAll',
+        () => table
+            .select()
+            .eq('user_id', userId)
+            .eq('is_deleted', false)
+            .order('created_at'),
+      );
       return response.map((json) => fromJson(json)).toList();
     } catch (e, st) {
       throw handleError(e, st);
@@ -65,11 +68,7 @@ abstract class BaseRemoteSource<T> {
     try {
       final response = await _timed(
         'fetchById',
-        () => table
-            .select()
-            .eq('id', id)
-            .eq('user_id', userId)
-            .maybeSingle(),
+        () => table.select().eq('id', id).eq('user_id', userId).maybeSingle(),
       );
       return response != null ? fromJson(response) : null;
     } catch (e, st) {
@@ -78,17 +77,17 @@ abstract class BaseRemoteSource<T> {
   }
 
   /// Fetches records updated since [since] for a user.
-  Future<List<T>> fetchUpdatedSince(
-    String userId,
-    DateTime since,
-  ) async {
+  Future<List<T>> fetchUpdatedSince(String userId, DateTime since) async {
     try {
-      final response = await _timed('fetchUpdatedSince', () => table
-          .select()
-          .eq('user_id', userId)
-          .eq('is_deleted', false)
-          .gte('updated_at', since.toIso8601String())
-          .order('updated_at'));
+      final response = await _timed(
+        'fetchUpdatedSince',
+        () => table
+            .select()
+            .eq('user_id', userId)
+            .eq('is_deleted', false)
+            .gte('updated_at', since.toIso8601String())
+            .order('updated_at'),
+      );
       return response.map((json) => fromJson(json)).toList();
     } catch (e, st) {
       throw handleError(e, st);
@@ -121,10 +120,7 @@ abstract class BaseRemoteSource<T> {
   ///
   /// Useful for large datasets (500+ records) to avoid response size limits.
   /// Uses `created_at` cursor instead of OFFSET for stable performance at scale.
-  Future<List<T>> fetchAllPaginated(
-    String userId, {
-    int pageSize = 500,
-  }) async {
+  Future<List<T>> fetchAllPaginated(String userId, {int pageSize = 500}) async {
     try {
       final results = <T>[];
       String? cursor;
@@ -183,10 +179,7 @@ abstract class BaseRemoteSource<T> {
 
     if (error is AppException) return error;
 
-    return NetworkException(
-      error.toString(),
-      originalError: error,
-    );
+    return NetworkException(error.toString(), originalError: error);
   }
 }
 
@@ -199,10 +192,10 @@ abstract class BaseRemoteSourceNoSoftDelete<T> extends BaseRemoteSource<T> {
   @override
   Future<List<T>> fetchAll(String userId) async {
     try {
-      final response = await _timed('fetchAll', () => table
-          .select()
-          .eq('user_id', userId)
-          .order('created_at'));
+      final response = await _timed(
+        'fetchAll',
+        () => table.select().eq('user_id', userId).order('created_at'),
+      );
       return response.map((json) => fromJson(json)).toList();
     } catch (e, st) {
       throw handleError(e, st);
@@ -210,16 +203,16 @@ abstract class BaseRemoteSourceNoSoftDelete<T> extends BaseRemoteSource<T> {
   }
 
   @override
-  Future<List<T>> fetchUpdatedSince(
-    String userId,
-    DateTime since,
-  ) async {
+  Future<List<T>> fetchUpdatedSince(String userId, DateTime since) async {
     try {
-      final response = await _timed('fetchUpdatedSince', () => table
-          .select()
-          .eq('user_id', userId)
-          .gte('updated_at', since.toIso8601String())
-          .order('updated_at'));
+      final response = await _timed(
+        'fetchUpdatedSince',
+        () => table
+            .select()
+            .eq('user_id', userId)
+            .gte('updated_at', since.toIso8601String())
+            .order('updated_at'),
+      );
       return response.map((json) => fromJson(json)).toList();
     } catch (e, st) {
       throw handleError(e, st);

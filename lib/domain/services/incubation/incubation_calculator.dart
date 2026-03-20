@@ -59,9 +59,7 @@ abstract class IncubationCalculator {
           const Duration(days: IncubationConstants.candlingDay),
         ),
         isPassed: now.isAfter(
-          startDate.add(
-            const Duration(days: IncubationConstants.candlingDay),
-          ),
+          startDate.add(const Duration(days: IncubationConstants.candlingDay)),
         ),
       ),
       IncubationMilestone(
@@ -115,9 +113,7 @@ abstract class IncubationCalculator {
           const Duration(days: IncubationConstants.lateHatchDay),
         ),
         isPassed: now.isAfter(
-          startDate.add(
-            const Duration(days: IncubationConstants.lateHatchDay),
-          ),
+          startDate.add(const Duration(days: IncubationConstants.lateHatchDay)),
         ),
       ),
     ];
@@ -155,26 +151,25 @@ abstract class IncubationCalculator {
   static List<EggStatus> getValidStatusTransitions(EggStatus current) {
     return switch (current) {
       EggStatus.laid => [
-          EggStatus.fertile,
-          EggStatus.infertile,
-          EggStatus.damaged,
-          EggStatus.discarded,
-        ],
+        EggStatus.fertile,
+        EggStatus.infertile,
+        EggStatus.damaged,
+        EggStatus.discarded,
+      ],
       EggStatus.fertile => [
-          EggStatus.incubating,
-          EggStatus.damaged,
-          EggStatus.discarded,
-        ],
+        EggStatus.incubating,
+        EggStatus.damaged,
+        EggStatus.discarded,
+      ],
       EggStatus.incubating => [
-          EggStatus.hatched,
-          EggStatus.damaged,
-          EggStatus.discarded,
-        ],
+        EggStatus.hatched,
+        EggStatus.damaged,
+        EggStatus.discarded,
+      ],
       EggStatus.hatched ||
       EggStatus.damaged ||
       EggStatus.discarded ||
-      EggStatus.infertile =>
-        [],
+      EggStatus.infertile => [],
       _ => [],
     };
   }

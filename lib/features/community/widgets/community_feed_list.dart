@@ -24,10 +24,7 @@ import 'community_story_strip.dart';
 class CommunityFeedList extends ConsumerStatefulWidget {
   final CommunityFeedTab tab;
 
-  const CommunityFeedList({
-    super.key,
-    this.tab = CommunityFeedTab.explore,
-  });
+  const CommunityFeedList({super.key, this.tab = CommunityFeedTab.explore});
 
   @override
   ConsumerState<CommunityFeedList> createState() => _CommunityFeedListState();
@@ -91,7 +88,10 @@ class _CommunityFeedListState extends ConsumerState<CommunityFeedList> {
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.lg, AppSpacing.md, AppSpacing.lg, 0,
+                  AppSpacing.lg,
+                  AppSpacing.md,
+                  AppSpacing.lg,
+                  0,
                 ),
                 child: CommunityHeroCard(posts: posts),
               ),
@@ -110,7 +110,10 @@ class _CommunityFeedListState extends ConsumerState<CommunityFeedList> {
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.lg, AppSpacing.lg, AppSpacing.lg, AppSpacing.sm,
+                  AppSpacing.lg,
+                  AppSpacing.lg,
+                  AppSpacing.lg,
+                  AppSpacing.sm,
                 ),
                 child: CommunityQuickComposer(
                   currentUserId: currentUserId,
@@ -124,7 +127,10 @@ class _CommunityFeedListState extends ConsumerState<CommunityFeedList> {
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.lg, AppSpacing.md, AppSpacing.lg, AppSpacing.md,
+                  AppSpacing.lg,
+                  AppSpacing.md,
+                  AppSpacing.lg,
+                  AppSpacing.md,
                 ),
                 child: CommunitySectionBar(
                   tab: widget.tab,
@@ -136,8 +142,7 @@ class _CommunityFeedListState extends ConsumerState<CommunityFeedList> {
             ),
           if (showExploreExtras) ...[
             () {
-              final creators =
-                  CommunityCreatorStrip.fromPosts(visiblePosts);
+              final creators = CommunityCreatorStrip.fromPosts(visiblePosts);
               if (creators.isEmpty) return const SliverToBoxAdapter();
               return SliverToBoxAdapter(
                 child: Padding(
@@ -151,8 +156,10 @@ class _CommunityFeedListState extends ConsumerState<CommunityFeedList> {
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.lg, AppSpacing.lg,
-                  AppSpacing.lg, AppSpacing.xxxl * 2,
+                  AppSpacing.lg,
+                  AppSpacing.lg,
+                  AppSpacing.lg,
+                  AppSpacing.xxxl * 2,
                 ),
                 child: EmptyState(
                   icon: const AppIcon(AppIcons.community),
@@ -165,8 +172,10 @@ class _CommunityFeedListState extends ConsumerState<CommunityFeedList> {
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.lg, AppSpacing.md,
-                  AppSpacing.lg, AppSpacing.xxxl,
+                  AppSpacing.lg,
+                  AppSpacing.md,
+                  AppSpacing.lg,
+                  AppSpacing.xxxl,
                 ),
                 child: _FilteredFeedEmptyState(
                   tab: widget.tab,
@@ -186,8 +195,7 @@ class _CommunityFeedListState extends ConsumerState<CommunityFeedList> {
                       if (feedState.isLoading) {
                         return const Padding(
                           padding: EdgeInsets.all(AppSpacing.lg),
-                          child:
-                              Center(child: CircularProgressIndicator()),
+                          child: Center(child: CircularProgressIndicator()),
                         );
                       }
                       return const SizedBox.shrink();
@@ -198,8 +206,7 @@ class _CommunityFeedListState extends ConsumerState<CommunityFeedList> {
                       post: post,
                     );
                   },
-                  childCount:
-                      visiblePosts.length + (feedState.hasMore ? 1 : 0),
+                  childCount: visiblePosts.length + (feedState.hasMore ? 1 : 0),
                 ),
               ),
             ),

@@ -88,18 +88,14 @@ void main() {
         final container = createTestContainer();
         addTearDown(container.dispose);
 
-        container
-            .read(fatherGenotypeProvider.notifier)
-            .state = ParentGenotype(
+        container.read(fatherGenotypeProvider.notifier).state = ParentGenotype(
           gender: BirdGender.male,
           mutations: {
             'blue': AlleleState.visual,
             'dark_factor': AlleleState.carrier,
           },
         );
-        container
-            .read(motherGenotypeProvider.notifier)
-            .state = ParentGenotype(
+        container.read(motherGenotypeProvider.notifier).state = ParentGenotype(
           gender: BirdGender.female,
           mutations: {
             'dilute': AlleleState.visual,
@@ -133,15 +129,11 @@ void main() {
             'Sultan';
         container.read(selectedMotherBirdNameProvider.notifier).state =
             'Papatya';
-        container
-            .read(fatherGenotypeProvider.notifier)
-            .state = ParentGenotype(
+        container.read(fatherGenotypeProvider.notifier).state = ParentGenotype(
           gender: BirdGender.male,
           mutations: {'ino': AlleleState.visual},
         );
-        container
-            .read(motherGenotypeProvider.notifier)
-            .state = ParentGenotype(
+        container.read(motherGenotypeProvider.notifier).state = ParentGenotype(
           gender: BirdGender.female,
           mutations: {'ino': AlleleState.carrier},
         );
@@ -162,15 +154,11 @@ void main() {
         final container = createTestContainer();
         addTearDown(container.dispose);
 
-        container
-            .read(fatherGenotypeProvider.notifier)
-            .state = ParentGenotype(
+        container.read(fatherGenotypeProvider.notifier).state = ParentGenotype(
           gender: BirdGender.male,
           mutations: {'blue': AlleleState.visual},
         );
-        container
-            .read(motherGenotypeProvider.notifier)
-            .state = ParentGenotype(
+        container.read(motherGenotypeProvider.notifier).state = ParentGenotype(
           gender: BirdGender.female,
           mutations: {'blue': AlleleState.carrier},
         );

@@ -22,15 +22,15 @@ class BreedingPairInfoSection extends ConsumerWidget {
     final theme = Theme.of(context);
 
     final maleBird = pair.maleId != null
-        ? ref.watch(birdByIdProvider(pair.maleId!)).whenOrNull(
-              data: (bird) => bird,
-            )
+        ? ref
+              .watch(birdByIdProvider(pair.maleId!))
+              .whenOrNull(data: (bird) => bird)
         : null;
 
     final femaleBird = pair.femaleId != null
-        ? ref.watch(birdByIdProvider(pair.femaleId!)).whenOrNull(
-              data: (bird) => bird,
-            )
+        ? ref
+              .watch(birdByIdProvider(pair.femaleId!))
+              .whenOrNull(data: (bird) => bird)
         : null;
 
     return Padding(
@@ -63,9 +63,11 @@ class BreedingPairInfoSection extends ConsumerWidget {
             const SizedBox(height: AppSpacing.sm),
             Row(
               children: [
-                AppIcon(AppIcons.nest,
-                    size: 16,
-                    color: theme.colorScheme.onSurfaceVariant),
+                AppIcon(
+                  AppIcons.nest,
+                  size: 16,
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
                 const SizedBox(width: AppSpacing.xs),
                 Text(
                   '${'breeding.cage_number'.tr()}: ${pair.cageNumber!}',

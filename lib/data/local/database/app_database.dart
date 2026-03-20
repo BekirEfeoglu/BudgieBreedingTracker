@@ -15,6 +15,7 @@ import 'package:budgie_breeding_tracker/core/enums/notification_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/subscription_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/photo_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/reminder_enums.dart';
+import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/data/models/health_record_model.dart';
 import 'package:budgie_breeding_tracker/data/models/sync_metadata_model.dart';
 
@@ -118,48 +119,57 @@ class AppDatabase extends _$AppDatabase {
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
-        onCreate: (m) async {
-          await m.createAll();
-          await _createPerformanceIndexes();
-        },
-        onUpgrade: (m, from, to) async {
-          // Run migrations sequentially from the old version to the new one.
-          for (var i = from + 1; i <= to; i++) {
-            switch (i) {
-              case 2:
-                await _migrateV1ToV2(m);
-              case 3:
-                await _migrateV2ToV3(m);
-              case 4:
-                await _migrateV3ToV4(m);
-              case 5:
-                await _migrateV4ToV5(m);
-              case 6:
-                await _migrateV5ToV6(m);
-              case 7:
-                await _migrateV6ToV7(m);
-              case 8:
-                await _migrateV7ToV8(m);
-              case 9:
-                await _migrateV8ToV9(m);
-              case 10:
-                await _migrateV9ToV10(m);
-              case 11:
-                await _migrateV10ToV11(m);
-              case 12:
-                await _migrateV11ToV12(m);
-              case 13:
-                await _migrateV12ToV13(m);
-              case 14:
-                await _migrateV13ToV14(m);
-            }
-          }
-        },
-        beforeOpen: (details) async {
-          // Enable foreign keys for every connection.
-          await customStatement('PRAGMA foreign_keys = ON');
-        },
-      );
+    onCreate: (m) async {
+      await m.createAll();
+      await _createPerformanceIndexes();
+    },
+    onUpgrade: (m, from, to) async {
+      // Run migrations sequentially from the old version to the new one.
+      for (var i = from + 1; i <= to; i++) {
+        switch (i) {
+          case 2:
+            await _migrateV1ToV2(m);
+          case 3:
+            await _migrateV2ToV3(m);
+          case 4:
+            await _migrateV3ToV4(m);
+          case 5:
+            await _migrateV4ToV5(m);
+          case 6:
+            await _migrateV5ToV6(m);
+          case 7:
+            await _migrateV6ToV7(m);
+          case 8:
+            await _migrateV7ToV8(m);
+          case 9:
+            await _migrateV8ToV9(m);
+          case 10:
+            await _migrateV9ToV10(m);
+          case 11:
+            await _migrateV10ToV11(m);
+          case 12:
+            await _migrateV11ToV12(m);
+          case 13:
+            await _migrateV12ToV13(m);
+          case 14:
+            await _migrateV13ToV14(m);
+        }
+      }
+    },
+    beforeOpen: (details) async {
+      // Enable foreign keys for every connection.
+      await customStatement('PRAGMA foreign_keys = ON');
+
+      // Quick integrity check to detect early corruption.
+      final result = await customSelect('PRAGMA integrity_check').get();
+      if (result.isNotEmpty) {
+        final status = result.first.data.values.first as String?;
+        if (status != null && status != 'ok') {
+          AppLogger.error('[DB] Integrity check failed: $status');
+        }
+      }
+    },
+  );
 
   /// Migration v1 -> v2: placeholder for future schema changes.
   ///
@@ -443,52 +453,58 @@ class AppDatabase extends _$AppDatabase {
     await transaction(() async {
       // Layer 7 – deepest children
       await customStatement(
-          'DELETE FROM growth_measurements WHERE user_id = ?', [userId]);
-      await customStatement(
-          'DELETE FROM event_reminders WHERE user_id = ?', [userId]);
+        'DELETE FROM growth_measurements WHERE user_id = ?',
+        [userId],
+      );
+      await customStatement('DELETE FROM event_reminders WHERE user_id = ?', [
+        userId,
+      ]);
       // Layer 6 – leaf entities
+      await customStatement('DELETE FROM health_records WHERE user_id = ?', [
+        userId,
+      ]);
+      await customStatement('DELETE FROM photos WHERE user_id = ?', [userId]);
+      await customStatement('DELETE FROM notifications WHERE user_id = ?', [
+        userId,
+      ]);
       await customStatement(
-          'DELETE FROM health_records WHERE user_id = ?', [userId]);
+        'DELETE FROM notification_settings WHERE user_id = ?',
+        [userId],
+      );
       await customStatement(
-          'DELETE FROM photos WHERE user_id = ?', [userId]);
-      await customStatement(
-          'DELETE FROM notifications WHERE user_id = ?', [userId]);
-      await customStatement(
-          'DELETE FROM notification_settings WHERE user_id = ?', [userId]);
-      await customStatement(
-          'DELETE FROM notification_schedules WHERE user_id = ?', [userId]);
-      await customStatement(
-          'DELETE FROM events WHERE user_id = ?', [userId]);
+        'DELETE FROM notification_schedules WHERE user_id = ?',
+        [userId],
+      );
+      await customStatement('DELETE FROM events WHERE user_id = ?', [userId]);
       // Layer 5
-      await customStatement(
-          'DELETE FROM chicks WHERE user_id = ?', [userId]);
+      await customStatement('DELETE FROM chicks WHERE user_id = ?', [userId]);
       // Layer 4
-      await customStatement(
-          'DELETE FROM eggs WHERE user_id = ?', [userId]);
+      await customStatement('DELETE FROM eggs WHERE user_id = ?', [userId]);
       // Layer 3
-      await customStatement(
-          'DELETE FROM incubations WHERE user_id = ?', [userId]);
-      await customStatement(
-          'DELETE FROM clutches WHERE user_id = ?', [userId]);
+      await customStatement('DELETE FROM incubations WHERE user_id = ?', [
+        userId,
+      ]);
+      await customStatement('DELETE FROM clutches WHERE user_id = ?', [userId]);
       // Layer 2
-      await customStatement(
-          'DELETE FROM breeding_pairs WHERE user_id = ?', [userId]);
+      await customStatement('DELETE FROM breeding_pairs WHERE user_id = ?', [
+        userId,
+      ]);
       // Layer 1
-      await customStatement(
-          'DELETE FROM birds WHERE user_id = ?', [userId]);
-      await customStatement(
-          'DELETE FROM nests WHERE user_id = ?', [userId]);
+      await customStatement('DELETE FROM birds WHERE user_id = ?', [userId]);
+      await customStatement('DELETE FROM nests WHERE user_id = ?', [userId]);
       // Local-only entities
-      await customStatement(
-          'DELETE FROM genetics_history WHERE user_id = ?', [userId]);
-      await customStatement(
-          'DELETE FROM user_preferences WHERE user_id = ?', [userId]);
+      await customStatement('DELETE FROM genetics_history WHERE user_id = ?', [
+        userId,
+      ]);
+      await customStatement('DELETE FROM user_preferences WHERE user_id = ?', [
+        userId,
+      ]);
       // Sync metadata
-      await customStatement(
-          'DELETE FROM sync_metadata WHERE user_id = ?', [userId]);
+      await customStatement('DELETE FROM sync_metadata WHERE user_id = ?', [
+        userId,
+      ]);
       // Profile (id = userId)
-      await customStatement(
-          'DELETE FROM profiles WHERE id = ?', [userId]);
+      await customStatement('DELETE FROM profiles WHERE id = ?', [userId]);
     });
   }
 }

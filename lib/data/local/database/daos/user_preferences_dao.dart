@@ -12,22 +12,22 @@ class UserPreferencesDao extends DatabaseAccessor<AppDatabase>
   UserPreferencesDao(super.db);
 
   Stream<UserPreference?> watchByUser(String userId) {
-    return (select(userPreferencesTable)
-          ..where((t) => t.userId.equals(userId)))
+    return (select(userPreferencesTable)..where((t) => t.userId.equals(userId)))
         .watchSingleOrNull()
         .map((row) => row?.toModel());
   }
 
   Future<UserPreference?> getByUser(String userId) async {
-    final row = await (select(userPreferencesTable)
-          ..where((t) => t.userId.equals(userId)))
-        .getSingleOrNull();
+    final row = await (select(
+      userPreferencesTable,
+    )..where((t) => t.userId.equals(userId))).getSingleOrNull();
     return row?.toModel();
   }
 
   Future<void> upsert(UserPreference model) {
-    return into(userPreferencesTable)
-        .insertOnConflictUpdate(model.toCompanion());
+    return into(
+      userPreferencesTable,
+    ).insertOnConflictUpdate(model.toCompanion());
   }
 
   Future<void> hardDelete(String id) {

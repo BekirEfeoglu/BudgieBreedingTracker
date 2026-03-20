@@ -114,22 +114,31 @@ class ProfileHeader extends StatelessWidget {
               children: [
                 if (profile?.hasPremium == true)
                   _Badge(
-                    icon: AppIcon(AppIcons.premium,
-                        size: 14, color: theme.colorScheme.onPrimary),
+                    icon: AppIcon(
+                      AppIcons.premium,
+                      size: 14,
+                      color: theme.colorScheme.onPrimary,
+                    ),
                     label: 'profile.premium_badge'.tr(),
                     color: AppColors.success,
                   ),
                 if (profile?.isFounder == true)
                   _Badge(
-                    icon: AppIcon(AppIcons.security,
-                        size: 14, color: theme.colorScheme.onPrimary),
+                    icon: AppIcon(
+                      AppIcons.security,
+                      size: 14,
+                      color: theme.colorScheme.onPrimary,
+                    ),
                     label: 'profile.founder_badge'.tr(),
                     color: AppColors.primary,
                   )
                 else if (profile?.isAdmin == true)
                   _Badge(
-                    icon: AppIcon(AppIcons.twoFactor,
-                        size: 14, color: theme.colorScheme.onPrimary),
+                    icon: AppIcon(
+                      AppIcons.twoFactor,
+                      size: 14,
+                      color: theme.colorScheme.onPrimary,
+                    ),
                     label: 'profile.admin_badge'.tr(),
                     color: AppColors.primary,
                   ),
@@ -160,11 +169,7 @@ class ProfileHeader extends StatelessWidget {
 // -- Badge --
 
 class _Badge extends StatelessWidget {
-  const _Badge({
-    required this.icon,
-    required this.label,
-    required this.color,
-  });
+  const _Badge({required this.icon, required this.label, required this.color});
 
   final Widget icon;
   final String label;
@@ -189,9 +194,9 @@ class _Badge extends StatelessWidget {
           Text(
             label,
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: Theme.of(context).colorScheme.onPrimary,
-                  fontWeight: FontWeight.bold,
-                ),
+              color: Theme.of(context).colorScheme.onPrimary,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ],
       ),

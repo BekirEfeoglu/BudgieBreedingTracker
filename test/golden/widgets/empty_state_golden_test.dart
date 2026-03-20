@@ -10,15 +10,17 @@ import '../golden_test_helper.dart';
 void main() {
   group('EmptyState golden tests', () {
     testWidgets('with action button', (tester) async {
-      await tester.pumpWidget(buildGoldenWidget(
-        EmptyState(
-          icon: const Icon(Icons.pets),
-          title: 'Henuz kus eklenmemis',
-          subtitle: 'Ilk kusunuzu ekleyin',
-          actionLabel: 'Kus Ekle',
-          onAction: () {},
+      await tester.pumpWidget(
+        buildGoldenWidget(
+          EmptyState(
+            icon: const Icon(Icons.pets),
+            title: 'Henuz kus eklenmemis',
+            subtitle: 'Ilk kusunuzu ekleyin',
+            actionLabel: 'Kus Ekle',
+            onAction: () {},
+          ),
         ),
-      ));
+      );
       await tester.pumpAndSettle();
 
       await expectLater(
@@ -28,13 +30,15 @@ void main() {
     });
 
     testWidgets('without action (search results)', (tester) async {
-      await tester.pumpWidget(buildGoldenWidget(
-        const EmptyState(
-          icon: Icon(Icons.search_off),
-          title: 'Sonuc bulunamadi',
-          subtitle: 'Arama kriterlerini degistirin',
+      await tester.pumpWidget(
+        buildGoldenWidget(
+          const EmptyState(
+            icon: Icon(Icons.search_off),
+            title: 'Sonuc bulunamadi',
+            subtitle: 'Arama kriterlerini degistirin',
+          ),
         ),
-      ));
+      );
       await tester.pumpAndSettle();
 
       await expectLater(
@@ -44,12 +48,11 @@ void main() {
     });
 
     testWidgets('title only (minimal)', (tester) async {
-      await tester.pumpWidget(buildGoldenWidget(
-        const EmptyState(
-          icon: Icon(Icons.inbox),
-          title: 'Bos',
+      await tester.pumpWidget(
+        buildGoldenWidget(
+          const EmptyState(icon: Icon(Icons.inbox), title: 'Bos'),
         ),
-      ));
+      );
       await tester.pumpAndSettle();
 
       await expectLater(
@@ -59,16 +62,18 @@ void main() {
     });
 
     testWidgets('dark mode', (tester) async {
-      await tester.pumpWidget(buildGoldenWidget(
-        EmptyState(
-          icon: const Icon(Icons.pets),
-          title: 'Henuz kus eklenmemis',
-          subtitle: 'Ilk kusunuzu ekleyin',
-          actionLabel: 'Kus Ekle',
-          onAction: () {},
+      await tester.pumpWidget(
+        buildGoldenWidget(
+          EmptyState(
+            icon: const Icon(Icons.pets),
+            title: 'Henuz kus eklenmemis',
+            subtitle: 'Ilk kusunuzu ekleyin',
+            actionLabel: 'Kus Ekle',
+            onAction: () {},
+          ),
+          themeMode: ThemeMode.dark,
         ),
-        themeMode: ThemeMode.dark,
-      ));
+      );
       await tester.pumpAndSettle();
 
       await expectLater(

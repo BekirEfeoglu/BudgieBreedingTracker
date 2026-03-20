@@ -17,30 +17,20 @@ class ProfileSkeleton extends StatelessWidget {
       children: const [
         // Avatar circle
         Center(
-          child: SkeletonLoader(
-            width: 112,
-            height: 112,
-            borderRadius: 56,
-          ),
+          child: SkeletonLoader(width: 112, height: 112, borderRadius: 56),
         ),
         SizedBox(height: AppSpacing.md),
 
         // Display name
-        Center(
-          child: SkeletonLoader(width: 160, height: 24),
-        ),
+        Center(child: SkeletonLoader(width: 160, height: 24)),
         SizedBox(height: AppSpacing.sm),
 
         // Email
-        Center(
-          child: SkeletonLoader(width: 200, height: 16),
-        ),
+        Center(child: SkeletonLoader(width: 200, height: 16)),
         SizedBox(height: AppSpacing.md),
 
         // Badges row
-        Center(
-          child: SkeletonLoader(width: 100, height: 22, borderRadius: 11),
-        ),
+        Center(child: SkeletonLoader(width: 100, height: 22, borderRadius: 11)),
         SizedBox(height: AppSpacing.lg),
 
         // Stats row
@@ -48,19 +38,13 @@ class ProfileSkeleton extends StatelessWidget {
           padding: EdgeInsets.symmetric(horizontal: AppSpacing.xxxl),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              _StatSkeleton(),
-              _StatSkeleton(),
-              _StatSkeleton(),
-            ],
+            children: [_StatSkeleton(), _StatSkeleton(), _StatSkeleton()],
           ),
         ),
         SizedBox(height: AppSpacing.lg),
 
         // Edit profile button
-        Center(
-          child: SkeletonLoader(width: 140, height: 36, borderRadius: 18),
-        ),
+        Center(child: SkeletonLoader(width: 140, height: 36, borderRadius: 18)),
         SizedBox(height: AppSpacing.xxl),
 
         // Section title + card skeleton (Account Info)
@@ -123,9 +107,7 @@ class _SectionSkeleton extends StatelessWidget {
                     children: [
                       SkeletonLoader(width: 22, height: 22, borderRadius: 4),
                       SizedBox(width: AppSpacing.md),
-                      Expanded(
-                        child: SkeletonLoader(height: 16),
-                      ),
+                      Expanded(child: SkeletonLoader(height: 16)),
                     ],
                   ),
                 );

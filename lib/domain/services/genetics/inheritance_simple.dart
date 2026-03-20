@@ -109,11 +109,7 @@ List<_RawResult> _autosomalDominant(
       genotype: '$sym+/$sym',
       expressedMutationIds: [record.id],
     ),
-    _RawResult(
-      phenotype: 'Normal',
-      probability: 0.50,
-      genotype: '$sym+/$sym+',
-    ),
+    _RawResult(phenotype: 'Normal', probability: 0.50, genotype: '$sym+/$sym+'),
   ];
 }
 
@@ -158,11 +154,7 @@ List<_RawResult> _autosomalIncompleteDominant(
       genotype: '$sym+/$sym',
       expressedMutationIds: [record.id],
     ),
-    _RawResult(
-      phenotype: 'Normal',
-      probability: 0.50,
-      genotype: '$sym+/$sym+',
-    ),
+    _RawResult(phenotype: 'Normal', probability: 0.50, genotype: '$sym+/$sym+'),
   ];
 }
 

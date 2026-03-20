@@ -47,15 +47,11 @@ void main() {
       final container = ProviderContainer();
       addTearDown(container.dispose);
 
-      container
-          .read(fatherGenotypeProvider.notifier)
-          .state = ParentGenotype(
+      container.read(fatherGenotypeProvider.notifier).state = ParentGenotype(
         gender: BirdGender.male,
         mutations: {'blue': AlleleState.visual},
       );
-      container
-          .read(motherGenotypeProvider.notifier)
-          .state = ParentGenotype(
+      container.read(motherGenotypeProvider.notifier).state = ParentGenotype(
         gender: BirdGender.female,
         mutations: {'blue': AlleleState.carrier},
       );
@@ -74,15 +70,11 @@ void main() {
       final container = ProviderContainer();
       addTearDown(container.dispose);
 
-      container
-          .read(fatherGenotypeProvider.notifier)
-          .state = ParentGenotype(
+      container.read(fatherGenotypeProvider.notifier).state = ParentGenotype(
         gender: BirdGender.male,
         mutations: {'blue': AlleleState.visual},
       );
-      container
-          .read(motherGenotypeProvider.notifier)
-          .state = ParentGenotype(
+      container.read(motherGenotypeProvider.notifier).state = ParentGenotype(
         gender: BirdGender.female,
         mutations: {'opaline': AlleleState.visual},
       );
@@ -97,15 +89,11 @@ void main() {
       final container = ProviderContainer();
       addTearDown(container.dispose);
 
-      container
-          .read(fatherGenotypeProvider.notifier)
-          .state = ParentGenotype(
+      container.read(fatherGenotypeProvider.notifier).state = ParentGenotype(
         gender: BirdGender.male,
         mutations: {'opaline': AlleleState.visual},
       );
-      container
-          .read(motherGenotypeProvider.notifier)
-          .state = ParentGenotype(
+      container.read(motherGenotypeProvider.notifier).state = ParentGenotype(
         gender: BirdGender.female,
         mutations: {'blue': AlleleState.visual},
       );
@@ -118,15 +106,11 @@ void main() {
       final container = ProviderContainer();
       addTearDown(container.dispose);
 
-      container
-          .read(fatherGenotypeProvider.notifier)
-          .state = ParentGenotype(
+      container.read(fatherGenotypeProvider.notifier).state = ParentGenotype(
         gender: BirdGender.male,
         mutations: {'blue': AlleleState.visual},
       );
-      container
-          .read(motherGenotypeProvider.notifier)
-          .state = ParentGenotype(
+      container.read(motherGenotypeProvider.notifier).state = ParentGenotype(
         gender: BirdGender.female,
         mutations: {'blue': AlleleState.carrier},
       );
@@ -142,15 +126,11 @@ void main() {
       final container = ProviderContainer();
       addTearDown(container.dispose);
 
-      container
-          .read(fatherGenotypeProvider.notifier)
-          .state = ParentGenotype(
+      container.read(fatherGenotypeProvider.notifier).state = ParentGenotype(
         gender: BirdGender.male,
         mutations: {'blue': AlleleState.visual},
       );
-      container
-          .read(motherGenotypeProvider.notifier)
-          .state = ParentGenotype(
+      container.read(motherGenotypeProvider.notifier).state = ParentGenotype(
         gender: BirdGender.female,
         mutations: {'blue': AlleleState.carrier},
       );
@@ -168,15 +148,11 @@ void main() {
       final container = ProviderContainer();
       addTearDown(container.dispose);
 
-      container
-          .read(fatherGenotypeProvider.notifier)
-          .state = ParentGenotype(
+      container.read(fatherGenotypeProvider.notifier).state = ParentGenotype(
         gender: BirdGender.male,
         mutations: {'blue': AlleleState.visual},
       );
-      container
-          .read(motherGenotypeProvider.notifier)
-          .state = ParentGenotype(
+      container.read(motherGenotypeProvider.notifier).state = ParentGenotype(
         gender: BirdGender.female,
         mutations: {'blue': AlleleState.carrier},
       );
@@ -223,10 +199,7 @@ void main() {
         AppColors.phenotypeAlbino,
       );
       // Ino without blue = Lutino color
-      expect(
-        phenotypeColorFromMutations(['ino']),
-        AppColors.phenotypeLutino,
-      );
+      expect(phenotypeColorFromMutations(['ino']), AppColors.phenotypeLutino);
       // Cinnamon + Ino = Lacewing color
       expect(
         phenotypeColorFromMutations(['cinnamon', 'ino']),
@@ -261,17 +234,11 @@ void main() {
         AppColors.phenotypeGrey,
       );
       // Grey alone = Grey-Green
-      expect(
-        phenotypeColorFromMutations(['grey']),
-        AppColors.phenotypeGrey,
-      );
+      expect(phenotypeColorFromMutations(['grey']), AppColors.phenotypeGrey);
     });
 
     test('phenotypeColorFromMutations maps individual mutations', () {
-      expect(
-        phenotypeColorFromMutations(['blue']),
-        AppColors.budgieBlue,
-      );
+      expect(phenotypeColorFromMutations(['blue']), AppColors.budgieBlue);
       expect(
         phenotypeColorFromMutations(['opaline']),
         AppColors.phenotypeOpaline,
@@ -288,10 +255,7 @@ void main() {
         phenotypeColorFromMutations(['recessive_pied']),
         AppColors.phenotypePied,
       );
-      expect(
-        phenotypeColorFromMutations(['slate']),
-        AppColors.phenotypeSlate,
-      );
+      expect(phenotypeColorFromMutations(['slate']), AppColors.phenotypeSlate);
       expect(
         phenotypeColorFromMutations(['fallow_english']),
         AppColors.phenotypeFallow,
@@ -303,25 +267,18 @@ void main() {
     });
 
     test('phenotypeColorFromMutations returns default for empty list', () {
-      expect(
-        phenotypeColorFromMutations([]),
-        AppColors.neutral500,
-      );
+      expect(phenotypeColorFromMutations([]), AppColors.neutral500);
     });
 
     test('parent mutation providers include only visual mutations', () {
       final container = ProviderContainer();
       addTearDown(container.dispose);
 
-      container
-          .read(fatherGenotypeProvider.notifier)
-          .state = ParentGenotype(
+      container.read(fatherGenotypeProvider.notifier).state = ParentGenotype(
         gender: BirdGender.male,
         mutations: {'ino': AlleleState.carrier, 'spangle': AlleleState.carrier},
       );
-      container
-          .read(motherGenotypeProvider.notifier)
-          .state = ParentGenotype(
+      container.read(motherGenotypeProvider.notifier).state = ParentGenotype(
         gender: BirdGender.female,
         mutations: {'ino': AlleleState.visual, 'blue': AlleleState.carrier},
       );
@@ -336,15 +293,11 @@ void main() {
         final container = ProviderContainer();
         addTearDown(container.dispose);
 
-        container
-            .read(fatherGenotypeProvider.notifier)
-            .state = ParentGenotype(
+        container.read(fatherGenotypeProvider.notifier).state = ParentGenotype(
           gender: BirdGender.male,
           mutations: {'ino': AlleleState.carrier},
         );
-        container
-            .read(motherGenotypeProvider.notifier)
-            .state = ParentGenotype(
+        container.read(motherGenotypeProvider.notifier).state = ParentGenotype(
           gender: BirdGender.female,
           mutations: {'ino': AlleleState.visual},
         );
@@ -473,15 +426,11 @@ void main() {
       () async {
         final container = makeContainer();
         addTearDown(container.dispose);
-        container
-            .read(fatherGenotypeProvider.notifier)
-            .state = ParentGenotype(
+        container.read(fatherGenotypeProvider.notifier).state = ParentGenotype(
           gender: BirdGender.male,
           mutations: {'blue': AlleleState.visual},
         );
-        container
-            .read(motherGenotypeProvider.notifier)
-            .state = ParentGenotype(
+        container.read(motherGenotypeProvider.notifier).state = ParentGenotype(
           gender: BirdGender.female,
           mutations: {'blue': AlleleState.carrier},
         );

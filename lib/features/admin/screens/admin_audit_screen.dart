@@ -35,14 +35,14 @@ class _AdminAuditScreenState extends ConsumerState<AdminAuditScreen> {
       if (state.isSuccess) {
         ref.read(adminActionsProvider.notifier).reset();
         ref.invalidate(filteredAuditLogsProvider);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('admin.logs_cleared'.tr())),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('admin.logs_cleared'.tr())));
       }
       if (state.error != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('admin.action_error'.tr())),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('admin.action_error'.tr())));
       }
     });
 
@@ -52,15 +52,15 @@ class _AdminAuditScreenState extends ConsumerState<AdminAuditScreen> {
           AuditFilterBar(
             controller: _searchController,
             filter: filter,
-            onSearchChanged: (q) => ref
-                .read(auditLogFilterProvider.notifier)
-                .state = filter.copyWith(searchQuery: q),
-            onStartDatePicked: (date) => ref
-                .read(auditLogFilterProvider.notifier)
-                .state = filter.copyWith(startDate: date),
-            onEndDatePicked: (date) => ref
-                .read(auditLogFilterProvider.notifier)
-                .state = filter.copyWith(endDate: date),
+            onSearchChanged: (q) =>
+                ref.read(auditLogFilterProvider.notifier).state = filter
+                    .copyWith(searchQuery: q),
+            onStartDatePicked: (date) =>
+                ref.read(auditLogFilterProvider.notifier).state = filter
+                    .copyWith(startDate: date),
+            onEndDatePicked: (date) =>
+                ref.read(auditLogFilterProvider.notifier).state = filter
+                    .copyWith(endDate: date),
             onClear: () {
               _searchController.clear();
               ref.read(auditLogFilterProvider.notifier).state =
@@ -69,14 +69,12 @@ class _AdminAuditScreenState extends ConsumerState<AdminAuditScreen> {
           ),
           Expanded(
             child: RefreshIndicator(
-              onRefresh: () async =>
-                  ref.invalidate(filteredAuditLogsProvider),
+              onRefresh: () async => ref.invalidate(filteredAuditLogsProvider),
               child: logsAsync.when(
                 loading: () => const LoadingState(),
                 error: (error, _) => ErrorState(
                   message: 'common.data_load_error'.tr(),
-                  onRetry: () =>
-                      ref.invalidate(filteredAuditLogsProvider),
+                  onRetry: () => ref.invalidate(filteredAuditLogsProvider),
                 ),
                 data: (logs) => AuditContent(
                   logs: logs,

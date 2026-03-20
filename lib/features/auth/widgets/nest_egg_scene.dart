@@ -198,21 +198,9 @@ class NestEggScene extends StatelessWidget {
   Widget _buildEggSpots() {
     return Stack(
       children: [
-        Positioned(
-          top: 10,
-          left: 10,
-          child: _eggSpot(5),
-        ),
-        Positioned(
-          top: 22,
-          left: 20,
-          child: _eggSpot(6),
-        ),
-        Positioned(
-          top: 14,
-          left: 26,
-          child: _eggSpot(4),
-        ),
+        Positioned(top: 10, left: 10, child: _eggSpot(5)),
+        Positioned(top: 22, left: 20, child: _eggSpot(6)),
+        Positioned(top: 14, left: 26, child: _eggSpot(4)),
       ],
     );
   }

@@ -193,8 +193,12 @@ class _EntryHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final fatherMutations = PhenotypeLocalizer.localizeGenotypeKeys(entry.fatherGenotype);
-    final motherMutations = PhenotypeLocalizer.localizeGenotypeKeys(entry.motherGenotype);
+    final fatherMutations = PhenotypeLocalizer.localizeGenotypeKeys(
+      entry.fatherGenotype,
+    );
+    final motherMutations = PhenotypeLocalizer.localizeGenotypeKeys(
+      entry.motherGenotype,
+    );
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -241,5 +245,4 @@ class _EntryHeader extends StatelessWidget {
       ],
     );
   }
-
 }

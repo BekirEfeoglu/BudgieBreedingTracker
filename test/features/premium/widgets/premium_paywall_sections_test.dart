@@ -96,32 +96,36 @@ void main() {
 
   group('PremiumTrialBannerSection', () {
     testWidgets('renders without crashing', (tester) async {
-      await tester
-          .pumpWidget(_wrapWithProviders(const PremiumTrialBannerSection()));
+      await tester.pumpWidget(
+        _wrapWithProviders(const PremiumTrialBannerSection()),
+      );
       await tester.pump();
 
       expect(find.byType(PremiumTrialBannerSection), findsOneWidget);
     });
 
     testWidgets('shows trial badge text', (tester) async {
-      await tester
-          .pumpWidget(_wrapWithProviders(const PremiumTrialBannerSection()));
+      await tester.pumpWidget(
+        _wrapWithProviders(const PremiumTrialBannerSection()),
+      );
       await tester.pump();
 
       expect(find.text('premium.trial_badge'), findsOneWidget);
     });
 
     testWidgets('shows trial subtitle text', (tester) async {
-      await tester
-          .pumpWidget(_wrapWithProviders(const PremiumTrialBannerSection()));
+      await tester.pumpWidget(
+        _wrapWithProviders(const PremiumTrialBannerSection()),
+      );
       await tester.pump();
 
       expect(find.text('premium.trial_subtitle_fallback'), findsOneWidget);
     });
 
     testWidgets('shows value proposition text', (tester) async {
-      await tester
-          .pumpWidget(_wrapWithProviders(const PremiumTrialBannerSection()));
+      await tester.pumpWidget(
+        _wrapWithProviders(const PremiumTrialBannerSection()),
+      );
       await tester.pump();
 
       expect(find.text('premium.value_proposition'), findsOneWidget);
@@ -190,9 +194,18 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        expect(find.textContaining('\$4.99', findRichText: true), findsOneWidget);
-        expect(find.textContaining('\$34.99', findRichText: true), findsOneWidget);
-        expect(find.textContaining('\$89.99', findRichText: true), findsOneWidget);
+        expect(
+          find.textContaining('\$4.99', findRichText: true),
+          findsOneWidget,
+        );
+        expect(
+          find.textContaining('\$34.99', findRichText: true),
+          findsOneWidget,
+        );
+        expect(
+          find.textContaining('\$89.99', findRichText: true),
+          findsOneWidget,
+        );
         expect(find.text('premium.price_yearly'), findsNothing);
         expect(find.text('premium.price_lifetime'), findsNothing);
       },
@@ -209,162 +222,156 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        expect(find.text('premium.offerings_unavailable_title'), findsOneWidget);
+        expect(
+          find.text('premium.offerings_unavailable_title'),
+          findsOneWidget,
+        );
         // Fallback localized prices shown instead of "price unavailable"
-        expect(find.textContaining('premium.price_monthly', findRichText: true), findsOneWidget);
-        expect(find.textContaining('premium.price_yearly', findRichText: true), findsOneWidget);
-        expect(find.textContaining('premium.price_lifetime', findRichText: true), findsOneWidget);
+        expect(
+          find.textContaining('premium.price_monthly', findRichText: true),
+          findsOneWidget,
+        );
+        expect(
+          find.textContaining('premium.price_yearly', findRichText: true),
+          findsOneWidget,
+        );
+        expect(
+          find.textContaining('premium.price_lifetime', findRichText: true),
+          findsOneWidget,
+        );
         expect(find.text('common.retry'), findsOneWidget);
       },
     );
 
-    testWidgets(
-      'shows missing API key guidance with setup instructions',
-      (tester) async {
-        await tester.pumpWidget(
-          _wrapWithProviders(
-            const PremiumPricingSection(),
-            purchaseIssue: PremiumPurchaseIssue.missingApiKey,
-          ),
-        );
-        await tester.pumpAndSettle();
+    testWidgets('shows missing API key guidance with setup instructions', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrapWithProviders(
+          const PremiumPricingSection(),
+          purchaseIssue: PremiumPurchaseIssue.missingApiKey,
+        ),
+      );
+      await tester.pumpAndSettle();
 
-        expect(
-          find.text('premium.purchase_setup_missing_title'),
-          findsOneWidget,
-        );
-        expect(
-          find.text('premium.purchase_setup_missing_body'),
-          findsOneWidget,
-        );
-        // missingApiKey has no retry button
-        expect(find.text('common.retry'), findsNothing);
-      },
-    );
+      expect(find.text('premium.purchase_setup_missing_title'), findsOneWidget);
+      expect(find.text('premium.purchase_setup_missing_body'), findsOneWidget);
+      // missingApiKey has no retry button
+      expect(find.text('common.retry'), findsNothing);
+    });
 
-    testWidgets(
-      'shows iOS debug StoreKit guidance',
-      (tester) async {
-        await tester.pumpWidget(
-          _wrapWithProviders(
-            const PremiumPricingSection(),
-            purchaseIssue: PremiumPurchaseIssue.iosDebugStoreKitRequired,
-          ),
-        );
-        await tester.pumpAndSettle();
+    testWidgets('shows iOS debug StoreKit guidance', (tester) async {
+      await tester.pumpWidget(
+        _wrapWithProviders(
+          const PremiumPricingSection(),
+          purchaseIssue: PremiumPurchaseIssue.iosDebugStoreKitRequired,
+        ),
+      );
+      await tester.pumpAndSettle();
 
-        expect(
-          find.text('premium.ios_debug_purchase_title'),
-          findsOneWidget,
-        );
-        expect(
-          find.text('premium.ios_debug_purchase_body'),
-          findsOneWidget,
-        );
-        // iosDebugStoreKitRequired has no retry button
-        expect(find.text('common.retry'), findsNothing);
-      },
-    );
+      expect(find.text('premium.ios_debug_purchase_title'), findsOneWidget);
+      expect(find.text('premium.ios_debug_purchase_body'), findsOneWidget);
+      // iosDebugStoreKitRequired has no retry button
+      expect(find.text('common.retry'), findsNothing);
+    });
 
-    testWidgets(
-      'disables subscribe buttons when purchase issue exists',
-      (tester) async {
-        await tester.pumpWidget(
-          _wrapWithProviders(
-            const PremiumPricingSection(),
-            purchaseIssue: PremiumPurchaseIssue.missingApiKey,
-          ),
-        );
-        await tester.pumpAndSettle();
+    testWidgets('disables subscribe buttons when purchase issue exists', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrapWithProviders(
+          const PremiumPricingSection(),
+          purchaseIssue: PremiumPurchaseIssue.missingApiKey,
+        ),
+      );
+      await tester.pumpAndSettle();
 
-        // All three plan cards render with localized fallback prices
-        expect(find.textContaining('premium.price_monthly', findRichText: true), findsOneWidget);
-        expect(find.textContaining('premium.price_yearly', findRichText: true), findsOneWidget);
-        expect(find.textContaining('premium.price_lifetime', findRichText: true), findsOneWidget);
-        expect(find.text('premium.plan_monthly'), findsOneWidget);
-        expect(find.text('premium.plan_yearly'), findsOneWidget);
-        expect(find.text('premium.plan_lifetime'), findsOneWidget);
-      },
-    );
+      // All three plan cards render with localized fallback prices
+      expect(
+        find.textContaining('premium.price_monthly', findRichText: true),
+        findsOneWidget,
+      );
+      expect(
+        find.textContaining('premium.price_yearly', findRichText: true),
+        findsOneWidget,
+      );
+      expect(
+        find.textContaining('premium.price_lifetime', findRichText: true),
+        findsOneWidget,
+      );
+      expect(find.text('premium.plan_monthly'), findsOneWidget);
+      expect(find.text('premium.plan_yearly'), findsOneWidget);
+      expect(find.text('premium.plan_lifetime'), findsOneWidget);
+    });
 
-    testWidgets(
-      'shows guest access card for anonymous users',
-      (tester) async {
-        await tester.pumpWidget(
-          _wrapWithProviders(
-            const PremiumPricingSection(),
-            userId: 'anonymous',
-          ),
-        );
-        await tester.pumpAndSettle();
+    testWidgets('shows guest access card for anonymous users', (tester) async {
+      await tester.pumpWidget(
+        _wrapWithProviders(const PremiumPricingSection(), userId: 'anonymous'),
+      );
+      await tester.pumpAndSettle();
 
-        expect(
-          find.text('premium.account_required_title'),
-          findsOneWidget,
-        );
-        expect(
-          find.text('premium.sign_in_to_purchase'),
-          findsAtLeastNWidgets(1),
-        );
-      },
-    );
+      expect(find.text('premium.account_required_title'), findsOneWidget);
+      expect(find.text('premium.sign_in_to_purchase'), findsAtLeastNWidgets(1));
+    });
 
     testWidgets(
-      'shows trial text subordinate to price on monthly and yearly cards',
+      'shows trial text subordinate to price on monthly card only',
       (tester) async {
         await tester.pumpWidget(
           _wrapWithProviders(const PremiumPricingSection()),
         );
         await tester.pumpAndSettle();
 
-        // Trial info appears as subordinate text below the price
-        expect(find.text('premium.trial_after_price'), findsNWidgets(2));
+        // Trial info appears only on monthly card per App Store Guidelines
+        expect(find.text('premium.trial_after_price'), findsOneWidget);
       },
     );
 
-    testWidgets(
-      'shows store prices with standard PackageType identifiers',
-      (tester) async {
-        final offerings = [
-          Package.fromJson(
-            _packageJson(
-              identifier: r'$rc_monthly',
-              packageType: 'MONTHLY',
-              productIdentifier: 'budgie_premium_monthly',
-              priceString: '₺49,99',
-            ),
+    testWidgets('shows store prices with standard PackageType identifiers', (
+      tester,
+    ) async {
+      final offerings = [
+        Package.fromJson(
+          _packageJson(
+            identifier: r'$rc_monthly',
+            packageType: 'MONTHLY',
+            productIdentifier: 'budgie_premium_monthly',
+            priceString: '₺49,99',
           ),
-          Package.fromJson(
-            _packageJson(
-              identifier: r'$rc_annual',
-              packageType: 'ANNUAL',
-              productIdentifier: 'budgie_premium_yearly',
-              priceString: '₺299,99',
-            ),
+        ),
+        Package.fromJson(
+          _packageJson(
+            identifier: r'$rc_annual',
+            packageType: 'ANNUAL',
+            productIdentifier: 'budgie_premium_yearly',
+            priceString: '₺299,99',
           ),
-          Package.fromJson(
-            _packageJson(
-              identifier: r'$rc_lifetime',
-              packageType: 'LIFETIME',
-              productIdentifier: 'budgie_premium_lifetime',
-              priceString: '₺249,99',
-            ),
+        ),
+        Package.fromJson(
+          _packageJson(
+            identifier: r'$rc_lifetime',
+            packageType: 'LIFETIME',
+            productIdentifier: 'budgie_premium_lifetime',
+            priceString: '₺249,99',
           ),
-        ];
+        ),
+      ];
 
-        await tester.pumpWidget(
-          _wrapWithProviders(
-            const PremiumPricingSection(),
-            offerings: offerings,
-          ),
-        );
-        await tester.pumpAndSettle();
+      await tester.pumpWidget(
+        _wrapWithProviders(const PremiumPricingSection(), offerings: offerings),
+      );
+      await tester.pumpAndSettle();
 
-        expect(find.textContaining('₺49,99', findRichText: true), findsOneWidget);
-        expect(find.textContaining('₺299,99', findRichText: true), findsOneWidget);
-        expect(find.textContaining('₺249,99', findRichText: true), findsOneWidget);
-      },
-    );
+      expect(find.textContaining('₺49,99', findRichText: true), findsOneWidget);
+      expect(
+        find.textContaining('₺299,99', findRichText: true),
+        findsOneWidget,
+      );
+      expect(
+        find.textContaining('₺249,99', findRichText: true),
+        findsOneWidget,
+      );
+    });
   });
 
   group('PremiumFeatureItem', () {
@@ -485,15 +492,24 @@ void main() {
       ];
 
       expect(
-        matchPackageForPlan(packages, PremiumPlan.monthly)?.storeProduct.identifier,
+        matchPackageForPlan(
+          packages,
+          PremiumPlan.monthly,
+        )?.storeProduct.identifier,
         'budgie_premium_monthly',
       );
       expect(
-        matchPackageForPlan(packages, PremiumPlan.yearly)?.storeProduct.identifier,
+        matchPackageForPlan(
+          packages,
+          PremiumPlan.yearly,
+        )?.storeProduct.identifier,
         'budgie_premium_yearly',
       );
       expect(
-        matchPackageForPlan(packages, PremiumPlan.lifetime)?.storeProduct.identifier,
+        matchPackageForPlan(
+          packages,
+          PremiumPlan.lifetime,
+        )?.storeProduct.identifier,
         'budgie_premium_lifetime',
       );
     });
@@ -522,7 +538,9 @@ void main() {
   });
 
   group('SubscriptionInfoCard', () {
-    testWidgets('shows active subscription with plan and expiry', (tester) async {
+    testWidgets('shows active subscription with plan and expiry', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         _wrap(
           SubscriptionInfoCard(
@@ -543,7 +561,9 @@ void main() {
       expect(find.text('common.yes'), findsOneWidget);
     });
 
-    testWidgets('shows trial badge when subscription is in trial', (tester) async {
+    testWidgets('shows trial badge when subscription is in trial', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         _wrap(
           SubscriptionInfoCard(

@@ -7,16 +7,15 @@ import '../providers/profile_providers.dart';
 import 'password_change_form.dart';
 
 /// Shows a bottom sheet for changing the user's password.
-void showPasswordChangeSheet(
-  BuildContext context, {
-  required WidgetRef ref,
-}) {
+void showPasswordChangeSheet(BuildContext context, {required WidgetRef ref}) {
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
+    constraints: const BoxConstraints(maxWidth: AppSpacing.maxSheetWidth),
     shape: const RoundedRectangleBorder(
-      borderRadius:
-          BorderRadius.vertical(top: Radius.circular(AppSpacing.radiusXl)),
+      borderRadius: BorderRadius.vertical(
+        top: Radius.circular(AppSpacing.radiusXl),
+      ),
     ),
     builder: (ctx) => const _PasswordChangeSheetContent(),
   );
@@ -42,9 +41,9 @@ class _PasswordChangeSheetContent extends ConsumerWidget {
         final errorKey = s.error == 'password_incorrect'
             ? 'profile.password_incorrect'
             : 'profile.password_change_error';
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(errorKey.tr())),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(errorKey.tr())));
       }
     });
 
@@ -64,8 +63,9 @@ class _PasswordChangeSheetContent extends ConsumerWidget {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: theme.colorScheme.onSurfaceVariant
-                    .withValues(alpha: 0.4),
+                color: theme.colorScheme.onSurfaceVariant.withValues(
+                  alpha: 0.4,
+                ),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -73,21 +73,25 @@ class _PasswordChangeSheetContent extends ConsumerWidget {
           const SizedBox(height: AppSpacing.lg),
           Text(
             'profile.change_password'.tr(),
-            style: theme.textTheme.titleMedium
-                ?.copyWith(fontWeight: FontWeight.bold),
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const SizedBox(height: AppSpacing.lg),
           PasswordChangeForm(
             isLoading: state.isLoading,
-            onSubmit: ({
-              required String currentPassword,
-              required String newPassword,
-            }) async {
-              ref.read(passwordChangeStateProvider.notifier).changePassword(
-                    currentPassword: currentPassword,
-                    newPassword: newPassword,
-                  );
-            },
+            onSubmit:
+                ({
+                  required String currentPassword,
+                  required String newPassword,
+                }) async {
+                  ref
+                      .read(passwordChangeStateProvider.notifier)
+                      .changePassword(
+                        currentPassword: currentPassword,
+                        newPassword: newPassword,
+                      );
+                },
           ),
           const SizedBox(height: AppSpacing.md),
         ],

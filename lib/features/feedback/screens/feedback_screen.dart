@@ -85,9 +85,9 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen>
         _tabController.animateTo(1);
       }
       if (state.error != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('feedback.error'.tr())),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('feedback.error'.tr())));
       }
     });
 
@@ -110,10 +110,7 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen>
       ),
       body: TabBarView(
         controller: _tabController,
-        children: [
-          _buildFormTab(theme, formState),
-          const FeedbackHistoryTab(),
-        ],
+        children: [_buildFormTab(theme, formState), const FeedbackHistoryTab()],
       ),
     );
   }
@@ -135,116 +132,123 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen>
       autovalidateMode: AutovalidateMode.onUserInteraction,
       child: SingleChildScrollView(
         padding: AppSpacing.screenPadding,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: AppSpacing.sm),
-
-            // Category selection
-            Text(
-              'feedback.category'.tr(),
-              style: theme.textTheme.titleSmall?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(
+              maxWidth: AppSpacing.maxContentWidth,
             ),
-            const SizedBox(height: AppSpacing.sm),
-            FeedbackCategorySelector(
-              selected: _category,
-              onChanged: (cat) => setState(() => _category = cat),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: AppSpacing.sm),
+
+                // Category selection
+                Text(
+                  'feedback.category'.tr(),
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                FeedbackCategorySelector(
+                  selected: _category,
+                  onChanged: (cat) => setState(() => _category = cat),
+                ),
+
+                const SizedBox(height: AppSpacing.xl),
+
+                // Subject field
+                TextFormField(
+                  controller: _subjectController,
+                  decoration: InputDecoration(
+                    labelText: 'feedback.subject_label'.tr(),
+                    hintText: 'feedback.subject_hint'.tr(),
+                    border: const OutlineInputBorder(),
+                    prefixIcon: const AppIcon(AppIcons.edit, size: 20),
+                  ),
+                  maxLength: 100,
+                  textInputAction: TextInputAction.next,
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'feedback.subject_required'.tr();
+                    }
+                    return null;
+                  },
+                ),
+
+                const SizedBox(height: AppSpacing.lg),
+
+                // Message field
+                TextFormField(
+                  controller: _messageController,
+                  decoration: InputDecoration(
+                    labelText: 'feedback.message_label'.tr(),
+                    hintText: 'feedback.message_hint'.tr(),
+                    border: const OutlineInputBorder(),
+                    alignLabelWithHint: true,
+                  ),
+                  maxLines: 6,
+                  maxLength: 1000,
+                  textInputAction: TextInputAction.newline,
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'feedback.message_required'.tr();
+                    }
+                    if (value.trim().length < 10) {
+                      return 'feedback.message_too_short'.tr();
+                    }
+                    return null;
+                  },
+                ),
+
+                const SizedBox(height: AppSpacing.lg),
+
+                // Email field (optional)
+                TextFormField(
+                  controller: _emailController,
+                  decoration: InputDecoration(
+                    labelText: 'feedback.email_label'.tr(),
+                    hintText: 'feedback.email_hint'.tr(),
+                    border: const OutlineInputBorder(),
+                    prefixIcon: const Icon(LucideIcons.mail, size: 20),
+                  ),
+                  keyboardType: TextInputType.emailAddress,
+                  textInputAction: TextInputAction.done,
+                  validator: (value) {
+                    if (value != null && value.trim().isNotEmpty) {
+                      final emailRegex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
+                      if (!emailRegex.hasMatch(value.trim())) {
+                        return 'feedback.email_invalid'.tr();
+                      }
+                    }
+                    return null;
+                  },
+                ),
+
+                const SizedBox(height: AppSpacing.xl),
+
+                // Device info section
+                FeedbackDeviceInfoSection(deviceInfo: _collectDeviceInfo()),
+
+                const SizedBox(height: AppSpacing.xl),
+
+                // Info banner
+                FeedbackInfoBanner(theme: theme),
+
+                const SizedBox(height: AppSpacing.xxl),
+
+                // Submit button
+                PrimaryButton(
+                  label: 'feedback.submit'.tr(),
+                  isLoading: formState.isLoading,
+                  onPressed: _submit,
+                  icon: const Icon(LucideIcons.send),
+                ),
+
+                const SizedBox(height: AppSpacing.xxxl),
+              ],
             ),
-
-            const SizedBox(height: AppSpacing.xl),
-
-            // Subject field
-            TextFormField(
-              controller: _subjectController,
-              decoration: InputDecoration(
-                labelText: 'feedback.subject_label'.tr(),
-                hintText: 'feedback.subject_hint'.tr(),
-                border: const OutlineInputBorder(),
-                prefixIcon: const AppIcon(AppIcons.edit, size: 20),
-              ),
-              maxLength: 100,
-              textInputAction: TextInputAction.next,
-              validator: (value) {
-                if (value == null || value.trim().isEmpty) {
-                  return 'feedback.subject_required'.tr();
-                }
-                return null;
-              },
-            ),
-
-            const SizedBox(height: AppSpacing.lg),
-
-            // Message field
-            TextFormField(
-              controller: _messageController,
-              decoration: InputDecoration(
-                labelText: 'feedback.message_label'.tr(),
-                hintText: 'feedback.message_hint'.tr(),
-                border: const OutlineInputBorder(),
-                alignLabelWithHint: true,
-              ),
-              maxLines: 6,
-              maxLength: 1000,
-              textInputAction: TextInputAction.newline,
-              validator: (value) {
-                if (value == null || value.trim().isEmpty) {
-                  return 'feedback.message_required'.tr();
-                }
-                if (value.trim().length < 10) {
-                  return 'feedback.message_too_short'.tr();
-                }
-                return null;
-              },
-            ),
-
-            const SizedBox(height: AppSpacing.lg),
-
-            // Email field (optional)
-            TextFormField(
-              controller: _emailController,
-              decoration: InputDecoration(
-                labelText: 'feedback.email_label'.tr(),
-                hintText: 'feedback.email_hint'.tr(),
-                border: const OutlineInputBorder(),
-                prefixIcon: const Icon(LucideIcons.mail, size: 20),
-              ),
-              keyboardType: TextInputType.emailAddress,
-              textInputAction: TextInputAction.done,
-              validator: (value) {
-                if (value != null && value.trim().isNotEmpty) {
-                  final emailRegex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
-                  if (!emailRegex.hasMatch(value.trim())) {
-                    return 'feedback.email_invalid'.tr();
-                  }
-                }
-                return null;
-              },
-            ),
-
-            const SizedBox(height: AppSpacing.xl),
-
-            // Device info section
-            FeedbackDeviceInfoSection(deviceInfo: _collectDeviceInfo()),
-
-            const SizedBox(height: AppSpacing.xl),
-
-            // Info banner
-            FeedbackInfoBanner(theme: theme),
-
-            const SizedBox(height: AppSpacing.xxl),
-
-            // Submit button
-            PrimaryButton(
-              label: 'feedback.submit'.tr(),
-              isLoading: formState.isLoading,
-              onPressed: _submit,
-              icon: const Icon(LucideIcons.send),
-            ),
-
-            const SizedBox(height: AppSpacing.xxxl),
-          ],
+          ),
         ),
       ),
     );
@@ -256,7 +260,9 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen>
     AppHaptics.lightImpact();
 
     final email = _emailController.text.trim();
-    ref.read(feedbackFormStateProvider.notifier).submit(
+    ref
+        .read(feedbackFormStateProvider.notifier)
+        .submit(
           category: _category,
           subject: _subjectController.text.trim(),
           message: _messageController.text.trim(),

@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 import 'package:budgie_breeding_tracker/features/genetics/widgets/bird_color_simulation.dart';
@@ -128,8 +129,8 @@ class GeneticsColorAuditScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FB),
-      appBar: AppBar(title: const Text('Genetics Color Audit')),
+      backgroundColor: Theme.of(context).colorScheme.surfaceContainerLowest,
+      appBar: AppBar(title: Text('genetics.color_audit_title'.tr())),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
@@ -197,9 +198,9 @@ class GeneticsColorAuditBoard extends StatelessWidget {
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: const Color(0xFFF9FBFF),
+        color: theme.colorScheme.surfaceContainerLowest,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFFDCE3F0)),
+        border: Border.all(color: theme.colorScheme.outlineVariant),
       ),
       child: Padding(
         padding: const EdgeInsets.all(12),
@@ -264,7 +265,7 @@ class _AuditSampleCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFDCE3F0)),
+        border: Border.all(color: theme.colorScheme.outlineVariant),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.04),

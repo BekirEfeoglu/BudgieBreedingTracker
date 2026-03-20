@@ -95,7 +95,9 @@ class _DataStorageSectionState extends ConsumerState<DataStorageSection> {
         if (conflicts.isNotEmpty)
           SettingsActionTile(
             title: 'sync.conflict_history'.tr(),
-            subtitle: 'sync.conflict_detected'.tr(args: ['${conflicts.length}']),
+            subtitle: 'sync.conflict_detected'.tr(
+              args: ['${conflicts.length}'],
+            ),
             icon: const Icon(LucideIcons.gitMerge),
             onTap: () => _showConflictHistoryDialog(context, conflicts),
           ),
@@ -120,8 +122,9 @@ class _DataStorageSectionState extends ConsumerState<DataStorageSection> {
             icon: const Icon(LucideIcons.wifiOff),
             value: ref.watch(debugOfflineModeProvider),
             onChanged: (_) {
-              ref.read(debugOfflineModeProvider.notifier).state =
-                  !ref.read(debugOfflineModeProvider);
+              ref.read(debugOfflineModeProvider.notifier).state = !ref.read(
+                debugOfflineModeProvider,
+              );
             },
           ),
       ],
@@ -137,9 +140,9 @@ class _DataStorageSectionState extends ConsumerState<DataStorageSection> {
         final message = result == SyncResult.success
             ? 'settings.sync_success'.tr()
             : 'settings.sync_error'.tr();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(message)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(message)));
       }
     } finally {
       if (mounted) setState(() => _isSyncing = false);
@@ -151,8 +154,10 @@ class _DataStorageSectionState extends ConsumerState<DataStorageSection> {
     try {
       final tempDir = await getTemporaryDirectory();
       if (await tempDir.exists()) {
-        await for (final entity
-            in tempDir.list(recursive: false, followLinks: false)) {
+        await for (final entity in tempDir.list(
+          recursive: false,
+          followLinks: false,
+        )) {
           try {
             if (entity is File) {
               await entity.delete();
@@ -167,9 +172,9 @@ class _DataStorageSectionState extends ConsumerState<DataStorageSection> {
       ref.invalidate(cacheSizeProvider);
       ref.invalidate(imageStorageSizeProvider);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('settings.cache_cleared'.tr())),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('settings.cache_cleared'.tr())));
       }
     } finally {
       if (mounted) setState(() => _isClearingCache = false);
@@ -202,10 +207,7 @@ class _DataStorageSectionState extends ConsumerState<DataStorageSection> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            c.description,
-                            style: theme.textTheme.bodySmall,
-                          ),
+                          Text(c.description, style: theme.textTheme.bodySmall),
                           const SizedBox(height: 2),
                           Text(
                             '${c.table} — ${_formatTimeSince(c.detectedAt)}',
@@ -270,21 +272,33 @@ class _DataStorageSectionState extends ConsumerState<DataStorageSection> {
                 _StorageInfoRow(
                   label: 'settings.storage_database'.tr(),
                   value: dbText,
-                  icon: AppIcon(AppIcons.database, size: 20, color: theme.colorScheme.onSurfaceVariant),
+                  icon: AppIcon(
+                    AppIcons.database,
+                    size: 20,
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
                   theme: theme,
                 ),
                 const Divider(height: 1),
                 _StorageInfoRow(
                   label: 'settings.storage_cache'.tr(),
                   value: cacheText,
-                  icon: Icon(LucideIcons.hardDrive, size: 20, color: theme.colorScheme.onSurfaceVariant),
+                  icon: Icon(
+                    LucideIcons.hardDrive,
+                    size: 20,
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
                   theme: theme,
                 ),
                 const Divider(height: 1),
                 _StorageInfoRow(
                   label: 'settings.storage_images'.tr(),
                   value: imageText,
-                  icon: AppIcon(AppIcons.photo, size: 20, color: theme.colorScheme.onSurfaceVariant),
+                  icon: AppIcon(
+                    AppIcons.photo,
+                    size: 20,
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
                   theme: theme,
                 ),
               ],
@@ -341,9 +355,7 @@ class _StorageInfoRow extends StatelessWidget {
         children: [
           icon,
           const SizedBox(width: AppSpacing.md),
-          Expanded(
-            child: Text(label, style: theme.textTheme.bodyMedium),
-          ),
+          Expanded(child: Text(label, style: theme.textTheme.bodyMedium)),
           Text(
             value ?? 'settings.storage_calculating'.tr(),
             style: theme.textTheme.bodyMedium?.copyWith(

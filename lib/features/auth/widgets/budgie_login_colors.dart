@@ -41,7 +41,9 @@ abstract final class BudgieLoginPalette {
     final brightness = Theme.of(context).brightness;
     return brightness == Brightness.light
         ? Colors.white.withValues(alpha: 0.92)
-        : Theme.of(context).colorScheme.surfaceContainerLowest.withValues(alpha: 0.95);
+        : Theme.of(
+            context,
+          ).colorScheme.surfaceContainerLowest.withValues(alpha: 0.95);
   }
 
   static Color cardShadow(BuildContext context) {

@@ -10,8 +10,6 @@ import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
 import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
 import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
-import 'package:budgie_breeding_tracker/domain/services/backup/backup_providers.dart';
-import 'package:budgie_breeding_tracker/domain/services/backup/backup_service.dart';
 import 'package:budgie_breeding_tracker/domain/services/import/import_result.dart';
 import 'package:budgie_breeding_tracker/domain/services/import/import_providers.dart';
 import 'package:budgie_breeding_tracker/features/settings/providers/export_providers.dart';
@@ -22,36 +20,6 @@ void main() {
   ensureE2EBinding();
 
   group('Backup & Export Flow E2E', () {
-    test(
-      'GIVEN backup screen WHEN backup is triggered THEN createBackup is called and backup metadata is available',
-      () async {
-        final mockBackupService = MockBackupService();
-        when(() => mockBackupService.createBackup('test-user')).thenAnswer(
-          (_) async => BackupResult.success(
-            filePath: 'C:/tmp/backup.json',
-            recordCount: 12,
-          ),
-        );
-
-        final container = createTestContainer(
-          overrides: [
-            backupServiceProvider.overrideWithValue(mockBackupService),
-          ],
-        );
-        addTearDown(container.dispose);
-
-        final result = await container
-            .read(backupServiceProvider)
-            .createBackup('test-user');
-
-        expect(result.success, isTrue);
-        expect(result.filePath, contains('backup'));
-        expect(result.recordCount, 12);
-        verify(() => mockBackupService.createBackup('test-user')).called(1);
-      },
-      timeout: e2eTimeout,
-    );
-
     test(
       'GIVEN existing backup file WHEN restore import is confirmed THEN DataImportService processes rows and returns import summary',
       () async {

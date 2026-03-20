@@ -17,10 +17,7 @@ class BirdRemoteSource extends BaseRemoteSource<Bird> {
   Map<String, dynamic> toSupabaseJson(Bird model) => model.toSupabase();
 
   /// Fetches birds filtered by gender for a user.
-  Future<List<Bird>> fetchByGender(
-    String userId,
-    String gender,
-  ) async {
+  Future<List<Bird>> fetchByGender(String userId, String gender) async {
     try {
       final response = await table
           .select()

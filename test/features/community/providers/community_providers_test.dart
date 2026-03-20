@@ -121,5 +121,4 @@ void main() {
       expect(updated.content, 'Nice!');
     });
   });
-
 }

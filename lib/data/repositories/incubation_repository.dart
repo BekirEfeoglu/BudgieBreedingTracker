@@ -24,9 +24,9 @@ class IncubationRepository extends BaseRepository<Incubation>
     required IncubationsDao localDao,
     required IncubationRemoteSource remoteSource,
     required SyncMetadataDao syncDao,
-  })  : _localDao = localDao,
-        _remoteSource = remoteSource,
-        _syncDao = syncDao;
+  }) : _localDao = localDao,
+       _remoteSource = remoteSource,
+       _syncDao = syncDao;
 
   static const _table = SupabaseConstants.incubationsTable;
 
@@ -45,8 +45,7 @@ class IncubationRepository extends BaseRepository<Incubation>
   Stream<Incubation?> watchById(String id) => _localDao.watchById(id);
 
   @override
-  Future<List<Incubation>> getAll(String userId) =>
-      _localDao.getAll(userId);
+  Future<List<Incubation>> getAll(String userId) => _localDao.getAll(userId);
 
   @override
   Future<Incubation?> getById(String id) => _localDao.getById(id);
@@ -62,13 +61,17 @@ class IncubationRepository extends BaseRepository<Incubation>
   Future<void> saveAll(List<Incubation> items) async {
     await _localDao.insertAll(items);
     if (items.isNotEmpty) {
-      final syncEntries = items.map((item) => SyncMetadata(
-        id: _uuid.v4(),
-        table: _table,
-        userId: item.userId,
-        status: SyncStatus.pending,
-        recordId: item.id,
-      )).toList();
+      final syncEntries = items
+          .map(
+            (item) => SyncMetadata(
+              id: _uuid.v4(),
+              table: _table,
+              userId: item.userId,
+              status: SyncStatus.pending,
+              recordId: item.id,
+            ),
+          )
+          .toList();
       await _syncDao.insertAll(syncEntries);
     }
   }
@@ -79,19 +82,23 @@ class IncubationRepository extends BaseRepository<Incubation>
     final item = await _localDao.getById(id);
     await _localDao.hardDelete(id);
     if (item != null) {
-      await _syncDao.insertItem(SyncMetadata(
-        id: _uuid.v4(),
-        table: _table,
-        userId: item.userId,
-        status: SyncStatus.pendingDelete,
-        recordId: id,
-      ));
+      await _syncDao.insertItem(
+        SyncMetadata(
+          id: _uuid.v4(),
+          table: _table,
+          userId: item.userId,
+          status: SyncStatus.pendingDelete,
+          recordId: id,
+        ),
+      );
       // Immediate remote delete — falls back to next sync on failure
       try {
         await _remoteSource.deleteById(id, userId: item.userId);
         await _syncDao.deleteByRecord(_table, id);
       } catch (e) {
-        AppLogger.debug('[IncubationRepo] Immediate remote delete failed, will retry on next sync: $e');
+        AppLogger.debug(
+          '[IncubationRepo] Immediate remote delete failed, will retry on next sync: $e',
+        );
       }
     }
   }
@@ -148,13 +155,14 @@ class IncubationRepository extends BaseRepository<Incubation>
           await _syncDao.deleteByRecord(_table, meta.recordId ?? '');
           pushed++;
         } on AppException catch (e) {
-          await markError(
-              meta.recordId ?? '', userId, e.message);
+          await markError(meta.recordId ?? '', userId, e.message);
         }
       } else {
         final item = await _localDao.getById(meta.recordId ?? '');
         if (item == null) {
-          AppLogger.warning('[IncubationRepo] Orphan sync_metadata cleaned: ${meta.recordId}');
+          AppLogger.warning(
+            '[IncubationRepo] Orphan sync_metadata cleaned: ${meta.recordId}',
+          );
           await _syncDao.deleteByRecord(_table, meta.recordId ?? '');
           orphansCleaned++;
           continue;
@@ -177,5 +185,4 @@ class IncubationRepository extends BaseRepository<Incubation>
   /// Incubations by multiple breeding pair IDs (batch query).
   Future<List<Incubation>> getByBreedingPairIds(List<String> pairIds) =>
       _localDao.getByBreedingPairIds(pairIds);
-
 }

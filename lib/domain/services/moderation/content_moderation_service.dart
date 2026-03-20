@@ -7,12 +7,31 @@ class ModerationResult {
   final bool isAllowed;
   final String? rejectionReason;
 
-  const ModerationResult({required this.isAllowed, this.rejectionReason});
+  /// When `true`, the content was allowed but server-side moderation was
+  /// unavailable. The content should be flagged for manual review.
+  final bool needsReview;
 
-  const ModerationResult.allowed() : isAllowed = true, rejectionReason = null;
+  const ModerationResult({
+    required this.isAllowed,
+    this.rejectionReason,
+    this.needsReview = false,
+  });
+
+  const ModerationResult.allowed()
+    : isAllowed = true,
+      rejectionReason = null,
+      needsReview = false;
   const ModerationResult.rejected(String reason)
-      : isAllowed = false,
-        rejectionReason = reason;
+    : isAllowed = false,
+      rejectionReason = reason,
+      needsReview = false;
+
+  /// Content is allowed but should be queued for manual review because
+  /// the server-side moderation check could not be performed.
+  const ModerationResult.pendingReview()
+    : isAllowed = true,
+      rejectionReason = null,
+      needsReview = true;
 }
 
 /// Service that checks user-generated content before publishing.
@@ -27,7 +46,7 @@ class ContentModerationService {
   static const _tag = '[ContentModeration]';
 
   const ContentModerationService({EdgeFunctionClient? edgeFunctionClient})
-      : _edgeFunctionClient = edgeFunctionClient;
+    : _edgeFunctionClient = edgeFunctionClient;
 
   /// Check text content (post body, comment, title) for violations.
   Future<ModerationResult> checkText(String text) async {
@@ -93,27 +112,25 @@ class ContentModerationService {
       );
 
       if (!result.success) {
-        // Edge function unavailable — allow content (fail-open with logging).
-        // Server-side RLS + manual review can catch issues later.
+        // Edge function unavailable — allow content but flag for manual review.
         AppLogger.warning(
-          '$_tag Edge function unavailable, allowing content',
+          '$_tag Edge function unavailable, flagging for review',
         );
-        return const ModerationResult.allowed();
+        return const ModerationResult.pendingReview();
       }
 
       final isAllowed = result.data?['allowed'] as bool? ?? true;
       if (!isAllowed) {
-        final reason =
-            result.data?['reason'] as String? ?? 'server_rejected';
+        final reason = result.data?['reason'] as String? ?? 'server_rejected';
         AppLogger.info('$_tag Server rejected content: $reason');
         return ModerationResult.rejected(reason);
       }
 
       return const ModerationResult.allowed();
     } catch (e, st) {
-      // On error, allow content — manual moderation can catch issues.
+      // On error, allow content but flag for manual review.
       AppLogger.error('$_tag Server-side check failed', e, st);
-      return const ModerationResult.allowed();
+      return const ModerationResult.pendingReview();
     }
   }
 
@@ -126,10 +143,10 @@ class ContentModerationService {
   /// `String.contains()` on the lowercased input.
   /// Maps a moderation rejection reason to a localized error message.
   static String localizedError(String? reason) => switch (reason) {
-        'excessive_caps' => 'community.moderation_caps'.tr(),
-        'spam_detected' => 'community.moderation_spam'.tr(),
-        _ => 'community.moderation_violation'.tr(),
-      };
+    'excessive_caps' => 'community.moderation_caps'.tr(),
+    'spam_detected' => 'community.moderation_spam'.tr(),
+    _ => 'community.moderation_violation'.tr(),
+  };
 
   static const _prohibitedPatterns = <String>[
     // Violence & threats (EN)

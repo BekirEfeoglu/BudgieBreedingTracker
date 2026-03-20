@@ -39,18 +39,22 @@ class ChickDetailHeader extends StatelessWidget {
                         memCacheWidth: 192,
                         memCacheHeight: 192,
                         fit: BoxFit.cover,
-                        errorWidget: (_, __, ___) =>
-                            developmentStageIconWidget(stage, size: 48, color: stageColor),
+                        errorWidget: (_, __, ___) => developmentStageIconWidget(
+                          stage,
+                          size: 48,
+                          color: stageColor,
+                        ),
                       ),
                     )
-                  : developmentStageIconWidget(stage, size: 48, color: stageColor),
+                  : developmentStageIconWidget(
+                      stage,
+                      size: 48,
+                      color: stageColor,
+                    ),
             ),
           ),
           const SizedBox(height: AppSpacing.md),
-          Text(
-            chickDisplayName(chick),
-            style: theme.textTheme.headlineSmall,
-          ),
+          Text(chickDisplayName(chick), style: theme.textTheme.headlineSmall),
           if (chick.ringNumber != null) ...[
             const SizedBox(height: AppSpacing.xs),
             Text(
@@ -85,7 +89,9 @@ class ChickDetailHeader extends StatelessWidget {
 
   String _formatAge(({int weeks, int days, int totalDays}) age) {
     if (age.weeks > 0) {
-      return 'chicks.age_weeks_days'.tr(args: [age.weeks.toString(), age.days.toString()]);
+      return 'chicks.age_weeks_days'.tr(
+        args: [age.weeks.toString(), age.days.toString()],
+      );
     }
     return 'chicks.age_days_only'.tr(args: [age.totalDays.toString()]);
   }

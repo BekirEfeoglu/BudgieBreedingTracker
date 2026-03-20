@@ -95,76 +95,101 @@ class InbreedingWarning extends StatelessWidget {
   }
 
   Widget _riskIconWidget(InbreedingRisk risk, Color color) => switch (risk) {
-        InbreedingRisk.none => Icon(LucideIcons.checkCircle, size: 20, color: color),
-        InbreedingRisk.minimal => AppIcon(AppIcons.info, size: 20, color: color, semanticsLabel: 'genetics.risk_minimal'.tr()),
-        InbreedingRisk.low => AppIcon(AppIcons.info, size: 20, color: color, semanticsLabel: 'genetics.risk_low'.tr()),
-        InbreedingRisk.moderate => AppIcon(AppIcons.warning, size: 20, color: color, semanticsLabel: 'genetics.risk_moderate'.tr()),
-        InbreedingRisk.high => AppIcon(AppIcons.warning, size: 20, color: color, semanticsLabel: 'genetics.risk_high'.tr()),
-        InbreedingRisk.critical => Icon(LucideIcons.alertOctagon, size: 20, color: color),
-      };
+    InbreedingRisk.none => Icon(
+      LucideIcons.checkCircle,
+      size: 20,
+      color: color,
+    ),
+    InbreedingRisk.minimal => AppIcon(
+      AppIcons.info,
+      size: 20,
+      color: color,
+      semanticsLabel: 'genetics.risk_minimal'.tr(),
+    ),
+    InbreedingRisk.low => AppIcon(
+      AppIcons.info,
+      size: 20,
+      color: color,
+      semanticsLabel: 'genetics.risk_low'.tr(),
+    ),
+    InbreedingRisk.moderate => AppIcon(
+      AppIcons.warning,
+      size: 20,
+      color: color,
+      semanticsLabel: 'genetics.risk_moderate'.tr(),
+    ),
+    InbreedingRisk.high => AppIcon(
+      AppIcons.warning,
+      size: 20,
+      color: color,
+      semanticsLabel: 'genetics.risk_high'.tr(),
+    ),
+    InbreedingRisk.critical => Icon(
+      LucideIcons.alertOctagon,
+      size: 20,
+      color: color,
+    ),
+  };
 
   String _riskDescription(InbreedingRisk risk) => switch (risk) {
-        InbreedingRisk.none => '',
-        InbreedingRisk.minimal =>
-          'genetics.inbreeding_desc_minimal'.tr(),
-        InbreedingRisk.low =>
-          'genetics.inbreeding_desc_low'.tr(),
-        InbreedingRisk.moderate =>
-          'genetics.inbreeding_desc_moderate'.tr(),
-        InbreedingRisk.high =>
-          'genetics.inbreeding_desc_high'.tr(),
-        InbreedingRisk.critical =>
-          'genetics.inbreeding_desc_critical'.tr(),
-      };
+    InbreedingRisk.none => '',
+    InbreedingRisk.minimal => 'genetics.inbreeding_desc_minimal'.tr(),
+    InbreedingRisk.low => 'genetics.inbreeding_desc_low'.tr(),
+    InbreedingRisk.moderate => 'genetics.inbreeding_desc_moderate'.tr(),
+    InbreedingRisk.high => 'genetics.inbreeding_desc_high'.tr(),
+    InbreedingRisk.critical => 'genetics.inbreeding_desc_critical'.tr(),
+  };
 
   _RiskColors _riskColors(BuildContext context, InbreedingRisk risk) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final neutralText = isDark ? AppColors.neutral200 : AppColors.neutral700;
-    final neutralTextDarker = isDark ? AppColors.neutral100 : AppColors.neutral800;
+    final neutralTextDarker = isDark
+        ? AppColors.neutral100
+        : AppColors.neutral800;
 
     return switch (risk) {
       InbreedingRisk.none => _RiskColors(
-          background: AppColors.success.withValues(alpha: 0.1),
-          border: AppColors.success.withValues(alpha: 0.3),
-          icon: AppColors.success,
-          text: AppColors.success,
-          badge: AppColors.success,
-        ),
+        background: AppColors.success.withValues(alpha: 0.1),
+        border: AppColors.success.withValues(alpha: 0.3),
+        icon: AppColors.success,
+        text: AppColors.success,
+        badge: AppColors.success,
+      ),
       InbreedingRisk.minimal => _RiskColors(
-          background: AppColors.info.withValues(alpha: 0.1),
-          border: AppColors.info.withValues(alpha: 0.3),
-          icon: AppColors.info,
-          text: neutralText,
-          badge: AppColors.info,
-        ),
+        background: AppColors.info.withValues(alpha: 0.1),
+        border: AppColors.info.withValues(alpha: 0.3),
+        icon: AppColors.info,
+        text: neutralText,
+        badge: AppColors.info,
+      ),
       InbreedingRisk.low => _RiskColors(
-          background: AppColors.budgieBlue.withValues(alpha: 0.1),
-          border: AppColors.budgieBlue.withValues(alpha: 0.3),
-          icon: AppColors.budgieBlue,
-          text: neutralText,
-          badge: AppColors.budgieBlue,
-        ),
+        background: AppColors.budgieBlue.withValues(alpha: 0.1),
+        border: AppColors.budgieBlue.withValues(alpha: 0.3),
+        icon: AppColors.budgieBlue,
+        text: neutralText,
+        badge: AppColors.budgieBlue,
+      ),
       InbreedingRisk.moderate => _RiskColors(
-          background: AppColors.warning.withValues(alpha: 0.1),
-          border: AppColors.warning.withValues(alpha: 0.3),
-          icon: AppColors.warning,
-          text: neutralTextDarker,
-          badge: AppColors.warning,
-        ),
+        background: AppColors.warning.withValues(alpha: 0.1),
+        border: AppColors.warning.withValues(alpha: 0.3),
+        icon: AppColors.warning,
+        text: neutralTextDarker,
+        badge: AppColors.warning,
+      ),
       InbreedingRisk.high => _RiskColors(
-          background: AppColors.stageOverdue.withValues(alpha: 0.1),
-          border: AppColors.stageOverdue.withValues(alpha: 0.3),
-          icon: AppColors.stageOverdue,
-          text: neutralTextDarker,
-          badge: AppColors.stageOverdue,
-        ),
+        background: AppColors.stageOverdue.withValues(alpha: 0.1),
+        border: AppColors.stageOverdue.withValues(alpha: 0.3),
+        icon: AppColors.stageOverdue,
+        text: neutralTextDarker,
+        badge: AppColors.stageOverdue,
+      ),
       InbreedingRisk.critical => _RiskColors(
-          background: AppColors.error.withValues(alpha: 0.15),
-          border: AppColors.error.withValues(alpha: 0.4),
-          icon: AppColors.error,
-          text: AppColors.error,
-          badge: AppColors.error,
-        ),
+        background: AppColors.error.withValues(alpha: 0.15),
+        border: AppColors.error.withValues(alpha: 0.4),
+        icon: AppColors.error,
+        text: AppColors.error,
+        badge: AppColors.error,
+      ),
     };
   }
 }

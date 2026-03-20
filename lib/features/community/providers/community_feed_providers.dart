@@ -191,42 +191,86 @@ final communityFeedProvider =
     );
 
 // ---------------------------------------------------------------------------
-// Blocked users (local-only, SharedPreferences-backed)
+// Blocked users (SharedPreferences cache + Supabase server sync)
 // ---------------------------------------------------------------------------
 
-/// Blocked user IDs list — notifier to allow reactive updates.
+/// Blocked user IDs — loads from local cache first, then syncs with server.
 class BlockedUsersNotifier extends Notifier<List<String>> {
   @override
-  List<String> build() => [];
+  List<String> build() {
+    Future.microtask(() => load());
+    return [];
+  }
 
-  /// Loads blocked user IDs from SharedPreferences.
+  /// Loads blocked user IDs from local cache, then syncs from server.
   Future<void> load() async {
     final prefs = await SharedPreferences.getInstance();
-    state = prefs.getStringList(AppPreferences.keyBlockedUserIds) ?? [];
+    final localIds =
+        prefs.getStringList(AppPreferences.keyBlockedUserIds) ?? [];
+    if (!ref.mounted) return;
+    state = localIds;
+
+    // Pull from server (merge with local)
+    try {
+      final userId = ref.read(currentUserIdProvider);
+      if (userId == 'anonymous') return;
+      final repo = ref.read(communitySocialRepositoryProvider);
+      final serverIds = await repo.fetchBlockedUserIds(userId);
+      if (!ref.mounted) return;
+
+      final merged = {...localIds, ...serverIds}.toList();
+      await prefs.setStringList(AppPreferences.keyBlockedUserIds, merged);
+      state = merged;
+    } catch (e) {
+      AppLogger.warning('Failed to sync blocked users from server: $e');
+    }
   }
 
-  /// Block a user and persist to SharedPreferences.
-  Future<void> block(String userId) async {
-    if (state.contains(userId)) return;
-    final prefs = await SharedPreferences.getInstance();
-    final updated = [...state, userId];
-    await prefs.setStringList(AppPreferences.keyBlockedUserIds, updated);
+  /// Block a user — persists locally and pushes to server.
+  Future<void> block(String blockedUserId) async {
+    if (state.contains(blockedUserId)) return;
+
+    // Optimistic local update
+    final updated = [...state, blockedUserId];
     state = updated;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(AppPreferences.keyBlockedUserIds, updated);
+
+    // Push to server (best-effort)
+    try {
+      final userId = ref.read(currentUserIdProvider);
+      if (userId == 'anonymous') return;
+      final repo = ref.read(communitySocialRepositoryProvider);
+      await repo.blockUser(userId: userId, blockedUserId: blockedUserId);
+    } catch (e) {
+      AppLogger.warning('Failed to push block to server: $e');
+    }
   }
 
-  /// Unblock a user and persist to SharedPreferences.
-  Future<void> unblock(String userId) async {
-    final prefs = await SharedPreferences.getInstance();
-    final updated = state.where((id) => id != userId).toList();
-    await prefs.setStringList(AppPreferences.keyBlockedUserIds, updated);
+  /// Unblock a user — persists locally and pushes to server.
+  Future<void> unblock(String blockedUserId) async {
+    // Optimistic local update
+    final updated = state.where((id) => id != blockedUserId).toList();
     state = updated;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(AppPreferences.keyBlockedUserIds, updated);
+
+    // Push to server (best-effort)
+    try {
+      final userId = ref.read(currentUserIdProvider);
+      if (userId == 'anonymous') return;
+      final repo = ref.read(communitySocialRepositoryProvider);
+      await repo.unblockUser(userId: userId, blockedUserId: blockedUserId);
+    } catch (e) {
+      AppLogger.warning('Failed to push unblock to server: $e');
+    }
   }
 }
 
 final blockedUsersProvider =
     NotifierProvider<BlockedUsersNotifier, List<String>>(
-  BlockedUsersNotifier.new,
-);
+      BlockedUsersNotifier.new,
+    );
 
 // ---------------------------------------------------------------------------
 // Filtered + sorted feed (per tab) — cached at provider level
@@ -251,9 +295,13 @@ final communityVisiblePostsProvider =
               .where((p) => p.isFollowingAuthor && p.userId != currentUserId)
               .toList(),
         CommunityFeedTab.guides =>
-          unblocked.where((p) => p.postType == CommunityPostType.guide).toList(),
+          unblocked
+              .where((p) => p.postType == CommunityPostType.guide)
+              .toList(),
         CommunityFeedTab.questions =>
-          unblocked.where((p) => p.postType == CommunityPostType.question).toList(),
+          unblocked
+              .where((p) => p.postType == CommunityPostType.question)
+              .toList(),
       };
 
       // Sort

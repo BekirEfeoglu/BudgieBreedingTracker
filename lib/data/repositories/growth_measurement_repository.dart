@@ -25,9 +25,9 @@ class GrowthMeasurementRepository extends BaseRepository<GrowthMeasurement>
     required GrowthMeasurementsDao localDao,
     required GrowthMeasurementRemoteSource remoteSource,
     required SyncMetadataDao syncDao,
-  })  : _localDao = localDao,
-        _remoteSource = remoteSource,
-        _syncDao = syncDao;
+  }) : _localDao = localDao,
+       _remoteSource = remoteSource,
+       _syncDao = syncDao;
 
   static const _table = SupabaseConstants.growthMeasurementsTable;
 
@@ -43,16 +43,14 @@ class GrowthMeasurementRepository extends BaseRepository<GrowthMeasurement>
       _localDao.watchAll(userId);
 
   @override
-  Stream<GrowthMeasurement?> watchById(String id) =>
-      _localDao.watchById(id);
+  Stream<GrowthMeasurement?> watchById(String id) => _localDao.watchById(id);
 
   @override
   Future<List<GrowthMeasurement>> getAll(String userId) =>
       _localDao.getAll(userId);
 
   @override
-  Future<GrowthMeasurement?> getById(String id) =>
-      _localDao.getById(id);
+  Future<GrowthMeasurement?> getById(String id) => _localDao.getById(id);
 
   @override
   Future<void> save(GrowthMeasurement item) async {
@@ -65,13 +63,17 @@ class GrowthMeasurementRepository extends BaseRepository<GrowthMeasurement>
   Future<void> saveAll(List<GrowthMeasurement> items) async {
     await _localDao.insertAll(items);
     if (items.isNotEmpty) {
-      final syncEntries = items.map((item) => SyncMetadata(
-        id: _uuid.v4(),
-        table: _table,
-        userId: item.userId,
-        status: SyncStatus.pending,
-        recordId: item.id,
-      )).toList();
+      final syncEntries = items
+          .map(
+            (item) => SyncMetadata(
+              id: _uuid.v4(),
+              table: _table,
+              userId: item.userId,
+              status: SyncStatus.pending,
+              recordId: item.id,
+            ),
+          )
+          .toList();
       await _syncDao.insertAll(syncEntries);
     }
   }
@@ -82,19 +84,23 @@ class GrowthMeasurementRepository extends BaseRepository<GrowthMeasurement>
     final item = await _localDao.getById(id);
     await _localDao.hardDelete(id);
     if (item != null) {
-      await _syncDao.insertItem(SyncMetadata(
-        id: _uuid.v4(),
-        table: _table,
-        userId: item.userId,
-        status: SyncStatus.pendingDelete,
-        recordId: id,
-      ));
+      await _syncDao.insertItem(
+        SyncMetadata(
+          id: _uuid.v4(),
+          table: _table,
+          userId: item.userId,
+          status: SyncStatus.pendingDelete,
+          recordId: id,
+        ),
+      );
       // Immediate remote delete — falls back to next sync on failure
       try {
         await _remoteSource.deleteById(id, userId: item.userId);
         await _syncDao.deleteByRecord(_table, id);
       } catch (e) {
-        AppLogger.debug('[GrowthMeasurementRepo] Immediate remote delete failed, will retry on next sync: $e');
+        AppLogger.debug(
+          '[GrowthMeasurementRepo] Immediate remote delete failed, will retry on next sync: $e',
+        );
       }
     }
   }
@@ -151,13 +157,14 @@ class GrowthMeasurementRepository extends BaseRepository<GrowthMeasurement>
           await _syncDao.deleteByRecord(_table, meta.recordId ?? '');
           pushed++;
         } on AppException catch (e) {
-          await markError(
-              meta.recordId ?? '', userId, e.message);
+          await markError(meta.recordId ?? '', userId, e.message);
         }
       } else {
         final item = await _localDao.getById(meta.recordId ?? '');
         if (item == null) {
-          AppLogger.warning('[GrowthMeasurementRepo] Orphan sync_metadata cleaned: ${meta.recordId}');
+          AppLogger.warning(
+            '[GrowthMeasurementRepo] Orphan sync_metadata cleaned: ${meta.recordId}',
+          );
           await _syncDao.deleteByRecord(_table, meta.recordId ?? '');
           orphansCleaned++;
           continue;
@@ -176,5 +183,4 @@ class GrowthMeasurementRepository extends BaseRepository<GrowthMeasurement>
   /// Latest measurement for a chick.
   Future<GrowthMeasurement?> getLatest(String chickId) =>
       _localDao.getLatest(chickId);
-
 }

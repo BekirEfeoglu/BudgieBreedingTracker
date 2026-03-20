@@ -181,6 +181,9 @@ dist/
 # Claude Code (AI config, rules, hooks, skills - local only)
 # --------------------------------------------------
 .claude/
+.agent/
+.agents/
+skills-lock.json
 
 # --------------------------------------------------
 # Temporary / CI artifacts

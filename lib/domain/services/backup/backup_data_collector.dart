@@ -55,19 +55,19 @@ class BackupDataCollector {
     required NestRepository nestRepo,
     required PhotoRepository photoRepo,
     EncryptionService? encryptionService,
-  })  : _birdRepo = birdRepo,
-        _breedingRepo = breedingRepo,
-        _eggRepo = eggRepo,
-        _chickRepo = chickRepo,
-        _healthRepo = healthRepo,
-        _eventRepo = eventRepo,
-        _incubationRepo = incubationRepo,
-        _growthRepo = growthRepo,
-        _notificationRepo = notificationRepo,
-        _clutchRepo = clutchRepo,
-        _nestRepo = nestRepo,
-        _photoRepo = photoRepo,
-        _encryptionService = encryptionService;
+  }) : _birdRepo = birdRepo,
+       _breedingRepo = breedingRepo,
+       _eggRepo = eggRepo,
+       _chickRepo = chickRepo,
+       _healthRepo = healthRepo,
+       _eventRepo = eventRepo,
+       _incubationRepo = incubationRepo,
+       _growthRepo = growthRepo,
+       _notificationRepo = notificationRepo,
+       _clutchRepo = clutchRepo,
+       _nestRepo = nestRepo,
+       _photoRepo = photoRepo,
+       _encryptionService = encryptionService;
 
   /// The current backup format version.
   static int get backupVersion => _backupVersion;
@@ -82,8 +82,10 @@ class BackupDataCollector {
     bool encrypt = false,
   }) async {
     try {
-      AppLogger.info('$_tag Creating backup for user: $userId'
-          '${encrypt ? ' (encrypted)' : ''}');
+      AppLogger.info(
+        '$_tag Creating backup for user: $userId'
+        '${encrypt ? ' (encrypted)' : ''}',
+      );
 
       if (encrypt && _encryptionService == null) {
         return BackupResult.failure(
@@ -112,30 +114,34 @@ class BackupDataCollector {
         'user_id': userId,
         'data': {
           'birds': results[0].map((b) => (b as dynamic).toJson()).toList(),
-          'breeding_pairs':
-              results[1].map((b) => (b as dynamic).toJson()).toList(),
+          'breeding_pairs': results[1]
+              .map((b) => (b as dynamic).toJson())
+              .toList(),
           'eggs': results[2].map((e) => (e as dynamic).toJson()).toList(),
           'chicks': results[3].map((c) => (c as dynamic).toJson()).toList(),
-          'health_records':
-              results[4].map((h) => (h as dynamic).toJson()).toList(),
+          'health_records': results[4]
+              .map((h) => (h as dynamic).toJson())
+              .toList(),
           'events': results[5].map((e) => (e as dynamic).toJson()).toList(),
-          'incubations':
-              results[6].map((i) => (i as dynamic).toJson()).toList(),
-          'growth_measurements':
-              results[7].map((g) => (g as dynamic).toJson()).toList(),
-          'notifications':
-              results[8].map((n) => (n as dynamic).toJson()).toList(),
-          'clutches':
-              results[9].map((c) => (c as dynamic).toJson()).toList(),
-          'nests':
-              results[10].map((n) => (n as dynamic).toJson()).toList(),
-          'photos':
-              results[11].map((p) => (p as dynamic).toJson()).toList(),
+          'incubations': results[6]
+              .map((i) => (i as dynamic).toJson())
+              .toList(),
+          'growth_measurements': results[7]
+              .map((g) => (g as dynamic).toJson())
+              .toList(),
+          'notifications': results[8]
+              .map((n) => (n as dynamic).toJson())
+              .toList(),
+          'clutches': results[9].map((c) => (c as dynamic).toJson()).toList(),
+          'nests': results[10].map((n) => (n as dynamic).toJson()).toList(),
+          'photos': results[11].map((p) => (p as dynamic).toJson()).toList(),
         },
       };
 
-      final totalRecords =
-          results.fold<int>(0, (sum, list) => sum + list.length);
+      final totalRecords = results.fold<int>(
+        0,
+        (sum, list) => sum + list.length,
+      );
 
       final jsonString = const JsonEncoder.withIndent('  ').convert(backupData);
 
@@ -155,8 +161,7 @@ class BackupDataCollector {
 
       await file.writeAsString(contentToWrite);
 
-      AppLogger.info(
-          '$_tag Backup created: $fileName ($totalRecords records)');
+      AppLogger.info('$_tag Backup created: $fileName ($totalRecords records)');
 
       return BackupResult.success(
         filePath: file.path,

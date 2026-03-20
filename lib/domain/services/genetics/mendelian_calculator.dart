@@ -7,6 +7,7 @@ import 'package:budgie_breeding_tracker/domain/services/genetics/parent_genotype
 
 part 'offspring_result.dart';
 part 'allele_resolver.dart';
+part 'allele_resolver_compounds.dart';
 part 'punnett_square_builder.dart';
 part 'inheritance_allelic_series.dart';
 part 'inheritance_linked_pair.dart';
@@ -26,7 +27,9 @@ class MendelianCalculator {
   /// [fatherMutations] and [motherMutations] are sets of mutation IDs
   /// from [MutationDatabase] (e.g., `{'blue', 'opaline'}`).
   /// Both parents are assumed homozygous visual for selected mutations.
-  @Deprecated('Use calculateFromGenotypes instead for explicit allele state support')
+  @Deprecated(
+    'Use calculateFromGenotypes instead for explicit allele state support',
+  )
   List<OffspringResult> calculateOffspring({
     required Set<String> fatherMutations,
     required Set<String> motherMutations,
@@ -122,8 +125,7 @@ class MendelianCalculator {
     final consumedSexLinked = <String>{};
 
     void tryLinkPair(String id1, String id2, double rate) {
-      if (consumedSexLinked.contains(id1) ||
-          consumedSexLinked.contains(id2)) {
+      if (consumedSexLinked.contains(id1) || consumedSexLinked.contains(id2)) {
         return;
       }
       if (!fatherIsHeterozygousAt(id1) || !fatherIsHeterozygousAt(id2)) {
@@ -154,22 +156,35 @@ class MendelianCalculator {
       tryLinkPair('ino', 'slate', GeneticsConstants.inoSlateRecombination);
     }
     if (hasCinnamon && hasInoAllele) {
-      tryLinkPair('cinnamon', 'ino', GeneticsConstants.cinnamonInoRecombination);
+      tryLinkPair(
+        'cinnamon',
+        'ino',
+        GeneticsConstants.cinnamonInoRecombination,
+      );
     }
     if (hasCinnamon && hasSlate) {
       tryLinkPair(
-          'cinnamon', 'slate', GeneticsConstants.cinnamonSlateRecombination);
+        'cinnamon',
+        'slate',
+        GeneticsConstants.cinnamonSlateRecombination,
+      );
     }
     if (hasOpaline && hasInoAllele) {
       tryLinkPair('opaline', 'ino', GeneticsConstants.opalineInoRecombination);
     }
     if (hasOpaline && hasCinnamon) {
-      tryLinkPair('opaline', 'cinnamon',
-          GeneticsConstants.opalineCinnamonRecombination);
+      tryLinkPair(
+        'opaline',
+        'cinnamon',
+        GeneticsConstants.opalineCinnamonRecombination,
+      );
     }
     if (hasOpaline && hasSlate) {
       tryLinkPair(
-          'opaline', 'slate', GeneticsConstants.opalineSlateRecombination);
+        'opaline',
+        'slate',
+        GeneticsConstants.opalineSlateRecombination,
+      );
     }
 
     // 2. Allelic series loci

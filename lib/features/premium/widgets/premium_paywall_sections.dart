@@ -34,65 +34,67 @@ class PremiumHeaderSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return RepaintBoundary(child: Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            AppColors.primary.withValues(alpha: 0.08),
-            AppColors.accent.withValues(alpha: 0.06),
+    return RepaintBoundary(
+      child: Container(
+        width: double.infinity,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              AppColors.primary.withValues(alpha: 0.08),
+              AppColors.accent.withValues(alpha: 0.06),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.lg,
+          AppSpacing.xxl,
+          AppSpacing.lg,
+          AppSpacing.xxl,
+        ),
+        child: Column(
+          children: [
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                gradient: AppColors.premiumGradientDiagonal,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.premiumGold.withValues(alpha: 0.3),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: AppIcon(
+                AppIcons.premium,
+                size: 40,
+                color: theme.colorScheme.onPrimary,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            Text(
+              'premium.headline'.tr(),
+              style: theme.textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              'premium.subtitle'.tr(),
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+              textAlign: TextAlign.center,
+            ),
           ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
         ),
       ),
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.lg,
-        AppSpacing.xxl,
-        AppSpacing.lg,
-        AppSpacing.xxl,
-      ),
-      child: Column(
-        children: [
-          Container(
-            width: 80,
-            height: 80,
-            decoration: BoxDecoration(
-              gradient: AppColors.premiumGradientDiagonal,
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.premiumGold.withValues(alpha: 0.3),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: AppIcon(
-              AppIcons.premium,
-              size: 40,
-              color: theme.colorScheme.onPrimary,
-            ),
-          ),
-          const SizedBox(height: AppSpacing.lg),
-          Text(
-            'premium.headline'.tr(),
-            style: theme.textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          Text(
-            'premium.subtitle'.tr(),
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    ));
+    );
   }
 }
 
@@ -107,9 +109,11 @@ class PremiumTrialBannerSection extends ConsumerWidget {
 
     // Show price after trial: "7-day free trial, then $4.99/month"
     final trialPriceText = monthlyPackage != null
-        ? 'premium.trial_subtitle'.tr(args: [
-            '${monthlyPackage.storeProduct.priceString}${'premium.period_monthly'.tr()}',
-          ])
+        ? 'premium.trial_subtitle'.tr(
+            args: [
+              '${monthlyPackage.storeProduct.priceString}${'premium.period_monthly'.tr()}',
+            ],
+          )
         : 'premium.trial_subtitle_fallback'.tr();
 
     return Padding(
@@ -172,22 +176,26 @@ class PremiumFeatureListSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return RepaintBoundary(child: Padding(
-      padding: AppSpacing.screenPadding,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'premium.features_title'.tr(),
-            style: theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
+    return RepaintBoundary(
+      child: Padding(
+        padding: AppSpacing.screenPadding,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'premium.features_title'.tr(),
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
             ),
-          ),
-          const SizedBox(height: AppSpacing.md),
-          ...premiumFeatures.map((key) => PremiumFeatureItem(featureKey: key)),
-        ],
+            const SizedBox(height: AppSpacing.md),
+            ...premiumFeatures.map(
+              (key) => PremiumFeatureItem(featureKey: key),
+            ),
+          ],
+        ),
       ),
-    ));
+    );
   }
 }
 

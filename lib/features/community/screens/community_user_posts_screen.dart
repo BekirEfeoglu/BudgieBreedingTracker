@@ -21,9 +21,7 @@ class CommunityUserPostsScreen extends ConsumerWidget {
     final postsAsync = ref.watch(userPostsProvider(userId));
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text('community.user_posts'.tr()),
-      ),
+      appBar: AppBar(title: Text('community.user_posts'.tr())),
       body: postsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(
@@ -43,8 +41,7 @@ class CommunityUserPostsScreen extends ConsumerWidget {
           }
 
           return RefreshIndicator(
-            onRefresh: () async =>
-                ref.invalidate(userPostsProvider(userId)),
+            onRefresh: () async => ref.invalidate(userPostsProvider(userId)),
             child: ListView.builder(
               padding: const EdgeInsets.only(
                 top: AppSpacing.sm,

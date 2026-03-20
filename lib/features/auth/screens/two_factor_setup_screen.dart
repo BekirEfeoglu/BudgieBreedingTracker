@@ -101,18 +101,16 @@ class _TwoFactorSetupScreenState extends ConsumerState<TwoFactorSetupScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text('auth.2fa_setup'.tr()),
-      ),
+      appBar: AppBar(title: Text('auth.2fa_setup'.tr())),
       body: SingleChildScrollView(
         padding: AppSpacing.screenPadding,
         child: _enrollmentComplete
             ? _buildSuccessView(theme)
             : _isEnrolling
-                ? const Center(child: CircularProgressIndicator())
-                : _error != null && _factorId == null
-                    ? _buildErrorView(theme)
-                    : _buildSetupView(theme),
+            ? const Center(child: CircularProgressIndicator())
+            : _error != null && _factorId == null
+            ? _buildErrorView(theme)
+            : _buildSetupView(theme),
       ),
     );
   }
@@ -149,11 +147,7 @@ class _TwoFactorSetupScreenState extends ConsumerState<TwoFactorSetupScreen> {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         const SizedBox(height: AppSpacing.lg),
-        AppIcon(
-          AppIcons.twoFactor,
-          size: 48,
-          color: theme.colorScheme.primary,
-        ),
+        AppIcon(AppIcons.twoFactor, size: 48, color: theme.colorScheme.primary),
         const SizedBox(height: AppSpacing.lg),
         Text(
           'auth.2fa_scan_qr'.tr(),
@@ -234,14 +228,9 @@ class _TwoFactorSetupScreenState extends ConsumerState<TwoFactorSetupScreen> {
         const SizedBox(height: AppSpacing.xxl),
 
         // OTP Input
-        Text(
-          'auth.2fa_enter_code'.tr(),
-          style: theme.textTheme.titleSmall,
-        ),
+        Text('auth.2fa_enter_code'.tr(), style: theme.textTheme.titleSmall),
         const SizedBox(height: AppSpacing.md),
-        OtpInputField(
-          onCompleted: _verifyCode,
-        ),
+        OtpInputField(onCompleted: _verifyCode),
 
         if (_error != null) ...[
           const SizedBox(height: AppSpacing.md),
@@ -266,11 +255,7 @@ class _TwoFactorSetupScreenState extends ConsumerState<TwoFactorSetupScreen> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         const SizedBox(height: AppSpacing.xxxl),
-        const Icon(
-          LucideIcons.checkCircle,
-          size: 64,
-          color: AppColors.success,
-        ),
+        const Icon(LucideIcons.checkCircle, size: 64, color: AppColors.success),
         const SizedBox(height: AppSpacing.xl),
         Text(
           'auth.2fa_enabled'.tr(),

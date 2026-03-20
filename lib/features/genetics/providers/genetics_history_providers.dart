@@ -15,16 +15,16 @@ import 'package:budgie_breeding_tracker/features/genetics/providers/genetics_pro
 /// Stream of all genetics history entries for the current user.
 final geneticsHistoryStreamProvider =
     StreamProvider.family<List<GeneticsHistory>, String>((ref, userId) {
-  final dao = ref.watch(geneticsHistoryDaoProvider);
-  return dao.watchAll(userId);
-});
+      final dao = ref.watch(geneticsHistoryDaoProvider);
+      return dao.watchAll(userId);
+    });
 
 /// Single genetics history entry by ID.
 final geneticsHistoryByIdProvider =
     StreamProvider.family<GeneticsHistory?, String>((ref, id) {
-  final dao = ref.watch(geneticsHistoryDaoProvider);
-  return dao.watchById(id);
-});
+      final dao = ref.watch(geneticsHistoryDaoProvider);
+      return dao.watchById(id);
+    });
 
 /// Notifier for saving and deleting genetics history entries.
 class GeneticsHistorySaveNotifier extends Notifier<AsyncValue<void>> {
@@ -79,38 +79,40 @@ class GeneticsHistorySaveNotifier extends Notifier<AsyncValue<void>> {
   }
 
   static Map<String, String> _genotypeToMap(ParentGenotype genotype) {
-    return genotype.mutations.map(
-      (key, value) => MapEntry(key, value.name),
-    );
+    return genotype.mutations.map((key, value) => MapEntry(key, value.name));
   }
 
   static List<Map<String, dynamic>> _resultsToJson(
-      List<OffspringResult> results) {
+    List<OffspringResult> results,
+  ) {
     return results
-        .map((r) => {
-              'phenotype': r.phenotype,
-              'probability': r.probability,
-              'genotype': r.genotype,
-              'sex': r.sex.name,
-              'isCarrier': r.isCarrier,
-              if (r.compoundPhenotype != null)
-                'compoundPhenotype': r.compoundPhenotype,
-              if (r.visualMutations.isNotEmpty)
-                'visualMutations': r.visualMutations,
-              if (r.carriedMutations.isNotEmpty)
-                'carriedMutations': r.carriedMutations,
-              if (r.maskedMutations.isNotEmpty)
-                'maskedMutations': r.maskedMutations,
-              if (r.lethalCombinationIds.isNotEmpty)
-                'lethalCombinationIds': r.lethalCombinationIds,
-            })
+        .map(
+          (r) => {
+            'phenotype': r.phenotype,
+            'probability': r.probability,
+            'genotype': r.genotype,
+            'sex': r.sex.name,
+            'isCarrier': r.isCarrier,
+            if (r.compoundPhenotype != null)
+              'compoundPhenotype': r.compoundPhenotype,
+            if (r.visualMutations.isNotEmpty)
+              'visualMutations': r.visualMutations,
+            if (r.carriedMutations.isNotEmpty)
+              'carriedMutations': r.carriedMutations,
+            if (r.maskedMutations.isNotEmpty)
+              'maskedMutations': r.maskedMutations,
+            if (r.lethalCombinationIds.isNotEmpty)
+              'lethalCombinationIds': r.lethalCombinationIds,
+          },
+        )
         .toList();
   }
 }
 
 final geneticsHistorySaveProvider =
     NotifierProvider<GeneticsHistorySaveNotifier, AsyncValue<void>>(
-        GeneticsHistorySaveNotifier.new);
+      GeneticsHistorySaveNotifier.new,
+    );
 
 /// Parses stored results JSON back to OffspringResult list.
 List<OffspringResult> parseHistoryResults(String resultsJson) {
@@ -141,9 +143,7 @@ List<OffspringResult> parseHistoryResults(String resultsJson) {
           visualMutations: _parseStringList(json['visualMutations']),
           carriedMutations: _parseStringList(json['carriedMutations']),
           maskedMutations: _parseStringList(json['maskedMutations']),
-          lethalCombinationIds: _parseStringList(
-            json['lethalCombinationIds'],
-          ),
+          lethalCombinationIds: _parseStringList(json['lethalCombinationIds']),
         ),
       );
     }
@@ -176,7 +176,9 @@ bool _hasLegacyCarrierSuffix(String phenotype) {
 /// Resolves legacy mutation IDs (lutino→ino, albino→ino, etc.)
 /// for backward compatibility with saved history entries.
 ParentGenotype parseStoredGenotype(
-    Map<String, String> stored, BirdGender gender) {
+  Map<String, String> stored,
+  BirdGender gender,
+) {
   final mutations = <String, AlleleState>{};
   for (final entry in stored.entries) {
     final resolvedId = MutationDatabase.resolveId(entry.key);

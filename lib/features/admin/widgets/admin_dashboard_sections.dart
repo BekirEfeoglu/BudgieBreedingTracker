@@ -38,11 +38,15 @@ class DashboardAlertsSection extends ConsumerWidget {
                   padding: AppSpacing.cardPadding,
                   child: Row(
                     children: [
-                      const Icon(LucideIcons.checkCircle,
-                          color: AppColors.success),
+                      const Icon(
+                        LucideIcons.checkCircle,
+                        color: AppColors.success,
+                      ),
                       const SizedBox(width: AppSpacing.md),
-                      Text('admin.no_active_alerts'.tr(),
-                          style: theme.textTheme.bodyMedium),
+                      Text(
+                        'admin.no_active_alerts'.tr(),
+                        style: theme.textTheme.bodyMedium,
+                      ),
                     ],
                   ),
                 ),
@@ -71,17 +75,23 @@ class DashboardAlertsSection extends ConsumerWidget {
                     padding: AppSpacing.cardPadding,
                     child: Row(
                       children: [
-                        AppIcon(AppIcons.warning,
-                            size: 18, color: color, semanticsLabel: 'Alert'),
+                        AppIcon(
+                          AppIcons.warning,
+                          size: 18,
+                          color: color,
+                          semanticsLabel: 'Alert',
+                        ),
                         const SizedBox(width: AppSpacing.sm),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(alert.message,
-                                  style: theme.textTheme.bodySmall,
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis),
+                              Text(
+                                alert.message,
+                                style: theme.textTheme.bodySmall,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ],
                           ),
                         ),
@@ -92,8 +102,9 @@ class DashboardAlertsSection extends ConsumerWidget {
                           ),
                           decoration: BoxDecoration(
                             color: color.withValues(alpha: 0.1),
-                            borderRadius:
-                                BorderRadius.circular(AppSpacing.radiusFull),
+                            borderRadius: BorderRadius.circular(
+                              AppSpacing.radiusFull,
+                            ),
                           ),
                           child: Text(
                             label,
@@ -108,6 +119,78 @@ class DashboardAlertsSection extends ConsumerWidget {
                   ),
                 );
               },
+            );
+          },
+        ),
+      ],
+    );
+  }
+}
+
+/// Pending content review section.
+class DashboardContentReviewSection extends ConsumerWidget {
+  const DashboardContentReviewSection({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final countAsync = ref.watch(adminPendingReviewCountProvider);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'admin.content_review'.tr(),
+          style: theme.textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.md),
+        countAsync.when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (_, __) => Text('admin.action_error'.tr()),
+          data: (count) {
+            if (count == 0) {
+              return Card(
+                child: Padding(
+                  padding: AppSpacing.cardPadding,
+                  child: Row(
+                    children: [
+                      const Icon(
+                        LucideIcons.checkCircle,
+                        color: AppColors.success,
+                      ),
+                      const SizedBox(width: AppSpacing.md),
+                      Text(
+                        'admin.no_pending_review'.tr(),
+                        style: theme.textTheme.bodyMedium,
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }
+            return Card(
+              child: Padding(
+                padding: AppSpacing.cardPadding,
+                child: Row(
+                  children: [
+                    const Icon(
+                      LucideIcons.alertTriangle,
+                      color: AppColors.warning,
+                    ),
+                    const SizedBox(width: AppSpacing.md),
+                    Expanded(
+                      child: Text(
+                        'admin.pending_review_count'.tr(
+                          args: [count.toString()],
+                        ),
+                        style: theme.textTheme.bodyMedium,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             );
           },
         ),
@@ -143,15 +226,16 @@ class DashboardRecentActionsSection extends ConsumerWidget {
               return Card(
                 child: Padding(
                   padding: AppSpacing.cardPadding,
-                  child: Text('admin.no_activity'.tr(),
-                      style: theme.textTheme.bodyMedium),
+                  child: Text(
+                    'admin.no_activity'.tr(),
+                    style: theme.textTheme.bodyMedium,
+                  ),
                 ),
               );
             }
             return Column(
               children: actions.map((log) {
-                final locale =
-                    Localizations.localeOf(context).languageCode;
+                final locale = Localizations.localeOf(context).languageCode;
                 return Card(
                   margin: const EdgeInsets.only(bottom: AppSpacing.xs),
                   child: Padding(
@@ -171,8 +255,10 @@ class DashboardRecentActionsSection extends ConsumerWidget {
                           ),
                         ),
                         Text(
-                          DateFormat('dd MMM HH:mm', locale)
-                              .format(log.createdAt),
+                          DateFormat(
+                            'dd MMM HH:mm',
+                            locale,
+                          ).format(log.createdAt),
                           style: theme.textTheme.labelSmall?.copyWith(
                             color: theme.colorScheme.outline,
                           ),

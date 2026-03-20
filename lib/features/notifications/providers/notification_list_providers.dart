@@ -12,25 +12,25 @@ enum NotificationFilter {
   read;
 
   String get label => switch (this) {
-        NotificationFilter.all => 'notifications.filter_all'.tr(),
-        NotificationFilter.unread => 'notifications.filter_unread'.tr(),
-        NotificationFilter.read => 'notifications.filter_read'.tr(),
-      };
+    NotificationFilter.all => 'notifications.filter_all'.tr(),
+    NotificationFilter.unread => 'notifications.filter_unread'.tr(),
+    NotificationFilter.read => 'notifications.filter_read'.tr(),
+  };
 }
 
 /// Stream of all notifications for a given user.
 final notificationsStreamProvider =
     StreamProvider.family<List<AppNotification>, String>((ref, userId) {
-  final repo = ref.watch(notificationRepositoryProvider);
-  return repo.watchAll(userId);
-});
+      final repo = ref.watch(notificationRepositoryProvider);
+      return repo.watchAll(userId);
+    });
 
 /// Stream of unread notifications for a given user.
 final unreadNotificationsProvider =
     StreamProvider.family<List<AppNotification>, String>((ref, userId) {
-  final repo = ref.watch(notificationRepositoryProvider);
-  return repo.watchUnread(userId);
-});
+      final repo = ref.watch(notificationRepositoryProvider);
+      return repo.watchUnread(userId);
+    });
 
 /// Notifier for notification list filter state.
 class NotificationFilterNotifier extends Notifier<NotificationFilter> {
@@ -40,25 +40,28 @@ class NotificationFilterNotifier extends Notifier<NotificationFilter> {
 
 /// Current filter state for notification list.
 final notificationFilterProvider =
-    NotifierProvider<NotificationFilterNotifier, NotificationFilter>(NotificationFilterNotifier.new);
+    NotifierProvider<NotificationFilterNotifier, NotificationFilter>(
+      NotificationFilterNotifier.new,
+    );
 
 /// Filtered notifications based on current filter.
 final filteredNotificationsProvider =
-    Provider.family<List<AppNotification>, List<AppNotification>>(
-        (ref, allNotifications) {
-  final filter = ref.watch(notificationFilterProvider);
-  return switch (filter) {
-    NotificationFilter.all => allNotifications,
-    NotificationFilter.unread =>
-      allNotifications.where((n) => !n.read).toList(),
-    NotificationFilter.read =>
-      allNotifications.where((n) => n.read).toList(),
-  };
-});
+    Provider.family<List<AppNotification>, List<AppNotification>>((
+      ref,
+      allNotifications,
+    ) {
+      final filter = ref.watch(notificationFilterProvider);
+      return switch (filter) {
+        NotificationFilter.all => allNotifications,
+        NotificationFilter.unread =>
+          allNotifications.where((n) => !n.read).toList(),
+        NotificationFilter.read =>
+          allNotifications.where((n) => n.read).toList(),
+      };
+    });
 
 /// Actions for managing notifications (mark read, delete).
-final notificationActionsProvider =
-    Provider<NotificationActions>((ref) {
+final notificationActionsProvider = Provider<NotificationActions>((ref) {
   return NotificationActions(ref);
 });
 

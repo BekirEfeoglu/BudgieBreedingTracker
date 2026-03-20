@@ -15,31 +15,27 @@ class ChickHealthBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return StatusBadge(
-      label: _label,
-      color: _color,
-      icon: _icon,
-    );
+    return StatusBadge(label: _label, color: _color, icon: _icon);
   }
 
   String get _label => switch (status) {
-        ChickHealthStatus.healthy => 'chicks.status_healthy'.tr(),
-        ChickHealthStatus.sick => 'chicks.status_sick'.tr(),
-        ChickHealthStatus.deceased => 'chicks.status_deceased'.tr(),
-        ChickHealthStatus.unknown => 'chicks.status_unknown'.tr(),
-      };
+    ChickHealthStatus.healthy => 'chicks.status_healthy'.tr(),
+    ChickHealthStatus.sick => 'chicks.status_sick'.tr(),
+    ChickHealthStatus.deceased => 'chicks.status_deceased'.tr(),
+    ChickHealthStatus.unknown => 'chicks.status_unknown'.tr(),
+  };
 
   Color get _color => switch (status) {
-        ChickHealthStatus.healthy => AppColors.success,
-        ChickHealthStatus.sick => AppColors.warning,
-        ChickHealthStatus.deceased => AppColors.error,
-        ChickHealthStatus.unknown => AppColors.genderUnknown,
-      };
+    ChickHealthStatus.healthy => AppColors.success,
+    ChickHealthStatus.sick => AppColors.warning,
+    ChickHealthStatus.deceased => AppColors.error,
+    ChickHealthStatus.unknown => AppColors.genderUnknown,
+  };
 
   Widget get _icon => switch (status) {
-        ChickHealthStatus.healthy => const AppIcon(AppIcons.health),
-        ChickHealthStatus.sick => const AppIcon(AppIcons.care),
-        ChickHealthStatus.deceased => const Icon(LucideIcons.heartCrack),
-        ChickHealthStatus.unknown => const Icon(LucideIcons.helpCircle),
-      };
+    ChickHealthStatus.healthy => const AppIcon(AppIcons.health),
+    ChickHealthStatus.sick => const AppIcon(AppIcons.care),
+    ChickHealthStatus.deceased => const Icon(LucideIcons.heartCrack),
+    ChickHealthStatus.unknown => const Icon(LucideIcons.helpCircle),
+  };
 }

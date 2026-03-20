@@ -27,10 +27,7 @@ class InheritanceBadge extends StatelessWidget {
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-        border: Border.all(
-          color: color.withValues(alpha: 0.4),
-          width: 0.5,
-        ),
+        border: Border.all(color: color.withValues(alpha: 0.4), width: 0.5),
       ),
       child: Text(
         type.badge,
@@ -47,21 +44,26 @@ class InheritanceBadge extends StatelessWidget {
   Color _badgeColor(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return switch (type) {
-      InheritanceType.autosomalRecessive => isDark
-          ? AppColors.inheritAutosomalRecessiveDark
-          : AppColors.inheritAutosomalRecessive,
-      InheritanceType.autosomalDominant => isDark
-          ? AppColors.inheritAutosomalDominantDark
-          : AppColors.inheritAutosomalDominant,
-      InheritanceType.autosomalIncompleteDominant => isDark
-          ? AppColors.inheritAutosomalIncompleteDominantDark
-          : AppColors.inheritAutosomalIncompleteDominant,
-      InheritanceType.sexLinkedRecessive => isDark
-          ? AppColors.inheritSexLinkedRecessiveDark
-          : AppColors.inheritSexLinkedRecessive,
-      InheritanceType.sexLinkedCodominant => isDark
-          ? AppColors.inheritSexLinkedCodominantDark
-          : AppColors.inheritSexLinkedCodominant,
+      InheritanceType.autosomalRecessive =>
+        isDark
+            ? AppColors.inheritAutosomalRecessiveDark
+            : AppColors.inheritAutosomalRecessive,
+      InheritanceType.autosomalDominant =>
+        isDark
+            ? AppColors.inheritAutosomalDominantDark
+            : AppColors.inheritAutosomalDominant,
+      InheritanceType.autosomalIncompleteDominant =>
+        isDark
+            ? AppColors.inheritAutosomalIncompleteDominantDark
+            : AppColors.inheritAutosomalIncompleteDominant,
+      InheritanceType.sexLinkedRecessive =>
+        isDark
+            ? AppColors.inheritSexLinkedRecessiveDark
+            : AppColors.inheritSexLinkedRecessive,
+      InheritanceType.sexLinkedCodominant =>
+        isDark
+            ? AppColors.inheritSexLinkedCodominantDark
+            : AppColors.inheritSexLinkedCodominant,
     };
   }
 }

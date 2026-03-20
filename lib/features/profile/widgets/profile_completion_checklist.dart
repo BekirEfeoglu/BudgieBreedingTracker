@@ -37,11 +37,7 @@ class SetNameBanner extends StatelessWidget {
             padding: const EdgeInsets.all(AppSpacing.md),
             child: Row(
               children: [
-                Icon(
-                  icon,
-                  size: 20,
-                  color: theme.colorScheme.primary,
-                ),
+                Icon(icon, size: 20, color: theme.colorScheme.primary),
                 const SizedBox(width: AppSpacing.md),
                 Expanded(
                   child: Text(
@@ -86,8 +82,7 @@ class CompletionChecklist extends StatelessWidget {
       ),
       child: Card(
         elevation: 0,
-        color: theme.colorScheme.surfaceContainerHighest
-            .withValues(alpha: 0.4),
+        color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
         ),
@@ -141,9 +136,7 @@ class CompletionCheckItem extends StatelessWidget {
         child: Row(
           children: [
             Icon(
-              item.isCompleted
-                  ? LucideIcons.checkCircle2
-                  : LucideIcons.circle,
+              item.isCompleted ? LucideIcons.checkCircle2 : LucideIcons.circle,
               size: 20,
               color: item.isCompleted
                   ? AppColors.success

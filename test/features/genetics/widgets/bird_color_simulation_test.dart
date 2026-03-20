@@ -52,9 +52,7 @@ void main() {
       );
       await tester.pump();
 
-      final container = tester.widget<Container>(
-        find.byType(Container).first,
-      );
+      final container = tester.widget<Container>(find.byType(Container).first);
       expect(container.constraints?.maxWidth, 56.0);
       expect(container.constraints?.maxHeight, 56.0);
     });
@@ -71,9 +69,7 @@ void main() {
       );
       await tester.pump();
 
-      final container = tester.widget<Container>(
-        find.byType(Container).first,
-      );
+      final container = tester.widget<Container>(find.byType(Container).first);
       expect(container.constraints?.maxWidth, 80.0);
       expect(container.constraints?.maxHeight, 80.0);
     });
@@ -175,9 +171,7 @@ void main() {
       expect(find.byType(BirdColorSimulation), findsOneWidget);
     });
 
-    testWidgets('renders with albino phenotype (ino mutation)', (
-      tester,
-    ) async {
+    testWidgets('renders with albino phenotype (ino mutation)', (tester) async {
       await tester.pumpWidget(
         _wrap(
           const BirdColorSimulation(
@@ -247,9 +241,7 @@ void main() {
       expect(find.byType(BirdColorSimulation), findsOneWidget);
     });
 
-    testWidgets('renders with double factor spangle phenotype', (
-      tester,
-    ) async {
+    testWidgets('renders with double factor spangle phenotype', (tester) async {
       await tester.pumpWidget(
         _wrap(
           const BirdColorSimulation(
@@ -279,12 +271,7 @@ void main() {
 
     testWidgets('renders with empty phenotype string', (tester) async {
       await tester.pumpWidget(
-        _wrap(
-          const BirdColorSimulation(
-            visualMutations: [],
-            phenotype: '',
-          ),
-        ),
+        _wrap(const BirdColorSimulation(visualMutations: [], phenotype: '')),
       );
       await tester.pump();
 
@@ -302,9 +289,7 @@ void main() {
       );
       await tester.pump();
 
-      final container = tester.widget<Container>(
-        find.byType(Container).first,
-      );
+      final container = tester.widget<Container>(find.byType(Container).first);
       expect(container.clipBehavior, Clip.antiAlias);
     });
 

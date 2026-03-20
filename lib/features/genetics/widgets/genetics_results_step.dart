@@ -272,4 +272,3 @@ List<GeneticChartItem> _localizeChartData(
     );
   }).toList();
 }
-

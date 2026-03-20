@@ -13,8 +13,7 @@ class BirdsDao extends DatabaseAccessor<AppDatabase> with _$BirdsDaoMixin {
 
   Stream<List<Bird>> watchAll(String userId) {
     return (select(birdsTable)
-          ..where(
-              (t) => t.userId.equals(userId) & t.isDeleted.equals(false))
+          ..where((t) => t.userId.equals(userId) & t.isDeleted.equals(false))
           ..orderBy([(t) => OrderingTerm.desc(t.createdAt)]))
         .watch()
         .map((rows) => rows.map((r) => r.toModel()).toList());
@@ -27,16 +26,16 @@ class BirdsDao extends DatabaseAccessor<AppDatabase> with _$BirdsDaoMixin {
   }
 
   Future<List<Bird>> getAll(String userId) async {
-    final rows = await (select(birdsTable)
-          ..where(
-              (t) => t.userId.equals(userId) & t.isDeleted.equals(false)))
-        .get();
+    final rows = await (select(
+      birdsTable,
+    )..where((t) => t.userId.equals(userId) & t.isDeleted.equals(false))).get();
     return rows.map((r) => r.toModel()).toList();
   }
 
   Future<Bird?> getById(String id) async {
-    final row = await (select(birdsTable)..where((t) => t.id.equals(id)))
-        .getSingleOrNull();
+    final row = await (select(
+      birdsTable,
+    )..where((t) => t.id.equals(id))).getSingleOrNull();
     return row?.toModel();
   }
 
@@ -71,12 +70,14 @@ class BirdsDao extends DatabaseAccessor<AppDatabase> with _$BirdsDaoMixin {
   }
 
   Future<List<Bird>> getByGender(String userId, BirdGender gender) async {
-    final rows = await (select(birdsTable)
-          ..where((t) =>
-              t.userId.equals(userId) &
-              t.gender.equalsValue(gender) &
-              t.isDeleted.equals(false)))
-        .get();
+    final rows =
+        await (select(birdsTable)..where(
+              (t) =>
+                  t.userId.equals(userId) &
+                  t.gender.equalsValue(gender) &
+                  t.isDeleted.equals(false),
+            ))
+            .get();
     return rows.map((r) => r.toModel()).toList();
   }
 
@@ -85,17 +86,18 @@ class BirdsDao extends DatabaseAccessor<AppDatabase> with _$BirdsDaoMixin {
     final count = birdsTable.id.count();
     return (selectOnly(birdsTable)
           ..addColumns([count])
-          ..where(birdsTable.userId.equals(userId) &
-              birdsTable.isDeleted.equals(false)))
+          ..where(
+            birdsTable.userId.equals(userId) &
+                birdsTable.isDeleted.equals(false),
+          ))
         .watchSingle()
         .map((row) => row.read(count) ?? 0);
   }
 
   Future<List<Bird>> getDeleted(String userId) async {
-    final rows = await (select(birdsTable)
-          ..where(
-              (t) => t.userId.equals(userId) & t.isDeleted.equals(true)))
-        .get();
+    final rows = await (select(
+      birdsTable,
+    )..where((t) => t.userId.equals(userId) & t.isDeleted.equals(true))).get();
     return rows.map((r) => r.toModel()).toList();
   }
 }

@@ -69,13 +69,11 @@ class NotificationListScreen extends ConsumerWidget {
                 ref.invalidate(notificationsStreamProvider(userId));
               },
               child: notificationsAsync.when(
-                loading: () =>
-                    const Center(child: CircularProgressIndicator()),
+                loading: () => const Center(child: CircularProgressIndicator()),
                 error: (error, _) => ErrorState(
                   message: 'notifications.load_error'.tr(),
-                  onRetry: () => ref.invalidate(
-                    notificationsStreamProvider(userId),
-                  ),
+                  onRetry: () =>
+                      ref.invalidate(notificationsStreamProvider(userId)),
                 ),
                 data: (allNotifications) {
                   final filtered = ref.watch(
@@ -98,26 +96,29 @@ class NotificationListScreen extends ConsumerWidget {
                     );
                   }
 
-                  return ListView.builder(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    padding: const EdgeInsets.only(
-                      top: AppSpacing.sm,
-                      bottom: AppSpacing.xxxl * 2,
-                    ),
-                    itemCount: filtered.length,
-                    itemBuilder: (context, index) {
-                      final notification = filtered[index];
-                      return NotificationCard(
-                        key: ValueKey(notification.id),
-                        notification: notification,
-                        onTap: () => _onNotificationTap(
-                          context,
-                          ref,
-                          notification,
+                  return Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 800),
+                      child: ListView.builder(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        padding: const EdgeInsets.only(
+                          top: AppSpacing.sm,
+                          bottom: AppSpacing.xxxl * 2,
                         ),
-                        onDismiss: () => _onDelete(context, ref, notification.id),
-                      );
-                    },
+                        itemCount: filtered.length,
+                        itemBuilder: (context, index) {
+                          final notification = filtered[index];
+                          return NotificationCard(
+                            key: ValueKey(notification.id),
+                            notification: notification,
+                            onTap: () =>
+                                _onNotificationTap(context, ref, notification),
+                            onDismiss: () =>
+                                _onDelete(context, ref, notification.id),
+                          );
+                        },
+                      ),
+                    ),
                   );
                 },
               ),
@@ -155,7 +156,11 @@ class NotificationListScreen extends ConsumerWidget {
     ref.read(notificationActionsProvider).markAllAsRead(userId);
   }
 
-  Future<void> _onDelete(BuildContext context, WidgetRef ref, String notificationId) async {
+  Future<void> _onDelete(
+    BuildContext context,
+    WidgetRef ref,
+    String notificationId,
+  ) async {
     try {
       await ref.read(notificationActionsProvider).delete(notificationId);
     } catch (e) {

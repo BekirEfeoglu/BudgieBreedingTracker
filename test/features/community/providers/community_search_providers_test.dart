@@ -51,9 +51,11 @@ void main() {
     late ProviderContainer container;
 
     setUp(() {
-      container = ProviderContainer(overrides: [
-        communityFeedProvider.overrideWith(() => _FakeFeedNotifier()),
-      ]);
+      container = ProviderContainer(
+        overrides: [
+          communityFeedProvider.overrideWith(() => _FakeFeedNotifier()),
+        ],
+      );
     });
 
     tearDown(() => container.dispose());
@@ -102,10 +104,13 @@ void main() {
     ];
 
     setUp(() {
-      container = ProviderContainer(overrides: [
-        communityFeedProvider
-            .overrideWith(() => _FakeFeedNotifier(posts: testPosts)),
-      ]);
+      container = ProviderContainer(
+        overrides: [
+          communityFeedProvider.overrideWith(
+            () => _FakeFeedNotifier(posts: testPosts),
+          ),
+        ],
+      );
     });
 
     tearDown(() => container.dispose());
@@ -150,10 +155,13 @@ void main() {
     ];
 
     setUp(() {
-      container = ProviderContainer(overrides: [
-        communityFeedProvider
-            .overrideWith(() => _FakeFeedNotifier(posts: taggedPosts)),
-      ]);
+      container = ProviderContainer(
+        overrides: [
+          communityFeedProvider.overrideWith(
+            () => _FakeFeedNotifier(posts: taggedPosts),
+          ),
+        ],
+      );
     });
 
     tearDown(() => container.dispose());
@@ -197,10 +205,13 @@ void main() {
           mutationTags: ['albino'],
         ),
       ];
-      container = ProviderContainer(overrides: [
-        communityFeedProvider
-            .overrideWith(() => _FakeFeedNotifier(posts: posts)),
-      ]);
+      container = ProviderContainer(
+        overrides: [
+          communityFeedProvider.overrideWith(
+            () => _FakeFeedNotifier(posts: posts),
+          ),
+        ],
+      );
     });
 
     tearDown(() => container.dispose());
@@ -220,10 +231,13 @@ void main() {
           tags: ['tag$i'],
         ),
       );
-      final c = ProviderContainer(overrides: [
-        communityFeedProvider
-            .overrideWith(() => _FakeFeedNotifier(posts: posts)),
-      ]);
+      final c = ProviderContainer(
+        overrides: [
+          communityFeedProvider.overrideWith(
+            () => _FakeFeedNotifier(posts: posts),
+          ),
+        ],
+      );
       addTearDown(c.dispose);
 
       final tags = c.read(communityPopularTagsProvider);
@@ -244,10 +258,13 @@ void main() {
           likeCount: i,
         ),
       );
-      container = ProviderContainer(overrides: [
-        communityFeedProvider
-            .overrideWith(() => _FakeFeedNotifier(posts: posts)),
-      ]);
+      container = ProviderContainer(
+        overrides: [
+          communityFeedProvider.overrideWith(
+            () => _FakeFeedNotifier(posts: posts),
+          ),
+        ],
+      );
     });
 
     tearDown(() => container.dispose());

@@ -171,8 +171,7 @@ void main() {
     });
 
     test('infers carrier from legacy phenotype string when flag is absent', () {
-      const json =
-          '[{"phenotype":"Blue (Opaline carrier)","probability":0.5}]';
+      const json = '[{"phenotype":"Blue (Opaline carrier)","probability":0.5}]';
       final results = parseHistoryResults(json);
       expect(results, hasLength(1));
       expect(results.first.isCarrier, isTrue);

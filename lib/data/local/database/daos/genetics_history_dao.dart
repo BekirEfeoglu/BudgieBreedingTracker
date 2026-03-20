@@ -14,8 +14,7 @@ class GeneticsHistoryDao extends DatabaseAccessor<AppDatabase>
   /// Watch all non-deleted history entries for a user, newest first.
   Stream<List<GeneticsHistory>> watchAll(String userId) {
     return (select(geneticsHistoryTable)
-          ..where(
-              (t) => t.userId.equals(userId) & t.isDeleted.equals(false))
+          ..where((t) => t.userId.equals(userId) & t.isDeleted.equals(false))
           ..orderBy([(t) => OrderingTerm.desc(t.createdAt)]))
         .watch()
         .map((rows) => rows.map((r) => r.toModel()).toList());
@@ -30,26 +29,29 @@ class GeneticsHistoryDao extends DatabaseAccessor<AppDatabase>
 
   /// Get all non-deleted history entries for a user.
   Future<List<GeneticsHistory>> getAll(String userId) async {
-    final rows = await (select(geneticsHistoryTable)
-          ..where(
-              (t) => t.userId.equals(userId) & t.isDeleted.equals(false))
-          ..orderBy([(t) => OrderingTerm.desc(t.createdAt)]))
-        .get();
+    final rows =
+        await (select(geneticsHistoryTable)
+              ..where(
+                (t) => t.userId.equals(userId) & t.isDeleted.equals(false),
+              )
+              ..orderBy([(t) => OrderingTerm.desc(t.createdAt)]))
+            .get();
     return rows.map((r) => r.toModel()).toList();
   }
 
   /// Get a single history entry by ID.
   Future<GeneticsHistory?> getById(String id) async {
-    final row = await (select(geneticsHistoryTable)
-          ..where((t) => t.id.equals(id)))
-        .getSingleOrNull();
+    final row = await (select(
+      geneticsHistoryTable,
+    )..where((t) => t.id.equals(id))).getSingleOrNull();
     return row?.toModel();
   }
 
   /// Insert or update a history entry.
   Future<void> insertItem(GeneticsHistory model) {
-    return into(geneticsHistoryTable)
-        .insertOnConflictUpdate(model.toCompanion());
+    return into(
+      geneticsHistoryTable,
+    ).insertOnConflictUpdate(model.toCompanion());
   }
 
   /// Bulk insert history entries.
@@ -64,8 +66,7 @@ class GeneticsHistoryDao extends DatabaseAccessor<AppDatabase>
 
   /// Soft delete a history entry.
   Future<void> softDelete(String id) {
-    return (update(geneticsHistoryTable)..where((t) => t.id.equals(id)))
-        .write(
+    return (update(geneticsHistoryTable)..where((t) => t.id.equals(id))).write(
       GeneticsHistoryTableCompanion(
         isDeleted: const Value(true),
         updatedAt: Value(DateTime.now()),

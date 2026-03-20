@@ -49,9 +49,9 @@ class AccountInfoCard extends StatelessWidget {
                           child: Icon(
                             LucideIcons.copy,
                             size: 16,
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onSurfaceVariant,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurfaceVariant,
                           ),
                         ),
                       ),
@@ -60,8 +60,7 @@ class AccountInfoCard extends StatelessWidget {
             ),
 
             // Full name
-            if (profile?.fullName != null &&
-                profile!.fullName!.isNotEmpty) ...[
+            if (profile?.fullName != null && profile!.fullName!.isNotEmpty) ...[
               const Divider(height: AppSpacing.xxl),
               ProfileInfoRow(
                 icon: const AppIcon(AppIcons.profile, size: 20),
@@ -110,8 +109,8 @@ class AccountInfoCard extends StatelessWidget {
   }
 
   String _roleLabel(String role) => switch (role) {
-        'founder' => 'profile.role_founder'.tr(),
-        'admin' => 'profile.role_admin'.tr(),
-        _ => 'profile.role_user'.tr(),
-      };
+    'founder' => 'profile.role_founder'.tr(),
+    'admin' => 'profile.role_admin'.tr(),
+    _ => 'profile.role_user'.tr(),
+  };
 }

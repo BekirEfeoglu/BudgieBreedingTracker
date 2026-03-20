@@ -141,29 +141,18 @@ void main() {
       expect(find.text('auth.consent_checkbox'), findsOneWidget);
     });
 
-    testWidgets('unchecked checkboxes block form submission', (
-      tester,
-    ) async {
+    testWidgets('unchecked checkboxes block form submission', (tester) async {
       await tester.pumpWidget(createSubject());
       await tester.pump(const Duration(milliseconds: 500));
 
       // Fill in all text fields
-      await tester.enterText(
-        find.byType(TextFormField).at(0),
-        'Test User',
-      );
+      await tester.enterText(find.byType(TextFormField).at(0), 'Test User');
       await tester.enterText(
         find.byType(TextFormField).at(1),
         'test@example.com',
       );
-      await tester.enterText(
-        find.byType(TextFormField).at(2),
-        'Test123!@#',
-      );
-      await tester.enterText(
-        find.byType(TextFormField).at(3),
-        'Test123!@#',
-      );
+      await tester.enterText(find.byType(TextFormField).at(2), 'Test123!@#');
+      await tester.enterText(find.byType(TextFormField).at(3), 'Test123!@#');
       await tester.pump();
 
       // Scroll down to make submit button visible

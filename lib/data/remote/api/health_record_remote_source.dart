@@ -15,8 +15,7 @@ class HealthRecordRemoteSource extends BaseRemoteSource<HealthRecord> {
       HealthRecord.fromJson(json);
 
   @override
-  Map<String, dynamic> toSupabaseJson(HealthRecord model) =>
-      model.toSupabase();
+  Map<String, dynamic> toSupabaseJson(HealthRecord model) => model.toSupabase();
 
   /// Fetches health records for a specific bird.
   Future<List<HealthRecord>> fetchByBird(String userId, String birdId) async {

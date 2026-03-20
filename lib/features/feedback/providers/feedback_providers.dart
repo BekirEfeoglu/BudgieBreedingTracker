@@ -23,40 +23,40 @@ enum FeedbackCategory {
   general;
 
   String get label => switch (this) {
-        FeedbackCategory.bug => 'feedback.bug'.tr(),
-        FeedbackCategory.feature => 'feedback.feature_request'.tr(),
-        FeedbackCategory.general => 'feedback.general'.tr(),
-      };
+    FeedbackCategory.bug => 'feedback.bug'.tr(),
+    FeedbackCategory.feature => 'feedback.feature_request'.tr(),
+    FeedbackCategory.general => 'feedback.general'.tr(),
+  };
 
   String get description => switch (this) {
-        FeedbackCategory.bug => 'feedback.bug_description'.tr(),
-        FeedbackCategory.feature => 'feedback.feature_description'.tr(),
-        FeedbackCategory.general => 'feedback.general_description'.tr(),
-      };
+    FeedbackCategory.bug => 'feedback.bug_description'.tr(),
+    FeedbackCategory.feature => 'feedback.feature_description'.tr(),
+    FeedbackCategory.general => 'feedback.general_description'.tr(),
+  };
 
   IconData get icon => switch (this) {
-        FeedbackCategory.bug => LucideIcons.bug,
-        FeedbackCategory.feature => LucideIcons.lightbulb,
-        FeedbackCategory.general => LucideIcons.messageCircle,
-      };
+    FeedbackCategory.bug => LucideIcons.bug,
+    FeedbackCategory.feature => LucideIcons.lightbulb,
+    FeedbackCategory.general => LucideIcons.messageCircle,
+  };
 
   Color get color => switch (this) {
-        FeedbackCategory.bug => AppColors.error,
-        FeedbackCategory.feature => AppColors.warning,
-        FeedbackCategory.general => AppColors.budgieBlue,
-      };
+    FeedbackCategory.bug => AppColors.error,
+    FeedbackCategory.feature => AppColors.warning,
+    FeedbackCategory.general => AppColors.budgieBlue,
+  };
 
   String get value => switch (this) {
-        FeedbackCategory.bug => 'bug',
-        FeedbackCategory.feature => 'feature',
-        FeedbackCategory.general => 'general',
-      };
+    FeedbackCategory.bug => 'bug',
+    FeedbackCategory.feature => 'feature',
+    FeedbackCategory.general => 'general',
+  };
 
   static FeedbackCategory fromString(String value) => switch (value) {
-        'bug' => FeedbackCategory.bug,
-        'feature' => FeedbackCategory.feature,
-        _ => FeedbackCategory.general,
-      };
+    'bug' => FeedbackCategory.bug,
+    'feature' => FeedbackCategory.feature,
+    _ => FeedbackCategory.general,
+  };
 }
 
 /// Feedback status (server-managed).
@@ -68,36 +68,36 @@ enum FeedbackStatus {
   unknown;
 
   factory FeedbackStatus.fromString(String value) => switch (value) {
-        'open' => FeedbackStatus.open,
-        'in_progress' => FeedbackStatus.inProgress,
-        'resolved' => FeedbackStatus.resolved,
-        'closed' => FeedbackStatus.closed,
-        _ => FeedbackStatus.unknown,
-      };
+    'open' => FeedbackStatus.open,
+    'in_progress' => FeedbackStatus.inProgress,
+    'resolved' => FeedbackStatus.resolved,
+    'closed' => FeedbackStatus.closed,
+    _ => FeedbackStatus.unknown,
+  };
 
   String get label => switch (this) {
-        FeedbackStatus.open => 'feedback.status_open'.tr(),
-        FeedbackStatus.inProgress => 'feedback.status_in_progress'.tr(),
-        FeedbackStatus.resolved => 'feedback.status_resolved'.tr(),
-        FeedbackStatus.closed => 'feedback.status_closed'.tr(),
-        FeedbackStatus.unknown => 'feedback.status_unknown'.tr(),
-      };
+    FeedbackStatus.open => 'feedback.status_open'.tr(),
+    FeedbackStatus.inProgress => 'feedback.status_in_progress'.tr(),
+    FeedbackStatus.resolved => 'feedback.status_resolved'.tr(),
+    FeedbackStatus.closed => 'feedback.status_closed'.tr(),
+    FeedbackStatus.unknown => 'feedback.status_unknown'.tr(),
+  };
 
   Color get color => switch (this) {
-        FeedbackStatus.open => AppColors.budgieBlue,
-        FeedbackStatus.inProgress => AppColors.warning,
-        FeedbackStatus.resolved => AppColors.success,
-        FeedbackStatus.closed => AppColors.neutral400,
-        FeedbackStatus.unknown => AppColors.neutral400,
-      };
+    FeedbackStatus.open => AppColors.budgieBlue,
+    FeedbackStatus.inProgress => AppColors.warning,
+    FeedbackStatus.resolved => AppColors.success,
+    FeedbackStatus.closed => AppColors.neutral400,
+    FeedbackStatus.unknown => AppColors.neutral400,
+  };
 
   IconData get icon => switch (this) {
-        FeedbackStatus.open => LucideIcons.circle,
-        FeedbackStatus.inProgress => LucideIcons.clock,
-        FeedbackStatus.resolved => LucideIcons.checkCircle2,
-        FeedbackStatus.closed => LucideIcons.xCircle,
-        FeedbackStatus.unknown => LucideIcons.helpCircle,
-      };
+    FeedbackStatus.open => LucideIcons.circle,
+    FeedbackStatus.inProgress => LucideIcons.clock,
+    FeedbackStatus.resolved => LucideIcons.checkCircle2,
+    FeedbackStatus.closed => LucideIcons.xCircle,
+    FeedbackStatus.unknown => LucideIcons.helpCircle,
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -129,7 +129,9 @@ class FeedbackEntry {
   factory FeedbackEntry.fromJson(Map<String, dynamic> json) {
     return FeedbackEntry(
       id: json['id'] as String,
-      category: FeedbackCategory.fromString(json['type'] as String? ?? 'general'),
+      category: FeedbackCategory.fromString(
+        json['type'] as String? ?? 'general',
+      ),
       subject: json['subject'] as String? ?? '',
       message: json['message'] as String? ?? '',
       status: FeedbackStatus.fromString(json['status'] as String? ?? 'open'),
@@ -149,14 +151,14 @@ class FeedbackEntry {
 /// Fetches the user's feedback history from Supabase via [FeedbackRemoteSource].
 final feedbackHistoryProvider =
     FutureProvider.family<List<FeedbackEntry>, String>((ref, userId) async {
-  final initialized = ref.watch(supabaseInitializedProvider);
-  if (!initialized) return [];
+      final initialized = ref.watch(supabaseInitializedProvider);
+      if (!initialized) return [];
 
-  final remoteSource = ref.watch(feedbackRemoteSourceProvider);
-  final response = await remoteSource.fetchByUser(userId);
+      final remoteSource = ref.watch(feedbackRemoteSourceProvider);
+      final response = await remoteSource.fetchByUser(userId);
 
-  return response.map((json) => FeedbackEntry.fromJson(json)).toList();
-});
+      return response.map((json) => FeedbackEntry.fromJson(json)).toList();
+    });
 
 // ---------------------------------------------------------------------------
 // Form state
@@ -284,4 +286,6 @@ class FeedbackFormNotifier extends Notifier<FeedbackFormState> {
 
 /// Provider for feedback form state and actions.
 final feedbackFormStateProvider =
-    NotifierProvider<FeedbackFormNotifier, FeedbackFormState>(FeedbackFormNotifier.new);
+    NotifierProvider<FeedbackFormNotifier, FeedbackFormState>(
+      FeedbackFormNotifier.new,
+    );

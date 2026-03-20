@@ -180,10 +180,7 @@ void main() {
     });
 
     testWidgets('shows ring number when present', (tester) async {
-      final chick = _createTestChick(
-        name: 'Ringed',
-        ringNumber: 'TR-2024-007',
-      );
+      final chick = _createTestChick(name: 'Ringed', ringNumber: 'TR-2024-007');
 
       await pumpWidgetSimple(
         tester,

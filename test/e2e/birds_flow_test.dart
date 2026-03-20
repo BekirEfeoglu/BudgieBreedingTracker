@@ -225,7 +225,8 @@ void main() {
         final container = createTestContainer(
           overrides: [
             birdPhotosProvider.overrideWith(
-              (ref, birdId) => Stream.value(['https://cdn.example.com/bird_1.jpg']),
+              (ref, birdId) =>
+                  Stream.value(['https://cdn.example.com/bird_1.jpg']),
             ),
           ],
         );

@@ -32,7 +32,8 @@ class AppPreferences {
   static const keyLastReconciledAt = 'pref_last_reconciled_at';
   static const keyPedigreeDepth = 'pref_pedigree_depth';
   static const keyWifiOnlySync = 'pref_wifi_only_sync';
-  static const keyRewardStatisticsUnlockedAt = 'pref_reward_statistics_unlocked_at';
+  static const keyRewardStatisticsUnlockedAt =
+      'pref_reward_statistics_unlocked_at';
   static const keyRewardGeneticsUses = 'pref_reward_genetics_uses';
   static const keyRewardExportUses = 'pref_reward_export_uses';
   static const keyBlockedUserIds = 'pref_blocked_user_ids';
@@ -52,8 +53,7 @@ class AppPreferences {
   String get language => _prefs.getString(keyLanguage) ?? 'tr';
 
   /// Set language code.
-  Future<bool> setLanguage(String code) =>
-      _prefs.setString(keyLanguage, code);
+  Future<bool> setLanguage(String code) => _prefs.setString(keyLanguage, code);
 
   // ── Notifications ──
 
@@ -90,8 +90,7 @@ class AppPreferences {
   // ── Onboarding ──
 
   /// Whether onboarding flow has been completed.
-  bool get onboardingComplete =>
-      _prefs.getBool(keyOnboardingComplete) ?? false;
+  bool get onboardingComplete => _prefs.getBool(keyOnboardingComplete) ?? false;
 
   /// Mark onboarding as complete.
   Future<bool> setOnboardingComplete(bool complete) =>
@@ -202,8 +201,7 @@ class AppPreferences {
       _prefs.setString(keyImageQuality, quality);
 
   /// Whether images should be auto-downloaded.
-  bool get autoDownloadImages =>
-      _prefs.getBool(keyAutoDownloadImages) ?? true;
+  bool get autoDownloadImages => _prefs.getBool(keyAutoDownloadImages) ?? true;
 
   /// Set auto download images state.
   Future<bool> setAutoDownloadImages(bool enabled) =>
@@ -212,8 +210,7 @@ class AppPreferences {
   // ── Breeding Alerts ──
 
   /// Whether egg turning reminders are enabled.
-  bool get eggTurningReminder =>
-      _prefs.getBool(keyEggTurningReminder) ?? true;
+  bool get eggTurningReminder => _prefs.getBool(keyEggTurningReminder) ?? true;
 
   /// Set egg turning reminder state.
   Future<bool> setEggTurningReminder(bool enabled) =>
@@ -255,8 +252,7 @@ class AppPreferences {
       _prefs.setInt(keyRewardGeneticsUses, count);
 
   /// Remaining export uses from rewarded ads.
-  int get rewardExportUsesRemaining =>
-      _prefs.getInt(keyRewardExportUses) ?? 0;
+  int get rewardExportUsesRemaining => _prefs.getInt(keyRewardExportUses) ?? 0;
 
   Future<bool> setRewardExportUsesRemaining(int count) =>
       _prefs.setInt(keyRewardExportUses, count);
@@ -274,15 +270,13 @@ class AppPreferences {
   bool? getBool(String key) => _prefs.getBool(key);
 
   /// Set a bool value by key.
-  Future<bool> setBool(String key, bool value) =>
-      _prefs.setBool(key, value);
+  Future<bool> setBool(String key, bool value) => _prefs.setBool(key, value);
 
   /// Get an int value by key.
   int? getInt(String key) => _prefs.getInt(key);
 
   /// Set an int value by key.
-  Future<bool> setInt(String key, int value) =>
-      _prefs.setInt(key, value);
+  Future<bool> setInt(String key, int value) => _prefs.setInt(key, value);
 
   /// Remove a key.
   Future<bool> remove(String key) => _prefs.remove(key);

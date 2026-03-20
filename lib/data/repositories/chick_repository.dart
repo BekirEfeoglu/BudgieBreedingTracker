@@ -31,11 +31,11 @@ class ChickRepository extends BaseRepository<Chick>
     required SyncMetadataDao syncDao,
     required EggsDao eggsDao,
     required ClutchesDao clutchesDao,
-  })  : _localDao = localDao,
-        _remoteSource = remoteSource,
-        _syncDao = syncDao,
-        _eggsDao = eggsDao,
-        _clutchesDao = clutchesDao;
+  }) : _localDao = localDao,
+       _remoteSource = remoteSource,
+       _syncDao = syncDao,
+       _eggsDao = eggsDao,
+       _clutchesDao = clutchesDao;
 
   static const _table = SupabaseConstants.chicksTable;
 
@@ -119,13 +119,17 @@ class ChickRepository extends BaseRepository<Chick>
   Future<void> saveAll(List<Chick> items) async {
     await _localDao.insertAll(items);
     if (items.isNotEmpty) {
-      final syncEntries = items.map((item) => SyncMetadata(
-        id: _uuid.v4(),
-        table: _table,
-        userId: item.userId,
-        status: SyncStatus.pending,
-        recordId: item.id,
-      )).toList();
+      final syncEntries = items
+          .map(
+            (item) => SyncMetadata(
+              id: _uuid.v4(),
+              table: _table,
+              userId: item.userId,
+              status: SyncStatus.pending,
+              recordId: item.id,
+            ),
+          )
+          .toList();
       await _syncDao.insertAll(syncEntries);
     }
   }
@@ -232,5 +236,4 @@ class ChickRepository extends BaseRepository<Chick>
   /// Unweaned chicks.
   Future<List<Chick>> getUnweaned(String userId) =>
       _localDao.getUnweaned(userId);
-
 }

@@ -37,8 +37,7 @@ class SecurityScoreCard extends StatelessWidget {
         border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Semantics(
-        label:
-            '${'profile.security_score'.tr()}: ${securityScore.score}%',
+        label: '${'profile.security_score'.tr()}: ${securityScore.score}%',
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -62,8 +61,7 @@ class SecurityScoreCard extends StatelessWidget {
                   ),
                   decoration: BoxDecoration(
                     color: color.withValues(alpha: 0.15),
-                    borderRadius:
-                        BorderRadius.circular(AppSpacing.radiusFull),
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
                   ),
                   child: Text(
                     securityScore.levelKey.tr(),
@@ -146,8 +144,7 @@ class _FactorRow extends StatelessWidget {
                   color: isCompleted
                       ? theme.colorScheme.onSurfaceVariant
                       : theme.colorScheme.onSurface,
-                  decoration:
-                      isCompleted ? TextDecoration.lineThrough : null,
+                  decoration: isCompleted ? TextDecoration.lineThrough : null,
                 ),
               ),
             ),

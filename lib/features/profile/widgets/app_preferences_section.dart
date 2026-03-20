@@ -28,13 +28,11 @@ class AppPreferencesSection extends ConsumerWidget {
         children: [
           // Theme mode toggle
           const _ThemeModeTile(),
-          const Divider(
-              height: 1, indent: AppSpacing.lg + 24 + AppSpacing.md),
+          const Divider(height: 1, indent: AppSpacing.lg + 24 + AppSpacing.md),
 
           // Sync status
           const SyncStatusTile(),
-          const Divider(
-              height: 1, indent: AppSpacing.lg + 24 + AppSpacing.md),
+          const Divider(height: 1, indent: AppSpacing.lg + 24 + AppSpacing.md),
 
           // Notifications
           ProfileMenuTile(
@@ -42,8 +40,7 @@ class AppPreferencesSection extends ConsumerWidget {
             label: 'profile.notifications'.tr(),
             onTap: () => context.push(AppRoutes.notificationSettings),
           ),
-          const Divider(
-              height: 1, indent: AppSpacing.lg + 24 + AppSpacing.md),
+          const Divider(height: 1, indent: AppSpacing.lg + 24 + AppSpacing.md),
 
           // Backup & Export
           ProfileMenuTile(
@@ -51,8 +48,7 @@ class AppPreferencesSection extends ConsumerWidget {
             label: 'profile.backup_export'.tr(),
             onTap: () => context.push(AppRoutes.backup),
           ),
-          const Divider(
-              height: 1, indent: AppSpacing.lg + 24 + AppSpacing.md),
+          const Divider(height: 1, indent: AppSpacing.lg + 24 + AppSpacing.md),
 
           // Premium
           ProfileMenuTile(
@@ -60,8 +56,7 @@ class AppPreferencesSection extends ConsumerWidget {
             label: 'profile.premium_membership'.tr(),
             onTap: () => context.push(AppRoutes.premium),
           ),
-          const Divider(
-              height: 1, indent: AppSpacing.lg + 24 + AppSpacing.md),
+          const Divider(height: 1, indent: AppSpacing.lg + 24 + AppSpacing.md),
 
           // Language
           _LanguageTile(currentLocale: currentLocale),
@@ -93,12 +88,13 @@ class _ThemeModeTile extends ConsumerWidget {
             children: [
               IconTheme(
                 data: IconThemeData(
-                    size: 22, color: theme.colorScheme.onSurface),
+                  size: 22,
+                  color: theme.colorScheme.onSurface,
+                ),
                 child: const AppIcon(AppIcons.theme),
               ),
               const SizedBox(width: AppSpacing.md),
-              Text('profile.theme_mode'.tr(),
-                  style: theme.textTheme.bodyLarge),
+              Text('profile.theme_mode'.tr(), style: theme.textTheme.bodyLarge),
             ],
           ),
           const SizedBox(height: AppSpacing.sm),
@@ -157,8 +153,7 @@ class _LanguageTile extends ConsumerWidget {
         child: Row(
           children: [
             IconTheme(
-              data: IconThemeData(
-                  size: 22, color: theme.colorScheme.onSurface),
+              data: IconThemeData(size: 22, color: theme.colorScheme.onSurface),
               child: const AppIcon(AppIcons.language),
             ),
             const SizedBox(width: AppSpacing.md),
@@ -189,18 +184,18 @@ class _LanguageTile extends ConsumerWidget {
   void _showLanguagePicker(BuildContext context, WidgetRef ref) {
     showModalBottomSheet(
       context: context,
+      constraints: const BoxConstraints(maxWidth: AppSpacing.maxSheetWidth),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(
-            top: Radius.circular(AppSpacing.radiusXl)),
+          top: Radius.circular(AppSpacing.radiusXl),
+        ),
       ),
       builder: (ctx) => _LanguagePickerSheet(
         currentLocale: currentLocale,
         onSelect: (locale) {
           AppHaptics.lightImpact();
           Navigator.of(ctx).pop();
-          ref
-              .read(appLocaleProvider.notifier)
-              .setLocale(locale, context);
+          ref.read(appLocaleProvider.notifier).setLocale(locale, context);
         },
       ),
     );
@@ -232,8 +227,9 @@ class _LanguagePickerSheet extends StatelessWidget {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: theme.colorScheme.onSurfaceVariant
-                      .withValues(alpha: 0.4),
+                  color: theme.colorScheme.onSurfaceVariant.withValues(
+                    alpha: 0.4,
+                  ),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -241,8 +237,9 @@ class _LanguagePickerSheet extends StatelessWidget {
             const SizedBox(height: AppSpacing.lg),
             Text(
               'profile.language'.tr(),
-              style: theme.textTheme.titleMedium
-                  ?.copyWith(fontWeight: FontWeight.bold),
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: AppSpacing.md),
             for (final locale in AppLocale.values)

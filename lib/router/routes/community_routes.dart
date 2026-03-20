@@ -10,36 +10,34 @@ import '../route_names.dart';
 
 /// Community feature routes (feed, posts, comments, bookmarks, search).
 List<RouteBase> buildCommunityRoutes() => [
+  GoRoute(
+    path: AppRoutes.community,
+    builder: (context, state) => const CommunityScreen(),
+    routes: [
+      // Specific paths BEFORE parameterized paths
       GoRoute(
-        path: AppRoutes.community,
-        builder: (context, state) => const CommunityScreen(),
-        routes: [
-          // Specific paths BEFORE parameterized paths
-          GoRoute(
-            path: 'create',
-            builder: (context, state) => const CommunityCreatePostScreen(),
-          ),
-          GoRoute(
-            path: 'bookmarks',
-            builder: (context, state) => const CommunityBookmarksScreen(),
-          ),
-          GoRoute(
-            path: 'search',
-            builder: (context, state) => const CommunitySearchScreen(),
-          ),
-          // Parameterized paths AFTER specific paths
-          GoRoute(
-            path: 'post/:postId',
-            builder: (context, state) => CommunityPostDetailScreen(
-              postId: state.pathParameters['postId']!,
-            ),
-          ),
-          GoRoute(
-            path: 'user/:userId',
-            builder: (context, state) => CommunityUserPostsScreen(
-              userId: state.pathParameters['userId']!,
-            ),
-          ),
-        ],
+        path: 'create',
+        builder: (context, state) => const CommunityCreatePostScreen(),
       ),
-    ];
+      GoRoute(
+        path: 'bookmarks',
+        builder: (context, state) => const CommunityBookmarksScreen(),
+      ),
+      GoRoute(
+        path: 'search',
+        builder: (context, state) => const CommunitySearchScreen(),
+      ),
+      // Parameterized paths AFTER specific paths
+      GoRoute(
+        path: 'post/:postId',
+        builder: (context, state) =>
+            CommunityPostDetailScreen(postId: state.pathParameters['postId']!),
+      ),
+      GoRoute(
+        path: 'user/:userId',
+        builder: (context, state) =>
+            CommunityUserPostsScreen(userId: state.pathParameters['userId']!),
+      ),
+    ],
+  ),
+];

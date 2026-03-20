@@ -38,8 +38,10 @@ abstract class SupabaseConstants {
   static const String communityCommentLikesTable = 'community_comment_likes';
   static const String communityFollowsTable = 'community_follows';
   static const String communityReportsTable = 'community_reports';
+  static const String communityBlocksTable = 'community_blocks';
   static const String communityEventsTable = 'community_events';
-  static const String communityEventAttendeesTable = 'community_event_attendees';
+  static const String communityEventAttendeesTable =
+      'community_event_attendees';
   static const String communityPollsTable = 'community_polls';
   static const String communityPollOptionsTable = 'community_poll_options';
   static const String communityPollVotesTable = 'community_poll_votes';

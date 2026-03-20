@@ -29,8 +29,8 @@ class BirdDetailHealth extends ConsumerWidget {
             Text(
               'health_records.load_error'.tr(),
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.error,
-                  ),
+                color: Theme.of(context).colorScheme.error,
+              ),
             ),
             const SizedBox(height: AppSpacing.sm),
             TextButton.icon(

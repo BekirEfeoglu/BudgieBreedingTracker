@@ -107,9 +107,7 @@ class CommunitySocialRemoteSource {
 
   Future<void> likeComment(String userId, String commentId) async {
     try {
-      await _client
-          .from(SupabaseConstants.communityCommentLikesTable)
-          .insert({
+      await _client.from(SupabaseConstants.communityCommentLikesTable).insert({
         'id': const Uuid().v4(),
         'user_id': userId,
         'comment_id': commentId,
@@ -292,6 +290,57 @@ class CommunitySocialRemoteSource {
           .eq('following_id', targetUserId);
     } catch (e, st) {
       AppLogger.error('CommunitySocialRemoteSource.unfollowUser', e, st);
+      rethrow;
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Blocks
+  // ---------------------------------------------------------------------------
+
+  /// Fetches all user IDs blocked by [userId].
+  Future<List<String>> fetchBlockedUserIds(String userId) async {
+    if (userId == 'anonymous') return [];
+    try {
+      final result = await _client
+          .from(SupabaseConstants.communityBlocksTable)
+          .select('blocked_user_id')
+          .eq('user_id', userId);
+
+      return (result as List)
+          .map((r) => r['blocked_user_id']?.toString())
+          .whereType<String>()
+          .toList();
+    } catch (e) {
+      AppLogger.warning('Failed to fetch blocked user IDs: $e');
+      return [];
+    }
+  }
+
+  /// Blocks a user on the server.
+  Future<void> blockUser(String userId, String blockedUserId) async {
+    try {
+      await _client.from(SupabaseConstants.communityBlocksTable).insert({
+        'id': const Uuid().v4(),
+        'user_id': userId,
+        'blocked_user_id': blockedUserId,
+      });
+    } catch (e, st) {
+      AppLogger.error('CommunitySocialRemoteSource.blockUser', e, st);
+      rethrow;
+    }
+  }
+
+  /// Unblocks a user on the server.
+  Future<void> unblockUser(String userId, String blockedUserId) async {
+    try {
+      await _client
+          .from(SupabaseConstants.communityBlocksTable)
+          .delete()
+          .eq('user_id', userId)
+          .eq('blocked_user_id', blockedUserId);
+    } catch (e, st) {
+      AppLogger.error('CommunitySocialRemoteSource.unblockUser', e, st);
       rethrow;
     }
   }

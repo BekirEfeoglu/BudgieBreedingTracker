@@ -357,38 +357,41 @@ void main() {
       expect(offerings.first.storeProduct.identifier, 'premium_monthly');
     });
 
-    test('getOfferings falls back to all offerings when current is null',
-        () async {
-      await _installHandler((call) async {
-        if (call.method == 'setupPurchases') return null;
-        if (call.method == 'getOfferings') return _offeringsNoCurrent();
-        return null;
-      });
+    test(
+      'getOfferings falls back to all offerings when current is null',
+      () async {
+        await _installHandler((call) async {
+          if (call.method == 'setupPurchases') return null;
+          if (call.method == 'getOfferings') return _offeringsNoCurrent();
+          return null;
+        });
 
-      final service = PurchaseService();
-      await service.initialize(apiKey: 'test_key', userId: 'user-1');
+        final service = PurchaseService();
+        await service.initialize(apiKey: 'test_key', userId: 'user-1');
 
-      final offerings = await service.getOfferings();
-      expect(offerings, hasLength(1));
-      expect(offerings.first.storeProduct.identifier, 'premium_monthly');
-    });
+        final offerings = await service.getOfferings();
+        expect(offerings, hasLength(1));
+        expect(offerings.first.storeProduct.identifier, 'premium_monthly');
+      },
+    );
 
     test(
-        'getOfferings falls back to all offerings when current has no packages',
-        () async {
-      await _installHandler((call) async {
-        if (call.method == 'setupPurchases') return null;
-        if (call.method == 'getOfferings') return _offeringsCurrentEmpty();
-        return null;
-      });
+      'getOfferings falls back to all offerings when current has no packages',
+      () async {
+        await _installHandler((call) async {
+          if (call.method == 'setupPurchases') return null;
+          if (call.method == 'getOfferings') return _offeringsCurrentEmpty();
+          return null;
+        });
 
-      final service = PurchaseService();
-      await service.initialize(apiKey: 'test_key', userId: 'user-1');
+        final service = PurchaseService();
+        await service.initialize(apiKey: 'test_key', userId: 'user-1');
 
-      final offerings = await service.getOfferings();
-      expect(offerings, hasLength(1));
-      expect(offerings.first.storeProduct.identifier, 'premium_monthly');
-    });
+        final offerings = await service.getOfferings();
+        expect(offerings, hasLength(1));
+        expect(offerings.first.storeProduct.identifier, 'premium_monthly');
+      },
+    );
 
     test('getOfferings returns empty when no offering has packages', () async {
       await _installHandler((call) async {

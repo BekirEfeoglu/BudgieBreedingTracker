@@ -26,10 +26,7 @@ class ParentSelectionStep extends ConsumerWidget {
     WidgetRef ref,
     BirdGender gender,
   ) async {
-    final bird = await showBirdPickerDialog(
-      context,
-      genderFilter: gender,
-    );
+    final bird = await showBirdPickerDialog(context, genderFilter: gender);
     if (bird == null || !context.mounted) return;
 
     final genotype = birdToGenotype(bird);
@@ -89,11 +86,7 @@ class ParentSelectionStep extends ConsumerWidget {
                 Row(
                   children: [
                     OutlinedButton.icon(
-                      onPressed: () => _pickBird(
-                        context,
-                        ref,
-                        BirdGender.male,
-                      ),
+                      onPressed: () => _pickBird(context, ref, BirdGender.male),
                       icon: const AppIcon(AppIcons.search, size: 16),
                       label: Text('genetics.select_from_birds'.tr()),
                     ),
@@ -111,12 +104,17 @@ class ParentSelectionStep extends ConsumerWidget {
                             overflow: TextOverflow.ellipsis,
                           ),
                           onDeleted: () {
-                            ref.read(fatherGenotypeProvider.notifier).state =
-                                const ParentGenotype.empty(
-                                    gender: BirdGender.male);
                             ref
-                                .read(selectedFatherBirdNameProvider.notifier)
-                                .state = null;
+                                .read(fatherGenotypeProvider.notifier)
+                                .state = const ParentGenotype.empty(
+                              gender: BirdGender.male,
+                            );
+                            ref
+                                    .read(
+                                      selectedFatherBirdNameProvider.notifier,
+                                    )
+                                    .state =
+                                null;
                           },
                           visualDensity: VisualDensity.compact,
                         ),
@@ -154,11 +152,8 @@ class ParentSelectionStep extends ConsumerWidget {
                 Row(
                   children: [
                     OutlinedButton.icon(
-                      onPressed: () => _pickBird(
-                        context,
-                        ref,
-                        BirdGender.female,
-                      ),
+                      onPressed: () =>
+                          _pickBird(context, ref, BirdGender.female),
                       icon: const AppIcon(AppIcons.search, size: 16),
                       label: Text('genetics.select_from_birds'.tr()),
                     ),
@@ -176,12 +171,17 @@ class ParentSelectionStep extends ConsumerWidget {
                             overflow: TextOverflow.ellipsis,
                           ),
                           onDeleted: () {
-                            ref.read(motherGenotypeProvider.notifier).state =
-                                const ParentGenotype.empty(
-                                    gender: BirdGender.female);
                             ref
-                                .read(selectedMotherBirdNameProvider.notifier)
-                                .state = null;
+                                .read(motherGenotypeProvider.notifier)
+                                .state = const ParentGenotype.empty(
+                              gender: BirdGender.female,
+                            );
+                            ref
+                                    .read(
+                                      selectedMotherBirdNameProvider.notifier,
+                                    )
+                                    .state =
+                                null;
                           },
                           visualDensity: VisualDensity.compact,
                         ),

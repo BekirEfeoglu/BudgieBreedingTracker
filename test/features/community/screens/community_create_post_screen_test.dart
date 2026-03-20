@@ -13,18 +13,19 @@ void main() {
   GoRouter buildRouter(Widget child) {
     return GoRouter(
       initialLocation: '/create',
-      routes: [
-        GoRoute(path: '/create', builder: (_, __) => child),
-      ],
+      routes: [GoRoute(path: '/create', builder: (_, __) => child)],
     );
   }
 
-  ProviderScope buildScope(Widget child,
-      {CreatePostNotifier Function()? notifierFactory}) {
+  ProviderScope buildScope(
+    Widget child, {
+    CreatePostNotifier Function()? notifierFactory,
+  }) {
     return ProviderScope(
       overrides: [
-        createPostProvider
-            .overrideWith(notifierFactory ?? _FakeCreatePostNotifier.new),
+        createPostProvider.overrideWith(
+          notifierFactory ?? _FakeCreatePostNotifier.new,
+        ),
       ],
       child: MaterialApp.router(routerConfig: buildRouter(child)),
     );
@@ -32,27 +33,21 @@ void main() {
 
   group('CommunityCreatePostScreen', () {
     testWidgets('shows app bar with create title', (tester) async {
-      await tester.pumpWidget(
-        buildScope(const CommunityCreatePostScreen()),
-      );
+      await tester.pumpWidget(buildScope(const CommunityCreatePostScreen()));
       await tester.pumpAndSettle();
 
       expect(find.text('community.create_post'), findsOneWidget);
     });
 
     testWidgets('shows share action in app bar', (tester) async {
-      await tester.pumpWidget(
-        buildScope(const CommunityCreatePostScreen()),
-      );
+      await tester.pumpWidget(buildScope(const CommunityCreatePostScreen()));
       await tester.pumpAndSettle();
 
       expect(find.text('community.share_action'), findsOneWidget);
     });
 
     testWidgets('renders post type selector chips', (tester) async {
-      await tester.pumpWidget(
-        buildScope(const CommunityCreatePostScreen()),
-      );
+      await tester.pumpWidget(buildScope(const CommunityCreatePostScreen()));
       await tester.pumpAndSettle();
 
       expect(find.text('community.post_type_general'), findsOneWidget);
@@ -61,9 +56,7 @@ void main() {
     });
 
     testWidgets('renders title and content fields', (tester) async {
-      await tester.pumpWidget(
-        buildScope(const CommunityCreatePostScreen()),
-      );
+      await tester.pumpWidget(buildScope(const CommunityCreatePostScreen()));
       await tester.pumpAndSettle();
 
       expect(find.text('community.post_title_label'), findsOneWidget);
@@ -71,9 +64,7 @@ void main() {
     });
 
     testWidgets('renders tag input and add photo button', (tester) async {
-      await tester.pumpWidget(
-        buildScope(const CommunityCreatePostScreen()),
-      );
+      await tester.pumpWidget(buildScope(const CommunityCreatePostScreen()));
       await tester.pumpAndSettle();
 
       expect(find.text('community.add_tags'), findsOneWidget);

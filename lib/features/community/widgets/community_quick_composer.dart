@@ -44,8 +44,9 @@ class CommunityQuickComposer extends StatelessWidget {
             children: [
               CircleAvatar(
                 radius: 22,
-                backgroundColor:
-                    theme.colorScheme.primary.withValues(alpha: 0.12),
+                backgroundColor: theme.colorScheme.primary.withValues(
+                  alpha: 0.12,
+                ),
                 child: Text(
                   initial,
                   style: theme.textTheme.titleSmall?.copyWith(

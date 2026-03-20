@@ -63,19 +63,19 @@ class NotificationToggleSettingsNotifier
       if (userId == 'anonymous') return;
       final dao = ref.read(notificationSettingsDaoProvider);
       final existing = await dao.getByUser(userId);
-      final model = (existing ?? NotificationSettings(
-        id: const Uuid().v4(),
-        userId: userId,
-      )).copyWith(
-        soundEnabled: state.soundEnabled,
-        vibrationEnabled: state.vibrationEnabled,
-        eggTurningEnabled: state.eggTurning,
-        incubationReminderEnabled: state.incubation,
-        feedingReminderEnabled: state.chickCare,
-        healthCheckEnabled: state.healthCheck,
-        cleanupDaysOld: state.cleanupDaysOld,
-        updatedAt: DateTime.now(),
-      );
+      final model =
+          (existing ??
+                  NotificationSettings(id: const Uuid().v4(), userId: userId))
+              .copyWith(
+                soundEnabled: state.soundEnabled,
+                vibrationEnabled: state.vibrationEnabled,
+                eggTurningEnabled: state.eggTurning,
+                incubationReminderEnabled: state.incubation,
+                feedingReminderEnabled: state.chickCare,
+                healthCheckEnabled: state.healthCheck,
+                cleanupDaysOld: state.cleanupDaysOld,
+                updatedAt: DateTime.now(),
+              );
       await dao.upsert(model);
     } catch (e, st) {
       AppLogger.warning('Failed to persist notification settings to DAO: $e');
@@ -106,16 +106,16 @@ class NotificationToggleSettingsNotifier
     if (!value) {
       try {
         final notificationService = ref.read(notificationServiceProvider);
-        final cancelled =
-            await notificationService.cancelByIdRange(rangeStart, rangeEnd);
+        final cancelled = await notificationService.cancelByIdRange(
+          rangeStart,
+          rangeEnd,
+        );
         AppLogger.info(
           '[NotificationToggleSettings] $categoryName disabled — '
           '$cancelled notifications cancelled',
         );
       } catch (e, st) {
-        AppLogger.warning(
-          'Failed to cancel $categoryName notifications: $e',
-        );
+        AppLogger.warning('Failed to cancel $categoryName notifications: $e');
         Sentry.captureException(e, stackTrace: st);
       }
     }
@@ -222,5 +222,8 @@ class NotificationToggleSettingsNotifier
 ///
 /// Injects [NotificationService] so that disabling a category
 /// can cancel pending scheduled notifications.
-final notificationToggleSettingsProvider = NotifierProvider<
-    NotificationToggleSettingsNotifier, NotificationToggleSettings>(NotificationToggleSettingsNotifier.new);
+final notificationToggleSettingsProvider =
+    NotifierProvider<
+      NotificationToggleSettingsNotifier,
+      NotificationToggleSettings
+    >(NotificationToggleSettingsNotifier.new);

@@ -32,14 +32,16 @@ List<_RawResult> _calculateAllelicSeriesLocus(
     final prob = entry.value;
 
     final resolved = _resolveAllelicPhenotype(locusId, allele1, allele2);
-    results.add(_RawResult(
-      phenotype: resolved.phenotype,
-      probability: prob,
-      isCarrier: resolved.isCarrier,
-      genotype: resolved.genotype,
-      expressedMutationIds: resolved.expressedIds,
-      carriedMutationIds: resolved.carriedIds,
-    ));
+    results.add(
+      _RawResult(
+        phenotype: resolved.phenotype,
+        probability: prob,
+        isCarrier: resolved.isCarrier,
+        genotype: resolved.genotype,
+        expressedMutationIds: resolved.expressedIds,
+        carriedMutationIds: resolved.carriedIds,
+      ),
+    );
   }
 
   return results;
@@ -77,49 +79,58 @@ List<_RawResult> _calculateSexLinkedAllelicSeriesLocus(
       // Female offspring (Z from father / W)
       // Hemizygous: father's Z allele determines phenotype
       if (fatherAllele == 'wildtype') {
-        results.add(_RawResult(
-          phenotype: 'Normal',
-          probability: prob,
-          sex: OffspringSex.female,
-          genotype: 'Z+/W',
-        ));
+        results.add(
+          _RawResult(
+            phenotype: 'Normal',
+            probability: prob,
+            sex: OffspringSex.female,
+            genotype: 'Z+/W',
+          ),
+        );
       } else {
         final record = MutationDatabase.getById(fatherAllele);
         final name = record?.name ?? fatherAllele;
         final sym = record?.alleleSymbol ?? fatherAllele;
-        results.add(_RawResult(
-          phenotype: name,
-          probability: prob,
-          sex: OffspringSex.female,
-          genotype: 'Z$sym/W',
-          expressedMutationIds: [fatherAllele],
-        ));
+        results.add(
+          _RawResult(
+            phenotype: name,
+            probability: prob,
+            sex: OffspringSex.female,
+            genotype: 'Z$sym/W',
+            expressedMutationIds: [fatherAllele],
+          ),
+        );
       }
     } else {
       // Male offspring (Z from father / Z from mother)
       // Use allelic phenotype resolution (dominance hierarchy)
-      final resolved =
-          _resolveAllelicPhenotype(locusId, fatherAllele, motherAllele);
+      final resolved = _resolveAllelicPhenotype(
+        locusId,
+        fatherAllele,
+        motherAllele,
+      );
 
       // Build Z-notation genotype for sex-linked
       final sym1 = fatherAllele == 'wildtype'
           ? '+'
           : (MutationDatabase.getById(fatherAllele)?.alleleSymbol ??
-              fatherAllele);
+                fatherAllele);
       final sym2 = motherAllele == 'wildtype'
           ? '+'
           : (MutationDatabase.getById(motherAllele)?.alleleSymbol ??
-              motherAllele);
+                motherAllele);
 
-      results.add(_RawResult(
-        phenotype: resolved.phenotype,
-        probability: prob,
-        sex: OffspringSex.male,
-        isCarrier: resolved.isCarrier,
-        genotype: 'Z$sym1/Z$sym2',
-        expressedMutationIds: resolved.expressedIds,
-        carriedMutationIds: resolved.carriedIds,
-      ));
+      results.add(
+        _RawResult(
+          phenotype: resolved.phenotype,
+          probability: prob,
+          sex: OffspringSex.male,
+          isCarrier: resolved.isCarrier,
+          genotype: 'Z$sym1/Z$sym2',
+          expressedMutationIds: resolved.expressedIds,
+          carriedMutationIds: resolved.carriedIds,
+        ),
+      );
     }
   }
 

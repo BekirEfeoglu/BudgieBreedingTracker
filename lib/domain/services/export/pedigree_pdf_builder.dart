@@ -22,9 +22,13 @@ class PedigreePdfBuilder {
 
   PedigreePdfBuilder({required this.regularFont, required this.boldFont}) {
     _chartBuilder = PedigreePdfChartBuilder(
-        regularFont: regularFont, boldFont: boldFont);
+      regularFont: regularFont,
+      boldFont: boldFont,
+    );
     _tableBuilder = PedigreePdfTableBuilder(
-        regularFont: regularFont, boldFont: boldFont);
+      regularFont: regularFont,
+      boldFont: boldFont,
+    );
   }
 
   pw.Page build(Bird rootBird, Map<String, Bird> ancestors, int maxDepth) {
@@ -45,10 +49,10 @@ class PedigreePdfBuilder {
     for (int i = 1; i <= maxDepth; i++) {
       possible += 1 << i;
     }
-    final deepestGen =
-        generations.keys.where((k) => k > 0).fold(0, (a, b) => a > b ? a : b);
-    final completeness =
-        possible > 0 ? (ancestorCount / possible * 100) : 0.0;
+    final deepestGen = generations.keys
+        .where((k) => k > 0)
+        .fold(0, (a, b) => a > b ? a : b);
+    final completeness = possible > 0 ? (ancestorCount / possible * 100) : 0.0;
 
     return pw.MultiPage(
       pageFormat: PdfPageFormat.a4,
@@ -64,7 +68,12 @@ class PedigreePdfBuilder {
         pw.SizedBox(height: 20),
         PedigreePdfHelpers.sectionTitle('export.pedigree_stats_section'.tr()),
         pw.SizedBox(height: 8),
-        _chartBuilder.buildStats(ancestorCount, possible, deepestGen, completeness),
+        _chartBuilder.buildStats(
+          ancestorCount,
+          possible,
+          deepestGen,
+          completeness,
+        ),
         ..._tableBuilder.buildDeepTables(generations, maxDepth),
       ],
     );
@@ -82,22 +91,28 @@ class PedigreePdfBuilder {
             pw.Column(
               crossAxisAlignment: pw.CrossAxisAlignment.start,
               children: [
-                pw.Text(AppConstants.appName,
-                    style: const pw.TextStyle(
-                        fontSize: 9, color: PdfColors.grey600)),
+                pw.Text(
+                  AppConstants.appName,
+                  style: const pw.TextStyle(
+                    fontSize: 9,
+                    color: PdfColors.grey600,
+                  ),
+                ),
                 pw.SizedBox(height: 2),
                 pw.Text(
                   'export.pedigree_report_title'.tr(args: [rootBird.name]),
                   style: pw.TextStyle(
-                      fontSize: 18,
-                      fontWeight: pw.FontWeight.bold,
-                      color: PedigreePdfColors.brandDark),
+                    fontSize: 18,
+                    fontWeight: pw.FontWeight.bold,
+                    color: PedigreePdfColors.brandDark,
+                  ),
                 ),
               ],
             ),
-            pw.Text(PedigreePdfHelpers.dateFormat.format(DateTime.now()),
-                style: const pw.TextStyle(
-                    fontSize: 9, color: PdfColors.grey600)),
+            pw.Text(
+              PedigreePdfHelpers.dateFormat.format(DateTime.now()),
+              style: const pw.TextStyle(fontSize: 9, color: PdfColors.grey600),
+            ),
           ],
         ),
         pw.SizedBox(height: 6),
@@ -111,18 +126,21 @@ class PedigreePdfBuilder {
     return pw.Container(
       decoration: const pw.BoxDecoration(
         border: pw.Border(
-            top: pw.BorderSide(color: PdfColors.grey300, width: 0.5)),
+          top: pw.BorderSide(color: PdfColors.grey300, width: 0.5),
+        ),
       ),
       padding: const pw.EdgeInsets.only(top: 8),
       child: pw.Row(
         mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
         children: [
-          pw.Text(AppConstants.appName,
-              style: const pw.TextStyle(
-                  fontSize: 8, color: PdfColors.grey500)),
-          pw.Text('${context.pageNumber} / ${context.pagesCount}',
-              style: const pw.TextStyle(
-                  fontSize: 8, color: PdfColors.grey500)),
+          pw.Text(
+            AppConstants.appName,
+            style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey500),
+          ),
+          pw.Text(
+            '${context.pageNumber} / ${context.pagesCount}',
+            style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey500),
+          ),
         ],
       ),
     );
@@ -133,8 +151,13 @@ class PedigreePdfBuilder {
   Bird? _resolve(String? id, Map<String, Bird> ancestors) =>
       id != null ? ancestors[id] : null;
 
-  void _collectByGeneration(Bird? bird, int depth, Map<String, Bird> ancestors,
-      Map<int, List<Bird>> generations, int maxDepth) {
+  void _collectByGeneration(
+    Bird? bird,
+    int depth,
+    Map<String, Bird> ancestors,
+    Map<int, List<Bird>> generations,
+    int maxDepth,
+  ) {
     if (bird == null || depth > maxDepth) return;
     generations.putIfAbsent(depth, () => []).add(bird);
     final father = bird.fatherId != null ? ancestors[bird.fatherId] : null;

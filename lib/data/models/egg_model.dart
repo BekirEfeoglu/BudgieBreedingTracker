@@ -38,12 +38,14 @@ extension EggX on Egg {
     return end.difference(layDate).inDays;
   }
 
-  DateTime get expectedHatchDate =>
-      layDate.add(const Duration(days: IncubationConstants.incubationPeriodDays));
+  DateTime get expectedHatchDate => layDate.add(
+    const Duration(days: IncubationConstants.incubationPeriodDays),
+  );
 
   bool get isOverdue =>
       !isHatched &&
-      DateTime.now().difference(layDate).inDays > IncubationConstants.incubationPeriodDays;
+      DateTime.now().difference(layDate).inDays >
+          IncubationConstants.incubationPeriodDays;
 
   double get progressPercent {
     final days = DateTime.now().difference(layDate).inDays;
@@ -52,6 +54,7 @@ extension EggX on Egg {
   }
 
   bool get isHatched => status == EggStatus.hatched;
-  bool get isFertile => status == EggStatus.fertile || status == EggStatus.hatched;
+  bool get isFertile =>
+      status == EggStatus.fertile || status == EggStatus.hatched;
   bool get isIncubating => status == EggStatus.incubating;
 }

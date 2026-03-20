@@ -33,9 +33,9 @@ class _RewardedAdButtonState extends ConsumerState<RewardedAdButton> {
     final adService = ref.read(adServiceProvider);
     if (!adService.isRewardedAdReady) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('ads.ad_not_available'.tr())),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('ads.ad_not_available'.tr())));
       }
       return;
     }
@@ -72,8 +72,7 @@ class _RewardedAdButtonState extends ConsumerState<RewardedAdButton> {
             ),
           ),
           style: OutlinedButton.styleFrom(
-            minimumSize:
-                const Size(double.infinity, AppSpacing.touchTargetMin),
+            minimumSize: const Size(double.infinity, AppSpacing.touchTargetMin),
           ),
         ),
         if (widget.subtitle != null) ...[

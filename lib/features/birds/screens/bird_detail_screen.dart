@@ -72,9 +72,9 @@ class _DetailContent extends ConsumerWidget {
         );
       }
       if (state.error != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(state.error!)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(state.error!)));
       }
     });
 
@@ -85,12 +85,10 @@ class _DetailContent extends ConsumerWidget {
           IconButton(
             icon: const AppIcon(AppIcons.edit),
             tooltip: 'common.edit'.tr(),
-            onPressed: () =>
-                context.push('/birds/form?editId=${bird.id}'),
+            onPressed: () => context.push('/birds/form?editId=${bird.id}'),
           ),
           PopupMenuButton<String>(
-            onSelected: (value) =>
-                _handleMenuAction(context, ref, value),
+            onSelected: (value) => _handleMenuAction(context, ref, value),
             itemBuilder: (context) => [
               PopupMenuItem(
                 value: 'pedigree',
@@ -101,15 +99,9 @@ class _DetailContent extends ConsumerWidget {
                   value: 'dead',
                   child: Text('birds.mark_dead'.tr()),
                 ),
-                PopupMenuItem(
-                  value: 'sold',
-                  child: Text('birds.sold'.tr()),
-                ),
+                PopupMenuItem(value: 'sold', child: Text('birds.sold'.tr())),
               ],
-              PopupMenuItem(
-                value: 'delete',
-                child: Text('common.delete'.tr()),
-              ),
+              PopupMenuItem(value: 'delete', child: Text('common.delete'.tr())),
             ],
           ),
         ],
@@ -144,16 +136,16 @@ class _DetailContent extends ConsumerWidget {
 
     switch (action) {
       case 'pedigree':
-        ref.read(selectedEntityForTreeProvider.notifier).state =
-            (id: bird.id, isChick: false);
+        ref.read(selectedEntityForTreeProvider.notifier).state = (
+          id: bird.id,
+          isChick: false,
+        );
         if (context.mounted) context.push('/genealogy');
       case 'dead':
         final confirmed = await showConfirmDialog(
           context,
           title: 'common.death'.tr(),
-          message: 'birds.mark_dead_confirm'.tr(
-            namedArgs: {'name': bird.name},
-          ),
+          message: 'birds.mark_dead_confirm'.tr(namedArgs: {'name': bird.name}),
           confirmLabel: 'common.yes'.tr(),
           isDestructive: true,
         );
@@ -165,9 +157,7 @@ class _DetailContent extends ConsumerWidget {
         final confirmed = await showConfirmDialog(
           context,
           title: 'common.sale'.tr(),
-          message: 'birds.mark_sold_confirm'.tr(
-            namedArgs: {'name': bird.name},
-          ),
+          message: 'birds.mark_sold_confirm'.tr(namedArgs: {'name': bird.name}),
           confirmLabel: 'common.yes'.tr(),
         );
         if (confirmed == true) {
@@ -178,9 +168,7 @@ class _DetailContent extends ConsumerWidget {
         final confirmed = await showConfirmDialog(
           context,
           title: 'common.delete'.tr(),
-          message: 'birds.delete_confirm'.tr(
-            namedArgs: {'name': bird.name},
-          ),
+          message: 'birds.delete_confirm'.tr(namedArgs: {'name': bird.name}),
           confirmLabel: 'common.delete'.tr(),
           isDestructive: true,
         );
@@ -188,9 +176,9 @@ class _DetailContent extends ConsumerWidget {
           AppHaptics.heavyImpact();
           await notifier.deleteBird(bird.id);
           if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('birds.bird_deleted'.tr())),
-            );
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text('birds.bird_deleted'.tr())));
             context.pop();
           }
         }

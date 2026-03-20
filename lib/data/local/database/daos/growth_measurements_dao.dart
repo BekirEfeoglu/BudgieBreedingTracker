@@ -25,22 +25,23 @@ class GrowthMeasurementsDao extends DatabaseAccessor<AppDatabase>
   }
 
   Future<List<GrowthMeasurement>> getAll(String userId) async {
-    final rows = await (select(growthMeasurementsTable)
-          ..where((t) => t.userId.equals(userId)))
-        .get();
+    final rows = await (select(
+      growthMeasurementsTable,
+    )..where((t) => t.userId.equals(userId))).get();
     return rows.map((r) => r.toModel()).toList();
   }
 
   Future<GrowthMeasurement?> getById(String id) async {
-    final row = await (select(growthMeasurementsTable)
-          ..where((t) => t.id.equals(id)))
-        .getSingleOrNull();
+    final row = await (select(
+      growthMeasurementsTable,
+    )..where((t) => t.id.equals(id))).getSingleOrNull();
     return row?.toModel();
   }
 
   Future<void> insertItem(GrowthMeasurement measurement) {
-    return into(growthMeasurementsTable)
-        .insertOnConflictUpdate(measurement.toCompanion());
+    return into(
+      growthMeasurementsTable,
+    ).insertOnConflictUpdate(measurement.toCompanion());
   }
 
   Future<void> insertAll(List<GrowthMeasurement> measurements) {
@@ -57,8 +58,9 @@ class GrowthMeasurementsDao extends DatabaseAccessor<AppDatabase>
   }
 
   Future<void> hardDelete(String id) {
-    return (delete(growthMeasurementsTable)..where((t) => t.id.equals(id)))
-        .go();
+    return (delete(
+      growthMeasurementsTable,
+    )..where((t) => t.id.equals(id))).go();
   }
 
   Stream<List<GrowthMeasurement>> watchByChick(String chickId) {
@@ -70,11 +72,12 @@ class GrowthMeasurementsDao extends DatabaseAccessor<AppDatabase>
   }
 
   Future<GrowthMeasurement?> getLatest(String chickId) async {
-    final row = await (select(growthMeasurementsTable)
-          ..where((t) => t.chickId.equals(chickId))
-          ..orderBy([(t) => OrderingTerm.desc(t.measurementDate)])
-          ..limit(1))
-        .getSingleOrNull();
+    final row =
+        await (select(growthMeasurementsTable)
+              ..where((t) => t.chickId.equals(chickId))
+              ..orderBy([(t) => OrderingTerm.desc(t.measurementDate)])
+              ..limit(1))
+            .getSingleOrNull();
     return row?.toModel();
   }
 }

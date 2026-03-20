@@ -23,9 +23,9 @@ class NotificationScheduleRepository
     required NotificationSchedulesDao localDao,
     required NotificationScheduleRemoteSource remoteSource,
     required SyncMetadataDao syncDao,
-  })  : _localDao = localDao,
-        _remoteSource = remoteSource,
-        _syncDao = syncDao;
+  }) : _localDao = localDao,
+       _remoteSource = remoteSource,
+       _syncDao = syncDao;
 
   static const _table = SupabaseConstants.notificationSchedulesTable;
 
@@ -44,8 +44,7 @@ class NotificationScheduleRepository
       _localDao.watchAll(userId);
 
   @override
-  Stream<NotificationSchedule?> watchById(String id) =>
-      _localDao.watchById(id);
+  Stream<NotificationSchedule?> watchById(String id) => _localDao.watchById(id);
 
   @override
   Future<List<NotificationSchedule>> getAll(String userId) =>
@@ -65,13 +64,17 @@ class NotificationScheduleRepository
   Future<void> saveAll(List<NotificationSchedule> items) async {
     await _localDao.insertAll(items);
     if (items.isNotEmpty) {
-      final syncEntries = items.map((item) => SyncMetadata(
-        id: _uuid.v4(),
-        table: _table,
-        userId: item.userId,
-        status: SyncStatus.pending,
-        recordId: item.id,
-      )).toList();
+      final syncEntries = items
+          .map(
+            (item) => SyncMetadata(
+              id: _uuid.v4(),
+              table: _table,
+              userId: item.userId,
+              status: SyncStatus.pending,
+              recordId: item.id,
+            ),
+          )
+          .toList();
       await _syncDao.insertAll(syncEntries);
     }
   }
@@ -81,18 +84,22 @@ class NotificationScheduleRepository
     final item = await _localDao.getById(id);
     await _localDao.hardDelete(id);
     if (item != null) {
-      await _syncDao.insertItem(SyncMetadata(
-        id: _uuid.v4(),
-        table: _table,
-        userId: item.userId,
-        status: SyncStatus.pendingDelete,
-        recordId: id,
-      ));
+      await _syncDao.insertItem(
+        SyncMetadata(
+          id: _uuid.v4(),
+          table: _table,
+          userId: item.userId,
+          status: SyncStatus.pendingDelete,
+          recordId: id,
+        ),
+      );
       try {
         await _remoteSource.deleteById(id, userId: item.userId);
         await _syncDao.deleteByRecord(_table, id);
       } catch (e) {
-        AppLogger.debug('[NotificationScheduleRepo] Immediate remote delete failed, will retry on next sync: $e');
+        AppLogger.debug(
+          '[NotificationScheduleRepo] Immediate remote delete failed, will retry on next sync: $e',
+        );
       }
     }
   }
@@ -161,8 +168,7 @@ class NotificationScheduleRepository
     } on AppException {
       rethrow;
     } catch (e, st) {
-      AppLogger.error(
-          '[NotificationScheduleRepository] Pull failed', e, st);
+      AppLogger.error('[NotificationScheduleRepository] Pull failed', e, st);
     }
   }
 
@@ -193,7 +199,9 @@ class NotificationScheduleRepository
       } else {
         final item = await _localDao.getById(meta.recordId ?? '');
         if (item == null) {
-          AppLogger.warning('[NotificationScheduleRepo] Orphan sync_metadata cleaned: ${meta.recordId}');
+          AppLogger.warning(
+            '[NotificationScheduleRepo] Orphan sync_metadata cleaned: ${meta.recordId}',
+          );
           await _syncDao.deleteByRecord(_table, meta.recordId ?? '');
           orphansCleaned++;
           continue;
@@ -204,5 +212,4 @@ class NotificationScheduleRepository
     }
     return (pushed: pushed, orphansCleaned: orphansCleaned);
   }
-
 }

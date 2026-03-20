@@ -39,30 +39,35 @@ class _EntitySelectorState extends State<EntitySelector> {
   }
 
   ({List<_EntityOption> birds, List<_EntityOption> chicks})
-      _buildFilteredOptions() {
+  _buildFilteredOptions() {
     final birdOptions = <_EntityOption>[];
     final chickOptions = <_EntityOption>[];
 
     for (final bird in widget.birds) {
-      birdOptions.add(_EntityOption(
-        selection: (id: bird.id, isChick: false),
-        displayName: bird.name,
-        ringNumber: bird.ringNumber,
-        isChick: false,
-      ));
+      birdOptions.add(
+        _EntityOption(
+          selection: (id: bird.id, isChick: false),
+          displayName: bird.name,
+          ringNumber: bird.ringNumber,
+          isChick: false,
+        ),
+      );
     }
 
     for (final chick in widget.chicks) {
-      final name = chick.name ??
+      final name =
+          chick.name ??
           'chicks.unnamed_chick'.tr(
             args: [chick.ringNumber ?? chick.id.substring(0, 6)],
           );
-      chickOptions.add(_EntityOption(
-        selection: (id: chick.id, isChick: true),
-        displayName: name,
-        ringNumber: chick.ringNumber,
-        isChick: true,
-      ));
+      chickOptions.add(
+        _EntityOption(
+          selection: (id: chick.id, isChick: true),
+          displayName: name,
+          ringNumber: chick.ringNumber,
+          isChick: true,
+        ),
+      );
     }
 
     if (_query.isEmpty) return (birds: birdOptions, chicks: chickOptions);
@@ -126,8 +131,11 @@ class _EntitySelectorState extends State<EntitySelector> {
                   slivers: [
                     if (birds.isNotEmpty) ...[
                       _StickyHeader(
-                        icon: AppIcon(AppIcons.bird, size: 18,
-                            color: theme.colorScheme.primary),
+                        icon: AppIcon(
+                          AppIcons.bird,
+                          size: 18,
+                          color: theme.colorScheme.primary,
+                        ),
                         title: 'birds.title'.tr(),
                         count: birds.length,
                       ),
@@ -138,15 +146,17 @@ class _EntitySelectorState extends State<EntitySelector> {
                     ],
                     if (chicks.isNotEmpty) ...[
                       _StickyHeader(
-                        icon: AppIcon(AppIcons.egg, size: 18,
-                            color: theme.colorScheme.tertiary),
+                        icon: AppIcon(
+                          AppIcons.egg,
+                          size: 18,
+                          color: theme.colorScheme.tertiary,
+                        ),
                         title: 'chicks.title'.tr(),
                         count: chicks.length,
                       ),
                       SliverList.builder(
                         itemCount: chicks.length,
-                        itemBuilder: (_, i) =>
-                            _buildTile(theme, chicks[i]),
+                        itemBuilder: (_, i) => _buildTile(theme, chicks[i]),
                       ),
                     ],
                     const SliverPadding(
@@ -163,13 +173,12 @@ class _EntitySelectorState extends State<EntitySelector> {
     final isSelected = widget.selection == option.selection;
     return ListTile(
       selected: isSelected,
-      selectedTileColor:
-          theme.colorScheme.primaryContainer.withValues(alpha: 0.3),
+      selectedTileColor: theme.colorScheme.primaryContainer.withValues(
+        alpha: 0.3,
+      ),
       leading: option.isChick
-          ? AppIcon(AppIcons.egg, size: 18,
-              color: theme.colorScheme.tertiary)
-          : AppIcon(AppIcons.bird, size: 18,
-              color: theme.colorScheme.primary),
+          ? AppIcon(AppIcons.egg, size: 18, color: theme.colorScheme.tertiary)
+          : AppIcon(AppIcons.bird, size: 18, color: theme.colorScheme.primary),
       title: Text(
         option.displayName,
         overflow: TextOverflow.ellipsis,
@@ -184,8 +193,11 @@ class _EntitySelectorState extends State<EntitySelector> {
           ? Text(option.ringNumber!, style: theme.textTheme.bodySmall)
           : null,
       trailing: isSelected
-          ? Icon(LucideIcons.check, size: 16,
-              color: theme.colorScheme.onPrimaryContainer)
+          ? Icon(
+              LucideIcons.check,
+              size: 16,
+              color: theme.colorScheme.onPrimaryContainer,
+            )
           : null,
       dense: true,
       onTap: () => widget.onChanged(option.selection),
@@ -240,7 +252,9 @@ class _StickyHeaderDelegate extends SliverPersistentHeaderDelegate {
 
   @override
   Widget build(
-    BuildContext context, double shrinkOffset, bool overlapsContent,
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
   ) {
     return Semantics(
       header: true,

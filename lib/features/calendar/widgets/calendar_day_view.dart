@@ -47,9 +47,7 @@ class CalendarDayView extends StatelessWidget {
     final slots = List.generate(slotCount, (i) => i + startHour);
 
     return ListView.builder(
-      padding: const EdgeInsets.only(
-        bottom: AppSpacing.xxxl * 2,
-      ),
+      padding: const EdgeInsets.only(bottom: AppSpacing.xxxl * 2),
       itemCount: slots.length,
       itemBuilder: (context, index) {
         final hour = slots[index];
@@ -131,14 +129,16 @@ class _HourSlot extends StatelessWidget {
                   ? const SizedBox.shrink()
                   : Column(
                       children: events
-                          .map((e) => EventCard(
-                                event: e,
-                                onTap: onEventTap != null
-                                    ? () => onEventTap!(e)
-                                    : null,
-                                onEdit: () => onEditEvent(e),
-                                onDelete: () => onDeleteEvent(e),
-                              ))
+                          .map(
+                            (e) => EventCard(
+                              event: e,
+                              onTap: onEventTap != null
+                                  ? () => onEventTap!(e)
+                                  : null,
+                              onEdit: () => onEditEvent(e),
+                              onDelete: () => onDeleteEvent(e),
+                            ),
+                          )
                           .toList(),
                     ),
             ),

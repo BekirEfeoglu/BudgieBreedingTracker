@@ -25,7 +25,9 @@ class BirdDetailHeader extends StatelessWidget {
             tag: 'bird_${bird.id}',
             child: CircleAvatar(
               radius: 48,
-              backgroundColor: birdGenderColor(bird.gender).withValues(alpha: 0.1),
+              backgroundColor: birdGenderColor(
+                bird.gender,
+              ).withValues(alpha: 0.1),
               child: bird.photoUrl != null
                   ? ClipOval(
                       child: CachedNetworkImage(
@@ -59,5 +61,4 @@ class BirdDetailHeader extends StatelessWidget {
       ),
     );
   }
-
 }

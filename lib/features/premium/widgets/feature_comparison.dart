@@ -96,7 +96,11 @@ class FeatureComparison extends StatelessWidget {
     );
   }
 
-  Widget _buildRow(ThemeData theme, _FeatureRow feature, {required bool isEven}) {
+  Widget _buildRow(
+    ThemeData theme,
+    _FeatureRow feature, {
+    required bool isEven,
+  }) {
     return Container(
       color: isEven
           ? theme.colorScheme.surface
@@ -109,10 +113,7 @@ class FeatureComparison extends StatelessWidget {
         children: [
           Expanded(
             flex: 3,
-            child: Text(
-              feature.name.tr(),
-              style: theme.textTheme.bodyMedium,
-            ),
+            child: Text(feature.name.tr(), style: theme.textTheme.bodyMedium),
           ),
           Expanded(child: _buildIcon(feature.inFree)),
           Expanded(child: _buildIcon(feature.inPro)),
@@ -138,11 +139,7 @@ class FeatureComparison extends StatelessWidget {
       );
     }
 
-    return const Icon(
-      LucideIcons.minus,
-      size: 18,
-      color: AppColors.neutral400,
-    );
+    return const Icon(LucideIcons.minus, size: 18, color: AppColors.neutral400);
   }
 
   static const _features = [

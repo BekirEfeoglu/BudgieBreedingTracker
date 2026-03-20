@@ -38,6 +38,6 @@ extension ProfileX on Profile {
 
   String get resolvedDisplayName =>
       (fullName != null && fullName!.trim().isNotEmpty)
-          ? fullName!
-          : email.split('@').first;
+      ? fullName!
+      : email.split('@').first;
 }

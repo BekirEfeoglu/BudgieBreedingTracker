@@ -107,9 +107,7 @@ void main() {
 
     test('drains multiple queued payloads in order', () {
       final failingRouter = _MockGoRouter();
-      when(
-        () => failingRouter.push(any()),
-      ).thenThrow(StateError('not ready'));
+      when(() => failingRouter.push(any())).thenThrow(StateError('not ready'));
 
       final queueContainer = ProviderContainer(
         overrides: [routerProvider.overrideWithValue(failingRouter)],

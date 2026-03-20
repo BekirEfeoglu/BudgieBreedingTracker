@@ -45,7 +45,8 @@ class ChickDetailInfo extends ConsumerWidget {
                       Expanded(
                         child: InfoCard(
                           icon: const AppIcon(AppIcons.male),
-                          title: parents.maleName ?? 'chicks.unknown_gender'.tr(),
+                          title:
+                              parents.maleName ?? 'chicks.unknown_gender'.tr(),
                           subtitle: 'chicks.father'.tr(),
                           onTap: parents.maleId != null
                               ? () => context.push('/birds/${parents.maleId}')
@@ -56,7 +57,9 @@ class ChickDetailInfo extends ConsumerWidget {
                       Expanded(
                         child: InfoCard(
                           icon: const AppIcon(AppIcons.female),
-                          title: parents.femaleName ?? 'chicks.unknown_gender'.tr(),
+                          title:
+                              parents.femaleName ??
+                              'chicks.unknown_gender'.tr(),
                           subtitle: 'chicks.mother'.tr(),
                           onTap: parents.femaleId != null
                               ? () => context.push('/birds/${parents.femaleId}')
@@ -139,16 +142,16 @@ class ChickDetailInfo extends ConsumerWidget {
   }
 
   Widget get _genderWidget => switch (chick.gender) {
-        BirdGender.male => const AppIcon(AppIcons.male),
-        BirdGender.female => const AppIcon(AppIcons.female),
-        BirdGender.unknown => const Icon(LucideIcons.helpCircle),
-      };
+    BirdGender.male => const AppIcon(AppIcons.male),
+    BirdGender.female => const AppIcon(AppIcons.female),
+    BirdGender.unknown => const Icon(LucideIcons.helpCircle),
+  };
 
   String get _genderLabel => switch (chick.gender) {
-        BirdGender.male => 'chicks.male'.tr(),
-        BirdGender.female => 'chicks.female'.tr(),
-        BirdGender.unknown => 'chicks.unknown_gender'.tr(),
-      };
+    BirdGender.male => 'chicks.male'.tr(),
+    BirdGender.female => 'chicks.female'.tr(),
+    BirdGender.unknown => 'chicks.unknown_gender'.tr(),
+  };
 }
 
 /// Notes section for the chick detail screen.
@@ -165,8 +168,10 @@ class ChickDetailNotes extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: AppSpacing.md),
-          Text('common.notes'.tr(),
-              style: Theme.of(context).textTheme.titleMedium),
+          Text(
+            'common.notes'.tr(),
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
           const SizedBox(height: AppSpacing.sm),
           Text(notes, style: Theme.of(context).textTheme.bodyMedium),
         ],

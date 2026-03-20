@@ -21,9 +21,9 @@ class ClutchRepository extends BaseRepository<Clutch>
     required ClutchesDao localDao,
     required ClutchRemoteSource remoteSource,
     required SyncMetadataDao syncDao,
-  })  : _localDao = localDao,
-        _remoteSource = remoteSource,
-        _syncDao = syncDao;
+  }) : _localDao = localDao,
+       _remoteSource = remoteSource,
+       _syncDao = syncDao;
 
   static const _table = SupabaseConstants.clutchesTable;
 
@@ -60,13 +60,17 @@ class ClutchRepository extends BaseRepository<Clutch>
   Future<void> saveAll(List<Clutch> items) async {
     await _localDao.insertAll(items);
     if (items.isNotEmpty) {
-      final syncEntries = items.map((item) => SyncMetadata(
-        id: _uuid.v4(),
-        table: _table,
-        userId: item.userId,
-        status: SyncStatus.pending,
-        recordId: item.id,
-      )).toList();
+      final syncEntries = items
+          .map(
+            (item) => SyncMetadata(
+              id: _uuid.v4(),
+              table: _table,
+              userId: item.userId,
+              status: SyncStatus.pending,
+              recordId: item.id,
+            ),
+          )
+          .toList();
       await _syncDao.insertAll(syncEntries);
     }
   }
@@ -161,7 +165,9 @@ class ClutchRepository extends BaseRepository<Clutch>
     for (final meta in tablePending) {
       final item = await _localDao.getById(meta.recordId ?? '');
       if (item == null) {
-        AppLogger.warning('[ClutchRepo] Orphan sync_metadata cleaned: ${meta.recordId}');
+        AppLogger.warning(
+          '[ClutchRepo] Orphan sync_metadata cleaned: ${meta.recordId}',
+        );
         await _syncDao.deleteByRecord(_table, meta.recordId ?? '');
         orphansCleaned++;
         continue;
@@ -174,5 +180,4 @@ class ClutchRepository extends BaseRepository<Clutch>
 
   Future<List<Clutch>> getByBreeding(String breedingId) =>
       _localDao.getByBreeding(breedingId);
-
 }
