@@ -194,7 +194,8 @@ class _WizardNavBar extends ConsumerWidget {
         ),
       );
     } finally {
-      controller.dispose();
+      WidgetsBinding.instance
+          .addPostFrameCallback((_) => controller.dispose());
     }
   }
 
