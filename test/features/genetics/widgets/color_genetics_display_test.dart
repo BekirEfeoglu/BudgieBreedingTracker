@@ -194,7 +194,7 @@ void main() {
       await tester.pump();
 
       expect(find.byType(BirdColorSimulation), findsOneWidget);
-      expect(find.byType(Container), findsAtLeastNWidgets(1));
+      expect(find.byType(CustomPaint), findsAtLeastNWidgets(1));
     });
 
     testWidgets('displays color for blue series phenotype', (tester) async {
@@ -209,6 +209,7 @@ void main() {
       await tester.pump();
 
       expect(find.byType(BirdColorSimulation), findsOneWidget);
+      expect(find.byType(CustomPaint), findsAtLeastNWidgets(1));
     });
 
     testWidgets('displays mutation names through visual elements', (
@@ -224,8 +225,8 @@ void main() {
       );
       await tester.pump();
 
-      // Opaline + cinnamon produce specific visual elements
-      expect(find.byType(Positioned), findsAtLeastNWidgets(2));
+      // Opaline + cinnamon are rendered via CustomPaint + BudgiePainter
+      expect(find.byType(CustomPaint), findsAtLeastNWidgets(1));
     });
 
     testWidgets('displays carried mutation accent indicator', (tester) async {
@@ -240,8 +241,8 @@ void main() {
       );
       await tester.pump();
 
-      // Carrier accent adds a small colored dot and border
-      expect(find.byType(DecoratedBox), findsAtLeastNWidgets(2));
+      // Carrier accent is painted via BudgiePainter inside CustomPaint
+      expect(find.byType(CustomPaint), findsAtLeastNWidgets(1));
     });
 
     testWidgets('handles empty mutations list', (tester) async {
