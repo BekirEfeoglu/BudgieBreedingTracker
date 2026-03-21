@@ -1,130 +1,12 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
+import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
+import 'package:budgie_breeding_tracker/features/genetics/screens/genetics_color_audit_samples.dart';
 import 'package:budgie_breeding_tracker/features/genetics/widgets/bird_color_simulation.dart';
 
 class GeneticsColorAuditScreen extends StatelessWidget {
   const GeneticsColorAuditScreen({super.key});
-
-  static const _primarySamples = <AuditSample>[
-    AuditSample(
-      title: 'Light Green',
-      note: 'WBO 375',
-      phenotype: 'Light Green',
-      visualMutations: [],
-    ),
-    AuditSample(
-      title: 'Grey-Green',
-      note: 'Grey cheek',
-      phenotype: 'Grey-Green',
-      visualMutations: ['grey'],
-    ),
-    AuditSample(
-      title: 'Skyblue',
-      note: 'WBO 310',
-      phenotype: 'Skyblue',
-      visualMutations: ['blue'],
-    ),
-    AuditSample(
-      title: 'Cobalt',
-      note: 'WBO 2915',
-      phenotype: 'Cobalt',
-      visualMutations: ['blue', 'dark_factor'],
-    ),
-    AuditSample(
-      title: 'Grey',
-      note: 'Grey cheek',
-      phenotype: 'Grey',
-      visualMutations: ['blue', 'grey'],
-    ),
-    AuditSample(
-      title: 'Anthracite DF',
-      note: 'Dark cheek/body',
-      phenotype: 'Double Factor Anthracite',
-      visualMutations: ['anthracite'],
-    ),
-    AuditSample(
-      title: 'Cinnamon Skyblue',
-      note: '50% body depth',
-      phenotype: 'Cinnamon Skyblue',
-      visualMutations: ['blue', 'cinnamon'],
-    ),
-    AuditSample(
-      title: 'Greywing Skyblue',
-      note: '50% + pale cheek',
-      phenotype: 'Skyblue Greywing',
-      visualMutations: ['blue', 'greywing'],
-    ),
-    AuditSample(
-      title: 'Dom. Clearbody',
-      note: 'Smoky grey cheek',
-      phenotype: 'Dominant Clearbody Skyblue',
-      visualMutations: ['blue', 'dominant_clearbody'],
-    ),
-    AuditSample(
-      title: 'Texas Clearbody',
-      note: 'Pale body suffusion',
-      phenotype: 'Skyblue Texas Clearbody',
-      visualMutations: ['blue', 'texas_clearbody'],
-    ),
-    AuditSample(
-      title: 'Lutino',
-      note: 'White cheek',
-      phenotype: 'Lutino',
-      visualMutations: ['ino'],
-    ),
-    AuditSample(
-      title: 'Albino',
-      note: 'White cheek',
-      phenotype: 'Albino',
-      visualMutations: ['ino', 'blue'],
-    ),
-  ];
-
-  static const _advancedSamples = <AuditSample>[
-    AuditSample(
-      title: 'Visual Violet',
-      note: 'Series violet',
-      phenotype: 'Visual Violet Skyblue',
-      visualMutations: ['blue', 'violet'],
-    ),
-    AuditSample(
-      title: 'Mauve',
-      note: 'Dark factor blue',
-      phenotype: 'Mauve',
-      visualMutations: ['blue', 'dark_factor'],
-    ),
-    AuditSample(
-      title: 'Slate',
-      note: 'Deep violet cheek',
-      phenotype: 'Slate',
-      visualMutations: ['slate'],
-    ),
-    AuditSample(
-      title: 'Green Slate',
-      note: 'Muted grey-green',
-      phenotype: 'Light Green Slate',
-      visualMutations: ['slate'],
-    ),
-    AuditSample(
-      title: 'SF Anthracite',
-      note: 'Deeper green, not charcoal',
-      phenotype: 'Light Green Single Factor Anthracite',
-      visualMutations: ['anthracite'],
-    ),
-    AuditSample(
-      title: 'Blackface',
-      note: 'Black mask',
-      phenotype: 'Blackface Light Green',
-      visualMutations: ['blackface'],
-    ),
-    AuditSample(
-      title: 'DF Spangle',
-      note: 'Silver-white cheek',
-      phenotype: 'Double Factor Spangle',
-      visualMutations: ['blue', 'spangle'],
-    ),
-  ];
 
   @override
   Widget build(BuildContext context) {
@@ -133,10 +15,15 @@ class GeneticsColorAuditScreen extends StatelessWidget {
       appBar: AppBar(title: Text('genetics.color_audit_title'.tr())),
       body: SafeArea(
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.md,
+            AppSpacing.sm,
+            AppSpacing.md,
+            AppSpacing.md,
+          ),
           children: const [
             GeneticsPrimaryColorAuditBoard(),
-            SizedBox(height: 16),
+            SizedBox(height: AppSpacing.lg),
             GeneticsAdvancedColorAuditBoard(),
           ],
         ),
@@ -150,12 +37,12 @@ class GeneticsPrimaryColorAuditBoard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const GeneticsColorAuditBoard(
-      title: 'Critical phenotype audit board',
-      subtitle: 'WBO base tones + high-risk mutation visuals',
-      samples: GeneticsColorAuditScreen._primarySamples,
+    return GeneticsColorAuditBoard(
+      title: 'genetics.color_audit_primary_title'.tr(),
+      subtitle: 'genetics.color_audit_primary_subtitle'.tr(),
+      samples: primaryAuditSamples,
       minTileWidth: 88,
-      birdSize: 52,
+      birdSize: 64,
     );
   }
 }
@@ -165,13 +52,12 @@ class GeneticsAdvancedColorAuditBoard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const GeneticsColorAuditBoard(
-      title: 'Advanced mutation audit board',
-      subtitle:
-          'Violet, mauve, slate, anthracite, blackface, and DF spangle checks',
-      samples: GeneticsColorAuditScreen._advancedSamples,
+    return GeneticsColorAuditBoard(
+      title: 'genetics.color_audit_advanced_title'.tr(),
+      subtitle: 'genetics.color_audit_advanced_subtitle'.tr(),
+      samples: advancedAuditSamples,
       minTileWidth: 106,
-      birdSize: 62,
+      birdSize: 80,
     );
   }
 }
@@ -199,11 +85,11 @@ class GeneticsColorAuditBoard extends StatelessWidget {
     return DecoratedBox(
       decoration: BoxDecoration(
         color: theme.colorScheme.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(AppSpacing.xxl),
         border: Border.all(color: theme.colorScheme.outlineVariant),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(AppSpacing.md),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -213,14 +99,14 @@ class GeneticsColorAuditBoard extends StatelessWidget {
                 fontWeight: FontWeight.w700,
               ),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: AppSpacing.xs),
             Text(
               subtitle,
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.md),
             LayoutBuilder(
               builder: (context, constraints) {
                 final crossAxisCount = (constraints.maxWidth / minTileWidth)
@@ -232,14 +118,17 @@ class GeneticsColorAuditBoard extends StatelessWidget {
                   physics: const NeverScrollableScrollPhysics(),
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: crossAxisCount,
-                    crossAxisSpacing: 10,
-                    mainAxisSpacing: 10,
+                    crossAxisSpacing: AppSpacing.sm,
+                    mainAxisSpacing: AppSpacing.sm,
                     childAspectRatio: 0.70,
                   ),
                   itemCount: samples.length,
                   itemBuilder: (context, index) {
                     final sample = samples[index];
-                    return _AuditSampleCard(sample: sample, birdSize: birdSize);
+                    return _AuditSampleCard(
+                      sample: sample,
+                      birdSize: birdSize,
+                    );
                   },
                 );
               },
@@ -263,8 +152,8 @@ class _AuditSampleCard extends StatelessWidget {
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(AppSpacing.xl),
         border: Border.all(color: theme.colorScheme.outlineVariant),
         boxShadow: [
           BoxShadow(
@@ -275,16 +164,19 @@ class _AuditSampleCard extends StatelessWidget {
         ],
       ),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 10),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.sm,
+          vertical: AppSpacing.sm,
+        ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             BirdColorSimulation(
               visualMutations: sample.visualMutations,
               phenotype: sample.phenotype,
-              size: birdSize,
+              height: birdSize,
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.sm),
             Text(
               sample.title,
               textAlign: TextAlign.center,
@@ -296,7 +188,7 @@ class _AuditSampleCard extends StatelessWidget {
                 height: 1.1,
               ),
             ),
-            const SizedBox(height: 3),
+            const SizedBox(height: AppSpacing.xxs),
             Text(
               sample.note,
               textAlign: TextAlign.center,
@@ -314,18 +206,4 @@ class _AuditSampleCard extends StatelessWidget {
       ),
     );
   }
-}
-
-class AuditSample {
-  final String title;
-  final String note;
-  final String phenotype;
-  final List<String> visualMutations;
-
-  const AuditSample({
-    required this.title,
-    required this.note,
-    required this.phenotype,
-    required this.visualMutations,
-  });
 }

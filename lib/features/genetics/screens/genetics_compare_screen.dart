@@ -155,7 +155,7 @@ class _CompareTableState extends State<_CompareTable> {
                         child: BirdColorSimulation(
                           visualMutations: const [],
                           phenotype: phenotype,
-                          size: 24.0,
+                          height: 48,
                         ),
                       ),
                       Text(localizedPhenotype),
