@@ -124,5 +124,45 @@ void main() {
       );
       expect(result.effectiveBackColor, equals(result.bodyColor));
     });
+
+    test('german fallow has dark red eye color', () {
+      final result = BudgieColorResolver.resolve(
+        visualMutations: ['fallow_german'],
+        phenotype: 'German Fallow Light Green',
+      );
+      expect(result.eyeColor, equals(const Color(0xFFAA3344)));
+    });
+
+    test('dark-eyed clear has no eye ring', () {
+      final result = BudgieColorResolver.resolve(
+        visualMutations: ['recessive_pied', 'clearflight_pied'],
+        phenotype: 'Dark-Eyed Clear Light Green',
+      );
+      expect(result.showEyeRing, isFalse);
+    });
+
+    test('texas clearbody back color is a lightened body color', () {
+      final result = BudgieColorResolver.resolve(
+        visualMutations: ['texas_clearbody'],
+        phenotype: 'Texas Clearbody Light Green',
+      );
+      expect(result.backColor, isNotNull);
+    });
+
+    test('fallow beak color is warm orange', () {
+      final result = BudgieColorResolver.resolve(
+        visualMutations: ['fallow_english'],
+        phenotype: 'English Fallow Light Green',
+      );
+      expect(result.beakColor, equals(const Color(0xFFE89830)));
+    });
+
+    test('ino tail is alpha-faded to approximately 0.15', () {
+      final result = BudgieColorResolver.resolve(
+        visualMutations: ['ino'],
+        phenotype: 'Lutino',
+      );
+      expect(result.tailColor.a, closeTo(0.15, 0.02));
+    });
   });
 }
