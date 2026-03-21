@@ -59,13 +59,8 @@ abstract final class BudgieColorResolver {
     final hasSaddleback =
         ids.contains('saddleback') || lower.contains('saddleback');
 
-    final isBlueSeries = _isBlueSeries(
-      ids,
-      lower,
-      hasBlue,
-      hasAqua,
-      hasTurquoise,
-    );
+    final isBlueSeries =
+        _isBlueSeries(ids, lower, hasBlue, hasAqua, hasTurquoise);
     final isDoubleFactorSpangle =
         lower.contains('double factor spangle') || lower.contains('df spangle');
     final isDarkEyedClear = lower.contains('dark-eyed clear');
@@ -273,18 +268,32 @@ abstract final class BudgieColorResolver {
       showPiedPatch = true;
     }
 
+    final hasRecessivePied =
+        ids.contains('recessive_pied') || lower.contains('recessive pied');
+    final anatomy = _resolveAnatomyDetails(
+      isAlbino: isAlbino, isLutino: isLutino,
+      isCreamino: isCreamino, isLacewing: isLacewing,
+      isDarkEyedClear: isDarkEyedClear,
+      isDoubleFactorSpangle: isDoubleFactorSpangle,
+      isBlueSeries: isBlueSeries, hasOpaline: hasOpaline,
+      hasCinnamon: hasCinnamon, hasDilute: hasDilute,
+      hasGreywing: hasGreywing, hasEnglishFallow: hasEnglishFallow,
+      hasGermanFallow: hasGermanFallow, hasRecessivePied: hasRecessivePied,
+      hasTexasClearbody: hasTexasClearbody, body: body,
+    );
+
     return BudgieColorAppearance(
-      bodyColor: body,
-      maskColor: mask,
-      wingMarkingColor: wingMarkings,
-      wingFillColor: wingFill,
-      cheekPatchColor: cheekPatch,
-      piedPatchColor: piedPatch,
+      bodyColor: body, maskColor: mask,
+      wingMarkingColor: wingMarkings, wingFillColor: wingFill,
+      cheekPatchColor: cheekPatch, piedPatchColor: piedPatch,
       carrierAccentColor: carrierAccentColor,
-      showPiedPatch: showPiedPatch,
-      showMantleHighlight: showMantleHighlight,
-      showCarrierAccent: showCarrierAccent,
-      hideWingMarkings: hideWingMarkings,
+      eyeColor: anatomy.eyeColor, eyeRingColor: anatomy.eyeRingColor,
+      showEyeRing: anatomy.showEyeRing, backColor: anatomy.backColor,
+      tailColor: anatomy.tailColor, throatSpotColor: anatomy.throatSpotColor,
+      showThroatSpots: anatomy.showThroatSpots,
+      throatSpotCount: anatomy.throatSpotCount, beakColor: anatomy.beakColor,
+      showPiedPatch: showPiedPatch, showMantleHighlight: showMantleHighlight,
+      showCarrierAccent: showCarrierAccent, hideWingMarkings: hideWingMarkings,
     );
   }
 }
