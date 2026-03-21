@@ -63,7 +63,7 @@ class OffspringPrediction extends StatelessWidget {
                 visualMutations: result.visualMutations,
                 carriedMutations: result.carriedMutations,
                 phenotype: result.compoundPhenotype ?? result.phenotype,
-                size: showGenotype ? 64 : 48,
+                height: showGenotype ? 80 : 64,
               ),
               const SizedBox(width: AppSpacing.md),
 
