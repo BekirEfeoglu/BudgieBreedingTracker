@@ -45,9 +45,31 @@ Replace the current circle-based color simulation (`BirdColorSimulation`) with a
 | `throatSpotCount` | `int` | Spot count (normal: 6, opaline: 4) |
 | `showEyeRing` | `bool` | Show eye ring (false for Recessive Pied) |
 
+### New Field Defaults
+
+All new fields are optional with compile-time defaults, ensuring backward compatibility with the single existing construction site in `BudgieColorResolver.resolve()`:
+
+```dart
+final Color eyeColor;          // default: Color(0xFF1A1A1A)
+final Color eyeRingColor;      // default: Color(0xFFF0F0F0)
+final Color backColor;         // default: bodyColor (resolved at construction)
+final Color tailColor;         // default: Color(0xFF2B4F6F)
+final Color throatSpotColor;   // default: Color(0xFF1A1A1A)
+final Color beakColor;         // default: Color(0xFFE8A830)
+final bool showThroatSpots;    // default: true
+final int throatSpotCount;     // default: 6 (total spots, not visible count)
+final bool showEyeRing;        // default: true
+```
+
+`throatSpotCount` represents total spots on the bird. The painter renders `(count / 2).ceil()` spots in side profile.
+
 ### Retained Fields (unchanged)
 
 `bodyColor`, `maskColor`, `wingMarkingColor`, `wingFillColor`, `cheekPatchColor`, `piedPatchColor`, `carrierAccentColor`, `showPiedPatch`, `showMantleHighlight`, `showCarrierAccent`, `hideWingMarkings`
+
+### Removed Fields
+
+`showCheekPatch` — always `true` in current code (line 284 of resolver). Removed; cheek patches are always rendered.
 
 ---
 
@@ -155,26 +177,42 @@ New private helper `_resolveAnatomyDetails()` computes the 6 new color fields + 
 
 ## 4. Widget Integration
 
-### API Preservation
+### API Changes
 
 ```dart
 BirdColorSimulation(
   visualMutations: ['blue', 'opaline'],
   carriedMutations: ['ino'],
   phenotype: 'Opaline Skyblue',
-  size: 90,  // now represents height (was circle diameter)
+  height: 80,   // NEW: explicit height parameter
+  width: 60,    // NEW: explicit width parameter (optional, default: height * 0.75)
 )
 ```
 
-- `size` parameter reinterpreted as height; width = `size * 0.75`
-- No breaking changes to constructor signature
-- Internal rendering changes from Container/Stack to CustomPaint
+- Old `size` parameter **deprecated** but still accepted (mapped to `height` internally)
+- New `height` + optional `width` parameters replace `size`
+- Minimum enforced size: `height >= 48` (below this, silhouette detail is illegible)
+- Internal rendering changes from Container/Stack to `CustomPaint` + `RepaintBoundary`
 - `BudgieColorResolver.resolve()` call unchanged; returned `BudgieColorAppearance` has new fields with defaults
+- `shouldRepaint`: uses `identical(oldAppearance, newAppearance)` check on the `BudgieColorAppearance` instance to avoid unnecessary repaints
+
+### Call Site Updates Required
+
+| File | Current Usage | New Usage |
+|------|--------------|-----------|
+| `offspring_prediction.dart` | `size: 56` | `height: 72` |
+| `genetics_compare_screen.dart` | `size: 24` | `height: 48` (minimum enforced) |
+| `genetics_color_audit_screen.dart` | `birdSize: 52/62` | `height: 64/80` |
 
 ### Layout Impact
 
-- Offspring prediction cards: size may adjust from 56px circle to ~64-80px height silhouette
-- Card layout in `offspring_prediction.dart` may need minor padding adjustments
+- Offspring prediction cards: rectangular silhouette (~54x72) replaces 56px circle — card row layout may need minor padding adjustment
+- Compare screen: silhouette at minimum 48px height (was 24px circle) — column width may need adjustment
+- Audit screen: minor size changes, no layout impact expected
+
+### Semantics
+
+`BirdColorSimulation` wraps the `CustomPaint` with a `Semantics` widget using the `phenotype` string as label for screen reader accessibility.
 
 ---
 
@@ -228,14 +266,48 @@ BirdColorSimulation(
 | Blackface | Black mask, extra dark wing bars |
 | Fallow (English) | Faded body, brown wings, plum eye |
 | Fallow (German) | Similar to English but slightly darker |
+| Saddleback | V-shaped back marking: upper back = body color, lower back = wing marking color; `showMantleHighlight: true` |
 
 ---
+
+## 6. Test Migration Plan
+
+### Existing Tests Affected
+
+- `test/features/genetics/widgets/bird_color_simulation_test.dart` (355 lines, 19 tests): assertions on `Container`, `Stack`, `Positioned`, `DecoratedBox` will all break. These must be rewritten to test `CustomPaint` + `BudgiePainter` output.
+- Golden test images under `test/golden/genetics/` (6 images referencing `BirdColorSimulation`): must be regenerated after visual change.
+
+### New Test Coverage
+
+| Test File | Scope |
+|-----------|-------|
+| `bird_color_simulation_test.dart` | Rewritten: widget renders `CustomPaint`, correct `BudgiePainter` receives `BudgieColorAppearance`, deprecated `size` maps to `height`, minimum size enforced, `Semantics` label present |
+| `budgie_painter_test.dart` (new) | Unit test: `shouldRepaint` returns false for identical appearance, true for changed appearance. Paint does not throw for edge cases (all flags false, empty mutations). |
+| `budgie_color_resolver_test.dart` (existing) | Extended: verify new fields (eyeColor, tailColor, etc.) for key mutation combinations |
+| Golden tests | Regenerated with `--update-goldens` after implementation |
+
+### Color Helper Consolidation
+
+The duplicate `_lighten` helper in `bird_color_simulation.dart` (line 198) is removed. The painter uses color helpers from `BudgieColorResolver` parts (`_mix`, `_lighten`, `_saturate`) which are extracted to a shared top-level utility if needed by the painter, or the painter defines its own minimal set.
+
+## 7. File Size Estimates
+
+| File | Estimated Lines | Risk |
+|------|----------------|------|
+| `budgie_painter.dart` | 60-90 | Safe |
+| `budgie_painter_paths.dart` | 200-280 | Medium — if exceeds 300, split into `_paths_body.dart` and `_paths_details.dart` |
+| `budgie_painter_details.dart` | 120-180 | Safe |
+| `bird_color_simulation.dart` | 40-60 (simplified) | Safe — much smaller than current 203 lines |
 
 ## Implementation Notes
 
 - Existing `BudgieColorResolver` logic is NOT refactored — only extended
 - New `_resolveAnatomyDetails()` helper added at end of `resolve()`
-- `BudgieColorAppearance` new fields have sensible defaults (backward compatible)
-- `BirdColorSimulation` widget API signature unchanged
+- `BudgieColorAppearance` new fields use optional parameters with defaults (backward compatible)
+- Old `size` parameter deprecated, new `height`/`width` parameters added
 - `BudgiePainter` uses `part` directive to stay under 300-line file limit
+- `RepaintBoundary` wraps `CustomPaint` inside `BirdColorSimulation` widget
+- `shouldRepaint` uses `identical()` on `BudgieColorAppearance` for performance
+- `Semantics` widget wraps painter with phenotype label for accessibility
 - All new files follow project conventions (snake_case, const constructors, AppSpacing)
+- Dark mode: domain-specific bird colors do NOT change with theme; only the widget's shadow/outline adapts via `Theme.of(context)`
