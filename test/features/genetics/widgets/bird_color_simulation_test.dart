@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:budgie_breeding_tracker/features/genetics/widgets/bird_color_simulation.dart';
+import 'package:budgie_breeding_tracker/features/genetics/widgets/budgie_painter.dart';
 
 Widget _wrap(Widget child) {
   return MaterialApp(
@@ -11,345 +12,164 @@ Widget _wrap(Widget child) {
 
 void main() {
   group('BirdColorSimulation', () {
-    testWidgets('renders without crashing with basic phenotype', (
-      tester,
-    ) async {
+    testWidgets('renders CustomPaint', (tester) async {
       await tester.pumpWidget(
         _wrap(
           const BirdColorSimulation(
             visualMutations: [],
-            phenotype: 'Normal Green',
+            phenotype: 'Light Green',
           ),
         ),
       );
-      await tester.pump();
 
-      expect(find.byType(BirdColorSimulation), findsOneWidget);
+      expect(find.byType(CustomPaint), findsAtLeastNWidgets(1));
     });
 
-    testWidgets('renders a circular Container as root', (tester) async {
+    testWidgets('wraps in RepaintBoundary', (tester) async {
       await tester.pumpWidget(
         _wrap(
           const BirdColorSimulation(
             visualMutations: [],
-            phenotype: 'Normal Green',
+            phenotype: 'Light Green',
           ),
         ),
       );
-      await tester.pump();
 
-      expect(find.byType(Container), findsAtLeastNWidgets(1));
+      expect(find.byType(RepaintBoundary), findsAtLeastNWidgets(1));
     });
 
-    testWidgets('uses default size of 56', (tester) async {
+    testWidgets('has Semantics with phenotype label', (tester) async {
       await tester.pumpWidget(
         _wrap(
           const BirdColorSimulation(
             visualMutations: [],
-            phenotype: 'Normal Green',
+            phenotype: 'Cobalt Opaline',
           ),
         ),
       );
-      await tester.pump();
 
-      final container = tester.widget<Container>(find.byType(Container).first);
-      expect(container.constraints?.maxWidth, 56.0);
-      expect(container.constraints?.maxHeight, 56.0);
+      final semantics = tester.getSemantics(
+        find.byType(BirdColorSimulation),
+      );
+      expect(semantics.label, contains('Cobalt Opaline'));
     });
 
-    testWidgets('respects custom size parameter', (tester) async {
+    testWidgets('default height is 72 with 3:4 aspect', (tester) async {
       await tester.pumpWidget(
         _wrap(
           const BirdColorSimulation(
             visualMutations: [],
-            phenotype: 'Normal Green',
+            phenotype: 'Light Green',
+          ),
+        ),
+      );
+
+      final customPaint = tester.widget<CustomPaint>(
+        find.byType(CustomPaint).last,
+      );
+      expect(customPaint.size.height, equals(72.0));
+      expect(customPaint.size.width, equals(54.0));
+    });
+
+    testWidgets('respects custom height', (tester) async {
+      await tester.pumpWidget(
+        _wrap(
+          const BirdColorSimulation(
+            visualMutations: [],
+            phenotype: 'Light Green',
+            height: 100,
+          ),
+        ),
+      );
+
+      final customPaint = tester.widget<CustomPaint>(
+        find.byType(CustomPaint).last,
+      );
+      expect(customPaint.size.height, equals(100.0));
+      expect(customPaint.size.width, equals(75.0));
+    });
+
+    testWidgets('enforces minimum height of 48', (tester) async {
+      await tester.pumpWidget(
+        _wrap(
+          const BirdColorSimulation(
+            visualMutations: [],
+            phenotype: 'Light Green',
+            height: 20,
+          ),
+        ),
+      );
+
+      final customPaint = tester.widget<CustomPaint>(
+        find.byType(CustomPaint).last,
+      );
+      expect(customPaint.size.height, greaterThanOrEqualTo(48.0));
+    });
+
+    testWidgets('deprecated size maps to height', (tester) async {
+      await tester.pumpWidget(
+        _wrap(
+          // ignore: deprecated_member_use_from_same_package
+          const BirdColorSimulation(
+            visualMutations: [],
+            phenotype: 'Light Green',
             size: 80,
           ),
         ),
       );
-      await tester.pump();
 
-      final container = tester.widget<Container>(find.byType(Container).first);
-      expect(container.constraints?.maxWidth, 80.0);
-      expect(container.constraints?.maxHeight, 80.0);
-    });
-
-    testWidgets('renders Stack for layered visual elements', (tester) async {
-      await tester.pumpWidget(
-        _wrap(
-          const BirdColorSimulation(
-            visualMutations: [],
-            phenotype: 'Normal Green',
-          ),
-        ),
+      final customPaint = tester.widget<CustomPaint>(
+        find.byType(CustomPaint).last,
       );
-      await tester.pump();
-
-      expect(find.byType(Stack), findsAtLeastNWidgets(1));
+      expect(customPaint.size.height, equals(80.0));
     });
 
-    testWidgets('renders with blue series phenotype', (tester) async {
+    testWidgets('uses BudgiePainter', (tester) async {
       await tester.pumpWidget(
         _wrap(
           const BirdColorSimulation(
             visualMutations: ['blue'],
-            phenotype: 'Normal Blue',
+            phenotype: 'Skyblue',
           ),
         ),
       );
-      await tester.pump();
 
-      expect(find.byType(BirdColorSimulation), findsOneWidget);
+      final customPaint = tester.widget<CustomPaint>(
+        find.byType(CustomPaint).last,
+      );
+      expect(customPaint.painter, isA<BudgiePainter>());
     });
 
-    testWidgets('renders with opaline mutation showing mantle highlight', (
+    testWidgets('renders without crash for various mutations', (
       tester,
     ) async {
-      await tester.pumpWidget(
-        _wrap(
-          const BirdColorSimulation(
-            visualMutations: ['opaline'],
-            phenotype: 'Opaline Green',
+      final testCases = [
+        (['blue'], 'Skyblue'),
+        (['opaline'], 'Opaline Light Green'),
+        (['ino', 'blue'], 'Albino'),
+        (['ino'], 'Lutino'),
+        (['cinnamon'], 'Cinnamon Light Green'),
+        (['spangle'], 'Spangle Light Green'),
+        (['recessive_pied'], 'Recessive Pied Light Green'),
+        (['greywing'], 'Greywing Light Green'),
+        (['clearwing'], 'Clearwing Light Green'),
+        (['dilute'], 'Dilute Light Green'),
+        (<String>[], 'Light Green'),
+        (['blue', 'opaline', 'cinnamon'], 'Cinnamon Opaline Skyblue'),
+      ];
+
+      for (final (mutations, phenotype) in testCases) {
+        await tester.pumpWidget(
+          _wrap(
+            BirdColorSimulation(
+              visualMutations: mutations,
+              phenotype: phenotype,
+            ),
           ),
-        ),
-      );
-      await tester.pump();
+        );
 
-      // Opaline enables showMantleHighlight, adding extra Positioned elements
-      expect(find.byType(Positioned), findsAtLeastNWidgets(2));
-    });
-
-    testWidgets('renders with pied mutation showing pied patch', (
-      tester,
-    ) async {
-      await tester.pumpWidget(
-        _wrap(
-          const BirdColorSimulation(
-            visualMutations: ['recessive_pied'],
-            phenotype: 'Recessive Pied Green',
-          ),
-        ),
-      );
-      await tester.pump();
-
-      // Pied enables showPiedPatch, adding a pied patch Positioned
-      expect(find.byType(DecoratedBox), findsAtLeastNWidgets(1));
-    });
-
-    testWidgets('renders with carried mutations showing carrier accent', (
-      tester,
-    ) async {
-      await tester.pumpWidget(
-        _wrap(
-          const BirdColorSimulation(
-            visualMutations: [],
-            carriedMutations: ['blue'],
-            phenotype: 'Normal Green',
-          ),
-        ),
-      );
-      await tester.pump();
-
-      // Carrier accent adds additional Positioned elements (border + dot)
-      expect(find.byType(DecoratedBox), findsAtLeastNWidgets(2));
-    });
-
-    testWidgets('renders without carrier accent when no carried mutations', (
-      tester,
-    ) async {
-      await tester.pumpWidget(
-        _wrap(
-          const BirdColorSimulation(
-            visualMutations: [],
-            carriedMutations: [],
-            phenotype: 'Normal Green',
-          ),
-        ),
-      );
-      await tester.pump();
-
-      expect(find.byType(BirdColorSimulation), findsOneWidget);
-    });
-
-    testWidgets('renders with albino phenotype (ino mutation)', (tester) async {
-      await tester.pumpWidget(
-        _wrap(
-          const BirdColorSimulation(
-            visualMutations: ['ino', 'blue'],
-            phenotype: 'Albino',
-          ),
-        ),
-      );
-      await tester.pump();
-
-      expect(find.byType(BirdColorSimulation), findsOneWidget);
-    });
-
-    testWidgets('renders with lutino phenotype', (tester) async {
-      await tester.pumpWidget(
-        _wrap(
-          const BirdColorSimulation(
-            visualMutations: ['ino'],
-            phenotype: 'Lutino',
-          ),
-        ),
-      );
-      await tester.pump();
-
-      expect(find.byType(BirdColorSimulation), findsOneWidget);
-    });
-
-    testWidgets('renders with cinnamon mutation', (tester) async {
-      await tester.pumpWidget(
-        _wrap(
-          const BirdColorSimulation(
-            visualMutations: ['cinnamon'],
-            phenotype: 'Cinnamon Green',
-          ),
-        ),
-      );
-      await tester.pump();
-
-      expect(find.byType(BirdColorSimulation), findsOneWidget);
-    });
-
-    testWidgets('renders with spangle mutation', (tester) async {
-      await tester.pumpWidget(
-        _wrap(
-          const BirdColorSimulation(
-            visualMutations: ['spangle'],
-            phenotype: 'Spangle Green',
-          ),
-        ),
-      );
-      await tester.pump();
-
-      expect(find.byType(BirdColorSimulation), findsOneWidget);
-    });
-
-    testWidgets('renders with multiple combined mutations', (tester) async {
-      await tester.pumpWidget(
-        _wrap(
-          const BirdColorSimulation(
-            visualMutations: ['opaline', 'cinnamon', 'blue'],
-            phenotype: 'Opaline Cinnamon Blue',
-          ),
-        ),
-      );
-      await tester.pump();
-
-      expect(find.byType(BirdColorSimulation), findsOneWidget);
-    });
-
-    testWidgets('renders with double factor spangle phenotype', (tester) async {
-      await tester.pumpWidget(
-        _wrap(
-          const BirdColorSimulation(
-            visualMutations: ['spangle'],
-            phenotype: 'Double Factor Spangle Green',
-          ),
-        ),
-      );
-      await tester.pump();
-
-      expect(find.byType(BirdColorSimulation), findsOneWidget);
-    });
-
-    testWidgets('renders with grey mutation', (tester) async {
-      await tester.pumpWidget(
-        _wrap(
-          const BirdColorSimulation(
-            visualMutations: ['grey', 'blue'],
-            phenotype: 'Grey Blue',
-          ),
-        ),
-      );
-      await tester.pump();
-
-      expect(find.byType(BirdColorSimulation), findsOneWidget);
-    });
-
-    testWidgets('renders with empty phenotype string', (tester) async {
-      await tester.pumpWidget(
-        _wrap(const BirdColorSimulation(visualMutations: [], phenotype: '')),
-      );
-      await tester.pump();
-
-      expect(find.byType(BirdColorSimulation), findsOneWidget);
-    });
-
-    testWidgets('has clip behavior set to antiAlias', (tester) async {
-      await tester.pumpWidget(
-        _wrap(
-          const BirdColorSimulation(
-            visualMutations: [],
-            phenotype: 'Normal Green',
-          ),
-        ),
-      );
-      await tester.pump();
-
-      final container = tester.widget<Container>(find.byType(Container).first);
-      expect(container.clipBehavior, Clip.antiAlias);
-    });
-
-    testWidgets('renders cheek patch area by default', (tester) async {
-      await tester.pumpWidget(
-        _wrap(
-          const BirdColorSimulation(
-            visualMutations: [],
-            phenotype: 'Normal Green',
-          ),
-        ),
-      );
-      await tester.pump();
-
-      // cheek patch is always rendered
-      expect(find.byType(Positioned), findsAtLeastNWidgets(1));
-    });
-
-    testWidgets('renders mask/face color area', (tester) async {
-      await tester.pumpWidget(
-        _wrap(
-          const BirdColorSimulation(
-            visualMutations: [],
-            phenotype: 'Normal Green',
-          ),
-        ),
-      );
-      await tester.pump();
-
-      // Mask area is always rendered as a Positioned Container
-      final positioned = find.byType(Positioned);
-      expect(positioned, findsAtLeastNWidgets(1));
-    });
-
-    testWidgets('renders with clearwing mutation', (tester) async {
-      await tester.pumpWidget(
-        _wrap(
-          const BirdColorSimulation(
-            visualMutations: ['clearwing'],
-            phenotype: 'Clearwing Green',
-          ),
-        ),
-      );
-      await tester.pump();
-
-      expect(find.byType(BirdColorSimulation), findsOneWidget);
-    });
-
-    testWidgets('renders with dilute mutation', (tester) async {
-      await tester.pumpWidget(
-        _wrap(
-          const BirdColorSimulation(
-            visualMutations: ['dilute'],
-            phenotype: 'Dilute Green',
-          ),
-        ),
-      );
-      await tester.pump();
-
-      expect(find.byType(BirdColorSimulation), findsOneWidget);
+        expect(find.byType(CustomPaint), findsAtLeastNWidgets(1));
+      }
     });
   });
 }
