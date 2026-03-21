@@ -52,7 +52,7 @@ All new fields are optional with compile-time defaults, ensuring backward compat
 ```dart
 final Color eyeColor;          // default: Color(0xFF1A1A1A)
 final Color eyeRingColor;      // default: Color(0xFFF0F0F0)
-final Color backColor;         // default: bodyColor (resolved at construction)
+final Color? backColor;        // default: null → getter returns bodyColor at runtime
 final Color tailColor;         // default: Color(0xFF2B4F6F)
 final Color throatSpotColor;   // default: Color(0xFF1A1A1A)
 final Color beakColor;         // default: Color(0xFFE8A830)
@@ -194,14 +194,14 @@ BirdColorSimulation(
 - Minimum enforced size: `height >= 48` (below this, silhouette detail is illegible)
 - Internal rendering changes from Container/Stack to `CustomPaint` + `RepaintBoundary`
 - `BudgieColorResolver.resolve()` call unchanged; returned `BudgieColorAppearance` has new fields with defaults
-- `shouldRepaint`: uses `identical(oldAppearance, newAppearance)` check on the `BudgieColorAppearance` instance to avoid unnecessary repaints
+- `shouldRepaint`: `BudgieColorAppearance` implements `operator ==` and `hashCode` (field-by-field comparison). `BudgiePainter.shouldRepaint` uses `oldAppearance != newAppearance`. The class is NOT Freezed (plain `@immutable` class) so `==`/`hashCode` are hand-written. The `const` constructor is dropped because `backColor` defaults to `bodyColor` at runtime.
 
 ### Call Site Updates Required
 
 | File | Current Usage | New Usage |
 |------|--------------|-----------|
-| `offspring_prediction.dart` | `size: 56` | `height: 72` |
-| `genetics_compare_screen.dart` | `size: 24` | `height: 48` (minimum enforced) |
+| `offspring_prediction.dart` | `size: showGenotype ? 64 : 48` | `height: showGenotype ? 80 : 64` |
+| `genetics_compare_screen.dart` | `size: 24` | `height: 48` (minimum enforced); remove external `RepaintBoundary` wrapper (now internal) |
 | `genetics_color_audit_screen.dart` | `birdSize: 52/62` | `height: 64/80` |
 
 ### Layout Impact
@@ -275,6 +275,7 @@ BirdColorSimulation(
 ### Existing Tests Affected
 
 - `test/features/genetics/widgets/bird_color_simulation_test.dart` (355 lines, 19 tests): assertions on `Container`, `Stack`, `Positioned`, `DecoratedBox` will all break. These must be rewritten to test `CustomPaint` + `BudgiePainter` output.
+- `test/features/genetics/widgets/color_genetics_display_test.dart` (5 usages of `BirdColorSimulation`): assertions checking for `Container` will break. Must be updated.
 - Golden test images under `test/golden/genetics/` (6 images referencing `BirdColorSimulation`): must be regenerated after visual change.
 
 ### New Test Coverage
@@ -295,7 +296,7 @@ The duplicate `_lighten` helper in `bird_color_simulation.dart` (line 198) is re
 | File | Estimated Lines | Risk |
 |------|----------------|------|
 | `budgie_painter.dart` | 60-90 | Safe |
-| `budgie_painter_paths.dart` | 200-280 | Medium — if exceeds 300, split into `_paths_body.dart` and `_paths_details.dart` |
+| `budgie_painter_paths.dart` | 200-280 | Medium — if exceeds 300, replace with two direct parts of `budgie_painter.dart`: `budgie_painter_paths_body.dart` + `budgie_painter_paths_head.dart` |
 | `budgie_painter_details.dart` | 120-180 | Safe |
 | `bird_color_simulation.dart` | 40-60 (simplified) | Safe — much smaller than current 203 lines |
 
@@ -307,7 +308,7 @@ The duplicate `_lighten` helper in `bird_color_simulation.dart` (line 198) is re
 - Old `size` parameter deprecated, new `height`/`width` parameters added
 - `BudgiePainter` uses `part` directive to stay under 300-line file limit
 - `RepaintBoundary` wraps `CustomPaint` inside `BirdColorSimulation` widget
-- `shouldRepaint` uses `identical()` on `BudgieColorAppearance` for performance
+- `shouldRepaint` uses `operator ==` on `BudgieColorAppearance` (hand-written `==`/`hashCode`)
 - `Semantics` widget wraps painter with phenotype label for accessibility
 - All new files follow project conventions (snake_case, const constructors, AppSpacing)
 - Dark mode: domain-specific bird colors do NOT change with theme; only the widget's shadow/outline adapts via `Theme.of(context)`
