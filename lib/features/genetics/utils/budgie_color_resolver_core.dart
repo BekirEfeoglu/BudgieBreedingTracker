@@ -121,52 +121,24 @@ abstract final class BudgieColorResolver {
       // YF1 / Blue Factor I: yellow confined to mask only, no body suffusion.
     }
 
-    if (isDarkEyedClear) {
-      body = isBlueSeries
-          ? BudgiePhenotypePalette.maskWhite
-          : BudgiePhenotypePalette.maskYellow;
-      mask = body;
-      wingMarkings = Colors.transparent;
-      wingFill = Colors.transparent;
-      cheekPatch = BudgiePhenotypePalette.maskWhite;
-      hideWingMarkings = true;
-      showMantleHighlight = false;
-    } else if (isDoubleFactorSpangle) {
-      body = isBlueSeries
-          ? BudgiePhenotypePalette.maskWhite
-          : BudgiePhenotypePalette.maskYellow;
-      mask = body;
-      wingMarkings = Colors.transparent;
-      wingFill = Colors.transparent;
-      cheekPatch = BudgiePhenotypePalette.cheekSilver;
-      hideWingMarkings = true;
-      showMantleHighlight = false;
-    } else if (isAlbino || isLutino || isCreamino || isLacewing) {
-      if (isAlbino) {
-        body = BudgiePhenotypePalette.maskWhite;
-        mask = BudgiePhenotypePalette.maskWhite;
-        cheekPatch = BudgiePhenotypePalette.maskWhite;
-      } else if (isCreamino) {
-        body = BudgiePhenotypePalette.cream;
-        mask = BudgiePhenotypePalette.warmIvory;
-        cheekPatch = BudgiePhenotypePalette.cheekPaleViolet;
-      } else {
-        body = BudgiePhenotypePalette.lutino;
-        mask = BudgiePhenotypePalette.maskYellow;
-        cheekPatch = BudgiePhenotypePalette.maskWhite;
-      }
+    final special = _resolveSpecialPhenotype(
+      isDarkEyedClear: isDarkEyedClear,
+      isDoubleFactorSpangle: isDoubleFactorSpangle,
+      isAlbino: isAlbino,
+      isLutino: isLutino,
+      isCreamino: isCreamino,
+      isLacewing: isLacewing,
+      isBlueSeries: isBlueSeries,
+      currentShowMantleHighlight: showMantleHighlight,
+    );
 
-      if (isLacewing) {
-        body = isBlueSeries
-            ? BudgiePhenotypePalette.warmIvory
-            : BudgiePhenotypePalette.cream;
-        mask = body;
-        wingMarkings = BudgiePhenotypePalette.cinnamon;
-        cheekPatch = BudgiePhenotypePalette.cheekPaleViolet;
-      } else {
-        wingMarkings = Colors.transparent;
-        hideWingMarkings = true;
-      }
+    if (special != null) {
+      body = special.body;
+      mask = special.mask;
+      wingMarkings = special.wingMarkings;
+      cheekPatch = special.cheekPatch;
+      hideWingMarkings = special.hideWingMarkings;
+      showMantleHighlight = special.showMantleHighlight;
     } else {
       if (hasTexasClearbody) {
         body = _mix(
@@ -286,28 +258,19 @@ abstract final class BudgieColorResolver {
       }
     }
 
-    final hasRecessivePied =
-        ids.contains('recessive_pied') || lower.contains('recessive pied');
-    final hasDominantPied =
-        ids.contains('dominant_pied') || lower.contains('dominant pied');
-    final hasClearflightPied =
-        ids.contains('clearflight_pied') || lower.contains('clearflight pied');
-    final hasDutchPied =
-        ids.contains('dutch_pied') || lower.contains('dutch pied');
-
-    if (!isDarkEyedClear &&
-        (hasRecessivePied ||
-            hasDominantPied ||
-            hasClearflightPied ||
-            hasDutchPied)) {
+    final piedResult = _detectAndApplyPied(
+      ids: ids,
+      lower: lower,
+      isDarkEyedClear: isDarkEyedClear,
+      body: body,
+      mask: mask,
+      wingFill: wingFill,
+    );
+    if (piedResult != null) {
+      body = piedResult.body;
+      piedPatch = piedResult.piedPatch;
+      wingFill = piedResult.wingFill;
       showPiedPatch = true;
-      piedPatch = _mix(mask, body, 0.30);
-      if (hasRecessivePied) {
-        body = _mix(body, mask, 0.10);
-      }
-      if (hasClearflightPied) {
-        wingFill = mask.withValues(alpha: 0.28);
-      }
     }
 
     return BudgieColorAppearance(
@@ -318,7 +281,6 @@ abstract final class BudgieColorResolver {
       cheekPatchColor: cheekPatch,
       piedPatchColor: piedPatch,
       carrierAccentColor: carrierAccentColor,
-      showCheekPatch: true,
       showPiedPatch: showPiedPatch,
       showMantleHighlight: showMantleHighlight,
       showCarrierAccent: showCarrierAccent,

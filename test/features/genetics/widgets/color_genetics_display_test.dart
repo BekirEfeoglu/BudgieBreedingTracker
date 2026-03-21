@@ -170,15 +170,6 @@ void main() {
       expect(appearance.hideWingMarkings, isTrue);
     });
 
-    test('always shows cheek patch', () {
-      final appearance = BudgieColorResolver.resolve(
-        visualMutations: [],
-        phenotype: 'Normal Green',
-      );
-
-      expect(appearance.showCheekPatch, isTrue);
-    });
-
     test('resolves empty phenotype without crashing', () {
       final appearance = BudgieColorResolver.resolve(
         visualMutations: [],

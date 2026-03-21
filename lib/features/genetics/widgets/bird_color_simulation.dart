@@ -142,8 +142,7 @@ class BirdColorSimulation extends StatelessWidget {
               ),
             ),
 
-          if (appearance.showCheekPatch)
-            Positioned(
+          Positioned(
               top: size * 0.34,
               right: size * 0.08,
               width: size * 0.18,

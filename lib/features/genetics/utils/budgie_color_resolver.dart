@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 part 'budgie_color_resolver_core.dart';
 part 'budgie_color_resolver_helpers.dart';
+part 'budgie_color_resolver_utils.dart';
 
 /// Research-backed budgerigar palette used by genetics result previews.
 ///
@@ -59,11 +60,19 @@ class BudgieColorAppearance {
   final Color cheekPatchColor;
   final Color piedPatchColor;
   final Color carrierAccentColor;
-  final bool showCheekPatch;
+  final Color eyeColor;
+  final Color eyeRingColor;
+  final Color? backColor;
+  final Color tailColor;
+  final Color throatSpotColor;
+  final Color beakColor;
   final bool showPiedPatch;
   final bool showMantleHighlight;
   final bool showCarrierAccent;
   final bool hideWingMarkings;
+  final bool showThroatSpots;
+  final int throatSpotCount;
+  final bool showEyeRing;
 
   const BudgieColorAppearance({
     required this.bodyColor,
@@ -73,10 +82,69 @@ class BudgieColorAppearance {
     required this.cheekPatchColor,
     required this.piedPatchColor,
     required this.carrierAccentColor,
-    required this.showCheekPatch,
+    this.eyeColor = const Color(0xFF1A1A1A),
+    this.eyeRingColor = const Color(0xFFF0F0F0),
+    this.backColor,
+    this.tailColor = const Color(0xFF2B4F6F),
+    this.throatSpotColor = const Color(0xFF1A1A1A),
+    this.beakColor = const Color(0xFFE8A830),
     required this.showPiedPatch,
     required this.showMantleHighlight,
     required this.showCarrierAccent,
     required this.hideWingMarkings,
+    this.showThroatSpots = true,
+    this.throatSpotCount = 6,
+    this.showEyeRing = true,
   });
+
+  Color get effectiveBackColor => backColor ?? bodyColor;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is BudgieColorAppearance &&
+          bodyColor == other.bodyColor &&
+          maskColor == other.maskColor &&
+          wingMarkingColor == other.wingMarkingColor &&
+          wingFillColor == other.wingFillColor &&
+          cheekPatchColor == other.cheekPatchColor &&
+          piedPatchColor == other.piedPatchColor &&
+          carrierAccentColor == other.carrierAccentColor &&
+          eyeColor == other.eyeColor &&
+          eyeRingColor == other.eyeRingColor &&
+          backColor == other.backColor &&
+          tailColor == other.tailColor &&
+          throatSpotColor == other.throatSpotColor &&
+          beakColor == other.beakColor &&
+          showPiedPatch == other.showPiedPatch &&
+          showMantleHighlight == other.showMantleHighlight &&
+          showCarrierAccent == other.showCarrierAccent &&
+          hideWingMarkings == other.hideWingMarkings &&
+          showThroatSpots == other.showThroatSpots &&
+          throatSpotCount == other.throatSpotCount &&
+          showEyeRing == other.showEyeRing;
+
+  @override
+  int get hashCode => Object.hash(
+        bodyColor,
+        maskColor,
+        wingMarkingColor,
+        wingFillColor,
+        cheekPatchColor,
+        piedPatchColor,
+        carrierAccentColor,
+        eyeColor,
+        eyeRingColor,
+        backColor,
+        tailColor,
+        throatSpotColor,
+        beakColor,
+        showPiedPatch,
+        showMantleHighlight,
+        showCarrierAccent,
+        hideWingMarkings,
+        showThroatSpots,
+        throatSpotCount,
+        showEyeRing,
+      );
 }
