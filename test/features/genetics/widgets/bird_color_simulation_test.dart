@@ -304,7 +304,7 @@ void main() {
       );
       await tester.pump();
 
-      // showCheekPatch is always true, so cheek patch Positioned is present
+      // cheek patch is always rendered
       expect(find.byType(Positioned), findsAtLeastNWidgets(1));
     });
 
