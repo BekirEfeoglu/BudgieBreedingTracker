@@ -24,6 +24,13 @@ void main() {
         when(
           () => mockBirdRepository.getAll(any()),
         ).thenAnswer((_) async => []);
+        when(
+          () => mockBirdRepository.hasRingNumber(
+            any(),
+            any(),
+            excludeId: any(named: 'excludeId'),
+          ),
+        ).thenAnswer((_) async => false);
 
         final container = createTestContainer(
           overrides: [
@@ -106,6 +113,13 @@ void main() {
 
         final mockBirdRepository = MockBirdRepository();
         when(() => mockBirdRepository.save(any())).thenAnswer((_) async {});
+        when(
+          () => mockBirdRepository.hasRingNumber(
+            any(),
+            any(),
+            excludeId: any(named: 'excludeId'),
+          ),
+        ).thenAnswer((_) async => false);
 
         final container = createTestContainer(
           overrides: [
