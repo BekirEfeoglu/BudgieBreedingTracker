@@ -11,7 +11,9 @@ import '../../features/profile/screens/profile_screen.dart';
 import '../../features/settings/screens/settings_screen.dart';
 import '../../features/settings/screens/backup_screen.dart';
 import '../../features/settings/screens/legal_document_screen.dart';
+import '../../features/more/screens/guide_detail_screen.dart';
 import '../../features/more/screens/user_guide_screen.dart';
+import '../../features/more/widgets/guide_data.dart';
 import '../../features/notifications/screens/notification_list_screen.dart';
 import '../../features/notifications/screens/notification_settings_screen.dart';
 import '../../features/feedback/screens/feedback_screen.dart';
@@ -79,6 +81,18 @@ List<RouteBase> buildUserRoutes() => [
   GoRoute(
     path: AppRoutes.userGuide,
     builder: (context, state) => const UserGuideScreen(),
+    routes: [
+      GoRoute(
+        path: ':topicIndex',
+        builder: (context, state) {
+          final index = int.tryParse(state.pathParameters['topicIndex'] ?? '');
+          if (index == null || index < 0 || index >= guideTopics.length) {
+            return const NotFoundScreen();
+          }
+          return GuideDetailScreen(topicIndex: index);
+        },
+      ),
+    ],
   ),
   GoRoute(
     path: AppRoutes.notifications,

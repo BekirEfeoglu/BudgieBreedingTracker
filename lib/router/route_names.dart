@@ -52,6 +52,7 @@ abstract class AppRoutes {
   static const more = '/more';
   static const premium = '/premium';
   static const userGuide = '/user-guide';
+  static const userGuideDetail = '/user-guide/:topicIndex';
   static const notifications = '/notifications';
   static const notificationSettings = '/notification-settings';
   static const backup = '/backup';
