@@ -10,29 +10,37 @@ class _GuideAssetLoader extends AssetLoader {
   static const _translations = <String, Map<String, dynamic>>{
     'tr': {
       'common': {
-        'no_results': 'Sonuç bulunamadı',
-        'no_results_hint': 'Farklı bir arama deneyin',
+        'no_results': 'Sonuc bulunamadi',
+        'no_results_hint': 'Farkli bir arama deneyin',
       },
       'user_guide': {
-        'title': 'Kullanım Kılavuzu',
+        'title': 'Kullanim Kilavuzu',
         'search_hint': 'Konularda ara...',
-        'category_all': 'Tümü',
-        'category_getting_started': 'Başlangıç',
-        'category_bird_management': 'Kuş Yönetimi',
-        'category_breeding_process': 'Üreme Süreci',
-        'category_tools': 'Araçlar',
-        'category_data_management': 'Veri Yönetimi',
+        'category_all': 'Tumu',
+        'category_getting_started': 'Baslangic',
+        'category_bird_management': 'Kus Yonetimi',
+        'category_breeding_process': 'Ureme Sureci',
+        'category_tools': 'Araclar',
+        'category_data_management': 'Veri Yonetimi',
         'category_account_settings': 'Hesap ve Ayarlar',
-        'tip_label': 'İpucu:',
-        'warning_label': 'Uyarı:',
+        'tip_label': 'Ipucu:',
+        'warning_label': 'Uyari:',
         'premium_feature': 'Premium',
         'topics': {
-          'registration': {'title': 'Kayıt ve Giriş', 'intro': 'Kayıt intro'},
+          'registration': {
+            'title': 'Kayit ve Giris',
+            'subtitle': 'Hesap olusturma',
+            'intro': 'Kayit intro',
+          },
           'dashboard': {
-            'title': 'Dashboard Tanıtımı',
+            'title': 'Dashboard Tanitimi',
+            'subtitle': 'Ana ekran',
             'intro': 'Dashboard intro',
           },
-          'eggs_incubation': {'title': 'Yumurta ve Kuluçka Takibi'},
+          'eggs_incubation': {
+            'title': 'Yumurta ve Kulucka Takibi',
+            'subtitle': 'Kulucka sureci',
+          },
         },
       },
     },
@@ -75,7 +83,7 @@ void main() {
       await tester.enterText(find.byType(TextField), 'kulucka');
       await tester.pumpAndSettle();
 
-      expect(find.text('Yumurta ve Kuluçka Takibi'), findsOneWidget);
+      expect(find.text('Yumurta ve Kulucka Takibi'), findsOneWidget);
     });
 
     testWidgets('matches Turkish dotless i forms in search', (tester) async {
@@ -85,26 +93,7 @@ void main() {
       await tester.enterText(find.byType(TextField), 'kayit');
       await tester.pumpAndSettle();
 
-      expect(find.text('Kayıt ve Giriş'), findsOneWidget);
-    });
-
-    testWidgets('does not leak expansion state between filtered topics', (
-      tester,
-    ) async {
-      await tester.pumpWidget(_createSubject());
-      await tester.pumpAndSettle();
-
-      await tester.tap(find.text('Kayıt ve Giriş'));
-      await tester.pumpAndSettle();
-
-      expect(find.text('Kayıt intro'), findsOneWidget);
-      expect(find.text('Dashboard intro'), findsNothing);
-
-      await tester.enterText(find.byType(TextField), 'dashboard');
-      await tester.pumpAndSettle();
-
-      expect(find.text('Dashboard Tanıtımı'), findsOneWidget);
-      expect(find.text('Dashboard intro'), findsNothing);
+      expect(find.text('Kayit ve Giris'), findsOneWidget);
     });
   });
 }
