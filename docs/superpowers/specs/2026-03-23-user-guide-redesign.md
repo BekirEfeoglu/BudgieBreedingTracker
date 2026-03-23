@@ -61,7 +61,8 @@ GuideDetailScreen (StatelessWidget) — NEW
 - `lib/features/more/screens/user_guide_screen.dart` — REWRITE (grouped list)
 - `lib/features/more/screens/guide_detail_screen.dart` — NEW
 - `lib/features/more/widgets/guide_topic_list_item.dart` — NEW (replaces guide_topic_card.dart)
-- `lib/features/more/widgets/guide_data.dart` — MODIFIED (add subtitleKey, relatedTopicIndices)
+- `lib/features/more/widgets/guide_data.dart` — MODIFIED (add subtitleKey, relatedTopicIndices, split topics into part file)
+- `lib/features/more/widgets/guide_topics_data.dart` — NEW (part of guide_data.dart, contains 15 topic definitions)
 - `lib/features/more/widgets/guide_content_widgets.dart` — KEPT (no changes)
 - `lib/features/more/widgets/guide_topic_card.dart` — DELETED (replaced by list item + detail screen)
 
@@ -126,6 +127,14 @@ class GuideTopic {
 The `all` category was only needed for chip bar filtering. With grouped list,
 it is no longer needed. The search still filters across all categories.
 Remove `GuideCategory.all` and its `labelKey`/`iconAsset`.
+Also remove the `user_guide.category_all` key from all 3 L10n files.
+
+**Breaking test changes from removing `all`:**
+- `guide_data_test.dart` line 31: `containsAll` assertion includes `all` — remove it
+- `guide_data_test.dart` line 43: `values.length` is 7, becomes 6
+- `guide_data_test.dart` line 48-49: Filter test references `all` — remove/rewrite
+- `guide_data_test.dart` line 58: `all.iconAsset` assertion — delete
+- `guide_data_test.dart` line 68: `labelKey` prefix assertion for `all` — remove
 
 ## UI Specifications
 
@@ -155,8 +164,13 @@ Scaffold
   topics in a flat list (no section headers)
 - Empty state unchanged: EmptyState widget with search icon
 
+**Search normalization:**
+- The existing `_searchFoldMap` and `_normalizeSearchText` logic for Turkish/German
+  diacritic folding (i̇→i, ş→s, ç→c, ğ→g, ü→u, ö→o, etc.) MUST be preserved
+  in the rewritten screen. This is critical for Turkish language search.
+
 **Dimensions:**
-- Icon container: 38x38, borderRadius 10, background `theme.colorScheme.surfaceContainerHighest`
+- Icon container: 38x38, borderRadius `AppSpacing.radiusLg` (12), background `theme.colorScheme.surfaceContainerHighest`
 - Title: `titleSmall`, color `onSurface`
 - Subtitle: `bodySmall`, color `onSurfaceVariant`, maxLines 1, ellipsis
 - Chevron: `LucideIcons.chevronRight`, size 18, color `onSurfaceVariant`
@@ -190,6 +204,7 @@ Scaffold
 **Step count calculation:**
 - Count blocks where `type == GuideBlockType.steps`, sum their `stepKeys.length`
 - Display as: "{n} adim" using L10n key
+- If step count is 0 (topic has no steps blocks), hide the step count line entirely
 
 ## Localization Changes
 
@@ -280,20 +295,22 @@ Each topic's `relatedTopicIndices` (0-indexed into `guideTopics`):
 | `user_guide_screen.dart` | Rewrite | ~180 |
 | `guide_detail_screen.dart` | New | ~160 |
 | `guide_topic_list_item.dart` | New | ~90 |
-| `guide_data.dart` | Modify | +30 (subtitleKey, relatedTopicIndices, remove `all`) |
+| `guide_data.dart` | Split | Models + enums only (~100 lines) |
+| `guide_topics_data.dart` | New (part of guide_data) | 15 topic definitions (~300 lines) |
 | `guide_content_widgets.dart` | Keep | 0 changes |
 | `guide_topic_card.dart` | Delete | -67 |
 | `route_names.dart` | Modify | +1 line |
 | `user_routes.dart` | Modify | +10 lines (nested route) |
-| `tr.json` | Modify | +18 keys |
-| `en.json` | Modify | +18 keys |
-| `de.json` | Modify | +18 keys |
-| Tests | Update | Rewrite existing 4 test files |
+| `tr.json` | Modify | +17 keys, -1 key (`category_all`) |
+| `en.json` | Modify | +17 keys, -1 key (`category_all`) |
+| `de.json` | Modify | +17 keys, -1 key (`category_all`) |
+| Tests | Update | Rewrite existing 4 test files + 1 localized test |
 
 ## Testing Strategy
 
-- **guide_data_test.dart** — Update: verify subtitleKey, relatedTopicIndices, no `all` category
-- **user_guide_screen_test.dart** — Rewrite: test grouped list rendering, search filtering, navigation to detail
+- **guide_data_test.dart** — Update: verify subtitleKey, relatedTopicIndices, no `all` category, add relatedTopicIndices bounds validation test (all indices >= 0 and < guideTopics.length, no self-reference)
+- **user_guide_screen_test.dart** — Rewrite: test grouped list rendering, search filtering (incl. Turkish diacritic normalization), navigation to detail
+- **user_guide_screen_localized_test.dart** — Update: preserve Turkish diacritic search tests, remove ExpansionTile interaction tests (replaced by navigation tests)
 - **guide_detail_screen_test.dart** — New: test header, block rendering, related topics navigation
 - **guide_topic_list_item_test.dart** — New: test title/subtitle/icon/chevron rendering, premium badge
 - **guide_topic_card_test.dart** — Delete (widget removed)
