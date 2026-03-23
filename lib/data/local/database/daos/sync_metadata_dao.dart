@@ -111,14 +111,18 @@ class SyncMetadataDao extends DatabaseAccessor<AppDatabase>
   /// and must not be deleted during full reconciliation.
   Future<Set<String>> getPendingRecordIds(String userId) async {
     final rows =
-        await (select(syncMetadataTable)..where(
-              (t) =>
-                  t.userId.equals(userId) &
-                  (t.status.equalsValue(SyncStatus.pending) |
-                      t.status.equalsValue(SyncStatus.error)),
-            ))
+        await (selectOnly(syncMetadataTable)
+              ..addColumns([syncMetadataTable.recordId])
+              ..where(
+                syncMetadataTable.userId.equals(userId) &
+                    (syncMetadataTable.status.equalsValue(SyncStatus.pending) |
+                        syncMetadataTable.status.equalsValue(SyncStatus.error)),
+              ))
             .get();
-    return rows.map((r) => r.recordId).whereType<String>().toSet();
+    return rows
+        .map((row) => row.read(syncMetadataTable.recordId))
+        .whereType<String>()
+        .toSet();
   }
 
   /// Returns the set of table names that have pending sync records.

@@ -6,8 +6,8 @@ import 'package:budgie_breeding_tracker/router/route_names.dart';
 
 void main() {
   group('AdminGuard.redirect', () {
-    test('allows navigation while loading', () {
-      expect(AdminGuard.redirect(const AsyncLoading()), isNull);
+    test('redirects to splash while loading', () {
+      expect(AdminGuard.redirect(const AsyncLoading()), AppRoutes.splash);
     });
 
     test('redirects to home on error', () {

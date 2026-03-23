@@ -35,18 +35,22 @@ class BreedingNotificationHelper {
       final loadedEggs = eggs ?? await getEggsForIncubations(loadedIncubations);
 
       final scheduler = _ref.read(notificationSchedulerProvider);
-      for (final incubation in loadedIncubations) {
-        await scheduler.cancelIncubationMilestones(incubation.id);
-      }
+      await Future.wait(
+        loadedIncubations.map(
+          (inc) => scheduler.cancelIncubationMilestones(inc.id),
+        ),
+      );
 
       // Keep legacy cancellation by incubationId and cancel proper eggId-based schedules.
       final turningReminderIds = <String>{
         for (final incubation in loadedIncubations) incubation.id,
         for (final egg in loadedEggs) egg.id,
       };
-      for (final reminderId in turningReminderIds) {
-        await scheduler.cancelEggTurningReminders(reminderId);
-      }
+      await Future.wait(
+        turningReminderIds.map(
+          (id) => scheduler.cancelEggTurningReminders(id),
+        ),
+      );
     } catch (e) {
       AppLogger.warning('Failed to cancel breeding notifications: $e');
     }
@@ -72,15 +76,18 @@ class BreedingNotificationHelper {
       breedingPairId,
     ]);
 
-    for (final incubation in incubations) {
-      if (incubation.status != IncubationStatus.active) continue;
-      await incubationRepo.save(
-        incubation.copyWith(
-          status: status,
-          endDate: incubation.endDate ?? closedAt,
-          updatedAt: closedAt,
-        ),
-      );
+    final updatedIncubations = incubations
+        .where((inc) => inc.status == IncubationStatus.active)
+        .map(
+          (inc) => inc.copyWith(
+            status: status,
+            endDate: inc.endDate ?? closedAt,
+            updatedAt: closedAt,
+          ),
+        )
+        .toList();
+    if (updatedIncubations.isNotEmpty) {
+      await incubationRepo.saveAll(updatedIncubations);
     }
 
     return incubations;

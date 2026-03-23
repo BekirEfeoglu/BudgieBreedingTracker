@@ -6,13 +6,13 @@ import '../route_names.dart';
 class AdminGuard {
   /// Returns a redirect path if the user should not access admin routes.
   ///
-  /// - Loading: allows through (screens handle their own loading state)
+  /// - Loading: redirects to splash (prevent unauthenticated access)
   /// - Error: redirects to home (cannot verify admin status)
   /// - Not admin: redirects to home
   /// - Admin: allows through (returns null)
   static String? redirect(AsyncValue<bool> isAdminAsync) {
     return isAdminAsync.when(
-      loading: () => null,
+      loading: () => AppRoutes.splash,
       error: (_, __) => AppRoutes.home,
       data: (isAdmin) => isAdmin ? null : AppRoutes.home,
     );

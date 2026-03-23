@@ -106,14 +106,13 @@ void main() {
       expect(customPaint.size.height, greaterThanOrEqualTo(48.0));
     });
 
-    testWidgets('deprecated size maps to height', (tester) async {
+    testWidgets('explicit height is respected', (tester) async {
       await tester.pumpWidget(
         _wrap(
-          // ignore: deprecated_member_use_from_same_package
           const BirdColorSimulation(
             visualMutations: [],
             phenotype: 'Light Green',
-            size: 80,
+            height: 80,
           ),
         ),
       );

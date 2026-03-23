@@ -77,6 +77,20 @@ abstract final class GeneticsConstants {
   static const String mutAqua = 'aqua';
   static const String mutTurquoise = 'turquoise';
 
+  // ── Modifier / pattern mutation IDs ──
+  static const String mutBlackface = 'blackface';
+  static const String mutSpangle = 'spangle';
+  static const String mutViolet = 'violet';
+  static const String mutDarkFactor = 'dark_factor';
+  static const String mutGrey = 'grey';
+  static const String mutGreywing = 'greywing';
+  static const String mutClearwing = 'clearwing';
+  static const String mutYellowfaceType1 = 'yellowface_type1';
+  static const String mutYellowfaceType2 = 'yellowface_type2';
+  static const String mutGoldenface = 'goldenface';
+  static const String mutBlueFactor1 = 'bluefactor_1';
+  static const String mutBlueFactor2 = 'bluefactor_2';
+
   // ── Pied mutation IDs ──
   static const String mutRecessivePied = 'recessive_pied';
   static const String mutClearflightPied = 'clearflight_pied';

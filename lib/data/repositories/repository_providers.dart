@@ -21,6 +21,7 @@ import 'package:budgie_breeding_tracker/data/remote/api/community_post_cache.dar
 import 'package:budgie_breeding_tracker/data/repositories/community_post_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/community_comment_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/community_social_repository.dart';
+import 'package:budgie_breeding_tracker/data/repositories/feedback_repository.dart';
 
 /// Riverpod providers for all repositories.
 ///
@@ -188,5 +189,11 @@ final communitySocialRepositoryProvider = Provider<CommunitySocialRepository>((
 ) {
   return CommunitySocialRepository(
     source: ref.watch(communitySocialRemoteSourceProvider),
+  );
+});
+
+final feedbackRepositoryProvider = Provider<FeedbackRepository>((ref) {
+  return FeedbackRepository(
+    remoteSource: ref.watch(feedbackRemoteSourceProvider),
   );
 });

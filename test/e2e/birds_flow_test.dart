@@ -25,6 +25,9 @@ void main() {
           () => mockBirdRepository.getAll(any()),
         ).thenAnswer((_) async => []);
         when(
+          () => mockBirdRepository.getCount(any()),
+        ).thenAnswer((_) async => 1);
+        when(
           () => mockBirdRepository.hasRingNumber(
             any(),
             any(),

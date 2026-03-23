@@ -4,13 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
-import 'package:uuid/uuid.dart';
 
-import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
 import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
+import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
-import 'package:budgie_breeding_tracker/data/remote/api/feedback_remote_source.dart';
-import 'package:budgie_breeding_tracker/data/remote/api/remote_source_providers.dart';
+import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 
 // Enums
@@ -145,14 +143,14 @@ class FeedbackEntry {
 
 // Providers
 
-/// Fetches the user's feedback history from Supabase via [FeedbackRemoteSource].
+/// Fetches the user's feedback history from Supabase via [FeedbackRepository].
 final feedbackHistoryProvider =
     FutureProvider.family<List<FeedbackEntry>, String>((ref, userId) async {
       final initialized = ref.watch(supabaseInitializedProvider);
       if (!initialized) return [];
 
-      final remoteSource = ref.watch(feedbackRemoteSourceProvider);
-      final response = await remoteSource.fetchByUser(userId);
+      final repo = ref.watch(feedbackRepositoryProvider);
+      final response = await repo.fetchByUser(userId);
 
       return response.map((json) => FeedbackEntry.fromJson(json)).toList();
     });
@@ -189,7 +187,7 @@ class FeedbackFormNotifier extends Notifier<FeedbackFormState> {
   @override
   FeedbackFormState build() => const FeedbackFormState();
 
-  /// Submits feedback via [FeedbackRemoteSource].
+  /// Submits feedback via [FeedbackRepository].
   Future<void> submit({
     required FeedbackCategory category,
     required String subject,
@@ -201,30 +199,24 @@ class FeedbackFormNotifier extends Notifier<FeedbackFormState> {
     state = state.copyWith(isLoading: true, error: null, isSuccess: false);
 
     try {
-      final remoteSource = ref.read(feedbackRemoteSourceProvider);
+      final repo = ref.read(feedbackRepositoryProvider);
       final userId = ref.read(currentUserIdProvider);
 
-      final feedbackId = const Uuid().v4();
-
-      await remoteSource.insert({
-        SupabaseConstants.feedbackColId: feedbackId,
-        SupabaseConstants.feedbackColUserId: userId,
-        SupabaseConstants.feedbackColType: category.value,
-        SupabaseConstants.feedbackColSubject: subject,
-        SupabaseConstants.feedbackColMessage: message,
-        if (email != null && email.isNotEmpty)
-          SupabaseConstants.feedbackColEmail: email,
-        if (appVersion != null)
-          SupabaseConstants.feedbackColAppVersion: appVersion,
-        SupabaseConstants.feedbackColPlatform: deviceInfo,
-        SupabaseConstants.feedbackColStatus: 'open',
-      });
+      final feedbackId = await repo.submit(
+        userId: userId,
+        categoryValue: category.value,
+        subject: subject,
+        message: message,
+        email: email,
+        appVersion: appVersion,
+        deviceInfo: deviceInfo,
+      );
 
       // Notify founders about the new feedback
-      await _notifyFounders(
-        remoteSource: remoteSource,
+      await repo.notifyFounders(
         feedbackId: feedbackId,
-        category: category,
+        notificationTitle:
+            'feedback.notify_founder_title'.tr(args: [category.label]),
         subject: subject,
       );
 
@@ -237,44 +229,6 @@ class FeedbackFormNotifier extends Notifier<FeedbackFormState> {
       AppLogger.error('FeedbackFormNotifier', e, st);
       Sentry.captureException(e, stackTrace: st);
       state = state.copyWith(isLoading: false, error: e.toString());
-    }
-  }
-
-  /// Sends a notification to all founder-role admins about new feedback.
-  Future<void> _notifyFounders({
-    required FeedbackRemoteSource remoteSource,
-    required String feedbackId,
-    required FeedbackCategory category,
-    required String subject,
-  }) async {
-    try {
-      final founderIds = await remoteSource.fetchFounderIds();
-      if (founderIds.isEmpty) return;
-
-      final now = DateTime.now().toIso8601String();
-      final notifications = <Map<String, dynamic>>[];
-
-      for (final founderId in founderIds) {
-        notifications.add({
-          SupabaseConstants.notificationColId: const Uuid().v4(),
-          SupabaseConstants.notificationColUserId: founderId,
-          SupabaseConstants.notificationColTitle:
-              'feedback.notify_founder_title'.tr(args: [category.label]),
-          SupabaseConstants.notificationColBody: subject,
-          SupabaseConstants.notificationColType: 'custom',
-          SupabaseConstants.notificationColPriority: 'normal',
-          SupabaseConstants.notificationColRead: false,
-          SupabaseConstants.notificationColReferenceId: feedbackId,
-          SupabaseConstants.notificationColReferenceType: 'feedback',
-          SupabaseConstants.notificationColCreatedAt: now,
-          SupabaseConstants.notificationColUpdatedAt: now,
-        });
-      }
-
-      await remoteSource.notifyFounders(notifications);
-    } catch (e, st) {
-      AppLogger.warning('FeedbackFormNotifier: Failed to notify founders: $e');
-      Sentry.captureException(e, stackTrace: st);
     }
   }
 

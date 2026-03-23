@@ -244,8 +244,18 @@ final repairOrphanBirdsProvider = FutureProvider<int>((ref) async {
   final incubationRepo = ref.read(incubationRepositoryProvider);
   final pairRepo = ref.read(breedingPairRepositoryProvider);
 
-  final allBirds = await birdRepo.getAll(userId);
-  final allChicks = await chickRepo.getAll(userId);
+  // Pre-fetch all entities into maps to avoid N+1 getById calls
+  final (allBirds, allChicks, allEggs, allIncubations, allPairs) = await (
+    birdRepo.getAll(userId),
+    chickRepo.getAll(userId),
+    eggRepo.getAll(userId),
+    incubationRepo.getAll(userId),
+    pairRepo.getAll(userId),
+  ).wait;
+
+  final eggMap = {for (final e in allEggs) e.id: e};
+  final incubationMap = {for (final i in allIncubations) i.id: i};
+  final pairMap = {for (final p in allPairs) p.id: p};
 
   // Build a map of birdId → chick for quick lookup
   final promotedChickMap = <String, Chick>{};
@@ -256,6 +266,7 @@ final repairOrphanBirdsProvider = FutureProvider<int>((ref) async {
   }
 
   int repairedCount = 0;
+  final birdsToSave = <Bird>[];
 
   for (final bird in allBirds) {
     // Skip birds that already have parents
@@ -265,32 +276,31 @@ final repairOrphanBirdsProvider = FutureProvider<int>((ref) async {
     final chick = promotedChickMap[bird.id];
     if (chick == null || chick.eggId == null) continue;
 
-    try {
-      final egg = await eggRepo.getById(chick.eggId!);
-      if (egg == null || egg.incubationId == null) continue;
+    final egg = eggMap[chick.eggId!];
+    if (egg == null || egg.incubationId == null) continue;
 
-      final incubation = await incubationRepo.getById(egg.incubationId!);
-      if (incubation == null || incubation.breedingPairId == null) continue;
+    final incubation = incubationMap[egg.incubationId!];
+    if (incubation == null || incubation.breedingPairId == null) continue;
 
-      final pair = await pairRepo.getById(incubation.breedingPairId!);
-      if (pair == null) continue;
+    final pair = pairMap[incubation.breedingPairId!];
+    if (pair == null) continue;
 
-      // Update bird with resolved parent IDs
-      await birdRepo.save(
-        bird.copyWith(
-          fatherId: pair.maleId,
-          motherId: pair.femaleId,
-          updatedAt: DateTime.now(),
-        ),
-      );
-      repairedCount++;
-      AppLogger.info(
-        'Repaired bird ${bird.name} (${bird.id}): '
-        'father=${pair.maleId}, mother=${pair.femaleId}',
-      );
-    } catch (e) {
-      AppLogger.warning('Failed to repair bird ${bird.id}: $e');
-    }
+    birdsToSave.add(
+      bird.copyWith(
+        fatherId: pair.maleId,
+        motherId: pair.femaleId,
+        updatedAt: DateTime.now(),
+      ),
+    );
+    repairedCount++;
+    AppLogger.info(
+      'Repaired bird ${bird.name} (${bird.id}): '
+      'father=${pair.maleId}, mother=${pair.femaleId}',
+    );
+  }
+
+  if (birdsToSave.isNotEmpty) {
+    await birdRepo.saveAll(birdsToSave);
   }
 
   return repairedCount;

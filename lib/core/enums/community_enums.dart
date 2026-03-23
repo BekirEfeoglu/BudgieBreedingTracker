@@ -18,24 +18,6 @@ enum CommunityPostType {
   }
 }
 
-enum CommunityPostStatus {
-  active,
-  deleted,
-  reported,
-  hidden,
-  unknown;
-
-  String toJson() => name;
-
-  static CommunityPostStatus fromJson(String json) {
-    try {
-      return values.byName(json);
-    } catch (_) {
-      return CommunityPostStatus.unknown;
-    }
-  }
-}
-
 enum CommunityReportReason {
   spam,
   harassment,

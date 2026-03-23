@@ -265,12 +265,10 @@ class BreedingFormNotifier extends Notifier<BreedingFormState> {
           eggs: eggs,
         );
 
-        for (final egg in eggs) {
-          await eggRepo.remove(egg.id);
-        }
-        for (final incubation in incubations) {
-          await incubationRepo.remove(incubation.id);
-        }
+        await Future.wait(eggs.map((egg) => eggRepo.remove(egg.id)));
+        await Future.wait(
+          incubations.map((inc) => incubationRepo.remove(inc.id)),
+        );
       } catch (e) {
         AppLogger.warning(
           'Failed to clean related incubation/egg records before deleting breeding $id: $e',

@@ -139,11 +139,3 @@ final eventsForWeekProvider = Provider<Map<DateTime, List<Event>>>((ref) {
   return map;
 });
 
-/// Upcoming events (next 5) for the current user.
-final upcomingEventsProvider = FutureProvider.family<List<Event>, String>((
-  ref,
-  userId,
-) {
-  final repo = ref.watch(eventRepositoryProvider);
-  return repo.getUpcoming(userId, limit: 5);
-});

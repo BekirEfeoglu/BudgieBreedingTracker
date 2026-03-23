@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 import 'package:budgie_breeding_tracker/data/local/database/app_database.dart';
 import 'package:budgie_breeding_tracker/data/local/database/tables/events_table.dart';
 import 'package:budgie_breeding_tracker/data/local/database/mappers/event_mapper.dart';
+import 'package:budgie_breeding_tracker/core/enums/event_enums.dart';
 import 'package:budgie_breeding_tracker/data/models/event_model.dart';
 
 part 'events_dao.g.dart';
@@ -107,6 +108,23 @@ class EventsDao extends DatabaseAccessor<AppDatabase> with _$EventsDaoMixin {
               ..orderBy([(t) => OrderingTerm.asc(t.eventDate)])
               ..limit(limit))
             .get();
+    return rows.map((r) => r.toModel()).toList();
+  }
+
+  /// Gets active events for a specific chick filtered by event type.
+  Future<List<Event>> getActiveByChickAndType(
+    String chickId,
+    EventType type,
+  ) async {
+    final rows = await (select(eventsTable)
+          ..where(
+            (t) =>
+                t.chickId.equals(chickId) &
+                t.type.equalsValue(type) &
+                t.isDeleted.equals(false) &
+                t.status.equalsValue(EventStatus.active),
+          ))
+        .get();
     return rows.map((r) => r.toModel()).toList();
   }
 

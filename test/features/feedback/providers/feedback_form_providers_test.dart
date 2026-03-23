@@ -1,55 +1,47 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
-import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
+import 'package:budgie_breeding_tracker/data/repositories/feedback_repository.dart';
+import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
+import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 import 'package:budgie_breeding_tracker/features/feedback/providers/feedback_providers.dart';
 
-// -- Fakes for Supabase insert chain --
+// -- Fake FeedbackRepository --
 
-/// A fake that acts as a Future-like PostgrestFilterBuilder.
-/// When awaited (via `.then()`), resolves or rejects based on [_error].
-class _FakeFilterBuilder extends Fake implements PostgrestFilterBuilder {
+class _FakeFeedbackRepository implements FeedbackRepository {
   final Object? _error;
 
-  _FakeFilterBuilder({Object? error}) : _error = error;
+  _FakeFeedbackRepository({Object? error}) : _error = error;
 
   @override
-  Future<S> then<S>(
-    FutureOr<S> Function(dynamic) onValue, {
-    Function? onError,
-  }) {
-    if (_error != null) {
-      final future = Future<dynamic>.error(_error);
-      return future.then(onValue, onError: onError);
-    }
-    return Future.value(onValue(null));
+  Future<List<Map<String, dynamic>>> fetchByUser(String userId) async {
+    if (_error != null) throw _error;
+    return [];
   }
-}
-
-class _FakeQueryBuilder extends Fake implements SupabaseQueryBuilder {
-  final Object? _error;
-
-  _FakeQueryBuilder({Object? error}) : _error = error;
 
   @override
-  PostgrestFilterBuilder insert(Object values, {bool defaultToNull = true}) {
-    return _FakeFilterBuilder(error: _error);
+  Future<String> submit({
+    required String userId,
+    required String categoryValue,
+    required String subject,
+    required String message,
+    String? email,
+    String? appVersion,
+    String? deviceInfo,
+  }) async {
+    if (_error != null) throw _error;
+    return 'fake-feedback-id';
   }
-}
-
-class _FakeSupabaseClient extends Fake implements SupabaseClient {
-  final Object? error;
-
-  _FakeSupabaseClient({this.error});
 
   @override
-  SupabaseQueryBuilder from(String table) {
-    return _FakeQueryBuilder(error: error);
+  Future<void> notifyFounders({
+    required String feedbackId,
+    required String notificationTitle,
+    required String subject,
+  }) async {
+    // No-op in tests
   }
 }
 
@@ -174,11 +166,11 @@ void main() {
   group('FeedbackFormNotifier', () {
     late ProviderContainer container;
 
-    ProviderContainer createContainer({Object? supabaseError}) {
+    ProviderContainer createContainer({Object? repoError}) {
       return ProviderContainer(
         overrides: [
-          supabaseClientProvider.overrideWithValue(
-            _FakeSupabaseClient(error: supabaseError),
+          feedbackRepositoryProvider.overrideWithValue(
+            _FakeFeedbackRepository(error: repoError),
           ),
           currentUserIdProvider.overrideWithValue('test-user'),
         ],
@@ -207,7 +199,7 @@ void main() {
             message: 'Test message body',
           );
 
-      // Should have at least loading → success transitions
+      // Should have at least loading -> success transitions
       expect(states.length, greaterThanOrEqualTo(2));
 
       // First state change: loading
@@ -222,7 +214,7 @@ void main() {
     });
 
     test('submit sets loading then error on failure', () async {
-      container = createContainer(supabaseError: Exception('Network failure'));
+      container = createContainer(repoError: Exception('Network failure'));
 
       final states = <FeedbackFormState>[];
       container.listen<FeedbackFormState>(

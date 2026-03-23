@@ -23,224 +23,219 @@ class SyncPushHandler {
   /// layer had errors.
   Future<bool> pushChanges(String userId) async {
     AppLogger.info('[SyncOrchestrator] Pushing changes for $userId');
-    int layerErrors = 0;
-    int totalPushed = 0;
-    int totalOrphans = 0;
+    final ctx = _PushContext();
 
-    // FK layer dependency flags — downstream layers skip when parent fails
-    bool l1Failed = false;
-    bool l2Failed = false;
-    bool l3Failed = false;
-    bool l4Failed = false;
-    bool l6Failed = false;
-
-    // Single DB query to determine which tables have pending changes
     final syncDao = _ref.read(syncMetadataDaoProvider);
     final pending = await syncDao.getPendingTableNames(userId);
 
-    // Layer 0: profile (always — lightweight single-record check)
+    await _pushLayer0Profile(userId, ctx);
+    await _pushLayer1RootEntities(userId, pending, ctx);
+    await _pushLayer2BreedingPairs(userId, pending, ctx);
+    await _pushLayer3ClutchesIncubations(userId, pending, ctx);
+    await _pushLayer4Eggs(userId, pending, ctx);
+    await _pushLayer5Chicks(userId, pending, ctx);
+    await _pushLayer6LeafEntities(userId, pending, ctx);
+    await _pushLayer7EventReminders(userId, pending, ctx);
+
+    return _reportPushResult(ctx);
+  }
+
+  Future<void> _pushLayer0Profile(String userId, _PushContext ctx) async {
     try {
       await _ref.read(profileRepositoryProvider).pushPending(userId);
     } catch (e, st) {
-      layerErrors++;
+      ctx.layerErrors++;
       AppLogger.error('[SyncOrchestrator] Push L0 (profile) failed', e, st);
     }
+  }
 
-    // Layer 1: root entities (birds, nests)
-    if (_anyPending(pending, [
+  Future<void> _pushLayer1RootEntities(
+    String userId, Set<String> pending, _PushContext ctx,
+  ) async {
+    if (!_anyPending(pending, [
       SupabaseConstants.birdsTable,
       SupabaseConstants.nestsTable,
     ])) {
-      final results = await _safeParallelPush([
-        if (pending.contains(SupabaseConstants.birdsTable))
-          () => _ref.read(birdRepositoryProvider).pushAll(userId),
-        if (pending.contains(SupabaseConstants.nestsTable))
-          () => _ref.read(nestRepositoryProvider).pushAll(userId),
-      ], 'L1 (birds/nests)');
-      for (final r in results) {
-        totalPushed += r.pushed;
-        totalOrphans += r.orphansCleaned;
-      }
-      if (results.isEmpty &&
-          _anyPending(pending, [
-            SupabaseConstants.birdsTable,
-            SupabaseConstants.nestsTable,
-          ])) {
-        layerErrors++;
-        l1Failed = true;
-      }
+      return;
     }
 
-    // Layer 2: depends on birds
-    if (l1Failed) {
-      AppLogger.warning(
-        '[SyncOrchestrator] Push L2 skipped: parent layer L1 failed',
-      );
-      l2Failed = true;
-    } else if (pending.contains(SupabaseConstants.breedingPairsTable)) {
-      try {
-        final r = await _ref
-            .read(breedingPairRepositoryProvider)
-            .pushAll(userId);
-        totalPushed += r.pushed;
-        totalOrphans += r.orphansCleaned;
-      } catch (e, st) {
-        layerErrors++;
-        l2Failed = true;
-        AppLogger.error(
-          '[SyncOrchestrator] Push L2 (breeding_pairs) failed',
-          e,
-          st,
-        );
-      }
+    final results = await _safeParallelPush([
+      if (pending.contains(SupabaseConstants.birdsTable))
+        () => _ref.read(birdRepositoryProvider).pushAll(userId),
+      if (pending.contains(SupabaseConstants.nestsTable))
+        () => _ref.read(nestRepositoryProvider).pushAll(userId),
+    ], 'L1 (birds/nests)');
+    ctx.addResults(results);
+    if (results.isEmpty &&
+        _anyPending(pending, [
+          SupabaseConstants.birdsTable,
+          SupabaseConstants.nestsTable,
+        ])) {
+      ctx.layerErrors++;
+      ctx.l1Failed = true;
     }
+  }
 
-    // Layer 3: depends on breeding_pairs (independent of each other)
-    if (l2Failed) {
-      AppLogger.warning(
-        '[SyncOrchestrator] Push L3 skipped: parent layer L2 failed',
-      );
-      l3Failed = true;
-    } else if (_anyPending(pending, [
+  Future<void> _pushLayer2BreedingPairs(
+    String userId, Set<String> pending, _PushContext ctx,
+  ) async {
+    if (ctx.l1Failed) {
+      AppLogger.warning('[SyncOrchestrator] Push L2 skipped: parent layer L1 failed');
+      ctx.l2Failed = true;
+      return;
+    }
+    if (!pending.contains(SupabaseConstants.breedingPairsTable)) return;
+    try {
+      ctx.addResult(await _ref.read(breedingPairRepositoryProvider).pushAll(userId));
+    } catch (e, st) {
+      ctx.layerErrors++;
+      ctx.l2Failed = true;
+      AppLogger.error('[SyncOrchestrator] Push L2 (breeding_pairs) failed', e, st);
+    }
+  }
+
+  Future<void> _pushLayer3ClutchesIncubations(
+    String userId, Set<String> pending, _PushContext ctx,
+  ) async {
+    if (ctx.l2Failed) {
+      AppLogger.warning('[SyncOrchestrator] Push L3 skipped: parent layer L2 failed');
+      ctx.l3Failed = true;
+      return;
+    }
+    if (!_anyPending(pending, [
       SupabaseConstants.clutchesTable,
       SupabaseConstants.incubationsTable,
     ])) {
-      final results = await _safeParallelPush([
-        if (pending.contains(SupabaseConstants.clutchesTable))
-          () => _ref.read(clutchRepositoryProvider).pushAll(userId),
-        if (pending.contains(SupabaseConstants.incubationsTable))
-          () => _ref.read(incubationRepositoryProvider).pushAll(userId),
-      ], 'L3 (clutches/incubations)');
-      for (final r in results) {
-        totalPushed += r.pushed;
-        totalOrphans += r.orphansCleaned;
-      }
-      if (results.isEmpty &&
-          _anyPending(pending, [
-            SupabaseConstants.clutchesTable,
-            SupabaseConstants.incubationsTable,
-          ])) {
-        layerErrors++;
-        l3Failed = true;
-      }
+      return;
     }
 
-    // Layer 4: depends on clutches + incubations
-    if (l3Failed) {
-      AppLogger.warning(
-        '[SyncOrchestrator] Push L4 skipped: parent layer L3 failed',
-      );
-      l4Failed = true;
-    } else if (pending.contains(SupabaseConstants.eggsTable)) {
-      try {
-        final r = await _ref.read(eggRepositoryProvider).pushAll(userId);
-        totalPushed += r.pushed;
-        totalOrphans += r.orphansCleaned;
-      } catch (e, st) {
-        layerErrors++;
-        l4Failed = true;
-        AppLogger.error('[SyncOrchestrator] Push L4 (eggs) failed', e, st);
-      }
+    final results = await _safeParallelPush([
+      if (pending.contains(SupabaseConstants.clutchesTable))
+        () => _ref.read(clutchRepositoryProvider).pushAll(userId),
+      if (pending.contains(SupabaseConstants.incubationsTable))
+        () => _ref.read(incubationRepositoryProvider).pushAll(userId),
+    ], 'L3 (clutches/incubations)');
+    ctx.addResults(results);
+    if (results.isEmpty &&
+        _anyPending(pending, [
+          SupabaseConstants.clutchesTable,
+          SupabaseConstants.incubationsTable,
+        ])) {
+      ctx.layerErrors++;
+      ctx.l3Failed = true;
     }
+  }
 
-    // Layer 5: depends on eggs
-    if (l4Failed) {
-      AppLogger.warning(
-        '[SyncOrchestrator] Push L5 skipped: parent layer L4 failed',
-      );
-    } else if (pending.contains(SupabaseConstants.chicksTable)) {
-      try {
-        final r = await _ref.read(chickRepositoryProvider).pushAll(userId);
-        totalPushed += r.pushed;
-        totalOrphans += r.orphansCleaned;
-      } catch (e, st) {
-        layerErrors++;
-        AppLogger.error('[SyncOrchestrator] Push L5 (chicks) failed', e, st);
-      }
+  Future<void> _pushLayer4Eggs(
+    String userId, Set<String> pending, _PushContext ctx,
+  ) async {
+    if (ctx.l3Failed) {
+      AppLogger.warning('[SyncOrchestrator] Push L4 skipped: parent layer L3 failed');
+      ctx.l4Failed = true;
+      return;
     }
+    if (!pending.contains(SupabaseConstants.eggsTable)) return;
+    try {
+      ctx.addResult(await _ref.read(eggRepositoryProvider).pushAll(userId));
+    } catch (e, st) {
+      ctx.layerErrors++;
+      ctx.l4Failed = true;
+      AppLogger.error('[SyncOrchestrator] Push L4 (eggs) failed', e, st);
+    }
+  }
 
-    // Layer 6: leaf entities (all independent — parallel push)
-    if (_anyPending(pending, [
+  Future<void> _pushLayer5Chicks(
+    String userId, Set<String> pending, _PushContext ctx,
+  ) async {
+    if (ctx.l4Failed) {
+      AppLogger.warning('[SyncOrchestrator] Push L5 skipped: parent layer L4 failed');
+      return;
+    }
+    if (!pending.contains(SupabaseConstants.chicksTable)) return;
+    try {
+      ctx.addResult(await _ref.read(chickRepositoryProvider).pushAll(userId));
+    } catch (e, st) {
+      ctx.layerErrors++;
+      AppLogger.error('[SyncOrchestrator] Push L5 (chicks) failed', e, st);
+    }
+  }
+
+  Future<void> _pushLayer6LeafEntities(
+    String userId, Set<String> pending, _PushContext ctx,
+  ) async {
+    final leafTables = [
       SupabaseConstants.healthRecordsTable,
       SupabaseConstants.growthMeasurementsTable,
       SupabaseConstants.eventsTable,
       SupabaseConstants.notificationsTable,
       SupabaseConstants.notificationSchedulesTable,
       SupabaseConstants.photosTable,
-    ])) {
-      final results = await _safeParallelPush([
-        if (pending.contains(SupabaseConstants.healthRecordsTable))
-          () => _ref.read(healthRecordRepositoryProvider).pushAll(userId),
-        if (pending.contains(SupabaseConstants.growthMeasurementsTable))
-          () => _ref.read(growthMeasurementRepositoryProvider).pushAll(userId),
-        if (pending.contains(SupabaseConstants.eventsTable))
-          () => _ref.read(eventRepositoryProvider).pushAll(userId),
-        if (pending.contains(SupabaseConstants.notificationsTable))
-          () => _ref.read(notificationRepositoryProvider).pushAll(userId),
-        if (pending.contains(SupabaseConstants.notificationSchedulesTable))
-          () =>
-              _ref.read(notificationScheduleRepositoryProvider).pushAll(userId),
-        if (pending.contains(SupabaseConstants.photosTable))
-          () => _ref.read(photoRepositoryProvider).pushAll(userId),
-      ], 'L6 (leaf entities)');
-      for (final r in results) {
-        totalPushed += r.pushed;
-        totalOrphans += r.orphansCleaned;
-      }
-      if (results.isEmpty) {
-        layerErrors++;
-        l6Failed = true;
-      }
-    }
+    ];
+    if (!_anyPending(pending, leafTables)) return;
 
-    // Layer 7: depends on events
-    if (l6Failed) {
-      AppLogger.warning(
-        '[SyncOrchestrator] Push L7 skipped: parent layer L6 failed',
-      );
-    } else if (pending.contains(SupabaseConstants.eventRemindersTable)) {
-      try {
-        final r = await _ref
-            .read(eventReminderRepositoryProvider)
-            .pushAll(userId);
-        totalPushed += r.pushed;
-        totalOrphans += r.orphansCleaned;
-      } catch (e, st) {
-        layerErrors++;
-        AppLogger.error(
-          '[SyncOrchestrator] Push L7 (event_reminders) failed',
-          e,
-          st,
-        );
-      }
+    final results = await _safeParallelPush([
+      if (pending.contains(SupabaseConstants.healthRecordsTable))
+        () => _ref.read(healthRecordRepositoryProvider).pushAll(userId),
+      if (pending.contains(SupabaseConstants.growthMeasurementsTable))
+        () => _ref.read(growthMeasurementRepositoryProvider).pushAll(userId),
+      if (pending.contains(SupabaseConstants.eventsTable))
+        () => _ref.read(eventRepositoryProvider).pushAll(userId),
+      if (pending.contains(SupabaseConstants.notificationsTable))
+        () => _ref.read(notificationRepositoryProvider).pushAll(userId),
+      if (pending.contains(SupabaseConstants.notificationSchedulesTable))
+        () => _ref.read(notificationScheduleRepositoryProvider).pushAll(userId),
+      if (pending.contains(SupabaseConstants.photosTable))
+        () => _ref.read(photoRepositoryProvider).pushAll(userId),
+    ], 'L6 (leaf entities)');
+    ctx.addResults(results);
+    if (results.isEmpty) {
+      ctx.layerErrors++;
+      ctx.l6Failed = true;
     }
+  }
 
-    final orphanInfo = totalOrphans > 0
-        ? ', $totalOrphans orphans cleaned'
+  Future<void> _pushLayer7EventReminders(
+    String userId, Set<String> pending, _PushContext ctx,
+  ) async {
+    if (ctx.l6Failed) {
+      AppLogger.warning('[SyncOrchestrator] Push L7 skipped: parent layer L6 failed');
+      return;
+    }
+    if (!pending.contains(SupabaseConstants.eventRemindersTable)) return;
+    try {
+      ctx.addResult(await _ref.read(eventReminderRepositoryProvider).pushAll(userId));
+    } catch (e, st) {
+      ctx.layerErrors++;
+      AppLogger.error('[SyncOrchestrator] Push L7 (event_reminders) failed', e, st);
+    }
+  }
+
+  bool _reportPushResult(_PushContext ctx) {
+    final orphanInfo = ctx.totalOrphans > 0
+        ? ', ${ctx.totalOrphans} orphans cleaned'
         : '';
 
-    // Report sync metrics to Sentry for observability.
     Sentry.addBreadcrumb(Breadcrumb(
       message: 'SyncPush completed',
       data: {
-        'pushed': totalPushed,
-        'orphansCleaned': totalOrphans,
-        'layerErrors': layerErrors,
-        'success': layerErrors == 0,
+        'pushed': ctx.totalPushed,
+        'orphansCleaned': ctx.totalOrphans,
+        'layerErrors': ctx.layerErrors,
+        'success': ctx.layerErrors == 0,
       },
       category: 'sync.push',
-      level: layerErrors > 0 ? SentryLevel.warning : SentryLevel.info,
+      level: ctx.layerErrors > 0 ? SentryLevel.warning : SentryLevel.info,
     ));
 
-    if (layerErrors > 0) {
+    if (ctx.layerErrors > 0) {
       AppLogger.warning(
-        '[SyncOrchestrator] Push completed with $layerErrors layer error(s): '
-        '$totalPushed pushed$orphanInfo',
+        '[SyncOrchestrator] Push completed with ${ctx.layerErrors} layer error(s): '
+        '${ctx.totalPushed} pushed$orphanInfo',
       );
       return false;
     } else {
       AppLogger.info(
-        '[SyncOrchestrator] Push complete: $totalPushed pushed$orphanInfo',
+        '[SyncOrchestrator] Push complete: ${ctx.totalPushed} pushed$orphanInfo',
       );
       return true;
     }
@@ -249,4 +244,28 @@ class SyncPushHandler {
   /// Pushes pending records for a specific table.
   Future<void> pushTable(String userId, String table) =>
       _pushSingleTable(_ref, userId, table);
+}
+
+/// Accumulates push statistics and failure flags across layers.
+class _PushContext {
+  int layerErrors = 0;
+  int totalPushed = 0;
+  int totalOrphans = 0;
+
+  bool l1Failed = false;
+  bool l2Failed = false;
+  bool l3Failed = false;
+  bool l4Failed = false;
+  bool l6Failed = false;
+
+  void addResult(PushStats r) {
+    totalPushed += r.pushed;
+    totalOrphans += r.orphansCleaned;
+  }
+
+  void addResults(List<PushStats> results) {
+    for (final r in results) {
+      addResult(r);
+    }
+  }
 }

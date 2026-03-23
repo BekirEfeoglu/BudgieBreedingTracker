@@ -22,6 +22,8 @@ void main() {
       () async {
         final mockEventRepository = MockEventRepository();
         when(() => mockEventRepository.save(any())).thenAnswer((_) async {});
+        when(() => mockEventRepository.saveAll(any()))
+            .thenAnswer((_) async {});
 
         final generator = CalendarEventGenerator(mockEventRepository);
         await generator.generateIncubationEvents(
@@ -32,11 +34,11 @@ void main() {
         );
 
         final saved = verify(
-          () => mockEventRepository.save(captureAny()),
-        ).captured.cast<Event>();
+          () => mockEventRepository.saveAll(captureAny()),
+        ).captured.single as List<dynamic>;
         expect(saved, isNotEmpty);
         expect(
-          saved.every((event) => event.type == EventType.breeding),
+          saved.cast<Event>().every((event) => event.type == EventType.breeding),
           isTrue,
         );
       },
@@ -79,6 +81,8 @@ void main() {
       () async {
         final mockEventRepository = MockEventRepository();
         when(() => mockEventRepository.save(any())).thenAnswer((_) async {});
+        when(() => mockEventRepository.saveAll(any()))
+            .thenAnswer((_) async {});
 
         final generator = CalendarEventGenerator(mockEventRepository);
         final layDate = DateTime.now().add(const Duration(days: 1));
@@ -95,14 +99,20 @@ void main() {
           chickLabel: 'Yavru 1',
         );
 
-        final generated = verify(
+        // Egg events use individual save(), chick events use saveAll()
+        final eggEvents = verify(
           () => mockEventRepository.save(captureAny()),
         ).captured.cast<Event>();
+        final chickEvents = verify(
+          () => mockEventRepository.saveAll(captureAny()),
+        ).captured.single as List<dynamic>;
+
+        final allEvents = [...eggEvents, ...chickEvents.cast<Event>()];
         expect(
-          generated.any((event) => event.type == EventType.hatching),
+          allEvents.any((event) => event.type == EventType.hatching),
           isTrue,
         );
-        expect(generated.any((event) => event.type == EventType.chick), isTrue);
+        expect(allEvents.any((event) => event.type == EventType.chick), isTrue);
       },
       timeout: e2eTimeout,
     );

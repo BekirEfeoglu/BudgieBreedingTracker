@@ -4,30 +4,98 @@ part of 'epistasis_engine.dart';
 List<EpistaticInteraction> _getInteractions(Set<String> mutations) {
   final interactions = <EpistaticInteraction>[];
 
-  final isBlue =
-      mutations.contains(GeneticsConstants.mutBlue) ||
-      mutations.contains(GeneticsConstants.mutAqua) ||
-      mutations.contains(GeneticsConstants.mutTurquoise) ||
-      mutations.contains('bluefactor_1') ||
-      mutations.contains('bluefactor_2');
-  final hasIno = mutations.contains(GeneticsConstants.mutIno);
-  final hasCinnamon = mutations.contains(GeneticsConstants.mutCinnamon);
-  final hasPallid = mutations.contains(GeneticsConstants.mutPallid);
-  final hasBlackface = mutations.contains('blackface');
-  final hasSpangle = mutations.contains('spangle');
-  final hasViolet = mutations.contains('violet');
-  final hasDarkFactor = mutations.contains('dark_factor');
-  final hasYf2 = mutations.contains('yellowface_type2');
-  final hasGoldenface = mutations.contains('goldenface');
-  final hasBlueFactor1 = mutations.contains('bluefactor_1');
-  final hasBlueFactor2 = mutations.contains('bluefactor_2');
-  final hasRecessivePied = mutations.contains(GeneticsConstants.mutRecessivePied);
-  final hasClearflightPied = mutations.contains(GeneticsConstants.mutClearflightPied);
-  final hasDominantPied = mutations.contains(GeneticsConstants.mutDominantPied);
-  final hasDutchPied = mutations.contains(GeneticsConstants.mutDutchPied);
+  final flags = _InteractionFlags.from(mutations);
 
-  // PallidIno / Creamino
-  if (hasIno && hasPallid) {
+  _addInoAllelicInteractions(mutations, flags, interactions);
+  _addInoSeriesInteractions(flags, interactions);
+  _addVioletDarkFactorInteractions(flags, interactions);
+  _addGreyInteractions(mutations, flags, interactions);
+  _addGreywingClearwingInteractions(mutations, interactions);
+  _addPiedInteractions(flags, interactions);
+  _addBlackfaceSpangleInteractions(flags, interactions);
+  _addYellowfaceMaskedInteractions(mutations, flags, interactions);
+  _addParblueInoInteractions(mutations, flags, interactions);
+  _addPearlyInteractions(mutations, flags, interactions);
+  _addCrestedCompoundInteractions(mutations, interactions);
+
+  return interactions;
+}
+
+class _InteractionFlags {
+  final bool isBlue;
+  final bool hasIno;
+  final bool hasCinnamon;
+  final bool hasPallid;
+  final bool hasBlackface;
+  final bool hasSpangle;
+  final bool hasViolet;
+  final bool hasDarkFactor;
+  final bool hasYf2;
+  final bool hasGoldenface;
+  final bool hasBlueFactor1;
+  final bool hasBlueFactor2;
+  final bool hasRecessivePied;
+  final bool hasClearflightPied;
+  final bool hasDominantPied;
+  final bool hasDutchPied;
+  final bool hasAqua;
+  final bool hasTurquoise;
+
+  const _InteractionFlags({
+    required this.isBlue,
+    required this.hasIno,
+    required this.hasCinnamon,
+    required this.hasPallid,
+    required this.hasBlackface,
+    required this.hasSpangle,
+    required this.hasViolet,
+    required this.hasDarkFactor,
+    required this.hasYf2,
+    required this.hasGoldenface,
+    required this.hasBlueFactor1,
+    required this.hasBlueFactor2,
+    required this.hasRecessivePied,
+    required this.hasClearflightPied,
+    required this.hasDominantPied,
+    required this.hasDutchPied,
+    required this.hasAqua,
+    required this.hasTurquoise,
+  });
+
+  factory _InteractionFlags.from(Set<String> mutations) {
+    return _InteractionFlags(
+      isBlue: mutations.contains(GeneticsConstants.mutBlue) ||
+          mutations.contains(GeneticsConstants.mutAqua) ||
+          mutations.contains(GeneticsConstants.mutTurquoise) ||
+          mutations.contains(GeneticsConstants.mutBlueFactor1) ||
+          mutations.contains(GeneticsConstants.mutBlueFactor2),
+      hasIno: mutations.contains(GeneticsConstants.mutIno),
+      hasCinnamon: mutations.contains(GeneticsConstants.mutCinnamon),
+      hasPallid: mutations.contains(GeneticsConstants.mutPallid),
+      hasBlackface: mutations.contains(GeneticsConstants.mutBlackface),
+      hasSpangle: mutations.contains(GeneticsConstants.mutSpangle),
+      hasViolet: mutations.contains(GeneticsConstants.mutViolet),
+      hasDarkFactor: mutations.contains(GeneticsConstants.mutDarkFactor),
+      hasYf2: mutations.contains(GeneticsConstants.mutYellowfaceType2),
+      hasGoldenface: mutations.contains(GeneticsConstants.mutGoldenface),
+      hasBlueFactor1: mutations.contains(GeneticsConstants.mutBlueFactor1),
+      hasBlueFactor2: mutations.contains(GeneticsConstants.mutBlueFactor2),
+      hasRecessivePied: mutations.contains(GeneticsConstants.mutRecessivePied),
+      hasClearflightPied: mutations.contains(GeneticsConstants.mutClearflightPied),
+      hasDominantPied: mutations.contains(GeneticsConstants.mutDominantPied),
+      hasDutchPied: mutations.contains(GeneticsConstants.mutDutchPied),
+      hasAqua: mutations.contains(GeneticsConstants.mutAqua),
+      hasTurquoise: mutations.contains(GeneticsConstants.mutTurquoise),
+    );
+  }
+}
+
+void _addInoAllelicInteractions(
+  Set<String> mutations,
+  _InteractionFlags f,
+  List<EpistaticInteraction> interactions,
+) {
+  if (f.hasIno && f.hasPallid) {
     interactions.add(
       const EpistaticInteraction(
         mutationIds: [GeneticsConstants.mutPallid, GeneticsConstants.mutIno],
@@ -37,16 +105,16 @@ List<EpistaticInteraction> _getInteractions(Set<String> mutations) {
             'their compound state yields a lacewing-like phenotype.',
       ),
     );
-  } else if (hasIno &&
-      (hasYf2 || hasGoldenface || hasBlueFactor1 || hasBlueFactor2) &&
-      isBlue) {
-    final creaminoSource = hasYf2
-        ? 'yellowface_type2'
-        : hasGoldenface
-        ? 'goldenface'
-        : hasBlueFactor2
-        ? 'bluefactor_2'
-        : 'bluefactor_1';
+  } else if (f.hasIno &&
+      (f.hasYf2 || f.hasGoldenface || f.hasBlueFactor1 || f.hasBlueFactor2) &&
+      f.isBlue) {
+    final creaminoSource = f.hasYf2
+        ? GeneticsConstants.mutYellowfaceType2
+        : f.hasGoldenface
+        ? GeneticsConstants.mutGoldenface
+        : f.hasBlueFactor2
+        ? GeneticsConstants.mutBlueFactor2
+        : GeneticsConstants.mutBlueFactor1;
     interactions.add(
       EpistaticInteraction(
         mutationIds: [creaminoSource, GeneticsConstants.mutBlue, GeneticsConstants.mutIno],
@@ -56,7 +124,7 @@ List<EpistaticInteraction> _getInteractions(Set<String> mutations) {
             'a creamy yellowish-white bird with red eyes.',
       ),
     );
-  } else if (hasIno && isBlue) {
+  } else if (f.hasIno && f.isBlue) {
     interactions.add(
       const EpistaticInteraction(
         mutationIds: [GeneticsConstants.mutIno, GeneticsConstants.mutBlue],
@@ -67,8 +135,13 @@ List<EpistaticInteraction> _getInteractions(Set<String> mutations) {
       ),
     );
   }
+}
 
-  if (hasIno && !isBlue) {
+void _addInoSeriesInteractions(
+  _InteractionFlags f,
+  List<EpistaticInteraction> interactions,
+) {
+  if (f.hasIno && !f.isBlue) {
     interactions.add(
       const EpistaticInteraction(
         mutationIds: [GeneticsConstants.mutIno],
@@ -80,7 +153,7 @@ List<EpistaticInteraction> _getInteractions(Set<String> mutations) {
     );
   }
 
-  if (hasIno && hasCinnamon) {
+  if (f.hasIno && f.hasCinnamon) {
     interactions.add(
       const EpistaticInteraction(
         mutationIds: [GeneticsConstants.mutIno, GeneticsConstants.mutCinnamon],
@@ -91,11 +164,20 @@ List<EpistaticInteraction> _getInteractions(Set<String> mutations) {
       ),
     );
   }
+}
 
-  if (hasViolet && isBlue && hasDarkFactor) {
+void _addVioletDarkFactorInteractions(
+  _InteractionFlags f,
+  List<EpistaticInteraction> interactions,
+) {
+  if (f.hasViolet && f.isBlue && f.hasDarkFactor) {
     interactions.add(
       const EpistaticInteraction(
-        mutationIds: ['violet', 'blue', 'dark_factor'],
+        mutationIds: [
+          GeneticsConstants.mutViolet,
+          GeneticsConstants.mutBlue,
+          GeneticsConstants.mutDarkFactor,
+        ],
         resultName: 'Visual Violet',
         description:
             'Violet factor shows best on Cobalt (Blue + 1 Dark Factor). '
@@ -103,11 +185,17 @@ List<EpistaticInteraction> _getInteractions(Set<String> mutations) {
       ),
     );
   }
+}
 
-  if (mutations.contains('grey') && !isBlue) {
+void _addGreyInteractions(
+  Set<String> mutations,
+  _InteractionFlags f,
+  List<EpistaticInteraction> interactions,
+) {
+  if (mutations.contains(GeneticsConstants.mutGrey) && !f.isBlue) {
     interactions.add(
       const EpistaticInteraction(
-        mutationIds: ['grey'],
+        mutationIds: [GeneticsConstants.mutGrey],
         resultName: 'Grey-Green',
         description:
             'Grey factor on green series produces Grey-Green, '
@@ -115,11 +203,17 @@ List<EpistaticInteraction> _getInteractions(Set<String> mutations) {
       ),
     );
   }
+}
 
-  if (mutations.contains('greywing') && mutations.contains('clearwing')) {
+void _addGreywingClearwingInteractions(
+  Set<String> mutations,
+  List<EpistaticInteraction> interactions,
+) {
+  if (mutations.contains(GeneticsConstants.mutGreywing) &&
+      mutations.contains(GeneticsConstants.mutClearwing)) {
     interactions.add(
       const EpistaticInteraction(
-        mutationIds: ['greywing', 'clearwing'],
+        mutationIds: [GeneticsConstants.mutGreywing, GeneticsConstants.mutClearwing],
         resultName: 'Full-Body Greywing',
         description:
             'Greywing/Clearwing heterozygote produces a Full-Body '
@@ -127,9 +221,13 @@ List<EpistaticInteraction> _getInteractions(Set<String> mutations) {
       ),
     );
   }
+}
 
-  // Dark-Eyed Clear: Recessive Pied + Clearflight Pied
-  if (hasRecessivePied && hasClearflightPied) {
+void _addPiedInteractions(
+  _InteractionFlags f,
+  List<EpistaticInteraction> interactions,
+) {
+  if (f.hasRecessivePied && f.hasClearflightPied) {
     interactions.add(
       const EpistaticInteraction(
         mutationIds: [GeneticsConstants.mutRecessivePied, GeneticsConstants.mutClearflightPied],
@@ -142,19 +240,7 @@ List<EpistaticInteraction> _getInteractions(Set<String> mutations) {
     );
   }
 
-  if (hasBlackface && hasSpangle) {
-    interactions.add(
-      const EpistaticInteraction(
-        mutationIds: ['blackface', 'spangle'],
-        resultName: 'Melanistic Spangle',
-        description:
-            'Blackface with Spangle can produce a heavier melanin-edged '
-            'spangle presentation (melanistic-style look).',
-      ),
-    );
-  }
-
-  if (hasDutchPied && hasDominantPied) {
+  if (f.hasDutchPied && f.hasDominantPied) {
     interactions.add(
       const EpistaticInteraction(
         mutationIds: [GeneticsConstants.mutDutchPied, GeneticsConstants.mutDominantPied],
@@ -166,7 +252,7 @@ List<EpistaticInteraction> _getInteractions(Set<String> mutations) {
     );
   }
 
-  if (hasDutchPied && hasClearflightPied && !hasRecessivePied) {
+  if (f.hasDutchPied && f.hasClearflightPied && !f.hasRecessivePied) {
     interactions.add(
       const EpistaticInteraction(
         mutationIds: [GeneticsConstants.mutDutchPied, GeneticsConstants.mutClearflightPied],
@@ -177,14 +263,36 @@ List<EpistaticInteraction> _getInteractions(Set<String> mutations) {
       ),
     );
   }
+}
 
-  // Yellowface on green series -> no visible effect
-  if ((mutations.contains('yellowface_type1') ||
-          mutations.contains('yellowface_type2')) &&
-      !isBlue) {
+void _addBlackfaceSpangleInteractions(
+  _InteractionFlags f,
+  List<EpistaticInteraction> interactions,
+) {
+  if (f.hasBlackface && f.hasSpangle) {
     interactions.add(
       const EpistaticInteraction(
-        mutationIds: ['yellowface_type1'],
+        mutationIds: [GeneticsConstants.mutBlackface, GeneticsConstants.mutSpangle],
+        resultName: 'Melanistic Spangle',
+        description:
+            'Blackface with Spangle can produce a heavier melanin-edged '
+            'spangle presentation (melanistic-style look).',
+      ),
+    );
+  }
+}
+
+void _addYellowfaceMaskedInteractions(
+  Set<String> mutations,
+  _InteractionFlags f,
+  List<EpistaticInteraction> interactions,
+) {
+  if ((mutations.contains(GeneticsConstants.mutYellowfaceType1) ||
+          mutations.contains(GeneticsConstants.mutYellowfaceType2)) &&
+      !f.isBlue) {
+    interactions.add(
+      const EpistaticInteraction(
+        mutationIds: [GeneticsConstants.mutYellowfaceType1],
         resultName: 'Yellowface (masked)',
         description:
             'Yellowface on green series birds has no visible effect, '
@@ -193,15 +301,21 @@ List<EpistaticInteraction> _getInteractions(Set<String> mutations) {
       ),
     );
   }
+}
 
-  // Aqua/Turquoise + Ino interactions
-  final hasAqua = mutations.contains(GeneticsConstants.mutAqua);
-  final hasTurquoise = mutations.contains(GeneticsConstants.mutTurquoise);
-  if (hasIno && (hasAqua || hasTurquoise) && !hasCinnamon) {
-    final parblueType = hasAqua ? 'Aqua' : 'Turquoise';
+void _addParblueInoInteractions(
+  Set<String> mutations,
+  _InteractionFlags f,
+  List<EpistaticInteraction> interactions,
+) {
+  if (f.hasIno && (f.hasAqua || f.hasTurquoise) && !f.hasCinnamon) {
+    final parblueType = f.hasAqua ? 'Aqua' : 'Turquoise';
     interactions.add(
       EpistaticInteraction(
-        mutationIds: [hasAqua ? GeneticsConstants.mutAqua : GeneticsConstants.mutTurquoise, GeneticsConstants.mutIno],
+        mutationIds: [
+          f.hasAqua ? GeneticsConstants.mutAqua : GeneticsConstants.mutTurquoise,
+          GeneticsConstants.mutIno,
+        ],
         resultName: '$parblueType Ino',
         description:
             '$parblueType parblue allele + Ino: melanin removed but '
@@ -210,10 +324,16 @@ List<EpistaticInteraction> _getInteractions(Set<String> mutations) {
       ),
     );
   }
+}
 
-  // Pearly + Opaline interaction
+void _addPearlyInteractions(
+  Set<String> mutations,
+  _InteractionFlags f,
+  List<EpistaticInteraction> interactions,
+) {
   final hasPearly = mutations.contains(GeneticsConstants.mutPearly);
   final hasOpaline = mutations.contains(GeneticsConstants.mutOpaline);
+
   if (hasPearly && hasOpaline) {
     interactions.add(
       const EpistaticInteraction(
@@ -227,8 +347,7 @@ List<EpistaticInteraction> _getInteractions(Set<String> mutations) {
     );
   }
 
-  // Pearly + Cinnamon interaction
-  if (hasPearly && hasCinnamon) {
+  if (hasPearly && f.hasCinnamon) {
     interactions.add(
       const EpistaticInteraction(
         mutationIds: [GeneticsConstants.mutPearly, GeneticsConstants.mutCinnamon],
@@ -239,8 +358,12 @@ List<EpistaticInteraction> _getInteractions(Set<String> mutations) {
       ),
     );
   }
+}
 
-  // Crested compound heterozygote
+void _addCrestedCompoundInteractions(
+  Set<String> mutations,
+  List<EpistaticInteraction> interactions,
+) {
   final activeCrested = GeneticsConstants.crestedAlleleIds
       .where(mutations.contains)
       .toList();
@@ -256,6 +379,4 @@ List<EpistaticInteraction> _getInteractions(Set<String> mutations) {
       ),
     );
   }
-
-  return interactions;
 }

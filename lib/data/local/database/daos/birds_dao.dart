@@ -94,6 +94,19 @@ class BirdsDao extends DatabaseAccessor<AppDatabase> with _$BirdsDaoMixin {
         .map((row) => row.read(count) ?? 0);
   }
 
+  /// Returns the count of non-deleted birds for a user (lightweight — no row mapping).
+  Future<int> getCount(String userId) async {
+    final count = birdsTable.id.count();
+    final row = await (selectOnly(birdsTable)
+          ..addColumns([count])
+          ..where(
+            birdsTable.userId.equals(userId) &
+                birdsTable.isDeleted.equals(false),
+          ))
+        .getSingle();
+    return row.read(count) ?? 0;
+  }
+
   Future<List<Bird>> getDeleted(String userId) async {
     final rows = await (select(
       birdsTable,
@@ -119,7 +132,8 @@ class BirdsDao extends DatabaseAccessor<AppDatabase> with _$BirdsDaoMixin {
               condition = condition & t.id.equals(excludeId).not();
             }
             return condition;
-          }))
+          })
+          ..limit(1))
         .get();
     return rows.isNotEmpty;
   }

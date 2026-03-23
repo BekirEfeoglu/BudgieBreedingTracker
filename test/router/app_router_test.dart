@@ -396,7 +396,7 @@ void main() {
         loadingContainer,
         AppRoutes.adminUsers,
       );
-      expect(loadingAllowed, AppRoutes.adminUsers);
+      expect(loadingAllowed, AppRoutes.splash);
     });
 
     test('matches /admin/* patterns including nested params', () async {

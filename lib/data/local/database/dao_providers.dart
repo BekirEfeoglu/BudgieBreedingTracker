@@ -15,7 +15,6 @@ import 'package:budgie_breeding_tracker/data/local/database/daos/sync_metadata_d
 import 'package:budgie_breeding_tracker/data/local/database/daos/clutches_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/nests_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/photos_dao.dart';
-import 'package:budgie_breeding_tracker/data/local/database/daos/user_preferences_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/event_reminders_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/notification_schedules_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/genetics_history_dao.dart';
@@ -84,10 +83,6 @@ final nestsDaoProvider = Provider<NestsDao>((ref) {
 
 final photosDaoProvider = Provider<PhotosDao>((ref) {
   return ref.watch(appDatabaseProvider).photosDao;
-});
-
-final userPreferencesDaoProvider = Provider<UserPreferencesDao>((ref) {
-  return ref.watch(appDatabaseProvider).userPreferencesDao;
 });
 
 final eventRemindersDaoProvider = Provider<EventRemindersDao>((ref) {

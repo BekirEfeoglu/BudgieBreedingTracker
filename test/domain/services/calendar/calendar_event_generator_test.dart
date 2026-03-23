@@ -21,12 +21,14 @@ void main() {
 
   setUpAll(() {
     registerFallbackValue(_dummyEvent());
+    registerFallbackValue(<Event>[]);
   });
 
   setUp(() {
     mockRepo = MockEventRepository();
     generator = CalendarEventGenerator(mockRepo);
     when(() => mockRepo.save(any())).thenAnswer((_) async {});
+    when(() => mockRepo.saveAll(any())).thenAnswer((_) async {});
   });
 
   group('CalendarEventGenerator', () {
@@ -40,7 +42,10 @@ void main() {
         pairLabel: 'Pair A',
       );
 
-      verify(() => mockRepo.save(any())).called(5);
+      final captured = verify(() => mockRepo.saveAll(captureAny()))
+          .captured
+          .single as List<dynamic>;
+      expect(captured.length, 5);
     });
 
     test(
@@ -55,7 +60,7 @@ void main() {
           pairLabel: 'Pair A',
         );
 
-        verifyNever(() => mockRepo.save(any()));
+        verifyNever(() => mockRepo.saveAll(any()));
       },
     );
 
@@ -102,7 +107,10 @@ void main() {
         chickLabel: 'Chick A',
       );
 
-      verify(() => mockRepo.save(any())).called(3);
+      final captured = verify(() => mockRepo.saveAll(captureAny()))
+          .captured
+          .single as List<dynamic>;
+      expect(captured.length, 3);
     });
   });
 }

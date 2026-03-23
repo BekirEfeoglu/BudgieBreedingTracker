@@ -190,6 +190,9 @@ class BirdRepository extends BaseRepository<Bird>
   Future<List<Bird>> getByGender(String userId, BirdGender gender) =>
       _localDao.getByGender(userId, gender);
 
+  /// Lightweight count of non-deleted birds (no row mapping).
+  Future<int> getCount(String userId) => _localDao.getCount(userId);
+
   /// Soft-deleted birds.
   Future<List<Bird>> getDeleted(String userId) => _localDao.getDeleted(userId);
 

@@ -116,7 +116,7 @@ abstract final class BudgieColorResolver {
       // YF1 / Blue Factor I: yellow confined to mask only, no body suffusion.
     }
 
-    final special = _resolveSpecialPhenotype(
+    final special = _resolveSpecialPhenotype((
       isDarkEyedClear: isDarkEyedClear,
       isDoubleFactorSpangle: isDoubleFactorSpangle,
       isAlbino: isAlbino,
@@ -125,7 +125,7 @@ abstract final class BudgieColorResolver {
       isLacewing: isLacewing,
       isBlueSeries: isBlueSeries,
       currentShowMantleHighlight: showMantleHighlight,
-    );
+    ));
 
     if (special != null) {
       body = special.body;

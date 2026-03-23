@@ -54,10 +54,6 @@ class _EventDetailContent extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final dateFormat = DateFormat(
-      'dd MMMM yyyy, HH:mm',
-      context.locale.toStringWithSeparator(),
-    );
     final isBandingEvent =
         event.type == EventType.banding &&
         event.status == EventStatus.active &&
@@ -74,213 +70,215 @@ class _EventDetailContent extends ConsumerWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Drag handle
-          Center(
-            child: Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: theme.colorScheme.onSurfaceVariant.withValues(
-                  alpha: 0.4,
-                ),
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-          ),
+          _buildDragHandle(theme),
           const SizedBox(height: AppSpacing.lg),
-
-          // Type icon + title
-          Row(
-            children: [
-              CircleAvatar(
-                radius: 22,
-                backgroundColor: eventTypeColor(
-                  event.type,
-                ).withValues(alpha: 0.15),
-                child: Icon(
-                  eventTypeIcon(event.type),
-                  size: 22,
-                  color: eventTypeColor(event.type),
-                ),
-              ),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      event.title,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Wrap(
-                      spacing: AppSpacing.sm,
-                      runSpacing: AppSpacing.xxs,
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      children: [
-                        Text(
-                          eventTypeLabel(event.type),
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: eventTypeColor(event.type),
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        if (event.status != EventStatus.active &&
-                            event.status != EventStatus.unknown)
-                          EventStatusBadge(status: event.status),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
+          _buildHeader(theme),
           const SizedBox(height: AppSpacing.lg),
-
-          // Date/time
-          Row(
-            children: [
-              Icon(
-                LucideIcons.clock,
-                size: 18,
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              Text(
-                dateFormat.format(event.eventDate),
-                style: theme.textTheme.bodyMedium,
-              ),
-            ],
-          ),
-
-          // Status
-          const SizedBox(height: AppSpacing.sm),
-          Row(
-            children: [
-              Icon(
-                LucideIcons.checkCircle,
-                size: 18,
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              Expanded(
-                child: Text(
-                  '${'calendar.event_status'.tr()}: ${eventStatusLabel(event.status)}',
-                  style: theme.textTheme.bodyMedium,
-                  softWrap: true,
-                ),
-              ),
-            ],
-          ),
-
-          // Notes
-          if (event.notes != null && event.notes!.isNotEmpty) ...[
-            const SizedBox(height: AppSpacing.md),
-            Text(
-              event.notes!,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
-            ),
-          ],
-
+          _buildDetails(context, theme),
           const SizedBox(height: AppSpacing.xl),
-
-          // Banding complete button
           if (isBandingEvent) ...[
-            PrimaryButton(
-              label: 'common.complete'.tr(),
-              icon: const Icon(LucideIcons.checkCircle, size: 18),
-              onPressed: () async {
-                await ref
-                    .read(bandingActionProvider.notifier)
-                    .markBandingComplete(event.chickId!);
-                if (context.mounted) {
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('chicks.banding_success'.tr())),
-                  );
-                }
-              },
-            ),
+            _buildBandingAction(context, ref),
             const SizedBox(height: AppSpacing.sm),
           ],
-
-          // Status change buttons
           if (onStatusChange != null && event.status == EventStatus.active) ...[
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: () {
-                      Navigator.pop(context);
-                      onStatusChange!(EventStatus.completed);
-                    },
-                    icon: const Icon(LucideIcons.checkCircle, size: 18),
-                    label: Text('calendar.mark_completed'.tr()),
-                  ),
-                ),
-                const SizedBox(width: AppSpacing.sm),
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: () {
-                      Navigator.pop(context);
-                      onStatusChange!(EventStatus.cancelled);
-                    },
-                    icon: Icon(
-                      LucideIcons.xCircle,
-                      size: 18,
-                      color: theme.colorScheme.error,
-                    ),
-                    label: Text(
-                      'calendar.mark_cancelled'.tr(),
-                      style: TextStyle(color: theme.colorScheme.error),
-                    ),
-                    style: OutlinedButton.styleFrom(
-                      side: BorderSide(color: theme.colorScheme.error),
-                    ),
-                  ),
-                ),
-              ],
-            ),
+            _buildStatusChangeButtons(context, theme),
             const SizedBox(height: AppSpacing.sm),
           ],
-
-          // Action buttons
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              OutlinedButton.icon(
-                onPressed: () {
-                  Navigator.pop(context);
-                  onEdit();
-                },
-                icon: const AppIcon(AppIcons.edit, size: 18),
-                label: Text('common.edit'.tr()),
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              FilledButton.icon(
-                onPressed: () {
-                  AppHaptics.heavyImpact();
-                  Navigator.pop(context);
-                  onDelete();
-                },
-                icon: AppIcon(
-                  AppIcons.delete,
-                  size: 18,
-                  color: theme.colorScheme.onError,
-                ),
-                label: Text('common.delete'.tr()),
-                style: FilledButton.styleFrom(
-                  backgroundColor: theme.colorScheme.error,
-                ),
-              ),
-            ],
-          ),
+          _buildActionButtons(context, theme),
           const SizedBox(height: AppSpacing.sm),
         ],
       ),
+    );
+  }
+
+  Widget _buildDragHandle(ThemeData theme) {
+    return Center(
+      child: Container(
+        width: 40,
+        height: 4,
+        decoration: BoxDecoration(
+          color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+          borderRadius: BorderRadius.circular(2),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeader(ThemeData theme) {
+    return Row(
+      children: [
+        CircleAvatar(
+          radius: 22,
+          backgroundColor: eventTypeColor(event.type).withValues(alpha: 0.15),
+          child: Icon(
+            eventTypeIcon(event.type),
+            size: 22,
+            color: eventTypeColor(event.type),
+          ),
+        ),
+        const SizedBox(width: AppSpacing.md),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                event.title,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Wrap(
+                spacing: AppSpacing.sm,
+                runSpacing: AppSpacing.xxs,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  Text(
+                    eventTypeLabel(event.type),
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: eventTypeColor(event.type),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  if (event.status != EventStatus.active &&
+                      event.status != EventStatus.unknown)
+                    EventStatusBadge(status: event.status),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDetails(BuildContext context, ThemeData theme) {
+    final dateFormat = DateFormat(
+      'dd MMMM yyyy, HH:mm',
+      context.locale.toStringWithSeparator(),
+    );
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(LucideIcons.clock, size: 18, color: theme.colorScheme.onSurfaceVariant),
+            const SizedBox(width: AppSpacing.sm),
+            Text(dateFormat.format(event.eventDate), style: theme.textTheme.bodyMedium),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        Row(
+          children: [
+            Icon(LucideIcons.checkCircle, size: 18, color: theme.colorScheme.onSurfaceVariant),
+            const SizedBox(width: AppSpacing.sm),
+            Expanded(
+              child: Text(
+                '${'calendar.event_status'.tr()}: ${eventStatusLabel(event.status)}',
+                style: theme.textTheme.bodyMedium,
+                softWrap: true,
+              ),
+            ),
+          ],
+        ),
+        if (event.notes != null && event.notes!.isNotEmpty) ...[
+          const SizedBox(height: AppSpacing.md),
+          Text(
+            event.notes!,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildBandingAction(BuildContext context, WidgetRef ref) {
+    return PrimaryButton(
+      label: 'common.complete'.tr(),
+      icon: const Icon(LucideIcons.checkCircle, size: 18),
+      onPressed: () async {
+        await ref
+            .read(bandingActionProvider.notifier)
+            .markBandingComplete(event.chickId!);
+        if (context.mounted) {
+          Navigator.pop(context);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('chicks.banding_success'.tr())),
+          );
+        }
+      },
+    );
+  }
+
+  Widget _buildStatusChangeButtons(BuildContext context, ThemeData theme) {
+    return Row(
+      children: [
+        Expanded(
+          child: OutlinedButton.icon(
+            onPressed: () {
+              Navigator.pop(context);
+              onStatusChange!(EventStatus.completed);
+            },
+            icon: const Icon(LucideIcons.checkCircle, size: 18),
+            label: Text('calendar.mark_completed'.tr()),
+          ),
+        ),
+        const SizedBox(width: AppSpacing.sm),
+        Expanded(
+          child: OutlinedButton.icon(
+            onPressed: () {
+              Navigator.pop(context);
+              onStatusChange!(EventStatus.cancelled);
+            },
+            icon: Icon(
+              LucideIcons.xCircle,
+              size: 18,
+              color: theme.colorScheme.error,
+            ),
+            label: Text(
+              'calendar.mark_cancelled'.tr(),
+              style: TextStyle(color: theme.colorScheme.error),
+            ),
+            style: OutlinedButton.styleFrom(
+              side: BorderSide(color: theme.colorScheme.error),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActionButtons(BuildContext context, ThemeData theme) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        OutlinedButton.icon(
+          onPressed: () {
+            Navigator.pop(context);
+            onEdit();
+          },
+          icon: const AppIcon(AppIcons.edit, size: 18),
+          label: Text('common.edit'.tr()),
+        ),
+        const SizedBox(width: AppSpacing.sm),
+        FilledButton.icon(
+          onPressed: () {
+            AppHaptics.heavyImpact();
+            Navigator.pop(context);
+            onDelete();
+          },
+          icon: AppIcon(
+            AppIcons.delete,
+            size: 18,
+            color: theme.colorScheme.onError,
+          ),
+          label: Text('common.delete'.tr()),
+          style: FilledButton.styleFrom(
+            backgroundColor: theme.colorScheme.error,
+          ),
+        ),
+      ],
     );
   }
 }
