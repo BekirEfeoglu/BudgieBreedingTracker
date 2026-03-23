@@ -29,3 +29,11 @@ class ValidationException extends AppException {
 class PermissionException extends AppException {
   const PermissionException(super.message, {super.code, super.originalError});
 }
+
+class FreeTierLimitException extends AppException {
+  final String entityType;
+  final int limit;
+
+  FreeTierLimitException(this.entityType, this.limit)
+      : super('Free tier limit reached for $entityType');
+}
