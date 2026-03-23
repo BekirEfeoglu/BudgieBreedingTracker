@@ -23,6 +23,8 @@ abstract class Chick with _$Chick {
     String? birdId,
     String? name,
     String? ringNumber,
+    @Default(10) int bandingDay,
+    DateTime? bandingDate,
     String? notes,
     String? photoUrl,
     double? hatchWeight,
@@ -54,4 +56,9 @@ extension ChickX on Chick {
   }
 
   bool get isWeaned => weanDate != null;
+
+  bool get isBanded => bandingDate != null;
+
+  DateTime? get plannedBandingDate =>
+      hatchDate != null ? hatchDate!.add(Duration(days: bandingDay)) : null;
 }

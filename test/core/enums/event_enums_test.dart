@@ -18,6 +18,11 @@ void main() {
     test('has at least 17 values', () {
       expect(EventType.values.length, greaterThanOrEqualTo(17));
     });
+
+    test('banding serializes to "banding" and round-trips', () {
+      expect(EventType.banding.toJson(), 'banding');
+      expect(EventType.fromJson('banding'), EventType.banding);
+    });
   });
 
   group('EventStatus', () {

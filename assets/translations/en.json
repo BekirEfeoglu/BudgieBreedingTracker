@@ -438,7 +438,17 @@
     "sort_youngest": "Youngest First",
     "sort_oldest_age": "Oldest First (Age)",
     "no_measurements_hint": "Tap the button to add the first measurement",
-    "wean_success": "Chick marked as weaned"
+    "wean_success": "Chick marked as weaned",
+    "banding_day_label": "Banding Day",
+    "banding_day_hint": "Days after hatch (default: 10)",
+    "banding_day_validation": "Enter a value between 5 and 21",
+    "banding_status": "Banding Status",
+    "banding_planned": "Planned: {}",
+    "banding_completed": "Banded",
+    "banding_not_yet": "Not yet banded",
+    "banding_confirm_title": "Banding Complete?",
+    "banding_confirm_message": "Confirm this chick has been banded?",
+    "banding_success": "Banding recorded"
   },
   "home": {
     "app_title": "BudgieBreedingTracker",
@@ -981,7 +991,13 @@
     "cleanup_title": "Notification Cleanup",
     "cleanup_description": "Number of days after which read notifications are auto-deleted",
     "cleanup_days": "{} days",
-    "permission_denied_hint": "Notification permission denied. You can grant it from device settings."
+    "permission_denied_hint": "Notification permission denied. You can grant it from device settings.",
+    "banding_pre_title": "Banding Day Tomorrow",
+    "banding_pre_body": "Banding day for {} is tomorrow",
+    "banding_main_title": "Banding Day!",
+    "banding_main_body": "{} should be banded today",
+    "banding_followup_title": "Banding Reminder",
+    "banding_followup_body": "{} has not been banded yet"
   },
   "premium": {
     "title": "Premium",

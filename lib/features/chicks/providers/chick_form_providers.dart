@@ -49,6 +49,7 @@ class ChickFormNotifier extends Notifier<ChickFormState> {
     double? hatchWeight,
     String? ringNumber,
     String? notes,
+    int bandingDay = 10,
   }) async {
     state = state.copyWith(isLoading: true, error: null, isSuccess: false);
     try {
@@ -65,6 +66,7 @@ class ChickFormNotifier extends Notifier<ChickFormState> {
         hatchWeight: hatchWeight,
         ringNumber: ringNumber,
         notes: notes,
+        bandingDay: bandingDay,
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
       );
@@ -90,6 +92,25 @@ class ChickFormNotifier extends Notifier<ChickFormState> {
         AppLogger.warning('Failed to schedule chick care reminders: $e');
       }
 
+      // Schedule banding reminders
+      try {
+        final scheduler = ref.read(notificationSchedulerProvider);
+        final settings = ref.read(notificationToggleSettingsProvider);
+        await scheduler.scheduleBandingReminders(
+          chickId: chick.id,
+          chickLabel:
+              name ??
+              'chicks.unnamed_chick'.tr(
+                args: [ringNumber ?? chick.id.substring(0, 6)],
+              ),
+          hatchDate: hatchDate,
+          bandingDay: bandingDay,
+          settings: settings,
+        );
+      } catch (e) {
+        AppLogger.warning('Failed to schedule banding reminders: $e');
+      }
+
       // Auto-generate chick milestone calendar events
       try {
         final calendarGen = ref.read(calendarEventGeneratorProvider);
@@ -101,6 +122,8 @@ class ChickFormNotifier extends Notifier<ChickFormState> {
               'chicks.unnamed_chick'.tr(
                 args: [ringNumber ?? chick.id.substring(0, 6)],
               ),
+          chickId: chick.id,
+          bandingDay: bandingDay,
         );
       } catch (e) {
         if (_isSupabaseUnavailableError(e)) {
@@ -120,11 +143,32 @@ class ChickFormNotifier extends Notifier<ChickFormState> {
   }
 
   /// Updates an existing chick.
-  Future<void> updateChick(Chick chick) async {
+  Future<void> updateChick(Chick chick, {Chick? previous}) async {
     state = state.copyWith(isLoading: true, error: null, isSuccess: false);
     try {
       final repo = ref.read(chickRepositoryProvider);
       await repo.save(chick.copyWith(updatedAt: DateTime.now()));
+
+      // Reschedule banding reminders if bandingDay changed
+      if (previous != null && previous.bandingDay != chick.bandingDay && !chick.isBanded) {
+        try {
+          final scheduler = ref.read(notificationSchedulerProvider);
+          final settings = ref.read(notificationToggleSettingsProvider);
+          await scheduler.cancelBandingReminders(chick.id);
+          if (chick.hatchDate != null) {
+            await scheduler.scheduleBandingReminders(
+              chickId: chick.id,
+              chickLabel: chick.name ?? chick.id.substring(0, 6),
+              hatchDate: chick.hatchDate!,
+              bandingDay: chick.bandingDay,
+              settings: settings,
+            );
+          }
+        } catch (e) {
+          AppLogger.warning('Failed to reschedule banding reminders: $e');
+        }
+      }
+
       state = state.copyWith(isLoading: false, isSuccess: true);
     } catch (e) {
       AppLogger.error('ChickFormNotifier', e, StackTrace.current);
@@ -138,6 +182,12 @@ class ChickFormNotifier extends Notifier<ChickFormState> {
     try {
       final repo = ref.read(chickRepositoryProvider);
       await repo.remove(id);
+      try {
+        final scheduler = ref.read(notificationSchedulerProvider);
+        await scheduler.cancelBandingReminders(id);
+      } catch (e) {
+        AppLogger.warning('Failed to cancel banding reminders: $e');
+      }
       state = state.copyWith(isLoading: false, isSuccess: true);
     } catch (e) {
       AppLogger.error('ChickFormNotifier', e, StackTrace.current);
@@ -180,6 +230,12 @@ class ChickFormNotifier extends Notifier<ChickFormState> {
             updatedAt: DateTime.now(),
           ),
         );
+        try {
+          final scheduler = ref.read(notificationSchedulerProvider);
+          await scheduler.cancelBandingReminders(id);
+        } catch (e) {
+          AppLogger.warning('Failed to cancel banding reminders: $e');
+        }
       }
       state = state.copyWith(isLoading: false, isSuccess: true);
     } catch (e) {
