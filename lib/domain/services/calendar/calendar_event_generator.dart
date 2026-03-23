@@ -122,32 +122,37 @@ class CalendarEventGenerator {
 
   /// Generates chick care milestone events.
   ///
-  /// Creates events for first week check, banding day (day 10),
-  /// and weaning target (day 35).
+  /// Creates events for first week check, banding day, and weaning target.
+  /// The banding event uses [EventType.banding] with [chickId] for linkage.
   Future<void> generateChickEvents({
     required String userId,
     required DateTime hatchDate,
     required String chickLabel,
+    String? chickId,
+    int bandingDay = 10,
   }) async {
     try {
-      final milestones = <int, String>{
-        7: 'calendar.milestone_first_week'.tr(),
-        10: 'calendar.milestone_banding'.tr(),
-        35: 'calendar.milestone_weaning'.tr(),
+      final milestones = <int, (String, EventType, String?)>{
+        7: ('calendar.milestone_first_week'.tr(), EventType.chick, null),
+        bandingDay: ('calendar.milestone_banding'.tr(), EventType.banding, chickId),
+        35: ('calendar.milestone_weaning'.tr(), EventType.chick, null),
       };
 
       for (final entry in milestones.entries) {
         final eventDate = hatchDate.add(Duration(days: entry.key));
         if (eventDate.isBefore(DateTime.now())) continue;
 
+        final (label, type, eventChickId) = entry.value;
+
         final event = Event(
           id: _uuid.v4(),
-          title: '${entry.value} - $chickLabel',
+          title: '$label - $chickLabel',
           eventDate: eventDate,
-          type: EventType.chick,
+          type: type,
           userId: userId,
+          chickId: eventChickId,
           description: 'calendar.day_milestone'.tr(
-            args: ['${entry.key}', entry.value],
+            args: ['${entry.key}', label],
           ),
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
