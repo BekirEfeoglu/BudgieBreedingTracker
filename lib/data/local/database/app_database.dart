@@ -115,7 +115,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 14;
+  int get schemaVersion => 15;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -153,6 +153,8 @@ class AppDatabase extends _$AppDatabase {
             await _migrateV12ToV13(m);
           case 14:
             await _migrateV13ToV14(m);
+          case 15:
+            await _migrateV14ToV15(m);
         }
       }
     },
@@ -294,6 +296,13 @@ class AppDatabase extends _$AppDatabase {
     await customStatement(
       "UPDATE birds SET species = 'finch' WHERE species = 'ispinoz'",
     );
+  }
+
+  /// Migration v14 -> v15: Add banding columns to chicks and chickId to events.
+  Future<void> _migrateV14ToV15(Migrator m) async {
+    await m.addColumn(chicksTable, chicksTable.bandingDay);
+    await m.addColumn(chicksTable, chicksTable.bandingDate);
+    await m.addColumn(eventsTable, eventsTable.chickId);
   }
 
   /// Creates performance indexes on all tables.
