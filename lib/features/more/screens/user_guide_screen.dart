@@ -18,7 +18,6 @@ class UserGuideScreen extends StatefulWidget {
 
 class _UserGuideScreenState extends State<UserGuideScreen> {
   final _searchController = TextEditingController();
-  GuideCategory _selectedCategory = GuideCategory.all;
   String _searchQuery = '';
 
   static const Map<String, String> _searchFoldMap = {
@@ -72,11 +71,6 @@ class _UserGuideScreenState extends State<UserGuideScreen> {
 
   List<GuideTopic> get _filteredTopics {
     var topics = guideTopics.toList();
-
-    // Category filter
-    if (_selectedCategory != GuideCategory.all) {
-      topics = topics.where((t) => t.category == _selectedCategory).toList();
-    }
 
     // Search filter
     if (_searchQuery.isNotEmpty) {
@@ -149,13 +143,6 @@ class _UserGuideScreenState extends State<UserGuideScreen> {
           ),
           const SizedBox(height: AppSpacing.sm),
 
-          // Category chips
-          _CategoryChipBar(
-            selected: _selectedCategory,
-            onSelected: (cat) => setState(() => _selectedCategory = cat),
-          ),
-          const SizedBox(height: AppSpacing.sm),
-
           // Content
           Expanded(
             child: topics.isEmpty
@@ -182,38 +169,3 @@ class _UserGuideScreenState extends State<UserGuideScreen> {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Horizontal scrollable category chip bar
-// ---------------------------------------------------------------------------
-
-class _CategoryChipBar extends StatelessWidget {
-  final GuideCategory selected;
-  final ValueChanged<GuideCategory> onSelected;
-
-  const _CategoryChipBar({required this.selected, required this.onSelected});
-
-  @override
-  Widget build(BuildContext context) {
-    const categories = GuideCategory.values;
-
-    return SizedBox(
-      height: 40,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-        itemCount: categories.length,
-        separatorBuilder: (_, __) => const SizedBox(width: AppSpacing.sm),
-        itemBuilder: (context, index) {
-          final cat = categories[index];
-          final isSelected = cat == selected;
-
-          return ChoiceChip(
-            label: Text(cat.label),
-            selected: isSelected,
-            onSelected: (_) => onSelected(cat),
-          );
-        },
-      ),
-    );
-  }
-}
