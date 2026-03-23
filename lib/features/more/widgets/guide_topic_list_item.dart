@@ -40,8 +40,7 @@ class GuideTopicListItem extends StatelessWidget {
                   height: 38,
                   decoration: BoxDecoration(
                     color: theme.colorScheme.surfaceContainerHighest,
-                    borderRadius:
-                        BorderRadius.circular(AppSpacing.radiusLg),
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
                   ),
                   child: Center(
                     child: IconTheme(

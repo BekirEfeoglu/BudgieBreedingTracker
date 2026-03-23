@@ -19,7 +19,8 @@ void main() {
         expect(
           category.labelKey,
           startsWith('user_guide.category_'),
-          reason: '${category.name}.labelKey does not start with '
+          reason:
+              '${category.name}.labelKey does not start with '
               'user_guide.category_',
         );
       }
@@ -68,7 +69,8 @@ void main() {
         expect(
           topic.subtitleKey,
           startsWith('user_guide.topics.'),
-          reason: '${topic.titleKey} subtitleKey does not start with '
+          reason:
+              '${topic.titleKey} subtitleKey does not start with '
               'user_guide.topics.',
         );
       }
@@ -103,21 +105,22 @@ void main() {
       );
     });
 
-    test('all relatedTopicIndices are valid (in range, no self-reference)',
-        () {
+    test('all relatedTopicIndices are valid (in range, no self-reference)', () {
       for (var i = 0; i < guideTopics.length; i++) {
         final topic = guideTopics[i];
         for (final relatedIndex in topic.relatedTopicIndices) {
           expect(
             relatedIndex,
             greaterThanOrEqualTo(0),
-            reason: '${topic.titleKey} has negative relatedTopicIndex '
+            reason:
+                '${topic.titleKey} has negative relatedTopicIndex '
                 '$relatedIndex',
           );
           expect(
             relatedIndex,
             lessThan(guideTopics.length),
-            reason: '${topic.titleKey} has out-of-range relatedTopicIndex '
+            reason:
+                '${topic.titleKey} has out-of-range relatedTopicIndex '
                 '$relatedIndex',
           );
           expect(

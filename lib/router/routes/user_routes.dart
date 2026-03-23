@@ -85,9 +85,7 @@ List<RouteBase> buildUserRoutes() => [
       GoRoute(
         path: ':topicIndex',
         builder: (context, state) {
-          final index = int.tryParse(
-            state.pathParameters['topicIndex'] ?? '',
-          );
+          final index = int.tryParse(state.pathParameters['topicIndex'] ?? '');
           if (index == null || index < 0 || index >= guideTopics.length) {
             return const NotFoundScreen();
           }

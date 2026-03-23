@@ -64,10 +64,7 @@ class _DetailHeader extends StatelessWidget {
           ),
           child: Center(
             child: IconTheme(
-              data: IconThemeData(
-                color: theme.colorScheme.primary,
-                size: 24,
-              ),
+              data: IconThemeData(color: theme.colorScheme.primary, size: 24),
               child: AppIcon(topic.iconAsset),
             ),
           ),
@@ -138,9 +135,7 @@ class _RelatedTopicsSection extends StatelessWidget {
           child: Column(
             children: [
               for (var i = 0; i < indices.length; i++) ...[
-                _RelatedTopicItem(
-                  topicIndex: indices[i],
-                ),
+                _RelatedTopicItem(topicIndex: indices[i]),
                 if (i < indices.length - 1)
                   Divider(
                     height: 1,
