@@ -8,6 +8,7 @@ import 'package:budgie_breeding_tracker/core/enums/chick_enums.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/core/widgets/cards/info_card.dart';
+import 'package:budgie_breeding_tracker/core/widgets/dialogs/confirm_dialog.dart';
 import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
 import 'package:budgie_breeding_tracker/features/chicks/providers/chick_providers.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -118,6 +119,27 @@ class ChickDetailInfo extends ConsumerWidget {
               ),
             ],
           ),
+          // Banding status
+          const SizedBox(height: AppSpacing.sm),
+          if (chick.isBanded)
+            InfoCard(
+              icon: const AppIcon(AppIcons.ring),
+              title: dateFormat.format(chick.bandingDate!),
+              subtitle: 'chicks.banding_completed'.tr(),
+              trailing: Icon(
+                LucideIcons.checkCircle2,
+                color: theme.colorScheme.primary,
+              ),
+            )
+          else if (chick.plannedBandingDate != null)
+            InfoCard(
+              icon: const AppIcon(AppIcons.ring),
+              title: 'chicks.banding_planned'.tr(
+                args: [dateFormat.format(chick.plannedBandingDate!)],
+              ),
+              subtitle: 'chicks.banding_not_yet'.tr(),
+              onTap: () => _confirmBanding(context, ref),
+            ),
           if (chick.healthStatus == ChickHealthStatus.deceased &&
               chick.deathDate != null) ...[
             const SizedBox(height: AppSpacing.sm),
@@ -152,6 +174,30 @@ class ChickDetailInfo extends ConsumerWidget {
     BirdGender.female => 'chicks.female'.tr(),
     BirdGender.unknown => 'chicks.unknown_gender'.tr(),
   };
+
+  Future<void> _confirmBanding(BuildContext context, WidgetRef ref) async {
+    final confirmed = await showConfirmDialog(
+      context,
+      title: 'chicks.banding_confirm_title'.tr(),
+      message: 'chicks.banding_confirm_message'.tr(),
+    );
+    if (confirmed == true) {
+      await ref
+          .read(bandingActionProvider.notifier)
+          .markBandingComplete(chick.id);
+      if (!context.mounted) return;
+      final state = ref.read(bandingActionProvider);
+      state.when(
+        data: (_) => ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('chicks.banding_success'.tr())),
+        ),
+        error: (e, _) => ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${'common.error'.tr()}: $e')),
+        ),
+        loading: () {},
+      );
+    }
+  }
 }
 
 /// Notes section for the chick detail screen.
