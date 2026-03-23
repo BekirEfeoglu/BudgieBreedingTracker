@@ -193,6 +193,47 @@ void main() {
     });
   });
 
+  group('cancelBandingReminders', () {
+    test('cancels exactly 4 notifications', () async {
+      await scheduler.cancelBandingReminders('chick-band-1');
+
+      verify(() => mockService.cancel(any())).called(4);
+    });
+
+    test('uses bandingBaseId for ID generation', () async {
+      final cancelledIds = <int>[];
+      when(() => mockService.cancel(any())).thenAnswer((inv) async {
+        cancelledIds.add(inv.positionalArguments[0] as int);
+      });
+
+      await scheduler.cancelBandingReminders('chick-band-2');
+
+      expect(cancelledIds.length, 4);
+      for (final id in cancelledIds) {
+        expect(id, greaterThanOrEqualTo(NotificationIds.bandingBaseId));
+        expect(id, lessThan(NotificationIds.bandingBaseId + 100000));
+      }
+    });
+
+    test('cancelled IDs are deterministic and match scheduled IDs', () async {
+      final scheduledIds = <int>[];
+      for (var i = 0; i < 4; i++) {
+        scheduledIds.add(
+          NotificationIds.generate(NotificationIds.bandingBaseId, 'chick-det', i),
+        );
+      }
+
+      final cancelledIds = <int>[];
+      when(() => mockService.cancel(any())).thenAnswer((inv) async {
+        cancelledIds.add(inv.positionalArguments[0] as int);
+      });
+
+      await scheduler.cancelBandingReminders('chick-det');
+
+      expect(cancelledIds.toSet(), equals(scheduledIds.toSet()));
+    });
+  });
+
   group('cancelAll', () {
     test('delegates to notificationService.cancelAll', () async {
       await scheduler.cancelAll();

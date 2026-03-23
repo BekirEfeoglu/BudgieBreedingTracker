@@ -438,7 +438,17 @@
     "sort_youngest": "Jüngste zuerst",
     "sort_oldest_age": "Älteste zuerst (Alter)",
     "no_measurements_hint": "Tippen Sie auf die Schaltfläche, um die erste Messung hinzuzufügen",
-    "wean_success": "Küken als entwöhnt markiert"
+    "wean_success": "Küken als entwöhnt markiert",
+    "banding_day_label": "Tag der Beringung",
+    "banding_day_hint": "Tage nach dem Schlupf (Standard: 10)",
+    "banding_day_validation": "Geben Sie einen Wert zwischen 5 und 21 ein",
+    "banding_status": "Beringungsstatus",
+    "banding_planned": "Geplant: {}",
+    "banding_completed": "Beringt",
+    "banding_not_yet": "Noch nicht beringt",
+    "banding_confirm_title": "Beringung abgeschlossen?",
+    "banding_confirm_message": "Bestätigen Sie, dass dieser Küken beringt wurde?",
+    "banding_success": "Beringung gespeichert"
   },
   "home": {
     "app_title": "BudgieBreedingTracker",
@@ -981,7 +991,13 @@
     "cleanup_title": "Benachrichtigungsbereinigung",
     "cleanup_description": "Anzahl der Tage, nach denen gelesene Benachrichtigungen automatisch gelöscht werden",
     "cleanup_days": "{} Tage",
-    "permission_denied_hint": "Benachrichtigungsberechtigung verweigert. Sie können sie in den Geräteeinstellungen erteilen."
+    "permission_denied_hint": "Benachrichtigungsberechtigung verweigert. Sie können sie in den Geräteeinstellungen erteilen.",
+    "banding_pre_title": "Morgen Beringungstag",
+    "banding_pre_body": "Morgen ist Beringungstag für {}",
+    "banding_main_title": "Beringungstag!",
+    "banding_main_body": "{} sollte heute beringt werden",
+    "banding_followup_title": "Beringungserinnerung",
+    "banding_followup_body": "{} wurde noch nicht beringt"
   },
   "premium": {
     "title": "Premium",

@@ -2,10 +2,12 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:budgie_breeding_tracker/core/enums/chick_enums.dart';
+import 'package:budgie_breeding_tracker/core/enums/event_enums.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/data/local/preferences/app_preferences.dart';
 import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/notifications/notification_providers.dart';
 
 typedef ChickParentsInfo = ({
   String? maleName,
@@ -305,3 +307,53 @@ enum ChickSort {
     ChickSort.ageOldest => 'chicks.sort_oldest_age'.tr(),
   };
 }
+
+/// Notifier for marking banding as complete.
+class BandingActionNotifier extends Notifier<AsyncValue<void>> {
+  @override
+  AsyncValue<void> build() => const AsyncData(null);
+
+  /// Marks a chick as banded: updates chick, completes event, cancels notifications.
+  Future<void> markBandingComplete(String chickId) async {
+    state = const AsyncLoading();
+    try {
+      final chickRepo = ref.read(chickRepositoryProvider);
+      final eventRepo = ref.read(eventRepositoryProvider);
+      final scheduler = ref.read(notificationSchedulerProvider);
+
+      // 1. Update chick with bandingDate
+      final chick = await chickRepo.getById(chickId);
+      if (chick == null) {
+        state = AsyncError('Chick not found', StackTrace.current);
+        return;
+      }
+      await chickRepo.save(chick.copyWith(
+        bandingDate: DateTime.now(),
+        updatedAt: DateTime.now(),
+      ));
+
+      // 2. Complete banding event (filter in memory — no DAO method for chickId)
+      final allEvents = await eventRepo.getAll(chick.userId);
+      final bandingEvents = allEvents.where(
+        (e) => e.chickId == chickId && e.type == EventType.banding && e.status == EventStatus.active,
+      );
+      for (final event in bandingEvents) {
+        await eventRepo.save(event.copyWith(
+          status: EventStatus.completed,
+          updatedAt: DateTime.now(),
+        ));
+      }
+
+      // 3. Cancel remaining banding notifications
+      await scheduler.cancelBandingReminders(chickId);
+
+      state = const AsyncData(null);
+    } catch (e, st) {
+      AppLogger.error('BandingActionNotifier', e, st);
+      state = AsyncError(e, st);
+    }
+  }
+}
+
+final bandingActionProvider =
+    NotifierProvider<BandingActionNotifier, AsyncValue<void>>(BandingActionNotifier.new);

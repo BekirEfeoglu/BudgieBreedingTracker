@@ -12,6 +12,7 @@ class NotificationToggleSettings {
     this.incubation = true,
     this.chickCare = true,
     this.healthCheck = true,
+    this.banding = true,
     this.cleanupDaysOld = 30,
   });
 
@@ -33,11 +34,15 @@ class NotificationToggleSettings {
   /// Whether health check reminders are enabled.
   final bool healthCheck;
 
+  /// Whether banding reminder notifications are enabled.
+  final bool banding;
+
   /// Number of days after which read notifications are automatically deleted.
   final int cleanupDaysOld;
 
   /// Whether all category toggles are enabled.
-  bool get allEnabled => eggTurning && incubation && chickCare && healthCheck;
+  bool get allEnabled =>
+      eggTurning && incubation && chickCare && healthCheck && banding;
 
   /// Creates a copy with the given fields replaced.
   NotificationToggleSettings copyWith({
@@ -47,6 +52,7 @@ class NotificationToggleSettings {
     bool? incubation,
     bool? chickCare,
     bool? healthCheck,
+    bool? banding,
     int? cleanupDaysOld,
   }) {
     return NotificationToggleSettings(
@@ -56,6 +62,7 @@ class NotificationToggleSettings {
       incubation: incubation ?? this.incubation,
       chickCare: chickCare ?? this.chickCare,
       healthCheck: healthCheck ?? this.healthCheck,
+      banding: banding ?? this.banding,
       cleanupDaysOld: cleanupDaysOld ?? this.cleanupDaysOld,
     );
   }

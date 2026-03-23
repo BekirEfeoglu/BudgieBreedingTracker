@@ -1,13 +1,16 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:budgie_breeding_tracker/core/utils/app_haptics.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/enums/event_enums.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
+import 'package:budgie_breeding_tracker/core/widgets/buttons/primary_button.dart';
 import 'package:budgie_breeding_tracker/data/models/event_model.dart';
 import 'package:budgie_breeding_tracker/features/calendar/widgets/event_card.dart';
+import 'package:budgie_breeding_tracker/features/chicks/providers/chick_providers.dart';
 
 /// Shows an event detail bottom sheet.
 Future<void> showEventDetailModal(
@@ -35,7 +38,7 @@ Future<void> showEventDetailModal(
   );
 }
 
-class _EventDetailContent extends StatelessWidget {
+class _EventDetailContent extends ConsumerWidget {
   final Event event;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
@@ -49,12 +52,16 @@ class _EventDetailContent extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final dateFormat = DateFormat(
       'dd MMMM yyyy, HH:mm',
       context.locale.toStringWithSeparator(),
     );
+    final isBandingEvent =
+        event.type == EventType.banding &&
+        event.status == EventStatus.active &&
+        event.chickId != null;
 
     return Padding(
       padding: EdgeInsets.fromLTRB(
@@ -179,6 +186,26 @@ class _EventDetailContent extends StatelessWidget {
           ],
 
           const SizedBox(height: AppSpacing.xl),
+
+          // Banding complete button
+          if (isBandingEvent) ...[
+            PrimaryButton(
+              label: 'common.complete'.tr(),
+              icon: const Icon(LucideIcons.checkCircle, size: 18),
+              onPressed: () async {
+                await ref
+                    .read(bandingActionProvider.notifier)
+                    .markBandingComplete(event.chickId!);
+                if (context.mounted) {
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('chicks.banding_success'.tr())),
+                  );
+                }
+              },
+            ),
+            const SizedBox(height: AppSpacing.sm),
+          ],
 
           // Status change buttons
           if (onStatusChange != null && event.status == EventStatus.active) ...[

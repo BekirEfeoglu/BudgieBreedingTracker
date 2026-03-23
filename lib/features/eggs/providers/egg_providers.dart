@@ -227,6 +227,8 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
           userId: egg.userId,
           hatchDate: hatchDate,
           chickLabel: chickLabel,
+          chickId: chick.id,
+          bandingDay: 10,
         );
       } catch (e) {
         if (_isSupabaseUnavailableError(e)) {
@@ -236,6 +238,21 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
         } else {
           AppLogger.warning('Failed to generate chick calendar events: $e');
         }
+      }
+
+      // Schedule banding reminders for auto-created chick
+      try {
+        final scheduler = ref.read(notificationSchedulerProvider);
+        final chickSettings = ref.read(notificationToggleSettingsProvider);
+        await scheduler.scheduleBandingReminders(
+          chickId: chick.id,
+          chickLabel: chickLabel,
+          hatchDate: hatchDate,
+          bandingDay: 10,
+          settings: chickSettings,
+        );
+      } catch (e) {
+        AppLogger.warning('Failed to schedule banding reminders: $e');
       }
 
       AppLogger.info('Chick auto-created from hatched egg: ${egg.id}');

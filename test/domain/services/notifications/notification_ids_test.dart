@@ -109,6 +109,23 @@ void main() {
       expect(NotificationIds.incubationBaseId, 200000);
       expect(NotificationIds.healthCheckBaseId, 300000);
       expect(NotificationIds.chickCareBaseId, 400000);
+      expect(NotificationIds.bandingBaseId, 500000);
+    });
+
+    test('bandingBaseId is 500000', () {
+      expect(NotificationIds.bandingBaseId, 500000);
+    });
+
+    test('banding IDs are generated within the 500000–599999 range', () {
+      for (var i = 0; i < 4; i++) {
+        final id = NotificationIds.generate(
+          NotificationIds.bandingBaseId,
+          'chick-uuid-test',
+          i,
+        );
+        expect(id, greaterThanOrEqualTo(500000));
+        expect(id, lessThan(600000));
+      }
     });
 
     test('idsPerEntitySlot is 100', () {

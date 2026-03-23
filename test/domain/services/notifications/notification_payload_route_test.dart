@@ -51,6 +51,13 @@ void main() {
       );
     });
 
+    test('maps banding payload to chick route', () {
+      expect(
+        NotificationService.payloadToRoute('banding:chick-band-1'),
+        '/chicks/chick-band-1',
+      );
+    });
+
     test('maps egg payload to breeding list', () {
       expect(
         NotificationService.payloadToRoute('egg:egg-123'),

@@ -13,6 +13,8 @@ Chick _buildChick({
   String? birdId,
   String? name,
   String? ringNumber,
+  int bandingDay = 10,
+  DateTime? bandingDate,
   String? notes,
   String? photoUrl,
   double? hatchWeight,
@@ -33,6 +35,8 @@ Chick _buildChick({
     birdId: birdId,
     name: name,
     ringNumber: ringNumber,
+    bandingDay: bandingDay,
+    bandingDate: bandingDate,
     notes: notes,
     photoUrl: photoUrl,
     hatchWeight: hatchWeight,
@@ -59,6 +63,8 @@ void main() {
           birdId: 'bird-1',
           name: 'Mini',
           ringNumber: 'TR-CH-1',
+          bandingDay: 14,
+          bandingDate: DateTime(2024, 2, 3),
           notes: 'Needs monitoring',
           photoUrl: 'https://example.com/chick.jpg',
           hatchWeight: 3.6,
@@ -81,6 +87,8 @@ void main() {
         expect(restored.birdId, chick.birdId);
         expect(restored.name, chick.name);
         expect(restored.ringNumber, chick.ringNumber);
+        expect(restored.bandingDay, chick.bandingDay);
+        expect(restored.bandingDate, chick.bandingDate);
         expect(restored.notes, chick.notes);
         expect(restored.photoUrl, chick.photoUrl);
         expect(restored.hatchWeight, chick.hatchWeight);
@@ -102,6 +110,8 @@ void main() {
         expect(chick.weanDate, isNull);
         expect(chick.clutchId, isNull);
         expect(chick.eggId, isNull);
+        expect(chick.bandingDay, 10);
+        expect(chick.bandingDate, isNull);
       });
 
       test('parses unknown enums with configured fallbacks', () {
@@ -205,6 +215,31 @@ void main() {
 
       expect(weaned.isWeaned, isTrue);
       expect(notWeaned.isWeaned, isFalse);
+    });
+
+    test('isBanded is true when bandingDate is set', () {
+      final banded = _buildChick(bandingDate: DateTime(2024, 1, 30));
+      final notBanded = _buildChick(bandingDate: null);
+
+      expect(banded.isBanded, isTrue);
+      expect(notBanded.isBanded, isFalse);
+    });
+
+    test('plannedBandingDate is null when hatchDate is null', () {
+      final chick = _buildChick(hatchDate: null, bandingDay: 10);
+      expect(chick.plannedBandingDate, isNull);
+    });
+
+    test('plannedBandingDate is hatchDate + bandingDay days', () {
+      final hatchDate = DateTime(2024, 1, 20);
+      final chick = _buildChick(hatchDate: hatchDate, bandingDay: 10);
+      expect(chick.plannedBandingDate, DateTime(2024, 1, 30));
+    });
+
+    test('plannedBandingDate respects custom bandingDay', () {
+      final hatchDate = DateTime(2024, 3, 1);
+      final chick = _buildChick(hatchDate: hatchDate, bandingDay: 14);
+      expect(chick.plannedBandingDate, DateTime(2024, 3, 15));
     });
   });
 }

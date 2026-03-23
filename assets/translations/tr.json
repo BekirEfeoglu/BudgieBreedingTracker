@@ -438,7 +438,17 @@
     "sort_youngest": "En Genç",
     "sort_oldest_age": "En Yaşlı",
     "no_measurements_hint": "İlk ölçümü eklemek için butona dokunun",
-    "wean_success": "Yavru sütten kesildi olarak işaretlendi"
+    "wean_success": "Yavru sütten kesildi olarak işaretlendi",
+    "banding_day_label": "Halka Takma Günü",
+    "banding_day_hint": "Çıkış tarihinden itibaren kaçıncı gün (varsayılan: 10)",
+    "banding_day_validation": "5 ile 21 arasında bir değer girin",
+    "banding_status": "Halka Durumu",
+    "banding_planned": "Planlanan: {}",
+    "banding_completed": "Halka Takıldı",
+    "banding_not_yet": "Henüz takılmadı",
+    "banding_confirm_title": "Halka Takıldı mı?",
+    "banding_confirm_message": "Bu yavruya halka takıldığını onaylıyor musunuz?",
+    "banding_success": "Halka takma kaydedildi"
   },
   "home": {
     "app_title": "BudgieBreedingTracker",
@@ -981,7 +991,13 @@
     "cleanup_title": "Bildirim Temizliği",
     "cleanup_description": "Okunmuş bildirimlerin otomatik silineceği gün sayısı",
     "cleanup_days": "{} gün",
-    "permission_denied_hint": "Bildirim izni verilmedi. Cihaz ayarlarından izin verebilirsiniz."
+    "permission_denied_hint": "Bildirim izni verilmedi. Cihaz ayarlarından izin verebilirsiniz.",
+    "banding_pre_title": "Yarın Halka Takma Günü",
+    "banding_pre_body": "{} için yarın halka takma günü",
+    "banding_main_title": "Halka Takma Günü!",
+    "banding_main_body": "{} için bugün halka takılmalı",
+    "banding_followup_title": "Halka Hatırlatma",
+    "banding_followup_body": "{} için halka henüz takılmadı"
   },
   "premium": {
     "title": "Premium",
