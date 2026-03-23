@@ -17,18 +17,26 @@ import 'package:uuid/uuid.dart';
 class ChickFormState {
   final bool isLoading;
   final String? error;
+  final String? warning;
   final bool isSuccess;
 
   const ChickFormState({
     this.isLoading = false,
     this.error,
+    this.warning,
     this.isSuccess = false,
   });
 
-  ChickFormState copyWith({bool? isLoading, String? error, bool? isSuccess}) {
+  ChickFormState copyWith({
+    bool? isLoading,
+    String? error,
+    String? warning,
+    bool? isSuccess,
+  }) {
     return ChickFormState(
       isLoading: isLoading ?? this.isLoading,
       error: error,
+      warning: warning,
       isSuccess: isSuccess ?? this.isSuccess,
     );
   }
@@ -53,9 +61,15 @@ class ChickFormNotifier extends Notifier<ChickFormState> {
     String? notes,
     int bandingDay = 10,
   }) async {
-    state = state.copyWith(isLoading: true, error: null, isSuccess: false);
+    state = state.copyWith(
+      isLoading: true,
+      error: null,
+      warning: null,
+      isSuccess: false,
+    );
     try {
       final repo = ref.read(chickRepositoryProvider);
+      final sideEffectErrors = <String>[];
       final chick = Chick(
         id: const Uuid().v4(),
         userId: userId,
@@ -92,6 +106,7 @@ class ChickFormNotifier extends Notifier<ChickFormState> {
         );
       } catch (e) {
         AppLogger.warning('Failed to schedule chick care reminders: $e');
+        sideEffectErrors.add('chick_care');
       }
 
       // Schedule banding reminders
@@ -111,6 +126,7 @@ class ChickFormNotifier extends Notifier<ChickFormState> {
         );
       } catch (e) {
         AppLogger.warning('Failed to schedule banding reminders: $e');
+        sideEffectErrors.add('banding');
       }
 
       // Auto-generate chick milestone calendar events
@@ -134,10 +150,17 @@ class ChickFormNotifier extends Notifier<ChickFormState> {
           );
         } else {
           AppLogger.warning('Failed to generate chick calendar events: $e');
+          sideEffectErrors.add('calendar');
         }
       }
 
-      state = state.copyWith(isLoading: false, isSuccess: true);
+      state = state.copyWith(
+        isLoading: false,
+        warning: sideEffectErrors.isNotEmpty
+            ? 'errors.background_tasks_partial'.tr()
+            : null,
+        isSuccess: true,
+      );
     } catch (e) {
       AppLogger.error('ChickFormNotifier', e, StackTrace.current);
       Sentry.captureException(e, stackTrace: StackTrace.current);
@@ -147,10 +170,16 @@ class ChickFormNotifier extends Notifier<ChickFormState> {
 
   /// Updates an existing chick.
   Future<void> updateChick(Chick chick, {Chick? previous}) async {
-    state = state.copyWith(isLoading: true, error: null, isSuccess: false);
+    state = state.copyWith(
+      isLoading: true,
+      error: null,
+      warning: null,
+      isSuccess: false,
+    );
     try {
       final repo = ref.read(chickRepositoryProvider);
       await repo.save(chick.copyWith(updatedAt: DateTime.now()));
+      var sideEffectError = false;
 
       // Reschedule banding reminders if bandingDay changed
       if (previous != null && previous.bandingDay != chick.bandingDay && !chick.isBanded) {
@@ -169,10 +198,15 @@ class ChickFormNotifier extends Notifier<ChickFormState> {
           }
         } catch (e) {
           AppLogger.warning('Failed to reschedule banding reminders: $e');
+          sideEffectError = true;
         }
       }
 
-      state = state.copyWith(isLoading: false, isSuccess: true);
+      state = state.copyWith(
+        isLoading: false,
+        warning: sideEffectError ? 'errors.background_tasks_partial'.tr() : null,
+        isSuccess: true,
+      );
     } catch (e) {
       AppLogger.error('ChickFormNotifier', e, StackTrace.current);
       Sentry.captureException(e, stackTrace: StackTrace.current);
@@ -182,17 +216,23 @@ class ChickFormNotifier extends Notifier<ChickFormState> {
 
   /// Soft-deletes a chick.
   Future<void> deleteChick(String id) async {
-    state = state.copyWith(isLoading: true, error: null);
+    state = state.copyWith(isLoading: true, error: null, warning: null);
     try {
       final repo = ref.read(chickRepositoryProvider);
       await repo.remove(id);
+      var sideEffectError = false;
       try {
         final scheduler = ref.read(notificationSchedulerProvider);
         await scheduler.cancelBandingReminders(id);
       } catch (e) {
         AppLogger.warning('Failed to cancel banding reminders: $e');
+        sideEffectError = true;
       }
-      state = state.copyWith(isLoading: false, isSuccess: true);
+      state = state.copyWith(
+        isLoading: false,
+        warning: sideEffectError ? 'errors.background_tasks_partial'.tr() : null,
+        isSuccess: true,
+      );
     } catch (e) {
       AppLogger.error('ChickFormNotifier', e, StackTrace.current);
       Sentry.captureException(e, stackTrace: StackTrace.current);
@@ -202,7 +242,7 @@ class ChickFormNotifier extends Notifier<ChickFormState> {
 
   /// Marks a chick as weaned.
   Future<void> markAsWeaned(String id, {DateTime? weanDate}) async {
-    state = state.copyWith(isLoading: true, error: null);
+    state = state.copyWith(isLoading: true, error: null, warning: null);
     try {
       final repo = ref.read(chickRepositoryProvider);
       final chick = await repo.getById(id);
@@ -224,10 +264,11 @@ class ChickFormNotifier extends Notifier<ChickFormState> {
 
   /// Marks a chick as deceased.
   Future<void> markAsDeceased(String id, {DateTime? deathDate}) async {
-    state = state.copyWith(isLoading: true, error: null);
+    state = state.copyWith(isLoading: true, error: null, warning: null);
     try {
       final repo = ref.read(chickRepositoryProvider);
       final chick = await repo.getById(id);
+      var sideEffectError = false;
       if (chick != null) {
         await repo.save(
           chick.copyWith(
@@ -241,9 +282,14 @@ class ChickFormNotifier extends Notifier<ChickFormState> {
           await scheduler.cancelBandingReminders(id);
         } catch (e) {
           AppLogger.warning('Failed to cancel banding reminders: $e');
+          sideEffectError = true;
         }
       }
-      state = state.copyWith(isLoading: false, isSuccess: true);
+      state = state.copyWith(
+        isLoading: false,
+        warning: sideEffectError ? 'errors.background_tasks_partial'.tr() : null,
+        isSuccess: true,
+      );
     } catch (e) {
       AppLogger.error('ChickFormNotifier', e, StackTrace.current);
       Sentry.captureException(e, stackTrace: StackTrace.current);
@@ -254,7 +300,12 @@ class ChickFormNotifier extends Notifier<ChickFormState> {
   /// Promotes a chick to a Bird. Creates a new Bird and sets chick.birdId.
   /// Resolves parent IDs from the breeding pair via egg → incubation → pair.
   Future<void> promoteToBird(Chick chick) async {
-    state = state.copyWith(isLoading: true, error: null, isSuccess: false);
+    state = state.copyWith(
+      isLoading: true,
+      error: null,
+      warning: null,
+      isSuccess: false,
+    );
     try {
       final birdRepo = ref.read(birdRepositoryProvider);
       final chickRepo = ref.read(chickRepositoryProvider);

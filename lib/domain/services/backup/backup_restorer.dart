@@ -114,6 +114,15 @@ class BackupRestorer {
       }
       // v1 backups are compatible — new entity keys simply won't exist in data
 
+      final backupUserId = (backupData['user_id'] as String?)?.trim();
+      if (backupUserId != null &&
+          backupUserId.isNotEmpty &&
+          backupUserId != userId) {
+        return BackupResult.failure(
+          'Backup belongs to another user: $backupUserId',
+        );
+      }
+
       final data = backupData['data'] as Map<String, dynamic>;
       var totalRecords = 0;
       var errorCount = 0;
@@ -121,6 +130,7 @@ class BackupRestorer {
       // Restore birds
       totalRecords += await _restoreEntity<Bird>(
         data: data,
+        userId: userId,
         key: 'birds',
         fromJson: (json) => Bird.fromJson(json as Map<String, dynamic>),
         saveAll: (items) => _birdRepo.saveAll(items),
@@ -130,6 +140,7 @@ class BackupRestorer {
       // Restore breeding pairs
       totalRecords += await _restoreEntity<BreedingPair>(
         data: data,
+        userId: userId,
         key: 'breeding_pairs',
         fromJson: (json) => BreedingPair.fromJson(json as Map<String, dynamic>),
         saveAll: (items) => _breedingRepo.saveAll(items),
@@ -139,6 +150,7 @@ class BackupRestorer {
       // Restore eggs
       totalRecords += await _restoreEntity<Egg>(
         data: data,
+        userId: userId,
         key: 'eggs',
         fromJson: (json) => Egg.fromJson(json as Map<String, dynamic>),
         saveAll: (items) => _eggRepo.saveAll(items),
@@ -148,6 +160,7 @@ class BackupRestorer {
       // Restore chicks
       totalRecords += await _restoreEntity<Chick>(
         data: data,
+        userId: userId,
         key: 'chicks',
         fromJson: (json) => Chick.fromJson(json as Map<String, dynamic>),
         saveAll: (items) => _chickRepo.saveAll(items),
@@ -157,6 +170,7 @@ class BackupRestorer {
       // Restore health records
       totalRecords += await _restoreEntity<HealthRecord>(
         data: data,
+        userId: userId,
         key: 'health_records',
         fromJson: (json) => HealthRecord.fromJson(json as Map<String, dynamic>),
         saveAll: (items) => _healthRepo.saveAll(items),
@@ -166,6 +180,7 @@ class BackupRestorer {
       // Restore events
       totalRecords += await _restoreEntity<Event>(
         data: data,
+        userId: userId,
         key: 'events',
         fromJson: (json) => Event.fromJson(json as Map<String, dynamic>),
         saveAll: (items) => _eventRepo.saveAll(items),
@@ -175,6 +190,7 @@ class BackupRestorer {
       // Restore incubations
       totalRecords += await _restoreEntity<Incubation>(
         data: data,
+        userId: userId,
         key: 'incubations',
         fromJson: (json) => Incubation.fromJson(json as Map<String, dynamic>),
         saveAll: (items) => _incubationRepo.saveAll(items),
@@ -184,6 +200,7 @@ class BackupRestorer {
       // Restore growth measurements
       totalRecords += await _restoreEntity<GrowthMeasurement>(
         data: data,
+        userId: userId,
         key: 'growth_measurements',
         fromJson: (json) =>
             GrowthMeasurement.fromJson(json as Map<String, dynamic>),
@@ -194,6 +211,7 @@ class BackupRestorer {
       // Restore notifications
       totalRecords += await _restoreEntity<AppNotification>(
         data: data,
+        userId: userId,
         key: 'notifications',
         fromJson: (json) =>
             AppNotification.fromJson(json as Map<String, dynamic>),
@@ -204,6 +222,7 @@ class BackupRestorer {
       // Restore clutches (added in backup v2)
       totalRecords += await _restoreEntity<Clutch>(
         data: data,
+        userId: userId,
         key: 'clutches',
         fromJson: (json) => Clutch.fromJson(json as Map<String, dynamic>),
         saveAll: (items) => _clutchRepo.saveAll(items),
@@ -213,6 +232,7 @@ class BackupRestorer {
       // Restore nests (added in backup v2)
       totalRecords += await _restoreEntity<Nest>(
         data: data,
+        userId: userId,
         key: 'nests',
         fromJson: (json) => Nest.fromJson(json as Map<String, dynamic>),
         saveAll: (items) => _nestRepo.saveAll(items),
@@ -222,6 +242,7 @@ class BackupRestorer {
       // Restore photos (added in backup v2)
       totalRecords += await _restoreEntity<Photo>(
         data: data,
+        userId: userId,
         key: 'photos',
         fromJson: (json) => Photo.fromJson(json as Map<String, dynamic>),
         saveAll: (items) => _photoRepo.saveAll(items),
@@ -232,6 +253,16 @@ class BackupRestorer {
         '$_tag Backup restored: $totalRecords records '
         '($errorCount entity types had errors)',
       );
+
+      if (errorCount > 0) {
+        return BackupResult(
+          success: false,
+          filePath: filePath,
+          error: 'Backup restored partially: $errorCount entity type(s) failed',
+          recordCount: totalRecords,
+          timestamp: DateTime.now(),
+        );
+      }
 
       return BackupResult.success(
         filePath: filePath,
@@ -256,6 +287,7 @@ class BackupRestorer {
   /// Returns the number of successfully restored records.
   Future<int> _restoreEntity<T>({
     required Map<String, dynamic> data,
+    required String userId,
     required String key,
     required T Function(dynamic json) fromJson,
     required Future<void> Function(List<T> items) saveAll,
@@ -272,7 +304,7 @@ class BackupRestorer {
       final items = <T>[];
       for (final jsonItem in jsonList) {
         try {
-          items.add(fromJson(jsonItem));
+          items.add(fromJson(_normalizeUserScope(jsonItem, userId)));
         } catch (e) {
           AppLogger.warning('$_tag Failed to parse $key item: $e');
         }
@@ -289,5 +321,15 @@ class BackupRestorer {
       onError();
       return 0;
     }
+  }
+
+  /// Forces entity-level `user_id` to match the active restore target.
+  ///
+  /// This prevents silent cross-account imports when backup payloads contain
+  /// stale or foreign user ids.
+  dynamic _normalizeUserScope(dynamic jsonItem, String userId) {
+    if (jsonItem is! Map<String, dynamic>) return jsonItem;
+    if (!jsonItem.containsKey('user_id')) return jsonItem;
+    return <String, dynamic>{...jsonItem, 'user_id': userId};
   }
 }

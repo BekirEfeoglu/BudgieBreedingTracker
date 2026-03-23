@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -186,6 +188,30 @@ void main() {
       expect(state.incubation, isTrue);
       expect(state.chickCare, isTrue);
       expect(state.healthCheck, isTrue);
+    });
+
+    test('disposing container before async load completes does not crash', () async {
+      final completer = Completer<NotificationSettings?>();
+      when(() => dao.getByUser(_testUserId)).thenAnswer((_) => completer.future);
+
+      final container = ProviderContainer(
+        overrides: [
+          notificationServiceProvider.overrideWithValue(service),
+          notificationSettingsDaoProvider.overrideWithValue(dao),
+          currentUserIdProvider.overrideWithValue(_testUserId),
+        ],
+      );
+
+      // Trigger provider build (starts async load), then dispose immediately.
+      container.read(notificationToggleSettingsProvider);
+      container.dispose();
+
+      // Complete pending DAO call after dispose; test should finish without
+      // disposed-ref exceptions.
+      completer.complete(
+        const NotificationSettings(id: 'ns-2', userId: _testUserId),
+      );
+      await _flushAsync();
     });
   });
 }

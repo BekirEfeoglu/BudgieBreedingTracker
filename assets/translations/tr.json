@@ -1835,7 +1835,8 @@
     "unknown": "Beklenmeyen bir hata oluştu.",
     "save_failed": "Kaydetme işlemi başarısız oldu.",
     "delete_failed": "Silme işlemi başarısız oldu.",
-    "update_failed": "Güncelleme işlemi başarısız oldu."
+    "update_failed": "Güncelleme işlemi başarısız oldu.",
+    "background_tasks_partial": "Kayıt tamamlandı ancak bazı hatırlatma/takvim görevleri planlanamadı."
   },
   "validation": {
     "field_required": "{} zorunludur",

@@ -38,12 +38,14 @@ final eggsForIncubationProvider = StreamProvider.family<List<Egg>, String>((
 class EggActionsState {
   final bool isLoading;
   final String? error;
+  final String? warning;
   final bool isSuccess;
   final bool chickCreated;
 
   const EggActionsState({
     this.isLoading = false,
     this.error,
+    this.warning,
     this.isSuccess = false,
     this.chickCreated = false,
   });
@@ -51,12 +53,14 @@ class EggActionsState {
   EggActionsState copyWith({
     bool? isLoading,
     String? error,
+    String? warning,
     bool? isSuccess,
     bool? chickCreated,
   }) {
     return EggActionsState(
       isLoading: isLoading ?? this.isLoading,
       error: error,
+      warning: warning,
       isSuccess: isSuccess ?? this.isSuccess,
       chickCreated: chickCreated ?? this.chickCreated,
     );
@@ -74,10 +78,16 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
     required int eggNumber,
     String? notes,
   }) async {
-    state = state.copyWith(isLoading: true, error: null, isSuccess: false);
+    state = state.copyWith(
+      isLoading: true,
+      error: null,
+      warning: null,
+      isSuccess: false,
+    );
     try {
       final repo = ref.read(eggRepositoryProvider);
       final userId = ref.read(currentUserIdProvider);
+      final sideEffectErrors = <String>[];
 
       final egg = Egg(
         id: const Uuid().v4(),
@@ -105,6 +115,7 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
         );
       } catch (e) {
         AppLogger.warning('Failed to schedule egg reminders: $e');
+        sideEffectErrors.add('egg_reminder');
       }
 
       // Auto-generate expected hatch date calendar event
@@ -123,10 +134,17 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
           );
         } else {
           AppLogger.warning('Failed to generate egg calendar event: $e');
+          sideEffectErrors.add('egg_calendar');
         }
       }
 
-      state = state.copyWith(isLoading: false, isSuccess: true);
+      state = state.copyWith(
+        isLoading: false,
+        warning: sideEffectErrors.isNotEmpty
+            ? 'errors.background_tasks_partial'.tr()
+            : null,
+        isSuccess: true,
+      );
     } catch (e) {
       AppLogger.error('EggActionsNotifier', e, StackTrace.current);
       Sentry.captureException(e, stackTrace: StackTrace.current);
@@ -139,6 +157,7 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
     state = state.copyWith(
       isLoading: true,
       error: null,
+      warning: null,
       isSuccess: false,
       chickCreated: false,
     );
@@ -159,12 +178,16 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
 
       // Automatically create chick when egg hatches
       var didCreateChick = false;
+      var sideEffectError = false;
       if (newStatus == EggStatus.hatched) {
-        didCreateChick = await _createChickFromHatchedEgg(updated);
+        final result = await _createChickFromHatchedEgg(updated);
+        didCreateChick = result.created;
+        sideEffectError = result.sideEffectError;
       }
 
       state = state.copyWith(
         isLoading: false,
+        warning: sideEffectError ? 'errors.background_tasks_partial'.tr() : null,
         isSuccess: true,
         chickCreated: didCreateChick,
       );
@@ -176,8 +199,13 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
   }
 
   /// Creates a chick record automatically when an egg is marked as hatched.
-  /// Returns true if a new chick was created, false if already exists.
-  Future<bool> _createChickFromHatchedEgg(Egg egg) async {
+  ///
+  /// Returns:
+  /// - `created`: whether a new chick record was created
+  /// - `sideEffectError`: whether notification/calendar side-effects failed
+  Future<({bool created, bool sideEffectError})> _createChickFromHatchedEgg(
+    Egg egg,
+  ) async {
     try {
       final chickRepo = ref.read(chickRepositoryProvider);
 
@@ -185,7 +213,7 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
       final existing = await chickRepo.getByEggId(egg.id);
       if (existing != null) {
         AppLogger.info('Chick already exists for egg: ${egg.id}, skipping');
-        return false;
+        return (created: false, sideEffectError: false);
       }
 
       final hatchDate = egg.hatchDate ?? DateTime.now();
@@ -207,6 +235,7 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
       final chickLabel = 'chicks.unnamed_chick'.tr(
         args: ['${egg.eggNumber ?? chick.id.substring(0, 6)}'],
       );
+      var sideEffectError = false;
 
       // Schedule chick care reminders
       try {
@@ -222,6 +251,7 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
         );
       } catch (e) {
         AppLogger.warning('Failed to schedule chick care reminders: $e');
+        sideEffectError = true;
       }
 
       // Auto-generate chick milestone calendar events
@@ -241,6 +271,7 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
           );
         } else {
           AppLogger.warning('Failed to generate chick calendar events: $e');
+          sideEffectError = true;
         }
       }
 
@@ -257,13 +288,14 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
         );
       } catch (e) {
         AppLogger.warning('Failed to schedule banding reminders: $e');
+        sideEffectError = true;
       }
 
       AppLogger.info('Chick auto-created from hatched egg: ${egg.id}');
-      return true;
+      return (created: true, sideEffectError: sideEffectError);
     } catch (e) {
       AppLogger.error('Failed to auto-create chick from egg', e);
-      return false;
+      return (created: false, sideEffectError: true);
     }
   }
 
