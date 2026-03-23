@@ -30,6 +30,7 @@ void main() {
       overrides: [
         birdRepositoryProvider.overrideWithValue(repo),
         isPremiumProvider.overrideWithValue(isPremium),
+        effectivePremiumProvider.overrideWithValue(isPremium),
       ],
     );
   }

@@ -12,6 +12,8 @@ import 'package:budgie_breeding_tracker/data/models/incubation_model.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/features/birds/providers/bird_providers.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_notification_helpers.dart';
+import 'package:budgie_breeding_tracker/domain/services/premium/free_tier_limit_providers.dart';
+import 'package:budgie_breeding_tracker/core/errors/app_exception.dart';
 import 'package:budgie_breeding_tracker/features/premium/providers/premium_providers.dart';
 import 'package:uuid/uuid.dart';
 
@@ -89,17 +91,13 @@ class BreedingFormNotifier extends Notifier<BreedingFormState> {
       final incubationRepo = ref.read(incubationRepositoryProvider);
 
       // Free tier limit checks
-      final isPremium = ref.read(isPremiumProvider);
+      final isPremium = ref.read(effectivePremiumProvider);
       if (!isPremium) {
-        final existingPairs = await pairRepo.getAll(userId);
-        final activePairs = existingPairs
-            .where(
-              (p) =>
-                  p.status == BreedingStatus.active ||
-                  p.status == BreedingStatus.ongoing,
-            )
-            .length;
-        if (activePairs >= AppConstants.freeTierMaxBreedingPairs) {
+        try {
+          await ref
+              .read(freeTierLimitServiceProvider)
+              .guardBreedingPairLimit(userId);
+        } on FreeTierLimitException {
           state = state.copyWith(
             isLoading: false,
             error: 'premium.breeding_limit_reached'.tr(
@@ -110,11 +108,11 @@ class BreedingFormNotifier extends Notifier<BreedingFormState> {
           return;
         }
 
-        final existingIncubations = await incubationRepo.getAll(userId);
-        final activeIncubations = existingIncubations
-            .where((i) => i.status == IncubationStatus.active)
-            .length;
-        if (activeIncubations >= AppConstants.freeTierMaxActiveIncubations) {
+        try {
+          await ref
+              .read(freeTierLimitServiceProvider)
+              .guardIncubationLimit(userId);
+        } on FreeTierLimitException {
           state = state.copyWith(
             isLoading: false,
             error: 'premium.incubation_limit_reached'.tr(
