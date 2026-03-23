@@ -11,10 +11,10 @@ class CommunityImageViewer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: Colors.black, // Intentional: image viewer overlay
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        iconTheme: const IconThemeData(color: Colors.white),
+        backgroundColor: Colors.transparent, // Intentional: image viewer overlay
+        iconTheme: const IconThemeData(color: Colors.white), // Intentional: image viewer overlay
         actions: [
           IconButton(
             icon: const Icon(LucideIcons.x),

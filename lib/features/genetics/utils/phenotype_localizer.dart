@@ -80,6 +80,10 @@ abstract final class PhenotypeLocalizer {
     return phrases;
   }
 
+  /// All l10n keys referenced by known phenotype phrases (for validation).
+  static List<String> get allReferencedKeys =>
+      _phraseKeys.map((e) => e.$2).toList();
+
   /// Localize a phenotype label (compound or simple) to current locale.
   static String localizePhenotype(
     String raw, {

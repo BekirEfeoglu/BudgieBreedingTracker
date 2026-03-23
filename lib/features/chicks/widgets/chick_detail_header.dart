@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
 import 'package:budgie_breeding_tracker/features/chicks/screens/chick_detail_screen.dart';
+import 'package:budgie_breeding_tracker/features/chicks/widgets/chick_age_formatter.dart';
 import 'package:budgie_breeding_tracker/features/chicks/widgets/chick_health_badge.dart';
 import 'package:budgie_breeding_tracker/features/chicks/widgets/development_stage_badge.dart';
 
@@ -67,7 +68,7 @@ class ChickDetailHeader extends StatelessWidget {
           if (age != null) ...[
             const SizedBox(height: AppSpacing.xs),
             Text(
-              _formatAge(age),
+              formatChickAge(age),
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
               ),
@@ -87,12 +88,4 @@ class ChickDetailHeader extends StatelessWidget {
     );
   }
 
-  String _formatAge(({int weeks, int days, int totalDays}) age) {
-    if (age.weeks > 0) {
-      return 'chicks.age_weeks_days'.tr(
-        args: [age.weeks.toString(), age.days.toString()],
-      );
-    }
-    return 'chicks.age_days_only'.tr(args: [age.totalDays.toString()]);
-  }
 }

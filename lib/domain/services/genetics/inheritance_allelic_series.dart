@@ -6,7 +6,7 @@ part of 'mendelian_calculator.dart';
 
 /// Calculates offspring for an allelic series locus using a 2x2 Punnett square.
 ///
-/// Each allele is either 'wildtype' or a mutation ID.
+/// Each allele is either [_kWildtype] or a mutation ID.
 /// The dominance hierarchy determines the phenotype for each combination.
 List<_RawResult> _calculateAllelicSeriesLocus(
   String locusId,
@@ -50,7 +50,7 @@ List<_RawResult> _calculateAllelicSeriesLocus(
 /// Calculates offspring for a sex-linked allelic series locus.
 ///
 /// Father (ZZ): two Z alleles from [_getAllelesAtLocus].
-/// Mother (ZW): one Z allele + 'W' from [_getSexLinkedMotherAllelesAtLocus].
+/// Mother (ZW): one Z allele + [_kWChromosome] from [_getSexLinkedMotherAllelesAtLocus].
 ///
 /// Male offspring get Z from father + Z from mother.
 /// Female offspring get Z from father + W from mother (hemizygous).
@@ -75,10 +75,10 @@ List<_RawResult> _calculateSexLinkedAllelicSeriesLocus(
     final motherAllele = pair[1];
     final prob = entry.value;
 
-    if (motherAllele == 'W') {
+    if (motherAllele == _kWChromosome) {
       // Female offspring (Z from father / W)
       // Hemizygous: father's Z allele determines phenotype
-      if (fatherAllele == 'wildtype') {
+      if (fatherAllele == _kWildtype) {
         results.add(
           _RawResult(
             phenotype: 'Normal',
@@ -111,11 +111,11 @@ List<_RawResult> _calculateSexLinkedAllelicSeriesLocus(
       );
 
       // Build Z-notation genotype for sex-linked
-      final sym1 = fatherAllele == 'wildtype'
+      final sym1 = fatherAllele == _kWildtype
           ? '+'
           : (MutationDatabase.getById(fatherAllele)?.alleleSymbol ??
                 fatherAllele);
-      final sym2 = motherAllele == 'wildtype'
+      final sym2 = motherAllele == _kWildtype
           ? '+'
           : (MutationDatabase.getById(motherAllele)?.alleleSymbol ??
                 motherAllele);

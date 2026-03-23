@@ -38,9 +38,12 @@ class BirdDetailScreen extends ConsumerWidget {
         appBar: AppBar(title: Text('common.loading'.tr())),
         body: const LoadingState(),
       ),
-      error: (error, _) => Scaffold(
+      error: (_, __) => Scaffold(
         appBar: AppBar(title: Text('common.error'.tr())),
-        body: ErrorState(message: error.toString()),
+        body: ErrorState(
+          message: 'common.data_load_error'.tr(),
+          onRetry: () => ref.invalidate(birdByIdProvider(birdId)),
+        ),
       ),
       data: (bird) {
         if (bird == null) {
@@ -152,6 +155,7 @@ class _DetailContent extends ConsumerWidget {
         if (confirmed == true) {
           AppHaptics.heavyImpact();
           await notifier.markAsDead(bird.id);
+          if (!context.mounted) return;
         }
       case 'sold':
         final confirmed = await showConfirmDialog(
@@ -163,6 +167,7 @@ class _DetailContent extends ConsumerWidget {
         if (confirmed == true) {
           AppHaptics.mediumImpact();
           await notifier.markAsSold(bird.id);
+          if (!context.mounted) return;
         }
       case 'delete':
         final confirmed = await showConfirmDialog(

@@ -39,73 +39,123 @@ abstract final class BudgieDetails {
     }
   }
 
-  /// Draw throat spots below the mask area.
+  /// Draw spangle scallop pattern (reversed: light center, thin dark edge).
   ///
-  /// In side profile only half the spots are visible, so the rendered
-  /// count is `(totalCount / 2).ceil()`. Spots are arranged in a loose
-  /// arc on the lower mask boundary.
-  static void paintThroatSpots(
+  /// Instead of dark bar stripes, draws thin arc outlines suggesting
+  /// feather edges — characteristic of SF Spangle wing markings.
+  static void paintSpangleScallops(
     Canvas canvas,
     double w,
     double h,
     Color color,
-    int totalCount,
+    double strokeWidth,
   ) {
-    final visibleCount = (totalCount / 2).ceil();
-    if (visibleCount <= 0) return;
+    final paint = Paint()
+      ..color = color.withValues(alpha: 0.85)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = (strokeWidth * 0.7).clamp(0.6, 2.0)
+      ..strokeCap = StrokeCap.round;
 
-    final paint = Paint()..color = color;
-    final spotRadius = (w * 0.022).clamp(1.5, 4.0);
+    const scallops = 5;
+    for (var i = 0; i < scallops; i++) {
+      final t = (i + 1) / (scallops + 1);
 
-    for (var i = 0; i < visibleCount; i++) {
-      final t = (i + 1) / (visibleCount + 1);
+      // Small arcs (U-shapes) representing feather edges
+      final cx = w * (0.42 + t * 0.20);
+      final cy = h * (0.48 + t * 0.14);
+      final rx = w * 0.04;
+      final ry = h * 0.025;
 
-      // Arc along the lower mask boundary
-      final cx = w * (0.58 + t * 0.14);
-      final cy = h * (0.34 + t * 0.02);
+      final arc = Path()
+        ..moveTo(cx - rx, cy - ry * 0.5)
+        ..quadraticBezierTo(cx, cy + ry, cx + rx, cy - ry * 0.5);
 
-      canvas.drawCircle(Offset(cx, cy), spotRadius, paint);
+      canvas.drawPath(arc, paint);
     }
   }
 
-  /// Draw the eye with optional eye-ring and a small highlight dot.
+  /// Draw head/nape stripes (characteristic budgie markings).
   ///
-  /// The eye sits in the upper-right quadrant of the head, roughly at
-  /// (0.66w, 0.20h) in the overall canvas coordinate space.
-  static void paintEye(
+  /// Stripes follow the contour of the back of the head from crown
+  /// to nape. Clipped to the head shape and painted BEFORE the mask
+  /// so the mask naturally covers front-facing stripes.
+  static void paintHeadStripes(
     Canvas canvas,
     double w,
     double h,
-    Color eyeColor,
-    Color eyeRingColor,
-    bool showRing,
-  ) {
-    final cx = w * 0.66;
-    final cy = h * 0.20;
-    final eyeRadius = (w * 0.04).clamp(2.0, 6.0);
+    Color color,
+    double strokeWidth, {
+    int stripeCount = 4,
+    double opacity = 0.55,
+  }) {
+    canvas.save();
+    canvas.clipPath(BudgiePaths.head(w, h));
 
-    // Optional iris ring
-    if (showRing) {
-      canvas.drawCircle(
-        Offset(cx, cy),
-        eyeRadius * 1.45,
-        Paint()..color = eyeRingColor,
-      );
+    final paint = Paint()
+      ..color = color.withValues(alpha: opacity)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth
+      ..strokeCap = StrokeCap.round;
+
+    for (var i = 0; i < stripeCount; i++) {
+      final t = (i + 1) / (stripeCount + 1);
+
+      // Crown-to-nape arc following the back contour of the head
+      final startX = w * (0.52 + t * 0.06);
+      final startY = h * (0.08 + t * 0.01);
+      final endX = w * (0.48 + t * 0.04);
+      final endY = h * (0.24 + t * 0.04);
+      final ctrlX = w * (0.42 + t * 0.02);
+      final ctrlY = h * (0.14 + t * 0.04);
+
+      final stripePath = Path()
+        ..moveTo(startX, startY)
+        ..quadraticBezierTo(ctrlX, ctrlY, endX, endY);
+
+      canvas.drawPath(stripePath, paint);
     }
 
-    // Iris
-    canvas.drawCircle(
-      Offset(cx, cy),
-      eyeRadius,
-      Paint()..color = eyeColor,
-    );
-
-    // Highlight dot (top-right of iris)
-    final highlightRadius = (eyeRadius * 0.30).clamp(0.8, 2.0);
-    canvas.drawCircle(
-      Offset(cx + eyeRadius * 0.28, cy - eyeRadius * 0.28),
-      highlightRadius,
-      Paint()..color = const Color(0xCCFFFFFF),
-    );
+    canvas.restore();
   }
+
+  /// Draw longitudinal stripes along the tail feathers.
+  ///
+  /// Clipped to the tail shape. Three curved lines following the
+  /// diagonal direction of the tail from body toward tip.
+  static void paintTailStripes(
+    Canvas canvas,
+    double w,
+    double h,
+    Color tailColor,
+  ) {
+    canvas.save();
+    canvas.clipPath(BudgiePaths.tail(w, h));
+
+    final paint = Paint()
+      ..color = tailColor.withValues(alpha: 0.20)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = (w * 0.012).clamp(0.6, 1.5)
+      ..strokeCap = StrokeCap.round;
+
+    const lineCount = 3;
+    for (var i = 0; i < lineCount; i++) {
+      final t = (i + 1) / (lineCount + 1);
+
+      final startX = w * (0.28 + t * 0.06);
+      final startY = h * (0.72 + t * 0.02);
+      final endX = w * (0.06 + t * 0.06);
+      final endY = h * (0.94 + t * 0.01);
+      final ctrlX = w * (0.16 + t * 0.04);
+      final ctrlY = h * (0.82 + t * 0.02);
+
+      final stripePath = Path()
+        ..moveTo(startX, startY)
+        ..quadraticBezierTo(ctrlX, ctrlY, endX, endY);
+
+      canvas.drawPath(stripePath, paint);
+    }
+
+    canvas.restore();
+  }
+
 }

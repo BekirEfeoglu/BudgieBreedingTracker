@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
@@ -181,8 +182,15 @@ class SyncPullHandler {
 
     if (layerErrors > 0) {
       AppLogger.warning(
-        '[SyncOrchestrator] Pull completed with $layerErrors layer error(s)',
+        '[SyncOrchestrator] Pull completed with $layerErrors layer error(s). '
+        'Check logs above for "[SyncOrchestrator] Pull L*" entries.',
       );
+      Sentry.addBreadcrumb(Breadcrumb(
+        message: 'SyncPull completed with errors',
+        data: {'layerErrors': layerErrors, 'incremental': since != null},
+        category: 'sync.pull',
+        level: SentryLevel.warning,
+      ));
       return false;
     } else {
       AppLogger.info('[SyncOrchestrator] Pull complete');

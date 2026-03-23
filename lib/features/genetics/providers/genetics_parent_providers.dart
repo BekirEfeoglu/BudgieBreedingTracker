@@ -77,6 +77,20 @@ final showGenotypeProvider = NotifierProvider<ShowGenotypeNotifier, bool>(
   ShowGenotypeNotifier.new,
 );
 
+/// Filter for offspring results.
+enum OffspringFilter { all, carrierOnly, visualOnly }
+
+/// Active offspring result filter.
+class OffspringFilterNotifier extends Notifier<OffspringFilter> {
+  @override
+  OffspringFilter build() => OffspringFilter.all;
+}
+
+final offspringFilterProvider =
+    NotifierProvider<OffspringFilterNotifier, OffspringFilter>(
+  OffspringFilterNotifier.new,
+);
+
 /// Current wizard step (0=parents, 1=preview, 2=results).
 class WizardStepNotifier extends Notifier<int> {
   @override

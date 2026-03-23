@@ -14,6 +14,7 @@ import '../../../data/providers/auth_state_providers.dart';
 import '../../../data/repositories/repository_providers.dart';
 import '../providers/community_comment_providers.dart';
 import '../providers/community_providers.dart';
+import 'community_report_dialog.dart';
 
 /// Tile widget for displaying a single comment.
 class CommunityCommentTile extends ConsumerWidget {
@@ -152,33 +153,9 @@ class CommunityCommentTile extends ConsumerWidget {
   }
 
   void _showReportDialog(BuildContext context, WidgetRef ref) async {
-    final reason = await showDialog<CommunityReportReason>(
-      context: context,
-      builder: (ctx) => SimpleDialog(
-        title: Text('community.report_comment'.tr()),
-        children: CommunityReportReason.values
-            .where((r) => r != CommunityReportReason.unknown)
-            .map((reason) {
-              final label = switch (reason) {
-                CommunityReportReason.spam =>
-                  'community.report_reason_spam'.tr(),
-                CommunityReportReason.harassment =>
-                  'community.report_reason_harassment'.tr(),
-                CommunityReportReason.inappropriate =>
-                  'community.report_reason_inappropriate'.tr(),
-                CommunityReportReason.misinformation =>
-                  'community.report_reason_misinformation'.tr(),
-                CommunityReportReason.other =>
-                  'community.report_reason_other'.tr(),
-                CommunityReportReason.unknown => '',
-              };
-              return SimpleDialogOption(
-                onPressed: () => Navigator.pop(ctx, reason),
-                child: Text(label),
-              );
-            })
-            .toList(),
-      ),
+    final reason = await showCommunityReportDialog(
+      context,
+      title: 'community.report_comment'.tr(),
     );
     if (reason == null || !context.mounted) return;
     try {

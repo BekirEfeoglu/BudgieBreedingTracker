@@ -38,7 +38,7 @@ class EggManagementScreen extends ConsumerWidget {
       ),
       error: (e, _) => Scaffold(
         appBar: AppBar(title: Text('eggs.management'.tr())),
-        body: ErrorState(message: e.toString()),
+        body: ErrorState(message: 'common.data_load_error'.tr()),
       ),
       data: (incubations) {
         final incubation = selectPrimaryIncubation(incubations);
@@ -124,27 +124,33 @@ class _EggManagementContent extends ConsumerWidget {
                 )
               else
                 Expanded(
-                  child: ListView.builder(
-                    padding: const EdgeInsets.only(bottom: AppSpacing.xxxl * 2),
-                    itemCount: activeEggs.length,
-                    itemBuilder: (context, index) {
-                      final egg = activeEggs[index];
-                      return EggListItem(
-                        egg: egg,
-                        onStatusUpdate: () async {
-                          final newStatus = await showEggStatusUpdateSheet(
-                            context,
-                            egg,
-                          );
-                          if (newStatus != null) {
-                            ref
-                                .read(eggActionsProvider.notifier)
-                                .updateEggStatus(egg, newStatus);
-                          }
-                        },
-                        onDelete: () => _confirmDelete(context, ref, egg),
-                      );
+                  child: RefreshIndicator(
+                    onRefresh: () async {
+                      ref.invalidate(eggsForIncubationProvider(incubationId));
                     },
+                    child: ListView.builder(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: const EdgeInsets.only(bottom: AppSpacing.xxxl * 2),
+                      itemCount: activeEggs.length,
+                      itemBuilder: (context, index) {
+                        final egg = activeEggs[index];
+                        return EggListItem(
+                          egg: egg,
+                          onStatusUpdate: () async {
+                            final newStatus = await showEggStatusUpdateSheet(
+                              context,
+                              egg,
+                            );
+                            if (newStatus != null) {
+                              ref
+                                  .read(eggActionsProvider.notifier)
+                                  .updateEggStatus(egg, newStatus);
+                            }
+                          },
+                          onDelete: () => _confirmDelete(context, ref, egg),
+                        );
+                      },
+                    ),
                   ),
                 ),
             ],

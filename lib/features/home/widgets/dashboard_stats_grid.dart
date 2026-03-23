@@ -115,8 +115,8 @@ class DashboardStatsGrid extends ConsumerWidget {
   }
 
   Color _ratioColor(double ratio) {
-    if (ratio >= 0.93) return AppColors.error;
-    if (ratio >= 0.66) return AppColors.warning;
+    if (ratio >= AppConstants.freeTierCriticalRatio) return AppColors.error;
+    if (ratio >= AppConstants.freeTierWarningRatio) return AppColors.warning;
     return AppColors.budgieGreen;
   }
 }

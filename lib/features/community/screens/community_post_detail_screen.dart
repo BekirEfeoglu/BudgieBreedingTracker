@@ -11,22 +11,15 @@ import '../widgets/community_comment_tile.dart';
 import '../widgets/community_post_card.dart';
 
 /// Detail screen showing a single post with its comments.
-class CommunityPostDetailScreen extends ConsumerStatefulWidget {
+class CommunityPostDetailScreen extends ConsumerWidget {
   final String postId;
 
   const CommunityPostDetailScreen({super.key, required this.postId});
 
   @override
-  ConsumerState<CommunityPostDetailScreen> createState() =>
-      _CommunityPostDetailScreenState();
-}
-
-class _CommunityPostDetailScreenState
-    extends ConsumerState<CommunityPostDetailScreen> {
-  @override
-  Widget build(BuildContext context) {
-    final postAsync = ref.watch(communityPostByIdProvider(widget.postId));
-    final commentsAsync = ref.watch(commentsForPostProvider(widget.postId));
+  Widget build(BuildContext context, WidgetRef ref) {
+    final postAsync = ref.watch(communityPostByIdProvider(postId));
+    final commentsAsync = ref.watch(commentsForPostProvider(postId));
 
     ref.listen<CommentFormState>(commentFormProvider, (_, state) {
       if (state.isSuccess) {
@@ -49,8 +42,8 @@ class _CommunityPostDetailScreenState
           Expanded(
             child: RefreshIndicator(
               onRefresh: () async {
-                ref.invalidate(communityPostByIdProvider(widget.postId));
-                ref.invalidate(commentsForPostProvider(widget.postId));
+                ref.invalidate(communityPostByIdProvider(postId));
+                ref.invalidate(commentsForPostProvider(postId));
               },
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
@@ -68,7 +61,7 @@ class _CommunityPostDetailScreenState
                         child: app.ErrorState(
                           message: e.toString(),
                           onRetry: () => ref.invalidate(
-                            communityPostByIdProvider(widget.postId),
+                            communityPostByIdProvider(postId),
                           ),
                         ),
                       ),
@@ -154,7 +147,7 @@ class _CommunityPostDetailScreenState
           ),
 
           // Comment input
-          CommunityCommentInput(postId: widget.postId),
+          CommunityCommentInput(postId: postId),
         ],
       ),
     );

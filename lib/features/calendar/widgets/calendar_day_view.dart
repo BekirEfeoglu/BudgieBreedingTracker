@@ -24,7 +24,6 @@ class CalendarDayView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final sortedEvents = List<Event>.from(events)
       ..sort((a, b) => a.eventDate.compareTo(b.eventDate));
 
@@ -64,7 +63,6 @@ class CalendarDayView extends StatelessWidget {
         return _HourSlot(
           hourLabel: hourStr,
           events: hourEvents,
-          theme: theme,
           onEditEvent: onEditEvent,
           onDeleteEvent: onDeleteEvent,
           onEventTap: onEventTap,
@@ -77,7 +75,6 @@ class CalendarDayView extends StatelessWidget {
 class _HourSlot extends StatelessWidget {
   final String hourLabel;
   final List<Event> events;
-  final ThemeData theme;
   final ValueChanged<Event> onEditEvent;
   final ValueChanged<Event> onDeleteEvent;
   final ValueChanged<Event>? onEventTap;
@@ -85,7 +82,6 @@ class _HourSlot extends StatelessWidget {
   const _HourSlot({
     required this.hourLabel,
     required this.events,
-    required this.theme,
     required this.onEditEvent,
     required this.onDeleteEvent,
     this.onEventTap,
@@ -93,6 +89,7 @@ class _HourSlot extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return IntrinsicHeight(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,

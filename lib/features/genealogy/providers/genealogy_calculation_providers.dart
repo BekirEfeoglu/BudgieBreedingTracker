@@ -7,6 +7,7 @@ typedef InbreedingData = ({
   double coefficient,
   InbreedingRisk risk,
   Set<String> commonAncestorIds,
+  bool depthLimited,
 });
 
 /// Calculates inbreeding coefficient and common ancestor IDs for a bird.
@@ -15,16 +16,21 @@ InbreedingData calculateInbreedingForBird(
   Map<String, Bird> ancestors,
 ) {
   const calculator = InbreedingCalculator();
-  final coefficient = calculator.calculate(
+  final detail = calculator.calculateDetailed(
     birdId: birdId,
     ancestors: ancestors,
   );
-  final risk = calculator.assessRisk(coefficient);
+  final risk = calculator.assessRisk(detail.coefficient);
   final commonIds = calculator.findCommonAncestors(
     birdId: birdId,
     ancestors: ancestors,
   );
-  return (coefficient: coefficient, risk: risk, commonAncestorIds: commonIds);
+  return (
+    coefficient: detail.coefficient,
+    risk: risk,
+    commonAncestorIds: commonIds,
+    depthLimited: detail.depthLimited,
+  );
 }
 
 /// Memoized inbreeding data provider — recomputes only when ancestors change.

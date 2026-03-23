@@ -29,21 +29,22 @@ class PunnettSquareWidget extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
+        Wrap(
+          spacing: AppSpacing.sm,
+          runSpacing: AppSpacing.xs,
+          crossAxisAlignment: WrapCrossAlignment.center,
           children: [
             AppIcon(
               AppIcons.punnett,
               size: 20,
               color: theme.colorScheme.primary,
             ),
-            const SizedBox(width: AppSpacing.sm),
             Text(
               'genetics.punnett_square'.tr(),
               style: theme.textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(width: AppSpacing.sm),
             Text(
               _localizeLocusName(data.mutationName),
               style: theme.textTheme.bodySmall?.copyWith(
@@ -51,8 +52,7 @@ class PunnettSquareWidget extends StatelessWidget {
                 fontWeight: FontWeight.w500,
               ),
             ),
-            if (data.isSexLinked) ...[
-              const SizedBox(width: AppSpacing.xs),
+            if (data.isSexLinked)
               Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: AppSpacing.xs + 2,
@@ -71,7 +71,6 @@ class PunnettSquareWidget extends StatelessWidget {
                   ),
                 ),
               ),
-            ],
           ],
         ),
         const SizedBox(height: AppSpacing.md),

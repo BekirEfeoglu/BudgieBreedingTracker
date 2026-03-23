@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_constants.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
@@ -66,14 +67,11 @@ class BirdFormNotifier extends Notifier<BirdFormState> {
     if (normalizedRing == null) return false;
 
     final repo = ref.read(birdRepositoryProvider);
-    final allBirds = await repo.getAll(userId);
-    return allBirds.any((bird) {
-      if (excludeBirdId != null && bird.id == excludeBirdId) return false;
-      final existingRing = _normalizeOptionalText(
-        bird.ringNumber,
-      )?.toLowerCase();
-      return existingRing == normalizedRing;
-    });
+    return repo.hasRingNumber(
+      userId,
+      normalizedRing,
+      excludeId: excludeBirdId,
+    );
   }
 
   /// Creates a new bird.
@@ -160,7 +158,8 @@ class BirdFormNotifier extends Notifier<BirdFormState> {
       );
     } catch (e) {
       AppLogger.error('BirdFormNotifier', e, StackTrace.current);
-      state = state.copyWith(isLoading: false, error: e.toString());
+      Sentry.captureException(e, stackTrace: StackTrace.current);
+      state = state.copyWith(isLoading: false, error: 'errors.unknown'.tr());
     }
   }
 
@@ -194,7 +193,8 @@ class BirdFormNotifier extends Notifier<BirdFormState> {
       state = state.copyWith(isLoading: false, isSuccess: true);
     } catch (e) {
       AppLogger.error('BirdFormNotifier', e, StackTrace.current);
-      state = state.copyWith(isLoading: false, error: e.toString());
+      Sentry.captureException(e, stackTrace: StackTrace.current);
+      state = state.copyWith(isLoading: false, error: 'errors.unknown'.tr());
     }
   }
 
@@ -207,7 +207,8 @@ class BirdFormNotifier extends Notifier<BirdFormState> {
       state = state.copyWith(isLoading: false, isSuccess: true);
     } catch (e) {
       AppLogger.error('BirdFormNotifier', e, StackTrace.current);
-      state = state.copyWith(isLoading: false, error: e.toString());
+      Sentry.captureException(e, stackTrace: StackTrace.current);
+      state = state.copyWith(isLoading: false, error: 'errors.unknown'.tr());
     }
   }
 
@@ -229,7 +230,8 @@ class BirdFormNotifier extends Notifier<BirdFormState> {
       state = state.copyWith(isLoading: false, isSuccess: true);
     } catch (e) {
       AppLogger.error('BirdFormNotifier', e, StackTrace.current);
-      state = state.copyWith(isLoading: false, error: e.toString());
+      Sentry.captureException(e, stackTrace: StackTrace.current);
+      state = state.copyWith(isLoading: false, error: 'errors.unknown'.tr());
     }
   }
 
@@ -251,7 +253,8 @@ class BirdFormNotifier extends Notifier<BirdFormState> {
       state = state.copyWith(isLoading: false, isSuccess: true);
     } catch (e) {
       AppLogger.error('BirdFormNotifier', e, StackTrace.current);
-      state = state.copyWith(isLoading: false, error: e.toString());
+      Sentry.captureException(e, stackTrace: StackTrace.current);
+      state = state.copyWith(isLoading: false, error: 'errors.unknown'.tr());
     }
   }
 

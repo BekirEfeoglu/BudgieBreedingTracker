@@ -106,11 +106,11 @@ class _ErrorBody extends ConsumerWidget {
                 color: AppColors.error.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: const AppIcon(
+              child: AppIcon(
                 AppIcons.offline,
                 size: 40,
                 color: AppColors.error,
-                semanticsLabel: 'Offline',
+                semanticsLabel: 'sync.offline'.tr(),
               ),
             ),
             const SizedBox(height: AppSpacing.xl),

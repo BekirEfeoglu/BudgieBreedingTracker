@@ -16,18 +16,6 @@ import 'package:budgie_breeding_tracker/features/genealogy/widgets/genetic_info_
 import 'package:budgie_breeding_tracker/features/genealogy/widgets/offspring_section.dart';
 import 'package:budgie_breeding_tracker/features/genealogy/widgets/pedigree_export_button.dart';
 
-enum TreeViewMode { tree, list }
-
-class TreeViewModeNotifier extends Notifier<TreeViewMode> {
-  @override
-  TreeViewMode build() => TreeViewMode.tree;
-}
-
-final treeViewModeProvider =
-    NotifierProvider<TreeViewModeNotifier, TreeViewMode>(
-      TreeViewModeNotifier.new,
-    );
-
 /// Main tree content: tree view + stats + offspring + export.
 class TreeContent extends ConsumerStatefulWidget {
   final String entityId;

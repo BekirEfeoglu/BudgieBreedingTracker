@@ -9,6 +9,14 @@ import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/core/utils/navigation_throttle.dart';
 import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
+import 'package:budgie_breeding_tracker/features/birds/utils/bird_color_utils.dart';
+
+part 'pedigree_node_helpers.dart';
+
+const _tightSpacing = 2.0;
+const _tightSpacingLg = 3.0;
+const _nodePaddingH = 4.0;
+const _nodePaddingV = 1.0;
 
 /// Single node in the pedigree tree displaying bird info.
 ///
@@ -42,7 +50,7 @@ class PedigreeNode extends StatelessWidget {
     final theme = Theme.of(context);
 
     if (bird == null) {
-      return _buildEmptyNode(theme);
+      return buildEmptyNode(theme);
     }
 
     final width = isRoot ? _rootWidth : _normalWidth;
@@ -100,7 +108,7 @@ class PedigreeNode extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
                 if (bird!.ringNumber != null) ...[
-                  const SizedBox(height: 2),
+                  const SizedBox(height: _tightSpacing),
                   Text(
                     bird!.ringNumber!,
                     style: theme.textTheme.labelSmall?.copyWith(
@@ -112,11 +120,11 @@ class PedigreeNode extends StatelessWidget {
                   ),
                 ],
                 if (bird!.colorMutation != null) ...[
-                  const SizedBox(height: 3),
-                  _buildMutationChip(theme),
+                  const SizedBox(height: _tightSpacingLg),
+                  buildMutationChip(theme),
                 ],
                 if (_ageText != null) ...[
-                  const SizedBox(height: 2),
+                  const SizedBox(height: _tightSpacing),
                   Text(
                     _ageText!,
                     style: theme.textTheme.labelSmall?.copyWith(
@@ -129,7 +137,7 @@ class PedigreeNode extends StatelessWidget {
                   ),
                 ],
                 if (siblingCount > 0) ...[
-                  const SizedBox(height: 2),
+                  const SizedBox(height: _tightSpacing),
                   Text(
                     'genealogy.siblings_count'.tr(
                       args: [siblingCount.toString()],
@@ -167,8 +175,8 @@ class PedigreeNode extends StatelessWidget {
                 left: -6,
                 child: Container(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 4,
-                    vertical: 1,
+                    horizontal: _nodePaddingH,
+                    vertical: _nodePaddingV,
                   ),
                   decoration: BoxDecoration(
                     color: theme.colorScheme.primaryContainer,
@@ -208,76 +216,10 @@ class PedigreeNode extends StatelessWidget {
     return nodeWidget;
   }
 
-  Widget _buildEmptyNode(ThemeData theme) {
-    final isDark = theme.brightness == Brightness.dark;
-    return Container(
-      width: _normalWidth,
-      padding: const EdgeInsets.all(AppSpacing.sm),
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.neutral800 : AppColors.neutral100,
-        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-        border: Border.all(
-          color: isDark ? AppColors.neutral600 : AppColors.neutral300,
-          width: 1.5,
-          strokeAlign: BorderSide.strokeAlignCenter,
-        ),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            LucideIcons.userPlus,
-            size: 16,
-            color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
-          ),
-          const SizedBox(height: AppSpacing.xs),
-          Text(
-            placeholder,
-            style: theme.textTheme.labelSmall?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildMutationChip(ThemeData theme) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-      decoration: BoxDecoration(
-        color: _genderBorderColor.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-      ),
-      child: Text(
-        bird!.colorMutation!.name,
-        style: theme.textTheme.labelSmall?.copyWith(
-          fontSize: 9,
-          color: _genderBorderColor,
-        ),
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-      ),
-    );
-  }
-
   Widget get _genderIconWidget => switch (bird?.gender) {
-    BirdGender.male => const AppIcon(
-      AppIcons.male,
-      size: 16,
-      color: AppColors.genderMale,
-    ),
-    BirdGender.female => const AppIcon(
-      AppIcons.female,
-      size: 16,
-      color: AppColors.genderFemale,
-    ),
-    _ => const Icon(
-      LucideIcons.helpCircle,
-      size: 16,
-      color: AppColors.genderUnknown,
-    ),
+    BirdGender.male => const AppIcon(AppIcons.male, size: 16, color: AppColors.genderMale),
+    BirdGender.female => const AppIcon(AppIcons.female, size: 16, color: AppColors.genderFemale),
+    _ => const Icon(LucideIcons.helpCircle, size: 16, color: AppColors.genderUnknown),
   };
 
   Color get _genderBackgroundColor => switch (bird?.gender) {

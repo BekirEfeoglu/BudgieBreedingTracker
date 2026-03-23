@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/mutation_database.dart';
 import 'package:budgie_breeding_tracker/features/genetics/widgets/inheritance_badge.dart';
+import 'package:budgie_breeding_tracker/features/genetics/widgets/mutation_linkage_data.dart';
 
 /// Shows a bottom sheet with detailed mutation information.
 Future<void> showMutationDetailSheet(
@@ -193,7 +194,7 @@ class _ZLinkageSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final linkages = _linkageMap[mutationId];
+    final linkages = mutationLinkageMap[mutationId];
     if (linkages == null || linkages.isEmpty) return const SizedBox.shrink();
 
     final theme = Theme.of(context);
@@ -260,45 +261,3 @@ class _ZLinkageSection extends StatelessWidget {
   }
 }
 
-/// Z-chromosome linkage rates for sex-linked mutations.
-/// Gene order: Opaline — Cinnamon — Ino — Slate.
-typedef _LinkageEntry = ({String label, int centiMorgans});
-
-const _linkageMap = <String, List<_LinkageEntry>>{
-  'opaline': [
-    (label: 'Ino', centiMorgans: 30),
-    (label: 'Cinnamon', centiMorgans: 34),
-    (label: 'Slate', centiMorgans: 40),
-  ],
-  'cinnamon': [
-    (label: 'Ino', centiMorgans: 3),
-    (label: 'Slate', centiMorgans: 5),
-    (label: 'Opaline', centiMorgans: 34),
-  ],
-  'ino': [
-    (label: 'Slate', centiMorgans: 2),
-    (label: 'Cinnamon', centiMorgans: 3),
-    (label: 'Opaline', centiMorgans: 30),
-  ],
-  'slate': [
-    (label: 'Ino', centiMorgans: 2),
-    (label: 'Cinnamon', centiMorgans: 5),
-    (label: 'Opaline', centiMorgans: 40),
-  ],
-  // Pearly, Pallid & Texas Clearbody share the ino locus position.
-  'pearly': [
-    (label: 'Slate', centiMorgans: 2),
-    (label: 'Cinnamon', centiMorgans: 3),
-    (label: 'Opaline', centiMorgans: 30),
-  ],
-  'pallid': [
-    (label: 'Slate', centiMorgans: 2),
-    (label: 'Cinnamon', centiMorgans: 3),
-    (label: 'Opaline', centiMorgans: 30),
-  ],
-  'texas_clearbody': [
-    (label: 'Slate', centiMorgans: 2),
-    (label: 'Cinnamon', centiMorgans: 3),
-    (label: 'Opaline', centiMorgans: 30),
-  ],
-};

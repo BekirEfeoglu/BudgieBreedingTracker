@@ -1,5 +1,37 @@
 part of 'epistasis_engine.dart';
 
+// Phenotype display names in this file (e.g., "Whitefaced", "Yellowface Type I")
+// are standardized English aviculture terms from WBO/MUTAVI nomenclature.
+// UI localization is handled by PhenotypeLocalizer in the features layer,
+// which maps these English terms to localized display names via .tr() keys.
+
+/// Adds Ino-specific naming: Albino/Lutino/Lacewing/Creamino/PallidIno.
+void _addInoNaming(
+  List<String> parts, {
+  required bool hasIno,
+  required bool hasCinnamon,
+  required bool hasPallid,
+  required bool hasYf2,
+  required bool hasGoldenface,
+  required bool hasBlueFactor1,
+  required bool hasBlueFactor2,
+  required bool isBlue,
+}) {
+  if (!hasIno) return;
+  if (hasPallid) {
+    parts.add('PallidIno (Lacewing)');
+  } else if ((hasYf2 || hasGoldenface || hasBlueFactor1 || hasBlueFactor2) &&
+      isBlue) {
+    parts.add('Creamino');
+  } else if (hasCinnamon) {
+    parts.add('Lacewing');
+  } else if (isBlue) {
+    parts.add('Albino');
+  } else {
+    parts.add('Lutino');
+  }
+}
+
 /// Collects mutations masked by Ino (genetically present but not visible).
 void _collectMaskedMutations(
   Set<String> visualMutations,
@@ -9,7 +41,7 @@ void _collectMaskedMutations(
   List<String> masked,
 ) {
   // Ino masks all melanin-based mutations visually
-  if (visualMutations.contains('opaline')) masked.add('Opaline');
+  if (visualMutations.contains(GeneticsConstants.mutOpaline)) masked.add('Opaline');
   if (visualMutations.contains('dark_factor')) {
     final dfLabel = doubleFactorIds.contains('dark_factor')
         ? 'Dark Factor (Double)'
@@ -25,11 +57,11 @@ void _collectMaskedMutations(
     masked.add(spLabel);
   }
   if (visualMutations.contains('dilute')) masked.add('Dilute');
-  if (visualMutations.contains('slate')) masked.add('Slate');
+  if (visualMutations.contains(GeneticsConstants.mutSlate)) masked.add('Slate');
   if (visualMutations.contains('clearwing')) masked.add('Clearwing');
   if (visualMutations.contains('greywing')) masked.add('Greywing');
-  if (visualMutations.contains('pearly')) masked.add('Pearly');
-  if (visualMutations.contains('pallid')) masked.add('Pallid');
+  if (visualMutations.contains(GeneticsConstants.mutPearly)) masked.add('Pearly');
+  if (visualMutations.contains(GeneticsConstants.mutPallid)) masked.add('Pallid');
   // Cinnamon is masked by Ino unless it's already part of the Lacewing name
   if (hasCinnamon && !parts.contains('Lacewing')) {
     masked.add('Cinnamon');
@@ -83,7 +115,7 @@ void _addYellowfaceNaming(
     // Yellowface + Ino but not Creamino -> just note Yellowface
     if (hasYf1 && isBlue) {
       if (doubleFactorIds.contains('yellowface_type1')) {
-        parts.add('Whitefaced');
+        // Whitefaced paradox: suppress for Ino+Blue (already Albino)
       } else {
         parts.add('Yellowface Type I');
       }
@@ -150,12 +182,12 @@ void _addPatternAndModifierNaming(
   required bool hasBlackface,
 }) {
   // 9. Pattern mutations (order: Spangle > Opaline > Clearwing/Greywing)
-  if (!hasIno || (hasIno && hasCinnamon)) {
-    // Lacewing shows patterns, pure Ino doesn't
+  if (!hasIno) {
+    // Ino masks all pattern mutations; Lacewing only reveals cinnamon markings
     final hasSpangle = visualMutations.contains('spangle');
     final isDoubleSpangle = hasSpangle && doubleFactorIds.contains('spangle');
-    final hasOpaline = visualMutations.contains('opaline');
-    final hasPearly = visualMutations.contains('pearly');
+    final hasOpaline = visualMutations.contains(GeneticsConstants.mutOpaline);
+    final hasPearly = visualMutations.contains(GeneticsConstants.mutPearly);
     final hasClearwing = visualMutations.contains('clearwing');
     final hasGreywing = visualMutations.contains('greywing');
     // Full-Body Greywing: compound heterozygote of greywing + clearwing
@@ -191,7 +223,7 @@ void _addPatternAndModifierNaming(
   if (!hasIno) {
     if (hasCinnamon) parts.add('Cinnamon');
     if (visualMutations.contains('dilute')) parts.add('Dilute');
-    if (visualMutations.contains('slate')) parts.add('Slate');
+    if (visualMutations.contains(GeneticsConstants.mutSlate)) parts.add('Slate');
     if (visualMutations.contains('anthracite')) {
       if (doubleFactorIds.contains('anthracite')) {
         parts.add('Double Factor Anthracite');
@@ -199,7 +231,7 @@ void _addPatternAndModifierNaming(
         parts.add('Single Factor Anthracite');
       }
     }
-    if (visualMutations.contains('pallid')) parts.add('Pallid');
+    if (visualMutations.contains(GeneticsConstants.mutPallid)) parts.add('Pallid');
   }
 
   // 11. Pied mutations + Dark-Eyed Clear detection
@@ -217,7 +249,7 @@ void _addPatternAndModifierNaming(
   _addCrestedNaming(parts, visualMutations);
 
   // 14. Clearbody
-  if (visualMutations.contains('texas_clearbody')) {
+  if (visualMutations.contains(GeneticsConstants.mutTexasClearbody)) {
     parts.add('Texas Clearbody');
   }
   if (visualMutations.contains('dominant_clearbody')) {
@@ -233,73 +265,3 @@ void _addPatternAndModifierNaming(
   }
 }
 
-/// Adds pied mutation naming including Dark-Eyed Clear detection.
-void _addPiedNaming(List<String> parts, Set<String> visualMutations) {
-  final hasRecessivePied = visualMutations.contains('recessive_pied');
-  final hasClearflightPied = visualMutations.contains('clearflight_pied');
-  final hasDominantPied = visualMutations.contains('dominant_pied');
-  final hasDutchPied = visualMutations.contains('dutch_pied');
-
-  if (hasRecessivePied && hasClearflightPied) {
-    // Dark-Eyed Clear: Recessive Pied + Clearflight Pied
-    parts.add('Dark-Eyed Clear');
-  } else {
-    if (hasRecessivePied) parts.add('Recessive Pied');
-    if (hasClearflightPied && hasDutchPied) {
-      parts.add('Dutch Clearflight Pied');
-    } else if (hasClearflightPied) {
-      parts.add('Clearflight Pied');
-    }
-  }
-
-  if (hasDominantPied && hasDutchPied) {
-    parts.add('Double Dominant Pied');
-  } else {
-    if (hasDominantPied) parts.add('Dominant Pied');
-    if (hasDutchPied) parts.add('Dutch Pied');
-  }
-}
-
-/// Adds crested mutation naming with compound heterozygote detection.
-void _addCrestedNaming(List<String> parts, Set<String> visualMutations) {
-  final activeCrested = GeneticsConstants.crestedAlleleIds
-      .where(visualMutations.contains)
-      .toList();
-  if (activeCrested.length >= 2) {
-    // Compound heterozygote: two different crested alleles
-    final labels = activeCrested
-        .map(
-          (id) => switch (id) {
-            'crested_tufted' => 'Tufted',
-            'crested_half_circular' => 'Half-Circular',
-            'crested_full_circular' => 'Full-Circular',
-            _ => id,
-          },
-        )
-        .toList();
-    parts.add('${labels.join('/')} Compound Crest');
-  } else {
-    if (visualMutations.contains('crested_tufted')) {
-      parts.add('Tufted');
-    }
-    if (visualMutations.contains('crested_half_circular')) {
-      parts.add('Half-Circular Crest');
-    }
-    if (visualMutations.contains('crested_full_circular')) {
-      parts.add('Full-Circular Crest');
-    }
-  }
-}
-
-/// Resolves base color name from base color series and dark factor count.
-String? _resolveBaseColorName(_BaseColor base, int darkFactorCount) {
-  return switch ((base, darkFactorCount)) {
-    (_BaseColor.green, 0) => 'Light Green',
-    (_BaseColor.green, 1) => 'Dark Green',
-    (_BaseColor.green, >= 2) => 'Olive',
-    (_BaseColor.blue, 0) => 'Skyblue',
-    (_BaseColor.blue, 1) => 'Cobalt',
-    (_BaseColor.blue, >= 2) => 'Mauve',
-    _ => null,
-  };
-}

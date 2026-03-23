@@ -119,6 +119,7 @@ class FamilyStatsSection extends StatelessWidget {
             InbreedingWarning(
               coefficient: inbreedingData.coefficient,
               risk: inbreedingData.risk,
+              depthLimited: inbreedingData.depthLimited,
             ),
           ] else ...[
             const SizedBox(height: AppSpacing.sm),

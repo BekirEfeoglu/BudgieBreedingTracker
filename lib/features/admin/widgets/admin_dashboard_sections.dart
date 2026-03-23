@@ -79,7 +79,7 @@ class DashboardAlertsSection extends ConsumerWidget {
                           AppIcons.warning,
                           size: 18,
                           color: color,
-                          semanticsLabel: 'Alert',
+                          semanticsLabel: 'common.alert'.tr(),
                         ),
                         const SizedBox(width: AppSpacing.sm),
                         Expanded(

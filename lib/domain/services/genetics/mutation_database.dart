@@ -21,6 +21,15 @@ abstract class MutationDatabase {
     return _index ??= {for (final m in allMutations) m.id: m};
   }
 
+  /// Index for fast name lookup (lazily built, case-insensitive).
+  static Map<String, BudgieMutationRecord>? _nameIndex;
+
+  static Map<String, BudgieMutationRecord> get _mutationNameIndex {
+    return _nameIndex ??= {
+      for (final m in allMutations) m.name.toLowerCase(): m,
+    };
+  }
+
   /// Index for fast locus ID lookup (lazily built).
   static Map<String, List<BudgieMutationRecord>>? _locusIndex;
 
@@ -71,14 +80,9 @@ abstract class MutationDatabase {
     return allMutations.where((m) => m.isAutosomal).toList();
   }
 
-  /// Find a mutation by name (case-insensitive).
-  static BudgieMutationRecord? getByName(String name) {
-    final lowerName = name.toLowerCase();
-    for (final m in allMutations) {
-      if (m.name.toLowerCase() == lowerName) return m;
-    }
-    return null;
-  }
+  /// Find a mutation by name (case-insensitive). O(1) via lazy index.
+  static BudgieMutationRecord? getByName(String name) =>
+      _mutationNameIndex[name.toLowerCase()];
 
   /// Search mutations by keyword in name or description.
   static List<BudgieMutationRecord> search(String query) {

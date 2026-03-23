@@ -44,14 +44,12 @@ class _EntitySelectorState extends State<EntitySelector> {
     final chickOptions = <_EntityOption>[];
 
     for (final bird in widget.birds) {
-      birdOptions.add(
-        _EntityOption(
-          selection: (id: bird.id, isChick: false),
-          displayName: bird.name,
-          ringNumber: bird.ringNumber,
-          isChick: false,
-        ),
-      );
+      birdOptions.add((
+        selection: (id: bird.id, isChick: false),
+        displayName: bird.name,
+        ringNumber: bird.ringNumber,
+        isChick: false,
+      ));
     }
 
     for (final chick in widget.chicks) {
@@ -60,14 +58,12 @@ class _EntitySelectorState extends State<EntitySelector> {
           'chicks.unnamed_chick'.tr(
             args: [chick.ringNumber ?? chick.id.substring(0, 6)],
           );
-      chickOptions.add(
-        _EntityOption(
-          selection: (id: chick.id, isChick: true),
-          displayName: name,
-          ringNumber: chick.ringNumber,
-          isChick: true,
-        ),
-      );
+      chickOptions.add((
+        selection: (id: chick.id, isChick: true),
+        displayName: name,
+        ringNumber: chick.ringNumber,
+        isChick: true,
+      ));
     }
 
     if (_query.isEmpty) return (birds: birdOptions, chicks: chickOptions);
@@ -291,16 +287,9 @@ class _StickyHeaderDelegate extends SliverPersistentHeaderDelegate {
       title != oldDelegate.title || count != oldDelegate.count;
 }
 
-class _EntityOption {
-  final GenealogySelection selection;
-  final String displayName;
-  final String? ringNumber;
-  final bool isChick;
-
-  const _EntityOption({
-    required this.selection,
-    required this.displayName,
-    required this.ringNumber,
-    required this.isChick,
-  });
-}
+typedef _EntityOption = ({
+  GenealogySelection selection,
+  String displayName,
+  String? ringNumber,
+  bool isChick,
+});

@@ -55,19 +55,43 @@ abstract final class GeneticsConstants {
   static const String locusDilution = 'dilution';
   static const String locusBlueSeries = 'blue_series';
 
-  /// Ino locus on Z chromosome:
-  /// ino+ > pallid > ino^cl (Texas Clearbody) > ino.
+  /// Ino locus on Z chromosome (WBO/MUTAVI hierarchy):
+  /// ino+ > Texas Clearbody (tcb) > Pearly (prl) > Pallid (pal) > Ino (ino).
   static const String locusIno = 'ino_locus';
 
   /// Crested locus: tufted / half-circular / full-circular alleles.
   /// Crested pairings are treated as sub-vital risk in viability warnings.
   static const String locusCrested = 'crested';
 
+  // ── Sex-linked mutation IDs ──
+  static const String mutIno = 'ino';
+  static const String mutCinnamon = 'cinnamon';
+  static const String mutSlate = 'slate';
+  static const String mutOpaline = 'opaline';
+  static const String mutPallid = 'pallid';
+  static const String mutPearly = 'pearly';
+  static const String mutTexasClearbody = 'texas_clearbody';
+
+  // ── Autosomal mutation IDs ──
+  static const String mutBlue = 'blue';
+  static const String mutAqua = 'aqua';
+  static const String mutTurquoise = 'turquoise';
+
+  // ── Pied mutation IDs ──
+  static const String mutRecessivePied = 'recessive_pied';
+  static const String mutClearflightPied = 'clearflight_pied';
+  static const String mutDominantPied = 'dominant_pied';
+  static const String mutDutchPied = 'dutch_pied';
+
   // ── Crested allele IDs ──
+  static const String mutCrestedTufted = 'crested_tufted';
+  static const String mutCrestedHalfCircular = 'crested_half_circular';
+  static const String mutCrestedFullCircular = 'crested_full_circular';
+
   static const Set<String> crestedAlleleIds = {
-    'crested_tufted',
-    'crested_half_circular',
-    'crested_full_circular',
+    mutCrestedTufted,
+    mutCrestedHalfCircular,
+    mutCrestedFullCircular,
   };
 
   // ── ReverseCalculator limits ──
@@ -79,6 +103,14 @@ abstract final class GeneticsConstants {
 
   /// Maximum final combinations returned from reverse calculation.
   static const int reverseMaxFinalCombinations = 500;
+
+  // ── Ancestor traversal ──
+  /// Maximum recursion depth for pedigree ancestor collection.
+  static const int maxAncestorDepth = 10;
+
+  // ── Display limits ──
+  /// Maximum number of reverse calculation results shown to the user.
+  static const int reverseMaxDisplayResults = 25;
 
   // ── Probability thresholds ──
   /// Minimum probability for an offspring combination to survive early pruning.

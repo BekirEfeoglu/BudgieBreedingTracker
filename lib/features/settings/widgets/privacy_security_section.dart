@@ -108,6 +108,7 @@ class PrivacySecuritySection extends ConsumerWidget {
                     AppLogger.error(
                       '[PrivacySecurity] Password change failed',
                       e,
+                      StackTrace.current,
                     );
                     messenger.showSnackBar(
                       SnackBar(
@@ -170,7 +171,7 @@ class PrivacySecuritySection extends ConsumerWidget {
                   SnackBar(content: Text('settings.sessions_signed_out'.tr())),
                 );
               } catch (e) {
-                AppLogger.error('[PrivacySecurity] Sign out all failed', e);
+                AppLogger.error('[PrivacySecurity] Sign out all failed', e, StackTrace.current);
                 navigator.pop();
                 messenger.showSnackBar(
                   SnackBar(content: Text('errors.unknown'.tr())),

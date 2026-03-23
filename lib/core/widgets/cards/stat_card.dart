@@ -199,7 +199,7 @@ class _TrendIndicator extends StatelessWidget {
         Icon(icon, size: 12, color: trendColor),
         const SizedBox(width: 2),
         Text(
-          '$sign${percent.toStringAsFixed(0)}%',
+          '$sign${percent.abs().toStringAsFixed(0)}%',
           style: Theme.of(context).textTheme.labelSmall?.copyWith(
             color: trendColor,
             fontWeight: FontWeight.w600,

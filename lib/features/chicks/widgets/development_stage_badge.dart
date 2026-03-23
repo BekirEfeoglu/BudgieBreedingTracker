@@ -61,11 +61,3 @@ Widget developmentStageIconWidget(
   ),
 };
 
-/// Returns the stage icon for legacy usage (IconData).
-IconData developmentStageIcon(DevelopmentStage stage) => switch (stage) {
-  DevelopmentStage.newborn => Icons.egg_alt,
-  DevelopmentStage.nestling => Icons.nest_cam_wired_stand,
-  DevelopmentStage.fledgling => Icons.flutter_dash,
-  DevelopmentStage.juvenile => Icons.pets,
-  DevelopmentStage.unknown => Icons.help_outline,
-};

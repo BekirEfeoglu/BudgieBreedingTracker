@@ -143,7 +143,8 @@ class _BirdDetailPhotosState extends ConsumerState<BirdDetailPhotos> {
           context,
         ).showSnackBar(SnackBar(content: Text('birds.photo_deleted'.tr())));
       }
-    } catch (_) {
+    } catch (e) {
+      AppLogger.error('[BirdDetailPhotos]', e, StackTrace.current);
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('birds.photo_delete_error'.tr())),
@@ -200,7 +201,8 @@ class _BirdDetailPhotosState extends ConsumerState<BirdDetailPhotos> {
           filePath: url,
         ),
       );
-    } catch (_) {
+    } catch (e) {
+      AppLogger.error('[BirdDetailPhotos]', e, StackTrace.current);
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('birds.photo_upload_error'.tr())),

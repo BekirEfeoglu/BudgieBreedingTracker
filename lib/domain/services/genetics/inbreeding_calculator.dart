@@ -17,25 +17,48 @@ class InbreedingCalculator {
   double calculate({
     required String birdId,
     required Map<String, Bird> ancestors,
+  }) =>
+      calculateDetailed(birdId: birdId, ancestors: ancestors).coefficient;
+
+  /// Calculates the inbreeding coefficient with metadata about the traversal.
+  ///
+  /// Returns [InbreedingDetail] which includes whether the pedigree depth
+  /// limit was reached during ancestor collection.
+  InbreedingDetail calculateDetailed({
+    required String birdId,
+    required Map<String, Bird> ancestors,
   }) {
     final bird = ancestors[birdId];
-    if (bird == null) return 0.0;
-    if (bird.fatherId == null || bird.motherId == null) return 0.0;
+    if (bird == null) return const InbreedingDetail(coefficient: 0.0);
+    if (bird.fatherId == null || bird.motherId == null) {
+      return const InbreedingDetail(coefficient: 0.0);
+    }
 
     // Build ancestor path lists for father and mother lines
     // Each ancestor can be reached via multiple paths → store ALL depths
     final fatherAncestors = <String, List<int>>{};
     final motherAncestors = <String, List<int>>{};
+    var depthLimited = false;
 
-    _collectAncestors(bird.fatherId!, ancestors, fatherAncestors, 0);
-    _collectAncestors(bird.motherId!, ancestors, motherAncestors, 0);
+    void onDepthLimit() => depthLimited = true;
+
+    _collectAncestors(
+      bird.fatherId!, ancestors, fatherAncestors, 0,
+      onDepthLimit: onDepthLimit,
+    );
+    _collectAncestors(
+      bird.motherId!, ancestors, motherAncestors, 0,
+      onDepthLimit: onDepthLimit,
+    );
 
     // Find common ancestors
     final commonAncestors = fatherAncestors.keys
         .where(motherAncestors.containsKey)
         .toSet();
 
-    if (commonAncestors.isEmpty) return 0.0;
+    if (commonAncestors.isEmpty) {
+      return InbreedingDetail(coefficient: 0.0, depthLimited: depthLimited);
+    }
 
     // Wright's path coefficient: F = sum over all common ancestors A,
     // for each pair of paths (n1, n2): (1/2)^(n1+n2+1)
@@ -51,7 +74,10 @@ class InbreedingCalculator {
       }
     }
 
-    return coefficient.clamp(0.0, 0.5);
+    return InbreedingDetail(
+      coefficient: coefficient.clamp(0.0, 0.5),
+      depthLimited: depthLimited,
+    );
   }
 
   /// Returns the set of common ancestor IDs between father and mother lines.
@@ -97,10 +123,14 @@ class InbreedingCalculator {
     String id,
     Map<String, Bird> allAncestors,
     Map<String, List<int>> collected,
-    int depth, [
+    int depth, {
     Set<String>? pathVisited,
-  ]) {
-    if (depth > 10) return; // Safety limit
+    void Function()? onDepthLimit,
+  }) {
+    if (depth > GeneticsConstants.maxAncestorDepth) {
+      onDepthLimit?.call();
+      return;
+    }
 
     final bird = allAncestors[id];
     if (bird == null) return;
@@ -119,7 +149,8 @@ class InbreedingCalculator {
         allAncestors,
         collected,
         depth + 1,
-        nextVisited,
+        pathVisited: nextVisited,
+        onDepthLimit: onDepthLimit,
       );
     }
     if (bird.motherId != null) {
@@ -128,10 +159,24 @@ class InbreedingCalculator {
         allAncestors,
         collected,
         depth + 1,
-        nextVisited,
+        pathVisited: nextVisited,
+        onDepthLimit: onDepthLimit,
       );
     }
   }
+}
+
+/// Result of a detailed inbreeding calculation.
+class InbreedingDetail {
+  final double coefficient;
+
+  /// Whether the pedigree traversal was truncated at [GeneticsConstants.maxAncestorDepth].
+  final bool depthLimited;
+
+  const InbreedingDetail({
+    required this.coefficient,
+    this.depthLimited = false,
+  });
 }
 
 /// Risk levels for inbreeding coefficient values.

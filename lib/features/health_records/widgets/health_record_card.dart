@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
@@ -7,9 +8,10 @@ import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/data/models/health_record_model.dart';
+import 'package:budgie_breeding_tracker/features/settings/providers/settings_providers.dart';
 
 /// Card displaying a health record summary in the list.
-class HealthRecordCard extends StatelessWidget {
+class HealthRecordCard extends ConsumerWidget {
   final HealthRecord record;
   final String? animalName;
   final VoidCallback? onTap;
@@ -22,7 +24,7 @@ class HealthRecordCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
 
     return Card(
@@ -70,7 +72,7 @@ class HealthRecordCard extends StatelessWidget {
                         ),
                         const SizedBox(width: AppSpacing.sm),
                         Text(
-                          DateFormat('dd.MM.yyyy').format(record.date),
+                          ref.watch(dateFormatProvider).formatter().format(record.date),
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: theme.colorScheme.onSurfaceVariant,
                           ),

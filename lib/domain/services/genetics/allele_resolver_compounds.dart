@@ -70,21 +70,23 @@ _AllelicPhenotypeResult _resolveBlueSeriesCompound(
   final alleles = {allele1, allele2};
 
   // yellowface_type2 + blue = Yellowface II Blue
-  if (alleles.contains('yellowface_type2') && alleles.contains('blue')) {
+  if (alleles.contains('yellowface_type2') &&
+      alleles.contains(GeneticsConstants.mutBlue)) {
     return const _AllelicPhenotypeResult(
       phenotype: 'Yellowface Type II Blue',
       genotype: 'Yf2/bl',
-      expressedIds: ['yellowface_type2', 'blue'],
+      expressedIds: ['yellowface_type2', GeneticsConstants.mutBlue],
       carriedIds: [],
     );
   }
 
   // yellowface_type1 + blue = Yellowface I Blue
-  if (alleles.contains('yellowface_type1') && alleles.contains('blue')) {
+  if (alleles.contains('yellowface_type1') &&
+      alleles.contains(GeneticsConstants.mutBlue)) {
     return const _AllelicPhenotypeResult(
       phenotype: 'Yellowface Type I Blue',
       genotype: 'Yf1/bl',
-      expressedIds: ['yellowface_type1', 'blue'],
+      expressedIds: ['yellowface_type1', GeneticsConstants.mutBlue],
       carriedIds: [],
     );
   }
@@ -101,31 +103,34 @@ _AllelicPhenotypeResult _resolveBlueSeriesCompound(
   }
 
   // goldenface + blue = Goldenface Blue
-  if (alleles.contains('goldenface') && alleles.contains('blue')) {
+  if (alleles.contains('goldenface') &&
+      alleles.contains(GeneticsConstants.mutBlue)) {
     return const _AllelicPhenotypeResult(
       phenotype: 'Goldenface Blue',
       genotype: 'Gf/bl',
-      expressedIds: ['goldenface', 'blue'],
+      expressedIds: ['goldenface', GeneticsConstants.mutBlue],
       carriedIds: [],
     );
   }
 
   // turquoise + blue = Turquoise Blue
-  if (alleles.contains('turquoise') && alleles.contains('blue')) {
+  if (alleles.contains('turquoise') &&
+      alleles.contains(GeneticsConstants.mutBlue)) {
     return const _AllelicPhenotypeResult(
       phenotype: 'Turquoise Blue',
       genotype: 'Tq/bl',
-      expressedIds: ['turquoise', 'blue'],
+      expressedIds: ['turquoise', GeneticsConstants.mutBlue],
       carriedIds: [],
     );
   }
 
   // aqua + blue = Aqua Blue
-  if (alleles.contains('aqua') && alleles.contains('blue')) {
+  if (alleles.contains('aqua') &&
+      alleles.contains(GeneticsConstants.mutBlue)) {
     return const _AllelicPhenotypeResult(
       phenotype: 'Aqua Blue',
       genotype: 'Aq/bl',
-      expressedIds: ['aqua', 'blue'],
+      expressedIds: ['aqua', GeneticsConstants.mutBlue],
       carriedIds: [],
     );
   }
@@ -141,21 +146,23 @@ _AllelicPhenotypeResult _resolveBlueSeriesCompound(
   }
 
   // bluefactor_1 + blue = Blue Factor I Blue
-  if (alleles.contains('bluefactor_1') && alleles.contains('blue')) {
+  if (alleles.contains('bluefactor_1') &&
+      alleles.contains(GeneticsConstants.mutBlue)) {
     return const _AllelicPhenotypeResult(
       phenotype: 'Blue Factor I Blue',
       genotype: 'Bf1/bl',
-      expressedIds: ['bluefactor_1', 'blue'],
+      expressedIds: ['bluefactor_1', GeneticsConstants.mutBlue],
       carriedIds: [],
     );
   }
 
   // bluefactor_2 + blue = Blue Factor II Blue
-  if (alleles.contains('bluefactor_2') && alleles.contains('blue')) {
+  if (alleles.contains('bluefactor_2') &&
+      alleles.contains(GeneticsConstants.mutBlue)) {
     return const _AllelicPhenotypeResult(
       phenotype: 'Blue Factor II Blue',
       genotype: 'Bf2/bl',
-      expressedIds: ['bluefactor_2', 'blue'],
+      expressedIds: ['bluefactor_2', GeneticsConstants.mutBlue],
       carriedIds: [],
     );
   }
@@ -199,61 +206,70 @@ _AllelicPhenotypeResult _resolveInoCompound(
   final alleles = {allele1, allele2};
 
   // pallid + ino = PallidIno (often termed Lacewing in aviculture)
-  if (alleles.contains('pallid') && alleles.contains('ino')) {
+  if (alleles.contains(GeneticsConstants.mutPallid) &&
+      alleles.contains(GeneticsConstants.mutIno)) {
     return const _AllelicPhenotypeResult(
       phenotype: 'PallidIno (Lacewing)',
       genotype: 'pal/ino',
-      expressedIds: ['pallid', 'ino'],
+      expressedIds: [GeneticsConstants.mutPallid, GeneticsConstants.mutIno],
       carriedIds: [],
     );
   }
 
   // texas_clearbody + ino = Texas Clearbody (ino carried)
-  if (alleles.contains('texas_clearbody') && alleles.contains('ino')) {
+  if (alleles.contains(GeneticsConstants.mutTexasClearbody) &&
+      alleles.contains(GeneticsConstants.mutIno)) {
     return const _AllelicPhenotypeResult(
       phenotype: 'Texas Clearbody',
       genotype: 'tcb/ino',
-      expressedIds: ['texas_clearbody'],
-      carriedIds: ['ino'],
+      expressedIds: [GeneticsConstants.mutTexasClearbody],
+      carriedIds: [GeneticsConstants.mutIno],
     );
   }
 
   // texas_clearbody + pallid = Pallid Texas Clearbody
-  if (alleles.contains('texas_clearbody') && alleles.contains('pallid')) {
+  if (alleles.contains(GeneticsConstants.mutTexasClearbody) &&
+      alleles.contains(GeneticsConstants.mutPallid)) {
     return const _AllelicPhenotypeResult(
       phenotype: 'Pallid Texas Clearbody',
       genotype: 'pal/tcb',
-      expressedIds: ['pallid', 'texas_clearbody'],
+      expressedIds: [
+        GeneticsConstants.mutPallid,
+        GeneticsConstants.mutTexasClearbody,
+      ],
       carriedIds: [],
     );
   }
 
   // pearly + ino = Pearly (ino carried, pearly > ino)
-  if (alleles.contains('pearly') && alleles.contains('ino')) {
+  if (alleles.contains(GeneticsConstants.mutPearly) &&
+      alleles.contains(GeneticsConstants.mutIno)) {
     return const _AllelicPhenotypeResult(
       phenotype: 'Pearly',
       genotype: 'prl/ino',
-      expressedIds: ['pearly'],
-      carriedIds: ['ino'],
+      expressedIds: [GeneticsConstants.mutPearly],
+      carriedIds: [GeneticsConstants.mutIno],
     );
   }
 
   // texas_clearbody + pearly = Texas Clearbody (pearly carried, tcb > pearly)
-  if (alleles.contains('texas_clearbody') && alleles.contains('pearly')) {
+  if (alleles.contains(GeneticsConstants.mutTexasClearbody) &&
+      alleles.contains(GeneticsConstants.mutPearly)) {
     return const _AllelicPhenotypeResult(
       phenotype: 'Texas Clearbody',
       genotype: 'tcb/prl',
-      expressedIds: ['texas_clearbody'],
-      carriedIds: ['pearly'],
+      expressedIds: [GeneticsConstants.mutTexasClearbody],
+      carriedIds: [GeneticsConstants.mutPearly],
     );
   }
 
   // pearly + pallid = Pallid Pearly (both expressed, adjacent in hierarchy)
-  if (alleles.contains('pearly') && alleles.contains('pallid')) {
+  if (alleles.contains(GeneticsConstants.mutPearly) &&
+      alleles.contains(GeneticsConstants.mutPallid)) {
     return const _AllelicPhenotypeResult(
       phenotype: 'Pallid Pearly',
       genotype: 'prl/pal',
-      expressedIds: ['pearly', 'pallid'],
+      expressedIds: [GeneticsConstants.mutPearly, GeneticsConstants.mutPallid],
       carriedIds: [],
     );
   }

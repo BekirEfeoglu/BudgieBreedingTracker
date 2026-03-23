@@ -234,8 +234,8 @@ abstract final class BudgiePaths {
   static Path cheekPatch(double w, double h) {
     final cx = w * 0.66;
     final cy = h * 0.32;
-    final rx = w * 0.06;
-    final ry = h * 0.04;
+    final rx = w * 0.08;
+    final ry = h * 0.055;
     return Path()
       ..addOval(Rect.fromCenter(center: Offset(cx, cy), width: rx * 2, height: ry * 2));
   }

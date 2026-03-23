@@ -73,7 +73,9 @@
     "months_ago": "vor {} Monaten",
     "years_ago": "vor {} Jahren",
     "feature_under_development": "Diese Funktion befindet sich in der Entwicklung.",
-    "confirm_delete": "Sind Sie sicher, dass Sie löschen möchten?"
+    "confirm_delete": "Sind Sie sicher, dass Sie löschen möchten?",
+    "alert": "Warnung",
+    "export": "Exportieren"
   },
   "auth": {
     "login": "Anmelden",
@@ -971,6 +973,8 @@
     "no_notifications_hint": "Neue Benachrichtigungen werden hier angezeigt",
     "load_error": "Fehler beim Laden der Benachrichtigungen",
     "delete_error": "Fehler beim Löschen der Benachrichtigung",
+    "delete_title": "Benachrichtigung löschen",
+    "delete_confirm": "Möchten Sie diese Benachrichtigung wirklich löschen?",
     "filter_all": "Alle",
     "filter_unread": "Ungelesen",
     "filter_read": "Gelesen",
@@ -997,7 +1001,8 @@
     "banding_main_title": "Beringungstag!",
     "banding_main_body": "{} sollte heute beringt werden",
     "banding_followup_title": "Beringungserinnerung",
-    "banding_followup_body": "{} wurde noch nicht beringt"
+    "banding_followup_body": "{} wurde noch nicht beringt",
+    "high_priority": "Hohe Priorität"
   },
   "premium": {
     "title": "Premium",
@@ -1180,6 +1185,7 @@
     "inbreeding_desc_moderate": "Mäßige Inzucht. Die genetische Vielfalt kann reduziert sein.",
     "inbreeding_desc_high": "Hohe Inzucht! Risiko von Gesundheitsproblemen und verringerter Vitalität.",
     "inbreeding_desc_critical": "Kritisches Inzuchtniveau! Von dieser Verpaarung wird dringend abgeraten.",
+    "inbreeding_depth_limited": "Stammbaum-Tiefengrenze erreicht — der tatsächliche Koeffizient kann höher sein.",
     "genetic_info": "Genetische Informationen",
     "primary_color": "Primärfarbe",
     "secondary_color": "Sekundärfarbe",
@@ -1195,6 +1201,14 @@
     "no_female_results": "Keine weiblichen Nachkommen",
     "show_more_results": "Alle anzeigen ({} Ergebnisse)",
     "show_less_results": "Weniger anzeigen",
+    "tap_to_expand": "Für Details tippen",
+    "tap_to_collapse": "Zum Einklappen tippen",
+    "probability_group_header": "{} Ergebnisse",
+    "genotype_copied": "Genotyp in Zwischenablage kopiert",
+    "both_sexes_label": "Unisex",
+    "filter_all": "Alle",
+    "filter_carrier_only": "Träger",
+    "filter_visual_only": "Visuell",
     "probability_chart": "Wahrscheinlichkeitsdiagramm",
     "inheritance_type": "Vererbungstyp",
     "alleles": "Allele",
@@ -1308,6 +1322,14 @@
     "share_results": "Ergebnisse teilen",
     "export_results": "Ergebnisse exportieren",
     "color_audit_title": "Genetik-Farbprüfung",
+    "color_audit_primary_title": "Kritisches Phänotyp-Prüfpanel",
+    "color_audit_primary_subtitle": "WBO-Basistöne + Hochrisiko-Mutationsvisualisierungen",
+    "color_audit_advanced_title": "Erweitertes Mutations-Prüfpanel",
+    "color_audit_advanced_subtitle": "Flügel-/Körpermodifikationen und Verdünnungsmutationen",
+    "color_audit_compound_title": "Verbund- und Spezialphänotyp-Panel",
+    "color_audit_compound_subtitle": "Komplexe Kombinationen, Pied, Yellowface und seltene Varianten",
+    "dosage_double_factor": "DF",
+    "dosage_single_factor": "SF",
     "color_preview": "Farbvorschau",
     "expected_color": "Erwartete Farbe",
     "delete_history_confirm": "Möchten Sie diesen Berechnungsdatensatz wirklich löschen?",
@@ -1374,6 +1396,8 @@
     "lethal_df_crested_desc": "Hauben-Verpaarungen gelten als subvital; erhöhte Mortalität (~48 %) sowie mögliche neurologische/entwicklungsbedingte Probleme sind beschrieben.",
     "lethal_df_spangle_name": "Doppelfaktor Spangle (DF Spangle)",
     "lethal_df_spangle_desc": "DF Spangle Vögel überleben, sind aber oft schwächer mit reduzierter Federqualität.",
+    "lethal_df_dominant_pied_name": "Doppelfaktor Dominante Schecke",
+    "lethal_df_dominant_pied_desc": "DF Dominante (Australische) Schecken haben eine deutlich reduzierte Lebensfähigkeit. Dominante Schecke × Dominante Schecke erzeugt 25% DF Nachkommen mit erhöhter Sterblichkeit.",
     "lethal_ino_x_ino_name": "Ino × Ino Verpaarung",
     "lethal_ino_x_ino_desc": "Wenn beide Eltern visuell Ino sind, können Nachkommen Federzysten, geschwächte Immunität, Augenprobleme und höhere Kükenmortalität entwickeln.",
     "reverse_calculator": "Rückwärtsrechner",
@@ -1462,6 +1486,9 @@
     "setting_updated": "Einstellung erfolgreich aktualisiert",
     "setting_update_error": "Fehler beim Aktualisieren der Einstellung",
     "permission_denied": "Admin-Berechtigung für diese Aktion erforderlich",
+    "auth_required": "Authentifizierung erforderlich",
+    "invalid_table_name": "Ungültiger Tabellenname: {}",
+    "database_limit_suffix": "/ 500 MB",
     "toggle_active": "Aktivstatus ändern",
     "confirm_deactivate": "Benutzer deaktivieren",
     "confirm_deactivate_desc": "Dieser Benutzer wird deaktiviert und sein Zugriff wird gesperrt. Fortfahren?",
@@ -1805,7 +1832,10 @@
     "database": "Ein Datenbankfehler ist aufgetreten. Bitte versuchen Sie es erneut.",
     "storage": "Dateispeicherfehler. Bitte versuchen Sie es erneut.",
     "permission": "Sie haben keine Berechtigung für diese Aktion.",
-    "unknown": "Ein unerwarteter Fehler ist aufgetreten."
+    "unknown": "Ein unerwarteter Fehler ist aufgetreten.",
+    "save_failed": "Speichervorgang fehlgeschlagen.",
+    "delete_failed": "Löschvorgang fehlgeschlagen.",
+    "update_failed": "Aktualisierung fehlgeschlagen."
   },
   "validation": {
     "field_required": "{} ist erforderlich",
@@ -1815,7 +1845,8 @@
     "password_short": "Passwort muss mindestens 8 Zeichen lang sein",
     "ring_number_short": "Ringnummer ist zu kurz",
     "weight_invalid": "Bitte geben Sie ein gültiges Gewicht ein",
-    "weight_too_high": "Gewicht scheint zu hoch"
+    "weight_too_high": "Gewicht scheint zu hoch",
+    "weight_positive": "Gewicht muss größer als Null sein"
   },
   "incubation": {
     "stage_overdue": "Überfällig",
@@ -2098,7 +2129,8 @@
     "empty_questions_title": "Noch keine Fragen",
     "empty_questions_hint": "Fragen Sie die Community um Hilfe",
     "empty_filtered_title": "Keine passenden Beiträge",
-    "empty_filtered_hint": "Versuchen Sie andere Suchkriterien"
+    "empty_filtered_hint": "Versuchen Sie andere Suchkriterien",
+    "post_type_general": "Allgemein"
   },
   "legal": {
     "last_updated": "Zuletzt aktualisiert: 15. März 2026",

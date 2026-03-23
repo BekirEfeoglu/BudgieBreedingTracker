@@ -112,9 +112,11 @@ class AdminActionsNotifier extends Notifier<AdminActionState> {
           })
           .eq('id', eventId);
 
-      await _logAdminAction(
+      await logAdminAction(
+        client,
+        ref.read(currentUserIdProvider),
         'security_event_dismissed',
-        details: 'Event $eventId resolved',
+        details: {'message': 'Event $eventId resolved'},
       );
 
       state = state.copyWith(isLoading: false, isSuccess: true);
@@ -141,9 +143,11 @@ class AdminActionsNotifier extends Notifier<AdminActionState> {
           .delete()
           .lt('created_at', cutoff.toUtc().toIso8601String());
 
-      await _logAdminAction(
+      await logAdminAction(
+        client,
+        ref.read(currentUserIdProvider),
         'audit_logs_cleared',
-        details: 'Logs before ${cutoff.toIso8601String()} cleared',
+        details: {'message': 'Logs before ${cutoff.toIso8601String()} cleared'},
       );
 
       state = state.copyWith(isLoading: false, isSuccess: true);
@@ -153,29 +157,6 @@ class AdminActionsNotifier extends Notifier<AdminActionState> {
         isLoading: false,
         error: 'admin.action_error'.tr(),
       );
-    }
-  }
-
-  // ── Private helpers ──────────────────────────────────
-
-  /// Log an admin action to admin_logs.
-  Future<void> _logAdminAction(
-    String action, {
-    String? targetUserId,
-    String? details,
-  }) async {
-    try {
-      final client = ref.read(supabaseClientProvider);
-      final adminUserId = ref.read(currentUserIdProvider);
-
-      await client.from(SupabaseConstants.adminLogsTable).insert({
-        'action': action,
-        'admin_user_id': adminUserId,
-        if (targetUserId != null) 'target_user_id': targetUserId,
-        if (details != null) 'details': {'message': details},
-      });
-    } catch (e, st) {
-      AppLogger.error('AdminActions._logAdminAction', e, st);
     }
   }
 

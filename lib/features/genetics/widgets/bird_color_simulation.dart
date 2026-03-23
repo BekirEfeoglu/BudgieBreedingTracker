@@ -17,6 +17,9 @@ class BirdColorSimulation extends StatelessWidget {
   /// Optional explicit width. If null, defaults to `height * 0.75`.
   final double? width;
 
+  /// Sex indicator for cere color: true=female (brown), false=male (blue).
+  final bool? isFemale;
+
   /// @deprecated Use [height] instead.
   final double? size;
 
@@ -27,6 +30,7 @@ class BirdColorSimulation extends StatelessWidget {
     required this.phenotype,
     this.height = 72,
     this.width,
+    this.isFemale,
     @Deprecated('Use height instead') this.size,
   });
 
@@ -46,7 +50,10 @@ class BirdColorSimulation extends StatelessWidget {
       child: RepaintBoundary(
         child: CustomPaint(
           size: Size(effectiveWidth, effectiveHeight),
-          painter: BudgiePainter(appearance: appearance),
+          painter: BudgiePainter(
+            appearance: appearance,
+            isFemale: isFemale,
+          ),
         ),
       ),
     );

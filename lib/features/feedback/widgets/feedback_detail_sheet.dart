@@ -36,7 +36,6 @@ class FeedbackStatusBadge extends StatelessWidget {
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
               color: status.color,
               fontWeight: FontWeight.w600,
-              fontSize: 10,
             ),
           ),
         ],

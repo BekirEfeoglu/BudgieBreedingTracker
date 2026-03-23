@@ -67,6 +67,7 @@ class BirdCard extends StatelessWidget {
                       style: theme.textTheme.titleMedium,
                       overflow: TextOverflow.ellipsis,
                     ),
+                    // 2px gap: tight spacing between name and details row
                     const SizedBox(height: 2),
                     Row(
                       children: [
@@ -76,6 +77,7 @@ class BirdCard extends StatelessWidget {
                             size: 14,
                             color: theme.colorScheme.onSurfaceVariant,
                           ),
+                          // 2px icon-to-text gap: tighter than xs(4) for compact info row
                           const SizedBox(width: 2),
                           Text(
                             bird.ringNumber!,
@@ -95,6 +97,7 @@ class BirdCard extends StatelessWidget {
                       ],
                     ),
                     if (bird.species != Species.budgie) ...[
+                      // 2px gap: tight spacing between detail rows
                       const SizedBox(height: 2),
                       Row(
                         children: [
@@ -103,7 +106,7 @@ class BirdCard extends StatelessWidget {
                             size: 14,
                             color: theme.colorScheme.onSurfaceVariant,
                           ),
-                          const SizedBox(width: 4),
+                          const SizedBox(width: AppSpacing.xs),
                           Text(
                             speciesLabel(bird.species),
                             style: theme.textTheme.bodySmall?.copyWith(

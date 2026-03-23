@@ -29,7 +29,7 @@ class DepthChip extends StatelessWidget {
                   color: theme.colorScheme.primary,
                 )
               else
-                const SizedBox(width: 16),
+                const SizedBox(width: AppSpacing.lg),
               const SizedBox(width: AppSpacing.sm),
               Text(
                 'genealogy.generations'.tr(args: [value.toString()]),

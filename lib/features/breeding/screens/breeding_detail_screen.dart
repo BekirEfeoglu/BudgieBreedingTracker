@@ -18,6 +18,7 @@ import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_det
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_form_providers.dart';
 import 'package:budgie_breeding_tracker/features/breeding/widgets/breeding_pair_info_section.dart';
 import 'package:budgie_breeding_tracker/features/breeding/widgets/breeding_eggs_section.dart';
+import 'package:budgie_breeding_tracker/features/settings/providers/settings_providers.dart';
 
 /// Detail screen for a breeding pair showing incubation, eggs, milestones.
 class BreedingDetailScreen extends ConsumerWidget {
@@ -34,9 +35,12 @@ class BreedingDetailScreen extends ConsumerWidget {
         appBar: AppBar(title: Text('common.loading'.tr())),
         body: const LoadingState(),
       ),
-      error: (error, _) => Scaffold(
+      error: (_, __) => Scaffold(
         appBar: AppBar(title: Text('common.error'.tr())),
-        body: ErrorState(message: error.toString()),
+        body: ErrorState(
+          message: 'common.data_load_error'.tr(),
+          onRetry: () => ref.invalidate(breedingPairByIdProvider(pairId)),
+        ),
       ),
       data: (pair) {
         if (pair == null) {
@@ -186,15 +190,15 @@ class _DetailContent extends ConsumerWidget {
   }
 }
 
-class _IncubationSection extends StatelessWidget {
+class _IncubationSection extends ConsumerWidget {
   final Incubation incubation;
 
   const _IncubationSection({required this.incubation});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final dateFormat = DateFormat('dd.MM.yyyy');
+    final dateFormat = ref.watch(dateFormatProvider).formatter();
     final daysElapsed = incubation.daysElapsed;
     final isComplete = incubation.isComplete;
     final stageColor = isComplete

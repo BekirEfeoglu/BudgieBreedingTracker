@@ -1,4 +1,6 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/data/models/health_record_model.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
@@ -81,7 +83,8 @@ class HealthRecordFormNotifier extends Notifier<HealthRecordFormState> {
       state = state.copyWith(isLoading: false, isSuccess: true);
     } catch (e) {
       AppLogger.error('HealthRecordFormNotifier', e, StackTrace.current);
-      state = state.copyWith(isLoading: false, error: e.toString());
+      Sentry.captureException(e, stackTrace: StackTrace.current);
+      state = state.copyWith(isLoading: false, error: 'errors.unknown'.tr());
     }
   }
 
@@ -122,7 +125,8 @@ class HealthRecordFormNotifier extends Notifier<HealthRecordFormState> {
       state = state.copyWith(isLoading: false, isSuccess: true);
     } catch (e) {
       AppLogger.error('HealthRecordFormNotifier', e, StackTrace.current);
-      state = state.copyWith(isLoading: false, error: e.toString());
+      Sentry.captureException(e, stackTrace: StackTrace.current);
+      state = state.copyWith(isLoading: false, error: 'errors.unknown'.tr());
     }
   }
 
@@ -134,7 +138,8 @@ class HealthRecordFormNotifier extends Notifier<HealthRecordFormState> {
       state = state.copyWith(isLoading: false, isSuccess: true);
     } catch (e) {
       AppLogger.error('HealthRecordFormNotifier', e, StackTrace.current);
-      state = state.copyWith(isLoading: false, error: e.toString());
+      Sentry.captureException(e, stackTrace: StackTrace.current);
+      state = state.copyWith(isLoading: false, error: 'errors.unknown'.tr());
     }
   }
 

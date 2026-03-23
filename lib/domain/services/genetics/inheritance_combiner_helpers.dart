@@ -28,6 +28,7 @@ List<OffspringResult> _normalizeAndSort(
           compoundPhenotype: r.compoundPhenotype,
           carriedMutations: r.carriedMutations,
           maskedMutations: r.maskedMutations,
+          doubleFactorIds: r.doubleFactorIds,
         ),
       )
       .toList();
@@ -51,4 +52,43 @@ OffspringSex _mergeSex(OffspringSex a, OffspringSex b) {
   if (a == OffspringSex.both) return b;
   if (b == OffspringSex.both) return a;
   return a; // Should not happen if _sexCompatible passed
+}
+
+/// Extracts visual mutation IDs and double-factor flags from a combined
+/// multi-locus result, using expressed IDs and falling back to name→ID lookup.
+({Set<String> visualMutIds, Set<String> doubleFactorIds}) _extractMutationIds(
+  _MultiLocusResult c,
+) {
+  // Separate visual phenotype names from carrier info
+  final visualNames = c.phenotypes
+      .where((p) => !p.contains('(carrier)'))
+      .toList();
+
+  // Prefer expressedMutationIds from allelic series results
+  final visualMutIds = <String>{...c.expressedMutationIds};
+  final doubleFactorIds = <String>{};
+
+  // Fallback: name→ID lookup for legacy independent locus results
+  for (final name in visualNames) {
+    final cleanName = name
+        .replaceAll(' (single)', '')
+        .replaceAll(' (double)', '')
+        .replaceAll(' (homozygous)', '');
+    final id = MutationDatabase.getByName(cleanName)?.id;
+    if (id != null) {
+      visualMutIds.add(id);
+      if (name.contains('(double)')) {
+        doubleFactorIds.add(id);
+      }
+    }
+  }
+
+  return (visualMutIds: visualMutIds, doubleFactorIds: doubleFactorIds);
+}
+
+/// Builds a phenotype label from compound name and carried mutations.
+String _buildPhenotypeLabel(String compoundName, List<String> uniqueCarried) {
+  return uniqueCarried.isNotEmpty
+      ? '$compoundName (${uniqueCarried.join(", ")} carrier)'
+      : compoundName;
 }

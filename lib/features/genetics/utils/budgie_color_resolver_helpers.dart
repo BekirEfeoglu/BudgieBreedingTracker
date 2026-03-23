@@ -51,24 +51,28 @@ Color _resolveBaseBodyColor({
   if (lower.contains('dark green')) {
     return BudgiePhenotypePalette.darkGreen;
   }
-  if (lower.contains('mauve')) {
-    return BudgiePhenotypePalette.mauve;
-  }
-  if (lower.contains('cobalt')) {
-    return BudgiePhenotypePalette.cobalt;
-  }
+  // Violet applied BEFORE cobalt/mauve so it modifies dark factor bases
   if ((lower.contains('violet') || hasViolet) && isBlueSeries) {
+    if (lower.contains('mauve')) {
+      return _mix(BudgiePhenotypePalette.mauve, BudgiePhenotypePalette.violet, 0.40);
+    }
+    if (lower.contains('cobalt') || lower.contains('visual violet')) {
+      return BudgiePhenotypePalette.violet;
+    }
     return _mix(
       BudgiePhenotypePalette.skyBlue,
       BudgiePhenotypePalette.violet,
       0.55,
     );
   }
+  if (lower.contains('mauve')) {
+    return BudgiePhenotypePalette.mauve;
+  }
+  if (lower.contains('cobalt')) {
+    return BudgiePhenotypePalette.cobalt;
+  }
   if (isBlueSeries) {
     return BudgiePhenotypePalette.skyBlue;
-  }
-  if (lower.contains('grey-green')) {
-    return BudgiePhenotypePalette.greyGreen;
   }
   return BudgiePhenotypePalette.lightGreen;
 }
@@ -105,14 +109,14 @@ Color _resolveSlateBodyColor({
   if (lower.contains('dark green')) {
     return _mix(
       BudgiePhenotypePalette.darkGreen,
-      BudgiePhenotypePalette.greyGreen,
-      0.44,
+      BudgiePhenotypePalette.slate,
+      0.40,
     );
   }
   return _mix(
     BudgiePhenotypePalette.lightGreen,
-    BudgiePhenotypePalette.greyGreen,
-    0.42,
+    BudgiePhenotypePalette.slate,
+    0.40,
   );
 }
 
@@ -128,7 +132,7 @@ Color _resolveAnthraciteBodyColor({
     return _mix(
       BudgiePhenotypePalette.cobalt,
       BudgiePhenotypePalette.anthraciteSingle,
-      0.26,
+      0.50,
     );
   }
 
@@ -162,195 +166,94 @@ Color _resolveBaseCheekPatch({
       : BudgiePhenotypePalette.cheekBlue;
 }
 
-bool _isBlueSeries(
-  Set<String> ids,
-  String lower,
-  bool hasBlue,
-  bool hasAqua,
-  bool hasTurquoise,
-) {
-  if (_containsAny(lower, const [
-    'light green',
-    'dark green',
-    'olive',
-    'grey-green',
-  ])) {
-    return false;
+/// Resolves complete color overrides for special compound phenotypes
+/// (Dark-Eyed Clear, Double Factor Spangle, and Ino variants).
+///
+/// Returns null if no special phenotype applies, allowing the caller
+/// to fall through to individual mutation modifiers.
+({
+  Color body,
+  Color mask,
+  Color wingMarkings,
+  Color cheekPatch,
+  bool hideWingMarkings,
+  bool showMantleHighlight,
+})? _resolveSpecialPhenotype({
+  required bool isDarkEyedClear,
+  required bool isDoubleFactorSpangle,
+  required bool isAlbino,
+  required bool isLutino,
+  required bool isCreamino,
+  required bool isLacewing,
+  required bool isBlueSeries,
+  required bool currentShowMantleHighlight,
+}) {
+  if (isDarkEyedClear) {
+    final body = isBlueSeries
+        ? BudgiePhenotypePalette.maskWhite
+        : BudgiePhenotypePalette.maskYellow;
+    return (
+      body: body,
+      mask: body,
+      wingMarkings: Colors.transparent,
+      cheekPatch: BudgiePhenotypePalette.maskWhite,
+      hideWingMarkings: true,
+      showMantleHighlight: false,
+    );
   }
 
-  if (hasAqua || hasTurquoise) return true;
-
-  return hasBlue ||
-      ids.contains('bluefactor_1') ||
-      ids.contains('bluefactor_2') ||
-      ids.contains('yellowface_type1') ||
-      ids.contains('yellowface_type2') ||
-      ids.contains('goldenface') ||
-      _containsAny(lower, const [
-        'skyblue',
-        'cobalt',
-        'mauve',
-        'blue',
-        'violet',
-        'slate',
-        'albino',
-        'creamino',
-        'whitefaced',
-      ]);
-}
-
-bool _containsAny(String input, List<String> terms) {
-  for (final term in terms) {
-    if (input.contains(term)) return true;
+  if (isDoubleFactorSpangle) {
+    final body = isBlueSeries
+        ? BudgiePhenotypePalette.maskWhite
+        : BudgiePhenotypePalette.maskYellow;
+    return (
+      body: body,
+      mask: body,
+      wingMarkings: const Color(0x28808080),
+      cheekPatch: BudgiePhenotypePalette.cheekSilver,
+      hideWingMarkings: false,
+      showMantleHighlight: false,
+    );
   }
-  return false;
-}
 
-bool _containsPhrase(String input, String phrase) {
-  final pattern = RegExp(
-    '(^|[^a-z])${RegExp.escape(phrase)}([^a-z]|\$)',
-    caseSensitive: false,
+  if (!(isAlbino || isLutino || isCreamino || isLacewing)) return null;
+
+  Color body, mask, cheekPatch;
+  if (isAlbino) {
+    body = BudgiePhenotypePalette.maskWhite;
+    mask = BudgiePhenotypePalette.maskWhite;
+    cheekPatch = BudgiePhenotypePalette.maskWhite;
+  } else if (isCreamino) {
+    body = BudgiePhenotypePalette.cream;
+    mask = BudgiePhenotypePalette.warmIvory;
+    cheekPatch = BudgiePhenotypePalette.cheekPaleViolet;
+  } else {
+    body = BudgiePhenotypePalette.lutino;
+    mask = BudgiePhenotypePalette.maskYellow;
+    cheekPatch = BudgiePhenotypePalette.maskWhite;
+  }
+
+  if (isLacewing) {
+    body = isBlueSeries
+        ? BudgiePhenotypePalette.warmIvory
+        : BudgiePhenotypePalette.cream;
+    return (
+      body: body,
+      mask: body,
+      wingMarkings: BudgiePhenotypePalette.cinnamon,
+      cheekPatch: BudgiePhenotypePalette.cheekPaleViolet,
+      hideWingMarkings: false,
+      showMantleHighlight: currentShowMantleHighlight,
+    );
+  }
+
+  return (
+    body: body,
+    mask: mask,
+    wingMarkings: Colors.transparent,
+    cheekPatch: cheekPatch,
+    hideWingMarkings: true,
+    showMantleHighlight: currentShowMantleHighlight,
   );
-  return pattern.hasMatch(input);
 }
 
-String _normalizeMutationId(String raw) {
-  final value = raw.trim().toLowerCase();
-  return switch (value) {
-    'blue' || 'mavi' => 'blue',
-    'aqua' => 'aqua',
-    'turquoise' || 'turkuaz' => 'turquoise',
-    'yellowface type i' || 'yellowface_type1' => 'yellowface_type1',
-    'yellowface type ii' || 'yellowface_type2' => 'yellowface_type2',
-    'goldenface' => 'goldenface',
-    'blue factor i' || 'bluefactor_1' => 'bluefactor_1',
-    'blue factor ii' || 'bluefactor_2' => 'bluefactor_2',
-    'grey' || 'gri' => 'grey',
-    'violet' || 'mor' => 'violet',
-    'dark factor' || 'dark_factor' => 'dark_factor',
-    'cinnamon' || 'tarcin' => 'cinnamon',
-    'ino' || 'albino' || 'lutino' => 'ino',
-    'pallid' => 'pallid',
-    'greywing' => 'greywing',
-    'clearwing' => 'clearwing',
-    'dilute' => 'dilute',
-    'spangle' => 'spangle',
-    'opaline' => 'opaline',
-    'pearly' => 'pearly',
-    'recessive pied' || 'recessive_pied' => 'recessive_pied',
-    'dominant pied' || 'dominant_pied' => 'dominant_pied',
-    'clearflight pied' || 'clearflight_pied' => 'clearflight_pied',
-    'dutch pied' || 'dutch_pied' => 'dutch_pied',
-    'slate' => 'slate',
-    'anthracite' => 'anthracite',
-    'english fallow' || 'fallow_english' => 'fallow_english',
-    'german fallow' || 'fallow_german' => 'fallow_german',
-    'texas clearbody' || 'texas_clearbody' => 'texas_clearbody',
-    'dominant clearbody' || 'dominant_clearbody' => 'dominant_clearbody',
-    'blackface' => 'blackface',
-    'saddleback' => 'saddleback',
-    _ => value.replaceAll(' ', '_'),
-  };
-}
-
-Color _resolveCarrierAccent(Set<String> carriedIds) {
-  if (carriedIds.isEmpty) return Colors.transparent;
-
-  if (carriedIds.contains('anthracite')) {
-    return BudgiePhenotypePalette.anthraciteSingle;
-  }
-  if (carriedIds.contains('slate')) {
-    return BudgiePhenotypePalette.slate;
-  }
-  if (carriedIds.contains('violet')) {
-    return BudgiePhenotypePalette.violet;
-  }
-  if (carriedIds.contains('grey')) {
-    return BudgiePhenotypePalette.grey;
-  }
-  if (carriedIds.contains('blue') ||
-      carriedIds.contains('bluefactor_1') ||
-      carriedIds.contains('bluefactor_2')) {
-    return BudgiePhenotypePalette.skyBlue;
-  }
-  if (carriedIds.contains('aqua')) {
-    return BudgiePhenotypePalette.aqua;
-  }
-  if (carriedIds.contains('turquoise')) {
-    return BudgiePhenotypePalette.turquoise;
-  }
-  if (carriedIds.contains('goldenface') ||
-      carriedIds.contains('yellowface_type1') ||
-      carriedIds.contains('yellowface_type2')) {
-    return BudgiePhenotypePalette.maskYellow;
-  }
-  if (carriedIds.contains('ino')) {
-    return BudgiePhenotypePalette.lutino;
-  }
-  if (carriedIds.contains('cinnamon')) {
-    return BudgiePhenotypePalette.cinnamon;
-  }
-  if (carriedIds.contains('pallid')) {
-    return BudgiePhenotypePalette.cream;
-  }
-  if (carriedIds.contains('greywing')) {
-    return BudgiePhenotypePalette.wingGrey;
-  }
-  if (carriedIds.contains('clearwing') || carriedIds.contains('spangle')) {
-    return BudgiePhenotypePalette.maskWhite;
-  }
-  if (carriedIds.contains('dilute')) {
-    return BudgiePhenotypePalette.warmIvory;
-  }
-  if (carriedIds.contains('opaline') || carriedIds.contains('pearly')) {
-    return BudgiePhenotypePalette.cheekViolet;
-  }
-  if (carriedIds.contains('texas_clearbody') ||
-      carriedIds.contains('dominant_clearbody')) {
-    return BudgiePhenotypePalette.cheekBlue;
-  }
-  if (carriedIds.contains('recessive_pied') ||
-      carriedIds.contains('dominant_pied') ||
-      carriedIds.contains('clearflight_pied') ||
-      carriedIds.contains('dutch_pied')) {
-    return BudgiePhenotypePalette.maskYellow;
-  }
-  if (carriedIds.contains('fallow_english') ||
-      carriedIds.contains('fallow_german')) {
-    return BudgiePhenotypePalette.fallowTaupe;
-  }
-  if (carriedIds.contains('blackface')) {
-    return BudgiePhenotypePalette.wingBlack;
-  }
-
-  return BudgiePhenotypePalette.cheekBlue;
-}
-
-Color _mix(Color a, Color b, double amount) {
-  return Color.lerp(a, b, amount.clamp(0.0, 1.0)) ?? a;
-}
-
-Color _lighten(Color color, double amount) {
-  final hsl = HSLColor.fromColor(color);
-  return hsl.withLightness((hsl.lightness + amount).clamp(0.0, 1.0)).toColor();
-}
-
-Color _saturate(Color color, double amount) {
-  final hsl = HSLColor.fromColor(color);
-  return hsl
-      .withSaturation((hsl.saturation + amount).clamp(0.0, 1.0))
-      .toColor();
-}
-
-const List<String> _blueTerms = [
-  'skyblue',
-  'cobalt',
-  'mauve',
-  'blue',
-  'anthracite',
-  'albino',
-  'creamino',
-  'whitefaced',
-  'yellowface',
-  'goldenface',
-];

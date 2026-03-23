@@ -9,6 +9,8 @@ import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_providers.dart';
 
+part 'chick_filter_sort.dart';
+
 typedef ChickParentsInfo = ({
   String? maleName,
   String? femaleName,
@@ -130,27 +132,6 @@ final chickParentsByEggProvider =
       }
     });
 
-/// Current filter selection for the chick list.
-class ChickFilterNotifier extends Notifier<ChickFilter> {
-  @override
-  ChickFilter build() => ChickFilter.all;
-}
-
-final chickFilterProvider = NotifierProvider<ChickFilterNotifier, ChickFilter>(
-  ChickFilterNotifier.new,
-);
-
-/// Current search query for the chick list.
-class ChickSearchQueryNotifier extends Notifier<String> {
-  @override
-  String build() => '';
-}
-
-final chickSearchQueryProvider =
-    NotifierProvider<ChickSearchQueryNotifier, String>(
-      ChickSearchQueryNotifier.new,
-    );
-
 /// Filtered chicks based on the current filter selection.
 final filteredChicksProvider = Provider.family<List<Chick>, List<Chick>>((
   ref,
@@ -233,81 +214,6 @@ final searchedAndFilteredChicksProvider =
       return result;
     });
 
-/// Filter options for the chick list.
-enum ChickFilter {
-  all,
-  healthy,
-  sick,
-  deceased,
-  unweaned,
-  newborn,
-  nestling,
-  fledgling,
-  juvenile;
-
-  String get label => switch (this) {
-    ChickFilter.all => 'common.all'.tr(),
-    ChickFilter.healthy => 'chicks.status_healthy'.tr(),
-    ChickFilter.sick => 'chicks.status_sick'.tr(),
-    ChickFilter.deceased => 'chicks.status_deceased'.tr(),
-    ChickFilter.unweaned => 'chicks.status_unweaned'.tr(),
-    ChickFilter.newborn => 'chicks.stage_newborn'.tr(),
-    ChickFilter.nestling => 'chicks.stage_nestling'.tr(),
-    ChickFilter.fledgling => 'chicks.stage_fledgling'.tr(),
-    ChickFilter.juvenile => 'chicks.stage_juvenile'.tr(),
-  };
-}
-
-/// Manages [ChickSort] state and persists it locally.
-class ChickSortNotifier extends Notifier<ChickSort> {
-  @override
-  ChickSort build() {
-    _loadFromPrefs();
-    return ChickSort.newest;
-  }
-
-  Future<void> _loadFromPrefs() async {
-    final prefs = await SharedPreferences.getInstance();
-    final saved = prefs.getString(AppPreferences.keyChickSort);
-    if (saved != null) {
-      final match = ChickSort.values.where((s) => s.name == saved);
-      if (match.isNotEmpty) {
-        state = match.first;
-      }
-    }
-  }
-
-  Future<void> setSort(ChickSort sort) async {
-    state = sort;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(AppPreferences.keyChickSort, sort.name);
-  }
-}
-
-/// Current sort selection for the chick list, persisted in SharedPreferences.
-final chickSortProvider = NotifierProvider<ChickSortNotifier, ChickSort>(
-  ChickSortNotifier.new,
-);
-
-/// Sort options for the chick list.
-enum ChickSort {
-  newest,
-  oldest,
-  nameAsc,
-  nameDesc,
-  ageYoungest,
-  ageOldest;
-
-  String get label => switch (this) {
-    ChickSort.newest => 'chicks.sort_newest'.tr(),
-    ChickSort.oldest => 'chicks.sort_oldest'.tr(),
-    ChickSort.nameAsc => 'chicks.sort_name_asc'.tr(),
-    ChickSort.nameDesc => 'chicks.sort_name_desc'.tr(),
-    ChickSort.ageYoungest => 'chicks.sort_youngest'.tr(),
-    ChickSort.ageOldest => 'chicks.sort_oldest_age'.tr(),
-  };
-}
-
 /// Notifier for marking banding as complete.
 class BandingActionNotifier extends Notifier<AsyncValue<void>> {
   @override
@@ -327,21 +233,25 @@ class BandingActionNotifier extends Notifier<AsyncValue<void>> {
         state = AsyncError('Chick not found', StackTrace.current);
         return;
       }
-      await chickRepo.save(chick.copyWith(
-        bandingDate: DateTime.now(),
-        updatedAt: DateTime.now(),
-      ));
+      await chickRepo.save(
+        chick.copyWith(bandingDate: DateTime.now(), updatedAt: DateTime.now()),
+      );
 
       // 2. Complete banding event (filter in memory — no DAO method for chickId)
       final allEvents = await eventRepo.getAll(chick.userId);
       final bandingEvents = allEvents.where(
-        (e) => e.chickId == chickId && e.type == EventType.banding && e.status == EventStatus.active,
+        (e) =>
+            e.chickId == chickId &&
+            e.type == EventType.banding &&
+            e.status == EventStatus.active,
       );
       for (final event in bandingEvents) {
-        await eventRepo.save(event.copyWith(
-          status: EventStatus.completed,
-          updatedAt: DateTime.now(),
-        ));
+        await eventRepo.save(
+          event.copyWith(
+            status: EventStatus.completed,
+            updatedAt: DateTime.now(),
+          ),
+        );
       }
 
       // 3. Cancel remaining banding notifications
@@ -356,4 +266,6 @@ class BandingActionNotifier extends Notifier<AsyncValue<void>> {
 }
 
 final bandingActionProvider =
-    NotifierProvider<BandingActionNotifier, AsyncValue<void>>(BandingActionNotifier.new);
+    NotifierProvider<BandingActionNotifier, AsyncValue<void>>(
+      BandingActionNotifier.new,
+    );

@@ -27,7 +27,7 @@ PunnettSquareData _buildAllelicSeriesPunnett(
     return isSexLinked ? 'Z$display' : display;
   }).toList();
   final motherNames = motherAlleles.map((a) {
-    if (a == 'W') return 'W';
+    if (a == _kWChromosome) return _kWChromosome;
     final display = _alleleDisplayName(a);
     return isSexLinked ? 'Z$display' : display;
   }).toList();
@@ -140,10 +140,10 @@ PunnettSquareData _buildSexLinkedPunnettFromGenotype(
   };
 
   final List<String> motherAlleles = switch (motherState) {
-    AlleleState.visual => ['Z$sym', 'W'],
-    AlleleState.carrier => ['Z$sym', 'W'],
-    AlleleState.split => ['Z$sym', 'W'],
-    null => ['Z+', 'W'],
+    AlleleState.visual => ['Z$sym', _kWChromosome],
+    AlleleState.carrier => ['Z$sym', _kWChromosome],
+    AlleleState.split => ['Z$sym', _kWChromosome],
+    null => ['Z+', _kWChromosome],
   };
 
   final cells = <List<String>>[];

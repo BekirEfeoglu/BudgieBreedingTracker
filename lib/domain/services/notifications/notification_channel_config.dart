@@ -51,7 +51,7 @@ abstract final class NotificationChannelConfig {
     return switch (type) {
       'breeding' || 'incubation' => '/breeding/$id',
       'bird' => '/birds/$id',
-      'chick' || 'chick_care' => '/chicks/$id',
+      'chick' || 'chick_care' || 'banding' => '/chicks/$id',
       // Egg-related payloads currently carry egg IDs, not pair IDs. Route to
       // breeding list instead of an invalid pair-detail path.
       'egg' || 'egg_turning' => '/breeding',

@@ -19,7 +19,12 @@ final selectedDateProvider = NotifierProvider<SelectedDateNotifier, DateTime>(
 enum CalendarViewMode { month, week, day }
 
 /// Current calendar view mode, persisted in SharedPreferences.
+///
+/// Uses [SharedPreferences] directly (same pattern as settings notifiers)
+/// with [AppPreferences] key constants for consistency.
 class CalendarViewNotifier extends Notifier<CalendarViewMode> {
+  bool _hasLoadedFromPrefs = false;
+
   @override
   CalendarViewMode build() {
     _loadFromPrefs();
@@ -29,7 +34,8 @@ class CalendarViewNotifier extends Notifier<CalendarViewMode> {
   Future<void> _loadFromPrefs() async {
     final prefs = await SharedPreferences.getInstance();
     final value = prefs.getString(AppPreferences.keyCalendarViewMode);
-    if (value != null) {
+    if (value != null && !_hasLoadedFromPrefs) {
+      _hasLoadedFromPrefs = true;
       state = switch (value) {
         'week' => CalendarViewMode.week,
         'day' => CalendarViewMode.day,
@@ -39,6 +45,7 @@ class CalendarViewNotifier extends Notifier<CalendarViewMode> {
   }
 
   Future<void> setViewMode(CalendarViewMode mode) async {
+    _hasLoadedFromPrefs = true;
     state = mode;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(AppPreferences.keyCalendarViewMode, mode.name);

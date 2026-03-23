@@ -17,9 +17,9 @@ CompoundPhenotypeResult _resolveCompoundPhenotypeDetailed(
 
   // 1. Determine base color (green or blue series)
   final isBlue =
-      visualMutations.contains('blue') ||
-      visualMutations.contains('aqua') ||
-      visualMutations.contains('turquoise') ||
+      visualMutations.contains(GeneticsConstants.mutBlue) ||
+      visualMutations.contains(GeneticsConstants.mutAqua) ||
+      visualMutations.contains(GeneticsConstants.mutTurquoise) ||
       visualMutations.contains('bluefactor_1') ||
       visualMutations.contains('bluefactor_2');
   final baseColor = isBlue ? _BaseColor.blue : _BaseColor.green;
@@ -34,29 +34,23 @@ CompoundPhenotypeResult _resolveCompoundPhenotypeDetailed(
       hasYf1 || hasYf2 || hasGoldenface || hasBlueFactor1 || hasBlueFactor2;
 
   // 3. Check for Ino interactions FIRST (overrides base color naming)
-  final hasIno = visualMutations.contains('ino');
-  final hasCinnamon = visualMutations.contains('cinnamon');
-  final hasPallid = visualMutations.contains('pallid');
+  final hasIno = visualMutations.contains(GeneticsConstants.mutIno);
+  final hasCinnamon = visualMutations.contains(GeneticsConstants.mutCinnamon);
+  final hasPallid = visualMutations.contains(GeneticsConstants.mutPallid);
   final hasBlackface = visualMutations.contains('blackface');
 
-  // 3a. PallidIno and Creamino combinations
-  if (hasIno && hasPallid) {
-    parts.add('PallidIno (Lacewing)');
-  } else if (hasIno &&
-      (hasYf2 || hasGoldenface || hasBlueFactor1 || hasBlueFactor2) &&
-      isBlue) {
-    // Creamino: Yellowface Type II/Goldenface + Blue + Ino
-    parts.add('Creamino');
-  } else if (hasIno && hasCinnamon) {
-    // Lacewing: Cinnamon + Ino combination
-    parts.add('Lacewing');
-  } else if (hasIno) {
-    if (isBlue) {
-      parts.add('Albino');
-    } else {
-      parts.add('Lutino');
-    }
-  }
+  // 3a. Ino naming: Albino/Lutino/Lacewing/Creamino/PallidIno
+  _addInoNaming(
+    parts,
+    hasIno: hasIno,
+    hasCinnamon: hasCinnamon,
+    hasPallid: hasPallid,
+    hasYf2: hasYf2,
+    hasGoldenface: hasGoldenface,
+    hasBlueFactor1: hasBlueFactor1,
+    hasBlueFactor2: hasBlueFactor2,
+    isBlue: isBlue,
+  );
 
   // 3b. Collect mutations masked by Ino
   if (hasIno) {

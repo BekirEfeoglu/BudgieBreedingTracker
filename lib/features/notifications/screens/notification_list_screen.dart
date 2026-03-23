@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
+import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/core/widgets/empty_state.dart';
 import 'package:budgie_breeding_tracker/core/widgets/error_state.dart';
 import 'package:budgie_breeding_tracker/data/models/notification_model.dart';
@@ -164,6 +165,7 @@ class NotificationListScreen extends ConsumerWidget {
     try {
       await ref.read(notificationActionsProvider).delete(notificationId);
     } catch (e) {
+      AppLogger.error('[NotificationListScreen]', e, StackTrace.current);
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('notifications.delete_error'.tr())),

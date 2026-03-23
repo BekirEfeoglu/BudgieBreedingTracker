@@ -1,5 +1,4 @@
 import 'package:easy_localization/easy_localization.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/chick_enums.dart';
 import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
@@ -21,18 +20,6 @@ enum OffspringFilter {
     OffspringFilter.dead => 'birds.dead'.tr(),
   };
 }
-
-/// Notifier for offspring filter selection.
-class OffspringFilterNotifier extends Notifier<OffspringFilter> {
-  @override
-  OffspringFilter build() => OffspringFilter.all;
-}
-
-/// Current offspring filter selection.
-final offspringFilterProvider =
-    NotifierProvider<OffspringFilterNotifier, OffspringFilter>(
-      OffspringFilterNotifier.new,
-    );
 
 /// Filters offspring birds by the selected filter.
 List<Bird> filterOffspringBirds(List<Bird> birds, OffspringFilter filter) {

@@ -222,24 +222,24 @@ class AuditLogItem extends StatelessWidget {
   Widget _iconForAction(String action) {
     final lower = action.toLowerCase();
     if (lower.contains('delete')) {
-      return const AppIcon(
+      return AppIcon(
         AppIcons.delete,
         size: 18,
-        semanticsLabel: 'Delete action',
+        semanticsLabel: 'common.delete'.tr(),
       );
     }
     if (lower.contains('create')) {
-      return const AppIcon(
+      return AppIcon(
         AppIcons.add,
         size: 18,
-        semanticsLabel: 'Create action',
+        semanticsLabel: 'common.add'.tr(),
       );
     }
     if (lower.contains('update')) {
-      return const AppIcon(
+      return AppIcon(
         AppIcons.edit,
         size: 18,
-        semanticsLabel: 'Update action',
+        semanticsLabel: 'common.edit'.tr(),
       );
     }
     if (lower.contains('login')) return const Icon(LucideIcons.logIn, size: 18);

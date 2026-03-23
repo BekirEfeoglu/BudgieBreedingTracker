@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_constants.dart';
+import 'package:budgie_breeding_tracker/core/constants/incubation_constants.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/breeding_enums.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
@@ -147,13 +148,19 @@ class BreedingFormNotifier extends Notifier<BreedingFormState> {
         status: IncubationStatus.active,
         breedingPairId: pairId,
         startDate: pairingDate,
-        expectedHatchDate: pairingDate.add(const Duration(days: 18)),
+        expectedHatchDate: pairingDate.add(const Duration(days: IncubationConstants.incubationPeriodDays)),
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
       );
 
       await pairRepo.save(pair);
-      await incubationRepo.save(incubation);
+      try {
+        await incubationRepo.save(incubation);
+      } catch (e) {
+        // Rollback: remove the orphaned pair
+        await pairRepo.remove(pairId);
+        rethrow;
+      }
 
       _helper.scheduleBreedingNotifications(pairId, incubationId, pairingDate);
       _helper.generateCalendarEvents(userId, pairId, pairingDate);
@@ -161,7 +168,8 @@ class BreedingFormNotifier extends Notifier<BreedingFormState> {
       state = state.copyWith(isLoading: false, isSuccess: true);
     } catch (e) {
       AppLogger.error('BreedingFormNotifier', e, StackTrace.current);
-      state = state.copyWith(isLoading: false, error: e.toString());
+      Sentry.captureException(e, stackTrace: StackTrace.current);
+      state = state.copyWith(isLoading: false, error: 'errors.unknown'.tr());
     }
   }
 
@@ -174,7 +182,8 @@ class BreedingFormNotifier extends Notifier<BreedingFormState> {
       state = state.copyWith(isLoading: false, isSuccess: true);
     } catch (e) {
       AppLogger.error('BreedingFormNotifier', e, StackTrace.current);
-      state = state.copyWith(isLoading: false, error: e.toString());
+      Sentry.captureException(e, stackTrace: StackTrace.current);
+      state = state.copyWith(isLoading: false, error: 'errors.unknown'.tr());
     }
   }
 
@@ -204,7 +213,8 @@ class BreedingFormNotifier extends Notifier<BreedingFormState> {
       state = state.copyWith(isLoading: false, isSuccess: true);
     } catch (e) {
       AppLogger.error('BreedingFormNotifier', e, StackTrace.current);
-      state = state.copyWith(isLoading: false, error: e.toString());
+      Sentry.captureException(e, stackTrace: StackTrace.current);
+      state = state.copyWith(isLoading: false, error: 'errors.unknown'.tr());
     }
   }
 
@@ -234,7 +244,8 @@ class BreedingFormNotifier extends Notifier<BreedingFormState> {
       state = state.copyWith(isLoading: false, isSuccess: true);
     } catch (e) {
       AppLogger.error('BreedingFormNotifier', e, StackTrace.current);
-      state = state.copyWith(isLoading: false, error: e.toString());
+      Sentry.captureException(e, stackTrace: StackTrace.current);
+      state = state.copyWith(isLoading: false, error: 'errors.unknown'.tr());
     }
   }
 
@@ -273,7 +284,7 @@ class BreedingFormNotifier extends Notifier<BreedingFormState> {
     } catch (e, st) {
       AppLogger.error('BreedingFormNotifier', e, st);
       Sentry.captureException(e, stackTrace: st);
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: 'errors.unknown'.tr());
     }
   }
 

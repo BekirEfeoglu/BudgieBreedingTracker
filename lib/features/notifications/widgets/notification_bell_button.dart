@@ -31,7 +31,10 @@ class NotificationBellButton extends ConsumerWidget {
           ? Badge(
               label: Text(
                 unreadCount > 99 ? '99+' : '$unreadCount',
-                style: const TextStyle(fontSize: 10),
+                // 10px standard badge counter size — fits within Material badge
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  fontSize: 10,
+                ),
               ),
               child: const AppIcon(AppIcons.notification, size: 22),
             )

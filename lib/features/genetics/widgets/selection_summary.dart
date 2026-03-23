@@ -5,6 +5,7 @@ import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/mutation_database.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/parent_genotype.dart';
+import 'package:budgie_breeding_tracker/features/genetics/widgets/compound_mutation_chip.dart';
 
 /// Compact chip list showing selected mutations with their allele states.
 ///
@@ -118,7 +119,7 @@ class SelectionSummary extends StatelessWidget {
               .whereType<BudgieMutationRecord>()
               .toList();
           return <Widget>[
-            _CompoundChip(
+            CompoundMutationChip(
               records: records,
               onRemove: () {
                 var updated = genotype;
@@ -200,9 +201,9 @@ class _MutationChip extends StatelessWidget {
     final String stateLabel;
     if (isDosageBased) {
       stateLabel = switch (state) {
-        AlleleState.visual => 'DF',
-        AlleleState.carrier => 'SF',
-        AlleleState.split => 'SF',
+        AlleleState.visual => 'genetics.dosage_double_factor'.tr(),
+        AlleleState.carrier => 'genetics.dosage_single_factor'.tr(),
+        AlleleState.split => 'genetics.dosage_single_factor'.tr(),
       };
     } else {
       stateLabel = switch (state) {
@@ -256,46 +257,3 @@ class _MutationChip extends StatelessWidget {
   }
 }
 
-/// Chip for compound heterozygote: two mutations at the same locus.
-///
-/// Shows "Mutation1 / Mutation2" with a compound badge. Deleting removes both.
-class _CompoundChip extends StatelessWidget {
-  final List<BudgieMutationRecord> records;
-  final VoidCallback onRemove;
-
-  const _CompoundChip({required this.records, required this.onRemove});
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final label = records.map((r) => r.localizationKey.tr()).join(' / ');
-
-    return InputChip(
-      label: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(label, style: theme.textTheme.labelMedium),
-          const SizedBox(width: AppSpacing.xs),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.tertiaryContainer,
-              borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-            ),
-            child: Text(
-              'genetics.compound_short'.tr(),
-              style: TextStyle(
-                fontSize: 9,
-                fontWeight: FontWeight.bold,
-                color: theme.colorScheme.onTertiaryContainer,
-              ),
-            ),
-          ),
-        ],
-      ),
-      onDeleted: onRemove,
-      deleteIcon: const Icon(LucideIcons.x, size: 16),
-      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-    );
-  }
-}

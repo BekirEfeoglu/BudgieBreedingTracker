@@ -1,10 +1,8 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
-import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/lethal_combination_database.dart';
 
 /// Displays a warning banner when lethal allele combinations are detected
@@ -115,8 +113,8 @@ class LethalWarning extends StatelessWidget {
           size: 20,
           color: color,
         ),
-        LethalSeverity.subVital => AppIcon(
-          AppIcons.warning,
+        LethalSeverity.subVital => Icon(
+          LucideIcons.alertTriangle,
           size: 20,
           color: color,
         ),

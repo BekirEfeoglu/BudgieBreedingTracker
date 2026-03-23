@@ -13,6 +13,8 @@ import 'package:budgie_breeding_tracker/domain/services/notifications/notificati
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_service.dart';
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 
+part 'notification_processor_schedules.dart';
+
 /// Processes pending [EventReminder] and [NotificationSchedule] records.
 ///
 /// Checks for unsent event reminders and unprocessed notification schedules,
@@ -153,7 +155,7 @@ class NotificationProcessor {
       final pending = await schedulesDao.getPending(userId);
 
       // Load toggle settings to respect per-category preferences
-      final settings = await _loadToggleSettings(userId);
+      final settings = await _loadToggleSettings(_ref, userId);
 
       AppLogger.info(
         '$_tag Processing ${pending.length} pending notification schedules',
@@ -245,86 +247,6 @@ class NotificationProcessor {
       AppLogger.error('$_tag processNotificationSchedules failed', e, st);
       Sentry.captureException(e, stackTrace: st);
     }
-  }
-
-  /// Generates a stable notification ID for an event reminder.
-  int _eventReminderNotificationId(EventReminder reminder) {
-    // Use a 500000+ range to avoid collision with scheduler ranges
-    return NotificationScheduler.notificationId(500000, reminder.id, 0);
-  }
-
-  /// Generates a stable notification ID for a notification schedule.
-  int _scheduleNotificationId(NotificationSchedule schedule) {
-    // Use a 600000+ range
-    return NotificationScheduler.notificationId(600000, schedule.id, 0);
-  }
-
-  /// Maps [NotificationType] to an Android notification channel ID.
-  String _channelForType(NotificationType type) {
-    return switch (type) {
-      NotificationType.eggTurning => NotificationService.eggTurningChannelId,
-      NotificationType.incubationReminder =>
-        NotificationService.incubationChannelId,
-      NotificationType.feedingReminder =>
-        NotificationService.chickCareChannelId,
-      NotificationType.healthCheck => NotificationService.healthCheckChannelId,
-      _ => 'default',
-    };
-  }
-
-  /// Builds a payload string for a notification schedule.
-  String? _payloadForSchedule(NotificationSchedule schedule) {
-    if (schedule.relatedEntityId == null) return null;
-    return '${schedule.type.name}:${schedule.relatedEntityId}';
-  }
-
-  /// Formats reminder body text with localization.
-  String _formatReminderBody(EventReminder reminder, String eventTitle) {
-    if (reminder.minutesBefore >= 60) {
-      final hours = reminder.minutesBefore ~/ 60;
-      return 'notifications.reminder_hours_before'.tr(
-        args: [eventTitle, '$hours'],
-      );
-    }
-    return 'notifications.reminder_minutes_before'.tr(
-      args: [eventTitle, '${reminder.minutesBefore}'],
-    );
-  }
-
-  DateTime _nextOccurrenceAfter({
-    required DateTime base,
-    required int intervalMinutes,
-    required DateTime now,
-  }) {
-    var next = base.add(Duration(minutes: intervalMinutes));
-    while (!next.isAfter(now)) {
-      next = next.add(Duration(minutes: intervalMinutes));
-    }
-    return next;
-  }
-
-  /// Loads notification toggle settings from the DAO.
-  Future<NotificationSettings?> _loadToggleSettings(String userId) async {
-    try {
-      final dao = _ref.read(notificationSettingsDaoProvider);
-      return await dao.getByUser(userId);
-    } catch (e) {
-      AppLogger.warning('$_tag Failed to load toggle settings: $e');
-      return null;
-    }
-  }
-
-  /// Checks if the given [NotificationType] is enabled per user settings.
-  bool _isTypeEnabled(NotificationType type, NotificationSettings settings) {
-    return switch (type) {
-      NotificationType.eggTurning => settings.eggTurningEnabled,
-      NotificationType.incubationReminder => settings.incubationReminderEnabled,
-      NotificationType.feedingReminder => settings.feedingReminderEnabled,
-      NotificationType.healthCheck => settings.healthCheckEnabled,
-      NotificationType.temperatureAlert => settings.temperatureAlertEnabled,
-      NotificationType.humidityAlert => settings.humidityAlertEnabled,
-      _ => true, // custom/unknown types are always enabled
-    };
   }
 }
 

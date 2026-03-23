@@ -7,9 +7,10 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 
-import '../../../data/repositories/repository_providers.dart';
-import '../../../domain/services/sync/sync_providers.dart';
-import '../../auth/providers/auth_providers.dart';
+import 'package:budgie_breeding_tracker/core/utils/logger.dart';
+import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/sync/sync_providers.dart';
+import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
 
 /// Breakpoint for switching between bottom nav and side rail.
 const double _kTabletBreakpoint = 600;
@@ -145,5 +146,9 @@ final _profileSyncProvider = FutureProvider.family<void, String>((
 ) async {
   if (userId == 'anonymous') return;
   final repo = ref.watch(profileRepositoryProvider);
-  await repo.pull(userId);
+  try {
+    await repo.pull(userId);
+  } catch (e) {
+    AppLogger.error('[MainShell] Profile sync failed', e, StackTrace.current);
+  }
 });

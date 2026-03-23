@@ -60,5 +60,5 @@ extension ChickX on Chick {
   bool get isBanded => bandingDate != null;
 
   DateTime? get plannedBandingDate =>
-      hatchDate != null ? hatchDate!.add(Duration(days: bandingDay)) : null;
+      hatchDate?.add(Duration(days: bandingDay));
 }

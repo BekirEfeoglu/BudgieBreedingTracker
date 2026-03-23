@@ -13,9 +13,11 @@ part 'punnett_square_dihybrid.dart';
 part 'inheritance_allelic_series.dart';
 part 'inheritance_linked_pair.dart';
 part 'inheritance_genotype.dart';
+part 'inheritance_genotype_sex_linked.dart';
 part 'inheritance_simple.dart';
 part 'inheritance_combiner.dart';
 part 'inheritance_combiner_helpers.dart';
+part 'mendelian_calculator_punnett.dart';
 
 /// Mendelian genetics calculator for budgie color mutations.
 ///
@@ -82,10 +84,10 @@ class MendelianCalculator {
     //    Ino-Slate (2 cM) → Cin-Ino (3 cM) → Cin-Slate (5 cM) →
     //    Op-Ino (30 cM) → Op-Cin (34 cM) → Op-Slate (40 cM).
     //    Each mutation consumed once paired; remainder stay independent.
-    final hasCinnamon = allIds.contains('cinnamon');
-    final hasInoAllele = allIds.contains('ino');
-    final hasOpaline = allIds.contains('opaline');
-    final hasSlate = allIds.contains('slate');
+    final hasCinnamon = allIds.contains(GeneticsConstants.mutCinnamon);
+    final hasInoAllele = allIds.contains(GeneticsConstants.mutIno);
+    final hasOpaline = allIds.contains(GeneticsConstants.mutOpaline);
+    final hasSlate = allIds.contains(GeneticsConstants.mutSlate);
 
     final consumedSexLinked = <String>{};
 
@@ -118,36 +120,44 @@ class MendelianCalculator {
 
     // Ordered by recombination rate (tightest first).
     if (hasInoAllele && hasSlate) {
-      tryLinkPair('ino', 'slate', GeneticsConstants.inoSlateRecombination);
+      tryLinkPair(
+        GeneticsConstants.mutIno,
+        GeneticsConstants.mutSlate,
+        GeneticsConstants.inoSlateRecombination,
+      );
     }
     if (hasCinnamon && hasInoAllele) {
       tryLinkPair(
-        'cinnamon',
-        'ino',
+        GeneticsConstants.mutCinnamon,
+        GeneticsConstants.mutIno,
         GeneticsConstants.cinnamonInoRecombination,
       );
     }
     if (hasCinnamon && hasSlate) {
       tryLinkPair(
-        'cinnamon',
-        'slate',
+        GeneticsConstants.mutCinnamon,
+        GeneticsConstants.mutSlate,
         GeneticsConstants.cinnamonSlateRecombination,
       );
     }
     if (hasOpaline && hasInoAllele) {
-      tryLinkPair('opaline', 'ino', GeneticsConstants.opalineInoRecombination);
+      tryLinkPair(
+        GeneticsConstants.mutOpaline,
+        GeneticsConstants.mutIno,
+        GeneticsConstants.opalineInoRecombination,
+      );
     }
     if (hasOpaline && hasCinnamon) {
       tryLinkPair(
-        'opaline',
-        'cinnamon',
+        GeneticsConstants.mutOpaline,
+        GeneticsConstants.mutCinnamon,
         GeneticsConstants.opalineCinnamonRecombination,
       );
     }
     if (hasOpaline && hasSlate) {
       tryLinkPair(
-        'opaline',
-        'slate',
+        GeneticsConstants.mutOpaline,
+        GeneticsConstants.mutSlate,
         GeneticsConstants.opalineSlateRecombination,
       );
     }
@@ -230,63 +240,4 @@ class MendelianCalculator {
     return _combineMultiLocus(perLocusResults);
   }
 
-  /// Builds Punnett square from genotype data for a specific mutation.
-  PunnettSquareData? buildPunnettSquareFromGenotypes({
-    required ParentGenotype father,
-    required ParentGenotype mother,
-    String? mutationId,
-  }) {
-    final allIds = {...father.allMutationIds, ...mother.allMutationIds};
-    if (allIds.isEmpty) return null;
-
-    final targetId = mutationId ?? allIds.first;
-
-    // Check if targetId is a locusId (allelic series Punnett)
-    final allelicLocusIds = MutationDatabase.getAllelicLocusIds();
-    if (allelicLocusIds.contains(targetId)) {
-      return _buildAllelicSeriesPunnett(targetId, father, mother);
-    }
-
-    final record = MutationDatabase.getById(targetId);
-    if (record == null) return null;
-
-    final fatherState = father.getState(targetId);
-    final motherState = mother.getState(targetId);
-    final sym = record.alleleSymbol;
-
-    if (record.isSexLinked) {
-      return _buildSexLinkedPunnettFromGenotype(
-        record,
-        sym,
-        fatherState,
-        motherState,
-      );
-    }
-
-    return _buildAutosomalPunnettFromGenotype(
-      record,
-      sym,
-      fatherState,
-      motherState,
-    );
-  }
-
-  /// Builds a dihybrid (4×4) Punnett square for two independent loci.
-  ///
-  /// Each locus is resolved to its single-locus allele pair, then the gametes
-  /// are combined (A1B1, A1B2, A2B1, A2B2) for both parents to produce
-  /// a 4×4 grid showing all possible genotype combinations.
-  PunnettSquareData? buildDihybridPunnettSquare({
-    required ParentGenotype father,
-    required ParentGenotype mother,
-    required String locusId1,
-    required String locusId2,
-  }) {
-    return _buildDihybridPunnett(
-      father: father,
-      mother: mother,
-      locusId1: locusId1,
-      locusId2: locusId2,
-    );
-  }
 }

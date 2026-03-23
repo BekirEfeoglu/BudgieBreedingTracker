@@ -25,10 +25,15 @@ class RouterNotifier extends ChangeNotifier {
 
   /// Coalesce multiple rapid provider changes into a single notification
   /// to prevent GoRouter key reservation conflicts during redirect.
+  ///
+  /// Uses [addPostFrameCallback] instead of [Future.microtask] to ensure
+  /// the notification fires after the current frame's build/layout/paint
+  /// phases are complete — preventing Navigator key reservation conflicts
+  /// when multiple redirects fire during widget tree construction.
   void _scheduleNotify() {
     if (_scheduled) return;
     _scheduled = true;
-    Future.microtask(() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       _scheduled = false;
       notifyListeners();
     });

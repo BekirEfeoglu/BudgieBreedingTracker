@@ -73,7 +73,9 @@
     "months_ago": "{} ay önce",
     "years_ago": "{} yıl önce",
     "feature_under_development": "Bu özellik geliştirme aşamasındadır.",
-    "confirm_delete": "Silmek istediğinizden emin misiniz?"
+    "confirm_delete": "Silmek istediğinizden emin misiniz?",
+    "alert": "Uyarı",
+    "export": "Dışa Aktar"
   },
   "auth": {
     "login": "Giriş Yap",
@@ -971,6 +973,8 @@
     "no_notifications_hint": "Yeni bildirimler burada görünecek",
     "load_error": "Bildirimler yüklenirken hata oluştu",
     "delete_error": "Bildirim silinirken hata oluştu",
+    "delete_title": "Bildirimi Sil",
+    "delete_confirm": "Bu bildirimi silmek istediğinize emin misiniz?",
     "filter_all": "Tümü",
     "filter_unread": "Okunmamış",
     "filter_read": "Okunmuş",
@@ -997,7 +1001,8 @@
     "banding_main_title": "Halka Takma Günü!",
     "banding_main_body": "{} için bugün halka takılmalı",
     "banding_followup_title": "Halka Hatırlatma",
-    "banding_followup_body": "{} için halka henüz takılmadı"
+    "banding_followup_body": "{} için halka henüz takılmadı",
+    "high_priority": "Yüksek öncelik"
   },
   "premium": {
     "title": "Premium",
@@ -1180,6 +1185,7 @@
     "inbreeding_desc_moderate": "Orta düzeyde akrabalık. Genetik çeşitlilik azalmış olabilir.",
     "inbreeding_desc_high": "Yüksek akrabalık! Sağlık sorunları ve düşük yaşama gücü riski.",
     "inbreeding_desc_critical": "Kritik seviyede akrabalık! Bu eşleştirme kesinlikle önerilmez.",
+    "inbreeding_depth_limited": "Soy ağacı derinlik sınırına ulaşıldı — gerçek katsayı daha yüksek olabilir.",
     "genetic_info": "Genetik Bilgi",
     "primary_color": "Ana Renk",
     "secondary_color": "İkincil Renk",
@@ -1195,6 +1201,14 @@
     "no_female_results": "Dişi yavru sonucu yok",
     "show_more_results": "Tümünü Göster ({} sonuç)",
     "show_less_results": "Daha Az Göster",
+    "tap_to_expand": "Detaylar için dokunun",
+    "tap_to_collapse": "Daraltmak için dokunun",
+    "probability_group_header": "{} sonuç",
+    "genotype_copied": "Genotip panoya kopyalandı",
+    "both_sexes_label": "Unisex",
+    "filter_all": "Tümü",
+    "filter_carrier_only": "Taşıyıcı",
+    "filter_visual_only": "Görsel",
     "probability_chart": "Olasılık Grafiği",
     "inheritance_type": "Kalıtım Tipi",
     "alleles": "Alleller",
@@ -1308,6 +1322,14 @@
     "share_results": "Sonuçları Paylaş",
     "export_results": "Sonuçları Dışa Aktar",
     "color_audit_title": "Genetik Renk Denetimi",
+    "color_audit_primary_title": "Kritik fenotip denetim panosu",
+    "color_audit_primary_subtitle": "WBO baz tonları + yüksek riskli mutasyon görselleri",
+    "color_audit_advanced_title": "Gelişmiş mutasyon denetim panosu",
+    "color_audit_advanced_subtitle": "Kanat/gövde modifikasyonları ve seyreltme mutasyonları",
+    "color_audit_compound_title": "Bileşik ve özel fenotip panosu",
+    "color_audit_compound_subtitle": "Karmaşık kombinasyonlar, pied, yellowface ve nadir varyantlar",
+    "dosage_double_factor": "DF",
+    "dosage_single_factor": "SF",
     "color_preview": "Renk Önizlemesi",
     "expected_color": "Beklenen Renk",
     "delete_history_confirm": "Bu hesaplama kaydını silmek istediğinizden emin misiniz?",
@@ -1374,6 +1396,8 @@
     "lethal_df_crested_desc": "Tepeli eşleşmeleri sub-vital kabul edilir; artmış ölüm oranı (~%48) ve olası nörolojik/gelişimsel sorunlar görülebilir.",
     "lethal_df_spangle_name": "Çift Faktör Spangle (DF Spangle)",
     "lethal_df_spangle_desc": "DF Spangle kuşlar yaşar ancak genellikle daha zayıf, tüy kalitesi düşük olabilir.",
+    "lethal_df_dominant_pied_name": "Çift Faktör Baskın Parçalı",
+    "lethal_df_dominant_pied_desc": "DF Baskın (Avustralya) Parçalı kuşların yaşama şansı önemli ölçüde düşüktür. Baskın Parçalı × Baskın Parçalı eşleştirmesi %25 DF yavru üretir.",
     "lethal_ino_x_ino_name": "İno × İno Eşleştirmesi",
     "lethal_ino_x_ino_desc": "Her iki ebeveyn görsel İno olduğunda yavrularda tüy kistleri, bağışıklık zayıflığı, göz sorunları ve yüksek yavru ölüm oranı görülebilir.",
     "reverse_calculator": "Ters Hesaplayıcı",
@@ -1462,6 +1486,9 @@
     "setting_updated": "Ayar başarıyla güncellendi",
     "setting_update_error": "Ayar güncellenirken hata oluştu",
     "permission_denied": "Bu işlem için admin yetkisi gereklidir",
+    "auth_required": "Kimlik doğrulaması gereklidir",
+    "invalid_table_name": "Geçersiz tablo adı: {}",
+    "database_limit_suffix": "/ 500 MB",
     "toggle_active": "Aktiflik Durumunu Değiştir",
     "confirm_deactivate": "Kullanıcıyı Deaktif Et",
     "confirm_deactivate_desc": "Bu kullanıcı deaktif edilecek ve uygulamaya erişimi engellenecek. Devam?",
@@ -1805,7 +1832,10 @@
     "database": "Veritabanı hatası. Lütfen tekrar deneyin.",
     "storage": "Dosya depolama hatası. Lütfen tekrar deneyin.",
     "permission": "Bu işlem için yetkiniz bulunmuyor.",
-    "unknown": "Beklenmeyen bir hata oluştu."
+    "unknown": "Beklenmeyen bir hata oluştu.",
+    "save_failed": "Kaydetme işlemi başarısız oldu.",
+    "delete_failed": "Silme işlemi başarısız oldu.",
+    "update_failed": "Güncelleme işlemi başarısız oldu."
   },
   "validation": {
     "field_required": "{} zorunludur",
@@ -1815,7 +1845,8 @@
     "password_short": "Şifre en az 8 karakter olmalıdır",
     "ring_number_short": "Ring numarası çok kısa",
     "weight_invalid": "Geçerli bir ağırlık girin",
-    "weight_too_high": "Ağırlık çok yüksek görünüyor"
+    "weight_too_high": "Ağırlık çok yüksek görünüyor",
+    "weight_positive": "Ağırlık sıfırdan büyük olmalıdır"
   },
   "incubation": {
     "stage_overdue": "Gecikmiş",
@@ -2098,7 +2129,8 @@
     "empty_questions_title": "Henüz soru yok",
     "empty_questions_hint": "Topluluktan yardım isteyin",
     "empty_filtered_title": "Eşleşen gönderi yok",
-    "empty_filtered_hint": "Farklı arama kriterleri deneyin"
+    "empty_filtered_hint": "Farklı arama kriterleri deneyin",
+    "post_type_general": "Genel"
   },
   "legal": {
     "last_updated": "Son güncelleme: 15 Mart 2026",

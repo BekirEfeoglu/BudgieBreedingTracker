@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
-import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
+import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 import 'package:budgie_breeding_tracker/features/feedback/providers/feedback_providers.dart';
 import 'package:budgie_breeding_tracker/features/feedback/widgets/feedback_form_widgets.dart';
 
@@ -16,7 +16,6 @@ class FeedbackHistoryTab extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final userId = ref.watch(currentUserIdProvider);
     final historyAsync = ref.watch(feedbackHistoryProvider(userId));
-    final theme = Theme.of(context);
 
     return historyAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
@@ -25,7 +24,7 @@ class FeedbackHistoryTab extends ConsumerWidget {
       ),
       data: (entries) {
         if (entries.isEmpty) {
-          return FeedbackHistoryEmpty(theme: theme);
+          return const FeedbackHistoryEmpty();
         }
 
         return RefreshIndicator(
@@ -51,12 +50,11 @@ class FeedbackHistoryTab extends ConsumerWidget {
 
 /// Empty state shown when no feedback has been submitted yet.
 class FeedbackHistoryEmpty extends StatelessWidget {
-  final ThemeData theme;
-
-  const FeedbackHistoryEmpty({super.key, required this.theme});
+  const FeedbackHistoryEmpty({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Center(
       child: Padding(
         padding: AppSpacing.screenPadding,

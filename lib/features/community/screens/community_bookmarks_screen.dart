@@ -24,7 +24,7 @@ class CommunityBookmarksScreen extends ConsumerWidget {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(
           child: app.ErrorState(
-            message: e.toString(),
+            message: 'common.data_load_error'.tr(),
             onRetry: () => ref.invalidate(bookmarkedPostsProvider),
           ),
         ),

@@ -87,7 +87,7 @@ class _UserCard extends StatelessWidget {
                       ],
                     ),
                     if (showEmail) ...[
-                      const SizedBox(height: 2),
+                      const SizedBox(height: AppSpacing.xs / 2),
                       Text(
                         user.email,
                         style: theme.textTheme.bodySmall,

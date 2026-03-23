@@ -29,6 +29,12 @@ abstract class AppConstants {
   static const int freeTierMaxBreedingPairs = 5;
   static const int freeTierMaxActiveIncubations = 3;
 
+  /// Ratio threshold for warning state (bird count approaching limit).
+  static const double freeTierWarningRatio = 0.66;
+
+  /// Ratio threshold for critical state (bird count very close to limit).
+  static const double freeTierCriticalRatio = 0.93;
+
   // Social Login Credentials — resolved at runtime from .env / BuildConfig / --dart-define.
   static String get googleWebClientId => googleWebClientIdResolved;
   static String get googleIosClientId => googleIosClientIdResolved;

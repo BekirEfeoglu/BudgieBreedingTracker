@@ -1,18 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/enums/egg_enums.dart';
-import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
+import 'package:budgie_breeding_tracker/features/settings/providers/settings_providers.dart';
 
 import 'egg_status_chip.dart';
+import 'egg_status_utils.dart';
 
 /// A list tile displaying an egg's number, status, dates, and actions.
-class EggListItem extends StatelessWidget {
+class EggListItem extends ConsumerWidget {
   final Egg egg;
   final VoidCallback? onTap;
   final VoidCallback? onStatusUpdate;
@@ -27,11 +29,11 @@ class EggListItem extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final dateFormat = DateFormat('dd.MM.yyyy');
+    final dateFormat = ref.watch(dateFormatProvider).formatter();
 
-    final statusColor = _getStatusColor(egg.status);
+    final statusColor = getEggStatusColor(egg.status);
 
     return Semantics(
       label: '${'eggs.egg_label'.tr()} ${egg.eggNumber ?? '?'}',
@@ -137,17 +139,4 @@ class EggListItem extends StatelessWidget {
     };
   }
 
-  static Color _getStatusColor(EggStatus status) {
-    return switch (status) {
-      EggStatus.laid => AppColors.stageNew,
-      EggStatus.fertile => AppColors.success,
-      EggStatus.infertile => AppColors.neutral400,
-      EggStatus.incubating => AppColors.stageOngoing,
-      EggStatus.hatched => AppColors.stageCompleted,
-      EggStatus.damaged => AppColors.error,
-      EggStatus.discarded => AppColors.neutral500,
-      EggStatus.empty => AppColors.neutral300,
-      EggStatus.unknown => AppColors.neutral300,
-    };
-  }
 }

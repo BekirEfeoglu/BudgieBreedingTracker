@@ -1,10 +1,15 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
+part 'app_preferences_extras.dart';
+
 /// Type-safe wrapper around SharedPreferences for app settings.
 class AppPreferences {
   final SharedPreferences _prefs;
+  late final _PreferencesExtras _extras;
 
-  AppPreferences(this._prefs);
+  AppPreferences(this._prefs) {
+    _extras = _PreferencesExtras(_prefs);
+  }
 
   // ── Key Constants (public – single source of truth for all providers) ──
 
@@ -232,78 +237,52 @@ class AppPreferences {
   Future<bool> setPedigreeDepth(int depth) =>
       _prefs.setInt(keyPedigreeDepth, depth.clamp(3, 8));
 
-  // ── Ad Rewards ──
+  // ── Ad Rewards (delegated to _PreferencesExtras) ──
 
-  /// When statistics was last unlocked by watching an ad (24h validity).
-  DateTime? get rewardStatisticsUnlockedAt {
-    final value = _prefs.getString(keyRewardStatisticsUnlockedAt);
-    if (value == null) return null;
-    return DateTime.tryParse(value);
-  }
+  DateTime? get rewardStatisticsUnlockedAt =>
+      _extras.rewardStatisticsUnlockedAt;
 
   Future<bool> setRewardStatisticsUnlockedAt(DateTime time) =>
-      _prefs.setString(keyRewardStatisticsUnlockedAt, time.toIso8601String());
+      _extras.setRewardStatisticsUnlockedAt(time);
 
-  /// Remaining genetics uses from rewarded ads.
-  int get rewardGeneticsUsesRemaining =>
-      _prefs.getInt(keyRewardGeneticsUses) ?? 0;
+  int get rewardGeneticsUsesRemaining => _extras.rewardGeneticsUsesRemaining;
 
   Future<bool> setRewardGeneticsUsesRemaining(int count) =>
-      _prefs.setInt(keyRewardGeneticsUses, count);
+      _extras.setRewardGeneticsUsesRemaining(count);
 
-  /// Remaining export uses from rewarded ads.
-  int get rewardExportUsesRemaining => _prefs.getInt(keyRewardExportUses) ?? 0;
+  int get rewardExportUsesRemaining => _extras.rewardExportUsesRemaining;
 
   Future<bool> setRewardExportUsesRemaining(int count) =>
-      _prefs.setInt(keyRewardExportUses, count);
+      _extras.setRewardExportUsesRemaining(count);
 
-  // ── Generic Access ──
+  // ── Generic Access (delegated to _PreferencesExtras) ──
 
-  /// Get a string value by key.
-  String? getString(String key) => _prefs.getString(key);
+  String? getString(String key) => _extras.getString(key);
 
-  /// Set a string value by key.
   Future<bool> setString(String key, String value) =>
-      _prefs.setString(key, value);
+      _extras.setString(key, value);
 
-  /// Get a bool value by key.
-  bool? getBool(String key) => _prefs.getBool(key);
+  bool? getBool(String key) => _extras.getBool(key);
 
-  /// Set a bool value by key.
-  Future<bool> setBool(String key, bool value) => _prefs.setBool(key, value);
+  Future<bool> setBool(String key, bool value) => _extras.setBool(key, value);
 
-  /// Get an int value by key.
-  int? getInt(String key) => _prefs.getInt(key);
+  int? getInt(String key) => _extras.getInt(key);
 
-  /// Set an int value by key.
-  Future<bool> setInt(String key, int value) => _prefs.setInt(key, value);
+  Future<bool> setInt(String key, int value) => _extras.setInt(key, value);
 
-  /// Remove a key.
-  Future<bool> remove(String key) => _prefs.remove(key);
+  Future<bool> remove(String key) => _extras.remove(key);
 
-  // ── Blocked Users ──
+  // ── Blocked Users (delegated to _PreferencesExtras) ──
 
-  /// Get list of blocked user IDs.
-  List<String> get blockedUserIds =>
-      _prefs.getStringList(keyBlockedUserIds) ?? [];
+  List<String> get blockedUserIds => _extras.blockedUserIds;
 
-  /// Block a user — adds their ID to the blocked list.
-  Future<bool> addBlockedUser(String userId) {
-    final current = blockedUserIds;
-    if (current.contains(userId)) return Future.value(true);
-    return _prefs.setStringList(keyBlockedUserIds, [...current, userId]);
-  }
+  Future<bool> addBlockedUser(String userId) =>
+      _extras.addBlockedUser(userId);
 
-  /// Unblock a user — removes their ID from the blocked list.
-  Future<bool> removeBlockedUser(String userId) {
-    final current = blockedUserIds;
-    current.remove(userId);
-    return _prefs.setStringList(keyBlockedUserIds, current);
-  }
+  Future<bool> removeBlockedUser(String userId) =>
+      _extras.removeBlockedUser(userId);
 
-  /// Check if a user is blocked.
-  bool isUserBlocked(String userId) => blockedUserIds.contains(userId);
+  bool isUserBlocked(String userId) => _extras.isUserBlocked(userId);
 
-  /// Clear all preferences.
-  Future<bool> clear() => _prefs.clear();
+  Future<bool> clear() => _extras.clear();
 }

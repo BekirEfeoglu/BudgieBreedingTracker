@@ -59,9 +59,8 @@ class HealthRecordAnimalSelector extends StatelessWidget {
               header: true,
               child: Text(
                 '— ${'nav.birds'.tr()} —',
-                style: TextStyle(
+                style: theme.textTheme.labelMedium?.copyWith(
                   fontWeight: FontWeight.bold,
-                  fontSize: 13,
                   color: theme.colorScheme.primary,
                 ),
               ),
@@ -86,9 +85,8 @@ class HealthRecordAnimalSelector extends StatelessWidget {
               header: true,
               child: Text(
                 '— ${'nav.chicks'.tr()} —',
-                style: TextStyle(
+                style: theme.textTheme.labelMedium?.copyWith(
                   fontWeight: FontWeight.bold,
-                  fontSize: 13,
                   color: theme.colorScheme.primary,
                 ),
               ),

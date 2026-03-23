@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/features/statistics/widgets/chart_card.dart';
+import 'package:budgie_breeding_tracker/features/statistics/widgets/chart_legend_item.dart';
 
 /// Pie chart showing male/female/unknown bird gender distribution.
 ///
@@ -113,19 +114,19 @@ class _GenderPieChartState extends State<GenderPieChart> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        _LegendItem(
+        ChartLegendItem(
           color: AppColors.genderMale,
           label: 'statistics.male'.tr(),
           count: widget.maleCount,
         ),
         const SizedBox(width: AppSpacing.lg),
-        _LegendItem(
+        ChartLegendItem(
           color: AppColors.genderFemale,
           label: 'statistics.female'.tr(),
           count: widget.femaleCount,
         ),
         const SizedBox(width: AppSpacing.lg),
-        _LegendItem(
+        ChartLegendItem(
           color: AppColors.neutral400,
           label: 'statistics.unknown'.tr(),
           count: widget.unknownCount,
@@ -135,30 +136,3 @@ class _GenderPieChartState extends State<GenderPieChart> {
   }
 }
 
-class _LegendItem extends StatelessWidget {
-  const _LegendItem({
-    required this.color,
-    required this.label,
-    required this.count,
-  });
-
-  final Color color;
-  final String label;
-  final int count;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: AppSpacing.md,
-          height: AppSpacing.md,
-          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-        ),
-        const SizedBox(width: AppSpacing.xs),
-        Text('$label ($count)', style: Theme.of(context).textTheme.labelSmall),
-      ],
-    );
-  }
-}

@@ -5,6 +5,10 @@ import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../../../data/models/bird_model.dart';
+import '../../../data/models/breeding_pair_model.dart';
+import '../../../data/models/chick_model.dart';
+import '../../../data/models/egg_model.dart';
 import '../../../data/repositories/repository_providers.dart';
 import '../../../domain/services/export/excel_export_service.dart';
 import '../../../domain/services/export/pdf_export_service.dart';
@@ -107,17 +111,17 @@ class ExportActions {
 
   Future<_ExportData> _fetchAllData() async {
     final userId = _ref.read(currentUserIdProvider);
-    final results = await Future.wait([
+    final results = await (
       _ref.read(birdRepositoryProvider).getAll(userId),
       _ref.read(breedingPairRepositoryProvider).getAll(userId),
       _ref.read(eggRepositoryProvider).getAll(userId),
       _ref.read(chickRepositoryProvider).getAll(userId),
-    ]);
+    ).wait;
     return _ExportData(
-      birds: results[0] as dynamic,
-      pairs: results[1] as dynamic,
-      eggs: results[2] as dynamic,
-      chicks: results[3] as dynamic,
+      birds: results.$1,
+      pairs: results.$2,
+      eggs: results.$3,
+      chicks: results.$4,
     );
   }
 
@@ -132,10 +136,10 @@ class ExportActions {
 }
 
 class _ExportData {
-  final dynamic birds;
-  final dynamic pairs;
-  final dynamic eggs;
-  final dynamic chicks;
+  final List<Bird> birds;
+  final List<BreedingPair> pairs;
+  final List<Egg> eggs;
+  final List<Chick> chicks;
 
   _ExportData({
     required this.birds,

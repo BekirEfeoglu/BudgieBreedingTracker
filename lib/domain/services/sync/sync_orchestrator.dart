@@ -82,7 +82,8 @@ class SyncOrchestrator {
       );
       if (!pullSuccess) {
         _ref.read(syncErrorProvider.notifier).state = true;
-        return SyncResult.error;
+        // Still proceed with cleanup and notification processing
+        // instead of returning early — partial data is better than none.
       }
 
       // Clean up unrecoverable errors AFTER sync cycle completes.
@@ -93,16 +94,19 @@ class SyncOrchestrator {
       // Process pending event reminders and notification schedules
       await _processNotifications();
 
-      // Persist sync timestamp
-      final now = DateTime.now();
-      await _persistLastSyncTime(now);
-      _ref.read(lastSyncTimeProvider.notifier).state = now;
+      if (pullSuccess) {
+        // Only advance sync checkpoint when pull fully succeeded.
+        // Partial failures retry from the same point on next cycle.
+        final now = DateTime.now();
+        await _persistLastSyncTime(now);
+        _ref.read(lastSyncTimeProvider.notifier).state = now;
 
-      if (pushSuccess && (needsReconcile || lastSync == null)) {
-        await _persistLastReconcileTime(now);
+        if (pushSuccess && (needsReconcile || lastSync == null)) {
+          await _persistLastReconcileTime(now);
+        }
       }
 
-      return SyncResult.success;
+      return pullSuccess ? SyncResult.success : SyncResult.error;
     } catch (e, st) {
       AppLogger.error('[SyncOrchestrator] Full sync failed', e, st);
       Sentry.captureException(e, stackTrace: st);
@@ -151,7 +155,7 @@ class SyncOrchestrator {
       );
       if (!pullSuccess) {
         _ref.read(syncErrorProvider.notifier).state = true;
-        return SyncResult.error;
+        // Still proceed with cleanup and notification processing.
       }
 
       // Clean up unrecoverable errors AFTER sync cycle completes.
@@ -160,15 +164,17 @@ class SyncOrchestrator {
       // Process pending event reminders and notification schedules
       await _processNotifications();
 
-      final now = DateTime.now();
-      _lastForceFullSyncAt = now;
-      await _persistLastSyncTime(now);
-      if (pushSuccess) {
-        await _persistLastReconcileTime(now);
+      if (pullSuccess) {
+        final now = DateTime.now();
+        _lastForceFullSyncAt = now;
+        await _persistLastSyncTime(now);
+        if (pushSuccess) {
+          await _persistLastReconcileTime(now);
+        }
+        _ref.read(lastSyncTimeProvider.notifier).state = now;
       }
-      _ref.read(lastSyncTimeProvider.notifier).state = now;
 
-      return SyncResult.success;
+      return pullSuccess ? SyncResult.success : SyncResult.error;
     } catch (e, st) {
       AppLogger.error('[SyncOrchestrator] Force full sync failed', e, st);
       Sentry.captureException(e, stackTrace: st);
