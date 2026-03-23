@@ -1095,7 +1095,14 @@
     "limit_approaching": "Sie nähern sich Ihrem Limit",
     "limit_approaching_birds": "{} Vogelplätze verbleibend",
     "limit_approaching_breedings": "{} Zuchtpaar-Plätze verbleibend",
-    "try_free_trial": "7 Tage kostenlos testen"
+    "try_free_trial": "7 Tage kostenlos testen",
+    "grace_period_title": "Ihr Premium ist abgelaufen",
+    "grace_period_message": "Ihr Premium-Abonnement ist vor {} Tagen abgelaufen. Jetzt erneuern!",
+    "grace_period_renew": "Jetzt erneuern",
+    "sync_failed_warning": "Ihr Premium-Status konnte nicht mit dem Server synchronisiert werden",
+    "free_tier_limit_bird": "Im kostenlosen Plan können Sie bis zu {} Vögel hinzufügen",
+    "free_tier_limit_breeding": "Im kostenlosen Plan können Sie bis zu {} aktive Zuchtpaare erstellen",
+    "free_tier_limit_incubation": "Im kostenlosen Plan können Sie bis zu {} aktive Bruten starten"
   },
   "genealogy": {
     "title": "Stammbaum",

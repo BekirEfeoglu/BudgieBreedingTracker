@@ -1095,7 +1095,14 @@
     "limit_approaching": "Limitinize yaklaşıyorsunuz",
     "limit_approaching_birds": "{} kuş hakkınız kaldı",
     "limit_approaching_breedings": "{} üreme çifti hakkınız kaldı",
-    "try_free_trial": "7 Gün Ücretsiz Dene"
+    "try_free_trial": "7 Gün Ücretsiz Dene",
+    "grace_period_title": "Premium Süreniz Doldu",
+    "grace_period_message": "Premium aboneliğiniz {} gün önce sona erdi. Yenileyin!",
+    "grace_period_renew": "Şimdi Yenile",
+    "sync_failed_warning": "Premium durumunuz sunucuya senkronize edilemedi",
+    "free_tier_limit_bird": "Ücretsiz planda en fazla {} kuş ekleyebilirsiniz",
+    "free_tier_limit_breeding": "Ücretsiz planda en fazla {} aktif çift oluşturabilirsiniz",
+    "free_tier_limit_incubation": "Ücretsiz planda en fazla {} aktif kuluçka başlatabilirsiniz"
   },
   "genealogy": {
     "title": "Soy Ağacı",

@@ -1095,7 +1095,14 @@
     "limit_approaching": "You're approaching your limit",
     "limit_approaching_birds": "{} bird slots remaining",
     "limit_approaching_breedings": "{} breeding pair slots remaining",
-    "try_free_trial": "Try 7 Days Free"
+    "try_free_trial": "Try 7 Days Free",
+    "grace_period_title": "Your Premium Has Expired",
+    "grace_period_message": "Your premium subscription expired {} days ago. Renew now!",
+    "grace_period_renew": "Renew Now",
+    "sync_failed_warning": "Your premium status could not be synced to the server",
+    "free_tier_limit_bird": "Free plan allows up to {} birds",
+    "free_tier_limit_breeding": "Free plan allows up to {} active breeding pairs",
+    "free_tier_limit_incubation": "Free plan allows up to {} active incubations"
   },
   "genealogy": {
     "title": "Genealogy",
