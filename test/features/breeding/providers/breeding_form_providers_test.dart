@@ -62,6 +62,7 @@ void main() {
         breedingPairRepositoryProvider.overrideWithValue(mockPairRepo),
         incubationRepositoryProvider.overrideWithValue(mockIncubationRepo),
         isPremiumProvider.overrideWithValue(isPremium),
+        effectivePremiumProvider.overrideWithValue(isPremium),
       ],
     );
   }

@@ -6,6 +6,8 @@ import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/premium/free_tier_limit_providers.dart';
+import 'package:budgie_breeding_tracker/core/errors/app_exception.dart';
 import 'package:budgie_breeding_tracker/features/premium/providers/premium_providers.dart';
 import 'package:uuid/uuid.dart';
 
@@ -97,14 +99,15 @@ class BirdFormNotifier extends Notifier<BirdFormState> {
       final normalizedCageNumber = _normalizeOptionalText(cageNumber);
 
       // Free tier bird limit check
-      final isPremium = ref.read(isPremiumProvider);
+      final isPremium = ref.read(effectivePremiumProvider);
       if (!isPremium) {
-        final existingBirds = await repo.getAll(userId);
-        if (existingBirds.length >= AppConstants.freeTierMaxBirds) {
+        try {
+          await ref.read(freeTierLimitServiceProvider).guardBirdLimit(userId);
+        } on FreeTierLimitException catch (e) {
           state = state.copyWith(
             isLoading: false,
             error: 'premium.bird_limit_reached'.tr(
-              args: ['${AppConstants.freeTierMaxBirds}'],
+              args: ['${e.limit}'],
             ),
             isBirdLimitReached: true,
           );
