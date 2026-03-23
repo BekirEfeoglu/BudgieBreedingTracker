@@ -1594,7 +1594,8 @@
   "user_guide": {
     "title": "Benutzerhandbuch",
     "search_hint": "Themen durchsuchen...",
-    "category_all": "Alle",
+    "related_topics": "Verwandte Themen",
+    "step_count": "{} Schritte",
     "category_getting_started": "Erste Schritte",
     "category_bird_management": "Vogelverwaltung",
     "category_breeding_process": "Zuchtprozess",
@@ -1607,6 +1608,7 @@
     "topics": {
       "registration": {
         "title": "Registrierung & Anmeldung",
+        "subtitle": "Registrieren Sie sich, um die App zu nutzen",
         "intro": "Sie müssen ein Konto erstellen, um die App nutzen zu können. Sie können sich schnell mit Ihrer E-Mail-Adresse und einem Passwort registrieren.",
         "steps_title": "Registrierungsschritte",
         "step1": "Tippen Sie auf die Schaltfläche 'Registrieren' auf dem Anmeldebildschirm.",
@@ -1618,6 +1620,7 @@
       },
       "dashboard": {
         "title": "Dashboard-Übersicht",
+        "subtitle": "Statistiken und Schnellzugriff auf dem Startbildschirm",
         "intro": "Der Startbildschirm bietet eine Zusammenfassung aller Ihrer Daten. Sie können Gesamtvogelanzahl, aktive Zuchtpaare, zuletzt hinzugefügte Küken und ausstehende Benachrichtigungen auf einen Blick sehen.",
         "stats_info": "Statistikkarten zeigen Ihre Gesamtvögel, aktive Paare, Eier und Kükenanzahl. Tippen Sie auf Karten für Details.",
         "quick_actions": "Verwenden Sie Schnellaktions-Schaltflächen, um neue Vögel, Zuchtpaare oder Eier hinzuzufügen.",
@@ -1625,6 +1628,7 @@
       },
       "navigation": {
         "title": "App-Navigation",
+        "subtitle": "Zwischen Tabs und Menüs navigieren",
         "intro": "Die App besteht aus fünf Hauptbereichen. Sie können über die untere Navigationsleiste schnell zwischen ihnen wechseln.",
         "bottom_nav": "Die untere Leiste enthält die Registerkarten Startseite, Vögel, Zucht, Kalender und Mehr.",
         "more_menu": "Über das Mehr-Menü können Sie auf Statistiken, Stammbaum, Genetik, Einstellungen, Profil, Benachrichtigungen, Sicherung und dieses Handbuch zugreifen.",
@@ -1632,6 +1636,7 @@
       },
       "bird_management": {
         "title": "Vögel hinzufügen & bearbeiten",
+        "subtitle": "Registrieren und bearbeiten Sie Ihre Vögel",
         "intro": "Im Bereich Vögel können Sie alle Ihre Vögel anzeigen, neue hinzufügen und vorhandene Datensätze bearbeiten.",
         "add_steps_title": "Einen neuen Vogel hinzufügen",
         "add_step1": "Tippen Sie auf die '+'-Schaltfläche unten rechts auf dem Vögel-Bildschirm.",
@@ -1643,6 +1648,7 @@
       },
       "filtering": {
         "title": "Filtern & Suchen",
+        "subtitle": "Finden Sie Ihre Vögel schnell mit Filtern und Suche",
         "intro": "Sie können Ihre Vogelliste schnell durchsuchen und verschiedene Filteroptionen verwenden.",
         "filter_types": "Filteroptionen: Alle, Männlich, Weiblich, Lebend, Verstorben, Verkauft. Tippen Sie auf die Optionen in der Filterleiste, um Ihre Liste einzugrenzen.",
         "search_info": "Geben Sie einen Vogelnamen oder eine Ringnummer in die Suchleiste ein, um sofortige Ergebnisse zu sehen.",
@@ -1650,6 +1656,7 @@
       },
       "health_records": {
         "title": "Gesundheitsaufzeichnungen",
+        "subtitle": "Verfolgen Sie die Gesundheitshistorie Ihrer Vögel",
         "intro": "Verfolgen Sie den Gesundheitszustand Ihrer Vögel. Sie können Tierarztbesuche, Impfungen und Behandlungsinformationen erfassen.",
         "add_steps_title": "Gesundheitseintrag hinzufügen",
         "add_step1": "Gehen Sie zum Abschnitt 'Gesundheitsaufzeichnungen' auf der Vogeldetailseite.",
@@ -1659,6 +1666,7 @@
       },
       "breeding_pair": {
         "title": "Zuchtpaar erstellen",
+        "subtitle": "Zuchtpaare erstellen und verwalten",
         "intro": "Im Zuchtbereich können Sie Zuchtpaare aus Ihren Vögeln erstellen und den Zuchtprozess von Anfang bis Ende verfolgen.",
         "steps_title": "Ein Paar erstellen",
         "step1": "Tippen Sie auf die '+'-Schaltfläche auf dem Zucht-Bildschirm.",
@@ -1670,6 +1678,7 @@
       },
       "eggs_incubation": {
         "title": "Eier- & Brutverfolgung",
+        "subtitle": "Eierregistrierung und Brutüberwachung",
         "intro": "Von der Zuchtpaar-Detailseite aus können Sie Eier hinzufügen und den Brutprozess Tag für Tag verfolgen.",
         "steps_title": "Eierverfolgungsschritte",
         "step1": "Tippen Sie auf 'Ei hinzufügen' auf der Zuchtpaar-Detailseite.",
@@ -1681,6 +1690,7 @@
       },
       "chick_tracking": {
         "title": "Kükenverfolgung & Wachstum",
+        "subtitle": "Kükenentwicklung und Wachstum überwachen",
         "intro": "Verfolgen Sie den Wachstumsprozess geschlüpfter Küken im Detail. Sie können Gewichtsmessungen, Entwicklungsstadien und Gesundheitsstatus erfassen.",
         "steps_title": "Kükenverfolgungsschritte",
         "step1": "Wählen Sie ein Küken auf dem Küken-Bildschirm oder fügen Sie ein neues hinzu.",
@@ -1691,6 +1701,7 @@
       },
       "calendar_notifications": {
         "title": "Kalender & Benachrichtigungen",
+        "subtitle": "Kalenderereignisse und Erinnerungen",
         "intro": "Im Kalenderbereich können Sie alle wichtigen Ereignisse anzeigen, neue Ereignisse hinzufügen und Erinnerungen einrichten.",
         "calendar_info": "Der Kalender zeigt Zuchttermine, Brutende-Daten, Tierarzttermine und benutzerdefinierte Ereignisse an. Tippen Sie auf einen Tag, um seine Details zu sehen.",
         "notification_info": "Im Bereich Benachrichtigungen können Sie Ihre Erinnerungseinstellungen verwalten. Brutende-, Impferinnerungen und benutzerdefinierte Benachrichtigungen können konfiguriert werden.",
@@ -1698,6 +1709,7 @@
       },
       "genealogy_genetics": {
         "title": "Stammbaum & Genetische Berechnung",
+        "subtitle": "Stammbaum und genetische Berechnungen",
         "intro": "Erkunden Sie den Stammbaum Ihrer Vögel visuell und sagen Sie mögliche Nachkommenfarben mit genetischen Berechnungen voraus.",
         "family_tree": "Die Stammbaumansicht zeigt die Abstammung eines Vogels zurück zu Mutter, Vater und früheren Generationen. Zugänglich über die Detailseite jedes Vogels.",
         "punnett_info": "Mit dem Punnett-Quadrat können Sie mögliche Nachkommenfarben und Mutationen von zwei Vögeln berechnen. Wählen Sie die Mutationen der Eltern und sehen Sie die Ergebnisse.",
@@ -1706,6 +1718,7 @@
       },
       "backup_export": {
         "title": "Sicherung & Export",
+        "subtitle": "Sichern und exportieren Sie Ihre Daten",
         "intro": "Sichern Sie Ihre Daten sicher und exportieren Sie sie im PDF- oder Excel-Format.",
         "backup_steps_title": "Sicherungsschritte",
         "backup_step1": "Gehen Sie zu Einstellungen > Sicherung.",
@@ -1716,6 +1729,7 @@
       },
       "sync": {
         "title": "Datensynchronisation",
+        "subtitle": "Geräteübergreifende Datensynchronisierung",
         "intro": "Ihre Daten werden automatisch mit der Cloud synchronisiert. Sie können offline arbeiten, und Änderungen werden automatisch aktualisiert, wenn die Internetverbindung wiederhergestellt ist.",
         "offline_info": "Sie können Daten ohne Internetverbindung hinzufügen und bearbeiten. Alle Änderungen werden in der lokalen Datenbank gespeichert.",
         "conflict_info": "Wenn Sie denselben Datensatz auf mehreren Geräten bearbeiten, hat die neueste Serverversion Vorrang (Server-gewinnt).",
@@ -1724,6 +1738,7 @@
       },
       "profile_settings": {
         "title": "Profil & Einstellungen",
+        "subtitle": "Profilinformationen und App-Einstellungen",
         "intro": "Sie können Ihre Profilinformationen aktualisieren und App-Einstellungen anpassen.",
         "profile_info": "Auf der Profilseite können Sie Ihren Namen, Ihr Avatarfoto und Ihre Kontaktinformationen bearbeiten.",
         "settings_info": "Im Bereich Einstellungen können Sie Design (hell/dunkel), Sprache (Türkisch, Englisch, Deutsch), Benachrichtigungseinstellungen und Sicherheitseinstellungen verwalten.",
@@ -1731,6 +1746,7 @@
       },
       "premium": {
         "title": "Premium-Mitgliedschaft",
+        "subtitle": "Zugang zu Premium-Funktionen und Abonnement",
         "intro": "Erhalten Sie mit der Premium-Mitgliedschaft unbegrenzten Zugang zu allen Funktionen und heben Sie Ihre Zuchterfahrung auf die nächste Stufe.",
         "features_list": "Premium-Funktionen: Unbegrenzte Vogeldatensätze, detaillierte Statistiken und Diagramme, Stammbaumansicht, genetische Berechnung (Punnett-Quadrat), prioritärer Support.",
         "subscribe_steps_title": "Schritte zum Premium-Upgrade",
