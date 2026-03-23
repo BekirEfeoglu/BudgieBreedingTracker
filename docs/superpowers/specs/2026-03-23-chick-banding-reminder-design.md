@@ -183,7 +183,9 @@ generateChickEvents({
 
 The banding milestone event is created with `EventType.banding` (instead of `EventType.chick`) and `chickId` set. Other milestone events (day 7, day 35) remain `EventType.chick` with no chickId.
 
-**Caller update:** `ChickFormNotifier.createChick()` must pass `chickId` and `bandingDay` to `generateChickEvents()`.
+**Caller updates:**
+- `ChickFormNotifier.createChick()` in `chick_form_providers.dart` — pass `chickId` and `bandingDay`
+- `EggProviders` auto-hatch flow in `egg_providers.dart` — pass `chickId` and `bandingDay` (default 10), also schedule banding reminders for auto-created chicks
 
 ### 5. Edge Cases
 
@@ -272,6 +274,7 @@ New keys under `notifications.` category (TR / EN / DE):
 
 **Feature layer:**
 - `lib/features/chicks/providers/chick_form_providers.dart` — pass bandingDay/chickId to generator, schedule banding reminders, handle reschedule on edit, cancel on delete/deceased
+- `lib/features/eggs/providers/egg_providers.dart` — update auto-hatch generateChickEvents() call with chickId + bandingDay, schedule banding reminders for auto-created chicks
 - `lib/features/chicks/providers/chick_providers.dart` — add markBandingComplete action
 - `lib/features/chicks/screens/chick_form_screen.dart` — add bandingDay field
 - `lib/features/chicks/widgets/chick_detail_info.dart` — add banding InfoCard with action
