@@ -12,6 +12,8 @@ class ChicksTable extends Table {
   TextColumn get birdId => text().nullable()();
   TextColumn get name => text().nullable()();
   TextColumn get ringNumber => text().nullable()();
+  IntColumn get bandingDay => integer().withDefault(const Constant(10))();
+  DateTimeColumn get bandingDate => dateTime().nullable()();
   TextColumn get notes => text().nullable()();
   TextColumn get photoUrl => text().nullable()();
   RealColumn get hatchWeight => real().nullable()();
