@@ -12,6 +12,7 @@ class EventsTable extends Table {
   TextColumn get description => text().nullable()();
   TextColumn get birdId => text().nullable()();
   TextColumn get breedingPairId => text().nullable()();
+  TextColumn get chickId => text().nullable()();
   TextColumn get notes => text().nullable()();
   DateTimeColumn get endDate => dateTime().nullable()();
   DateTimeColumn get reminderDate => dateTime().nullable()();
