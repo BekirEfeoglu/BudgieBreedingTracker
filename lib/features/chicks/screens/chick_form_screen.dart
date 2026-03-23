@@ -35,6 +35,7 @@ class _ChickFormScreenState extends ConsumerState<ChickFormScreen> {
   final _ringController = TextEditingController();
   final _hatchWeightController = TextEditingController();
   final _notesController = TextEditingController();
+  final _bandingDayController = TextEditingController(text: '10');
 
   BirdGender _gender = BirdGender.unknown;
   ChickHealthStatus _healthStatus = ChickHealthStatus.healthy;
@@ -60,6 +61,7 @@ class _ChickFormScreenState extends ConsumerState<ChickFormScreen> {
         ? chick.hatchWeight!.toStringAsFixed(1)
         : '';
     _notesController.text = chick.notes ?? '';
+    _bandingDayController.text = chick.bandingDay.toString();
     _didPopulateFromExisting = true;
   }
 
@@ -69,6 +71,7 @@ class _ChickFormScreenState extends ConsumerState<ChickFormScreen> {
     _ringController.dispose();
     _hatchWeightController.dispose();
     _notesController.dispose();
+    _bandingDayController.dispose();
     super.dispose();
   }
 
@@ -231,6 +234,31 @@ class _ChickFormScreenState extends ConsumerState<ChickFormScreen> {
                   ),
                   const SizedBox(height: AppSpacing.lg),
 
+                  // Banding Day
+                  TextFormField(
+                    controller: _bandingDayController,
+                    enabled: _existingChick?.isBanded != true,
+                    decoration: InputDecoration(
+                      labelText: 'chicks.banding_day_label'.tr(),
+                      hintText: 'chicks.banding_day_hint'.tr(),
+                      border: const OutlineInputBorder(),
+                      prefixIcon: const AppIcon(AppIcons.ring),
+                    ),
+                    keyboardType: TextInputType.number,
+                    textInputAction: TextInputAction.next,
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'validation.required'.tr();
+                      }
+                      final parsed = int.tryParse(value.trim());
+                      if (parsed == null || parsed < 5 || parsed > 21) {
+                        return 'chicks.banding_day_validation'.tr();
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+
                   // Hatch Weight
                   TextFormField(
                     controller: _hatchWeightController,
@@ -325,7 +353,10 @@ class _ChickFormScreenState extends ConsumerState<ChickFormScreen> {
           notes: _notesController.text.isEmpty
               ? null
               : _notesController.text.trim(),
+          bandingDay:
+              int.tryParse(_bandingDayController.text.trim()) ?? 10,
         ),
+        previous: _existingChick,
       );
       return;
     }
@@ -343,6 +374,7 @@ class _ChickFormScreenState extends ConsumerState<ChickFormScreen> {
       notes: _notesController.text.isEmpty
           ? null
           : _notesController.text.trim(),
+      bandingDay: int.tryParse(_bandingDayController.text.trim()) ?? 10,
     );
   }
 
