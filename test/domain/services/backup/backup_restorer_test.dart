@@ -199,6 +199,19 @@ void main() {
         expect(result.error, contains('Unsupported backup version: 99'));
       });
 
+      test('returns failure when backup belongs to another user', () async {
+        final file = await writeBackupFile('wrong_user.json', {
+          'version': 2,
+          'user_id': 'another-user',
+          'data': <String, dynamic>{},
+        });
+
+        final result = await restorer.restoreBackup('user-1', file.path);
+
+        expect(result.success, isFalse);
+        expect(result.error, contains('Backup belongs to another user'));
+      });
+
       test('returns failure when version is null', () async {
         final file = await writeBackupFile('no_version.json', {
           'data': <String, dynamic>{},
@@ -263,6 +276,33 @@ void main() {
         expect(savedBirds.length, 1);
         expect(savedBirds.first.id, 'bird-1');
         expect(savedBirds.first.name, 'Mavis');
+      });
+
+      test('normalizes entity user_id to active restore user', () async {
+        stubAllSaveAll();
+        final bird = createTestBird(
+          id: 'bird-1',
+          userId: 'legacy-user',
+          name: 'Mavis',
+        );
+
+        final json = bird.toJson();
+        json['user_id'] = 'legacy-user';
+
+        final file = await writeBackupFile('normalize_user_scope.json', {
+          'version': 2,
+          'user_id': 'user-1',
+          'data': {
+            'birds': [json],
+          },
+        });
+
+        final result = await restorer.restoreBackup('user-1', file.path);
+
+        expect(result.success, isTrue);
+        final captured = verify(() => birdRepo.saveAll(captureAny())).captured;
+        final savedBirds = captured.single as List<Bird>;
+        expect(savedBirds.single.userId, 'user-1');
       });
 
       test('restores multiple entity types to correct repositories', () async {
@@ -464,7 +504,7 @@ void main() {
       test(
         'continues restoring other entities when one entity type fails',
         () async {
-          stubAllSaveAll();
+        stubAllSaveAll();
           when(
             () => birdRepo.saveAll(any<List<Bird>>()),
           ).thenThrow(Exception('DB error'));
@@ -482,14 +522,14 @@ void main() {
             },
           });
 
-          final result = await restorer.restoreBackup('user-1', file.path);
+        final result = await restorer.restoreBackup('user-1', file.path);
 
-          // The restore still succeeds overall, but bird count is 0 due to
-          // the entity-level error
-          expect(result.success, isTrue);
-          verify(() => birdRepo.saveAll(any())).called(1);
-        },
-      );
+        // Entity-level failure now returns partial-failure result.
+        expect(result.success, isFalse);
+        expect(result.error, contains('partially'));
+        verify(() => birdRepo.saveAll(any())).called(1);
+      },
+    );
 
       test(
         'returns total record count across all restored entity types',

@@ -79,6 +79,11 @@ class _ChickFormScreenState extends ConsumerState<ChickFormScreen> {
     final formState = ref.watch(chickFormStateProvider);
 
     ref.listen<ChickFormState>(chickFormStateProvider, (_, state) {
+      if (state.warning != null) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(state.warning!)));
+      }
       if (state.isSuccess) {
         ref.read(chickFormStateProvider.notifier).reset();
         context.pop();

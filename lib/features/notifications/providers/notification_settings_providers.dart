@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:uuid/uuid.dart';
@@ -21,6 +23,8 @@ export 'package:budgie_breeding_tracker/domain/services/notifications/notificati
 /// pending scheduled notifications via [NotificationService.cancelByIdRange].
 class NotificationToggleSettingsNotifier
     extends Notifier<NotificationToggleSettings> {
+  int _loadGeneration = 0;
+
   @override
   NotificationToggleSettings build() {
     final userId = ref.watch(currentUserIdProvider);
@@ -28,15 +32,18 @@ class NotificationToggleSettingsNotifier
       return const NotificationToggleSettings();
     }
 
-    _loadFromDao(userId);
+    final generation = ++_loadGeneration;
+    unawaited(_loadFromDao(userId, generation));
     return const NotificationToggleSettings();
   }
 
   /// Loads stored settings from the Drift DAO.
-  Future<void> _loadFromDao(String userId) async {
+  Future<void> _loadFromDao(String userId, int generation) async {
     try {
       final dao = ref.read(notificationSettingsDaoProvider);
       final settings = await dao.getByUser(userId);
+      if (!ref.mounted) return;
+      if (generation != _loadGeneration) return;
       if (ref.read(currentUserIdProvider) != userId) return;
       if (settings != null) {
         state = NotificationToggleSettings(

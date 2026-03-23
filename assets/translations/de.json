@@ -1835,7 +1835,8 @@
     "unknown": "Ein unerwarteter Fehler ist aufgetreten.",
     "save_failed": "Speichervorgang fehlgeschlagen.",
     "delete_failed": "Löschvorgang fehlgeschlagen.",
-    "update_failed": "Aktualisierung fehlgeschlagen."
+    "update_failed": "Aktualisierung fehlgeschlagen.",
+    "background_tasks_partial": "Gespeichert, aber einige Erinnerungs-/Kalenderaufgaben konnten nicht geplant werden."
   },
   "validation": {
     "field_required": "{} ist erforderlich",

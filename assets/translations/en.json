@@ -1835,7 +1835,8 @@
     "unknown": "An unexpected error occurred.",
     "save_failed": "Save operation failed.",
     "delete_failed": "Delete operation failed.",
-    "update_failed": "Update operation failed."
+    "update_failed": "Update operation failed.",
+    "background_tasks_partial": "Saved, but some reminders/calendar tasks could not be scheduled."
   },
   "validation": {
     "field_required": "{} is required",
