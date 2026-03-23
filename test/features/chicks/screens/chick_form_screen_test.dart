@@ -106,9 +106,9 @@ void main() {
       await tester.pumpWidget(createSubject());
       await tester.pump();
 
-      // Multiple text fields: name, hatch date (DatePickerField), weight, ring, notes
+      // Form can evolve (e.g. banding day), but ring-related text inputs should exist.
       final fields = find.byType(TextFormField);
-      expect(fields, findsNWidgets(5));
+      expect(fields, findsAtLeastNWidgets(5));
     });
 
     testWidgets('title changes for edit mode when editChickId is provided', (

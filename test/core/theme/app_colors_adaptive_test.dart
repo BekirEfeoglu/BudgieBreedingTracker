@@ -173,20 +173,16 @@ void main() {
       expect(color, AppColors.inheritAutosomalDominant);
     });
 
-    testWidgets(
-      'autosomalIncompleteDominant returns correct color',
-      (tester) async {
-        final color = await _captureColor(
-          tester,
-          Brightness.light,
-          (ctx) => AppColors.inheritanceColor(
-            ctx,
-            'autosomalIncompleteDominant',
-          ),
-        );
-        expect(color, AppColors.inheritAutosomalIncompleteDominant);
-      },
-    );
+    testWidgets('autosomalIncompleteDominant returns correct color', (
+      tester,
+    ) async {
+      final color = await _captureColor(
+        tester,
+        Brightness.light,
+        (ctx) => AppColors.inheritanceColor(ctx, 'autosomalIncompleteDominant'),
+      );
+      expect(color, AppColors.inheritAutosomalIncompleteDominant);
+    });
 
     testWidgets('sexLinkedRecessive returns correct color', (tester) async {
       final color = await _captureColor(
@@ -288,22 +284,22 @@ void main() {
   });
 
   group('chartText', () {
-    testWidgets('light theme returns black87', (tester) async {
+    testWidgets('light theme returns onSurfaceVariant', (tester) async {
       final color = await _captureColor(
         tester,
         Brightness.light,
         AppColors.chartText,
       );
-      expect(color, Colors.black87);
+      expect(color, ThemeData.light().colorScheme.onSurfaceVariant);
     });
 
-    testWidgets('dark theme returns white70', (tester) async {
+    testWidgets('dark theme returns onSurfaceVariant', (tester) async {
       final color = await _captureColor(
         tester,
         Brightness.dark,
         AppColors.chartText,
       );
-      expect(color, Colors.white70);
+      expect(color, ThemeData.dark().colorScheme.onSurfaceVariant);
     });
   });
 

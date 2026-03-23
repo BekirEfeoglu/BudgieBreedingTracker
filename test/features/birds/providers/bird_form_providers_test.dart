@@ -19,6 +19,10 @@ void main() {
     registerFallbackValue(
       const Bird(id: '', name: '', gender: BirdGender.unknown, userId: ''),
     );
+    when(
+      () =>
+          repo.hasRingNumber(any(), any(), excludeId: any(named: 'excludeId')),
+    ).thenAnswer((_) async => false);
   });
 
   ProviderContainer makeContainer({bool isPremium = false}) {
@@ -112,6 +116,13 @@ void main() {
           ),
         ],
       );
+      when(
+        () => repo.hasRingNumber(
+          'user-1',
+          'tr-100',
+          excludeId: any(named: 'excludeId'),
+        ),
+      ).thenAnswer((_) async => true);
 
       final container = makeContainer();
       addTearDown(container.dispose);
@@ -245,24 +256,9 @@ void main() {
     });
 
     test('updateBird blocks duplicate ring number on another bird', () async {
-      when(() => repo.getAll(any())).thenAnswer(
-        (_) async => const [
-          Bird(
-            id: 'b1',
-            name: 'Bird One',
-            gender: BirdGender.male,
-            userId: 'user-1',
-            ringNumber: 'TR-100',
-          ),
-          Bird(
-            id: 'b2',
-            name: 'Bird Two',
-            gender: BirdGender.female,
-            userId: 'user-1',
-            ringNumber: 'TR-200',
-          ),
-        ],
-      );
+      when(
+        () => repo.hasRingNumber('user-1', 'tr-100', excludeId: 'b2'),
+      ).thenAnswer((_) async => true);
 
       final container = makeContainer();
       addTearDown(container.dispose);
