@@ -13,6 +13,8 @@ class PremiumNotifier extends Notifier<bool> {
   }
 
   static String _cacheKey(String userId) => 'is_premium_$userId';
+  static const int _maxSyncRetries = 3;
+  static String _pendingSyncKey(String userId) => 'pending_premium_sync_$userId';
 
   Future<void> _load(String userId, int loadToken) async {
     final prefs = await SharedPreferences.getInstance();
@@ -51,6 +53,9 @@ class PremiumNotifier extends Notifier<bool> {
     } catch (_) {
       // RevenueCat not initialized yet, use cached value
     }
+
+    // Retry any pending Supabase sync from a previous failed attempt
+    await _retryPendingSync(userId);
   }
 
   bool _isLatestLoad(int token) => ref.mounted && token == _loadSequence;
@@ -91,6 +96,10 @@ class PremiumNotifier extends Notifier<bool> {
     } catch (e) {
       AppLogger.warning('[PremiumNotifier] Refresh failed: $e');
     }
+
+    // Retry any pending Supabase sync
+    final userId = ref.read(currentUserIdProvider);
+    await _retryPendingSync(userId);
   }
 
   /// Purchases a package via RevenueCat.
@@ -129,18 +138,9 @@ class PremiumNotifier extends Notifier<bool> {
       final userId = ref.read(currentUserIdProvider);
       if (userId == 'anonymous') return;
 
-      // Update profiles table (source of truth)
-      await client
-          .from(SupabaseConstants.profilesTable)
-          .update({
-            'is_premium': isPremium,
-            'subscription_status': isPremium ? 'premium' : 'free',
-          })
-          .eq('id', userId);
-
+      // Determine expiry from RevenueCat subscription info
+      DateTime? expiresAt;
       if (isPremium) {
-        // Determine expiry from RevenueCat subscription info
-        DateTime? expiresAt;
         try {
           if (!ref.mounted) return;
           final info = await ref
@@ -150,7 +150,20 @@ class PremiumNotifier extends Notifier<bool> {
         } catch (_) {
           // RevenueCat info unavailable — proceed without expiry
         }
+      }
 
+      // Update profiles table (source of truth)
+      await client
+          .from(SupabaseConstants.profilesTable)
+          .update({
+            'is_premium': isPremium,
+            'subscription_status': isPremium ? 'premium' : 'free',
+            'premium_expires_at':
+                isPremium ? expiresAt?.toIso8601String() : null,
+          })
+          .eq('id', userId);
+
+      if (isPremium) {
         final now = DateTime.now().toUtc().toIso8601String();
         final existing = await client
             .from(SupabaseConstants.userSubscriptionsTable)
@@ -183,6 +196,9 @@ class PremiumNotifier extends Notifier<bool> {
             .delete()
             .eq('user_id', userId);
       }
+
+      // Sync succeeded — clear any pending retry
+      await _clearPendingSync(userId);
     } catch (e) {
       if (_isSupabaseUnavailableError(e)) {
         AppLogger.info(
@@ -192,6 +208,9 @@ class PremiumNotifier extends Notifier<bool> {
         AppLogger.warning(
           '[PremiumNotifier] Supabase sync failed (non-fatal): $e',
         );
+        // Save for retry on next app resume
+        final userId = ref.read(currentUserIdProvider);
+        await _savePendingSync(userId, isPremium);
       }
     }
   }
@@ -200,5 +219,70 @@ class PremiumNotifier extends Notifier<bool> {
     final message = error.toString();
     return message.contains('You must initialize the supabase instance') ||
         message.contains('provider that is in error state');
+  }
+
+  Future<void> _savePendingSync(String userId, bool isPremium) async {
+    final prefs = await SharedPreferences.getInstance();
+    final data = jsonEncode({
+      'isPremium': isPremium,
+      'retryCount': 0,
+      'timestamp': DateTime.now().toUtc().toIso8601String(),
+    });
+    await prefs.setString(_pendingSyncKey(userId), data);
+    AppLogger.info('[PremiumNotifier] Saved pending sync for user $userId');
+  }
+
+  Future<void> _clearPendingSync(String userId) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_pendingSyncKey(userId));
+  }
+
+  Future<void> _retryPendingSync(String userId) async {
+    if (userId == 'anonymous') return;
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_pendingSyncKey(userId));
+    if (raw == null) return;
+
+    int retryCount = 0;
+    bool isPremium = true;
+    try {
+      final map = jsonDecode(raw) as Map<String, dynamic>;
+      retryCount = (map['retryCount'] as num?)?.toInt() ?? 0;
+      isPremium = map['isPremium'] as bool? ?? true;
+    } catch (_) {
+      await _clearPendingSync(userId);
+      return;
+    }
+
+    if (retryCount >= _maxSyncRetries) {
+      AppLogger.warning(
+        '[PremiumNotifier] Max sync retries ($retryCount) reached for $userId',
+      );
+      Sentry.captureException(
+        Exception(
+          'Premium Supabase sync failed after $_maxSyncRetries retries',
+        ),
+        stackTrace: StackTrace.current,
+      );
+      await _clearPendingSync(userId);
+      return;
+    }
+
+    AppLogger.info(
+      '[PremiumNotifier] Retrying pending sync '
+      '(attempt ${retryCount + 1}/$_maxSyncRetries)',
+    );
+
+    try {
+      await _syncPremiumToSupabase(isPremium: isPremium);
+      // _syncPremiumToSupabase clears pending on success
+    } catch (_) {
+      final newData = jsonEncode({
+        'isPremium': isPremium,
+        'retryCount': retryCount + 1,
+        'timestamp': DateTime.now().toUtc().toIso8601String(),
+      });
+      await prefs.setString(_pendingSyncKey(userId), newData);
+    }
   }
 }
