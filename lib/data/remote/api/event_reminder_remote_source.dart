@@ -11,8 +11,13 @@ class EventReminderRemoteSource extends BaseRemoteSource<EventReminder> {
   String get tableName => SupabaseConstants.eventRemindersTable;
 
   @override
-  EventReminder fromJson(Map<String, dynamic> json) =>
-      EventReminder.fromJson(json);
+  EventReminder fromJson(Map<String, dynamic> json) {
+    final mapped = {...json};
+    if (mapped.containsKey('reminder_type') && !mapped.containsKey('type')) {
+      mapped['type'] = mapped.remove('reminder_type');
+    }
+    return EventReminder.fromJson(mapped);
+  }
 
   @override
   Map<String, dynamic> toSupabaseJson(EventReminder model) =>

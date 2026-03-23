@@ -26,6 +26,10 @@ class OffspringResult {
   /// Lethal combination IDs affecting this offspring (empty = no risk).
   final List<String> lethalCombinationIds;
 
+  /// Mutation IDs that are homozygous (double factor) in this offspring.
+  /// Used by ViabilityAnalyzer for structural DF detection.
+  final Set<String> doubleFactorIds;
+
   const OffspringResult({
     required this.phenotype,
     required this.probability,
@@ -37,6 +41,7 @@ class OffspringResult {
     this.carriedMutations = const [],
     this.maskedMutations = const [],
     this.lethalCombinationIds = const [],
+    this.doubleFactorIds = const {},
   });
 }
 

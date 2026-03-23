@@ -15,13 +15,34 @@ import 'package:budgie_breeding_tracker/features/health_records/widgets/health_r
 import 'package:budgie_breeding_tracker/features/health_records/widgets/health_record_filter_bar.dart';
 
 /// Screen showing all health records for the current user.
-class HealthRecordListScreen extends ConsumerWidget {
+class HealthRecordListScreen extends ConsumerStatefulWidget {
   const HealthRecordListScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<HealthRecordListScreen> createState() =>
+      _HealthRecordListScreenState();
+}
+
+class _HealthRecordListScreenState
+    extends ConsumerState<HealthRecordListScreen> {
+  final _searchController = TextEditingController();
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final userId = ref.watch(currentUserIdProvider);
     final recordsAsync = ref.watch(healthRecordsStreamProvider(userId));
+    final query = ref.watch(healthRecordSearchQueryProvider);
+
+    // Sync controller when query is cleared externally
+    if (query.isEmpty && _searchController.text.isNotEmpty) {
+      _searchController.clear();
+    }
 
     return Scaffold(
       appBar: AppBar(title: Text('health_records.title'.tr())),
@@ -34,12 +55,26 @@ class HealthRecordListScreen extends ConsumerWidget {
               vertical: AppSpacing.sm,
             ),
             child: TextField(
+              controller: _searchController,
               decoration: InputDecoration(
                 hintText: 'health_records.search_hint'.tr(),
                 prefixIcon: const Padding(
                   padding: EdgeInsets.all(AppSpacing.md),
                   child: AppIcon(AppIcons.search, size: 20),
                 ),
+                suffixIcon: query.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(LucideIcons.x),
+                        onPressed: () {
+                          _searchController.clear();
+                          ref
+                              .read(
+                                healthRecordSearchQueryProvider.notifier,
+                              )
+                              .state = '';
+                        },
+                      )
+                    : null,
                 border: const OutlineInputBorder(),
                 isDense: true,
               ),
@@ -102,6 +137,7 @@ class HealthRecordListScreen extends ConsumerWidget {
                     child: ConstrainedBox(
                       constraints: const BoxConstraints(maxWidth: 800),
                       child: ListView.builder(
+                        physics: const AlwaysScrollableScrollPhysics(),
                         padding: const EdgeInsets.only(
                           top: AppSpacing.sm,
                           bottom: AppSpacing.xxxl * 2,

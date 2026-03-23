@@ -213,12 +213,12 @@ class _FeedbackDetailSheetState extends State<FeedbackDetailSheet> {
             FilledButton.icon(
               onPressed: _isLoading ? null : _save,
               icon: _isLoading
-                  ? const SizedBox(
+                  ? SizedBox(
                       width: 16,
                       height: 16,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        color: Colors.white,
+                        color: theme.colorScheme.onPrimary,
                       ),
                     )
                   : const Icon(LucideIcons.save, size: 16),

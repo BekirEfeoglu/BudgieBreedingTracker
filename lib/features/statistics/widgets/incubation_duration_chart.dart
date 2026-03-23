@@ -1,10 +1,12 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:budgie_breeding_tracker/core/constants/incubation_constants.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/data/models/statistics_models.dart';
 import 'package:budgie_breeding_tracker/features/statistics/widgets/chart_card.dart';
+import 'package:budgie_breeding_tracker/features/statistics/widgets/chart_legend_item.dart';
 
 /// Bar chart showing actual incubation days vs the expected 18-day reference.
 class IncubationDurationChart extends StatelessWidget {
@@ -20,7 +22,7 @@ class IncubationDurationChart extends StatelessWidget {
       return const ChartEmpty();
     }
 
-    var maxVal = 18.0;
+    var maxVal = IncubationConstants.incubationPeriodDays.toDouble();
     for (final item in data) {
       if (item.actualDays.toDouble() > maxVal) {
         maxVal = item.actualDays.toDouble();
@@ -93,7 +95,7 @@ class IncubationDurationChart extends StatelessWidget {
                 extraLinesData: ExtraLinesData(
                   horizontalLines: [
                     HorizontalLine(
-                      y: 18,
+                      y: IncubationConstants.incubationPeriodDays.toDouble(),
                       color: AppColors.info,
                       strokeWidth: 2,
                       dashArray: [5, 5],
@@ -104,7 +106,7 @@ class IncubationDurationChart extends StatelessWidget {
                           color: AppColors.info,
                         ),
                         labelResolver: (_) =>
-                            '18 ${'statistics.expected_days'.tr()}',
+                            '${IncubationConstants.incubationPeriodDays} ${'statistics.expected_days'.tr()}',
                       ),
                     ),
                   ],
@@ -136,8 +138,8 @@ class IncubationDurationChart extends StatelessWidget {
   }
 
   static Color _barColor(int days) {
-    if (days < 18) return AppColors.success;
-    if (days == 18) return AppColors.budgieBlue;
+    if (days < IncubationConstants.incubationPeriodDays) return AppColors.success;
+    if (days == IncubationConstants.incubationPeriodDays) return AppColors.budgieBlue;
     return AppColors.warning;
   }
 }
@@ -150,37 +152,23 @@ class _Legend extends StatelessWidget {
     return const Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        _LegendItem(color: AppColors.success, label: '<18'),
-        SizedBox(width: AppSpacing.md),
-        _LegendItem(color: AppColors.budgieBlue, label: '=18'),
-        SizedBox(width: AppSpacing.md),
-        _LegendItem(color: AppColors.warning, label: '>18'),
-      ],
-    );
-  }
-}
-
-class _LegendItem extends StatelessWidget {
-  const _LegendItem({required this.color, required this.label});
-
-  final Color color;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: AppSpacing.md,
-          height: AppSpacing.md,
-          decoration: BoxDecoration(
-            color: color,
-            borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-          ),
+        ChartLegendItem(
+          color: AppColors.success,
+          label: '<${IncubationConstants.incubationPeriodDays}',
+          useCircle: false,
         ),
-        const SizedBox(width: AppSpacing.xs),
-        Text(label, style: Theme.of(context).textTheme.labelSmall),
+        SizedBox(width: AppSpacing.md),
+        ChartLegendItem(
+          color: AppColors.budgieBlue,
+          label: '=${IncubationConstants.incubationPeriodDays}',
+          useCircle: false,
+        ),
+        SizedBox(width: AppSpacing.md),
+        ChartLegendItem(
+          color: AppColors.warning,
+          label: '>${IncubationConstants.incubationPeriodDays}',
+          useCircle: false,
+        ),
       ],
     );
   }

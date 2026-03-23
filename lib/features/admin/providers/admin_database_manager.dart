@@ -71,7 +71,10 @@ class AdminDatabaseManager {
   /// Tries RPC first, falls back to client-side SELECT if RPC is unavailable.
   Future<String?> exportTable(String tableName) async {
     if (!_allowedTables.contains(tableName)) {
-      _updateState(isLoading: false, error: 'Invalid table name: $tableName');
+      _updateState(
+        isLoading: false,
+        error: 'admin.invalid_table_name'.tr(args: [tableName]),
+      );
       return null;
     }
     _updateState(isLoading: true, error: null, isSuccess: false);
@@ -167,7 +170,10 @@ class AdminDatabaseManager {
   /// Tries RPC first, falls back to client-side DELETE if RPC is unavailable.
   Future<bool> resetTable(String tableName) async {
     if (!_allowedTables.contains(tableName)) {
-      _updateState(isLoading: false, error: 'Invalid table name: $tableName');
+      _updateState(
+        isLoading: false,
+        error: 'admin.invalid_table_name'.tr(args: [tableName]),
+      );
       return false;
     }
     _updateState(isLoading: true, error: null, isSuccess: false);

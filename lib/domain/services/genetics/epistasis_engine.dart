@@ -2,6 +2,7 @@ import 'package:budgie_breeding_tracker/core/constants/genetics_constants.dart';
 
 part 'epistasis_engine_resolution.dart';
 part 'epistasis_engine_modifiers.dart';
+part 'epistasis_engine_naming.dart';
 part 'epistasis_engine_interactions.dart';
 
 /// Result of compound phenotype resolution, including masked mutations.

@@ -48,19 +48,19 @@ python scripts/verify_rules.py          # Validate .claude/rules numeric claims 
 
 | Metric | Value |
 | --- | --- |
-| Source files (lib/) | 603 Dart files |
-| Test files (test/) | 554 test files, 5,300+ individual tests |
+| Source files (lib/) | 677 Dart files |
+| Test files (test/) | 644 test files, 7,500+ individual tests |
 | Feature modules | 20 |
 | Drift tables / DAOs / Mappers | 19 each |
 | Repositories | 18 entity + base + sync_metadata |
-| Remote sources | 19 entity + base |
+| Remote sources | 20 entity + base + 2 caches |
 | Freezed models | 20 model files + statistics_models + supabase_extensions |
 | Domain services | 13 directories |
 | Routes | 59 |
 | Custom SVG icons | 82 constants, 83 files on disk |
 | Shared widgets | 17 (12 root + 5 in subdirs) |
 | Enum files | 11 |
-| L10n keys | ~1,999 per language, 35 categories |
+| L10n keys | ~2,031 per language, 35 categories |
 | DB schema version | 14 |
 
 ## Architecture Overview
@@ -132,7 +132,7 @@ router/     -> Can import features/ (screens only)
 - **Colors/styles**: always via `Theme.of(context)`, never hardcoded
 - **Icons**: 82 custom SVG icons via `AppIcons` constants + `AppIcon` widget; LucideIcons for generic UI icons
 - **Shared widgets accepting `Widget icon`** (not IconData): EmptyState, InfoCard, StatCard, FabButton, PrimaryButton, StatusBadge
-- **Localization**: `'feature.key'.tr()` — master file is `tr.json` (~1,999 keys, 35 categories)
+- **Localization**: `'feature.key'.tr()` — master file is `tr.json` (~2,031 keys, 35 categories)
 - **Database**: Schema version 14, migration via for-loop + switch pattern
 - **Riverpod 3**: No StateProvider (use NotifierProvider), no `.valueOrNull` (use `.value`)
 - **Freezed 3**: Always add `const Model._()` private constructor
@@ -164,7 +164,7 @@ Tables:        lib/data/local/database/tables/  (19 Drift tables)
 DAOs:          lib/data/local/database/daos/    (19 DAOs)
 Mappers:       lib/data/local/database/mappers/ (19 mappers)
 Repos:         lib/data/repositories/           (18 entity repos + base + sync_metadata)
-Remote:        lib/data/remote/api/             (19 entity sources + base + community_post_cache)
+Remote:        lib/data/remote/api/             (20 entity sources + base + 2 caches)
 Services:      lib/domain/services/             (13 dirs: ads, auth, backup, calendar, encryption, export,
                                                  genetics, import, incubation, moderation, notifications,
                                                  payment, sync)
@@ -175,7 +175,7 @@ Icons:         lib/core/constants/app_icons.dart (82 SVG path constants)
 SVG Assets:    assets/icons/                    (10 subdirectories, 83 SVG files)
 Preferences:   lib/data/local/preferences/      (AppPreferences)
 EdgeFunctions: lib/data/remote/supabase/        (EdgeFunctionClient)
-Translations:  assets/translations/             (~1,999 leaf keys per language, 35 categories)
+Translations:  assets/translations/             (~2,031 leaf keys per language, 35 categories)
 Database:      schemaVersion 14 (switch-based migration, 30+ perf indexes)
 ```
 

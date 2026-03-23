@@ -19,7 +19,7 @@ import 'budgie_login_screen.dart' show LoginState;
 import '../widgets/budgie_branch_scene.dart';
 import '../widgets/budgie_login_background.dart';
 import '../widgets/budgie_login_colors.dart';
-import '../widgets/register_form_body.dart';
+import '../widgets/register_card.dart';
 
 /// Email kayit ekrani.
 class RegisterScreen extends ConsumerStatefulWidget {
@@ -99,24 +99,26 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
     }
   }
 
+  Future<bool> _ensureSupabase() async {
+    if (ref.read(supabaseInitializedProvider)) return true;
+    setState(() => _loading = true);
+    final ok = await ensureSupabaseInitialized(
+      timeout: const Duration(seconds: 12),
+    );
+    if (!mounted) return false;
+    if (!ok) {
+      AppLogger.error(
+        '[Register] Supabase not initialized after runtime retry',
+      );
+      _showSnack('auth.error_service_unavailable'.tr(), isError: true);
+      setState(() => _loading = false);
+    }
+    return ok;
+  }
+
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
-
-    if (!ref.read(supabaseInitializedProvider)) {
-      setState(() => _loading = true);
-      final initialized = await ensureSupabaseInitialized(
-        timeout: const Duration(seconds: 12),
-      );
-      if (!mounted) return;
-      if (!initialized) {
-        AppLogger.error(
-          '[Register] Supabase not initialized after runtime retry',
-        );
-        _showSnack('auth.error_service_unavailable'.tr(), isError: true);
-        setState(() => _loading = false);
-        return;
-      }
-    }
+    if (!await _ensureSupabase()) return;
 
     setState(() => _loading = true);
     try {
@@ -143,7 +145,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
       }
     } on AuthException catch (e) {
       AppLogger.error(
-        '[Register] AuthException: ${e.runtimeType} | message=${e.message} | status=${e.statusCode} | code=${e.code}',
+        '[Register] AuthException: ${e.message} | status=${e.statusCode}',
         e,
       );
       Sentry.captureException(
@@ -155,17 +157,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
       );
       _showSnack(mapAuthError(e), isError: true);
     } catch (e, st) {
-      AppLogger.error(
-        '[Register] signUpWithEmail failed: ${e.runtimeType}: $e',
-        e,
-        st,
-      );
+      AppLogger.error('[Register] signUpWithEmail failed: $e', e, st);
       Sentry.captureException(e, stackTrace: st);
-      if (e is SocketException || e is HandshakeException) {
-        _showSnack('auth.error_network'.tr(), isError: true);
-      } else {
-        _showSnack('auth.error_unknown'.tr(), isError: true);
-      }
+      final isNetwork = e is SocketException || e is HandshakeException;
+      _showSnack(
+        (isNetwork ? 'auth.error_network' : 'auth.error_unknown').tr(),
+        isError: true,
+      );
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -174,32 +172,17 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
   Future<void> _signInWithOAuth(OAuthProvider provider) async {
     setState(() => _loading = true);
     try {
-      if (!ref.read(supabaseInitializedProvider)) {
-        final initialized = await ensureSupabaseInitialized(
-          timeout: const Duration(seconds: 12),
-        );
-        if (!mounted) return;
-        if (!initialized) {
-          AppLogger.error('[Register] Supabase not initialized before OAuth');
-          _showSnack('auth.error_service_unavailable'.tr(), isError: true);
-          setState(() => _loading = false);
-          return;
-        }
-      }
-
+      if (!await _ensureSupabase()) return;
       final auth = ref.read(authActionsProvider);
 
       if (provider == OAuthProvider.apple) {
-        // Native Apple Sign In
         await auth.signInWithApple();
-        // Return without changing _loading flag, stream will navigate user away
+        if (!mounted) return;
         return;
       }
-
       if (provider == OAuthProvider.google) {
-        // Native Google Sign In
         await auth.signInWithGoogle();
-        // Return without changing _loading flag, stream will navigate user away
+        if (!mounted) return;
         return;
       }
 
@@ -209,9 +192,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
       } else if (launched && mounted) {
         _oAuthTimeoutTimer?.cancel();
         _oAuthTimeoutTimer = Timer(const Duration(seconds: 30), () {
-          if (mounted && _loading) {
-            setState(() => _loading = false);
-          }
+          if (mounted && _loading) setState(() => _loading = false);
         });
       }
     } on AuthException catch (e) {
@@ -219,10 +200,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
         if (mounted) setState(() => _loading = false);
         return;
       }
-      AppLogger.error(
-        '[Register] OAuth AuthException: ${e.message} (status=${e.statusCode})',
-        e,
-      );
+      AppLogger.error('[Register] OAuth AuthException: ${e.message}', e);
       Sentry.captureException(e);
       if (mounted) setState(() => _loading = false);
       _showSnack(mapAuthError(e), isError: true);
@@ -278,7 +256,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
                       child: Center(
                         child: ConstrainedBox(
                           constraints: const BoxConstraints(maxWidth: 440),
-                          child: _RegisterCard(
+                          child: RegisterCard(
                             formKey: _formKey,
                             nameCtrl: _nameCtrl,
                             emailCtrl: _emailCtrl,
@@ -302,78 +280,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _RegisterCard extends StatelessWidget {
-  final GlobalKey<FormState> formKey;
-  final TextEditingController nameCtrl;
-  final TextEditingController emailCtrl;
-  final TextEditingController passwordCtrl;
-  final TextEditingController confirmCtrl;
-  final bool isLoading;
-  final VoidCallback onSubmit;
-  final VoidCallback onGoogleTap;
-  final VoidCallback onAppleTap;
-  final VoidCallback onLoginTap;
-
-  const _RegisterCard({
-    required this.formKey,
-    required this.nameCtrl,
-    required this.emailCtrl,
-    required this.passwordCtrl,
-    required this.confirmCtrl,
-    required this.isLoading,
-    required this.onSubmit,
-    required this.onGoogleTap,
-    required this.onAppleTap,
-    required this.onLoginTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.xxl),
-      decoration: BoxDecoration(
-        color: BudgieLoginPalette.cardSurface(context),
-        borderRadius: BorderRadius.circular(28),
-        boxShadow: [
-          BoxShadow(
-            color: BudgieLoginPalette.cardShadow(context),
-            blurRadius: 24,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            'auth.create_account'.tr(),
-            style: theme.textTheme.headlineMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: AppSpacing.lg),
-          Form(
-            key: formKey,
-            child: RegisterFormBody(
-              nameCtrl: nameCtrl,
-              emailCtrl: emailCtrl,
-              passwordCtrl: passwordCtrl,
-              confirmCtrl: confirmCtrl,
-              isLoading: isLoading,
-              onSubmit: onSubmit,
-              onGoogleTap: onGoogleTap,
-              onAppleTap: onAppleTap,
-              onLoginTap: onLoginTap,
-            ),
-          ),
-        ],
       ),
     );
   }

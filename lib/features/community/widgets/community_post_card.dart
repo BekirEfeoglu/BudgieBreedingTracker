@@ -19,6 +19,7 @@ import 'community_image_viewer.dart';
 import 'community_media_gallery.dart';
 import 'community_post_actions.dart';
 import 'community_post_card_parts.dart';
+import 'community_report_dialog.dart';
 import 'community_user_header.dart';
 
 /// Card widget displaying a single community post with full interaction.
@@ -174,33 +175,9 @@ class CommunityPostCard extends ConsumerWidget {
   }
 
   void _handleReport(BuildContext context, WidgetRef ref) async {
-    final reason = await showDialog<CommunityReportReason>(
-      context: context,
-      builder: (ctx) => SimpleDialog(
-        title: Text('community.report_post'.tr()),
-        children: CommunityReportReason.values
-            .where((r) => r != CommunityReportReason.unknown)
-            .map((reason) {
-              final label = switch (reason) {
-                CommunityReportReason.spam =>
-                  'community.report_reason_spam'.tr(),
-                CommunityReportReason.harassment =>
-                  'community.report_reason_harassment'.tr(),
-                CommunityReportReason.inappropriate =>
-                  'community.report_reason_inappropriate'.tr(),
-                CommunityReportReason.misinformation =>
-                  'community.report_reason_misinformation'.tr(),
-                CommunityReportReason.other =>
-                  'community.report_reason_other'.tr(),
-                CommunityReportReason.unknown => '',
-              };
-              return SimpleDialogOption(
-                onPressed: () => Navigator.pop(ctx, reason),
-                child: Text(label),
-              );
-            })
-            .toList(),
-      ),
+    final reason = await showCommunityReportDialog(
+      context,
+      title: 'community.report_post'.tr(),
     );
     if (reason == null || !context.mounted) return;
     try {

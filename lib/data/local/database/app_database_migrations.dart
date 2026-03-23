@@ -124,6 +124,15 @@ Future<void> _migrateV13ToV14(AppDatabase db, Migrator m) async {
   );
 }
 
+/// Migration v14 -> v15: Add banding columns to chicks and chickId to events.
+Future<void> _migrateV14ToV15(AppDatabase db, Migrator m) async {
+  await db.customStatement(
+    'ALTER TABLE chicks ADD COLUMN banding_day INTEGER NOT NULL DEFAULT 10',
+  );
+  await db.customStatement('ALTER TABLE chicks ADD COLUMN banding_date TEXT');
+  await db.customStatement('ALTER TABLE events ADD COLUMN chick_id TEXT');
+}
+
 // ---------------------------------------------------------------------------
 // Performance indexes — called from both onCreate and onUpgrade.
 // ---------------------------------------------------------------------------

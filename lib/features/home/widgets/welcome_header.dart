@@ -2,9 +2,9 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/theme/app_spacing.dart';
-import '../../../data/models/profile_model.dart';
-import '../../profile/providers/profile_providers.dart';
+import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
+import 'package:budgie_breeding_tracker/data/models/profile_model.dart';
+import 'package:budgie_breeding_tracker/features/profile/providers/profile_providers.dart';
 
 /// Gradient welcome header with time-based greeting and user name.
 class WelcomeHeader extends ConsumerStatefulWidget {
@@ -96,6 +96,9 @@ class _WelcomeHeaderState extends ConsumerState<WelcomeHeader>
       child: Stack(
         clipBehavior: Clip.none,
         children: [
+          // Decorative bokeh circles on primary gradient — Colors.white is
+          // intentional because the gradient background is always a dark
+          // primary shade, regardless of light/dark theme mode.
           Positioned(
             right: -8,
             top: -20,
@@ -154,6 +157,7 @@ class _WelcomeHeaderState extends ConsumerState<WelcomeHeader>
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Flexible(
+                      // White text on primary gradient — intentional
                       child: Text(
                         greeting,
                         style: theme.textTheme.bodyMedium?.copyWith(
@@ -165,6 +169,7 @@ class _WelcomeHeaderState extends ConsumerState<WelcomeHeader>
                       ),
                     ),
                     const SizedBox(width: AppSpacing.xs),
+                    // White icon on primary gradient — intentional
                     Icon(
                       _greetingIcon(_greetingKey),
                       size: 18,
@@ -173,6 +178,7 @@ class _WelcomeHeaderState extends ConsumerState<WelcomeHeader>
                   ],
                 ),
                 const SizedBox(height: AppSpacing.xs),
+                // White text on primary gradient — intentional
                 profileAsync.when(
                   loading: () => Text(
                     'home.welcome'.tr(),

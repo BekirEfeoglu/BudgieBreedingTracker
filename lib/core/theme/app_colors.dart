@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+part 'app_colors_adaptive.dart';
+
 abstract class AppColors {
   // Primary - Deep Blue
   static const primary = Color(0xFF1E40AF);
@@ -137,6 +139,17 @@ abstract class AppColors {
   static const chartClearwing = Color(0xFF60A5FA);
   static const chartOther = Color(0xFF64748B);
 
+  // Carrier Text Colors (WCAG AA compliant)
+  static const warningText = Color(0xFFB45309); // amber-700, ~4.7:1 on white
+  static const warningTextDark = Color(0xFFFBBF24); // amber-400, bright on dark
+
+  /// Warning/carrier text color (adaptive for WCAG AA contrast).
+  static Color warningTextAdaptive(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark
+        ? warningTextDark
+        : warningText;
+  }
+
   // Allele State Colors (light theme)
   static const alleleVisual = Color(0xFF4CAF50);
   static const alleleCarrier = Color(0xFFFFA726);
@@ -174,127 +187,53 @@ abstract class AppColors {
   // Audit Severity
   static const severityCritical = Color(0xFF7F1D1D);
 
-  // --- Adaptive helpers (context-aware) ---
+  // --- Adaptive helpers (context-aware) --- see app_colors_adaptive.dart
 
-  /// Allele state color (adaptive for dark mode).
-  static Color alleleStateColor(BuildContext context, String state) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return switch (state) {
-      'visual' => isDark ? alleleVisualDark : alleleVisual,
-      'carrier' => isDark ? alleleCarrierDark : alleleCarrier,
-      'split' => isDark ? alleleSplitDark : alleleSplit,
-      _ => neutral400,
-    };
-  }
+  static Color alleleStateColor(BuildContext context, String state) =>
+      _AdaptiveColors.alleleStateColor(context, state);
 
-  /// Allele visual color (adaptive).
-  static Color alleleVisualAdaptive(BuildContext context) {
-    return Theme.of(context).brightness == Brightness.dark
-        ? alleleVisualDark
-        : alleleVisual;
-  }
+  static Color alleleVisualAdaptive(BuildContext context) =>
+      _AdaptiveColors.alleleVisualAdaptive(context);
 
-  /// Allele carrier color (adaptive).
-  static Color alleleCarrierAdaptive(BuildContext context) {
-    return Theme.of(context).brightness == Brightness.dark
-        ? alleleCarrierDark
-        : alleleCarrier;
-  }
+  static Color alleleCarrierAdaptive(BuildContext context) =>
+      _AdaptiveColors.alleleCarrierAdaptive(context);
 
-  /// Allele split color (adaptive).
-  static Color alleleSplitAdaptive(BuildContext context) {
-    return Theme.of(context).brightness == Brightness.dark
-        ? alleleSplitDark
-        : alleleSplit;
-  }
+  static Color alleleSplitAdaptive(BuildContext context) =>
+      _AdaptiveColors.alleleSplitAdaptive(context);
 
-  /// Inheritance type color (adaptive for dark mode).
-  static Color inheritanceColor(BuildContext context, String type) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return switch (type) {
-      'autosomalRecessive' =>
-        isDark ? inheritAutosomalRecessiveDark : inheritAutosomalRecessive,
-      'autosomalDominant' =>
-        isDark ? inheritAutosomalDominantDark : inheritAutosomalDominant,
-      'autosomalIncompleteDominant' =>
-        isDark
-            ? inheritAutosomalIncompleteDominantDark
-            : inheritAutosomalIncompleteDominant,
-      'sexLinkedRecessive' =>
-        isDark ? inheritSexLinkedRecessiveDark : inheritSexLinkedRecessive,
-      'sexLinkedCodominant' =>
-        isDark ? inheritSexLinkedCodominantDark : inheritSexLinkedCodominant,
-      _ => neutral400,
-    };
-  }
+  static Color inheritanceColor(BuildContext context, String type) =>
+      _AdaptiveColors.inheritanceColor(context, type);
 
-  /// Whether a color is very light (luminance > 0.85), e.g. albino/white.
-  /// Useful for deciding border visibility on light backgrounds.
-  static bool isLightColor(Color color) => color.computeLuminance() > 0.85;
+  static bool isLightColor(Color color) =>
+      _AdaptiveColors.isLightColor(color);
 
-  /// Text color on gold/premium gradient backgrounds.
-  static Color premiumOnGold(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return isDark ? Colors.white : premiumBadgeText;
-  }
+  static Color premiumOnGold(BuildContext context) =>
+      _AdaptiveColors.premiumOnGold(context);
 
-  /// Chart axis / label text color.
-  static Color chartText(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return isDark ? Colors.white70 : Colors.black87;
-  }
+  static Color chartText(BuildContext context) =>
+      _AdaptiveColors.chartText(context);
 
-  /// Chart title text color.
-  static Color chartTitle(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return isDark ? Colors.white : Colors.black87;
-  }
+  static Color chartTitle(BuildContext context) =>
+      _AdaptiveColors.chartTitle(context);
 
-  /// Subtle overlay (e.g. scrim, barrier).
-  static Color overlay(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return isDark
-        ? Colors.white.withValues(alpha: 0.08)
-        : Colors.black.withValues(alpha: 0.08);
-  }
+  static Color overlay(BuildContext context) =>
+      _AdaptiveColors.overlay(context);
 
-  /// Skeleton loader base color.
-  static Color skeletonBase(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return isDark ? neutral800 : neutral300;
-  }
+  static Color skeletonBase(BuildContext context) =>
+      _AdaptiveColors.skeletonBase(context);
 
-  /// Skeleton loader highlight color.
-  static Color skeletonHighlight(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return isDark ? neutral700 : neutral100;
-  }
+  static Color skeletonHighlight(BuildContext context) =>
+      _AdaptiveColors.skeletonHighlight(context);
 
-  /// Skeleton loader surface color.
-  static Color skeletonSurface(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return isDark ? neutral800 : Colors.white;
-  }
+  static Color skeletonSurface(BuildContext context) =>
+      _AdaptiveColors.skeletonSurface(context);
 
-  /// Fullscreen gallery background.
-  static Color galleryBackground(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return isDark ? Colors.black : neutral900;
-  }
+  static Color galleryBackground(BuildContext context) =>
+      _AdaptiveColors.galleryBackground(context);
 
-  /// Subtitle / secondary text color.
-  static Color subtitleText(BuildContext context) {
-    return Theme.of(context).colorScheme.onSurfaceVariant;
-  }
+  static Color subtitleText(BuildContext context) =>
+      _AdaptiveColors.subtitleText(context);
 
-  /// Status color helper.
-  static Color statusColor(BuildContext context, String status) {
-    return switch (status) {
-      'alive' || 'active' || 'healthy' || 'completed' => success,
-      'dead' || 'deceased' || 'cancelled' || 'error' => error,
-      'sold' || 'pending' || 'warning' => warning,
-      'sick' || 'injured' => injury,
-      _ => neutral400,
-    };
-  }
+  static Color statusColor(BuildContext context, String status) =>
+      _AdaptiveColors.statusColor(context, status);
 }

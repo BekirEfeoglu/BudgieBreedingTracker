@@ -141,7 +141,7 @@ abstract final class BudgieColorResolver {
               ? BudgiePhenotypePalette.maskWhite
               : BudgiePhenotypePalette.maskYellow,
           body,
-          0.30,
+          0.48,
         );
         mask = isBlueSeries
             ? BudgiePhenotypePalette.maskWhite
@@ -153,7 +153,7 @@ abstract final class BudgieColorResolver {
               ? BudgiePhenotypePalette.maskWhite
               : BudgiePhenotypePalette.maskYellow,
           body,
-          0.48,
+          0.28,
         );
         cheekPatch = BudgiePhenotypePalette.cheekSmokeGrey;
       }
@@ -163,17 +163,16 @@ abstract final class BudgieColorResolver {
         body = _mix(body, mask, 0.10);
         wingMarkings = BudgiePhenotypePalette.wingGrey;
         wingFill = BudgiePhenotypePalette.maskWhite.withValues(alpha: 0.18);
-        cheekPatch = BudgiePhenotypePalette.cheekViolet;
+        cheekPatch = isBlueSeries
+            ? BudgiePhenotypePalette.cheekViolet
+            : BudgiePhenotypePalette.cheekBlue;
       } else {
         if (hasGreywing) {
-          body = _mix(body, mask, 0.50);
+          body = _mix(body, mask, 0.28);
           wingMarkings = BudgiePhenotypePalette.wingGrey;
-          cheekPatch = hasGrey || lower.contains('grey-green')
-              ? BudgiePhenotypePalette.cheekSilver
-              : BudgiePhenotypePalette.cheekPaleViolet;
         }
         if (hasClearwing) {
-          body = _saturate(_lighten(body, 0.04), 0.08);
+          body = _saturate(body, 0.18);
           wingMarkings = isBlueSeries
               ? BudgiePhenotypePalette.maskWhite
               : _mix(BudgiePhenotypePalette.maskYellow, Colors.white, 0.25);
@@ -182,10 +181,10 @@ abstract final class BudgieColorResolver {
       }
 
       if (hasDilute) {
-        body = _mix(body, mask, 0.58);
+        body = _mix(body, mask, 0.72);
         wingMarkings = BudgiePhenotypePalette.wingSoftGrey;
-        wingFill = BudgiePhenotypePalette.maskWhite.withValues(alpha: 0.20);
-        cheekPatch = _mix(cheekPatch, mask, 0.55);
+        wingFill = BudgiePhenotypePalette.maskWhite.withValues(alpha: 0.22);
+        cheekPatch = _mix(cheekPatch, mask, 0.20);
       }
 
       if (hasEnglishFallow) {
@@ -199,17 +198,17 @@ abstract final class BudgieColorResolver {
       }
 
       if (hasPallid) {
-        body = _mix(body, mask, 0.18);
+        body = _mix(body, mask, 0.30);
         wingMarkings = _mix(
           wingMarkings,
-          BudgiePhenotypePalette.cinnamon,
-          0.35,
+          BudgiePhenotypePalette.wingGrey,
+          0.50,
         );
-        cheekPatch = _mix(cheekPatch, mask, 0.20);
+        cheekPatch = _mix(cheekPatch, mask, 0.28);
       }
 
       if (hasCinnamon) {
-        body = _mix(body, mask, 0.50);
+        body = _mix(body, mask, 0.35);
         wingMarkings = BudgiePhenotypePalette.cinnamon;
       }
 
@@ -219,9 +218,9 @@ abstract final class BudgieColorResolver {
       }
 
       if (hasOpaline) {
-        wingMarkings = _mix(wingMarkings, body, 0.18);
+        wingMarkings = _mix(wingMarkings, body, 0.35);
         if (wingFill == Colors.transparent) {
-          wingFill = body.withValues(alpha: 0.16);
+          wingFill = body.withValues(alpha: 0.35);
         }
       }
 
@@ -294,6 +293,7 @@ abstract final class BudgieColorResolver {
       throatSpotCount: anatomy.throatSpotCount, beakColor: anatomy.beakColor,
       showPiedPatch: showPiedPatch, showMantleHighlight: showMantleHighlight,
       showCarrierAccent: showCarrierAccent, hideWingMarkings: hideWingMarkings,
+      isSpangle: hasSpangle && !isDoubleFactorSpangle,
     );
   }
 }

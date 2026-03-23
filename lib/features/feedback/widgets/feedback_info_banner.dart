@@ -8,12 +8,11 @@ import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 /// Informational banner displayed below the feedback form explaining how
 /// submitted feedback will be handled.
 class FeedbackInfoBanner extends StatelessWidget {
-  final ThemeData theme;
-
-  const FeedbackInfoBanner({super.key, required this.theme});
+  const FeedbackInfoBanner({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(

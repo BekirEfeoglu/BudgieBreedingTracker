@@ -1,9 +1,11 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/chick_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/egg_enums.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
+import 'package:budgie_breeding_tracker/core/utils/supabase_error_utils.dart';
 import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
 import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
@@ -115,7 +117,7 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
           incubationId: incubationId,
         );
       } catch (e) {
-        if (_isSupabaseUnavailableError(e)) {
+        if (isSupabaseUnavailableError(e)) {
           AppLogger.info(
             'Skipping egg calendar generation: Supabase is not initialized',
           );
@@ -127,7 +129,8 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
       state = state.copyWith(isLoading: false, isSuccess: true);
     } catch (e) {
       AppLogger.error('EggActionsNotifier', e, StackTrace.current);
-      state = state.copyWith(isLoading: false, error: e.toString());
+      Sentry.captureException(e, stackTrace: StackTrace.current);
+      state = state.copyWith(isLoading: false, error: 'errors.unknown'.tr());
     }
   }
 
@@ -167,7 +170,8 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
       );
     } catch (e) {
       AppLogger.error('EggActionsNotifier', e, StackTrace.current);
-      state = state.copyWith(isLoading: false, error: e.toString());
+      Sentry.captureException(e, stackTrace: StackTrace.current);
+      state = state.copyWith(isLoading: false, error: 'errors.unknown'.tr());
     }
   }
 
@@ -231,7 +235,7 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
           bandingDay: 10,
         );
       } catch (e) {
-        if (_isSupabaseUnavailableError(e)) {
+        if (isSupabaseUnavailableError(e)) {
           AppLogger.info(
             'Skipping chick calendar generation: Supabase is not initialized',
           );
@@ -272,7 +276,8 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
       state = state.copyWith(isLoading: false, isSuccess: true);
     } catch (e) {
       AppLogger.error('EggActionsNotifier', e, StackTrace.current);
-      state = state.copyWith(isLoading: false, error: e.toString());
+      Sentry.captureException(e, stackTrace: StackTrace.current);
+      state = state.copyWith(isLoading: false, error: 'errors.unknown'.tr());
     }
   }
 
@@ -281,11 +286,6 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
     state = const EggActionsState();
   }
 
-  bool _isSupabaseUnavailableError(Object error) {
-    final message = error.toString();
-    return message.contains('You must initialize the supabase instance') ||
-        message.contains('provider that is in error state');
-  }
 }
 
 /// Actions notifier for egg CRUD operations.

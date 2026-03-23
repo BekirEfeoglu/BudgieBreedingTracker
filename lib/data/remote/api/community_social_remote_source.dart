@@ -4,13 +4,19 @@ import 'package:uuid/uuid.dart';
 import '../../../core/constants/supabase_constants.dart';
 import '../../../core/enums/community_enums.dart';
 import '../../../core/utils/logger.dart';
+import 'community_engagement_remote_source.dart';
 
 /// Remote data source for community social interactions
 /// (likes, bookmarks, comment likes, reports).
+///
+/// Bookmark, follow, block, and report operations are delegated to
+/// [CommunityEngagementRemoteSource] for file-size compliance.
 class CommunitySocialRemoteSource {
   final SupabaseClient _client;
+  final CommunityEngagementRemoteSource _engagement;
 
-  const CommunitySocialRemoteSource(this._client);
+  CommunitySocialRemoteSource(this._client)
+    : _engagement = CommunityEngagementRemoteSource(_client);
 
   // ---------------------------------------------------------------------------
   // Post likes
@@ -147,206 +153,57 @@ class CommunitySocialRemoteSource {
   }
 
   // ---------------------------------------------------------------------------
-  // Bookmarks
+  // Delegated: Bookmarks
   // ---------------------------------------------------------------------------
 
   Future<Set<String>> fetchBookmarkedPostIds(
     String userId,
     List<String> postIds,
-  ) async {
-    if (postIds.isEmpty || userId == 'anonymous') return {};
-    try {
-      final result = await _client
-          .from(SupabaseConstants.communityBookmarksTable)
-          .select('post_id')
-          .eq('user_id', userId)
-          .inFilter('post_id', postIds);
+  ) => _engagement.fetchBookmarkedPostIds(userId, postIds);
 
-      return (result as List)
-          .map((r) => r['post_id']?.toString())
-          .whereType<String>()
-          .toSet();
-    } catch (e) {
-      AppLogger.warning('Failed to fetch bookmarked post IDs: $e');
-      return {};
-    }
-  }
+  Future<void> bookmarkPost(String userId, String postId) =>
+      _engagement.bookmarkPost(userId, postId);
 
-  Future<void> bookmarkPost(String userId, String postId) async {
-    try {
-      await _client.from(SupabaseConstants.communityBookmarksTable).insert({
-        'id': const Uuid().v4(),
-        'user_id': userId,
-        'post_id': postId,
-      });
-    } catch (e, st) {
-      AppLogger.error('CommunitySocialRemoteSource.bookmarkPost', e, st);
-      rethrow;
-    }
-  }
+  Future<void> unbookmarkPost(String userId, String postId) =>
+      _engagement.unbookmarkPost(userId, postId);
 
-  Future<void> unbookmarkPost(String userId, String postId) async {
-    try {
-      await _client
-          .from(SupabaseConstants.communityBookmarksTable)
-          .delete()
-          .eq('user_id', userId)
-          .eq('post_id', postId);
-    } catch (e, st) {
-      AppLogger.error('CommunitySocialRemoteSource.unbookmarkPost', e, st);
-      rethrow;
-    }
-  }
+  Future<bool> isPostBookmarked(String userId, String postId) =>
+      _engagement.isPostBookmarked(userId, postId);
 
-  Future<bool> isPostBookmarked(String userId, String postId) async {
-    try {
-      final result = await _client
-          .from(SupabaseConstants.communityBookmarksTable)
-          .select('id')
-          .eq('user_id', userId)
-          .eq('post_id', postId)
-          .maybeSingle();
-      return result != null;
-    } catch (e) {
-      AppLogger.warning('Failed to check bookmark status: $e');
-      return false;
-    }
-  }
-
-  Future<List<String>> fetchAllBookmarkedPostIds(String userId) async {
-    if (userId == 'anonymous') return [];
-    try {
-      final result = await _client
-          .from(SupabaseConstants.communityBookmarksTable)
-          .select('post_id')
-          .eq('user_id', userId);
-
-      return (result as List)
-          .map((r) => r['post_id']?.toString())
-          .whereType<String>()
-          .toList();
-    } catch (e) {
-      AppLogger.warning('Failed to fetch all bookmarked post IDs: $e');
-      return [];
-    }
-  }
+  Future<List<String>> fetchAllBookmarkedPostIds(String userId) =>
+      _engagement.fetchAllBookmarkedPostIds(userId);
 
   // ---------------------------------------------------------------------------
-  // Follows
+  // Delegated: Follows
   // ---------------------------------------------------------------------------
 
-  Future<Set<String>> fetchFollowedUserIds(String userId) async {
-    if (userId == 'anonymous') return {};
-    try {
-      final result = await _client
-          .from(SupabaseConstants.communityFollowsTable)
-          .select('following_id')
-          .eq('follower_id', userId);
+  Future<Set<String>> fetchFollowedUserIds(String userId) =>
+      _engagement.fetchFollowedUserIds(userId);
 
-      return (result as List)
-          .map((r) => r['following_id']?.toString())
-          .whereType<String>()
-          .toSet();
-    } catch (e) {
-      AppLogger.warning('Failed to fetch followed user IDs: $e');
-      return {};
-    }
-  }
+  Future<bool> isFollowing(String userId, String targetUserId) =>
+      _engagement.isFollowing(userId, targetUserId);
 
-  Future<bool> isFollowing(String userId, String targetUserId) async {
-    try {
-      final result = await _client
-          .from(SupabaseConstants.communityFollowsTable)
-          .select('id')
-          .eq('follower_id', userId)
-          .eq('following_id', targetUserId)
-          .maybeSingle();
-      return result != null;
-    } catch (e) {
-      AppLogger.warning('Failed to check follow status: $e');
-      return false;
-    }
-  }
+  Future<void> followUser(String userId, String targetUserId) =>
+      _engagement.followUser(userId, targetUserId);
 
-  Future<void> followUser(String userId, String targetUserId) async {
-    try {
-      await _client.from(SupabaseConstants.communityFollowsTable).insert({
-        'id': const Uuid().v4(),
-        'follower_id': userId,
-        'following_id': targetUserId,
-      });
-    } catch (e, st) {
-      AppLogger.error('CommunitySocialRemoteSource.followUser', e, st);
-      rethrow;
-    }
-  }
-
-  Future<void> unfollowUser(String userId, String targetUserId) async {
-    try {
-      await _client
-          .from(SupabaseConstants.communityFollowsTable)
-          .delete()
-          .eq('follower_id', userId)
-          .eq('following_id', targetUserId);
-    } catch (e, st) {
-      AppLogger.error('CommunitySocialRemoteSource.unfollowUser', e, st);
-      rethrow;
-    }
-  }
+  Future<void> unfollowUser(String userId, String targetUserId) =>
+      _engagement.unfollowUser(userId, targetUserId);
 
   // ---------------------------------------------------------------------------
-  // Blocks
+  // Delegated: Blocks
   // ---------------------------------------------------------------------------
 
-  /// Fetches all user IDs blocked by [userId].
-  Future<List<String>> fetchBlockedUserIds(String userId) async {
-    if (userId == 'anonymous') return [];
-    try {
-      final result = await _client
-          .from(SupabaseConstants.communityBlocksTable)
-          .select('blocked_user_id')
-          .eq('user_id', userId);
+  Future<List<String>> fetchBlockedUserIds(String userId) =>
+      _engagement.fetchBlockedUserIds(userId);
 
-      return (result as List)
-          .map((r) => r['blocked_user_id']?.toString())
-          .whereType<String>()
-          .toList();
-    } catch (e) {
-      AppLogger.warning('Failed to fetch blocked user IDs: $e');
-      return [];
-    }
-  }
+  Future<void> blockUser(String userId, String blockedUserId) =>
+      _engagement.blockUser(userId, blockedUserId);
 
-  /// Blocks a user on the server.
-  Future<void> blockUser(String userId, String blockedUserId) async {
-    try {
-      await _client.from(SupabaseConstants.communityBlocksTable).insert({
-        'id': const Uuid().v4(),
-        'user_id': userId,
-        'blocked_user_id': blockedUserId,
-      });
-    } catch (e, st) {
-      AppLogger.error('CommunitySocialRemoteSource.blockUser', e, st);
-      rethrow;
-    }
-  }
-
-  /// Unblocks a user on the server.
-  Future<void> unblockUser(String userId, String blockedUserId) async {
-    try {
-      await _client
-          .from(SupabaseConstants.communityBlocksTable)
-          .delete()
-          .eq('user_id', userId)
-          .eq('blocked_user_id', blockedUserId);
-    } catch (e, st) {
-      AppLogger.error('CommunitySocialRemoteSource.unblockUser', e, st);
-      rethrow;
-    }
-  }
+  Future<void> unblockUser(String userId, String blockedUserId) =>
+      _engagement.unblockUser(userId, blockedUserId);
 
   // ---------------------------------------------------------------------------
-  // Reports
+  // Delegated: Reports
   // ---------------------------------------------------------------------------
 
   Future<void> reportContent({
@@ -355,19 +212,11 @@ class CommunitySocialRemoteSource {
     required String targetType,
     required CommunityReportReason reason,
     String? description,
-  }) async {
-    try {
-      await _client.from(SupabaseConstants.communityReportsTable).insert({
-        'id': const Uuid().v4(),
-        'user_id': userId,
-        'target_id': targetId,
-        'target_type': targetType,
-        'reason': reason.toJson(),
-        if (description != null) 'description': description,
-      });
-    } catch (e, st) {
-      AppLogger.error('CommunitySocialRemoteSource.reportContent', e, st);
-      rethrow;
-    }
-  }
+  }) => _engagement.reportContent(
+    userId: userId,
+    targetId: targetId,
+    targetType: targetType,
+    reason: reason,
+    description: description,
+  );
 }

@@ -194,12 +194,14 @@ class _GenealogyScreenState extends ConsumerState<GenealogyScreen> {
     }
   }
 
-  void _runRepair(BuildContext context) async {
+  Future<void> _runRepair(BuildContext context) async {
     final messenger = ScaffoldMessenger.of(context);
     messenger.showSnackBar(SnackBar(content: Text('genealogy.repairing'.tr())));
 
     ref.invalidate(repairOrphanBirdsProvider);
     final result = await ref.read(repairOrphanBirdsProvider.future);
+
+    if (!mounted) return;
 
     messenger.clearSnackBars();
     messenger.showSnackBar(

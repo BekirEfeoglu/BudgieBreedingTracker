@@ -64,6 +64,7 @@ class _CategoryCard extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
         side: BorderSide(
+          // Intentional: no border when unselected
           color: isSelected ? catColor : Colors.transparent,
           width: isSelected ? 1.5 : 0,
         ),
@@ -101,8 +102,7 @@ class _CategoryCard extends StatelessWidget {
               const SizedBox(height: AppSpacing.xs / 2),
               Text(
                 category.description,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  fontSize: 10,
+                style: theme.textTheme.labelSmall?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant.withValues(
                     alpha: 0.7,
                   ),

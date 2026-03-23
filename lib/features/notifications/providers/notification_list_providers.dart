@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:budgie_breeding_tracker/core/enums/notification_enums.dart';
+import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/data/models/notification_model.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 
@@ -73,20 +74,33 @@ class NotificationActions {
 
   /// Marks a single notification as read.
   Future<void> markAsRead(String notificationId) async {
-    final repo = _ref.read(notificationRepositoryProvider);
-    await repo.markAsRead(notificationId);
+    try {
+      final repo = _ref.read(notificationRepositoryProvider);
+      await repo.markAsRead(notificationId);
+    } catch (e) {
+      AppLogger.error('[NotificationActions]', e, StackTrace.current);
+    }
   }
 
   /// Marks all notifications as read for a user.
   Future<void> markAllAsRead(String userId) async {
-    final repo = _ref.read(notificationRepositoryProvider);
-    await repo.markAllAsRead(userId);
+    try {
+      final repo = _ref.read(notificationRepositoryProvider);
+      await repo.markAllAsRead(userId);
+    } catch (e) {
+      AppLogger.error('[NotificationActions]', e, StackTrace.current);
+    }
   }
 
   /// Deletes a notification.
   Future<void> delete(String notificationId) async {
-    final repo = _ref.read(notificationRepositoryProvider);
-    await repo.remove(notificationId);
+    try {
+      final repo = _ref.read(notificationRepositoryProvider);
+      await repo.remove(notificationId);
+    } catch (e) {
+      AppLogger.error('[NotificationActions]', e, StackTrace.current);
+      rethrow;
+    }
   }
 }
 

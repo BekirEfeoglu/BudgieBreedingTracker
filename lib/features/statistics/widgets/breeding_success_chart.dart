@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/features/statistics/widgets/chart_card.dart';
+import 'package:budgie_breeding_tracker/features/statistics/widgets/chart_legend_item.dart';
 
 /// Bar chart showing completed vs cancelled breedings per month.
 ///
@@ -145,38 +146,17 @@ class _Legend extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        _LegendItem(
+        ChartLegendItem(
           color: AppColors.success,
           label: 'statistics.completed'.tr(),
+          useCircle: false,
         ),
         const SizedBox(width: AppSpacing.lg),
-        _LegendItem(color: AppColors.error, label: 'statistics.cancelled'.tr()),
-      ],
-    );
-  }
-}
-
-class _LegendItem extends StatelessWidget {
-  const _LegendItem({required this.color, required this.label});
-
-  final Color color;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: AppSpacing.md,
-          height: AppSpacing.md,
-          decoration: BoxDecoration(
-            color: color,
-            borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-          ),
+        ChartLegendItem(
+          color: AppColors.error,
+          label: 'statistics.cancelled'.tr(),
+          useCircle: false,
         ),
-        const SizedBox(width: AppSpacing.xs),
-        Text(label, style: Theme.of(context).textTheme.labelSmall),
       ],
     );
   }

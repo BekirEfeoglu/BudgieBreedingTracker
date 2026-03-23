@@ -11,6 +11,7 @@ import 'package:budgie_breeding_tracker/core/widgets/buttons/primary_button.dart
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:budgie_breeding_tracker/core/widgets/date_picker_field.dart';
 import 'package:budgie_breeding_tracker/core/widgets/empty_state.dart';
+import 'package:budgie_breeding_tracker/core/widgets/error_state.dart';
 import 'package:budgie_breeding_tracker/features/settings/providers/settings_providers.dart';
 import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
 import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
@@ -141,7 +142,10 @@ class _BreedingFormScreenState extends ConsumerState<BreedingFormScreen> {
       ),
       body: birdsAsync.when(
         loading: () => const LoadingState(),
-        error: (e, _) => Center(child: Text('${'common.error'.tr()}: $e')),
+        error: (_, __) => ErrorState(
+          message: 'common.data_load_error'.tr(),
+          onRetry: () => ref.invalidate(birdsStreamProvider(userId)),
+        ),
         data: (allBirds) {
           if (_isEdit && _isLoadingExistingPair) {
             return const LoadingState();

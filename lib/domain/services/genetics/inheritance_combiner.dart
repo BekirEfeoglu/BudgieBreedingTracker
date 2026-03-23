@@ -51,8 +51,19 @@ List<OffspringResult> _combineResults(List<_RawResult> rawResults) {
 
   return sorted.where((r) => r.probability * normalizer > 0.001).map((r) {
     final visualIds = r.expressedMutationIds.toSet();
+
+    // Derive doubleFactorIds from raw result phenotype markers
+    final dfIds = <String>{};
+    if (r.phenotype.contains('(double)') ||
+        r.phenotype.contains('(homozygous)')) {
+      dfIds.addAll(r.expressedMutationIds);
+    }
+
     final CompoundPhenotypeResult? compound = visualIds.isNotEmpty
-        ? epistasis.resolveCompoundPhenotypeDetailed(visualIds)
+        ? epistasis.resolveCompoundPhenotypeDetailed(
+            visualIds,
+            doubleFactorIds: dfIds,
+          )
         : null;
 
     return OffspringResult(
@@ -65,6 +76,7 @@ List<OffspringResult> _combineResults(List<_RawResult> rawResults) {
       compoundPhenotype: compound?.name,
       carriedMutations: r.carriedMutationIds,
       maskedMutations: compound?.maskedMutations ?? const [],
+      doubleFactorIds: dfIds,
     );
   }).toList();
 }
@@ -170,45 +182,6 @@ List<_MultiLocusResult> _crossAllLoci(
 // Step 2: Resolve epistasis and build OffspringResult map
 // ---------------------------------------------------------------------------
 
-/// Extracts visual mutation IDs and double-factor flags from a combined
-/// multi-locus result, using expressed IDs and falling back to name→ID lookup.
-({Set<String> visualMutIds, Set<String> doubleFactorIds}) _extractMutationIds(
-  _MultiLocusResult c,
-) {
-  // Separate visual phenotype names from carrier info
-  final visualNames = c.phenotypes
-      .where((p) => !p.contains('(carrier)'))
-      .toList();
-
-  // Prefer expressedMutationIds from allelic series results
-  final visualMutIds = <String>{...c.expressedMutationIds};
-  final doubleFactorIds = <String>{};
-
-  // Fallback: name→ID lookup for legacy independent locus results
-  for (final name in visualNames) {
-    final cleanName = name
-        .replaceAll(' (single)', '')
-        .replaceAll(' (double)', '')
-        .replaceAll(' (homozygous)', '');
-    final id = MutationDatabase.getByName(cleanName)?.id;
-    if (id != null) {
-      visualMutIds.add(id);
-      if (name.contains('(double)')) {
-        doubleFactorIds.add(id);
-      }
-    }
-  }
-
-  return (visualMutIds: visualMutIds, doubleFactorIds: doubleFactorIds);
-}
-
-/// Builds a phenotype label from compound name and carried mutations.
-String _buildPhenotypeLabel(String compoundName, List<String> uniqueCarried) {
-  return uniqueCarried.isNotEmpty
-      ? '$compoundName (${uniqueCarried.join(", ")} carrier)'
-      : compoundName;
-}
-
 /// Resolves epistasis for each combined multi-locus result and groups
 /// identical phenotypes into an [OffspringResult] map.
 Map<String, OffspringResult> _resolveEpistasisForCombined(
@@ -264,6 +237,7 @@ Map<String, OffspringResult> _resolveEpistasisForCombined(
           ...uniqueCarried,
         }.toList(),
         maskedMutations: maskedMuts,
+        doubleFactorIds: doubleFactorIds,
       );
     } else {
       resultMap[key] = OffspringResult(
@@ -276,6 +250,7 @@ Map<String, OffspringResult> _resolveEpistasisForCombined(
         compoundPhenotype: compoundName,
         carriedMutations: uniqueCarried,
         maskedMutations: maskedMuts,
+        doubleFactorIds: doubleFactorIds,
       );
     }
   }

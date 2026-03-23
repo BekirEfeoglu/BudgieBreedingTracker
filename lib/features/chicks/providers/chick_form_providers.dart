@@ -1,8 +1,10 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/chick_enums.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
+import 'package:budgie_breeding_tracker/core/utils/supabase_error_utils.dart';
 import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
@@ -126,7 +128,7 @@ class ChickFormNotifier extends Notifier<ChickFormState> {
           bandingDay: bandingDay,
         );
       } catch (e) {
-        if (_isSupabaseUnavailableError(e)) {
+        if (isSupabaseUnavailableError(e)) {
           AppLogger.info(
             'Skipping chick calendar generation: Supabase is not initialized',
           );
@@ -138,7 +140,8 @@ class ChickFormNotifier extends Notifier<ChickFormState> {
       state = state.copyWith(isLoading: false, isSuccess: true);
     } catch (e) {
       AppLogger.error('ChickFormNotifier', e, StackTrace.current);
-      state = state.copyWith(isLoading: false, error: e.toString());
+      Sentry.captureException(e, stackTrace: StackTrace.current);
+      state = state.copyWith(isLoading: false, error: 'errors.unknown'.tr());
     }
   }
 
@@ -172,7 +175,8 @@ class ChickFormNotifier extends Notifier<ChickFormState> {
       state = state.copyWith(isLoading: false, isSuccess: true);
     } catch (e) {
       AppLogger.error('ChickFormNotifier', e, StackTrace.current);
-      state = state.copyWith(isLoading: false, error: e.toString());
+      Sentry.captureException(e, stackTrace: StackTrace.current);
+      state = state.copyWith(isLoading: false, error: 'errors.unknown'.tr());
     }
   }
 
@@ -191,7 +195,8 @@ class ChickFormNotifier extends Notifier<ChickFormState> {
       state = state.copyWith(isLoading: false, isSuccess: true);
     } catch (e) {
       AppLogger.error('ChickFormNotifier', e, StackTrace.current);
-      state = state.copyWith(isLoading: false, error: e.toString());
+      Sentry.captureException(e, stackTrace: StackTrace.current);
+      state = state.copyWith(isLoading: false, error: 'errors.unknown'.tr());
     }
   }
 
@@ -212,7 +217,8 @@ class ChickFormNotifier extends Notifier<ChickFormState> {
       state = state.copyWith(isLoading: false, isSuccess: true);
     } catch (e) {
       AppLogger.error('ChickFormNotifier', e, StackTrace.current);
-      state = state.copyWith(isLoading: false, error: e.toString());
+      Sentry.captureException(e, stackTrace: StackTrace.current);
+      state = state.copyWith(isLoading: false, error: 'errors.unknown'.tr());
     }
   }
 
@@ -240,7 +246,8 @@ class ChickFormNotifier extends Notifier<ChickFormState> {
       state = state.copyWith(isLoading: false, isSuccess: true);
     } catch (e) {
       AppLogger.error('ChickFormNotifier', e, StackTrace.current);
-      state = state.copyWith(isLoading: false, error: e.toString());
+      Sentry.captureException(e, stackTrace: StackTrace.current);
+      state = state.copyWith(isLoading: false, error: 'errors.unknown'.tr());
     }
   }
 
@@ -312,7 +319,8 @@ class ChickFormNotifier extends Notifier<ChickFormState> {
       state = state.copyWith(isLoading: false, isSuccess: true);
     } catch (e) {
       AppLogger.error('ChickFormNotifier', e, StackTrace.current);
-      state = state.copyWith(isLoading: false, error: e.toString());
+      Sentry.captureException(e, stackTrace: StackTrace.current);
+      state = state.copyWith(isLoading: false, error: 'errors.unknown'.tr());
     }
   }
 
@@ -321,11 +329,6 @@ class ChickFormNotifier extends Notifier<ChickFormState> {
     state = const ChickFormState();
   }
 
-  bool _isSupabaseUnavailableError(Object error) {
-    final message = error.toString();
-    return message.contains('You must initialize the supabase instance') ||
-        message.contains('provider that is in error state');
-  }
 }
 
 /// Form state and actions for creating/editing chicks.

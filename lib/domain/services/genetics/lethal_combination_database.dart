@@ -1,6 +1,8 @@
 import 'package:budgie_breeding_tracker/core/constants/genetics_constants.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/mendelian_calculator.dart';
 
+export 'package:budgie_breeding_tracker/domain/services/genetics/viability_analyzer.dart';
+
 /// Severity of a lethal allele combination.
 enum LethalSeverity {
   /// Embryonic lethal — most offspring with this combo die before hatching.
@@ -98,16 +100,15 @@ class LethalAnalysisResult {
 abstract class LethalCombinationDatabase {
   /// All known lethal/semi-lethal combinations.
   static const List<LethalCombination> allCombinations = [
-    // ── Crested × Crested (Sub-vital Risk) ──
-    // Recent aviculture references describe the crested factor as sub-vital:
-    // elevated mortality and developmental/neurological issues can appear
-    // in crested pairings, not only in classical DF outcomes.
+    // ── Crested × Crested (Embryonic Lethal for DF) ──
+    // Classical genetics: homozygous crested (DF) is embryonic lethal.
+    // 25% of Crested × Crested offspring die in shell.
     LethalCombination(
       id: 'df_crested',
       nameKey: 'genetics.lethal_df_crested_name',
       descriptionKey: 'genetics.lethal_df_crested_desc',
-      severity: LethalSeverity.subVital,
-      affectedRate: 0.48,
+      severity: LethalSeverity.lethal,
+      affectedRate: 0.25,
       requiredMutationIds: GeneticsConstants.crestedAlleleIds,
       requiresHomozygous: false,
     ),
@@ -125,6 +126,19 @@ abstract class LethalCombinationDatabase {
       requiresHomozygous: true,
     ),
 
+    // ── Double Factor Dominant Pied (Semi-Lethal) ──
+    // DF Dominant (Australian) Pied has significantly reduced viability.
+    // Dominant Pied × Dominant Pied → 25% DF with elevated mortality.
+    LethalCombination(
+      id: 'df_dominant_pied',
+      nameKey: 'genetics.lethal_df_dominant_pied_name',
+      descriptionKey: 'genetics.lethal_df_dominant_pied_desc',
+      severity: LethalSeverity.semiLethal,
+      affectedRate: 1.0,
+      requiredMutationIds: {'dominant_pied'},
+      requiresHomozygous: true,
+    ),
+
     // ── Visual Ino x Visual Ino (Semi-Lethal) ──
     // Both parents visual Ino → all offspring visual Ino.
     // Documented health issues: feather cysts, reduced immune function,
@@ -136,7 +150,7 @@ abstract class LethalCombinationDatabase {
       descriptionKey: 'genetics.lethal_ino_x_ino_desc',
       severity: LethalSeverity.semiLethal,
       affectedRate: 1.0,
-      requiredMutationIds: {'ino'},
+      requiredMutationIds: {GeneticsConstants.mutIno},
       requiresHomozygous: false,
     ),
   ];
@@ -150,156 +164,3 @@ abstract class LethalCombinationDatabase {
   }
 }
 
-/// Analyzes offspring results for lethal allele combinations.
-class ViabilityAnalyzer {
-  const ViabilityAnalyzer();
-
-  /// Analyzes a set of offspring results for lethal combinations.
-  ///
-  /// [fatherMutations] and [motherMutations] are the parent visual mutation sets,
-  /// needed to detect parent-level combinations (like Ino x Ino).
-  /// [offspringResults] are the calculated offspring predictions.
-  LethalAnalysisResult analyze({
-    required Set<String> fatherMutations,
-    required Set<String> motherMutations,
-    required List<OffspringResult> offspringResults,
-  }) {
-    final warnings = <ViabilityWarning>[];
-
-    for (final combo in LethalCombinationDatabase.allCombinations) {
-      final comboWarnings = _checkCombination(
-        combo,
-        fatherMutations: fatherMutations,
-        motherMutations: motherMutations,
-        offspringResults: offspringResults,
-      );
-      warnings.addAll(comboWarnings);
-    }
-
-    if (warnings.isEmpty) {
-      return const LethalAnalysisResult(
-        warnings: [],
-        highestSeverity: null,
-        totalAffectedProbability: 0.0,
-      );
-    }
-
-    // Find highest severity
-    final highestSeverity = warnings
-        .map((w) => w.combination.severity)
-        .reduce((a, b) => a.index <= b.index ? a : b);
-
-    // Sum affected probabilities with combination-specific impact rate.
-    final totalAffected = warnings
-        .fold(
-          0.0,
-          (sum, w) =>
-              sum + (w.offspring.probability * w.combination.affectedRate),
-        )
-        .clamp(0.0, 1.0);
-
-    return LethalAnalysisResult(
-      warnings: warnings,
-      highestSeverity: highestSeverity,
-      totalAffectedProbability: totalAffected,
-    );
-  }
-
-  List<ViabilityWarning> _checkCombination(
-    LethalCombination combo, {
-    required Set<String> fatherMutations,
-    required Set<String> motherMutations,
-    required List<OffspringResult> offspringResults,
-  }) {
-    final warnings = <ViabilityWarning>[];
-
-    // Special case: Ino x Ino — check parent-level
-    if (combo.id == 'ino_x_ino') {
-      final fatherHasIno = fatherMutations.contains('ino');
-      final motherHasIno = motherMutations.contains('ino');
-      if (fatherHasIno && motherHasIno) {
-        // All offspring are affected when both parents are visual Ino
-        for (final result in offspringResults) {
-          warnings.add(ViabilityWarning(combination: combo, offspring: result));
-        }
-      }
-      return warnings;
-    }
-
-    // Special case: Crested x Crested — pairing-level sub-vital risk.
-    if (combo.id == 'df_crested') {
-      final fatherHasCrested = combo.requiredMutationIds.any(
-        fatherMutations.contains,
-      );
-      final motherHasCrested = combo.requiredMutationIds.any(
-        motherMutations.contains,
-      );
-      if (fatherHasCrested && motherHasCrested) {
-        for (final result in offspringResults) {
-          warnings.add(ViabilityWarning(combination: combo, offspring: result));
-        }
-      }
-      return warnings;
-    }
-
-    // Homozygous check: look for "DF" or double factor indicators in phenotype
-    if (combo.requiresHomozygous) {
-      // Both parents must carry any mutation from the required set.
-      // For crested: father has any crested variant AND mother has any crested variant.
-      final fatherHas = combo.requiredMutationIds.any(fatherMutations.contains);
-      final motherHas = combo.requiredMutationIds.any(motherMutations.contains);
-
-      if (fatherHas && motherHas) {
-        // DF offspring are possible — find them in results
-        for (final result in offspringResults) {
-          final phenotypeLower = result.phenotype.toLowerCase();
-          final compoundLower = result.compoundPhenotype?.toLowerCase() ?? '';
-          // Check for DF/double factor indicators using all mutation IDs
-          final hasDF = combo.requiredMutationIds.any(
-            (id) =>
-                _isDoubleFactorPhenotype(phenotypeLower, id) ||
-                _isDoubleFactorPhenotype(compoundLower, id),
-          );
-          if (hasDF) {
-            warnings.add(
-              ViabilityWarning(combination: combo, offspring: result),
-            );
-          }
-        }
-      }
-      return warnings;
-    }
-
-    // Standard check: all required mutations present in offspring
-    for (final result in offspringResults) {
-      final offspringVisual = result.visualMutations.toSet();
-      if (combo.requiredMutationIds.every(
-        (id) => offspringVisual.contains(id),
-      )) {
-        warnings.add(ViabilityWarning(combination: combo, offspring: result));
-      }
-    }
-
-    return warnings;
-  }
-
-  /// Checks if a phenotype string indicates a double factor (homozygous) state.
-  ///
-  /// Autosomal dominant uses "(homozygous)" suffix, while autosomal incomplete
-  /// dominant uses "(double)" or "DF" prefix.
-  bool _isDoubleFactorPhenotype(String phenotype, String mutationId) {
-    return switch (mutationId) {
-      'crested_tufted' || 'crested_half_circular' || 'crested_full_circular' =>
-        (phenotype.contains('crested') && phenotype.contains('homozygous')) ||
-            phenotype.contains('df crested') ||
-            phenotype.contains('double factor crested'),
-      'spangle' =>
-        phenotype.contains('spangle') &&
-            (phenotype.contains('double') || phenotype.contains('df spangle')),
-      _ =>
-        phenotype.contains('df $mutationId') ||
-            (phenotype.contains(mutationId) &&
-                phenotype.contains('homozygous')),
-    };
-  }
-}

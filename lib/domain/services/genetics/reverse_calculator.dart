@@ -64,7 +64,7 @@ class ReverseCalculator {
 
     combinations.sort((a, b) => b.maxProbability.compareTo(a.maxProbability));
 
-    return combinations.take(25).toList();
+    return combinations.take(GeneticsConstants.reverseMaxDisplayResults).toList();
   }
 
   List<LocusPairResult> _findValidPairsForLocus(

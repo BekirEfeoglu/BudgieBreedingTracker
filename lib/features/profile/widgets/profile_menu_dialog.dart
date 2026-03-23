@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
+import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/data/models/profile_model.dart';
 import 'package:budgie_breeding_tracker/features/admin/providers/admin_providers.dart'
@@ -217,7 +218,9 @@ Future<void> _confirmLogout(
   if (confirmed == true) {
     try {
       await authActions.signOut();
-    } catch (_) {}
+    } catch (e) {
+      AppLogger.error('[ProfileMenuDialog] Sign out failed', e, StackTrace.current);
+    }
     if (context.mounted) context.go(AppRoutes.login);
   }
 }

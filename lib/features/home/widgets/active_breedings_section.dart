@@ -9,6 +9,9 @@ import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/status_badge.dart';
 import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_detail_providers.dart';
+import 'package:budgie_breeding_tracker/features/home/widgets/section_header.dart';
+import 'package:budgie_breeding_tracker/features/settings/providers/settings_providers.dart';
+import 'package:budgie_breeding_tracker/router/route_names.dart';
 
 /// Section showing active breeding pairs on the dashboard.
 class ActiveBreedingsSection extends ConsumerWidget {
@@ -23,9 +26,9 @@ class ActiveBreedingsSection extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _SectionHeader(
+          SectionHeader(
             title: 'home.active_breedings_section'.tr(),
-            onViewAll: () => context.push('/breeding'),
+            onViewAll: () => context.go(AppRoutes.breeding),
           ),
           const SizedBox(height: AppSpacing.sm),
           if (pairs.isEmpty)
@@ -48,29 +51,6 @@ class ActiveBreedingsSection extends ConsumerWidget {
   }
 }
 
-class _SectionHeader extends StatelessWidget {
-  final String title;
-  final VoidCallback onViewAll;
-
-  const _SectionHeader({required this.title, required this.onViewAll});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          title,
-          style: Theme.of(
-            context,
-          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-        ),
-        TextButton(onPressed: onViewAll, child: Text('common.view_all'.tr())),
-      ],
-    );
-  }
-}
-
 class _BreedingPairTile extends ConsumerWidget {
   final BreedingPair pair;
 
@@ -89,7 +69,7 @@ class _BreedingPairTile extends ConsumerWidget {
     final femaleName = femaleAsync?.value?.name ?? 'common.unknown'.tr();
 
     final dateText = pair.pairingDate != null
-        ? DateFormat('dd.MM.yyyy').format(pair.pairingDate!)
+        ? ref.watch(dateFormatProvider).formatter().format(pair.pairingDate!)
         : '';
     final daysActive = pair.pairingDate != null
         ? DateTime.now().difference(pair.pairingDate!).inDays

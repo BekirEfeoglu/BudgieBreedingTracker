@@ -26,6 +26,10 @@ final selectedEntityForTreeProvider =
 class PedigreeDepthNotifier extends Notifier<int> {
   @override
   int build() => 5;
+
+  void setDepth(int depth) {
+    state = depth.clamp(3, 8);
+  }
 }
 
 final pedigreeDepthProvider = NotifierProvider<PedigreeDepthNotifier, int>(
@@ -39,13 +43,13 @@ Future<void> initPedigreeDepth(WidgetRef ref) async {
     3,
     8,
   );
-  ref.read(pedigreeDepthProvider.notifier).state = depth;
+  ref.read(pedigreeDepthProvider.notifier).setDepth(depth);
 }
 
 /// Persists pedigree depth and updates provider.
 Future<void> setPedigreeDepth(WidgetRef ref, int depth) async {
   final clamped = depth.clamp(3, 8);
-  ref.read(pedigreeDepthProvider.notifier).state = clamped;
+  ref.read(pedigreeDepthProvider.notifier).setDepth(clamped);
   final prefs = await SharedPreferences.getInstance();
   await prefs.setInt(AppPreferences.keyPedigreeDepth, clamped);
 }
@@ -94,7 +98,7 @@ final offspringProvider =
       ref,
       birdId,
     ) async {
-      final userId = ref.read(currentUserIdProvider);
+      final userId = ref.watch(currentUserIdProvider);
       final birdRepo = ref.read(birdRepositoryProvider);
 
       // 1. Get all birds and find direct offspring (parent filter)
@@ -215,6 +219,21 @@ final chickAncestorsProvider = FutureProvider.family<Map<String, Bird>, String>(
     return ancestors;
   },
 );
+
+/// View mode for pedigree tree display: tree (interactive) or list (flat).
+enum TreeViewMode { tree, list }
+
+/// Notifier for tree view mode toggle.
+class TreeViewModeNotifier extends Notifier<TreeViewMode> {
+  @override
+  TreeViewMode build() => TreeViewMode.tree;
+}
+
+/// Provider for tree/list view mode in genealogy screen.
+final treeViewModeProvider =
+    NotifierProvider<TreeViewModeNotifier, TreeViewMode>(
+      TreeViewModeNotifier.new,
+    );
 
 /// Repairs promoted birds with null parent IDs via chick → egg → pair chain.
 final repairOrphanBirdsProvider = FutureProvider<int>((ref) async {

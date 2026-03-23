@@ -63,6 +63,7 @@ import 'package:budgie_breeding_tracker/data/local/database/daos/genetics_histor
 import 'package:budgie_breeding_tracker/data/local/database/converters/enum_converters.dart';
 
 part 'app_database.g.dart';
+part 'app_database_migrations.dart';
 
 @DriftDatabase(
   tables: [
@@ -121,40 +122,40 @@ class AppDatabase extends _$AppDatabase {
   MigrationStrategy get migration => MigrationStrategy(
     onCreate: (m) async {
       await m.createAll();
-      await _createPerformanceIndexes();
+      await _createPerformanceIndexes(this);
     },
     onUpgrade: (m, from, to) async {
       // Run migrations sequentially from the old version to the new one.
       for (var i = from + 1; i <= to; i++) {
         switch (i) {
           case 2:
-            await _migrateV1ToV2(m);
+            await _migrateV1ToV2(this, m);
           case 3:
-            await _migrateV2ToV3(m);
+            await _migrateV2ToV3(this, m);
           case 4:
-            await _migrateV3ToV4(m);
+            await _migrateV3ToV4(this, m);
           case 5:
-            await _migrateV4ToV5(m);
+            await _migrateV4ToV5(this, m);
           case 6:
-            await _migrateV5ToV6(m);
+            await _migrateV5ToV6(this, m);
           case 7:
-            await _migrateV6ToV7(m);
+            await _migrateV6ToV7(this, m);
           case 8:
-            await _migrateV7ToV8(m);
+            await _migrateV7ToV8(this, m);
           case 9:
-            await _migrateV8ToV9(m);
+            await _migrateV8ToV9(this, m);
           case 10:
-            await _migrateV9ToV10(m);
+            await _migrateV9ToV10(this, m);
           case 11:
-            await _migrateV10ToV11(m);
+            await _migrateV10ToV11(this, m);
           case 12:
-            await _migrateV11ToV12(m);
+            await _migrateV11ToV12(this, m);
           case 13:
-            await _migrateV12ToV13(m);
+            await _migrateV12ToV13(this, m);
           case 14:
-            await _migrateV13ToV14(m);
+            await _migrateV13ToV14(this, m);
           case 15:
-            await _migrateV14ToV15(m);
+            await _migrateV14ToV15(this, m);
         }
       }
     },
@@ -172,287 +173,6 @@ class AppDatabase extends _$AppDatabase {
       }
     },
   );
-
-  /// Migration v1 -> v2: placeholder for future schema changes.
-  ///
-  /// Add concrete ALTER TABLE / CREATE TABLE statements here
-  /// when new columns or tables are introduced.
-  Future<void> _migrateV1ToV2(Migrator m) async {
-    // Example:
-    // await m.addColumn(birdsTable, birdsTable.someNewColumn);
-    // await m.createTable(someNewTable);
-  }
-
-  /// Migration v2 -> v3: Add 6 new tables.
-  Future<void> _migrateV2ToV3(Migrator m) async {
-    await m.createTable(clutchesTable);
-    await m.createTable(nestsTable);
-    await m.createTable(photosTable);
-    await m.createTable(userPreferencesTable);
-    await m.createTable(eventRemindersTable);
-    await m.createTable(notificationSchedulesTable);
-  }
-
-  /// Migration v3 -> v4: Update existing 'laid' eggs to 'incubating'
-  /// for eggs that belong to an incubation.
-  Future<void> _migrateV3ToV4(Migrator m) async {
-    await customStatement(
-      "UPDATE eggs SET status = 'incubating' "
-      "WHERE status = 'laid' AND incubation_id IS NOT NULL AND is_deleted = 0",
-    );
-  }
-
-  /// Migration v4 -> v5: Add color_mutation column to birds table.
-  Future<void> _migrateV4ToV5(Migrator m) async {
-    await m.addColumn(birdsTable, birdsTable.colorMutation);
-  }
-
-  /// Migration v5 -> v6: Add userId, isDeleted, updatedAt to event_reminders.
-  Future<void> _migrateV5ToV6(Migrator m) async {
-    // EventReminders: add userId, isDeleted, updatedAt columns
-    await customStatement(
-      "ALTER TABLE event_reminders ADD COLUMN user_id TEXT NOT NULL DEFAULT ''",
-    );
-    await customStatement(
-      'ALTER TABLE event_reminders ADD COLUMN is_deleted INTEGER NOT NULL DEFAULT 0',
-    );
-    await customStatement(
-      'ALTER TABLE event_reminders ADD COLUMN updated_at TEXT',
-    );
-  }
-
-  /// Migration v6 -> v7: Add mutations and genotype_info to birds.
-  Future<void> _migrateV6ToV7(Migrator m) async {
-    await m.addColumn(birdsTable, birdsTable.mutations);
-    await m.addColumn(birdsTable, birdsTable.genotypeInfo);
-  }
-
-  /// Migration v7 -> v8: Add genetics_history table.
-  Future<void> _migrateV7ToV8(Migrator m) async {
-    await m.createTable(geneticsHistoryTable);
-  }
-
-  /// Migration v8 -> v9: Add performance indexes to all tables.
-  Future<void> _migrateV8ToV9(Migrator m) async {
-    await _createPerformanceIndexes();
-  }
-
-  /// Migration v9 -> v10: Add composite index for nests status queries.
-  Future<void> _migrateV9ToV10(Migrator m) async {
-    await customStatement(
-      'CREATE INDEX IF NOT EXISTS idx_nests_user_status_deleted '
-      'ON nests (user_id, status, is_deleted)',
-    );
-  }
-
-  /// Migration v10 -> v11: Add composite index for breeding_pairs status queries.
-  Future<void> _migrateV10ToV11(Migrator m) async {
-    await customStatement(
-      'CREATE INDEX IF NOT EXISTS idx_breeding_pairs_user_status_deleted '
-      'ON breeding_pairs (user_id, status, is_deleted)',
-    );
-  }
-
-  /// Migration v11 -> v12: Add UNIQUE constraint on sync_metadata(table_name, record_id).
-  ///
-  /// Prevents duplicate sync entries for the same entity.
-  /// First removes existing duplicates, then creates the UNIQUE index.
-  Future<void> _migrateV11ToV12(Migrator m) async {
-    // Remove duplicate sync_metadata rows (keep the earliest by rowid)
-    await customStatement(
-      'DELETE FROM sync_metadata WHERE rowid NOT IN '
-      '(SELECT MIN(rowid) FROM sync_metadata GROUP BY table_name, record_id)',
-    );
-    // Drop the old non-unique index (the UNIQUE index covers the same columns)
-    await customStatement(
-      'DROP INDEX IF EXISTS idx_sync_metadata_table_record',
-    );
-    // Create UNIQUE index
-    await customStatement(
-      'CREATE UNIQUE INDEX IF NOT EXISTS idx_sync_metadata_table_record_unique '
-      'ON sync_metadata(table_name, record_id)',
-    );
-  }
-
-  /// Migration v12 -> v13: Add cleanupDaysOld column to notification_settings.
-  Future<void> _migrateV12ToV13(Migrator m) async {
-    await m.addColumn(
-      notificationSettingsTable,
-      notificationSettingsTable.cleanupDaysOld,
-    );
-  }
-
-  /// Migration v13 -> v14: normalize Species enum aliases.
-  ///
-  /// Replaces Turkish alias values (muhabbet, kanarya, ispinoz) with their
-  /// canonical English equivalents (budgie, canary, finch).
-  Future<void> _migrateV13ToV14(Migrator m) async {
-    await customStatement(
-      "UPDATE birds SET species = 'budgie' WHERE species = 'muhabbet'",
-    );
-    await customStatement(
-      "UPDATE birds SET species = 'canary' WHERE species = 'kanarya'",
-    );
-    await customStatement(
-      "UPDATE birds SET species = 'finch' WHERE species = 'ispinoz'",
-    );
-  }
-
-  /// Migration v14 -> v15: Add banding columns to chicks and chickId to events.
-  Future<void> _migrateV14ToV15(Migrator m) async {
-    await m.addColumn(chicksTable, chicksTable.bandingDay);
-    await m.addColumn(chicksTable, chicksTable.bandingDate);
-    await m.addColumn(eventsTable, eventsTable.chickId);
-  }
-
-  /// Creates performance indexes on all tables.
-  ///
-  /// Uses IF NOT EXISTS so it's safe to call from both onCreate and onUpgrade.
-  /// Composite index on (user_id, is_deleted) covers the most common query
-  /// pattern. FK columns are indexed for join/lookup performance.
-  Future<void> _createPerformanceIndexes() async {
-    // --- Composite (user_id, is_deleted) indexes for soft-delete tables ---
-    await customStatement(
-      'CREATE INDEX IF NOT EXISTS idx_birds_user_deleted '
-      'ON birds (user_id, is_deleted)',
-    );
-    await customStatement(
-      'CREATE INDEX IF NOT EXISTS idx_eggs_user_deleted '
-      'ON eggs (user_id, is_deleted)',
-    );
-    await customStatement(
-      'CREATE INDEX IF NOT EXISTS idx_chicks_user_deleted '
-      'ON chicks (user_id, is_deleted)',
-    );
-    await customStatement(
-      'CREATE INDEX IF NOT EXISTS idx_breeding_pairs_user_deleted '
-      'ON breeding_pairs (user_id, is_deleted)',
-    );
-    await customStatement(
-      'CREATE INDEX IF NOT EXISTS idx_events_user_deleted '
-      'ON events (user_id, is_deleted)',
-    );
-    await customStatement(
-      'CREATE INDEX IF NOT EXISTS idx_health_records_user_deleted '
-      'ON health_records (user_id, is_deleted)',
-    );
-    await customStatement(
-      'CREATE INDEX IF NOT EXISTS idx_clutches_user_deleted '
-      'ON clutches (user_id, is_deleted)',
-    );
-    await customStatement(
-      'CREATE INDEX IF NOT EXISTS idx_nests_user_deleted '
-      'ON nests (user_id, is_deleted)',
-    );
-    await customStatement(
-      'CREATE INDEX IF NOT EXISTS idx_event_reminders_user_deleted '
-      'ON event_reminders (user_id, is_deleted)',
-    );
-    await customStatement(
-      'CREATE INDEX IF NOT EXISTS idx_genetics_history_user_deleted '
-      'ON genetics_history (user_id, is_deleted)',
-    );
-
-    // --- Composite (user_id, status, is_deleted) for filtered status queries ---
-    await customStatement(
-      'CREATE INDEX IF NOT EXISTS idx_nests_user_status_deleted '
-      'ON nests (user_id, status, is_deleted)',
-    );
-    await customStatement(
-      'CREATE INDEX IF NOT EXISTS idx_breeding_pairs_user_status_deleted '
-      'ON breeding_pairs (user_id, status, is_deleted)',
-    );
-
-    // --- userId-only indexes for tables without is_deleted ---
-    await customStatement(
-      'CREATE INDEX IF NOT EXISTS idx_incubations_user '
-      'ON incubations (user_id)',
-    );
-    await customStatement(
-      'CREATE INDEX IF NOT EXISTS idx_growth_measurements_user '
-      'ON growth_measurements (user_id)',
-    );
-    await customStatement(
-      'CREATE INDEX IF NOT EXISTS idx_notifications_user '
-      'ON notifications (user_id)',
-    );
-    await customStatement(
-      'CREATE INDEX IF NOT EXISTS idx_notification_settings_user '
-      'ON notification_settings (user_id)',
-    );
-    await customStatement(
-      'CREATE INDEX IF NOT EXISTS idx_notification_schedules_user '
-      'ON notification_schedules (user_id)',
-    );
-    await customStatement(
-      'CREATE INDEX IF NOT EXISTS idx_user_preferences_user '
-      'ON user_preferences (user_id)',
-    );
-    await customStatement(
-      'CREATE INDEX IF NOT EXISTS idx_photos_user '
-      'ON photos (user_id)',
-    );
-
-    // --- FK indexes for join/lookup performance ---
-    await customStatement(
-      'CREATE INDEX IF NOT EXISTS idx_eggs_clutch '
-      'ON eggs (clutch_id)',
-    );
-    await customStatement(
-      'CREATE INDEX IF NOT EXISTS idx_eggs_incubation '
-      'ON eggs (incubation_id)',
-    );
-    await customStatement(
-      'CREATE INDEX IF NOT EXISTS idx_chicks_egg '
-      'ON chicks (egg_id)',
-    );
-    await customStatement(
-      'CREATE INDEX IF NOT EXISTS idx_breeding_pairs_male '
-      'ON breeding_pairs (male_id)',
-    );
-    await customStatement(
-      'CREATE INDEX IF NOT EXISTS idx_breeding_pairs_female '
-      'ON breeding_pairs (female_id)',
-    );
-    await customStatement(
-      'CREATE INDEX IF NOT EXISTS idx_health_records_bird '
-      'ON health_records (bird_id)',
-    );
-    await customStatement(
-      'CREATE INDEX IF NOT EXISTS idx_growth_measurements_chick '
-      'ON growth_measurements (chick_id)',
-    );
-    await customStatement(
-      'CREATE INDEX IF NOT EXISTS idx_event_reminders_event '
-      'ON event_reminders (event_id)',
-    );
-    await customStatement(
-      'CREATE INDEX IF NOT EXISTS idx_photos_entity '
-      'ON photos (entity_id, entity_type)',
-    );
-    await customStatement(
-      'CREATE INDEX IF NOT EXISTS idx_incubations_breeding_pair '
-      'ON incubations (breeding_pair_id)',
-    );
-    await customStatement(
-      'CREATE INDEX IF NOT EXISTS idx_clutches_breeding '
-      'ON clutches (breeding_id)',
-    );
-    await customStatement(
-      'CREATE INDEX IF NOT EXISTS idx_events_bird '
-      'ON events (bird_id)',
-    );
-
-    // --- Sync metadata indexes (critical for sync performance) ---
-    await customStatement(
-      'CREATE INDEX IF NOT EXISTS idx_sync_metadata_user_status '
-      'ON sync_metadata (user_id, status)',
-    );
-    await customStatement(
-      'CREATE UNIQUE INDEX IF NOT EXISTS idx_sync_metadata_table_record_unique '
-      'ON sync_metadata (table_name, record_id)',
-    );
-  }
 
   /// Deletes ALL data belonging to [userId] from every table.
   ///

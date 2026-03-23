@@ -1,4 +1,3 @@
-import 'package:budgie_breeding_tracker/core/utils/app_haptics.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,11 +10,14 @@ import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
 import 'package:budgie_breeding_tracker/core/widgets/error_state.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
+import 'package:budgie_breeding_tracker/core/widgets/dialogs/confirm_dialog.dart';
 import 'package:budgie_breeding_tracker/data/models/health_record_model.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_providers.dart';
 import 'package:budgie_breeding_tracker/features/health_records/providers/health_record_providers.dart';
 import 'package:budgie_breeding_tracker/features/health_records/providers/health_record_form_providers.dart';
 import 'package:budgie_breeding_tracker/features/health_records/widgets/health_record_card.dart';
+
+part 'health_record_detail_widgets.dart';
 
 /// Detail screen for a single health record.
 class HealthRecordDetailScreen extends ConsumerWidget {
@@ -69,6 +71,11 @@ class _DetailContent extends ConsumerWidget {
       if (state.isSuccess) {
         ref.read(healthRecordFormStateProvider.notifier).reset();
         context.pop();
+      }
+      if (state.error != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(state.error!)),
+        );
       }
     });
 
@@ -199,26 +206,12 @@ class _DetailContent extends ConsumerWidget {
   }
 
   void _onDelete(BuildContext context, WidgetRef ref) async {
-    AppHaptics.lightImpact();
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text('common.delete'.tr()),
-        content: Text('health_records.delete_confirm'.tr()),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text('common.cancel'.tr()),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            style: TextButton.styleFrom(
-              foregroundColor: Theme.of(ctx).colorScheme.error,
-            ),
-            child: Text('common.delete'.tr()),
-          ),
-        ],
-      ),
+    final confirmed = await showConfirmDialog(
+      context,
+      title: 'common.delete'.tr(),
+      message: 'health_records.delete_confirm'.tr(),
+      confirmLabel: 'common.delete'.tr(),
+      isDestructive: true,
     );
     if (confirmed == true && context.mounted) {
       ref.read(healthRecordFormStateProvider.notifier).deleteRecord(record.id);
@@ -226,81 +219,3 @@ class _DetailContent extends ConsumerWidget {
   }
 }
 
-class _HeaderSection extends StatelessWidget {
-  final HealthRecord record;
-  final ThemeData theme;
-
-  const _HeaderSection({required this.record, required this.theme});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(AppSpacing.xl),
-      decoration: BoxDecoration(
-        color: healthRecordTypeColor(record.type).withValues(alpha: 0.08),
-      ),
-      child: Column(
-        children: [
-          CircleAvatar(
-            radius: 32,
-            backgroundColor: healthRecordTypeColor(
-              record.type,
-            ).withValues(alpha: 0.2),
-            child: Icon(
-              healthRecordTypeIcon(record.type),
-              size: 32,
-              color: healthRecordTypeColor(record.type),
-            ),
-          ),
-          const SizedBox(height: AppSpacing.md),
-          Text(
-            record.title,
-            style: theme.textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: AppSpacing.xs),
-          Text(
-            healthRecordTypeLabel(record.type),
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: healthRecordTypeColor(record.type),
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _AnimalInfoCard extends ConsumerWidget {
-  final String birdId;
-
-  const _AnimalInfoCard({required this.birdId});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final userId = ref.watch(currentUserIdProvider);
-    final cache = ref.watch(animalNameCacheProvider(userId));
-    final animal = cache[birdId];
-
-    if (animal == null) return const SizedBox.shrink();
-
-    final displayName = animal.ringNumber != null
-        ? '${animal.name} (${animal.ringNumber})'
-        : animal.name;
-    final typeLabel = animal.isChick
-        ? 'chicks.chick_label'.tr()
-        : 'health_records.bird_label'.tr();
-
-    return InfoCard(
-      icon: AppIcon(animal.isChick ? AppIcons.chick : AppIcons.bird),
-      title: typeLabel,
-      subtitle: displayName,
-      onTap: () =>
-          context.push(animal.isChick ? '/chicks/$birdId' : '/birds/$birdId'),
-    );
-  }
-}

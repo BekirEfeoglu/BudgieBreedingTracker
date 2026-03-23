@@ -133,27 +133,36 @@ class _PhotoThumbnail extends StatelessWidget {
             ),
             if (onDelete != null)
               Positioned(
-                top: 4,
-                right: 4,
-                child: GestureDetector(
-                  onTap: onDelete,
-                  child: Container(
-                    width: 28,
-                    height: 28,
-                    decoration: BoxDecoration(
-                      color: theme.colorScheme.surface.withValues(alpha: 0.85),
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.15),
-                          blurRadius: 4,
+                top: 0,
+                right: 0,
+                child: SizedBox(
+                  width: AppSpacing.touchTargetMin,
+                  height: AppSpacing.touchTargetMin,
+                  child: GestureDetector(
+                    onTap: onDelete,
+                    behavior: HitTestBehavior.opaque,
+                    child: Center(
+                      child: Container(
+                        width: 28,
+                        height: 28,
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.surface.withValues(
+                            alpha: 0.85,
+                          ),
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.15),
+                              blurRadius: 4,
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                    child: Icon(
-                      LucideIcons.x,
-                      size: 16,
-                      color: theme.colorScheme.error,
+                        child: Icon(
+                          LucideIcons.x,
+                          size: 16,
+                          color: theme.colorScheme.error,
+                        ),
+                      ),
                     ),
                   ),
                 ),

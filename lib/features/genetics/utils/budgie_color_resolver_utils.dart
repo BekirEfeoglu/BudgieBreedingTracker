@@ -218,9 +218,9 @@ const List<String> _blueTerms = [
   // Eye
   final (Color eyeColor, Color eyeRingColor, bool showEyeRing) = switch (true) {
     _ when isIno => (const Color(0xFFCC2233), const Color(0xFFF2C8CC), true),
-    _ when hasEnglishFallow => (const Color(0xFF8B4557), whiteRing, true),
-    _ when hasGermanFallow => (const Color(0xFFAA3344), whiteRing, true),
-    _ when hasRecessivePied => (black, whiteRing, false),
+    _ when hasEnglishFallow => (const Color(0xFFCC2838), whiteRing, false),
+    _ when hasGermanFallow => (const Color(0xFFA82030), whiteRing, true),
+    _ when hasRecessivePied => (const Color(0xFF1F0F18), whiteRing, false),
     _ when isDarkEyedClear => (const Color(0xFF0F0F0F), whiteRing, false),
     _ => (black, whiteRing, true),
   };
@@ -242,7 +242,9 @@ const List<String> _blueTerms = [
   // Tail
   final baseTail = isBlueSeries ? baseTailBlue : baseTailGreen;
   final Color tailColor = switch (true) {
-    _ when isIno => baseTail.withValues(alpha: 0.15),
+    _ when isIno && !isBlueSeries =>
+      BudgiePhenotypePalette.maskYellow.withValues(alpha: 0.20),
+    _ when isIno => baseTail.withValues(alpha: 0.10),
     _ when hasCinnamon => const Color(0xFF6B5040),
     _ when hasDilute || hasGreywing => BudgiePhenotypePalette.wingGrey,
     _ when hasOpaline => _mix(baseTail, body, 0.30),

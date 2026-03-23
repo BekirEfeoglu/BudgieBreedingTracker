@@ -81,6 +81,34 @@ abstract class SupabaseConstants {
   static const String backupHistoryTable = 'backup_history';
   static const String configBackupsTable = 'config_backups';
 
+  // Feedback columns
+  static const String feedbackColId = 'id';
+  static const String feedbackColUserId = 'user_id';
+  static const String feedbackColType = 'type';
+  static const String feedbackColSubject = 'subject';
+  static const String feedbackColMessage = 'message';
+  static const String feedbackColEmail = 'email';
+  static const String feedbackColAppVersion = 'app_version';
+  static const String feedbackColPlatform = 'platform';
+  static const String feedbackColStatus = 'status';
+  static const String feedbackColAdminResponse = 'admin_response';
+  static const String feedbackColCreatedAt = 'created_at';
+  static const String feedbackColRespondedAt = 'responded_at';
+  static const String feedbackColResponseReadAt = 'response_read_at';
+
+  // Notification columns (used by feedback founder notifications)
+  static const String notificationColId = 'id';
+  static const String notificationColUserId = 'user_id';
+  static const String notificationColTitle = 'title';
+  static const String notificationColBody = 'body';
+  static const String notificationColType = 'type';
+  static const String notificationColPriority = 'priority';
+  static const String notificationColRead = 'read';
+  static const String notificationColReferenceId = 'reference_id';
+  static const String notificationColReferenceType = 'reference_type';
+  static const String notificationColCreatedAt = 'created_at';
+  static const String notificationColUpdatedAt = 'updated_at';
+
   // Storage Buckets
   static const String birdPhotosBucket = 'bird-photos';
   static const String eggPhotosBucket = 'egg-photos';

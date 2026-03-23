@@ -10,7 +10,17 @@ class PhotoRemoteSource extends BaseRemoteSourceNoSoftDelete<Photo> {
   String get tableName => SupabaseConstants.photosTable;
 
   @override
-  Photo fromJson(Map<String, dynamic> json) => Photo.fromJson(json);
+  Photo fromJson(Map<String, dynamic> json) {
+    final mapped = {...json};
+    if (mapped.containsKey('url') && !mapped.containsKey('file_name')) {
+      mapped['file_name'] = mapped.remove('url');
+    }
+    if (mapped.containsKey('thumbnail_url') &&
+        !mapped.containsKey('file_path')) {
+      mapped['file_path'] = mapped.remove('thumbnail_url');
+    }
+    return Photo.fromJson(mapped);
+  }
 
   @override
   Map<String, dynamic> toSupabaseJson(Photo model) => model.toSupabase();

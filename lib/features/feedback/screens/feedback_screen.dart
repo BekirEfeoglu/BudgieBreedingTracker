@@ -233,7 +233,7 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen>
                 const SizedBox(height: AppSpacing.xl),
 
                 // Info banner
-                FeedbackInfoBanner(theme: theme),
+                const FeedbackInfoBanner(),
 
                 const SizedBox(height: AppSpacing.xxl),
 

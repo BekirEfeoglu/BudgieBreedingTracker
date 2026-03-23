@@ -7,6 +7,7 @@ import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
 import 'package:budgie_breeding_tracker/features/home/providers/home_providers.dart';
+import 'package:budgie_breeding_tracker/features/home/widgets/section_header.dart';
 import 'package:budgie_breeding_tracker/router/route_names.dart';
 
 /// Section showing a summary of incubating eggs with days remaining.
@@ -22,7 +23,7 @@ class IncubationSummarySection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _SectionHeader(
+          SectionHeader(
             title: 'home.incubation_summary'.tr(),
             onViewAll: () => context.go(AppRoutes.breeding),
           ),
@@ -43,29 +44,6 @@ class IncubationSummarySection extends StatelessWidget {
             ...eggs.map((summary) => _IncubatingEggTile(summary: summary)),
         ],
       ),
-    );
-  }
-}
-
-class _SectionHeader extends StatelessWidget {
-  final String title;
-  final VoidCallback onViewAll;
-
-  const _SectionHeader({required this.title, required this.onViewAll});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          title,
-          style: Theme.of(
-            context,
-          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-        ),
-        TextButton(onPressed: onViewAll, child: Text('common.view_all'.tr())),
-      ],
     );
   }
 }
@@ -151,6 +129,7 @@ class _ProgressIndicator extends StatelessWidget {
           ),
           Text(
             '${(progress * 100).round()}%',
+            // 9px needed to fit "100%" inside 36px circular indicator
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
               fontSize: 9,
               fontWeight: FontWeight.bold,

@@ -192,4 +192,14 @@ class BirdRepository extends BaseRepository<Bird>
 
   /// Soft-deleted birds.
   Future<List<Bird>> getDeleted(String userId) => _localDao.getDeleted(userId);
+
+  /// Checks if [ringNumber] is already in use by another bird.
+  ///
+  /// Pass [excludeId] to skip the bird being edited.
+  Future<bool> hasRingNumber(
+    String userId,
+    String ringNumber, {
+    String? excludeId,
+  }) =>
+      _localDao.hasRingNumber(userId, ringNumber, excludeId: excludeId);
 }

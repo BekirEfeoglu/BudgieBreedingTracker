@@ -3,8 +3,10 @@ import 'dart:ui' as ui;
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+// DateFormat provided via easy_localization (re-exports intl)
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
@@ -105,6 +107,7 @@ class _PedigreeExportButtonState extends State<PedigreeExportButton> {
       );
     } catch (e, st) {
       AppLogger.error('[PedigreeExport]', e, st);
+      Sentry.captureException(e, stackTrace: st);
       messenger.showSnackBar(SnackBar(content: Text('errors.unknown'.tr())));
     } finally {
       if (mounted) setState(() => _isExporting = false);
@@ -136,6 +139,7 @@ class _PedigreeExportButtonState extends State<PedigreeExportButton> {
       );
     } catch (e, st) {
       AppLogger.error('[PedigreeImageExport]', e, st);
+      Sentry.captureException(e, stackTrace: st);
       messenger.showSnackBar(SnackBar(content: Text('errors.unknown'.tr())));
     } finally {
       if (mounted) setState(() => _isExporting = false);

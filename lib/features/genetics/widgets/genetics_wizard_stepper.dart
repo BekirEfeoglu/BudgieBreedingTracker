@@ -96,8 +96,8 @@ class _StepDot extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
-      child: SizedBox(
-        width: AppSpacing.touchTargetMin,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minWidth: AppSpacing.touchTargetMin),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -137,6 +137,9 @@ class _StepDot extends StatelessWidget {
                     ? theme.colorScheme.primary
                     : theme.colorScheme.onSurfaceVariant,
               ),
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),

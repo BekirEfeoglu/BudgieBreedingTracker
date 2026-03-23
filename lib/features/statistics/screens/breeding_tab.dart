@@ -62,7 +62,7 @@ class _BreedingSuccessSection extends ConsumerWidget {
       icon: const AppIcon(AppIcons.breeding),
       child: outcomesAsync.when(
         loading: () => const ChartLoading(),
-        error: (e, _) => ChartError(message: e.toString()),
+        error: (e, _) => ChartError(message: 'common.data_load_error'.tr()),
         data: (data) => BreedingSuccessChart(
           completed: data.completed,
           cancelled: data.cancelled,
@@ -86,7 +86,7 @@ class _EggProductionSection extends ConsumerWidget {
       icon: const AppIcon(AppIcons.egg),
       child: eggDataAsync.when(
         loading: () => const ChartLoading(),
-        error: (e, _) => ChartError(message: e.toString()),
+        error: (e, _) => ChartError(message: 'common.data_load_error'.tr()),
         data: (data) => EggProductionChart(monthlyData: data),
       ),
     );
@@ -107,7 +107,7 @@ class _FertilityTrendSection extends ConsumerWidget {
       icon: const AppIcon(AppIcons.fertile),
       child: fertilityAsync.when(
         loading: () => const ChartLoading(),
-        error: (e, _) => ChartError(message: e.toString()),
+        error: (e, _) => ChartError(message: 'common.data_load_error'.tr()),
         data: (data) => FertilityTrendChart(monthlyData: data),
       ),
     );
@@ -128,7 +128,7 @@ class _IncubationDurationSection extends ConsumerWidget {
       icon: const AppIcon(AppIcons.incubation),
       child: durationAsync.when(
         loading: () => const ChartLoading(),
-        error: (e, _) => ChartError(message: e.toString()),
+        error: (e, _) => ChartError(message: 'common.data_load_error'.tr()),
         data: (data) => IncubationDurationChart(data: data),
       ),
     );

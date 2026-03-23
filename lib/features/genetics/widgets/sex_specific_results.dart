@@ -1,8 +1,9 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/mendelian_calculator.dart';
-import 'package:budgie_breeding_tracker/features/genetics/widgets/offspring_prediction.dart';
+import 'package:budgie_breeding_tracker/features/genetics/widgets/grouped_results_list.dart';
 
 /// Maximum visible results before collapsing with "show more".
 const _initialVisibleCount = 6;
@@ -157,18 +158,9 @@ class _ResultsListState extends State<_ResultsList> {
 
     return Column(
       children: [
-        ListView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
-          itemCount: visibleResults.length,
-          itemBuilder: (context, index) => Padding(
-            padding: const EdgeInsets.only(bottom: AppSpacing.xs),
-            child: OffspringPrediction(
-              result: visibleResults[index],
-              showGenotype: widget.showGenotype,
-            ),
-          ),
+        GroupedResultsList(
+          results: visibleResults,
+          showGenotype: widget.showGenotype,
         ),
         if (hasMore)
           Padding(
@@ -176,7 +168,7 @@ class _ResultsListState extends State<_ResultsList> {
             child: TextButton.icon(
               onPressed: () => setState(() => _expanded = !_expanded),
               icon: Icon(
-                _expanded ? Icons.expand_less : Icons.expand_more,
+                _expanded ? LucideIcons.chevronUp : LucideIcons.chevronDown,
                 size: 20,
               ),
               label: Text(

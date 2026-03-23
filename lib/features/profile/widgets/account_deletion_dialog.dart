@@ -100,7 +100,7 @@ Future<void> performAccountDeletion(BuildContext context, WidgetRef ref) async {
       context.go(AppRoutes.login);
     }
   } catch (e) {
-    AppLogger.error('[AccountDeletion] Account deletion failed', e);
+    AppLogger.error('[AccountDeletion] Account deletion failed', e, StackTrace.current);
     if (context.mounted) {
       Navigator.of(context).pop(); // close loading dialog
     }
@@ -132,15 +132,14 @@ class _AccountDeletionDialogState extends State<AccountDeletionDialog> {
   final _controller = TextEditingController();
   bool _canDelete = false;
 
-  /// Internal ASCII target for comparison (after normalization).
-  static const _confirmPhrase = 'HESABIMI SIL';
+  /// Language-neutral confirmation phrase.
+  static const _confirmPhrase = 'DELETE';
 
-  /// User-friendly display phrase (lowercase Turkish).
-  static const _displayPhrase = 'hesabımı sil';
+  /// User-friendly display phrase shown to the user.
+  static const _displayPhrase = 'DELETE';
 
   void _onTextChanged() {
-    final matches =
-        _normalizeTurkish(_controller.text.trim()) == _confirmPhrase;
+    final matches = _controller.text.trim().toUpperCase() == _confirmPhrase;
     if (matches != _canDelete) {
       setState(() => _canDelete = matches);
     }
@@ -150,19 +149,6 @@ class _AccountDeletionDialogState extends State<AccountDeletionDialog> {
   void initState() {
     super.initState();
     _controller.addListener(_onTextChanged);
-  }
-
-  /// Normalizes Turkish-specific characters to ASCII equivalents
-  /// so that both 'İ' (U+0130) and 'I' (U+0049) match the confirm phrase.
-  static String _normalizeTurkish(String input) {
-    return input
-        .toUpperCase()
-        .replaceAll('İ', 'I') // Turkish dotted İ → ASCII I
-        .replaceAll('Ş', 'S')
-        .replaceAll('Ç', 'C')
-        .replaceAll('Ğ', 'G')
-        .replaceAll('Ü', 'U')
-        .replaceAll('Ö', 'O');
   }
 
   @override

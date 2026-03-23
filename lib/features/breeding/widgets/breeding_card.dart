@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
@@ -13,7 +12,7 @@ import 'breeding_card_eggs.dart';
 import 'breeding_card_footer.dart';
 
 /// Composite breeding card with stage-colored left border.
-class BreedingCard extends ConsumerWidget {
+class BreedingCard extends StatelessWidget {
   final BreedingPair pair;
   final Incubation? incubation;
   final List<Egg> eggs;
@@ -28,7 +27,7 @@ class BreedingCard extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final daysElapsed = incubation?.daysElapsed ?? 0;
     final isComplete = incubation?.isComplete ?? false;
     final stageColor = isComplete

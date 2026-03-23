@@ -100,4 +100,27 @@ class BirdsDao extends DatabaseAccessor<AppDatabase> with _$BirdsDaoMixin {
     )..where((t) => t.userId.equals(userId) & t.isDeleted.equals(true))).get();
     return rows.map((r) => r.toModel()).toList();
   }
+
+  /// Checks if a ring number already exists for a given user.
+  ///
+  /// When [excludeId] is provided the bird with that id is skipped
+  /// (useful for update-form uniqueness validation).
+  Future<bool> hasRingNumber(
+    String userId,
+    String ringNumber, {
+    String? excludeId,
+  }) async {
+    final rows = await (select(birdsTable)
+          ..where((t) {
+            var condition = t.userId.equals(userId) &
+                t.ringNumber.equals(ringNumber) &
+                t.isDeleted.equals(false);
+            if (excludeId != null) {
+              condition = condition & t.id.equals(excludeId).not();
+            }
+            return condition;
+          }))
+        .get();
+    return rows.isNotEmpty;
+  }
 }

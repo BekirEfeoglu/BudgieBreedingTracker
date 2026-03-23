@@ -64,7 +64,7 @@ class _SummarySection extends ConsumerWidget {
 
     return statsAsync.when(
       loading: () => const ChartLoading(),
-      error: (e, _) => ChartError(message: e.toString()),
+      error: (e, _) => ChartError(message: 'common.data_load_error'.tr()),
       data: (stats) {
         final trends = trendAsync.value;
         return SummaryStatsGrid(stats: stats, trends: trends);
@@ -86,7 +86,7 @@ class _GenderDistributionSection extends ConsumerWidget {
       icon: const AppIcon(AppIcons.statistics),
       child: genderAsync.when(
         loading: () => const ChartLoading(),
-        error: (e, _) => ChartError(message: e.toString()),
+        error: (e, _) => ChartError(message: 'common.data_load_error'.tr()),
         data: (stats) => GenderPieChart(
           maleCount: stats.male,
           femaleCount: stats.female,
@@ -110,7 +110,7 @@ class _ColorMutationSection extends ConsumerWidget {
       icon: const AppIcon(AppIcons.colorPalette),
       child: colorAsync.when(
         loading: () => const ChartLoading(),
-        error: (e, _) => ChartError(message: e.toString()),
+        error: (e, _) => ChartError(message: 'common.data_load_error'.tr()),
         data: (data) => ColorMutationChart(data: data),
       ),
     );
@@ -130,7 +130,7 @@ class _AgeDistributionSection extends ConsumerWidget {
       icon: const AppIcon(AppIcons.bird),
       child: ageAsync.when(
         loading: () => const ChartLoading(),
-        error: (e, _) => ChartError(message: e.toString()),
+        error: (e, _) => ChartError(message: 'common.data_load_error'.tr()),
         data: (data) => AgeDistributionChart(data: data),
       ),
     );

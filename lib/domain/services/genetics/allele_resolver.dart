@@ -1,9 +1,16 @@
 part of 'mendelian_calculator.dart';
 
+/// Wild-type allele identifier used in allele pair representations.
+const _kWildtype = 'wildtype';
+
+/// W chromosome identifier for sex-linked (ZW) inheritance.
+/// Female birds are ZW; the W chromosome carries no color gene alleles.
+const _kWChromosome = 'W';
+
 /// Determines the two alleles a parent contributes at an allelic series locus.
 ///
 /// Returns a list of two allele identifiers:
-/// - 'wildtype' for the wild-type allele
+/// - [_kWildtype] for the wild-type allele
 /// - mutation ID for the mutant allele
 List<String> _getAllelesAtLocus(
   String locusId,
@@ -13,7 +20,7 @@ List<String> _getAllelesAtLocus(
   final selectedAtLocus = parent.getMutationsAtLocus(locusId);
 
   if (selectedAtLocus.isEmpty) {
-    return ['wildtype', 'wildtype'];
+    return [_kWildtype, _kWildtype];
   }
 
   if (selectedAtLocus.length == 1) {
@@ -21,9 +28,9 @@ List<String> _getAllelesAtLocus(
     final state = parent.getState(mutId);
     return switch (state) {
       AlleleState.visual => [mutId, mutId], // Homozygous
-      AlleleState.carrier => [mutId, 'wildtype'], // Heterozygous
-      AlleleState.split => [mutId, 'wildtype'],
-      null => ['wildtype', 'wildtype'],
+      AlleleState.carrier => [mutId, _kWildtype], // Heterozygous
+      AlleleState.split => [mutId, _kWildtype],
+      null => [_kWildtype, _kWildtype],
     };
   }
 
@@ -52,22 +59,22 @@ List<String> _getSexLinkedMotherAllelesAtLocus(
   final selectedAtLocus = mother.getMutationsAtLocus(locusId);
 
   if (selectedAtLocus.isEmpty) {
-    return ['wildtype', 'W'];
+    return [_kWildtype, _kWChromosome];
   }
 
   // Female is hemizygous: only one Z allele at sex-linked loci
   final mutId = selectedAtLocus.first;
   final state = mother.getState(mutId);
   if (state != null) {
-    return [mutId, 'W'];
+    return [mutId, _kWChromosome];
   }
-  return ['wildtype', 'W'];
+  return [_kWildtype, _kWChromosome];
 }
 
 /// Sorts allelic pair into a canonical key for grouping.
 String _sortAllelicPair(String a, String b) {
-  if (a == 'wildtype' && b != 'wildtype') return '$b|$a';
-  if (b == 'wildtype' && a != 'wildtype') return '$a|$b';
+  if (a == _kWildtype && b != _kWildtype) return '$b|$a';
+  if (b == _kWildtype && a != _kWildtype) return '$a|$b';
   if (a.compareTo(b) <= 0) return '$a|$b';
   return '$b|$a';
 }
@@ -79,7 +86,7 @@ _AllelicPhenotypeResult _resolveAllelicPhenotype(
   String allele2,
 ) {
   // Both wild-type
-  if (allele1 == 'wildtype' && allele2 == 'wildtype') {
+  if (allele1 == _kWildtype && allele2 == _kWildtype) {
     return const _AllelicPhenotypeResult(
       phenotype: 'Normal',
       genotype: '+/+',
@@ -89,8 +96,8 @@ _AllelicPhenotypeResult _resolveAllelicPhenotype(
   }
 
   // One wild-type, one mutant: wild-type is dominant over all mutants
-  if (allele1 == 'wildtype' || allele2 == 'wildtype') {
-    final mutant = allele1 == 'wildtype' ? allele2 : allele1;
+  if (allele1 == _kWildtype || allele2 == _kWildtype) {
+    final mutant = allele1 == _kWildtype ? allele2 : allele1;
     final record = MutationDatabase.getById(mutant);
     final sym = record?.alleleSymbol ?? mutant;
     return _AllelicPhenotypeResult(
@@ -191,7 +198,10 @@ String _resolveLinkedCompoundName(
   String name2,
 ) {
   final ids = {id1, id2};
-  if (ids.contains('cinnamon') && ids.contains('ino')) return 'Lacewing';
+  if (ids.contains(GeneticsConstants.mutCinnamon) &&
+      ids.contains(GeneticsConstants.mutIno)) {
+    return 'Lacewing';
+  }
   final names = [name1, name2]..sort();
   return names.join(' ');
 }
@@ -245,8 +255,8 @@ String _sortAlleles(String a, String b) {
 
 /// Returns human-readable name for an allele ID.
 String _alleleDisplayName(String alleleId) {
-  if (alleleId == 'wildtype') return '+';
-  if (alleleId == 'W') return 'W';
+  if (alleleId == _kWildtype) return '+';
+  if (alleleId == _kWChromosome) return _kWChromosome;
   final record = MutationDatabase.getById(alleleId);
   return record?.alleleSymbol ?? alleleId;
 }

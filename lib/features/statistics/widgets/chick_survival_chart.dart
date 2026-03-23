@@ -5,6 +5,7 @@ import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/data/models/statistics_models.dart';
 import 'package:budgie_breeding_tracker/features/statistics/widgets/chart_card.dart';
+import 'package:budgie_breeding_tracker/features/statistics/widgets/chart_legend_item.dart';
 
 /// Pie chart showing chick health status distribution (healthy/sick/deceased).
 class ChickSurvivalChart extends StatelessWidget {
@@ -96,22 +97,22 @@ class ChickSurvivalChart extends StatelessWidget {
   }
 
   Widget _buildLegend(ThemeData theme, int total) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
+    return Wrap(
+      alignment: WrapAlignment.center,
+      spacing: AppSpacing.lg,
+      runSpacing: AppSpacing.sm,
       children: [
-        _LegendItem(
+        ChartLegendItem(
           color: AppColors.success,
           label: 'statistics.survival_healthy'.tr(),
           count: data.healthy,
         ),
-        const SizedBox(width: AppSpacing.lg),
-        _LegendItem(
+        ChartLegendItem(
           color: AppColors.warning,
           label: 'statistics.survival_sick'.tr(),
           count: data.sick,
         ),
-        const SizedBox(width: AppSpacing.lg),
-        _LegendItem(
+        ChartLegendItem(
           color: AppColors.error,
           label: 'statistics.survival_deceased'.tr(),
           count: data.deceased,
@@ -121,30 +122,3 @@ class ChickSurvivalChart extends StatelessWidget {
   }
 }
 
-class _LegendItem extends StatelessWidget {
-  const _LegendItem({
-    required this.color,
-    required this.label,
-    required this.count,
-  });
-
-  final Color color;
-  final String label;
-  final int count;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: AppSpacing.md,
-          height: AppSpacing.md,
-          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-        ),
-        const SizedBox(width: AppSpacing.xs),
-        Text('$label ($count)', style: Theme.of(context).textTheme.labelSmall),
-      ],
-    );
-  }
-}

@@ -14,11 +14,13 @@ import 'package:budgie_breeding_tracker/domain/services/genetics/inbreeding_calc
 class InbreedingWarning extends StatelessWidget {
   final double coefficient;
   final InbreedingRisk risk;
+  final bool depthLimited;
 
   const InbreedingWarning({
     super.key,
     required this.coefficient,
     required this.risk,
+    this.depthLimited = false,
   });
 
   @override
@@ -89,6 +91,28 @@ class InbreedingWarning extends StatelessWidget {
               color: colors.text.withValues(alpha: 0.8),
             ),
           ),
+          if (depthLimited) ...[
+            const SizedBox(height: AppSpacing.xs),
+            Row(
+              children: [
+                Icon(
+                  LucideIcons.info,
+                  size: 14,
+                  color: colors.text.withValues(alpha: 0.6),
+                ),
+                const SizedBox(width: AppSpacing.xs),
+                Expanded(
+                  child: Text(
+                    'genetics.inbreeding_depth_limited'.tr(),
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: colors.text.withValues(alpha: 0.6),
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
         ],
       ),
     );

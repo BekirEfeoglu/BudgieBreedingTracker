@@ -56,7 +56,12 @@ class _LogItem extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(log.action, style: theme.textTheme.bodySmall),
+                Text(
+                  log.action,
+                  style: theme.textTheme.bodySmall,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
                 if (log.details != null)
                   Text(
                     log.details!,

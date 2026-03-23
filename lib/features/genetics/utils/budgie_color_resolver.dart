@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 part 'budgie_color_resolver_core.dart';
 part 'budgie_color_resolver_helpers.dart';
+part 'budgie_color_resolver_pied.dart';
 part 'budgie_color_resolver_utils.dart';
 
 /// Research-backed budgerigar palette used by genetics result previews.
@@ -12,7 +13,7 @@ part 'budgie_color_resolver_utils.dart';
 /// BudgieGenEx, Budgie World, Budgie Bubble, and mutation reference articles.
 abstract final class BudgiePhenotypePalette {
   static const lightGreen = Color(0xFF8CD600);
-  static const darkGreen = Color(0xFF56AA1C);
+  static const darkGreen = Color(0xFF49921A);
   static const olive = Color(0xFF566B21);
   static const greyGreen = Color(0xFFAFA80A);
 
@@ -24,7 +25,7 @@ abstract final class BudgiePhenotypePalette {
   static const slate = Color(0xFF647E90);
   static const anthraciteSingle = Color(0xFF57646E);
   static const anthraciteDouble = Color(0xFF3F474F);
-  static const anthraciteGreenSingle = Color(0xFF4F8120);
+  static const anthraciteGreenSingle = Color(0xFF3A5F15);
   static const anthraciteGreenDouble = Color(0xFF4B5A24);
 
   static const aqua = Color(0xFF67C9B7);
@@ -34,7 +35,7 @@ abstract final class BudgiePhenotypePalette {
   static const maskYellow = Color(0xFFF3DF63);
   static const maskWhite = Color(0xFFF4F7FA);
   static const warmIvory = Color(0xFFF4E7C6);
-  static const cream = Color(0xFFF7E9AE);
+  static const cream = Color(0xFFF5ECCC);
   static const lutino = Color(0xFFF4DF57);
 
   static const wingBlack = Color(0xFF2F3138);
@@ -73,6 +74,7 @@ class BudgieColorAppearance {
   final bool showThroatSpots;
   final int throatSpotCount;
   final bool showEyeRing;
+  final bool isSpangle;
 
   const BudgieColorAppearance({
     required this.bodyColor,
@@ -95,6 +97,7 @@ class BudgieColorAppearance {
     this.showThroatSpots = true,
     this.throatSpotCount = 6,
     this.showEyeRing = true,
+    this.isSpangle = false,
   });
 
   Color get effectiveBackColor => backColor ?? bodyColor;
@@ -122,29 +125,19 @@ class BudgieColorAppearance {
           hideWingMarkings == other.hideWingMarkings &&
           showThroatSpots == other.showThroatSpots &&
           throatSpotCount == other.throatSpotCount &&
-          showEyeRing == other.showEyeRing;
+          showEyeRing == other.showEyeRing &&
+          isSpangle == other.isSpangle;
 
   @override
   int get hashCode => Object.hash(
-        bodyColor,
-        maskColor,
-        wingMarkingColor,
-        wingFillColor,
-        cheekPatchColor,
-        piedPatchColor,
-        carrierAccentColor,
-        eyeColor,
-        eyeRingColor,
-        backColor,
-        tailColor,
-        throatSpotColor,
-        beakColor,
-        showPiedPatch,
-        showMantleHighlight,
-        showCarrierAccent,
-        hideWingMarkings,
-        showThroatSpots,
-        throatSpotCount,
-        showEyeRing,
+        Object.hash(bodyColor, maskColor, wingMarkingColor, wingFillColor),
+        Object.hash(cheekPatchColor, piedPatchColor, carrierAccentColor),
+        Object.hash(eyeColor, eyeRingColor, backColor, tailColor),
+        Object.hash(throatSpotColor, beakColor),
+        Object.hash(
+          showPiedPatch, showMantleHighlight, showCarrierAccent,
+          hideWingMarkings, showThroatSpots, throatSpotCount,
+          showEyeRing, isSpangle,
+        ),
       );
 }

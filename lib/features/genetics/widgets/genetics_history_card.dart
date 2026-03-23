@@ -14,6 +14,7 @@ import 'package:budgie_breeding_tracker/features/genetics/providers/genetics_his
 import 'package:budgie_breeding_tracker/features/genetics/providers/genetics_providers.dart';
 import 'package:budgie_breeding_tracker/features/genetics/utils/phenotype_colors.dart';
 import 'package:budgie_breeding_tracker/features/genetics/utils/phenotype_localizer.dart';
+import 'package:budgie_breeding_tracker/features/genetics/widgets/genetics_history_parent_chip.dart';
 
 /// Card showing a saved genetics calculation summary.
 class GeneticsHistoryCard extends ConsumerWidget {
@@ -144,7 +145,7 @@ class GeneticsHistoryCard extends ConsumerWidget {
     return Row(
       children: [
         Expanded(
-          child: _ParentChip(
+          child: GeneticsHistoryParentChip(
             label: 'genetics.father_mutations'.tr(),
             mutations: fatherMutations,
             color: AppColors.genderMale.withValues(alpha: 0.1),
@@ -163,7 +164,7 @@ class GeneticsHistoryCard extends ConsumerWidget {
         ),
         const SizedBox(width: AppSpacing.sm),
         Expanded(
-          child: _ParentChip(
+          child: GeneticsHistoryParentChip(
             label: 'genetics.mother_mutations'.tr(),
             mutations: motherMutations,
             color: AppColors.genderFemale.withValues(alpha: 0.1),
@@ -284,53 +285,3 @@ class GeneticsHistoryCard extends ConsumerWidget {
   }
 }
 
-/// Compact chip showing parent mutations.
-class _ParentChip extends StatelessWidget {
-  final String label;
-  final List<String> mutations;
-  final Color color;
-  final Widget icon;
-
-  const _ParentChip({
-    required this.label,
-    required this.mutations,
-    required this.color,
-    required this.icon,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.sm),
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              icon,
-              const SizedBox(width: AppSpacing.xs),
-              Expanded(
-                child: Text(
-                  mutations.isEmpty
-                      ? 'genetics.mutation_normal'.tr()
-                      : mutations.join(', '),
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    fontWeight: FontWeight.w500,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}

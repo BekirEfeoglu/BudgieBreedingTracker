@@ -1,6 +1,7 @@
 import 'dart:collection';
 
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
+import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/mutation_database.dart';
 
 /// Allele state for a single mutation locus in a parent bird.
@@ -136,6 +137,12 @@ class ParentGenotype {
       // Females are hemizygous for sex-linked: always visual
       next = AlleleState.visual;
     } else {
+      if (isSexLinked && gender == BirdGender.unknown) {
+        AppLogger.warning(
+          '[ParentGenotype] Sex-linked toggle on unknown gender bird, '
+          'falling back to visual↔carrier toggle',
+        );
+      }
       // Autosomal (or unknown gender fallback): toggle between visual and carrier
       next = switch (current) {
         AlleleState.visual => AlleleState.carrier,

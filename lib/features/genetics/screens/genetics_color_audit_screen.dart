@@ -25,6 +25,8 @@ class GeneticsColorAuditScreen extends StatelessWidget {
             GeneticsPrimaryColorAuditBoard(),
             SizedBox(height: AppSpacing.lg),
             GeneticsAdvancedColorAuditBoard(),
+            SizedBox(height: AppSpacing.lg),
+            GeneticsCompoundColorAuditBoard(),
           ],
         ),
       ),
@@ -56,6 +58,21 @@ class GeneticsAdvancedColorAuditBoard extends StatelessWidget {
       title: 'genetics.color_audit_advanced_title'.tr(),
       subtitle: 'genetics.color_audit_advanced_subtitle'.tr(),
       samples: advancedAuditSamples,
+      minTileWidth: 106,
+      birdSize: 80,
+    );
+  }
+}
+
+class GeneticsCompoundColorAuditBoard extends StatelessWidget {
+  const GeneticsCompoundColorAuditBoard({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return GeneticsColorAuditBoard(
+      title: 'genetics.color_audit_compound_title'.tr(),
+      subtitle: 'genetics.color_audit_compound_subtitle'.tr(),
+      samples: compoundAuditSamples,
       minTileWidth: 106,
       birdSize: 80,
     );

@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
+import '../../../core/constants/app_icons.dart';
 import '../../../core/enums/community_enums.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../core/widgets/app_icon.dart';
 import '../../../data/models/community_post_model.dart';
 import '../../../router/route_names.dart';
 
@@ -58,7 +60,7 @@ class BirdLinkChip extends StatelessWidget {
     final label = post.birdName ?? 'community.linked_bird'.tr();
 
     return ActionChip(
-      avatar: const Icon(LucideIcons.bird, size: 18),
+      avatar: const AppIcon(AppIcons.bird, size: 18),
       label: Text(label),
       onPressed: post.birdId == null
           ? null

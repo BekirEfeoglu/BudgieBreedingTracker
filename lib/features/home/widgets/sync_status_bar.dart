@@ -1,7 +1,11 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 
+import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
+import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
+import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/domain/services/sync/sync_providers.dart';
 
 class SyncStatusBar extends ConsumerStatefulWidget {
@@ -42,24 +46,24 @@ class _SyncStatusBarState extends ConsumerState<SyncStatusBar>
 
     final colorScheme = Theme.of(context).colorScheme;
 
-    final (IconData icon, Color color, String label) = switch (status) {
+    final (Widget icon, Color color, String label) = switch (status) {
       SyncDisplayStatus.synced => (
-        Icons.cloud_done,
+        Icon(LucideIcons.cloud, size: 13, color: colorScheme.primary),
         colorScheme.primary,
         'sync.synced'.tr(),
       ),
       SyncDisplayStatus.syncing => (
-        Icons.sync,
+        AppIcon(AppIcons.sync, size: 13, color: colorScheme.tertiary),
         colorScheme.tertiary,
         'sync.syncing'.tr(),
       ),
       SyncDisplayStatus.offline => (
-        Icons.cloud_off,
+        AppIcon(AppIcons.offline, size: 13, color: colorScheme.error),
         colorScheme.error,
         'sync.offline'.tr(),
       ),
       SyncDisplayStatus.error => (
-        Icons.cloud_off,
+        AppIcon(AppIcons.offline, size: 13, color: colorScheme.error),
         colorScheme.error,
         'sync.sync_error'.tr(),
       ),
@@ -79,7 +83,7 @@ class _SyncStatusBarState extends ConsumerState<SyncStatusBar>
         },
         child: Container(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(vertical: 4),
+          padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
           color: theme.colorScheme.surfaceContainerLow,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -88,9 +92,9 @@ class _SyncStatusBarState extends ConsumerState<SyncStatusBar>
               status == SyncDisplayStatus.syncing
                   ? RotationTransition(
                       turns: _rotationController,
-                      child: Icon(icon, size: 13, color: color),
+                      child: icon,
                     )
-                  : Icon(icon, size: 13, color: color),
+                  : icon,
               const SizedBox(width: 6),
               Text(
                 label,

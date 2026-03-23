@@ -84,7 +84,10 @@ class _CreateStoryButton extends StatelessWidget {
                   colors: [theme.colorScheme.primary, AppColors.accent],
                 ),
               ),
-              child: const Icon(LucideIcons.plus, color: Colors.white),
+              child: Icon(
+                LucideIcons.plus,
+                color: theme.colorScheme.onPrimary,
+              ),
             ),
             const SizedBox(height: AppSpacing.sm),
             Text(

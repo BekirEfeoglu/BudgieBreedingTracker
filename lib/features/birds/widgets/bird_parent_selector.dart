@@ -9,6 +9,8 @@ import 'package:budgie_breeding_tracker/features/birds/providers/bird_providers.
 
 /// Dropdown selector for choosing a parent bird (father or mother).
 class BirdParentSelector extends ConsumerWidget {
+  static const _maxDisplayCandidates = 50;
+
   final String label;
   final Widget icon;
   final String? selectedId;
@@ -64,7 +66,8 @@ class BirdParentSelector extends ConsumerWidget {
                 .where((b) => b.status == BirdStatus.alive)
                 .toList()
               ..sort((a, b) => a.name.compareTo(b.name));
-        final displayCandidates = candidates.take(50).toList();
+        final displayCandidates =
+            candidates.take(_maxDisplayCandidates).toList();
 
         Bird? selectedBird;
         if (selectedId != null) {

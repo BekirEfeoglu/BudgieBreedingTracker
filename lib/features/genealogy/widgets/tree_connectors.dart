@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 
+const _connectorPaddingH = 6.0;
+const _connectorPaddingV = 2.0;
+
 /// Small label widget for generation/line identification.
 class GenerationLabel extends StatelessWidget {
   final String label;
@@ -14,7 +17,7 @@ class GenerationLabel extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.xs, top: AppSpacing.xs),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+        padding: const EdgeInsets.symmetric(horizontal: _connectorPaddingH, vertical: _connectorPaddingV),
         decoration: BoxDecoration(
           color: theme.colorScheme.surfaceContainerHighest.withValues(
             alpha: 0.6,

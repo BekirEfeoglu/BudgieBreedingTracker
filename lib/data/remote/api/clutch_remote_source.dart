@@ -10,7 +10,13 @@ class ClutchRemoteSource extends BaseRemoteSource<Clutch> {
   String get tableName => SupabaseConstants.clutchesTable;
 
   @override
-  Clutch fromJson(Map<String, dynamic> json) => Clutch.fromJson(json);
+  Clutch fromJson(Map<String, dynamic> json) {
+    final mapped = {...json};
+    if (mapped.containsKey('breeding_pair_id')) {
+      mapped['breeding_id'] = mapped.remove('breeding_pair_id');
+    }
+    return Clutch.fromJson(mapped);
+  }
 
   @override
   Map<String, dynamic> toSupabaseJson(Clutch model) => model.toSupabase();
@@ -19,7 +25,7 @@ class ClutchRemoteSource extends BaseRemoteSource<Clutch> {
     final response = await table
         .select()
         .eq('user_id', userId)
-        .eq('breeding_id', breedingId)
+        .eq('breeding_pair_id', breedingId)
         .eq('is_deleted', false)
         .order('created_at');
     return response.map((json) => fromJson(json)).toList();

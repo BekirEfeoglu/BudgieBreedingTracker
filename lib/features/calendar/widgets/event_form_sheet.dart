@@ -13,6 +13,8 @@ import 'package:budgie_breeding_tracker/features/calendar/providers/calendar_for
 import 'package:budgie_breeding_tracker/features/settings/providers/settings_providers.dart';
 import 'package:budgie_breeding_tracker/features/calendar/widgets/event_card.dart';
 
+part 'event_form_fields.dart';
+
 /// Opens the event form as a modal bottom sheet.
 Future<void> showEventFormSheet(
   BuildContext context, {
@@ -104,7 +106,7 @@ class _EventFormContentState extends ConsumerState<_EventFormContent> {
       if (state.error != null) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text(state.error!)));
+        ).showSnackBar(SnackBar(content: Text('errors.unknown'.tr())));
       }
     });
 
@@ -175,7 +177,7 @@ class _EventFormContentState extends ConsumerState<_EventFormContent> {
                   border: const OutlineInputBorder(),
                   prefixIcon: Icon(eventTypeIcon(_eventType)),
                 ),
-                items: _buildEventTypeItems(),
+                items: buildEventTypeItems(),
                 onChanged: (value) {
                   if (value != null) {
                     setState(() => _eventType = value);
@@ -196,7 +198,10 @@ class _EventFormContentState extends ConsumerState<_EventFormContent> {
               const SizedBox(height: AppSpacing.lg),
 
               // Time picker
-              _buildTimePicker(theme),
+              _TimePickerField(
+                eventTime: _eventTime,
+                onTap: _pickTime,
+              ),
               const SizedBox(height: AppSpacing.lg),
 
               // Notes field
@@ -241,24 +246,6 @@ class _EventFormContentState extends ConsumerState<_EventFormContent> {
     );
   }
 
-  Widget _buildTimePicker(ThemeData theme) {
-    final timeStr =
-        '${_eventTime.hour.toString().padLeft(2, '0')}:${_eventTime.minute.toString().padLeft(2, '0')}';
-
-    return InkWell(
-      onTap: _pickTime,
-      borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-      child: InputDecorator(
-        decoration: InputDecoration(
-          labelText: 'calendar.event_time'.tr(),
-          border: const OutlineInputBorder(),
-          prefixIcon: const Icon(LucideIcons.clock),
-        ),
-        child: Text(timeStr, style: theme.textTheme.bodyLarge),
-      ),
-    );
-  }
-
   Future<void> _pickTime() async {
     final picked = await showTimePicker(
       context: context,
@@ -268,23 +255,6 @@ class _EventFormContentState extends ConsumerState<_EventFormContent> {
     if (picked != null && mounted) {
       setState(() => _eventTime = picked);
     }
-  }
-
-  List<DropdownMenuItem<EventType>> _buildEventTypeItems() {
-    return EventType.values.where((type) => type != EventType.unknown).map((
-      type,
-    ) {
-      return DropdownMenuItem(
-        value: type,
-        child: Row(
-          children: [
-            Icon(eventTypeIcon(type), size: 18),
-            const SizedBox(width: AppSpacing.sm),
-            Text(eventTypeLabel(type)),
-          ],
-        ),
-      );
-    }).toList();
   }
 
   void _submit() {

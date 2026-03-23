@@ -9,6 +9,8 @@ import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
 import 'package:budgie_breeding_tracker/features/chicks/providers/chick_providers.dart';
 import 'package:budgie_breeding_tracker/features/chicks/widgets/development_stage_badge.dart';
+import 'package:budgie_breeding_tracker/features/home/widgets/section_header.dart';
+import 'package:budgie_breeding_tracker/router/route_names.dart';
 
 /// Section showing recent chicks on the dashboard.
 class RecentChicksSection extends ConsumerWidget {
@@ -34,9 +36,9 @@ class RecentChicksSection extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _SectionHeader(
+          SectionHeader(
             title: 'home.recent_chicks'.tr(),
-            onViewAll: () => context.push('/chicks'),
+            onViewAll: () => context.go(AppRoutes.chicks),
           ),
           const SizedBox(height: AppSpacing.sm),
           if (chicks.isEmpty)
@@ -62,29 +64,6 @@ class RecentChicksSection extends ConsumerWidget {
             ),
         ],
       ),
-    );
-  }
-}
-
-class _SectionHeader extends StatelessWidget {
-  final String title;
-  final VoidCallback onViewAll;
-
-  const _SectionHeader({required this.title, required this.onViewAll});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          title,
-          style: Theme.of(
-            context,
-          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-        ),
-        TextButton(onPressed: onViewAll, child: Text('common.view_all'.tr())),
-      ],
     );
   }
 }
@@ -157,6 +136,7 @@ class _ChickTile extends StatelessWidget {
                     // Parent info
                     if (parents != null)
                       Padding(
+                        // 2px top gap: tight spacing beneath age text, no AppSpacing equivalent
                         padding: const EdgeInsets.only(top: 2),
                         child: Row(
                           children: [
@@ -165,14 +145,14 @@ class _ChickTile extends StatelessWidget {
                               size: 12,
                               color: AppColors.genderMale,
                             ),
+                            // 2px icon-to-text gap: tighter than xs(4) for compact parent row
                             const SizedBox(width: 2),
                             Flexible(
                               child: Text(
                                 parents!.maleName ?? '?',
-                                style: Theme.of(context).textTheme.bodySmall
+                                style: Theme.of(context).textTheme.labelSmall
                                     ?.copyWith(
                                       color: AppColors.genderMale,
-                                      fontSize: 11,
                                     ),
                                 overflow: TextOverflow.ellipsis,
                               ),
@@ -183,14 +163,14 @@ class _ChickTile extends StatelessWidget {
                               size: 12,
                               color: AppColors.genderFemale,
                             ),
+                            // 2px icon-to-text gap: tighter than xs(4) for compact parent row
                             const SizedBox(width: 2),
                             Flexible(
                               child: Text(
                                 parents!.femaleName ?? '?',
-                                style: Theme.of(context).textTheme.bodySmall
+                                style: Theme.of(context).textTheme.labelSmall
                                     ?.copyWith(
                                       color: AppColors.genderFemale,
-                                      fontSize: 11,
                                     ),
                                 overflow: TextOverflow.ellipsis,
                               ),

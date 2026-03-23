@@ -11,6 +11,7 @@ import 'package:budgie_breeding_tracker/features/chicks/providers/chick_provider
 import 'package:budgie_breeding_tracker/features/chicks/screens/chick_detail_screen.dart'
     show chickDisplayName;
 
+import 'chick_age_formatter.dart';
 import 'chick_health_badge.dart';
 import 'development_stage_badge.dart';
 
@@ -95,7 +96,7 @@ class ChickCard extends ConsumerWidget {
                         ],
                         if (age != null)
                           Text(
-                            _formatAge(age),
+                            formatChickAge(age, short: true),
                             style: theme.textTheme.bodySmall?.copyWith(
                               color: theme.colorScheme.onSurfaceVariant,
                             ),
@@ -165,12 +166,4 @@ class ChickCard extends ConsumerWidget {
     );
   }
 
-  String _formatAge(({int weeks, int days, int totalDays}) age) {
-    if (age.weeks > 0) {
-      return 'chicks.age_weeks_days_short'.tr(
-        args: [age.weeks.toString(), age.days.toString()],
-      );
-    }
-    return 'chicks.age_days_only_short'.tr(args: [age.totalDays.toString()]);
-  }
 }

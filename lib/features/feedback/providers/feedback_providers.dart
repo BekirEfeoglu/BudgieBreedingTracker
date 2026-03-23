@@ -7,16 +7,14 @@ import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:uuid/uuid.dart';
 
 import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
+import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/data/remote/api/feedback_remote_source.dart';
 import 'package:budgie_breeding_tracker/data/remote/api/remote_source_providers.dart';
-import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
+import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 
-// ---------------------------------------------------------------------------
 // Enums
-// ---------------------------------------------------------------------------
 
-/// Feedback categories.
 enum FeedbackCategory {
   bug,
   feature,
@@ -59,7 +57,6 @@ enum FeedbackCategory {
   };
 }
 
-/// Feedback status (server-managed).
 enum FeedbackStatus {
   open,
   inProgress,
@@ -100,11 +97,8 @@ enum FeedbackStatus {
   };
 }
 
-// ---------------------------------------------------------------------------
 // Data class
-// ---------------------------------------------------------------------------
 
-/// Lightweight model for displaying submitted feedback history.
 class FeedbackEntry {
   final String id;
   final FeedbackCategory category;
@@ -128,25 +122,28 @@ class FeedbackEntry {
 
   factory FeedbackEntry.fromJson(Map<String, dynamic> json) {
     return FeedbackEntry(
-      id: json['id'] as String,
+      id: json[SupabaseConstants.feedbackColId] as String,
       category: FeedbackCategory.fromString(
-        json['type'] as String? ?? 'general',
+        json[SupabaseConstants.feedbackColType] as String? ?? 'general',
       ),
-      subject: json['subject'] as String? ?? '',
-      message: json['message'] as String? ?? '',
-      status: FeedbackStatus.fromString(json['status'] as String? ?? 'open'),
-      email: json['email'] as String?,
-      adminResponse: json['admin_response'] as String?,
-      createdAt: json['created_at'] != null
-          ? DateTime.tryParse(json['created_at'] as String)
+      subject: json[SupabaseConstants.feedbackColSubject] as String? ?? '',
+      message: json[SupabaseConstants.feedbackColMessage] as String? ?? '',
+      status: FeedbackStatus.fromString(
+        json[SupabaseConstants.feedbackColStatus] as String? ?? 'open',
+      ),
+      email: json[SupabaseConstants.feedbackColEmail] as String?,
+      adminResponse:
+          json[SupabaseConstants.feedbackColAdminResponse] as String?,
+      createdAt: json[SupabaseConstants.feedbackColCreatedAt] != null
+          ? DateTime.tryParse(
+              json[SupabaseConstants.feedbackColCreatedAt] as String,
+            )
           : null,
     );
   }
 }
 
-// ---------------------------------------------------------------------------
 // Providers
-// ---------------------------------------------------------------------------
 
 /// Fetches the user's feedback history from Supabase via [FeedbackRemoteSource].
 final feedbackHistoryProvider =
@@ -160,9 +157,7 @@ final feedbackHistoryProvider =
       return response.map((json) => FeedbackEntry.fromJson(json)).toList();
     });
 
-// ---------------------------------------------------------------------------
 // Form state
-// ---------------------------------------------------------------------------
 
 /// State for the feedback form.
 class FeedbackFormState {
@@ -212,15 +207,17 @@ class FeedbackFormNotifier extends Notifier<FeedbackFormState> {
       final feedbackId = const Uuid().v4();
 
       await remoteSource.insert({
-        'id': feedbackId,
-        'user_id': userId,
-        'type': category.value,
-        'subject': subject,
-        'message': message,
-        if (email != null && email.isNotEmpty) 'email': email,
-        if (appVersion != null) 'app_version': appVersion,
-        'platform': deviceInfo,
-        'status': 'open',
+        SupabaseConstants.feedbackColId: feedbackId,
+        SupabaseConstants.feedbackColUserId: userId,
+        SupabaseConstants.feedbackColType: category.value,
+        SupabaseConstants.feedbackColSubject: subject,
+        SupabaseConstants.feedbackColMessage: message,
+        if (email != null && email.isNotEmpty)
+          SupabaseConstants.feedbackColEmail: email,
+        if (appVersion != null)
+          SupabaseConstants.feedbackColAppVersion: appVersion,
+        SupabaseConstants.feedbackColPlatform: deviceInfo,
+        SupabaseConstants.feedbackColStatus: 'open',
       });
 
       // Notify founders about the new feedback
@@ -259,17 +256,18 @@ class FeedbackFormNotifier extends Notifier<FeedbackFormState> {
 
       for (final founderId in founderIds) {
         notifications.add({
-          'id': const Uuid().v4(),
-          'user_id': founderId,
-          'title': 'feedback.notify_founder_title'.tr(args: [category.label]),
-          'body': subject,
-          'type': 'custom',
-          'priority': 'normal',
-          'read': false,
-          'reference_id': feedbackId,
-          'reference_type': 'feedback',
-          'created_at': now,
-          'updated_at': now,
+          SupabaseConstants.notificationColId: const Uuid().v4(),
+          SupabaseConstants.notificationColUserId: founderId,
+          SupabaseConstants.notificationColTitle:
+              'feedback.notify_founder_title'.tr(args: [category.label]),
+          SupabaseConstants.notificationColBody: subject,
+          SupabaseConstants.notificationColType: 'custom',
+          SupabaseConstants.notificationColPriority: 'normal',
+          SupabaseConstants.notificationColRead: false,
+          SupabaseConstants.notificationColReferenceId: feedbackId,
+          SupabaseConstants.notificationColReferenceType: 'feedback',
+          SupabaseConstants.notificationColCreatedAt: now,
+          SupabaseConstants.notificationColUpdatedAt: now,
         });
       }
 

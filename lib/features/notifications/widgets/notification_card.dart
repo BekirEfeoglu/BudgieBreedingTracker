@@ -7,6 +7,7 @@ import 'package:budgie_breeding_tracker/core/enums/notification_enums.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
+import 'package:budgie_breeding_tracker/core/widgets/dialogs/confirm_dialog.dart';
 import 'package:budgie_breeding_tracker/data/models/notification_model.dart';
 
 /// Card widget for displaying a single notification item.
@@ -31,6 +32,13 @@ class NotificationCard extends StatelessWidget {
     return Dismissible(
       key: ValueKey(notification.id),
       direction: DismissDirection.endToStart,
+      confirmDismiss: (_) => showConfirmDialog(
+        context,
+        title: 'notifications.delete_title'.tr(),
+        message: 'notifications.delete_confirm'.tr(),
+        confirmLabel: 'common.delete'.tr(),
+        isDestructive: true,
+      ),
       onDismissed: (_) => onDismiss?.call(),
       background: Container(
         alignment: Alignment.centerRight,
@@ -39,7 +47,7 @@ class NotificationCard extends StatelessWidget {
         child: AppIcon(
           AppIcons.delete,
           color: theme.colorScheme.onError,
-          semanticsLabel: 'Delete',
+          semanticsLabel: 'common.delete'.tr(),
         ),
       ),
       child: Card(
@@ -136,7 +144,7 @@ class NotificationCard extends StatelessWidget {
                           notification.priority == NotificationPriority.critical
                           ? theme.colorScheme.error
                           : AppColors.warning,
-                      semanticsLabel: 'High priority',
+                      semanticsLabel: 'notifications.high_priority'.tr(),
                     ),
                   ),
               ],
@@ -162,7 +170,7 @@ class NotificationCard extends StatelessWidget {
     if (diff.inDays < 7) {
       return 'notifications.time_days_ago'.tr(args: ['${diff.inDays}']);
     }
-    return DateFormat.yMMMd().format(dateTime);
+    return DateFormat.yMMMd(Intl.getCurrentLocale()).format(dateTime);
   }
 }
 

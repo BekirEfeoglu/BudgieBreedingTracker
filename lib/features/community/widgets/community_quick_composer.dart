@@ -32,6 +32,7 @@ class CommunityQuickComposer extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
+            // Intentional: subtle shadow independent of theme
             color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 18,
             offset: const Offset(0, 8),

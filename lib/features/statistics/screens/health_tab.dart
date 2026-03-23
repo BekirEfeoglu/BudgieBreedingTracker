@@ -58,7 +58,7 @@ class _MonthlyTrendSection extends ConsumerWidget {
       icon: const AppIcon(AppIcons.growth),
       child: trendAsync.when(
         loading: () => const ChartLoading(),
-        error: (e, _) => ChartError(message: e.toString()),
+        error: (e, _) => ChartError(message: 'common.data_load_error'.tr()),
         data: (data) => MonthlyTrendChart(monthlyData: data),
       ),
     );
@@ -79,7 +79,7 @@ class _ChickSurvivalSection extends ConsumerWidget {
       icon: const AppIcon(AppIcons.chick),
       child: survivalAsync.when(
         loading: () => const ChartLoading(),
-        error: (e, _) => ChartError(message: e.toString()),
+        error: (e, _) => ChartError(message: 'common.data_load_error'.tr()),
         data: (data) => ChickSurvivalChart(data: data),
       ),
     );
@@ -100,7 +100,7 @@ class _HealthRecordSection extends ConsumerWidget {
       icon: const AppIcon(AppIcons.health),
       child: healthAsync.when(
         loading: () => const ChartLoading(),
-        error: (e, _) => ChartError(message: e.toString()),
+        error: (e, _) => ChartError(message: 'common.data_load_error'.tr()),
         data: (data) => HealthRecordTypeChart(data: data),
       ),
     );

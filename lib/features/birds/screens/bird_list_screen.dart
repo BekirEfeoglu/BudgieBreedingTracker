@@ -72,7 +72,7 @@ class BirdListScreen extends ConsumerWidget {
                         color: Theme.of(context).colorScheme.primary,
                       )
                     else
-                      const SizedBox(width: 20),
+                      const SizedBox(width: AppSpacing.xl),
                     const SizedBox(width: AppSpacing.sm),
                     Text(sort.label),
                   ],

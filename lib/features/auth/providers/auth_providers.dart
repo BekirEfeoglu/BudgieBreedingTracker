@@ -10,6 +10,7 @@ import '../../../core/utils/logger.dart';
 import '../../../data/models/profile_model.dart';
 import '../../../data/repositories/repository_providers.dart';
 import '../../../domain/services/notifications/notification_providers.dart';
+import '../../../domain/services/sync/sync_orchestrator.dart';
 import '../../../domain/services/sync/sync_providers.dart';
 import '../../premium/providers/premium_providers.dart';
 import 'two_factor_providers.dart';
@@ -235,10 +236,17 @@ Future<void> _initRevenueCat(Ref ref, String userId) async {
 ///
 /// Periodic and network-aware sync providers are watched by [MainShell]
 /// to ensure their timers and listeners stay alive for the session.
+/// Retries once after a short delay if the initial attempt fails.
 Future<void> _initDataSync(Ref ref, String userId) async {
   try {
     final syncOrchestrator = ref.read(syncOrchestratorProvider);
-    await syncOrchestrator.fullSync();
+    final result = await syncOrchestrator.fullSync();
+    if (result == SyncResult.error) {
+      // Retry once after a short delay — initial sync often fails due to
+      // timing (Supabase client not fully ready, token refresh in progress).
+      await Future<void>.delayed(const Duration(seconds: 3));
+      await syncOrchestrator.fullSync();
+    }
   } catch (_) {
     // Non-critical: offline data is still available
   }

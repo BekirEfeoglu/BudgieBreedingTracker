@@ -13,43 +13,43 @@ class AdminSidebar extends StatelessWidget {
   const AdminSidebar({super.key});
 
   static final _menuItems = [
-    _AdminMenuItem(
-      icon: const AppIcon(AppIcons.dashboard),
+    const _AdminMenuItem(
+      icon: AppIcon(AppIcons.dashboard),
       labelKey: 'admin.dashboard',
       route: AppRoutes.adminDashboard,
     ),
-    _AdminMenuItem(
-      icon: const AppIcon(AppIcons.users),
+    const _AdminMenuItem(
+      icon: AppIcon(AppIcons.users),
       labelKey: 'admin.users',
       route: AppRoutes.adminUsers,
     ),
-    _AdminMenuItem(
-      icon: const AppIcon(AppIcons.monitoring),
+    const _AdminMenuItem(
+      icon: AppIcon(AppIcons.monitoring),
       labelKey: 'admin.monitoring',
       route: AppRoutes.adminMonitoring,
     ),
-    _AdminMenuItem(
-      icon: const AppIcon(AppIcons.database),
+    const _AdminMenuItem(
+      icon: AppIcon(AppIcons.database),
       labelKey: 'admin.database',
       route: AppRoutes.adminDatabase,
     ),
-    _AdminMenuItem(
-      icon: const AppIcon(AppIcons.audit),
+    const _AdminMenuItem(
+      icon: AppIcon(AppIcons.audit),
       labelKey: 'admin.audit',
       route: AppRoutes.adminAudit,
     ),
-    _AdminMenuItem(
-      icon: const AppIcon(AppIcons.security),
+    const _AdminMenuItem(
+      icon: AppIcon(AppIcons.security),
       labelKey: 'admin.security',
       route: AppRoutes.adminSecurity,
     ),
-    _AdminMenuItem(
-      icon: const AppIcon(AppIcons.settings),
+    const _AdminMenuItem(
+      icon: AppIcon(AppIcons.settings),
       labelKey: 'admin.settings',
       route: AppRoutes.adminSettings,
     ),
-    _AdminMenuItem(
-      icon: const AppIcon(AppIcons.comment),
+    const _AdminMenuItem(
+      icon: AppIcon(AppIcons.comment),
       labelKey: 'admin.feedback_admin',
       route: AppRoutes.adminFeedback,
     ),
@@ -127,9 +127,10 @@ class AdminSidebar extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
       child: Material(
+        // Transparent when not selected to let the surface show through
         color: isSelected
             ? theme.colorScheme.primaryContainer.withValues(alpha: 0.3)
-            : Colors.transparent,
+            : theme.colorScheme.surface.withValues(alpha: 0),
         borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
         child: InkWell(
           onTap: () {
@@ -187,7 +188,8 @@ class AdminSidebar extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
       child: Material(
-        color: Colors.transparent,
+        // Transparent to let the surface show through
+        color: theme.colorScheme.surface.withValues(alpha: 0),
         borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
         child: InkWell(
           onTap: () {
@@ -227,7 +229,7 @@ class AdminSidebar extends StatelessWidget {
 }
 
 class _AdminMenuItem {
-  _AdminMenuItem({
+  const _AdminMenuItem({
     required this.icon,
     required this.labelKey,
     required this.route,
