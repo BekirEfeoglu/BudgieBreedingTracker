@@ -7,7 +7,9 @@ import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:budgie_breeding_tracker/bootstrap.dart';
+import 'package:budgie_breeding_tracker/core/constants/app_constants.dart';
 import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
+import 'package:budgie_breeding_tracker/core/enums/subscription_enums.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/domain/services/payment/purchase_service.dart';
 import 'package:budgie_breeding_tracker/data/models/profile_model.dart';
@@ -111,4 +113,52 @@ final subscriptionInfoProvider = FutureProvider<SubscriptionInfo>((ref) async {
 
   final service = ref.watch(purchaseServiceProvider);
   return service.getSubscriptionInfo();
+});
+
+/// Determines the user's premium grace period status.
+///
+/// Uses profile data (premiumExpiresAt) to detect grace period.
+/// Admin/founder roles always return [GracePeriodStatus.active].
+///
+/// Usage: Use this provider when you need to distinguish between
+/// active premium, grace period, and expired states.
+/// For simple "has access?" checks, use [effectivePremiumProvider] instead.
+final premiumGracePeriodProvider = Provider<GracePeriodStatus>((ref) {
+  final profileAsync = ref.watch(userProfileProvider);
+  final profile = profileAsync.value;
+
+  // No profile loaded yet — treat as unknown/free
+  if (profile == null) return GracePeriodStatus.free;
+
+  // Admin/founder always active
+  if (profile.isAdmin || profile.isFounder) return GracePeriodStatus.active;
+
+  // Currently premium (active subscription)
+  if (profile.hasPremium) return GracePeriodStatus.active;
+
+  // Check grace period via premiumExpiresAt
+  final expiresAt = profile.premiumExpiresAt;
+  if (expiresAt == null) return GracePeriodStatus.free;
+
+  final daysSinceExpiry = DateTime.now().difference(expiresAt).inDays;
+  if (daysSinceExpiry <= AppConstants.gracePeriodDays) {
+    return GracePeriodStatus.gracePeriod;
+  }
+
+  return GracePeriodStatus.expired;
+});
+
+/// Whether the user has effective premium access (active OR grace period).
+///
+/// Use this provider for:
+/// - Free tier limit checks in form notifiers
+/// - Premium route guards
+///
+/// Do NOT use for:
+/// - Ad visibility (use [isPremiumProvider] — grace period shows ads)
+/// - Subscription info display (use [premiumGracePeriodProvider])
+final effectivePremiumProvider = Provider<bool>((ref) {
+  final status = ref.watch(premiumGracePeriodProvider);
+  return status == GracePeriodStatus.active ||
+      status == GracePeriodStatus.gracePeriod;
 });
