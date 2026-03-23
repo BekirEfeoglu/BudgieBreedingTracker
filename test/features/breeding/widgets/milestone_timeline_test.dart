@@ -1,16 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:budgie_breeding_tracker/domain/services/incubation/incubation_calculator.dart';
 import 'package:budgie_breeding_tracker/domain/services/incubation/incubation_milestone.dart';
 import 'package:budgie_breeding_tracker/features/breeding/widgets/milestone_timeline.dart';
 
+import '../../../helpers/test_localization.dart';
+
 Future<void> _pump(WidgetTester tester, Widget child) async {
-  await tester.pumpWidget(
-    MaterialApp(
-      home: Scaffold(body: SingleChildScrollView(child: child)),
+  await pumpLocalizedApp(tester,
+    ProviderScope(
+      child: MaterialApp(
+        home: Scaffold(body: SingleChildScrollView(child: child)),
+      ),
     ),
   );
-  await tester.pump();
 }
 
 void main() {
@@ -111,11 +115,6 @@ void main() {
       final milestones = IncubationCalculator.getMilestones(startDate);
 
       await _pump(tester, MilestoneTimeline(milestones: milestones));
-      // Consume potential overflow exceptions from long timeline in test viewport
-      Object? ex;
-      do {
-        ex = tester.takeException();
-      } while (ex != null);
 
       // Should render milestones from calculator (non-empty)
       expect(milestones.isNotEmpty, isTrue);

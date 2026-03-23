@@ -5,12 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:budgie_breeding_tracker/data/local/preferences/app_preferences.dart';
 import 'package:budgie_breeding_tracker/domain/services/sync/sync_settings_providers.dart';
 
-Future<void> _waitUntil(bool Function() predicate) async {
-  for (var i = 0; i < 120; i++) {
-    if (predicate()) return;
-    await Future<void>.delayed(const Duration(milliseconds: 5));
-  }
-}
+import '../../../helpers/test_helpers.dart';
 
 void main() {
   group('autoSyncProvider', () {
@@ -21,7 +16,11 @@ void main() {
       final container = ProviderContainer();
       addTearDown(container.dispose);
 
-      await _waitUntil(() => container.read(autoSyncProvider) == false);
+      await waitUntil(
+        () => container.read(autoSyncProvider) == false,
+        maxAttempts: 120,
+        interval: const Duration(milliseconds: 5),
+      );
 
       expect(container.read(autoSyncProvider), isFalse);
     });
@@ -34,11 +33,19 @@ void main() {
       addTearDown(container.dispose);
 
       // Wait for async preference load (build default is true).
-      await _waitUntil(() => container.read(autoSyncProvider) == false);
+      await waitUntil(
+        () => container.read(autoSyncProvider) == false,
+        maxAttempts: 120,
+        interval: const Duration(milliseconds: 5),
+      );
       expect(container.read(autoSyncProvider), isFalse);
 
       await container.read(autoSyncProvider.notifier).toggle();
-      await _waitUntil(() => container.read(autoSyncProvider) == true);
+      await waitUntil(
+        () => container.read(autoSyncProvider) == true,
+        maxAttempts: 120,
+        interval: const Duration(milliseconds: 5),
+      );
       expect(container.read(autoSyncProvider), isTrue);
 
       final prefs = await SharedPreferences.getInstance();
@@ -54,7 +61,11 @@ void main() {
       final container = ProviderContainer();
       addTearDown(container.dispose);
 
-      await _waitUntil(() => container.read(wifiOnlySyncProvider) == true);
+      await waitUntil(
+        () => container.read(wifiOnlySyncProvider) == true,
+        maxAttempts: 120,
+        interval: const Duration(milliseconds: 5),
+      );
 
       expect(container.read(wifiOnlySyncProvider), isTrue);
     });
@@ -67,11 +78,19 @@ void main() {
       addTearDown(container.dispose);
 
       // Wait for async preference load (build default is false).
-      await _waitUntil(() => container.read(wifiOnlySyncProvider) == true);
+      await waitUntil(
+        () => container.read(wifiOnlySyncProvider) == true,
+        maxAttempts: 120,
+        interval: const Duration(milliseconds: 5),
+      );
       expect(container.read(wifiOnlySyncProvider), isTrue);
 
       await container.read(wifiOnlySyncProvider.notifier).toggle();
-      await _waitUntil(() => container.read(wifiOnlySyncProvider) == false);
+      await waitUntil(
+        () => container.read(wifiOnlySyncProvider) == false,
+        maxAttempts: 120,
+        interval: const Duration(milliseconds: 5),
+      );
       expect(container.read(wifiOnlySyncProvider), isFalse);
 
       final prefs = await SharedPreferences.getInstance();

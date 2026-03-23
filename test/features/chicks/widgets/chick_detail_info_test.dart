@@ -8,6 +8,7 @@ import 'package:budgie_breeding_tracker/core/widgets/cards/info_card.dart';
 import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
 import 'package:budgie_breeding_tracker/features/chicks/providers/chick_providers.dart';
 import 'package:budgie_breeding_tracker/features/chicks/widgets/chick_detail_info.dart';
+import 'package:budgie_breeding_tracker/features/settings/providers/settings_providers.dart';
 
 /// Pumps ChickDetailInfo inside a ProviderScope with the chickParentsProvider
 /// overridden. By default returns null (no parent info).
@@ -19,6 +20,7 @@ Future<void> _pumpChickDetailInfo(
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
+        dateFormatProvider.overrideWith(() => DateFormatNotifier()),
         chickParentsProvider.overrideWith(
           (ref, eggId) => Future.value(parentsInfo),
         ),
@@ -118,9 +120,10 @@ void main() {
 
       await _pumpChickDetailInfo(tester, chick);
 
-      // The hatch date card shows 'chicks.unknown_gender' as fallback text
-      // Gender card also shows it, so at least 2
-      expect(find.text('chicks.unknown_gender'), findsAtLeastNWidgets(2));
+      // The hatch date card shows 'common.no_data' as fallback text
+      expect(find.text('common.no_data'), findsAtLeastNWidgets(1));
+      // Gender card shows unknown_gender
+      expect(find.text('chicks.unknown_gender'), findsAtLeastNWidgets(1));
     });
 
     testWidgets('shows weight information when available', (tester) async {
@@ -136,8 +139,8 @@ void main() {
 
       await _pumpChickDetailInfo(tester, chick);
 
-      // Weight card shows 'chicks.unknown_gender' as fallback
-      expect(find.text('chicks.unknown_gender'), findsAtLeastNWidgets(1));
+      // Weight card shows 'common.no_data' as fallback
+      expect(find.text('common.no_data'), findsAtLeastNWidgets(1));
     });
 
     testWidgets('shows birth weight subtitle', (tester) async {
@@ -192,8 +195,8 @@ void main() {
       await _pumpChickDetailInfo(tester, chick, parentsInfo: parents);
 
       // Both parent cards show the unknown_gender fallback text
-      // Plus gender card and potentially hatch date card
-      expect(find.text('chicks.unknown_gender'), findsAtLeastNWidgets(2));
+      // Plus gender card shows it too
+      expect(find.text('chicks.unknown_gender'), findsAtLeastNWidgets(3));
     });
 
     testWidgets('shows weaning date when chick is weaned', (tester) async {

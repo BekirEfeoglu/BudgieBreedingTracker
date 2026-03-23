@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import 'package:mocktail/mocktail.dart';
 
+import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/domain/services/sync/sync_orchestrator.dart';
 import 'package:budgie_breeding_tracker/domain/services/sync/sync_providers.dart';
 import 'package:budgie_breeding_tracker/features/home/widgets/sync_status_bar.dart';
@@ -44,11 +46,11 @@ void main() {
       expect(find.text('sync.synced'), findsOneWidget);
     });
 
-    testWidgets('shows cloud_done icon when synced', (tester) async {
+    testWidgets('shows cloud icon when synced', (tester) async {
       await tester.pumpWidget(createSubject(status: SyncDisplayStatus.synced));
       await tester.pump();
 
-      expect(find.byIcon(Icons.cloud_done), findsOneWidget);
+      expect(find.byIcon(LucideIcons.cloud), findsOneWidget);
     });
 
     testWidgets('shows syncing label when sync is in progress', (tester) async {
@@ -58,11 +60,11 @@ void main() {
       expect(find.text('sync.syncing'), findsOneWidget);
     });
 
-    testWidgets('shows sync icon with rotation when syncing', (tester) async {
+    testWidgets('shows sync AppIcon with rotation when syncing', (tester) async {
       await tester.pumpWidget(createSubject(status: SyncDisplayStatus.syncing));
       await tester.pump();
 
-      expect(find.byIcon(Icons.sync), findsOneWidget);
+      expect(find.byType(AppIcon), findsOneWidget);
       // RotationTransition wrapping the sync icon inside SyncStatusBar
       expect(
         find.descendant(
@@ -80,11 +82,11 @@ void main() {
       expect(find.text('sync.offline'), findsOneWidget);
     });
 
-    testWidgets('shows cloud_off icon when offline', (tester) async {
+    testWidgets('shows offline AppIcon when offline', (tester) async {
       await tester.pumpWidget(createSubject(status: SyncDisplayStatus.offline));
       await tester.pump();
 
-      expect(find.byIcon(Icons.cloud_off), findsOneWidget);
+      expect(find.byType(AppIcon), findsOneWidget);
     });
 
     testWidgets('shows error label when sync has error', (tester) async {
@@ -94,11 +96,11 @@ void main() {
       expect(find.text('sync.sync_error'), findsOneWidget);
     });
 
-    testWidgets('shows cloud_off icon when error', (tester) async {
+    testWidgets('shows offline AppIcon when error', (tester) async {
       await tester.pumpWidget(createSubject(status: SyncDisplayStatus.error));
       await tester.pump();
 
-      expect(find.byIcon(Icons.cloud_off), findsOneWidget);
+      expect(find.byType(AppIcon), findsOneWidget);
     });
 
     testWidgets('does not show RotationTransition when not syncing', (

@@ -9,6 +9,8 @@ import 'package:budgie_breeding_tracker/features/settings/providers/settings_pro
 import 'package:budgie_breeding_tracker/features/settings/widgets/about_section.dart';
 import 'package:budgie_breeding_tracker/features/settings/widgets/settings_section_header.dart';
 
+import '../../../helpers/test_localization.dart';
+
 void main() {
   late GoRouter router;
 
@@ -52,19 +54,13 @@ void main() {
 
   group('AboutSection', () {
     testWidgets('hatasiz render edilir', (tester) async {
-      await tester.pumpWidget(buildSubject());
+      await pumpLocalizedApp(tester,buildSubject());
       await tester.pump(const Duration(milliseconds: 500));
-
-      var ex = tester.takeException();
-      while (ex != null) {
-        ex = tester.takeException();
-      }
-
       expect(find.byType(AboutSection), findsOneWidget);
     });
 
     testWidgets('SettingsSectionHeader render edilir', (tester) async {
-      await tester.pumpWidget(buildSubject());
+      await pumpLocalizedApp(tester,buildSubject());
       await tester.pump(const Duration(milliseconds: 500));
       expect(find.byType(SettingsSectionHeader), findsOneWidget);
     });
@@ -72,15 +68,10 @@ void main() {
     testWidgets('appInfo yuklendikten sonra versiyon gosterilir', (
       tester,
     ) async {
-      await tester.pumpWidget(buildSubject());
+      await pumpLocalizedApp(tester,buildSubject());
       await tester.pump(const Duration(milliseconds: 500));
 
       // Overflow tüket
-      var ex = tester.takeException();
-      while (ex != null) {
-        ex = tester.takeException();
-      }
-
       // Versiyon metnini içeren ListTile bulunabilmeli
       expect(find.text('v1.2.3 (42)'), findsOneWidget);
     });
@@ -89,7 +80,7 @@ void main() {
       tester,
     ) async {
       // AsyncLoading ile direkt override - pending timer olusturmaz
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         ProviderScope(
           overrides: [
             appInfoProvider.overrideWithValue(
@@ -99,15 +90,13 @@ void main() {
           child: MaterialApp.router(routerConfig: router),
         ),
       );
-      await tester.pump();
-
       expect(find.text('...'), findsOneWidget);
     });
 
     testWidgets('appInfo hatali oldugunda widget hatasiz render edilir', (
       tester,
     ) async {
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         ProviderScope(
           overrides: [
             appInfoProvider.overrideWith(
@@ -120,22 +109,12 @@ void main() {
       await tester.pump(const Duration(milliseconds: 500));
 
       // Hata durumunda da widget kendini gostermeli (hata propagate etmemeli)
-      var ex = tester.takeException();
-      while (ex != null) {
-        ex = tester.takeException();
-      }
       expect(find.byType(AboutSection), findsOneWidget);
     });
 
     testWidgets('yenilikler tile tiklama dialog acar', (tester) async {
-      await tester.pumpWidget(buildSubject());
+      await pumpLocalizedApp(tester,buildSubject());
       await tester.pump(const Duration(milliseconds: 500));
-
-      var ex = tester.takeException();
-      while (ex != null) {
-        ex = tester.takeException();
-      }
-
       // 'Whats new' tile'i bul - SettingsNavigationTile ile
       final tiles = find.byType(ListTile);
       // Ikinci tile yenilikler (indekse gore): daha guvenli yol tile sayisini dogrula
@@ -143,14 +122,8 @@ void main() {
     });
 
     testWidgets('birden fazla ListTile render edilir', (tester) async {
-      await tester.pumpWidget(buildSubject());
+      await pumpLocalizedApp(tester,buildSubject());
       await tester.pump(const Duration(milliseconds: 500));
-
-      var ex = tester.takeException();
-      while (ex != null) {
-        ex = tester.takeException();
-      }
-
       // AboutSection en az 5 tile icerir (versiyon, yenilikler, degerlendir, lisanslar, paylas, destek)
       expect(find.byType(ListTile), findsAtLeastNWidgets(5));
     });

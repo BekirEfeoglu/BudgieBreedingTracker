@@ -63,7 +63,7 @@ void main() {
         0,
         (sum, item) => sum + item.probability,
       );
-      expect(total, closeTo(1.0, 0.001));
+      expect(total, closeTo(1.0, 0.0001));
     });
 
     test('availablePunnettLociProvider returns union of parent loci', () {

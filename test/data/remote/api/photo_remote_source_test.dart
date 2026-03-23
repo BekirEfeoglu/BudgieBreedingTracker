@@ -78,7 +78,7 @@ void main() {
       expect(payload['user_id'], 'user-1');
       expect(payload['entity_type'], 'bird');
       expect(payload['entity_id'], 'bird-1');
-      expect(payload['file_name'], 'test.jpg');
+      expect(payload['url'], 'test.jpg');
     });
 
     test('converts fetch failures to NetworkException', () async {

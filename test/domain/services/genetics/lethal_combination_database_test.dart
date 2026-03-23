@@ -7,12 +7,14 @@ OffspringResult _offspring({
   required double probability,
   List<String> visualMutations = const [],
   String? compoundPhenotype,
+  Set<String> doubleFactorIds = const {},
 }) {
   return OffspringResult(
     phenotype: phenotype,
     probability: probability,
     visualMutations: visualMutations,
     compoundPhenotype: compoundPhenotype,
+    doubleFactorIds: doubleFactorIds,
   );
 }
 
@@ -38,7 +40,7 @@ void main() {
       final unknown = LethalCombinationDatabase.getById('missing');
 
       expect(crested, isNotNull);
-      expect(crested!.severity, LethalSeverity.subVital);
+      expect(crested!.severity, LethalSeverity.lethal);
       expect(spangle, isNotNull);
       expect(spangle!.severity, LethalSeverity.subVital);
       expect(unknown, isNull);
@@ -129,8 +131,8 @@ void main() {
           analysis.warnings.every((w) => w.combination.id == 'df_crested'),
           isTrue,
         );
-        expect(analysis.highestSeverity, LethalSeverity.subVital);
-        expect(analysis.totalAffectedProbability, closeTo(0.48, 0.0001));
+        expect(analysis.highestSeverity, LethalSeverity.lethal);
+        expect(analysis.totalAffectedProbability, closeTo(0.25, 0.0001));
       },
     );
 
@@ -146,6 +148,7 @@ void main() {
               probability: 0.25,
               compoundPhenotype: 'Double Factor Spangle',
               visualMutations: const ['spangle'],
+              doubleFactorIds: const {'spangle'},
             ),
             _offspring(
               phenotype: 'Ino',
@@ -169,7 +172,7 @@ void main() {
     );
 
     test(
-      'reports semi-lethal as highest severity when semi-lethal and sub-vital coexist',
+      'reports lethal as highest severity when lethal and semi-lethal coexist',
       () {
         final analysis = analyzer.analyze(
           fatherMutations: const {'crested_tufted', 'ino'},
@@ -188,7 +191,7 @@ void main() {
           analysis.warnings.where((w) => w.combination.id == 'ino_x_ino'),
           hasLength(2),
         );
-        expect(analysis.highestSeverity, LethalSeverity.semiLethal);
+        expect(analysis.highestSeverity, LethalSeverity.lethal);
         expect(analysis.totalAffectedProbability, 1.0);
       },
     );

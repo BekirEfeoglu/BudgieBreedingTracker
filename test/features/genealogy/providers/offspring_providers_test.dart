@@ -2,7 +2,6 @@ import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/chick_enums.dart';
 import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
 import 'package:budgie_breeding_tracker/features/genealogy/providers/offspring_providers.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../helpers/test_helpers.dart';
@@ -101,15 +100,4 @@ void main() {
     });
   });
 
-  group('offspringFilterProvider', () {
-    test('defaults to all and can be updated', () {
-      final container = ProviderContainer();
-      addTearDown(container.dispose);
-
-      expect(container.read(offspringFilterProvider), OffspringFilter.all);
-      container.read(offspringFilterProvider.notifier).state =
-          OffspringFilter.female;
-      expect(container.read(offspringFilterProvider), OffspringFilter.female);
-    });
-  });
 }

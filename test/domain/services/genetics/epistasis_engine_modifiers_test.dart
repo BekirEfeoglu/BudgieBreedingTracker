@@ -20,12 +20,13 @@ void main() {
       expect(result.name, isNotEmpty);
     });
 
-    test('Yellowface Type I DF + Ino on blue shows Whitefaced', () {
+    test('Yellowface Type I DF + Ino on blue suppresses Whitefaced (Albino)', () {
       final result = engine.resolveCompoundPhenotypeDetailed(
         {'yellowface_type1', 'blue', 'ino'},
         doubleFactorIds: {'yellowface_type1'},
       );
-      expect(result.name, contains('Whitefaced'));
+      // Whitefaced is suppressed when Ino+Blue (already Albino)
+      expect(result.name, isNot(contains('Whitefaced')));
     });
 
     test('Yellowface Type II + Green series (no blue) has no visible label', () {
@@ -72,7 +73,7 @@ void main() {
   });
 
   group('_addPatternAndModifierNaming edge cases', () {
-    test('Cinnamon not masked under Lacewing (ino+cinnamon shows patterns)', () {
+    test('Lacewing (ino+cinnamon) does not show pattern mutations', () {
       final result = engine.resolveCompoundPhenotype({
         'ino',
         'cinnamon',
@@ -80,7 +81,7 @@ void main() {
         'blue',
       });
       expect(result, contains('Lacewing'));
-      expect(result, contains('Spangle'));
+      expect(result, isNot(contains('Spangle')));
     });
 
     test('Single Factor Anthracite on blue', () {

@@ -161,13 +161,14 @@ void main() {
       expect(appearance.hideWingMarkings, isFalse);
     });
 
-    test('resolves double factor spangle with hidden wing markings', () {
+    test('resolves double factor spangle with ghost wing markings', () {
       final appearance = BudgieColorResolver.resolve(
         visualMutations: ['spangle'],
         phenotype: 'Double Factor Spangle Green',
       );
 
-      expect(appearance.hideWingMarkings, isTrue);
+      expect(appearance.hideWingMarkings, isFalse);
+      expect(appearance.wingMarkingColor.a, lessThan(0.20));
     });
 
     test('resolves empty phenotype without crashing', () {

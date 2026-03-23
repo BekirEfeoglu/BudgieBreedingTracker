@@ -92,7 +92,7 @@ void main() {
       final state = container.read(eggActionsProvider);
       expect(state.isLoading, isFalse);
       expect(state.isSuccess, isFalse);
-      expect(state.error, contains('delete failed'));
+      expect(state.error, contains('errors.unknown'));
     });
 
     test('reset restores initial state', () async {

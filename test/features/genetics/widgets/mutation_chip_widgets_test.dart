@@ -6,6 +6,8 @@ import 'package:budgie_breeding_tracker/domain/services/genetics/mutation_databa
 import 'package:budgie_breeding_tracker/domain/services/genetics/parent_genotype.dart';
 import 'package:budgie_breeding_tracker/features/genetics/widgets/mutation_chip_widgets.dart';
 
+import '../../../helpers/test_localization.dart';
+
 Widget _wrap(Widget child) {
   return MaterialApp(
     home: Scaffold(
@@ -14,13 +16,6 @@ Widget _wrap(Widget child) {
       ),
     ),
   );
-}
-
-void _consumeExceptions(WidgetTester tester) {
-  var ex = tester.takeException();
-  while (ex != null) {
-    ex = tester.takeException();
-  }
 }
 
 BudgieMutationRecord _makeAutosomalRecessive(String id) {
@@ -65,6 +60,19 @@ BudgieMutationRecord _makeIncompleteDominant(String id) {
   );
 }
 
+/// Suppresses overflow exceptions that occur when FilterChip Row content
+/// exceeds the constrained 800x600 test surface width.
+void _suppressOverflowErrors() {
+  final originalOnError = FlutterError.onError;
+  FlutterError.onError = (details) {
+    final isOverflow = details.exceptionAsString().contains('overflowed');
+    if (!isOverflow) {
+      originalOnError?.call(details);
+    }
+  };
+  addTearDown(() => FlutterError.onError = originalOnError);
+}
+
 void main() {
   group('IndependentMutationChip', () {
     testWidgets('renders without crashing for unselected mutation', (
@@ -73,7 +81,7 @@ void main() {
       final mutation = _makeAutosomalRecessive('blue');
       const genotype = ParentGenotype.empty(gender: BirdGender.male);
 
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         _wrap(
           IndependentMutationChip(
             mutation: mutation,
@@ -82,7 +90,6 @@ void main() {
           ),
         ),
       );
-      await tester.pump();
       expect(find.byType(IndependentMutationChip), findsOneWidget);
     });
 
@@ -90,7 +97,7 @@ void main() {
       final mutation = _makeAutosomalRecessive('test_ar');
       const genotype = ParentGenotype.empty(gender: BirdGender.male);
 
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         _wrap(
           IndependentMutationChip(
             mutation: mutation,
@@ -99,14 +106,13 @@ void main() {
           ),
         ),
       );
-      await tester.pump();
       expect(find.byType(FilterChip), findsOneWidget);
     });
 
     testWidgets('shows mutation localizationKey as chip label', (tester) async {
       final mutation = _makeAutosomalRecessive('opaline');
 
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         _wrap(
           IndependentMutationChip(
             mutation: mutation,
@@ -115,7 +121,6 @@ void main() {
           ),
         ),
       );
-      await tester.pump();
       expect(find.text('genetics.mutation_opaline'), findsOneWidget);
     });
 
@@ -125,7 +130,7 @@ void main() {
       final mutation = _makeAutosomalRecessive('dilute');
       const genotype = ParentGenotype.empty(gender: BirdGender.male);
 
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         _wrap(
           IndependentMutationChip(
             mutation: mutation,
@@ -134,8 +139,6 @@ void main() {
           ),
         ),
       );
-      await tester.pump();
-
       final chip = tester.widget<FilterChip>(find.byType(FilterChip));
       expect(chip.selected, isFalse);
     });
@@ -149,7 +152,7 @@ void main() {
         gender: BirdGender.male,
       );
 
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         _wrap(
           IndependentMutationChip(
             mutation: mutation,
@@ -158,8 +161,6 @@ void main() {
           ),
         ),
       );
-      await tester.pump();
-
       final chip = tester.widget<FilterChip>(find.byType(FilterChip));
       expect(chip.selected, isTrue);
     });
@@ -169,7 +170,7 @@ void main() {
       const genotype = ParentGenotype.empty(gender: BirdGender.male);
       ParentGenotype? changed;
 
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         _wrap(
           IndependentMutationChip(
             mutation: mutation,
@@ -178,8 +179,6 @@ void main() {
           ),
         ),
       );
-      await tester.pump();
-
       await tester.tap(find.byType(FilterChip));
       await tester.pump();
 
@@ -193,7 +192,7 @@ void main() {
       final mutation = _makeSexLinked('ino_sl');
       const genotype = ParentGenotype.empty(gender: BirdGender.male);
 
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         _wrap(
           IndependentMutationChip(
             mutation: mutation,
@@ -202,8 +201,6 @@ void main() {
           ),
         ),
       );
-      await tester.pump();
-
       final chip = tester.widget<FilterChip>(find.byType(FilterChip));
       expect(chip.tooltip, 'genetics.sex_linked');
     });
@@ -217,7 +214,7 @@ void main() {
         gender: BirdGender.male,
       );
 
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         _wrap(
           IndependentMutationChip(
             mutation: mutation,
@@ -226,10 +223,6 @@ void main() {
           ),
         ),
       );
-      await tester.pump();
-
-      _consumeExceptions(tester);
-
       expect(find.text('genetics.allele_df_short'), findsOneWidget);
     });
 
@@ -237,7 +230,7 @@ void main() {
       final mutation = MutationDatabase.getById('blue')!;
       const genotype = ParentGenotype.empty(gender: BirdGender.male);
 
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         _wrap(
           IndependentMutationChip(
             mutation: mutation,
@@ -246,7 +239,6 @@ void main() {
           ),
         ),
       );
-      await tester.pump();
       expect(find.byType(FilterChip), findsOneWidget);
     });
   });
@@ -258,7 +250,7 @@ void main() {
       final mutation = _makeAutosomalRecessive('dilute');
       const genotype = ParentGenotype.empty(gender: BirdGender.male);
 
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         _wrap(
           AllelicSeriesChips(
             locusId: 'dilution',
@@ -268,8 +260,6 @@ void main() {
           ),
         ),
       );
-      await tester.pump();
-      _consumeExceptions(tester);
       expect(find.byType(AllelicSeriesChips), findsOneWidget);
     });
 
@@ -278,7 +268,7 @@ void main() {
       final m2 = _makeAutosomalRecessive('mut_b');
       const genotype = ParentGenotype.empty(gender: BirdGender.male);
 
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         _wrap(
           AllelicSeriesChips(
             locusId: 'test_locus',
@@ -288,8 +278,6 @@ void main() {
           ),
         ),
       );
-      await tester.pump();
-      _consumeExceptions(tester);
       expect(find.byType(FilterChip), findsNWidgets(2));
     });
 
@@ -308,7 +296,7 @@ void main() {
         gender: BirdGender.male,
       );
 
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         _wrap(
           AllelicSeriesChips(
             locusId: 'dilution',
@@ -318,16 +306,13 @@ void main() {
           ),
         ),
       );
-      await tester.pump();
-
-      _consumeExceptions(tester);
-
       expect(find.text('genetics.compound_heterozygote'), findsOneWidget);
     });
 
     testWidgets(
       'does not show compound_heterozygote badge for single selection',
       (tester) async {
+        _suppressOverflowErrors();
         final m1 = _makeAutosomalRecessive('single_mut');
         final m2 = _makeAutosomalRecessive('unselected_mut');
         final genotype = ParentGenotype(
@@ -335,7 +320,7 @@ void main() {
           gender: BirdGender.male,
         );
 
-        await tester.pumpWidget(
+        await pumpLocalizedApp(tester,
           _wrap(
             AllelicSeriesChips(
               locusId: 'test_locus',
@@ -345,8 +330,6 @@ void main() {
             ),
           ),
         );
-        await tester.pump();
-        _consumeExceptions(tester);
         expect(find.text('genetics.compound_heterozygote'), findsNothing);
       },
     );
@@ -356,7 +339,7 @@ void main() {
       const genotype = ParentGenotype.empty(gender: BirdGender.male);
       ParentGenotype? changed;
 
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         _wrap(
           AllelicSeriesChips(
             locusId: 'test_locus',
@@ -366,15 +349,8 @@ void main() {
           ),
         ),
       );
-      await tester.pump();
-
-      _consumeExceptions(tester);
-
       await tester.tap(find.byType(FilterChip).first);
       await tester.pump();
-
-      _consumeExceptions(tester);
-
       expect(changed, isNotNull);
       expect(changed!.mutations.containsKey('tap_test'), isTrue);
     });
@@ -392,7 +368,7 @@ void main() {
         );
 
         // Render with female genotype, max 1 allele at sex-linked locus
-        await tester.pumpWidget(
+        await pumpLocalizedApp(tester,
           _wrap(
             AllelicSeriesChips(
               locusId: inoMutation.locusId ?? inoMutation.id,
@@ -402,10 +378,6 @@ void main() {
             ),
           ),
         );
-        await tester.pump();
-
-        _consumeExceptions(tester);
-
         // Both chips render without crashing
         expect(find.byType(FilterChip), findsNWidgets(2));
         // Sex-linked status is properly detected (isSexLinked = true for ino)

@@ -7,6 +7,8 @@ import 'package:budgie_breeding_tracker/features/admin/providers/admin_actions_p
 import 'package:budgie_breeding_tracker/features/admin/providers/admin_models.dart';
 import 'package:budgie_breeding_tracker/features/admin/widgets/admin_database_content.dart';
 
+import '../../../helpers/test_localization.dart';
+
 class _FakeAdminActionsNotifier extends AdminActionsNotifier {
   @override
   AdminActionState build() => const AdminActionState();
@@ -36,93 +38,76 @@ void main() {
 
   group('DatabaseSummaryCard', () {
     testWidgets('renders without crashing', (tester) async {
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         const MaterialApp(
           home: Scaffold(
             body: DatabaseSummaryCard(tableCount: 10, totalRows: 500),
           ),
         ),
       );
-      await tester.pump();
-
-      var ex = tester.takeException();
-      while (ex != null) {
-        ex = tester.takeException();
-      }
-
       expect(find.byType(DatabaseSummaryCard), findsOneWidget);
     });
 
     testWidgets('shows table count', (tester) async {
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         const MaterialApp(
           home: Scaffold(
             body: DatabaseSummaryCard(tableCount: 15, totalRows: 200),
           ),
         ),
       );
-      await tester.pump();
-
       expect(find.text('15'), findsOneWidget);
     });
 
     testWidgets('shows admin.tables label', (tester) async {
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         const MaterialApp(
           home: Scaffold(
             body: DatabaseSummaryCard(tableCount: 10, totalRows: 300),
           ),
         ),
       );
-      await tester.pump();
-
       expect(find.text('admin.tables'), findsAtLeastNWidgets(1));
     });
 
     testWidgets('shows admin.total_rows label', (tester) async {
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         const MaterialApp(
           home: Scaffold(
             body: DatabaseSummaryCard(tableCount: 5, totalRows: 1500),
           ),
         ),
       );
-      await tester.pump();
-
       expect(find.text('admin.total_rows'), findsOneWidget);
     });
 
     testWidgets('formats large total rows with K suffix', (tester) async {
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         const MaterialApp(
           home: Scaffold(
             body: DatabaseSummaryCard(tableCount: 5, totalRows: 5000),
           ),
         ),
       );
-      await tester.pump();
-
       // 5000 → 5.0K
       expect(find.text('5.0K'), findsOneWidget);
     });
 
     testWidgets('formats million rows with M suffix', (tester) async {
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         const MaterialApp(
           home: Scaffold(
             body: DatabaseSummaryCard(tableCount: 3, totalRows: 2000000),
           ),
         ),
       );
-      await tester.pump();
-
       expect(find.text('2.0M'), findsOneWidget);
     });
   });
 
   group('DatabaseActionButton', () {
     testWidgets('renders without crashing', (tester) async {
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         MaterialApp(
           home: Scaffold(
             body: DatabaseActionButton(
@@ -135,13 +120,11 @@ void main() {
           ),
         ),
       );
-      await tester.pump();
-
       expect(find.byType(DatabaseActionButton), findsOneWidget);
     });
 
     testWidgets('shows label text', (tester) async {
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         MaterialApp(
           home: Scaffold(
             body: DatabaseActionButton(
@@ -154,13 +137,12 @@ void main() {
           ),
         ),
       );
-      await tester.pump();
-
       expect(find.text('Reset All'), findsOneWidget);
     });
 
     testWidgets('shows CircularProgressIndicator when loading', (tester) async {
-      await tester.pumpWidget(
+      await pumpLocalizedApp(
+        tester,
         MaterialApp(
           home: Scaffold(
             body: DatabaseActionButton(
@@ -172,14 +154,14 @@ void main() {
             ),
           ),
         ),
+        settle: false,
       );
       await tester.pump();
-
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
     });
 
     testWidgets('shows icon when not loading', (tester) async {
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         MaterialApp(
           home: Scaffold(
             body: DatabaseActionButton(
@@ -192,15 +174,13 @@ void main() {
           ),
         ),
       );
-      await tester.pump();
-
       expect(find.byKey(const Key('backup-icon')), findsOneWidget);
       expect(find.byType(CircularProgressIndicator), findsNothing);
     });
 
     testWidgets('calls onTap when tapped and not loading', (tester) async {
       var tapped = false;
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         MaterialApp(
           home: Scaffold(
             body: DatabaseActionButton(
@@ -213,8 +193,6 @@ void main() {
           ),
         ),
       );
-      await tester.pump();
-
       await tester.tap(find.byType(InkWell).first);
       await tester.pump();
 
@@ -224,40 +202,22 @@ void main() {
 
   group('DatabaseGlobalActionsBar', () {
     testWidgets('renders without crashing', (tester) async {
-      await tester.pumpWidget(_wrap(const DatabaseGlobalActionsBar()));
-      await tester.pump();
-
-      var ex = tester.takeException();
-      while (ex != null) {
-        ex = tester.takeException();
-      }
-
+      await pumpLocalizedApp(tester,_wrap(const DatabaseGlobalActionsBar()));
       expect(find.byType(DatabaseGlobalActionsBar), findsOneWidget);
     });
 
     testWidgets('shows backup_all button', (tester) async {
-      await tester.pumpWidget(_wrap(const DatabaseGlobalActionsBar()));
-      await tester.pump();
-
+      await pumpLocalizedApp(tester,_wrap(const DatabaseGlobalActionsBar()));
       expect(find.text('admin.backup_all'), findsOneWidget);
     });
 
     testWidgets('shows reset_all button', (tester) async {
-      await tester.pumpWidget(_wrap(const DatabaseGlobalActionsBar()));
-      await tester.pump();
-
+      await pumpLocalizedApp(tester,_wrap(const DatabaseGlobalActionsBar()));
       expect(find.text('admin.reset_all'), findsOneWidget);
     });
 
     testWidgets('shows two DatabaseActionButton widgets', (tester) async {
-      await tester.pumpWidget(_wrap(const DatabaseGlobalActionsBar()));
-      await tester.pump();
-
-      var ex = tester.takeException();
-      while (ex != null) {
-        ex = tester.takeException();
-      }
-
+      await pumpLocalizedApp(tester,_wrap(const DatabaseGlobalActionsBar()));
       expect(find.byType(DatabaseActionButton), findsNWidgets(2));
     });
   });
@@ -269,38 +229,17 @@ void main() {
     ];
 
     testWidgets('renders without crashing', (tester) async {
-      await tester.pumpWidget(_wrap(const DatabaseContent(tables: tables)));
-      await tester.pump();
-
-      var ex = tester.takeException();
-      while (ex != null) {
-        ex = tester.takeException();
-      }
-
+      await pumpLocalizedApp(tester,_wrap(const DatabaseContent(tables: tables)));
       expect(find.byType(DatabaseContent), findsOneWidget);
     });
 
     testWidgets('shows DatabaseSummaryCard', (tester) async {
-      await tester.pumpWidget(_wrap(const DatabaseContent(tables: tables)));
-      await tester.pump();
-
-      var ex = tester.takeException();
-      while (ex != null) {
-        ex = tester.takeException();
-      }
-
+      await pumpLocalizedApp(tester,_wrap(const DatabaseContent(tables: tables)));
       expect(find.byType(DatabaseSummaryCard), findsOneWidget);
     });
 
     testWidgets('shows admin.tables section label', (tester) async {
-      await tester.pumpWidget(_wrap(const DatabaseContent(tables: tables)));
-      await tester.pump();
-
-      var ex = tester.takeException();
-      while (ex != null) {
-        ex = tester.takeException();
-      }
-
+      await pumpLocalizedApp(tester,_wrap(const DatabaseContent(tables: tables)));
       expect(find.text('admin.tables'), findsAtLeastNWidgets(1));
     });
   });

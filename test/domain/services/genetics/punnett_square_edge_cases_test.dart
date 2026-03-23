@@ -158,7 +158,7 @@ void main() {
           0.0,
           (sum, r) => sum + r.probability,
         );
-        expect(totalProbability, closeTo(1.0, 0.01));
+        expect(totalProbability, closeTo(1.0, 0.0001));
       }
     });
   });

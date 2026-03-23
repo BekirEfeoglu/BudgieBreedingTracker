@@ -433,7 +433,7 @@ void main() {
       expect(result, isNot(contains('Spangle')));
     });
 
-    test('Lacewing shows pattern mutations (cinnamon+ino exception)', () {
+    test('Lacewing does not show pattern mutations (ino masks all)', () {
       final result = engine.resolveCompoundPhenotype({
         'ino',
         'cinnamon',
@@ -442,8 +442,8 @@ void main() {
       });
 
       expect(result, contains('Lacewing'));
-      expect(result, contains('Opaline'));
-      expect(result, contains('Spangle'));
+      expect(result, isNot(contains('Opaline')));
+      expect(result, isNot(contains('Spangle')));
     });
   });
 

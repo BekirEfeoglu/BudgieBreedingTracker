@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
@@ -236,7 +237,7 @@ void main() {
       await tester.pump();
 
       expect(find.text('Maviş'), findsOneWidget);
-      expect(find.byIcon(LucideIcons.bird), findsOneWidget);
+      expect(find.byType(SvgPicture), findsOneWidget);
     });
 
     testWidgets('shows fallback label when birdName is null', (tester) async {

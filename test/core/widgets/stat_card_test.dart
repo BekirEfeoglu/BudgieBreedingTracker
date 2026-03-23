@@ -112,5 +112,63 @@ void main() {
 
       expect(find.text('Births'), findsOneWidget);
     });
+
+    testWidgets('shows positive trend with plus sign', (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: StatCard(
+              label: 'Birds',
+              value: '10',
+              trendPercent: 25.0,
+              trendUp: true,
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('+25%'), findsOneWidget);
+    });
+
+    testWidgets('shows negative trend without double minus sign',
+        (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: StatCard(
+              label: 'Birds',
+              value: '10',
+              trendPercent: -25.0,
+              trendUp: false,
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Should show "-25%" not "--25%"
+      expect(find.text('-25%'), findsOneWidget);
+      expect(find.text('--25%'), findsNothing);
+    });
+
+    testWidgets('shows zero trend as stable text', (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: StatCard(
+              label: 'Birds',
+              value: '10',
+              trendPercent: 0.0,
+              trendUp: true,
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // percent == 0 shows 'statistics.trend_stable' key
+      expect(find.text('statistics.trend_stable'), findsOneWidget);
+    });
   });
 }

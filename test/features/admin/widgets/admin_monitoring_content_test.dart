@@ -4,6 +4,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:budgie_breeding_tracker/features/admin/providers/admin_models.dart';
 import 'package:budgie_breeding_tracker/features/admin/widgets/admin_monitoring_content.dart';
 
+import '../../../helpers/test_localization.dart';
+
 /// Healthy server: small DB, low connections, high cache.
 const _healthyCapacity = ServerCapacity(
   databaseSizeBytes: 50000000, // 50 MB (~10% of 500 MB)
@@ -40,51 +42,46 @@ Widget _wrap(Widget child) => MaterialApp(home: Scaffold(body: child));
 void main() {
   group('MonitoringStatusBanner', () {
     testWidgets('renders without crashing', (tester) async {
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         _wrap(const MonitoringStatusBanner(capacity: _healthyCapacity)),
       );
-      await tester.pump();
       expect(find.byType(MonitoringStatusBanner), findsOneWidget);
     });
 
     testWidgets('shows system_status label', (tester) async {
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         _wrap(const MonitoringStatusBanner(capacity: _healthyCapacity)),
       );
-      await tester.pump();
       expect(find.text('admin.system_status'), findsOneWidget);
     });
 
     testWidgets('shows db_status_healthy for healthy capacity', (tester) async {
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         _wrap(const MonitoringStatusBanner(capacity: _healthyCapacity)),
       );
-      await tester.pump();
       expect(find.text('admin.db_status_healthy'), findsOneWidget);
     });
 
     testWidgets('shows db_status_warning for warning capacity', (tester) async {
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         _wrap(const MonitoringStatusBanner(capacity: _warningCapacity)),
       );
-      await tester.pump();
       expect(find.text('admin.db_status_warning'), findsOneWidget);
     });
 
     testWidgets('shows db_status_critical for critical capacity', (
       tester,
     ) async {
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         _wrap(const MonitoringStatusBanner(capacity: _criticalCapacity)),
       );
-      await tester.pump();
       expect(find.text('admin.db_status_critical'), findsOneWidget);
     });
   });
 
   group('MonitoringCapacityCard', () {
     testWidgets('renders without crashing', (tester) async {
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         _wrap(
           const MonitoringCapacityCard(
             icon: Icon(Icons.storage),
@@ -95,12 +92,11 @@ void main() {
           ),
         ),
       );
-      await tester.pump();
       expect(find.byType(MonitoringCapacityCard), findsOneWidget);
     });
 
     testWidgets('shows label text', (tester) async {
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         _wrap(
           const MonitoringCapacityCard(
             icon: Icon(Icons.storage),
@@ -110,12 +106,11 @@ void main() {
           ),
         ),
       );
-      await tester.pump();
       expect(find.text('My Metric'), findsOneWidget);
     });
 
     testWidgets('shows value text', (tester) async {
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         _wrap(
           const MonitoringCapacityCard(
             icon: Icon(Icons.storage),
@@ -125,12 +120,11 @@ void main() {
           ),
         ),
       );
-      await tester.pump();
       expect(find.text('123 MB'), findsOneWidget);
     });
 
     testWidgets('shows subtitle when provided', (tester) async {
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         _wrap(
           const MonitoringCapacityCard(
             icon: Icon(Icons.storage),
@@ -141,14 +135,13 @@ void main() {
           ),
         ),
       );
-      await tester.pump();
       expect(find.text('/ 100'), findsOneWidget);
     });
 
     testWidgets('shows LinearProgressIndicator when ratio provided', (
       tester,
     ) async {
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         _wrap(
           const MonitoringCapacityCard(
             icon: Icon(Icons.storage),
@@ -158,14 +151,13 @@ void main() {
           ),
         ),
       );
-      await tester.pump();
       expect(find.byType(LinearProgressIndicator), findsOneWidget);
     });
 
     testWidgets('hides LinearProgressIndicator when ratio is null', (
       tester,
     ) async {
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         _wrap(
           const MonitoringCapacityCard(
             icon: Icon(Icons.list),
@@ -175,41 +167,36 @@ void main() {
           ),
         ),
       );
-      await tester.pump();
       expect(find.byType(LinearProgressIndicator), findsNothing);
     });
   });
 
   group('MonitoringIndexUsageCard', () {
     testWidgets('renders without crashing', (tester) async {
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         _wrap(const MonitoringIndexUsageCard(indexHitRatio: 90.0)),
       );
-      await tester.pump();
       expect(find.byType(MonitoringIndexUsageCard), findsOneWidget);
     });
 
     testWidgets('shows admin.index_usage label', (tester) async {
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         _wrap(const MonitoringIndexUsageCard(indexHitRatio: 85.0)),
       );
-      await tester.pump();
       expect(find.text('admin.index_usage'), findsOneWidget);
     });
 
     testWidgets('shows index ratio percentage', (tester) async {
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         _wrap(const MonitoringIndexUsageCard(indexHitRatio: 90.0)),
       );
-      await tester.pump();
       expect(find.text('90.0%'), findsOneWidget);
     });
 
     testWidgets('shows LinearProgressIndicator', (tester) async {
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         _wrap(const MonitoringIndexUsageCard(indexHitRatio: 75.0)),
       );
-      await tester.pump();
       expect(find.byType(LinearProgressIndicator), findsOneWidget);
     });
   });
@@ -218,78 +205,40 @@ void main() {
     testWidgets('renders without crashing with healthy capacity', (
       tester,
     ) async {
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         _wrap(const MonitoringContent(capacity: _healthyCapacity)),
       );
-      await tester.pump();
-
-      // Overflow risk from GridView childAspectRatio in small viewport
-      var ex = tester.takeException();
-      while (ex != null) {
-        if (ex is! FlutterError || !(ex.message.contains('overflowed'))) {
-          Error.throwWithStackTrace(ex, StackTrace.current);
-        }
-        ex = tester.takeException();
-      }
 
       expect(find.byType(MonitoringContent), findsOneWidget);
     });
 
     testWidgets('shows MonitoringStatusBanner', (tester) async {
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         _wrap(const MonitoringContent(capacity: _healthyCapacity)),
       );
-      await tester.pump();
-
-      var ex = tester.takeException();
-      while (ex != null) {
-        ex = tester.takeException();
-      }
-
       expect(find.byType(MonitoringStatusBanner), findsOneWidget);
     });
 
     testWidgets('shows MonitoringIndexUsageCard', (tester) async {
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         _wrap(const MonitoringContent(capacity: _healthyCapacity)),
       );
-      await tester.pump();
-
-      var ex = tester.takeException();
-      while (ex != null) {
-        ex = tester.takeException();
-      }
-
       expect(find.byType(MonitoringIndexUsageCard), findsOneWidget);
     });
 
     testWidgets('renders with critical capacity without crashing', (
       tester,
     ) async {
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         _wrap(const MonitoringContent(capacity: _criticalCapacity)),
       );
-      await tester.pump();
-
-      var ex = tester.takeException();
-      while (ex != null) {
-        ex = tester.takeException();
-      }
-
       expect(find.byType(MonitoringContent), findsOneWidget);
     });
 
     testWidgets('renders with empty default capacity', (tester) async {
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         _wrap(const MonitoringContent(capacity: ServerCapacity())),
       );
-      await tester.pump();
-
-      var ex = tester.takeException();
-      while (ex != null) {
-        ex = tester.takeException();
-      }
-
       expect(find.byType(MonitoringContent), findsOneWidget);
     });
   });

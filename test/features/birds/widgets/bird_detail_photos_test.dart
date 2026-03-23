@@ -9,20 +9,23 @@ import 'package:budgie_breeding_tracker/features/birds/widgets/bird_photo_galler
 
 import '../../../helpers/test_helpers.dart';
 
+import '../../../helpers/test_localization.dart';
+
 Future<void> _pump(
   WidgetTester tester,
   Widget child, {
   List<dynamic> overrides = const [],
+  bool settle = true,
 }) async {
-  await tester.pumpWidget(
+  await pumpLocalizedApp(tester,
     ProviderScope(
       overrides: List.from(overrides),
       child: MaterialApp(
         home: Scaffold(body: SingleChildScrollView(child: child)),
       ),
     ),
+    settle: settle,
   );
-  await tester.pump();
 }
 
 void main() {
@@ -78,6 +81,7 @@ void main() {
             (ref, id) => Stream.value(['https://example.com/photo1.jpg']),
           ),
         ],
+        settle: false,
       );
       // Use pump() instead of pumpAndSettle() to avoid timeout from
       // CachedNetworkImage scheduling infinite frames.
@@ -127,11 +131,6 @@ void main() {
       );
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 50));
-      // Consume any surfaced exceptions
-      Object? ex;
-      do {
-        ex = tester.takeException();
-      } while (ex != null);
 
       // If AsyncError state reached, verify error text
       final errorTextFinder = find.text('birds.photos_load_error');

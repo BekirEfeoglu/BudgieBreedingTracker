@@ -171,5 +171,86 @@ void main() {
         expect(find.byType(CustomPaint), findsAtLeastNWidgets(1));
       }
     });
+
+    testWidgets('renders without error with isFemale=true', (tester) async {
+      await tester.pumpWidget(
+        _wrap(
+          const BirdColorSimulation(
+            visualMutations: [],
+            phenotype: 'Light Green',
+            isFemale: true,
+          ),
+        ),
+      );
+
+      expect(find.byType(CustomPaint), findsAtLeastNWidgets(1));
+    });
+
+    testWidgets('renders without error with isFemale=false', (tester) async {
+      await tester.pumpWidget(
+        _wrap(
+          const BirdColorSimulation(
+            visualMutations: [],
+            phenotype: 'Light Green',
+            isFemale: false,
+          ),
+        ),
+      );
+
+      expect(find.byType(CustomPaint), findsAtLeastNWidgets(1));
+    });
+
+    testWidgets('renders without error with isFemale=null (default)', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          const BirdColorSimulation(
+            visualMutations: [],
+            phenotype: 'Light Green',
+          ),
+        ),
+      );
+
+      final customPaint = tester.widget<CustomPaint>(
+        find.byType(CustomPaint).last,
+      );
+      final painter = customPaint.painter! as BudgiePainter;
+      expect(painter.isFemale, isNull);
+    });
+
+    testWidgets('passes isFemale to BudgiePainter', (tester) async {
+      await tester.pumpWidget(
+        _wrap(
+          const BirdColorSimulation(
+            visualMutations: ['blue'],
+            phenotype: 'Skyblue',
+            isFemale: true,
+          ),
+        ),
+      );
+
+      final customPaint = tester.widget<CustomPaint>(
+        find.byType(CustomPaint).last,
+      );
+      final painter = customPaint.painter! as BudgiePainter;
+      expect(painter.isFemale, isTrue);
+
+      await tester.pumpWidget(
+        _wrap(
+          const BirdColorSimulation(
+            visualMutations: ['blue'],
+            phenotype: 'Skyblue',
+            isFemale: false,
+          ),
+        ),
+      );
+
+      final updatedPaint = tester.widget<CustomPaint>(
+        find.byType(CustomPaint).last,
+      );
+      final updatedPainter = updatedPaint.painter! as BudgiePainter;
+      expect(updatedPainter.isFemale, isFalse);
+    });
   });
 }

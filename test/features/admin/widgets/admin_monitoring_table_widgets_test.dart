@@ -4,6 +4,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:budgie_breeding_tracker/features/admin/providers/admin_models.dart';
 import 'package:budgie_breeding_tracker/features/admin/widgets/admin_monitoring_table_widgets.dart';
 
+import '../../../helpers/test_localization.dart';
+
 Widget _wrap(Widget child) => MaterialApp(
   home: Scaffold(body: SingleChildScrollView(child: child)),
 );
@@ -26,16 +28,9 @@ void main() {
         ),
       ];
 
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         _wrap(const MonitoringTableDetailsSection(tables: tables)),
       );
-      await tester.pump();
-
-      var ex = tester.takeException();
-      while (ex != null) {
-        ex = tester.takeException();
-      }
-
       expect(find.byType(MonitoringTableDetailsSection), findsOneWidget);
     });
 
@@ -49,11 +44,9 @@ void main() {
         ),
       ];
 
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         _wrap(const MonitoringTableDetailsSection(tables: tables)),
       );
-      await tester.pump();
-
       expect(find.text('admin.table_details'), findsOneWidget);
     });
 
@@ -73,11 +66,9 @@ void main() {
         ),
       ];
 
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         _wrap(const MonitoringTableDetailsSection(tables: tables)),
       );
-      await tester.pump();
-
       // 2 tables shown in header
       expect(find.text('admin.tables'), findsAtLeastNWidgets(1));
     });
@@ -92,20 +83,16 @@ void main() {
         ),
       ];
 
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         _wrap(const MonitoringTableDetailsSection(tables: tables)),
       );
-      await tester.pump();
-
       expect(find.text('chicks'), findsOneWidget);
     });
 
     testWidgets('renders empty without crashing', (tester) async {
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         _wrap(const MonitoringTableDetailsSection(tables: [])),
       );
-      await tester.pump();
-
       // Empty list → SizedBox.shrink, no crash
       expect(find.byType(MonitoringTableDetailsSection), findsOneWidget);
     });
@@ -132,11 +119,9 @@ void main() {
         ),
       ];
 
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         _wrap(const MonitoringTableDetailsSection(tables: tables)),
       );
-      await tester.pump();
-
       // All table names appear in the widget
       expect(find.text('birds'), findsOneWidget);
       expect(find.text('eggs'), findsOneWidget);

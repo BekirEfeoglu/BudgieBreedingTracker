@@ -31,12 +31,13 @@ void main() {
       expect(result.eyeColor, equals(const Color(0xFFCC2233)));
     });
 
-    test('english fallow has plum eyes', () {
+    test('english fallow has bright red eyes and no iris ring', () {
       final result = BudgieColorResolver.resolve(
         visualMutations: ['fallow_english'],
         phenotype: 'English Fallow Light Green',
       );
-      expect(result.eyeColor, equals(const Color(0xFF8B4557)));
+      expect(result.eyeColor, equals(const Color(0xFFCC2838)));
+      expect(result.showEyeRing, isFalse);
     });
 
     test('recessive pied has no eye ring', () {
@@ -125,12 +126,13 @@ void main() {
       expect(result.effectiveBackColor, equals(result.bodyColor));
     });
 
-    test('german fallow has dark red eye color', () {
+    test('german fallow has dark ruby eye with iris ring', () {
       final result = BudgieColorResolver.resolve(
         visualMutations: ['fallow_german'],
         phenotype: 'German Fallow Light Green',
       );
-      expect(result.eyeColor, equals(const Color(0xFFAA3344)));
+      expect(result.eyeColor, equals(const Color(0xFFA82030)));
+      expect(result.showEyeRing, isTrue);
     });
 
     test('dark-eyed clear has no eye ring', () {
@@ -157,12 +159,12 @@ void main() {
       expect(result.beakColor, equals(const Color(0xFFE89830)));
     });
 
-    test('ino tail is alpha-faded to approximately 0.15', () {
+    test('lutino tail uses yellow mask tint', () {
       final result = BudgieColorResolver.resolve(
         visualMutations: ['ino'],
         phenotype: 'Lutino',
       );
-      expect(result.tailColor.a, closeTo(0.15, 0.02));
+      expect(result.tailColor.a, closeTo(0.20, 0.02));
     });
   });
 }

@@ -20,6 +20,7 @@ void main() {
         birdId: 'b1',
         name: 'Baby',
         ringNumber: 'R-001',
+        bandingDay: 10,
         notes: 'Healthy chick',
         photoUrl: 'photo.jpg',
         hatchWeight: 3.5,
@@ -49,6 +50,7 @@ void main() {
         userId: 'u1',
         gender: BirdGender.unknown,
         healthStatus: ChickHealthStatus.healthy,
+        bandingDay: 10,
         isDeleted: false,
       );
       final model = row.toModel();

@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 
 import 'package:budgie_breeding_tracker/features/admin/widgets/admin_shell.dart';
 
+import '../../../helpers/test_localization.dart';
+
 /// Wraps AdminShell inside a minimal GoRouter context.
 Widget _wrapWithRouter({
   required Widget shellChild,
@@ -53,15 +55,15 @@ Widget _wrapWithRouter({
   return MaterialApp.router(routerConfig: router);
 }
 
-/// Consumes all pending test exceptions (e.g. layout overflow from long l10n keys).
-void _consumeExceptions(WidgetTester tester) {
-  var ex = tester.takeException();
-  while (ex != null) {
-    ex = tester.takeException();
+const _childWidget = Text('Page Content');
+
+/// Drains all overflow exceptions thrown after widget rendering.
+void _drainOverflowErrors(WidgetTester tester) {
+  for (var i = 0; i < 20; i++) {
+    final error = tester.takeException();
+    if (error == null) break;
   }
 }
-
-const _childWidget = Text('Page Content');
 
 void main() {
   group('AdminShell — narrow layout (width < 840)', () {
@@ -70,10 +72,8 @@ void main() {
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.reset);
 
-      await tester.pumpWidget(_wrapWithRouter(shellChild: _childWidget));
-      await tester.pump();
-      _consumeExceptions(tester);
-
+      await pumpLocalizedApp(tester, _wrapWithRouter(shellChild: _childWidget));
+      _drainOverflowErrors(tester);
       expect(find.byType(AdminShell), findsOneWidget);
     });
 
@@ -82,10 +82,8 @@ void main() {
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.reset);
 
-      await tester.pumpWidget(_wrapWithRouter(shellChild: _childWidget));
-      await tester.pump();
-      _consumeExceptions(tester);
-
+      await pumpLocalizedApp(tester, _wrapWithRouter(shellChild: _childWidget));
+      _drainOverflowErrors(tester);
       expect(find.byType(AppBar), findsOneWidget);
     });
 
@@ -94,10 +92,8 @@ void main() {
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.reset);
 
-      await tester.pumpWidget(_wrapWithRouter(shellChild: _childWidget));
-      await tester.pump();
-      _consumeExceptions(tester);
-
+      await pumpLocalizedApp(tester, _wrapWithRouter(shellChild: _childWidget));
+      _drainOverflowErrors(tester);
       // Closed drawers are not built into the visible widget tree —
       // verify the Scaffold has a non-null drawer property instead.
       final scaffold = tester.widget<Scaffold>(find.byType(Scaffold).first);
@@ -109,10 +105,8 @@ void main() {
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.reset);
 
-      await tester.pumpWidget(_wrapWithRouter(shellChild: _childWidget));
-      await tester.pump();
-      _consumeExceptions(tester);
-
+      await pumpLocalizedApp(tester, _wrapWithRouter(shellChild: _childWidget));
+      _drainOverflowErrors(tester);
       expect(find.text('Page Content'), findsOneWidget);
     });
 
@@ -123,10 +117,8 @@ void main() {
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.reset);
 
-      await tester.pumpWidget(_wrapWithRouter(shellChild: _childWidget));
-      await tester.pump();
-      _consumeExceptions(tester);
-
+      await pumpLocalizedApp(tester, _wrapWithRouter(shellChild: _childWidget));
+      _drainOverflowErrors(tester);
       // Without easy_localization, .tr() returns key
       expect(find.text('admin.dashboard'), findsOneWidget);
     });
@@ -136,15 +128,14 @@ void main() {
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.reset);
 
-      await tester.pumpWidget(
+      await pumpLocalizedApp(
+        tester,
         _wrapWithRouter(
           shellChild: _childWidget,
           initialLocation: '/admin/users',
         ),
       );
-      await tester.pump();
-      _consumeExceptions(tester);
-
+      _drainOverflowErrors(tester);
       expect(find.text('admin.users'), findsAtLeastNWidgets(1));
     });
 
@@ -153,10 +144,8 @@ void main() {
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.reset);
 
-      await tester.pumpWidget(_wrapWithRouter(shellChild: _childWidget));
-      await tester.pump();
-      _consumeExceptions(tester);
-
+      await pumpLocalizedApp(tester, _wrapWithRouter(shellChild: _childWidget));
+      _drainOverflowErrors(tester);
       // Back to app IconButton is in AppBar actions
       expect(find.byType(IconButton), findsAtLeastNWidgets(1));
     });
@@ -168,10 +157,8 @@ void main() {
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.reset);
 
-      await tester.pumpWidget(_wrapWithRouter(shellChild: _childWidget));
-      await tester.pump();
-      _consumeExceptions(tester);
-
+      await pumpLocalizedApp(tester, _wrapWithRouter(shellChild: _childWidget));
+      _drainOverflowErrors(tester);
       expect(find.byType(AdminShell), findsOneWidget);
     });
 
@@ -180,10 +167,8 @@ void main() {
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.reset);
 
-      await tester.pumpWidget(_wrapWithRouter(shellChild: _childWidget));
-      await tester.pump();
-      _consumeExceptions(tester);
-
+      await pumpLocalizedApp(tester, _wrapWithRouter(shellChild: _childWidget));
+      _drainOverflowErrors(tester);
       expect(find.byType(VerticalDivider), findsOneWidget);
     });
 
@@ -192,10 +177,8 @@ void main() {
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.reset);
 
-      await tester.pumpWidget(_wrapWithRouter(shellChild: _childWidget));
-      await tester.pump();
-      _consumeExceptions(tester);
-
+      await pumpLocalizedApp(tester, _wrapWithRouter(shellChild: _childWidget));
+      _drainOverflowErrors(tester);
       expect(find.text('Page Content'), findsOneWidget);
     });
 
@@ -204,10 +187,8 @@ void main() {
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.reset);
 
-      await tester.pumpWidget(_wrapWithRouter(shellChild: _childWidget));
-      await tester.pump();
-      _consumeExceptions(tester);
-
+      await pumpLocalizedApp(tester, _wrapWithRouter(shellChild: _childWidget));
+      _drainOverflowErrors(tester);
       // Wide layout uses _WideLayout which has no AppBar (just Row with Sidebar)
       expect(find.byType(AppBar), findsNothing);
     });
