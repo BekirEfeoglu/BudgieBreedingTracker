@@ -9,6 +9,7 @@ String _exceptionKind(AppException exception) {
     StorageException() => 'storage',
     ValidationException() => 'validation',
     PermissionException() => 'permission',
+    FreeTierLimitException() => 'freeTierLimit',
   };
 }
 
@@ -107,6 +108,20 @@ void main() {
       expect(_exceptionKind(const StorageException('x')), 'storage');
       expect(_exceptionKind(const ValidationException('x')), 'validation');
       expect(_exceptionKind(const PermissionException('x')), 'permission');
+      expect(
+        _exceptionKind(FreeTierLimitException('bird', 15)),
+        'freeTierLimit',
+      );
+    });
+  });
+
+  group('FreeTierLimitException', () {
+    test('stores entityType and limit', () {
+      final exception = FreeTierLimitException('bird', 15);
+      expect(exception.entityType, 'bird');
+      expect(exception.limit, 15);
+      expect(exception.message, 'Free tier limit reached for bird');
+      expect(exception, isA<AppException>());
     });
   });
 }
