@@ -330,6 +330,88 @@ class NotificationScheduler with NotificationSchedulerCancel {
     );
   }
 
+  /// Schedules banding reminder notifications for a chick.
+  ///
+  /// Creates 4 notifications: pre-reminder (day-1), main (banding day),
+  /// follow-up 1 (day+1), follow-up 2 (day+3). All at 09:00.
+  /// Respects [NotificationToggleSettings.banding] toggle.
+  Future<void> scheduleBandingReminders({
+    required String chickId,
+    required String chickLabel,
+    required DateTime hatchDate,
+    required int bandingDay,
+    NotificationToggleSettings? settings,
+    @visibleForTesting DateTime? now,
+  }) async {
+    if (settings != null && !settings.banding) {
+      AppLogger.info(
+        '[NotificationScheduler] Banding disabled, skipping $chickLabel',
+      );
+      return;
+    }
+
+    final now0 = now ?? DateTime.now();
+    final futures = <Future<void>>[];
+
+    // Offsets relative to bandingDay: -1, 0, +1, +3
+    final offsets = <int, ({String titleKey, String bodyKey})>{
+      -1: (
+        titleKey: 'notifications.banding_pre_title',
+        bodyKey: 'notifications.banding_pre_body',
+      ),
+      0: (
+        titleKey: 'notifications.banding_main_title',
+        bodyKey: 'notifications.banding_main_body',
+      ),
+      1: (
+        titleKey: 'notifications.banding_followup_title',
+        bodyKey: 'notifications.banding_followup_body',
+      ),
+      3: (
+        titleKey: 'notifications.banding_followup_title',
+        bodyKey: 'notifications.banding_followup_body',
+      ),
+    };
+
+    var index = 0;
+    for (final entry in offsets.entries) {
+      final scheduledDate = DateTime(
+        hatchDate.year,
+        hatchDate.month,
+        hatchDate.day + bandingDay + entry.key,
+        9, // 09:00
+      );
+
+      if (scheduledDate.isBefore(now0)) {
+        index++;
+        continue;
+      }
+
+      final id = NotificationIds.generate(
+        NotificationIds.bandingBaseId,
+        chickId,
+        index,
+      );
+
+      futures.add(
+        _service.scheduleNotification(
+          id: id,
+          title: entry.value.titleKey.tr(),
+          body: entry.value.bodyKey.tr(args: [chickLabel]),
+          scheduledDate: scheduledDate,
+          channelId: NotificationService.chickCareChannelId,
+          payload: 'banding:$chickId',
+        ),
+      );
+      index++;
+    }
+    await Future.wait(futures);
+
+    AppLogger.info(
+      '[NotificationScheduler] Banding reminders scheduled for $chickLabel',
+    );
+  }
+
   /// Shows an immediate notification with rate limiting.
   ///
   /// Checks [NotificationRateLimiter] before showing. Returns `true`
