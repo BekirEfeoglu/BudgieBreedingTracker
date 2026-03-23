@@ -1594,7 +1594,8 @@
   "user_guide": {
     "title": "User Guide",
     "search_hint": "Search topics...",
-    "category_all": "All",
+    "related_topics": "Related Topics",
+    "step_count": "{} steps",
     "category_getting_started": "Getting Started",
     "category_bird_management": "Bird Management",
     "category_breeding_process": "Breeding Process",
@@ -1607,6 +1608,7 @@
     "topics": {
       "registration": {
         "title": "Registration & Login",
+        "subtitle": "Sign up to start using the app",
         "intro": "You need to create an account to start using the app. You can quickly register with your email address and a password.",
         "steps_title": "Registration steps",
         "step1": "Tap the 'Register' button on the login screen.",
@@ -1618,6 +1620,7 @@
       },
       "dashboard": {
         "title": "Dashboard Overview",
+        "subtitle": "Statistics and quick access on the home screen",
         "intro": "The home screen provides a summary of all your data. You can see total bird count, active breeding pairs, recently added chicks, and pending notifications at a glance.",
         "stats_info": "Stat cards show your total birds, active pairs, eggs, and chick counts. Tap on cards for details.",
         "quick_actions": "Use quick action buttons to add new birds, breeding pairs, or eggs.",
@@ -1625,6 +1628,7 @@
       },
       "navigation": {
         "title": "App Navigation",
+        "subtitle": "Navigate between tabs and menus",
         "intro": "The app consists of five main sections. You can quickly switch between them using the bottom navigation bar.",
         "bottom_nav": "The bottom bar includes Home, Birds, Breeding, Calendar, and More tabs.",
         "more_menu": "From the More menu, you can access Statistics, Genealogy, Genetics, Settings, Profile, Notifications, Backup, and this guide.",
@@ -1632,6 +1636,7 @@
       },
       "bird_management": {
         "title": "Adding & Editing Birds",
+        "subtitle": "Register and edit your birds",
         "intro": "In the Birds section, you can view all your birds, add new ones, and edit existing records.",
         "add_steps_title": "Adding a new bird",
         "add_step1": "Tap the '+' button at the bottom-right of the Birds screen.",
@@ -1643,6 +1648,7 @@
       },
       "filtering": {
         "title": "Filtering & Search",
+        "subtitle": "Quickly find your birds with filters and search",
         "intro": "You can quickly search your bird list and use various filtering options.",
         "filter_types": "Filter options: All, Male, Female, Alive, Dead, Sold. Tap the options in the filter bar to narrow your list.",
         "search_info": "Type a bird name or ring number in the search bar to see instant results.",
@@ -1650,6 +1656,7 @@
       },
       "health_records": {
         "title": "Health Records",
+        "subtitle": "Track your birds' health history",
         "intro": "Track the health status of your birds. You can record vet visits, vaccination records, and treatment information.",
         "add_steps_title": "Adding a health record",
         "add_step1": "Go to the 'Health Records' section from the bird detail page.",
@@ -1659,6 +1666,7 @@
       },
       "breeding_pair": {
         "title": "Creating Breeding Pairs",
+        "subtitle": "Create and manage breeding pairs",
         "intro": "In the Breeding section, you can create breeding pairs from your birds and track the breeding process from start to finish.",
         "steps_title": "Creating a pair",
         "step1": "Tap the '+' button on the Breeding screen.",
@@ -1670,6 +1678,7 @@
       },
       "eggs_incubation": {
         "title": "Egg & Incubation Tracking",
+        "subtitle": "Egg registration and incubation tracking",
         "intro": "From the breeding pair detail page, you can add eggs and track the incubation process day by day.",
         "steps_title": "Egg tracking steps",
         "step1": "Tap 'Add Egg' on the breeding pair detail page.",
@@ -1681,6 +1690,7 @@
       },
       "chick_tracking": {
         "title": "Chick Tracking & Growth",
+        "subtitle": "Monitor chick development and growth",
         "intro": "Track the growth process of hatched chicks in detail. You can record weight measurements, development stages, and health status.",
         "steps_title": "Chick tracking steps",
         "step1": "Select a chick from the Chicks screen or add a new one.",
@@ -1691,6 +1701,7 @@
       },
       "calendar_notifications": {
         "title": "Calendar & Notifications",
+        "subtitle": "Calendar events and reminders",
         "intro": "In the Calendar section, you can view all important events, add new events, and set up reminders.",
         "calendar_info": "The calendar displays breeding dates, incubation end dates, vet appointments, and custom events. Tap a day to see its details.",
         "notification_info": "From the Notifications section, you can manage your reminder preferences. Incubation end, vaccination reminders, and custom notifications can be configured.",
@@ -1698,6 +1709,7 @@
       },
       "genealogy_genetics": {
         "title": "Genealogy & Genetic Calculation",
+        "subtitle": "Family tree and genetic calculations",
         "intro": "Visually explore your birds' family tree and predict possible offspring colors with genetic calculations.",
         "family_tree": "The genealogy view shows a bird's lineage going back to mother, father, and earlier generations. Accessible from each bird's detail page.",
         "punnett_info": "With the Punnett square, you can calculate possible offspring colors and mutations from two birds. Select the parents' mutations and view the results.",
@@ -1706,6 +1718,7 @@
       },
       "backup_export": {
         "title": "Backup & Export",
+        "subtitle": "Back up and export your data",
         "intro": "Safely back up your data and export it in PDF or Excel format.",
         "backup_steps_title": "Backup steps",
         "backup_step1": "Go to Settings > Backup section.",
@@ -1716,6 +1729,7 @@
       },
       "sync": {
         "title": "Data Synchronization",
+        "subtitle": "Cross-device data synchronization",
         "intro": "Your data is automatically synchronized with the cloud. You can work offline, and changes are automatically updated when the internet connection returns.",
         "offline_info": "You can add and edit data without an internet connection. All changes are stored in the local database.",
         "conflict_info": "If you edit the same record on multiple devices, the latest server version takes priority (server-wins).",
@@ -1724,6 +1738,7 @@
       },
       "profile_settings": {
         "title": "Profile & Settings",
+        "subtitle": "Profile information and app settings",
         "intro": "You can update your profile information and customize app settings.",
         "profile_info": "From the Profile page, you can edit your name, avatar photo, and contact information.",
         "settings_info": "From the Settings section, you can manage theme (light/dark), language (Turkish, English, German), notification preferences, and security settings.",
@@ -1731,6 +1746,7 @@
       },
       "premium": {
         "title": "Premium Membership",
+        "subtitle": "Access premium features and subscription",
         "intro": "Get unlimited access to all features with Premium membership and take your breeding experience to the next level.",
         "features_list": "Premium features: Unlimited bird records, detailed statistics and charts, genealogy tree view, genetic calculation (Punnett square), priority support.",
         "subscribe_steps_title": "Steps to go Premium",

@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
@@ -7,7 +8,7 @@ import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/core/widgets/empty_state.dart';
 import 'package:budgie_breeding_tracker/features/more/widgets/guide_data.dart';
-import 'package:budgie_breeding_tracker/features/more/widgets/guide_topic_card.dart';
+import 'package:budgie_breeding_tracker/features/more/widgets/guide_topic_list_item.dart';
 
 class UserGuideScreen extends StatefulWidget {
   const UserGuideScreen({super.key});
@@ -18,35 +19,34 @@ class UserGuideScreen extends StatefulWidget {
 
 class _UserGuideScreenState extends State<UserGuideScreen> {
   final _searchController = TextEditingController();
-  GuideCategory _selectedCategory = GuideCategory.all;
   String _searchQuery = '';
 
   static const Map<String, String> _searchFoldMap = {
-    'i̇': 'i',
-    'ı': 'i',
-    'ş': 's',
-    'ç': 'c',
-    'ğ': 'g',
-    'ü': 'u',
-    'ö': 'o',
-    'ä': 'a',
-    'â': 'a',
-    'à': 'a',
-    'á': 'a',
-    'é': 'e',
-    'è': 'e',
-    'ê': 'e',
-    'î': 'i',
-    'í': 'i',
-    'ì': 'i',
-    'ô': 'o',
-    'ó': 'o',
-    'ò': 'o',
-    'û': 'u',
-    'ú': 'u',
-    'ù': 'u',
-    'ñ': 'n',
-    'ß': 'ss',
+    'i\u0307': 'i',
+    '\u0131': 'i',
+    '\u015f': 's',
+    '\u00e7': 'c',
+    '\u011f': 'g',
+    '\u00fc': 'u',
+    '\u00f6': 'o',
+    '\u00e4': 'a',
+    '\u00e2': 'a',
+    '\u00e0': 'a',
+    '\u00e1': 'a',
+    '\u00e9': 'e',
+    '\u00e8': 'e',
+    '\u00ea': 'e',
+    '\u00ee': 'i',
+    '\u00ed': 'i',
+    '\u00ec': 'i',
+    '\u00f4': 'o',
+    '\u00f3': 'o',
+    '\u00f2': 'o',
+    '\u00fb': 'u',
+    '\u00fa': 'u',
+    '\u00f9': 'u',
+    '\u00f1': 'n',
+    '\u00df': 'ss',
   };
 
   static String _normalizeSearchText(String value) {
@@ -70,53 +70,46 @@ class _UserGuideScreenState extends State<UserGuideScreen> {
     super.dispose();
   }
 
-  List<GuideTopic> get _filteredTopics {
-    var topics = guideTopics.toList();
-
-    // Category filter
-    if (_selectedCategory != GuideCategory.all) {
-      topics = topics.where((t) => t.category == _selectedCategory).toList();
+  List<(int, GuideTopic)> get _filteredTopics {
+    final indexed = <(int, GuideTopic)>[];
+    for (var i = 0; i < guideTopics.length; i++) {
+      indexed.add((i, guideTopics[i]));
     }
 
-    // Search filter
-    if (_searchQuery.isNotEmpty) {
-      final query = _normalizeSearchText(_searchQuery);
-      topics = topics.where((t) {
-        final titleMatch = _matchesQuery(t.title, query);
-        if (titleMatch) return true;
+    if (_searchQuery.isEmpty) return indexed;
 
-        // Search through block text content
-        for (final block in t.blocks) {
-          if (block.textKey != null &&
-              _matchesQuery(block.textKey!.tr(), query)) {
-            return true;
-          }
-          if (block.stepsTitle != null &&
-              _matchesQuery(block.stepsTitle!.tr(), query)) {
-            return true;
-          }
-          if (block.stepKeys != null) {
-            for (final key in block.stepKeys!) {
-              if (_matchesQuery(key.tr(), query)) return true;
-            }
+    final query = _normalizeSearchText(_searchQuery);
+    return indexed.where((entry) {
+      final t = entry.$2;
+      if (_matchesQuery(t.title, query)) return true;
+      for (final block in t.blocks) {
+        if (block.textKey != null &&
+            _matchesQuery(block.textKey!.tr(), query)) {
+          return true;
+        }
+        if (block.stepsTitle != null &&
+            _matchesQuery(block.stepsTitle!.tr(), query)) {
+          return true;
+        }
+        if (block.stepKeys != null) {
+          for (final key in block.stepKeys!) {
+            if (_matchesQuery(key.tr(), query)) return true;
           }
         }
-        return false;
-      }).toList();
-    }
-
-    return topics;
+      }
+      return false;
+    }).toList();
   }
 
   @override
   Widget build(BuildContext context) {
     final topics = _filteredTopics;
+    final isSearching = _searchQuery.isNotEmpty;
 
     return Scaffold(
       appBar: AppBar(title: Text('user_guide.title'.tr())),
       body: Column(
         children: [
-          // Search bar
           Padding(
             padding: const EdgeInsets.fromLTRB(
               AppSpacing.lg,
@@ -148,15 +141,6 @@ class _UserGuideScreenState extends State<UserGuideScreen> {
             ),
           ),
           const SizedBox(height: AppSpacing.sm),
-
-          // Category chips
-          _CategoryChipBar(
-            selected: _selectedCategory,
-            onSelected: (cat) => setState(() => _selectedCategory = cat),
-          ),
-          const SizedBox(height: AppSpacing.sm),
-
-          // Content
           Expanded(
             child: topics.isEmpty
                 ? EmptyState(
@@ -164,56 +148,89 @@ class _UserGuideScreenState extends State<UserGuideScreen> {
                     title: 'common.no_results'.tr(),
                     subtitle: 'common.no_results_hint'.tr(),
                   )
-                : ListView.builder(
-                    padding: const EdgeInsets.only(
-                      top: AppSpacing.xs,
-                      bottom: AppSpacing.xxxl * 2,
-                    ),
-                    itemCount: topics.length,
-                    itemBuilder: (_, i) => GuideTopicCard(
-                      key: ValueKey(topics[i].titleKey),
-                      topic: topics[i],
-                    ),
-                  ),
+                : isSearching
+                ? _buildFlatList(topics)
+                : _buildGroupedList(topics),
           ),
         ],
       ),
     );
   }
-}
 
-// ---------------------------------------------------------------------------
-// Horizontal scrollable category chip bar
-// ---------------------------------------------------------------------------
-
-class _CategoryChipBar extends StatelessWidget {
-  final GuideCategory selected;
-  final ValueChanged<GuideCategory> onSelected;
-
-  const _CategoryChipBar({required this.selected, required this.onSelected});
-
-  @override
-  Widget build(BuildContext context) {
-    const categories = GuideCategory.values;
-
-    return SizedBox(
-      height: 40,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-        itemCount: categories.length,
-        separatorBuilder: (_, __) => const SizedBox(width: AppSpacing.sm),
-        itemBuilder: (context, index) {
-          final cat = categories[index];
-          final isSelected = cat == selected;
-
-          return ChoiceChip(
-            label: Text(cat.label),
-            selected: isSelected,
-            onSelected: (_) => onSelected(cat),
-          );
-        },
+  Widget _buildFlatList(List<(int, GuideTopic)> topics) {
+    return ListView.builder(
+      padding: const EdgeInsets.only(
+        top: AppSpacing.xs,
+        bottom: AppSpacing.xxxl * 2,
       ),
+      itemCount: topics.length,
+      itemBuilder: (context, i) {
+        final (index, topic) = topics[i];
+        return GuideTopicListItem(
+          topic: topic,
+          showDivider: i < topics.length - 1,
+          onTap: () => context.push('/user-guide/$index'),
+        );
+      },
+    );
+  }
+
+  Widget _buildGroupedList(List<(int, GuideTopic)> topics) {
+    final theme = Theme.of(context);
+    final widgets = <Widget>[];
+
+    for (final category in GuideCategory.values) {
+      final categoryTopics = topics
+          .where((e) => e.$2.category == category)
+          .toList();
+      if (categoryTopics.isEmpty) continue;
+
+      // Section header
+      widgets.add(
+        Padding(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.lg + AppSpacing.xs,
+            AppSpacing.lg,
+            AppSpacing.lg,
+            AppSpacing.sm,
+          ),
+          child: Text(
+            category.label.toUpperCase(),
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: theme.colorScheme.primary,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.5,
+            ),
+          ),
+        ),
+      );
+
+      // Grouped card
+      widgets.add(
+        Card(
+          margin: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+          clipBehavior: Clip.antiAlias,
+          child: Column(
+            children: [
+              for (var i = 0; i < categoryTopics.length; i++)
+                GuideTopicListItem(
+                  topic: categoryTopics[i].$2,
+                  showDivider: i < categoryTopics.length - 1,
+                  onTap: () =>
+                      context.push('/user-guide/${categoryTopics[i].$1}'),
+                ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return ListView(
+      padding: const EdgeInsets.only(
+        top: AppSpacing.xs,
+        bottom: AppSpacing.xxxl * 2,
+      ),
+      children: widgets,
     );
   }
 }

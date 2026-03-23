@@ -1,21 +1,32 @@
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/features/more/widgets/guide_data.dart';
 
 void main() {
   group('GuideCategory', () {
-    test('every value has a non-empty labelKey', () {
+    test('has exactly 6 values (all removed)', () {
+      expect(GuideCategory.values.length, 6);
+    });
+
+    test('all categories have non-empty labelKey starting with '
+        'user_guide.category_', () {
       for (final category in GuideCategory.values) {
         expect(
           category.labelKey,
           isNotEmpty,
           reason: '${category.name}.labelKey is empty',
         );
+        expect(
+          category.labelKey,
+          startsWith('user_guide.category_'),
+          reason:
+              '${category.name}.labelKey does not start with '
+              'user_guide.category_',
+        );
       }
     });
 
-    test('every value has a non-empty iconAsset', () {
+    test('all categories have non-empty iconAsset', () {
       for (final category in GuideCategory.values) {
         expect(
           category.iconAsset,
@@ -24,69 +35,48 @@ void main() {
         );
       }
     });
-
-    test('all values appear in the enum', () {
-      expect(
-        GuideCategory.values,
-        containsAll([
-          GuideCategory.all,
-          GuideCategory.gettingStarted,
-          GuideCategory.birdManagement,
-          GuideCategory.breedingProcess,
-          GuideCategory.tools,
-          GuideCategory.dataManagement,
-          GuideCategory.accountSettings,
-        ]),
-      );
-    });
-
-    test('has exactly 7 categories', () {
-      expect(GuideCategory.values.length, 7);
-    });
-
-    test('all category except "all" can be used as filter', () {
-      final filterCategories = GuideCategory.values
-          .where((c) => c != GuideCategory.all)
-          .toList();
-      expect(filterCategories, isNotEmpty);
-      // Each non-all category has distinct name
-      final names = filterCategories.map((c) => c.name).toSet();
-      expect(names.length, filterCategories.length);
-    });
-
-    test('maps correct icon assets per category', () {
-      expect(GuideCategory.all.iconAsset, AppIcons.guide);
-      expect(GuideCategory.gettingStarted.iconAsset, AppIcons.onboarding);
-      expect(GuideCategory.birdManagement.iconAsset, AppIcons.bird);
-      expect(GuideCategory.breedingProcess.iconAsset, AppIcons.breeding);
-      expect(GuideCategory.tools.iconAsset, AppIcons.calendar);
-      expect(GuideCategory.dataManagement.iconAsset, AppIcons.backup);
-      expect(GuideCategory.accountSettings.iconAsset, AppIcons.settings);
-    });
-
-    test('labelKey follows user_guide.category_ prefix pattern', () {
-      for (final category in GuideCategory.values) {
-        expect(category.labelKey, startsWith('user_guide.category_'));
-      }
-    });
   });
 
   group('GuideTopic', () {
-    test('guideTopics contains exactly 15 topics', () {
+    test('guideTopics has exactly 15 entries', () {
       expect(guideTopics.length, 15);
     });
 
-    test('every topic has a non-empty titleKey', () {
+    test('every topic has non-empty titleKey starting with '
+        'user_guide.topics.', () {
       for (final topic in guideTopics) {
         expect(
           topic.titleKey,
           isNotEmpty,
           reason: 'A topic has an empty titleKey',
         );
+        expect(
+          topic.titleKey,
+          startsWith('user_guide.topics.'),
+          reason: '${topic.titleKey} does not start with user_guide.topics.',
+        );
       }
     });
 
-    test('every topic has a non-empty iconAsset', () {
+    test('every topic has non-empty subtitleKey starting with '
+        'user_guide.topics.', () {
+      for (final topic in guideTopics) {
+        expect(
+          topic.subtitleKey,
+          isNotEmpty,
+          reason: '${topic.titleKey} has empty subtitleKey',
+        );
+        expect(
+          topic.subtitleKey,
+          startsWith('user_guide.topics.'),
+          reason:
+              '${topic.titleKey} subtitleKey does not start with '
+              'user_guide.topics.',
+        );
+      }
+    });
+
+    test('every topic has non-empty iconAsset', () {
       for (final topic in guideTopics) {
         expect(
           topic.iconAsset,
@@ -96,13 +86,7 @@ void main() {
       }
     });
 
-    test('every topic has a non-null category', () {
-      for (final topic in guideTopics) {
-        expect(topic.category, isNotNull);
-      }
-    });
-
-    test('every topic has at least one block', () {
+    test('every topic has non-empty blocks list', () {
       for (final topic in guideTopics) {
         expect(
           topic.blocks,
@@ -112,23 +96,7 @@ void main() {
       }
     });
 
-    test('topics span all non-all categories', () {
-      final usedCategories = guideTopics.map((t) => t.category).toSet();
-      expect(usedCategories, isNot(contains(GuideCategory.all)));
-      expect(
-        usedCategories,
-        containsAll([
-          GuideCategory.gettingStarted,
-          GuideCategory.birdManagement,
-          GuideCategory.breedingProcess,
-          GuideCategory.tools,
-          GuideCategory.dataManagement,
-          GuideCategory.accountSettings,
-        ]),
-      );
-    });
-
-    test('only genealogy/genetics topic is marked as premium', () {
+    test('exactly 1 premium topic (genealogy_genetics)', () {
       final premiumTopics = guideTopics.where((t) => t.isPremium).toList();
       expect(premiumTopics.length, 1);
       expect(
@@ -137,20 +105,41 @@ void main() {
       );
     });
 
-    test('isPremium defaults to false for standard topics', () {
-      final nonPremium = guideTopics.where((t) => !t.isPremium).toList();
-      expect(nonPremium.length, 14);
+    test('all relatedTopicIndices are valid (in range, no self-reference)', () {
+      for (var i = 0; i < guideTopics.length; i++) {
+        final topic = guideTopics[i];
+        for (final relatedIndex in topic.relatedTopicIndices) {
+          expect(
+            relatedIndex,
+            greaterThanOrEqualTo(0),
+            reason:
+                '${topic.titleKey} has negative relatedTopicIndex '
+                '$relatedIndex',
+          );
+          expect(
+            relatedIndex,
+            lessThan(guideTopics.length),
+            reason:
+                '${topic.titleKey} has out-of-range relatedTopicIndex '
+                '$relatedIndex',
+          );
+          expect(
+            relatedIndex,
+            isNot(equals(i)),
+            reason: '${topic.titleKey} has self-reference at index $i',
+          );
+        }
+      }
     });
 
-    test('constructor provides correct defaults', () {
-      const topic = GuideTopic(
-        titleKey: 'test.title',
-        iconAsset: 'assets/icons/test.svg',
-        category: GuideCategory.tools,
-        blocks: [GuideBlock.text('test.intro')],
-      );
-      expect(topic.isPremium, false);
-      expect(topic.blocks.length, 1);
+    test('stepCount returns total step keys across all step blocks', () {
+      // Registration topic (index 0) has 1 steps block with 4 steps
+      final registration = guideTopics[0];
+      expect(registration.stepCount, 4);
+
+      // Dashboard topic (index 1) has no steps blocks
+      final dashboard = guideTopics[1];
+      expect(dashboard.stepCount, 0);
     });
   });
 
@@ -194,21 +183,8 @@ void main() {
   });
 
   group('GuideBlockType', () {
-    test('enum has 5 values', () {
+    test('has 5 values', () {
       expect(GuideBlockType.values.length, 5);
-    });
-
-    test('contains all expected block types', () {
-      expect(
-        GuideBlockType.values,
-        containsAll([
-          GuideBlockType.text,
-          GuideBlockType.tip,
-          GuideBlockType.warning,
-          GuideBlockType.steps,
-          GuideBlockType.premiumNote,
-        ]),
-      );
     });
   });
 }

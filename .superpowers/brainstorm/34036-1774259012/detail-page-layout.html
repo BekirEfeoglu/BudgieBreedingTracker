@@ -1,0 +1,113 @@
+<h2>Konu Detay Sayfasi Yapisi</h2>
+<p class="subtitle">Bir konuya tiklandiginda acilacak detay sayfasi nasil olmali?</p>
+
+<div class="cards">
+  <div class="card" data-choice="scroll-sections" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="background: #f8fafc; border-radius: 12px; padding: 16px; font-family: system-ui; max-width: 340px; margin: 0 auto;">
+        <!-- AppBar -->
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #e5e7eb;">
+          <div style="color: #6366f1; font-size: 16px;">&larr;</div>
+          <div style="font-weight: 600; font-size: 15px; color: #111827;">Kus Ekleme ve Duzenleme</div>
+        </div>
+        <!-- Header -->
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+          <div style="width: 48px; height: 48px; border-radius: 12px; background: #f3f4f6; display: flex; align-items: center; justify-content: center; font-size: 24px;">🐦</div>
+          <div>
+            <div style="font-size: 12px; color: #6366f1; font-weight: 600;">BASLANGIC</div>
+            <div style="font-size: 13px; color: #94a3b8;">5 adim &bull; 3 dk okuma</div>
+          </div>
+        </div>
+        <!-- Intro text -->
+        <div style="font-size: 13px; color: #475569; line-height: 1.6; margin-bottom: 16px; padding: 12px; background: white; border-radius: 8px; border: 1px solid #f1f5f9;">
+          Kuslarinizi kayit altina alin, detaylarini duzenleyin ve kolayca takip edin.
+        </div>
+        <!-- Steps section -->
+        <div style="margin-bottom: 12px;">
+          <div style="font-weight: 600; font-size: 13px; color: #374151; margin-bottom: 8px;">Kayit adimlari</div>
+          <div style="display: flex; gap: 8px; align-items: flex-start; margin-bottom: 8px;">
+            <div style="width: 22px; height: 22px; border-radius: 50%; background: #6366f1; color: white; font-size: 11px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">1</div>
+            <div style="font-size: 13px; color: #475569; line-height: 1.4;">FAB butonuna tiklayin</div>
+          </div>
+          <div style="display: flex; gap: 8px; align-items: flex-start; margin-bottom: 8px;">
+            <div style="width: 22px; height: 22px; border-radius: 50%; background: #6366f1; color: white; font-size: 11px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">2</div>
+            <div style="font-size: 13px; color: #475569; line-height: 1.4;">Kus bilgilerini girin</div>
+          </div>
+          <div style="display: flex; gap: 8px; align-items: flex-start;">
+            <div style="width: 22px; height: 22px; border-radius: 50%; background: #6366f1; color: white; font-size: 11px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">3</div>
+            <div style="font-size: 13px; color: #475569; line-height: 1.4;">Kaydet butonuna basin</div>
+          </div>
+        </div>
+        <!-- Tip box -->
+        <div style="background: #eff6ff; border-radius: 8px; padding: 10px 12px; border-left: 3px solid #3b82f6;">
+          <div style="font-size: 11px; font-weight: 600; color: #2563eb; margin-bottom: 2px;">💡 Ipucu</div>
+          <div style="font-size: 12px; color: #1e40af; line-height: 1.4;">Halka numarasi eklemek kusunuzu kolayca tanimanizi saglar.</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A: Tek Scroll Sayfa</h3>
+      <p>Tum icerik tek sayfada, bolumler alt alta. Header + intro + steps + tips/warnings. Basit, dogrusal okuma deneyimi.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="tabbed-sections" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="background: #f8fafc; border-radius: 12px; padding: 16px; font-family: system-ui; max-width: 340px; margin: 0 auto;">
+        <!-- AppBar -->
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid #e5e7eb;">
+          <div style="color: #6366f1; font-size: 16px;">&larr;</div>
+          <div style="font-weight: 600; font-size: 15px; color: #111827;">Kus Ekleme ve Duzenleme</div>
+        </div>
+        <!-- Header compact -->
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 14px;">
+          <div style="width: 40px; height: 40px; border-radius: 10px; background: #f3f4f6; display: flex; align-items: center; justify-content: center; font-size: 20px;">🐦</div>
+          <div style="font-size: 13px; color: #64748b;">Baslangic &bull; 5 adim</div>
+        </div>
+        <!-- Tabs -->
+        <div style="display: flex; gap: 0; margin-bottom: 14px; border-bottom: 2px solid #e5e7eb;">
+          <div style="padding: 8px 16px; font-size: 13px; font-weight: 600; color: #6366f1; border-bottom: 2px solid #6366f1; margin-bottom: -2px;">Genel Bakis</div>
+          <div style="padding: 8px 16px; font-size: 13px; color: #94a3b8;">Adimlar</div>
+          <div style="padding: 8px 16px; font-size: 13px; color: #94a3b8;">Ipuclari</div>
+        </div>
+        <!-- Tab content -->
+        <div style="font-size: 13px; color: #475569; line-height: 1.6; padding: 12px; background: white; border-radius: 8px; border: 1px solid #f1f5f9;">
+          Kuslarinizi kayit altina alin, detaylarini duzenleyin ve kolayca takip edin. Uygulama icerisinde her kusu benzersiz bilgileriyle birlikte saklayabilirsiniz.
+        </div>
+        <!-- Related topics -->
+        <div style="margin-top: 16px; padding-top: 12px; border-top: 1px solid #f1f5f9;">
+          <div style="font-size: 12px; font-weight: 600; color: #94a3b8; margin-bottom: 8px;">ILGILI KONULAR</div>
+          <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+            <div style="background: #f1f5f9; border-radius: 6px; padding: 4px 10px; font-size: 12px; color: #475569;">Filtreleme</div>
+            <div style="background: #f1f5f9; border-radius: 6px; padding: 4px 10px; font-size: 12px; color: #475569;">Saglik Kayitlari</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B: Sekmeli Detay</h3>
+      <p>Icerik "Genel Bakis / Adimlar / Ipuclari" sekmelerine bolunmus. Alt kisimda ilgili konular. Daha organize ama daha karmasik.</p>
+    </div>
+  </div>
+</div>
+
+<div class="pros-cons" style="margin-top: 20px;">
+  <div class="pros">
+    <h4>Tek Scroll (A) Avantajlari</h4>
+    <ul>
+      <li>Basit uygulama, daha az kod</li>
+      <li>Tum icerik tek bakista gorunur</li>
+      <li>Mobilde dogal scroll deneyimi</li>
+      <li>Mevcut blok sistemine uyumlu</li>
+    </ul>
+  </div>
+  <div class="cons">
+    <h4>Sekmeli (B) Avantajlari</h4>
+    <ul>
+      <li>Uzun iceriklerde daha organize</li>
+      <li>Kullanici sadece ilgilendigini okur</li>
+      <li>Ilgili konular bolumu eklenebilir</li>
+      <li>Daha "uygulama" hissi verir</li>
+    </ul>
+  </div>
+</div>

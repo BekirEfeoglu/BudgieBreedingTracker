@@ -1594,7 +1594,8 @@
   "user_guide": {
     "title": "Kullanım Kılavuzu",
     "search_hint": "Konularda ara...",
-    "category_all": "Tümü",
+    "related_topics": "İlgili Konular",
+    "step_count": "{} adım",
     "category_getting_started": "Başlangıç",
     "category_bird_management": "Kuş Yönetimi",
     "category_breeding_process": "Üreme Süreci",
@@ -1607,6 +1608,7 @@
     "topics": {
       "registration": {
         "title": "Kayıt ve Giriş",
+        "subtitle": "Uygulamayı kullanmaya başlamak için kayıt olun",
         "intro": "Uygulamayı kullanmaya başlamak için bir hesap oluşturmanız gerekir. E-posta adresiniz ve bir şifre ile hızlıca kayıt olabilirsiniz.",
         "steps_title": "Kayıt adımları",
         "step1": "Giriş ekranında 'Kayıt Ol' butonuna tıklayın.",
@@ -1618,6 +1620,7 @@
       },
       "dashboard": {
         "title": "Dashboard Tanıtımı",
+        "subtitle": "Ana ekranda istatistikler ve hızlı erişim",
         "intro": "Ana sayfa, tüm verilerinizin özetini sunar. Toplam kuş sayısı, aktif üreme çiftleri, son eklenen yavrular ve bekleyen bildirimler gibi bilgileri tek bakışta görebilirsiniz.",
         "stats_info": "İstatistik kartları toplam kuş, aktif çift, yumurta ve yavru sayılarınızı gösterir. Detaylar için kartlara tıklayın.",
         "quick_actions": "Hızlı işlem butonları ile yeni kuş, üreme çifti veya yumurta ekleyebilirsiniz.",
@@ -1625,6 +1628,7 @@
       },
       "navigation": {
         "title": "Uygulama Navigasyonu",
+        "subtitle": "Sekmeler ve menüler arasında gezinme",
         "intro": "Uygulama beş ana bölümden oluşur. Alt navigasyon çubuğu ile bu bölümler arasında hızlıca geçiş yapabilirsiniz.",
         "bottom_nav": "Alt çubukta Ana Sayfa, Kuşlar, Üreme, Takvim ve Daha Fazla sekmeleri bulunur.",
         "more_menu": "Daha Fazla menüsünden İstatistikler, Soy Ağacı, Genetik, Ayarlar, Profil, Bildirimler, Yedekleme ve bu kılavuza erişebilirsiniz.",
@@ -1632,6 +1636,7 @@
       },
       "bird_management": {
         "title": "Kuş Ekleme ve Düzenleme",
+        "subtitle": "Kuşlarınızı kayıt altına alın ve düzenleyin",
         "intro": "Kuşlarım bölümünde tüm kuşlarınızı görebilir, yeni kuş ekleyebilir ve mevcut kayıtları düzenleyebilirsiniz.",
         "add_steps_title": "Yeni kuş ekleme adımları",
         "add_step1": "Kuşlar ekranında sağ alttaki '+' butonuna tıklayın.",
@@ -1643,6 +1648,7 @@
       },
       "filtering": {
         "title": "Filtreleme ve Arama",
+        "subtitle": "Kuşlarınızı hızla bulmak için filtre ve arama",
         "intro": "Kuş listenizde hızlıca arama yapabilir ve çeşitli filtreleme seçeneklerini kullanabilirsiniz.",
         "filter_types": "Filtre seçenekleri: Tümü, Erkek, Dişi, Yaşayan, Ölü, Satılmış. Filtre çubuğundaki seçeneklere tıklayarak listenizi daraltabilirsiniz.",
         "search_info": "Arama çubuğuna kuş adı veya halka numarası yazarak anında sonuç görebilirsiniz.",
@@ -1650,6 +1656,7 @@
       },
       "health_records": {
         "title": "Sağlık Kayıtları",
+        "subtitle": "Kuşlarınızın sağlık geçmişini takip edin",
         "intro": "Kuşlarınızın sağlık durumunu takip edin. Veteriner ziyaretleri, aşı kayıtları ve tedavi bilgilerini kaydedebilirsiniz.",
         "add_steps_title": "Sağlık kaydı ekleme",
         "add_step1": "Kuş detay sayfasından 'Sağlık Kayıtları' bölümüne gidin.",
@@ -1659,6 +1666,7 @@
       },
       "breeding_pair": {
         "title": "Üreme Çifti Oluşturma",
+        "subtitle": "Üreme çifti oluşturun ve yönetin",
         "intro": "Üreme bölümünde kuşlarınız arasında üreme çiftleri oluşturabilir ve üreme sürecini başından sonuna takip edebilirsiniz.",
         "steps_title": "Çift oluşturma adımları",
         "step1": "Üreme ekranında '+' butonuna tıklayın.",
@@ -1670,6 +1678,7 @@
       },
       "eggs_incubation": {
         "title": "Yumurta ve Kuluçka Takibi",
+        "subtitle": "Yumurta kaydı ve kuluçka süreci takibi",
         "intro": "Üreme çifti detay sayfasından yumurta ekleyebilir ve kuluçka sürecini gün gün takip edebilirsiniz.",
         "steps_title": "Yumurta takip adımları",
         "step1": "Üreme çifti detay sayfasında 'Yumurta Ekle' butonuna tıklayın.",
@@ -1681,6 +1690,7 @@
       },
       "chick_tracking": {
         "title": "Yavru Takibi ve Büyüme",
+        "subtitle": "Yavru gelişimini ve büyümesini izleyin",
         "intro": "Çıkmış yavruların büyüme sürecini detaylı olarak takip edin. Ağırlık ölçümleri, gelişim aşamaları ve sağlık durumunu kaydedebilirsiniz.",
         "steps_title": "Yavru takip adımları",
         "step1": "Yavrular ekranında yavruyu seçin veya yeni yavru ekleyin.",
@@ -1691,6 +1701,7 @@
       },
       "calendar_notifications": {
         "title": "Takvim ve Bildirimler",
+        "subtitle": "Takvim etkinlikleri ve hatırlatıcılar",
         "intro": "Takvim bölümünde tüm önemli etkinliklerinizi görebilir, yeni etkinlik ekleyebilir ve hatırlatıcılar ayarlayabilirsiniz.",
         "calendar_info": "Takvimde üreme tarihleri, kuluçka bitiş günleri, veteriner randevuları ve özel etkinlikler görüntülenir. Bir güne tıklayarak o günün detaylarını görün.",
         "notification_info": "Bildirimler bölümünden hatırlatıcı tercihlerinizi yönetebilirsiniz. Kuluçka bitiş, aşı hatırlatma ve özel bildirimler ayarlanabilir.",
@@ -1698,6 +1709,7 @@
       },
       "genealogy_genetics": {
         "title": "Soy Ağacı ve Genetik Hesaplama",
+        "subtitle": "Soy ağacı ve genetik hesaplamalar",
         "intro": "Kuşlarınızın soy ağacını görsel olarak inceleyin ve genetik hesaplamalar ile olası yavru renklerini tahmin edin.",
         "family_tree": "Soy ağacı görünümü, bir kuşun anne, baba ve daha önceki nesillere kadar soyunu gösterir. Her kuş için detay sayfasından erişebilirsiniz.",
         "punnett_info": "Punnett karesi ile iki kuşun olası yavru renklerini ve mutasyonlarını hesaplayabilirsiniz. Anne ve baba kuşun mutasyonlarını seçin, sonuçları görüntüleyin.",
@@ -1706,6 +1718,7 @@
       },
       "backup_export": {
         "title": "Yedekleme ve Dışa Aktarma",
+        "subtitle": "Verilerinizi yedekleyin ve dışa aktarın",
         "intro": "Verilerinizi güvenle yedekleyin ve PDF veya Excel formatında dışa aktarın.",
         "backup_steps_title": "Yedekleme adımları",
         "backup_step1": "Ayarlar > Yedekleme bölümüne gidin.",
@@ -1716,6 +1729,7 @@
       },
       "sync": {
         "title": "Veri Senkronizasyonu",
+        "subtitle": "Cihazlar arası veri senkronizasyonu",
         "intro": "Verileriniz otomatik olarak bulut ile senkronize edilir. Çevrimdışı çalışabilir, internet bağlantısı geri geldiğinde veriler otomatik olarak güncellenir.",
         "offline_info": "İnternet bağlantısı olmadan da veri ekleyebilir ve düzenleyebilirsiniz. Tüm değişiklikler yerel veritabanında saklanır.",
         "conflict_info": "Birden fazla cihazda aynı kaydı düzenlerseniz, sunucu tarafındaki en son versiyon geçerli olur (sunucu öncelikli).",
@@ -1724,6 +1738,7 @@
       },
       "profile_settings": {
         "title": "Profil ve Ayarlar",
+        "subtitle": "Profil bilgileri ve uygulama ayarları",
         "intro": "Profil bilgilerinizi güncelleyebilir ve uygulama ayarlarını kişiselleştirebilirsiniz.",
         "profile_info": "Profil sayfasından adınızı, avatar fotoğrafınızı ve iletişim bilgilerinizi düzenleyebilirsiniz.",
         "settings_info": "Ayarlar bölümünden tema (açık/koyu), dil (Türkçe, İngilizce, Almanca), bildirim tercihleri ve güvenlik ayarlarını yönetebilirsiniz.",
@@ -1731,6 +1746,7 @@
       },
       "premium": {
         "title": "Premium Üyelik",
+        "subtitle": "Premium özelliklere erişim ve abonelik",
         "intro": "Premium üyelik ile tüm özelliklere sınırsız erişim kazanın ve yetiştiriclik deneyiminizi bir üst seviyeye taşıyın.",
         "features_list": "Premium özellikler: Sınırsız kuş kaydı, detaylı istatistikler ve grafikler, soy ağacı görüntüleme, genetik hesaplama (Punnett karesi), öncelikli destek.",
         "subscribe_steps_title": "Premium'a geçiş adımları",
