@@ -17,6 +17,9 @@ abstract final class NotificationIds {
   /// Base ID offset for chick care notifications. Range: 400000–499999
   static const chickCareBaseId = 400000;
 
+  /// Base ID offset for banding reminder notifications. Range: 500000–599999
+  static const bandingBaseId = 500000;
+
   static const idsPerEntitySlot = 100;
 
   /// Generates a stable notification ID for an entity within a category.

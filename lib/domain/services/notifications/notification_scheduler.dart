@@ -32,6 +32,7 @@ class NotificationScheduler with NotificationSchedulerCancel {
   static const incubationBaseId = NotificationIds.incubationBaseId;
   static const healthCheckBaseId = NotificationIds.healthCheckBaseId;
   static const chickCareBaseId = NotificationIds.chickCareBaseId;
+  static const bandingBaseId = NotificationIds.bandingBaseId;
 
   @visibleForTesting
   static int get idsPerEntitySlot => NotificationIds.idsPerEntitySlot;
