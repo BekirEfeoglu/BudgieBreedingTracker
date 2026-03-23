@@ -105,6 +105,23 @@ mixin NotificationSchedulerCancel {
     );
   }
 
+  /// Cancels banding reminder notifications for a specific chick.
+  Future<void> cancelBandingReminders(String chickId) async {
+    final futures = <Future<void>>[];
+    for (var i = 0; i < 4; i++) {
+      final id = NotificationIds.generate(
+        NotificationIds.bandingBaseId,
+        chickId,
+        i,
+      );
+      futures.add(notificationService.cancel(id));
+    }
+    await Future.wait(futures);
+    AppLogger.info(
+      '[NotificationScheduler] Banding reminders cancelled for $chickId',
+    );
+  }
+
   /// Cancels all scheduled notifications.
   Future<void> cancelAll() async {
     await notificationService.cancelAll();
