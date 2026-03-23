@@ -27,10 +27,7 @@ void main() {
 
   setUp(() => tapped = false);
 
-  Widget createSubject({
-    GuideTopic? topic,
-    bool showDivider = true,
-  }) {
+  Widget createSubject({GuideTopic? topic, bool showDivider = true}) {
     return MaterialApp(
       home: Scaffold(
         body: GuideTopicListItem(
@@ -69,16 +66,18 @@ void main() {
       expect(find.byType(AppIcon), findsOneWidget);
     });
 
-    testWidgets('shows premium badge when topic.isPremium is true',
-        (tester) async {
+    testWidgets('shows premium badge when topic.isPremium is true', (
+      tester,
+    ) async {
       final topic = _createTopic(isPremium: true);
       await tester.pumpWidget(createSubject(topic: topic));
 
       expect(find.text('user_guide.premium_feature'), findsOneWidget);
     });
 
-    testWidgets('hides premium badge when topic.isPremium is false',
-        (tester) async {
+    testWidgets('hides premium badge when topic.isPremium is false', (
+      tester,
+    ) async {
       final topic = _createTopic(isPremium: false);
       await tester.pumpWidget(createSubject(topic: topic));
 
@@ -94,8 +93,9 @@ void main() {
       expect(tapped, isTrue);
     });
 
-    testWidgets('shows divider when showDivider is true (default)',
-        (tester) async {
+    testWidgets('shows divider when showDivider is true (default)', (
+      tester,
+    ) async {
       await tester.pumpWidget(createSubject(showDivider: true));
 
       expect(find.byType(Divider), findsOneWidget);

@@ -50,9 +50,7 @@ void main() {
       expect(find.byType(GuideTopicListItem), findsWidgets);
     });
 
-    testWidgets('shows empty state when search has no results', (
-      tester,
-    ) async {
+    testWidgets('shows empty state when search has no results', (tester) async {
       await tester.pumpWidget(createSubject());
       await tester.pumpAndSettle();
 

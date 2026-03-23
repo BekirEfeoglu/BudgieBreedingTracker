@@ -18,21 +18,15 @@ void main() {
       await tester.pumpAndSettle();
 
       // Without EasyLocalization, .tr() returns the key itself
-      expect(
-        find.text(guideTopics[0].titleKey),
-        findsOneWidget,
-      );
+      expect(find.text(guideTopics[0].titleKey), findsOneWidget);
     });
 
-    testWidgets('renders category label (uppercase) in header', (
-      tester,
-    ) async {
+    testWidgets('renders category label (uppercase) in header', (tester) async {
       await tester.pumpWidget(createSubject(topicIndex: 0));
       await tester.pumpAndSettle();
 
       // Category labelKey is returned as-is by .tr() without localization
-      final expectedLabel =
-          guideTopics[0].category.labelKey.toUpperCase();
+      final expectedLabel = guideTopics[0].category.labelKey.toUpperCase();
       expect(find.text(expectedLabel), findsOneWidget);
     });
 
@@ -43,10 +37,7 @@ void main() {
 
       // .tr() without localization returns the key; step_count uses args
       // so it returns 'user_guide.step_count' as the key
-      expect(
-        find.textContaining('user_guide.step_count'),
-        findsOneWidget,
-      );
+      expect(find.textContaining('user_guide.step_count'), findsOneWidget);
     });
 
     testWidgets('hides step count when topic has no steps', (tester) async {
@@ -56,10 +47,7 @@ void main() {
       await tester.pumpWidget(createSubject(topicIndex: 1));
       await tester.pumpAndSettle();
 
-      expect(
-        find.textContaining('user_guide.step_count'),
-        findsNothing,
-      );
+      expect(find.textContaining('user_guide.step_count'), findsNothing);
     });
 
     testWidgets('renders GuideBlockRenderer', (tester) async {

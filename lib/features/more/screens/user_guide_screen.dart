@@ -149,8 +149,8 @@ class _UserGuideScreenState extends State<UserGuideScreen> {
                     subtitle: 'common.no_results_hint'.tr(),
                   )
                 : isSearching
-                    ? _buildFlatList(topics)
-                    : _buildGroupedList(topics),
+                ? _buildFlatList(topics)
+                : _buildGroupedList(topics),
           ),
         ],
       ),
@@ -180,8 +180,9 @@ class _UserGuideScreenState extends State<UserGuideScreen> {
     final widgets = <Widget>[];
 
     for (final category in GuideCategory.values) {
-      final categoryTopics =
-          topics.where((e) => e.$2.category == category).toList();
+      final categoryTopics = topics
+          .where((e) => e.$2.category == category)
+          .toList();
       if (categoryTopics.isEmpty) continue;
 
       // Section header
@@ -215,9 +216,8 @@ class _UserGuideScreenState extends State<UserGuideScreen> {
                 GuideTopicListItem(
                   topic: categoryTopics[i].$2,
                   showDivider: i < categoryTopics.length - 1,
-                  onTap: () => context.push(
-                    '/user-guide/${categoryTopics[i].$1}',
-                  ),
+                  onTap: () =>
+                      context.push('/user-guide/${categoryTopics[i].$1}'),
                 ),
             ],
           ),
