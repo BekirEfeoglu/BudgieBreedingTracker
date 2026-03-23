@@ -59,7 +59,7 @@ final routerProvider = Provider<GoRouter>((ref) {
     redirect: (context, state) {
       final isLoggedIn = ref.read(isAuthenticatedProvider);
       final isAdminAsync = ref.read(isAdminProvider);
-      final isPremium = ref.read(isPremiumProvider);
+      final isPremium = ref.read(effectivePremiumProvider);
       final appInit = ref.read(appInitializationProvider);
       final initSkipped = ref.read(initSkippedProvider);
       final isAppReady = appInit.hasValue || initSkipped;
