@@ -7,7 +7,7 @@ import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/core/widgets/empty_state.dart';
 import 'package:budgie_breeding_tracker/features/more/widgets/guide_data.dart';
-import 'package:budgie_breeding_tracker/features/more/widgets/guide_topic_card.dart';
+import 'package:budgie_breeding_tracker/features/more/widgets/guide_topic_list_item.dart';
 
 class UserGuideScreen extends StatefulWidget {
   const UserGuideScreen({super.key});
@@ -157,9 +157,11 @@ class _UserGuideScreenState extends State<UserGuideScreen> {
                       bottom: AppSpacing.xxxl * 2,
                     ),
                     itemCount: topics.length,
-                    itemBuilder: (_, i) => GuideTopicCard(
+                    itemBuilder: (_, i) => GuideTopicListItem(
                       key: ValueKey(topics[i].titleKey),
                       topic: topics[i],
+                      onTap: () {},
+                      showDivider: i < topics.length - 1,
                     ),
                   ),
           ),
