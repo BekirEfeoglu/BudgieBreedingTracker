@@ -15,6 +15,7 @@ enum EventType {
   vaccination,
   weightCheck,
   cageChange,
+  banding,
   other;
 
   String toJson() => name;
