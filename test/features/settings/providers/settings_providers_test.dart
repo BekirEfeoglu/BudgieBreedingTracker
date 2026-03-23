@@ -7,19 +7,14 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:budgie_breeding_tracker/data/local/preferences/app_preferences.dart';
 import 'package:budgie_breeding_tracker/features/settings/providers/settings_providers.dart';
 
+import '../../../helpers/test_helpers.dart';
+
 class _TestAssetLoader extends AssetLoader {
   const _TestAssetLoader();
 
   @override
   Future<Map<String, dynamic>> load(String path, Locale locale) async {
     return <String, dynamic>{};
-  }
-}
-
-Future<void> _waitUntil(bool Function() predicate) async {
-  for (var i = 0; i < 100; i++) {
-    if (predicate()) return;
-    await Future<void>.delayed(const Duration(milliseconds: 5));
   }
 }
 
@@ -65,8 +60,10 @@ void main() {
       final container = ProviderContainer();
       addTearDown(container.dispose);
 
-      await _waitUntil(
+      await waitUntil(
         () => container.read(themeModeProvider) == ThemeMode.dark,
+        maxAttempts: 100,
+        interval: const Duration(milliseconds: 5),
       );
       expect(container.read(themeModeProvider), ThemeMode.dark);
 
@@ -128,8 +125,10 @@ void main() {
       final container = ProviderContainer();
       addTearDown(container.dispose);
 
-      await _waitUntil(
+      await waitUntil(
         () => container.read(fontScaleProvider) == AppFontScale.large,
+        maxAttempts: 100,
+        interval: const Duration(milliseconds: 5),
       );
       expect(container.read(fontScaleProvider), AppFontScale.large);
 

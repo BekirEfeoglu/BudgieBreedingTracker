@@ -22,7 +22,6 @@ import 'package:budgie_breeding_tracker/features/statistics/providers/statistics
 import 'package:budgie_breeding_tracker/features/statistics/providers/statistics_providers.dart';
 import 'package:budgie_breeding_tracker/features/statistics/providers/statistics_summary_providers.dart';
 import 'package:budgie_breeding_tracker/features/statistics/providers/statistics_trend_providers.dart';
-import 'package:budgie_breeding_tracker/features/statistics/widgets/stats_period_selector.dart';
 
 Bird _bird({
   required String id,

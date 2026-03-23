@@ -3,6 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:budgie_breeding_tracker/features/admin/screens/_feedback_detail_sheet.dart';
 
+import '../../../helpers/test_localization.dart';
+
 const _testItem = {
   'subject': 'Test Subject',
   'message': 'Test message content',
@@ -36,14 +38,6 @@ Widget _buildSheet({Map<String, dynamic>? item, FeedbackSaveCallback? onSave}) {
     ),
   );
 }
-
-void _consumeExceptions(WidgetTester tester) {
-  var ex = tester.takeException();
-  while (ex != null) {
-    ex = tester.takeException();
-  }
-}
-
 void main() {
   group('FeedbackDetailSheet', () {
     testWidgets('renders without crashing', (tester) async {
@@ -52,10 +46,8 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
 
-      await tester.pumpWidget(_buildSheet());
+      await pumpLocalizedApp(tester,_buildSheet());
       await tester.pump(const Duration(milliseconds: 300));
-      _consumeExceptions(tester);
-
       expect(find.byType(FeedbackDetailSheet), findsOneWidget);
     });
 
@@ -65,10 +57,7 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
 
-      await tester.pumpWidget(_buildSheet());
-      await tester.pump();
-      _consumeExceptions(tester);
-
+      await pumpLocalizedApp(tester,_buildSheet());
       expect(find.text('admin.feedback_detail'), findsOneWidget);
     });
 
@@ -78,10 +67,7 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
 
-      await tester.pumpWidget(_buildSheet());
-      await tester.pump();
-      _consumeExceptions(tester);
-
+      await pumpLocalizedApp(tester,_buildSheet());
       expect(find.text('Test Subject'), findsAtLeastNWidgets(1));
     });
 
@@ -91,10 +77,7 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
 
-      await tester.pumpWidget(_buildSheet());
-      await tester.pump();
-      _consumeExceptions(tester);
-
+      await pumpLocalizedApp(tester,_buildSheet());
       expect(find.text('Test message content'), findsOneWidget);
     });
 
@@ -104,10 +87,7 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
 
-      await tester.pumpWidget(_buildSheet());
-      await tester.pump();
-      _consumeExceptions(tester);
-
+      await pumpLocalizedApp(tester,_buildSheet());
       expect(find.text('user@example.com'), findsOneWidget);
     });
 
@@ -117,10 +97,7 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
 
-      await tester.pumpWidget(_buildSheet());
-      await tester.pump();
-      _consumeExceptions(tester);
-
+      await pumpLocalizedApp(tester,_buildSheet());
       expect(find.text('android'), findsOneWidget);
     });
 
@@ -130,10 +107,7 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
 
-      await tester.pumpWidget(_buildSheet());
-      await tester.pump();
-      _consumeExceptions(tester);
-
+      await pumpLocalizedApp(tester,_buildSheet());
       expect(find.text('1.0.0'), findsOneWidget);
     });
 
@@ -143,10 +117,7 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
 
-      await tester.pumpWidget(_buildSheet());
-      await tester.pump();
-      _consumeExceptions(tester);
-
+      await pumpLocalizedApp(tester,_buildSheet());
       expect(find.byType(SegmentedButton<String>), findsAtLeastNWidgets(1));
     });
 
@@ -156,10 +127,7 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
 
-      await tester.pumpWidget(_buildSheet());
-      await tester.pump();
-      _consumeExceptions(tester);
-
+      await pumpLocalizedApp(tester,_buildSheet());
       expect(find.text('admin.feedback_save'), findsOneWidget);
     });
 
@@ -169,10 +137,7 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
 
-      await tester.pumpWidget(_buildSheet());
-      await tester.pump();
-      _consumeExceptions(tester);
-
+      await pumpLocalizedApp(tester,_buildSheet());
       expect(find.byType(TextFormField), findsOneWidget);
     });
 
@@ -182,10 +147,7 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
 
-      await tester.pumpWidget(_buildSheet());
-      await tester.pump();
-      _consumeExceptions(tester);
-
+      await pumpLocalizedApp(tester,_buildSheet());
       expect(find.byType(DraggableScrollableSheet), findsOneWidget);
     });
 
@@ -200,10 +162,7 @@ void main() {
       final itemWithoutEmail = Map<String, dynamic>.from(_testItem)
         ..remove('email');
 
-      await tester.pumpWidget(_buildSheet(item: itemWithoutEmail));
-      await tester.pump();
-      _consumeExceptions(tester);
-
+      await pumpLocalizedApp(tester,_buildSheet(item: itemWithoutEmail));
       expect(find.text('user@example.com'), findsNothing);
     });
 
@@ -218,10 +177,7 @@ void main() {
       final itemWithResponse = Map<String, dynamic>.from(_testItem)
         ..['admin_response'] = 'Previous response';
 
-      await tester.pumpWidget(_buildSheet(item: itemWithResponse));
-      await tester.pump();
-      _consumeExceptions(tester);
-
+      await pumpLocalizedApp(tester,_buildSheet(item: itemWithResponse));
       expect(find.text('Previous response'), findsOneWidget);
     });
 
@@ -232,7 +188,7 @@ void main() {
       addTearDown(tester.view.resetDevicePixelRatio);
 
       var callCount = 0;
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         _buildSheet(
           onSave:
               ({
@@ -245,8 +201,6 @@ void main() {
         ),
       );
       await tester.pump();
-      _consumeExceptions(tester);
-
       final saveButton = find.byType(FilledButton);
       await tester.tap(saveButton);
       await tester.pump();

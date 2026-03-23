@@ -101,7 +101,7 @@ void main() {
       }
 
       expect(caught, isA<Exception>());
-      expect(caught.toString(), contains('Authentication required'));
+      expect(caught.toString(), contains('admin.auth_required'));
       expect(client.requestedTables, isEmpty);
     });
 
@@ -128,7 +128,7 @@ void main() {
       }
 
       expect(caught, isA<Exception>());
-      expect(caught.toString(), contains('Admin permission denied'));
+      expect(caught.toString(), contains('admin.permission_denied'));
       expect(client.requestedTables, [SupabaseConstants.adminUsersTable]);
       expect(queryBuilder.selectedColumns, ['id']);
       expect(filterBuilder.eqCalls, hasLength(1));

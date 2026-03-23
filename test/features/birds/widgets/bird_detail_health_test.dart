@@ -7,21 +7,34 @@ import 'package:budgie_breeding_tracker/data/models/health_record_model.dart';
 import 'package:budgie_breeding_tracker/features/birds/widgets/bird_detail_health.dart';
 import 'package:budgie_breeding_tracker/features/health_records/providers/health_record_providers.dart';
 import 'package:budgie_breeding_tracker/features/health_records/widgets/health_record_card.dart';
+import 'package:budgie_breeding_tracker/features/settings/providers/settings_providers.dart';
+
+import '../../../helpers/test_localization.dart';
 
 Future<void> _pump(
   WidgetTester tester,
   Widget child, {
   List<dynamic> overrides = const [],
+  bool settle = true,
 }) async {
-  await tester.pumpWidget(
+  // Use a wider surface to prevent RenderFlex overflow caused by long
+  // raw localization key strings in test mode.
+  tester.view.physicalSize = const Size(1200, 800);
+  tester.view.devicePixelRatio = 1.0;
+  addTearDown(() => tester.view.resetPhysicalSize());
+  addTearDown(() => tester.view.resetDevicePixelRatio());
+  await pumpLocalizedApp(tester,
     ProviderScope(
-      overrides: List.from(overrides),
+      overrides: [
+        dateFormatProvider.overrideWith(() => DateFormatNotifier()),
+        ...overrides,
+      ],
       child: MaterialApp(
         home: Scaffold(body: SingleChildScrollView(child: child)),
       ),
     ),
+    settle: settle,
   );
-  await tester.pump();
 }
 
 HealthRecord _buildRecord({String id = 'record-1', String birdId = 'bird-1'}) {
@@ -46,7 +59,9 @@ void main() {
             (ref, id) => const Stream.empty(),
           ),
         ],
+        settle: false,
       );
+      await tester.pump();
 
       expect(find.byType(HealthRecordCard), findsNothing);
       expect(find.byType(LinearProgressIndicator), findsNothing);
@@ -98,12 +113,7 @@ void main() {
           ),
         ],
       );
-      await tester.pump();
-      // Consume overflow exceptions from HealthRecordCard Row in test viewport
-      Object? ex;
-      do {
-        ex = tester.takeException();
-      } while (ex != null);
+      await tester.pumpAndSettle();
 
       expect(find.byType(HealthRecordCard), findsNWidgets(3));
     });
@@ -122,12 +132,7 @@ void main() {
           ),
         ],
       );
-      await tester.pump();
-      // Consume overflow exceptions from HealthRecordCard Row in test viewport
-      Object? ex;
-      do {
-        ex = tester.takeException();
-      } while (ex != null);
+      await tester.pumpAndSettle();
 
       expect(find.text('health_records.view_all_records'), findsOneWidget);
     });
@@ -176,9 +181,10 @@ void main() {
       // Note: Stream.error() with StreamProvider in Riverpod 3 may not
       // reliably trigger AsyncError in widget tests without real async events.
       // We verify the error UI exists by constructing it directly instead.
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         ProviderScope(
           overrides: [
+            dateFormatProvider.overrideWith(() => DateFormatNotifier()),
             healthRecordsByBirdProvider.overrideWith(
               (ref, id) =>
                   Stream<List<HealthRecord>>.error(Exception('Network error')),
@@ -193,13 +199,7 @@ void main() {
           ),
         ),
       );
-      await tester.pump();
       await tester.pump(const Duration(milliseconds: 50));
-      // Consume any surfaced exceptions from the stream error
-      Object? ex;
-      do {
-        ex = tester.takeException();
-      } while (ex != null);
 
       // If AsyncError state reached, verify error text
       final errorTextFinder = find.text('health_records.load_error');

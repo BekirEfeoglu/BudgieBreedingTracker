@@ -8,6 +8,9 @@ import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_det
 import 'package:budgie_breeding_tracker/features/breeding/widgets/breeding_eggs_section.dart';
 import 'package:budgie_breeding_tracker/features/eggs/providers/egg_providers.dart';
 import 'package:budgie_breeding_tracker/features/eggs/widgets/egg_summary_row.dart';
+import 'package:budgie_breeding_tracker/features/settings/providers/settings_providers.dart';
+
+import '../../../helpers/test_localization.dart';
 
 Egg _buildEgg({String id = 'egg-1', EggStatus status = EggStatus.laid}) {
   return Egg(
@@ -22,16 +25,17 @@ Future<void> _pump(
   WidgetTester tester,
   Widget child, {
   List<dynamic> overrides = const [],
+  bool settle = true,
 }) async {
-  await tester.pumpWidget(
+  await pumpLocalizedApp(tester,
     ProviderScope(
       overrides: List.from(overrides),
       child: MaterialApp(
         home: Scaffold(body: SingleChildScrollView(child: child)),
       ),
     ),
+    settle: settle,
   );
-  await tester.pump();
 }
 
 void main() {
@@ -46,7 +50,9 @@ void main() {
           ),
           eggActionsProvider.overrideWith(() => EggActionsNotifier()),
         ],
+        settle: false,
       );
+      await tester.pump();
 
       expect(find.text('breeding.eggs'), findsOneWidget);
     });
@@ -61,7 +67,9 @@ void main() {
           ),
           eggActionsProvider.overrideWith(() => EggActionsNotifier()),
         ],
+        settle: false,
       );
+      await tester.pump();
 
       expect(find.text('breeding.manage'), findsOneWidget);
     });
@@ -76,7 +84,9 @@ void main() {
           ),
           eggActionsProvider.overrideWith(() => EggActionsNotifier()),
         ],
+        settle: false,
       );
+      await tester.pump();
 
       expect(find.byType(LinearProgressIndicator), findsOneWidget);
     });
@@ -157,41 +167,39 @@ void main() {
 
   group('BreedingMilestoneSection', () {
     testWidgets('shows milestones title', (tester) async {
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: SingleChildScrollView(
-              child: BreedingMilestoneSection(startDate: DateTime(2026, 3, 1)),
+      await pumpLocalizedApp(tester,
+        ProviderScope(
+          overrides: [
+            dateFormatProvider.overrideWith(() => DateFormatNotifier()),
+          ],
+          child: MaterialApp(
+            home: Scaffold(
+              body: SingleChildScrollView(
+                child: BreedingMilestoneSection(startDate: DateTime(2026, 3, 1)),
+              ),
             ),
           ),
         ),
       );
-      await tester.pump();
-      // Consume overflow exceptions from long MilestoneTimeline in test viewport
-      Object? ex;
-      do {
-        ex = tester.takeException();
-      } while (ex != null);
 
       expect(find.text('breeding.milestones'), findsOneWidget);
     });
 
     testWidgets('shows MilestoneTimeline widget', (tester) async {
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: SingleChildScrollView(
-              child: BreedingMilestoneSection(startDate: DateTime(2026, 3, 1)),
+      await pumpLocalizedApp(tester,
+        ProviderScope(
+          overrides: [
+            dateFormatProvider.overrideWith(() => DateFormatNotifier()),
+          ],
+          child: MaterialApp(
+            home: Scaffold(
+              body: SingleChildScrollView(
+                child: BreedingMilestoneSection(startDate: DateTime(2026, 3, 1)),
+              ),
             ),
           ),
         ),
       );
-      await tester.pump();
-      // Consume overflow exceptions from long MilestoneTimeline in test viewport
-      Object? ex;
-      do {
-        ex = tester.takeException();
-      } while (ex != null);
 
       // MilestoneTimeline is rendered inside BreedingMilestoneSection
       final milestones = IncubationCalculator.getMilestones(
@@ -203,36 +211,30 @@ void main() {
 
   group('BreedingNotesSection', () {
     testWidgets('shows notes title', (tester) async {
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         const MaterialApp(
           home: Scaffold(body: BreedingNotesSection(notes: 'Test notlar')),
         ),
       );
-      await tester.pump();
-
       expect(find.text('common.notes'), findsOneWidget);
     });
 
     testWidgets('shows notes content', (tester) async {
       const notes = 'Bu cift cok uyumlu';
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         const MaterialApp(
           home: Scaffold(body: BreedingNotesSection(notes: notes)),
         ),
       );
-      await tester.pump();
-
       expect(find.text(notes), findsOneWidget);
     });
 
     testWidgets('shows empty notes without error', (tester) async {
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         const MaterialApp(
           home: Scaffold(body: BreedingNotesSection(notes: '')),
         ),
       );
-      await tester.pump();
-
       expect(find.text('common.notes'), findsOneWidget);
     });
   });

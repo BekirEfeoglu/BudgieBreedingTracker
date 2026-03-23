@@ -7,6 +7,8 @@ import 'package:budgie_breeding_tracker/features/calendar/widgets/calendar_day_v
 
 import '../../../helpers/pump_helpers.dart';
 
+import '../../../helpers/test_localization.dart';
+
 void main() {
   final selectedDate = DateTime(2024, 3, 15);
 
@@ -88,24 +90,22 @@ void main() {
       tester,
     ) async {
       final earlyEvent = makeEvent(hour: 4);
-      await pumpWidgetSimple(
+      await pumpLocalizedApp(
         tester,
-        SizedBox(
-          height: 600,
-          child: CalendarDayView(
-            selectedDate: selectedDate,
-            events: [earlyEvent],
-            onEditEvent: (_) {},
-            onDeleteEvent: (_) {},
+        MaterialApp(
+          home: Scaffold(
+            body: SizedBox(
+              height: 600,
+              child: CalendarDayView(
+                selectedDate: selectedDate,
+                events: [earlyEvent],
+                onEditEvent: (_) {},
+                onDeleteEvent: (_) {},
+              ),
+            ),
           ),
         ),
       );
-      // Drain all rendering exceptions (EventCard may generate overflow or
-      // localization exceptions in test env without EasyLocalization wrapper)
-      Object? ex;
-      do {
-        ex = tester.takeException();
-      } while (ex != null);
       // Hour 05:00 slot has no events (renders cleanly) and is present only
       // when the range expanded past 06:00 (default start). Default range
       // starts at 06:00, so '05:00' only appears when an early event forces

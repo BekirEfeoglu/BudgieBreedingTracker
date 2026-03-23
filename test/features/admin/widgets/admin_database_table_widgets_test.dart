@@ -7,6 +7,8 @@ import 'package:budgie_breeding_tracker/features/admin/providers/admin_actions_p
 import 'package:budgie_breeding_tracker/features/admin/providers/admin_models.dart';
 import 'package:budgie_breeding_tracker/features/admin/widgets/admin_database_table_widgets.dart';
 
+import '../../../helpers/test_localization.dart';
+
 class _FakeAdminActionsNotifier extends AdminActionsNotifier {
   @override
   AdminActionState build() => const AdminActionState();
@@ -34,14 +36,8 @@ void main() {
         TableInfo(name: 'eggs', rowCount: 50),
       ];
 
-      await tester.pumpWidget(_wrap(const DatabaseTableList(tables: tables)));
+      await pumpLocalizedApp(tester,_wrap(const DatabaseTableList(tables: tables)));
       await tester.pump(const Duration(milliseconds: 300));
-
-      var ex = tester.takeException();
-      while (ex != null) {
-        ex = tester.takeException();
-      }
-
       expect(find.byType(DatabaseTableList), findsOneWidget);
     });
 
@@ -52,21 +48,12 @@ void main() {
         TableInfo(name: 'chicks', rowCount: 25),
       ];
 
-      await tester.pumpWidget(_wrap(const DatabaseTableList(tables: tables)));
-      await tester.pump();
-
-      var ex = tester.takeException();
-      while (ex != null) {
-        ex = tester.takeException();
-      }
-
+      await pumpLocalizedApp(tester,_wrap(const DatabaseTableList(tables: tables)));
       expect(find.byType(DatabaseTableRow), findsNWidgets(3));
     });
 
     testWidgets('renders empty list without crashing', (tester) async {
-      await tester.pumpWidget(_wrap(const DatabaseTableList(tables: [])));
-      await tester.pump();
-
+      await pumpLocalizedApp(tester,_wrap(const DatabaseTableList(tables: [])));
       expect(find.byType(DatabaseTableList), findsOneWidget);
       expect(find.byType(DatabaseTableRow), findsNothing);
     });
@@ -74,77 +61,65 @@ void main() {
 
   group('DatabaseTableRow', () {
     testWidgets('shows table name', (tester) async {
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         _wrap(
           const DatabaseTableRow(table: TableInfo(name: 'birds', rowCount: 42)),
         ),
       );
-      await tester.pump();
-
       expect(find.text('birds'), findsOneWidget);
     });
 
     testWidgets('shows row count', (tester) async {
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         _wrap(
           const DatabaseTableRow(table: TableInfo(name: 'eggs', rowCount: 99)),
         ),
       );
-      await tester.pump();
-
       expect(find.text('99'), findsOneWidget);
     });
 
     testWidgets('shows protected_table label for protected table', (
       tester,
     ) async {
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         _wrap(
           const DatabaseTableRow(
             table: TableInfo(name: 'profiles', rowCount: 10),
           ),
         ),
       );
-      await tester.pump();
-
       expect(find.text('admin.protected_table'), findsOneWidget);
     });
 
     testWidgets('does not show protected label for unprotected table', (
       tester,
     ) async {
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         _wrap(
           const DatabaseTableRow(table: TableInfo(name: 'birds', rowCount: 10)),
         ),
       );
-      await tester.pump();
-
       expect(find.text('admin.protected_table'), findsNothing);
     });
 
     testWidgets('shows warning icon for negative row count (error state)', (
       tester,
     ) async {
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         _wrap(
           const DatabaseTableRow(table: TableInfo(name: 'eggs', rowCount: -1)),
         ),
       );
-      await tester.pump();
-
       // Row count badge is replaced with warning icon when rowCount < 0
       expect(find.text('-1'), findsNothing);
     });
 
     testWidgets('is tappable (InkWell)', (tester) async {
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         _wrap(
           const DatabaseTableRow(table: TableInfo(name: 'birds', rowCount: 5)),
         ),
       );
-      await tester.pump();
-
       expect(find.byType(InkWell), findsAtLeastNWidgets(1));
     });
   });

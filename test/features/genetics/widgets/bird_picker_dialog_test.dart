@@ -8,20 +8,14 @@ import 'package:budgie_breeding_tracker/features/birds/providers/bird_providers.
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_providers.dart';
 import 'package:budgie_breeding_tracker/features/genetics/widgets/bird_picker_dialog.dart';
 
+import '../../../helpers/test_localization.dart';
+
 Widget _wrap(Widget child, {List<dynamic> overrides = const []}) {
   return ProviderScope(
     overrides: overrides.cast(),
     child: MaterialApp(home: Scaffold(body: child)),
   );
 }
-
-void _consumeExceptions(WidgetTester tester) {
-  var ex = tester.takeException();
-  while (ex != null) {
-    ex = tester.takeException();
-  }
-}
-
 Bird _makeBird({
   required String id,
   required String name,
@@ -42,7 +36,7 @@ Bird _makeBird({
 void main() {
   group('BirdPickerDialog', () {
     testWidgets('renders without crashing with loading state', (tester) async {
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         _wrap(
           const SizedBox.shrink(),
           overrides: [
@@ -53,12 +47,12 @@ void main() {
           ],
         ),
       );
-      await tester.pump();
       expect(find.byType(MaterialApp), findsOneWidget);
     });
 
     testWidgets('shows CircularProgressIndicator when loading', (tester) async {
-      await tester.pumpWidget(
+      // Stream.empty() keeps provider in loading state; spinner never settles.
+      await pumpLocalizedApp(tester,
         ProviderScope(
           overrides: [
             currentUserIdProvider.overrideWithValue('user1'),
@@ -72,8 +66,8 @@ void main() {
             ),
           ),
         ),
+        settle: false,
       );
-      await tester.pump();
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
     });
 
@@ -81,7 +75,7 @@ void main() {
       tester,
     ) async {
       // Stream with a female bird but dialog filters for male
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         ProviderScope(
           overrides: [
             currentUserIdProvider.overrideWithValue('user1'),
@@ -102,12 +96,11 @@ void main() {
           ),
         ),
       );
-      await tester.pump();
       expect(find.text('common.no_results'), findsOneWidget);
     });
 
     testWidgets('shows bird name when matching bird exists', (tester) async {
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         ProviderScope(
           overrides: [
             currentUserIdProvider.overrideWithValue('user1'),
@@ -128,15 +121,11 @@ void main() {
           ),
         ),
       );
-      await tester.pump();
-
-      _consumeExceptions(tester);
-
       expect(find.text('Mavi Erkek'), findsOneWidget);
     });
 
     testWidgets('filters out dead birds', (tester) async {
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         ProviderScope(
           overrides: [
             currentUserIdProvider.overrideWithValue('user1'),
@@ -158,12 +147,12 @@ void main() {
           ),
         ),
       );
-      await tester.pump();
       expect(find.text('common.no_results'), findsOneWidget);
     });
 
     testWidgets('shows search TextField', (tester) async {
-      await tester.pumpWidget(
+      // Stream.empty() keeps provider in loading state; spinner never settles.
+      await pumpLocalizedApp(tester,
         ProviderScope(
           overrides: [
             currentUserIdProvider.overrideWithValue('user1'),
@@ -177,13 +166,14 @@ void main() {
             ),
           ),
         ),
+        settle: false,
       );
-      await tester.pump();
       expect(find.byType(TextField), findsOneWidget);
     });
 
     testWidgets('shows close IconButton', (tester) async {
-      await tester.pumpWidget(
+      // Stream.empty() keeps provider in loading state; spinner never settles.
+      await pumpLocalizedApp(tester,
         ProviderScope(
           overrides: [
             currentUserIdProvider.overrideWithValue('user1'),
@@ -197,13 +187,13 @@ void main() {
             ),
           ),
         ),
+        settle: false,
       );
-      await tester.pump();
       expect(find.byType(IconButton), findsAtLeastNWidgets(1));
     });
 
     testWidgets('filters birds by search query', (tester) async {
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         ProviderScope(
           overrides: [
             currentUserIdProvider.overrideWithValue('user1'),
@@ -221,15 +211,8 @@ void main() {
           ),
         ),
       );
-      await tester.pump();
-
-      _consumeExceptions(tester);
-
       await tester.enterText(find.byType(TextField), 'Mavi');
       await tester.pump();
-
-      _consumeExceptions(tester);
-
       expect(find.text('Mavi'), findsAtLeastNWidgets(1));
     });
   });

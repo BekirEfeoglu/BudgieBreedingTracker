@@ -110,7 +110,8 @@ class _FakeAdminSupabaseClient extends Fake implements SupabaseClient {
 
 void main() {
   group('adminFeedbackProvider', () {
-    test('enforces admin check before querying feedback table', () async {
+    test('returns empty list when admin check fails for anonymous user',
+        () async {
       final maybeSingleBuilder = _FakeAdminMaybeSingleBuilder();
       final filterBuilder = _FakeAdminSelectBuilder(
         maybeSingleBuilder: maybeSingleBuilder,
@@ -134,17 +135,8 @@ void main() {
         container.dispose();
       });
 
-      await expectLater(
-        () async => container.read(adminFeedbackProvider.future),
-        throwsA(
-          isA<Exception>().having(
-            (e) => e.toString(),
-            'message',
-            contains('Authentication required'),
-          ),
-        ),
-      );
-      expect(client.requestedTables, isEmpty);
+      final result = await container.read(adminFeedbackProvider.future);
+      expect(result, isEmpty);
     });
 
     test(

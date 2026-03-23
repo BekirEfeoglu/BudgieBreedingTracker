@@ -4,6 +4,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/mendelian_calculator.dart';
 import 'package:budgie_breeding_tracker/features/genetics/widgets/offspring_prediction.dart';
 
+import '../../../helpers/test_localization.dart';
+
 Widget _wrap(Widget child) {
   return MaterialApp(
     home: Scaffold(body: SingleChildScrollView(child: child)),
@@ -18,9 +20,7 @@ void main() {
         probability: 0.5,
       );
 
-      await tester.pumpWidget(_wrap(const OffspringPrediction(result: result)));
-      await tester.pump();
-
+      await pumpLocalizedApp(tester,_wrap(const OffspringPrediction(result: result)));
       expect(find.byType(OffspringPrediction), findsOneWidget);
     });
 
@@ -30,14 +30,7 @@ void main() {
         probability: 0.25,
       );
 
-      await tester.pumpWidget(_wrap(const OffspringPrediction(result: result)));
-      await tester.pump();
-
-      var ex = tester.takeException();
-      while (ex != null) {
-        ex = tester.takeException();
-      }
-
+      await pumpLocalizedApp(tester,_wrap(const OffspringPrediction(result: result)));
       // PhenotypeLocalizer converts 'Normal Blue' to localization keys
       expect(find.textContaining('genetics.mutation'), findsAtLeastNWidgets(1));
     });
@@ -48,15 +41,8 @@ void main() {
         probability: 0.5,
       );
 
-      await tester.pumpWidget(_wrap(const OffspringPrediction(result: result)));
-      await tester.pump();
-
-      var ex = tester.takeException();
-      while (ex != null) {
-        ex = tester.takeException();
-      }
-
-      expect(find.textContaining('50.0%'), findsAtLeastNWidgets(1));
+      await pumpLocalizedApp(tester,_wrap(const OffspringPrediction(result: result)));
+      expect(find.textContaining('%50.0'), findsAtLeastNWidgets(1));
     });
 
     testWidgets('shows probability percentage for 25%', (tester) async {
@@ -65,15 +51,8 @@ void main() {
         probability: 0.25,
       );
 
-      await tester.pumpWidget(_wrap(const OffspringPrediction(result: result)));
-      await tester.pump();
-
-      var ex = tester.takeException();
-      while (ex != null) {
-        ex = tester.takeException();
-      }
-
-      expect(find.textContaining('25.0%'), findsAtLeastNWidgets(1));
+      await pumpLocalizedApp(tester,_wrap(const OffspringPrediction(result: result)));
+      expect(find.textContaining('%25.0'), findsAtLeastNWidgets(1));
     });
 
     testWidgets('shows probability percentage for 100%', (tester) async {
@@ -82,15 +61,8 @@ void main() {
         probability: 1.0,
       );
 
-      await tester.pumpWidget(_wrap(const OffspringPrediction(result: result)));
-      await tester.pump();
-
-      var ex = tester.takeException();
-      while (ex != null) {
-        ex = tester.takeException();
-      }
-
-      expect(find.textContaining('100.0%'), findsAtLeastNWidgets(1));
+      await pumpLocalizedApp(tester,_wrap(const OffspringPrediction(result: result)));
+      expect(find.textContaining('%100.0'), findsAtLeastNWidgets(1));
     });
 
     testWidgets('shows CircularProgressIndicator for probability', (
@@ -101,9 +73,7 @@ void main() {
         probability: 0.75,
       );
 
-      await tester.pumpWidget(_wrap(const OffspringPrediction(result: result)));
-      await tester.pump();
-
+      await pumpLocalizedApp(tester,_wrap(const OffspringPrediction(result: result)));
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
     });
 
@@ -113,9 +83,7 @@ void main() {
         probability: 0.5,
       );
 
-      await tester.pumpWidget(_wrap(const OffspringPrediction(result: result)));
-      await tester.pump();
-
+      await pumpLocalizedApp(tester,_wrap(const OffspringPrediction(result: result)));
       expect(find.byType(Card), findsOneWidget);
     });
 
@@ -127,14 +95,7 @@ void main() {
         carriedMutations: ['Blue'],
       );
 
-      await tester.pumpWidget(_wrap(const OffspringPrediction(result: result)));
-      await tester.pump();
-
-      var ex = tester.takeException();
-      while (ex != null) {
-        ex = tester.takeException();
-      }
-
+      await pumpLocalizedApp(tester,_wrap(const OffspringPrediction(result: result)));
       expect(find.text('genetics.carrier'), findsAtLeastNWidgets(1));
     });
 
@@ -144,14 +105,7 @@ void main() {
         probability: 0.5,
       );
 
-      await tester.pumpWidget(_wrap(const OffspringPrediction(result: result)));
-      await tester.pump();
-
-      var ex = tester.takeException();
-      while (ex != null) {
-        ex = tester.takeException();
-      }
-
+      await pumpLocalizedApp(tester,_wrap(const OffspringPrediction(result: result)));
       // Carrier text appears only inside carrier badge and semantics
       final carrierFinder = find.text('genetics.carrier');
       expect(carrierFinder, findsNothing);
@@ -164,14 +118,7 @@ void main() {
         lethalCombinationIds: ['df_crested'],
       );
 
-      await tester.pumpWidget(_wrap(const OffspringPrediction(result: result)));
-      await tester.pump();
-
-      var ex = tester.takeException();
-      while (ex != null) {
-        ex = tester.takeException();
-      }
-
+      await pumpLocalizedApp(tester,_wrap(const OffspringPrediction(result: result)));
       expect(find.text('genetics.lethal_badge'), findsOneWidget);
     });
 
@@ -183,14 +130,7 @@ void main() {
         probability: 0.5,
       );
 
-      await tester.pumpWidget(_wrap(const OffspringPrediction(result: result)));
-      await tester.pump();
-
-      var ex = tester.takeException();
-      while (ex != null) {
-        ex = tester.takeException();
-      }
-
+      await pumpLocalizedApp(tester,_wrap(const OffspringPrediction(result: result)));
       expect(find.text('genetics.lethal_badge'), findsNothing);
     });
 
@@ -203,16 +143,9 @@ void main() {
         genotype: '+/+ bl/bl',
       );
 
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         _wrap(const OffspringPrediction(result: result, showGenotype: true)),
       );
-      await tester.pump();
-
-      var ex = tester.takeException();
-      while (ex != null) {
-        ex = tester.takeException();
-      }
-
       expect(find.textContaining('+/+ bl/bl'), findsAtLeastNWidgets(1));
     });
 
@@ -225,14 +158,7 @@ void main() {
         genotype: '+/+ bl/bl',
       );
 
-      await tester.pumpWidget(_wrap(const OffspringPrediction(result: result)));
-      await tester.pump();
-
-      var ex = tester.takeException();
-      while (ex != null) {
-        ex = tester.takeException();
-      }
-
+      await pumpLocalizedApp(tester,_wrap(const OffspringPrediction(result: result)));
       expect(find.textContaining('+/+ bl/bl'), findsNothing);
     });
 
@@ -244,14 +170,7 @@ void main() {
         carriedMutations: ['Blue'],
       );
 
-      await tester.pumpWidget(_wrap(const OffspringPrediction(result: result)));
-      await tester.pump();
-
-      var ex = tester.takeException();
-      while (ex != null) {
-        ex = tester.takeException();
-      }
-
+      await pumpLocalizedApp(tester,_wrap(const OffspringPrediction(result: result)));
       expect(
         find.textContaining('genetics.mutation_blue'),
         findsAtLeastNWidgets(1),
@@ -265,14 +184,7 @@ void main() {
         maskedMutations: ['Opaline'],
       );
 
-      await tester.pumpWidget(_wrap(const OffspringPrediction(result: result)));
-      await tester.pump();
-
-      var ex = tester.takeException();
-      while (ex != null) {
-        ex = tester.takeException();
-      }
-
+      await pumpLocalizedApp(tester,_wrap(const OffspringPrediction(result: result)));
       expect(find.text('genetics.masked_mutations'), findsAtLeastNWidgets(1));
     });
 
@@ -282,9 +194,7 @@ void main() {
         probability: 0.5,
       );
 
-      await tester.pumpWidget(_wrap(const OffspringPrediction(result: result)));
-      await tester.pump();
-
+      await pumpLocalizedApp(tester,_wrap(const OffspringPrediction(result: result)));
       expect(find.byType(Semantics), findsAtLeastNWidgets(1));
     });
 
@@ -295,14 +205,7 @@ void main() {
         compoundPhenotype: 'Opaline Blue',
       );
 
-      await tester.pumpWidget(_wrap(const OffspringPrediction(result: result)));
-      await tester.pump();
-
-      var ex = tester.takeException();
-      while (ex != null) {
-        ex = tester.takeException();
-      }
-
+      await pumpLocalizedApp(tester,_wrap(const OffspringPrediction(result: result)));
       expect(
         find.textContaining('genetics.mutation_opaline'),
         findsAtLeastNWidgets(1),
@@ -316,14 +219,7 @@ void main() {
         sex: OffspringSex.male,
       );
 
-      await tester.pumpWidget(_wrap(const OffspringPrediction(result: result)));
-      await tester.pump();
-
-      var ex = tester.takeException();
-      while (ex != null) {
-        ex = tester.takeException();
-      }
-
+      await pumpLocalizedApp(tester,_wrap(const OffspringPrediction(result: result)));
       expect(find.byType(OffspringPrediction), findsOneWidget);
     });
 
@@ -334,14 +230,7 @@ void main() {
         sex: OffspringSex.female,
       );
 
-      await tester.pumpWidget(_wrap(const OffspringPrediction(result: result)));
-      await tester.pump();
-
-      var ex = tester.takeException();
-      while (ex != null) {
-        ex = tester.takeException();
-      }
-
+      await pumpLocalizedApp(tester,_wrap(const OffspringPrediction(result: result)));
       expect(find.byType(OffspringPrediction), findsOneWidget);
     });
 
@@ -351,15 +240,8 @@ void main() {
         probability: 0.0,
       );
 
-      await tester.pumpWidget(_wrap(const OffspringPrediction(result: result)));
-      await tester.pump();
-
-      var ex = tester.takeException();
-      while (ex != null) {
-        ex = tester.takeException();
-      }
-
-      expect(find.textContaining('0.0%'), findsAtLeastNWidgets(1));
+      await pumpLocalizedApp(tester,_wrap(const OffspringPrediction(result: result)));
+      expect(find.textContaining('%0.0'), findsAtLeastNWidgets(1));
     });
   });
 }

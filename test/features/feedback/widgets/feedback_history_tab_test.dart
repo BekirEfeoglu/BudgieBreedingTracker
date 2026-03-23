@@ -122,13 +122,11 @@ void main() {
   group('FeedbackHistoryEmpty', () {
     testWidgets('renders without errors', (tester) async {
       await tester.pumpWidget(
-        ProviderScope(
+        const ProviderScope(
           child: MaterialApp(
-            builder: (context, child) {
-              return Scaffold(
-                body: FeedbackHistoryEmpty(theme: Theme.of(context)),
-              );
-            },
+            home: Scaffold(
+              body: FeedbackHistoryEmpty(),
+            ),
           ),
         ),
       );

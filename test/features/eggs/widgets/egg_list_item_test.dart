@@ -1,11 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:budgie_breeding_tracker/core/enums/egg_enums.dart';
 import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
 import 'package:budgie_breeding_tracker/features/eggs/widgets/egg_list_item.dart';
 
-import '../../../helpers/pump_helpers.dart';
+Future<void> _pump(WidgetTester tester, Widget child) async {
+  await tester.pumpWidget(
+    ProviderScope(child: MaterialApp(home: Scaffold(body: child))),
+  );
+  await tester.pump();
+}
 
 void main() {
   final testEgg = Egg(
@@ -18,7 +24,7 @@ void main() {
 
   group('EggListItem', () {
     testWidgets('renders inside a Card widget', (tester) async {
-      await pumpWidgetSimple(tester, EggListItem(egg: testEgg));
+      await _pump(tester, EggListItem(egg: testEgg));
 
       expect(find.byType(Card), findsOneWidget);
     });
@@ -26,7 +32,7 @@ void main() {
     testWidgets('custom onTap is invoked', (tester) async {
       var tapped = false;
 
-      await pumpWidgetSimple(
+      await _pump(
         tester,
         EggListItem(egg: testEgg, onTap: () => tapped = true),
       );
@@ -38,7 +44,7 @@ void main() {
     testWidgets('onStatusUpdate button is shown when callback provided', (
       tester,
     ) async {
-      await pumpWidgetSimple(
+      await _pump(
         tester,
         EggListItem(egg: testEgg, onStatusUpdate: () {}),
       );
@@ -49,7 +55,7 @@ void main() {
     testWidgets('onDelete button is shown when callback provided', (
       tester,
     ) async {
-      await pumpWidgetSimple(
+      await _pump(
         tester,
         EggListItem(egg: testEgg, onDelete: () {}),
       );
@@ -60,7 +66,7 @@ void main() {
     testWidgets('onStatusUpdate callback is invoked', (tester) async {
       var updated = false;
 
-      await pumpWidgetSimple(
+      await _pump(
         tester,
         EggListItem(egg: testEgg, onStatusUpdate: () => updated = true),
       );
@@ -80,7 +86,7 @@ void main() {
           eggNumber: 1,
         );
 
-        await pumpWidgetSimple(tester, EggListItem(egg: egg));
+        await _pump(tester, EggListItem(egg: egg));
         expect(find.byType(Card), findsOneWidget);
       }
     });
@@ -94,7 +100,7 @@ void main() {
         eggNumber: 2,
       );
 
-      await pumpWidgetSimple(tester, EggListItem(egg: incubatingEgg));
+      await _pump(tester, EggListItem(egg: incubatingEgg));
 
       expect(find.byType(Card), findsOneWidget);
     });

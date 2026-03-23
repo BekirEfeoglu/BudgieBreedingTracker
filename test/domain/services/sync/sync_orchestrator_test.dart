@@ -80,164 +80,148 @@ void main() {
   late MockSyncMetadataDao mockSyncMetadataDao;
   late MockNotificationProcessor mockNotificationProcessor;
 
+  /// Stubs pushAll + pull on a syncable repository mock, and optionally
+  /// stubs lastPullConflicts to return an empty list.
+  ///
+  /// [pushAll] — `() => mockRepo.pushAll(any())`
+  /// [pull]    — `() => mockRepo.pull(any(), lastSyncedAt: ...)`
+  /// [lastPullConflicts] — `() => mockRepo.lastPullConflicts` (null to skip)
+  void stubPushAndPull({
+    required Future<PushStats> Function() pushAll,
+    required Future<void> Function() pull,
+    List<({String recordId, String detail})> Function()? lastPullConflicts,
+  }) {
+    when(pushAll).thenAnswer((_) async => emptyPushStats);
+    when(pull).thenAnswer((_) async {});
+    if (lastPullConflicts != null) {
+      when(lastPullConflicts).thenReturn([]);
+    }
+  }
+
   void stubRepositoryCalls() {
+    // Profile (special: pushPending + pull with no lastSyncedAt)
     when(
       () => mockProfileRepository.pushPending(any()),
     ).thenAnswer((_) async {});
     when(() => mockProfileRepository.pull(any())).thenAnswer((_) async {});
 
-    when(
-      () => mockBirdRepository.pushAll(any()),
-    ).thenAnswer((_) async => emptyPushStats);
-    when(
-      () => mockBirdRepository.pull(
+    // Syncable repositories with lastPullConflicts
+    stubPushAndPull(
+      pushAll: () => mockBirdRepository.pushAll(any()),
+      pull: () => mockBirdRepository.pull(
         any(),
         lastSyncedAt: any(named: 'lastSyncedAt'),
       ),
-    ).thenAnswer((_) async {});
-    when(() => mockBirdRepository.lastPullConflicts).thenReturn([]);
-
-    when(
-      () => mockNestRepository.pushAll(any()),
-    ).thenAnswer((_) async => emptyPushStats);
-    when(
-      () => mockNestRepository.pull(
+      lastPullConflicts: () => mockBirdRepository.lastPullConflicts,
+    );
+    stubPushAndPull(
+      pushAll: () => mockNestRepository.pushAll(any()),
+      pull: () => mockNestRepository.pull(
         any(),
         lastSyncedAt: any(named: 'lastSyncedAt'),
       ),
-    ).thenAnswer((_) async {});
-    when(() => mockNestRepository.lastPullConflicts).thenReturn([]);
-
-    when(
-      () => mockBreedingPairRepository.pushAll(any()),
-    ).thenAnswer((_) async => emptyPushStats);
-    when(
-      () => mockBreedingPairRepository.pull(
+      lastPullConflicts: () => mockNestRepository.lastPullConflicts,
+    );
+    stubPushAndPull(
+      pushAll: () => mockBreedingPairRepository.pushAll(any()),
+      pull: () => mockBreedingPairRepository.pull(
         any(),
         lastSyncedAt: any(named: 'lastSyncedAt'),
       ),
-    ).thenAnswer((_) async {});
-    when(() => mockBreedingPairRepository.lastPullConflicts).thenReturn([]);
-
-    when(
-      () => mockClutchRepository.pushAll(any()),
-    ).thenAnswer((_) async => emptyPushStats);
-    when(
-      () => mockClutchRepository.pull(
+      lastPullConflicts: () =>
+          mockBreedingPairRepository.lastPullConflicts,
+    );
+    stubPushAndPull(
+      pushAll: () => mockClutchRepository.pushAll(any()),
+      pull: () => mockClutchRepository.pull(
         any(),
         lastSyncedAt: any(named: 'lastSyncedAt'),
       ),
-    ).thenAnswer((_) async {});
-    when(() => mockClutchRepository.lastPullConflicts).thenReturn([]);
-
-    when(
-      () => mockIncubationRepository.pushAll(any()),
-    ).thenAnswer((_) async => emptyPushStats);
-    when(
-      () => mockIncubationRepository.pull(
+      lastPullConflicts: () => mockClutchRepository.lastPullConflicts,
+    );
+    stubPushAndPull(
+      pushAll: () => mockEggRepository.pushAll(any()),
+      pull: () => mockEggRepository.pull(
         any(),
         lastSyncedAt: any(named: 'lastSyncedAt'),
       ),
-    ).thenAnswer((_) async {});
-
-    when(
-      () => mockEggRepository.pushAll(any()),
-    ).thenAnswer((_) async => emptyPushStats);
-    when(
-      () => mockEggRepository.pull(
+      lastPullConflicts: () => mockEggRepository.lastPullConflicts,
+    );
+    stubPushAndPull(
+      pushAll: () => mockChickRepository.pushAll(any()),
+      pull: () => mockChickRepository.pull(
         any(),
         lastSyncedAt: any(named: 'lastSyncedAt'),
       ),
-    ).thenAnswer((_) async {});
-    when(() => mockEggRepository.lastPullConflicts).thenReturn([]);
-
-    when(
-      () => mockChickRepository.pushAll(any()),
-    ).thenAnswer((_) async => emptyPushStats);
-    when(
-      () => mockChickRepository.pull(
+      lastPullConflicts: () => mockChickRepository.lastPullConflicts,
+    );
+    stubPushAndPull(
+      pushAll: () => mockHealthRecordRepository.pushAll(any()),
+      pull: () => mockHealthRecordRepository.pull(
         any(),
         lastSyncedAt: any(named: 'lastSyncedAt'),
       ),
-    ).thenAnswer((_) async {});
-    when(() => mockChickRepository.lastPullConflicts).thenReturn([]);
-
-    when(
-      () => mockHealthRecordRepository.pushAll(any()),
-    ).thenAnswer((_) async => emptyPushStats);
-    when(
-      () => mockHealthRecordRepository.pull(
+      lastPullConflicts: () =>
+          mockHealthRecordRepository.lastPullConflicts,
+    );
+    stubPushAndPull(
+      pushAll: () => mockEventRepository.pushAll(any()),
+      pull: () => mockEventRepository.pull(
         any(),
         lastSyncedAt: any(named: 'lastSyncedAt'),
       ),
-    ).thenAnswer((_) async {});
-    when(() => mockHealthRecordRepository.lastPullConflicts).thenReturn([]);
-
-    when(
-      () => mockGrowthMeasurementRepository.pushAll(any()),
-    ).thenAnswer((_) async => emptyPushStats);
-    when(
-      () => mockGrowthMeasurementRepository.pull(
+      lastPullConflicts: () => mockEventRepository.lastPullConflicts,
+    );
+    stubPushAndPull(
+      pushAll: () => mockNotificationScheduleRepository.pushAll(any()),
+      pull: () => mockNotificationScheduleRepository.pull(
         any(),
         lastSyncedAt: any(named: 'lastSyncedAt'),
       ),
-    ).thenAnswer((_) async {});
-
-    when(
-      () => mockEventRepository.pushAll(any()),
-    ).thenAnswer((_) async => emptyPushStats);
-    when(
-      () => mockEventRepository.pull(
+      lastPullConflicts: () =>
+          mockNotificationScheduleRepository.lastPullConflicts,
+    );
+    stubPushAndPull(
+      pushAll: () => mockEventReminderRepository.pushAll(any()),
+      pull: () => mockEventReminderRepository.pull(
         any(),
         lastSyncedAt: any(named: 'lastSyncedAt'),
       ),
-    ).thenAnswer((_) async {});
-    when(() => mockEventRepository.lastPullConflicts).thenReturn([]);
+      lastPullConflicts: () =>
+          mockEventReminderRepository.lastPullConflicts,
+    );
 
-    when(
-      () => mockNotificationRepository.pushAll(any()),
-    ).thenAnswer((_) async => emptyPushStats);
-    when(
-      () => mockNotificationRepository.pull(
+    // Syncable repositories without lastPullConflicts
+    stubPushAndPull(
+      pushAll: () => mockIncubationRepository.pushAll(any()),
+      pull: () => mockIncubationRepository.pull(
         any(),
         lastSyncedAt: any(named: 'lastSyncedAt'),
       ),
-    ).thenAnswer((_) async {});
-
-    when(
-      () => mockNotificationScheduleRepository.pushAll(any()),
-    ).thenAnswer((_) async => emptyPushStats);
-    when(
-      () => mockNotificationScheduleRepository.pull(
+    );
+    stubPushAndPull(
+      pushAll: () => mockGrowthMeasurementRepository.pushAll(any()),
+      pull: () => mockGrowthMeasurementRepository.pull(
         any(),
         lastSyncedAt: any(named: 'lastSyncedAt'),
       ),
-    ).thenAnswer((_) async {});
-    when(
-      () => mockNotificationScheduleRepository.lastPullConflicts,
-    ).thenReturn([]);
-
-    when(
-      () => mockPhotoRepository.pushAll(any()),
-    ).thenAnswer((_) async => emptyPushStats);
-    when(
-      () => mockPhotoRepository.pull(
+    );
+    stubPushAndPull(
+      pushAll: () => mockNotificationRepository.pushAll(any()),
+      pull: () => mockNotificationRepository.pull(
         any(),
         lastSyncedAt: any(named: 'lastSyncedAt'),
       ),
-    ).thenAnswer((_) async {});
-
-    when(
-      () => mockEventReminderRepository.pushAll(any()),
-    ).thenAnswer((_) async => emptyPushStats);
-    when(
-      () => mockEventReminderRepository.pull(
+    );
+    stubPushAndPull(
+      pushAll: () => mockPhotoRepository.pushAll(any()),
+      pull: () => mockPhotoRepository.pull(
         any(),
         lastSyncedAt: any(named: 'lastSyncedAt'),
       ),
-    ).thenAnswer((_) async {});
-    when(() => mockEventReminderRepository.lastPullConflicts).thenReturn([]);
+    );
 
+    // Sync metadata
     when(
       () => mockSyncMetadataRepository.getErrors(any()),
     ).thenAnswer((_) async => []);

@@ -23,21 +23,21 @@ void main() {
 
   group('BudgiePainter', () {
     test('shouldRepaint returns false for equal appearances', () {
-      final p1 = BudgiePainter(appearance: defaultAppearance);
-      final p2 = BudgiePainter(appearance: defaultAppearance);
+      const p1 = BudgiePainter(appearance: defaultAppearance);
+      const p2 = BudgiePainter(appearance: defaultAppearance);
       expect(p1.shouldRepaint(p2), isFalse);
     });
 
     test('shouldRepaint returns true for different appearances', () {
-      final p1 = BudgiePainter(appearance: defaultAppearance);
-      final p2 = BudgiePainter(
+      const p1 = BudgiePainter(appearance: defaultAppearance);
+      const p2 = BudgiePainter(
         appearance: BudgieColorAppearance(
-          bodyColor: const Color(0xFF72D1DD),
-          maskColor: const Color(0xFFF4F7FA),
-          wingMarkingColor: const Color(0xFF2F3138),
+          bodyColor: Color(0xFF72D1DD),
+          maskColor: Color(0xFFF4F7FA),
+          wingMarkingColor: Color(0xFF2F3138),
           wingFillColor: Colors.transparent,
-          cheekPatchColor: const Color(0xFF7A78C7),
-          piedPatchColor: const Color(0xFFF4F7FA),
+          cheekPatchColor: Color(0xFF7A78C7),
+          piedPatchColor: Color(0xFFF4F7FA),
           carrierAccentColor: Colors.transparent,
           showPiedPatch: false,
           showMantleHighlight: false,
@@ -49,7 +49,7 @@ void main() {
     });
 
     test('paint does not throw for default appearance', () {
-      final painter = BudgiePainter(appearance: defaultAppearance);
+      const painter = BudgiePainter(appearance: defaultAppearance);
       final recorder = PictureRecorder();
       final canvas = Canvas(recorder);
       expect(
@@ -59,15 +59,15 @@ void main() {
     });
 
     test('paint does not throw with all optional features enabled', () {
-      final painter = BudgiePainter(
+      const painter = BudgiePainter(
         appearance: BudgieColorAppearance(
-          bodyColor: const Color(0xFF8CD600),
-          maskColor: const Color(0xFFF3DF63),
-          wingMarkingColor: const Color(0xFF2F3138),
-          wingFillColor: const Color(0xFF5C6168),
-          cheekPatchColor: const Color(0xFF3D76C3),
-          piedPatchColor: const Color(0xFFF3DF63),
-          carrierAccentColor: const Color(0xFF72D1DD),
+          bodyColor: Color(0xFF8CD600),
+          maskColor: Color(0xFFF3DF63),
+          wingMarkingColor: Color(0xFF2F3138),
+          wingFillColor: Color(0xFF5C6168),
+          cheekPatchColor: Color(0xFF3D76C3),
+          piedPatchColor: Color(0xFFF3DF63),
+          carrierAccentColor: Color(0xFF72D1DD),
           showPiedPatch: true,
           showMantleHighlight: true,
           showCarrierAccent: true,
@@ -86,14 +86,14 @@ void main() {
     });
 
     test('paint does not throw for ino (hidden elements)', () {
-      final painter = BudgiePainter(
+      const painter = BudgiePainter(
         appearance: BudgieColorAppearance(
-          bodyColor: const Color(0xFFF4DF57),
-          maskColor: const Color(0xFFF3DF63),
+          bodyColor: Color(0xFFF4DF57),
+          maskColor: Color(0xFFF3DF63),
           wingMarkingColor: Colors.transparent,
           wingFillColor: Colors.transparent,
-          cheekPatchColor: const Color(0xFFF4F7FA),
-          piedPatchColor: const Color(0xFFF3DF63),
+          cheekPatchColor: Color(0xFFF4F7FA),
+          piedPatchColor: Color(0xFFF3DF63),
           carrierAccentColor: Colors.transparent,
           showPiedPatch: false,
           showMantleHighlight: false,
@@ -101,7 +101,7 @@ void main() {
           hideWingMarkings: true,
           showThroatSpots: false,
           throatSpotCount: 0,
-          eyeColor: const Color(0xFFCC2233),
+          eyeColor: Color(0xFFCC2233),
           showEyeRing: false,
         ),
       );
@@ -114,7 +114,7 @@ void main() {
     });
 
     test('paint does not throw at minimum size', () {
-      final painter = BudgiePainter(appearance: defaultAppearance);
+      const painter = BudgiePainter(appearance: defaultAppearance);
       final recorder = PictureRecorder();
       final canvas = Canvas(recorder);
       expect(
@@ -124,7 +124,7 @@ void main() {
     });
 
     test('paint does not throw at large size', () {
-      final painter = BudgiePainter(appearance: defaultAppearance);
+      const painter = BudgiePainter(appearance: defaultAppearance);
       final recorder = PictureRecorder();
       final canvas = Canvas(recorder);
       expect(
@@ -134,7 +134,7 @@ void main() {
     });
 
     test('shouldRepaint detects showPiedPatch change', () {
-      final p1 = BudgiePainter(appearance: defaultAppearance);
+      const p1 = BudgiePainter(appearance: defaultAppearance);
       final p2 = BudgiePainter(
         appearance: BudgieColorAppearance(
           bodyColor: defaultAppearance.bodyColor,
@@ -154,7 +154,7 @@ void main() {
     });
 
     test('shouldRepaint detects throatSpotCount change', () {
-      final p1 = BudgiePainter(appearance: defaultAppearance);
+      const p1 = BudgiePainter(appearance: defaultAppearance);
       final p2 = BudgiePainter(
         appearance: BudgieColorAppearance(
           bodyColor: defaultAppearance.bodyColor,
@@ -175,14 +175,14 @@ void main() {
     });
 
     test('paint handles zero throat spot count gracefully', () {
-      final painter = BudgiePainter(
+      const painter = BudgiePainter(
         appearance: BudgieColorAppearance(
-          bodyColor: const Color(0xFF8CD600),
-          maskColor: const Color(0xFFF3DF63),
-          wingMarkingColor: const Color(0xFF2F3138),
+          bodyColor: Color(0xFF8CD600),
+          maskColor: Color(0xFFF3DF63),
+          wingMarkingColor: Color(0xFF2F3138),
           wingFillColor: Colors.transparent,
-          cheekPatchColor: const Color(0xFF3D76C3),
-          piedPatchColor: const Color(0xFFF3DF63),
+          cheekPatchColor: Color(0xFF3D76C3),
+          piedPatchColor: Color(0xFFF3DF63),
           carrierAccentColor: Colors.transparent,
           showPiedPatch: false,
           showMantleHighlight: false,

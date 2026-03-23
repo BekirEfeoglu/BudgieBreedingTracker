@@ -10,6 +10,8 @@ import 'package:budgie_breeding_tracker/features/admin/screens/admin_user_detail
 import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
 import 'package:budgie_breeding_tracker/core/widgets/error_state.dart';
 
+import '../../../helpers/test_localization.dart';
+
 const _testUserId = 'test-user-id';
 
 /// Fake notifier: avoids real Supabase calls during rendering.
@@ -41,42 +43,39 @@ void main() {
 
   group('AdminUserDetailScreen', () {
     testWidgets('renders without crashing', (tester) async {
-      await tester.pumpWidget(_createSubject());
+      await pumpLocalizedApp(tester, _createSubject(), settle: false);
       await tester.pump();
-
       expect(find.byType(AdminUserDetailScreen), findsOneWidget);
     });
 
     testWidgets('shows loading state when data is loading', (tester) async {
-      await tester.pumpWidget(_createSubject());
+      await pumpLocalizedApp(tester, _createSubject(), settle: false);
       await tester.pump();
-
       expect(find.byType(LoadingState), findsOneWidget);
     });
 
     testWidgets('shows error state when provider fails', (tester) async {
-      await tester.pumpWidget(
+      await pumpLocalizedApp(
+        tester,
         _createSubject(
           detailAsync: const AsyncError('User not found', StackTrace.empty),
         ),
+        settle: false,
       );
       await tester.pump();
-
       expect(find.byType(ErrorState), findsOneWidget);
     });
 
     testWidgets('shows AppBar with user detail title', (tester) async {
-      await tester.pumpWidget(_createSubject());
+      await pumpLocalizedApp(tester, _createSubject(), settle: false);
       await tester.pump();
-
       expect(find.byType(AppBar), findsOneWidget);
       expect(find.text('admin.user_detail'), findsOneWidget);
     });
 
     testWidgets('shows RefreshIndicator in all states', (tester) async {
-      await tester.pumpWidget(_createSubject());
+      await pumpLocalizedApp(tester, _createSubject(), settle: false);
       await tester.pump();
-
       expect(find.byType(RefreshIndicator), findsOneWidget);
     });
 
@@ -89,21 +88,18 @@ void main() {
         isActive: true,
       );
 
-      await tester.pumpWidget(_createSubject(detailAsync: AsyncData(detail)));
+      await pumpLocalizedApp(
+        tester,
+        _createSubject(detailAsync: AsyncData(detail)),
+        settle: false,
+      );
       await tester.pump();
-
-      var ex = tester.takeException();
-      while (ex != null) {
-        ex = tester.takeException();
-      }
-
       expect(find.byType(RefreshIndicator), findsOneWidget);
     });
 
     testWidgets('shows popup menu button in AppBar', (tester) async {
-      await tester.pumpWidget(_createSubject());
+      await pumpLocalizedApp(tester, _createSubject(), settle: false);
       await tester.pump();
-
       expect(find.byType(PopupMenuButton<String>), findsOneWidget);
     });
 
@@ -119,9 +115,12 @@ void main() {
       );
       const expectedError = 'protected role premium mutation';
 
-      await tester.pumpWidget(_createSubject(detailAsync: AsyncData(detail)));
+      await pumpLocalizedApp(
+        tester,
+        _createSubject(detailAsync: AsyncData(detail)),
+        settle: false,
+      );
       await tester.pump();
-
       final container = ProviderScope.containerOf(
         tester.element(find.byType(AdminUserDetailScreen)),
       );
@@ -130,7 +129,7 @@ void main() {
               as _FakeAdminActionsNotifier;
 
       notifier.emitError(expectedError);
-      await tester.pumpAndSettle();
+      await tester.pump();
 
       expect(find.text(expectedError), findsOneWidget);
     });

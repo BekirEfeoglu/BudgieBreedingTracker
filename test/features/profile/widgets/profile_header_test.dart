@@ -7,6 +7,16 @@ import 'package:budgie_breeding_tracker/features/profile/widgets/profile_header.
 import 'package:budgie_breeding_tracker/features/profile/widgets/profile_completion_indicator.dart';
 import 'package:budgie_breeding_tracker/features/profile/widgets/avatar_widget.dart';
 
+import '../../../helpers/test_localization.dart';
+
+/// Drains all overflow exceptions thrown after widget rendering.
+void _drainOverflowErrors(WidgetTester tester) {
+  for (var i = 0; i < 20; i++) {
+    final error = tester.takeException();
+    if (error == null) break;
+  }
+}
+
 Profile _fakeProfile({
   String id = 'user-1',
   String email = 'test@example.com',
@@ -67,16 +77,12 @@ Widget _buildSubject({
 }
 
 void _consumeOverflowExceptions(WidgetTester tester) {
-  var ex = tester.takeException();
-  while (ex != null) {
-    ex = tester.takeException();
-  }
 }
 
 void main() {
   group('ProfileHeader', () {
     testWidgets('renders without crashing', (tester) async {
-      await tester.pumpWidget(_buildSubject());
+      await pumpLocalizedApp(tester,_buildSubject());
       await tester.pump(const Duration(milliseconds: 500));
       _consumeOverflowExceptions(tester);
 
@@ -84,7 +90,7 @@ void main() {
     });
 
     testWidgets('displays display name', (tester) async {
-      await tester.pumpWidget(_buildSubject(displayName: 'Bekir Demirci'));
+      await pumpLocalizedApp(tester,_buildSubject(displayName: 'Bekir Demirci'));
       await tester.pump(const Duration(milliseconds: 500));
       _consumeOverflowExceptions(tester);
 
@@ -92,7 +98,7 @@ void main() {
     });
 
     testWidgets('displays email', (tester) async {
-      await tester.pumpWidget(_buildSubject(email: 'bekir@test.com'));
+      await pumpLocalizedApp(tester,_buildSubject(email: 'bekir@test.com'));
       await tester.pump(const Duration(milliseconds: 500));
       _consumeOverflowExceptions(tester);
 
@@ -100,7 +106,7 @@ void main() {
     });
 
     testWidgets('shows AvatarWidget', (tester) async {
-      await tester.pumpWidget(_buildSubject());
+      await pumpLocalizedApp(tester,_buildSubject());
       await tester.pump(const Duration(milliseconds: 500));
       _consumeOverflowExceptions(tester);
 
@@ -108,7 +114,7 @@ void main() {
     });
 
     testWidgets('shows ProfileCompletionIndicator', (tester) async {
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         _buildSubject(completion: _fakeCompletion(percentage: 0.75)),
       );
       await tester.pump(const Duration(milliseconds: 500));
@@ -119,7 +125,7 @@ void main() {
 
     testWidgets('edit profile button is present and tappable', (tester) async {
       bool tapped = false;
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         _buildSubject(onEditProfile: () => tapped = true),
       );
       await tester.pump(const Duration(milliseconds: 500));
@@ -135,7 +141,7 @@ void main() {
 
     testWidgets('camera icon button calls onEditAvatar', (tester) async {
       bool avatarTapped = false;
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         _buildSubject(onEditAvatar: () => avatarTapped = true),
       );
       await tester.pump(const Duration(milliseconds: 500));
@@ -157,14 +163,16 @@ void main() {
       tester,
     ) async {
       bool avatarTapped = false;
-      await tester.pumpWidget(
+      await pumpLocalizedApp(
+        tester,
         _buildSubject(
           onEditAvatar: () => avatarTapped = true,
           isAvatarUploading: true,
         ),
+        settle: false,
       );
       await tester.pump(const Duration(milliseconds: 500));
-      _consumeOverflowExceptions(tester);
+      _drainOverflowErrors(tester);
 
       // The camera InkWell onTap is null when uploading — tap should have no effect
       final cameraInkWell = tester
@@ -178,16 +186,16 @@ void main() {
     });
 
     testWidgets('shows stats row when stats are provided', (tester) async {
-      await tester.pumpWidget(_buildSubject(stats: _fakeStats(totalBirds: 7)));
+      await pumpLocalizedApp(tester, _buildSubject(stats: _fakeStats(totalBirds: 7)));
       await tester.pump(const Duration(milliseconds: 1000));
-      _consumeOverflowExceptions(tester);
+      _drainOverflowErrors(tester);
 
       // TweenAnimationBuilder animates 0→7 over 800ms; after 1s final value shown
       expect(find.text('7'), findsAtLeastNWidgets(1));
     });
 
     testWidgets('does not show stats row when stats is null', (tester) async {
-      await tester.pumpWidget(_buildSubject(stats: null));
+      await pumpLocalizedApp(tester,_buildSubject(stats: null));
       await tester.pump(const Duration(milliseconds: 500));
       _consumeOverflowExceptions(tester);
 
@@ -199,7 +207,7 @@ void main() {
 
     testWidgets('shows premium badge for premium profile', (tester) async {
       final profile = _fakeProfile(isPremium: true);
-      await tester.pumpWidget(_buildSubject(profile: profile));
+      await pumpLocalizedApp(tester,_buildSubject(profile: profile));
       await tester.pump(const Duration(milliseconds: 500));
       _consumeOverflowExceptions(tester);
 
@@ -209,7 +217,7 @@ void main() {
 
     testWidgets('shows founder badge for founder profile', (tester) async {
       final profile = _fakeProfile(role: 'founder');
-      await tester.pumpWidget(_buildSubject(profile: profile));
+      await pumpLocalizedApp(tester,_buildSubject(profile: profile));
       await tester.pump(const Duration(milliseconds: 500));
       _consumeOverflowExceptions(tester);
 
@@ -220,7 +228,7 @@ void main() {
       tester,
     ) async {
       final profile = _fakeProfile(role: 'admin');
-      await tester.pumpWidget(_buildSubject(profile: profile));
+      await pumpLocalizedApp(tester,_buildSubject(profile: profile));
       await tester.pump(const Duration(milliseconds: 500));
       _consumeOverflowExceptions(tester);
 
@@ -231,7 +239,7 @@ void main() {
       tester,
     ) async {
       final profile = _fakeProfile();
-      await tester.pumpWidget(_buildSubject(profile: profile));
+      await pumpLocalizedApp(tester,_buildSubject(profile: profile));
       await tester.pump(const Duration(milliseconds: 500));
       _consumeOverflowExceptions(tester);
 
@@ -241,7 +249,7 @@ void main() {
     });
 
     testWidgets('does not show badges when profile is null', (tester) async {
-      await tester.pumpWidget(_buildSubject(profile: null));
+      await pumpLocalizedApp(tester,_buildSubject(profile: null));
       await tester.pump(const Duration(milliseconds: 500));
       _consumeOverflowExceptions(tester);
 
@@ -250,22 +258,23 @@ void main() {
     });
 
     testWidgets('stat items animate from 0 to final value', (tester) async {
-      await tester.pumpWidget(
+      await pumpLocalizedApp(
+        tester,
         _buildSubject(stats: _fakeStats(totalBirds: 3, totalPairs: 1)),
       );
       // Initially at 0 (animation starts)
       await tester.pump();
-      _consumeOverflowExceptions(tester);
+      _drainOverflowErrors(tester);
 
       // After animation completes
       await tester.pump(const Duration(milliseconds: 900));
-      _consumeOverflowExceptions(tester);
+      _drainOverflowErrors(tester);
 
       expect(find.text('3'), findsAtLeastNWidgets(1));
     });
 
     testWidgets('renders inside a Card widget', (tester) async {
-      await tester.pumpWidget(_buildSubject());
+      await pumpLocalizedApp(tester,_buildSubject());
       await tester.pump(const Duration(milliseconds: 500));
       _consumeOverflowExceptions(tester);
 
@@ -273,7 +282,7 @@ void main() {
     });
 
     testWidgets('completion 0 renders without error', (tester) async {
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         _buildSubject(completion: _fakeCompletion(percentage: 0.0)),
       );
       await tester.pump(const Duration(milliseconds: 500));
@@ -283,7 +292,7 @@ void main() {
     });
 
     testWidgets('completion 1.0 renders without error', (tester) async {
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         _buildSubject(completion: _fakeCompletion(percentage: 1.0)),
       );
       await tester.pump(const Duration(milliseconds: 500));
@@ -293,7 +302,8 @@ void main() {
     });
 
     testWidgets('zero stats show 0 after animation', (tester) async {
-      await tester.pumpWidget(
+      await pumpLocalizedApp(
+        tester,
         _buildSubject(
           stats: const ProfileStats(
             totalBirds: 0,
@@ -304,7 +314,7 @@ void main() {
         ),
       );
       await tester.pump(const Duration(milliseconds: 1000));
-      _consumeOverflowExceptions(tester);
+      _drainOverflowErrors(tester);
 
       // 4 stats each showing 0
       final zeroFinders = tester.widgetList<Text>(find.text('0'));

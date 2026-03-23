@@ -25,10 +25,12 @@ InbreedingData _makeInbreeding({
   double coefficient = 0.0,
   InbreedingRisk risk = InbreedingRisk.none,
   Set<String> commonAncestorIds = const {},
+  bool depthLimited = false,
 }) => (
   coefficient: coefficient,
   risk: risk,
   commonAncestorIds: commonAncestorIds,
+  depthLimited: depthLimited,
 );
 
 Bird _makeBird({

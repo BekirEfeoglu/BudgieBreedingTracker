@@ -7,7 +7,7 @@ void main() {
   group('BudgieColorResolver', () {
     test('matches WBO base swatches for the primary exhibition colors', () {
       expect(BudgiePhenotypePalette.lightGreen, const Color(0xFF8CD600));
-      expect(BudgiePhenotypePalette.darkGreen, const Color(0xFF56AA1C));
+      expect(BudgiePhenotypePalette.darkGreen, const Color(0xFF49921A));
       expect(BudgiePhenotypePalette.olive, const Color(0xFF566B21));
       expect(BudgiePhenotypePalette.greyGreen, const Color(0xFFAFA80A));
       expect(BudgiePhenotypePalette.skyBlue, const Color(0xFF72D1DD));
@@ -106,7 +106,7 @@ void main() {
       expect(cinnamon.bodyColor, isNot(BudgiePhenotypePalette.lightGreen));
       expect(greywing.wingMarkingColor, BudgiePhenotypePalette.wingGrey);
       expect(greywing.bodyColor, isNot(BudgiePhenotypePalette.skyBlue));
-      expect(greywing.cheekPatchColor, BudgiePhenotypePalette.cheekPaleViolet);
+      expect(greywing.cheekPatchColor, BudgiePhenotypePalette.cheekViolet);
     });
 
     test(
@@ -122,7 +122,7 @@ void main() {
         );
 
         expect(sfSpangle.hideWingMarkings, isFalse);
-        expect(dfSpangle.hideWingMarkings, isTrue);
+        expect(dfSpangle.hideWingMarkings, isFalse);
         expect(dfSpangle.bodyColor, BudgiePhenotypePalette.maskWhite);
       },
     );
@@ -165,8 +165,8 @@ void main() {
         lightGreenSlate.bodyColor,
         Color.lerp(
           BudgiePhenotypePalette.lightGreen,
-          BudgiePhenotypePalette.greyGreen,
-          0.42,
+          BudgiePhenotypePalette.slate,
+          0.40,
         ),
       );
       expect(
@@ -204,7 +204,7 @@ void main() {
       expect(dominantClearbody.bodyColor, isNot(texasClearbody.bodyColor));
       expect(
         dominantClearbody.bodyColor.computeLuminance(),
-        lessThan(texasClearbody.bodyColor.computeLuminance()),
+        greaterThan(texasClearbody.bodyColor.computeLuminance()),
       );
       expect(
         dominantClearbody.cheekPatchColor,

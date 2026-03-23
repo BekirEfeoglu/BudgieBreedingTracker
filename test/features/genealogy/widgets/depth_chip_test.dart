@@ -3,10 +3,12 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:budgie_breeding_tracker/features/genealogy/widgets/depth_chip.dart';
 
+import '../../../helpers/test_localization.dart';
+
 void main() {
   group('DepthChip', () {
     testWidgets('renders current depth value in chip label', (tester) async {
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         MaterialApp(
           home: Scaffold(
             appBar: AppBar(actions: [DepthChip(depth: 5, onChanged: (_) {})]),
@@ -18,7 +20,7 @@ void main() {
     });
 
     testWidgets('renders with depth 3', (tester) async {
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         MaterialApp(
           home: Scaffold(
             appBar: AppBar(actions: [DepthChip(depth: 3, onChanged: (_) {})]),
@@ -30,7 +32,7 @@ void main() {
     });
 
     testWidgets('opens popup menu on tap', (tester) async {
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         MaterialApp(
           home: Scaffold(
             appBar: AppBar(actions: [DepthChip(depth: 4, onChanged: (_) {})]),
@@ -43,12 +45,6 @@ void main() {
       await tester.pump();
 
       // Consume Row overflow exceptions from popup menu items
-      var ex = tester.takeException();
-      while (ex != null) {
-        if (!ex.toString().contains('overflowed')) throw ex as Object;
-        ex = tester.takeException();
-      }
-
       // Popup menu should show items (genealogy.generations for each depth 3-8)
       expect(find.byType(PopupMenuItem<int>), findsWidgets);
     });
@@ -56,7 +52,7 @@ void main() {
     testWidgets('calls onChanged when menu item selected', (tester) async {
       int? selectedValue;
 
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         MaterialApp(
           home: Scaffold(
             appBar: AppBar(
@@ -79,7 +75,7 @@ void main() {
     });
 
     testWidgets('shows Chip widget', (tester) async {
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         MaterialApp(
           home: Scaffold(
             appBar: AppBar(actions: [DepthChip(depth: 6, onChanged: (_) {})]),

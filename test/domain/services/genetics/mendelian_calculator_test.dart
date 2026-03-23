@@ -516,7 +516,7 @@ void main() {
           0.0,
           (sum, r) => sum + r.probability,
         );
-        expect(total, closeTo(1.0, 0.001));
+        expect(total, closeTo(1.0, 0.0001));
 
         // Must have both male and female outcomes (sex-linked)
         expect(results.any((r) => r.sex == OffspringSex.male), isTrue);
@@ -610,7 +610,7 @@ void main() {
           0.0,
           (sum, r) => sum + r.probability,
         );
-        expect(total, closeTo(1.0, 0.001));
+        expect(total, closeTo(1.0, 0.0001));
 
         expect(results.any((r) => r.sex == OffspringSex.male), isTrue);
         expect(results.any((r) => r.sex == OffspringSex.female), isTrue);
@@ -662,7 +662,7 @@ void main() {
 
       expect(results, isNotEmpty);
       final total = results.fold<double>(0.0, (sum, r) => sum + r.probability);
-      expect(total, closeTo(1.0, 0.001));
+      expect(total, closeTo(1.0, 0.0001));
 
       expect(results.any((r) => r.sex == OffspringSex.male), isTrue);
       expect(results.any((r) => r.sex == OffspringSex.female), isTrue);
@@ -702,7 +702,7 @@ void main() {
           0.0,
           (sum, r) => sum + r.probability,
         );
-        expect(total, closeTo(1.0, 0.001));
+        expect(total, closeTo(1.0, 0.0001));
 
         // Lacewing (cinnamon+ino compound) should appear in results
         expect(results.any((r) => r.phenotype.contains('Lacewing')), isTrue);
@@ -743,7 +743,7 @@ void main() {
           0.0,
           (sum, r) => sum + r.probability,
         );
-        expect(total, closeTo(1.0, 0.001));
+        expect(total, closeTo(1.0, 0.0001));
 
         expect(results.any((r) => r.sex == OffspringSex.male), isTrue);
         expect(results.any((r) => r.sex == OffspringSex.female), isTrue);
@@ -783,7 +783,7 @@ void main() {
 
       expect(results, isNotEmpty);
       final total = results.fold<double>(0.0, (sum, r) => sum + r.probability);
-      expect(total, closeTo(1.0, 0.001));
+      expect(total, closeTo(1.0, 0.0001));
 
       // Both mutations should co-occur in visualMutations (parental type).
       // Ino masks Slate in phenotype via epistasis, so check IDs.
@@ -824,7 +824,7 @@ void main() {
           0.0,
           (sum, r) => sum + r.probability,
         );
-        expect(total, closeTo(1.0, 0.001));
+        expect(total, closeTo(1.0, 0.0001));
 
         // Ino-Slate (2 cM) pair has priority, so both should co-occur
         // in visualMutations (Ino masks Slate in phenotype via epistasis).
@@ -879,7 +879,7 @@ void main() {
 
       expect(results, isNotEmpty);
       final total = results.fold<double>(0.0, (sum, r) => sum + r.probability);
-      expect(total, closeTo(1.0, 0.001));
+      expect(total, closeTo(1.0, 0.0001));
 
       // Some males should be visual slate (father Z_sl + mother Z_sl)
       final males = results.where((r) => r.sex == OffspringSex.male).toList();
@@ -918,7 +918,7 @@ void main() {
 
       expect(results, isNotEmpty);
       final total = results.fold<double>(0.0, (sum, r) => sum + r.probability);
-      expect(total, closeTo(1.0, 0.001));
+      expect(total, closeTo(1.0, 0.0001));
 
       // In repulsion, parental types are single-mutation (Cin alone, Slate
       // alone) and the compound (Cin+Slate) is a rare recombinant.
@@ -967,7 +967,7 @@ void main() {
 
       expect(results, isNotEmpty);
       final total = results.fold<double>(0.0, (sum, r) => sum + r.probability);
-      expect(total, closeTo(1.0, 0.001));
+      expect(total, closeTo(1.0, 0.0001));
 
       // Some males should be visual ino (father Z_ino + mother Z_ino)
       final males = results.where((r) => r.sex == OffspringSex.male).toList();

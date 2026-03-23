@@ -5,6 +5,8 @@ import 'package:budgie_breeding_tracker/domain/services/genetics/mutation_databa
 import 'package:budgie_breeding_tracker/features/genetics/widgets/inheritance_badge.dart';
 import 'package:budgie_breeding_tracker/features/genetics/widgets/mutation_detail_sheet.dart';
 
+import '../../../helpers/test_localization.dart';
+
 // A private widget exposed via the public showMutationDetailSheet function.
 // We test the content widget directly via a wrapper that simulates bottom sheet.
 Widget _contentWrap(BudgieMutationRecord mutation) {
@@ -44,120 +46,64 @@ void main() {
   group('showMutationDetailSheet', () {
     testWidgets('opens bottom sheet when button is tapped', (tester) async {
       final mutation = _makeMutation();
-      await tester.pumpWidget(_contentWrap(mutation));
-      await tester.pump();
-
+      await pumpLocalizedApp(tester,_contentWrap(mutation));
       await tester.tap(find.text('open'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
-
-      var ex = tester.takeException();
-      while (ex != null) {
-        ex = tester.takeException();
-      }
-
       expect(find.byType(BottomSheet), findsOneWidget);
     });
 
     testWidgets('shows mutation localizationKey as title', (tester) async {
       final mutation = _makeMutation(id: 'blue');
-      await tester.pumpWidget(_contentWrap(mutation));
-      await tester.pump();
-
+      await pumpLocalizedApp(tester,_contentWrap(mutation));
       await tester.tap(find.text('open'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
-
-      var ex = tester.takeException();
-      while (ex != null) {
-        ex = tester.takeException();
-      }
-
       expect(find.text('genetics.mutation_blue'), findsAtLeastNWidgets(1));
     });
 
     testWidgets('shows InheritanceBadge in sheet', (tester) async {
       final mutation = _makeMutation();
-      await tester.pumpWidget(_contentWrap(mutation));
-      await tester.pump();
-
+      await pumpLocalizedApp(tester,_contentWrap(mutation));
       await tester.tap(find.text('open'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
-
-      var ex = tester.takeException();
-      while (ex != null) {
-        ex = tester.takeException();
-      }
-
       expect(find.byType(InheritanceBadge), findsAtLeastNWidgets(1));
     });
 
     testWidgets('shows inheritance_type label key', (tester) async {
       final mutation = _makeMutation();
-      await tester.pumpWidget(_contentWrap(mutation));
-      await tester.pump();
-
+      await pumpLocalizedApp(tester,_contentWrap(mutation));
       await tester.tap(find.text('open'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
-
-      var ex = tester.takeException();
-      while (ex != null) {
-        ex = tester.takeException();
-      }
-
       expect(find.text('genetics.inheritance_type'), findsOneWidget);
     });
 
     testWidgets('shows alleles label key', (tester) async {
       final mutation = _makeMutation();
-      await tester.pumpWidget(_contentWrap(mutation));
-      await tester.pump();
-
+      await pumpLocalizedApp(tester,_contentWrap(mutation));
       await tester.tap(find.text('open'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
-
-      var ex = tester.takeException();
-      while (ex != null) {
-        ex = tester.takeException();
-      }
-
       expect(find.text('genetics.alleles'), findsOneWidget);
     });
 
     testWidgets('shows allele_symbol label key', (tester) async {
       final mutation = _makeMutation();
-      await tester.pumpWidget(_contentWrap(mutation));
-      await tester.pump();
-
+      await pumpLocalizedApp(tester,_contentWrap(mutation));
       await tester.tap(find.text('open'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
-
-      var ex = tester.takeException();
-      while (ex != null) {
-        ex = tester.takeException();
-      }
-
       expect(find.text('genetics.allele_symbol'), findsOneWidget);
     });
 
     testWidgets('shows visual_effect when provided', (tester) async {
       final mutation = _makeMutation(visualEffect: 'Makes feathers blue');
-      await tester.pumpWidget(_contentWrap(mutation));
-      await tester.pump();
-
+      await pumpLocalizedApp(tester,_contentWrap(mutation));
       await tester.tap(find.text('open'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
-
-      var ex = tester.takeException();
-      while (ex != null) {
-        ex = tester.takeException();
-      }
-
       expect(find.text('genetics.visual_effect'), findsOneWidget);
       expect(find.text('Makes feathers blue'), findsOneWidget);
     });
@@ -166,35 +112,19 @@ void main() {
       tester,
     ) async {
       final mutation = _makeMutation(visualEffect: null);
-      await tester.pumpWidget(_contentWrap(mutation));
-      await tester.pump();
-
+      await pumpLocalizedApp(tester,_contentWrap(mutation));
       await tester.tap(find.text('open'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
-
-      var ex = tester.takeException();
-      while (ex != null) {
-        ex = tester.takeException();
-      }
-
       expect(find.text('genetics.visual_effect'), findsNothing);
     });
 
     testWidgets('shows allele symbols joined with slash', (tester) async {
       final mutation = _makeMutation();
-      await tester.pumpWidget(_contentWrap(mutation));
-      await tester.pump();
-
+      await pumpLocalizedApp(tester,_contentWrap(mutation));
       await tester.tap(find.text('open'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
-
-      var ex = tester.takeException();
-      while (ex != null) {
-        ex = tester.takeException();
-      }
-
       expect(find.text('tm / +'), findsOneWidget);
     });
   });
@@ -204,18 +134,10 @@ void main() {
       tester,
     ) async {
       final cinnamon = MutationDatabase.getById('cinnamon')!;
-      await tester.pumpWidget(_contentWrap(cinnamon));
-      await tester.pump();
-
+      await pumpLocalizedApp(tester,_contentWrap(cinnamon));
       await tester.tap(find.text('open'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
-
-      var ex = tester.takeException();
-      while (ex != null) {
-        ex = tester.takeException();
-      }
-
       // Linkage header should appear
       expect(find.text('genetics.z_linkage'), findsOneWidget);
       // Gene order should appear
@@ -230,18 +152,10 @@ void main() {
       tester,
     ) async {
       final blue = MutationDatabase.getById('blue')!;
-      await tester.pumpWidget(_contentWrap(blue));
-      await tester.pump();
-
+      await pumpLocalizedApp(tester,_contentWrap(blue));
       await tester.tap(find.text('open'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
-
-      var ex = tester.takeException();
-      while (ex != null) {
-        ex = tester.takeException();
-      }
-
       expect(find.text('genetics.z_linkage'), findsNothing);
     });
 
@@ -253,18 +167,10 @@ void main() {
           id: 'custom_sl',
           type: InheritanceType.sexLinkedRecessive,
         );
-        await tester.pumpWidget(_contentWrap(custom));
-        await tester.pump();
-
+        await pumpLocalizedApp(tester,_contentWrap(custom));
         await tester.tap(find.text('open'));
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 300));
-
-        var ex = tester.takeException();
-        while (ex != null) {
-          ex = tester.takeException();
-        }
-
         // Sex-linked but no linkage data → section hidden
         expect(find.text('genetics.z_linkage'), findsNothing);
       },
@@ -274,18 +180,10 @@ void main() {
       tester,
     ) async {
       final pearly = MutationDatabase.getById('pearly')!;
-      await tester.pumpWidget(_contentWrap(pearly));
-      await tester.pump();
-
+      await pumpLocalizedApp(tester,_contentWrap(pearly));
       await tester.tap(find.text('open'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
-
-      var ex = tester.takeException();
-      while (ex != null) {
-        ex = tester.takeException();
-      }
-
       expect(find.text('genetics.z_linkage'), findsOneWidget);
       expect(find.text('Cinnamon'), findsAtLeastNWidgets(1));
     });
@@ -305,18 +203,10 @@ void main() {
 
     testWidgets('real blue mutation renders in sheet', (tester) async {
       final mutation = MutationDatabase.getById('blue')!;
-      await tester.pumpWidget(_contentWrap(mutation));
-      await tester.pump();
-
+      await pumpLocalizedApp(tester,_contentWrap(mutation));
       await tester.tap(find.text('open'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
-
-      var ex = tester.takeException();
-      while (ex != null) {
-        ex = tester.takeException();
-      }
-
       expect(find.byType(BottomSheet), findsOneWidget);
     });
   });

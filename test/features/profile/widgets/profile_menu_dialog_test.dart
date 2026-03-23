@@ -16,6 +16,8 @@ import 'package:budgie_breeding_tracker/features/profile/widgets/profile_menu_he
 import 'package:budgie_breeding_tracker/features/profile/widgets/profile_menu_item.dart';
 import 'package:budgie_breeding_tracker/features/settings/providers/settings_providers.dart';
 
+import '../../../helpers/test_localization.dart';
+
 Profile _fakeProfile({
   String id = 'user-1',
   String email = 'test@example.com',
@@ -31,10 +33,6 @@ Profile _fakeProfile({
 );
 
 void _consumeOverflowExceptions(WidgetTester tester) {
-  var ex = tester.takeException();
-  while (ex != null) {
-    ex = tester.takeException();
-  }
 }
 
 void main() {
@@ -80,8 +78,7 @@ void main() {
         ],
       );
 
-      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
-      await tester.pump();
+      await pumpLocalizedApp(tester,MaterialApp.router(routerConfig: router));
       _consumeOverflowExceptions(tester);
 
       expect(find.byType(ProfileMenuDialog), findsOneWidget);
@@ -114,8 +111,7 @@ void main() {
         ],
       );
 
-      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
-      await tester.pump();
+      await pumpLocalizedApp(tester,MaterialApp.router(routerConfig: router));
       _consumeOverflowExceptions(tester);
 
       expect(find.byType(ProfileMenuHeader), findsOneWidget);
@@ -148,8 +144,7 @@ void main() {
         ],
       );
 
-      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
-      await tester.pump();
+      await pumpLocalizedApp(tester,MaterialApp.router(routerConfig: router));
       _consumeOverflowExceptions(tester);
 
       // Profile, Password, Settings, User Guide + Logout + Delete = at least 5
@@ -183,8 +178,7 @@ void main() {
         ],
       );
 
-      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
-      await tester.pump();
+      await pumpLocalizedApp(tester,MaterialApp.router(routerConfig: router));
       _consumeOverflowExceptions(tester);
 
       expect(find.text('profile.title'), findsAtLeastNWidgets(1));
@@ -217,8 +211,7 @@ void main() {
         ],
       );
 
-      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
-      await tester.pump();
+      await pumpLocalizedApp(tester,MaterialApp.router(routerConfig: router));
       _consumeOverflowExceptions(tester);
 
       expect(find.text('settings.title'), findsAtLeastNWidgets(1));
@@ -251,8 +244,7 @@ void main() {
         ],
       );
 
-      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
-      await tester.pump();
+      await pumpLocalizedApp(tester,MaterialApp.router(routerConfig: router));
       _consumeOverflowExceptions(tester);
 
       expect(find.text('auth.logout'), findsAtLeastNWidgets(1));
@@ -285,8 +277,7 @@ void main() {
         ],
       );
 
-      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
-      await tester.pump();
+      await pumpLocalizedApp(tester,MaterialApp.router(routerConfig: router));
       _consumeOverflowExceptions(tester);
 
       expect(find.text('profile.delete_account'), findsAtLeastNWidgets(1));
@@ -319,8 +310,7 @@ void main() {
         ],
       );
 
-      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
-      await tester.pump();
+      await pumpLocalizedApp(tester,MaterialApp.router(routerConfig: router));
       _consumeOverflowExceptions(tester);
 
       expect(find.text('profile.founder_panel'), findsAtLeastNWidgets(1));
@@ -353,8 +343,7 @@ void main() {
         ],
       );
 
-      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
-      await tester.pump();
+      await pumpLocalizedApp(tester,MaterialApp.router(routerConfig: router));
       _consumeOverflowExceptions(tester);
 
       expect(find.text('profile.founder_panel'), findsNothing);
@@ -389,8 +378,7 @@ void main() {
         ],
       );
 
-      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
-      await tester.pump();
+      await pumpLocalizedApp(tester,MaterialApp.router(routerConfig: router));
       _consumeOverflowExceptions(tester);
 
       expect(find.text('Tam İsim'), findsAtLeastNWidgets(1));
@@ -434,8 +422,7 @@ void main() {
         ],
       );
 
-      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
-      await tester.pump();
+      await pumpLocalizedApp(tester,MaterialApp.router(routerConfig: router));
       _consumeOverflowExceptions(tester);
 
       // resolvedDisplayName falls back to email prefix ('bekir')
@@ -466,8 +453,7 @@ void main() {
         ],
       );
 
-      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
-      await tester.pump();
+      await pumpLocalizedApp(tester,MaterialApp.router(routerConfig: router));
       _consumeOverflowExceptions(tester);
 
       expect(find.byType(ProfileMenuDialog), findsOneWidget);
@@ -530,13 +516,12 @@ void main() {
         ],
       );
 
-      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
-      await tester.pump();
+      await pumpLocalizedApp(tester,MaterialApp.router(routerConfig: router));
       _consumeOverflowExceptions(tester);
 
       // Check that ProfileMenuItems and logout text are rendered
       // (via direct widget test without actually popping the router)
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         ProviderScope(
           overrides: [
             currentUserIdProvider.overrideWithValue('user-1'),
@@ -646,8 +631,7 @@ void main() {
         ],
       );
 
-      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
-      await tester.pump();
+      await pumpLocalizedApp(tester,MaterialApp.router(routerConfig: router));
       _consumeOverflowExceptions(tester);
 
       await tester.tap(find.text('open'));
@@ -673,7 +657,7 @@ void main() {
       tester,
     ) async {
       // Use plain MaterialApp (not GoRouter) to avoid animation ticker issues
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         ProviderScope(
           overrides: [
             currentUserIdProvider.overrideWithValue('user-1'),
@@ -706,7 +690,7 @@ void main() {
       tester,
     ) async {
       // Use plain MaterialApp (not GoRouter) to avoid animation ticker issues
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         ProviderScope(
           overrides: [
             currentUserIdProvider.overrideWithValue('user-1'),

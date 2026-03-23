@@ -1,7 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:budgie_breeding_tracker/domain/services/notifications/notification_ids.dart';
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_rate_limiter.dart';
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_scheduler.dart';
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_service.dart';
@@ -129,34 +128,35 @@ void main() {
       );
 
       expect(
-        fakeService.scheduled.every(
-          (n) => n.payload == 'banding:chick-band-3',
-        ),
+        fakeService.scheduled.every((n) => n.payload == 'banding:chick-band-3'),
         isTrue,
       );
     });
 
-    test('all notification IDs are in the banding range (500000–599999)', () async {
-      final hatchDate = DateTime(2026, 1, 1);
-      final fixedNow = DateTime(2026, 1, 1, 7, 0);
+    test(
+      'all notification IDs are in the banding range (500000–599999)',
+      () async {
+        final hatchDate = DateTime(2026, 1, 1);
+        final fixedNow = DateTime(2026, 1, 1, 7, 0);
 
-      await scheduler.scheduleBandingReminders(
-        chickId: 'chick-band-4',
-        chickLabel: 'Chick B4',
-        hatchDate: hatchDate,
-        bandingDay: 10,
-        now: fixedNow,
-      );
+        await scheduler.scheduleBandingReminders(
+          chickId: 'chick-band-4',
+          chickLabel: 'Chick B4',
+          hatchDate: hatchDate,
+          bandingDay: 10,
+          now: fixedNow,
+        );
 
-      expect(
-        fakeService.scheduled.every(
-          (n) =>
-              n.id >= NotificationIds.bandingBaseId &&
-              n.id < NotificationIds.bandingBaseId + 100000,
-        ),
-        isTrue,
-      );
-    });
+        expect(
+          fakeService.scheduled.every(
+            (n) =>
+                n.id >= NotificationIds.bandingBaseId &&
+                n.id < NotificationIds.bandingBaseId + 100000,
+          ),
+          isTrue,
+        );
+      },
+    );
 
     test('notifications are scheduled at 09:00', () async {
       final hatchDate = DateTime(2026, 1, 1);
@@ -170,7 +170,10 @@ void main() {
         now: fixedNow,
       );
 
-      expect(fakeService.scheduled.every((n) => n.scheduledDate.hour == 9), isTrue);
+      expect(
+        fakeService.scheduled.every((n) => n.scheduledDate.hour == 9),
+        isTrue,
+      );
     });
 
     test('skips past notifications and only schedules future ones', () async {
@@ -180,7 +183,13 @@ void main() {
       // offsets: -1 => 2026-01-10 (past), 0 => 2026-01-11 09:00 (past if now is after)
       //           +1 => 2026-01-12 (past), +3 => 2026-01-14 (future)
       final hatchDate = DateTime(2026, 1, 1);
-      final fixedNow = DateTime(2026, 1, 13, 10, 0); // after day 12, before day 14
+      final fixedNow = DateTime(
+        2026,
+        1,
+        13,
+        10,
+        0,
+      ); // after day 12, before day 14
 
       await scheduler.scheduleBandingReminders(
         chickId: 'chick-band-skip',

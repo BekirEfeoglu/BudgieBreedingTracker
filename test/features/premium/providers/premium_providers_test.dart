@@ -13,6 +13,8 @@ import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.d
 import 'package:budgie_breeding_tracker/features/premium/providers/premium_providers.dart';
 import 'package:budgie_breeding_tracker/features/profile/providers/profile_providers.dart';
 
+import '../../../helpers/test_helpers.dart';
+
 class MockPackage extends Mock implements Package {}
 
 class MockStoreProduct extends Mock implements StoreProduct {}
@@ -136,13 +138,6 @@ void _stubPackage(
   when(() => storeProduct.identifier).thenReturn(productIdentifier);
 }
 
-Future<void> _waitUntil(bool Function() predicate) async {
-  for (var i = 0; i < 50; i++) {
-    if (predicate()) return;
-    await Future<void>.delayed(const Duration(milliseconds: 1));
-  }
-}
-
 ProviderContainer _containerWithService(
   FakePurchaseService service, {
   List<dynamic> extraOverrides = const [],
@@ -199,7 +194,7 @@ void main() {
       final container = _containerWithService(service);
       addTearDown(container.dispose);
 
-      await _waitUntil(() => service.isPremiumCallCount > 0);
+      await waitUntil(() => service.isPremiumCallCount > 0);
       final success = await container
           .read(localPremiumProvider.notifier)
           .purchase(package);
@@ -296,7 +291,7 @@ void main() {
 
       // Trigger PremiumNotifier._load() early and wait for it to complete
       container.read(localPremiumProvider);
-      await _waitUntil(() => service.isPremiumCallCount > 0);
+      await waitUntil(() => service.isPremiumCallCount > 0);
 
       await container
           .read(purchaseActionProvider.notifier)
@@ -649,7 +644,7 @@ void main() {
       container.listen(userProfileProvider, (_, __) {});
       await container.read(userProfileProvider.future);
       expect(container.read(isPremiumProvider), isTrue);
-      await _waitUntil(() => service.isPremiumCallCount > 0);
+      await waitUntil(() => service.isPremiumCallCount > 0);
       await _flushAsync();
     });
 

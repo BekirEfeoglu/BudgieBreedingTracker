@@ -43,8 +43,10 @@ void main() {
   ) async {
     await _pumpGolden(
       tester,
-      const Size(980, 720),
-      const Scaffold(body: SafeArea(child: GeneticsAdvancedColorAuditBoard())),
+      const Size(980, 1100),
+      const Scaffold(
+        body: SafeArea(child: SingleChildScrollView(child: GeneticsAdvancedColorAuditBoard())),
+      ),
     );
 
     await expectLater(

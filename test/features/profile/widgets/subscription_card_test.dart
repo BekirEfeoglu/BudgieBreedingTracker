@@ -5,6 +5,16 @@ import 'package:go_router/go_router.dart';
 import 'package:budgie_breeding_tracker/data/models/profile_model.dart';
 import 'package:budgie_breeding_tracker/features/profile/widgets/subscription_card.dart';
 
+import '../../../helpers/test_localization.dart';
+
+/// Drains all overflow exceptions thrown after widget rendering.
+void _drainOverflowErrors(WidgetTester tester) {
+  for (var i = 0; i < 20; i++) {
+    final error = tester.takeException();
+    if (error == null) break;
+  }
+}
+
 Widget _wrap(Widget child) {
   final router = GoRouter(
     initialLocation: '/',
@@ -26,8 +36,7 @@ Widget _wrap(Widget child) {
 void main() {
   group('SubscriptionCard', () {
     testWidgets('renders without crashing for null profile', (tester) async {
-      await tester.pumpWidget(_wrap(const SubscriptionCard(profile: null)));
-      await tester.pump();
+      await pumpLocalizedApp(tester, _wrap(const SubscriptionCard(profile: null)));
 
       expect(find.byType(SubscriptionCard), findsOneWidget);
     });
@@ -37,23 +46,20 @@ void main() {
     ) async {
       const profile = Profile(id: 'u1', email: 'test@test.com');
 
-      await tester.pumpWidget(_wrap(const SubscriptionCard(profile: profile)));
-      await tester.pump();
+      await pumpLocalizedApp(tester, _wrap(const SubscriptionCard(profile: profile)));
 
       // Upsell card shows 'premium_membership' title
       expect(find.text('profile.premium_membership'), findsOneWidget);
     });
 
     testWidgets('shows upsell upgrade button for free user', (tester) async {
-      await tester.pumpWidget(_wrap(const SubscriptionCard(profile: null)));
-      await tester.pump();
+      await pumpLocalizedApp(tester, _wrap(const SubscriptionCard(profile: null)));
 
       expect(find.text('profile.subscription_upgrade'), findsOneWidget);
     });
 
     testWidgets('shows upsell benefit rows', (tester) async {
-      await tester.pumpWidget(_wrap(const SubscriptionCard(profile: null)));
-      await tester.pump();
+      await pumpLocalizedApp(tester, _wrap(const SubscriptionCard(profile: null)));
 
       expect(find.text('profile.subscription_benefit_stats'), findsOneWidget);
       expect(
@@ -75,14 +81,8 @@ void main() {
         createdAt: DateTime(2024, 1, 1),
       );
 
-      await tester.pumpWidget(_wrap(SubscriptionCard(profile: profile)));
-      await tester.pump();
-
-      // Consume possible Row overflow from member tenure line (clock icon + text)
-      final ex = tester.takeException();
-      if (ex != null && !ex.toString().contains('overflowed')) {
-        throw ex as Object;
-      }
+      await pumpLocalizedApp(tester, _wrap(SubscriptionCard(profile: profile)));
+      _drainOverflowErrors(tester);
 
       expect(find.text('profile.subscription_active'), findsAtLeastNWidgets(1));
     });
@@ -96,14 +96,8 @@ void main() {
         createdAt: DateTime(2024, 1, 1),
       );
 
-      await tester.pumpWidget(_wrap(SubscriptionCard(profile: profile)));
-      await tester.pump();
-
-      // Consume possible Row overflow from member tenure line
-      final ex = tester.takeException();
-      if (ex != null && !ex.toString().contains('overflowed')) {
-        throw ex as Object;
-      }
+      await pumpLocalizedApp(tester, _wrap(SubscriptionCard(profile: profile)));
+      _drainOverflowErrors(tester);
 
       expect(find.text('profile.subscription_manage'), findsOneWidget);
     });
@@ -119,14 +113,8 @@ void main() {
         createdAt: DateTime(2024, 1, 1),
       );
 
-      await tester.pumpWidget(_wrap(SubscriptionCard(profile: profile)));
-      await tester.pump();
-
-      // Consume possible Row overflow from member tenure line
-      final ex = tester.takeException();
-      if (ex != null && !ex.toString().contains('overflowed')) {
-        throw ex as Object;
-      }
+      await pumpLocalizedApp(tester, _wrap(SubscriptionCard(profile: profile)));
+      _drainOverflowErrors(tester);
 
       // 'profile.subscription_days_remaining' should be present
       expect(
@@ -138,8 +126,7 @@ void main() {
     testWidgets('FilledButton navigates to /premium on tap (upsell)', (
       tester,
     ) async {
-      await tester.pumpWidget(_wrap(const SubscriptionCard(profile: null)));
-      await tester.pump();
+      await pumpLocalizedApp(tester, _wrap(const SubscriptionCard(profile: null)));
 
       await tester.tap(find.byType(FilledButton));
       await tester.pumpAndSettle();

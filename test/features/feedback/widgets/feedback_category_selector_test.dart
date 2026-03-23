@@ -5,13 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:budgie_breeding_tracker/features/feedback/providers/feedback_providers.dart';
 import 'package:budgie_breeding_tracker/features/feedback/widgets/feedback_category_selector.dart';
 
-void _consumeExceptions(WidgetTester tester) {
-  var ex = tester.takeException();
-  while (ex != null) {
-    ex = tester.takeException();
-  }
-}
-
+import '../../../helpers/test_localization.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -37,24 +31,18 @@ void main() {
 
   group('FeedbackCategorySelector', () {
     testWidgets('renders without errors', (tester) async {
-      await tester.pumpWidget(buildSubject());
-      await tester.pump();
-
+      await pumpLocalizedApp(tester,buildSubject());
       expect(find.byType(FeedbackCategorySelector), findsOneWidget);
     });
 
     testWidgets('renders a card for each FeedbackCategory', (tester) async {
-      await tester.pumpWidget(buildSubject());
-      await tester.pump();
-
+      await pumpLocalizedApp(tester,buildSubject());
       // 3 categories => 3 Card widgets
       expect(find.byType(Card), findsNWidgets(FeedbackCategory.values.length));
     });
 
     testWidgets('renders an Icon for each FeedbackCategory', (tester) async {
-      await tester.pumpWidget(buildSubject());
-      await tester.pump();
-
+      await pumpLocalizedApp(tester,buildSubject());
       expect(
         find.byType(Icon),
         findsAtLeastNWidgets(FeedbackCategory.values.length),
@@ -65,7 +53,7 @@ void main() {
       tester,
     ) async {
       FeedbackCategory? tapped;
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
@@ -77,8 +65,6 @@ void main() {
           ),
         ),
       );
-      await tester.pump();
-
       // Tap the 'feature' card (second in row)
       final inkWells = find.byType(InkWell);
       await tester.tap(inkWells.at(1));
@@ -90,9 +76,7 @@ void main() {
     testWidgets('selected category card has elevated elevation', (
       tester,
     ) async {
-      await tester.pumpWidget(buildSubject(selected: FeedbackCategory.bug));
-      await tester.pump();
-
+      await pumpLocalizedApp(tester,buildSubject(selected: FeedbackCategory.bug));
       final cards = tester.widgetList<Card>(find.byType(Card)).toList();
       // First card (bug) is selected → elevation == 2
       expect(cards.first.elevation, 2.0);
@@ -103,16 +87,13 @@ void main() {
     testWidgets('changing selection via state updates selected card', (
       tester,
     ) async {
-      await tester.pumpWidget(buildSubject(selected: FeedbackCategory.bug));
-      await tester.pump();
-
+      await pumpLocalizedApp(tester,buildSubject(selected: FeedbackCategory.bug));
       // Tap 'general' card (third)
       final inkWells = find.byType(InkWell);
       await tester.tap(inkWells.at(2));
       await tester.pump();
 
       // After tap _selected changes to general; no errors expected
-      _consumeExceptions(tester);
     });
   });
 }

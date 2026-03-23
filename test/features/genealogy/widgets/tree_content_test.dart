@@ -9,6 +9,8 @@ import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/features/genealogy/providers/genealogy_providers.dart';
 import 'package:budgie_breeding_tracker/features/genealogy/widgets/tree_content.dart';
 
+import '../../../helpers/test_localization.dart';
+
 const _testBird = Bird(
   id: 'entity-1',
   userId: 'user-1',
@@ -22,7 +24,8 @@ void main() {
     testWidgets('shows skeleton loader when ancestorsProvider is loading', (
       tester,
     ) async {
-      await tester.pumpWidget(
+      // Loading state never settles (spinner animation), so skip pumpAndSettle.
+      await pumpLocalizedApp(tester,
         ProviderScope(
           overrides: [
             ancestorsProvider(
@@ -35,16 +38,15 @@ void main() {
             ),
           ),
         ),
+        settle: false,
       );
-      await tester.pump();
-
       expect(find.byType(SkeletonLoader), findsAtLeastNWidgets(1));
     });
 
     testWidgets('shows ErrorState when ancestorsProvider has error', (
       tester,
     ) async {
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         ProviderScope(
           overrides: [
             ancestorsProvider('entity-1').overrideWithValue(
@@ -58,15 +60,13 @@ void main() {
           ),
         ),
       );
-      await tester.pump();
-
       expect(find.byType(ErrorState), findsOneWidget);
     });
 
     testWidgets('shows bird_not_found text when entity not in ancestors map', (
       tester,
     ) async {
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         ProviderScope(
           overrides: [
             ancestorsProvider('entity-1').overrideWithValue(
@@ -80,15 +80,13 @@ void main() {
           ),
         ),
       );
-      await tester.pump();
-
       expect(find.text('genealogy.bird_not_found'), findsOneWidget);
     });
 
     testWidgets('renders SegmentedButton for view mode when data loaded', (
       tester,
     ) async {
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         ProviderScope(
           overrides: [
             ancestorsProvider(
@@ -120,7 +118,7 @@ void main() {
     testWidgets('switches to list view when list segment selected', (
       tester,
     ) async {
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         ProviderScope(
           overrides: [
             ancestorsProvider(
@@ -154,19 +152,13 @@ void main() {
       }
 
       // Exception tüket (animasyon / overflow)
-      var ex = tester.takeException();
-      while (ex != null) {
-        if (!ex.toString().contains('overflowed')) throw ex as Object;
-        ex = tester.takeException();
-      }
-
       expect(find.byType(TreeContent), findsOneWidget);
     });
 
     testWidgets('shows genealogy.tree_error in ErrorState retry message', (
       tester,
     ) async {
-      await tester.pumpWidget(
+      await pumpLocalizedApp(tester,
         ProviderScope(
           overrides: [
             ancestorsProvider(
@@ -180,8 +172,6 @@ void main() {
           ),
         ),
       );
-      await tester.pump();
-
       expect(find.text('genealogy.tree_error'), findsOneWidget);
     });
   });

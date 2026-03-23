@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:budgie_breeding_tracker/data/models/health_record_model.dart';
 import 'package:budgie_breeding_tracker/features/health_records/widgets/health_record_card.dart';
 
-import '../../../helpers/pump_helpers.dart';
+Future<void> _pump(WidgetTester tester, Widget child) async {
+  await tester.pumpWidget(
+    ProviderScope(child: MaterialApp(home: Scaffold(body: child))),
+  );
+  await tester.pump();
+}
 
 void main() {
   final testRecord = HealthRecord(
@@ -17,13 +23,13 @@ void main() {
 
   group('HealthRecordCard', () {
     testWidgets('displays record title', (tester) async {
-      await pumpWidgetSimple(tester, HealthRecordCard(record: testRecord));
+      await _pump(tester, HealthRecordCard(record: testRecord));
 
       expect(find.text('Annual Checkup'), findsOneWidget);
     });
 
     testWidgets('shows animal name when provided', (tester) async {
-      await pumpWidgetSimple(
+      await _pump(
         tester,
         HealthRecordCard(record: testRecord, animalName: 'Mavi'),
       );
@@ -32,7 +38,7 @@ void main() {
     });
 
     testWidgets('does not show animal name when null', (tester) async {
-      await pumpWidgetSimple(tester, HealthRecordCard(record: testRecord));
+      await _pump(tester, HealthRecordCard(record: testRecord));
 
       expect(find.text('Mavi'), findsNothing);
     });
@@ -40,7 +46,7 @@ void main() {
     testWidgets('custom onTap is invoked', (tester) async {
       var tapped = false;
 
-      await pumpWidgetSimple(
+      await _pump(
         tester,
         HealthRecordCard(record: testRecord, onTap: () => tapped = true),
       );
@@ -59,13 +65,13 @@ void main() {
         description: 'Respiratory issue',
       );
 
-      await pumpWidgetSimple(tester, HealthRecordCard(record: record));
+      await _pump(tester, HealthRecordCard(record: record));
 
       expect(find.text('Respiratory issue'), findsOneWidget);
     });
 
     testWidgets('renders inside a Card widget', (tester) async {
-      await pumpWidgetSimple(tester, HealthRecordCard(record: testRecord));
+      await _pump(tester, HealthRecordCard(record: testRecord));
 
       expect(find.byType(Card), findsOneWidget);
     });
@@ -82,7 +88,7 @@ void main() {
         followUpDate: DateTime(2024, 2, 15),
       );
 
-      await pumpWidgetSimple(tester, HealthRecordCard(record: record));
+      await _pump(tester, HealthRecordCard(record: record));
 
       // Follow-up icon is shown for records with a follow-up date
       expect(find.byType(Icon), findsWidgets);
@@ -98,7 +104,7 @@ void main() {
           title: 'Test $type',
         );
 
-        await pumpWidgetSimple(tester, HealthRecordCard(record: record));
+        await _pump(tester, HealthRecordCard(record: record));
         expect(find.byType(Card), findsOneWidget);
       }
     });
