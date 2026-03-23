@@ -108,7 +108,7 @@ class CommunityPostRemoteSource {
   }) async {
     try {
       // Escape PostgREST ilike wildcards to prevent injection
-      final sanitized = query.replaceAll('%', r'\%').replaceAll('_', r'\_');
+      final sanitized = query.replaceAll('\\', '\\\\').replaceAll('%', r'\%').replaceAll('_', r'\_');
       final result = await _client
           .from(SupabaseConstants.communityPostsTable)
           .select()

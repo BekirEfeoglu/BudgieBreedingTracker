@@ -150,7 +150,7 @@ class BirdFormNotifier extends Notifier<BirdFormState> {
       // Calculate remaining birds for soft upsell
       int? remaining;
       if (!isPremium) {
-        final afterCount = (await repo.getAll(userId)).length;
+        final afterCount = await repo.getCount(userId);
         remaining = AppConstants.freeTierMaxBirds - afterCount;
       }
 

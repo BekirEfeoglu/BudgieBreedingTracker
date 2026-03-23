@@ -3,6 +3,7 @@ import 'package:budgie_breeding_tracker/core/errors/app_exception.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/events_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/sync_metadata_dao.dart';
+import 'package:budgie_breeding_tracker/core/enums/event_enums.dart';
 import 'package:budgie_breeding_tracker/data/models/event_model.dart';
 import 'package:budgie_breeding_tracker/data/models/sync_metadata_model.dart';
 import 'package:budgie_breeding_tracker/data/remote/api/event_remote_source.dart';
@@ -193,4 +194,10 @@ class EventRepository extends BaseRepository<Event>
   /// Events for a specific bird (live stream).
   Stream<List<Event>> watchByBird(String birdId) =>
       _localDao.watchByBird(birdId);
+
+  /// Active events for a specific chick filtered by event type (DB-level).
+  Future<List<Event>> getActiveByChickAndType(
+    String chickId,
+    EventType type,
+  ) => _localDao.getActiveByChickAndType(chickId, type);
 }

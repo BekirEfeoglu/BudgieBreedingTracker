@@ -91,6 +91,7 @@ void main() {
     test('createBird sets isSuccess on success', () async {
       stubUnderLimit();
       when(() => repo.save(any())).thenAnswer((_) async {});
+      when(() => repo.getCount(any())).thenAnswer((_) async => 2);
 
       final container = makeContainer();
       addTearDown(container.dispose);
@@ -188,22 +189,8 @@ void main() {
     test('createBird returns remainingBirds for free tier', () async {
       stubUnderLimit(count: 10);
       when(() => repo.save(any())).thenAnswer((_) async {});
-      // After save, getAll returns 11 (10 existing + 1 newly saved)
-      var callCount = 0;
-      when(() => repo.getAll(any())).thenAnswer((_) async {
-        callCount++;
-        // First call: limit check (10 birds), second call: remaining calc (11 birds)
-        final count = callCount == 1 ? 10 : 11;
-        return List.generate(
-          count,
-          (i) => Bird(
-            id: 'b-$i',
-            name: 'Bird $i',
-            gender: BirdGender.male,
-            userId: 'user-1',
-          ),
-        );
-      });
+      // After save, getCount returns 11 (10 existing + 1 newly saved)
+      when(() => repo.getCount(any())).thenAnswer((_) async => 11);
 
       final container = makeContainer(isPremium: false);
       addTearDown(container.dispose);
@@ -339,6 +326,7 @@ void main() {
     test('reset clears state', () async {
       stubUnderLimit();
       when(() => repo.save(any())).thenAnswer((_) async {});
+      when(() => repo.getCount(any())).thenAnswer((_) async => 2);
 
       final container = makeContainer();
       addTearDown(container.dispose);

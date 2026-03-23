@@ -44,46 +44,62 @@ class RegisterFormBody extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // Full name
-        AuthFormField(
-          controller: nameCtrl,
-          label: 'auth.full_name'.tr(),
-          hint: 'auth.full_name_hint'.tr(),
-          prefixIcon: const AppIcon(AppIcons.profile),
-          keyboardType: TextInputType.name,
-          textInputAction: TextInputAction.next,
-          enabled: !isLoading,
-          validator: (v) {
-            if (v == null || v.trim().isEmpty) {
-              return 'common.required_field'.tr();
-            }
-            return null;
-          },
-        ),
+        _buildNameField(),
         const SizedBox(height: AppSpacing.lg),
-
-        // Email
-        AuthFormField(
-          controller: emailCtrl,
-          label: 'auth.email'.tr(),
-          hint: 'auth.email_hint'.tr(),
-          prefixIcon: const Icon(LucideIcons.mail),
-          keyboardType: TextInputType.emailAddress,
-          textInputAction: TextInputAction.next,
-          enabled: !isLoading,
-          validator: (v) {
-            if (v == null || v.trim().isEmpty) {
-              return 'common.required_field'.tr();
-            }
-            if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(v.trim())) {
-              return 'common.email_invalid'.tr();
-            }
-            return null;
-          },
-        ),
+        _buildEmailField(),
         const SizedBox(height: AppSpacing.lg),
+        _buildPasswordFields(context),
+        const SizedBox(height: AppSpacing.lg),
+        _buildConsentCheckboxes(context),
+        const SizedBox(height: AppSpacing.lg),
+        _buildSubmitSection(),
+      ],
+    );
+  }
 
-        // Password
+  Widget _buildNameField() {
+    return AuthFormField(
+      controller: nameCtrl,
+      label: 'auth.full_name'.tr(),
+      hint: 'auth.full_name_hint'.tr(),
+      prefixIcon: const AppIcon(AppIcons.profile),
+      keyboardType: TextInputType.name,
+      textInputAction: TextInputAction.next,
+      enabled: !isLoading,
+      validator: (v) {
+        if (v == null || v.trim().isEmpty) {
+          return 'common.required_field'.tr();
+        }
+        return null;
+      },
+    );
+  }
+
+  Widget _buildEmailField() {
+    return AuthFormField(
+      controller: emailCtrl,
+      label: 'auth.email'.tr(),
+      hint: 'auth.email_hint'.tr(),
+      prefixIcon: const Icon(LucideIcons.mail),
+      keyboardType: TextInputType.emailAddress,
+      textInputAction: TextInputAction.next,
+      enabled: !isLoading,
+      validator: (v) {
+        if (v == null || v.trim().isEmpty) {
+          return 'common.required_field'.tr();
+        }
+        if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(v.trim())) {
+          return 'common.email_invalid'.tr();
+        }
+        return null;
+      },
+    );
+  }
+
+  Widget _buildPasswordFields(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
         AuthFormField(
           controller: passwordCtrl,
           label: 'auth.password'.tr(),
@@ -112,8 +128,6 @@ class RegisterFormBody extends StatelessWidget {
               PasswordStrengthMeter(password: passwordCtrl.text),
         ),
         const SizedBox(height: AppSpacing.lg),
-
-        // Confirm password
         AuthFormField(
           controller: confirmCtrl,
           label: 'auth.confirm_password'.tr(),
@@ -128,95 +142,80 @@ class RegisterFormBody extends StatelessWidget {
             return null;
           },
         ),
-        const SizedBox(height: AppSpacing.lg),
+      ],
+    );
+  }
 
-        // Age confirmation checkbox (COPPA)
-        FormField<bool>(
-          initialValue: false,
-          validator: (v) => v != true ? 'auth.age_confirm_required'.tr() : null,
-          builder: (state) => Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              InkWell(
-                onTap: isLoading
-                    ? null
-                    : () => state.didChange(!(state.value ?? false)),
-                borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Checkbox(
-                      value: state.value ?? false,
-                      onChanged: isLoading ? null : (v) => state.didChange(v),
-                    ),
-                    Expanded(
-                      child: Text(
-                        'auth.age_confirm'.tr(),
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              if (state.hasError)
-                Padding(
-                  padding: const EdgeInsets.only(left: AppSpacing.xl * 2),
-                  child: Text(
-                    state.errorText!,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context).colorScheme.error,
-                    ),
-                  ),
-                ),
-            ],
-          ),
+  Widget _buildConsentCheckboxes(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _buildCheckboxField(
+          context: context,
+          label: 'auth.age_confirm'.tr(),
+          errorMessage: 'auth.age_confirm_required'.tr(),
         ),
         const SizedBox(height: AppSpacing.sm),
+        _buildCheckboxField(
+          context: context,
+          label: 'auth.consent_checkbox'.tr(),
+          errorMessage: 'auth.consent_required'.tr(),
+        ),
+      ],
+    );
+  }
 
-        // Terms & Privacy consent checkbox
-        FormField<bool>(
-          initialValue: false,
-          validator: (v) => v != true ? 'auth.consent_required'.tr() : null,
-          builder: (state) => Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              InkWell(
-                onTap: isLoading
-                    ? null
-                    : () => state.didChange(!(state.value ?? false)),
-                borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Checkbox(
-                      value: state.value ?? false,
-                      onChanged: isLoading ? null : (v) => state.didChange(v),
-                    ),
-                    Expanded(
-                      child: Text(
-                        'auth.consent_checkbox'.tr(),
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
-                    ),
-                  ],
+  Widget _buildCheckboxField({
+    required BuildContext context,
+    required String label,
+    required String errorMessage,
+  }) {
+    return FormField<bool>(
+      initialValue: false,
+      validator: (v) => v != true ? errorMessage : null,
+      builder: (state) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          InkWell(
+            onTap: isLoading
+                ? null
+                : () => state.didChange(!(state.value ?? false)),
+            borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Checkbox(
+                  value: state.value ?? false,
+                  onChanged: isLoading ? null : (v) => state.didChange(v),
                 ),
-              ),
-              if (state.hasError)
-                Padding(
-                  padding: const EdgeInsets.only(left: AppSpacing.xl * 2),
+                Expanded(
                   child: Text(
-                    state.errorText!,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context).colorScheme.error,
-                    ),
+                    label,
+                    style: Theme.of(context).textTheme.bodySmall,
                   ),
                 ),
-            ],
+              ],
+            ),
           ),
-        ),
-        const SizedBox(height: AppSpacing.lg),
+          if (state.hasError)
+            Padding(
+              padding: const EdgeInsets.only(left: AppSpacing.xl * 2),
+              child: Text(
+                state.errorText!,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Theme.of(context).colorScheme.error,
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
 
-        // Register button
+  Widget _buildSubmitSection() {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
         FilledButton(
           onPressed: isLoading ? null : onSubmit,
           style: FilledButton.styleFrom(
@@ -231,20 +230,14 @@ class RegisterFormBody extends StatelessWidget {
               : Text('auth.register'.tr()),
         ),
         const SizedBox(height: AppSpacing.lg),
-
-        // Social
         SocialLoginButtons(
           isLoading: isLoading,
           onGoogleTap: onGoogleTap,
           onAppleTap: onAppleTap,
         ),
         const SizedBox(height: AppSpacing.xxl),
-
-        // Legal links (Privacy Policy & Terms of Service)
         const LegalLinksText(),
         const SizedBox(height: AppSpacing.md),
-
-        // Login link
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [

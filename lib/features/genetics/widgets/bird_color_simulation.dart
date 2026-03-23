@@ -20,9 +20,6 @@ class BirdColorSimulation extends StatelessWidget {
   /// Sex indicator for cere color: true=female (brown), false=male (blue).
   final bool? isFemale;
 
-  /// @deprecated Use [height] instead.
-  final double? size;
-
   const BirdColorSimulation({
     super.key,
     required this.visualMutations,
@@ -31,12 +28,11 @@ class BirdColorSimulation extends StatelessWidget {
     this.height = 72,
     this.width,
     this.isFemale,
-    @Deprecated('Use height instead') this.size,
   });
 
   @override
   Widget build(BuildContext context) {
-    final effectiveHeight = (size ?? height).clamp(48.0, double.infinity);
+    final effectiveHeight = height.clamp(48.0, double.infinity);
     final effectiveWidth = width ?? effectiveHeight * 0.75;
 
     final appearance = BudgieColorResolver.resolve(

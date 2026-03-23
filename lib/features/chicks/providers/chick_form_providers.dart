@@ -94,11 +94,7 @@ class ChickFormNotifier extends Notifier<ChickFormState> {
         final settings = ref.read(notificationToggleSettingsProvider);
         await scheduler.scheduleChickCareReminder(
           chickId: chick.id,
-          chickLabel:
-              name ??
-              'chicks.unnamed_chick'.tr(
-                args: [ringNumber ?? chick.id.substring(0, 6)],
-              ),
+          chickLabel: _chickLabel(name, ringNumber, chick.id),
           startDate: hatchDate,
           intervalHours: 4,
           durationDays: 14,
@@ -115,11 +111,7 @@ class ChickFormNotifier extends Notifier<ChickFormState> {
         final settings = ref.read(notificationToggleSettingsProvider);
         await scheduler.scheduleBandingReminders(
           chickId: chick.id,
-          chickLabel:
-              name ??
-              'chicks.unnamed_chick'.tr(
-                args: [ringNumber ?? chick.id.substring(0, 6)],
-              ),
+          chickLabel: _chickLabel(name, ringNumber, chick.id),
           hatchDate: hatchDate,
           bandingDay: bandingDay,
           settings: settings,
@@ -135,11 +127,7 @@ class ChickFormNotifier extends Notifier<ChickFormState> {
         await calendarGen.generateChickEvents(
           userId: userId,
           hatchDate: hatchDate,
-          chickLabel:
-              name ??
-              'chicks.unnamed_chick'.tr(
-                args: [ringNumber ?? chick.id.substring(0, 6)],
-              ),
+          chickLabel: _chickLabel(name, ringNumber, chick.id),
           chickId: chick.id,
           bandingDay: bandingDay,
         );
@@ -311,40 +299,13 @@ class ChickFormNotifier extends Notifier<ChickFormState> {
       final chickRepo = ref.read(chickRepositoryProvider);
 
       // Resolve parent IDs from breeding pair chain
-      String? fatherId;
-      String? motherId;
-      if (chick.eggId != null) {
-        try {
-          final eggRepo = ref.read(eggRepositoryProvider);
-          final egg = await eggRepo.getById(chick.eggId!);
-          if (egg != null && egg.incubationId != null) {
-            final incubationRepo = ref.read(incubationRepositoryProvider);
-            final incubation = await incubationRepo.getById(egg.incubationId!);
-            if (incubation != null && incubation.breedingPairId != null) {
-              final pairRepo = ref.read(breedingPairRepositoryProvider);
-              final pair = await pairRepo.getById(incubation.breedingPairId!);
-              if (pair != null) {
-                fatherId = pair.maleId;
-                motherId = pair.femaleId;
-              }
-            }
-          }
-        } catch (e) {
-          AppLogger.warning(
-            'Failed to resolve parents for chick promotion: $e',
-          );
-        }
-      }
+      final (:fatherId, :motherId) = await _resolveParentIds(chick.eggId);
 
       final birdId = const Uuid().v4();
       final bird = Bird(
         id: birdId,
         userId: chick.userId,
-        name:
-            chick.name ??
-            'chicks.unnamed_chick'.tr(
-              args: [chick.ringNumber ?? chick.id.substring(0, 6)],
-            ),
+        name: _chickLabel(chick.name, chick.ringNumber, chick.id),
         gender: chick.gender,
         species: Species.budgie,
         status: BirdStatus.alive,
@@ -373,6 +334,41 @@ class ChickFormNotifier extends Notifier<ChickFormState> {
       Sentry.captureException(e, stackTrace: StackTrace.current);
       state = state.copyWith(isLoading: false, error: 'errors.unknown'.tr());
     }
+  }
+
+  /// Resolves father/mother IDs by traversing egg → incubation → breeding pair.
+  Future<({String? fatherId, String? motherId})> _resolveParentIds(
+    String? eggId,
+  ) async {
+    if (eggId == null) return (fatherId: null, motherId: null);
+    try {
+      final egg = await ref.read(eggRepositoryProvider).getById(eggId);
+      if (egg == null || egg.incubationId == null) {
+        return (fatherId: null, motherId: null);
+      }
+      final incubation = await ref
+          .read(incubationRepositoryProvider)
+          .getById(egg.incubationId!);
+      if (incubation == null || incubation.breedingPairId == null) {
+        return (fatherId: null, motherId: null);
+      }
+      final pair = await ref
+          .read(breedingPairRepositoryProvider)
+          .getById(incubation.breedingPairId!);
+      if (pair == null) return (fatherId: null, motherId: null);
+      return (fatherId: pair.maleId, motherId: pair.femaleId);
+    } catch (e) {
+      AppLogger.warning('Failed to resolve parents for chick promotion: $e');
+      return (fatherId: null, motherId: null);
+    }
+  }
+
+  /// Returns a display label for a chick (name or fallback).
+  String _chickLabel(String? name, String? ringNumber, String chickId) {
+    return name ??
+        'chicks.unnamed_chick'.tr(
+          args: [ringNumber ?? chickId.substring(0, 6)],
+        );
   }
 
   /// Resets form state for a new operation.

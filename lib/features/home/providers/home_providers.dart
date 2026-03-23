@@ -8,6 +8,7 @@ import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
 import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
 import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
 import 'package:budgie_breeding_tracker/data/models/statistics_models.dart';
+import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 
 /// Lightweight count streams for dashboard (SQL COUNT instead of full list).
 final birdCountProvider = StreamProvider.family<int, String>((ref, userId) {
@@ -34,14 +35,6 @@ final incubatingEggCountProvider = StreamProvider.family<int, String>((
   userId,
 ) {
   return ref.watch(eggsDaoProvider).watchIncubatingCount(userId);
-});
-
-/// Active incubation count for free tier limit display.
-final activeIncubationCountProvider = StreamProvider.family<int, String>((
-  ref,
-  userId,
-) {
-  return ref.watch(incubationsDaoProvider).watchActiveCount(userId);
 });
 
 /// Dashboard statistics computed from lightweight count streams.
@@ -173,4 +166,18 @@ final incubatingEggsLimitedProvider = StreamProvider.family<List<Egg>, String>((
   userId,
 ) {
   return ref.watch(eggsDaoProvider).watchIncubatingLimited(userId, limit: 3);
+});
+
+/// Pulls the user profile from Supabase to local DB once per session.
+final profileSyncProvider = FutureProvider.family<void, String>((
+  ref,
+  userId,
+) async {
+  if (userId == 'anonymous') return;
+  final repo = ref.watch(profileRepositoryProvider);
+  try {
+    await repo.pull(userId);
+  } catch (e) {
+    AppLogger.error('[MainShell] Profile sync failed', e, StackTrace.current);
+  }
 });

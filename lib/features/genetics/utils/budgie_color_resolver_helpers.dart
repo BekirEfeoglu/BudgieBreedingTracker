@@ -166,64 +166,75 @@ Color _resolveBaseCheekPatch({
       : BudgiePhenotypePalette.cheekBlue;
 }
 
-/// Resolves complete color overrides for special compound phenotypes
-/// (Dark-Eyed Clear, Double Factor Spangle, and Ino variants).
-///
-/// Returns null if no special phenotype applies, allowing the caller
-/// to fall through to individual mutation modifiers.
-({
+typedef SpecialPhenotypeResult = ({
   Color body,
   Color mask,
   Color wingMarkings,
   Color cheekPatch,
   bool hideWingMarkings,
   bool showMantleHighlight,
-})? _resolveSpecialPhenotype({
-  required bool isDarkEyedClear,
-  required bool isDoubleFactorSpangle,
-  required bool isAlbino,
-  required bool isLutino,
-  required bool isCreamino,
-  required bool isLacewing,
-  required bool isBlueSeries,
-  required bool currentShowMantleHighlight,
-}) {
-  if (isDarkEyedClear) {
-    final body = isBlueSeries
-        ? BudgiePhenotypePalette.maskWhite
-        : BudgiePhenotypePalette.maskYellow;
-    return (
-      body: body,
-      mask: body,
-      wingMarkings: Colors.transparent,
-      cheekPatch: BudgiePhenotypePalette.maskWhite,
-      hideWingMarkings: true,
-      showMantleHighlight: false,
-    );
+});
+
+typedef SpecialPhenotypeFlags = ({
+  bool isDarkEyedClear,
+  bool isDoubleFactorSpangle,
+  bool isAlbino,
+  bool isLutino,
+  bool isCreamino,
+  bool isLacewing,
+  bool isBlueSeries,
+  bool currentShowMantleHighlight,
+});
+
+/// Resolves complete color overrides for special compound phenotypes
+/// (Dark-Eyed Clear, Double Factor Spangle, and Ino variants).
+///
+/// Returns null if no special phenotype applies, allowing the caller
+/// to fall through to individual mutation modifiers.
+SpecialPhenotypeResult? _resolveSpecialPhenotype(SpecialPhenotypeFlags f) {
+  if (f.isDarkEyedClear) return _resolveDarkEyedClear(f.isBlueSeries);
+  if (f.isDoubleFactorSpangle) return _resolveDoubleFactorSpangle(f.isBlueSeries);
+  if (f.isAlbino || f.isLutino || f.isCreamino || f.isLacewing) {
+    return _resolveInoVariant(f);
   }
+  return null;
+}
 
-  if (isDoubleFactorSpangle) {
-    final body = isBlueSeries
-        ? BudgiePhenotypePalette.maskWhite
-        : BudgiePhenotypePalette.maskYellow;
-    return (
-      body: body,
-      mask: body,
-      wingMarkings: const Color(0x28808080),
-      cheekPatch: BudgiePhenotypePalette.cheekSilver,
-      hideWingMarkings: false,
-      showMantleHighlight: false,
-    );
-  }
+SpecialPhenotypeResult _resolveDarkEyedClear(bool isBlueSeries) {
+  final body = isBlueSeries
+      ? BudgiePhenotypePalette.maskWhite
+      : BudgiePhenotypePalette.maskYellow;
+  return (
+    body: body,
+    mask: body,
+    wingMarkings: Colors.transparent,
+    cheekPatch: BudgiePhenotypePalette.maskWhite,
+    hideWingMarkings: true,
+    showMantleHighlight: false,
+  );
+}
 
-  if (!(isAlbino || isLutino || isCreamino || isLacewing)) return null;
+SpecialPhenotypeResult _resolveDoubleFactorSpangle(bool isBlueSeries) {
+  final body = isBlueSeries
+      ? BudgiePhenotypePalette.maskWhite
+      : BudgiePhenotypePalette.maskYellow;
+  return (
+    body: body,
+    mask: body,
+    wingMarkings: const Color(0x28808080),
+    cheekPatch: BudgiePhenotypePalette.cheekSilver,
+    hideWingMarkings: false,
+    showMantleHighlight: false,
+  );
+}
 
+SpecialPhenotypeResult _resolveInoVariant(SpecialPhenotypeFlags f) {
   Color body, mask, cheekPatch;
-  if (isAlbino) {
+  if (f.isAlbino) {
     body = BudgiePhenotypePalette.maskWhite;
     mask = BudgiePhenotypePalette.maskWhite;
     cheekPatch = BudgiePhenotypePalette.maskWhite;
-  } else if (isCreamino) {
+  } else if (f.isCreamino) {
     body = BudgiePhenotypePalette.cream;
     mask = BudgiePhenotypePalette.warmIvory;
     cheekPatch = BudgiePhenotypePalette.cheekPaleViolet;
@@ -233,8 +244,8 @@ Color _resolveBaseCheekPatch({
     cheekPatch = BudgiePhenotypePalette.maskWhite;
   }
 
-  if (isLacewing) {
-    body = isBlueSeries
+  if (f.isLacewing) {
+    body = f.isBlueSeries
         ? BudgiePhenotypePalette.warmIvory
         : BudgiePhenotypePalette.cream;
     return (
@@ -243,7 +254,7 @@ Color _resolveBaseCheekPatch({
       wingMarkings: BudgiePhenotypePalette.cinnamon,
       cheekPatch: BudgiePhenotypePalette.cheekPaleViolet,
       hideWingMarkings: false,
-      showMantleHighlight: currentShowMantleHighlight,
+      showMantleHighlight: f.currentShowMantleHighlight,
     );
   }
 
@@ -253,7 +264,7 @@ Color _resolveBaseCheekPatch({
     wingMarkings: Colors.transparent,
     cheekPatch: cheekPatch,
     hideWingMarkings: true,
-    showMantleHighlight: currentShowMantleHighlight,
+    showMantleHighlight: f.currentShowMantleHighlight,
   );
 }
 

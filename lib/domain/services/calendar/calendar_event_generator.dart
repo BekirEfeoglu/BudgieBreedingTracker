@@ -40,25 +40,29 @@ class CalendarEventGenerator {
         IncubationConstants.lateHatchDay: 'calendar.milestone_late_hatch'.tr(),
       };
 
+      final events = <Event>[];
       for (final entry in milestones.entries) {
         final eventDate = startDate.add(Duration(days: entry.key));
         if (eventDate.isBefore(DateTime.now())) continue;
 
-        final event = Event(
-          id: _uuid.v4(),
-          title: '${entry.value} - $pairLabel',
-          eventDate: eventDate,
-          type: EventType.breeding,
-          userId: userId,
-          breedingPairId: breedingPairId,
-          description: 'calendar.day_milestone'.tr(
-            args: ['${entry.key}', entry.value],
+        events.add(
+          Event(
+            id: _uuid.v4(),
+            title: '${entry.value} - $pairLabel',
+            eventDate: eventDate,
+            type: EventType.breeding,
+            userId: userId,
+            breedingPairId: breedingPairId,
+            description: 'calendar.day_milestone'.tr(
+              args: ['${entry.key}', entry.value],
+            ),
+            createdAt: DateTime.now(),
+            updatedAt: DateTime.now(),
           ),
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
         );
-
-        await _eventRepo.save(event);
+      }
+      if (events.isNotEmpty) {
+        await _eventRepo.saveAll(events);
       }
 
       AppLogger.info(
@@ -138,27 +142,31 @@ class CalendarEventGenerator {
         35: ('calendar.milestone_weaning'.tr(), EventType.chick, null),
       };
 
+      final events = <Event>[];
       for (final entry in milestones.entries) {
         final eventDate = hatchDate.add(Duration(days: entry.key));
         if (eventDate.isBefore(DateTime.now())) continue;
 
         final (label, type, eventChickId) = entry.value;
 
-        final event = Event(
-          id: _uuid.v4(),
-          title: '$label - $chickLabel',
-          eventDate: eventDate,
-          type: type,
-          userId: userId,
-          chickId: eventChickId,
-          description: 'calendar.day_milestone'.tr(
-            args: ['${entry.key}', label],
+        events.add(
+          Event(
+            id: _uuid.v4(),
+            title: '$label - $chickLabel',
+            eventDate: eventDate,
+            type: type,
+            userId: userId,
+            chickId: eventChickId,
+            description: 'calendar.day_milestone'.tr(
+              args: ['${entry.key}', label],
+            ),
+            createdAt: DateTime.now(),
+            updatedAt: DateTime.now(),
           ),
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
         );
-
-        await _eventRepo.save(event);
+      }
+      if (events.isNotEmpty) {
+        await _eventRepo.saveAll(events);
       }
 
       AppLogger.info(

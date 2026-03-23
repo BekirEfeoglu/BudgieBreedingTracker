@@ -93,10 +93,12 @@ final chickParentsByEggProvider =
         final pairRepo = ref.read(breedingPairRepositoryProvider);
         final birdRepo = ref.read(birdRepositoryProvider);
 
-        final eggs = await eggRepo.getAll(userId);
-        final incubations = await incubationRepo.getAll(userId);
-        final pairs = await pairRepo.getAll(userId);
-        final birds = await birdRepo.getAll(userId);
+        final (eggs, incubations, pairs, birds) = await (
+          eggRepo.getAll(userId),
+          incubationRepo.getAll(userId),
+          pairRepo.getAll(userId),
+          birdRepo.getAll(userId),
+        ).wait;
 
         final incubationById = {for (final inc in incubations) inc.id: inc};
         final pairById = {for (final pair in pairs) pair.id: pair};
@@ -237,13 +239,10 @@ class BandingActionNotifier extends Notifier<AsyncValue<void>> {
         chick.copyWith(bandingDate: DateTime.now(), updatedAt: DateTime.now()),
       );
 
-      // 2. Complete banding event (filter in memory — no DAO method for chickId)
-      final allEvents = await eventRepo.getAll(chick.userId);
-      final bandingEvents = allEvents.where(
-        (e) =>
-            e.chickId == chickId &&
-            e.type == EventType.banding &&
-            e.status == EventStatus.active,
+      // 2. Complete banding event (filtered at DB level)
+      final bandingEvents = await eventRepo.getActiveByChickAndType(
+        chickId,
+        EventType.banding,
       );
       for (final event in bandingEvents) {
         await eventRepo.save(

@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 // ignore: unnecessary_import
 import 'package:intl/intl.dart' show DateFormat;
@@ -13,44 +12,6 @@ import '../../../data/local/preferences/app_preferences.dart';
 
 export 'settings_theme_providers.dart';
 export 'settings_toggle_providers.dart';
-
-// ---------------------------------------------------------------------------
-// Unit System
-// ---------------------------------------------------------------------------
-
-enum UnitSystem {
-  metric,
-  imperial;
-
-  String get label => switch (this) {
-    UnitSystem.metric => 'settings.unit_metric'.tr(),
-    UnitSystem.imperial => 'settings.unit_imperial'.tr(),
-  };
-}
-
-final unitSystemProvider = NotifierProvider<UnitSystemNotifier, UnitSystem>(
-  UnitSystemNotifier.new,
-);
-
-class UnitSystemNotifier extends Notifier<UnitSystem> {
-  @override
-  UnitSystem build() {
-    _loadFromPrefs();
-    return UnitSystem.metric;
-  }
-
-  Future<void> _loadFromPrefs() async {
-    final prefs = await SharedPreferences.getInstance();
-    final value = prefs.getString(AppPreferences.keyUnitSystem);
-    if (value == 'imperial') state = UnitSystem.imperial;
-  }
-
-  Future<void> setUnit(UnitSystem unit) async {
-    state = unit;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(AppPreferences.keyUnitSystem, unit.name);
-  }
-}
 
 // ---------------------------------------------------------------------------
 // Date Format
@@ -105,58 +66,6 @@ class DateFormatNotifier extends Notifier<AppDateFormat> {
     state = format;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(AppPreferences.keyDateFormat, format.name);
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Breeding Defaults
-// ---------------------------------------------------------------------------
-
-final defaultIncubationDaysProvider =
-    NotifierProvider<DefaultIncubationDaysNotifier, int>(
-      DefaultIncubationDaysNotifier.new,
-    );
-
-class DefaultIncubationDaysNotifier extends Notifier<int> {
-  @override
-  int build() {
-    _loadFromPrefs();
-    return 18;
-  }
-
-  Future<void> _loadFromPrefs() async {
-    final prefs = await SharedPreferences.getInstance();
-    state = prefs.getInt(AppPreferences.keyDefaultIncubationDays) ?? 18;
-  }
-
-  Future<void> setDays(int days) async {
-    state = days;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt(AppPreferences.keyDefaultIncubationDays, days);
-  }
-}
-
-final defaultClutchSizeProvider =
-    NotifierProvider<DefaultClutchSizeNotifier, int>(
-      DefaultClutchSizeNotifier.new,
-    );
-
-class DefaultClutchSizeNotifier extends Notifier<int> {
-  @override
-  int build() {
-    _loadFromPrefs();
-    return 6;
-  }
-
-  Future<void> _loadFromPrefs() async {
-    final prefs = await SharedPreferences.getInstance();
-    state = prefs.getInt(AppPreferences.keyDefaultClutchSize) ?? 6;
-  }
-
-  Future<void> setSize(int size) async {
-    state = size;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt(AppPreferences.keyDefaultClutchSize, size);
   }
 }
 

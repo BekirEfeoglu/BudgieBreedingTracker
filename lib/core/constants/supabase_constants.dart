@@ -71,16 +71,6 @@ abstract class SupabaseConstants {
   static const String archiveJobsTable = 'archive_jobs';
   static const String archiveSettingsTable = 'archive_settings';
 
-  // Privacy & audit tables (no client remote source yet)
-  static const String privacySettingsTable = 'privacy_settings';
-  static const String privacyAuditLogsTable = 'privacy_audit_logs';
-  static const String auditLogsTable = 'audit_logs';
-
-  // Server-side logging & backup (no client remote source yet)
-  static const String errorLogsTable = 'error_logs';
-  static const String backupHistoryTable = 'backup_history';
-  static const String configBackupsTable = 'config_backups';
-
   // Feedback columns
   static const String feedbackColId = 'id';
   static const String feedbackColUserId = 'user_id';
@@ -93,9 +83,6 @@ abstract class SupabaseConstants {
   static const String feedbackColStatus = 'status';
   static const String feedbackColAdminResponse = 'admin_response';
   static const String feedbackColCreatedAt = 'created_at';
-  static const String feedbackColRespondedAt = 'responded_at';
-  static const String feedbackColResponseReadAt = 'response_read_at';
-
   // Notification columns (used by feedback founder notifications)
   static const String notificationColId = 'id';
   static const String notificationColUserId = 'user_id';

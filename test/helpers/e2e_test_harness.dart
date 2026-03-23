@@ -160,6 +160,7 @@ void registerCommonFallbackValues() {
   registerFallbackValue(const notif_settings.NotificationToggleSettings());
   registerFallbackValue(DateTime(2024, 1, 1));
   registerFallbackValue(const Duration(seconds: 1));
+  registerFallbackValue(<Event>[]);
 }
 
 class _TestAssetLoader extends AssetLoader {

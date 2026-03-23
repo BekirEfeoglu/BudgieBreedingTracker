@@ -7,10 +7,9 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 
-import 'package:budgie_breeding_tracker/core/utils/logger.dart';
-import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/sync/sync_providers.dart';
 import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
+import 'package:budgie_breeding_tracker/features/home/providers/home_providers.dart';
 
 /// Breakpoint for switching between bottom nav and side rail.
 const double _kTabletBreakpoint = 600;
@@ -40,7 +39,7 @@ class MainShell extends ConsumerWidget {
     final userId = ref.watch(currentUserIdProvider);
 
     // Sync profile from Supabase to local DB on first load
-    ref.watch(_profileSyncProvider(userId));
+    ref.watch(profileSyncProvider(userId));
 
     // Keep periodic (15 min) and network-aware sync providers alive.
     // These set up Timer and ref.listen callbacks that must persist
@@ -139,16 +138,3 @@ class _NavItem {
   });
 }
 
-/// Pulls the user profile from Supabase to local DB once per session.
-final _profileSyncProvider = FutureProvider.family<void, String>((
-  ref,
-  userId,
-) async {
-  if (userId == 'anonymous') return;
-  final repo = ref.watch(profileRepositoryProvider);
-  try {
-    await repo.pull(userId);
-  } catch (e) {
-    AppLogger.error('[MainShell] Profile sync failed', e, StackTrace.current);
-  }
-});
