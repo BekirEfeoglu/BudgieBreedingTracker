@@ -30,3 +30,20 @@ enum BackupFrequency {
     }
   }
 }
+
+enum GracePeriodStatus {
+  active,
+  gracePeriod,
+  expired,
+  free,
+  unknown;
+
+  String toJson() => name;
+  static GracePeriodStatus fromJson(String json) {
+    try {
+      return values.byName(json);
+    } catch (_) {
+      return GracePeriodStatus.unknown;
+    }
+  }
+}
