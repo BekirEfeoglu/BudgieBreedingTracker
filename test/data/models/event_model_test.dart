@@ -12,6 +12,7 @@ Event _buildEvent({
   String? description,
   String? birdId,
   String? breedingPairId,
+  String? chickId,
   String? notes,
   DateTime? endDate,
   DateTime? reminderDate,
@@ -29,6 +30,7 @@ Event _buildEvent({
     description: description,
     birdId: birdId,
     breedingPairId: breedingPairId,
+    chickId: chickId,
     notes: notes,
     endDate: endDate,
     reminderDate: reminderDate,
@@ -62,6 +64,27 @@ void main() {
 
         final restored = Event.fromJson(event.toJson());
         expect(restored, event);
+      });
+
+      test('round-trips chickId correctly', () {
+        final event = _buildEvent(
+          breedingPairId: 'pair-1',
+          chickId: 'chick-99',
+        );
+        final restored = Event.fromJson(event.toJson());
+        expect(restored.chickId, 'chick-99');
+        expect(restored.breedingPairId, 'pair-1');
+      });
+
+      test('chickId defaults to null', () {
+        final event = Event.fromJson({
+          'id': 'event-1',
+          'title': 'Simple event',
+          'event_date': DateTime(2024, 2, 1).toIso8601String(),
+          'type': 'custom',
+          'user_id': 'user-1',
+        });
+        expect(event.chickId, isNull);
       });
 
       test('applies default status and isDeleted', () {
