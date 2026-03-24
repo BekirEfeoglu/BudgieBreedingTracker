@@ -6,6 +6,20 @@ import 'package:budgie_breeding_tracker/data/models/sync_metadata_model.dart';
 
 part 'sync_metadata_dao.g.dart';
 
+/// Aggregated sync error/pending detail per table.
+class SyncErrorDetail {
+  final String tableName;
+  final int errorCount;
+  final String? lastError;
+  final DateTime? lastAttempt;
+  const SyncErrorDetail({
+    required this.tableName,
+    required this.errorCount,
+    this.lastError,
+    this.lastAttempt,
+  });
+}
+
 @DriftAccessor(tables: [SyncMetadataTable])
 class SyncMetadataDao extends DatabaseAccessor<AppDatabase>
     with _$SyncMetadataDaoMixin {
@@ -254,5 +268,51 @@ class SyncMetadataDao extends DatabaseAccessor<AppDatabase>
               t.retryCount.isBiggerOrEqualValue(minRetries),
         ))
         .go();
+  }
+
+  /// Watches error records grouped by table name.
+  Stream<List<SyncErrorDetail>> watchErrorsByTable(String userId) {
+    final tbl = syncMetadataTable.tableName_;
+    final cnt = syncMetadataTable.id.count();
+    final lastErr = syncMetadataTable.errorMessage.max();
+    final lastTime = syncMetadataTable.updatedAt.max();
+
+    return (selectOnly(syncMetadataTable)
+          ..addColumns([tbl, cnt, lastErr, lastTime])
+          ..where(
+            syncMetadataTable.userId.equals(userId) &
+                syncMetadataTable.status.equalsValue(SyncStatus.error),
+          )
+          ..groupBy([tbl]))
+        .watch()
+        .map((rows) => rows.map((row) {
+              return SyncErrorDetail(
+                tableName: row.read(tbl) ?? '',
+                errorCount: row.read(cnt) ?? 0,
+                lastError: row.read(lastErr),
+                lastAttempt: row.read(lastTime),
+              );
+            }).toList());
+  }
+
+  /// Watches pending records grouped by table name.
+  Stream<List<SyncErrorDetail>> watchPendingByTable(String userId) {
+    final tbl = syncMetadataTable.tableName_;
+    final cnt = syncMetadataTable.id.count();
+
+    return (selectOnly(syncMetadataTable)
+          ..addColumns([tbl, cnt])
+          ..where(
+            syncMetadataTable.userId.equals(userId) &
+                syncMetadataTable.status.equalsValue(SyncStatus.pending),
+          )
+          ..groupBy([tbl]))
+        .watch()
+        .map((rows) => rows.map((row) {
+              return SyncErrorDetail(
+                tableName: row.read(tbl) ?? '',
+                errorCount: row.read(cnt) ?? 0,
+              );
+            }).toList());
   }
 }
