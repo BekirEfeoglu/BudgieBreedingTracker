@@ -718,8 +718,8 @@
       animation: curtainReveal 0.8s cubic-bezier(0.65, 0, 0.35, 1) 0.2s forwards;
     }
     @keyframes curtainReveal {
-      0% { clip-path: inset(0 0 0 0); }
-      100% { clip-path: inset(0 0 100% 0); }
+      0% { opacity: 1; }
+      100% { opacity: 0; visibility: hidden; }
     }
 
     /* ─── SECTION REVEAL ─── */
