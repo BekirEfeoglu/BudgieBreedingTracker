@@ -8,6 +8,8 @@ import 'package:budgie_breeding_tracker/domain/services/sync/sync_providers.dart
 import 'package:budgie_breeding_tracker/domain/services/sync/sync_push_handler.dart';
 import 'package:budgie_breeding_tracker/domain/services/sync/sync_pull_handler.dart';
 import 'package:budgie_breeding_tracker/domain/services/sync/sync_error_handler.dart';
+import 'package:budgie_breeding_tracker/data/local/database/dao_providers.dart'
+    show conflictHistoryDaoProvider;
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 
 /// Orchestrates offline-first sync between local Drift DB and Supabase.
@@ -90,6 +92,14 @@ class SyncOrchestrator {
       // Running before sync would remove error metadata that protects
       // local records from being deleted during reconciliation.
       await _errorHandler.cleanupUnrecoverableErrors(userId);
+
+      // Clean up old conflict history (30-day retention)
+      try {
+        final conflictDao = _ref.read(conflictHistoryDaoProvider);
+        await conflictDao.deleteOlderThan(30);
+      } catch (e) {
+        AppLogger.debug('[SyncOrchestrator] Conflict cleanup failed: $e');
+      }
 
       // Process pending event reminders and notification schedules
       await _processNotifications();
