@@ -133,6 +133,15 @@ Future<void> _migrateV14ToV15(AppDatabase db, Migrator m) async {
   await db.customStatement('ALTER TABLE events ADD COLUMN chick_id TEXT');
 }
 
+/// Migration v15 -> v16: Add conflict_history table for sync conflict tracking.
+Future<void> _migrateV15ToV16(AppDatabase db, Migrator m) async {
+  await m.createTable(db.conflictHistoryTable);
+  await db.customStatement(
+    'CREATE INDEX IF NOT EXISTS idx_conflict_history_user_created '
+    'ON conflict_history (user_id, created_at)',
+  );
+}
+
 // ---------------------------------------------------------------------------
 // Performance indexes — called from both onCreate and onUpgrade.
 // ---------------------------------------------------------------------------

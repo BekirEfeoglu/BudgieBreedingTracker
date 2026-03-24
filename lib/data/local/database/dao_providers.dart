@@ -18,6 +18,7 @@ import 'package:budgie_breeding_tracker/data/local/database/daos/photos_dao.dart
 import 'package:budgie_breeding_tracker/data/local/database/daos/event_reminders_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/notification_schedules_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/genetics_history_dao.dart';
+import 'package:budgie_breeding_tracker/data/local/database/daos/conflict_history_dao.dart';
 
 /// Riverpod providers for all Drift DAOs.
 ///
@@ -97,4 +98,8 @@ final notificationSchedulesDaoProvider = Provider<NotificationSchedulesDao>((
 
 final geneticsHistoryDaoProvider = Provider<GeneticsHistoryDao>((ref) {
   return ref.watch(appDatabaseProvider).geneticsHistoryDao;
+});
+
+final conflictHistoryDaoProvider = Provider<ConflictHistoryDao>((ref) {
+  return ref.watch(appDatabaseProvider).conflictHistoryDao;
 });
