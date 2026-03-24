@@ -4,18 +4,19 @@ import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
-import 'package:budgie_breeding_tracker/data/repositories/bird_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/breeding_pair_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/egg_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/chick_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/health_record_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/event_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/incubation_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/growth_measurement_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/notification_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/clutch_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/nest_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/photo_repository.dart';
+import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
+import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
+import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
+import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
+import 'package:budgie_breeding_tracker/data/models/health_record_model.dart';
+import 'package:budgie_breeding_tracker/data/models/event_model.dart';
+import 'package:budgie_breeding_tracker/data/models/incubation_model.dart';
+import 'package:budgie_breeding_tracker/data/models/growth_measurement_model.dart';
+import 'package:budgie_breeding_tracker/data/models/notification_model.dart';
+import 'package:budgie_breeding_tracker/data/models/clutch_model.dart';
+import 'package:budgie_breeding_tracker/data/models/nest_model.dart';
+import 'package:budgie_breeding_tracker/data/models/photo_model.dart';
+import 'package:budgie_breeding_tracker/domain/services/backup/backup_repositories.dart';
 import 'package:budgie_breeding_tracker/domain/services/backup/backup_result.dart';
 import 'package:budgie_breeding_tracker/domain/services/encryption/encryption_service.dart';
 
@@ -24,59 +25,24 @@ import 'package:budgie_breeding_tracker/domain/services/encryption/encryption_se
 /// Supports optional AES-256-CBC encryption via [EncryptionService].
 /// Encrypted backups use `.enc.json` extension.
 class BackupDataCollector {
-  final BirdRepository _birdRepo;
-  final BreedingPairRepository _breedingRepo;
-  final EggRepository _eggRepo;
-  final ChickRepository _chickRepo;
-  final HealthRecordRepository _healthRepo;
-  final EventRepository _eventRepo;
-  final IncubationRepository _incubationRepo;
-  final GrowthMeasurementRepository _growthRepo;
-  final NotificationRepository _notificationRepo;
-  final ClutchRepository _clutchRepo;
-  final NestRepository _nestRepo;
-  final PhotoRepository _photoRepo;
+  final BackupRepositories _repos;
   final EncryptionService? _encryptionService;
+  final List<_ExportEntry> _exportEntries;
 
   static const _tag = '[BackupDataCollector]';
   static const _backupVersion = 2;
 
   BackupDataCollector({
-    required BirdRepository birdRepo,
-    required BreedingPairRepository breedingRepo,
-    required EggRepository eggRepo,
-    required ChickRepository chickRepo,
-    required HealthRecordRepository healthRepo,
-    required EventRepository eventRepo,
-    required IncubationRepository incubationRepo,
-    required GrowthMeasurementRepository growthRepo,
-    required NotificationRepository notificationRepo,
-    required ClutchRepository clutchRepo,
-    required NestRepository nestRepo,
-    required PhotoRepository photoRepo,
+    required BackupRepositories repos,
     EncryptionService? encryptionService,
-  }) : _birdRepo = birdRepo,
-       _breedingRepo = breedingRepo,
-       _eggRepo = eggRepo,
-       _chickRepo = chickRepo,
-       _healthRepo = healthRepo,
-       _eventRepo = eventRepo,
-       _incubationRepo = incubationRepo,
-       _growthRepo = growthRepo,
-       _notificationRepo = notificationRepo,
-       _clutchRepo = clutchRepo,
-       _nestRepo = nestRepo,
-       _photoRepo = photoRepo,
-       _encryptionService = encryptionService;
+  }) : _repos = repos,
+       _encryptionService = encryptionService,
+       _exportEntries = _buildExportEntries(repos);
 
   /// The current backup format version.
   static int get backupVersion => _backupVersion;
 
   /// Create a full backup of user data as JSON file.
-  ///
-  /// When [encrypt] is `true` and an [EncryptionService] is available,
-  /// the JSON content is encrypted with AES-256-CBC before writing.
-  /// Encrypted files use `.enc.json` extension.
   Future<BackupResult> createBackup(
     String userId, {
     bool encrypt = false,
@@ -93,55 +59,27 @@ class BackupDataCollector {
         );
       }
 
-      final results = await Future.wait([
-        _birdRepo.getAll(userId),
-        _breedingRepo.getAll(userId),
-        _eggRepo.getAll(userId),
-        _chickRepo.getAll(userId),
-        _healthRepo.getAll(userId),
-        _eventRepo.getAll(userId),
-        _incubationRepo.getAll(userId),
-        _growthRepo.getAll(userId),
-        _notificationRepo.getAll(userId),
-        _clutchRepo.getAll(userId),
-        _nestRepo.getAll(userId),
-        _photoRepo.getAll(userId),
-      ]);
+      // Fetch all entities in parallel
+      final results = await Future.wait(
+        _exportEntries.map((e) => e.fetchAll(userId)),
+      );
+
+      // Assemble data map with typed toJson serialization
+      final dataMap = <String, dynamic>{};
+      var totalRecords = 0;
+      for (var i = 0; i < _exportEntries.length; i++) {
+        final entry = _exportEntries[i];
+        final items = results[i];
+        dataMap[entry.key] = items.map(entry.itemToJson).toList();
+        totalRecords += items.length;
+      }
 
       final backupData = {
         'version': _backupVersion,
         'created_at': DateTime.now().toIso8601String(),
         'user_id': userId,
-        'data': {
-          'birds': results[0].map((b) => (b as dynamic).toJson()).toList(),
-          'breeding_pairs': results[1]
-              .map((b) => (b as dynamic).toJson())
-              .toList(),
-          'eggs': results[2].map((e) => (e as dynamic).toJson()).toList(),
-          'chicks': results[3].map((c) => (c as dynamic).toJson()).toList(),
-          'health_records': results[4]
-              .map((h) => (h as dynamic).toJson())
-              .toList(),
-          'events': results[5].map((e) => (e as dynamic).toJson()).toList(),
-          'incubations': results[6]
-              .map((i) => (i as dynamic).toJson())
-              .toList(),
-          'growth_measurements': results[7]
-              .map((g) => (g as dynamic).toJson())
-              .toList(),
-          'notifications': results[8]
-              .map((n) => (n as dynamic).toJson())
-              .toList(),
-          'clutches': results[9].map((c) => (c as dynamic).toJson()).toList(),
-          'nests': results[10].map((n) => (n as dynamic).toJson()).toList(),
-          'photos': results[11].map((p) => (p as dynamic).toJson()).toList(),
-        },
+        'data': dataMap,
       };
-
-      final totalRecords = results.fold<int>(
-        0,
-        (sum, list) => sum + list.length,
-      );
 
       final jsonString = const JsonEncoder.withIndent('  ').convert(backupData);
 
@@ -172,4 +110,41 @@ class BackupDataCollector {
       return BackupResult.failure(e.toString());
     }
   }
+
+  static List<_ExportEntry> _buildExportEntries(BackupRepositories r) => [
+    _export('birds', r.bird.getAll, (Bird b) => b.toJson()),
+    _export('breeding_pairs', r.breedingPair.getAll, (BreedingPair b) => b.toJson()),
+    _export('eggs', r.egg.getAll, (Egg e) => e.toJson()),
+    _export('chicks', r.chick.getAll, (Chick c) => c.toJson()),
+    _export('health_records', r.healthRecord.getAll, (HealthRecord h) => h.toJson()),
+    _export('events', r.event.getAll, (Event e) => e.toJson()),
+    _export('incubations', r.incubation.getAll, (Incubation i) => i.toJson()),
+    _export('growth_measurements', r.growthMeasurement.getAll, (GrowthMeasurement g) => g.toJson()),
+    _export('notifications', r.notification.getAll, (AppNotification n) => n.toJson()),
+    _export('clutches', r.clutch.getAll, (Clutch c) => c.toJson()),
+    _export('nests', r.nest.getAll, (Nest n) => n.toJson()),
+    _export('photos', r.photo.getAll, (Photo p) => p.toJson()),
+  ];
+}
+
+/// Type-erased export entry that captures generics via [_export].
+class _ExportEntry {
+  final String key;
+  final Future<List<dynamic>> Function(String userId) fetchAll;
+  final Map<String, dynamic> Function(dynamic item) itemToJson;
+
+  const _ExportEntry(this.key, this.fetchAll, this.itemToJson);
+}
+
+/// Creates a typed [_ExportEntry] capturing [T] via closure.
+_ExportEntry _export<T>(
+  String key,
+  Future<List<T>> Function(String userId) getAll,
+  Map<String, dynamic> Function(T item) toJson,
+) {
+  return _ExportEntry(
+    key,
+    (userId) async => await getAll(userId),
+    (item) => toJson(item as T),
+  );
 }

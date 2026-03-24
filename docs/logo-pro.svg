@@ -1,22 +1,22 @@
 <svg width="1024" height="1024" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#163A27"/>
-      <stop offset="45%" stop-color="#1B4332"/>
-      <stop offset="100%" stop-color="#0E1F12"/>
+      <stop offset="0%" stop-color="#163568"/>
+      <stop offset="45%" stop-color="#1A3A6B"/>
+      <stop offset="100%" stop-color="#0B1535"/>
     </linearGradient>
     <linearGradient id="body" x1="0.15" y1="0" x2="0.85" y2="1">
-      <stop offset="0%" stop-color="#72D4A0"/>
-      <stop offset="35%" stop-color="#52B788"/>
-      <stop offset="100%" stop-color="#3D8B63"/>
+      <stop offset="0%" stop-color="#72A4D4"/>
+      <stop offset="35%" stop-color="#5BA4E6"/>
+      <stop offset="100%" stop-color="#3D7BB5"/>
     </linearGradient>
     <linearGradient id="wing" x1="0" y1="0" x2="0.8" y2="1">
-      <stop offset="0%" stop-color="#3D8B63"/>
-      <stop offset="100%" stop-color="#285C42"/>
+      <stop offset="0%" stop-color="#3D7BB5"/>
+      <stop offset="100%" stop-color="#28527A"/>
     </linearGradient>
     <linearGradient id="tail" x1="0.3" y1="0" x2="0.7" y2="1">
-      <stop offset="0%" stop-color="#347A58"/>
-      <stop offset="100%" stop-color="#1B4332"/>
+      <stop offset="0%" stop-color="#34609A"/>
+      <stop offset="100%" stop-color="#1A3A6B"/>
     </linearGradient>
     <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0%" stop-color="#F5DC90"/>
@@ -29,15 +29,15 @@
       <stop offset="100%" stop-color="#C89830"/>
     </linearGradient>
     <radialGradient id="center-glow" cx="0.48" cy="0.42" r="0.32">
-      <stop offset="0%" stop-color="rgba(212,168,83,0.10)"/>
-      <stop offset="60%" stop-color="rgba(82,183,136,0.04)"/>
+      <stop offset="0%" stop-color="rgba(245,200,66,0.10)"/>
+      <stop offset="60%" stop-color="rgba(82,140,200,0.04)"/>
       <stop offset="100%" stop-color="transparent"/>
     </radialGradient>
     <linearGradient id="ring" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0%" stop-color="#D4A853" stop-opacity="0.35"/>
-      <stop offset="30%" stop-color="#52B788" stop-opacity="0.12"/>
+      <stop offset="30%" stop-color="#5BA4E6" stop-opacity="0.12"/>
       <stop offset="60%" stop-color="#D4A853" stop-opacity="0.30"/>
-      <stop offset="100%" stop-color="#52B788" stop-opacity="0.10"/>
+      <stop offset="100%" stop-color="#5BA4E6" stop-opacity="0.10"/>
     </linearGradient>
     <filter id="shadow">
       <feDropShadow dx="0" dy="5" stdDeviation="10" flood-color="#000" flood-opacity="0.4"/>
@@ -58,7 +58,7 @@
   <!-- Outer decorative ring -->
   <circle cx="256" cy="238" r="195" fill="none" stroke="url(#ring)" stroke-width="1.2"/>
   <!-- Inner subtle ring -->
-  <circle cx="256" cy="238" r="178" fill="none" stroke="rgba(163,184,153,0.06)" stroke-width="0.8"/>
+  <circle cx="256" cy="238" r="178" fill="none" stroke="rgba(140,180,220,0.06)" stroke-width="0.8"/>
 
   <!-- ═══ BUDGIE ═══ -->
   <g filter="url(#shadow)" transform="translate(252, 232) scale(1.15)">
@@ -73,28 +73,28 @@
     <ellipse cx="2" cy="12" rx="68" ry="78" fill="url(#body)" transform="rotate(-6)"/>
 
     <!-- Chest shimmer -->
-    <ellipse cx="20" cy="28" rx="32" ry="48" fill="rgba(114,212,160,0.2)" transform="rotate(-4)"/>
+    <ellipse cx="20" cy="28" rx="32" ry="48" fill="rgba(114,170,220,0.2)" transform="rotate(-4)"/>
     <!-- Belly highlight -->
-    <ellipse cx="15" cy="50" rx="22" ry="28" fill="rgba(200,216,194,0.08)"/>
+    <ellipse cx="15" cy="50" rx="22" ry="28" fill="rgba(194,210,230,0.08)"/>
 
     <!-- Wing -->
     <path d="M-30 -22 Q-48 18 -42 62 Q-20 46 14 38 Q48 28 56 -2 Q42 -18 16 -24 Q-8 -28 -30 -22Z"
           fill="url(#wing)"/>
     <!-- Wing scallop lines -->
-    <path d="M-18 -6 Q2 -12 22 -8" fill="none" stroke="rgba(163,184,153,0.30)" stroke-width="1.3" stroke-linecap="round"/>
-    <path d="M-22 8 Q2 2 26 6" fill="none" stroke="rgba(163,184,153,0.22)" stroke-width="1.2" stroke-linecap="round"/>
-    <path d="M-24 22 Q2 16 28 20" fill="none" stroke="rgba(163,184,153,0.16)" stroke-width="1.1" stroke-linecap="round"/>
-    <path d="M-24 35 Q2 29 30 33" fill="none" stroke="rgba(163,184,153,0.10)" stroke-width="1" stroke-linecap="round"/>
+    <path d="M-18 -6 Q2 -12 22 -8" fill="none" stroke="rgba(140,180,220,0.30)" stroke-width="1.3" stroke-linecap="round"/>
+    <path d="M-22 8 Q2 2 26 6" fill="none" stroke="rgba(140,180,220,0.22)" stroke-width="1.2" stroke-linecap="round"/>
+    <path d="M-24 22 Q2 16 28 20" fill="none" stroke="rgba(140,180,220,0.16)" stroke-width="1.1" stroke-linecap="round"/>
+    <path d="M-24 35 Q2 29 30 33" fill="none" stroke="rgba(140,180,220,0.10)" stroke-width="1" stroke-linecap="round"/>
 
     <!-- Head -->
     <circle cx="46" cy="-50" r="48" fill="url(#body)"/>
     <!-- Forehead lighter area -->
-    <ellipse cx="50" cy="-65" rx="28" ry="18" fill="rgba(114,212,160,0.12)" transform="rotate(-5 50 -65)"/>
+    <ellipse cx="50" cy="-65" rx="28" ry="18" fill="rgba(114,170,220,0.12)" transform="rotate(-5 50 -65)"/>
 
     <!-- Head stripes -->
-    <path d="M16 -75 Q32 -84 56 -80" fill="none" stroke="rgba(18,45,28,0.28)" stroke-width="2" stroke-linecap="round"/>
-    <path d="M14 -65 Q34 -73 60 -69" fill="none" stroke="rgba(18,45,28,0.22)" stroke-width="1.7" stroke-linecap="round"/>
-    <path d="M12 -55 Q36 -63 62 -59" fill="none" stroke="rgba(18,45,28,0.15)" stroke-width="1.4" stroke-linecap="round"/>
+    <path d="M16 -75 Q32 -84 56 -80" fill="none" stroke="rgba(18,35,60,0.28)" stroke-width="2" stroke-linecap="round"/>
+    <path d="M14 -65 Q34 -73 60 -69" fill="none" stroke="rgba(18,35,60,0.22)" stroke-width="1.7" stroke-linecap="round"/>
+    <path d="M12 -55 Q36 -63 62 -59" fill="none" stroke="rgba(18,35,60,0.15)" stroke-width="1.4" stroke-linecap="round"/>
 
     <!-- ★ Crown — signature gold crest (larger, more prominent) -->
     <g filter="url(#crown-glow)">
@@ -116,10 +116,10 @@
 
     <!-- Eye — expressive, gold ring -->
     <g filter="url(#eye-glow)">
-      <circle cx="58" cy="-52" r="10" fill="#0C1F0F"/>
+      <circle cx="58" cy="-52" r="10" fill="#0B1A3D"/>
       <circle cx="58" cy="-52" r="7.5" fill="#161616"/>
       <circle cx="58" cy="-52" r="4.5" fill="#0a0a0a"/>
-      <circle cx="58" cy="-52" r="7" fill="none" stroke="rgba(212,168,83,0.75)" stroke-width="1.2"/>
+      <circle cx="58" cy="-52" r="7" fill="none" stroke="rgba(245,200,66,0.75)" stroke-width="1.2"/>
       <!-- Catchlights -->
       <circle cx="61" cy="-55" r="3" fill="white" opacity="0.92"/>
       <circle cx="55" cy="-49" r="1.2" fill="white" opacity="0.4"/>
@@ -130,7 +130,7 @@
     <path d="M82 -41 Q90 -43 96 -40" fill="none" stroke="#A07830" stroke-width="0.8" opacity="0.6"/>
 
     <!-- Feet -->
-    <g fill="none" stroke="#7A9A6E" stroke-width="2.5" stroke-linecap="round" opacity="0.7">
+    <g fill="none" stroke="#6E8AAE" stroke-width="2.5" stroke-linecap="round" opacity="0.7">
       <path d="M-10 70 Q-16 84 -24 88"/>
       <path d="M-10 70 Q-8 86 -10 92"/>
       <path d="M-10 70 Q-2 84 4 88"/>

@@ -4,6 +4,7 @@ part 'epistasis_engine_resolution.dart';
 part 'epistasis_engine_modifiers.dart';
 part 'epistasis_engine_naming.dart';
 part 'epistasis_engine_interactions.dart';
+part 'epistasis_engine_interactions_compound.dart';
 
 /// Result of compound phenotype resolution, including masked mutations.
 class CompoundPhenotypeResult {

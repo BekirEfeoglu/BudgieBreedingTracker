@@ -18,6 +18,7 @@ import 'package:budgie_breeding_tracker/data/repositories/nest_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/notification_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/photo_repository.dart';
 import 'package:budgie_breeding_tracker/domain/services/backup/backup_data_collector.dart';
+import 'package:budgie_breeding_tracker/domain/services/backup/backup_repositories.dart';
 import 'package:budgie_breeding_tracker/domain/services/encryption/encryption_service.dart';
 
 import '../../../helpers/test_helpers.dart';
@@ -67,6 +68,7 @@ void main() {
   late _MockClutchRepository clutchRepo;
   late _MockNestRepository nestRepo;
   late _MockPhotoRepository photoRepo;
+  late BackupRepositories repos;
   late BackupDataCollector collector;
   late Directory tempDir;
 
@@ -88,20 +90,22 @@ void main() {
     nestRepo = _MockNestRepository();
     photoRepo = _MockPhotoRepository();
 
-    collector = BackupDataCollector(
-      birdRepo: birdRepo,
-      breedingRepo: breedingRepo,
-      eggRepo: eggRepo,
-      chickRepo: chickRepo,
-      healthRepo: healthRepo,
-      eventRepo: eventRepo,
-      incubationRepo: incubationRepo,
-      growthRepo: growthRepo,
-      notificationRepo: notificationRepo,
-      clutchRepo: clutchRepo,
-      nestRepo: nestRepo,
-      photoRepo: photoRepo,
+    repos = BackupRepositories(
+      bird: birdRepo,
+      breedingPair: breedingRepo,
+      egg: eggRepo,
+      chick: chickRepo,
+      healthRecord: healthRepo,
+      event: eventRepo,
+      incubation: incubationRepo,
+      growthMeasurement: growthRepo,
+      notification: notificationRepo,
+      clutch: clutchRepo,
+      nest: nestRepo,
+      photo: photoRepo,
     );
+
+    collector = BackupDataCollector(repos: repos);
 
     tempDir = await Directory.systemTemp.createTemp('backup_collector_test_');
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
@@ -240,6 +244,33 @@ void main() {
         });
       });
 
+      test('preserves entity key order from export registry', () async {
+        stubAllRepositoriesEmpty();
+
+        final result = await collector.createBackup('user-1');
+
+        final file = File(result.filePath!);
+        final decoded =
+            jsonDecode(await file.readAsString()) as Map<String, dynamic>;
+        final dataKeys = (decoded['data'] as Map<String, dynamic>).keys.toList();
+
+        // Export registry order must be stable across serialization.
+        expect(dataKeys, [
+          'birds',
+          'breeding_pairs',
+          'eggs',
+          'chicks',
+          'health_records',
+          'events',
+          'incubations',
+          'growth_measurements',
+          'notifications',
+          'clutches',
+          'nests',
+          'photos',
+        ]);
+      });
+
       test('aggregates total record count across all repositories', () async {
         final bird1 = createTestBird(id: 'b1', userId: 'user-1', name: 'A');
         final bird2 = createTestBird(id: 'b2', userId: 'user-1', name: 'B');
@@ -297,18 +328,7 @@ void main() {
           ).thenAnswer((_) async => 'encrypted-content');
 
           final encryptedCollector = BackupDataCollector(
-            birdRepo: birdRepo,
-            breedingRepo: breedingRepo,
-            eggRepo: eggRepo,
-            chickRepo: chickRepo,
-            healthRepo: healthRepo,
-            eventRepo: eventRepo,
-            incubationRepo: incubationRepo,
-            growthRepo: growthRepo,
-            notificationRepo: notificationRepo,
-            clutchRepo: clutchRepo,
-            nestRepo: nestRepo,
-            photoRepo: photoRepo,
+            repos: repos,
             encryptionService: encryptionService,
           );
 
