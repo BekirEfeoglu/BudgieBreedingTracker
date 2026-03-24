@@ -25,7 +25,6 @@ import 'package:budgie_breeding_tracker/domain/services/encryption/encryption_se
 /// Supports optional AES-256-CBC encryption via [EncryptionService].
 /// Encrypted backups use `.enc.json` extension.
 class BackupDataCollector {
-  final BackupRepositories _repos;
   final EncryptionService? _encryptionService;
   final List<_ExportEntry> _exportEntries;
 
@@ -35,8 +34,7 @@ class BackupDataCollector {
   BackupDataCollector({
     required BackupRepositories repos,
     EncryptionService? encryptionService,
-  }) : _repos = repos,
-       _encryptionService = encryptionService,
+  }) : _encryptionService = encryptionService,
        _exportEntries = _buildExportEntries(repos);
 
   /// The current backup format version.
