@@ -67,8 +67,8 @@ class GracePeriodBanner extends ConsumerWidget {
             onPressed: () => context.push(AppRoutes.premium),
             child: Text(
               'premium.grace_period_renew'.tr(),
-              style: TextStyle(
-                color: bannerColor,
+              style: const TextStyle(
+                color: AppColors.warning,
                 fontWeight: FontWeight.w600,
               ),
             ),
