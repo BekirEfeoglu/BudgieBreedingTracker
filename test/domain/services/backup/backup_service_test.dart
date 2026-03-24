@@ -18,6 +18,7 @@ import 'package:budgie_breeding_tracker/data/repositories/incubation_repository.
 import 'package:budgie_breeding_tracker/data/repositories/nest_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/notification_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/photo_repository.dart';
+import 'package:budgie_breeding_tracker/domain/services/backup/backup_repositories.dart';
 import 'package:budgie_breeding_tracker/domain/services/backup/backup_service.dart';
 import 'package:budgie_breeding_tracker/domain/services/encryption/encryption_service.dart';
 
@@ -403,18 +404,20 @@ BackupService _buildService({
   EncryptionService? encryptionService,
 }) {
   return BackupService(
-    birdRepo: birdRepo ?? _MockBirdRepository(),
-    breedingRepo: breedingRepo ?? _MockBreedingPairRepository(),
-    eggRepo: eggRepo ?? _MockEggRepository(),
-    chickRepo: chickRepo ?? _MockChickRepository(),
-    healthRepo: healthRepo ?? _MockHealthRecordRepository(),
-    eventRepo: eventRepo ?? _MockEventRepository(),
-    incubationRepo: incubationRepo ?? _MockIncubationRepository(),
-    growthRepo: growthRepo ?? _MockGrowthMeasurementRepository(),
-    notificationRepo: notificationRepo ?? _MockNotificationRepository(),
-    clutchRepo: clutchRepo ?? _MockClutchRepository(),
-    nestRepo: nestRepo ?? _MockNestRepository(),
-    photoRepo: photoRepo ?? _MockPhotoRepository(),
+    repos: BackupRepositories(
+      bird: birdRepo ?? _MockBirdRepository(),
+      breedingPair: breedingRepo ?? _MockBreedingPairRepository(),
+      egg: eggRepo ?? _MockEggRepository(),
+      chick: chickRepo ?? _MockChickRepository(),
+      healthRecord: healthRepo ?? _MockHealthRecordRepository(),
+      event: eventRepo ?? _MockEventRepository(),
+      incubation: incubationRepo ?? _MockIncubationRepository(),
+      growthMeasurement: growthRepo ?? _MockGrowthMeasurementRepository(),
+      notification: notificationRepo ?? _MockNotificationRepository(),
+      clutch: clutchRepo ?? _MockClutchRepository(),
+      nest: nestRepo ?? _MockNestRepository(),
+      photo: photoRepo ?? _MockPhotoRepository(),
+    ),
     encryptionService: encryptionService,
   );
 }

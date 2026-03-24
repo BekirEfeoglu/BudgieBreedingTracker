@@ -29,6 +29,7 @@ import 'package:budgie_breeding_tracker/data/repositories/nest_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/notification_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/photo_repository.dart';
 import 'package:budgie_breeding_tracker/domain/services/backup/backup_data_collector.dart';
+import 'package:budgie_breeding_tracker/domain/services/backup/backup_repositories.dart';
 import 'package:budgie_breeding_tracker/domain/services/backup/backup_restorer.dart';
 import 'package:budgie_breeding_tracker/domain/services/encryption/encryption_service.dart';
 
@@ -77,6 +78,7 @@ void main() {
   late _MockClutchRepository clutchRepo;
   late _MockNestRepository nestRepo;
   late _MockPhotoRepository photoRepo;
+  late BackupRepositories repos;
   late BackupRestorer restorer;
   late Directory tempDir;
 
@@ -109,20 +111,22 @@ void main() {
     nestRepo = _MockNestRepository();
     photoRepo = _MockPhotoRepository();
 
-    restorer = BackupRestorer(
-      birdRepo: birdRepo,
-      breedingRepo: breedingRepo,
-      eggRepo: eggRepo,
-      chickRepo: chickRepo,
-      healthRepo: healthRepo,
-      eventRepo: eventRepo,
-      incubationRepo: incubationRepo,
-      growthRepo: growthRepo,
-      notificationRepo: notificationRepo,
-      clutchRepo: clutchRepo,
-      nestRepo: nestRepo,
-      photoRepo: photoRepo,
+    repos = BackupRepositories(
+      bird: birdRepo,
+      breedingPair: breedingRepo,
+      egg: eggRepo,
+      chick: chickRepo,
+      healthRecord: healthRepo,
+      event: eventRepo,
+      incubation: incubationRepo,
+      growthMeasurement: growthRepo,
+      notification: notificationRepo,
+      clutch: clutchRepo,
+      nest: nestRepo,
+      photo: photoRepo,
     );
+
+    restorer = BackupRestorer(repos: repos);
 
     tempDir = await Directory.systemTemp.createTemp('backup_restorer_test_');
   });
@@ -461,18 +465,7 @@ void main() {
           );
 
           final encryptedRestorer = BackupRestorer(
-            birdRepo: birdRepo,
-            breedingRepo: breedingRepo,
-            eggRepo: eggRepo,
-            chickRepo: chickRepo,
-            healthRepo: healthRepo,
-            eventRepo: eventRepo,
-            incubationRepo: incubationRepo,
-            growthRepo: growthRepo,
-            notificationRepo: notificationRepo,
-            clutchRepo: clutchRepo,
-            nestRepo: nestRepo,
-            photoRepo: photoRepo,
+            repos: repos,
             encryptionService: encryptionService,
           );
 
@@ -501,36 +494,6 @@ void main() {
         expect(result.filePath, file.path);
       });
 
-      test(
-        'continues restoring other entities when one entity type fails',
-        () async {
-        stubAllSaveAll();
-          when(
-            () => birdRepo.saveAll(any<List<Bird>>()),
-          ).thenThrow(Exception('DB error'));
-
-          final bird = createTestBird(
-            id: 'bird-1',
-            userId: 'user-1',
-            name: 'Fail',
-          );
-
-          final file = await writeBackupFile('partial_fail.json', {
-            'version': 2,
-            'data': {
-              'birds': [bird.toJson()],
-            },
-          });
-
-        final result = await restorer.restoreBackup('user-1', file.path);
-
-        // Entity-level failure now returns partial-failure result.
-        expect(result.success, isFalse);
-        expect(result.error, contains('partially'));
-        verify(() => birdRepo.saveAll(any())).called(1);
-      },
-    );
-
       test('restores entities in FK-safe order (parents before children)',
           () async {
         stubAllSaveAll();
@@ -540,8 +503,6 @@ void main() {
           name: 'B',
         );
 
-        // Provide data for multiple FK-related entities so all saveAll stubs
-        // are invoked. We only care about call *order*, not content.
         final file = await writeBackupFile('fk_order.json', {
           'version': 2,
           'data': {
@@ -593,6 +554,36 @@ void main() {
           () => chickRepo.saveAll(any()),
         ]);
       });
+
+      test(
+        'continues restoring other entities when one entity type fails',
+        () async {
+        stubAllSaveAll();
+          when(
+            () => birdRepo.saveAll(any<List<Bird>>()),
+          ).thenThrow(Exception('DB error'));
+
+          final bird = createTestBird(
+            id: 'bird-1',
+            userId: 'user-1',
+            name: 'Fail',
+          );
+
+          final file = await writeBackupFile('partial_fail.json', {
+            'version': 2,
+            'data': {
+              'birds': [bird.toJson()],
+            },
+          });
+
+        final result = await restorer.restoreBackup('user-1', file.path);
+
+        // Entity-level failure now returns partial-failure result.
+        expect(result.success, isFalse);
+        expect(result.error, contains('partially'));
+        verify(() => birdRepo.saveAll(any())).called(1);
+      },
+    );
 
       test(
         'returns total record count across all restored entity types',

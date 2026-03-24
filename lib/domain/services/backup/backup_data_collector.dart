@@ -16,18 +16,7 @@ import 'package:budgie_breeding_tracker/data/models/notification_model.dart';
 import 'package:budgie_breeding_tracker/data/models/clutch_model.dart';
 import 'package:budgie_breeding_tracker/data/models/nest_model.dart';
 import 'package:budgie_breeding_tracker/data/models/photo_model.dart';
-import 'package:budgie_breeding_tracker/data/repositories/bird_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/breeding_pair_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/egg_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/chick_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/health_record_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/event_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/incubation_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/growth_measurement_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/notification_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/clutch_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/nest_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/photo_repository.dart';
+import 'package:budgie_breeding_tracker/domain/services/backup/backup_repositories.dart';
 import 'package:budgie_breeding_tracker/domain/services/backup/backup_result.dart';
 import 'package:budgie_breeding_tracker/domain/services/encryption/encryption_service.dart';
 
@@ -36,78 +25,24 @@ import 'package:budgie_breeding_tracker/domain/services/encryption/encryption_se
 /// Supports optional AES-256-CBC encryption via [EncryptionService].
 /// Encrypted backups use `.enc.json` extension.
 class BackupDataCollector {
-  final BirdRepository _birdRepo;
-  final BreedingPairRepository _breedingRepo;
-  final EggRepository _eggRepo;
-  final ChickRepository _chickRepo;
-  final HealthRecordRepository _healthRepo;
-  final EventRepository _eventRepo;
-  final IncubationRepository _incubationRepo;
-  final GrowthMeasurementRepository _growthRepo;
-  final NotificationRepository _notificationRepo;
-  final ClutchRepository _clutchRepo;
-  final NestRepository _nestRepo;
-  final PhotoRepository _photoRepo;
+  final BackupRepositories _repos;
   final EncryptionService? _encryptionService;
+  final List<_ExportEntry> _exportEntries;
 
   static const _tag = '[BackupDataCollector]';
   static const _backupVersion = 2;
 
   BackupDataCollector({
-    required BirdRepository birdRepo,
-    required BreedingPairRepository breedingRepo,
-    required EggRepository eggRepo,
-    required ChickRepository chickRepo,
-    required HealthRecordRepository healthRepo,
-    required EventRepository eventRepo,
-    required IncubationRepository incubationRepo,
-    required GrowthMeasurementRepository growthRepo,
-    required NotificationRepository notificationRepo,
-    required ClutchRepository clutchRepo,
-    required NestRepository nestRepo,
-    required PhotoRepository photoRepo,
+    required BackupRepositories repos,
     EncryptionService? encryptionService,
-  }) : _birdRepo = birdRepo,
-       _breedingRepo = breedingRepo,
-       _eggRepo = eggRepo,
-       _chickRepo = chickRepo,
-       _healthRepo = healthRepo,
-       _eventRepo = eventRepo,
-       _incubationRepo = incubationRepo,
-       _growthRepo = growthRepo,
-       _notificationRepo = notificationRepo,
-       _clutchRepo = clutchRepo,
-       _nestRepo = nestRepo,
-       _photoRepo = photoRepo,
-       _encryptionService = encryptionService;
+  }) : _repos = repos,
+       _encryptionService = encryptionService,
+       _exportEntries = _buildExportEntries(repos);
 
   /// The current backup format version.
   static int get backupVersion => _backupVersion;
 
-  /// Entity export registry: (JSON key, getAll, toJson).
-  ///
-  /// Each [_ExportEntry] captures its generic type via [_export], so the
-  /// collect loop stays type-safe without `(x as dynamic).toJson()` casts.
-  late final _exportEntries = <_ExportEntry>[
-    _export('birds', _birdRepo.getAll, (Bird b) => b.toJson()),
-    _export('breeding_pairs', _breedingRepo.getAll, (BreedingPair b) => b.toJson()),
-    _export('eggs', _eggRepo.getAll, (Egg e) => e.toJson()),
-    _export('chicks', _chickRepo.getAll, (Chick c) => c.toJson()),
-    _export('health_records', _healthRepo.getAll, (HealthRecord h) => h.toJson()),
-    _export('events', _eventRepo.getAll, (Event e) => e.toJson()),
-    _export('incubations', _incubationRepo.getAll, (Incubation i) => i.toJson()),
-    _export('growth_measurements', _growthRepo.getAll, (GrowthMeasurement g) => g.toJson()),
-    _export('notifications', _notificationRepo.getAll, (AppNotification n) => n.toJson()),
-    _export('clutches', _clutchRepo.getAll, (Clutch c) => c.toJson()),
-    _export('nests', _nestRepo.getAll, (Nest n) => n.toJson()),
-    _export('photos', _photoRepo.getAll, (Photo p) => p.toJson()),
-  ];
-
   /// Create a full backup of user data as JSON file.
-  ///
-  /// When [encrypt] is `true` and an [EncryptionService] is available,
-  /// the JSON content is encrypted with AES-256-CBC before writing.
-  /// Encrypted files use `.enc.json` extension.
   Future<BackupResult> createBackup(
     String userId, {
     bool encrypt = false,
@@ -175,6 +110,21 @@ class BackupDataCollector {
       return BackupResult.failure(e.toString());
     }
   }
+
+  static List<_ExportEntry> _buildExportEntries(BackupRepositories r) => [
+    _export('birds', r.bird.getAll, (Bird b) => b.toJson()),
+    _export('breeding_pairs', r.breedingPair.getAll, (BreedingPair b) => b.toJson()),
+    _export('eggs', r.egg.getAll, (Egg e) => e.toJson()),
+    _export('chicks', r.chick.getAll, (Chick c) => c.toJson()),
+    _export('health_records', r.healthRecord.getAll, (HealthRecord h) => h.toJson()),
+    _export('events', r.event.getAll, (Event e) => e.toJson()),
+    _export('incubations', r.incubation.getAll, (Incubation i) => i.toJson()),
+    _export('growth_measurements', r.growthMeasurement.getAll, (GrowthMeasurement g) => g.toJson()),
+    _export('notifications', r.notification.getAll, (AppNotification n) => n.toJson()),
+    _export('clutches', r.clutch.getAll, (Clutch c) => c.toJson()),
+    _export('nests', r.nest.getAll, (Nest n) => n.toJson()),
+    _export('photos', r.photo.getAll, (Photo p) => p.toJson()),
+  ];
 }
 
 /// Type-erased export entry that captures generics via [_export].
