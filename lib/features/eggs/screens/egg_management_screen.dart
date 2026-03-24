@@ -21,6 +21,8 @@ import 'package:budgie_breeding_tracker/features/eggs/widgets/egg_list_item.dart
 import 'package:budgie_breeding_tracker/features/eggs/widgets/egg_status_update_sheet.dart';
 import 'package:budgie_breeding_tracker/features/eggs/widgets/egg_summary_row.dart';
 
+part 'egg_management_add_sheet.dart';
+
 /// Screen for managing eggs within an incubation.
 class EggManagementScreen extends ConsumerWidget {
   final String pairId;
@@ -66,14 +68,14 @@ class _EggManagementContent extends ConsumerWidget {
     // Show SnackBar when chick is auto-created from hatched egg
     ref.listen<EggActionsState>(eggActionsProvider, (_, state) {
       if (state.warning != null) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(state.warning!)));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(state.warning!)),
+        );
       }
       if (state.error != null) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(state.error!)));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(state.error!)),
+        );
       }
       if (state.chickCreated) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -104,11 +106,10 @@ class _EggManagementContent extends ConsumerWidget {
               title: 'eggs.no_eggs'.tr(),
               subtitle: 'eggs.no_eggs_hint'.tr(),
               actionLabel: 'eggs.add_egg'.tr(),
-              onAction: () => _showAddEggSheet(context, ref, eggs),
+              onAction: () => _showAddEggSheet(context, ref, incubationId, eggs),
             );
           }
 
-          // Filter out hatched eggs (they become chicks)
           final activeEggs = eggs
               .where((e) => e.status != EggStatus.hatched)
               .toList();
@@ -147,17 +148,12 @@ class _EggManagementContent extends ConsumerWidget {
                         return EggListItem(
                           egg: egg,
                           onStatusUpdate: () async {
-                            final newStatus = await showEggStatusUpdateSheet(
-                              context,
-                              egg,
-                            );
+                            final newStatus = await showEggStatusUpdateSheet(context, egg);
                             if (newStatus != null) {
-                              ref
-                                  .read(eggActionsProvider.notifier)
-                                  .updateEggStatus(egg, newStatus);
+                              ref.read(eggActionsProvider.notifier).updateEggStatus(egg, newStatus);
                             }
                           },
-                          onDelete: () => _confirmDelete(context, ref, egg),
+                          onDelete: () => _confirmDeleteEgg(context, ref, egg),
                         );
                       },
                     ),
@@ -171,135 +167,10 @@ class _EggManagementContent extends ConsumerWidget {
         icon: const AppIcon(AppIcons.add),
         tooltip: 'eggs.add_egg'.tr(),
         onPressed: () {
-          final eggs =
-              ref.read(eggsForIncubationProvider(incubationId)).value ?? [];
-          _showAddEggSheet(context, ref, eggs);
+          final eggs = ref.read(eggsForIncubationProvider(incubationId)).value ?? [];
+          _showAddEggSheet(context, ref, incubationId, eggs);
         },
       ),
     );
-  }
-
-  void _showAddEggSheet(
-    BuildContext context,
-    WidgetRef ref,
-    List<Egg> existingEggs,
-  ) {
-    DateTime layDate = DateTime.now();
-    final nextEggNumber = IncubationCalculator.getNextEggNumber(existingEggs);
-    final notesController = TextEditingController();
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      constraints: const BoxConstraints(maxWidth: AppSpacing.maxSheetWidth),
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(AppSpacing.radiusXl),
-        ),
-      ),
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setSheetState) {
-            return Padding(
-              padding: EdgeInsets.fromLTRB(
-                AppSpacing.lg,
-                AppSpacing.lg,
-                AppSpacing.lg,
-                MediaQuery.of(context).viewInsets.bottom + AppSpacing.lg,
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Center(
-                    child: Container(
-                      width: 40,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.lg),
-                  Text(
-                    'eggs.add_new_egg'.tr(),
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: AppSpacing.lg),
-                  TextFormField(
-                    initialValue: '$nextEggNumber',
-                    readOnly: true,
-                    decoration: InputDecoration(
-                      labelText: 'eggs.egg_number'.tr(),
-                      border: const OutlineInputBorder(),
-                      prefixIcon: const Icon(LucideIcons.tag),
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.lg),
-                  DatePickerField(
-                    label: 'eggs.lay_date'.tr(),
-                    value: layDate,
-                    onChanged: (date) => setSheetState(() => layDate = date),
-                    dateFormatter: ref.read(dateFormatProvider).formatter(),
-                  ),
-                  const SizedBox(height: AppSpacing.lg),
-                  TextFormField(
-                    controller: notesController,
-                    decoration: InputDecoration(
-                      labelText: 'common.notes_optional'.tr(),
-                      border: const OutlineInputBorder(),
-                      prefixIcon: const Icon(LucideIcons.stickyNote),
-                    ),
-                    maxLines: 2,
-                  ),
-                  const SizedBox(height: AppSpacing.xxl),
-                  FilledButton(
-                    onPressed: () {
-                      ref
-                          .read(eggActionsProvider.notifier)
-                          .addEgg(
-                            incubationId: incubationId,
-                            layDate: layDate,
-                            eggNumber: nextEggNumber,
-                            notes: notesController.text.isEmpty
-                                ? null
-                                : notesController.text,
-                          );
-                      Navigator.of(context).pop();
-                    },
-                    child: Text('common.add'.tr()),
-                  ),
-                  const SizedBox(height: AppSpacing.sm),
-                ],
-              ),
-            );
-          },
-        );
-      },
-    ).then((_) {
-      WidgetsBinding.instance.addPostFrameCallback((_) => notesController.dispose());
-    });
-  }
-
-  Future<void> _confirmDelete(
-    BuildContext context,
-    WidgetRef ref,
-    Egg egg,
-  ) async {
-    final confirmed = await showConfirmDialog(
-      context,
-      title: 'eggs.delete_egg'.tr(),
-      message: 'eggs.delete_confirm_number'.tr(
-        namedArgs: {'number': '${egg.eggNumber ?? '?'}'},
-      ),
-      confirmLabel: 'common.delete'.tr(),
-      isDestructive: true,
-    );
-    if (confirmed == true) {
-      ref.read(eggActionsProvider.notifier).deleteEgg(egg.id);
-    }
   }
 }

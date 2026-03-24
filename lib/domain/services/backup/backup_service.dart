@@ -6,19 +6,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 export 'backup_result.dart';
 import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
-import 'package:budgie_breeding_tracker/data/repositories/bird_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/breeding_pair_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/egg_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/chick_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/health_record_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/event_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/incubation_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/growth_measurement_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/notification_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/clutch_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/nest_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/photo_repository.dart';
 import 'package:budgie_breeding_tracker/domain/services/backup/backup_data_collector.dart';
+import 'package:budgie_breeding_tracker/domain/services/backup/backup_repositories.dart';
 import 'package:budgie_breeding_tracker/domain/services/backup/backup_restorer.dart';
 import 'package:budgie_breeding_tracker/domain/services/backup/backup_result.dart';
 import 'package:budgie_breeding_tracker/domain/services/encryption/encryption_service.dart';
@@ -41,76 +30,31 @@ class BackupService {
   static const _backupBucket = SupabaseConstants.backupsBucket;
 
   BackupService({
-    required BirdRepository birdRepo,
-    required BreedingPairRepository breedingRepo,
-    required EggRepository eggRepo,
-    required ChickRepository chickRepo,
-    required HealthRecordRepository healthRepo,
-    required EventRepository eventRepo,
-    required IncubationRepository incubationRepo,
-    required GrowthMeasurementRepository growthRepo,
-    required NotificationRepository notificationRepo,
-    required ClutchRepository clutchRepo,
-    required NestRepository nestRepo,
-    required PhotoRepository photoRepo,
+    required BackupRepositories repos,
     SupabaseClient? supabaseClient,
     EncryptionService? encryptionService,
   }) : _collector = BackupDataCollector(
-         birdRepo: birdRepo,
-         breedingRepo: breedingRepo,
-         eggRepo: eggRepo,
-         chickRepo: chickRepo,
-         healthRepo: healthRepo,
-         eventRepo: eventRepo,
-         incubationRepo: incubationRepo,
-         growthRepo: growthRepo,
-         notificationRepo: notificationRepo,
-         clutchRepo: clutchRepo,
-         nestRepo: nestRepo,
-         photoRepo: photoRepo,
+         repos: repos,
          encryptionService: encryptionService,
        ),
        _restorer = BackupRestorer(
-         birdRepo: birdRepo,
-         breedingRepo: breedingRepo,
-         eggRepo: eggRepo,
-         chickRepo: chickRepo,
-         healthRepo: healthRepo,
-         eventRepo: eventRepo,
-         incubationRepo: incubationRepo,
-         growthRepo: growthRepo,
-         notificationRepo: notificationRepo,
-         clutchRepo: clutchRepo,
-         nestRepo: nestRepo,
-         photoRepo: photoRepo,
+         repos: repos,
          encryptionService: encryptionService,
        ),
        _supabaseClient = supabaseClient,
        _encryptionService = encryptionService;
 
   /// Create a full backup of user data as JSON file.
-  ///
-  /// When [encrypt] is `true` and an [EncryptionService] is available,
-  /// the JSON content is encrypted with AES-256-CBC before writing.
-  /// Encrypted files use `.enc.json` extension.
   Future<BackupResult> createBackup(String userId, {bool encrypt = false}) {
     return _collector.createBackup(userId, encrypt: encrypt);
   }
 
   /// Restore data from a backup JSON file.
-  ///
-  /// Automatically detects encrypted backups by checking the file extension
-  /// (`.enc.json`) and content format (non-JSON content). If encryption is
-  /// detected, the [EncryptionService] is used to decrypt before parsing.
   Future<BackupResult> restoreBackup(String userId, String filePath) {
     return _restorer.restoreBackup(userId, filePath);
   }
 
   /// Upload a backup file to Supabase Storage.
-  ///
-  /// When [encrypt] is `true` and an [EncryptionService] is available,
-  /// the file content is encrypted before uploading. The remote file
-  /// uses `.enc.json` extension to indicate encryption.
   Future<BackupResult> uploadBackup(
     String userId,
     String filePath, {

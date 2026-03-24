@@ -29,6 +29,7 @@ import 'package:budgie_breeding_tracker/data/repositories/nest_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/notification_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/photo_repository.dart';
 import 'package:budgie_breeding_tracker/domain/services/backup/backup_data_collector.dart';
+import 'package:budgie_breeding_tracker/domain/services/backup/backup_repositories.dart';
 import 'package:budgie_breeding_tracker/domain/services/backup/backup_restorer.dart';
 import 'package:budgie_breeding_tracker/domain/services/encryption/encryption_service.dart';
 
@@ -77,6 +78,7 @@ void main() {
   late _MockClutchRepository clutchRepo;
   late _MockNestRepository nestRepo;
   late _MockPhotoRepository photoRepo;
+  late BackupRepositories repos;
   late BackupRestorer restorer;
   late Directory tempDir;
 
@@ -109,20 +111,22 @@ void main() {
     nestRepo = _MockNestRepository();
     photoRepo = _MockPhotoRepository();
 
-    restorer = BackupRestorer(
-      birdRepo: birdRepo,
-      breedingRepo: breedingRepo,
-      eggRepo: eggRepo,
-      chickRepo: chickRepo,
-      healthRepo: healthRepo,
-      eventRepo: eventRepo,
-      incubationRepo: incubationRepo,
-      growthRepo: growthRepo,
-      notificationRepo: notificationRepo,
-      clutchRepo: clutchRepo,
-      nestRepo: nestRepo,
-      photoRepo: photoRepo,
+    repos = BackupRepositories(
+      bird: birdRepo,
+      breedingPair: breedingRepo,
+      egg: eggRepo,
+      chick: chickRepo,
+      healthRecord: healthRepo,
+      event: eventRepo,
+      incubation: incubationRepo,
+      growthMeasurement: growthRepo,
+      notification: notificationRepo,
+      clutch: clutchRepo,
+      nest: nestRepo,
+      photo: photoRepo,
     );
+
+    restorer = BackupRestorer(repos: repos);
 
     tempDir = await Directory.systemTemp.createTemp('backup_restorer_test_');
   });
@@ -461,18 +465,7 @@ void main() {
           );
 
           final encryptedRestorer = BackupRestorer(
-            birdRepo: birdRepo,
-            breedingRepo: breedingRepo,
-            eggRepo: eggRepo,
-            chickRepo: chickRepo,
-            healthRepo: healthRepo,
-            eventRepo: eventRepo,
-            incubationRepo: incubationRepo,
-            growthRepo: growthRepo,
-            notificationRepo: notificationRepo,
-            clutchRepo: clutchRepo,
-            nestRepo: nestRepo,
-            photoRepo: photoRepo,
+            repos: repos,
             encryptionService: encryptionService,
           );
 
@@ -499,6 +492,67 @@ void main() {
 
         expect(result.success, isTrue);
         expect(result.filePath, file.path);
+      });
+
+      test('restores entities in FK-safe order (parents before children)',
+          () async {
+        stubAllSaveAll();
+        final bird = createTestBird(
+          id: 'b1',
+          userId: 'user-1',
+          name: 'B',
+        );
+
+        final file = await writeBackupFile('fk_order.json', {
+          'version': 2,
+          'data': {
+            'birds': [bird.toJson()],
+            'nests': [
+              {'id': 'n1', 'user_id': 'user-1', 'name': 'Nest 1'},
+            ],
+            'breeding_pairs': [
+              {'id': 'bp1', 'user_id': 'user-1'},
+            ],
+            'clutches': [
+              {'id': 'cl1', 'user_id': 'user-1', 'breeding_pair_id': 'bp1'},
+            ],
+            'incubations': [
+              {'id': 'inc1', 'user_id': 'user-1', 'breeding_pair_id': 'bp1'},
+            ],
+            'eggs': [
+              {
+                'id': 'e1',
+                'user_id': 'user-1',
+                'incubation_id': 'inc1',
+                'status': 'incubating',
+                'egg_number': 1,
+                'lay_date': '2025-01-01T00:00:00.000',
+              },
+            ],
+            'chicks': [
+              {
+                'id': 'ch1',
+                'user_id': 'user-1',
+                'egg_id': 'e1',
+                'gender': 'unknown',
+                'health_status': 'healthy',
+              },
+            ],
+          },
+        });
+
+        await restorer.restoreBackup('user-1', file.path);
+
+        // Verify FK-safe order: parents must be restored before children.
+        verifyInOrder([
+          () => birdRepo.saveAll(any()),
+          () => nestRepo.saveAll(any()),
+          () => breedingRepo.saveAll(any()),
+          () => clutchRepo.saveAll(any()),
+          () => incubationRepo.saveAll(any()),
+          () => eggRepo.saveAll(any()),
+          () => chickRepo.saveAll(any()),
+        ]);
       });
 
       test(

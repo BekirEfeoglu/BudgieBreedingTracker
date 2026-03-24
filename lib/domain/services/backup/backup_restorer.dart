@@ -14,21 +14,12 @@ import 'package:budgie_breeding_tracker/data/models/notification_model.dart';
 import 'package:budgie_breeding_tracker/data/models/clutch_model.dart';
 import 'package:budgie_breeding_tracker/data/models/nest_model.dart';
 import 'package:budgie_breeding_tracker/data/models/photo_model.dart';
-import 'package:budgie_breeding_tracker/data/repositories/bird_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/breeding_pair_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/egg_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/chick_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/health_record_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/event_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/incubation_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/growth_measurement_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/notification_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/clutch_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/nest_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/photo_repository.dart';
 import 'package:budgie_breeding_tracker/domain/services/backup/backup_data_collector.dart';
+import 'package:budgie_breeding_tracker/domain/services/backup/backup_repositories.dart';
 import 'package:budgie_breeding_tracker/domain/services/backup/backup_result.dart';
 import 'package:budgie_breeding_tracker/domain/services/encryption/encryption_service.dart';
+
+part 'backup_restorer_helpers.dart';
 
 /// Restores user data from a JSON backup file.
 ///
@@ -36,49 +27,18 @@ import 'package:budgie_breeding_tracker/domain/services/encryption/encryption_se
 /// (`.enc.json`) and content format (non-JSON content). If encryption is
 /// detected, the [EncryptionService] is used to decrypt before parsing.
 class BackupRestorer {
-  final BirdRepository _birdRepo;
-  final BreedingPairRepository _breedingRepo;
-  final EggRepository _eggRepo;
-  final ChickRepository _chickRepo;
-  final HealthRecordRepository _healthRepo;
-  final EventRepository _eventRepo;
-  final IncubationRepository _incubationRepo;
-  final GrowthMeasurementRepository _growthRepo;
-  final NotificationRepository _notificationRepo;
-  final ClutchRepository _clutchRepo;
-  final NestRepository _nestRepo;
-  final PhotoRepository _photoRepo;
+  final BackupRepositories _repos;
   final EncryptionService? _encryptionService;
+  final List<_RestoreStep> _restoreSteps;
 
   static const _tag = '[BackupRestorer]';
 
   BackupRestorer({
-    required BirdRepository birdRepo,
-    required BreedingPairRepository breedingRepo,
-    required EggRepository eggRepo,
-    required ChickRepository chickRepo,
-    required HealthRecordRepository healthRepo,
-    required EventRepository eventRepo,
-    required IncubationRepository incubationRepo,
-    required GrowthMeasurementRepository growthRepo,
-    required NotificationRepository notificationRepo,
-    required ClutchRepository clutchRepo,
-    required NestRepository nestRepo,
-    required PhotoRepository photoRepo,
+    required BackupRepositories repos,
     EncryptionService? encryptionService,
-  }) : _birdRepo = birdRepo,
-       _breedingRepo = breedingRepo,
-       _eggRepo = eggRepo,
-       _chickRepo = chickRepo,
-       _healthRepo = healthRepo,
-       _eventRepo = eventRepo,
-       _incubationRepo = incubationRepo,
-       _growthRepo = growthRepo,
-       _notificationRepo = notificationRepo,
-       _clutchRepo = clutchRepo,
-       _nestRepo = nestRepo,
-       _photoRepo = photoRepo,
-       _encryptionService = encryptionService;
+  }) : _repos = repos,
+       _encryptionService = encryptionService,
+       _restoreSteps = _buildRestoreSteps(repos);
 
   /// Restore data from a backup JSON file.
   Future<BackupResult> restoreBackup(String userId, String filePath) async {
@@ -112,7 +72,6 @@ class BackupRestorer {
           '(max: ${BackupDataCollector.backupVersion})',
         );
       }
-      // v1 backups are compatible — new entity keys simply won't exist in data
 
       final backupUserId = (backupData['user_id'] as String?)?.trim();
       if (backupUserId != null &&
@@ -124,149 +83,26 @@ class BackupRestorer {
       }
 
       final data = backupData['data'] as Map<String, dynamic>;
-      var totalRecords = 0;
-      var errorCount = 0;
-
-      // Restore birds
-      totalRecords += await _restoreEntity<Bird>(
-        data: data,
-        userId: userId,
-        key: 'birds',
-        fromJson: (json) => Bird.fromJson(json as Map<String, dynamic>),
-        saveAll: (items) => _birdRepo.saveAll(items),
-        onError: () => errorCount++,
-      );
-
-      // Restore breeding pairs
-      totalRecords += await _restoreEntity<BreedingPair>(
-        data: data,
-        userId: userId,
-        key: 'breeding_pairs',
-        fromJson: (json) => BreedingPair.fromJson(json as Map<String, dynamic>),
-        saveAll: (items) => _breedingRepo.saveAll(items),
-        onError: () => errorCount++,
-      );
-
-      // Restore eggs
-      totalRecords += await _restoreEntity<Egg>(
-        data: data,
-        userId: userId,
-        key: 'eggs',
-        fromJson: (json) => Egg.fromJson(json as Map<String, dynamic>),
-        saveAll: (items) => _eggRepo.saveAll(items),
-        onError: () => errorCount++,
-      );
-
-      // Restore chicks
-      totalRecords += await _restoreEntity<Chick>(
-        data: data,
-        userId: userId,
-        key: 'chicks',
-        fromJson: (json) => Chick.fromJson(json as Map<String, dynamic>),
-        saveAll: (items) => _chickRepo.saveAll(items),
-        onError: () => errorCount++,
-      );
-
-      // Restore health records
-      totalRecords += await _restoreEntity<HealthRecord>(
-        data: data,
-        userId: userId,
-        key: 'health_records',
-        fromJson: (json) => HealthRecord.fromJson(json as Map<String, dynamic>),
-        saveAll: (items) => _healthRepo.saveAll(items),
-        onError: () => errorCount++,
-      );
-
-      // Restore events
-      totalRecords += await _restoreEntity<Event>(
-        data: data,
-        userId: userId,
-        key: 'events',
-        fromJson: (json) => Event.fromJson(json as Map<String, dynamic>),
-        saveAll: (items) => _eventRepo.saveAll(items),
-        onError: () => errorCount++,
-      );
-
-      // Restore incubations
-      totalRecords += await _restoreEntity<Incubation>(
-        data: data,
-        userId: userId,
-        key: 'incubations',
-        fromJson: (json) => Incubation.fromJson(json as Map<String, dynamic>),
-        saveAll: (items) => _incubationRepo.saveAll(items),
-        onError: () => errorCount++,
-      );
-
-      // Restore growth measurements
-      totalRecords += await _restoreEntity<GrowthMeasurement>(
-        data: data,
-        userId: userId,
-        key: 'growth_measurements',
-        fromJson: (json) =>
-            GrowthMeasurement.fromJson(json as Map<String, dynamic>),
-        saveAll: (items) => _growthRepo.saveAll(items),
-        onError: () => errorCount++,
-      );
-
-      // Restore notifications
-      totalRecords += await _restoreEntity<AppNotification>(
-        data: data,
-        userId: userId,
-        key: 'notifications',
-        fromJson: (json) =>
-            AppNotification.fromJson(json as Map<String, dynamic>),
-        saveAll: (items) => _notificationRepo.saveAll(items),
-        onError: () => errorCount++,
-      );
-
-      // Restore clutches (added in backup v2)
-      totalRecords += await _restoreEntity<Clutch>(
-        data: data,
-        userId: userId,
-        key: 'clutches',
-        fromJson: (json) => Clutch.fromJson(json as Map<String, dynamic>),
-        saveAll: (items) => _clutchRepo.saveAll(items),
-        onError: () => errorCount++,
-      );
-
-      // Restore nests (added in backup v2)
-      totalRecords += await _restoreEntity<Nest>(
-        data: data,
-        userId: userId,
-        key: 'nests',
-        fromJson: (json) => Nest.fromJson(json as Map<String, dynamic>),
-        saveAll: (items) => _nestRepo.saveAll(items),
-        onError: () => errorCount++,
-      );
-
-      // Restore photos (added in backup v2)
-      totalRecords += await _restoreEntity<Photo>(
-        data: data,
-        userId: userId,
-        key: 'photos',
-        fromJson: (json) => Photo.fromJson(json as Map<String, dynamic>),
-        saveAll: (items) => _photoRepo.saveAll(items),
-        onError: () => errorCount++,
-      );
+      final result = await _restoreAllEntities(data, userId);
 
       AppLogger.info(
-        '$_tag Backup restored: $totalRecords records '
-        '($errorCount entity types had errors)',
+        '$_tag Backup restored: ${result.total} records '
+        '(${result.errors} entity types had errors)',
       );
 
-      if (errorCount > 0) {
+      if (result.errors > 0) {
         return BackupResult(
           success: false,
           filePath: filePath,
-          error: 'Backup restored partially: $errorCount entity type(s) failed',
-          recordCount: totalRecords,
+          error: 'Backup restored partially: ${result.errors} entity type(s) failed',
+          recordCount: result.total,
           timestamp: DateTime.now(),
         );
       }
 
       return BackupResult.success(
         filePath: filePath,
-        recordCount: totalRecords,
+        recordCount: result.total,
       );
     } catch (e, st) {
       AppLogger.error('$_tag Backup restore failed', e, st);
@@ -274,62 +110,33 @@ class BackupRestorer {
     }
   }
 
-  /// Checks whether [content] looks encrypted (i.e. not valid JSON).
-  ///
-  /// Valid JSON backup files always start with `{` (possibly after whitespace).
-  /// Encrypted content is Base64-encoded and will not start with `{`.
-  bool _looksEncrypted(String content) {
-    return !content.trimLeft().startsWith('{');
-  }
+  /// Entity registry: FK-safe restore order (parents before children).
+  static List<_RestoreStep> _buildRestoreSteps(BackupRepositories r) => [
+    _step('birds', Bird.fromJson, r.bird.saveAll),
+    _step('nests', Nest.fromJson, r.nest.saveAll),
+    _step('breeding_pairs', BreedingPair.fromJson, r.breedingPair.saveAll),
+    _step('clutches', Clutch.fromJson, r.clutch.saveAll),
+    _step('incubations', Incubation.fromJson, r.incubation.saveAll),
+    _step('eggs', Egg.fromJson, r.egg.saveAll),
+    _step('chicks', Chick.fromJson, r.chick.saveAll),
+    _step('health_records', HealthRecord.fromJson, r.healthRecord.saveAll),
+    _step('events', Event.fromJson, r.event.saveAll),
+    _step('growth_measurements', GrowthMeasurement.fromJson, r.growthMeasurement.saveAll),
+    _step('notifications', AppNotification.fromJson, r.notification.saveAll),
+    _step('photos', Photo.fromJson, r.photo.saveAll),
+  ];
 
-  /// Helper to restore a single entity type from backup data.
-  ///
-  /// Returns the number of successfully restored records.
-  Future<int> _restoreEntity<T>({
-    required Map<String, dynamic> data,
-    required String userId,
-    required String key,
-    required T Function(dynamic json) fromJson,
-    required Future<void> Function(List<T> items) saveAll,
-    required void Function() onError,
-  }) async {
-    if (!data.containsKey(key)) return 0;
+  Future<({int total, int errors})> _restoreAllEntities(
+    Map<String, dynamic> data,
+    String userId,
+  ) async {
+    var totalRecords = 0;
+    var errorCount = 0;
 
-    try {
-      final jsonList = data[key] as List;
-      if (jsonList.isEmpty) return 0;
-
-      AppLogger.info('$_tag Restoring ${jsonList.length} $key');
-
-      final items = <T>[];
-      for (final jsonItem in jsonList) {
-        try {
-          items.add(fromJson(_normalizeUserScope(jsonItem, userId)));
-        } catch (e) {
-          AppLogger.warning('$_tag Failed to parse $key item: $e');
-        }
-      }
-
-      if (items.isNotEmpty) {
-        await saveAll(items);
-      }
-
-      AppLogger.info('$_tag Restored ${items.length}/${jsonList.length} $key');
-      return items.length;
-    } catch (e, st) {
-      AppLogger.error('$_tag Failed to restore $key', e, st);
-      onError();
-      return 0;
+    for (final step in _restoreSteps) {
+      totalRecords += await step(data, userId, () => errorCount++);
     }
-  }
 
-  /// Forces entity-level `user_id` to match the active restore target.
-  ///
-  /// This prevents silent cross-account imports when backup payloads contain
-  /// stale or foreign user ids.
-  dynamic _normalizeUserScope(dynamic jsonItem, String userId) {
-    if (jsonItem is! Map<String, dynamic>) return jsonItem;
-    if (!jsonItem.containsKey('user_id')) return jsonItem;
-    return <String, dynamic>{...jsonItem, 'user_id': userId};
+    return (total: totalRecords, errors: errorCount);
   }
 }
