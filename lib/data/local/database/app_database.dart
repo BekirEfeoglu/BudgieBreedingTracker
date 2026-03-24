@@ -5,19 +5,7 @@ import 'package:drift/native.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 
-// Enums
-import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
-import 'package:budgie_breeding_tracker/core/enums/egg_enums.dart';
-import 'package:budgie_breeding_tracker/core/enums/breeding_enums.dart';
-import 'package:budgie_breeding_tracker/core/enums/chick_enums.dart';
-import 'package:budgie_breeding_tracker/core/enums/event_enums.dart';
-import 'package:budgie_breeding_tracker/core/enums/notification_enums.dart';
-import 'package:budgie_breeding_tracker/core/enums/subscription_enums.dart';
-import 'package:budgie_breeding_tracker/core/enums/photo_enums.dart';
-import 'package:budgie_breeding_tracker/core/enums/reminder_enums.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
-import 'package:budgie_breeding_tracker/data/models/health_record_model.dart';
-import 'package:budgie_breeding_tracker/data/models/sync_metadata_model.dart';
 
 import 'package:budgie_breeding_tracker/data/local/database/tables/birds_table.dart';
 import 'package:budgie_breeding_tracker/data/local/database/tables/eggs_table.dart';
@@ -58,9 +46,6 @@ import 'package:budgie_breeding_tracker/data/local/database/daos/event_reminders
 import 'package:budgie_breeding_tracker/data/local/database/daos/notification_schedules_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/notification_settings_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/genetics_history_dao.dart';
-
-// Converters
-import 'package:budgie_breeding_tracker/data/local/database/converters/enum_converters.dart';
 
 part 'app_database.g.dart';
 part 'app_database_migrations.dart';
