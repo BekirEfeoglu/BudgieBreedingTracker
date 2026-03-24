@@ -671,6 +671,29 @@
   /* Hide controls during autoplay recording */
   body.recording .controls { display: none; }
   body.recording .scene-indicator { display: none; }
+
+  /* ─── MOBILE PERFORMANCE ─── */
+  @media (max-width: 768px) {
+    body::before { display: none !important; } /* noise texture - GPU heavy */
+    .cursor-glow { display: none !important; }
+    .page-curtain { display: none !important; }
+    .particles, .particle, .leaf, .feather { display: none !important; }
+    .orb, .orb-1, .orb-2, .orb-3 { display: none !important; }
+    .glass-card, .glass-card:hover,
+    [style*="backdrop-filter"] {
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+    }
+    .glass-card {
+      background: rgba(27, 67, 50, 0.5) !important;
+    }
+    header {
+      backdrop-filter: blur(8px) !important;
+      -webkit-backdrop-filter: blur(8px) !important;
+    }
+    .particle { display: none !important; }
+    .logo-glow { animation: none !important; }
+  }
 </style>
 </head>
 <body>
