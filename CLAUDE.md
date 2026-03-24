@@ -51,7 +51,7 @@ python scripts/verify_rules.py          # Validate .claude/rules numeric claims 
 | Source files (lib/) | 677 Dart files |
 | Test files (test/) | 644 test files, 7,500+ individual tests |
 | Feature modules | 20 |
-| Drift tables / DAOs / Mappers | 19 each |
+| Drift tables / DAOs / Mappers | 20 each |
 | Repositories | 18 entity + base + sync_metadata |
 | Remote sources | 20 entity + base + 2 caches |
 | Freezed models | 20 model files + statistics_models + supabase_extensions |
@@ -61,7 +61,7 @@ python scripts/verify_rules.py          # Validate .claude/rules numeric claims 
 | Shared widgets | 17 (12 root + 5 in subdirs) |
 | Enum files | 11 |
 | L10n keys | ~2,031 per language, 35 categories |
-| DB schema version | 14 |
+| DB schema version | 16 |
 
 ## Architecture Overview
 
@@ -160,9 +160,9 @@ Widgets:       lib/features/<feature>/widgets/
 Models:        lib/data/models/                 (20 Freezed models + statistics_models + supabase_extensions)
 Enums:         lib/core/enums/                  (11 enum files)
 Extensions:    lib/core/extensions/             (context_extensions, num_extensions)
-Tables:        lib/data/local/database/tables/  (19 Drift tables)
-DAOs:          lib/data/local/database/daos/    (19 DAOs)
-Mappers:       lib/data/local/database/mappers/ (19 mappers)
+Tables:        lib/data/local/database/tables/  (20 Drift tables)
+DAOs:          lib/data/local/database/daos/    (20 DAOs)
+Mappers:       lib/data/local/database/mappers/ (20 mappers)
 Repos:         lib/data/repositories/           (18 entity repos + base + sync_metadata)
 Remote:        lib/data/remote/api/             (20 entity sources + base + 2 caches)
 Services:      lib/domain/services/             (13 dirs: ads, auth, backup, calendar, encryption, export,
@@ -176,7 +176,7 @@ SVG Assets:    assets/icons/                    (10 subdirectories, 83 SVG files
 Preferences:   lib/data/local/preferences/      (AppPreferences)
 EdgeFunctions: lib/data/remote/supabase/        (EdgeFunctionClient)
 Translations:  assets/translations/             (~2,031 leaf keys per language, 35 categories)
-Database:      schemaVersion 14 (switch-based migration, 30+ perf indexes)
+Database:      schemaVersion 16 (switch-based migration, 30+ perf indexes)
 ```
 
 ## Detailed Rules
