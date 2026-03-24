@@ -7,7 +7,7 @@
   <meta name="description" content="Muhabbet kuşu yetiştiricileri için kapsamlı üreme takip uygulaması. Kuş, yumurta, yavru, genetik hesaplama ve soy ağacı yönetimi.">
   <meta name="keywords" content="budgie, breeding, tracker, muhabbet kuşu, üreme takip, genetik, soy ağacı, parakeet, wellensittich">
   <meta name="author" content="BudgieBreedingTracker">
-  <meta name="theme-color" content="#1E40AF">
+  <meta name="theme-color" content="#0C1F0F">
 
   <!-- Open Graph -->
   <meta property="og:title" content="BudgieBreedingTracker">
@@ -43,74 +43,179 @@
   }
   </script>
 
-  <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            primary: { 50: '#EFF6FF', 100: '#DBEAFE', 200: '#BFDBFE', 300: '#93C5FD', 400: '#60A5FA', 500: '#3B82F6', 600: '#2563EB', 700: '#1D4ED8', 800: '#1E40AF', 900: '#1E3A8A' },
-            accent: { 400: '#FBBF24', 500: '#F59E0B', 600: '#D97706' },
-            budgie: { 50: '#F0FDF4', 100: '#DCFCE7', 400: '#4ADE80', 500: '#22C55E', 600: '#16A34A' },
-          },
-          fontFamily: {
-            sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
-          },
-          animation: {
-            'float': 'float 6s ease-in-out infinite',
-            'float-delayed': 'float 6s ease-in-out 2s infinite',
-            'float-slow': 'float 8s ease-in-out 1s infinite',
-            'fade-up': 'fadeUp 0.8s ease-out forwards',
-            'fade-up-delay-1': 'fadeUp 0.8s ease-out 0.15s forwards',
-            'fade-up-delay-2': 'fadeUp 0.8s ease-out 0.3s forwards',
-            'fade-up-delay-3': 'fadeUp 0.8s ease-out 0.45s forwards',
-            'scale-in': 'scaleIn 0.6s ease-out forwards',
-            'slide-right': 'slideRight 0.8s ease-out forwards',
-            'slide-left': 'slideLeft 0.8s ease-out forwards',
-            'count-up': 'countUp 0.5s ease-out forwards',
-            'pulse-soft': 'pulseSoft 3s ease-in-out infinite',
-            'shimmer': 'shimmer 2.5s ease-in-out infinite',
-          },
-        },
-      },
-    }
-  </script>
-
-  <!-- Inter Font -->
+  <!-- Outfit + DM Sans Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="logo.png">
   <link rel="apple-touch-icon" href="logo.png">
 
   <style>
+    :root {
+      --forest-deep: #0C1F0F;
+      --forest-mid: #122318;
+      --leaf-dark: #1B4332;
+      --leaf-mid: #2D6A4F;
+      --leaf-light: #40916C;
+      --sage: #A3B899;
+      --sage-light: #C8D8C2;
+      --gold: #D4A853;
+      --gold-light: #E8C27A;
+      --gold-glow: #F0D080;
+      --cream: #F0EBD8;
+      --glass-bg: rgba(27, 67, 50, 0.25);
+      --glass-border: rgba(163, 184, 153, 0.2);
+      --glass-border-hover: rgba(212, 168, 83, 0.4);
+    }
+
     html { scroll-behavior: smooth; }
-    body { font-family: 'Inter', system-ui, -apple-system, sans-serif; overflow-x: hidden; }
+
+    body {
+      font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+      background-color: var(--forest-deep);
+      color: var(--sage-light);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* ─── NOISE TEXTURE OVERLAY ─── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+      opacity: 0.04;
+      pointer-events: none;
+      z-index: 1000;
+      mix-blend-mode: overlay;
+    }
+
+    /* Display font for headings */
+    h1, h2, h3, h4,
+    .font-black, .font-extrabold, .font-bold {
+      font-family: 'Outfit', system-ui, -apple-system, sans-serif;
+    }
+
+    /* ─── LAYERED BACKGROUND ─── */
+    .bg-layer {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .bg-layer::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 20% 80%, rgba(27, 67, 50, 0.8) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 80% 20%, rgba(45, 106, 79, 0.4) 0%, transparent 55%),
+        radial-gradient(ellipse 100% 100% at 50% 50%, var(--forest-deep) 0%, #091A0C 100%);
+    }
+    .bg-layer::after {
+      content: '';
+      position: absolute;
+      top: -20%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 800px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(212, 168, 83, 0.07) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+
+    /* ─── FLOATING PARTICLES (CSS only) ─── */
+    .particles {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 1;
+      overflow: hidden;
+    }
+    .particle {
+      position: absolute;
+      border-radius: 50% 0 50% 0;
+      animation: drift linear infinite;
+      opacity: 0;
+    }
+    .particle.leaf { border-radius: 0 100% 0 100%; }
+    .particle.feather { width: 3px; border-radius: 50%; background: linear-gradient(180deg, transparent, var(--sage), transparent); }
+    .particle:nth-child(1)  { left: 8%;   width: 12px; height: 18px; background: rgba(163,184,153,0.25); animation-duration: 18s; animation-delay: 0s;    top: -20px; }
+    .particle:nth-child(2)  { left: 16%;  width: 8px;  height: 12px; background: rgba(212,168,83,0.2);  animation-duration: 22s; animation-delay: -4s;   top: -20px; }
+    .particle:nth-child(3)  { left: 25%;  width: 15px; height: 22px; background: rgba(64,145,108,0.3);  animation-duration: 15s; animation-delay: -8s;   top: -20px; }
+    .particle:nth-child(4)  { left: 35%;  width: 6px;  height: 10px; background: rgba(163,184,153,0.2); animation-duration: 25s; animation-delay: -2s;   top: -20px; }
+    .particle:nth-child(5)  { left: 44%;  width: 10px; height: 16px; background: rgba(212,168,83,0.15); animation-duration: 20s; animation-delay: -12s;  top: -20px; }
+    .particle:nth-child(6)  { left: 55%;  width: 14px; height: 20px; background: rgba(64,145,108,0.25); animation-duration: 17s; animation-delay: -6s;   top: -20px; }
+    .particle:nth-child(7)  { left: 63%;  width: 7px;  height: 11px; background: rgba(163,184,153,0.3); animation-duration: 23s; animation-delay: -10s;  top: -20px; }
+    .particle:nth-child(8)  { left: 72%;  width: 11px; height: 17px; background: rgba(212,168,83,0.2);  animation-duration: 19s; animation-delay: -3s;   top: -20px; }
+    .particle:nth-child(9)  { left: 82%;  width: 9px;  height: 13px; background: rgba(45,106,79,0.3);   animation-duration: 21s; animation-delay: -7s;   top: -20px; }
+    .particle:nth-child(10) { left: 91%;  width: 13px; height: 19px; background: rgba(163,184,153,0.2); animation-duration: 16s; animation-delay: -15s;  top: -20px; }
+    .particle:nth-child(11) { left: 5%;   width: 5px;  height: 8px;  background: rgba(212,168,83,0.25); animation-duration: 24s; animation-delay: -9s;   top: -20px; }
+    .particle:nth-child(12) { left: 20%;  width: 16px; height: 10px; background: rgba(64,145,108,0.2);  animation-duration: 14s; animation-delay: -11s;  top: -20px; }
+    .particle:nth-child(13) { left: 38%;  width: 8px;  height: 14px; background: rgba(163,184,153,0.35);animation-duration: 26s; animation-delay: -5s;   top: -20px; }
+    .particle:nth-child(14) { left: 50%;  width: 12px; height: 8px;  background: rgba(212,168,83,0.15); animation-duration: 18s; animation-delay: -14s;  top: -20px; }
+    .particle:nth-child(15) { left: 68%;  width: 6px;  height: 10px; background: rgba(45,106,79,0.25);  animation-duration: 22s; animation-delay: -1s;   top: -20px; }
+    .particle:nth-child(16) { left: 78%;  width: 18px; height: 12px; background: rgba(163,184,153,0.2); animation-duration: 20s; animation-delay: -13s;  top: -20px; }
+    .particle:nth-child(17) { left: 88%;  width: 9px;  height: 15px; background: rgba(212,168,83,0.3);  animation-duration: 15s; animation-delay: -8s;   top: -20px; }
+    .particle:nth-child(18) { left: 30%;  width: 11px; height: 7px;  background: rgba(64,145,108,0.3);  animation-duration: 19s; animation-delay: -16s;  top: -20px; }
+    .particle:nth-child(19) { left: 57%;  width: 14px; height: 9px;  background: rgba(163,184,153,0.25);animation-duration: 23s; animation-delay: -4s;   top: -20px; }
+    .particle:nth-child(20) { left: 95%;  width: 7px;  height: 12px; background: rgba(212,168,83,0.2);  animation-duration: 17s; animation-delay: -18s;  top: -20px; }
+
+    @keyframes drift {
+      0%   { transform: translateY(0)   rotate(0deg)   translateX(0);   opacity: 0; }
+      5%   { opacity: 0.8; }
+      90%  { opacity: 0.6; }
+      100% { transform: translateY(110vh) rotate(360deg) translateX(40px); opacity: 0; }
+    }
 
     /* Gradient Texts */
     .gradient-text {
-      background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 40%, #22C55E 100%);
+      background: linear-gradient(135deg, var(--leaf-light) 0%, var(--gold) 45%, var(--gold-glow) 100%);
       -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
     }
     .gradient-text-accent {
-      background: linear-gradient(135deg, #F59E0B, #22C55E);
+      background: linear-gradient(135deg, var(--gold), var(--leaf-light));
       -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
     }
 
-    /* Hero Background */
+    /* Hero Background — dark forest */
     .hero-gradient {
-      background: linear-gradient(135deg, #EFF6FF 0%, #F8FAFC 30%, #F0FDF4 60%, #FFFBEB 100%);
+      background:
+        radial-gradient(ellipse at 70% 0%, rgba(45, 106, 79, 0.25) 0%, transparent 55%),
+        radial-gradient(ellipse at 15% 85%, rgba(27, 67, 50, 0.4) 0%, transparent 50%),
+        radial-gradient(ellipse at 90% 80%, rgba(212, 168, 83, 0.08) 0%, transparent 45%),
+        linear-gradient(160deg, #0C1F0F 0%, #122318 35%, #0F2214 65%, #0C1F0F 100%);
       position: relative;
     }
     .hero-gradient::before {
       content: '';
       position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-      background: radial-gradient(ellipse at 80% 20%, rgba(59, 130, 246, 0.08) 0%, transparent 50%),
-                  radial-gradient(ellipse at 20% 80%, rgba(34, 197, 94, 0.06) 0%, transparent 50%);
+      background:
+        radial-gradient(ellipse at 80% 20%, rgba(64, 145, 108, 0.15) 0%, transparent 48%),
+        radial-gradient(ellipse at 20% 75%, rgba(45, 106, 79, 0.12) 0%, transparent 48%),
+        radial-gradient(ellipse at 50% 50%, rgba(212, 168, 83, 0.05) 0%, transparent 60%);
       pointer-events: none;
+    }
+    .hero-gradient::after {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.035'/%3E%3C/svg%3E");
+      background-size: 200px 200px;
+      pointer-events: none; opacity: 0.6;
+    }
+
+    /* Noise texture reusable on gradient sections */
+    .texture-overlay { position: relative; }
+    .texture-overlay::after {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      background-size: 200px 200px;
+      pointer-events: none; opacity: 0.5;
     }
 
     /* Keyframes */
@@ -159,8 +264,8 @@
       to { opacity: 1; transform: perspective(400px) rotateY(0); }
     }
     @keyframes glowPulse {
-      0%, 100% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.15), 0 0 60px rgba(34, 197, 94, 0.08); }
-      50% { box-shadow: 0 0 30px rgba(59, 130, 246, 0.3), 0 0 80px rgba(34, 197, 94, 0.15); }
+      0%, 100% { box-shadow: 0 0 24px rgba(212, 168, 83, 0.15), 0 0 70px rgba(64, 145, 108, 0.08); }
+      50% { box-shadow: 0 0 40px rgba(212, 168, 83, 0.28), 0 0 100px rgba(64, 145, 108, 0.14); }
     }
     @keyframes gradientShift {
       0% { background-position: 0% 50%; }
@@ -182,33 +287,106 @@
       50% { border-radius: 50% 60% 30% 60% / 40% 70% 50% 60%; }
       75% { border-radius: 60% 30% 50% 40% / 70% 40% 60% 30%; }
     }
+    @keyframes goldShimmer {
+      0% { background-position: -200% center; }
+      100% { background-position: 200% center; }
+    }
 
-    /* Scroll-triggered animations */
-    .reveal { opacity: 0; transform: translateY(40px); transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
-    .reveal.active { opacity: 1; transform: translateY(0); }
-    .reveal-scale { opacity: 0; transform: scale(0.88); transition: all 0.7s cubic-bezier(0.16, 1, 0.3, 1); }
-    .reveal-scale.active { opacity: 1; transform: scale(1); }
-    .reveal-left { opacity: 0; transform: translateX(-50px); transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
-    .reveal-left.active { opacity: 1; transform: translateX(0); }
-    .reveal-right { opacity: 0; transform: translateX(50px); transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
-    .reveal-right.active { opacity: 1; transform: translateX(0); }
-    .reveal-flip { opacity: 0; transform: perspective(400px) rotateY(30deg); transition: all 0.9s cubic-bezier(0.16, 1, 0.3, 1); }
-    .reveal-flip.active { opacity: 1; transform: perspective(400px) rotateY(0); }
+    /* Scroll-triggered animations — with blur-to-clear */
+    .reveal {
+      opacity: 0;
+      transform: translateY(40px);
+      filter: blur(4px);
+      transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+                  transform 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+                  filter 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .reveal.active { opacity: 1; transform: translateY(0); filter: blur(0); }
 
-    /* Card hover */
+    .reveal-scale {
+      opacity: 0;
+      transform: scale(0.88);
+      filter: blur(4px);
+      transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+                  transform 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+                  filter 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .reveal-scale.active { opacity: 1; transform: scale(1); filter: blur(0); }
+
+    .reveal-left {
+      opacity: 0;
+      transform: translateX(-50px);
+      filter: blur(4px);
+      transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+                  transform 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+                  filter 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .reveal-left.active { opacity: 1; transform: translateX(0); filter: blur(0); }
+
+    .reveal-right {
+      opacity: 0;
+      transform: translateX(50px);
+      filter: blur(4px);
+      transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+                  transform 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+                  filter 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .reveal-right.active { opacity: 1; transform: translateX(0); filter: blur(0); }
+
+    .reveal-flip {
+      opacity: 0;
+      transform: perspective(400px) rotateY(30deg);
+      filter: blur(3px);
+      transition: opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1),
+                  transform 0.9s cubic-bezier(0.16, 1, 0.3, 1),
+                  filter 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .reveal-flip.active { opacity: 1; transform: perspective(400px) rotateY(0); filter: blur(0); }
+
+    /* Card hover — dark glassmorphism */
     .card-hover {
       transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
       position: relative; overflow: hidden;
+      background-clip: padding-box;
+      background: var(--glass-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--glass-border);
     }
+    /* Animated gold gradient top border */
     .card-hover::before {
       content: '';
-      position: absolute; top: 0; left: 0; right: 0; height: 3px;
-      background: linear-gradient(90deg, #3B82F6, #22C55E);
+      position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, var(--leaf-light), var(--gold), var(--gold-glow), var(--leaf-light));
+      background-size: 300% 100%;
       transform: scaleX(0); transform-origin: left;
       transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
     }
-    .card-hover:hover::before { transform: scaleX(1); }
-    .card-hover:hover { transform: translateY(-8px) scale(1.02); box-shadow: 0 25px 50px -12px rgba(30, 64, 175, 0.22); }
+    .card-hover:hover::before {
+      transform: scaleX(1);
+      animation: gradientShift 3s ease infinite;
+    }
+    /* Glass inset glow on hover */
+    .card-hover::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(212,168,83,0.06) 0%, rgba(64,145,108,0.04) 60%);
+      opacity: 0;
+      transition: opacity 0.4s ease;
+      pointer-events: none;
+    }
+    .card-hover:hover::after { opacity: 1; }
+    .card-hover:hover {
+      transform: translateY(-10px) scale(1.02);
+      box-shadow:
+        0 30px 60px -12px rgba(0, 0, 0, 0.4),
+        0 8px 20px -4px rgba(212, 168, 83, 0.12),
+        inset 0 1px 0 rgba(163, 184, 153, 0.15);
+      background-color: rgba(27, 67, 50, 0.4);
+      border-color: var(--glass-border-hover);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+    }
 
     /* Feature icon */
     .feature-icon {
@@ -229,7 +407,7 @@
     .morph-blob {
       position: absolute; pointer-events: none;
       animation: morphBlob 12s ease-in-out infinite;
-      background: linear-gradient(135deg, rgba(59, 130, 246, 0.08), rgba(34, 197, 94, 0.06));
+      background: linear-gradient(135deg, rgba(45, 106, 79, 0.12), rgba(64, 145, 108, 0.08));
     }
 
     /* Gradient shift backgrounds */
@@ -242,55 +420,98 @@
     .parallax-layer { transition: transform 0.1s linear; will-change: transform; }
 
     /* Language button */
-    .lang-btn { transition: all 0.2s ease; }
-    .lang-btn.active { background-color: #1E40AF; color: white; box-shadow: 0 2px 8px rgba(30, 64, 175, 0.3); }
-    .lang-btn:not(.active):hover { background-color: #E5E7EB; }
+    .lang-btn {
+      transition: all 0.2s ease;
+      padding: 5px 10px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      border: none;
+      background: transparent;
+      color: var(--sage);
+      cursor: pointer;
+      letter-spacing: 0.03em;
+    }
+    .lang-btn.active {
+      background: rgba(212, 168, 83, 0.18);
+      color: var(--gold-light);
+      box-shadow: 0 0 0 1px rgba(212, 168, 83, 0.3);
+    }
+    .lang-btn:not(.active):hover {
+      color: var(--gold-light);
+      background: rgba(212, 168, 83, 0.1);
+    }
 
     /* Hero logo glow */
     .logo-glow {
-      filter: drop-shadow(0 0 30px rgba(59, 130, 246, 0.2)) drop-shadow(0 0 60px rgba(34, 197, 94, 0.1));
+      filter: drop-shadow(0 0 30px rgba(212, 168, 83, 0.20)) drop-shadow(0 0 60px rgba(64, 145, 108, 0.12));
     }
 
     /* Floating decorative elements */
     .floating-particle {
       position: absolute; border-radius: 50%; pointer-events: none;
-      background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(34, 197, 94, 0.15));
+      background: linear-gradient(135deg, rgba(45, 106, 79, 0.25), rgba(64, 145, 108, 0.18));
     }
 
-    /* Stats counter */
+    /* Stats section — deep forest green nature theme */
+    .stats-forest {
+      background: linear-gradient(135deg, #0C1F0F 0%, #112A14 30%, #1B4332 65%, #163A27 100%);
+      background-size: 200% 200%;
+      animation: gradientShift 12s ease infinite;
+      position: relative;
+      overflow: hidden;
+    }
+    .stats-forest::before {
+      content: '';
+      position: absolute; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n2'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n2)' opacity='0.06'/%3E%3C/svg%3E");
+      background-size: 200px 200px;
+      pointer-events: none;
+    }
+    /* Gold accent dividers for stat items on dark forest bg */
     .stat-item { position: relative; }
     .stat-item::after {
       content: '';
       position: absolute; right: 0; top: 50%; transform: translateY(-50%);
       width: 1px; height: 40px;
-      background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.2), transparent);
+      background: linear-gradient(to bottom, transparent, rgba(212, 168, 83, 0.25), transparent);
     }
     .stat-item:last-child::after { display: none; }
+    /* Stat text gold accent */
+    .stats-forest .text-primary-200 {
+      color: rgba(212, 168, 83, 0.75) !important;
+    }
 
     /* Navbar scroll */
-    .nav-scrolled { box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06); }
+    .nav-scrolled { box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); }
 
-    /* CTA shimmer */
+    /* CTA shimmer button — gold/green gradient */
     .btn-shimmer {
       background-size: 200% auto;
-      background-image: linear-gradient(90deg, #1E40AF 0%, #3B82F6 50%, #1E40AF 100%);
-      animation: shimmer 3s linear infinite;
+      background-image: linear-gradient(135deg, var(--leaf-mid) 0%, var(--leaf-light) 30%, var(--gold) 65%, var(--leaf-mid) 100%);
+      animation: shimmer 3.5s linear infinite;
+      color: var(--forest-deep);
+      font-weight: 700;
+      border: 1px solid rgba(212, 168, 83, 0.4);
     }
 
     /* Mobile phone mockup */
     .phone-mockup {
       width: 260px; height: 520px;
       border-radius: 36px;
-      border: 6px solid #1f2937;
-      background: linear-gradient(180deg, #f8fafc 0%, #eff6ff 100%);
-      box-shadow: 0 40px 80px -20px rgba(30, 64, 175, 0.25), 0 0 0 1px rgba(0,0,0,0.05);
+      border: 6px solid var(--leaf-dark);
+      background: linear-gradient(180deg, var(--forest-mid) 0%, #0F2214 100%);
+      box-shadow:
+        0 40px 80px -20px rgba(0, 0, 0, 0.6),
+        0 0 0 1px rgba(163, 184, 153, 0.1),
+        inset 0 1px 0 rgba(163, 184, 153, 0.1);
       position: relative; overflow: hidden;
     }
     .phone-mockup::before {
       content: '';
       position: absolute; top: 0; left: 50%; transform: translateX(-50%);
       width: 100px; height: 24px;
-      background: #1f2937; border-radius: 0 0 16px 16px;
+      background: var(--leaf-dark); border-radius: 0 0 16px 16px;
     }
 
     /* Screenshot carousel */
@@ -307,13 +528,20 @@
     .screenshot-item {
       flex-shrink: 0; width: 220px;
       border-radius: 24px; overflow: hidden;
-      border: 4px solid #1f2937;
-      box-shadow: 0 20px 40px -10px rgba(30, 64, 175, 0.2);
-      transition: transform 0.4s ease, box-shadow 0.4s ease;
+      border: 4px solid var(--leaf-dark);
+      box-shadow:
+        0 20px 40px -10px rgba(0, 0, 0, 0.5),
+        inset 0 1px 0 rgba(163, 184, 153, 0.1);
+      transition: transform 0.4s ease, box-shadow 0.4s ease, backdrop-filter 0.4s ease;
+      background: var(--forest-mid);
     }
     .screenshot-item:hover {
-      transform: scale(1.08) translateY(-12px) rotate(-1deg);
-      box-shadow: 0 30px 60px -15px rgba(30, 64, 175, 0.35);
+      transform: scale(1.08) translateY(-14px) rotate(-1deg);
+      box-shadow:
+        0 36px 70px -15px rgba(0, 0, 0, 0.6),
+        0 0 0 1px rgba(212, 168, 83, 0.25);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
     }
     .screenshot-item img { width: 100%; height: auto; display: block; }
 
@@ -322,34 +550,50 @@
     #mobile-menu.open { opacity: 1; }
     #mobile-panel { transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
 
-    /* Premium badge */
+    /* Premium badge — luxurious gold gradient */
     .premium-badge {
       position: absolute; top: 12px; right: 12px;
       display: inline-flex; align-items: center; gap: 3px;
-      background: linear-gradient(135deg, #F59E0B, #FBBF24);
-      color: white; font-size: 10px; font-weight: 700;
+      background: linear-gradient(135deg, #B8860B 0%, #D4A853 40%, #F0C674 70%, #D4A853 100%);
+      background-size: 200% auto;
+      animation: goldShimmer 3s linear infinite;
+      color: #3B1F00; font-size: 10px; font-weight: 700;
       padding: 3px 9px; border-radius: 999px;
-      box-shadow: 0 2px 8px rgba(245, 158, 11, 0.4);
-      letter-spacing: 0.02em;
+      box-shadow: 0 2px 10px rgba(212, 168, 83, 0.45), 0 0 0 1px rgba(212, 168, 83, 0.2);
+      letter-spacing: 0.04em;
+      text-shadow: 0 1px 0 rgba(255,255,255,0.3);
     }
 
     /* FAQ accordion */
-    .faq-item { border-bottom: 1px solid #F3F4F6; }
-    .faq-question { cursor: pointer; user-select: none; background: none; border: none; width: 100%; text-align: left; }
+    .faq-item { border-bottom: 1px solid var(--glass-border); }
+    .faq-question { cursor: pointer; user-select: none; background: none; border: none; width: 100%; text-align: left; color: var(--sage-light); }
     .faq-answer { max-height: 0; overflow: hidden; transition: max-height 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
     .faq-answer.open { max-height: 200px; }
-    .faq-icon { transition: transform 0.3s ease; }
+    .faq-icon { transition: transform 0.3s ease; color: var(--sage); }
     .faq-item.open .faq-icon { transform: rotate(180deg); }
 
     /* How it works connector line */
     .how-connector { flex: 1; height: 2px; max-width: 60px;
-      background: linear-gradient(90deg, #3B82F6, #22C55E);
+      background: linear-gradient(90deg, var(--leaf-light), var(--gold));
       background-size: 200% 100%; animation: shimmer 3s linear infinite; }
 
     /* Step number bounce */
     .step-bounce { animation: bounceIn 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards; opacity: 0; }
     .reveal.active .step-bounce { opacity: 1; }
     .step-icon-wiggle:hover { animation: wiggle 0.5s ease-in-out; }
+
+    /* Footer — deep forest green */
+    .footer-forest {
+      background: #0C1F0F;
+      position: relative;
+    }
+    .footer-forest::before {
+      content: '';
+      position: absolute; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='nf'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23nf)' opacity='0.04'/%3E%3C/svg%3E");
+      background-size: 200px 200px;
+      pointer-events: none;
+    }
 
     /* Responsive */
     @media (max-width: 768px) {
@@ -362,43 +606,440 @@
       .hero-title { font-size: 2rem !important; }
       .screenshot-item { width: 160px; border-radius: 18px; }
     }
+
+    /* ─── DECORATIVE ORBS ─── */
+    .orb {
+      position: fixed;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 0;
+      filter: blur(80px);
+      animation: morphBlob 18s ease-in-out infinite;
+    }
+    .orb-1 {
+      width: 500px; height: 500px;
+      top: -10%; left: -10%;
+      background: radial-gradient(circle, rgba(45, 106, 79, 0.12) 0%, transparent 70%);
+      animation-delay: 0s;
+    }
+    .orb-2 {
+      width: 400px; height: 400px;
+      top: 40%; right: -8%;
+      background: radial-gradient(circle, rgba(212, 168, 83, 0.07) 0%, transparent 70%);
+      animation-delay: -6s;
+    }
+    .orb-3 {
+      width: 350px; height: 350px;
+      bottom: 10%; left: 30%;
+      background: radial-gradient(circle, rgba(64, 145, 108, 0.09) 0%, transparent 70%);
+      animation-delay: -12s;
+    }
+
+    /* ─── ANIMATION UTILITY CLASSES ─── */
+    .animate-float { animation: float 6s ease-in-out infinite; }
+    .animate-float-delayed { animation: float 6s ease-in-out 2s infinite; }
+    .animate-float-slow { animation: float 8s ease-in-out 1s infinite; }
+    .animate-fade-up { animation: fadeUp 0.8s ease-out forwards; }
+    .animate-fade-up-delay-1 { animation: fadeUp 0.8s ease-out 0.15s forwards; }
+    .animate-fade-up-delay-2 { animation: fadeUp 0.8s ease-out 0.3s forwards; }
+    .animate-fade-up-delay-3 { animation: fadeUp 0.8s ease-out 0.45s forwards; }
+    .animate-scale-in { animation: scaleIn 0.6s ease-out forwards; }
+    .animate-slide-right { animation: slideRight 0.8s ease-out forwards; }
+    .animate-slide-left { animation: slideLeft 0.8s ease-out forwards; }
+    .animate-pulse-soft { animation: pulseSoft 3s ease-in-out infinite; }
+    .animate-\[spin_60s_linear_infinite\] { animation: spin 60s linear infinite; }
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+    /* ─── LAYOUT UTILITIES ─── */
+    *, *::before, *::after { box-sizing: border-box; }
+
+    .flex { display: flex; }
+    .inline-flex { display: inline-flex; }
+    .grid { display: grid; }
+    .hidden { display: none !important; }
+    .relative { position: relative; }
+
+    .flex-col { flex-direction: column; }
+    .flex-1 { flex: 1 1 0%; }
+    .flex-shrink-0 { flex-shrink: 0; }
+    .flex-wrap { flex-wrap: wrap; }
+
+    .items-center { align-items: center; }
+    .items-start { align-items: flex-start; }
+    .justify-center { justify-content: center; }
+    .justify-between { justify-content: space-between; }
+    .justify-end { justify-content: flex-end; }
+    .justify-start { justify-content: flex-start; }
+
+    .gap-1 { gap: 0.25rem; }
+    .gap-1\.5 { gap: 0.375rem; }
+    .gap-2 { gap: 0.5rem; }
+    .gap-2\.5 { gap: 0.625rem; }
+    .gap-3 { gap: 0.75rem; }
+    .gap-4 { gap: 1rem; }
+    .gap-6 { gap: 1.5rem; }
+    .gap-8 { gap: 2rem; }
+    .gap-12 { gap: 3rem; }
+    .gap-16 { gap: 4rem; }
+
+    .grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+    .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+    /* ─── SPACING UTILITIES ─── */
+    .p-2 { padding: 0.5rem; }
+    .p-3 { padding: 0.75rem; }
+    .p-7 { padding: 1.75rem; }
+    .px-3 { padding-left: 0.75rem; padding-right: 0.75rem; }
+    .px-4 { padding-left: 1rem; padding-right: 1rem; }
+    .px-6 { padding-left: 1.5rem; padding-right: 1.5rem; }
+    .px-8 { padding-left: 2rem; padding-right: 2rem; }
+    .py-1\.5 { padding-top: 0.375rem; padding-bottom: 0.375rem; }
+    .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+    .py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
+    .py-4 { padding-top: 1rem; padding-bottom: 1rem; }
+    .py-5 { padding-top: 1.25rem; padding-bottom: 1.25rem; }
+    .py-8 { padding-top: 2rem; padding-bottom: 2rem; }
+    .py-12 { padding-top: 3rem; padding-bottom: 3rem; }
+    .py-16 { padding-top: 4rem; padding-bottom: 4rem; }
+    .py-20 { padding-top: 5rem; padding-bottom: 5rem; }
+    .py-1 { padding-top: 0.25rem; padding-bottom: 0.25rem; }
+    .pt-2 { padding-top: 0.5rem; }
+    .pt-3 { padding-top: 0.75rem; }
+    .pt-8 { padding-top: 2rem; }
+    .pt-28 { padding-top: 7rem; }
+    .pb-1 { padding-bottom: 0.25rem; }
+    .pb-3 { padding-bottom: 0.75rem; }
+    .pb-16 { padding-bottom: 4rem; }
+
+    .mb-1 { margin-bottom: 0.25rem; }
+    .mb-2 { margin-bottom: 0.5rem; }
+    .mb-3 { margin-bottom: 0.75rem; }
+    .mb-4 { margin-bottom: 1rem; }
+    .mb-5 { margin-bottom: 1.25rem; }
+    .mb-6 { margin-bottom: 1.5rem; }
+    .mb-8 { margin-bottom: 2rem; }
+    .mb-10 { margin-bottom: 2.5rem; }
+    .mb-12 { margin-bottom: 3rem; }
+    .mb-14 { margin-bottom: 3.5rem; }
+    .mb-16 { margin-bottom: 4rem; }
+    .mt-0\.5 { margin-top: 0.125rem; }
+    .mt-3 { margin-top: 0.75rem; }
+    .mt-6 { margin-top: 1.5rem; }
+    .mt-10 { margin-top: 2.5rem; }
+    .mx-auto { margin-left: auto; margin-right: auto; }
+
+    /* ─── SIZING UTILITIES ─── */
+    .w-full { width: 100%; }
+    .w-2 { width: 0.5rem; }
+    .w-3 { width: 0.75rem; }
+    .w-4 { width: 1rem; }
+    .w-5 { width: 1.25rem; }
+    .w-6 { width: 1.5rem; }
+    .w-8 { width: 2rem; }
+    .w-9 { width: 2.25rem; }
+    .w-10 { width: 2.5rem; }
+    .w-12 { width: 3rem; }
+    .w-16 { width: 4rem; }
+    .w-20 { width: 5rem; }
+    .w-48 { width: 12rem; }
+    .w-56 { width: 14rem; }
+    .w-64 { width: 16rem; }
+    .w-72 { width: 18rem; }
+    .w-px { width: 1px; }
+    .h-2 { height: 0.5rem; }
+    .h-3 { height: 0.75rem; }
+    .h-4 { height: 1rem; }
+    .h-5 { height: 1.25rem; }
+    .h-6 { height: 1.5rem; }
+    .h-8 { height: 2rem; }
+    .h-9 { height: 2.25rem; }
+    .h-10 { height: 2.5rem; }
+    .h-12 { height: 3rem; }
+    .h-16 { height: 4rem; }
+    .h-20 { height: 5rem; }
+    .h-48 { height: 12rem; }
+    .h-56 { height: 14rem; }
+    .h-64 { height: 16rem; }
+    .h-72 { height: 18rem; }
+    .w-\[800px\] { width: 800px; }
+    .h-\[400px\] { height: 400px; }
+    .min-h-\[90vh\] { min-height: 90vh; }
+    .max-w-lg { max-width: 32rem; }
+    .max-w-xl { max-width: 36rem; }
+    .max-w-2xl { max-width: 42rem; }
+    .max-w-3xl { max-width: 48rem; }
+    .max-w-md { max-width: 28rem; }
+    .max-w-6xl { max-width: 72rem; }
+    .max-w-xs { max-width: 20rem; }
+
+    /* ─── POSITION UTILITIES ─── */
+    .absolute { position: absolute; }
+    .fixed { position: fixed; }
+    .inset-0 { top: 0; right: 0; bottom: 0; left: 0; }
+    .top-0 { top: 0; }
+    .top-10 { top: 2.5rem; }
+    .top-16 { top: 4rem; }
+    .top-20 { top: 5rem; }
+    .top-40 { top: 10rem; }
+    .bottom-0 { bottom: 0; }
+    .bottom-6 { bottom: 1.5rem; }
+    .bottom-20 { bottom: 5rem; }
+    .right-0 { right: 0; }
+    .right-6 { right: 1.5rem; }
+    .right-1\/4 { right: 25%; }
+    .left-0 { left: 0; }
+    .left-1\/2 { left: 50%; }
+    .left-1\/4 { left: 25%; }
+    .-top-3 { top: -0.75rem; }
+    .-right-6 { right: -1.5rem; }
+    .-bottom-2 { bottom: -0.5rem; }
+    .-left-6 { left: -1.5rem; }
+    .-m-3 { margin: -0.75rem; }
+    .-translate-x-1\/2 { transform: translateX(-50%); }
+    .top-\[30\%\] { top: 30%; }
+    .top-\[60\%\] { top: 60%; }
+    .left-\[5\%\] { left: 5%; }
+    .left-\[10\%\] { left: 10%; }
+    .left-\[20\%\] { left: 20%; }
+    .left-\[35\%\] { left: 35%; }
+    .right-\[5\%\] { right: 5%; }
+    .right-\[15\%\] { right: 15%; }
+    .right-\[30\%\] { right: 30%; }
+
+    /* ─── Z-INDEX UTILITIES ─── */
+    .z-10 { z-index: 10; }
+    .z-40 { z-index: 40; }
+    .z-50 { z-index: 50; }
+
+    /* ─── OVERFLOW UTILITIES ─── */
+    .overflow-hidden { overflow: hidden; }
+
+    /* ─── TEXT UTILITIES ─── */
+    .text-center { text-align: center; }
+    .text-left { text-align: left; }
+    .text-right { text-align: right; }
+    .text-xs { font-size: 0.75rem; line-height: 1rem; }
+    .text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+    .text-base { font-size: 1rem; line-height: 1.5rem; }
+    .text-lg { font-size: 1.125rem; line-height: 1.75rem; }
+    .text-xl { font-size: 1.25rem; line-height: 1.75rem; }
+    .text-4xl { font-size: 2.25rem; line-height: 2.5rem; }
+    .text-3xl { font-size: 1.875rem; line-height: 2.25rem; }
+    .text-5xl { font-size: 3rem; line-height: 1; }
+    .text-\[10px\] { font-size: 10px; }
+    .text-\[11px\] { font-size: 11px; }
+    .font-medium { font-weight: 500; }
+    .font-semibold { font-weight: 600; }
+    .font-bold { font-weight: 700; }
+    .font-extrabold { font-weight: 800; }
+    .font-black { font-weight: 900; }
+    .uppercase { text-transform: uppercase; }
+    .tracking-tight { letter-spacing: -0.025em; }
+    .tracking-wide { letter-spacing: 0.025em; }
+    .tracking-wider { letter-spacing: 0.05em; }
+    .leading-relaxed { line-height: 1.625; }
+    .leading-\[1\.1\] { line-height: 1.1; }
+    .text-white { color: #ffffff; }
+    .whitespace-nowrap { white-space: nowrap; }
+    .break-all { word-break: break-all; }
+
+    /* ─── BORDER RADIUS UTILITIES ─── */
+    .rounded-lg { border-radius: 0.5rem; }
+    .rounded-xl { border-radius: 0.75rem; }
+    .rounded-2xl { border-radius: 1rem; }
+    .rounded-3xl { border-radius: 1.5rem; }
+    .rounded-full { border-radius: 9999px; }
+    .rounded-\[2rem\] { border-radius: 2rem; }
+
+    /* ─── SHADOW UTILITIES ─── */
+    .shadow-sm { box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+    .shadow-lg { box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05); }
+    .shadow-xl { box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04); }
+
+    /* ─── OPACITY UTILITIES ─── */
+    .opacity-0 { opacity: 0; }
+    .opacity-10 { opacity: 0.1; }
+    .opacity-20 { opacity: 0.2; }
+    .opacity-25 { opacity: 0.25; }
+    .opacity-30 { opacity: 0.3; }
+    .opacity-35 { opacity: 0.35; }
+    .opacity-40 { opacity: 0.4; }
+    .opacity-50 { opacity: 0.5; }
+    .opacity-60 { opacity: 0.6; }
+    .opacity-100 { opacity: 1; }
+
+    /* ─── POINTER EVENTS UTILITIES ─── */
+    .pointer-events-none { pointer-events: none; }
+
+    /* ─── TRANSITION UTILITIES ─── */
+    .transition-all { transition: all 0.15s ease; }
+    .transition-colors { transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease; }
+    .transition-transform { transition: transform 0.15s ease; }
+    .duration-200 { transition-duration: 0.2s; }
+    .duration-300 { transition-duration: 0.3s; }
+
+    /* ─── TRANSLATE UTILITIES ─── */
+    .translate-y-4 { transform: translateY(1rem); }
+    .translate-y-0 { transform: translateY(0); }
+
+    /* ─── SCALE UTILITIES ─── */
+    .hover\:scale-\[1\.02\]:hover { transform: scale(1.02); }
+    .hover\:scale-110:hover { transform: scale(1.1); }
+    .hover\:shadow-lg:hover { box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05); }
+    .group:hover .group-hover\:-translate-y-0\.5 { transform: translateY(-0.125rem); }
+    .group:hover .group-hover\:translate-y-0\.5 { transform: translateY(0.125rem); }
+
+    /* ─── BACKGROUND UTILITIES ─── */
+    .backdrop-blur { backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+    .bg-black\/50 { background-color: rgba(0, 0, 0, 0.5); }
+    .backdrop-blur-sm { backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+    .bg-emerald-400 { background-color: #34d399; }
+    .bg-yellow-400 { background-color: #facc15; }
+    .blur-3xl { filter: blur(64px); }
+
+    /* ─── SPACE UTILITIES ─── */
+    .space-y-1 > * + * { margin-top: 0.25rem; }
+    .space-y-2 > * + * { margin-top: 0.5rem; }
+    .space-y-2\.5 > * + * { margin-top: 0.625rem; }
+    .space-y-5 > * + * { margin-top: 1.25rem; }
+
+    /* ─── HIDDEN/DISPLAY UTILITIES (sm breakpoint — applied via media query below) ─── */
+
+    /* ─── FOCUS UTILITIES ─── */
+    .focus\:outline-none:focus { outline: none; }
+
+    /* ─── ROTATE UTILITY ─── */
+    .rotate-90 { transform: rotate(90deg); }
+
+    /* ─── RESPONSIVE OVERRIDES ─── */
+    @media (min-width: 640px) {
+      .sm\:hidden { display: none !important; }
+      .sm\:inline { display: inline !important; }
+      .sm\:block { display: block !important; }
+      .sm\:flex { display: flex !important; }
+      .sm\:flex-row { flex-direction: row; }
+      .sm\:gap-12 { gap: 3rem; }
+      .sm\:px-6 { padding-left: 1.5rem; padding-right: 1.5rem; }
+      .sm\:py-20 { padding-top: 5rem; padding-bottom: 5rem; }
+      .sm\:py-28 { padding-top: 7rem; padding-bottom: 7rem; }
+      .sm\:pt-36 { padding-top: 9rem; }
+      .sm\:pb-24 { padding-bottom: 6rem; }
+      .sm\:text-3xl { font-size: 1.875rem; line-height: 2.25rem; }
+      .sm\:text-4xl { font-size: 2.25rem; line-height: 2.5rem; }
+      .sm\:text-5xl { font-size: 3rem; line-height: 1; }
+      .sm\:text-xl { font-size: 1.25rem; line-height: 1.75rem; }
+      .sm\:w-24 { width: 6rem; }
+      .sm\:w-64 { width: 16rem; }
+      .sm\:w-80 { width: 20rem; }
+      .sm\:h-64 { height: 16rem; }
+      .sm\:h-80 { height: 20rem; }
+      .sm\:-left-10 { left: -2.5rem; }
+      .sm\:-right-10 { right: -2.5rem; }
+    }
+
+    @media (min-width: 768px) {
+      .md\:hidden { display: none !important; }
+      .md\:flex { display: flex !important; }
+      .md\:flex-row { flex-direction: row; }
+      .md\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .md\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .md\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+      .md\:justify-start { justify-content: flex-start; }
+      .md\:text-right { text-align: right; }
+      .md\:hidden { display: none; }
+    }
+
+    @media (min-width: 1024px) {
+      .lg\:px-8 { padding-left: 2rem; padding-right: 2rem; }
+      .lg\:text-5xl { font-size: 3rem; line-height: 1; }
+      .lg\:text-6xl { font-size: 3.75rem; line-height: 1; }
+      .lg\:flex-row { flex-direction: row; }
+      .lg\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .lg\:gap-8 { gap: 2rem; }
+      .lg\:gap-16 { gap: 4rem; }
+      .lg\:gap-20 { gap: 5rem; }
+      .lg\:mx-0 { margin-left: 0; margin-right: 0; }
+      .lg\:justify-end { justify-content: flex-end; }
+      .lg\:justify-start { justify-content: flex-start; }
+      .lg\:text-left { text-align: left; }
+      .lg\:w-72 { width: 18rem; }
+      .lg\:w-96 { width: 24rem; }
+      .lg\:h-72 { height: 18rem; }
+      .lg\:h-96 { height: 24rem; }
+    }
+
+    /* ─── BACK TO TOP — JS-toggled state classes ─── */
+    #backToTop { opacity: 0; transform: translateY(1rem); pointer-events: none; }
+    #backToTop.visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
   </style>
 </head>
-<body class="bg-white text-gray-900 antialiased">
+<body>
+
+  <!-- Background Layer -->
+  <div class="bg-layer" aria-hidden="true"></div>
+
+  <!-- Decorative Orbs -->
+  <div class="orb orb-1" aria-hidden="true"></div>
+  <div class="orb orb-2" aria-hidden="true"></div>
+  <div class="orb orb-3" aria-hidden="true"></div>
+
+  <!-- Floating Particles -->
+  <div class="particles" aria-hidden="true">
+    <div class="particle leaf"></div>
+    <div class="particle"></div>
+    <div class="particle leaf"></div>
+    <div class="particle feather"></div>
+    <div class="particle leaf"></div>
+    <div class="particle"></div>
+    <div class="particle leaf"></div>
+    <div class="particle feather"></div>
+    <div class="particle"></div>
+    <div class="particle leaf"></div>
+    <div class="particle"></div>
+    <div class="particle leaf"></div>
+    <div class="particle feather"></div>
+    <div class="particle leaf"></div>
+    <div class="particle"></div>
+    <div class="particle leaf"></div>
+    <div class="particle feather"></div>
+    <div class="particle leaf"></div>
+    <div class="particle"></div>
+    <div class="particle leaf"></div>
+  </div>
 
   <!-- Navbar -->
-  <nav id="navbar" class="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-xl border-b border-gray-100/80 transition-all duration-300">
+  <nav id="navbar" class="fixed top-0 left-0 right-0 z-50 transition-all duration-300" style="background: rgba(12,31,15,0.7); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid rgba(163,184,153,0.15);">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex items-center justify-between h-16">
         <!-- Logo -->
         <a href="#" class="flex items-center gap-2.5 group">
-          <img src="logo.png" alt="BudgieBreedingTracker" class="w-9 h-9 rounded-lg transition-transform duration-300 group-hover:scale-110">
-          <span class="font-extrabold text-lg text-primary-800 hidden sm:inline tracking-tight">BudgieBreedingTracker</span>
-          <span class="font-extrabold text-lg text-primary-800 sm:hidden tracking-tight">BBT</span>
+          <img src="logo.png" alt="BudgieBreedingTracker" class="w-9 h-9 rounded-lg transition-transform duration-300 group-hover:scale-110" style="border: 1px solid rgba(212,168,83,0.3);">
+          <span class="font-extrabold text-lg hidden sm:inline tracking-tight" style="color: var(--gold-light);">BudgieBreedingTracker</span>
+          <span class="font-extrabold text-lg sm:hidden tracking-tight" style="color: var(--gold-light);">BBT</span>
         </a>
 
         <!-- Nav Links (desktop) -->
         <div class="hidden md:flex items-center gap-6">
-          <a href="#features" class="text-sm font-medium text-gray-500 hover:text-primary-700 transition-colors duration-200" data-i18n="nav_features">Ozellikler</a>
-          <a href="#how-it-works" class="text-sm font-medium text-gray-500 hover:text-primary-700 transition-colors duration-200" data-i18n="nav_how">Nasil Calisir?</a>
-          <a href="#screenshots" class="text-sm font-medium text-gray-500 hover:text-primary-700 transition-colors duration-200" data-i18n="nav_screenshots">Ekran Goruntuleri</a>
-          <a href="#faq" class="text-sm font-medium text-gray-500 hover:text-primary-700 transition-colors duration-200" data-i18n="faq_badge">SSS</a>
-          <a href="#cta" class="text-sm font-semibold text-white bg-primary-800 px-4 py-2 rounded-lg hover:bg-primary-700 transition-all duration-200 shadow-sm hover:shadow-md" data-i18n="nav_download">Indir</a>
+          <a href="#features" class="text-sm font-medium transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="nav_features">Ozellikler</a>
+          <a href="#how-it-works" class="text-sm font-medium transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="nav_how">Nasil Calisir?</a>
+          <a href="#screenshots" class="text-sm font-medium transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="nav_screenshots">Ekran Goruntuleri</a>
+          <a href="#faq" class="text-sm font-medium transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="faq_badge">SSS</a>
+          <a href="#cta" class="text-sm font-semibold px-4 py-2 rounded-lg transition-all duration-200" style="background: linear-gradient(135deg, var(--leaf-mid), var(--leaf-dark)); color: var(--gold-light); border: 1px solid rgba(212,168,83,0.3);" data-i18n="nav_download">Indir</a>
         </div>
 
         <!-- Language Switcher + Hamburger -->
         <div class="flex items-center gap-2">
-          <div class="flex items-center gap-1 bg-gray-100/80 rounded-lg p-1">
-            <button onclick="setLanguage('tr')" class="lang-btn px-2.5 py-1 rounded-md text-xs font-semibold active" data-lang="tr">TR</button>
-            <button onclick="setLanguage('en')" class="lang-btn px-2.5 py-1 rounded-md text-xs font-semibold" data-lang="en">EN</button>
-            <button onclick="setLanguage('de')" class="lang-btn px-2.5 py-1 rounded-md text-xs font-semibold" data-lang="de">DE</button>
+          <div class="flex items-center gap-1 rounded-lg p-1" style="background: rgba(27,67,50,0.4); border: 1px solid var(--glass-border);">
+            <button onclick="setLanguage('tr')" class="lang-btn active" data-lang="tr">TR</button>
+            <button onclick="setLanguage('en')" class="lang-btn" data-lang="en">EN</button>
+            <button onclick="setLanguage('de')" class="lang-btn" data-lang="de">DE</button>
           </div>
           <!-- Hamburger (mobile only) -->
-          <button id="hamburger-btn" class="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors" onclick="toggleMobileMenu()" aria-label="Menü aç/kapat">
-            <svg id="hamburger-icon" class="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <button id="hamburger-btn" class="md:hidden p-2 rounded-lg transition-colors" style="color: var(--sage);" onclick="toggleMobileMenu()" aria-label="Menü aç/kapat">
+            <svg id="hamburger-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
             </svg>
-            <svg id="close-icon" class="w-5 h-5 text-gray-700 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg id="close-icon" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
             </svg>
           </button>
@@ -409,14 +1050,14 @@
 
   <!-- Mobile Menu Panel -->
   <div id="mobile-menu" class="fixed inset-0 z-40 hidden" aria-hidden="true">
-    <div class="absolute inset-0 bg-black/20 backdrop-blur-sm" onclick="closeMobileMenu()"></div>
-    <div id="mobile-panel" class="absolute top-16 left-0 right-0 bg-white shadow-xl border-b border-gray-100" style="transform: translateY(-110%);">
+    <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="closeMobileMenu()"></div>
+    <div id="mobile-panel" class="absolute top-16 left-0 right-0 shadow-xl" style="background: rgba(12,31,15,0.95); backdrop-filter: blur(20px); border-bottom: 1px solid var(--glass-border); transform: translateY(-110%);">
       <div class="px-4 py-4 space-y-1">
-        <a href="#features" onclick="closeMobileMenu()" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-50 text-gray-700 font-medium transition-colors" data-i18n="nav_features">Özellikler</a>
-        <a href="#how-it-works" onclick="closeMobileMenu()" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-50 text-gray-700 font-medium transition-colors" data-i18n="nav_how">Nasıl Çalışır?</a>
-        <a href="#screenshots" onclick="closeMobileMenu()" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-50 text-gray-700 font-medium transition-colors" data-i18n="nav_screenshots">Ekran Görüntüleri</a>
+        <a href="#features" onclick="closeMobileMenu()" class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors" style="color: var(--sage-light);" data-i18n="nav_features">Özellikler</a>
+        <a href="#how-it-works" onclick="closeMobileMenu()" class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors" style="color: var(--sage-light);" data-i18n="nav_how">Nasıl Çalışır?</a>
+        <a href="#screenshots" onclick="closeMobileMenu()" class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors" style="color: var(--sage-light);" data-i18n="nav_screenshots">Ekran Görüntüleri</a>
         <div class="px-4 pt-2 pb-3">
-          <a href="#cta" onclick="closeMobileMenu()" class="flex items-center justify-center w-full py-3 bg-primary-800 text-white font-semibold rounded-xl hover:bg-primary-700 transition-all" data-i18n="nav_download">İndir</a>
+          <a href="#cta" onclick="closeMobileMenu()" class="flex items-center justify-center w-full py-3 font-semibold rounded-xl transition-all" style="background: linear-gradient(135deg, var(--leaf-mid), var(--leaf-dark)); color: var(--gold-light); border: 1px solid rgba(212,168,83,0.3);" data-i18n="nav_download">İndir</a>
         </div>
       </div>
     </div>
@@ -438,27 +1079,27 @@
       <div class="flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
         <!-- Hero Text -->
         <div class="flex-1 text-center lg:text-left">
-          <div class="inline-flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur border border-primary-100 rounded-full mb-6 shadow-sm opacity-0 animate-fade-up">
-            <span class="w-2 h-2 bg-budgie-500 rounded-full animate-pulse-soft"></span>
-            <span class="text-xs font-semibold text-primary-700 tracking-wide uppercase" data-i18n="hero_badge">Yetistiriciler Icin Tasarlandi</span>
+          <div class="inline-flex items-center gap-2 px-4 py-2 backdrop-blur rounded-full mb-6 shadow-sm opacity-0 animate-fade-up" style="background: rgba(27,67,50,0.4); border: 1px solid var(--glass-border);">
+            <span class="w-2 h-2 rounded-full animate-pulse-soft" style="background: var(--leaf-light);"></span>
+            <span class="text-xs font-semibold tracking-wide uppercase" style="color: var(--gold);" data-i18n="hero_badge">Yetistiriciler Icin Tasarlandi</span>
           </div>
 
           <h1 class="hero-title text-4xl sm:text-5xl lg:text-6xl font-black leading-[1.1] tracking-tight mb-6 opacity-0 animate-fade-up-delay-1">
-            <span class="text-gray-900" data-i18n="hero_title_1">Muhabbet Kusu</span><br>
+            <span style="color: var(--sage-light);" data-i18n="hero_title_1">Muhabbet Kusu</span><br>
             <span class="gradient-text" data-i18n="hero_title_2">Ureme Takibi</span><br>
-            <span class="text-gray-900" data-i18n="hero_title_3">Artik Kolay</span>
+            <span style="color: var(--sage-light);" data-i18n="hero_title_3">Artik Kolay</span>
           </h1>
 
-          <p class="text-lg sm:text-xl text-gray-500 max-w-lg mx-auto lg:mx-0 mb-10 leading-relaxed opacity-0 animate-fade-up-delay-2" data-i18n="hero_subtitle">
+          <p class="text-lg sm:text-xl max-w-lg mx-auto lg:mx-0 mb-10 leading-relaxed opacity-0 animate-fade-up-delay-2" style="color: var(--sage);" data-i18n="hero_subtitle">
             Kuslarinizi, yumurtalarinizi, yavrularinizi ve genetik hesaplamarinizi tek bir uygulamada yonetin. Offline calisin, verileriniz guvende kalsin.
           </p>
 
           <div class="flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start opacity-0 animate-fade-up-delay-3">
-            <a href="#cta" class="group inline-flex items-center gap-2.5 px-8 py-4 btn-shimmer text-white font-bold rounded-2xl transition-all shadow-lg shadow-primary-800/25 hover:shadow-xl hover:shadow-primary-800/35 hover:scale-[1.02]">
+            <a href="#cta" class="group inline-flex items-center gap-2.5 px-8 py-4 btn-shimmer rounded-2xl transition-all hover:scale-[1.02]" style="box-shadow: 0 8px 32px rgba(212,168,83,0.2);">
               <svg class="w-5 h-5 transition-transform group-hover:-translate-y-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
               <span data-i18n="hero_cta_primary">Uygulamayi Indir</span>
             </a>
-            <a href="#features" class="group inline-flex items-center gap-2 px-8 py-4 bg-white/80 backdrop-blur text-primary-800 font-semibold rounded-2xl border border-primary-100 hover:border-primary-200 hover:bg-white transition-all hover:shadow-md">
+            <a href="#features" class="group inline-flex items-center gap-2 px-8 py-4 backdrop-blur font-semibold rounded-2xl transition-all hover:shadow-md" style="background: rgba(27,67,50,0.35); color: var(--gold-light); border: 1px solid var(--glass-border);" onmouseover="this.style.borderColor='var(--glass-border-hover)'" onmouseout="this.style.borderColor='var(--glass-border)'">
               <span data-i18n="hero_cta_secondary">Ozellikleri Kesfet</span>
               <svg class="w-4 h-4 transition-transform group-hover:translate-y-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
             </a>
@@ -474,65 +1115,65 @@
                 <!-- App header inside phone -->
                 <img src="logo.png" alt="App Logo" class="w-20 h-20 rounded-2xl shadow-lg mt-6 mb-4">
                 <div class="text-center mb-4">
-                  <div class="text-sm font-bold text-gray-800">BudgieBreedingTracker</div>
-                  <div class="text-[10px] text-gray-400 mt-0.5" data-i18n="phone_subtitle">Ureme Takip Uygulamasi</div>
+                  <div class="text-sm font-bold" style="color: var(--gold-light);">BudgieBreedingTracker</div>
+                  <div class="text-[10px] mt-0.5" style="color: var(--sage);" data-i18n="phone_subtitle">Ureme Takip Uygulamasi</div>
                 </div>
                 <!-- Mock stats inside phone -->
                 <div class="w-full space-y-2.5 px-1">
-                  <div class="flex items-center gap-3 bg-white rounded-xl p-3 shadow-sm border border-gray-100">
-                    <div class="w-9 h-9 bg-primary-50 rounded-lg flex items-center justify-center text-base">🐦</div>
+                  <div class="flex items-center gap-3 rounded-xl p-3 shadow-sm" style="background: rgba(27,67,50,0.5); border: 1px solid var(--glass-border);">
+                    <div class="w-9 h-9 rounded-lg flex items-center justify-center text-base" style="background: rgba(45,106,79,0.4);">🐦</div>
                     <div class="flex-1">
-                      <div class="text-[11px] text-gray-400" data-i18n="phone_birds">Kuslarim</div>
-                      <div class="text-sm font-bold text-gray-800">24</div>
+                      <div class="text-[11px]" style="color: var(--sage);" data-i18n="phone_birds">Kuslarim</div>
+                      <div class="text-sm font-bold" style="color: var(--sage-light);">24</div>
                     </div>
-                    <div class="text-budgie-500 text-[10px] font-semibold">+3</div>
+                    <div class="text-[10px] font-semibold" style="color: var(--gold);">+3</div>
                   </div>
-                  <div class="flex items-center gap-3 bg-white rounded-xl p-3 shadow-sm border border-gray-100">
-                    <div class="w-9 h-9 bg-pink-50 rounded-lg flex items-center justify-center text-base">💕</div>
+                  <div class="flex items-center gap-3 rounded-xl p-3 shadow-sm" style="background: rgba(27,67,50,0.5); border: 1px solid var(--glass-border);">
+                    <div class="w-9 h-9 rounded-lg flex items-center justify-center text-base" style="background: rgba(45,106,79,0.4);">💕</div>
                     <div class="flex-1">
-                      <div class="text-[11px] text-gray-400" data-i18n="phone_pairs">Ciftler</div>
-                      <div class="text-sm font-bold text-gray-800">8</div>
+                      <div class="text-[11px]" style="color: var(--sage);" data-i18n="phone_pairs">Ciftler</div>
+                      <div class="text-sm font-bold" style="color: var(--sage-light);">8</div>
                     </div>
-                    <div class="text-budgie-500 text-[10px] font-semibold">+1</div>
+                    <div class="text-[10px] font-semibold" style="color: var(--gold);">+1</div>
                   </div>
-                  <div class="flex items-center gap-3 bg-white rounded-xl p-3 shadow-sm border border-gray-100">
-                    <div class="w-9 h-9 bg-amber-50 rounded-lg flex items-center justify-center text-base">🥚</div>
+                  <div class="flex items-center gap-3 rounded-xl p-3 shadow-sm" style="background: rgba(27,67,50,0.5); border: 1px solid var(--glass-border);">
+                    <div class="w-9 h-9 rounded-lg flex items-center justify-center text-base" style="background: rgba(45,106,79,0.4);">🥚</div>
                     <div class="flex-1">
-                      <div class="text-[11px] text-gray-400" data-i18n="phone_eggs">Yumurtalar</div>
-                      <div class="text-sm font-bold text-gray-800">15</div>
+                      <div class="text-[11px]" style="color: var(--sage);" data-i18n="phone_eggs">Yumurtalar</div>
+                      <div class="text-sm font-bold" style="color: var(--sage-light);">15</div>
                     </div>
-                    <div class="text-amber-500 text-[10px] font-semibold">5 kuluçka</div>
+                    <div class="text-[10px] font-semibold" style="color: var(--gold-light);">5 kuluçka</div>
                   </div>
-                  <div class="flex items-center gap-3 bg-white rounded-xl p-3 shadow-sm border border-gray-100">
-                    <div class="w-9 h-9 bg-green-50 rounded-lg flex items-center justify-center text-base">🐥</div>
+                  <div class="flex items-center gap-3 rounded-xl p-3 shadow-sm" style="background: rgba(27,67,50,0.5); border: 1px solid var(--glass-border);">
+                    <div class="w-9 h-9 rounded-lg flex items-center justify-center text-base" style="background: rgba(45,106,79,0.4);">🐥</div>
                     <div class="flex-1">
-                      <div class="text-[11px] text-gray-400" data-i18n="phone_chicks">Yavrular</div>
-                      <div class="text-sm font-bold text-gray-800">12</div>
+                      <div class="text-[11px]" style="color: var(--sage);" data-i18n="phone_chicks">Yavrular</div>
+                      <div class="text-sm font-bold" style="color: var(--sage-light);">12</div>
                     </div>
-                    <div class="text-budgie-500 text-[10px] font-semibold">+2</div>
+                    <div class="text-[10px] font-semibold" style="color: var(--gold);">+2</div>
                   </div>
                 </div>
               </div>
             </div>
 
             <!-- Floating badge — top-right -->
-            <div class="absolute -top-3 -right-6 sm:-right-10 bg-white rounded-2xl p-3 shadow-xl border border-gray-100 animate-float-delayed z-10">
+            <div class="absolute -top-3 -right-6 sm:-right-10 rounded-2xl p-3 shadow-xl animate-float-delayed z-10" style="background: rgba(18,35,24,0.9); backdrop-filter: blur(12px); border: 1px solid var(--glass-border);">
               <div class="flex items-center gap-2">
-                <div class="w-8 h-8 bg-budgie-50 rounded-lg flex items-center justify-center">🧬</div>
+                <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: rgba(45,106,79,0.4);">🧬</div>
                 <div>
-                  <div class="text-[10px] text-gray-400">Genetik</div>
-                  <div class="text-xs font-bold text-gray-800">Punnett</div>
+                  <div class="text-[10px]" style="color: var(--sage);">Genetik</div>
+                  <div class="text-xs font-bold" style="color: var(--gold-light);">Punnett</div>
                 </div>
               </div>
             </div>
 
             <!-- Floating badge — bottom-left -->
-            <div class="absolute -bottom-2 -left-6 sm:-left-10 bg-white rounded-2xl p-3 shadow-xl border border-gray-100 animate-float-slow z-10">
+            <div class="absolute -bottom-2 -left-6 sm:-left-10 rounded-2xl p-3 shadow-xl animate-float-slow z-10" style="background: rgba(18,35,24,0.9); backdrop-filter: blur(12px); border: 1px solid var(--glass-border);">
               <div class="flex items-center gap-2">
-                <div class="w-8 h-8 bg-primary-50 rounded-lg flex items-center justify-center">☁️</div>
+                <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: rgba(45,106,79,0.4);">☁️</div>
                 <div>
-                  <div class="text-[10px] text-gray-400">Sync</div>
-                  <div class="text-xs font-bold text-budgie-600">Online ✓</div>
+                  <div class="text-[10px]" style="color: var(--sage);">Sync</div>
+                  <div class="text-xs font-bold" style="color: var(--leaf-light);">Online ✓</div>
                 </div>
               </div>
             </div>
@@ -543,24 +1184,24 @@
   </section>
 
   <!-- Trusted By / Social Proof Ribbon -->
-  <section class="py-8 bg-white border-b border-gray-50">
+  <section class="py-8 relative z-10" style="background: rgba(18,35,24,0.6); border-bottom: 1px solid var(--glass-border);">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex flex-wrap items-center justify-center gap-6 sm:gap-12 text-gray-400 text-sm">
+      <div class="flex flex-wrap items-center justify-center gap-6 sm:gap-12 text-sm" style="color: var(--sage);">
         <div class="flex items-center gap-2">
           <span class="text-xl">🔒</span>
           <span class="font-medium" data-i18n="trust_1">AES-256 Sifreleme</span>
         </div>
-        <div class="w-px h-5 bg-gray-200 hidden sm:block"></div>
+        <div class="w-px h-5 hidden sm:block" style="background: var(--glass-border);"></div>
         <div class="flex items-center gap-2">
           <span class="text-xl">📱</span>
           <span class="font-medium" data-i18n="trust_2">iOS & Android</span>
         </div>
-        <div class="w-px h-5 bg-gray-200 hidden sm:block"></div>
+        <div class="w-px h-5 hidden sm:block" style="background: var(--glass-border);"></div>
         <div class="flex items-center gap-2">
           <span class="text-xl">🌐</span>
           <span class="font-medium" data-i18n="trust_3">3 Dil Destegi</span>
         </div>
-        <div class="w-px h-5 bg-gray-200 hidden sm:block"></div>
+        <div class="w-px h-5 hidden sm:block" style="background: var(--glass-border);"></div>
         <div class="flex items-center gap-2">
           <span class="text-xl">⚡</span>
           <span class="font-medium" data-i18n="trust_4">Offline Calisir</span>
@@ -570,149 +1211,149 @@
   </section>
 
   <!-- How It Works Section -->
-  <section id="how-it-works" class="py-20 sm:py-28 bg-gradient-to-b from-gray-50/50 to-white">
+  <section id="how-it-works" class="py-20 sm:py-28 relative z-10" style="background: linear-gradient(to bottom, rgba(12,31,15,0) 0%, rgba(18,35,24,0.6) 50%, rgba(12,31,15,0) 100%);">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
       <!-- Section Header -->
       <div class="text-center mb-16 reveal">
-        <div class="inline-flex items-center gap-2 px-3 py-1.5 bg-primary-50 rounded-full mb-4">
-          <span class="text-xs font-semibold text-primary-600 uppercase tracking-wider" data-i18n="how_badge">Nasıl Çalışır?</span>
+        <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full mb-4" style="background: rgba(45,106,79,0.2); border: 1px solid var(--glass-border);">
+          <span class="text-xs font-semibold uppercase tracking-wider" style="color: var(--gold);" data-i18n="how_badge">Nasıl Çalışır?</span>
         </div>
-        <h2 class="text-3xl sm:text-4xl lg:text-5xl font-black text-gray-900 mb-4 tracking-tight" data-i18n="how_title">3 Adımda Başlayın</h2>
+        <h2 class="text-3xl sm:text-4xl lg:text-5xl font-black mb-4 tracking-tight" style="color: var(--sage-light);" data-i18n="how_title">3 Adımda Başlayın</h2>
       </div>
 
       <!-- Steps -->
       <div class="flex flex-col md:flex-row items-center justify-center reveal" style="transition-delay: 0.1s;">
         <!-- Step 1 -->
         <div class="flex flex-col items-center text-center flex-1 px-6 max-w-xs">
-          <div class="w-20 h-20 bg-primary-50 rounded-2xl flex items-center justify-center text-4xl mb-4 shadow-sm step-icon-wiggle">📥</div>
-          <div class="w-9 h-9 bg-primary-800 text-white rounded-full flex items-center justify-center font-black text-base mb-4 shadow-lg">1</div>
-          <h3 class="text-xl font-bold text-gray-900 mb-2" data-i18n="how_step1_title">İndir</h3>
-          <p class="text-gray-500 text-sm leading-relaxed" data-i18n="how_step1_desc">Uygulamayı iOS veya Android cihazınıza ücretsiz indirin ve hesabınızı oluşturun.</p>
+          <div class="w-20 h-20 rounded-2xl flex items-center justify-center text-4xl mb-4 shadow-sm step-icon-wiggle" style="background: rgba(45,106,79,0.25); border: 1px solid var(--glass-border);">📥</div>
+          <div class="w-9 h-9 rounded-full flex items-center justify-center font-black text-base mb-4 shadow-lg" style="background: var(--leaf-mid); color: var(--forest-deep);">1</div>
+          <h3 class="text-xl font-bold mb-2" style="color: var(--sage-light);" data-i18n="how_step1_title">İndir</h3>
+          <p class="text-sm leading-relaxed" style="color: var(--sage);" data-i18n="how_step1_desc">Uygulamayı iOS veya Android cihazınıza ücretsiz indirin ve hesabınızı oluşturun.</p>
         </div>
 
         <!-- Connector -->
         <div class="hidden md:flex items-center gap-1 py-4">
           <div class="how-connector"></div>
-          <svg class="w-4 h-4 text-primary-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+          <svg class="w-4 h-4 flex-shrink-0" style="color: var(--gold);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
         </div>
         <div class="md:hidden flex items-center gap-1 py-4">
-          <svg class="w-5 h-5 text-primary-300 rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+          <svg class="w-5 h-5 rotate-90" style="color: var(--sage);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
         </div>
 
         <!-- Step 2 -->
         <div class="flex flex-col items-center text-center flex-1 px-6 max-w-xs">
-          <div class="w-20 h-20 bg-budgie-50 rounded-2xl flex items-center justify-center text-4xl mb-4 shadow-sm step-icon-wiggle">🐦</div>
-          <div class="w-9 h-9 bg-budgie-600 text-white rounded-full flex items-center justify-center font-black text-base mb-4 shadow-lg">2</div>
-          <h3 class="text-xl font-bold text-gray-900 mb-2" data-i18n="how_step2_title">Kuşlarını Ekle</h3>
-          <p class="text-gray-500 text-sm leading-relaxed" data-i18n="how_step2_desc">Kuşlarınızı, çiftleştirme kayıtlarınızı ve yumurtalarınızı kolayca profile edin.</p>
+          <div class="w-20 h-20 rounded-2xl flex items-center justify-center text-4xl mb-4 shadow-sm step-icon-wiggle" style="background: rgba(45,106,79,0.25); border: 1px solid var(--glass-border);">🐦</div>
+          <div class="w-9 h-9 rounded-full flex items-center justify-center font-black text-base mb-4 shadow-lg" style="background: var(--leaf-light); color: var(--forest-deep);">2</div>
+          <h3 class="text-xl font-bold mb-2" style="color: var(--sage-light);" data-i18n="how_step2_title">Kuşlarını Ekle</h3>
+          <p class="text-sm leading-relaxed" style="color: var(--sage);" data-i18n="how_step2_desc">Kuşlarınızı, çiftleştirme kayıtlarınızı ve yumurtalarınızı kolayca profile edin.</p>
         </div>
 
         <!-- Connector -->
         <div class="hidden md:flex items-center gap-1 py-4">
           <div class="how-connector"></div>
-          <svg class="w-4 h-4 text-budgie-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+          <svg class="w-4 h-4 flex-shrink-0" style="color: var(--gold);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
         </div>
         <div class="md:hidden flex items-center gap-1 py-4">
-          <svg class="w-5 h-5 text-budgie-300 rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+          <svg class="w-5 h-5 rotate-90" style="color: var(--sage);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
         </div>
 
         <!-- Step 3 -->
         <div class="flex flex-col items-center text-center flex-1 px-6 max-w-xs">
-          <div class="w-20 h-20 bg-purple-50 rounded-2xl flex items-center justify-center text-4xl mb-4 shadow-sm step-icon-wiggle">📊</div>
-          <div class="w-9 h-9 bg-purple-600 text-white rounded-full flex items-center justify-center font-black text-base mb-4 shadow-lg">3</div>
-          <h3 class="text-xl font-bold text-gray-900 mb-2" data-i18n="how_step3_title">Takip Et & Analiz Et</h3>
-          <p class="text-gray-500 text-sm leading-relaxed" data-i18n="how_step3_desc">Genetik hesaplamalar, istatistikler ve soy ağacı ile yetiştiriciliğinizi optimize edin.</p>
+          <div class="w-20 h-20 rounded-2xl flex items-center justify-center text-4xl mb-4 shadow-sm step-icon-wiggle" style="background: rgba(212,168,83,0.15); border: 1px solid rgba(212,168,83,0.2);">📊</div>
+          <div class="w-9 h-9 rounded-full flex items-center justify-center font-black text-base mb-4 shadow-lg" style="background: var(--gold); color: var(--forest-deep);">3</div>
+          <h3 class="text-xl font-bold mb-2" style="color: var(--sage-light);" data-i18n="how_step3_title">Takip Et & Analiz Et</h3>
+          <p class="text-sm leading-relaxed" style="color: var(--sage);" data-i18n="how_step3_desc">Genetik hesaplamalar, istatistikler ve soy ağacı ile yetiştiriciliğinizi optimize edin.</p>
         </div>
       </div>
     </div>
   </section>
 
   <!-- Features Section -->
-  <section id="features" class="py-20 sm:py-28 bg-gradient-to-b from-white to-gray-50/50">
+  <section id="features" class="py-20 sm:py-28 relative z-10">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
       <!-- Section Header -->
       <div class="text-center mb-16 reveal">
-        <div class="inline-flex items-center gap-2 px-3 py-1.5 bg-primary-50 rounded-full mb-4">
-          <span class="text-xs font-semibold text-primary-600 uppercase tracking-wider" data-i18n="features_badge">Ozellikler</span>
+        <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full mb-4" style="background: rgba(45,106,79,0.2); border: 1px solid var(--glass-border);">
+          <span class="text-xs font-semibold uppercase tracking-wider" style="color: var(--gold);" data-i18n="features_badge">Ozellikler</span>
         </div>
-        <h2 class="text-3xl sm:text-4xl lg:text-5xl font-black text-gray-900 mb-4 tracking-tight" data-i18n="features_title">Her Sey Tek Uygulamada</h2>
-        <p class="text-lg text-gray-500 max-w-2xl mx-auto leading-relaxed" data-i18n="features_subtitle">Profesyonel yetistiricilik icin ihtiyaciniz olan tum araclar, akilli ve kullanimi kolay bir arayuzle.</p>
+        <h2 class="text-3xl sm:text-4xl lg:text-5xl font-black mb-4 tracking-tight" style="color: var(--sage-light);" data-i18n="features_title">Her Sey Tek Uygulamada</h2>
+        <p class="text-lg max-w-2xl mx-auto leading-relaxed" style="color: var(--sage);" data-i18n="features_subtitle">Profesyonel yetistiricilik icin ihtiyaciniz olan tum araclar, akilli ve kullanimi kolay bir arayuzle.</p>
       </div>
 
       <!-- Feature Cards Grid -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
 
         <!-- Feature 1 -->
-        <div class="card-hover bg-white rounded-2xl p-7 border border-gray-100 shadow-sm reveal-scale" style="transition-delay: 0.05s;">
-          <div class="feature-icon bg-primary-50 text-primary-600 mb-5">🐦</div>
-          <h3 class="text-lg font-bold text-gray-900 mb-2" data-i18n="feature_1_title">Kus Takibi</h3>
-          <p class="text-gray-500 text-sm leading-relaxed" data-i18n="feature_1_desc">Tum kuslarinizi halka numarasi, cinsiyet, mutasyon ve fotograflariyla detayli kayit altina alin.</p>
+        <div class="card-hover rounded-2xl p-7 reveal-scale" style="transition-delay: 0.05s;">
+          <div class="feature-icon mb-5" style="background: rgba(45,106,79,0.3);">🐦</div>
+          <h3 class="text-lg font-bold mb-2" style="color: var(--sage-light);" data-i18n="feature_1_title">Kus Takibi</h3>
+          <p class="text-sm leading-relaxed" style="color: var(--sage);" data-i18n="feature_1_desc">Tum kuslarinizi halka numarasi, cinsiyet, mutasyon ve fotograflariyla detayli kayit altina alin.</p>
         </div>
 
         <!-- Feature 2 -->
-        <div class="card-hover bg-white rounded-2xl p-7 border border-gray-100 shadow-sm reveal-scale" style="transition-delay: 0.1s;">
-          <div class="feature-icon bg-pink-50 text-pink-600 mb-5">💕</div>
-          <h3 class="text-lg font-bold text-gray-900 mb-2" data-i18n="feature_2_title">Ureme Yonetimi</h3>
-          <p class="text-gray-500 text-sm leading-relaxed" data-i18n="feature_2_desc">Ciftlestirme, yumurta takibi, kulucka sureci ve yavru gelisimini adim adim izleyin.</p>
+        <div class="card-hover rounded-2xl p-7 reveal-scale" style="transition-delay: 0.1s;">
+          <div class="feature-icon mb-5" style="background: rgba(45,106,79,0.3);">💕</div>
+          <h3 class="text-lg font-bold mb-2" style="color: var(--sage-light);" data-i18n="feature_2_title">Ureme Yonetimi</h3>
+          <p class="text-sm leading-relaxed" style="color: var(--sage);" data-i18n="feature_2_desc">Ciftlestirme, yumurta takibi, kulucka sureci ve yavru gelisimini adim adim izleyin.</p>
         </div>
 
         <!-- Feature 3 -->
-        <div class="card-hover bg-white rounded-2xl p-7 border border-gray-100 shadow-sm reveal-scale relative" style="transition-delay: 0.15s;">
+        <div class="card-hover rounded-2xl p-7 reveal-scale relative" style="transition-delay: 0.15s;">
           <div class="premium-badge">⭐ <span data-i18n="badge_premium">Premium</span></div>
-          <div class="feature-icon bg-purple-50 text-purple-600 mb-5">🧬</div>
-          <h3 class="text-lg font-bold text-gray-900 mb-2" data-i18n="feature_3_title">Genetik Hesaplayici</h3>
-          <p class="text-gray-500 text-sm leading-relaxed" data-i18n="feature_3_desc">Punnett karesi ile mutasyon tahminleri yapin, genotip analizi ve soy agaci olusturun.</p>
+          <div class="feature-icon mb-5" style="background: rgba(212,168,83,0.15);">🧬</div>
+          <h3 class="text-lg font-bold mb-2" style="color: var(--sage-light);" data-i18n="feature_3_title">Genetik Hesaplayici</h3>
+          <p class="text-sm leading-relaxed" style="color: var(--sage);" data-i18n="feature_3_desc">Punnett karesi ile mutasyon tahminleri yapin, genotip analizi ve soy agaci olusturun.</p>
         </div>
 
         <!-- Feature 4 -->
-        <div class="card-hover bg-white rounded-2xl p-7 border border-gray-100 shadow-sm reveal-scale" style="transition-delay: 0.2s;">
-          <div class="feature-icon bg-red-50 text-red-500 mb-5">❤️‍🩹</div>
-          <h3 class="text-lg font-bold text-gray-900 mb-2" data-i18n="feature_4_title">Saglik Kayitlari</h3>
-          <p class="text-gray-500 text-sm leading-relaxed" data-i18n="feature_4_desc">Veteriner ziyaretleri, tedaviler ve saglik gecmisini kaydedin. Hatirlaticilarla hicbir seyi kacirmayin.</p>
+        <div class="card-hover rounded-2xl p-7 reveal-scale" style="transition-delay: 0.2s;">
+          <div class="feature-icon mb-5" style="background: rgba(45,106,79,0.3);">❤️‍🩹</div>
+          <h3 class="text-lg font-bold mb-2" style="color: var(--sage-light);" data-i18n="feature_4_title">Saglik Kayitlari</h3>
+          <p class="text-sm leading-relaxed" style="color: var(--sage);" data-i18n="feature_4_desc">Veteriner ziyaretleri, tedaviler ve saglik gecmisini kaydedin. Hatirlaticilarla hicbir seyi kacirmayin.</p>
         </div>
 
         <!-- Feature 5 -->
-        <div class="card-hover bg-white rounded-2xl p-7 border border-gray-100 shadow-sm reveal-scale" style="transition-delay: 0.25s;">
-          <div class="feature-icon bg-green-50 text-green-600 mb-5">☁️</div>
-          <h3 class="text-lg font-bold text-gray-900 mb-2" data-i18n="feature_5_title">Offline-First & Sync</h3>
-          <p class="text-gray-500 text-sm leading-relaxed" data-i18n="feature_5_desc">Internet olmadan da calisin. Baglanti geldiginde verileriniz otomatik olarak senkronize edilir.</p>
+        <div class="card-hover rounded-2xl p-7 reveal-scale" style="transition-delay: 0.25s;">
+          <div class="feature-icon mb-5" style="background: rgba(45,106,79,0.3);">☁️</div>
+          <h3 class="text-lg font-bold mb-2" style="color: var(--sage-light);" data-i18n="feature_5_title">Offline-First & Sync</h3>
+          <p class="text-sm leading-relaxed" style="color: var(--sage);" data-i18n="feature_5_desc">Internet olmadan da calisin. Baglanti geldiginde verileriniz otomatik olarak senkronize edilir.</p>
         </div>
 
         <!-- Feature 6 -->
-        <div class="card-hover bg-white rounded-2xl p-7 border border-gray-100 shadow-sm reveal-scale" style="transition-delay: 0.3s;">
-          <div class="feature-icon bg-amber-50 text-amber-600 mb-5">🌍</div>
-          <h3 class="text-lg font-bold text-gray-900 mb-2" data-i18n="feature_6_title">Cok Dilli Destek</h3>
-          <p class="text-gray-500 text-sm leading-relaxed" data-i18n="feature_6_desc">Turkce, Ingilizce ve Almanca dil destegi. Uygulama dilinizi istediginiz zaman degistirin.</p>
+        <div class="card-hover rounded-2xl p-7 reveal-scale" style="transition-delay: 0.3s;">
+          <div class="feature-icon mb-5" style="background: rgba(212,168,83,0.15);">🌍</div>
+          <h3 class="text-lg font-bold mb-2" style="color: var(--sage-light);" data-i18n="feature_6_title">Cok Dilli Destek</h3>
+          <p class="text-sm leading-relaxed" style="color: var(--sage);" data-i18n="feature_6_desc">Turkce, Ingilizce ve Almanca dil destegi. Uygulama dilinizi istediginiz zaman degistirin.</p>
         </div>
 
         <!-- Feature 7 — Statistics (Premium) -->
-        <div class="card-hover bg-white rounded-2xl p-7 border border-gray-100 shadow-sm reveal-scale relative" style="transition-delay: 0.35s;">
+        <div class="card-hover rounded-2xl p-7 reveal-scale relative" style="transition-delay: 0.35s;">
           <div class="premium-badge">⭐ <span data-i18n="badge_premium">Premium</span></div>
-          <div class="feature-icon bg-blue-50 text-blue-600 mb-5">📈</div>
-          <h3 class="text-lg font-bold text-gray-900 mb-2" data-i18n="feature_7_title">İstatistikler</h3>
-          <p class="text-gray-500 text-sm leading-relaxed" data-i18n="feature_7_desc">Üreme başarı oranları, yavru gelişim grafikleri ve kapsamlı analitik raporlar ile veriye dayalı kararlar alın.</p>
+          <div class="feature-icon mb-5" style="background: rgba(212,168,83,0.15);">📈</div>
+          <h3 class="text-lg font-bold mb-2" style="color: var(--sage-light);" data-i18n="feature_7_title">İstatistikler</h3>
+          <p class="text-sm leading-relaxed" style="color: var(--sage);" data-i18n="feature_7_desc">Üreme başarı oranları, yavru gelişim grafikleri ve kapsamlı analitik raporlar ile veriye dayalı kararlar alın.</p>
         </div>
 
         <!-- Feature 8 — Genealogy (Premium) -->
-        <div class="card-hover bg-white rounded-2xl p-7 border border-gray-100 shadow-sm reveal-scale relative" style="transition-delay: 0.4s;">
+        <div class="card-hover rounded-2xl p-7 reveal-scale relative" style="transition-delay: 0.4s;">
           <div class="premium-badge">⭐ <span data-i18n="badge_premium">Premium</span></div>
-          <div class="feature-icon bg-indigo-50 text-indigo-600 mb-5">🌳</div>
-          <h3 class="text-lg font-bold text-gray-900 mb-2" data-i18n="feature_8_title">Soy Ağacı</h3>
-          <p class="text-gray-500 text-sm leading-relaxed" data-i18n="feature_8_desc">Kuşlarınızın soy ağacını görselleştirin, akrabalık ilişkilerini ve genetik geçmişi interaktif olarak keşfedin.</p>
+          <div class="feature-icon mb-5" style="background: rgba(212,168,83,0.15);">🌳</div>
+          <h3 class="text-lg font-bold mb-2" style="color: var(--sage-light);" data-i18n="feature_8_title">Soy Ağacı</h3>
+          <p class="text-sm leading-relaxed" style="color: var(--sage);" data-i18n="feature_8_desc">Kuşlarınızın soy ağacını görselleştirin, akrabalık ilişkilerini ve genetik geçmişi interaktif olarak keşfedin.</p>
         </div>
 
         <!-- Feature 9 — Calendar & Reminders -->
-        <div class="card-hover bg-white rounded-2xl p-7 border border-gray-100 shadow-sm reveal-scale" style="transition-delay: 0.45s;">
-          <div class="feature-icon bg-teal-50 text-teal-600 mb-5">📅</div>
-          <h3 class="text-lg font-bold text-gray-900 mb-2" data-i18n="feature_9_title">Takvim & Hatırlatıcılar</h3>
-          <p class="text-gray-500 text-sm leading-relaxed" data-i18n="feature_9_desc">Kuluçka tarihleri, veteriner randevuları ve tüm etkinlikleri takvimde görün. Akıllı hatırlatıcılarla hiçbir şeyi kaçırmayın.</p>
+        <div class="card-hover rounded-2xl p-7 reveal-scale" style="transition-delay: 0.45s;">
+          <div class="feature-icon mb-5" style="background: rgba(45,106,79,0.3);">📅</div>
+          <h3 class="text-lg font-bold mb-2" style="color: var(--sage-light);" data-i18n="feature_9_title">Takvim & Hatırlatıcılar</h3>
+          <p class="text-sm leading-relaxed" style="color: var(--sage);" data-i18n="feature_9_desc">Kuluçka tarihleri, veteriner randevuları ve tüm etkinlikleri takvimde görün. Akıllı hatırlatıcılarla hiçbir şeyi kaçırmayın.</p>
         </div>
 
         <!-- Feature 10 — Backup & Export -->
-        <div class="card-hover bg-white rounded-2xl p-7 border border-gray-100 shadow-sm reveal-scale" style="transition-delay: 0.5s;">
-          <div class="feature-icon bg-slate-50 text-slate-600 mb-5">💾</div>
-          <h3 class="text-lg font-bold text-gray-900 mb-2" data-i18n="feature_10_title">Yedekleme & Dışa Aktarma</h3>
-          <p class="text-gray-500 text-sm leading-relaxed" data-i18n="feature_10_desc">Verilerinizi PDF ve Excel olarak dışa aktarın. AES-256 şifreli yedeklerle veri güvenliğinizi sağlayın.</p>
+        <div class="card-hover rounded-2xl p-7 reveal-scale" style="transition-delay: 0.5s;">
+          <div class="feature-icon mb-5" style="background: rgba(45,106,79,0.3);">💾</div>
+          <h3 class="text-lg font-bold mb-2" style="color: var(--sage-light);" data-i18n="feature_10_title">Yedekleme & Dışa Aktarma</h3>
+          <p class="text-sm leading-relaxed" style="color: var(--sage);" data-i18n="feature_10_desc">Verilerinizi PDF ve Excel olarak dışa aktarın. AES-256 şifreli yedeklerle veri güvenliğinizi sağlayın.</p>
         </div>
 
       </div>
@@ -720,22 +1361,22 @@
   </section>
 
   <!-- App Screenshots Section -->
-  <section id="screenshots" class="py-20 sm:py-28 bg-white overflow-hidden">
+  <section id="screenshots" class="py-20 sm:py-28 overflow-hidden relative z-10" style="background: rgba(18,35,24,0.4);">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
       <!-- Section Header -->
       <div class="text-center mb-14 reveal">
-        <div class="inline-flex items-center gap-2 px-3 py-1.5 bg-primary-50 rounded-full mb-4">
-          <span class="text-xs font-semibold text-primary-600 uppercase tracking-wider" data-i18n="screenshots_badge">Ekran Goruntuleri</span>
+        <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full mb-4" style="background: rgba(45,106,79,0.2); border: 1px solid var(--glass-border);">
+          <span class="text-xs font-semibold uppercase tracking-wider" style="color: var(--gold);" data-i18n="screenshots_badge">Ekran Goruntuleri</span>
         </div>
-        <h2 class="text-3xl sm:text-4xl lg:text-5xl font-black text-gray-900 mb-4 tracking-tight" data-i18n="screenshots_title">Uygulamayi Kesfet</h2>
-        <p class="text-lg text-gray-500 max-w-2xl mx-auto leading-relaxed" data-i18n="screenshots_subtitle">Guclu ozellikleri, temiz arayuzu ve sezgisel tasarimiyla tanisin.</p>
+        <h2 class="text-3xl sm:text-4xl lg:text-5xl font-black mb-4 tracking-tight" style="color: var(--sage-light);" data-i18n="screenshots_title">Uygulamayi Kesfet</h2>
+        <p class="text-lg max-w-2xl mx-auto leading-relaxed" style="color: var(--sage);" data-i18n="screenshots_subtitle">Guclu ozellikleri, temiz arayuzu ve sezgisel tasarimiyla tanisin.</p>
       </div>
 
       <!-- Screenshot Carousel -->
       <div class="relative reveal-scale" style="transition-delay: 0.15s;">
         <!-- Gradient masks -->
-        <div class="absolute left-0 top-0 bottom-0 w-16 sm:w-24 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none"></div>
-        <div class="absolute right-0 top-0 bottom-0 w-16 sm:w-24 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none"></div>
+        <div class="absolute left-0 top-0 bottom-0 w-16 sm:w-24 z-10 pointer-events-none" style="background: linear-gradient(to right, #0C1F0F, transparent);"></div>
+        <div class="absolute right-0 top-0 bottom-0 w-16 sm:w-24 z-10 pointer-events-none" style="background: linear-gradient(to left, #0C1F0F, transparent);"></div>
 
         <div class="overflow-hidden">
           <div class="screenshot-track">
@@ -807,58 +1448,58 @@
 
       <!-- Screenshot labels -->
       <div class="flex flex-wrap items-center justify-center gap-3 mt-10 reveal" style="transition-delay: 0.25s;">
-        <span class="px-4 py-2 bg-primary-50 text-primary-700 text-sm font-medium rounded-full" data-i18n="ss_label_dashboard">Ana Sayfa</span>
-        <span class="px-4 py-2 bg-budgie-50 text-budgie-700 text-sm font-medium rounded-full" data-i18n="ss_label_birds">Kus Yonetimi</span>
-        <span class="px-4 py-2 bg-pink-50 text-pink-700 text-sm font-medium rounded-full" data-i18n="ss_label_breeding">Ureme Takibi</span>
-        <span class="px-4 py-2 bg-green-50 text-green-700 text-sm font-medium rounded-full" data-i18n="ss_label_chicks">Yavrular</span>
-        <span class="px-4 py-2 bg-orange-50 text-orange-700 text-sm font-medium rounded-full" data-i18n="ss_label_calendar">Takvim</span>
-        <span class="px-4 py-2 bg-rose-50 text-rose-700 text-sm font-medium rounded-full" data-i18n="ss_label_health">Saglik Kayitlari</span>
-        <span class="px-4 py-2 bg-red-50 text-red-700 text-sm font-medium rounded-full" data-i18n="ss_label_statistics">Istatistikler</span>
-        <span class="px-4 py-2 bg-indigo-50 text-indigo-700 text-sm font-medium rounded-full" data-i18n="ss_label_genealogy">Soy Agaci</span>
-        <span class="px-4 py-2 bg-purple-50 text-purple-700 text-sm font-medium rounded-full" data-i18n="ss_label_genetics">Genetik</span>
-        <span class="px-4 py-2 bg-slate-50 text-slate-700 text-sm font-medium rounded-full" data-i18n="ss_label_settings">Ayarlar</span>
+        <span class="px-4 py-2 text-sm font-medium rounded-full" style="background: rgba(45,106,79,0.25); color: var(--sage-light); border: 1px solid var(--glass-border);" data-i18n="ss_label_dashboard">Ana Sayfa</span>
+        <span class="px-4 py-2 text-sm font-medium rounded-full" style="background: rgba(45,106,79,0.25); color: var(--sage-light); border: 1px solid var(--glass-border);" data-i18n="ss_label_birds">Kus Yonetimi</span>
+        <span class="px-4 py-2 text-sm font-medium rounded-full" style="background: rgba(45,106,79,0.25); color: var(--sage-light); border: 1px solid var(--glass-border);" data-i18n="ss_label_breeding">Ureme Takibi</span>
+        <span class="px-4 py-2 text-sm font-medium rounded-full" style="background: rgba(45,106,79,0.25); color: var(--sage-light); border: 1px solid var(--glass-border);" data-i18n="ss_label_chicks">Yavrular</span>
+        <span class="px-4 py-2 text-sm font-medium rounded-full" style="background: rgba(45,106,79,0.25); color: var(--sage-light); border: 1px solid var(--glass-border);" data-i18n="ss_label_calendar">Takvim</span>
+        <span class="px-4 py-2 text-sm font-medium rounded-full" style="background: rgba(45,106,79,0.25); color: var(--sage-light); border: 1px solid var(--glass-border);" data-i18n="ss_label_health">Saglik Kayitlari</span>
+        <span class="px-4 py-2 text-sm font-medium rounded-full" style="background: rgba(212,168,83,0.15); color: var(--gold-light); border: 1px solid rgba(212,168,83,0.2);" data-i18n="ss_label_statistics">Istatistikler</span>
+        <span class="px-4 py-2 text-sm font-medium rounded-full" style="background: rgba(212,168,83,0.15); color: var(--gold-light); border: 1px solid rgba(212,168,83,0.2);" data-i18n="ss_label_genealogy">Soy Agaci</span>
+        <span class="px-4 py-2 text-sm font-medium rounded-full" style="background: rgba(212,168,83,0.15); color: var(--gold-light); border: 1px solid rgba(212,168,83,0.2);" data-i18n="ss_label_genetics">Genetik</span>
+        <span class="px-4 py-2 text-sm font-medium rounded-full" style="background: rgba(45,106,79,0.25); color: var(--sage-light); border: 1px solid var(--glass-border);" data-i18n="ss_label_settings">Ayarlar</span>
       </div>
     </div>
   </section>
 
   <!-- Why Us Section -->
-  <section class="py-20 sm:py-28 bg-gradient-to-b from-white to-gray-50/50 overflow-hidden">
+  <section class="py-20 sm:py-28 overflow-hidden relative z-10">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex flex-col lg:flex-row items-center gap-16">
         <!-- Left: description -->
         <div class="flex-1 reveal-left">
-          <div class="inline-flex items-center gap-2 px-3 py-1.5 bg-budgie-50 rounded-full mb-4">
-            <span class="text-xs font-semibold text-budgie-600 uppercase tracking-wider" data-i18n="showcase_badge">Neden Biz?</span>
+          <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full mb-4" style="background: rgba(45,106,79,0.2); border: 1px solid var(--glass-border);">
+            <span class="text-xs font-semibold uppercase tracking-wider" style="color: var(--gold);" data-i18n="showcase_badge">Neden Biz?</span>
           </div>
-          <h2 class="text-3xl sm:text-4xl font-black text-gray-900 mb-6 tracking-tight" data-i18n="showcase_title">Yetistiriciligin Dijital Asistani</h2>
-          <p class="text-gray-500 text-lg mb-8 leading-relaxed" data-i18n="showcase_subtitle">Deneyimli yetistiriciler tarafindan, yetistiriciler icin tasarlandi. Her detay dusunuldu.</p>
+          <h2 class="text-3xl sm:text-4xl font-black mb-6 tracking-tight" style="color: var(--sage-light);" data-i18n="showcase_title">Yetistiriciligin Dijital Asistani</h2>
+          <p class="text-lg mb-8 leading-relaxed" style="color: var(--sage);" data-i18n="showcase_subtitle">Deneyimli yetistiriciler tarafindan, yetistiriciler icin tasarlandi. Her detay dusunuldu.</p>
 
           <div class="space-y-5">
             <div class="flex items-start gap-4">
-              <div class="w-10 h-10 bg-primary-50 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5">
-                <svg class="w-5 h-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5" style="background: rgba(45,106,79,0.3); border: 1px solid var(--glass-border);">
+                <svg class="w-5 h-5" style="color: var(--leaf-light);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
               </div>
               <div>
-                <h4 class="font-semibold text-gray-900 mb-1" data-i18n="benefit_1_title">Tam Kontrol</h4>
-                <p class="text-sm text-gray-500 leading-relaxed" data-i18n="benefit_1_desc">Her kus, yumurta ve yavru icin detayli kayit. Hicbir sey gozden kacmaz.</p>
+                <h4 class="font-semibold mb-1" style="color: var(--sage-light);" data-i18n="benefit_1_title">Tam Kontrol</h4>
+                <p class="text-sm leading-relaxed" style="color: var(--sage);" data-i18n="benefit_1_desc">Her kus, yumurta ve yavru icin detayli kayit. Hicbir sey gozden kacmaz.</p>
               </div>
             </div>
             <div class="flex items-start gap-4">
-              <div class="w-10 h-10 bg-budgie-50 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5">
-                <svg class="w-5 h-5 text-budgie-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+              <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5" style="background: rgba(45,106,79,0.3); border: 1px solid var(--glass-border);">
+                <svg class="w-5 h-5" style="color: var(--gold);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
               </div>
               <div>
-                <h4 class="font-semibold text-gray-900 mb-1" data-i18n="benefit_2_title">Aninda Senkronizasyon</h4>
-                <p class="text-sm text-gray-500 leading-relaxed" data-i18n="benefit_2_desc">Offline calisin, online olunca otomatik senkronize edin. Veri kaybi yok.</p>
+                <h4 class="font-semibold mb-1" style="color: var(--sage-light);" data-i18n="benefit_2_title">Aninda Senkronizasyon</h4>
+                <p class="text-sm leading-relaxed" style="color: var(--sage);" data-i18n="benefit_2_desc">Offline calisin, online olunca otomatik senkronize edin. Veri kaybi yok.</p>
               </div>
             </div>
             <div class="flex items-start gap-4">
-              <div class="w-10 h-10 bg-purple-50 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5">
-                <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+              <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5" style="background: rgba(212,168,83,0.15); border: 1px solid rgba(212,168,83,0.2);">
+                <svg class="w-5 h-5" style="color: var(--gold-light);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
               </div>
               <div>
-                <h4 class="font-semibold text-gray-900 mb-1" data-i18n="benefit_3_title">Guvende</h4>
-                <p class="text-sm text-gray-500 leading-relaxed" data-i18n="benefit_3_desc">AES-256 sifreleme ile yedekleme. Verileriniz sadece sizin kontrolunuzde.</p>
+                <h4 class="font-semibold mb-1" style="color: var(--sage-light);" data-i18n="benefit_3_title">Guvende</h4>
+                <p class="text-sm leading-relaxed" style="color: var(--sage);" data-i18n="benefit_3_desc">AES-256 sifreleme ile yedekleme. Verileriniz sadece sizin kontrolunuzde.</p>
               </div>
             </div>
           </div>
@@ -867,11 +1508,11 @@
         <!-- Right: Big logo showcase -->
         <div class="flex-1 flex justify-center reveal-right">
           <div class="relative">
-            <div class="w-72 h-72 sm:w-80 sm:h-80 lg:w-96 lg:h-96 bg-gradient-to-br from-primary-50 via-white to-budgie-50 rounded-[2rem] flex items-center justify-center shadow-2xl shadow-primary-200/30 border border-primary-100/50">
+            <div class="w-72 h-72 sm:w-80 sm:h-80 lg:w-96 lg:h-96 rounded-[2rem] flex items-center justify-center" style="background: linear-gradient(135deg, var(--leaf-dark) 0%, var(--forest-mid) 60%, rgba(212,168,83,0.08) 100%); box-shadow: 0 40px 80px rgba(0,0,0,0.4), 0 0 0 1px var(--glass-border);">
               <img src="logo.png" alt="BudgieBreedingTracker Logo" class="w-56 h-56 sm:w-64 sm:h-64 lg:w-72 lg:h-72 logo-glow rounded-3xl animate-float-slow">
             </div>
             <!-- Decorative ring -->
-            <div class="absolute inset-0 rounded-[2rem] border-2 border-dashed border-primary-100/40 -m-3 animate-[spin_60s_linear_infinite]"></div>
+            <div class="absolute inset-0 rounded-[2rem] -m-3 animate-[spin_60s_linear_infinite]" style="border: 2px dashed rgba(163,184,153,0.2);"></div>
           </div>
         </div>
       </div>
@@ -879,11 +1520,11 @@
   </section>
 
   <!-- Stats Section -->
-  <section class="py-16 sm:py-20 bg-gradient-to-r from-primary-800 via-primary-900 to-primary-800 gradient-animate relative overflow-hidden">
+  <section class="py-16 sm:py-20 stats-forest relative overflow-hidden">
     <!-- Background decoration -->
     <div class="absolute inset-0 opacity-10">
-      <div class="absolute top-0 left-1/4 w-64 h-64 bg-white rounded-full blur-3xl"></div>
-      <div class="absolute bottom-0 right-1/4 w-48 h-48 bg-budgie-400 rounded-full blur-3xl"></div>
+      <div class="absolute top-0 left-1/4 w-64 h-64 bg-emerald-400 rounded-full blur-3xl"></div>
+      <div class="absolute bottom-0 right-1/4 w-48 h-48 bg-yellow-400 rounded-full blur-3xl opacity-60"></div>
     </div>
 
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -909,93 +1550,93 @@
   </section>
 
   <!-- FAQ Section -->
-  <section id="faq" class="py-20 sm:py-28 bg-white">
+  <section id="faq" class="py-20 sm:py-28 relative z-10">
     <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
       <!-- Section Header -->
       <div class="text-center mb-12 reveal">
-        <div class="inline-flex items-center gap-2 px-3 py-1.5 bg-primary-50 rounded-full mb-4">
-          <span class="text-xs font-semibold text-primary-600 uppercase tracking-wider" data-i18n="faq_badge">SSS</span>
+        <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full mb-4" style="background: rgba(45,106,79,0.2); border: 1px solid var(--glass-border);">
+          <span class="text-xs font-semibold uppercase tracking-wider" style="color: var(--gold);" data-i18n="faq_badge">SSS</span>
         </div>
-        <h2 class="text-3xl sm:text-4xl font-black text-gray-900 mb-4 tracking-tight" data-i18n="faq_title">Sık Sorulan Sorular</h2>
+        <h2 class="text-3xl sm:text-4xl font-black mb-4 tracking-tight" style="color: var(--sage-light);" data-i18n="faq_title">Sık Sorulan Sorular</h2>
       </div>
 
       <!-- FAQ Items -->
-      <div class="divide-y divide-gray-100 reveal" style="transition-delay: 0.1s;">
+      <div class="reveal" style="transition-delay: 0.1s; border-top: 1px solid var(--glass-border);">
 
         <!-- Q1 -->
         <div class="faq-item py-5">
           <button class="faq-question flex items-center justify-between w-full text-left gap-4 py-1" onclick="toggleFaq(this)">
-            <span class="font-semibold text-gray-900" data-i18n="faq_q1">Uygulama ücretsiz mi?</span>
-            <svg class="faq-icon w-5 h-5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            <span class="font-semibold" style="color: var(--sage-light);" data-i18n="faq_q1">Uygulama ücretsiz mi?</span>
+            <svg class="faq-icon w-5 h-5 flex-shrink-0" style="color: var(--sage);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
           </button>
           <div class="faq-answer">
-            <p class="pt-3 pb-1 text-gray-500 text-sm leading-relaxed" data-i18n="faq_a1">Evet, temel özellikler tamamen ücretsizdir. Genetik hesaplayıcı, istatistikler ve soy ağacı gibi gelişmiş özellikler için premium abonelik gereklidir.</p>
+            <p class="pt-3 pb-1 text-sm leading-relaxed" style="color: var(--sage);" data-i18n="faq_a1">Evet, temel özellikler tamamen ücretsizdir. Genetik hesaplayıcı, istatistikler ve soy ağacı gibi gelişmiş özellikler için premium abonelik gereklidir.</p>
           </div>
         </div>
 
         <!-- Q2 -->
         <div class="faq-item py-5">
           <button class="faq-question flex items-center justify-between w-full text-left gap-4 py-1" onclick="toggleFaq(this)">
-            <span class="font-semibold text-gray-900" data-i18n="faq_q2">Verilerim güvende mi?</span>
-            <svg class="faq-icon w-5 h-5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            <span class="font-semibold" style="color: var(--sage-light);" data-i18n="faq_q2">Verilerim güvende mi?</span>
+            <svg class="faq-icon w-5 h-5 flex-shrink-0" style="color: var(--sage);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
           </button>
           <div class="faq-answer">
-            <p class="pt-3 pb-1 text-gray-500 text-sm leading-relaxed" data-i18n="faq_a2">Evet. Verileriniz AES-256 şifreleme ile korunur ve yalnızca sizin hesabınızla erişilebilir. Yedeklemeler de şifreli olarak saklanır.</p>
+            <p class="pt-3 pb-1 text-sm leading-relaxed" style="color: var(--sage);" data-i18n="faq_a2">Evet. Verileriniz AES-256 şifreleme ile korunur ve yalnızca sizin hesabınızla erişilebilir. Yedeklemeler de şifreli olarak saklanır.</p>
           </div>
         </div>
 
         <!-- Q3 -->
         <div class="faq-item py-5">
           <button class="faq-question flex items-center justify-between w-full text-left gap-4 py-1" onclick="toggleFaq(this)">
-            <span class="font-semibold text-gray-900" data-i18n="faq_q3">Offline çalışıyor mu?</span>
-            <svg class="faq-icon w-5 h-5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            <span class="font-semibold" style="color: var(--sage-light);" data-i18n="faq_q3">Offline çalışıyor mu?</span>
+            <svg class="faq-icon w-5 h-5 flex-shrink-0" style="color: var(--sage);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
           </button>
           <div class="faq-answer">
-            <p class="pt-3 pb-1 text-gray-500 text-sm leading-relaxed" data-i18n="faq_a3">Evet! Uygulama offline-first mimarisine sahiptir. İnternet olmadan tüm özelliklerden yararlanabilir, bağlantı geldiğinde verileriniz otomatik senkronize edilir.</p>
+            <p class="pt-3 pb-1 text-sm leading-relaxed" style="color: var(--sage);" data-i18n="faq_a3">Evet! Uygulama offline-first mimarisine sahiptir. İnternet olmadan tüm özelliklerden yararlanabilir, bağlantı geldiğinde verileriniz otomatik senkronize edilir.</p>
           </div>
         </div>
 
         <!-- Q4 -->
         <div class="faq-item py-5">
           <button class="faq-question flex items-center justify-between w-full text-left gap-4 py-1" onclick="toggleFaq(this)">
-            <span class="font-semibold text-gray-900" data-i18n="faq_q4">Kaç kuş kaydedebilirim?</span>
-            <svg class="faq-icon w-5 h-5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            <span class="font-semibold" style="color: var(--sage-light);" data-i18n="faq_q4">Kaç kuş kaydedebilirim?</span>
+            <svg class="faq-icon w-5 h-5 flex-shrink-0" style="color: var(--sage);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
           </button>
           <div class="faq-answer">
-            <p class="pt-3 pb-1 text-gray-500 text-sm leading-relaxed" data-i18n="faq_a4">Ücretsiz planda 15 kuş ve 5 çiftleştirme çifti ekleyebilirsiniz. Premium'a geçerek bu limitleri kaldırabilir, sınırsız kayıt yapabilirsiniz. Her kuş için 10 adede kadar fotoğraf yüklenebilir.</p>
+            <p class="pt-3 pb-1 text-sm leading-relaxed" style="color: var(--sage);" data-i18n="faq_a4">Ücretsiz planda 15 kuş ve 5 çiftleştirme çifti ekleyebilirsiniz. Premium'a geçerek bu limitleri kaldırabilir, sınırsız kayıt yapabilirsiniz. Her kuş için 10 adede kadar fotoğraf yüklenebilir.</p>
           </div>
         </div>
 
         <!-- Q5 -->
         <div class="faq-item py-5">
           <button class="faq-question flex items-center justify-between w-full text-left gap-4 py-1" onclick="toggleFaq(this)">
-            <span class="font-semibold text-gray-900" data-i18n="faq_q5">Hangi platformlarda çalışıyor?</span>
-            <svg class="faq-icon w-5 h-5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            <span class="font-semibold" style="color: var(--sage-light);" data-i18n="faq_q5">Hangi platformlarda çalışıyor?</span>
+            <svg class="faq-icon w-5 h-5 flex-shrink-0" style="color: var(--sage);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
           </button>
           <div class="faq-answer">
-            <p class="pt-3 pb-1 text-gray-500 text-sm leading-relaxed" data-i18n="faq_a5">BudgieBreedingTracker hem iOS (iPhone/iPad) hem de Android cihazlarda çalışır. Yakında App Store ve Google Play'de yayınlanacaktır.</p>
+            <p class="pt-3 pb-1 text-sm leading-relaxed" style="color: var(--sage);" data-i18n="faq_a5">BudgieBreedingTracker hem iOS (iPhone/iPad) hem de Android cihazlarda çalışır. Yakında App Store ve Google Play'de yayınlanacaktır.</p>
           </div>
         </div>
 
         <!-- Q6 -->
         <div class="faq-item py-5">
           <button class="faq-question flex items-center justify-between w-full text-left gap-4 py-1" onclick="toggleFaq(this)">
-            <span class="font-semibold text-gray-900" data-i18n="faq_q6">Genetik hesaplayici nasil calisiyor?</span>
-            <svg class="faq-icon w-5 h-5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            <span class="font-semibold" style="color: var(--sage-light);" data-i18n="faq_q6">Genetik hesaplayici nasil calisiyor?</span>
+            <svg class="faq-icon w-5 h-5 flex-shrink-0" style="color: var(--sage);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
           </button>
           <div class="faq-answer">
-            <p class="pt-3 pb-1 text-gray-500 text-sm leading-relaxed" data-i18n="faq_a6">Anne ve baba kusun mutasyonlarini secin, uygulama Punnett karesi ile olasi yavru renk ve genotiplerini hesaplasin. Sonuclari kaydedebilir ve gecmis hesaplamalari goruntuleyebilirsiniz.</p>
+            <p class="pt-3 pb-1 text-sm leading-relaxed" style="color: var(--sage);" data-i18n="faq_a6">Anne ve baba kusun mutasyonlarini secin, uygulama Punnett karesi ile olasi yavru renk ve genotiplerini hesaplasin. Sonuclari kaydedebilir ve gecmis hesaplamalari goruntuleyebilirsiniz.</p>
           </div>
         </div>
 
         <!-- Q7 -->
         <div class="faq-item py-5" style="border-bottom: none;">
           <button class="faq-question flex items-center justify-between w-full text-left gap-4 py-1" onclick="toggleFaq(this)">
-            <span class="font-semibold text-gray-900" data-i18n="faq_q7">Verilerimi baska cihaza aktarabilir miyim?</span>
-            <svg class="faq-icon w-5 h-5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            <span class="font-semibold" style="color: var(--sage-light);" data-i18n="faq_q7">Verilerimi baska cihaza aktarabilir miyim?</span>
+            <svg class="faq-icon w-5 h-5 flex-shrink-0" style="color: var(--sage);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
           </button>
           <div class="faq-answer">
-            <p class="pt-3 pb-1 text-gray-500 text-sm leading-relaxed" data-i18n="faq_a7">Evet! Ayni hesapla giris yaptiginizda verileriniz otomatik senkronize edilir. Ayrica sifreli yedekleme dosyasi olusturup baska cihazda geri yukleyebilirsiniz. PDF ve Excel olarak da disa aktarim yapabilirsiniz.</p>
+            <p class="pt-3 pb-1 text-sm leading-relaxed" style="color: var(--sage);" data-i18n="faq_a7">Evet! Ayni hesapla giris yaptiginizda verileriniz otomatik senkronize edilir. Ayrica sifreli yedekleme dosyasi olusturup baska cihazda geri yukleyebilirsiniz. PDF ve Excel olarak da disa aktarim yapabilirsiniz.</p>
           </div>
         </div>
 
@@ -1004,92 +1645,93 @@
   </section>
 
   <!-- CTA Section -->
-  <section id="cta" class="py-20 sm:py-28 bg-gradient-to-b from-gray-50 to-white relative overflow-hidden">
+  <section id="cta" class="py-20 sm:py-28 relative overflow-hidden z-10">
     <!-- Background decoration -->
-    <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-gradient-to-b from-primary-50/50 to-transparent rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] rounded-full blur-3xl pointer-events-none" style="background: radial-gradient(ellipse, rgba(212,168,83,0.07) 0%, transparent 70%);"></div>
 
     <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
       <div class="reveal">
-        <img src="logo.png" alt="BudgieBreedingTracker" class="w-20 h-20 rounded-2xl mx-auto mb-6 shadow-lg">
-        <h2 class="text-3xl sm:text-4xl lg:text-5xl font-black text-gray-900 mb-4 tracking-tight" data-i18n="cta_title">Hemen Baslayin</h2>
-        <p class="text-lg text-gray-500 mb-10 max-w-xl mx-auto leading-relaxed" data-i18n="cta_subtitle">Kuslarinizin bakimini profesyonel seviyeye tasiyin. Ucretsiz indirin, hemen kullanmaya baslayin.</p>
+        <img src="logo.png" alt="BudgieBreedingTracker" class="w-20 h-20 rounded-2xl mx-auto mb-6 shadow-lg logo-glow" style="border: 1px solid rgba(212,168,83,0.3);">
+        <h2 class="text-3xl sm:text-4xl lg:text-5xl font-black mb-4 tracking-tight" style="color: var(--sage-light);" data-i18n="cta_title">Hemen Baslayin</h2>
+        <p class="text-lg mb-10 max-w-xl mx-auto leading-relaxed" style="color: var(--sage);" data-i18n="cta_subtitle">Kuslarinizin bakimini profesyonel seviyeye tasiyin. Ucretsiz indirin, hemen kullanmaya baslayin.</p>
       </div>
 
       <div class="flex flex-col sm:flex-row items-center justify-center gap-4 reveal" style="transition-delay: 0.15s;">
         <!-- Google Play -->
-        <a href="#" class="group inline-flex items-center gap-3 px-8 py-4 bg-gray-900 text-white font-semibold rounded-2xl hover:bg-gray-800 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-[1.02]">
-          <svg class="w-8 h-8" viewBox="0 0 512 512" fill="currentColor"><path d="M325.3 234.3L104.6 13l280.8 161.2-60.1 60.1zM47 0C34 6.8 25.3 19.2 25.3 35.3v441.3c0 16.1 8.7 28.5 21.7 35.3l256.6-256L47 0zm425.2 225.6l-58.9-34.1-65.7 64.5 65.7 64.5 60.1-34.1c18-14.3 18-46.5-1.2-60.8zM104.6 499l280.8-161.2-60.1-60.1L104.6 499z"/></svg>
+        <a href="#" class="group inline-flex items-center gap-3 px-8 py-4 font-semibold rounded-2xl transition-all duration-300 hover:scale-[1.02]" style="background: var(--leaf-dark); color: var(--sage-light); border: 1px solid var(--glass-border); box-shadow: 0 8px 24px rgba(0,0,0,0.3);" onmouseover="this.style.borderColor='var(--glass-border-hover)'" onmouseout="this.style.borderColor='var(--glass-border)'">
+          <svg class="w-8 h-8" style="color: var(--gold);" viewBox="0 0 512 512" fill="currentColor"><path d="M325.3 234.3L104.6 13l280.8 161.2-60.1 60.1zM47 0C34 6.8 25.3 19.2 25.3 35.3v441.3c0 16.1 8.7 28.5 21.7 35.3l256.6-256L47 0zm425.2 225.6l-58.9-34.1-65.7 64.5 65.7 64.5 60.1-34.1c18-14.3 18-46.5-1.2-60.8zM104.6 499l280.8-161.2-60.1-60.1L104.6 499z"/></svg>
           <div class="text-left">
-            <div class="text-[10px] text-gray-400 uppercase tracking-wider" data-i18n="cta_google_label">Google Play'den</div>
-            <div class="text-base font-bold" data-i18n="cta_google_action">Indirin</div>
+            <div class="text-[10px] uppercase tracking-wider" style="color: var(--sage);" data-i18n="cta_google_label">Google Play'den</div>
+            <div class="text-base font-bold" style="color: var(--gold-light);" data-i18n="cta_google_action">Indirin</div>
           </div>
         </a>
 
         <!-- App Store -->
-        <a href="#" class="group inline-flex items-center gap-3 px-8 py-4 bg-gray-900 text-white font-semibold rounded-2xl hover:bg-gray-800 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-[1.02]">
-          <svg class="w-8 h-8" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+        <a href="#" class="group inline-flex items-center gap-3 px-8 py-4 font-semibold rounded-2xl transition-all duration-300 hover:scale-[1.02]" style="background: var(--leaf-dark); color: var(--sage-light); border: 1px solid var(--glass-border); box-shadow: 0 8px 24px rgba(0,0,0,0.3);" onmouseover="this.style.borderColor='var(--glass-border-hover)'" onmouseout="this.style.borderColor='var(--glass-border)'">
+          <svg class="w-8 h-8" style="color: var(--gold);" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
           <div class="text-left">
-            <div class="text-[10px] text-gray-400 uppercase tracking-wider" data-i18n="cta_apple_label">App Store'dan</div>
-            <div class="text-base font-bold" data-i18n="cta_apple_action">Indirin</div>
+            <div class="text-[10px] uppercase tracking-wider" style="color: var(--sage);" data-i18n="cta_apple_label">App Store'dan</div>
+            <div class="text-base font-bold" style="color: var(--gold-light);" data-i18n="cta_apple_action">Indirin</div>
           </div>
         </a>
       </div>
 
-      <p class="text-sm text-gray-400 mt-6 reveal" style="transition-delay: 0.3s;" data-i18n="cta_note">Yakinda tum platformlarda</p>
+      <p class="text-sm mt-6 reveal" style="color: var(--sage); opacity: 0.7; transition-delay: 0.3s;" data-i18n="cta_note">Yakinda tum platformlarda</p>
 
       <!-- Email Signup -->
       <div class="mt-10 reveal" style="transition-delay: 0.45s;">
-        <p class="text-sm text-gray-500 mb-4" data-i18n="cta_email_intro">Yakında tüm platformlarda — haberdar olmak için e-posta adresinizi bırakın:</p>
+        <p class="text-sm mb-4" style="color: var(--sage);" data-i18n="cta_email_intro">Yakında tüm platformlarda — haberdar olmak için e-posta adresinizi bırakın:</p>
         <form id="email-form" class="flex flex-col sm:flex-row gap-3 max-w-md mx-auto" onsubmit="handleEmailSignup(event)">
           <input
             type="email"
             id="email-input"
-            class="flex-1 px-4 py-3 rounded-xl border border-gray-200 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-300 focus:border-primary-400 transition-all text-sm"
+            class="flex-1 px-4 py-3 rounded-xl transition-all text-sm focus:outline-none"
+            style="background: rgba(27,67,50,0.4); border: 1px solid var(--glass-border); color: var(--sage-light);"
             data-i18n-placeholder="cta_email_placeholder"
             placeholder="e-posta@adresiniz.com"
             required
           >
-          <button type="submit" class="px-6 py-3 bg-primary-800 text-white font-semibold rounded-xl hover:bg-primary-700 transition-all hover:shadow-lg whitespace-nowrap text-sm" data-i18n="cta_email_btn">Haberdar Et</button>
+          <button type="submit" class="px-6 py-3 font-semibold rounded-xl transition-all hover:shadow-lg whitespace-nowrap text-sm" style="background: linear-gradient(135deg, var(--leaf-mid), var(--leaf-dark)); color: var(--gold-light); border: 1px solid rgba(212,168,83,0.3);" data-i18n="cta_email_btn">Haberdar Et</button>
         </form>
-        <p id="email-thanks" class="text-sm text-budgie-600 font-medium mt-3 hidden" data-i18n="cta_email_thanks">Teşekkürler! Size haber vereceğiz 🎉</p>
+        <p id="email-thanks" class="text-sm font-medium mt-3 hidden" style="color: var(--leaf-light);" data-i18n="cta_email_thanks">Teşekkürler! Size haber vereceğiz 🎉</p>
       </div>
     </div>
   </section>
 
   <!-- Footer -->
-  <footer class="bg-gray-900 text-gray-400">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+  <footer class="footer-forest relative z-10" style="color: var(--sage); opacity: 0.9;">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
       <!-- Main footer -->
       <div class="py-12 grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
         <!-- Brand -->
         <div class="flex items-center gap-3 justify-center md:justify-start">
-          <img src="logo.png" alt="Logo" class="w-10 h-10 rounded-xl">
+          <img src="logo.png" alt="Logo" class="w-10 h-10 rounded-xl" style="border: 1px solid rgba(212,168,83,0.2);">
           <div>
-            <span class="font-bold text-white text-lg">BudgieBreedingTracker</span>
-            <p class="text-xs text-gray-500 mt-0.5" data-i18n="footer_tagline">Ureme Takip Uygulamasi</p>
+            <span class="font-bold text-lg" style="color: var(--gold-light);">BudgieBreedingTracker</span>
+            <p class="text-xs mt-0.5" style="color: var(--sage); opacity: 0.7;" data-i18n="footer_tagline">Ureme Takip Uygulamasi</p>
           </div>
         </div>
 
         <!-- Links -->
-        <div class="flex items-center justify-center gap-6 text-sm">
-          <a href="#features" class="hover:text-white transition-colors duration-200" data-i18n="footer_features">Ozellikler</a>
-          <a href="#cta" class="hover:text-white transition-colors duration-200" data-i18n="nav_download">Indir</a>
-          <a href="https://github.com/BekirEfeoglu/BudgieBreedingTracker" target="_blank" rel="noopener noreferrer" class="hover:text-white transition-colors duration-200">GitHub</a>
-          <a href="privacy-policy.html" class="hover:text-white transition-colors duration-200" data-i18n="footer_privacy">Gizlilik Politikasi</a>
-          <a href="support/" class="hover:text-white transition-colors duration-200" data-i18n="footer_support">Destek</a>
+        <div class="flex items-center justify-center gap-6 text-sm flex-wrap">
+          <a href="#features" class="transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="footer_features">Ozellikler</a>
+          <a href="#cta" class="transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="nav_download">Indir</a>
+          <a href="https://github.com/BekirEfeoglu/BudgieBreedingTracker" target="_blank" rel="noopener noreferrer" class="transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'">GitHub</a>
+          <a href="privacy-policy.html" class="transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="footer_privacy">Gizlilik Politikasi</a>
+          <a href="support/" class="transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="footer_support">Destek</a>
         </div>
 
         <!-- Contact -->
         <div class="text-center md:text-right">
-          <h4 class="text-white font-semibold mb-3 text-sm" data-i18n="footer_contact_title">İletişim</h4>
+          <h4 class="font-semibold mb-3 text-sm" style="color: var(--sage-light);" data-i18n="footer_contact_title">İletişim</h4>
           <div class="space-y-2 text-sm">
             <div>
-              <a href="mailto:support@budgiebreedingtracker.online" class="hover:text-white transition-colors duration-200 break-all">
+              <a href="mailto:support@budgiebreedingtracker.online" class="transition-colors duration-200 break-all" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'">
                 support@budgiebreedingtracker.online
               </a>
             </div>
             <div>
-              <a href="https://github.com/BekirEfeoglu/BudgieBreedingTracker" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 hover:text-white transition-colors duration-200 justify-center md:justify-end">
+              <a href="https://github.com/BekirEfeoglu/BudgieBreedingTracker" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 transition-colors duration-200 justify-center md:justify-end" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'">
                 <svg class="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
                 GitHub
               </a>
@@ -1099,15 +1741,15 @@
       </div>
 
       <!-- Bottom bar -->
-      <div class="border-t border-gray-800 py-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-center">
-        <p class="text-xs text-gray-600" data-i18n="footer_made">Yetistiriciler tarafindan, yetistiriciler icin yapildi ❤️</p>
-        <p class="text-xs text-gray-600" data-i18n="footer_copyright">&copy; 2025-2026 BudgieBreedingTracker. Tum haklari saklidir.</p>
+      <div class="py-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-center relative z-10" style="border-top: 1px solid rgba(255,255,255,0.04);">
+        <p class="text-xs" style="color: var(--sage); opacity: 0.5;" data-i18n="footer_made">Yetistiriciler tarafindan, yetistiriciler icin yapildi ❤️</p>
+        <p class="text-xs" style="color: var(--sage); opacity: 0.5;" data-i18n="footer_copyright">&copy; 2025-2026 BudgieBreedingTracker. Tum haklari saklidir.</p>
       </div>
     </div>
   </footer>
 
   <!-- Back to Top Button -->
-  <button id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})" class="fixed bottom-6 right-6 w-12 h-12 bg-primary-800 text-white rounded-xl shadow-lg hover:bg-primary-700 transition-all duration-300 opacity-0 translate-y-4 pointer-events-none z-40 flex items-center justify-center">
+  <button id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})" class="fixed bottom-6 right-6 w-12 h-12 rounded-xl shadow-lg transition-all duration-300 z-40 flex items-center justify-center" style="background: linear-gradient(135deg, var(--leaf-mid), var(--leaf-dark)); color: var(--gold-light); border: 1px solid rgba(212,168,83,0.3);">
     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/></svg>
   </button>
 
@@ -1704,11 +2346,9 @@
     function handleBackToTop() {
       const btn = document.getElementById('backToTop');
       if (window.scrollY > 400) {
-        btn.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none');
-        btn.classList.add('opacity-100', 'translate-y-0');
+        btn.classList.add('visible');
       } else {
-        btn.classList.add('opacity-0', 'translate-y-4', 'pointer-events-none');
-        btn.classList.remove('opacity-100', 'translate-y-0');
+        btn.classList.remove('visible');
       }
     }
 

@@ -5,220 +5,810 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Gizlilik Politikası — BudgieBreedingTracker</title>
   <meta name="description" content="BudgieBreedingTracker uygulamasının gizlilik politikası. Verilerinizi nasıl topladığımızı, kullandığımızı ve koruduğumuzu öğrenin.">
-  <meta name="theme-color" content="#1E40AF">
+  <meta name="theme-color" content="#0C1F0F">
 
-  <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            primary: { 50: '#EFF6FF', 100: '#DBEAFE', 200: '#BFDBFE', 300: '#93C5FD', 400: '#60A5FA', 500: '#3B82F6', 600: '#2563EB', 700: '#1D4ED8', 800: '#1E40AF', 900: '#1E3A8A' },
-            accent: { 400: '#FBBF24', 500: '#F59E0B', 600: '#D97706' },
-            budgie: { 50: '#F0FDF4', 100: '#DCFCE7', 400: '#4ADE80', 500: '#22C55E', 600: '#16A34A' },
-          },
-          fontFamily: {
-            sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
-          },
-        },
-      },
-    }
-  </script>
-
-  <!-- Inter Font -->
+  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="logo.png">
   <link rel="apple-touch-icon" href="logo.png">
 
   <style>
-    html { scroll-behavior: smooth; }
-    body { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
-    .gradient-text {
-      background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 40%, #22C55E 100%);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
-    .lang-btn { transition: all 0.2s ease; }
-    .lang-btn.active { background-color: #1E40AF; color: white; box-shadow: 0 2px 8px rgba(30, 64, 175, 0.3); }
-    .lang-btn:not(.active):hover { background-color: #E5E7EB; }
+
+    :root {
+      --forest-deep: #0C1F0F;
+      --forest-mid: #122318;
+      --leaf-dark: #1B4332;
+      --leaf-mid: #2D6A4F;
+      --leaf-light: #40916C;
+      --sage: #A3B899;
+      --sage-light: #C8D8C2;
+      --gold: #D4A853;
+      --gold-light: #E8C27A;
+      --gold-glow: #F0D080;
+      --cream: #F0EBD8;
+      --glass-bg: rgba(27, 67, 50, 0.25);
+      --glass-border: rgba(163, 184, 153, 0.2);
+      --glass-border-hover: rgba(212, 168, 83, 0.4);
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+      background-color: var(--forest-deep);
+      color: var(--sage-light);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* ─── NOISE TEXTURE OVERLAY ─── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+      opacity: 0.04;
+      pointer-events: none;
+      z-index: 1000;
+      mix-blend-mode: overlay;
+    }
+
+    /* ─── LAYERED BACKGROUND ─── */
+    .bg-layer {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .bg-layer::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 20% 80%, rgba(27, 67, 50, 0.8) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 80% 20%, rgba(45, 106, 79, 0.4) 0%, transparent 55%),
+        radial-gradient(ellipse 100% 100% at 50% 50%, var(--forest-deep) 0%, #091A0C 100%);
+    }
+
+    .bg-layer::after {
+      content: '';
+      position: absolute;
+      top: -20%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 700px;
+      height: 700px;
+      background: radial-gradient(circle, rgba(212, 168, 83, 0.06) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+
+    /* ─── FLOATING PARTICLES (CSS only) ─── */
+    .particles {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 1;
+      overflow: hidden;
+    }
+
+    .particle {
+      position: absolute;
+      border-radius: 50% 0 50% 0;
+      animation: drift linear infinite;
+      opacity: 0;
+    }
+
+    .particle.leaf {
+      border-radius: 0 100% 0 100%;
+    }
+
+    .particle.feather {
+      width: 3px;
+      border-radius: 50%;
+      background: linear-gradient(180deg, transparent, var(--sage), transparent);
+    }
+
+    .particle:nth-child(1)  { left: 8%;   width: 12px; height: 18px; background: rgba(163,184,153,0.25); animation-duration: 18s; animation-delay: 0s;    top: -20px; }
+    .particle:nth-child(2)  { left: 16%;  width: 8px;  height: 12px; background: rgba(212,168,83,0.2);  animation-duration: 22s; animation-delay: -4s;   top: -20px; }
+    .particle:nth-child(3)  { left: 25%;  width: 15px; height: 22px; background: rgba(64,145,108,0.3);  animation-duration: 15s; animation-delay: -8s;   top: -20px; }
+    .particle:nth-child(4)  { left: 35%;  width: 6px;  height: 10px; background: rgba(163,184,153,0.2); animation-duration: 25s; animation-delay: -2s;   top: -20px; }
+    .particle:nth-child(5)  { left: 44%;  width: 10px; height: 16px; background: rgba(212,168,83,0.15); animation-duration: 20s; animation-delay: -12s;  top: -20px; }
+    .particle:nth-child(6)  { left: 55%;  width: 14px; height: 20px; background: rgba(64,145,108,0.25); animation-duration: 17s; animation-delay: -6s;   top: -20px; }
+    .particle:nth-child(7)  { left: 63%;  width: 7px;  height: 11px; background: rgba(163,184,153,0.3); animation-duration: 23s; animation-delay: -10s;  top: -20px; }
+    .particle:nth-child(8)  { left: 72%;  width: 11px; height: 17px; background: rgba(212,168,83,0.2);  animation-duration: 19s; animation-delay: -3s;   top: -20px; }
+    .particle:nth-child(9)  { left: 82%;  width: 9px;  height: 13px; background: rgba(45,106,79,0.3);   animation-duration: 21s; animation-delay: -7s;   top: -20px; }
+    .particle:nth-child(10) { left: 91%;  width: 13px; height: 19px; background: rgba(163,184,153,0.2); animation-duration: 16s; animation-delay: -15s;  top: -20px; }
+    .particle:nth-child(11) { left: 5%;   width: 5px;  height: 8px;  background: rgba(212,168,83,0.25); animation-duration: 24s; animation-delay: -9s;   top: -20px; }
+    .particle:nth-child(12) { left: 20%;  width: 16px; height: 10px; background: rgba(64,145,108,0.2);  animation-duration: 14s; animation-delay: -11s;  top: -20px; }
+    .particle:nth-child(13) { left: 38%;  width: 8px;  height: 14px; background: rgba(163,184,153,0.35);animation-duration: 26s; animation-delay: -5s;   top: -20px; }
+    .particle:nth-child(14) { left: 50%;  width: 12px; height: 8px;  background: rgba(212,168,83,0.15); animation-duration: 18s; animation-delay: -14s;  top: -20px; }
+    .particle:nth-child(15) { left: 68%;  width: 6px;  height: 10px; background: rgba(45,106,79,0.25);  animation-duration: 22s; animation-delay: -1s;   top: -20px; }
+    .particle:nth-child(16) { left: 78%;  width: 18px; height: 12px; background: rgba(163,184,153,0.2); animation-duration: 20s; animation-delay: -13s;  top: -20px; }
+    .particle:nth-child(17) { left: 88%;  width: 9px;  height: 15px; background: rgba(212,168,83,0.3);  animation-duration: 15s; animation-delay: -8s;   top: -20px; }
+    .particle:nth-child(18) { left: 30%;  width: 11px; height: 7px;  background: rgba(64,145,108,0.3);  animation-duration: 19s; animation-delay: -16s;  top: -20px; }
+    .particle:nth-child(19) { left: 57%;  width: 14px; height: 9px;  background: rgba(163,184,153,0.25);animation-duration: 23s; animation-delay: -4s;   top: -20px; }
+    .particle:nth-child(20) { left: 95%;  width: 7px;  height: 12px; background: rgba(212,168,83,0.2);  animation-duration: 17s; animation-delay: -18s;  top: -20px; }
+
+    @keyframes drift {
+      0%   { transform: translateY(0)   rotate(0deg)   translateX(0);   opacity: 0; }
+      5%   { opacity: 0.8; }
+      90%  { opacity: 0.6; }
+      100% { transform: translateY(110vh) rotate(360deg) translateX(40px); opacity: 0; }
+    }
+
+    /* ─── DECORATIVE ORBS ─── */
+    .orb {
+      position: fixed;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 0;
+      filter: blur(60px);
+      animation: orbPulse ease-in-out infinite;
+    }
+
+    .orb-1 {
+      width: 350px;
+      height: 350px;
+      background: radial-gradient(circle, rgba(45,106,79,0.22), transparent 70%);
+      bottom: 5%;
+      left: -10%;
+      animation-duration: 9s;
+      animation-delay: 0s;
+    }
+
+    .orb-2 {
+      width: 280px;
+      height: 280px;
+      background: radial-gradient(circle, rgba(212,168,83,0.07), transparent 70%);
+      top: 15%;
+      right: -6%;
+      animation-duration: 11s;
+      animation-delay: -3s;
+    }
+
+    .orb-3 {
+      width: 200px;
+      height: 200px;
+      background: radial-gradient(circle, rgba(27,67,50,0.38), transparent 70%);
+      top: 55%;
+      right: 18%;
+      animation-duration: 13s;
+      animation-delay: -6s;
+    }
+
+    @keyframes orbPulse {
+      0%, 100% { opacity: 0.6; transform: scale(1); }
+      50%       { opacity: 1;   transform: scale(1.15); }
+    }
+
+    /* ─── HEADER ─── */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: rgba(12, 31, 15, 0.6);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--glass-border);
+    }
+
+    .header-inner {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    @media (min-width: 640px) {
+      .header-inner { padding: 16px 32px; }
+    }
+
+    .logo-link {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      transition: opacity 0.2s;
+    }
+
+    .logo-link:hover { opacity: 0.85; }
+
+    .logo-img {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      border: 1px solid rgba(212, 168, 83, 0.3);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .logo-link:hover .logo-img {
+      transform: scale(1.08) rotate(-3deg);
+      box-shadow: 0 0 12px rgba(212, 168, 83, 0.3);
+    }
+
+    .logo-text {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 800;
+      font-size: 16px;
+      color: var(--gold-light);
+      letter-spacing: -0.02em;
+    }
+
+    @media (max-width: 480px) {
+      .logo-text { display: none; }
+    }
+
+    @media (min-width: 640px) {
+      .logo-text { font-size: 18px; }
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .back-link {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--sage);
+      text-decoration: none;
+      transition: color 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .back-link:hover { color: var(--gold-light); }
+
+    @media (max-width: 360px) {
+      .back-link { display: none; }
+    }
+
+    .lang-group {
+      display: flex;
+      gap: 4px;
+      background: rgba(27, 67, 50, 0.3);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      padding: 4px;
+    }
+
+    .lang-btn {
+      padding: 5px 12px;
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      border: none;
+      background: transparent;
+      color: var(--sage);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      letter-spacing: 0.03em;
+    }
+
+    .lang-btn:hover {
+      color: var(--gold-light);
+      background: rgba(212, 168, 83, 0.1);
+    }
+
+    .lang-btn.active {
+      background: rgba(212, 168, 83, 0.18);
+      color: var(--gold-light);
+      box-shadow: 0 0 0 1px rgba(212, 168, 83, 0.3);
+    }
+
+    /* ─── MAIN ─── */
+    main {
+      flex: 1;
+      position: relative;
+      z-index: 2;
+      max-width: 860px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 48px 20px 80px;
+    }
+
+    @media (min-width: 640px) {
+      main { padding: 56px 32px 100px; }
+    }
+
+    /* ─── PAGE HEADER ─── */
+    .page-header {
+      margin-bottom: 36px;
+      animation: fadeUp 0.6s ease forwards;
+      opacity: 0;
+    }
+
+    .page-title {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 800;
+      font-size: clamp(28px, 6vw, 42px);
+      color: var(--sage-light);
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+      margin-bottom: 8px;
+    }
+
+    .page-subtitle {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      color: var(--sage);
+      opacity: 0.7;
+    }
+
+    /* ─── CONTENT CARD ─── */
+    .content-card {
+      background: var(--glass-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--glass-border);
+      border-radius: 24px;
+      padding: 40px 36px 48px;
+      position: relative;
+      overflow: hidden;
+      animation: fadeUp 0.7s ease 0.15s forwards;
+      opacity: 0;
+    }
+
+    @media (max-width: 640px) {
+      .content-card { padding: 28px 20px 36px; border-radius: 18px; }
+    }
+
+    /* Gold gradient line at top */
+    .content-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(212,168,83,0.3), transparent);
+    }
+
+    /* Subtle inner glow */
+    .content-card::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 50% 0%, rgba(212,168,83,0.04) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    /* ─── SECTIONS ─── */
+    .sections-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 40px;
+    }
+
+    .policy-section {
+      animation: fadeUp 0.6s ease forwards;
+      opacity: 0;
+    }
+
+    .policy-section:nth-child(1)  { animation-delay: 0.25s; }
+    .policy-section:nth-child(2)  { animation-delay: 0.32s; }
+    .policy-section:nth-child(3)  { animation-delay: 0.39s; }
+    .policy-section:nth-child(4)  { animation-delay: 0.46s; }
+    .policy-section:nth-child(5)  { animation-delay: 0.53s; }
+    .policy-section:nth-child(6)  { animation-delay: 0.60s; }
+    .policy-section:nth-child(7)  { animation-delay: 0.67s; }
+    .policy-section:nth-child(8)  { animation-delay: 0.74s; }
+    .policy-section:nth-child(9)  { animation-delay: 0.81s; }
+    .policy-section:nth-child(10) { animation-delay: 0.88s; }
+    .policy-section:nth-child(11) { animation-delay: 0.95s; }
+
+    .section-divider {
+      border: none;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(163,184,153,0.15), transparent);
+      margin: 0;
+    }
+
+    /* ─── HEADINGS ─── */
+    .section-h2 {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      font-size: clamp(16px, 3vw, 20px);
+      color: var(--gold-light);
+      margin-bottom: 12px;
+      letter-spacing: -0.01em;
+    }
+
+    .section-h3 {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      font-size: 15px;
+      color: var(--sage-light);
+      margin-top: 20px;
+      margin-bottom: 8px;
+    }
+
+    /* ─── BODY TEXT ─── */
+    .section-text {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      color: var(--sage-light);
+      line-height: 1.75;
+    }
+
+    .section-text strong {
+      color: var(--cream);
+      font-weight: 600;
+    }
+
+    .section-intro {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      color: var(--sage-light);
+      line-height: 1.75;
+      margin-bottom: 10px;
+    }
+
+    .section-intro strong {
+      color: var(--cream);
+      font-weight: 600;
+    }
+
+    /* ─── LISTS ─── */
+    .policy-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .policy-list li {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      color: var(--sage);
+      line-height: 1.7;
+      padding-left: 20px;
+      position: relative;
+    }
+
+    .policy-list li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 10px;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: rgba(212, 168, 83, 0.55);
+      flex-shrink: 0;
+    }
+
+    .policy-list li strong {
+      color: var(--sage-light);
+      font-weight: 600;
+    }
+
+    /* ─── CONTACT CARD ─── */
+    .contact-card {
+      margin-top: 16px;
+      padding: 20px 24px;
+      background: rgba(12, 31, 15, 0.5);
+      border: 1px solid rgba(212, 168, 83, 0.2);
+      border-radius: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .contact-row {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      color: var(--sage-light);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .contact-row strong {
+      color: var(--sage);
+      font-weight: 600;
+      min-width: 48px;
+    }
+
+    .contact-link {
+      color: var(--gold);
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.2s, text-shadow 0.2s;
+    }
+
+    .contact-link:hover {
+      color: var(--gold-glow);
+      text-shadow: 0 0 10px rgba(212, 168, 83, 0.4);
+    }
+
+    /* ─── FOOTER ─── */
+    footer {
+      position: relative;
+      z-index: 2;
+      padding: 20px 24px;
+      text-align: center;
+      border-top: 1px solid rgba(163, 184, 153, 0.08);
+    }
+
+    footer p {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 12px;
+      color: var(--sage);
+      opacity: 0.4;
+    }
+
+    /* ─── ENTRANCE ANIMATIONS ─── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(22px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ─── SCROLLBAR ─── */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--forest-deep); }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(163, 184, 153, 0.25);
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(212, 168, 83, 0.35);
+    }
   </style>
 </head>
-<body class="bg-gray-50 text-gray-800">
+<body>
+
+  <!-- Decorative background layers -->
+  <div class="bg-layer"></div>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+
+  <!-- Floating leaf particles -->
+  <div class="particles" aria-hidden="true">
+    <div class="particle leaf"></div>
+    <div class="particle leaf"></div>
+    <div class="particle leaf"></div>
+    <div class="particle"></div>
+    <div class="particle leaf"></div>
+    <div class="particle feather"></div>
+    <div class="particle leaf"></div>
+    <div class="particle"></div>
+    <div class="particle leaf"></div>
+    <div class="particle"></div>
+    <div class="particle leaf"></div>
+    <div class="particle leaf"></div>
+    <div class="particle"></div>
+    <div class="particle leaf"></div>
+    <div class="particle feather"></div>
+    <div class="particle leaf"></div>
+    <div class="particle"></div>
+    <div class="particle leaf"></div>
+    <div class="particle leaf"></div>
+    <div class="particle"></div>
+  </div>
 
   <!-- Header -->
-  <header class="bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-50">
-    <div class="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
-      <a href="index.html" class="flex items-center gap-3 hover:opacity-80 transition">
-        <img src="logo.png" alt="BudgieBreedingTracker" class="w-9 h-9 rounded-xl">
-        <span class="text-lg font-bold gradient-text hidden sm:inline">BudgieBreedingTracker</span>
+  <header>
+    <div class="header-inner">
+      <a href="index.html" class="logo-link">
+        <img src="logo.png" alt="BudgieBreedingTracker" class="logo-img">
+        <span class="logo-text">BudgieBreedingTracker</span>
       </a>
-      <div class="flex items-center gap-4">
-        <!-- Language Switcher -->
-        <div class="flex items-center gap-1 bg-gray-100/80 rounded-lg p-1">
-          <button onclick="setLanguage('tr')" class="lang-btn px-2.5 py-1 rounded-md text-xs font-semibold active" data-lang="tr">TR</button>
-          <button onclick="setLanguage('en')" class="lang-btn px-2.5 py-1 rounded-md text-xs font-semibold" data-lang="en">EN</button>
-          <button onclick="setLanguage('de')" class="lang-btn px-2.5 py-1 rounded-md text-xs font-semibold" data-lang="de">DE</button>
+      <div class="header-right">
+        <a href="index.html" class="back-link" data-i18n="back">← Ana Sayfa</a>
+        <div class="lang-group">
+          <button onclick="setLanguage('tr')" class="lang-btn active" data-lang="tr">TR</button>
+          <button onclick="setLanguage('en')" class="lang-btn" data-lang="en">EN</button>
+          <button onclick="setLanguage('de')" class="lang-btn" data-lang="de">DE</button>
         </div>
-        <a href="index.html" class="text-sm text-primary-600 hover:text-primary-800 font-medium transition" data-i18n="back">&larr; Ana Sayfa</a>
       </div>
     </div>
   </header>
 
   <!-- Content -->
-  <main class="max-w-4xl mx-auto px-6 py-12">
+  <main>
 
-    <div class="mb-10">
-      <h1 class="text-4xl font-extrabold text-gray-900 mb-3" data-i18n="title">Gizlilik Politikası</h1>
-      <p class="text-gray-500" data-i18n="last_updated">Son güncelleme: 15 Mart 2026</p>
+    <div class="page-header">
+      <h1 class="page-title" data-i18n="title">Gizlilik Politikası</h1>
+      <p class="page-subtitle" data-i18n="last_updated">Son güncelleme: 15 Mart 2026</p>
     </div>
 
-    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 md:p-10 space-y-10">
+    <div class="content-card">
+      <div class="sections-wrap">
 
-      <section>
-        <h2 class="text-xl font-bold text-gray-900 mb-3" data-i18n="s1_title">1. Giriş</h2>
-        <p class="text-gray-600 leading-relaxed" data-i18n="s1_text">BudgieBreedingTracker ("Uygulama"), muhabbet kuşu yetiştiricileri için geliştirilmiş bir üreme takip uygulamasıdır. Bu gizlilik politikası, uygulamayı kullanırken kişisel verilerinizin nasıl toplandığını, kullanıldığını, saklandığını ve korunduğunu açıklar. Uygulamayı kullanarak bu politikayı kabul etmiş sayılırsınız.</p>
-      </section>
+        <section class="policy-section">
+          <h2 class="section-h2" data-i18n="s1_title">1. Giriş</h2>
+          <p class="section-text" data-i18n="s1_text">BudgieBreedingTracker ("Uygulama"), muhabbet kuşu yetiştiricileri için geliştirilmiş bir üreme takip uygulamasıdır. Bu gizlilik politikası, uygulamayı kullanırken kişisel verilerinizin nasıl toplandığını, kullanıldığını, saklandığını ve korunduğunu açıklar. Uygulamayı kullanarak bu politikayı kabul etmiş sayılırsınız.</p>
+        </section>
 
-      <section>
-        <h2 class="text-xl font-bold text-gray-900 mb-3" data-i18n="s2_title">2. Toplanan Veriler</h2>
-        <h3 class="text-lg font-semibold text-gray-800 mt-4 mb-2" data-i18n="s2_1_title">2.1 Hesap Bilgileri</h3>
-        <div data-i18n-html="s2_1_list">
-          <ul class="list-disc list-inside text-gray-600 space-y-1 ml-2">
-            <li>E-posta adresi (kayıt ve giriş için)</li>
-            <li>Kullanıcı adı ve profil bilgileri</li>
-            <li>Profil fotoğrafı (isteğe bağlı)</li>
-          </ul>
-        </div>
-        <h3 class="text-lg font-semibold text-gray-800 mt-4 mb-2" data-i18n="s2_2_title">2.2 Uygulama Verileri</h3>
-        <div data-i18n-html="s2_2_list">
-          <ul class="list-disc list-inside text-gray-600 space-y-1 ml-2">
-            <li>Kuş kayıtları (isim, cinsiyet, renk mutasyonu, halka numarası vb.)</li>
-            <li>Üreme çifti, yumurta ve yavru bilgileri</li>
-            <li>Kuluçka takip verileri</li>
-            <li>Sağlık kayıtları ve büyüme ölçümleri</li>
-            <li>Genetik hesaplama geçmişi</li>
-            <li>Takvim etkinlikleri ve hatırlatıcılar</li>
-            <li>Kuş, yumurta ve yavru fotoğrafları</li>
-          </ul>
-        </div>
-        <h3 class="text-lg font-semibold text-gray-800 mt-4 mb-2" data-i18n="s2_3_title">2.3 Otomatik Toplanan Veriler</h3>
-        <div data-i18n-html="s2_3_list">
-          <ul class="list-disc list-inside text-gray-600 space-y-1 ml-2">
-            <li>Uygulama çökme raporları ve hata günlükleri (Sentry aracılığıyla)</li>
-            <li>Cihaz türü ve işletim sistemi versiyonu</li>
-            <li>Uygulama kullanım istatistikleri (ekran gezinme verileri)</li>
-          </ul>
-        </div>
-      </section>
+        <hr class="section-divider">
 
-      <section>
-        <h2 class="text-xl font-bold text-gray-900 mb-3" data-i18n="s3_title">3. Verilerin Kullanım Amaçları</h2>
-        <div data-i18n-html="s3_list">
-          <ul class="list-disc list-inside text-gray-600 space-y-1 ml-2">
-            <li>Kullanıcı hesabı oluşturma ve kimlik doğrulama</li>
-            <li>Kuş üreme verilerinizi kaydetme ve senkronize etme</li>
-            <li>Genetik hesaplamalar ve soy ağacı oluşturma</li>
-            <li>Kuluçka hatırlatıcıları ve bildirimler gönderme</li>
-            <li>Veri yedekleme ve geri yükleme</li>
-            <li>Uygulama hatalarını tespit etme ve düzeltme</li>
-            <li>Uygulama performansını iyileştirme</li>
-          </ul>
-        </div>
-      </section>
+        <section class="policy-section">
+          <h2 class="section-h2" data-i18n="s2_title">2. Toplanan Veriler</h2>
 
-      <section>
-        <h2 class="text-xl font-bold text-gray-900 mb-3" data-i18n="s4_title">4. Veri Saklama ve Güvenlik</h2>
-        <p class="text-gray-600 leading-relaxed mb-3" data-i18n="s4_intro">Verileriniz iki katmanlı bir yapıda saklanır:</p>
-        <div data-i18n-html="s4_list">
-          <ul class="list-disc list-inside text-gray-600 space-y-1 ml-2">
-            <li><strong>Yerel depolama:</strong> Verileriniz cihazınızda şifrelenmiş SQLite veritabanında saklanır (AES-256-CBC şifreleme).</li>
-            <li><strong>Bulut depolama:</strong> Senkronizasyon için Supabase (PostgreSQL) altyapısı kullanılır. Veriler satır düzeyinde güvenlik politikaları (RLS) ile korunur.</li>
-            <li><strong>Fotoğraflar:</strong> Güvenli bulut depolama alanında saklanır ve yalnızca hesap sahibi tarafından erişilebilir.</li>
-            <li><strong>Yedeklemeler:</strong> Şifrelenmiş olarak oluşturulur ve güvenli şekilde saklanır.</li>
-          </ul>
-        </div>
-        <p class="text-gray-600 leading-relaxed mt-3" data-i18n="s4_tls">Tüm veri iletişimi HTTPS/TLS protokolü üzerinden şifrelenerek gerçekleştirilir.</p>
-      </section>
+          <h3 class="section-h3" data-i18n="s2_1_title">2.1 Hesap Bilgileri</h3>
+          <div data-i18n-html="s2_1_list">
+            <ul class="policy-list">
+              <li>E-posta adresi (kayıt ve giriş için)</li>
+              <li>Kullanıcı adı ve profil bilgileri</li>
+              <li>Profil fotoğrafı (isteğe bağlı)</li>
+            </ul>
+          </div>
 
-      <section>
-        <h2 class="text-xl font-bold text-gray-900 mb-3" data-i18n="s5_title">5. Veri Paylaşımı</h2>
-        <p class="text-gray-600 leading-relaxed mb-3" data-i18n="s5_intro">Kişisel verilerinizi üçüncü taraflarla <strong>satmaz veya kiralamayız</strong>. Verileriniz yalnızca aşağıdaki durumlarda paylaşılabilir:</p>
-        <div data-i18n-html="s5_list">
-          <ul class="list-disc list-inside text-gray-600 space-y-1 ml-2">
-            <li><strong>Hizmet sağlayıcılar:</strong> Supabase (veritabanı ve kimlik doğrulama), Sentry (hata raporlama) — yalnızca hizmetin işletilmesi için gerekli veriler paylaşılır.</li>
-            <li><strong>Ödeme yönetimi:</strong> RevenueCat (abonelik ve satın alma işlemleri) — yalnızca abonelik durumu ve işlem verileri paylaşılır.</li>
-            <li><strong>Reklam servisi:</strong> Google AdMob (reklam gösterimi) — cihaz tanımlayıcıları ve reklam tercihleri paylaşılır. Kişiselleştirilmiş reklam gösterimi için izleme izni ayrıca istenir.</li>
-            <li><strong>Yasal zorunluluk:</strong> Yasal düzenlemeler veya mahkeme kararları gerektirdiğinde.</li>
-          </ul>
-        </div>
-      </section>
+          <h3 class="section-h3" data-i18n="s2_2_title">2.2 Uygulama Verileri</h3>
+          <div data-i18n-html="s2_2_list">
+            <ul class="policy-list">
+              <li>Kuş kayıtları (isim, cinsiyet, renk mutasyonu, halka numarası vb.)</li>
+              <li>Üreme çifti, yumurta ve yavru bilgileri</li>
+              <li>Kuluçka takip verileri</li>
+              <li>Sağlık kayıtları ve büyüme ölçümleri</li>
+              <li>Genetik hesaplama geçmişi</li>
+              <li>Takvim etkinlikleri ve hatırlatıcılar</li>
+              <li>Kuş, yumurta ve yavru fotoğrafları</li>
+            </ul>
+          </div>
 
-      <section>
-        <h2 class="text-xl font-bold text-gray-900 mb-3" data-i18n="s6_title">6. Kullanıcı Hakları</h2>
-        <p class="text-gray-600 leading-relaxed mb-3" data-i18n="s6_intro">Aşağıdaki haklara sahipsiniz:</p>
-        <div data-i18n-html="s6_list">
-          <ul class="list-disc list-inside text-gray-600 space-y-1 ml-2">
-            <li><strong>Erişim hakkı:</strong> Saklanan kişisel verilerinize uygulama içinden erişebilirsiniz.</li>
-            <li><strong>Düzeltme hakkı:</strong> Profil ve kuş verilerinizi istediğiniz zaman güncelleyebilirsiniz.</li>
-            <li><strong>Silme hakkı:</strong> Verilerinizi uygulama içinden silebilir veya hesabınızı tamamen kapatabilirsiniz.</li>
-            <li><strong>Dışa aktarma hakkı:</strong> Verilerinizi PDF veya Excel formatında dışa aktarabilirsiniz.</li>
-            <li><strong>Yedekleme hakkı:</strong> Şifrelenmiş yedek oluşturup indirebilirsiniz.</li>
-          </ul>
-        </div>
-      </section>
+          <h3 class="section-h3" data-i18n="s2_3_title">2.3 Otomatik Toplanan Veriler</h3>
+          <div data-i18n-html="s2_3_list">
+            <ul class="policy-list">
+              <li>Uygulama çökme raporları ve hata günlükleri (Sentry aracılığıyla)</li>
+              <li>Cihaz türü ve işletim sistemi versiyonu</li>
+              <li>Uygulama kullanım istatistikleri (ekran gezinme verileri)</li>
+            </ul>
+          </div>
+        </section>
 
-      <section>
-        <h2 class="text-xl font-bold text-gray-900 mb-3" data-i18n="s7_title">7. Çocukların Gizliliği</h2>
-        <p class="text-gray-600 leading-relaxed" data-i18n="s7_text">Uygulamamız 13 yaşından küçük çocuklara yönelik değildir. Bilerek 13 yaşından küçük çocuklardan kişisel veri toplamayız. Eğer 13 yaşından küçük bir çocuğun bize kişisel veri sağladığını fark ederseniz, lütfen bizimle iletişime geçin. Bu verileri derhal sileceğiz.</p>
-      </section>
+        <hr class="section-divider">
 
-      <section>
-        <h2 class="text-xl font-bold text-gray-900 mb-3" data-i18n="s8_title">8. Çerezler ve İzleme</h2>
-        <p class="text-gray-600 leading-relaxed" data-i18n="s8_text">Uygulama, çerez (cookie) kullanmaz. Hata raporlama amacıyla Sentry SDK'sı kullanılmakta olup, bu hizmet yalnızca uygulama çökmelerini ve performans sorunlarını tespit etmek için anonim teknik veriler toplar. Reklam gösterimi için Google AdMob SDK'sı kullanılmaktadır; kişiselleştirilmiş reklam izleme yalnızca kullanıcının açık izniyle (ATT onayı) etkinleştirilir.</p>
-      </section>
+        <section class="policy-section">
+          <h2 class="section-h2" data-i18n="s3_title">3. Verilerin Kullanım Amaçları</h2>
+          <div data-i18n-html="s3_list">
+            <ul class="policy-list">
+              <li>Kullanıcı hesabı oluşturma ve kimlik doğrulama</li>
+              <li>Kuş üreme verilerinizi kaydetme ve senkronize etme</li>
+              <li>Genetik hesaplamalar ve soy ağacı oluşturma</li>
+              <li>Kuluçka hatırlatıcıları ve bildirimler gönderme</li>
+              <li>Veri yedekleme ve geri yükleme</li>
+              <li>Uygulama hatalarını tespit etme ve düzeltme</li>
+              <li>Uygulama performansını iyileştirme</li>
+            </ul>
+          </div>
+        </section>
 
-      <section>
-        <h2 class="text-xl font-bold text-gray-900 mb-3" data-i18n="s9_title">9. Veri Saklama Süresi</h2>
-        <div data-i18n-html="s9_list">
-          <ul class="list-disc list-inside text-gray-600 space-y-1 ml-2">
-            <li>Hesap verileri: Hesabınız aktif olduğu sürece saklanır.</li>
-            <li>Uygulama verileri: Siz silene kadar saklanır.</li>
-            <li>Hata raporları: 90 gün sonra otomatik olarak silinir.</li>
-            <li>Hesap silme: Hesabınızı sildiğinizde tüm verileriniz 30 gün içinde kalıcı olarak kaldırılır.</li>
-          </ul>
-        </div>
-      </section>
+        <hr class="section-divider">
 
-      <section>
-        <h2 class="text-xl font-bold text-gray-900 mb-3" data-i18n="s10_title">10. Politika Değişiklikleri</h2>
-        <p class="text-gray-600 leading-relaxed" data-i18n="s10_text">Bu gizlilik politikasını zaman zaman güncelleyebiliriz. Önemli değişiklikler yapıldığında, uygulama içi bildirim veya e-posta yoluyla sizi bilgilendireceğiz. Güncellenmiş politika bu sayfada yayınlandığı anda yürürlüğe girer.</p>
-      </section>
+        <section class="policy-section">
+          <h2 class="section-h2" data-i18n="s4_title">4. Veri Saklama ve Güvenlik</h2>
+          <p class="section-intro" data-i18n="s4_intro">Verileriniz iki katmanlı bir yapıda saklanır:</p>
+          <div data-i18n-html="s4_list">
+            <ul class="policy-list">
+              <li><strong>Yerel depolama:</strong> Verileriniz cihazınızda şifrelenmiş SQLite veritabanında saklanır (AES-256-CBC şifreleme).</li>
+              <li><strong>Bulut depolama:</strong> Senkronizasyon için Supabase (PostgreSQL) altyapısı kullanılır. Veriler satır düzeyinde güvenlik politikaları (RLS) ile korunur.</li>
+              <li><strong>Fotoğraflar:</strong> Güvenli bulut depolama alanında saklanır ve yalnızca hesap sahibi tarafından erişilebilir.</li>
+              <li><strong>Yedeklemeler:</strong> Şifrelenmiş olarak oluşturulur ve güvenli şekilde saklanır.</li>
+            </ul>
+          </div>
+          <p class="section-text" style="margin-top: 14px;" data-i18n="s4_tls">Tüm veri iletişimi HTTPS/TLS protokolü üzerinden şifrelenerek gerçekleştirilir.</p>
+        </section>
 
-      <section>
-        <h2 class="text-xl font-bold text-gray-900 mb-3" data-i18n="s11_title">11. İletişim</h2>
-        <p class="text-gray-600 leading-relaxed" data-i18n="s11_text">Gizlilik politikamız hakkında sorularınız veya talepleriniz için bizimle iletişime geçebilirsiniz:</p>
-        <div class="mt-4 p-4 bg-primary-50 rounded-xl border border-primary-100">
-          <p class="text-gray-700">
-            <strong>E-posta:</strong> <a href="mailto:support@budgiebreedingtracker.online" class="text-primary-600 hover:text-primary-800 underline">support@budgiebreedingtracker.online</a>
-          </p>
-          <p class="text-gray-700 mt-1">
-            <strong>Web:</strong> <a href="https://budgiebreedingtracker.online" class="text-primary-600 hover:text-primary-800 underline">budgiebreedingtracker.online</a>
-          </p>
-        </div>
-      </section>
+        <hr class="section-divider">
 
+        <section class="policy-section">
+          <h2 class="section-h2" data-i18n="s5_title">5. Veri Paylaşımı</h2>
+          <p class="section-intro" data-i18n="s5_intro">Kişisel verilerinizi üçüncü taraflarla <strong>satmaz veya kiralamayız</strong>. Verileriniz yalnızca aşağıdaki durumlarda paylaşılabilir:</p>
+          <div data-i18n-html="s5_list">
+            <ul class="policy-list">
+              <li><strong>Hizmet sağlayıcılar:</strong> Supabase (veritabanı ve kimlik doğrulama), Sentry (hata raporlama) — yalnızca hizmetin işletilmesi için gerekli veriler paylaşılır.</li>
+              <li><strong>Ödeme yönetimi:</strong> RevenueCat (abonelik ve satın alma işlemleri) — yalnızca abonelik durumu ve işlem verileri paylaşılır.</li>
+              <li><strong>Reklam servisi:</strong> Google AdMob (reklam gösterimi) — cihaz tanımlayıcıları ve reklam tercihleri paylaşılır. Kişiselleştirilmiş reklam gösterimi için izleme izni ayrıca istenir.</li>
+              <li><strong>Yasal zorunluluk:</strong> Yasal düzenlemeler veya mahkeme kararları gerektirdiğinde.</li>
+            </ul>
+          </div>
+        </section>
+
+        <hr class="section-divider">
+
+        <section class="policy-section">
+          <h2 class="section-h2" data-i18n="s6_title">6. Kullanıcı Hakları</h2>
+          <p class="section-intro" data-i18n="s6_intro">Aşağıdaki haklara sahipsiniz:</p>
+          <div data-i18n-html="s6_list">
+            <ul class="policy-list">
+              <li><strong>Erişim hakkı:</strong> Saklanan kişisel verilerinize uygulama içinden erişebilirsiniz.</li>
+              <li><strong>Düzeltme hakkı:</strong> Profil ve kuş verilerinizi istediğiniz zaman güncelleyebilirsiniz.</li>
+              <li><strong>Silme hakkı:</strong> Verilerinizi uygulama içinden silebilir veya hesabınızı tamamen kapatabilirsiniz.</li>
+              <li><strong>Dışa aktarma hakkı:</strong> Verilerinizi PDF veya Excel formatında dışa aktarabilirsiniz.</li>
+              <li><strong>Yedekleme hakkı:</strong> Şifrelenmiş yedek oluşturup indirebilirsiniz.</li>
+            </ul>
+          </div>
+        </section>
+
+        <hr class="section-divider">
+
+        <section class="policy-section">
+          <h2 class="section-h2" data-i18n="s7_title">7. Çocukların Gizliliği</h2>
+          <p class="section-text" data-i18n="s7_text">Uygulamamız 13 yaşından küçük çocuklara yönelik değildir. Bilerek 13 yaşından küçük çocuklardan kişisel veri toplamayız. Eğer 13 yaşından küçük bir çocuğun bize kişisel veri sağladığını fark ederseniz, lütfen bizimle iletişime geçin. Bu verileri derhal sileceğiz.</p>
+        </section>
+
+        <hr class="section-divider">
+
+        <section class="policy-section">
+          <h2 class="section-h2" data-i18n="s8_title">8. Çerezler ve İzleme</h2>
+          <p class="section-text" data-i18n="s8_text">Uygulama, çerez (cookie) kullanmaz. Hata raporlama amacıyla Sentry SDK'sı kullanılmakta olup, bu hizmet yalnızca uygulama çökmelerini ve performans sorunlarını tespit etmek için anonim teknik veriler toplar. Reklam gösterimi için Google AdMob SDK'sı kullanılmaktadır; kişiselleştirilmiş reklam izleme yalnızca kullanıcının açık izniyle (ATT onayı) etkinleştirilir.</p>
+        </section>
+
+        <hr class="section-divider">
+
+        <section class="policy-section">
+          <h2 class="section-h2" data-i18n="s9_title">9. Veri Saklama Süresi</h2>
+          <div data-i18n-html="s9_list">
+            <ul class="policy-list">
+              <li>Hesap verileri: Hesabınız aktif olduğu sürece saklanır.</li>
+              <li>Uygulama verileri: Siz silene kadar saklanır.</li>
+              <li>Hata raporları: 90 gün sonra otomatik olarak silinir.</li>
+              <li>Hesap silme: Hesabınızı sildiğinizde tüm verileriniz 30 gün içinde kalıcı olarak kaldırılır.</li>
+            </ul>
+          </div>
+        </section>
+
+        <hr class="section-divider">
+
+        <section class="policy-section">
+          <h2 class="section-h2" data-i18n="s10_title">10. Politika Değişiklikleri</h2>
+          <p class="section-text" data-i18n="s10_text">Bu gizlilik politikasını zaman zaman güncelleyebiliriz. Önemli değişiklikler yapıldığında, uygulama içi bildirim veya e-posta yoluyla sizi bilgilendireceğiz. Güncellenmiş politika bu sayfada yayınlandığı anda yürürlüğe girer.</p>
+        </section>
+
+        <hr class="section-divider">
+
+        <section class="policy-section">
+          <h2 class="section-h2" data-i18n="s11_title">11. İletişim</h2>
+          <p class="section-text" data-i18n="s11_text">Gizlilik politikamız hakkında sorularınız veya talepleriniz için bizimle iletişime geçebilirsiniz:</p>
+          <div class="contact-card">
+            <div class="contact-row">
+              <strong>E-posta:</strong>
+              <a href="mailto:support@budgiebreedingtracker.online" class="contact-link">support@budgiebreedingtracker.online</a>
+            </div>
+            <div class="contact-row">
+              <strong>Web:</strong>
+              <a href="https://budgiebreedingtracker.online" class="contact-link">budgiebreedingtracker.online</a>
+            </div>
+          </div>
+        </section>
+
+      </div>
     </div>
+
   </main>
 
   <!-- Footer -->
-  <footer class="bg-white border-t border-gray-100 mt-16">
-    <div class="max-w-4xl mx-auto px-6 py-8 text-center">
-      <p class="text-gray-400 text-sm" data-i18n="footer">&copy; 2025-2026 BudgieBreedingTracker. Tüm hakları saklıdır.</p>
-    </div>
+  <footer>
+    <p data-i18n="footer">&copy; 2025-2026 BudgieBreedingTracker. Tüm hakları saklıdır.</p>
   </footer>
 
   <script>
@@ -231,29 +821,29 @@
         s1_text: 'BudgieBreedingTracker ("Uygulama"), muhabbet kuşu yetiştiricileri için geliştirilmiş bir üreme takip uygulamasıdır. Bu gizlilik politikası, uygulamayı kullanırken kişisel verilerinizin nasıl toplandığını, kullanıldığını, saklandığını ve korunduğunu açıklar. Uygulamayı kullanarak bu politikayı kabul etmiş sayılırsınız.',
         s2_title: '2. Toplanan Veriler',
         s2_1_title: '2.1 Hesap Bilgileri',
-        s2_1_list: '<ul class="list-disc list-inside text-gray-600 space-y-1 ml-2"><li>E-posta adresi (kayıt ve giriş için)</li><li>Kullanıcı adı ve profil bilgileri</li><li>Profil fotoğrafı (isteğe bağlı)</li></ul>',
+        s2_1_list: '<ul class="policy-list"><li>E-posta adresi (kayıt ve giriş için)</li><li>Kullanıcı adı ve profil bilgileri</li><li>Profil fotoğrafı (isteğe bağlı)</li></ul>',
         s2_2_title: '2.2 Uygulama Verileri',
-        s2_2_list: '<ul class="list-disc list-inside text-gray-600 space-y-1 ml-2"><li>Kuş kayıtları (isim, cinsiyet, renk mutasyonu, halka numarası vb.)</li><li>Üreme çifti, yumurta ve yavru bilgileri</li><li>Kuluçka takip verileri</li><li>Sağlık kayıtları ve büyüme ölçümleri</li><li>Genetik hesaplama geçmişi</li><li>Takvim etkinlikleri ve hatırlatıcılar</li><li>Kuş, yumurta ve yavru fotoğrafları</li></ul>',
+        s2_2_list: '<ul class="policy-list"><li>Kuş kayıtları (isim, cinsiyet, renk mutasyonu, halka numarası vb.)</li><li>Üreme çifti, yumurta ve yavru bilgileri</li><li>Kuluçka takip verileri</li><li>Sağlık kayıtları ve büyüme ölçümleri</li><li>Genetik hesaplama geçmişi</li><li>Takvim etkinlikleri ve hatırlatıcılar</li><li>Kuş, yumurta ve yavru fotoğrafları</li></ul>',
         s2_3_title: '2.3 Otomatik Toplanan Veriler',
-        s2_3_list: '<ul class="list-disc list-inside text-gray-600 space-y-1 ml-2"><li>Uygulama çökme raporları ve hata günlükleri (Sentry aracılığıyla)</li><li>Cihaz türü ve işletim sistemi versiyonu</li><li>Uygulama kullanım istatistikleri (ekran gezinme verileri)</li></ul>',
+        s2_3_list: '<ul class="policy-list"><li>Uygulama çökme raporları ve hata günlükleri (Sentry aracılığıyla)</li><li>Cihaz türü ve işletim sistemi versiyonu</li><li>Uygulama kullanım istatistikleri (ekran gezinme verileri)</li></ul>',
         s3_title: '3. Verilerin Kullanım Amaçları',
-        s3_list: '<ul class="list-disc list-inside text-gray-600 space-y-1 ml-2"><li>Kullanıcı hesabı oluşturma ve kimlik doğrulama</li><li>Kuş üreme verilerinizi kaydetme ve senkronize etme</li><li>Genetik hesaplamalar ve soy ağacı oluşturma</li><li>Kuluçka hatırlatıcıları ve bildirimler gönderme</li><li>Veri yedekleme ve geri yükleme</li><li>Uygulama hatalarını tespit etme ve düzeltme</li><li>Uygulama performansını iyileştirme</li></ul>',
+        s3_list: '<ul class="policy-list"><li>Kullanıcı hesabı oluşturma ve kimlik doğrulama</li><li>Kuş üreme verilerinizi kaydetme ve senkronize etme</li><li>Genetik hesaplamalar ve soy ağacı oluşturma</li><li>Kuluçka hatırlatıcıları ve bildirimler gönderme</li><li>Veri yedekleme ve geri yükleme</li><li>Uygulama hatalarını tespit etme ve düzeltme</li><li>Uygulama performansını iyileştirme</li></ul>',
         s4_title: '4. Veri Saklama ve Güvenlik',
         s4_intro: 'Verileriniz iki katmanlı bir yapıda saklanır:',
-        s4_list: '<ul class="list-disc list-inside text-gray-600 space-y-1 ml-2"><li><strong>Yerel depolama:</strong> Verileriniz cihazınızda şifrelenmiş SQLite veritabanında saklanır (AES-256-CBC şifreleme).</li><li><strong>Bulut depolama:</strong> Senkronizasyon için Supabase (PostgreSQL) altyapısı kullanılır. Veriler satır düzeyinde güvenlik politikaları (RLS) ile korunur.</li><li><strong>Fotoğraflar:</strong> Güvenli bulut depolama alanında saklanır ve yalnızca hesap sahibi tarafından erişilebilir.</li><li><strong>Yedeklemeler:</strong> Şifrelenmiş olarak oluşturulur ve güvenli şekilde saklanır.</li></ul>',
+        s4_list: '<ul class="policy-list"><li><strong>Yerel depolama:</strong> Verileriniz cihazınızda şifrelenmiş SQLite veritabanında saklanır (AES-256-CBC şifreleme).</li><li><strong>Bulut depolama:</strong> Senkronizasyon için Supabase (PostgreSQL) altyapısı kullanılır. Veriler satır düzeyinde güvenlik politikaları (RLS) ile korunur.</li><li><strong>Fotoğraflar:</strong> Güvenli bulut depolama alanında saklanır ve yalnızca hesap sahibi tarafından erişilebilir.</li><li><strong>Yedeklemeler:</strong> Şifrelenmiş olarak oluşturulur ve güvenli şekilde saklanır.</li></ul>',
         s4_tls: 'Tüm veri iletişimi HTTPS/TLS protokolü üzerinden şifrelenerek gerçekleştirilir.',
         s5_title: '5. Veri Paylaşımı',
         s5_intro: 'Kişisel verilerinizi üçüncü taraflarla <strong>satmaz veya kiralamayız</strong>. Verileriniz yalnızca aşağıdaki durumlarda paylaşılabilir:',
-        s5_list: '<ul class="list-disc list-inside text-gray-600 space-y-1 ml-2"><li><strong>Hizmet sağlayıcılar:</strong> Supabase (veritabanı ve kimlik doğrulama), Sentry (hata raporlama) — yalnızca hizmetin işletilmesi için gerekli veriler paylaşılır.</li><li><strong>Ödeme yönetimi:</strong> RevenueCat (abonelik ve satın alma işlemleri) — yalnızca abonelik durumu ve işlem verileri paylaşılır.</li><li><strong>Reklam servisi:</strong> Google AdMob (reklam gösterimi) — cihaz tanımlayıcıları ve reklam tercihleri paylaşılır. Kişiselleştirilmiş reklam gösterimi için izleme izni ayrıca istenir.</li><li><strong>Yasal zorunluluk:</strong> Yasal düzenlemeler veya mahkeme kararları gerektirdiğinde.</li></ul>',
+        s5_list: '<ul class="policy-list"><li><strong>Hizmet sağlayıcılar:</strong> Supabase (veritabanı ve kimlik doğrulama), Sentry (hata raporlama) — yalnızca hizmetin işletilmesi için gerekli veriler paylaşılır.</li><li><strong>Ödeme yönetimi:</strong> RevenueCat (abonelik ve satın alma işlemleri) — yalnızca abonelik durumu ve işlem verileri paylaşılır.</li><li><strong>Reklam servisi:</strong> Google AdMob (reklam gösterimi) — cihaz tanımlayıcıları ve reklam tercihleri paylaşılır. Kişiselleştirilmiş reklam gösterimi için izleme izni ayrıca istenir.</li><li><strong>Yasal zorunluluk:</strong> Yasal düzenlemeler veya mahkeme kararları gerektirdiğinde.</li></ul>',
         s6_title: '6. Kullanıcı Hakları',
         s6_intro: 'Aşağıdaki haklara sahipsiniz:',
-        s6_list: '<ul class="list-disc list-inside text-gray-600 space-y-1 ml-2"><li><strong>Erişim hakkı:</strong> Saklanan kişisel verilerinize uygulama içinden erişebilirsiniz.</li><li><strong>Düzeltme hakkı:</strong> Profil ve kuş verilerinizi istediğiniz zaman güncelleyebilirsiniz.</li><li><strong>Silme hakkı:</strong> Verilerinizi uygulama içinden silebilir veya hesabınızı tamamen kapatabilirsiniz.</li><li><strong>Dışa aktarma hakkı:</strong> Verilerinizi PDF veya Excel formatında dışa aktarabilirsiniz.</li><li><strong>Yedekleme hakkı:</strong> Şifrelenmiş yedek oluşturup indirebilirsiniz.</li></ul>',
+        s6_list: '<ul class="policy-list"><li><strong>Erişim hakkı:</strong> Saklanan kişisel verilerinize uygulama içinden erişebilirsiniz.</li><li><strong>Düzeltme hakkı:</strong> Profil ve kuş verilerinizi istediğiniz zaman güncelleyebilirsiniz.</li><li><strong>Silme hakkı:</strong> Verilerinizi uygulama içinden silebilir veya hesabınızı tamamen kapatabilirsiniz.</li><li><strong>Dışa aktarma hakkı:</strong> Verilerinizi PDF veya Excel formatında dışa aktarabilirsiniz.</li><li><strong>Yedekleme hakkı:</strong> Şifrelenmiş yedek oluşturup indirebilirsiniz.</li></ul>',
         s7_title: '7. Çocukların Gizliliği',
         s7_text: 'Uygulamamız 13 yaşından küçük çocuklara yönelik değildir. Bilerek 13 yaşından küçük çocuklardan kişisel veri toplamayız. Eğer 13 yaşından küçük bir çocuğun bize kişisel veri sağladığını fark ederseniz, lütfen bizimle iletişime geçin. Bu verileri derhal sileceğiz.',
         s8_title: '8. Çerezler ve İzleme',
         s8_text: 'Uygulama, çerez (cookie) kullanmaz. Hata raporlama amacıyla Sentry SDK\'sı kullanılmakta olup, bu hizmet yalnızca uygulama çökmelerini ve performans sorunlarını tespit etmek için anonim teknik veriler toplar. Reklam gösterimi için Google AdMob SDK\'sı kullanılmaktadır; kişiselleştirilmiş reklam izleme yalnızca kullanıcının açık izniyle (ATT onayı) etkinleştirilir.',
         s9_title: '9. Veri Saklama Süresi',
-        s9_list: '<ul class="list-disc list-inside text-gray-600 space-y-1 ml-2"><li>Hesap verileri: Hesabınız aktif olduğu sürece saklanır.</li><li>Uygulama verileri: Siz silene kadar saklanır.</li><li>Hata raporları: 90 gün sonra otomatik olarak silinir.</li><li>Hesap silme: Hesabınızı sildiğinizde tüm verileriniz 30 gün içinde kalıcı olarak kaldırılır.</li></ul>',
+        s9_list: '<ul class="policy-list"><li>Hesap verileri: Hesabınız aktif olduğu sürece saklanır.</li><li>Uygulama verileri: Siz silene kadar saklanır.</li><li>Hata raporları: 90 gün sonra otomatik olarak silinir.</li><li>Hesap silme: Hesabınızı sildiğinizde tüm verileriniz 30 gün içinde kalıcı olarak kaldırılır.</li></ul>',
         s10_title: '10. Politika Değişiklikleri',
         s10_text: 'Bu gizlilik politikasını zaman zaman güncelleyebiliriz. Önemli değişiklikler yapıldığında, uygulama içi bildirim veya e-posta yoluyla sizi bilgilendireceğiz. Güncellenmiş politika bu sayfada yayınlandığı anda yürürlüğe girer.',
         s11_title: '11. İletişim',
@@ -268,29 +858,29 @@
         s1_text: 'BudgieBreedingTracker ("App") is a breeding tracker application developed for budgerigar breeders. This privacy policy explains how your personal data is collected, used, stored, and protected when you use the application. By using the App, you agree to this policy.',
         s2_title: '2. Data We Collect',
         s2_1_title: '2.1 Account Information',
-        s2_1_list: '<ul class="list-disc list-inside text-gray-600 space-y-1 ml-2"><li>Email address (for registration and login)</li><li>Username and profile information</li><li>Profile photo (optional)</li></ul>',
+        s2_1_list: '<ul class="policy-list"><li>Email address (for registration and login)</li><li>Username and profile information</li><li>Profile photo (optional)</li></ul>',
         s2_2_title: '2.2 App Data',
-        s2_2_list: '<ul class="list-disc list-inside text-gray-600 space-y-1 ml-2"><li>Bird records (name, gender, color mutation, ring number, etc.)</li><li>Breeding pair, egg, and chick information</li><li>Incubation tracking data</li><li>Health records and growth measurements</li><li>Genetics calculation history</li><li>Calendar events and reminders</li><li>Bird, egg, and chick photos</li></ul>',
+        s2_2_list: '<ul class="policy-list"><li>Bird records (name, gender, color mutation, ring number, etc.)</li><li>Breeding pair, egg, and chick information</li><li>Incubation tracking data</li><li>Health records and growth measurements</li><li>Genetics calculation history</li><li>Calendar events and reminders</li><li>Bird, egg, and chick photos</li></ul>',
         s2_3_title: '2.3 Automatically Collected Data',
-        s2_3_list: '<ul class="list-disc list-inside text-gray-600 space-y-1 ml-2"><li>App crash reports and error logs (via Sentry)</li><li>Device type and operating system version</li><li>App usage statistics (screen navigation data)</li></ul>',
+        s2_3_list: '<ul class="policy-list"><li>App crash reports and error logs (via Sentry)</li><li>Device type and operating system version</li><li>App usage statistics (screen navigation data)</li></ul>',
         s3_title: '3. How We Use Your Data',
-        s3_list: '<ul class="list-disc list-inside text-gray-600 space-y-1 ml-2"><li>Creating user accounts and authentication</li><li>Saving and syncing your bird breeding data</li><li>Genetics calculations and pedigree creation</li><li>Sending incubation reminders and notifications</li><li>Data backup and restore</li><li>Detecting and fixing app errors</li><li>Improving app performance</li></ul>',
+        s3_list: '<ul class="policy-list"><li>Creating user accounts and authentication</li><li>Saving and syncing your bird breeding data</li><li>Genetics calculations and pedigree creation</li><li>Sending incubation reminders and notifications</li><li>Data backup and restore</li><li>Detecting and fixing app errors</li><li>Improving app performance</li></ul>',
         s4_title: '4. Data Storage and Security',
         s4_intro: 'Your data is stored in a two-layer architecture:',
-        s4_list: '<ul class="list-disc list-inside text-gray-600 space-y-1 ml-2"><li><strong>Local storage:</strong> Your data is stored in an encrypted SQLite database on your device (AES-256-CBC encryption).</li><li><strong>Cloud storage:</strong> Supabase (PostgreSQL) infrastructure is used for synchronization. Data is protected with Row Level Security (RLS) policies.</li><li><strong>Photos:</strong> Stored in secure cloud storage and accessible only by the account owner.</li><li><strong>Backups:</strong> Created encrypted and stored securely.</li></ul>',
+        s4_list: '<ul class="policy-list"><li><strong>Local storage:</strong> Your data is stored in an encrypted SQLite database on your device (AES-256-CBC encryption).</li><li><strong>Cloud storage:</strong> Supabase (PostgreSQL) infrastructure is used for synchronization. Data is protected with Row Level Security (RLS) policies.</li><li><strong>Photos:</strong> Stored in secure cloud storage and accessible only by the account owner.</li><li><strong>Backups:</strong> Created encrypted and stored securely.</li></ul>',
         s4_tls: 'All data communication is encrypted via HTTPS/TLS protocol.',
         s5_title: '5. Data Sharing',
         s5_intro: 'We <strong>do not sell or rent</strong> your personal data to third parties. Your data may only be shared in the following cases:',
-        s5_list: '<ul class="list-disc list-inside text-gray-600 space-y-1 ml-2"><li><strong>Service providers:</strong> Supabase (database and authentication), Sentry (error reporting) — only data necessary for service operation is shared.</li><li><strong>Payment management:</strong> RevenueCat (subscription and purchase processing) — only subscription status and transaction data is shared.</li><li><strong>Advertising:</strong> Google AdMob (ad serving) — device identifiers and ad preferences are shared. Personalized ad tracking is only enabled with explicit user consent (ATT approval).</li><li><strong>Legal requirements:</strong> When required by law or court orders.</li></ul>',
+        s5_list: '<ul class="policy-list"><li><strong>Service providers:</strong> Supabase (database and authentication), Sentry (error reporting) — only data necessary for service operation is shared.</li><li><strong>Payment management:</strong> RevenueCat (subscription and purchase processing) — only subscription status and transaction data is shared.</li><li><strong>Advertising:</strong> Google AdMob (ad serving) — device identifiers and ad preferences are shared. Personalized ad tracking is only enabled with explicit user consent (ATT approval).</li><li><strong>Legal requirements:</strong> When required by law or court orders.</li></ul>',
         s6_title: '6. User Rights',
         s6_intro: 'You have the following rights:',
-        s6_list: '<ul class="list-disc list-inside text-gray-600 space-y-1 ml-2"><li><strong>Right of access:</strong> You can access your stored personal data from within the app.</li><li><strong>Right to rectification:</strong> You can update your profile and bird data at any time.</li><li><strong>Right to deletion:</strong> You can delete your data from the app or close your account entirely.</li><li><strong>Right to export:</strong> You can export your data in PDF or Excel format.</li><li><strong>Right to backup:</strong> You can create and download encrypted backups.</li></ul>',
+        s6_list: '<ul class="policy-list"><li><strong>Right of access:</strong> You can access your stored personal data from within the app.</li><li><strong>Right to rectification:</strong> You can update your profile and bird data at any time.</li><li><strong>Right to deletion:</strong> You can delete your data from the app or close your account entirely.</li><li><strong>Right to export:</strong> You can export your data in PDF or Excel format.</li><li><strong>Right to backup:</strong> You can create and download encrypted backups.</li></ul>',
         s7_title: '7. Children\'s Privacy',
         s7_text: 'Our app is not intended for children under 13 years of age. We do not knowingly collect personal data from children under 13. If you become aware that a child under 13 has provided us with personal data, please contact us. We will delete such data immediately.',
         s8_title: '8. Cookies and Tracking',
         s8_text: 'The App does not use cookies. Sentry SDK is used for error reporting purposes, and this service only collects anonymous technical data to detect app crashes and performance issues. Google AdMob SDK is used for ad serving; personalized ad tracking is only enabled with explicit user consent (ATT approval).',
         s9_title: '9. Data Retention',
-        s9_list: '<ul class="list-disc list-inside text-gray-600 space-y-1 ml-2"><li>Account data: Stored as long as your account is active.</li><li>App data: Stored until you delete it.</li><li>Error reports: Automatically deleted after 90 days.</li><li>Account deletion: All your data is permanently removed within 30 days of account deletion.</li></ul>',
+        s9_list: '<ul class="policy-list"><li>Account data: Stored as long as your account is active.</li><li>App data: Stored until you delete it.</li><li>Error reports: Automatically deleted after 90 days.</li><li>Account deletion: All your data is permanently removed within 30 days of account deletion.</li></ul>',
         s10_title: '10. Policy Changes',
         s10_text: 'We may update this privacy policy from time to time. When significant changes are made, we will notify you via in-app notification or email. The updated policy takes effect as soon as it is published on this page.',
         s11_title: '11. Contact',
@@ -305,29 +895,29 @@
         s1_text: 'BudgieBreedingTracker ("App") ist eine Zucht-Tracking-Anwendung für Wellensittichzüchter. Diese Datenschutzrichtlinie erklärt, wie Ihre personenbezogenen Daten bei der Nutzung der App erhoben, verwendet, gespeichert und geschützt werden. Durch die Nutzung der App stimmen Sie dieser Richtlinie zu.',
         s2_title: '2. Erhobene Daten',
         s2_1_title: '2.1 Kontoinformationen',
-        s2_1_list: '<ul class="list-disc list-inside text-gray-600 space-y-1 ml-2"><li>E-Mail-Adresse (für Registrierung und Anmeldung)</li><li>Benutzername und Profilinformationen</li><li>Profilfoto (optional)</li></ul>',
+        s2_1_list: '<ul class="policy-list"><li>E-Mail-Adresse (für Registrierung und Anmeldung)</li><li>Benutzername und Profilinformationen</li><li>Profilfoto (optional)</li></ul>',
         s2_2_title: '2.2 App-Daten',
-        s2_2_list: '<ul class="list-disc list-inside text-gray-600 space-y-1 ml-2"><li>Vogelaufzeichnungen (Name, Geschlecht, Farbmutation, Ringnummer usw.)</li><li>Zuchtpaar-, Ei- und Kükeninformationen</li><li>Brutüberwachungsdaten</li><li>Gesundheitsakten und Wachstumsmessungen</li><li>Genetik-Berechnungsverlauf</li><li>Kalendertermine und Erinnerungen</li><li>Vogel-, Ei- und Kükenfotos</li></ul>',
+        s2_2_list: '<ul class="policy-list"><li>Vogelaufzeichnungen (Name, Geschlecht, Farbmutation, Ringnummer usw.)</li><li>Zuchtpaar-, Ei- und Kükeninformationen</li><li>Brutüberwachungsdaten</li><li>Gesundheitsakten und Wachstumsmessungen</li><li>Genetik-Berechnungsverlauf</li><li>Kalendertermine und Erinnerungen</li><li>Vogel-, Ei- und Kükenfotos</li></ul>',
         s2_3_title: '2.3 Automatisch erhobene Daten',
-        s2_3_list: '<ul class="list-disc list-inside text-gray-600 space-y-1 ml-2"><li>App-Absturzberichte und Fehlerprotokolle (über Sentry)</li><li>Gerätetyp und Betriebssystemversion</li><li>App-Nutzungsstatistiken (Bildschirmnavigationsdaten)</li></ul>',
+        s2_3_list: '<ul class="policy-list"><li>App-Absturzberichte und Fehlerprotokolle (über Sentry)</li><li>Gerätetyp und Betriebssystemversion</li><li>App-Nutzungsstatistiken (Bildschirmnavigationsdaten)</li></ul>',
         s3_title: '3. Verwendungszwecke',
-        s3_list: '<ul class="list-disc list-inside text-gray-600 space-y-1 ml-2"><li>Erstellung von Benutzerkonten und Authentifizierung</li><li>Speichern und Synchronisieren Ihrer Vogelzuchtdaten</li><li>Genetische Berechnungen und Stammbaumerstellung</li><li>Senden von Bruterinnerungen und Benachrichtigungen</li><li>Datensicherung und -wiederherstellung</li><li>Erkennung und Behebung von App-Fehlern</li><li>Verbesserung der App-Leistung</li></ul>',
+        s3_list: '<ul class="policy-list"><li>Erstellung von Benutzerkonten und Authentifizierung</li><li>Speichern und Synchronisieren Ihrer Vogelzuchtdaten</li><li>Genetische Berechnungen und Stammbaumerstellung</li><li>Senden von Bruterinnerungen und Benachrichtigungen</li><li>Datensicherung und -wiederherstellung</li><li>Erkennung und Behebung von App-Fehlern</li><li>Verbesserung der App-Leistung</li></ul>',
         s4_title: '4. Datenspeicherung und Sicherheit',
         s4_intro: 'Ihre Daten werden in einer zweischichtigen Architektur gespeichert:',
-        s4_list: '<ul class="list-disc list-inside text-gray-600 space-y-1 ml-2"><li><strong>Lokale Speicherung:</strong> Ihre Daten werden in einer verschlüsselten SQLite-Datenbank auf Ihrem Gerät gespeichert (AES-256-CBC-Verschlüsselung).</li><li><strong>Cloud-Speicherung:</strong> Supabase (PostgreSQL) wird für die Synchronisierung verwendet. Daten werden durch Row Level Security (RLS) geschützt.</li><li><strong>Fotos:</strong> Werden in sicherem Cloud-Speicher aufbewahrt und sind nur für den Kontoinhaber zugänglich.</li><li><strong>Backups:</strong> Werden verschlüsselt erstellt und sicher gespeichert.</li></ul>',
+        s4_list: '<ul class="policy-list"><li><strong>Lokale Speicherung:</strong> Ihre Daten werden in einer verschlüsselten SQLite-Datenbank auf Ihrem Gerät gespeichert (AES-256-CBC-Verschlüsselung).</li><li><strong>Cloud-Speicherung:</strong> Supabase (PostgreSQL) wird für die Synchronisierung verwendet. Daten werden durch Row Level Security (RLS) geschützt.</li><li><strong>Fotos:</strong> Werden in sicherem Cloud-Speicher aufbewahrt und sind nur für den Kontoinhaber zugänglich.</li><li><strong>Backups:</strong> Werden verschlüsselt erstellt und sicher gespeichert.</li></ul>',
         s4_tls: 'Die gesamte Datenkommunikation wird über das HTTPS/TLS-Protokoll verschlüsselt.',
         s5_title: '5. Datenweitergabe',
         s5_intro: 'Wir <strong>verkaufen oder vermieten</strong> Ihre personenbezogenen Daten nicht an Dritte. Ihre Daten können nur in folgenden Fällen weitergegeben werden:',
-        s5_list: '<ul class="list-disc list-inside text-gray-600 space-y-1 ml-2"><li><strong>Dienstleister:</strong> Supabase (Datenbank und Authentifizierung), Sentry (Fehlerberichterstattung) — es werden nur die für den Betrieb notwendigen Daten weitergegeben.</li><li><strong>Zahlungsabwicklung:</strong> RevenueCat (Abonnement- und Kaufabwicklung) — nur Abonnementstatus und Transaktionsdaten werden weitergegeben.</li><li><strong>Werbung:</strong> Google AdMob (Anzeigenbereitstellung) — Gerätekennungen und Anzeigenpräferenzen werden weitergegeben. Personalisiertes Anzeigen-Tracking wird nur mit ausdrücklicher Nutzereinwilligung (ATT-Genehmigung) aktiviert.</li><li><strong>Gesetzliche Anforderungen:</strong> Wenn gesetzliche Vorschriften oder Gerichtsbeschlüsse dies erfordern.</li></ul>',
+        s5_list: '<ul class="policy-list"><li><strong>Dienstleister:</strong> Supabase (Datenbank und Authentifizierung), Sentry (Fehlerberichterstattung) — es werden nur die für den Betrieb notwendigen Daten weitergegeben.</li><li><strong>Zahlungsabwicklung:</strong> RevenueCat (Abonnement- und Kaufabwicklung) — nur Abonnementstatus und Transaktionsdaten werden weitergegeben.</li><li><strong>Werbung:</strong> Google AdMob (Anzeigenbereitstellung) — Gerätekennungen und Anzeigenpräferenzen werden weitergegeben. Personalisiertes Anzeigen-Tracking wird nur mit ausdrücklicher Nutzereinwilligung (ATT-Genehmigung) aktiviert.</li><li><strong>Gesetzliche Anforderungen:</strong> Wenn gesetzliche Vorschriften oder Gerichtsbeschlüsse dies erfordern.</li></ul>',
         s6_title: '6. Benutzerrechte',
         s6_intro: 'Sie haben folgende Rechte:',
-        s6_list: '<ul class="list-disc list-inside text-gray-600 space-y-1 ml-2"><li><strong>Auskunftsrecht:</strong> Sie können auf Ihre gespeicherten personenbezogenen Daten innerhalb der App zugreifen.</li><li><strong>Recht auf Berichtigung:</strong> Sie können Ihre Profil- und Vogeldaten jederzeit aktualisieren.</li><li><strong>Recht auf Löschung:</strong> Sie können Ihre Daten aus der App löschen oder Ihr Konto vollständig schließen.</li><li><strong>Recht auf Export:</strong> Sie können Ihre Daten im PDF- oder Excel-Format exportieren.</li><li><strong>Recht auf Backup:</strong> Sie können verschlüsselte Backups erstellen und herunterladen.</li></ul>',
+        s6_list: '<ul class="policy-list"><li><strong>Auskunftsrecht:</strong> Sie können auf Ihre gespeicherten personenbezogenen Daten innerhalb der App zugreifen.</li><li><strong>Recht auf Berichtigung:</strong> Sie können Ihre Profil- und Vogeldaten jederzeit aktualisieren.</li><li><strong>Recht auf Löschung:</strong> Sie können Ihre Daten aus der App löschen oder Ihr Konto vollständig schließen.</li><li><strong>Recht auf Export:</strong> Sie können Ihre Daten im PDF- oder Excel-Format exportieren.</li><li><strong>Recht auf Backup:</strong> Sie können verschlüsselte Backups erstellen und herunterladen.</li></ul>',
         s7_title: '7. Datenschutz für Kinder',
         s7_text: 'Unsere App richtet sich nicht an Kinder unter 13 Jahren. Wir erheben wissentlich keine personenbezogenen Daten von Kindern unter 13 Jahren. Wenn Sie feststellen, dass ein Kind unter 13 Jahren uns personenbezogene Daten bereitgestellt hat, kontaktieren Sie uns bitte. Wir werden diese Daten umgehend löschen.',
         s8_title: '8. Cookies und Tracking',
         s8_text: 'Die App verwendet keine Cookies. Das Sentry SDK wird für Fehlerberichterstattung verwendet und erhebt nur anonyme technische Daten zur Erkennung von App-Abstürzen und Leistungsproblemen. Google AdMob SDK wird für die Anzeigenbereitstellung verwendet; personalisiertes Anzeigen-Tracking wird nur mit ausdrücklicher Nutzereinwilligung (ATT-Genehmigung) aktiviert.',
         s9_title: '9. Datenaufbewahrung',
-        s9_list: '<ul class="list-disc list-inside text-gray-600 space-y-1 ml-2"><li>Kontodaten: Werden gespeichert, solange Ihr Konto aktiv ist.</li><li>App-Daten: Werden gespeichert, bis Sie sie löschen.</li><li>Fehlerberichte: Werden nach 90 Tagen automatisch gelöscht.</li><li>Kontolöschung: Alle Ihre Daten werden innerhalb von 30 Tagen nach Kontolöschung dauerhaft entfernt.</li></ul>',
+        s9_list: '<ul class="policy-list"><li>Kontodaten: Werden gespeichert, solange Ihr Konto aktiv ist.</li><li>App-Daten: Werden gespeichert, bis Sie sie löschen.</li><li>Fehlerberichte: Werden nach 90 Tagen automatisch gelöscht.</li><li>Kontolöschung: Alle Ihre Daten werden innerhalb von 30 Tagen nach Kontolöschung dauerhaft entfernt.</li></ul>',
         s10_title: '10. Richtlinienänderungen',
         s10_text: 'Wir können diese Datenschutzrichtlinie von Zeit zu Zeit aktualisieren. Bei wesentlichen Änderungen werden wir Sie per In-App-Benachrichtigung oder E-Mail informieren. Die aktualisierte Richtlinie tritt in Kraft, sobald sie auf dieser Seite veröffentlicht wird.',
         s11_title: '11. Kontakt',
