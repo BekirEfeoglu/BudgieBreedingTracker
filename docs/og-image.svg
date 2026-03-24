@@ -48,7 +48,7 @@
   <circle cx="200" cy="500" r="150" fill="#D4A853" opacity="0.04"/>
   <circle cx="1100" cy="500" r="120" fill="#4A8FD4" opacity="0.04"/>
 
-  <!-- Embedded shield logo (scaled from logo-new.svg) -->
+  <!-- Embedded shield logo (scaled from logo.png) -->
   <g transform="translate(60, 135) scale(0.7)">
     <!-- Shield outline -->
     <path d="M256 60 C256 60 380 80 420 120 C460 160 450 320 256 460 C62 320 52 160 92 120 C132 80 256 60 256 60Z"
