@@ -14,19 +14,8 @@ import 'package:budgie_breeding_tracker/data/models/notification_model.dart';
 import 'package:budgie_breeding_tracker/data/models/clutch_model.dart';
 import 'package:budgie_breeding_tracker/data/models/nest_model.dart';
 import 'package:budgie_breeding_tracker/data/models/photo_model.dart';
-import 'package:budgie_breeding_tracker/data/repositories/bird_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/breeding_pair_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/egg_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/chick_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/health_record_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/event_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/incubation_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/growth_measurement_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/notification_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/clutch_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/nest_repository.dart';
-import 'package:budgie_breeding_tracker/data/repositories/photo_repository.dart';
 import 'package:budgie_breeding_tracker/domain/services/backup/backup_data_collector.dart';
+import 'package:budgie_breeding_tracker/domain/services/backup/backup_repositories.dart';
 import 'package:budgie_breeding_tracker/domain/services/backup/backup_result.dart';
 import 'package:budgie_breeding_tracker/domain/services/encryption/encryption_service.dart';
 
@@ -38,49 +27,18 @@ part 'backup_restorer_helpers.dart';
 /// (`.enc.json`) and content format (non-JSON content). If encryption is
 /// detected, the [EncryptionService] is used to decrypt before parsing.
 class BackupRestorer {
-  final BirdRepository _birdRepo;
-  final BreedingPairRepository _breedingRepo;
-  final EggRepository _eggRepo;
-  final ChickRepository _chickRepo;
-  final HealthRecordRepository _healthRepo;
-  final EventRepository _eventRepo;
-  final IncubationRepository _incubationRepo;
-  final GrowthMeasurementRepository _growthRepo;
-  final NotificationRepository _notificationRepo;
-  final ClutchRepository _clutchRepo;
-  final NestRepository _nestRepo;
-  final PhotoRepository _photoRepo;
+  final BackupRepositories _repos;
   final EncryptionService? _encryptionService;
+  final List<_RestoreStep> _restoreSteps;
 
   static const _tag = '[BackupRestorer]';
 
   BackupRestorer({
-    required BirdRepository birdRepo,
-    required BreedingPairRepository breedingRepo,
-    required EggRepository eggRepo,
-    required ChickRepository chickRepo,
-    required HealthRecordRepository healthRepo,
-    required EventRepository eventRepo,
-    required IncubationRepository incubationRepo,
-    required GrowthMeasurementRepository growthRepo,
-    required NotificationRepository notificationRepo,
-    required ClutchRepository clutchRepo,
-    required NestRepository nestRepo,
-    required PhotoRepository photoRepo,
+    required BackupRepositories repos,
     EncryptionService? encryptionService,
-  }) : _birdRepo = birdRepo,
-       _breedingRepo = breedingRepo,
-       _eggRepo = eggRepo,
-       _chickRepo = chickRepo,
-       _healthRepo = healthRepo,
-       _eventRepo = eventRepo,
-       _incubationRepo = incubationRepo,
-       _growthRepo = growthRepo,
-       _notificationRepo = notificationRepo,
-       _clutchRepo = clutchRepo,
-       _nestRepo = nestRepo,
-       _photoRepo = photoRepo,
-       _encryptionService = encryptionService;
+  }) : _repos = repos,
+       _encryptionService = encryptionService,
+       _restoreSteps = _buildRestoreSteps(repos);
 
   /// Restore data from a backup JSON file.
   Future<BackupResult> restoreBackup(String userId, String filePath) async {
@@ -153,22 +111,19 @@ class BackupRestorer {
   }
 
   /// Entity registry: FK-safe restore order (parents before children).
-  ///
-  /// Each [_RestoreStep] captures its generic type via [_step], so the
-  /// loop below stays type-safe without repeating boilerplate per entity.
-  late final _restoreSteps = <_RestoreStep>[
-    _step('birds', Bird.fromJson, _birdRepo.saveAll),
-    _step('nests', Nest.fromJson, _nestRepo.saveAll),
-    _step('breeding_pairs', BreedingPair.fromJson, _breedingRepo.saveAll),
-    _step('clutches', Clutch.fromJson, _clutchRepo.saveAll),
-    _step('incubations', Incubation.fromJson, _incubationRepo.saveAll),
-    _step('eggs', Egg.fromJson, _eggRepo.saveAll),
-    _step('chicks', Chick.fromJson, _chickRepo.saveAll),
-    _step('health_records', HealthRecord.fromJson, _healthRepo.saveAll),
-    _step('events', Event.fromJson, _eventRepo.saveAll),
-    _step('growth_measurements', GrowthMeasurement.fromJson, _growthRepo.saveAll),
-    _step('notifications', AppNotification.fromJson, _notificationRepo.saveAll),
-    _step('photos', Photo.fromJson, _photoRepo.saveAll),
+  static List<_RestoreStep> _buildRestoreSteps(BackupRepositories r) => [
+    _step('birds', Bird.fromJson, r.bird.saveAll),
+    _step('nests', Nest.fromJson, r.nest.saveAll),
+    _step('breeding_pairs', BreedingPair.fromJson, r.breedingPair.saveAll),
+    _step('clutches', Clutch.fromJson, r.clutch.saveAll),
+    _step('incubations', Incubation.fromJson, r.incubation.saveAll),
+    _step('eggs', Egg.fromJson, r.egg.saveAll),
+    _step('chicks', Chick.fromJson, r.chick.saveAll),
+    _step('health_records', HealthRecord.fromJson, r.healthRecord.saveAll),
+    _step('events', Event.fromJson, r.event.saveAll),
+    _step('growth_measurements', GrowthMeasurement.fromJson, r.growthMeasurement.saveAll),
+    _step('notifications', AppNotification.fromJson, r.notification.saveAll),
+    _step('photos', Photo.fromJson, r.photo.saveAll),
   ];
 
   Future<({int total, int errors})> _restoreAllEntities(
