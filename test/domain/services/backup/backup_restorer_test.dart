@@ -531,6 +531,69 @@ void main() {
       },
     );
 
+      test('restores entities in FK-safe order (parents before children)',
+          () async {
+        stubAllSaveAll();
+        final bird = createTestBird(
+          id: 'b1',
+          userId: 'user-1',
+          name: 'B',
+        );
+
+        // Provide data for multiple FK-related entities so all saveAll stubs
+        // are invoked. We only care about call *order*, not content.
+        final file = await writeBackupFile('fk_order.json', {
+          'version': 2,
+          'data': {
+            'birds': [bird.toJson()],
+            'nests': [
+              {'id': 'n1', 'user_id': 'user-1', 'name': 'Nest 1'},
+            ],
+            'breeding_pairs': [
+              {'id': 'bp1', 'user_id': 'user-1'},
+            ],
+            'clutches': [
+              {'id': 'cl1', 'user_id': 'user-1', 'breeding_pair_id': 'bp1'},
+            ],
+            'incubations': [
+              {'id': 'inc1', 'user_id': 'user-1', 'breeding_pair_id': 'bp1'},
+            ],
+            'eggs': [
+              {
+                'id': 'e1',
+                'user_id': 'user-1',
+                'incubation_id': 'inc1',
+                'status': 'incubating',
+                'egg_number': 1,
+                'lay_date': '2025-01-01T00:00:00.000',
+              },
+            ],
+            'chicks': [
+              {
+                'id': 'ch1',
+                'user_id': 'user-1',
+                'egg_id': 'e1',
+                'gender': 'unknown',
+                'health_status': 'healthy',
+              },
+            ],
+          },
+        });
+
+        await restorer.restoreBackup('user-1', file.path);
+
+        // Verify FK-safe order: parents must be restored before children.
+        verifyInOrder([
+          () => birdRepo.saveAll(any()),
+          () => nestRepo.saveAll(any()),
+          () => breedingRepo.saveAll(any()),
+          () => clutchRepo.saveAll(any()),
+          () => incubationRepo.saveAll(any()),
+          () => eggRepo.saveAll(any()),
+          () => chickRepo.saveAll(any()),
+        ]);
+      });
+
       test(
         'returns total record count across all restored entity types',
         () async {

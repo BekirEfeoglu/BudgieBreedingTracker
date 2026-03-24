@@ -4,6 +4,18 @@ import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
+import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
+import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
+import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
+import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
+import 'package:budgie_breeding_tracker/data/models/health_record_model.dart';
+import 'package:budgie_breeding_tracker/data/models/event_model.dart';
+import 'package:budgie_breeding_tracker/data/models/incubation_model.dart';
+import 'package:budgie_breeding_tracker/data/models/growth_measurement_model.dart';
+import 'package:budgie_breeding_tracker/data/models/notification_model.dart';
+import 'package:budgie_breeding_tracker/data/models/clutch_model.dart';
+import 'package:budgie_breeding_tracker/data/models/nest_model.dart';
+import 'package:budgie_breeding_tracker/data/models/photo_model.dart';
 import 'package:budgie_breeding_tracker/data/repositories/bird_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/breeding_pair_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/egg_repository.dart';
@@ -72,6 +84,25 @@ class BackupDataCollector {
   /// The current backup format version.
   static int get backupVersion => _backupVersion;
 
+  /// Entity export registry: (JSON key, getAll, toJson).
+  ///
+  /// Each [_ExportEntry] captures its generic type via [_export], so the
+  /// collect loop stays type-safe without `(x as dynamic).toJson()` casts.
+  late final _exportEntries = <_ExportEntry>[
+    _export('birds', _birdRepo.getAll, (Bird b) => b.toJson()),
+    _export('breeding_pairs', _breedingRepo.getAll, (BreedingPair b) => b.toJson()),
+    _export('eggs', _eggRepo.getAll, (Egg e) => e.toJson()),
+    _export('chicks', _chickRepo.getAll, (Chick c) => c.toJson()),
+    _export('health_records', _healthRepo.getAll, (HealthRecord h) => h.toJson()),
+    _export('events', _eventRepo.getAll, (Event e) => e.toJson()),
+    _export('incubations', _incubationRepo.getAll, (Incubation i) => i.toJson()),
+    _export('growth_measurements', _growthRepo.getAll, (GrowthMeasurement g) => g.toJson()),
+    _export('notifications', _notificationRepo.getAll, (AppNotification n) => n.toJson()),
+    _export('clutches', _clutchRepo.getAll, (Clutch c) => c.toJson()),
+    _export('nests', _nestRepo.getAll, (Nest n) => n.toJson()),
+    _export('photos', _photoRepo.getAll, (Photo p) => p.toJson()),
+  ];
+
   /// Create a full backup of user data as JSON file.
   ///
   /// When [encrypt] is `true` and an [EncryptionService] is available,
@@ -93,55 +124,27 @@ class BackupDataCollector {
         );
       }
 
-      final results = await Future.wait([
-        _birdRepo.getAll(userId),
-        _breedingRepo.getAll(userId),
-        _eggRepo.getAll(userId),
-        _chickRepo.getAll(userId),
-        _healthRepo.getAll(userId),
-        _eventRepo.getAll(userId),
-        _incubationRepo.getAll(userId),
-        _growthRepo.getAll(userId),
-        _notificationRepo.getAll(userId),
-        _clutchRepo.getAll(userId),
-        _nestRepo.getAll(userId),
-        _photoRepo.getAll(userId),
-      ]);
+      // Fetch all entities in parallel
+      final results = await Future.wait(
+        _exportEntries.map((e) => e.fetchAll(userId)),
+      );
+
+      // Assemble data map with typed toJson serialization
+      final dataMap = <String, dynamic>{};
+      var totalRecords = 0;
+      for (var i = 0; i < _exportEntries.length; i++) {
+        final entry = _exportEntries[i];
+        final items = results[i];
+        dataMap[entry.key] = items.map(entry.itemToJson).toList();
+        totalRecords += items.length;
+      }
 
       final backupData = {
         'version': _backupVersion,
         'created_at': DateTime.now().toIso8601String(),
         'user_id': userId,
-        'data': {
-          'birds': results[0].map((b) => (b as dynamic).toJson()).toList(),
-          'breeding_pairs': results[1]
-              .map((b) => (b as dynamic).toJson())
-              .toList(),
-          'eggs': results[2].map((e) => (e as dynamic).toJson()).toList(),
-          'chicks': results[3].map((c) => (c as dynamic).toJson()).toList(),
-          'health_records': results[4]
-              .map((h) => (h as dynamic).toJson())
-              .toList(),
-          'events': results[5].map((e) => (e as dynamic).toJson()).toList(),
-          'incubations': results[6]
-              .map((i) => (i as dynamic).toJson())
-              .toList(),
-          'growth_measurements': results[7]
-              .map((g) => (g as dynamic).toJson())
-              .toList(),
-          'notifications': results[8]
-              .map((n) => (n as dynamic).toJson())
-              .toList(),
-          'clutches': results[9].map((c) => (c as dynamic).toJson()).toList(),
-          'nests': results[10].map((n) => (n as dynamic).toJson()).toList(),
-          'photos': results[11].map((p) => (p as dynamic).toJson()).toList(),
-        },
+        'data': dataMap,
       };
-
-      final totalRecords = results.fold<int>(
-        0,
-        (sum, list) => sum + list.length,
-      );
 
       final jsonString = const JsonEncoder.withIndent('  ').convert(backupData);
 
@@ -172,4 +175,26 @@ class BackupDataCollector {
       return BackupResult.failure(e.toString());
     }
   }
+}
+
+/// Type-erased export entry that captures generics via [_export].
+class _ExportEntry {
+  final String key;
+  final Future<List<dynamic>> Function(String userId) fetchAll;
+  final Map<String, dynamic> Function(dynamic item) itemToJson;
+
+  const _ExportEntry(this.key, this.fetchAll, this.itemToJson);
+}
+
+/// Creates a typed [_ExportEntry] capturing [T] via closure.
+_ExportEntry _export<T>(
+  String key,
+  Future<List<T>> Function(String userId) getAll,
+  Map<String, dynamic> Function(T item) toJson,
+) {
+  return _ExportEntry(
+    key,
+    (userId) async => await getAll(userId),
+    (item) => toJson(item as T),
+  );
 }
