@@ -25,7 +25,7 @@ const _allIcons = <String, String>{
   'birdOther': AppIcons.birdOther,
   'statusDead': AppIcons.statusDead,
   'photo': AppIcons.photo,
-  'budgieNestAnimated': AppIcons.budgieNestAnimated,
+  'budgieNest': AppIcons.budgieNest,
   'species': AppIcons.species,
   // Breeding
   'pair': AppIcons.pair,
