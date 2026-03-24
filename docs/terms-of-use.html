@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Kullanım Koşulları — BudgieBreedingTracker</title>
   <meta name="description" content="BudgieBreedingTracker uygulamasının kullanım koşulları ve son kullanıcı lisans sözleşmesi (EULA).">
-  <meta name="theme-color" content="#0C1F0F">
+  <meta name="theme-color" content="#0B1A3D">
 
   <!-- Google Fonts: Outfit + DM Sans -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -21,27 +21,27 @@
        CSS Custom Properties — Organic Nature Tech
        ============================================= */
     :root {
-      --forest-deep:     #0C1F0F;
+      --forest-deep:     #0B1A3D;
       --forest-mid:      #122818;
-      --forest-canopy:   #1B4332;
-      --forest-light:    #2D6A4F;
+      --forest-canopy:   #1A3A6B;
+      --forest-light:    #2D5A9E;
       --sage:            #A3B899;
       --sage-light:      #C8D8C2;
       --sage-muted:      #7A9970;
       --gold:            #D4A853;
       --gold-light:      #E8C27A;
       --gold-pale:       #F5E0A8;
-      --glass-bg:        rgba(27, 67, 50, 0.25);
-      --glass-border:    rgba(163, 184, 153, 0.2);
+      --glass-bg:        rgba(20, 50, 100, 0.25);
+      --glass-border:    rgba(140, 180, 220, 0.2);
       --glass-header:    rgba(12, 31, 15, 0.6);
-      --orb-green:       rgba(45, 106, 79, 0.35);
-      --orb-gold:        rgba(212, 168, 83, 0.15);
+      --orb-green:       rgba(30, 70, 140, 0.35);
+      --orb-gold:        rgba(245, 200, 66, 0.15);
       --orb-dark:        rgba(18, 40, 24, 0.5);
       --radius-sm:       6px;
       --radius-md:       12px;
       --radius-lg:       18px;
       --radius-xl:       24px;
-      --shadow-glow:     0 0 24px rgba(212, 168, 83, 0.15);
+      --shadow-glow:     0 0 24px rgba(245, 200, 66, 0.15);
     }
 
     /* =============================================
@@ -72,10 +72,10 @@
       inset: 0;
       z-index: -3;
       background:
-        radial-gradient(ellipse 80% 60% at 15% 10%, rgba(27, 67, 50, 0.6) 0%, transparent 55%),
-        radial-gradient(ellipse 60% 50% at 85% 20%, rgba(45, 106, 79, 0.25) 0%, transparent 50%),
+        radial-gradient(ellipse 80% 60% at 15% 10%, rgba(20, 50, 100, 0.6) 0%, transparent 55%),
+        radial-gradient(ellipse 60% 50% at 85% 20%, rgba(30, 70, 140, 0.25) 0%, transparent 50%),
         radial-gradient(ellipse 70% 60% at 50% 90%, rgba(18, 40, 24, 0.7) 0%, transparent 55%),
-        radial-gradient(ellipse 40% 40% at 80% 80%, rgba(212, 168, 83, 0.08) 0%, transparent 45%),
+        radial-gradient(ellipse 40% 40% at 80% 80%, rgba(245, 200, 66, 0.08) 0%, transparent 45%),
         var(--forest-deep);
     }
 
@@ -134,26 +134,26 @@
       100% { opacity: 0; transform: translateY(-10vh) translateX(60px) rotate(360deg); }
     }
 
-    .leaf:nth-child(1)  { left:  5%; width:5px;  height:8px;  background:rgba(163,184,153,0.5); animation-duration:14s; animation-delay:0s;    }
-    .leaf:nth-child(2)  { left: 12%; width:7px;  height:11px; background:rgba(212,168,83,0.35); animation-duration:18s; animation-delay:2s;    }
-    .leaf:nth-child(3)  { left: 20%; width:5px;  height:9px;  background:rgba(163,184,153,0.4); animation-duration:16s; animation-delay:5s;    }
-    .leaf:nth-child(4)  { left: 28%; width:8px;  height:12px; background:rgba(45,106,79,0.6);   animation-duration:20s; animation-delay:1s;    }
-    .leaf:nth-child(5)  { left: 35%; width:5px;  height:8px;  background:rgba(212,168,83,0.3);  animation-duration:15s; animation-delay:7s;    }
-    .leaf:nth-child(6)  { left: 42%; width:6px;  height:10px; background:rgba(163,184,153,0.45);animation-duration:22s; animation-delay:3s;    }
-    .leaf:nth-child(7)  { left: 50%; width:7px;  height:11px; background:rgba(45,106,79,0.5);   animation-duration:17s; animation-delay:9s;    }
-    .leaf:nth-child(8)  { left: 58%; width:5px;  height:8px;  background:rgba(212,168,83,0.4);  animation-duration:19s; animation-delay:4s;    }
-    .leaf:nth-child(9)  { left: 65%; width:6px;  height:10px; background:rgba(163,184,153,0.5); animation-duration:13s; animation-delay:11s;   }
-    .leaf:nth-child(10) { left: 72%; width:8px;  height:12px; background:rgba(45,106,79,0.55);  animation-duration:21s; animation-delay:6s;    }
-    .leaf:nth-child(11) { left: 78%; width:5px;  height:9px;  background:rgba(212,168,83,0.3);  animation-duration:16s; animation-delay:13s;   }
-    .leaf:nth-child(12) { left: 84%; width:7px;  height:11px; background:rgba(163,184,153,0.4); animation-duration:18s; animation-delay:8s;    }
-    .leaf:nth-child(13) { left: 90%; width:6px;  height:10px; background:rgba(45,106,79,0.5);   animation-duration:14s; animation-delay:15s;   }
-    .leaf:nth-child(14) { left:  8%; width:5px;  height:8px;  background:rgba(212,168,83,0.35); animation-duration:23s; animation-delay:10s;   }
-    .leaf:nth-child(15) { left: 17%; width:7px;  height:11px; background:rgba(163,184,153,0.45);animation-duration:20s; animation-delay:12s;   }
-    .leaf:nth-child(16) { left: 33%; width:6px;  height:9px;  background:rgba(45,106,79,0.45);  animation-duration:15s; animation-delay:16s;   }
-    .leaf:nth-child(17) { left: 55%; width:5px;  height:8px;  background:rgba(212,168,83,0.4);  animation-duration:17s; animation-delay:18s;   }
-    .leaf:nth-child(18) { left: 67%; width:8px;  height:12px; background:rgba(163,184,153,0.5); animation-duration:24s; animation-delay:0.5s;  }
-    .leaf:nth-child(19) { left: 76%; width:6px;  height:10px; background:rgba(45,106,79,0.6);   animation-duration:19s; animation-delay:14s;   }
-    .leaf:nth-child(20) { left: 95%; width:5px;  height:8px;  background:rgba(212,168,83,0.3);  animation-duration:22s; animation-delay:17s;   }
+    .leaf:nth-child(1)  { left:  5%; width:5px;  height:8px;  background:rgba(140,180,220,0.5); animation-duration:14s; animation-delay:0s;    }
+    .leaf:nth-child(2)  { left: 12%; width:7px;  height:11px; background:rgba(245,200,66,0.35); animation-duration:18s; animation-delay:2s;    }
+    .leaf:nth-child(3)  { left: 20%; width:5px;  height:9px;  background:rgba(140,180,220,0.4); animation-duration:16s; animation-delay:5s;    }
+    .leaf:nth-child(4)  { left: 28%; width:8px;  height:12px; background:rgba(30,70,140,0.6);   animation-duration:20s; animation-delay:1s;    }
+    .leaf:nth-child(5)  { left: 35%; width:5px;  height:8px;  background:rgba(245,200,66,0.3);  animation-duration:15s; animation-delay:7s;    }
+    .leaf:nth-child(6)  { left: 42%; width:6px;  height:10px; background:rgba(140,180,220,0.45);animation-duration:22s; animation-delay:3s;    }
+    .leaf:nth-child(7)  { left: 50%; width:7px;  height:11px; background:rgba(30,70,140,0.5);   animation-duration:17s; animation-delay:9s;    }
+    .leaf:nth-child(8)  { left: 58%; width:5px;  height:8px;  background:rgba(245,200,66,0.4);  animation-duration:19s; animation-delay:4s;    }
+    .leaf:nth-child(9)  { left: 65%; width:6px;  height:10px; background:rgba(140,180,220,0.5); animation-duration:13s; animation-delay:11s;   }
+    .leaf:nth-child(10) { left: 72%; width:8px;  height:12px; background:rgba(30,70,140,0.55);  animation-duration:21s; animation-delay:6s;    }
+    .leaf:nth-child(11) { left: 78%; width:5px;  height:9px;  background:rgba(245,200,66,0.3);  animation-duration:16s; animation-delay:13s;   }
+    .leaf:nth-child(12) { left: 84%; width:7px;  height:11px; background:rgba(140,180,220,0.4); animation-duration:18s; animation-delay:8s;    }
+    .leaf:nth-child(13) { left: 90%; width:6px;  height:10px; background:rgba(30,70,140,0.5);   animation-duration:14s; animation-delay:15s;   }
+    .leaf:nth-child(14) { left:  8%; width:5px;  height:8px;  background:rgba(245,200,66,0.35); animation-duration:23s; animation-delay:10s;   }
+    .leaf:nth-child(15) { left: 17%; width:7px;  height:11px; background:rgba(140,180,220,0.45);animation-duration:20s; animation-delay:12s;   }
+    .leaf:nth-child(16) { left: 33%; width:6px;  height:9px;  background:rgba(30,70,140,0.45);  animation-duration:15s; animation-delay:16s;   }
+    .leaf:nth-child(17) { left: 55%; width:5px;  height:8px;  background:rgba(245,200,66,0.4);  animation-duration:17s; animation-delay:18s;   }
+    .leaf:nth-child(18) { left: 67%; width:8px;  height:12px; background:rgba(140,180,220,0.5); animation-duration:24s; animation-delay:0.5s;  }
+    .leaf:nth-child(19) { left: 76%; width:6px;  height:10px; background:rgba(30,70,140,0.6);   animation-duration:19s; animation-delay:14s;   }
+    .leaf:nth-child(20) { left: 95%; width:5px;  height:8px;  background:rgba(245,200,66,0.3);  animation-duration:22s; animation-delay:17s;   }
 
     /* =============================================
        Header — Dark Glassmorphism
@@ -237,13 +237,13 @@
       transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
     }
     .lang-btn:hover:not(.active) {
-      background: rgba(163, 184, 153, 0.12);
+      background: rgba(140, 180, 220, 0.12);
       color: var(--sage-light);
     }
     .lang-btn.active {
       background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 100%);
       color: var(--forest-deep);
-      box-shadow: 0 2px 10px rgba(212, 168, 83, 0.35);
+      box-shadow: 0 2px 10px rgba(245, 200, 66, 0.35);
     }
 
     .back-link {
@@ -429,8 +429,8 @@
 
     /* Info / highlight boxes */
     .info-box {
-      background: rgba(27, 67, 50, 0.4);
-      border: 1px solid rgba(163, 184, 153, 0.18);
+      background: rgba(20, 50, 100, 0.4);
+      border: 1px solid rgba(140, 180, 220, 0.18);
       border-left: 3px solid var(--gold);
       border-radius: var(--radius-md);
       padding: 18px 20px;
@@ -438,8 +438,8 @@
     }
 
     .contact-box {
-      background: rgba(27, 67, 50, 0.4);
-      border: 1px solid rgba(163, 184, 153, 0.18);
+      background: rgba(20, 50, 100, 0.4);
+      border: 1px solid rgba(140, 180, 220, 0.18);
       border-left: 3px solid var(--gold);
       border-radius: var(--radius-md);
       padding: 18px 20px;
@@ -465,7 +465,7 @@
     .contact-box a {
       color: var(--gold);
       text-decoration: underline;
-      text-decoration-color: rgba(212, 168, 83, 0.4);
+      text-decoration-color: rgba(245, 200, 66, 0.4);
       text-underline-offset: 3px;
       transition: color 0.2s ease, text-shadow 0.2s ease, text-decoration-color 0.2s ease;
     }
@@ -473,7 +473,7 @@
     .section-text a:hover,
     .contact-box a:hover {
       color: var(--gold-light);
-      text-shadow: 0 0 12px rgba(212, 168, 83, 0.4);
+      text-shadow: 0 0 12px rgba(245, 200, 66, 0.4);
       text-decoration-color: var(--gold-light);
     }
 
@@ -570,7 +570,7 @@
       width: 250px;
       height: 250px;
       border-radius: 50%;
-      background: radial-gradient(circle, rgba(212,168,83,0.05) 0%, transparent 70%);
+      background: radial-gradient(circle, rgba(245,200,66,0.05) 0%, transparent 70%);
       pointer-events: none;
       z-index: 2;
       transform: translate(-50%, -50%);
@@ -590,7 +590,7 @@
         -webkit-backdrop-filter: none !important;
       }
       .glass-card {
-        background: rgba(27, 67, 50, 0.5) !important;
+        background: rgba(20, 50, 100, 0.5) !important;
       }
       header {
         backdrop-filter: blur(8px) !important;
