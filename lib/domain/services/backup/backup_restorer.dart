@@ -27,7 +27,6 @@ part 'backup_restorer_helpers.dart';
 /// (`.enc.json`) and content format (non-JSON content). If encryption is
 /// detected, the [EncryptionService] is used to decrypt before parsing.
 class BackupRestorer {
-  final BackupRepositories _repos;
   final EncryptionService? _encryptionService;
   final List<_RestoreStep> _restoreSteps;
 
@@ -36,8 +35,7 @@ class BackupRestorer {
   BackupRestorer({
     required BackupRepositories repos,
     EncryptionService? encryptionService,
-  }) : _repos = repos,
-       _encryptionService = encryptionService,
+  }) : _encryptionService = encryptionService,
        _restoreSteps = _buildRestoreSteps(repos);
 
   /// Restore data from a backup JSON file.
