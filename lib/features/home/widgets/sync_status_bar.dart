@@ -6,7 +6,9 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
+import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/sync/sync_providers.dart';
+import 'package:budgie_breeding_tracker/features/settings/widgets/sync_detail_sheet.dart';
 
 class SyncStatusBar extends ConsumerStatefulWidget {
   const SyncStatusBar({super.key});
@@ -32,6 +34,15 @@ class _SyncStatusBarState extends ConsumerState<SyncStatusBar>
   void dispose() {
     _rotationController.dispose();
     super.dispose();
+  }
+
+  String _errorLabel() {
+    final userId = ref.watch(currentUserIdProvider);
+    final details = ref.watch(syncErrorDetailsProvider(userId));
+    final total =
+        details.value?.fold<int>(0, (sum, d) => sum + d.errorCount) ?? 0;
+    if (total > 0) return 'sync.error_count_summary'.tr(args: ['$total']);
+    return 'sync.sync_error'.tr();
   }
 
   @override
@@ -65,7 +76,7 @@ class _SyncStatusBarState extends ConsumerState<SyncStatusBar>
       SyncDisplayStatus.error => (
         AppIcon(AppIcons.offline, size: 13, color: colorScheme.error),
         colorScheme.error,
-        'sync.sync_error'.tr(),
+        _errorLabel(),
       ),
     };
 
@@ -76,7 +87,9 @@ class _SyncStatusBarState extends ConsumerState<SyncStatusBar>
       button: status != SyncDisplayStatus.syncing,
       child: GestureDetector(
         onTap: () {
-          if (status != SyncDisplayStatus.syncing) {
+          if (status == SyncDisplayStatus.error) {
+            showSyncDetailSheet(context);
+          } else if (status != SyncDisplayStatus.syncing) {
             final orchestrator = ref.read(syncOrchestratorProvider);
             orchestrator.fullSync();
           }

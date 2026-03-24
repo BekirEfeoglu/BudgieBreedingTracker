@@ -7,8 +7,10 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/app_haptics.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_icon.dart';
+import '../../../data/providers/auth_state_providers.dart';
 import '../../../domain/services/sync/sync_orchestrator.dart';
 import '../../../domain/services/sync/sync_providers.dart';
+import '../../settings/widgets/sync_detail_sheet.dart';
 
 /// Displays current sync status with last sync time, pending count,
 /// stale error warning, and manual sync button.
@@ -27,62 +29,65 @@ class SyncStatusTile extends ConsumerWidget {
     final pendingCount = pendingAsync.value ?? 0;
     final staleCount = staleAsync.value ?? 0;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.lg,
-        vertical: AppSpacing.md + 2,
-      ),
-      child: Row(
-        children: [
-          IconTheme(
-            data: IconThemeData(size: 22, color: _statusColor(syncStatus)),
-            child: const AppIcon(AppIcons.sync),
-          ),
-          const SizedBox(width: AppSpacing.md),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'profile.sync_status'.tr(),
-                  style: theme.textTheme.bodyLarge,
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  _statusSubtitle(syncStatus, lastSync, pendingCount),
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: _statusColor(syncStatus),
+    return GestureDetector(
+      onTap: () => showSyncDetailSheet(context),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.lg,
+          vertical: AppSpacing.md + 2,
+        ),
+        child: Row(
+          children: [
+            IconTheme(
+              data: IconThemeData(size: 22, color: _statusColor(syncStatus)),
+              child: const AppIcon(AppIcons.sync),
+            ),
+            const SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'profile.sync_status'.tr(),
+                    style: theme.textTheme.bodyLarge,
                   ),
-                ),
-                if (staleCount > 0) ...[
                   const SizedBox(height: 2),
                   Text(
-                    'sync.stale_errors'.tr(args: ['$staleCount']),
-                    style: theme.textTheme.labelSmall?.copyWith(
-                      color: AppColors.error,
+                    _statusSubtitle(syncStatus, lastSync, pendingCount, ref),
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: _statusColor(syncStatus),
                     ),
                   ),
+                  if (staleCount > 0) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      'sync.stale_errors'.tr(args: ['$staleCount']),
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: AppColors.error,
+                      ),
+                    ),
+                  ],
                 ],
-              ],
-            ),
-          ),
-          if (isSyncing)
-            const SizedBox(
-              width: 20,
-              height: 20,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            )
-          else
-            IconButton(
-              onPressed: () => _triggerSync(ref),
-              icon: const AppIcon(AppIcons.sync, size: 18),
-              tooltip: 'profile.sync_now'.tr(),
-              constraints: const BoxConstraints(
-                minWidth: AppSpacing.touchTargetMin,
-                minHeight: AppSpacing.touchTargetMin,
               ),
             ),
-        ],
+            if (isSyncing)
+              const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+            else
+              IconButton(
+                onPressed: () => _triggerSync(ref),
+                icon: const AppIcon(AppIcons.sync, size: 18),
+                tooltip: 'profile.sync_now'.tr(),
+                constraints: const BoxConstraints(
+                  minWidth: AppSpacing.touchTargetMin,
+                  minHeight: AppSpacing.touchTargetMin,
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -98,6 +103,7 @@ class SyncStatusTile extends ConsumerWidget {
     SyncDisplayStatus status,
     DateTime? lastSync,
     int pendingCount,
+    WidgetRef ref,
   ) {
     final pendingSuffix = pendingCount > 0
         ? ' — ${pendingCount == 1 ? 'sync.pending_one'.tr() : 'sync.pending_count'.tr(args: ['$pendingCount'])}'
@@ -110,6 +116,15 @@ class SyncStatusTile extends ConsumerWidget {
       return 'sync.offline'.tr() + pendingSuffix;
     }
     if (status == SyncDisplayStatus.error) {
+      final userId = ref.watch(currentUserIdProvider);
+      final errorDetails = ref.watch(syncErrorDetailsProvider(userId));
+      final totalErrors = errorDetails.value
+              ?.fold<int>(0, (sum, d) => sum + d.errorCount) ??
+          0;
+      if (totalErrors > 0) {
+        return 'sync.error_count_summary'.tr(args: ['$totalErrors']) +
+            pendingSuffix;
+      }
       return 'profile.sync_error'.tr() + pendingSuffix;
     }
     if (lastSync == null) return 'profile.sync_never'.tr();
