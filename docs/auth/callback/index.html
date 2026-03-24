@@ -234,6 +234,28 @@
 
       /* Error subtitle override */
       .subtitle.error { color: #f87171; }
+
+      /* Custom scrollbar */
+      ::-webkit-scrollbar { width: 8px; }
+      ::-webkit-scrollbar-track { background: #0C1F0F; }
+      ::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #2D6A4F, #1B4332); border-radius: 4px; }
+
+      /* Page entrance */
+      .page-entrance {
+        animation: cardEntrance 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.3s both;
+      }
+      @keyframes cardEntrance {
+        from { opacity: 0; transform: translateY(30px) scale(0.96); filter: blur(4px); }
+        to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+      }
+
+      /* prefers-reduced-motion */
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+          animation-duration: 0.01ms !important;
+          transition-duration: 0.01ms !important;
+        }
+      }
     </style>
   </head>
   <body>
@@ -242,7 +264,7 @@
     <div class="orb orb-2"></div>
     <div class="orb orb-3"></div>
 
-    <div class="card">
+    <div class="card page-entrance">
       <div class="icon">&#x1F426;</div>
 
       <div id="loading">

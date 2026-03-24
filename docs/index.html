@@ -971,9 +971,136 @@
     /* ─── BACK TO TOP — JS-toggled state classes ─── */
     #backToTop { opacity: 0; transform: translateY(1rem); pointer-events: none; }
     #backToTop.visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
+
+    /* ─── PAGE ENTRANCE CURTAIN ─── */
+    .page-curtain {
+      position: fixed;
+      inset: 0;
+      background: var(--forest-deep);
+      z-index: 9999;
+      pointer-events: none;
+      animation: curtainReveal 1s cubic-bezier(0.65, 0, 0.35, 1) 0.3s forwards;
+    }
+    @keyframes curtainReveal {
+      0% { clip-path: inset(0 0 0 0); }
+      100% { clip-path: inset(0 0 100% 0); }
+    }
+
+    /* ─── SCROLL PROGRESS BAR ─── */
+    .scroll-progress {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--leaf-light), var(--gold), var(--gold-glow));
+      z-index: 10000;
+      transform-origin: left;
+      transform: scaleX(0);
+      transition: none;
+    }
+
+    /* ─── CUSTOM SCROLLBAR ─── */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: var(--forest-deep); }
+    ::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, var(--leaf-mid), var(--leaf-dark));
+      border-radius: 4px;
+      border: 2px solid var(--forest-deep);
+    }
+    ::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, var(--leaf-light), var(--leaf-mid)); }
+    html { scrollbar-color: var(--leaf-mid) var(--forest-deep); scrollbar-width: thin; }
+
+    /* ─── HERO WORD-BY-WORD REVEAL ─── */
+    .hero-word {
+      display: inline-block;
+      opacity: 0;
+      transform: translateY(40px) rotateX(40deg);
+      animation: wordReveal 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    @keyframes wordReveal {
+      to { opacity: 1; transform: translateY(0) rotateX(0); }
+    }
+
+    /* ─── COUNTER ANIMATION ─── */
+    .stat-number {
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* ─── MAGNETIC BUTTON ─── */
+    .magnetic-btn {
+      transition: transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    /* ─── CURSOR GLOW TRAIL ─── */
+    .cursor-glow {
+      position: fixed;
+      width: 300px;
+      height: 300px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(212,168,83,0.06) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 2;
+      transform: translate(-50%, -50%);
+      transition: opacity 0.3s;
+      will-change: left, top;
+    }
+
+    /* ─── ENHANCED CARD STAGGER ─── */
+    .stagger-1 { transition-delay: 0.05s !important; }
+    .stagger-2 { transition-delay: 0.12s !important; }
+    .stagger-3 { transition-delay: 0.19s !important; }
+    .stagger-4 { transition-delay: 0.26s !important; }
+    .stagger-5 { transition-delay: 0.33s !important; }
+    .stagger-6 { transition-delay: 0.40s !important; }
+    .stagger-7 { transition-delay: 0.47s !important; }
+    .stagger-8 { transition-delay: 0.54s !important; }
+    .stagger-9 { transition-delay: 0.61s !important; }
+    .stagger-10 { transition-delay: 0.68s !important; }
+
+    /* ─── SECTION HEADING UNDERLINE REVEAL ─── */
+    .heading-reveal {
+      position: relative;
+      display: inline-block;
+    }
+    .heading-reveal::after {
+      content: '';
+      position: absolute;
+      bottom: -6px;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(90deg, var(--gold), var(--leaf-light));
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .heading-reveal.active::after {
+      transform: scaleX(1);
+    }
+
+    /* ─── PREFERS-REDUCED-MOTION ─── */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+      .reveal, .reveal-scale, .reveal-left, .reveal-right, .reveal-flip {
+        opacity: 1 !important;
+        transform: none !important;
+        filter: none !important;
+      }
+      .page-curtain { display: none; }
+      .cursor-glow { display: none; }
+      .particle { display: none; }
+    }
   </style>
 </head>
 <body>
+
+  <div class="page-curtain" aria-hidden="true"></div>
+  <div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
+  <div class="cursor-glow" id="cursorGlow" aria-hidden="true"></div>
 
   <!-- Background Layer -->
   <div class="bg-layer" aria-hidden="true"></div>
@@ -1084,10 +1211,10 @@
             <span class="text-xs font-semibold tracking-wide uppercase" style="color: var(--gold);" data-i18n="hero_badge">Yetistiriciler Icin Tasarlandi</span>
           </div>
 
-          <h1 class="hero-title text-4xl sm:text-5xl lg:text-6xl font-black leading-[1.1] tracking-tight mb-6 opacity-0 animate-fade-up-delay-1">
-            <span style="color: var(--sage-light);" data-i18n="hero_title_1">Muhabbet Kusu</span><br>
-            <span class="gradient-text" data-i18n="hero_title_2">Ureme Takibi</span><br>
-            <span style="color: var(--sage-light);" data-i18n="hero_title_3">Artik Kolay</span>
+          <h1 class="hero-title text-4xl sm:text-5xl lg:text-6xl font-black leading-[1.1] tracking-tight mb-6" style="perspective: 600px;">
+            <span class="hero-word" style="color: var(--sage-light); animation-delay: 0.5s;" data-i18n="hero_title_1">Muhabbet Kusu</span><br>
+            <span class="hero-word gradient-text" style="animation-delay: 0.7s;" data-i18n="hero_title_2">Ureme Takibi</span><br>
+            <span class="hero-word" style="color: var(--sage-light); animation-delay: 0.9s;" data-i18n="hero_title_3">Artik Kolay</span>
           </h1>
 
           <p class="text-lg sm:text-xl max-w-lg mx-auto lg:mx-0 mb-10 leading-relaxed opacity-0 animate-fade-up-delay-2" style="color: var(--sage);" data-i18n="hero_subtitle">
@@ -1095,7 +1222,7 @@
           </p>
 
           <div class="flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start opacity-0 animate-fade-up-delay-3">
-            <a href="#cta" class="group inline-flex items-center gap-2.5 px-8 py-4 btn-shimmer rounded-2xl transition-all hover:scale-[1.02]" style="box-shadow: 0 8px 32px rgba(212,168,83,0.2);">
+            <a href="#cta" class="group inline-flex items-center gap-2.5 px-8 py-4 btn-shimmer rounded-2xl transition-all hover:scale-[1.02] magnetic-btn" style="box-shadow: 0 8px 32px rgba(212,168,83,0.2);">
               <svg class="w-5 h-5 transition-transform group-hover:-translate-y-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
               <span data-i18n="hero_cta_primary">Uygulamayi Indir</span>
             </a>
@@ -1218,7 +1345,7 @@
         <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full mb-4" style="background: rgba(45,106,79,0.2); border: 1px solid var(--glass-border);">
           <span class="text-xs font-semibold uppercase tracking-wider" style="color: var(--gold);" data-i18n="how_badge">Nasıl Çalışır?</span>
         </div>
-        <h2 class="text-3xl sm:text-4xl lg:text-5xl font-black mb-4 tracking-tight" style="color: var(--sage-light);" data-i18n="how_title">3 Adımda Başlayın</h2>
+        <h2 class="text-3xl sm:text-4xl lg:text-5xl font-black mb-4 tracking-tight heading-reveal" style="color: var(--sage-light);" data-i18n="how_title">3 Adımda Başlayın</h2>
       </div>
 
       <!-- Steps -->
@@ -1276,7 +1403,7 @@
         <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full mb-4" style="background: rgba(45,106,79,0.2); border: 1px solid var(--glass-border);">
           <span class="text-xs font-semibold uppercase tracking-wider" style="color: var(--gold);" data-i18n="features_badge">Ozellikler</span>
         </div>
-        <h2 class="text-3xl sm:text-4xl lg:text-5xl font-black mb-4 tracking-tight" style="color: var(--sage-light);" data-i18n="features_title">Her Sey Tek Uygulamada</h2>
+        <h2 class="text-3xl sm:text-4xl lg:text-5xl font-black mb-4 tracking-tight heading-reveal" style="color: var(--sage-light);" data-i18n="features_title">Her Sey Tek Uygulamada</h2>
         <p class="text-lg max-w-2xl mx-auto leading-relaxed" style="color: var(--sage);" data-i18n="features_subtitle">Profesyonel yetistiricilik icin ihtiyaciniz olan tum araclar, akilli ve kullanimi kolay bir arayuzle.</p>
       </div>
 
@@ -1284,21 +1411,21 @@
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
 
         <!-- Feature 1 -->
-        <div class="card-hover rounded-2xl p-7 reveal-scale" style="transition-delay: 0.05s;">
+        <div class="card-hover rounded-2xl p-7 reveal-scale stagger-1">
           <div class="feature-icon mb-5" style="background: rgba(45,106,79,0.3);">🐦</div>
           <h3 class="text-lg font-bold mb-2" style="color: var(--sage-light);" data-i18n="feature_1_title">Kus Takibi</h3>
           <p class="text-sm leading-relaxed" style="color: var(--sage);" data-i18n="feature_1_desc">Tum kuslarinizi halka numarasi, cinsiyet, mutasyon ve fotograflariyla detayli kayit altina alin.</p>
         </div>
 
         <!-- Feature 2 -->
-        <div class="card-hover rounded-2xl p-7 reveal-scale" style="transition-delay: 0.1s;">
+        <div class="card-hover rounded-2xl p-7 reveal-scale stagger-2">
           <div class="feature-icon mb-5" style="background: rgba(45,106,79,0.3);">💕</div>
           <h3 class="text-lg font-bold mb-2" style="color: var(--sage-light);" data-i18n="feature_2_title">Ureme Yonetimi</h3>
           <p class="text-sm leading-relaxed" style="color: var(--sage);" data-i18n="feature_2_desc">Ciftlestirme, yumurta takibi, kulucka sureci ve yavru gelisimini adim adim izleyin.</p>
         </div>
 
         <!-- Feature 3 -->
-        <div class="card-hover rounded-2xl p-7 reveal-scale relative" style="transition-delay: 0.15s;">
+        <div class="card-hover rounded-2xl p-7 reveal-scale stagger-3 relative">
           <div class="premium-badge">⭐ <span data-i18n="badge_premium">Premium</span></div>
           <div class="feature-icon mb-5" style="background: rgba(212,168,83,0.15);">🧬</div>
           <h3 class="text-lg font-bold mb-2" style="color: var(--sage-light);" data-i18n="feature_3_title">Genetik Hesaplayici</h3>
@@ -1306,28 +1433,28 @@
         </div>
 
         <!-- Feature 4 -->
-        <div class="card-hover rounded-2xl p-7 reveal-scale" style="transition-delay: 0.2s;">
+        <div class="card-hover rounded-2xl p-7 reveal-scale stagger-4">
           <div class="feature-icon mb-5" style="background: rgba(45,106,79,0.3);">❤️‍🩹</div>
           <h3 class="text-lg font-bold mb-2" style="color: var(--sage-light);" data-i18n="feature_4_title">Saglik Kayitlari</h3>
           <p class="text-sm leading-relaxed" style="color: var(--sage);" data-i18n="feature_4_desc">Veteriner ziyaretleri, tedaviler ve saglik gecmisini kaydedin. Hatirlaticilarla hicbir seyi kacirmayin.</p>
         </div>
 
         <!-- Feature 5 -->
-        <div class="card-hover rounded-2xl p-7 reveal-scale" style="transition-delay: 0.25s;">
+        <div class="card-hover rounded-2xl p-7 reveal-scale stagger-5">
           <div class="feature-icon mb-5" style="background: rgba(45,106,79,0.3);">☁️</div>
           <h3 class="text-lg font-bold mb-2" style="color: var(--sage-light);" data-i18n="feature_5_title">Offline-First & Sync</h3>
           <p class="text-sm leading-relaxed" style="color: var(--sage);" data-i18n="feature_5_desc">Internet olmadan da calisin. Baglanti geldiginde verileriniz otomatik olarak senkronize edilir.</p>
         </div>
 
         <!-- Feature 6 -->
-        <div class="card-hover rounded-2xl p-7 reveal-scale" style="transition-delay: 0.3s;">
+        <div class="card-hover rounded-2xl p-7 reveal-scale stagger-6">
           <div class="feature-icon mb-5" style="background: rgba(212,168,83,0.15);">🌍</div>
           <h3 class="text-lg font-bold mb-2" style="color: var(--sage-light);" data-i18n="feature_6_title">Cok Dilli Destek</h3>
           <p class="text-sm leading-relaxed" style="color: var(--sage);" data-i18n="feature_6_desc">Turkce, Ingilizce ve Almanca dil destegi. Uygulama dilinizi istediginiz zaman degistirin.</p>
         </div>
 
         <!-- Feature 7 — Statistics (Premium) -->
-        <div class="card-hover rounded-2xl p-7 reveal-scale relative" style="transition-delay: 0.35s;">
+        <div class="card-hover rounded-2xl p-7 reveal-scale stagger-7 relative">
           <div class="premium-badge">⭐ <span data-i18n="badge_premium">Premium</span></div>
           <div class="feature-icon mb-5" style="background: rgba(212,168,83,0.15);">📈</div>
           <h3 class="text-lg font-bold mb-2" style="color: var(--sage-light);" data-i18n="feature_7_title">İstatistikler</h3>
@@ -1335,7 +1462,7 @@
         </div>
 
         <!-- Feature 8 — Genealogy (Premium) -->
-        <div class="card-hover rounded-2xl p-7 reveal-scale relative" style="transition-delay: 0.4s;">
+        <div class="card-hover rounded-2xl p-7 reveal-scale stagger-8 relative">
           <div class="premium-badge">⭐ <span data-i18n="badge_premium">Premium</span></div>
           <div class="feature-icon mb-5" style="background: rgba(212,168,83,0.15);">🌳</div>
           <h3 class="text-lg font-bold mb-2" style="color: var(--sage-light);" data-i18n="feature_8_title">Soy Ağacı</h3>
@@ -1343,14 +1470,14 @@
         </div>
 
         <!-- Feature 9 — Calendar & Reminders -->
-        <div class="card-hover rounded-2xl p-7 reveal-scale" style="transition-delay: 0.45s;">
+        <div class="card-hover rounded-2xl p-7 reveal-scale stagger-9">
           <div class="feature-icon mb-5" style="background: rgba(45,106,79,0.3);">📅</div>
           <h3 class="text-lg font-bold mb-2" style="color: var(--sage-light);" data-i18n="feature_9_title">Takvim & Hatırlatıcılar</h3>
           <p class="text-sm leading-relaxed" style="color: var(--sage);" data-i18n="feature_9_desc">Kuluçka tarihleri, veteriner randevuları ve tüm etkinlikleri takvimde görün. Akıllı hatırlatıcılarla hiçbir şeyi kaçırmayın.</p>
         </div>
 
         <!-- Feature 10 — Backup & Export -->
-        <div class="card-hover rounded-2xl p-7 reveal-scale" style="transition-delay: 0.5s;">
+        <div class="card-hover rounded-2xl p-7 reveal-scale stagger-10">
           <div class="feature-icon mb-5" style="background: rgba(45,106,79,0.3);">💾</div>
           <h3 class="text-lg font-bold mb-2" style="color: var(--sage-light);" data-i18n="feature_10_title">Yedekleme & Dışa Aktarma</h3>
           <p class="text-sm leading-relaxed" style="color: var(--sage);" data-i18n="feature_10_desc">Verilerinizi PDF ve Excel olarak dışa aktarın. AES-256 şifreli yedeklerle veri güvenliğinizi sağlayın.</p>
@@ -1368,7 +1495,7 @@
         <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full mb-4" style="background: rgba(45,106,79,0.2); border: 1px solid var(--glass-border);">
           <span class="text-xs font-semibold uppercase tracking-wider" style="color: var(--gold);" data-i18n="screenshots_badge">Ekran Goruntuleri</span>
         </div>
-        <h2 class="text-3xl sm:text-4xl lg:text-5xl font-black mb-4 tracking-tight" style="color: var(--sage-light);" data-i18n="screenshots_title">Uygulamayi Kesfet</h2>
+        <h2 class="text-3xl sm:text-4xl lg:text-5xl font-black mb-4 tracking-tight heading-reveal" style="color: var(--sage-light);" data-i18n="screenshots_title">Uygulamayi Kesfet</h2>
         <p class="text-lg max-w-2xl mx-auto leading-relaxed" style="color: var(--sage);" data-i18n="screenshots_subtitle">Guclu ozellikleri, temiz arayuzu ve sezgisel tasarimiyla tanisin.</p>
       </div>
 
@@ -1471,7 +1598,7 @@
           <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full mb-4" style="background: rgba(45,106,79,0.2); border: 1px solid var(--glass-border);">
             <span class="text-xs font-semibold uppercase tracking-wider" style="color: var(--gold);" data-i18n="showcase_badge">Neden Biz?</span>
           </div>
-          <h2 class="text-3xl sm:text-4xl font-black mb-6 tracking-tight" style="color: var(--sage-light);" data-i18n="showcase_title">Yetistiriciligin Dijital Asistani</h2>
+          <h2 class="text-3xl sm:text-4xl font-black mb-6 tracking-tight heading-reveal" style="color: var(--sage-light);" data-i18n="showcase_title">Yetistiriciligin Dijital Asistani</h2>
           <p class="text-lg mb-8 leading-relaxed" style="color: var(--sage);" data-i18n="showcase_subtitle">Deneyimli yetistiriciler tarafindan, yetistiriciler icin tasarlandi. Her detay dusunuldu.</p>
 
           <div class="space-y-5">
@@ -1557,7 +1684,7 @@
         <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full mb-4" style="background: rgba(45,106,79,0.2); border: 1px solid var(--glass-border);">
           <span class="text-xs font-semibold uppercase tracking-wider" style="color: var(--gold);" data-i18n="faq_badge">SSS</span>
         </div>
-        <h2 class="text-3xl sm:text-4xl font-black mb-4 tracking-tight" style="color: var(--sage-light);" data-i18n="faq_title">Sık Sorulan Sorular</h2>
+        <h2 class="text-3xl sm:text-4xl font-black mb-4 tracking-tight heading-reveal" style="color: var(--sage-light);" data-i18n="faq_title">Sık Sorulan Sorular</h2>
       </div>
 
       <!-- FAQ Items -->
@@ -1652,13 +1779,13 @@
     <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
       <div class="reveal">
         <img src="logo.png" alt="BudgieBreedingTracker" class="w-20 h-20 rounded-2xl mx-auto mb-6 shadow-lg logo-glow" style="border: 1px solid rgba(212,168,83,0.3);">
-        <h2 class="text-3xl sm:text-4xl lg:text-5xl font-black mb-4 tracking-tight" style="color: var(--sage-light);" data-i18n="cta_title">Hemen Baslayin</h2>
+        <h2 class="text-3xl sm:text-4xl lg:text-5xl font-black mb-4 tracking-tight heading-reveal" style="color: var(--sage-light);" data-i18n="cta_title">Hemen Baslayin</h2>
         <p class="text-lg mb-10 max-w-xl mx-auto leading-relaxed" style="color: var(--sage);" data-i18n="cta_subtitle">Kuslarinizin bakimini profesyonel seviyeye tasiyin. Ucretsiz indirin, hemen kullanmaya baslayin.</p>
       </div>
 
       <div class="flex flex-col sm:flex-row items-center justify-center gap-4 reveal" style="transition-delay: 0.15s;">
         <!-- Google Play -->
-        <a href="#" class="group inline-flex items-center gap-3 px-8 py-4 font-semibold rounded-2xl transition-all duration-300 hover:scale-[1.02]" style="background: var(--leaf-dark); color: var(--sage-light); border: 1px solid var(--glass-border); box-shadow: 0 8px 24px rgba(0,0,0,0.3);" onmouseover="this.style.borderColor='var(--glass-border-hover)'" onmouseout="this.style.borderColor='var(--glass-border)'">
+        <a href="#" class="group inline-flex items-center gap-3 px-8 py-4 font-semibold rounded-2xl transition-all duration-300 hover:scale-[1.02] magnetic-btn" style="background: var(--leaf-dark); color: var(--sage-light); border: 1px solid var(--glass-border); box-shadow: 0 8px 24px rgba(0,0,0,0.3);" onmouseover="this.style.borderColor='var(--glass-border-hover)'" onmouseout="this.style.borderColor='var(--glass-border)'">
           <svg class="w-8 h-8" style="color: var(--gold);" viewBox="0 0 512 512" fill="currentColor"><path d="M325.3 234.3L104.6 13l280.8 161.2-60.1 60.1zM47 0C34 6.8 25.3 19.2 25.3 35.3v441.3c0 16.1 8.7 28.5 21.7 35.3l256.6-256L47 0zm425.2 225.6l-58.9-34.1-65.7 64.5 65.7 64.5 60.1-34.1c18-14.3 18-46.5-1.2-60.8zM104.6 499l280.8-161.2-60.1-60.1L104.6 499z"/></svg>
           <div class="text-left">
             <div class="text-[10px] uppercase tracking-wider" style="color: var(--sage);" data-i18n="cta_google_label">Google Play'den</div>
@@ -1667,7 +1794,7 @@
         </a>
 
         <!-- App Store -->
-        <a href="#" class="group inline-flex items-center gap-3 px-8 py-4 font-semibold rounded-2xl transition-all duration-300 hover:scale-[1.02]" style="background: var(--leaf-dark); color: var(--sage-light); border: 1px solid var(--glass-border); box-shadow: 0 8px 24px rgba(0,0,0,0.3);" onmouseover="this.style.borderColor='var(--glass-border-hover)'" onmouseout="this.style.borderColor='var(--glass-border)'">
+        <a href="#" class="group inline-flex items-center gap-3 px-8 py-4 font-semibold rounded-2xl transition-all duration-300 hover:scale-[1.02] magnetic-btn" style="background: var(--leaf-dark); color: var(--sage-light); border: 1px solid var(--glass-border); box-shadow: 0 8px 24px rgba(0,0,0,0.3);" onmouseover="this.style.borderColor='var(--glass-border-hover)'" onmouseout="this.style.borderColor='var(--glass-border)'">
           <svg class="w-8 h-8" style="color: var(--gold);" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
           <div class="text-left">
             <div class="text-[10px] uppercase tracking-wider" style="color: var(--sage);" data-i18n="cta_apple_label">App Store'dan</div>
@@ -2401,7 +2528,51 @@
         });
       }, { threshold: 0.5 });
       document.querySelectorAll('[data-stat]').forEach(el => statsObserver.observe(el));
+
+      // ─── Heading Reveal Observer ───
+      const headingObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('active');
+            headingObserver.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.5 });
+      document.querySelectorAll('.heading-reveal').forEach(el => headingObserver.observe(el));
+
+      // ─── Magnetic Buttons ───
+      document.querySelectorAll('.magnetic-btn').forEach(btn => {
+        btn.addEventListener('mousemove', (e) => {
+          const rect = btn.getBoundingClientRect();
+          const x = (e.clientX - rect.left - rect.width / 2) * 0.15;
+          const y = (e.clientY - rect.top - rect.height / 2) * 0.15;
+          btn.style.transform = 'translate(' + x + 'px, ' + y + 'px)';
+        });
+        btn.addEventListener('mouseleave', () => {
+          btn.style.transform = 'translate(0, 0)';
+        });
+      });
+
+      // ─── Cursor Glow (desktop only) ───
+      if (window.matchMedia('(pointer: fine)').matches) {
+        const glow = document.getElementById('cursorGlow');
+        if (glow) {
+          document.addEventListener('mousemove', (e) => {
+            glow.style.left = e.clientX + 'px';
+            glow.style.top = e.clientY + 'px';
+          }, { passive: true });
+        }
+      }
     });
+
+    // ─── Scroll Progress Bar ───
+    window.addEventListener('scroll', () => {
+      const scrollTop = document.documentElement.scrollTop;
+      const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const progress = scrollHeight > 0 ? scrollTop / scrollHeight : 0;
+      const bar = document.getElementById('scrollProgress');
+      if (bar) bar.style.transform = 'scaleX(' + progress + ')';
+    }, { passive: true });
   </script>
 </body>
 </html>

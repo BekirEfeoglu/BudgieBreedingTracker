@@ -570,19 +570,88 @@
       to   { opacity: 1; transform: translateY(0); }
     }
 
-    /* ─── SCROLLBAR ─── */
-    ::-webkit-scrollbar { width: 6px; }
+    /* ─── CUSTOM SCROLLBAR ─── */
+    ::-webkit-scrollbar { width: 8px; }
     ::-webkit-scrollbar-track { background: var(--forest-deep); }
     ::-webkit-scrollbar-thumb {
-      background: rgba(163, 184, 153, 0.25);
-      border-radius: 3px;
+      background: linear-gradient(180deg, var(--leaf-mid), var(--leaf-dark));
+      border-radius: 4px;
+      border: 2px solid var(--forest-deep);
     }
-    ::-webkit-scrollbar-thumb:hover {
-      background: rgba(212, 168, 83, 0.35);
+    ::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, var(--leaf-light), var(--leaf-mid)); }
+    html { scrollbar-color: var(--leaf-mid) var(--forest-deep); scrollbar-width: thin; }
+
+    /* ─── SCROLL PROGRESS BAR ─── */
+    .scroll-progress {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 2px;
+      width: 100%;
+      background: linear-gradient(90deg, var(--leaf-light), var(--gold), var(--gold-glow));
+      z-index: 10000;
+      transform-origin: left;
+      transform: scaleX(0);
+    }
+
+    /* ─── PAGE CURTAIN ─── */
+    .page-curtain {
+      position: fixed;
+      inset: 0;
+      background: var(--forest-deep);
+      z-index: 9999;
+      pointer-events: none;
+      animation: curtainReveal 0.8s cubic-bezier(0.65, 0, 0.35, 1) 0.2s forwards;
+    }
+    @keyframes curtainReveal {
+      0% { clip-path: inset(0 0 0 0); }
+      100% { clip-path: inset(0 0 100% 0); }
+    }
+
+    /* ─── SECTION REVEAL ─── */
+    .section-reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      filter: blur(3px);
+      transition: all 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .section-reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+      filter: blur(0);
+    }
+
+    /* ─── CURSOR GLOW ─── */
+    .cursor-glow {
+      position: fixed;
+      width: 250px;
+      height: 250px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(212,168,83,0.05) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 2;
+      transform: translate(-50%, -50%);
+      will-change: left, top;
+    }
+
+    /* ─── REDUCED MOTION ─── */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+      .section-reveal { opacity: 1 !important; transform: none !important; filter: none !important; }
+      .page-curtain { display: none; }
+      .cursor-glow { display: none; }
+      .particle, .leaf { display: none; }
     }
   </style>
 </head>
 <body>
+  <div class="page-curtain"></div>
+  <div class="scroll-progress" id="scrollProgress"></div>
+  <div class="cursor-glow" id="cursorGlow"></div>
 
   <!-- Decorative background layers -->
   <div class="bg-layer"></div>
@@ -643,14 +712,14 @@
     <div class="content-card">
       <div class="sections-wrap">
 
-        <section class="policy-section">
+        <section class="policy-section section-reveal">
           <h2 class="section-h2" data-i18n="s1_title">1. Giriş</h2>
           <p class="section-text" data-i18n="s1_text">BudgieBreedingTracker ("Uygulama"), muhabbet kuşu yetiştiricileri için geliştirilmiş bir üreme takip uygulamasıdır. Bu gizlilik politikası, uygulamayı kullanırken kişisel verilerinizin nasıl toplandığını, kullanıldığını, saklandığını ve korunduğunu açıklar. Uygulamayı kullanarak bu politikayı kabul etmiş sayılırsınız.</p>
         </section>
 
         <hr class="section-divider">
 
-        <section class="policy-section">
+        <section class="policy-section section-reveal">
           <h2 class="section-h2" data-i18n="s2_title">2. Toplanan Veriler</h2>
 
           <h3 class="section-h3" data-i18n="s2_1_title">2.1 Hesap Bilgileri</h3>
@@ -687,7 +756,7 @@
 
         <hr class="section-divider">
 
-        <section class="policy-section">
+        <section class="policy-section section-reveal">
           <h2 class="section-h2" data-i18n="s3_title">3. Verilerin Kullanım Amaçları</h2>
           <div data-i18n-html="s3_list">
             <ul class="policy-list">
@@ -704,7 +773,7 @@
 
         <hr class="section-divider">
 
-        <section class="policy-section">
+        <section class="policy-section section-reveal">
           <h2 class="section-h2" data-i18n="s4_title">4. Veri Saklama ve Güvenlik</h2>
           <p class="section-intro" data-i18n="s4_intro">Verileriniz iki katmanlı bir yapıda saklanır:</p>
           <div data-i18n-html="s4_list">
@@ -720,7 +789,7 @@
 
         <hr class="section-divider">
 
-        <section class="policy-section">
+        <section class="policy-section section-reveal">
           <h2 class="section-h2" data-i18n="s5_title">5. Veri Paylaşımı</h2>
           <p class="section-intro" data-i18n="s5_intro">Kişisel verilerinizi üçüncü taraflarla <strong>satmaz veya kiralamayız</strong>. Verileriniz yalnızca aşağıdaki durumlarda paylaşılabilir:</p>
           <div data-i18n-html="s5_list">
@@ -735,7 +804,7 @@
 
         <hr class="section-divider">
 
-        <section class="policy-section">
+        <section class="policy-section section-reveal">
           <h2 class="section-h2" data-i18n="s6_title">6. Kullanıcı Hakları</h2>
           <p class="section-intro" data-i18n="s6_intro">Aşağıdaki haklara sahipsiniz:</p>
           <div data-i18n-html="s6_list">
@@ -751,21 +820,21 @@
 
         <hr class="section-divider">
 
-        <section class="policy-section">
+        <section class="policy-section section-reveal">
           <h2 class="section-h2" data-i18n="s7_title">7. Çocukların Gizliliği</h2>
           <p class="section-text" data-i18n="s7_text">Uygulamamız 13 yaşından küçük çocuklara yönelik değildir. Bilerek 13 yaşından küçük çocuklardan kişisel veri toplamayız. Eğer 13 yaşından küçük bir çocuğun bize kişisel veri sağladığını fark ederseniz, lütfen bizimle iletişime geçin. Bu verileri derhal sileceğiz.</p>
         </section>
 
         <hr class="section-divider">
 
-        <section class="policy-section">
+        <section class="policy-section section-reveal">
           <h2 class="section-h2" data-i18n="s8_title">8. Çerezler ve İzleme</h2>
           <p class="section-text" data-i18n="s8_text">Uygulama, çerez (cookie) kullanmaz. Hata raporlama amacıyla Sentry SDK'sı kullanılmakta olup, bu hizmet yalnızca uygulama çökmelerini ve performans sorunlarını tespit etmek için anonim teknik veriler toplar. Reklam gösterimi için Google AdMob SDK'sı kullanılmaktadır; kişiselleştirilmiş reklam izleme yalnızca kullanıcının açık izniyle (ATT onayı) etkinleştirilir.</p>
         </section>
 
         <hr class="section-divider">
 
-        <section class="policy-section">
+        <section class="policy-section section-reveal">
           <h2 class="section-h2" data-i18n="s9_title">9. Veri Saklama Süresi</h2>
           <div data-i18n-html="s9_list">
             <ul class="policy-list">
@@ -779,14 +848,14 @@
 
         <hr class="section-divider">
 
-        <section class="policy-section">
+        <section class="policy-section section-reveal">
           <h2 class="section-h2" data-i18n="s10_title">10. Politika Değişiklikleri</h2>
           <p class="section-text" data-i18n="s10_text">Bu gizlilik politikasını zaman zaman güncelleyebiliriz. Önemli değişiklikler yapıldığında, uygulama içi bildirim veya e-posta yoluyla sizi bilgilendireceğiz. Güncellenmiş politika bu sayfada yayınlandığı anda yürürlüğe girer.</p>
         </section>
 
         <hr class="section-divider">
 
-        <section class="policy-section">
+        <section class="policy-section section-reveal">
           <h2 class="section-h2" data-i18n="s11_title">11. İletişim</h2>
           <p class="section-text" data-i18n="s11_text">Gizlilik politikamız hakkında sorularınız veya talepleriniz için bizimle iletişime geçebilirsiniz:</p>
           <div class="contact-card">
@@ -966,6 +1035,29 @@
         }
       }
     });
+
+    // Scroll progress bar
+    window.addEventListener('scroll', () => {
+      const p = document.documentElement.scrollTop / (document.documentElement.scrollHeight - window.innerHeight);
+      document.getElementById('scrollProgress').style.transform = 'scaleX(' + p + ')';
+    }, { passive: true });
+
+    // Cursor glow (desktop only)
+    if (window.matchMedia('(pointer: fine)').matches) {
+      const g = document.getElementById('cursorGlow');
+      document.addEventListener('mousemove', (e) => {
+        g.style.left = e.clientX + 'px';
+        g.style.top = e.clientY + 'px';
+      }, { passive: true });
+    }
+
+    // Section reveal on scroll
+    const revealObs = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) { e.target.classList.add('visible'); revealObs.unobserve(e.target); }
+      });
+    }, { threshold: 0.15 });
+    document.querySelectorAll('.section-reveal').forEach(el => revealObs.observe(el));
   </script>
 
 </body>

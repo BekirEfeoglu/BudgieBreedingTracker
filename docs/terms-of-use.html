@@ -514,13 +514,87 @@
     /* =============================================
        Scrollbar
        ============================================= */
-    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar { width: 8px; }
     ::-webkit-scrollbar-track { background: var(--forest-deep); }
-    ::-webkit-scrollbar-thumb { background: var(--forest-canopy); border-radius: 3px; }
-    ::-webkit-scrollbar-thumb:hover { background: var(--forest-light); }
+    ::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, var(--forest-light), var(--forest-canopy));
+      border-radius: 4px;
+      border: 2px solid var(--forest-deep);
+    }
+    ::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, var(--sage-muted), var(--forest-light)); }
+    html { scrollbar-color: var(--forest-light) var(--forest-deep); scrollbar-width: thin; }
+
+    /* ─── SCROLL PROGRESS BAR ─── */
+    .scroll-progress {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 2px;
+      width: 100%;
+      background: linear-gradient(90deg, var(--forest-light), var(--gold), var(--gold-light));
+      z-index: 10000;
+      transform-origin: left;
+      transform: scaleX(0);
+    }
+
+    /* ─── PAGE CURTAIN ─── */
+    .page-curtain {
+      position: fixed;
+      inset: 0;
+      background: var(--forest-deep);
+      z-index: 9999;
+      pointer-events: none;
+      animation: curtainReveal 0.8s cubic-bezier(0.65, 0, 0.35, 1) 0.2s forwards;
+    }
+    @keyframes curtainReveal {
+      0% { clip-path: inset(0 0 0 0); }
+      100% { clip-path: inset(0 0 100% 0); }
+    }
+
+    /* ─── SECTION REVEAL ─── */
+    .section-reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      filter: blur(3px);
+      transition: all 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .section-reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+      filter: blur(0);
+    }
+
+    /* ─── CURSOR GLOW ─── */
+    .cursor-glow {
+      position: fixed;
+      width: 250px;
+      height: 250px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(212,168,83,0.05) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 2;
+      transform: translate(-50%, -50%);
+      will-change: left, top;
+    }
+
+    /* ─── REDUCED MOTION ─── */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+      .section-reveal { opacity: 1 !important; transform: none !important; filter: none !important; }
+      .page-curtain { display: none; }
+      .cursor-glow { display: none; }
+      .particle, .leaf { display: none; }
+    }
   </style>
 </head>
 <body>
+  <div class="page-curtain"></div>
+  <div class="scroll-progress" id="scrollProgress"></div>
+  <div class="cursor-glow" id="cursorGlow"></div>
 
   <!-- Background system -->
   <div class="bg-layer" aria-hidden="true"></div>
@@ -582,17 +656,17 @@
     <div class="content-card">
       <div class="card-inner">
 
-        <section class="content-section">
+        <section class="content-section section-reveal">
           <h2 class="section-heading" data-i18n="s1_title">1. Sözleşmenin Kabulü</h2>
           <p class="section-text" data-i18n="s1_text">BudgieBreedingTracker uygulamasını ("Uygulama") indirerek, yükleyerek veya kullanarak bu Son Kullanıcı Lisans Sözleşmesi'ni ("EULA") kabul etmiş olursunuz. Bu koşulları kabul etmiyorsanız, uygulamayı kullanmayın ve cihazınızdan kaldırın.</p>
         </section>
 
-        <section class="content-section">
+        <section class="content-section section-reveal">
           <h2 class="section-heading" data-i18n="s2_title">2. Lisans Hakkı</h2>
           <p class="section-text" data-i18n="s2_text">Size bu uygulamayı kişisel ve ticari olmayan amaçlarla, sahip olduğunuz veya kontrol ettiğiniz Apple markalı cihazlarda kullanmak üzere sınırlı, geri alınabilir, münhasır olmayan ve devredilemez bir lisans verilmektedir. Bu lisans, Apple'ın App Store Kullanım Koşulları'nda belirtilen Kullanım Kuralları'na uygun olmak zorundadır.</p>
         </section>
 
-        <section class="content-section">
+        <section class="content-section section-reveal">
           <h2 class="section-heading" data-i18n="s3_title">3. Abonelik Koşulları</h2>
           <p class="section-intro" data-i18n="s3_intro">Uygulama, aşağıdaki otomatik yenilenen abonelik planları ve tek seferlik satın alma seçeneği sunmaktadır:</p>
           <div data-i18n-html="s3_plans">
@@ -612,7 +686,7 @@
           </div>
         </section>
 
-        <section class="content-section">
+        <section class="content-section section-reveal">
           <h2 class="section-heading" data-i18n="s4_title">4. Kullanım Kuralları</h2>
           <p class="section-intro" data-i18n="s4_intro">Uygulamayı kullanırken aşağıdaki kurallara uymayı kabul edersiniz:</p>
           <div data-i18n-html="s4_list">
@@ -627,22 +701,22 @@
           </div>
         </section>
 
-        <section class="content-section">
+        <section class="content-section section-reveal">
           <h2 class="section-heading" data-i18n="s5_title">5. Fikri Mülkiyet</h2>
           <p class="section-text" data-i18n="s5_text">Uygulama ve içindeki tüm içerik (tasarım, kod, grafikler, ikonlar, metinler) telif hakkı ile korunmaktadır. Uygulamadaki kullanıcı tarafından oluşturulan içeriklerin (kuş kayıtları, fotoğraflar vb.) mülkiyet hakkı kullanıcıya aittir. Uygulama size bu içerikleri depolama ve işleme konusunda sınırlı bir lisans vermektedir.</p>
         </section>
 
-        <section class="content-section">
+        <section class="content-section section-reveal">
           <h2 class="section-heading" data-i18n="s6_title">6. Sorumluluk Sınırlaması</h2>
           <p class="section-text" data-i18n="s6_text">Uygulama "olduğu gibi" sunulmaktadır. Uygulamanın kullanımında oluşan dolaylı, arızi veya özel hasarlardan sorumlu değiliz. Özellikle genetik hesaplamalar yalnızca bilgi amaçlı olup, profesyonel yetiştiricilik tavsiyesi yerine geçmez. Uygulamanın kesintisiz veya hatasız çalışacağını garanti etmiyoruz.</p>
         </section>
 
-        <section class="content-section">
+        <section class="content-section section-reveal">
           <h2 class="section-heading" data-i18n="s7_title">7. Hesap Fesih ve Silme</h2>
           <p class="section-text" data-i18n="s7_text">Hesabınızı istediğiniz zaman uygulama içinden silebilirsiniz (Profil &gt; Hesabı Sil). Hesabınız silindiğinde tüm kişisel verileriniz, kuş kayıtlarınız, fotoğraflarınız ve yedekleriniz 30 gün içinde kalıcı olarak kaldırılır. Aktif bir aboneliğiniz varsa, hesabınızı silmeden önce aboneliğinizi iptal etmeniz gerekmektedir. Bu koşulları ihlal etmeniz durumunda hesabınız uyarı yapılmaksızın askıya alınabilir veya sonlandırılabilir.</p>
         </section>
 
-        <section class="content-section">
+        <section class="content-section section-reveal">
           <h2 class="section-heading" data-i18n="s8_title">8. Üçüncü Taraf Hizmetleri</h2>
           <p class="section-intro" data-i18n="s8_intro">Uygulama aşağıdaki üçüncü taraf hizmetlerini kullanmaktadır:</p>
           <div data-i18n-html="s8_list">
@@ -656,12 +730,12 @@
           <p class="section-text" style="margin-top: 14px;" data-i18n="s8_note">Bu hizmetlerin kendi gizlilik politikaları ve kullanım koşulları geçerlidir.</p>
         </section>
 
-        <section class="content-section">
+        <section class="content-section section-reveal">
           <h2 class="section-heading" data-i18n="s9_title">9. Değişiklikler</h2>
           <p class="section-text" data-i18n="s9_text">Bu kullanım koşullarını zaman zaman güncelleyebiliriz. Önemli değişiklikler yapıldığında, uygulama içi bildirim veya e-posta yoluyla sizi bilgilendireceğiz. Güncellenmiş koşullar bu sayfada yayınlandığı anda yürürlüğe girer. Değişikliklerden sonra uygulamayı kullanmaya devam etmeniz, yeni koşulları kabul ettiğiniz anlamına gelir.</p>
         </section>
 
-        <section class="content-section">
+        <section class="content-section section-reveal">
           <h2 class="section-heading" data-i18n="s10_title">10. Gizlilik</h2>
           <p class="section-text" data-i18n="s10_text">Kişisel verilerinizin toplanması, kullanılması ve korunması hakkında detaylı bilgi için Gizlilik Politikamızı inceleyiniz:</p>
           <p class="privacy-link-wrap">
@@ -669,12 +743,12 @@
           </p>
         </section>
 
-        <section class="content-section">
+        <section class="content-section section-reveal">
           <h2 class="section-heading" data-i18n="s11_title">11. Uygulanacak Hukuk</h2>
           <p class="section-text" data-i18n="s11_text">Bu sözleşme Türkiye Cumhuriyeti yasalarına tabidir. Uyuşmazlıklar Türkiye mahkemelerinde çözümlenecektir.</p>
         </section>
 
-        <section class="content-section">
+        <section class="content-section section-reveal">
           <h2 class="section-heading" data-i18n="s12_title">12. İletişim</h2>
           <p class="section-text" data-i18n="s12_text">Kullanım koşulları hakkında sorularınız veya talepleriniz için bizimle iletişime geçebilirsiniz:</p>
           <div class="contact-box">
@@ -857,6 +931,29 @@
         }
       }
     });
+
+    // Scroll progress bar
+    window.addEventListener('scroll', () => {
+      const p = document.documentElement.scrollTop / (document.documentElement.scrollHeight - window.innerHeight);
+      document.getElementById('scrollProgress').style.transform = 'scaleX(' + p + ')';
+    }, { passive: true });
+
+    // Cursor glow (desktop only)
+    if (window.matchMedia('(pointer: fine)').matches) {
+      const g = document.getElementById('cursorGlow');
+      document.addEventListener('mousemove', (e) => {
+        g.style.left = e.clientX + 'px';
+        g.style.top = e.clientY + 'px';
+      }, { passive: true });
+    }
+
+    // Section reveal on scroll
+    const revealObs = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) { e.target.classList.add('visible'); revealObs.unobserve(e.target); }
+      });
+    }, { threshold: 0.15 });
+    document.querySelectorAll('.section-reveal').forEach(el => revealObs.observe(el));
   </script>
 
 </body>
