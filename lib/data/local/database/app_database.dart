@@ -15,6 +15,7 @@ import 'package:budgie_breeding_tracker/core/enums/notification_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/subscription_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/photo_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/reminder_enums.dart';
+import 'package:budgie_breeding_tracker/core/enums/sync_enums.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/data/models/health_record_model.dart';
 import 'package:budgie_breeding_tracker/data/models/sync_metadata_model.dart';
@@ -38,6 +39,7 @@ import 'package:budgie_breeding_tracker/data/local/database/tables/user_preferen
 import 'package:budgie_breeding_tracker/data/local/database/tables/event_reminders_table.dart';
 import 'package:budgie_breeding_tracker/data/local/database/tables/notification_schedules_table.dart';
 import 'package:budgie_breeding_tracker/data/local/database/tables/genetics_history_table.dart';
+import 'package:budgie_breeding_tracker/data/local/database/tables/conflict_history_table.dart';
 
 import 'package:budgie_breeding_tracker/data/local/database/daos/birds_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/eggs_dao.dart';
@@ -58,6 +60,7 @@ import 'package:budgie_breeding_tracker/data/local/database/daos/event_reminders
 import 'package:budgie_breeding_tracker/data/local/database/daos/notification_schedules_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/notification_settings_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/genetics_history_dao.dart';
+import 'package:budgie_breeding_tracker/data/local/database/daos/conflict_history_dao.dart';
 
 // Converters
 import 'package:budgie_breeding_tracker/data/local/database/converters/enum_converters.dart';
@@ -86,6 +89,7 @@ part 'app_database_migrations.dart';
     EventRemindersTable,
     NotificationSchedulesTable,
     GeneticsHistoryTable,
+    ConflictHistoryTable,
   ],
   daos: [
     BirdsDao,
@@ -107,6 +111,7 @@ part 'app_database_migrations.dart';
     EventRemindersDao,
     NotificationSchedulesDao,
     GeneticsHistoryDao,
+    ConflictHistoryDao,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -116,7 +121,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 15;
+  int get schemaVersion => 16;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -156,6 +161,8 @@ class AppDatabase extends _$AppDatabase {
             await _migrateV13ToV14(this, m);
           case 15:
             await _migrateV14ToV15(this, m);
+          case 16:
+            await _migrateV15ToV16(this, m);
         }
       }
     },
@@ -222,6 +229,9 @@ class AppDatabase extends _$AppDatabase {
       await customStatement('DELETE FROM birds WHERE user_id = ?', [userId]);
       await customStatement('DELETE FROM nests WHERE user_id = ?', [userId]);
       // Local-only entities
+      await customStatement('DELETE FROM conflict_history WHERE user_id = ?', [
+        userId,
+      ]);
       await customStatement('DELETE FROM genetics_history WHERE user_id = ?', [
         userId,
       ]);
