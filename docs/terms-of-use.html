@@ -5,194 +5,706 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Kullanım Koşulları — BudgieBreedingTracker</title>
   <meta name="description" content="BudgieBreedingTracker uygulamasının kullanım koşulları ve son kullanıcı lisans sözleşmesi (EULA).">
-  <meta name="theme-color" content="#1E40AF">
+  <meta name="theme-color" content="#0C1F0F">
 
-  <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            primary: { 50: '#EFF6FF', 100: '#DBEAFE', 200: '#BFDBFE', 300: '#93C5FD', 400: '#60A5FA', 500: '#3B82F6', 600: '#2563EB', 700: '#1D4ED8', 800: '#1E40AF', 900: '#1E3A8A' },
-            accent: { 400: '#FBBF24', 500: '#F59E0B', 600: '#D97706' },
-            budgie: { 50: '#F0FDF4', 100: '#DCFCE7', 400: '#4ADE80', 500: '#22C55E', 600: '#16A34A' },
-          },
-          fontFamily: {
-            sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
-          },
-        },
-      },
-    }
-  </script>
-
-  <!-- Inter Font -->
+  <!-- Google Fonts: Outfit + DM Sans -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="logo.png">
   <link rel="apple-touch-icon" href="logo.png">
 
   <style>
-    html { scroll-behavior: smooth; }
-    body { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
-    .gradient-text {
-      background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 40%, #22C55E 100%);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    /* =============================================
+       CSS Custom Properties — Organic Nature Tech
+       ============================================= */
+    :root {
+      --forest-deep:     #0C1F0F;
+      --forest-mid:      #122818;
+      --forest-canopy:   #1B4332;
+      --forest-light:    #2D6A4F;
+      --sage:            #A3B899;
+      --sage-light:      #C8D8C2;
+      --sage-muted:      #7A9970;
+      --gold:            #D4A853;
+      --gold-light:      #E8C27A;
+      --gold-pale:       #F5E0A8;
+      --glass-bg:        rgba(27, 67, 50, 0.25);
+      --glass-border:    rgba(163, 184, 153, 0.2);
+      --glass-header:    rgba(12, 31, 15, 0.6);
+      --orb-green:       rgba(45, 106, 79, 0.35);
+      --orb-gold:        rgba(212, 168, 83, 0.15);
+      --orb-dark:        rgba(18, 40, 24, 0.5);
+      --radius-sm:       6px;
+      --radius-md:       12px;
+      --radius-lg:       18px;
+      --radius-xl:       24px;
+      --shadow-glow:     0 0 24px rgba(212, 168, 83, 0.15);
     }
-    .lang-btn { transition: all 0.2s ease; }
-    .lang-btn.active { background-color: #1E40AF; color: white; box-shadow: 0 2px 8px rgba(30, 64, 175, 0.3); }
-    .lang-btn:not(.active):hover { background-color: #E5E7EB; }
+
+    /* =============================================
+       Reset & Base
+       ============================================= */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html {
+      scroll-behavior: smooth;
+      font-size: 16px;
+    }
+
+    body {
+      font-family: 'DM Sans', system-ui, sans-serif;
+      font-weight: 400;
+      background-color: var(--forest-deep);
+      color: var(--sage-light);
+      line-height: 1.7;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* =============================================
+       Background System
+       ============================================= */
+    .bg-layer {
+      position: fixed;
+      inset: 0;
+      z-index: -3;
+      background:
+        radial-gradient(ellipse 80% 60% at 15% 10%, rgba(27, 67, 50, 0.6) 0%, transparent 55%),
+        radial-gradient(ellipse 60% 50% at 85% 20%, rgba(45, 106, 79, 0.25) 0%, transparent 50%),
+        radial-gradient(ellipse 70% 60% at 50% 90%, rgba(18, 40, 24, 0.7) 0%, transparent 55%),
+        radial-gradient(ellipse 40% 40% at 80% 80%, rgba(212, 168, 83, 0.08) 0%, transparent 45%),
+        var(--forest-deep);
+    }
+
+    /* SVG noise texture overlay */
+    .bg-layer::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      opacity: 0.04;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+      pointer-events: none;
+    }
+
+    /* Decorative blurred orbs */
+    .orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(80px);
+      pointer-events: none;
+      z-index: -2;
+    }
+    .orb-1 {
+      width: 520px; height: 520px;
+      top: -120px; left: -160px;
+      background: var(--orb-green);
+    }
+    .orb-2 {
+      width: 400px; height: 400px;
+      bottom: 10%; right: -100px;
+      background: var(--orb-gold);
+    }
+    .orb-3 {
+      width: 360px; height: 360px;
+      top: 40%; left: 30%;
+      background: var(--orb-dark);
+    }
+
+    /* =============================================
+       Floating leaf particles (CSS-only, 20 leaves)
+       ============================================= */
+    .leaves { position: fixed; inset: 0; pointer-events: none; z-index: -1; overflow: hidden; }
+
+    .leaf {
+      position: absolute;
+      width: 6px;
+      height: 10px;
+      border-radius: 50% 0 50% 0;
+      opacity: 0;
+      animation: floatLeaf linear infinite;
+    }
+
+    @keyframes floatLeaf {
+      0%   { opacity: 0; transform: translateY(100vh) translateX(0) rotate(0deg); }
+      10%  { opacity: 0.4; }
+      90%  { opacity: 0.15; }
+      100% { opacity: 0; transform: translateY(-10vh) translateX(60px) rotate(360deg); }
+    }
+
+    .leaf:nth-child(1)  { left:  5%; width:5px;  height:8px;  background:rgba(163,184,153,0.5); animation-duration:14s; animation-delay:0s;    }
+    .leaf:nth-child(2)  { left: 12%; width:7px;  height:11px; background:rgba(212,168,83,0.35); animation-duration:18s; animation-delay:2s;    }
+    .leaf:nth-child(3)  { left: 20%; width:5px;  height:9px;  background:rgba(163,184,153,0.4); animation-duration:16s; animation-delay:5s;    }
+    .leaf:nth-child(4)  { left: 28%; width:8px;  height:12px; background:rgba(45,106,79,0.6);   animation-duration:20s; animation-delay:1s;    }
+    .leaf:nth-child(5)  { left: 35%; width:5px;  height:8px;  background:rgba(212,168,83,0.3);  animation-duration:15s; animation-delay:7s;    }
+    .leaf:nth-child(6)  { left: 42%; width:6px;  height:10px; background:rgba(163,184,153,0.45);animation-duration:22s; animation-delay:3s;    }
+    .leaf:nth-child(7)  { left: 50%; width:7px;  height:11px; background:rgba(45,106,79,0.5);   animation-duration:17s; animation-delay:9s;    }
+    .leaf:nth-child(8)  { left: 58%; width:5px;  height:8px;  background:rgba(212,168,83,0.4);  animation-duration:19s; animation-delay:4s;    }
+    .leaf:nth-child(9)  { left: 65%; width:6px;  height:10px; background:rgba(163,184,153,0.5); animation-duration:13s; animation-delay:11s;   }
+    .leaf:nth-child(10) { left: 72%; width:8px;  height:12px; background:rgba(45,106,79,0.55);  animation-duration:21s; animation-delay:6s;    }
+    .leaf:nth-child(11) { left: 78%; width:5px;  height:9px;  background:rgba(212,168,83,0.3);  animation-duration:16s; animation-delay:13s;   }
+    .leaf:nth-child(12) { left: 84%; width:7px;  height:11px; background:rgba(163,184,153,0.4); animation-duration:18s; animation-delay:8s;    }
+    .leaf:nth-child(13) { left: 90%; width:6px;  height:10px; background:rgba(45,106,79,0.5);   animation-duration:14s; animation-delay:15s;   }
+    .leaf:nth-child(14) { left:  8%; width:5px;  height:8px;  background:rgba(212,168,83,0.35); animation-duration:23s; animation-delay:10s;   }
+    .leaf:nth-child(15) { left: 17%; width:7px;  height:11px; background:rgba(163,184,153,0.45);animation-duration:20s; animation-delay:12s;   }
+    .leaf:nth-child(16) { left: 33%; width:6px;  height:9px;  background:rgba(45,106,79,0.45);  animation-duration:15s; animation-delay:16s;   }
+    .leaf:nth-child(17) { left: 55%; width:5px;  height:8px;  background:rgba(212,168,83,0.4);  animation-duration:17s; animation-delay:18s;   }
+    .leaf:nth-child(18) { left: 67%; width:8px;  height:12px; background:rgba(163,184,153,0.5); animation-duration:24s; animation-delay:0.5s;  }
+    .leaf:nth-child(19) { left: 76%; width:6px;  height:10px; background:rgba(45,106,79,0.6);   animation-duration:19s; animation-delay:14s;   }
+    .leaf:nth-child(20) { left: 95%; width:5px;  height:8px;  background:rgba(212,168,83,0.3);  animation-duration:22s; animation-delay:17s;   }
+
+    /* =============================================
+       Header — Dark Glassmorphism
+       ============================================= */
+    .site-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--glass-header);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--glass-border);
+    }
+
+    .header-inner {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 0 24px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .logo-link {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      opacity: 1;
+      transition: opacity 0.2s ease;
+    }
+    .logo-link:hover { opacity: 0.8; }
+
+    .logo-img {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: block;
+    }
+
+    .logo-name {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      font-size: 1.05rem;
+      background: linear-gradient(135deg, var(--sage-light) 0%, var(--gold-light) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    /* Language switcher */
+    .lang-switcher {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(12, 31, 15, 0.55);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-md);
+      padding: 4px;
+    }
+
+    .lang-btn {
+      padding: 4px 10px;
+      border-radius: 8px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      font-family: 'Outfit', sans-serif;
+      letter-spacing: 0.04em;
+      color: var(--sage);
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .lang-btn:hover:not(.active) {
+      background: rgba(163, 184, 153, 0.12);
+      color: var(--sage-light);
+    }
+    .lang-btn.active {
+      background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 100%);
+      color: var(--forest-deep);
+      box-shadow: 0 2px 10px rgba(212, 168, 83, 0.35);
+    }
+
+    .back-link {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--sage);
+      text-decoration: none;
+      transition: color 0.2s ease;
+      white-space: nowrap;
+    }
+    .back-link:hover { color: var(--gold-light); }
+
+    /* =============================================
+       Main Layout
+       ============================================= */
+    main {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 56px 24px 80px;
+    }
+
+    /* =============================================
+       Page Header Block
+       ============================================= */
+    .page-header {
+      margin-bottom: 40px;
+      opacity: 0;
+      transform: translateY(28px);
+      animation: fadeUp 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.1s forwards;
+    }
+
+    .page-title {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 800;
+      font-size: clamp(2rem, 5vw, 2.8rem);
+      line-height: 1.15;
+      background: linear-gradient(135deg, var(--sage-light) 0%, var(--gold-light) 60%, var(--gold-pale) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 8px;
+    }
+
+    .page-updated {
+      font-size: 0.875rem;
+      color: var(--sage-muted);
+      font-weight: 400;
+    }
+
+    /* =============================================
+       Content Card — Glassmorphism
+       ============================================= */
+    .content-card {
+      background: var(--glass-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      opacity: 0;
+      transform: translateY(32px);
+      animation: fadeUp 0.75s cubic-bezier(0.22, 1, 0.36, 1) 0.25s forwards;
+    }
+
+    /* Gold gradient top line */
+    .content-card::before {
+      content: '';
+      display: block;
+      height: 3px;
+      background: linear-gradient(90deg, transparent 0%, var(--gold) 30%, var(--gold-light) 60%, transparent 100%);
+    }
+
+    .card-inner {
+      padding: 40px 44px 44px;
+      display: flex;
+      flex-direction: column;
+      gap: 40px;
+    }
+
+    @media (max-width: 640px) {
+      .card-inner { padding: 28px 22px 32px; gap: 32px; }
+    }
+
+    /* =============================================
+       Sections
+       ============================================= */
+    .content-section {
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeUp 0.65s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    /* Staggered entrance for sections */
+    .content-section:nth-child(1)  { animation-delay: 0.35s; }
+    .content-section:nth-child(2)  { animation-delay: 0.42s; }
+    .content-section:nth-child(3)  { animation-delay: 0.49s; }
+    .content-section:nth-child(4)  { animation-delay: 0.56s; }
+    .content-section:nth-child(5)  { animation-delay: 0.63s; }
+    .content-section:nth-child(6)  { animation-delay: 0.70s; }
+    .content-section:nth-child(7)  { animation-delay: 0.77s; }
+    .content-section:nth-child(8)  { animation-delay: 0.84s; }
+    .content-section:nth-child(9)  { animation-delay: 0.91s; }
+    .content-section:nth-child(10) { animation-delay: 0.98s; }
+    .content-section:nth-child(11) { animation-delay: 1.05s; }
+    .content-section:nth-child(12) { animation-delay: 1.12s; }
+
+    .section-heading {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      font-size: 1.15rem;
+      color: var(--gold-light);
+      margin-bottom: 12px;
+    }
+
+    .section-text {
+      color: var(--sage-light);
+      line-height: 1.75;
+      font-size: 0.9625rem;
+    }
+
+    .section-intro {
+      color: var(--sage-light);
+      line-height: 1.75;
+      font-size: 0.9625rem;
+      margin-bottom: 14px;
+    }
+
+    /* =============================================
+       Lists inside i18n-html containers
+       ============================================= */
+    [data-i18n-html] ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    [data-i18n-html] ul li {
+      color: var(--sage);
+      font-size: 0.9375rem;
+      padding-left: 20px;
+      position: relative;
+      line-height: 1.65;
+    }
+
+    [data-i18n-html] ul li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0.65em;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--gold);
+      flex-shrink: 0;
+    }
+
+    [data-i18n-html] ul li strong {
+      color: var(--gold-light);
+      font-weight: 600;
+    }
+
+    /* Billing info box */
+    .billing-box [data-i18n-html] p,
+    .billing-box p {
+      color: var(--sage-light);
+      font-size: 0.9375rem;
+      line-height: 1.7;
+    }
+
+    .billing-box [data-i18n-html] p + p,
+    .billing-box p + p {
+      margin-top: 10px;
+    }
+
+    .billing-box [data-i18n-html] strong,
+    .billing-box strong {
+      color: var(--gold-light);
+      font-weight: 600;
+    }
+
+    /* Info / highlight boxes */
+    .info-box {
+      background: rgba(27, 67, 50, 0.4);
+      border: 1px solid rgba(163, 184, 153, 0.18);
+      border-left: 3px solid var(--gold);
+      border-radius: var(--radius-md);
+      padding: 18px 20px;
+      margin-top: 16px;
+    }
+
+    .contact-box {
+      background: rgba(27, 67, 50, 0.4);
+      border: 1px solid rgba(163, 184, 153, 0.18);
+      border-left: 3px solid var(--gold);
+      border-radius: var(--radius-md);
+      padding: 18px 20px;
+      margin-top: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .contact-box p {
+      color: var(--sage-light);
+      font-size: 0.9375rem;
+    }
+
+    .contact-box strong {
+      color: var(--gold-light);
+      font-weight: 600;
+    }
+
+    /* Links */
+    a.content-link,
+    .section-text a,
+    .contact-box a {
+      color: var(--gold);
+      text-decoration: underline;
+      text-decoration-color: rgba(212, 168, 83, 0.4);
+      text-underline-offset: 3px;
+      transition: color 0.2s ease, text-shadow 0.2s ease, text-decoration-color 0.2s ease;
+    }
+    a.content-link:hover,
+    .section-text a:hover,
+    .contact-box a:hover {
+      color: var(--gold-light);
+      text-shadow: 0 0 12px rgba(212, 168, 83, 0.4);
+      text-decoration-color: var(--gold-light);
+    }
+
+    /* Privacy link */
+    .privacy-link-wrap {
+      margin-top: 10px;
+    }
+
+    /* =============================================
+       Footer
+       ============================================= */
+    .site-footer {
+      border-top: 1px solid var(--glass-border);
+      margin-top: 24px;
+    }
+
+    .footer-inner {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 28px 24px;
+      text-align: center;
+    }
+
+    .footer-text {
+      font-size: 0.8125rem;
+      color: var(--sage-muted);
+      opacity: 0.7;
+    }
+
+    /* =============================================
+       Entrance Animation
+       ============================================= */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(28px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* =============================================
+       Scrollbar
+       ============================================= */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--forest-deep); }
+    ::-webkit-scrollbar-thumb { background: var(--forest-canopy); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--forest-light); }
   </style>
 </head>
-<body class="bg-gray-50 text-gray-800">
+<body>
+
+  <!-- Background system -->
+  <div class="bg-layer" aria-hidden="true"></div>
+  <div class="orb orb-1" aria-hidden="true"></div>
+  <div class="orb orb-2" aria-hidden="true"></div>
+  <div class="orb orb-3" aria-hidden="true"></div>
+
+  <!-- Floating leaf particles -->
+  <div class="leaves" aria-hidden="true">
+    <div class="leaf"></div>
+    <div class="leaf"></div>
+    <div class="leaf"></div>
+    <div class="leaf"></div>
+    <div class="leaf"></div>
+    <div class="leaf"></div>
+    <div class="leaf"></div>
+    <div class="leaf"></div>
+    <div class="leaf"></div>
+    <div class="leaf"></div>
+    <div class="leaf"></div>
+    <div class="leaf"></div>
+    <div class="leaf"></div>
+    <div class="leaf"></div>
+    <div class="leaf"></div>
+    <div class="leaf"></div>
+    <div class="leaf"></div>
+    <div class="leaf"></div>
+    <div class="leaf"></div>
+    <div class="leaf"></div>
+  </div>
 
   <!-- Header -->
-  <header class="bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-50">
-    <div class="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
-      <a href="index.html" class="flex items-center gap-3 hover:opacity-80 transition">
-        <img src="logo.png" alt="BudgieBreedingTracker" class="w-9 h-9 rounded-xl">
-        <span class="text-lg font-bold gradient-text hidden sm:inline">BudgieBreedingTracker</span>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="index.html" class="logo-link">
+        <img src="logo.png" alt="BudgieBreedingTracker" class="logo-img">
+        <span class="logo-name">BudgieBreedingTracker</span>
       </a>
-      <div class="flex items-center gap-4">
+      <div class="header-right">
         <!-- Language Switcher -->
-        <div class="flex items-center gap-1 bg-gray-100/80 rounded-lg p-1">
-          <button onclick="setLanguage('tr')" class="lang-btn px-2.5 py-1 rounded-md text-xs font-semibold active" data-lang="tr">TR</button>
-          <button onclick="setLanguage('en')" class="lang-btn px-2.5 py-1 rounded-md text-xs font-semibold" data-lang="en">EN</button>
-          <button onclick="setLanguage('de')" class="lang-btn px-2.5 py-1 rounded-md text-xs font-semibold" data-lang="de">DE</button>
+        <div class="lang-switcher">
+          <button onclick="setLanguage('tr')" class="lang-btn active" data-lang="tr">TR</button>
+          <button onclick="setLanguage('en')" class="lang-btn" data-lang="en">EN</button>
+          <button onclick="setLanguage('de')" class="lang-btn" data-lang="de">DE</button>
         </div>
-        <a href="index.html" class="text-sm text-primary-600 hover:text-primary-800 font-medium transition" data-i18n="back">&larr; Ana Sayfa</a>
+        <a href="index.html" class="back-link" data-i18n="back">&larr; Ana Sayfa</a>
       </div>
     </div>
   </header>
 
   <!-- Content -->
-  <main class="max-w-4xl mx-auto px-6 py-12">
+  <main>
 
-    <div class="mb-10">
-      <h1 class="text-4xl font-extrabold text-gray-900 mb-3" data-i18n="title">Kullanim Kosullari (EULA)</h1>
-      <p class="text-gray-500" data-i18n="last_updated">Son guncelleme: 17 Mart 2026</p>
+    <div class="page-header">
+      <h1 class="page-title" data-i18n="title">Kullanım Koşulları (EULA)</h1>
+      <p class="page-updated" data-i18n="last_updated">Son güncelleme: 17 Mart 2026</p>
     </div>
 
-    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 md:p-10 space-y-10">
+    <div class="content-card">
+      <div class="card-inner">
 
-      <section>
-        <h2 class="text-xl font-bold text-gray-900 mb-3" data-i18n="s1_title">1. Sozlesmenin Kabulu</h2>
-        <p class="text-gray-600 leading-relaxed" data-i18n="s1_text">BudgieBreedingTracker uygulamasini ("Uygulama") indirerek, yukleyerek veya kullanarak bu Son Kullanici Lisans Sozlesmesi'ni ("EULA") kabul etmis olursunuz. Bu kosullari kabul etmiyorsaniz, uygulamayi kullanmayin ve cihazinizdan kaldirin.</p>
-      </section>
+        <section class="content-section">
+          <h2 class="section-heading" data-i18n="s1_title">1. Sözleşmenin Kabulü</h2>
+          <p class="section-text" data-i18n="s1_text">BudgieBreedingTracker uygulamasını ("Uygulama") indirerek, yükleyerek veya kullanarak bu Son Kullanıcı Lisans Sözleşmesi'ni ("EULA") kabul etmiş olursunuz. Bu koşulları kabul etmiyorsanız, uygulamayı kullanmayın ve cihazınızdan kaldırın.</p>
+        </section>
 
-      <section>
-        <h2 class="text-xl font-bold text-gray-900 mb-3" data-i18n="s2_title">2. Lisans Hakki</h2>
-        <p class="text-gray-600 leading-relaxed" data-i18n="s2_text">Size bu uygulamayi kisisel ve ticari olmayan amaclarla, sahip oldugunuz veya kontrol ettiginiz Apple markalı cihazlarda kullanmak uzere sinirli, geri alinabilir, munhasir olmayan ve devredilemez bir lisans verilmektedir. Bu lisans, Apple'in App Store Kullanim Kosulları'nda belirtilen Kullanim Kurallari'na uygun olmak zorundadir.</p>
-      </section>
+        <section class="content-section">
+          <h2 class="section-heading" data-i18n="s2_title">2. Lisans Hakkı</h2>
+          <p class="section-text" data-i18n="s2_text">Size bu uygulamayı kişisel ve ticari olmayan amaçlarla, sahip olduğunuz veya kontrol ettiğiniz Apple markalı cihazlarda kullanmak üzere sınırlı, geri alınabilir, münhasır olmayan ve devredilemez bir lisans verilmektedir. Bu lisans, Apple'ın App Store Kullanım Koşulları'nda belirtilen Kullanım Kuralları'na uygun olmak zorundadır.</p>
+        </section>
 
-      <section>
-        <h2 class="text-xl font-bold text-gray-900 mb-3" data-i18n="s3_title">3. Abonelik Kosullari</h2>
-        <p class="text-gray-600 leading-relaxed mb-3" data-i18n="s3_intro">Uygulama, asagidaki otomatik yenilenen abonelik planlari ve tek seferlik satin alma secenegi sunmaktadir:</p>
-        <div data-i18n-html="s3_plans">
-          <ul class="list-disc list-inside text-gray-600 space-y-1 ml-2">
-            <li><strong>Aylik Plan:</strong> Aylik otomatik yenilenir. 7 gunluk ucretsiz deneme suresi dahildir.</li>
-            <li><strong>Yillik Plan:</strong> Yillik otomatik yenilenir. 7 gunluk ucretsiz deneme suresi dahildir.</li>
-            <li><strong>Omur Boyu:</strong> Tek seferlik odeme, abonelik yenilemesi yoktur.</li>
-          </ul>
-        </div>
-        <div class="mt-4 p-4 bg-primary-50 rounded-xl border border-primary-100" data-i18n-html="s3_billing">
-          <p class="text-gray-700 leading-relaxed"><strong>Odeme:</strong> Satin alma onayinda Apple ID hesabinizdan tahsil edilir.</p>
-          <p class="text-gray-700 leading-relaxed mt-2"><strong>Yenileme:</strong> Abonelik, mevcut donemin bitmesinden en az 24 saat once iptal edilmezse otomatik olarak yenilenir. Yenileme ucreti, mevcut donemin bitiminden onceki 24 saat icinde hesabinizdan tahsil edilir.</p>
-          <p class="text-gray-700 leading-relaxed mt-2"><strong>Ucretsiz Deneme:</strong> Ucretsiz deneme sureniz, abonelik satin aldiginizda kullanilmayan kismi gecerlilgini yitirir.</p>
-          <p class="text-gray-700 leading-relaxed mt-2"><strong>Yonetim ve Iptal:</strong> Aboneliginizi satin alma sonrasinda cihazinizda Ayarlar &gt; Apple ID &gt; Abonelikler uzerinden yonetebilir ve iptal edebilirsiniz.</p>
-        </div>
-      </section>
+        <section class="content-section">
+          <h2 class="section-heading" data-i18n="s3_title">3. Abonelik Koşulları</h2>
+          <p class="section-intro" data-i18n="s3_intro">Uygulama, aşağıdaki otomatik yenilenen abonelik planları ve tek seferlik satın alma seçeneği sunmaktadır:</p>
+          <div data-i18n-html="s3_plans">
+            <ul>
+              <li><strong>Aylık Plan:</strong> Aylık otomatik yenilenir. 7 günlük ücretsiz deneme süresi dahildir.</li>
+              <li><strong>Yıllık Plan:</strong> Yıllık otomatik yenilenir. 7 günlük ücretsiz deneme süresi dahildir.</li>
+              <li><strong>Ömür Boyu:</strong> Tek seferlik ödeme, abonelik yenilemesi yoktur.</li>
+            </ul>
+          </div>
+          <div class="info-box billing-box">
+            <div data-i18n-html="s3_billing">
+              <p><strong>Ödeme:</strong> Satın alma onayında Apple ID hesabınızdan tahsil edilir.</p>
+              <p><strong>Yenileme:</strong> Abonelik, mevcut dönemin bitmesinden en az 24 saat önce iptal edilmezse otomatik olarak yenilenir. Yenileme ücreti, mevcut dönemin bitiminden önceki 24 saat içinde hesabınızdan tahsil edilir.</p>
+              <p><strong>Ücretsiz Deneme:</strong> Ücretsiz deneme süreniz, abonelik satın aldığınızda kullanılmayan kısmı geçerliliğini yitirir.</p>
+              <p><strong>Yönetim ve İptal:</strong> Aboneliğinizi satın alma sonrasında cihazınızda Ayarlar &gt; Apple ID &gt; Abonelikler üzerinden yönetebilir ve iptal edebilirsiniz.</p>
+            </div>
+          </div>
+        </section>
 
-      <section>
-        <h2 class="text-xl font-bold text-gray-900 mb-3" data-i18n="s4_title">4. Kullanim Kurallari</h2>
-        <p class="text-gray-600 leading-relaxed mb-3" data-i18n="s4_intro">Uygulamayi kullanirken asagidaki kurallara uymayi kabul edersiniz:</p>
-        <div data-i18n-html="s4_list">
-          <ul class="list-disc list-inside text-gray-600 space-y-1 ml-2">
-            <li>Uygulamayi yalnizca yasal amaclarla kullanmak</li>
-            <li>Baska kullanicilarin haklarina saygili olmak</li>
-            <li>Topluluk ozelliklerinde kufur, nefret soylemi veya uygunsuz icerik paylasmamak</li>
-            <li>Uygulamayi tersine muhendislik, decompile veya kaynak kodunu cikarma girisimlerinde bulunmamak</li>
-            <li>Uygulamanin guvenlik onlemlerini atlatma girisiminde bulunmamak</li>
-            <li>Spam, kotu amacli yazilim veya zarali icerik yuklememek</li>
-          </ul>
-        </div>
-      </section>
+        <section class="content-section">
+          <h2 class="section-heading" data-i18n="s4_title">4. Kullanım Kuralları</h2>
+          <p class="section-intro" data-i18n="s4_intro">Uygulamayı kullanırken aşağıdaki kurallara uymayı kabul edersiniz:</p>
+          <div data-i18n-html="s4_list">
+            <ul>
+              <li>Uygulamayı yalnızca yasal amaçlarla kullanmak</li>
+              <li>Başka kullanıcıların haklarına saygılı olmak</li>
+              <li>Topluluk özelliklerinde küfür, nefret söylemi veya uygunsuz içerik paylaşmamak</li>
+              <li>Uygulamayı tersine mühendislik, decompile veya kaynak kodunu çıkarma girişimlerinde bulunmamak</li>
+              <li>Uygulamanın güvenlik önlemlerini atlatma girişiminde bulunmamak</li>
+              <li>Spam, kötü amaçlı yazılım veya zararlı içerik yüklememek</li>
+            </ul>
+          </div>
+        </section>
 
-      <section>
-        <h2 class="text-xl font-bold text-gray-900 mb-3" data-i18n="s5_title">5. Fikri Mulkiyet</h2>
-        <p class="text-gray-600 leading-relaxed" data-i18n="s5_text">Uygulama ve icindeki tum icerik (tasarim, kod, grafikler, ikonlar, metinler) telif hakki ile korunmaktadir. Uygulamadaki kullanici tarafindan olusturulan iceriklerin (kus kayitlari, fotograflar vb.) mulkiyet hakki kullaniciya aittir. Uygulama size bu icerikleri depolama ve isleme konusunda sinirli bir lisans vermektedir.</p>
-      </section>
+        <section class="content-section">
+          <h2 class="section-heading" data-i18n="s5_title">5. Fikri Mülkiyet</h2>
+          <p class="section-text" data-i18n="s5_text">Uygulama ve içindeki tüm içerik (tasarım, kod, grafikler, ikonlar, metinler) telif hakkı ile korunmaktadır. Uygulamadaki kullanıcı tarafından oluşturulan içeriklerin (kuş kayıtları, fotoğraflar vb.) mülkiyet hakkı kullanıcıya aittir. Uygulama size bu içerikleri depolama ve işleme konusunda sınırlı bir lisans vermektedir.</p>
+        </section>
 
-      <section>
-        <h2 class="text-xl font-bold text-gray-900 mb-3" data-i18n="s6_title">6. Sorumluluk Sinirlamasi</h2>
-        <p class="text-gray-600 leading-relaxed" data-i18n="s6_text">Uygulama "oldugu gibi" sunulmaktadir. Uygulamanin kullaniminda olusan dolayli, arizi veya ozel hasarlardan sorumlu degiliz. Ozellikle genetik hesaplamalar yalnizca bilgi amacli olup, profesyonel yetiştiricilik tavsiyesi yerine gecmez. Uygulamanin kesintisiz veya hatasiz calisacagini garanti etmiyoruz.</p>
-      </section>
+        <section class="content-section">
+          <h2 class="section-heading" data-i18n="s6_title">6. Sorumluluk Sınırlaması</h2>
+          <p class="section-text" data-i18n="s6_text">Uygulama "olduğu gibi" sunulmaktadır. Uygulamanın kullanımında oluşan dolaylı, arızi veya özel hasarlardan sorumlu değiliz. Özellikle genetik hesaplamalar yalnızca bilgi amaçlı olup, profesyonel yetiştiricilik tavsiyesi yerine geçmez. Uygulamanın kesintisiz veya hatasız çalışacağını garanti etmiyoruz.</p>
+        </section>
 
-      <section>
-        <h2 class="text-xl font-bold text-gray-900 mb-3" data-i18n="s7_title">7. Hesap Fesih ve Silme</h2>
-        <p class="text-gray-600 leading-relaxed" data-i18n="s7_text">Hesabinizi istediginiz zaman uygulama icinden silebilirsiniz (Profil &gt; Hesabi Sil). Hesabiniz silindiginde tum kisisel verileriniz, kus kayitlariniz, fotograflariniz ve yedekleriniz 30 gun icinde kalici olarak kaldirilir. Aktif bir aboneliginiz varsa, hesabinizi silmeden once aboneliginizi iptal etmeniz gerekmektedir. Bu kosullari ihlal etmeniz durumunda hesabiniz uyari yapilmaksizin askiya alinabilir veya sonlandirilabilir.</p>
-      </section>
+        <section class="content-section">
+          <h2 class="section-heading" data-i18n="s7_title">7. Hesap Fesih ve Silme</h2>
+          <p class="section-text" data-i18n="s7_text">Hesabınızı istediğiniz zaman uygulama içinden silebilirsiniz (Profil &gt; Hesabı Sil). Hesabınız silindiğinde tüm kişisel verileriniz, kuş kayıtlarınız, fotoğraflarınız ve yedekleriniz 30 gün içinde kalıcı olarak kaldırılır. Aktif bir aboneliğiniz varsa, hesabınızı silmeden önce aboneliğinizi iptal etmeniz gerekmektedir. Bu koşulları ihlal etmeniz durumunda hesabınız uyarı yapılmaksızın askıya alınabilir veya sonlandırılabilir.</p>
+        </section>
 
-      <section>
-        <h2 class="text-xl font-bold text-gray-900 mb-3" data-i18n="s8_title">8. Ucuncu Taraf Hizmetleri</h2>
-        <p class="text-gray-600 leading-relaxed mb-3" data-i18n="s8_intro">Uygulama asagidaki ucuncu taraf hizmetlerini kullanmaktadir:</p>
-        <div data-i18n-html="s8_list">
-          <ul class="list-disc list-inside text-gray-600 space-y-1 ml-2">
-            <li><strong>Supabase:</strong> Kimlik dogrulama ve veri senkronizasyonu</li>
-            <li><strong>RevenueCat:</strong> Abonelik ve satin alma yonetimi</li>
-            <li><strong>Sentry:</strong> Hata raporlama ve performans izleme</li>
-            <li><strong>Google AdMob:</strong> Reklam gosterimi (ucretsiz surumde)</li>
-          </ul>
-        </div>
-        <p class="text-gray-600 leading-relaxed mt-3" data-i18n="s8_note">Bu hizmetlerin kendi gizlilik politikalari ve kullanim kosullari gecerlidir.</p>
-      </section>
+        <section class="content-section">
+          <h2 class="section-heading" data-i18n="s8_title">8. Üçüncü Taraf Hizmetleri</h2>
+          <p class="section-intro" data-i18n="s8_intro">Uygulama aşağıdaki üçüncü taraf hizmetlerini kullanmaktadır:</p>
+          <div data-i18n-html="s8_list">
+            <ul>
+              <li><strong>Supabase:</strong> Kimlik doğrulama ve veri senkronizasyonu</li>
+              <li><strong>RevenueCat:</strong> Abonelik ve satın alma yönetimi</li>
+              <li><strong>Sentry:</strong> Hata raporlama ve performans izleme</li>
+              <li><strong>Google AdMob:</strong> Reklam gösterimi (ücretsiz sürümde)</li>
+            </ul>
+          </div>
+          <p class="section-text" style="margin-top: 14px;" data-i18n="s8_note">Bu hizmetlerin kendi gizlilik politikaları ve kullanım koşulları geçerlidir.</p>
+        </section>
 
-      <section>
-        <h2 class="text-xl font-bold text-gray-900 mb-3" data-i18n="s9_title">9. Degisiklikler</h2>
-        <p class="text-gray-600 leading-relaxed" data-i18n="s9_text">Bu kullanim kosullarini zaman zaman guncelleyebiliriz. Onemli degisiklikler yapildiginda, uygulama ici bildirim veya e-posta yoluyla sizi bilgilendireceğiz. Guncellenmis kosullar bu sayfada yayinlandigi anda yururluge girer. Degisikliklerden sonra uygulamayi kullanmaya devam etmeniz, yeni kosullari kabul ettiginiz anlamina gelir.</p>
-      </section>
+        <section class="content-section">
+          <h2 class="section-heading" data-i18n="s9_title">9. Değişiklikler</h2>
+          <p class="section-text" data-i18n="s9_text">Bu kullanım koşullarını zaman zaman güncelleyebiliriz. Önemli değişiklikler yapıldığında, uygulama içi bildirim veya e-posta yoluyla sizi bilgilendireceğiz. Güncellenmiş koşullar bu sayfada yayınlandığı anda yürürlüğe girer. Değişikliklerden sonra uygulamayı kullanmaya devam etmeniz, yeni koşulları kabul ettiğiniz anlamına gelir.</p>
+        </section>
 
-      <section>
-        <h2 class="text-xl font-bold text-gray-900 mb-3" data-i18n="s10_title">10. Gizlilik</h2>
-        <p class="text-gray-600 leading-relaxed" data-i18n="s10_text">Kisisel verilerinizin toplanmasi, kullanilmasi ve korunmasi hakkinda detayli bilgi icin Gizlilik Politikamizi inceleyiniz:</p>
-        <p class="mt-2"><a href="privacy-policy.html" class="text-primary-600 hover:text-primary-800 underline font-medium">Gizlilik Politikasi</a></p>
-      </section>
-
-      <section>
-        <h2 class="text-xl font-bold text-gray-900 mb-3" data-i18n="s11_title">11. Uygulanacak Hukuk</h2>
-        <p class="text-gray-600 leading-relaxed" data-i18n="s11_text">Bu sozlesme Turkiye Cumhuriyeti yasalarina tabidir. Uyusmazliklar Turkiye mahkemelerinde cozumlenecektir.</p>
-      </section>
-
-      <section>
-        <h2 class="text-xl font-bold text-gray-900 mb-3" data-i18n="s12_title">12. Iletisim</h2>
-        <p class="text-gray-600 leading-relaxed" data-i18n="s12_text">Kullanim kosullari hakkinda sorulariniz veya talepleriniz icin bizimle iletisime gecebilirsiniz:</p>
-        <div class="mt-4 p-4 bg-primary-50 rounded-xl border border-primary-100">
-          <p class="text-gray-700">
-            <strong>E-posta:</strong> <a href="mailto:support@budgiebreedingtracker.online" class="text-primary-600 hover:text-primary-800 underline">support@budgiebreedingtracker.online</a>
+        <section class="content-section">
+          <h2 class="section-heading" data-i18n="s10_title">10. Gizlilik</h2>
+          <p class="section-text" data-i18n="s10_text">Kişisel verilerinizin toplanması, kullanılması ve korunması hakkında detaylı bilgi için Gizlilik Politikamızı inceleyiniz:</p>
+          <p class="privacy-link-wrap">
+            <a href="privacy-policy.html" class="content-link">Gizlilik Politikası</a>
           </p>
-          <p class="text-gray-700 mt-1">
-            <strong>Web:</strong> <a href="https://budgiebreedingtracker.online" class="text-primary-600 hover:text-primary-800 underline">budgiebreedingtracker.online</a>
-          </p>
-        </div>
-      </section>
+        </section>
 
+        <section class="content-section">
+          <h2 class="section-heading" data-i18n="s11_title">11. Uygulanacak Hukuk</h2>
+          <p class="section-text" data-i18n="s11_text">Bu sözleşme Türkiye Cumhuriyeti yasalarına tabidir. Uyuşmazlıklar Türkiye mahkemelerinde çözümlenecektir.</p>
+        </section>
+
+        <section class="content-section">
+          <h2 class="section-heading" data-i18n="s12_title">12. İletişim</h2>
+          <p class="section-text" data-i18n="s12_text">Kullanım koşulları hakkında sorularınız veya talepleriniz için bizimle iletişime geçebilirsiniz:</p>
+          <div class="contact-box">
+            <p>
+              <strong>E-posta:</strong>
+              <a href="mailto:support@budgiebreedingtracker.online">support@budgiebreedingtracker.online</a>
+            </p>
+            <p>
+              <strong>Web:</strong>
+              <a href="https://budgiebreedingtracker.online">budgiebreedingtracker.online</a>
+            </p>
+          </div>
+        </section>
+
+      </div>
     </div>
+
   </main>
 
   <!-- Footer -->
-  <footer class="bg-white border-t border-gray-100 mt-16">
-    <div class="max-w-4xl mx-auto px-6 py-8 text-center">
-      <p class="text-gray-400 text-sm" data-i18n="footer">&copy; 2025-2026 BudgieBreedingTracker. Tum haklari saklidir.</p>
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p class="footer-text" data-i18n="footer">&copy; 2025-2026 BudgieBreedingTracker. Tüm hakları saklıdır.</p>
     </div>
   </footer>
 
   <script>
     const translations = {
       tr: {
-        back: '← Ana Sayfa',
+        back: '\u2190 Ana Sayfa',
         title: 'Kullan\u0131m Ko\u015fullar\u0131 (EULA)',
         last_updated: 'Son g\u00fcncelleme: 17 Mart 2026',
         s1_title: '1. S\u00f6zle\u015fmenin Kabul\u00fc',
@@ -201,11 +713,11 @@
         s2_text: 'Size bu uygulamay\u0131 ki\u015fisel ve ticari olmayan ama\u00e7larla, sahip oldu\u011funuz veya kontrol etti\u011finiz Apple markal\u0131 cihazlarda kullanmak \u00fczere s\u0131n\u0131rl\u0131, geri al\u0131nabilir, m\u00fcnhas\u0131r olmayan ve devredilemez bir lisans verilmektedir. Bu lisans, Apple\'\u0131n App Store Kullan\u0131m Ko\u015fullar\u0131\'nda belirtilen Kullan\u0131m Kurallar\u0131\'na uygun olmak zorundad\u0131r.',
         s3_title: '3. Abonelik Ko\u015fullar\u0131',
         s3_intro: 'Uygulama, a\u015fa\u011f\u0131daki otomatik yenilenen abonelik planlar\u0131 ve tek seferlik sat\u0131n alma se\u00e7ene\u011fi sunmaktad\u0131r:',
-        s3_plans: '<ul class="list-disc list-inside text-gray-600 space-y-1 ml-2"><li><strong>Ayl\u0131k Plan:</strong> Ayl\u0131k otomatik yenilenir. 7 g\u00fcnl\u00fck \u00fccretsiz deneme s\u00fcresi dahildir.</li><li><strong>Y\u0131ll\u0131k Plan:</strong> Y\u0131ll\u0131k otomatik yenilenir. 7 g\u00fcnl\u00fck \u00fccretsiz deneme s\u00fcresi dahildir.</li><li><strong>\u00d6m\u00fcr Boyu:</strong> Tek seferlik \u00f6deme, abonelik yenilemesi yoktur.</li></ul>',
-        s3_billing: '<p class="text-gray-700 leading-relaxed"><strong>\u00d6deme:</strong> Sat\u0131n alma onay\u0131nda Apple ID hesab\u0131n\u0131zdan tahsil edilir.</p><p class="text-gray-700 leading-relaxed mt-2"><strong>Yenileme:</strong> Abonelik, mevcut d\u00f6nemin bitmesinden en az 24 saat \u00f6nce iptal edilmezse otomatik olarak yenilenir. Yenileme \u00fccreti, mevcut d\u00f6nemin bitiminden \u00f6nceki 24 saat i\u00e7inde hesab\u0131n\u0131zdan tahsil edilir.</p><p class="text-gray-700 leading-relaxed mt-2"><strong>\u00dccretsiz Deneme:</strong> \u00dccretsiz deneme s\u00fcreniz, abonelik sat\u0131n ald\u0131\u011f\u0131n\u0131zda kullan\u0131lmayan k\u0131sm\u0131 ge\u00e7erlili\u011fini yitirir.</p><p class="text-gray-700 leading-relaxed mt-2"><strong>Y\u00f6netim ve \u0130ptal:</strong> Aboneli\u011finizi sat\u0131n alma sonras\u0131nda cihaz\u0131n\u0131zda Ayarlar &gt; Apple ID &gt; Abonelikler \u00fczerinden y\u00f6netebilir ve iptal edebilirsiniz.</p>',
+        s3_plans: '<ul><li><strong>Ayl\u0131k Plan:</strong> Ayl\u0131k otomatik yenilenir. 7 g\u00fcnl\u00fck \u00fccretsiz deneme s\u00fcresi dahildir.</li><li><strong>Y\u0131ll\u0131k Plan:</strong> Y\u0131ll\u0131k otomatik yenilenir. 7 g\u00fcnl\u00fck \u00fccretsiz deneme s\u00fcresi dahildir.</li><li><strong>\u00d6m\u00fcr Boyu:</strong> Tek seferlik \u00f6deme, abonelik yenilemesi yoktur.</li></ul>',
+        s3_billing: '<p><strong>\u00d6deme:</strong> Sat\u0131n alma onay\u0131nda Apple ID hesab\u0131n\u0131zdan tahsil edilir.</p><p><strong>Yenileme:</strong> Abonelik, mevcut d\u00f6nemin bitmesinden en az 24 saat \u00f6nce iptal edilmezse otomatik olarak yenilenir. Yenileme \u00fccreti, mevcut d\u00f6nemin bitiminden \u00f6nceki 24 saat i\u00e7inde hesab\u0131n\u0131zdan tahsil edilir.</p><p><strong>\u00dccretsiz Deneme:</strong> \u00dccretsiz deneme s\u00fcreniz, abonelik sat\u0131n ald\u0131\u011f\u0131n\u0131zda kullan\u0131lmayan k\u0131sm\u0131 ge\u00e7erlili\u011fini yitirir.</p><p><strong>Y\u00f6netim ve \u0130ptal:</strong> Aboneli\u011finizi sat\u0131n alma sonras\u0131nda cihaz\u0131n\u0131zda Ayarlar &gt; Apple ID &gt; Abonelikler \u00fczerinden y\u00f6netebilir ve iptal edebilirsiniz.</p>',
         s4_title: '4. Kullan\u0131m Kurallar\u0131',
         s4_intro: 'Uygulamay\u0131 kullan\u0131rken a\u015fa\u011f\u0131daki kurallara uymay\u0131 kabul edersiniz:',
-        s4_list: '<ul class="list-disc list-inside text-gray-600 space-y-1 ml-2"><li>Uygulamay\u0131 yaln\u0131zca yasal ama\u00e7larla kullanmak</li><li>Ba\u015fka kullan\u0131c\u0131lar\u0131n haklar\u0131na sayg\u0131l\u0131 olmak</li><li>Topluluk \u00f6zelliklerinde k\u00fcf\u00fcr, nefret s\u00f6ylemi veya uygunsuz i\u00e7erik payla\u015fmamak</li><li>Uygulamay\u0131 tersine m\u00fchendislik, decompile veya kaynak kodunu \u00e7\u0131karma giri\u015fimlerinde bulunmamak</li><li>Uygulaman\u0131n g\u00fcvenlik \u00f6nlemlerini atlatma giri\u015fiminde bulunmamak</li><li>Spam, k\u00f6t\u00fc ama\u00e7l\u0131 yaz\u0131l\u0131m veya zararl\u0131 i\u00e7erik y\u00fcklememek</li></ul>',
+        s4_list: '<ul><li>Uygulamay\u0131 yaln\u0131zca yasal ama\u00e7larla kullanmak</li><li>Ba\u015fka kullan\u0131c\u0131lar\u0131n haklar\u0131na sayg\u0131l\u0131 olmak</li><li>Topluluk \u00f6zelliklerinde k\u00fcf\u00fcr, nefret s\u00f6ylemi veya uygunsuz i\u00e7erik payla\u015fmamak</li><li>Uygulamay\u0131 tersine m\u00fchendislik, decompile veya kaynak kodunu \u00e7\u0131karma giri\u015fimlerinde bulunmamak</li><li>Uygulaman\u0131n g\u00fcvenlik \u00f6nlemlerini atlatma giri\u015fiminde bulunmamak</li><li>Spam, k\u00f6t\u00fc ama\u00e7l\u0131 yaz\u0131l\u0131m veya zararl\u0131 i\u00e7erik y\u00fcklememek</li></ul>',
         s5_title: '5. Fikri M\u00fclkiyet',
         s5_text: 'Uygulama ve i\u00e7indeki t\u00fcm i\u00e7erik (tasar\u0131m, kod, grafikler, ikonlar, metinler) telif hakk\u0131 ile korunmaktad\u0131r. Uygulamadaki kullan\u0131c\u0131 taraf\u0131ndan olu\u015fturulan i\u00e7eriklerin (ku\u015f kay\u0131tlar\u0131, foto\u011fraflar vb.) m\u00fclkiyet hakk\u0131 kullan\u0131c\u0131ya aittir. Uygulama size bu i\u00e7erikleri depolama ve i\u015fleme konusunda s\u0131n\u0131rl\u0131 bir lisans vermektedir.',
         s6_title: '6. Sorumluluk S\u0131n\u0131rlamas\u0131',
@@ -214,7 +726,7 @@
         s7_text: 'Hesab\u0131n\u0131z\u0131 istedi\u011finiz zaman uygulama i\u00e7inden silebilirsiniz (Profil > Hesab\u0131 Sil). Hesab\u0131n\u0131z silindi\u011finde t\u00fcm ki\u015fisel verileriniz, ku\u015f kay\u0131tlar\u0131n\u0131z, foto\u011fraflar\u0131n\u0131z ve yedekleriniz 30 g\u00fcn i\u00e7inde kal\u0131c\u0131 olarak kald\u0131r\u0131l\u0131r. Aktif bir aboneli\u011finiz varsa, hesab\u0131n\u0131z\u0131 silmeden \u00f6nce aboneli\u011finizi iptal etmeniz gerekmektedir. Bu ko\u015fullar\u0131 ihlal etmeniz durumunda hesab\u0131n\u0131z uyar\u0131 yap\u0131lmaks\u0131z\u0131n ask\u0131ya al\u0131nabilir veya sonland\u0131r\u0131labilir.',
         s8_title: '8. \u00dc\u00e7\u00fcnc\u00fc Taraf Hizmetleri',
         s8_intro: 'Uygulama a\u015fa\u011f\u0131daki \u00fc\u00e7\u00fcnc\u00fc taraf hizmetlerini kullanmaktad\u0131r:',
-        s8_list: '<ul class="list-disc list-inside text-gray-600 space-y-1 ml-2"><li><strong>Supabase:</strong> Kimlik do\u011frulama ve veri senkronizasyonu</li><li><strong>RevenueCat:</strong> Abonelik ve sat\u0131n alma y\u00f6netimi</li><li><strong>Sentry:</strong> Hata raporlama ve performans izleme</li><li><strong>Google AdMob:</strong> Reklam g\u00f6sterimi (\u00fccretsiz s\u00fcr\u00fcmde)</li></ul>',
+        s8_list: '<ul><li><strong>Supabase:</strong> Kimlik do\u011frulama ve veri senkronizasyonu</li><li><strong>RevenueCat:</strong> Abonelik ve sat\u0131n alma y\u00f6netimi</li><li><strong>Sentry:</strong> Hata raporlama ve performans izleme</li><li><strong>Google AdMob:</strong> Reklam g\u00f6sterimi (\u00fccretsiz s\u00fcr\u00fcmde)</li></ul>',
         s8_note: 'Bu hizmetlerin kendi gizlilik politikalar\u0131 ve kullan\u0131m ko\u015fullar\u0131 ge\u00e7erlidir.',
         s9_title: '9. De\u011fi\u015fiklikler',
         s9_text: 'Bu kullan\u0131m ko\u015fullar\u0131n\u0131 zaman zaman g\u00fcncelleyebiliriz. \u00d6nemli de\u011fi\u015fiklikler yap\u0131ld\u0131\u011f\u0131nda, uygulama i\u00e7i bildirim veya e-posta yoluyla sizi bilgilendirece\u011fiz. G\u00fcncellenmi\u015f ko\u015fullar bu sayfada yay\u0131nland\u0131\u011f\u0131 anda y\u00fcr\u00fcrl\u00fc\u011fe girer. De\u011fi\u015fikliklerden sonra uygulamay\u0131 kullanmaya devam etmeniz, yeni ko\u015fullar\u0131 kabul etti\u011finiz anlam\u0131na gelir.',
@@ -224,10 +736,10 @@
         s11_text: 'Bu s\u00f6zle\u015fme T\u00fcrkiye Cumhuriyeti yasalar\u0131na tabidir. Uyu\u015fmazl\u0131klar T\u00fcrkiye mahkemelerinde \u00e7\u00f6z\u00fcmlenecektir.',
         s12_title: '12. \u0130leti\u015fim',
         s12_text: 'Kullan\u0131m ko\u015fullar\u0131 hakk\u0131nda sorular\u0131n\u0131z veya talepleriniz i\u00e7in bizimle ileti\u015fime ge\u00e7ebilirsiniz:',
-        footer: '© 2025-2026 BudgieBreedingTracker. T\u00fcm haklar\u0131 sakl\u0131d\u0131r.',
+        footer: '\u00a9 2025-2026 BudgieBreedingTracker. T\u00fcm haklar\u0131 sakl\u0131d\u0131r.',
       },
       en: {
-        back: '← Home',
+        back: '\u2190 Home',
         title: 'Terms of Use (EULA)',
         last_updated: 'Last updated: March 17, 2026',
         s1_title: '1. Acceptance of Agreement',
@@ -236,11 +748,11 @@
         s2_text: 'You are granted a limited, revocable, non-exclusive, and non-transferable license to use this App for personal, non-commercial purposes on Apple-branded devices that you own or control. This license is subject to the Usage Rules set forth in the Apple App Store Terms of Service.',
         s3_title: '3. Subscription Terms',
         s3_intro: 'The App offers the following auto-renewable subscription plans and a one-time purchase option:',
-        s3_plans: '<ul class="list-disc list-inside text-gray-600 space-y-1 ml-2"><li><strong>Monthly Plan:</strong> Auto-renews monthly. Includes a 7-day free trial.</li><li><strong>Yearly Plan:</strong> Auto-renews annually. Includes a 7-day free trial.</li><li><strong>Lifetime:</strong> One-time payment, no subscription renewal.</li></ul>',
-        s3_billing: '<p class="text-gray-700 leading-relaxed"><strong>Payment:</strong> Payment will be charged to your Apple ID account at the confirmation of purchase.</p><p class="text-gray-700 leading-relaxed mt-2"><strong>Renewal:</strong> Subscription automatically renews unless it is canceled at least 24 hours before the end of the current period. Your account will be charged for renewal within 24 hours prior to the end of the current period.</p><p class="text-gray-700 leading-relaxed mt-2"><strong>Free Trial:</strong> Any unused portion of a free trial period will be forfeited when you purchase a subscription.</p><p class="text-gray-700 leading-relaxed mt-2"><strong>Management &amp; Cancellation:</strong> You can manage and cancel your subscriptions by going to your device Settings &gt; Apple ID &gt; Subscriptions after purchase.</p>',
+        s3_plans: '<ul><li><strong>Monthly Plan:</strong> Auto-renews monthly. Includes a 7-day free trial.</li><li><strong>Yearly Plan:</strong> Auto-renews annually. Includes a 7-day free trial.</li><li><strong>Lifetime:</strong> One-time payment, no subscription renewal.</li></ul>',
+        s3_billing: '<p><strong>Payment:</strong> Payment will be charged to your Apple ID account at the confirmation of purchase.</p><p><strong>Renewal:</strong> Subscription automatically renews unless it is canceled at least 24 hours before the end of the current period. Your account will be charged for renewal within 24 hours prior to the end of the current period.</p><p><strong>Free Trial:</strong> Any unused portion of a free trial period will be forfeited when you purchase a subscription.</p><p><strong>Management &amp; Cancellation:</strong> You can manage and cancel your subscriptions by going to your device Settings &gt; Apple ID &gt; Subscriptions after purchase.</p>',
         s4_title: '4. Usage Rules',
         s4_intro: 'By using the App, you agree to the following rules:',
-        s4_list: '<ul class="list-disc list-inside text-gray-600 space-y-1 ml-2"><li>Use the App only for lawful purposes</li><li>Respect the rights of other users</li><li>Not share profanity, hate speech, or inappropriate content in community features</li><li>Not attempt to reverse engineer, decompile, or extract source code from the App</li><li>Not attempt to circumvent the App\'s security measures</li><li>Not upload spam, malware, or harmful content</li></ul>',
+        s4_list: '<ul><li>Use the App only for lawful purposes</li><li>Respect the rights of other users</li><li>Not share profanity, hate speech, or inappropriate content in community features</li><li>Not attempt to reverse engineer, decompile, or extract source code from the App</li><li>Not attempt to circumvent the App\'s security measures</li><li>Not upload spam, malware, or harmful content</li></ul>',
         s5_title: '5. Intellectual Property',
         s5_text: 'The App and all its content (design, code, graphics, icons, text) are protected by copyright. User-generated content (bird records, photos, etc.) remains the property of the user. The App grants you a limited license to store and process this content.',
         s6_title: '6. Limitation of Liability',
@@ -249,7 +761,7 @@
         s7_text: 'You can delete your account at any time from within the App (Profile > Delete Account). When your account is deleted, all your personal data, bird records, photos, and backups will be permanently removed within 30 days. If you have an active subscription, you must cancel it before deleting your account. If you violate these terms, your account may be suspended or terminated without notice.',
         s8_title: '8. Third-Party Services',
         s8_intro: 'The App uses the following third-party services:',
-        s8_list: '<ul class="list-disc list-inside text-gray-600 space-y-1 ml-2"><li><strong>Supabase:</strong> Authentication and data synchronization</li><li><strong>RevenueCat:</strong> Subscription and purchase management</li><li><strong>Sentry:</strong> Error reporting and performance monitoring</li><li><strong>Google AdMob:</strong> Ad serving (in free version)</li></ul>',
+        s8_list: '<ul><li><strong>Supabase:</strong> Authentication and data synchronization</li><li><strong>RevenueCat:</strong> Subscription and purchase management</li><li><strong>Sentry:</strong> Error reporting and performance monitoring</li><li><strong>Google AdMob:</strong> Ad serving (in free version)</li></ul>',
         s8_note: 'These services have their own privacy policies and terms of use.',
         s9_title: '9. Changes',
         s9_text: 'We may update these terms of use from time to time. When significant changes are made, we will notify you via in-app notification or email. Updated terms take effect as soon as they are published on this page. Your continued use of the App after changes constitutes acceptance of the new terms.',
@@ -259,10 +771,10 @@
         s11_text: 'This agreement is governed by the laws of the Republic of Turkey. Disputes will be resolved in Turkish courts.',
         s12_title: '12. Contact',
         s12_text: 'If you have any questions or requests regarding these terms of use, you can contact us:',
-        footer: '© 2025-2026 BudgieBreedingTracker. All rights reserved.',
+        footer: '\u00a9 2025-2026 BudgieBreedingTracker. All rights reserved.',
       },
       de: {
-        back: '← Startseite',
+        back: '\u2190 Startseite',
         title: 'Nutzungsbedingungen (EULA)',
         last_updated: 'Letzte Aktualisierung: 17. M\u00e4rz 2026',
         s1_title: '1. Annahme der Vereinbarung',
@@ -271,11 +783,11 @@
         s2_text: 'Ihnen wird eine beschr\u00e4nkte, widerrufbare, nicht-exklusive und nicht \u00fcbertragbare Lizenz gew\u00e4hrt, diese App f\u00fcr pers\u00f6nliche, nicht-kommerzielle Zwecke auf Apple-Ger\u00e4ten zu verwenden, die Sie besitzen oder kontrollieren. Diese Lizenz unterliegt den Nutzungsregeln der Apple App Store Nutzungsbedingungen.',
         s3_title: '3. Abonnementbedingungen',
         s3_intro: 'Die App bietet folgende automatisch verl\u00e4ngernde Abonnementpl\u00e4ne und eine einmalige Kaufoption:',
-        s3_plans: '<ul class="list-disc list-inside text-gray-600 space-y-1 ml-2"><li><strong>Monatsplan:</strong> Verl\u00e4ngert sich monatlich automatisch. Inklusive 7-t\u00e4giger kostenloser Testphase.</li><li><strong>Jahresplan:</strong> Verl\u00e4ngert sich j\u00e4hrlich automatisch. Inklusive 7-t\u00e4giger kostenloser Testphase.</li><li><strong>Lebenslang:</strong> Einmalzahlung, keine Abonnementverl\u00e4ngerung.</li></ul>',
-        s3_billing: '<p class="text-gray-700 leading-relaxed"><strong>Zahlung:</strong> Die Zahlung wird bei Kaufbest\u00e4tigung Ihrem Apple-ID-Konto belastet.</p><p class="text-gray-700 leading-relaxed mt-2"><strong>Verl\u00e4ngerung:</strong> Das Abonnement verl\u00e4ngert sich automatisch, sofern es nicht mindestens 24 Stunden vor Ablauf des aktuellen Zeitraums gek\u00fcndigt wird. Die Verl\u00e4ngerungsgeb\u00fchr wird innerhalb von 24 Stunden vor Ablauf des aktuellen Zeitraums berechnet.</p><p class="text-gray-700 leading-relaxed mt-2"><strong>Kostenlose Testphase:</strong> Ein nicht genutzter Teil der kostenlosen Testphase verf\u00e4llt beim Kauf eines Abonnements.</p><p class="text-gray-700 leading-relaxed mt-2"><strong>Verwaltung &amp; K\u00fcndigung:</strong> Sie k\u00f6nnen Ihre Abonnements nach dem Kauf unter Einstellungen &gt; Apple ID &gt; Abonnements verwalten und k\u00fcndigen.</p>',
+        s3_plans: '<ul><li><strong>Monatsplan:</strong> Verl\u00e4ngert sich monatlich automatisch. Inklusive 7-t\u00e4giger kostenloser Testphase.</li><li><strong>Jahresplan:</strong> Verl\u00e4ngert sich j\u00e4hrlich automatisch. Inklusive 7-t\u00e4giger kostenloser Testphase.</li><li><strong>Lebenslang:</strong> Einmalzahlung, keine Abonnementverl\u00e4ngerung.</li></ul>',
+        s3_billing: '<p><strong>Zahlung:</strong> Die Zahlung wird bei Kaufbest\u00e4tigung Ihrem Apple-ID-Konto belastet.</p><p><strong>Verl\u00e4ngerung:</strong> Das Abonnement verl\u00e4ngert sich automatisch, sofern es nicht mindestens 24 Stunden vor Ablauf des aktuellen Zeitraums gek\u00fcndigt wird. Die Verl\u00e4ngerungsgeb\u00fchr wird innerhalb von 24 Stunden vor Ablauf des aktuellen Zeitraums berechnet.</p><p><strong>Kostenlose Testphase:</strong> Ein nicht genutzter Teil der kostenlosen Testphase verf\u00e4llt beim Kauf eines Abonnements.</p><p><strong>Verwaltung &amp; K\u00fcndigung:</strong> Sie k\u00f6nnen Ihre Abonnements nach dem Kauf unter Einstellungen &gt; Apple ID &gt; Abonnements verwalten und k\u00fcndigen.</p>',
         s4_title: '4. Nutzungsregeln',
         s4_intro: 'Bei der Nutzung der App stimmen Sie folgenden Regeln zu:',
-        s4_list: '<ul class="list-disc list-inside text-gray-600 space-y-1 ml-2"><li>Die App nur f\u00fcr legale Zwecke verwenden</li><li>Die Rechte anderer Benutzer respektieren</li><li>Keine Beleidigungen, Hassreden oder unangemessene Inhalte in Community-Funktionen teilen</li><li>Keine Reverse-Engineering-, Dekompilierungs- oder Quellcode-Extraktionsversuche unternehmen</li><li>Keine Versuche unternehmen, Sicherheitsma\u00dfnahmen der App zu umgehen</li><li>Keinen Spam, Malware oder sch\u00e4dliche Inhalte hochladen</li></ul>',
+        s4_list: '<ul><li>Die App nur f\u00fcr legale Zwecke verwenden</li><li>Die Rechte anderer Benutzer respektieren</li><li>Keine Beleidigungen, Hassreden oder unangemessene Inhalte in Community-Funktionen teilen</li><li>Keine Reverse-Engineering-, Dekompilierungs- oder Quellcode-Extraktionsversuche unternehmen</li><li>Keine Versuche unternehmen, Sicherheitsma\u00dfnahmen der App zu umgehen</li><li>Keinen Spam, Malware oder sch\u00e4dliche Inhalte hochladen</li></ul>',
         s5_title: '5. Geistiges Eigentum',
         s5_text: 'Die App und alle ihre Inhalte (Design, Code, Grafiken, Icons, Texte) sind urheberrechtlich gesch\u00fctzt. Benutzererstellte Inhalte (Vogelaufzeichnungen, Fotos usw.) bleiben Eigentum des Benutzers. Die App gew\u00e4hrt Ihnen eine beschr\u00e4nkte Lizenz zur Speicherung und Verarbeitung dieser Inhalte.',
         s6_title: '6. Haftungsbeschr\u00e4nkung',
@@ -284,7 +796,7 @@
         s7_text: 'Sie k\u00f6nnen Ihr Konto jederzeit \u00fcber die App l\u00f6schen (Profil > Konto l\u00f6schen). Bei Kontol\u00f6schung werden alle Ihre pers\u00f6nlichen Daten, Vogelaufzeichnungen, Fotos und Backups innerhalb von 30 Tagen dauerhaft entfernt. Wenn Sie ein aktives Abonnement haben, m\u00fcssen Sie es vor der Kontol\u00f6schung k\u00fcndigen. Bei Versto\u00df gegen diese Bedingungen kann Ihr Konto ohne Vorwarnung gesperrt oder gek\u00fcndigt werden.',
         s8_title: '8. Drittanbieterdienste',
         s8_intro: 'Die App verwendet folgende Drittanbieterdienste:',
-        s8_list: '<ul class="list-disc list-inside text-gray-600 space-y-1 ml-2"><li><strong>Supabase:</strong> Authentifizierung und Datensynchronisierung</li><li><strong>RevenueCat:</strong> Abonnement- und Kaufverwaltung</li><li><strong>Sentry:</strong> Fehlerberichterstattung und Leistungs\u00fcberwachung</li><li><strong>Google AdMob:</strong> Anzeigenbereitstellung (in der kostenlosen Version)</li></ul>',
+        s8_list: '<ul><li><strong>Supabase:</strong> Authentifizierung und Datensynchronisierung</li><li><strong>RevenueCat:</strong> Abonnement- und Kaufverwaltung</li><li><strong>Sentry:</strong> Fehlerberichterstattung und Leistungs\u00fcberwachung</li><li><strong>Google AdMob:</strong> Anzeigenbereitstellung (in der kostenlosen Version)</li></ul>',
         s8_note: 'Diese Dienste haben ihre eigenen Datenschutzrichtlinien und Nutzungsbedingungen.',
         s9_title: '9. \u00c4nderungen',
         s9_text: 'Wir k\u00f6nnen diese Nutzungsbedingungen von Zeit zu Zeit aktualisieren. Bei wesentlichen \u00c4nderungen werden wir Sie per In-App-Benachrichtigung oder E-Mail informieren. Aktualisierte Bedingungen treten in Kraft, sobald sie auf dieser Seite ver\u00f6ffentlicht werden. Ihre weitere Nutzung der App nach \u00c4nderungen gilt als Zustimmung zu den neuen Bedingungen.',
@@ -294,7 +806,7 @@
         s11_text: 'Diese Vereinbarung unterliegt den Gesetzen der Republik T\u00fcrkei. Streitigkeiten werden vor t\u00fcrkischen Gerichten beigelegt.',
         s12_title: '12. Kontakt',
         s12_text: 'Bei Fragen oder Anfragen zu diesen Nutzungsbedingungen k\u00f6nnen Sie uns kontaktieren:',
-        footer: '© 2025-2026 BudgieBreedingTracker. Alle Rechte vorbehalten.',
+        footer: '\u00a9 2025-2026 BudgieBreedingTracker. Alle Rechte vorbehalten.',
       },
     };
 

@@ -18,31 +18,54 @@
 <meta name="twitter:image" content="https://budgiebreedingtracker.online/og-image.svg">
 <link rel="icon" type="image/png" href="../logo.png">
 <link rel="canonical" href="https://budgiebreedingtracker.online/promo/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700;800;900&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
-
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
   :root {
-    --primary: #1565C0;
-    --primary-light: #42A5F5;
-    --accent: #FF9800;
-    --bg-dark: #0a1628;
-    --bg-gradient: linear-gradient(135deg, #0a1628 0%, #1a2a4a 50%, #0d2137 100%);
-    --text-white: #ffffff;
-    --text-light: rgba(255,255,255,0.8);
-    --green: #4CAF50;
-    --pink: #E91E63;
+    --forest-deep: #0C1F0F;
+    --forest-mid: #122318;
+    --leaf-dark: #1B4332;
+    --leaf-mid: #2D6A4F;
+    --leaf-light: #40916C;
+    --sage: #A3B899;
+    --sage-light: #C8D8C2;
+    --gold: #D4A853;
+    --gold-light: #E8C27A;
+    --gold-glow: #F0D080;
+    --cream: #F0EBD8;
+    --glass-bg: rgba(27, 67, 50, 0.25);
+    --glass-border: rgba(163, 184, 153, 0.2);
+    --glass-border-hover: rgba(212, 168, 83, 0.4);
+    --bg-gradient: linear-gradient(135deg, #0C1F0F 0%, #122318 50%, #091A0C 100%);
+    --red-soft: #e05c5c;
+    --red-x: #e84040;
+  }
+
+  /* ── NOISE TEXTURE ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+    opacity: 0.04;
+    pointer-events: none;
+    z-index: 1000;
+    mix-blend-mode: overlay;
   }
 
   body {
-    font-family: 'Inter', -apple-system, sans-serif;
-    background: var(--bg-dark);
-    color: var(--text-white);
+    font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+    background: var(--forest-deep);
+    color: var(--sage-light);
     overflow: hidden;
     width: 100vw;
     height: 100vh;
     position: relative;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   /* ===== GLOBAL SCENE CONTAINER ===== */
@@ -57,37 +80,57 @@
     opacity: 0;
     pointer-events: none;
     transition: none;
+    z-index: 2;
   }
   .scene.active {
     opacity: 1;
     pointer-events: auto;
   }
 
-  /* ===== BACKGROUND PARTICLES ===== */
+  /* ===== BACKGROUND PARTICLES (20 falling leaves/feathers) ===== */
   .particles {
     position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    z-index: 0;
+    inset: 0;
+    z-index: 1;
     overflow: hidden;
+    pointer-events: none;
   }
+
   .particle {
     position: absolute;
-    border-radius: 50%;
-    background: rgba(66, 165, 245, 0.15);
-    animation: float 20s infinite ease-in-out;
+    border-radius: 50% 0 50% 0;
+    animation: drift linear infinite;
+    opacity: 0;
+    top: -20px;
   }
-  .particle:nth-child(1) { width: 300px; height: 300px; top: 10%; left: -5%; animation-delay: 0s; }
-  .particle:nth-child(2) { width: 200px; height: 200px; top: 60%; right: -3%; animation-delay: -5s; background: rgba(255,152,0,0.1); }
-  .particle:nth-child(3) { width: 250px; height: 250px; bottom: 5%; left: 20%; animation-delay: -10s; }
-  .particle:nth-child(4) { width: 180px; height: 180px; top: 30%; right: 15%; animation-delay: -7s; background: rgba(233,30,99,0.08); }
 
-  @keyframes float {
-    0%, 100% { transform: translate(0, 0) scale(1); }
-    25% { transform: translate(30px, -30px) scale(1.05); }
-    50% { transform: translate(-20px, 20px) scale(0.95); }
-    75% { transform: translate(15px, 10px) scale(1.02); }
+  @keyframes drift {
+    0%   { transform: translateY(0)      rotate(0deg)   translateX(0);   opacity: 0; }
+    5%   { opacity: 0.8; }
+    90%  { opacity: 0.6; }
+    100% { transform: translateY(110vh)  rotate(360deg) translateX(40px); opacity: 0; }
   }
+
+  .particle:nth-child(1)  { left: 8%;   width: 12px; height: 18px; background: rgba(163,184,153,0.25); animation-duration: 18s; animation-delay: 0s;    }
+  .particle:nth-child(2)  { left: 16%;  width: 8px;  height: 12px; background: rgba(212,168,83,0.2);  animation-duration: 22s; animation-delay: -4s;   }
+  .particle:nth-child(3)  { left: 25%;  width: 15px; height: 22px; background: rgba(64,145,108,0.3);  animation-duration: 15s; animation-delay: -8s;   }
+  .particle:nth-child(4)  { left: 35%;  width: 6px;  height: 10px; background: rgba(163,184,153,0.2); animation-duration: 25s; animation-delay: -2s;   }
+  .particle:nth-child(5)  { left: 44%;  width: 10px; height: 16px; background: rgba(212,168,83,0.15); animation-duration: 20s; animation-delay: -12s;  }
+  .particle:nth-child(6)  { left: 55%;  width: 14px; height: 20px; background: rgba(64,145,108,0.25); animation-duration: 17s; animation-delay: -6s;   }
+  .particle:nth-child(7)  { left: 63%;  width: 7px;  height: 11px; background: rgba(163,184,153,0.3); animation-duration: 23s; animation-delay: -10s;  }
+  .particle:nth-child(8)  { left: 72%;  width: 11px; height: 17px; background: rgba(212,168,83,0.2);  animation-duration: 19s; animation-delay: -3s;   }
+  .particle:nth-child(9)  { left: 82%;  width: 9px;  height: 13px; background: rgba(45,106,79,0.3);   animation-duration: 21s; animation-delay: -7s;   }
+  .particle:nth-child(10) { left: 91%;  width: 13px; height: 19px; background: rgba(163,184,153,0.2); animation-duration: 16s; animation-delay: -15s;  }
+  .particle:nth-child(11) { left: 5%;   width: 5px;  height: 8px;  background: rgba(212,168,83,0.25); animation-duration: 24s; animation-delay: -9s;   }
+  .particle:nth-child(12) { left: 20%;  width: 16px; height: 10px; background: rgba(64,145,108,0.2);  animation-duration: 14s; animation-delay: -11s;  }
+  .particle:nth-child(13) { left: 38%;  width: 8px;  height: 14px; background: rgba(163,184,153,0.35);animation-duration: 26s; animation-delay: -5s;   }
+  .particle:nth-child(14) { left: 50%;  width: 12px; height: 8px;  background: rgba(212,168,83,0.15); animation-duration: 18s; animation-delay: -14s;  }
+  .particle:nth-child(15) { left: 68%;  width: 6px;  height: 10px; background: rgba(45,106,79,0.25);  animation-duration: 22s; animation-delay: -1s;   }
+  .particle:nth-child(16) { left: 78%;  width: 18px; height: 12px; background: rgba(163,184,153,0.2); animation-duration: 20s; animation-delay: -13s;  }
+  .particle:nth-child(17) { left: 88%;  width: 9px;  height: 15px; background: rgba(212,168,83,0.3);  animation-duration: 15s; animation-delay: -8s;   }
+  .particle:nth-child(18) { left: 30%;  width: 11px; height: 7px;  background: rgba(64,145,108,0.3);  animation-duration: 19s; animation-delay: -16s;  }
+  .particle:nth-child(19) { left: 57%;  width: 14px; height: 9px;  background: rgba(163,184,153,0.25);animation-duration: 23s; animation-delay: -4s;   }
+  .particle:nth-child(20) { left: 95%;  width: 7px;  height: 12px; background: rgba(212,168,83,0.2);  animation-duration: 17s; animation-delay: -18s;  }
 
   /* ===== SCENE 1: HOOK ===== */
   #scene1 { background: var(--bg-gradient); }
@@ -95,25 +138,27 @@
   .hook-emoji {
     font-size: min(120px, 15vh);
     animation: bounceIn 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-    filter: drop-shadow(0 20px 40px rgba(0,0,0,0.3));
+    filter: drop-shadow(0 20px 40px rgba(0,0,0,0.4));
   }
 
   .hook-title {
+    font-family: 'Outfit', sans-serif;
     font-size: min(56px, 7vh);
     font-weight: 900;
     text-align: center;
     margin-top: 24px;
     line-height: 1.2;
-    background: linear-gradient(135deg, #42A5F5, #FF9800);
+    background: linear-gradient(135deg, var(--leaf-light), var(--gold));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+    background-clip: text;
     animation: slideUp 0.6s ease-out 0.3s both;
   }
 
   .hook-subtitle {
     font-size: min(32px, 4vh);
     font-weight: 400;
-    color: var(--text-light);
+    color: var(--sage);
     margin-top: 16px;
     text-align: center;
     animation: slideUp 0.6s ease-out 0.5s both;
@@ -128,13 +173,14 @@
   }
 
   .problem-text {
+    font-family: 'Outfit', sans-serif;
     font-size: min(38px, 5vh);
     font-weight: 700;
     text-align: center;
     max-width: 80%;
     line-height: 1.4;
     margin-top: 30px;
-    color: #ff6b6b;
+    color: var(--red-soft);
   }
 
   .problem-items {
@@ -149,7 +195,7 @@
     align-items: center;
     gap: 16px;
     font-size: min(28px, 3.5vh);
-    color: var(--text-light);
+    color: var(--sage);
     animation: slideRight 0.5s ease-out both;
   }
   .problem-item:nth-child(1) { animation-delay: 0.3s; }
@@ -157,7 +203,7 @@
   .problem-item:nth-child(3) { animation-delay: 0.7s; }
 
   .problem-item .x-mark {
-    color: #ff4444;
+    color: var(--red-x);
     font-size: min(36px, 4.5vh);
     font-weight: 900;
   }
@@ -174,8 +220,9 @@
     width: min(220px, 30vh);
     height: min(220px, 30vh);
     border-radius: 48px;
-    box-shadow: 0 30px 80px rgba(21, 101, 192, 0.4),
-                0 0 120px rgba(66, 165, 245, 0.2);
+    box-shadow: 0 30px 80px rgba(27, 67, 50, 0.6),
+                0 0 120px rgba(64, 145, 108, 0.25);
+    border: 1px solid rgba(212, 168, 83, 0.25);
   }
 
   .logo-glow {
@@ -183,25 +230,26 @@
     top: -30px; left: -30px;
     width: calc(100% + 60px); height: calc(100% + 60px);
     border-radius: 60px;
-    background: radial-gradient(circle, rgba(66,165,245,0.3) 0%, transparent 70%);
+    background: radial-gradient(circle, rgba(64,145,108,0.35) 0%, transparent 70%);
     animation: pulse 2s ease-in-out infinite;
     z-index: -1;
   }
 
   .app-name {
+    font-family: 'Outfit', sans-serif;
     font-size: min(48px, 6vh);
     font-weight: 900;
     margin-top: 30px;
     text-align: center;
     letter-spacing: -1px;
   }
-  .app-name .budgie { color: var(--primary-light); }
-  .app-name .breeding { color: var(--accent); font-style: italic; }
-  .app-name .tracker { color: var(--text-white); }
+  .app-name .budgie { color: var(--leaf-light); }
+  .app-name .breeding { color: var(--gold); font-style: italic; }
+  .app-name .tracker { color: var(--sage-light); }
 
   .app-tagline {
     font-size: min(28px, 3.5vh);
-    color: var(--text-light);
+    color: var(--sage);
     margin-top: 12px;
     font-weight: 400;
   }
@@ -224,23 +272,30 @@
     letter-spacing: 2px;
     margin-bottom: 12px;
     animation: slideDown 0.5s ease-out both;
+    font-family: 'Outfit', sans-serif;
   }
-  .badge-blue { background: rgba(66,165,245,0.2); border: 2px solid rgba(66,165,245,0.4); color: var(--primary-light); }
-  .badge-orange { background: rgba(255,152,0,0.2); border: 2px solid rgba(255,152,0,0.4); color: var(--accent); }
-  .badge-green { background: rgba(76,175,80,0.2); border: 2px solid rgba(76,175,80,0.4); color: var(--green); }
-  .badge-pink { background: rgba(233,30,99,0.2); border: 2px solid rgba(233,30,99,0.4); color: var(--pink); }
+  /* badge-blue → leaf/sage theme */
+  .badge-blue  { background: rgba(64,145,108,0.18); border: 2px solid rgba(64,145,108,0.4);  color: var(--leaf-light); }
+  /* badge-orange → gold theme */
+  .badge-orange { background: rgba(212,168,83,0.15); border: 2px solid rgba(212,168,83,0.4); color: var(--gold-light); }
+  /* badge-green → deeper leaf */
+  .badge-green { background: rgba(45,106,79,0.2);  border: 2px solid rgba(45,106,79,0.45);   color: var(--sage-light); }
+  /* badge-pink → muted warm rose on forest */
+  .badge-pink  { background: rgba(200,90,90,0.15); border: 2px solid rgba(200,90,90,0.35);   color: #e89090; }
 
   .feature-title {
+    font-family: 'Outfit', sans-serif;
     font-size: min(36px, 4.5vh);
     font-weight: 900;
     text-align: center;
     margin-bottom: 8px;
+    color: var(--sage-light);
     animation: slideUp 0.5s ease-out 0.2s both;
   }
 
   .feature-desc {
     font-size: min(20px, 2.5vh);
-    color: var(--text-light);
+    color: var(--sage);
     text-align: center;
     max-width: 80%;
     line-height: 1.4;
@@ -253,11 +308,11 @@
     position: relative;
     width: min(240px, 30vw);
     height: min(500px, 55vh);
-    background: #000;
+    background: #050d07;
     border-radius: 32px;
     padding: 8px;
-    box-shadow: 0 30px 80px rgba(0,0,0,0.5),
-                0 0 0 2px rgba(255,255,255,0.1);
+    box-shadow: 0 30px 80px rgba(0,0,0,0.6),
+                0 0 0 2px rgba(163,184,153,0.15);
     animation: phoneSlideUp 0.7s ease-out 0.2s both;
   }
 
@@ -268,7 +323,7 @@
     transform: translateX(-50%);
     width: 100px;
     height: 22px;
-    background: #000;
+    background: #050d07;
     border-radius: 0 0 14px 14px;
     z-index: 10;
   }
@@ -301,10 +356,11 @@
     gap: 6px;
     padding: 8px 16px;
     border-radius: 20px;
-    background: rgba(255,255,255,0.08);
-    border: 1px solid rgba(255,255,255,0.15);
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
     font-size: min(16px, 2vh);
     font-weight: 600;
+    color: var(--sage-light);
   }
 
   /* ===== SCENE: DUAL PHONE ===== */
@@ -332,8 +388,8 @@
   }
 
   .feature-card {
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(255,255,255,0.1);
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
     border-radius: 16px;
     padding: 20px 16px;
     text-align: center;
@@ -342,7 +398,13 @@
     align-items: center;
     gap: 8px;
     animation: scaleIn 0.4s ease-out both;
-    transition: transform 0.3s;
+    transition: border-color 0.3s, box-shadow 0.3s;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+  .feature-card:hover {
+    border-color: var(--glass-border-hover);
+    box-shadow: 0 0 24px rgba(212,168,83,0.08);
   }
   .feature-card:nth-child(1) { animation-delay: 0.1s; }
   .feature-card:nth-child(2) { animation-delay: 0.2s; }
@@ -355,12 +417,14 @@
     font-size: min(42px, 5vh);
   }
   .feature-card-title {
+    font-family: 'Outfit', sans-serif;
     font-size: min(18px, 2.2vh);
     font-weight: 700;
+    color: var(--sage-light);
   }
   .feature-card-desc {
     font-size: min(14px, 1.8vh);
-    color: var(--text-light);
+    color: var(--sage);
     line-height: 1.3;
   }
 
@@ -371,21 +435,25 @@
     width: min(160px, 20vh);
     height: min(160px, 20vh);
     border-radius: 36px;
-    box-shadow: 0 30px 80px rgba(21,101,192,0.4);
+    box-shadow: 0 30px 80px rgba(27,67,50,0.5),
+                0 0 60px rgba(64,145,108,0.2);
+    border: 1px solid rgba(212,168,83,0.2);
     animation: bounceIn 0.8s cubic-bezier(0.68,-0.55,0.265,1.55);
   }
 
   .cta-title {
+    font-family: 'Outfit', sans-serif;
     font-size: min(42px, 5.5vh);
     font-weight: 900;
     text-align: center;
     margin-top: 24px;
     line-height: 1.3;
+    color: var(--sage-light);
   }
 
   .cta-subtitle {
     font-size: min(22px, 2.8vh);
-    color: var(--text-light);
+    color: var(--sage);
     margin-top: 10px;
     text-align: center;
   }
@@ -395,14 +463,23 @@
     padding: 16px 56px;
     font-size: min(26px, 3.2vh);
     font-weight: 800;
-    color: white;
-    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
-    border: none;
+    color: var(--gold-light);
+    background: linear-gradient(135deg, var(--leaf-mid) 0%, var(--leaf-dark) 100%);
+    border: 2px solid rgba(212,168,83,0.45);
     border-radius: 50px;
-    box-shadow: 0 16px 48px rgba(21,101,192,0.5);
+    box-shadow: 0 16px 48px rgba(27,67,50,0.5),
+                0 0 24px rgba(212,168,83,0.1);
     animation: pulse 2s ease-in-out infinite;
     cursor: pointer;
     letter-spacing: 1px;
+    font-family: 'Outfit', sans-serif;
+    transition: all 0.3s ease;
+  }
+  .cta-button:hover {
+    border-color: rgba(212,168,83,0.7);
+    box-shadow: 0 16px 48px rgba(27,67,50,0.5),
+                0 0 40px rgba(212,168,83,0.2);
+    color: var(--gold-glow);
   }
 
   .cta-features-row {
@@ -419,7 +496,7 @@
     gap: 4px;
   }
   .cta-feature-item span:first-child { font-size: min(36px, 4.5vh); }
-  .cta-feature-item span:last-child { font-size: min(16px, 2vh); color: var(--text-light); font-weight: 600; }
+  .cta-feature-item span:last-child  { font-size: min(16px, 2vh); color: var(--sage); font-weight: 600; }
 
   .cta-langs {
     margin-top: 24px;
@@ -430,9 +507,11 @@
   .lang-badge {
     padding: 6px 20px;
     border-radius: 16px;
-    background: rgba(255,255,255,0.1);
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
     font-size: min(20px, 2.5vh);
     font-weight: 700;
+    color: var(--sage-light);
   }
 
   /* ===== PROGRESS BAR ===== */
@@ -441,7 +520,7 @@
     bottom: 0;
     left: 0;
     height: 8px;
-    background: linear-gradient(90deg, var(--primary-light), var(--accent));
+    background: linear-gradient(90deg, var(--leaf-light), var(--gold));
     z-index: 100;
     transition: width 0.5s ease-out;
     border-radius: 0 4px 0 0;
@@ -462,12 +541,12 @@
     width: 14px;
     height: 14px;
     border-radius: 50%;
-    background: rgba(255,255,255,0.2);
+    background: rgba(163,184,153,0.2);
     transition: all 0.3s;
   }
   .scene-dot.active {
-    background: var(--primary-light);
-    box-shadow: 0 0 12px rgba(66,165,245,0.6);
+    background: var(--gold);
+    box-shadow: 0 0 12px rgba(212,168,83,0.6);
     transform: scale(1.4);
   }
 
@@ -535,21 +614,25 @@
     padding: 10px 24px;
     font-size: 14px;
     font-weight: 700;
-    border: 2px solid rgba(255,255,255,0.3);
+    border: 2px solid var(--glass-border);
     border-radius: 40px;
-    background: rgba(0,0,0,0.6);
-    color: white;
+    background: rgba(12, 31, 15, 0.75);
+    color: var(--sage-light);
     cursor: pointer;
     transition: all 0.2s;
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
   }
   .controls button:hover {
-    background: rgba(66,165,245,0.3);
-    border-color: var(--primary-light);
+    background: rgba(45,106,79,0.35);
+    border-color: var(--leaf-light);
+    color: var(--sage-light);
   }
   .controls button.active-btn {
-    background: var(--primary);
-    border-color: var(--primary-light);
+    background: var(--leaf-mid);
+    border-color: var(--gold);
+    color: var(--gold-light);
   }
 
   .controls .scene-counter {
@@ -558,12 +641,31 @@
     padding: 10px 16px;
     font-size: 14px;
     font-weight: 600;
-    color: var(--text-light);
+    color: var(--sage);
   }
 
+  /* Lang buttons inside controls */
+  .lang-btn {
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 600;
+    border: 1px solid var(--glass-border);
+    border-radius: 8px;
+    background: transparent;
+    color: var(--sage);
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .lang-btn:hover {
+    color: var(--gold-light);
+    background: rgba(212,168,83,0.1);
+  }
   .lang-btn.active-lang {
-    background: var(--primary) !important;
-    border-color: var(--primary-light) !important;
+    background: rgba(212,168,83,0.18) !important;
+    border-color: rgba(212,168,83,0.4) !important;
+    color: var(--gold-light) !important;
+    box-shadow: 0 0 0 1px rgba(212,168,83,0.3);
   }
 
   /* Hide controls during autoplay recording */
@@ -573,8 +675,24 @@
 </head>
 <body>
 
-<!-- Background particles -->
+<!-- Background particles (20 falling leaves/feathers) -->
 <div class="particles">
+  <div class="particle"></div>
+  <div class="particle"></div>
+  <div class="particle"></div>
+  <div class="particle"></div>
+  <div class="particle"></div>
+  <div class="particle"></div>
+  <div class="particle"></div>
+  <div class="particle"></div>
+  <div class="particle"></div>
+  <div class="particle"></div>
+  <div class="particle"></div>
+  <div class="particle"></div>
+  <div class="particle"></div>
+  <div class="particle"></div>
+  <div class="particle"></div>
+  <div class="particle"></div>
   <div class="particle"></div>
   <div class="particle"></div>
   <div class="particle"></div>

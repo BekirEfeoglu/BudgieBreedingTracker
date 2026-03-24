@@ -5,90 +5,783 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Topluluk Kurallari — BudgieBreedingTracker</title>
   <meta name="description" content="BudgieBreedingTracker topluluk kurallari ve icerik politikasi.">
-  <meta name="theme-color" content="#1E40AF">
-
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            primary: { 50: '#EFF6FF', 100: '#DBEAFE', 200: '#BFDBFE', 300: '#93C5FD', 400: '#60A5FA', 500: '#3B82F6', 600: '#2563EB', 700: '#1D4ED8', 800: '#1E40AF', 900: '#1E3A8A' },
-            accent: { 400: '#FBBF24', 500: '#F59E0B', 600: '#D97706' },
-            budgie: { 50: '#F0FDF4', 100: '#DCFCE7', 400: '#4ADE80', 500: '#22C55E', 600: '#16A34A' },
-          },
-          fontFamily: { sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'] },
-        },
-      },
-    }
-  </script>
+  <meta name="theme-color" content="#1B4332">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="icon" type="image/png" href="logo.png">
   <link rel="apple-touch-icon" href="logo.png">
 
   <style>
-    html { scroll-behavior: smooth; }
-    body { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
-    .gradient-text {
-      background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 40%, #22C55E 100%);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
-    .lang-btn { transition: all 0.2s ease; }
-    .lang-btn.active { background-color: #1E40AF; color: white; box-shadow: 0 2px 8px rgba(30, 64, 175, 0.3); }
-    .lang-btn:not(.active):hover { background-color: #E5E7EB; }
+
+    :root {
+      --forest-deep: #0C1F0F;
+      --forest-mid: #122318;
+      --leaf-dark: #1B4332;
+      --leaf-mid: #2D6A4F;
+      --leaf-light: #40916C;
+      --sage: #A3B899;
+      --sage-light: #C8D8C2;
+      --gold: #D4A853;
+      --gold-light: #E8C27A;
+      --gold-glow: #F0D080;
+      --glass-bg: rgba(27, 67, 50, 0.25);
+      --glass-border: rgba(163, 184, 153, 0.2);
+      --glass-border-hover: rgba(212, 168, 83, 0.4);
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+      background-color: var(--forest-deep);
+      color: var(--sage-light);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* ─── NOISE TEXTURE OVERLAY ─── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+      opacity: 0.04;
+      pointer-events: none;
+      z-index: 1000;
+      mix-blend-mode: overlay;
+    }
+
+    /* ─── LAYERED BACKGROUND ─── */
+    .bg-layer {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .bg-layer::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 20% 80%, rgba(27, 67, 50, 0.8) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 80% 20%, rgba(45, 106, 79, 0.4) 0%, transparent 55%),
+        radial-gradient(ellipse 100% 100% at 50% 50%, var(--forest-deep) 0%, #091A0C 100%);
+    }
+
+    .bg-layer::after {
+      content: '';
+      position: absolute;
+      top: -20%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 700px;
+      height: 700px;
+      background: radial-gradient(circle, rgba(212, 168, 83, 0.06) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+
+    /* ─── FLOATING PARTICLES ─── */
+    .particles {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 1;
+      overflow: hidden;
+    }
+
+    .particle {
+      position: absolute;
+      border-radius: 50% 0 50% 0;
+      animation: drift linear infinite;
+      opacity: 0;
+    }
+
+    .particle.leaf { border-radius: 0 100% 0 100%; }
+
+    .particle:nth-child(1)  { left: 8%;   width: 12px; height: 18px; background: rgba(163,184,153,0.25); animation-duration: 18s; animation-delay: 0s;    top: -20px; }
+    .particle:nth-child(2)  { left: 16%;  width: 8px;  height: 12px; background: rgba(212,168,83,0.2);  animation-duration: 22s; animation-delay: -4s;   top: -20px; }
+    .particle:nth-child(3)  { left: 25%;  width: 15px; height: 22px; background: rgba(64,145,108,0.3);  animation-duration: 15s; animation-delay: -8s;   top: -20px; }
+    .particle:nth-child(4)  { left: 35%;  width: 6px;  height: 10px; background: rgba(163,184,153,0.2); animation-duration: 25s; animation-delay: -2s;   top: -20px; }
+    .particle:nth-child(5)  { left: 44%;  width: 10px; height: 16px; background: rgba(212,168,83,0.15); animation-duration: 20s; animation-delay: -12s;  top: -20px; }
+    .particle:nth-child(6)  { left: 55%;  width: 14px; height: 20px; background: rgba(64,145,108,0.25); animation-duration: 17s; animation-delay: -6s;   top: -20px; }
+    .particle:nth-child(7)  { left: 63%;  width: 7px;  height: 11px; background: rgba(163,184,153,0.3); animation-duration: 23s; animation-delay: -10s;  top: -20px; }
+    .particle:nth-child(8)  { left: 72%;  width: 11px; height: 17px; background: rgba(212,168,83,0.2);  animation-duration: 19s; animation-delay: -3s;   top: -20px; }
+    .particle:nth-child(9)  { left: 82%;  width: 9px;  height: 13px; background: rgba(45,106,79,0.3);   animation-duration: 21s; animation-delay: -7s;   top: -20px; }
+    .particle:nth-child(10) { left: 91%;  width: 13px; height: 19px; background: rgba(163,184,153,0.2); animation-duration: 16s; animation-delay: -15s;  top: -20px; }
+    .particle:nth-child(11) { left: 5%;   width: 5px;  height: 8px;  background: rgba(212,168,83,0.25); animation-duration: 24s; animation-delay: -9s;   top: -20px; }
+    .particle:nth-child(12) { left: 20%;  width: 16px; height: 10px; background: rgba(64,145,108,0.2);  animation-duration: 14s; animation-delay: -11s;  top: -20px; }
+    .particle:nth-child(13) { left: 38%;  width: 8px;  height: 14px; background: rgba(163,184,153,0.35);animation-duration: 26s; animation-delay: -5s;   top: -20px; }
+    .particle:nth-child(14) { left: 50%;  width: 12px; height: 8px;  background: rgba(212,168,83,0.15); animation-duration: 18s; animation-delay: -14s;  top: -20px; }
+    .particle:nth-child(15) { left: 68%;  width: 6px;  height: 10px; background: rgba(45,106,79,0.25);  animation-duration: 22s; animation-delay: -1s;   top: -20px; }
+    .particle:nth-child(16) { left: 78%;  width: 18px; height: 12px; background: rgba(163,184,153,0.2); animation-duration: 20s; animation-delay: -13s;  top: -20px; }
+    .particle:nth-child(17) { left: 88%;  width: 9px;  height: 15px; background: rgba(212,168,83,0.3);  animation-duration: 15s; animation-delay: -8s;   top: -20px; }
+    .particle:nth-child(18) { left: 30%;  width: 11px; height: 7px;  background: rgba(64,145,108,0.3);  animation-duration: 19s; animation-delay: -16s;  top: -20px; }
+    .particle:nth-child(19) { left: 57%;  width: 14px; height: 9px;  background: rgba(163,184,153,0.25);animation-duration: 23s; animation-delay: -4s;   top: -20px; }
+    .particle:nth-child(20) { left: 95%;  width: 7px;  height: 12px; background: rgba(212,168,83,0.2);  animation-duration: 17s; animation-delay: -18s;  top: -20px; }
+
+    @keyframes drift {
+      0%   { transform: translateY(0) rotate(0deg) translateX(0);   opacity: 0; }
+      5%   { opacity: 0.8; }
+      90%  { opacity: 0.6; }
+      100% { transform: translateY(110vh) rotate(360deg) translateX(40px); opacity: 0; }
+    }
+
+    /* ─── DECORATIVE ORBS ─── */
+    .orb {
+      position: fixed;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 0;
+      animation: orbPulse ease-in-out infinite;
+    }
+
+    .orb-1 {
+      width: 350px;
+      height: 350px;
+      background: radial-gradient(circle, rgba(45,106,79,0.18) 0%, transparent 70%);
+      top: -80px;
+      right: -80px;
+      animation-duration: 8s;
+      animation-delay: 0s;
+    }
+
+    .orb-2 {
+      width: 280px;
+      height: 280px;
+      background: radial-gradient(circle, rgba(212,168,83,0.1) 0%, transparent 70%);
+      bottom: 10%;
+      left: -60px;
+      animation-duration: 10s;
+      animation-delay: -3s;
+    }
+
+    .orb-3 {
+      width: 200px;
+      height: 200px;
+      background: radial-gradient(circle, rgba(64,145,108,0.15) 0%, transparent 70%);
+      top: 40%;
+      right: 5%;
+      animation-duration: 12s;
+      animation-delay: -6s;
+    }
+
+    @keyframes orbPulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50%       { transform: scale(1.12); opacity: 0.75; }
+    }
+
+    /* ─── HEADER ─── */
+    header {
+      position: relative;
+      z-index: 10;
+      background: rgba(12, 31, 15, 0.65);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--glass-border);
+    }
+
+    .header-inner {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    @media (min-width: 640px) { .header-inner { padding: 16px 32px; } }
+
+    .logo-link {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      transition: opacity 0.2s;
+    }
+
+    .logo-link:hover { opacity: 0.85; }
+
+    .logo-img {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      border: 1px solid rgba(212, 168, 83, 0.3);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .logo-link:hover .logo-img {
+      transform: scale(1.08) rotate(-3deg);
+      box-shadow: 0 0 12px rgba(212, 168, 83, 0.3);
+    }
+
+    .logo-text {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 800;
+      font-size: 16px;
+      color: var(--gold-light);
+      letter-spacing: -0.02em;
+      display: none;
+    }
+
+    @media (min-width: 480px) {
+      .logo-text { display: block; font-size: 17px; }
+    }
+
+    @media (min-width: 640px) { .logo-text { font-size: 18px; } }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .lang-group {
+      display: flex;
+      gap: 4px;
+      background: rgba(27, 67, 50, 0.3);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      padding: 4px;
+    }
+
+    .lang-btn {
+      padding: 5px 10px;
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      border: none;
+      background: transparent;
+      color: var(--sage);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      letter-spacing: 0.03em;
+    }
+
+    @media (min-width: 400px) { .lang-btn { padding: 5px 12px; font-size: 13px; } }
+
+    .lang-btn:hover {
+      color: var(--gold-light);
+      background: rgba(212, 168, 83, 0.1);
+    }
+
+    .lang-btn.active {
+      background: rgba(212, 168, 83, 0.18);
+      color: var(--gold-light);
+      box-shadow: 0 0 0 1px rgba(212, 168, 83, 0.3);
+    }
+
+    .back-link {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--sage);
+      text-decoration: none;
+      transition: color 0.2s;
+      white-space: nowrap;
+    }
+
+    .back-link:hover { color: var(--gold-light); }
+
+    /* ─── MAIN ─── */
+    main {
+      flex: 1;
+      position: relative;
+      z-index: 2;
+      max-width: 900px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 48px 20px 72px;
+    }
+
+    @media (min-width: 640px) { main { padding: 56px 32px 80px; } }
+
+    /* ─── PAGE TITLE BLOCK ─── */
+    .page-title-block {
+      margin-bottom: 36px;
+    }
+
+    .page-title {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 800;
+      font-size: clamp(2rem, 6vw, 2.8rem);
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      background: linear-gradient(135deg, var(--leaf-light) 0%, var(--gold) 50%, var(--gold-glow) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 8px;
+    }
+
+    .page-subtitle {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.875rem;
+      color: var(--sage);
+      opacity: 0.8;
+    }
+
+    /* ─── CONTENT CARD ─── */
+    .content-card {
+      background: var(--glass-bg);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid var(--glass-border);
+      border-radius: 20px;
+      padding: 32px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    @media (min-width: 640px) { .content-card { padding: 40px 40px; } }
+
+    /* ─── SECTION DIVIDER ─── */
+    .section-divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--glass-border), transparent);
+      margin: 28px 0;
+    }
+
+    /* ─── SECTION HEADING ─── */
+    .section-heading {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .section-number {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      min-width: 32px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, var(--leaf-dark), var(--leaf-mid));
+      color: var(--gold-light);
+      font-family: 'Outfit', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      box-shadow: 0 2px 12px rgba(27, 67, 50, 0.5);
+      border: 1px solid rgba(212, 168, 83, 0.2);
+    }
+
+    .section-heading h2 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.125rem;
+      font-weight: 700;
+      color: var(--gold-light);
+      letter-spacing: -0.01em;
+    }
+
+    @media (min-width: 640px) { .section-heading h2 { font-size: 1.2rem; } }
+
+    /* ─── SECTION BODY TEXT ─── */
+    .section-body {
+      font-size: 0.9rem;
+      line-height: 1.7;
+      color: var(--sage-light);
+      opacity: 0.9;
+    }
+
+    .section-intro {
+      font-size: 0.875rem;
+      color: var(--sage);
+      margin-bottom: 12px;
+      line-height: 1.6;
+    }
+
+    /* ─── CHECK LIST (sections 2, 4) ─── */
+    .check-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .check-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 9px 12px;
+      border-radius: 10px;
+      color: var(--sage-light);
+      font-size: 0.9rem;
+      line-height: 1.6;
+      transition: background 0.18s;
+    }
+
+    .check-list li:hover { background: rgba(64, 145, 108, 0.08); }
+
+    .check-list li::before {
+      content: '';
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      min-width: 18px;
+      margin-top: 2px;
+      background: linear-gradient(135deg, #2D6A4F, #40916C);
+      border-radius: 50%;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E");
+      background-size: 11px;
+      background-position: center;
+      background-repeat: no-repeat;
+    }
+
+    /* ─── X LIST (section 3: prohibited) ─── */
+    .x-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .x-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 9px 12px;
+      border-radius: 10px;
+      color: var(--sage-light);
+      font-size: 0.9rem;
+      line-height: 1.6;
+      transition: background 0.18s;
+    }
+
+    .x-list li:hover { background: rgba(180, 40, 40, 0.07); }
+
+    .x-list li::before {
+      content: '';
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      min-width: 18px;
+      margin-top: 2px;
+      background: linear-gradient(135deg, #b91c1c, #ef4444);
+      border-radius: 50%;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='18' y1='6' x2='6' y2='18'/%3E%3Cline x1='6' y1='6' x2='18' y2='18'/%3E%3C/svg%3E");
+      background-size: 10px;
+      background-position: center;
+      background-repeat: no-repeat;
+    }
+
+    .x-list li strong { color: var(--gold-light); }
+
+    /* ─── SHIELD LIST (section 5: reporting) ─── */
+    .shield-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .shield-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 9px 12px;
+      border-radius: 10px;
+      color: var(--sage-light);
+      font-size: 0.9rem;
+      line-height: 1.6;
+      transition: background 0.18s;
+    }
+
+    .shield-list li:hover { background: rgba(212, 168, 83, 0.06); }
+
+    .shield-list li::before {
+      content: '';
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      min-width: 18px;
+      margin-top: 2px;
+      background: linear-gradient(135deg, var(--gold), var(--gold-light));
+      border-radius: 4px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230C1F0F' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z'/%3E%3C/svg%3E");
+      background-size: 11px;
+      background-position: center;
+      background-repeat: no-repeat;
+    }
+
+    /* ─── WARN LIST (section 6: enforcement) ─── */
+    .warn-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .warn-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 9px 12px;
+      border-radius: 10px;
+      color: var(--sage-light);
+      font-size: 0.9rem;
+      line-height: 1.6;
+      transition: background 0.18s;
+    }
+
+    .warn-list li:hover { background: rgba(212, 168, 83, 0.07); }
+
+    .warn-list li::before {
+      content: '';
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      min-width: 18px;
+      margin-top: 2px;
+      background: linear-gradient(135deg, var(--gold), #b8892f);
+      border-radius: 4px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230C1F0F' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z'/%3E%3Cline x1='12' y1='9' x2='12' y2='13'/%3E%3Cline x1='12' y1='17' x2='12.01' y2='17'/%3E%3C/svg%3E");
+      background-size: 10px;
+      background-position: center;
+      background-repeat: no-repeat;
+    }
+
+    .warn-list li strong { color: var(--gold-light); }
+    .check-list li strong { color: var(--gold-light); }
+
+    /* ─── CALLOUT ─── */
+    .callout {
+      background: rgba(45, 106, 79, 0.12);
+      border-left: 3px solid var(--leaf-mid);
+      border-radius: 0 10px 10px 0;
+      padding: 12px 16px;
+      margin-top: 14px;
+      color: var(--sage-light);
+      font-size: 0.875rem;
+      line-height: 1.65;
+    }
+
+    /* ─── EMAIL LINK IN SECTIONS ─── */
+    .section-email {
+      color: var(--gold-light);
+      text-decoration: underline;
+      text-decoration-color: rgba(232, 194, 122, 0.4);
+      transition: color 0.2s, text-decoration-color 0.2s;
+    }
+
+    .section-email:hover {
+      color: var(--gold-glow);
+      text-decoration-color: rgba(240, 208, 128, 0.7);
+    }
+
+    /* ─── CONTACT CARD ─── */
+    .contact-card {
+      background: rgba(12, 31, 15, 0.6);
+      border: 1px solid var(--glass-border-hover);
+      border-radius: 16px;
+      padding: 20px 22px;
+      margin-top: 16px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      transition: border-color 0.25s, background 0.25s;
+    }
+
+    .contact-card:hover {
+      background: rgba(18, 35, 24, 0.7);
+      border-color: rgba(212, 168, 83, 0.55);
+    }
+
+    .contact-icon {
+      width: 44px;
+      height: 44px;
+      min-width: 44px;
+      background: rgba(212, 168, 83, 0.1);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid rgba(212, 168, 83, 0.25);
+    }
+
+    .contact-label {
+      font-size: 0.78rem;
+      color: var(--sage);
+      margin: 0 0 2px;
+    }
+
+    .contact-value {
+      font-size: 0.93rem;
+      font-weight: 600;
+      color: var(--gold-light);
+    }
+
+    .contact-value a {
+      color: var(--gold-light);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .contact-value a:hover { color: var(--gold-glow); }
+
+    /* ─── FOOTER ─── */
+    footer {
+      position: relative;
+      z-index: 2;
+      background: var(--forest-deep);
+      border-top: 1px solid var(--glass-border);
+      padding: 24px 20px;
+      text-align: center;
+      margin-top: auto;
+    }
+
+    .footer-text {
+      font-size: 0.82rem;
+      color: var(--sage);
+      opacity: 0.55;
+    }
+
+    /* ─── ENTRANCE ANIMATIONS ─── */
+    .fade-up {
+      opacity: 0;
+      transform: translateY(22px);
+      transition: opacity 0.55s ease, transform 0.55s ease;
+    }
+
+    .fade-up.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .delay-0  { transition-delay: 0s; }
+    .delay-1  { transition-delay: 0.05s; }
+    .delay-2  { transition-delay: 0.10s; }
+    .delay-3  { transition-delay: 0.15s; }
+    .delay-4  { transition-delay: 0.20s; }
+    .delay-5  { transition-delay: 0.25s; }
+    .delay-6  { transition-delay: 0.30s; }
+    .delay-7  { transition-delay: 0.35s; }
   </style>
 </head>
-<body class="bg-gray-50 text-gray-800">
+<body>
 
-  <header class="bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-50">
-    <div class="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
-      <a href="index.html" class="flex items-center gap-3 hover:opacity-80 transition">
-        <img src="logo.png" alt="BudgieBreedingTracker" class="w-9 h-9 rounded-xl">
-        <span class="text-lg font-bold gradient-text hidden sm:inline">BudgieBreedingTracker</span>
+  <!-- Background layers -->
+  <div class="bg-layer" aria-hidden="true"></div>
+  <div class="orb orb-1" aria-hidden="true"></div>
+  <div class="orb orb-2" aria-hidden="true"></div>
+  <div class="orb orb-3" aria-hidden="true"></div>
+  <div class="particles" aria-hidden="true">
+    <div class="particle leaf"></div>
+    <div class="particle leaf"></div>
+    <div class="particle leaf"></div>
+    <div class="particle leaf"></div>
+    <div class="particle leaf"></div>
+    <div class="particle leaf"></div>
+    <div class="particle leaf"></div>
+    <div class="particle leaf"></div>
+    <div class="particle leaf"></div>
+    <div class="particle leaf"></div>
+    <div class="particle leaf"></div>
+    <div class="particle leaf"></div>
+    <div class="particle leaf"></div>
+    <div class="particle leaf"></div>
+    <div class="particle leaf"></div>
+    <div class="particle leaf"></div>
+    <div class="particle leaf"></div>
+    <div class="particle leaf"></div>
+    <div class="particle leaf"></div>
+    <div class="particle leaf"></div>
+  </div>
+
+  <!-- ══════════════ HEADER ══════════════ -->
+  <header>
+    <div class="header-inner">
+      <a href="index.html" class="logo-link">
+        <img src="logo.png" alt="BudgieBreedingTracker" class="logo-img">
+        <span class="logo-text">BudgieBreedingTracker</span>
       </a>
-      <div class="flex items-center gap-4">
-        <div class="flex items-center gap-1 bg-gray-100/80 rounded-lg p-1">
-          <button onclick="setLanguage('tr')" class="lang-btn px-2.5 py-1 rounded-md text-xs font-semibold active" data-lang="tr">TR</button>
-          <button onclick="setLanguage('en')" class="lang-btn px-2.5 py-1 rounded-md text-xs font-semibold" data-lang="en">EN</button>
-          <button onclick="setLanguage('de')" class="lang-btn px-2.5 py-1 rounded-md text-xs font-semibold" data-lang="de">DE</button>
+      <div class="header-right">
+        <div class="lang-group">
+          <button onclick="setLanguage('tr')" class="lang-btn active" data-lang="tr">TR</button>
+          <button onclick="setLanguage('en')" class="lang-btn" data-lang="en">EN</button>
+          <button onclick="setLanguage('de')" class="lang-btn" data-lang="de">DE</button>
         </div>
-        <a href="index.html" class="text-sm text-primary-600 hover:text-primary-800 font-medium transition" data-i18n="back">&larr; Ana Sayfa</a>
+        <a href="index.html" class="back-link" data-i18n="back">&larr; Ana Sayfa</a>
       </div>
     </div>
   </header>
 
-  <main class="max-w-4xl mx-auto px-6 py-12">
-    <div class="mb-10">
-      <h1 class="text-4xl font-extrabold text-gray-900 mb-3" data-i18n="title">Topluluk Kurallari</h1>
-      <p class="text-gray-500" data-i18n="last_updated">Son guncelleme: 17 Mart 2026</p>
+  <!-- ══════════════ MAIN ══════════════ -->
+  <main>
+
+    <!-- Page title block -->
+    <div class="page-title-block fade-up delay-0 visible">
+      <h1 class="page-title" data-i18n="title">Topluluk Kurallari</h1>
+      <p class="page-subtitle" data-i18n="last_updated">Son guncelleme: 17 Mart 2026</p>
     </div>
 
-    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 md:p-10 space-y-10">
+    <!-- Glass content card -->
+    <div class="content-card">
 
-      <section>
-        <h2 class="text-xl font-bold text-gray-900 mb-3" data-i18n="s1_title">1. Amac</h2>
-        <p class="text-gray-600 leading-relaxed" data-i18n="s1_text">BudgieBreedingTracker toplulugu, muhabbet kusu yetistiricilerinin deneyimlerini paylasmalari, birbirlerinden ogrenmeleri ve desteklemeleri icin guvenli bir ortam saglamayi amaclar. Bu kurallar, tum uyelerin olumlu bir deneyim yasamasini saglamak icin olusturulmustur.</p>
+      <!-- ── Section 1: Amac ── -->
+      <section class="fade-up delay-1">
+        <div class="section-heading">
+          <span class="section-number">1</span>
+          <h2 data-i18n="s1_title">Amac</h2>
+        </div>
+        <p class="section-body" data-i18n="s1_text">BudgieBreedingTracker toplulugu, muhabbet kusu yetistiricilerinin deneyimlerini paylasmalari, birbirlerinden ogrenmeleri ve desteklemeleri icin guvenli bir ortam saglamayi amaclar. Bu kurallar, tum uyelerin olumlu bir deneyim yasamasini saglamak icin olusturulmustur.</p>
       </section>
 
-      <section>
-        <h2 class="text-xl font-bold text-gray-900 mb-3" data-i18n="s2_title">2. Saygi ve Nezaket</h2>
+      <div class="section-divider"></div>
+
+      <!-- ── Section 2: Saygi ── -->
+      <section class="fade-up delay-2">
+        <div class="section-heading">
+          <span class="section-number">2</span>
+          <h2 data-i18n="s2_title">Saygi ve Nezaket</h2>
+        </div>
         <div data-i18n-html="s2_list">
-          <ul class="list-disc list-inside text-gray-600 space-y-1 ml-2">
+          <ul class="check-list">
             <li>Diger uyelere saygi ve nezaketle davranin</li>
             <li>Farkli goruslere ve deneyimlere acik olun</li>
-            <li>Yapici elestiri yapın, kisisel saldirilarda bulunmayin</li>
+            <li>Yapici elestiri yapin, kisisel saldirilarda bulunmayin</li>
             <li>Irk, din, cinsiyet, etnik koken veya cinsel yonelime dayali ayrimcilik yasaklanmistir</li>
           </ul>
         </div>
       </section>
 
-      <section>
-        <h2 class="text-xl font-bold text-gray-900 mb-3" data-i18n="s3_title">3. Yasaklanan Icerikler</h2>
+      <div class="section-divider"></div>
+
+      <!-- ── Section 3: Yasaklanan ── -->
+      <section class="fade-up delay-3">
+        <div class="section-heading">
+          <span class="section-number">3</span>
+          <h2 data-i18n="s3_title">Yasaklanan Icerikler</h2>
+        </div>
         <div data-i18n-html="s3_list">
-          <ul class="list-disc list-inside text-gray-600 space-y-1 ml-2">
+          <ul class="x-list">
             <li><strong>Nefret soylemi:</strong> Herhangi bir gruba yonelik nefret, tehdit veya siddet iceren icerikler</li>
             <li><strong>Taciz:</strong> Diger kullanicilari hedef alan zorbalik, tehdit veya kisisel saldirilar</li>
             <li><strong>Uygunsuz icerik:</strong> Cinsel, siddet iceren veya rahatsiz edici gorseller ve metinler</li>
@@ -100,37 +793,55 @@
         </div>
       </section>
 
-      <section>
-        <h2 class="text-xl font-bold text-gray-900 mb-3" data-i18n="s4_title">4. Icerik Paylasim Kurallari</h2>
+      <div class="section-divider"></div>
+
+      <!-- ── Section 4: Paylasim ── -->
+      <section class="fade-up delay-4">
+        <div class="section-heading">
+          <span class="section-number">4</span>
+          <h2 data-i18n="s4_title">Icerik Paylasim Kurallari</h2>
+        </div>
         <div data-i18n-html="s4_list">
-          <ul class="list-disc list-inside text-gray-600 space-y-1 ml-2">
+          <ul class="check-list">
             <li>Yalnizca muhabbet kusu yetistiriciligi ile ilgili icerikler paylasin</li>
             <li>Paylasimlarda dogru ve guvenilir bilgiler verin</li>
             <li>Baskalarinin fotograflarini izinsiz kullanmayin</li>
-            <li>Kisisel iletisim bilgilerinizi herkese acik paylasirken dikkatli olun</li>
+            <li>Kisisel iletisim bilgilerinizi herkese acik paylasilirken dikkatli olun</li>
             <li>Ticari reklam ve tanitim icin topluluk ozelliklerini kullanmayin</li>
           </ul>
         </div>
       </section>
 
-      <section>
-        <h2 class="text-xl font-bold text-gray-900 mb-3" data-i18n="s5_title">5. Raporlama ve Moderasyon</h2>
-        <p class="text-gray-600 leading-relaxed mb-3" data-i18n="s5_intro">Topluluk kurallarini ihlal eden icerikleri gördüğünüzde:</p>
+      <div class="section-divider"></div>
+
+      <!-- ── Section 5: Raporlama ── -->
+      <section class="fade-up delay-5">
+        <div class="section-heading">
+          <span class="section-number">5</span>
+          <h2 data-i18n="s5_title">Raporlama ve Moderasyon</h2>
+        </div>
+        <p class="section-intro" data-i18n="s5_intro">Topluluk kurallarini ihlal eden icerikleri gördüğünüzde:</p>
         <div data-i18n-html="s5_list">
-          <ul class="list-disc list-inside text-gray-600 space-y-1 ml-2">
+          <ul class="shield-list">
             <li>Icerik uzerindeki <strong>Raporla</strong> butonunu kullanin</li>
             <li>Sorunlu kullanicilari <strong>Engelle</strong> secenegi ile engelleyin</li>
-            <li>Ciddi ihlallerde <a href="mailto:support@budgiebreedingtracker.online" class="text-primary-600 underline">support@budgiebreedingtracker.online</a> adresine e-posta gonderin</li>
+            <li>Ciddi ihlallerde <a href="mailto:support@budgiebreedingtracker.online" class="section-email">support@budgiebreedingtracker.online</a> adresine e-posta gonderin</li>
           </ul>
         </div>
-        <p class="text-gray-600 leading-relaxed mt-3" data-i18n="s5_note">Raporlar moderasyon ekibimiz tarafindan incelenir ve uygun goruldugunde icerik kaldirilir, hesap uyarilir veya askiya alinir.</p>
+        <div class="callout" data-i18n="s5_note">Raporlar moderasyon ekibimiz tarafindan incelenir ve uygun goruldugunde icerik kaldirilir, hesap uyarilir veya askiya alinir.</div>
       </section>
 
-      <section>
-        <h2 class="text-xl font-bold text-gray-900 mb-3" data-i18n="s6_title">6. Yaptirimlar</h2>
-        <p class="text-gray-600 leading-relaxed mb-3" data-i18n="s6_intro">Kural ihlallerinde asagidaki yaptirimlar uygulanabilir:</p>
+      <div class="section-divider"></div>
+
+      <!-- ── Section 6: Yaptirimlar ── -->
+      <section class="fade-up delay-6">
+        <div class="section-heading">
+          <span class="section-number">6</span>
+          <h2 data-i18n="s6_title">Yaptirimlar</h2>
+        </div>
+        <p class="section-intro" data-i18n="s6_intro">Kural ihlallerinde asagidaki yaptirimlar uygulanabilir:</p>
         <div data-i18n-html="s6_list">
-          <ul class="list-disc list-inside text-gray-600 space-y-1 ml-2">
+          <ul class="warn-list">
             <li><strong>Uyari:</strong> Ilk ihlallerde yazili uyari</li>
             <li><strong>Icerik kaldirma:</strong> Kurallari ihlal eden icerikler kaldirilir</li>
             <li><strong>Gecici askiya alma:</strong> Tekrarlanan ihlallerde hesap gecici olarak askiya alinir</li>
@@ -139,95 +850,108 @@
         </div>
       </section>
 
-      <section>
-        <h2 class="text-xl font-bold text-gray-900 mb-3" data-i18n="s7_title">7. Iletisim</h2>
-        <p class="text-gray-600 leading-relaxed" data-i18n="s7_text">Topluluk kurallari hakkinda sorulariniz icin bizimle iletisime gecebilirsiniz:</p>
-        <div class="mt-4 p-4 bg-primary-50 rounded-xl border border-primary-100">
-          <p class="text-gray-700">
-            <strong>E-posta:</strong> <a href="mailto:support@budgiebreedingtracker.online" class="text-primary-600 hover:text-primary-800 underline">support@budgiebreedingtracker.online</a>
-          </p>
+      <div class="section-divider"></div>
+
+      <!-- ── Section 7: Iletisim ── -->
+      <section class="fade-up delay-7">
+        <div class="section-heading">
+          <span class="section-number">7</span>
+          <h2 data-i18n="s7_title">Iletisim</h2>
+        </div>
+        <p class="section-intro" data-i18n="s7_text">Topluluk kurallari hakkinda sorulariniz icin bizimle iletisime gecebilirsiniz:</p>
+        <div class="contact-card">
+          <div class="contact-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(232,194,122,0.95)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+              <polyline points="22,6 12,13 2,6"/>
+            </svg>
+          </div>
+          <div>
+            <p class="contact-label">E-posta</p>
+            <p class="contact-value"><a href="mailto:support@budgiebreedingtracker.online">support@budgiebreedingtracker.online</a></p>
+          </div>
         </div>
       </section>
 
-    </div>
+    </div><!-- /content-card -->
   </main>
 
-  <footer class="bg-white border-t border-gray-100 mt-16">
-    <div class="max-w-4xl mx-auto px-6 py-8 text-center">
-      <p class="text-gray-400 text-sm" data-i18n="footer">&copy; 2025-2026 BudgieBreedingTracker. Tum haklari saklidir.</p>
-    </div>
+  <!-- ══════════════ FOOTER ══════════════ -->
+  <footer>
+    <p class="footer-text" data-i18n="footer">&copy; 2025-2026 BudgieBreedingTracker. Tum haklari saklidir.</p>
   </footer>
 
+  <!-- ══════════════ SCRIPTS ══════════════ -->
   <script>
     const translations = {
       tr: {
-        back: '← Ana Sayfa',
+        back: '\u2190 Ana Sayfa',
         title: 'Topluluk Kurallar\u0131',
         last_updated: 'Son g\u00fcncelleme: 17 Mart 2026',
         s1_title: '1. Ama\u00e7',
         s1_text: 'BudgieBreedingTracker toplulu\u011fu, muhabbet ku\u015fu yeti\u015ftiricilerinin deneyimlerini payla\u015fmalar\u0131, birbirlerinden \u00f6\u011frenmeleri ve desteklemeleri i\u00e7in g\u00fcvenli bir ortam sa\u011flamay\u0131 ama\u00e7lar. Bu kurallar, t\u00fcm \u00fcyelerin olumlu bir deneyim ya\u015famas\u0131n\u0131 sa\u011flamak i\u00e7in olu\u015fturulmu\u015ftur.',
         s2_title: '2. Sayg\u0131 ve Nezaket',
-        s2_list: '<ul class="list-disc list-inside text-gray-600 space-y-1 ml-2"><li>Di\u011fer \u00fcyelere sayg\u0131 ve nezaketle davran\u0131n</li><li>Farkl\u0131 g\u00f6r\u00fc\u015flere ve deneyimlere a\u00e7\u0131k olun</li><li>Yap\u0131c\u0131 ele\u015ftiri yap\u0131n, ki\u015fisel sald\u0131r\u0131larda bulunmay\u0131n</li><li>\u0130rk, din, cinsiyet, etnik k\u00f6ken veya cinsel y\u00f6nelime dayal\u0131 ayr\u0131mc\u0131l\u0131k yasaklanm\u0131\u015ft\u0131r</li></ul>',
+        s2_list: '<ul class="check-list"><li>Di\u011fer \u00fcyelere sayg\u0131 ve nezaketle davran\u0131n</li><li>Farkl\u0131 g\u00f6r\u00fc\u015flere ve deneyimlere a\u00e7\u0131k olun</li><li>Yap\u0131c\u0131 ele\u015ftiri yap\u0131n, ki\u015fisel sald\u0131r\u0131larda bulunmay\u0131n</li><li>\u0130rk, din, cinsiyet, etnik k\u00f6ken veya cinsel y\u00f6nelime dayal\u0131 ayr\u0131mc\u0131l\u0131k yasaklanm\u0131\u015ft\u0131r</li></ul>',
         s3_title: '3. Yasaklanan \u0130\u00e7erikler',
-        s3_list: '<ul class="list-disc list-inside text-gray-600 space-y-1 ml-2"><li><strong>Nefret s\u00f6ylemi:</strong> Herhangi bir gruba y\u00f6nelik nefret, tehdit veya \u015fiddet i\u00e7eren i\u00e7erikler</li><li><strong>Taciz:</strong> Di\u011fer kullan\u0131c\u0131lar\u0131 hedef alan zorbal\u0131k, tehdit veya ki\u015fisel sald\u0131r\u0131lar</li><li><strong>Uygunsuz i\u00e7erik:</strong> Cinsel, \u015fiddet i\u00e7eren veya rahats\u0131z edici g\u00f6rseller ve metinler</li><li><strong>Spam:</strong> Tekrarlanan, anlams\u0131z veya reklam ama\u00e7l\u0131 i\u00e7erikler</li><li><strong>Doland\u0131r\u0131c\u0131l\u0131k:</strong> Yan\u0131lt\u0131c\u0131 bilgiler, sahte sat\u0131\u015f ilanlar\u0131 veya ki\u015fisel bilgi toplama giri\u015fimleri</li><li><strong>Hayvan istismar\u0131:</strong> Hayvanlara zarar vermeyi te\u015fvik eden veya g\u00f6steren i\u00e7erikler</li><li><strong>Yasad\u0131\u015f\u0131 faaliyetler:</strong> Ka\u00e7ak hayvan ticaretini te\u015fvik eden veya kolayla\u015ft\u0131ran i\u00e7erikler</li></ul>',
+        s3_list: '<ul class="x-list"><li><strong>Nefret s\u00f6ylemi:</strong> Herhangi bir gruba y\u00f6nelik nefret, tehdit veya \u015fiddet i\u00e7eren i\u00e7erikler</li><li><strong>Taciz:</strong> Di\u011fer kullan\u0131c\u0131lar\u0131 hedef alan zorbal\u0131k, tehdit veya ki\u015fisel sald\u0131r\u0131lar</li><li><strong>Uygunsuz i\u00e7erik:</strong> Cinsel, \u015fiddet i\u00e7eren veya rahats\u0131z edici g\u00f6rseller ve metinler</li><li><strong>Spam:</strong> Tekrarlanan, anlams\u0131z veya reklam ama\u00e7l\u0131 i\u00e7erikler</li><li><strong>Doland\u0131r\u0131c\u0131l\u0131k:</strong> Yan\u0131lt\u0131c\u0131 bilgiler, sahte sat\u0131\u015f ilanlar\u0131 veya ki\u015fisel bilgi toplama giri\u015fimleri</li><li><strong>Hayvan istismar\u0131:</strong> Hayvanlara zarar vermeyi te\u015fvik eden veya g\u00f6steren i\u00e7erikler</li><li><strong>Yasad\u0131\u015f\u0131 faaliyetler:</strong> Ka\u00e7ak hayvan ticaretini te\u015fvik eden veya kolayla\u015ft\u0131ran i\u00e7erikler</li></ul>',
         s4_title: '4. \u0130\u00e7erik Payla\u015f\u0131m Kurallar\u0131',
-        s4_list: '<ul class="list-disc list-inside text-gray-600 space-y-1 ml-2"><li>Yaln\u0131zca muhabbet ku\u015fu yeti\u015ftiricili\u011fi ile ilgili i\u00e7erikler payla\u015f\u0131n</li><li>Payla\u015f\u0131mlarda do\u011fru ve g\u00fcvenilir bilgiler verin</li><li>Ba\u015fkalar\u0131n\u0131n foto\u011fraflar\u0131n\u0131 izinsiz kullanmay\u0131n</li><li>Ki\u015fisel ileti\u015fim bilgilerinizi herkese a\u00e7\u0131k payla\u015f\u0131rken dikkatli olun</li><li>Ticari reklam ve tan\u0131t\u0131m i\u00e7in topluluk \u00f6zelliklerini kullanmay\u0131n</li></ul>',
+        s4_list: '<ul class="check-list"><li>Yaln\u0131zca muhabbet ku\u015fu yeti\u015ftiricili\u011fi ile ilgili i\u00e7erikler payla\u015f\u0131n</li><li>Payla\u015f\u0131mlarda do\u011fru ve g\u00fcvenilir bilgiler verin</li><li>Ba\u015fkalar\u0131n\u0131n foto\u011fraflar\u0131n\u0131 izinsiz kullanmay\u0131n</li><li>Ki\u015fisel ileti\u015fim bilgilerinizi herkese a\u00e7\u0131k payla\u015f\u0131rken dikkatli olun</li><li>Ticari reklam ve tan\u0131t\u0131m i\u00e7in topluluk \u00f6zelliklerini kullanmay\u0131n</li></ul>',
         s5_title: '5. Raporlama ve Moderasyon',
         s5_intro: 'Topluluk kurallar\u0131n\u0131 ihlal eden i\u00e7erikleri g\u00f6rd\u00fc\u011f\u00fcn\u00fczde:',
-        s5_list: '<ul class="list-disc list-inside text-gray-600 space-y-1 ml-2"><li>\u0130\u00e7erik \u00fczerindeki <strong>Raporla</strong> butonunu kullan\u0131n</li><li>Sorunlu kullan\u0131c\u0131lar\u0131 <strong>Engelle</strong> se\u00e7ene\u011fi ile engelleyin</li><li>Ciddi ihlallerde <a href="mailto:support@budgiebreedingtracker.online" class="text-primary-600 underline">support@budgiebreedingtracker.online</a> adresine e-posta g\u00f6nderin</li></ul>',
+        s5_list: '<ul class="shield-list"><li>\u0130\u00e7erik \u00fczerindeki <strong>Raporla</strong> butonunu kullan\u0131n</li><li>Sorunlu kullan\u0131c\u0131lar\u0131 <strong>Engelle</strong> se\u00e7ene\u011fi ile engelleyin</li><li>Ciddi ihlallerde <a href="mailto:support@budgiebreedingtracker.online" class="section-email">support@budgiebreedingtracker.online</a> adresine e-posta g\u00f6nderin</li></ul>',
         s5_note: 'Raporlar moderasyon ekibimiz taraf\u0131ndan incelenir ve uygun g\u00f6r\u00fcld\u00fc\u011f\u00fcnde i\u00e7erik kald\u0131r\u0131l\u0131r, hesap uyar\u0131l\u0131r veya ask\u0131ya al\u0131n\u0131r.',
         s6_title: '6. Yapt\u0131r\u0131mlar',
         s6_intro: 'Kural ihlallerinde a\u015fa\u011f\u0131daki yapt\u0131r\u0131mlar uygulanabilir:',
-        s6_list: '<ul class="list-disc list-inside text-gray-600 space-y-1 ml-2"><li><strong>Uyar\u0131:</strong> \u0130lk ihlallerde yaz\u0131l\u0131 uyar\u0131</li><li><strong>\u0130\u00e7erik kald\u0131rma:</strong> Kurallar\u0131 ihlal eden i\u00e7erikler kald\u0131r\u0131l\u0131r</li><li><strong>Ge\u00e7ici ask\u0131ya alma:</strong> Tekrarlanan ihlallerde hesap ge\u00e7ici olarak ask\u0131ya al\u0131n\u0131r</li><li><strong>Kal\u0131c\u0131 yasaklama:</strong> Ciddi veya s\u00fcrekli ihlallerde hesap kal\u0131c\u0131 olarak yasaklan\u0131r</li></ul>',
+        s6_list: '<ul class="warn-list"><li><strong>Uyar\u0131:</strong> \u0130lk ihlallerde yaz\u0131l\u0131 uyar\u0131</li><li><strong>\u0130\u00e7erik kald\u0131rma:</strong> Kurallar\u0131 ihlal eden i\u00e7erikler kald\u0131r\u0131l\u0131r</li><li><strong>Ge\u00e7ici ask\u0131ya alma:</strong> Tekrarlanan ihlallerde hesap ge\u00e7ici olarak ask\u0131ya al\u0131n\u0131r</li><li><strong>Kal\u0131c\u0131 yasaklama:</strong> Ciddi veya s\u00fcrekli ihlallerde hesap kal\u0131c\u0131 olarak yasaklan\u0131r</li></ul>',
         s7_title: '7. \u0130leti\u015fim',
         s7_text: 'Topluluk kurallar\u0131 hakk\u0131nda sorular\u0131n\u0131z i\u00e7in bizimle ileti\u015fime ge\u00e7ebilirsiniz:',
-        footer: '© 2025-2026 BudgieBreedingTracker. T\u00fcm haklar\u0131 sakl\u0131d\u0131r.',
+        footer: '\u00a9 2025-2026 BudgieBreedingTracker. T\u00fcm haklar\u0131 sakl\u0131d\u0131r.',
       },
       en: {
-        back: '← Home',
+        back: '\u2190 Home',
         title: 'Community Guidelines',
         last_updated: 'Last updated: March 17, 2026',
         s1_title: '1. Purpose',
         s1_text: 'The BudgieBreedingTracker community aims to provide a safe environment for budgerigar breeders to share their experiences, learn from each other, and support one another. These guidelines are designed to ensure a positive experience for all members.',
         s2_title: '2. Respect and Courtesy',
-        s2_list: '<ul class="list-disc list-inside text-gray-600 space-y-1 ml-2"><li>Treat other members with respect and courtesy</li><li>Be open to different opinions and experiences</li><li>Offer constructive criticism, avoid personal attacks</li><li>Discrimination based on race, religion, gender, ethnicity, or sexual orientation is prohibited</li></ul>',
+        s2_list: '<ul class="check-list"><li>Treat other members with respect and courtesy</li><li>Be open to different opinions and experiences</li><li>Offer constructive criticism, avoid personal attacks</li><li>Discrimination based on race, religion, gender, ethnicity, or sexual orientation is prohibited</li></ul>',
         s3_title: '3. Prohibited Content',
-        s3_list: '<ul class="list-disc list-inside text-gray-600 space-y-1 ml-2"><li><strong>Hate speech:</strong> Content containing hatred, threats, or violence toward any group</li><li><strong>Harassment:</strong> Bullying, threats, or personal attacks targeting other users</li><li><strong>Inappropriate content:</strong> Sexual, violent, or disturbing images and text</li><li><strong>Spam:</strong> Repetitive, meaningless, or promotional content</li><li><strong>Fraud:</strong> Misleading information, fake sales listings, or attempts to collect personal information</li><li><strong>Animal abuse:</strong> Content encouraging or depicting harm to animals</li><li><strong>Illegal activities:</strong> Content promoting or facilitating illegal animal trade</li></ul>',
+        s3_list: '<ul class="x-list"><li><strong>Hate speech:</strong> Content containing hatred, threats, or violence toward any group</li><li><strong>Harassment:</strong> Bullying, threats, or personal attacks targeting other users</li><li><strong>Inappropriate content:</strong> Sexual, violent, or disturbing images and text</li><li><strong>Spam:</strong> Repetitive, meaningless, or promotional content</li><li><strong>Fraud:</strong> Misleading information, fake sales listings, or attempts to collect personal information</li><li><strong>Animal abuse:</strong> Content encouraging or depicting harm to animals</li><li><strong>Illegal activities:</strong> Content promoting or facilitating illegal animal trade</li></ul>',
         s4_title: '4. Content Sharing Rules',
-        s4_list: '<ul class="list-disc list-inside text-gray-600 space-y-1 ml-2"><li>Share only content related to budgerigar breeding</li><li>Provide accurate and reliable information in your posts</li><li>Do not use others\' photos without permission</li><li>Be careful when sharing personal contact information publicly</li><li>Do not use community features for commercial advertising</li></ul>',
+        s4_list: '<ul class="check-list"><li>Share only content related to budgerigar breeding</li><li>Provide accurate and reliable information in your posts</li><li>Do not use others\' photos without permission</li><li>Be careful when sharing personal contact information publicly</li><li>Do not use community features for commercial advertising</li></ul>',
         s5_title: '5. Reporting and Moderation',
         s5_intro: 'When you encounter content that violates community guidelines:',
-        s5_list: '<ul class="list-disc list-inside text-gray-600 space-y-1 ml-2"><li>Use the <strong>Report</strong> button on the content</li><li>Block problematic users using the <strong>Block</strong> option</li><li>For serious violations, email <a href="mailto:support@budgiebreedingtracker.online" class="text-primary-600 underline">support@budgiebreedingtracker.online</a></li></ul>',
+        s5_list: '<ul class="shield-list"><li>Use the <strong>Report</strong> button on the content</li><li>Block problematic users using the <strong>Block</strong> option</li><li>For serious violations, email <a href="mailto:support@budgiebreedingtracker.online" class="section-email">support@budgiebreedingtracker.online</a></li></ul>',
         s5_note: 'Reports are reviewed by our moderation team, and where appropriate, content is removed and accounts are warned or suspended.',
         s6_title: '6. Enforcement',
         s6_intro: 'The following actions may be taken for guideline violations:',
-        s6_list: '<ul class="list-disc list-inside text-gray-600 space-y-1 ml-2"><li><strong>Warning:</strong> Written warning for first-time violations</li><li><strong>Content removal:</strong> Violating content will be removed</li><li><strong>Temporary suspension:</strong> Account temporarily suspended for repeated violations</li><li><strong>Permanent ban:</strong> Account permanently banned for serious or ongoing violations</li></ul>',
+        s6_list: '<ul class="warn-list"><li><strong>Warning:</strong> Written warning for first-time violations</li><li><strong>Content removal:</strong> Violating content will be removed</li><li><strong>Temporary suspension:</strong> Account temporarily suspended for repeated violations</li><li><strong>Permanent ban:</strong> Account permanently banned for serious or ongoing violations</li></ul>',
         s7_title: '7. Contact',
         s7_text: 'If you have questions about community guidelines, you can contact us:',
-        footer: '© 2025-2026 BudgieBreedingTracker. All rights reserved.',
+        footer: '\u00a9 2025-2026 BudgieBreedingTracker. All rights reserved.',
       },
       de: {
-        back: '← Startseite',
+        back: '\u2190 Startseite',
         title: 'Community-Richtlinien',
         last_updated: 'Letzte Aktualisierung: 17. M\u00e4rz 2026',
         s1_title: '1. Zweck',
         s1_text: 'Die BudgieBreedingTracker-Community bietet Wellensittichz\u00fcchtern eine sichere Umgebung zum Austausch von Erfahrungen, gegenseitigem Lernen und Unterst\u00fctzung. Diese Richtlinien sollen allen Mitgliedern eine positive Erfahrung erm\u00f6glichen.',
         s2_title: '2. Respekt und H\u00f6flichkeit',
-        s2_list: '<ul class="list-disc list-inside text-gray-600 space-y-1 ml-2"><li>Behandeln Sie andere Mitglieder mit Respekt und H\u00f6flichkeit</li><li>Seien Sie offen f\u00fcr verschiedene Meinungen und Erfahrungen</li><li>Geben Sie konstruktive Kritik, vermeiden Sie pers\u00f6nliche Angriffe</li><li>Diskriminierung aufgrund von Rasse, Religion, Geschlecht, Ethnie oder sexueller Orientierung ist verboten</li></ul>',
+        s2_list: '<ul class="check-list"><li>Behandeln Sie andere Mitglieder mit Respekt und H\u00f6flichkeit</li><li>Seien Sie offen f\u00fcr verschiedene Meinungen und Erfahrungen</li><li>Geben Sie konstruktive Kritik, vermeiden Sie pers\u00f6nliche Angriffe</li><li>Diskriminierung aufgrund von Rasse, Religion, Geschlecht, Ethnie oder sexueller Orientierung ist verboten</li></ul>',
         s3_title: '3. Verbotene Inhalte',
-        s3_list: '<ul class="list-disc list-inside text-gray-600 space-y-1 ml-2"><li><strong>Hassrede:</strong> Inhalte mit Hass, Drohungen oder Gewalt gegen\u00fcber einer Gruppe</li><li><strong>Bel\u00e4stigung:</strong> Mobbing, Drohungen oder pers\u00f6nliche Angriffe gegen andere Benutzer</li><li><strong>Unangemessene Inhalte:</strong> Sexuelle, gewaltt\u00e4tige oder verst\u00f6rende Bilder und Texte</li><li><strong>Spam:</strong> Wiederholende, sinnlose oder werbliche Inhalte</li><li><strong>Betrug:</strong> Irref\u00fchrende Informationen, gef\u00e4lschte Verkaufsanzeigen oder Versuche, pers\u00f6nliche Daten zu sammeln</li><li><strong>Tierqu\u00e4lerei:</strong> Inhalte, die Tiermisshandlung f\u00f6rdern oder zeigen</li><li><strong>Illegale Aktivit\u00e4ten:</strong> Inhalte, die illegalen Tierhandel f\u00f6rdern oder erleichtern</li></ul>',
+        s3_list: '<ul class="x-list"><li><strong>Hassrede:</strong> Inhalte mit Hass, Drohungen oder Gewalt gegen\u00fcber einer Gruppe</li><li><strong>Bel\u00e4stigung:</strong> Mobbing, Drohungen oder pers\u00f6nliche Angriffe gegen andere Benutzer</li><li><strong>Unangemessene Inhalte:</strong> Sexuelle, gewaltt\u00e4tige oder verst\u00f6rende Bilder und Texte</li><li><strong>Spam:</strong> Wiederholende, sinnlose oder werbliche Inhalte</li><li><strong>Betrug:</strong> Irref\u00fchrende Informationen, gef\u00e4lschte Verkaufsanzeigen oder Versuche, pers\u00f6nliche Daten zu sammeln</li><li><strong>Tierqu\u00e4lerei:</strong> Inhalte, die Tiermisshandlung f\u00f6rdern oder zeigen</li><li><strong>Illegale Aktivit\u00e4ten:</strong> Inhalte, die illegalen Tierhandel f\u00f6rdern oder erleichtern</li></ul>',
         s4_title: '4. Regeln f\u00fcr das Teilen von Inhalten',
-        s4_list: '<ul class="list-disc list-inside text-gray-600 space-y-1 ml-2"><li>Teilen Sie nur Inhalte im Zusammenhang mit Wellensittichzucht</li><li>Geben Sie in Ihren Beitr\u00e4gen genaue und zuverl\u00e4ssige Informationen an</li><li>Verwenden Sie keine Fotos anderer ohne Erlaubnis</li><li>Seien Sie vorsichtig beim \u00f6ffentlichen Teilen pers\u00f6nlicher Kontaktinformationen</li><li>Nutzen Sie Community-Funktionen nicht f\u00fcr kommerzielle Werbung</li></ul>',
+        s4_list: '<ul class="check-list"><li>Teilen Sie nur Inhalte im Zusammenhang mit Wellensittichzucht</li><li>Geben Sie in Ihren Beitr\u00e4gen genaue und zuverl\u00e4ssige Informationen an</li><li>Verwenden Sie keine Fotos anderer ohne Erlaubnis</li><li>Seien Sie vorsichtig beim \u00f6ffentlichen Teilen pers\u00f6nlicher Kontaktinformationen</li><li>Nutzen Sie Community-Funktionen nicht f\u00fcr kommerzielle Werbung</li></ul>',
         s5_title: '5. Meldung und Moderation',
         s5_intro: 'Wenn Sie Inhalte sehen, die gegen Community-Richtlinien versto\u00dfen:',
-        s5_list: '<ul class="list-disc list-inside text-gray-600 space-y-1 ml-2"><li>Verwenden Sie die <strong>Melden</strong>-Schaltfl\u00e4che am Inhalt</li><li>Blockieren Sie problematische Benutzer mit der <strong>Blockieren</strong>-Option</li><li>Bei schwerwiegenden Verst\u00f6\u00dfen senden Sie eine E-Mail an <a href="mailto:support@budgiebreedingtracker.online" class="text-primary-600 underline">support@budgiebreedingtracker.online</a></li></ul>',
+        s5_list: '<ul class="shield-list"><li>Verwenden Sie die <strong>Melden</strong>-Schaltfl\u00e4che am Inhalt</li><li>Blockieren Sie problematische Benutzer mit der <strong>Blockieren</strong>-Option</li><li>Bei schwerwiegenden Verst\u00f6\u00dfen senden Sie eine E-Mail an <a href="mailto:support@budgiebreedingtracker.online" class="section-email">support@budgiebreedingtracker.online</a></li></ul>',
         s5_note: 'Meldungen werden von unserem Moderationsteam \u00fcberpr\u00fcft. Bei Bedarf werden Inhalte entfernt und Konten verwarnt oder gesperrt.',
         s6_title: '6. Durchsetzung',
         s6_intro: 'Bei Richtlinienverst\u00f6\u00dfen k\u00f6nnen folgende Ma\u00dfnahmen ergriffen werden:',
-        s6_list: '<ul class="list-disc list-inside text-gray-600 space-y-1 ml-2"><li><strong>Verwarnung:</strong> Schriftliche Verwarnung bei erstmaligen Verst\u00f6\u00dfen</li><li><strong>Inhaltsentfernung:</strong> Versto\u00dfende Inhalte werden entfernt</li><li><strong>Vor\u00fcbergehende Sperrung:</strong> Konto wird bei wiederholten Verst\u00f6\u00dfen vor\u00fcbergehend gesperrt</li><li><strong>Dauerhafte Sperre:</strong> Konto wird bei schwerwiegenden oder andauernden Verst\u00f6\u00dfen dauerhaft gesperrt</li></ul>',
+        s6_list: '<ul class="warn-list"><li><strong>Verwarnung:</strong> Schriftliche Verwarnung bei erstmaligen Verst\u00f6\u00dfen</li><li><strong>Inhaltsentfernung:</strong> Versto\u00dfende Inhalte werden entfernt</li><li><strong>Vor\u00fcbergehende Sperrung:</strong> Konto wird bei wiederholten Verst\u00f6\u00dfen vor\u00fcbergehend gesperrt</li><li><strong>Dauerhafte Sperre:</strong> Konto wird bei schwerwiegenden oder andauernden Verst\u00f6\u00dfen dauerhaft gesperrt</li></ul>',
         s7_title: '7. Kontakt',
         s7_text: 'Bei Fragen zu den Community-Richtlinien k\u00f6nnen Sie uns kontaktieren:',
-        footer: '© 2025-2026 BudgieBreedingTracker. Alle Rechte vorbehalten.',
+        footer: '\u00a9 2025-2026 BudgieBreedingTracker. Alle Rechte vorbehalten.',
       },
     };
 
@@ -260,7 +984,9 @@
       });
     }
 
+    /* ── Intersection Observer for staggered entrance animations ── */
     document.addEventListener('DOMContentLoaded', () => {
+      // Language init
       const saved = localStorage.getItem('bbt-lang');
       if (saved && translations[saved]) {
         setLanguage(saved);
@@ -270,6 +996,21 @@
           setLanguage(browserLang);
         }
       }
+
+      // Entrance animations
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('visible');
+              observer.unobserve(entry.target);
+            }
+          });
+        },
+        { threshold: 0.08, rootMargin: '0px 0px -30px 0px' }
+      );
+
+      document.querySelectorAll('.fade-up:not(.visible)').forEach(el => observer.observe(el));
     });
   </script>
 

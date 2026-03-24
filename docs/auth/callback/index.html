@@ -4,51 +4,244 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BudgieBreedingTracker — Email Verified</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
     <style>
+      :root {
+        --forest-deep: #0C1F0F;
+        --forest-mid: #122318;
+        --leaf-dark: #1B4332;
+        --leaf-mid: #2D6A4F;
+        --leaf-light: #40916C;
+        --sage: #A3B899;
+        --sage-light: #C8D8C2;
+        --gold: #D4A853;
+        --gold-light: #E8C27A;
+        --gold-glow: #F0D080;
+        --glass-bg: rgba(27, 67, 50, 0.25);
+        --glass-border: rgba(163, 184, 153, 0.2);
+        --glass-border-hover: rgba(212, 168, 83, 0.4);
+      }
+
       * { margin: 0; padding: 0; box-sizing: border-box; }
+
       body {
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
         min-height: 100vh;
         display: flex;
         align-items: center;
         justify-content: center;
-        background: linear-gradient(135deg, #e0f4f2 0%, #f0f9ff 50%, #e8f5e9 100%);
+        background-color: var(--forest-deep);
         padding: 20px;
+        position: relative;
+        overflow: hidden;
       }
+
+      /* Noise texture overlay */
+      body::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      /* Layered radial gradients background */
+      .bg-layer {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 0;
+        background:
+          radial-gradient(ellipse 80% 60% at 20% 10%, rgba(45, 106, 79, 0.18) 0%, transparent 60%),
+          radial-gradient(ellipse 60% 50% at 80% 90%, rgba(27, 67, 50, 0.22) 0%, transparent 55%),
+          radial-gradient(ellipse 40% 40% at 50% 50%, rgba(212, 168, 83, 0.04) 0%, transparent 70%);
+      }
+
+      /* Decorative orbs */
+      .orb {
+        position: fixed;
+        border-radius: 50%;
+        pointer-events: none;
+        z-index: 0;
+        filter: blur(80px);
+        animation: pulse-orb 6s ease-in-out infinite;
+      }
+      .orb-1 {
+        width: 340px;
+        height: 340px;
+        top: -80px;
+        left: -60px;
+        background: radial-gradient(circle, rgba(64, 145, 108, 0.22) 0%, transparent 70%);
+        animation-delay: 0s;
+      }
+      .orb-2 {
+        width: 280px;
+        height: 280px;
+        bottom: -60px;
+        right: -40px;
+        background: radial-gradient(circle, rgba(212, 168, 83, 0.15) 0%, transparent 70%);
+        animation-delay: 2s;
+      }
+      .orb-3 {
+        width: 200px;
+        height: 200px;
+        top: 50%;
+        right: 8%;
+        transform: translateY(-50%);
+        background: radial-gradient(circle, rgba(45, 106, 79, 0.12) 0%, transparent 70%);
+        animation-delay: 4s;
+      }
+
+      @keyframes pulse-orb {
+        0%, 100% { opacity: 0.7; transform: scale(1); }
+        50% { opacity: 1; transform: scale(1.08); }
+      }
+      .orb-3 {
+        animation: pulse-orb-mid 6s ease-in-out infinite;
+        animation-delay: 4s;
+      }
+      @keyframes pulse-orb-mid {
+        0%, 100% { opacity: 0.7; transform: translateY(-50%) scale(1); }
+        50% { opacity: 1; transform: translateY(-50%) scale(1.08); }
+      }
+
+      /* Card */
       .card {
-        background: white;
+        background: var(--glass-bg);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
         border-radius: 20px;
         padding: 48px 36px;
         max-width: 440px;
         width: 100%;
         text-align: center;
-        box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+        border: 1px solid var(--glass-border);
+        border-top: 1px solid var(--gold);
+        box-shadow:
+          0 8px 32px rgba(0, 0, 0, 0.4),
+          0 1px 0 rgba(212, 168, 83, 0.15) inset;
+        position: relative;
+        z-index: 1;
+        animation: card-enter 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
       }
+
+      @keyframes card-enter {
+        from {
+          opacity: 0;
+          transform: translateY(20px) scale(0.98);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+
       .icon { font-size: 64px; margin-bottom: 16px; }
-      h1 { font-size: 22px; color: #1a1a2e; margin-bottom: 8px; }
-      .subtitle { color: #64748b; font-size: 15px; line-height: 1.5; margin-bottom: 28px; }
+
+      h1 {
+        font-family: 'Outfit', sans-serif;
+        font-size: 22px;
+        font-weight: 700;
+        color: var(--sage-light);
+        margin-bottom: 8px;
+        letter-spacing: -0.01em;
+      }
+
+      .subtitle {
+        color: var(--sage);
+        font-size: 15px;
+        line-height: 1.6;
+        margin-bottom: 28px;
+        font-weight: 400;
+      }
+
+      /* Primary button */
       .btn {
         display: inline-block;
         padding: 14px 32px;
         border-radius: 12px;
         font-size: 16px;
         font-weight: 600;
+        font-family: 'DM Sans', sans-serif;
         text-decoration: none;
         cursor: pointer;
-        transition: transform 0.15s, box-shadow 0.15s;
+        transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
         border: none;
       }
-      .btn:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,0,0,0.12); }
-      .btn-primary { background: #0d9488; color: white; }
-      .btn-store { background: #f1f5f9; color: #334155; margin-top: 12px; font-size: 14px; padding: 12px 24px; }
-      .status { margin-top: 24px; font-size: 13px; color: #94a3b8; }
-      .status.error { color: #ef4444; }
-      .spinner { display: inline-block; width: 20px; height: 20px; border: 2.5px solid #e2e8f0; border-top-color: #0d9488; border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 6px; }
+
+      .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+      }
+
+      .btn-primary {
+        background: linear-gradient(135deg, var(--leaf-mid) 0%, var(--leaf-dark) 100%);
+        color: var(--gold-light);
+        border: 1px solid var(--gold);
+        box-shadow: 0 2px 12px rgba(212, 168, 83, 0.15);
+      }
+
+      .btn-primary:hover {
+        border-color: var(--gold-glow);
+        box-shadow: 0 6px 20px rgba(212, 168, 83, 0.25);
+      }
+
+      /* Store button */
+      .btn-store {
+        background: rgba(27, 67, 50, 0.4);
+        color: var(--sage);
+        border: 1px solid var(--glass-border);
+        margin-top: 12px;
+        font-size: 14px;
+        padding: 12px 24px;
+        font-weight: 500;
+      }
+
+      .btn-store:hover {
+        border-color: var(--glass-border-hover);
+        color: var(--sage-light);
+      }
+
+      /* Status text */
+      .status {
+        margin-top: 24px;
+        font-size: 13px;
+        color: var(--sage);
+        font-weight: 400;
+      }
+
+      .status.error { color: #f87171; }
+
+      /* Spinner */
+      .spinner {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 2.5px solid rgba(163, 184, 153, 0.2);
+        border-top-color: var(--gold);
+        border-radius: 50%;
+        animation: spin 0.7s linear infinite;
+        vertical-align: middle;
+        margin-right: 6px;
+      }
+
       @keyframes spin { to { transform: rotate(360deg); } }
+
       .hidden { display: none; }
+
+      /* Error subtitle override */
+      .subtitle.error { color: #f87171; }
     </style>
   </head>
   <body>
+    <div class="bg-layer"></div>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+
     <div class="card">
       <div class="icon">&#x1F426;</div>
 

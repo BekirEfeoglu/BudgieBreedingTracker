@@ -9,141 +9,837 @@
   <link rel="canonical" href="https://budgiebreedingtracker.online/support/">
   <link rel="icon" type="image/png" href="../logo.png">
   <link rel="apple-touch-icon" href="../logo.png">
-
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            primary: { 50: '#EFF6FF', 100: '#DBEAFE', 200: '#BFDBFE', 400: '#60A5FA', 500: '#3B82F6', 600: '#2563EB', 700: '#1D4ED8', 800: '#1E40AF', 900: '#1E3A8A' },
-            budgie: { 50: '#F0FDF4', 500: '#22C55E', 600: '#16A34A' },
-          },
-          fontFamily: { sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'] },
-        },
-      },
-    }
-  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+
   <style>
-    body { font-family: 'Inter', system-ui, sans-serif; }
-    .gradient-text {
-      background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 40%, #22C55E 100%);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
-    .lang-btn { transition: all 0.2s ease; }
-    .lang-btn.active { background-color: #1E40AF; color: white; box-shadow: 0 2px 8px rgba(30, 64, 175, 0.3); }
-    .lang-btn:not(.active):hover { background-color: #E5E7EB; }
+
+    :root {
+      --forest-deep: #0C1F0F;
+      --forest-mid: #122318;
+      --leaf-dark: #1B4332;
+      --leaf-mid: #2D6A4F;
+      --leaf-light: #40916C;
+      --sage: #A3B899;
+      --sage-light: #C8D8C2;
+      --gold: #D4A853;
+      --gold-light: #E8C27A;
+      --gold-glow: #F0D080;
+      --glass-bg: rgba(27, 67, 50, 0.25);
+      --glass-border: rgba(163, 184, 153, 0.2);
+      --glass-border-hover: rgba(212, 168, 83, 0.4);
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+      background-color: var(--forest-deep);
+      color: var(--sage-light);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* ─── NOISE TEXTURE OVERLAY ─── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+      opacity: 0.04;
+      pointer-events: none;
+      z-index: 1000;
+      mix-blend-mode: overlay;
+    }
+
+    /* ─── LAYERED BACKGROUND ─── */
+    .bg-layer {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .bg-layer::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 20% 80%, rgba(27, 67, 50, 0.8) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 80% 20%, rgba(45, 106, 79, 0.4) 0%, transparent 55%),
+        radial-gradient(ellipse 100% 100% at 50% 50%, var(--forest-deep) 0%, #091A0C 100%);
+    }
+
+    .bg-layer::after {
+      content: '';
+      position: absolute;
+      top: -20%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 700px;
+      height: 700px;
+      background: radial-gradient(circle, rgba(212, 168, 83, 0.07) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+
+    /* ─── DECORATIVE ORBS ─── */
+    .orb {
+      position: fixed;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 0;
+      animation: orbPulse ease-in-out infinite;
+    }
+
+    .orb-1 {
+      width: 500px;
+      height: 500px;
+      top: -150px;
+      right: -100px;
+      background: radial-gradient(circle, rgba(45, 106, 79, 0.18) 0%, transparent 70%);
+      animation-duration: 12s;
+      animation-delay: 0s;
+    }
+
+    .orb-2 {
+      width: 400px;
+      height: 400px;
+      bottom: -100px;
+      left: -80px;
+      background: radial-gradient(circle, rgba(27, 67, 50, 0.25) 0%, transparent 70%);
+      animation-duration: 16s;
+      animation-delay: -5s;
+    }
+
+    .orb-3 {
+      width: 300px;
+      height: 300px;
+      top: 40%;
+      right: 5%;
+      background: radial-gradient(circle, rgba(212, 168, 83, 0.06) 0%, transparent 70%);
+      animation-duration: 20s;
+      animation-delay: -8s;
+    }
+
+    @keyframes orbPulse {
+      0%, 100% { transform: scale(1);    opacity: 0.7; }
+      50%       { transform: scale(1.12); opacity: 1;   }
+    }
+
+    /* ─── FLOATING PARTICLES ─── */
+    .particles {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 1;
+      overflow: hidden;
+    }
+
+    .particle {
+      position: absolute;
+      border-radius: 50% 0 50% 0;
+      animation: drift linear infinite;
+      opacity: 0;
+    }
+
+    .particle.leaf  { border-radius: 0 100% 0 100%; }
+    .particle.feather {
+      width: 3px;
+      border-radius: 50%;
+      background: linear-gradient(180deg, transparent, var(--sage), transparent);
+    }
+
+    .particle:nth-child(1)  { left: 8%;   width: 12px; height: 18px; background: rgba(163,184,153,0.25); animation-duration: 18s; animation-delay: 0s;    top: -20px; }
+    .particle:nth-child(2)  { left: 16%;  width: 8px;  height: 12px; background: rgba(212,168,83,0.2);   animation-duration: 22s; animation-delay: -4s;   top: -20px; }
+    .particle:nth-child(3)  { left: 25%;  width: 15px; height: 22px; background: rgba(64,145,108,0.3);   animation-duration: 15s; animation-delay: -8s;   top: -20px; }
+    .particle:nth-child(4)  { left: 35%;  width: 6px;  height: 10px; background: rgba(163,184,153,0.2);  animation-duration: 25s; animation-delay: -2s;   top: -20px; }
+    .particle:nth-child(5)  { left: 44%;  width: 10px; height: 16px; background: rgba(212,168,83,0.15);  animation-duration: 20s; animation-delay: -12s;  top: -20px; }
+    .particle:nth-child(6)  { left: 55%;  width: 14px; height: 20px; background: rgba(64,145,108,0.25);  animation-duration: 17s; animation-delay: -6s;   top: -20px; }
+    .particle:nth-child(7)  { left: 63%;  width: 7px;  height: 11px; background: rgba(163,184,153,0.3);  animation-duration: 23s; animation-delay: -10s;  top: -20px; }
+    .particle:nth-child(8)  { left: 72%;  width: 11px; height: 17px; background: rgba(212,168,83,0.2);   animation-duration: 19s; animation-delay: -3s;   top: -20px; }
+    .particle:nth-child(9)  { left: 82%;  width: 9px;  height: 13px; background: rgba(45,106,79,0.3);    animation-duration: 21s; animation-delay: -7s;   top: -20px; }
+    .particle:nth-child(10) { left: 91%;  width: 13px; height: 19px; background: rgba(163,184,153,0.2);  animation-duration: 16s; animation-delay: -15s;  top: -20px; }
+    .particle:nth-child(11) { left: 5%;   width: 5px;  height: 8px;  background: rgba(212,168,83,0.25);  animation-duration: 24s; animation-delay: -9s;   top: -20px; }
+    .particle:nth-child(12) { left: 20%;  width: 16px; height: 10px; background: rgba(64,145,108,0.2);   animation-duration: 14s; animation-delay: -11s;  top: -20px; }
+    .particle:nth-child(13) { left: 38%;  width: 8px;  height: 14px; background: rgba(163,184,153,0.35); animation-duration: 26s; animation-delay: -5s;   top: -20px; }
+    .particle:nth-child(14) { left: 50%;  width: 12px; height: 8px;  background: rgba(212,168,83,0.15);  animation-duration: 18s; animation-delay: -14s;  top: -20px; }
+    .particle:nth-child(15) { left: 68%;  width: 6px;  height: 10px; background: rgba(45,106,79,0.25);   animation-duration: 22s; animation-delay: -1s;   top: -20px; }
+    .particle:nth-child(16) { left: 78%;  width: 18px; height: 12px; background: rgba(163,184,153,0.2);  animation-duration: 20s; animation-delay: -13s;  top: -20px; }
+    .particle:nth-child(17) { left: 88%;  width: 9px;  height: 15px; background: rgba(212,168,83,0.3);   animation-duration: 15s; animation-delay: -8s;   top: -20px; }
+    .particle:nth-child(18) { left: 30%;  width: 11px; height: 7px;  background: rgba(64,145,108,0.3);   animation-duration: 19s; animation-delay: -16s;  top: -20px; }
+    .particle:nth-child(19) { left: 57%;  width: 14px; height: 9px;  background: rgba(163,184,153,0.25); animation-duration: 23s; animation-delay: -4s;   top: -20px; }
+    .particle:nth-child(20) { left: 95%;  width: 7px;  height: 12px; background: rgba(212,168,83,0.2);   animation-duration: 17s; animation-delay: -18s;  top: -20px; }
+
+    @keyframes drift {
+      0%   { transform: translateY(0)          rotate(0deg)   translateX(0);   opacity: 0; }
+      5%   { opacity: 0.8; }
+      90%  { opacity: 0.6; }
+      100% { transform: translateY(110vh) rotate(360deg) translateX(40px); opacity: 0; }
+    }
+
+    /* ─── HEADER ─── */
+    header {
+      position: relative;
+      z-index: 10;
+      background: rgba(12, 31, 15, 0.6);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--glass-border);
+    }
+
+    .header-inner {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    @media (min-width: 640px) { .header-inner { padding: 16px 32px; } }
+
+    .logo-link {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      transition: opacity 0.2s;
+    }
+
+    .logo-link:hover { opacity: 0.85; }
+
+    .logo-img {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      border: 1px solid rgba(212, 168, 83, 0.3);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .logo-link:hover .logo-img {
+      transform: scale(1.08) rotate(-3deg);
+      box-shadow: 0 0 12px rgba(212, 168, 83, 0.3);
+    }
+
+    .logo-text {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 800;
+      font-size: 16px;
+      color: var(--gold-light);
+      letter-spacing: -0.02em;
+    }
+
+    @media (min-width: 640px) { .logo-text { font-size: 18px; } }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .back-link {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--sage);
+      text-decoration: none;
+      transition: color 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .back-link:hover { color: var(--gold-light); }
+
+    .lang-group {
+      display: flex;
+      gap: 4px;
+      background: rgba(27, 67, 50, 0.3);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      padding: 4px;
+    }
+
+    .lang-btn {
+      padding: 5px 12px;
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      border: none;
+      background: transparent;
+      color: var(--sage);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      letter-spacing: 0.03em;
+    }
+
+    .lang-btn:hover {
+      color: var(--gold-light);
+      background: rgba(212, 168, 83, 0.1);
+    }
+
+    .lang-btn.active {
+      background: rgba(212, 168, 83, 0.18);
+      color: var(--gold-light);
+      box-shadow: 0 0 0 1px rgba(212, 168, 83, 0.3);
+    }
+
+    /* ─── MAIN ─── */
+    main {
+      flex: 1;
+      position: relative;
+      z-index: 2;
+      padding: 56px 20px 80px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    /* ─── PAGE HEADER ─── */
+    .page-header {
+      text-align: center;
+      margin-bottom: 56px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(27, 67, 50, 0.4);
+      border: 1px solid rgba(212, 168, 83, 0.3);
+      border-radius: 999px;
+      padding: 6px 18px;
+      margin-bottom: 20px;
+    }
+
+    .badge span {
+      font-family: 'Outfit', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--gold-light);
+    }
+
+    .badge-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--gold);
+      box-shadow: 0 0 6px rgba(212, 168, 83, 0.6);
+      animation: pulseDot 2s ease-in-out infinite;
+    }
+
+    @keyframes pulseDot {
+      0%, 100% { opacity: 1;   transform: scale(1); }
+      50%       { opacity: 0.6; transform: scale(0.8); }
+    }
+
+    .page-title {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 800;
+      font-size: clamp(28px, 5vw, 42px);
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, var(--sage-light) 0%, var(--gold-light) 50%, var(--sage-light) 100%);
+      background-size: 200% 200%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: shimmer 6s ease infinite;
+      margin-bottom: 14px;
+    }
+
+    @keyframes shimmer {
+      0%   { background-position: 0% 50%; }
+      50%  { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .page-subtitle {
+      font-size: 16px;
+      color: var(--sage);
+      max-width: 500px;
+      margin: 0 auto;
+      line-height: 1.65;
+    }
+
+    /* ─── CARDS GRID ─── */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+
+    @media (min-width: 640px) {
+      .cards-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    /* ─── GLASS CARD ─── */
+    .glass-card {
+      position: relative;
+      background: var(--glass-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--glass-border);
+      border-radius: 20px;
+      padding: 28px;
+      overflow: hidden;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    /* Gold top accent line */
+    .glass-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 20px;
+      right: 20px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(212, 168, 83, 0.5), transparent);
+    }
+
+    .glass-card:hover {
+      border-color: var(--glass-border-hover);
+      box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.3),
+        0 0 0 1px rgba(212, 168, 83, 0.15),
+        0 0 40px rgba(212, 168, 83, 0.06);
+      transform: translateY(-4px);
+    }
+
+    /* ─── ICON CONTAINER ─── */
+    .icon-wrap {
+      position: relative;
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      flex-shrink: 0;
+      margin-bottom: 20px;
+      background: rgba(27, 67, 50, 0.5);
+      border: 1px solid var(--glass-border);
+      transition: box-shadow 0.3s ease, border-color 0.3s ease;
+    }
+
+    .glass-card:hover .icon-wrap {
+      border-color: rgba(212, 168, 83, 0.35);
+      box-shadow: 0 0 16px rgba(212, 168, 83, 0.15);
+    }
+
+    /* ─── CARD TYPOGRAPHY ─── */
+    .card-title {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      font-size: 17px;
+      color: var(--sage-light);
+      margin-bottom: 10px;
+      letter-spacing: -0.01em;
+    }
+
+    .card-desc {
+      font-size: 14px;
+      color: var(--sage);
+      line-height: 1.65;
+      margin-bottom: 18px;
+    }
+
+    /* ─── LIST ─── */
+    .check-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .check-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 13.5px;
+      color: var(--sage);
+      line-height: 1.55;
+    }
+
+    .check-icon {
+      flex-shrink: 0;
+      margin-top: 2px;
+      width: 16px;
+      height: 16px;
+      color: var(--leaf-light);
+    }
+
+    .info-icon {
+      flex-shrink: 0;
+      margin-top: 2px;
+      width: 16px;
+      height: 16px;
+      color: var(--gold);
+    }
+
+    .check-list li strong {
+      color: var(--sage-light);
+      font-weight: 600;
+    }
+
+    /* ─── EMAIL LINK ─── */
+    .email-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--gold);
+      text-decoration: none;
+      transition: color 0.2s ease;
+      padding: 10px 16px;
+      background: rgba(212, 168, 83, 0.08);
+      border: 1px solid rgba(212, 168, 83, 0.2);
+      border-radius: 10px;
+    }
+
+    .email-link:hover {
+      color: var(--gold-glow);
+      background: rgba(212, 168, 83, 0.14);
+      border-color: rgba(212, 168, 83, 0.35);
+    }
+
+    .email-link svg {
+      transition: transform 0.2s ease;
+    }
+
+    .email-link:hover svg {
+      transform: translate(2px, -2px);
+    }
+
+    /* ─── LEGAL SECTION ─── */
+    .legal-card {
+      position: relative;
+      background: var(--glass-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--glass-border);
+      border-radius: 20px;
+      padding: 28px;
+      overflow: hidden;
+      max-width: 620px;
+      margin: 0 auto;
+    }
+
+    .legal-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 20px;
+      right: 20px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(212, 168, 83, 0.5), transparent);
+    }
+
+    .legal-title {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      font-size: 17px;
+      color: var(--sage-light);
+      margin-bottom: 18px;
+      letter-spacing: -0.01em;
+    }
+
+    .legal-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .legal-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 18px;
+      background: rgba(18, 35, 24, 0.6);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      font-size: 13.5px;
+      font-weight: 500;
+      color: var(--sage);
+      text-decoration: none;
+      transition: color 0.22s ease, border-color 0.22s ease, background 0.22s ease, transform 0.22s ease;
+    }
+
+    .legal-link:hover {
+      color: var(--gold-light);
+      border-color: rgba(212, 168, 83, 0.35);
+      background: rgba(212, 168, 83, 0.08);
+      transform: translateY(-2px);
+    }
+
+    .legal-link svg {
+      color: var(--leaf-light);
+      width: 15px;
+      height: 15px;
+      flex-shrink: 0;
+      transition: color 0.22s ease;
+    }
+
+    .legal-link:hover svg {
+      color: var(--gold);
+    }
+
+    /* ─── FOOTER ─── */
+    footer {
+      position: relative;
+      z-index: 2;
+      background-color: var(--forest-deep);
+      border-top: 1px solid var(--glass-border);
+      background-image:
+        radial-gradient(circle at 20% 50%, rgba(45, 106, 79, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(212, 168, 83, 0.06) 0%, transparent 40%),
+        url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%232D6A4F' fill-opacity='0.05'%3E%3Cpath d='M30 0 C20 10 10 20 15 35 C20 50 30 55 30 55 C30 55 40 50 45 35 C50 20 40 10 30 0 Z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+      background-size: auto, auto, 60px 60px;
+    }
+
+    .footer-inner {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      text-align: center;
+    }
+
+    @media (min-width: 640px) {
+      .footer-inner {
+        flex-direction: row;
+        padding: 24px 32px;
+        text-align: left;
+      }
+    }
+
+    .footer-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .footer-logo img {
+      width: 28px;
+      height: 28px;
+      border-radius: 7px;
+      opacity: 0.85;
+    }
+
+    .footer-logo-text {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--sage-light);
+    }
+
+    .footer-copy {
+      font-size: 12px;
+      color: var(--sage);
+      opacity: 0.7;
+    }
+
+    /* ─── ENTRANCE ANIMATIONS ─── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(28px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .fade-up {
+      animation: fadeUp 0.65s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    .delay-0 { animation-delay: 0.05s; }
+    .delay-1 { animation-delay: 0.15s; }
+    .delay-2 { animation-delay: 0.25s; }
+    .delay-3 { animation-delay: 0.35s; }
+    .delay-4 { animation-delay: 0.45s; }
+    .delay-5 { animation-delay: 0.55s; }
+    .delay-6 { animation-delay: 0.65s; }
   </style>
 </head>
-<body class="bg-gray-50 text-gray-900 antialiased min-h-screen flex flex-col">
+<body>
+
+  <!-- Background layers -->
+  <div class="bg-layer"></div>
+
+  <!-- Decorative orbs -->
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+
+  <!-- Floating leaf particles -->
+  <div class="particles" aria-hidden="true">
+    <div class="particle leaf"></div>
+    <div class="particle"></div>
+    <div class="particle leaf"></div>
+    <div class="particle feather"></div>
+    <div class="particle leaf"></div>
+    <div class="particle"></div>
+    <div class="particle leaf"></div>
+    <div class="particle feather"></div>
+    <div class="particle"></div>
+    <div class="particle leaf"></div>
+    <div class="particle feather"></div>
+    <div class="particle leaf"></div>
+    <div class="particle"></div>
+    <div class="particle leaf"></div>
+    <div class="particle feather"></div>
+    <div class="particle"></div>
+    <div class="particle leaf"></div>
+    <div class="particle"></div>
+    <div class="particle leaf"></div>
+    <div class="particle feather"></div>
+  </div>
 
   <!-- Header -->
-  <header class="bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-50">
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
-      <a href="../" class="flex items-center gap-2.5 group">
-        <img src="../logo.png" alt="BudgieBreedingTracker" class="w-9 h-9 rounded-lg transition-transform duration-300 group-hover:scale-110">
-        <span class="text-lg font-bold gradient-text hidden sm:inline">BudgieBreedingTracker</span>
+  <header>
+    <div class="header-inner">
+      <a href="../" class="logo-link">
+        <img src="../logo.png" alt="BudgieBreedingTracker" class="logo-img">
+        <span class="logo-text">BudgieBreedingTracker</span>
       </a>
-      <div class="flex items-center gap-4">
-        <!-- Language Switcher -->
-        <div class="flex items-center gap-1 bg-gray-100/80 rounded-lg p-1">
-          <button onclick="setLanguage('tr')" class="lang-btn px-2.5 py-1 rounded-md text-xs font-semibold active" data-lang="tr">TR</button>
-          <button onclick="setLanguage('en')" class="lang-btn px-2.5 py-1 rounded-md text-xs font-semibold" data-lang="en">EN</button>
-          <button onclick="setLanguage('de')" class="lang-btn px-2.5 py-1 rounded-md text-xs font-semibold" data-lang="de">DE</button>
+      <div class="header-right">
+        <a href="../" class="back-link" data-i18n="back">&larr; Ana Sayfa</a>
+        <div class="lang-group">
+          <button onclick="setLanguage('tr')" class="lang-btn active" data-lang="tr">TR</button>
+          <button onclick="setLanguage('en')" class="lang-btn" data-lang="en">EN</button>
+          <button onclick="setLanguage('de')" class="lang-btn" data-lang="de">DE</button>
         </div>
-        <a href="../" class="text-sm font-medium text-primary-600 hover:text-primary-800 transition-colors" data-i18n="back">&larr; Ana Sayfa</a>
       </div>
     </div>
   </header>
 
   <!-- Main Content -->
-  <main class="flex-1 py-12 sm:py-16">
-    <div class="max-w-4xl mx-auto px-4 sm:px-6">
+  <main>
+    <div class="container">
 
-      <!-- Page Title -->
-      <div class="text-center mb-12">
-        <div class="inline-flex items-center gap-2 px-3 py-1.5 bg-primary-50 rounded-full mb-4">
-          <span class="text-xs font-semibold text-primary-600 uppercase tracking-wider" data-i18n="badge">Destek Merkezi</span>
+      <!-- Page Header -->
+      <div class="page-header fade-up delay-0">
+        <div class="badge">
+          <div class="badge-dot"></div>
+          <span data-i18n="badge">Destek Merkezi</span>
         </div>
-        <h1 class="text-3xl sm:text-4xl font-black text-gray-900 tracking-tight mb-3" data-i18n="title">Nasıl Yardımcı Olabiliriz?</h1>
-        <p class="text-gray-500 text-lg max-w-xl mx-auto" data-i18n="subtitle">Hesabınız, aboneliğiniz veya uygulama hakkında yardıma mı ihtiyacınız var? Yanınızdayız.</p>
+        <h1 class="page-title" data-i18n="title">Nasıl Yardımcı Olabiliriz?</h1>
+        <p class="page-subtitle" data-i18n="subtitle">Hesabınız, aboneliğiniz veya uygulama hakkında yardıma mı ihtiyacınız var? Yanınızdayız.</p>
       </div>
 
       <!-- Cards Grid -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+      <div class="cards-grid">
 
         <!-- Contact Card -->
-        <div class="bg-white rounded-2xl p-7 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-          <div class="w-12 h-12 bg-primary-50 rounded-xl flex items-center justify-center text-2xl mb-4">&#x2709;</div>
-          <h2 class="text-lg font-bold text-gray-900 mb-2" data-i18n="contact_title">Bize Ulaşın</h2>
-          <p class="text-gray-500 text-sm mb-4" data-i18n="contact_desc">E-posta ile ulaşın. Daha hızlı destek için cihaz modelinizi ve işletim sistemi sürümünüzü belirtin.</p>
-          <a href="mailto:support@budgiebreedingtracker.online" class="inline-flex items-center gap-2 text-primary-600 font-semibold text-sm hover:text-primary-800 transition-colors">
+        <div class="glass-card fade-up delay-1">
+          <div class="icon-wrap">&#x2709;&#xFE0F;</div>
+          <h2 class="card-title" data-i18n="contact_title">Bize Ulaşın</h2>
+          <p class="card-desc" data-i18n="contact_desc">E-posta ile ulaşın. Daha hızlı destek için cihaz modelinizi ve işletim sistemi sürümünüzü belirtin.</p>
+          <a href="mailto:support@budgiebreedingtracker.online" class="email-link">
             support@budgiebreedingtracker.online
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+            </svg>
           </a>
         </div>
 
         <!-- Subscription Card -->
-        <div class="bg-white rounded-2xl p-7 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-          <div class="w-12 h-12 bg-amber-50 rounded-xl flex items-center justify-center text-2xl mb-4">&#x2B50;</div>
-          <h2 class="text-lg font-bold text-gray-900 mb-2" data-i18n="sub_title">Abonelik Yardımı</h2>
-          <p class="text-gray-500 text-sm mb-4" data-i18n="sub_desc">Premium aboneliğinizi cihaz ayarlarından yönetin veya iptal edin.</p>
-          <ul class="space-y-2 text-sm text-gray-600">
-            <li class="flex items-start gap-2">
-              <svg class="w-4 h-4 text-budgie-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+        <div class="glass-card fade-up delay-2">
+          <div class="icon-wrap">&#x2B50;</div>
+          <h2 class="card-title" data-i18n="sub_title">Abonelik Yardımı</h2>
+          <p class="card-desc" data-i18n="sub_desc">Premium aboneliğinizi cihaz ayarlarından yönetin veya iptal edin.</p>
+          <ul class="check-list">
+            <li>
+              <svg class="check-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+              </svg>
               <span data-i18n="sub_item1">Satın alımları uygulama içi Premium ekranından geri yükleyin</span>
             </li>
-            <li class="flex items-start gap-2">
-              <svg class="w-4 h-4 text-budgie-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            <li>
+              <svg class="check-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+              </svg>
               <span data-i18n="sub_item2">Abonelikleri Apple ID veya Google Play ayarlarından yönetin</span>
             </li>
-            <li class="flex items-start gap-2">
-              <svg class="w-4 h-4 text-budgie-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            <li>
+              <svg class="check-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+              </svg>
               <span data-i18n="sub_item3">İptal, mevcut faturalandırma döneminin sonunda geçerli olur</span>
             </li>
           </ul>
         </div>
 
         <!-- Data & Privacy Card -->
-        <div class="bg-white rounded-2xl p-7 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-          <div class="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center text-2xl mb-4">&#x1F512;</div>
-          <h2 class="text-lg font-bold text-gray-900 mb-2" data-i18n="data_title">Veri ve Gizlilik</h2>
-          <p class="text-gray-500 text-sm mb-4" data-i18n="data_desc">Verileriniz AES-256 ile şifrelenir ve güvenli bir şekilde saklanır. Yalnızca siz erişebilirsiniz.</p>
-          <ul class="space-y-2 text-sm text-gray-600">
-            <li class="flex items-start gap-2">
-              <svg class="w-4 h-4 text-budgie-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+        <div class="glass-card fade-up delay-3">
+          <div class="icon-wrap">&#x1F512;</div>
+          <h2 class="card-title" data-i18n="data_title">Veri ve Gizlilik</h2>
+          <p class="card-desc" data-i18n="data_desc">Verileriniz AES-256 ile şifrelenir ve güvenli bir şekilde saklanır. Yalnızca siz erişebilirsiniz.</p>
+          <ul class="check-list">
+            <li>
+              <svg class="check-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+              </svg>
               <span data-i18n="data_item1">Verilerinizi istediğiniz zaman dışa aktarın (PDF / Excel)</span>
             </li>
-            <li class="flex items-start gap-2">
-              <svg class="w-4 h-4 text-budgie-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            <li>
+              <svg class="check-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+              </svg>
               <span data-i18n="data_item2">Tam veri kurtarma için şifreli yedeklemeler</span>
             </li>
-            <li class="flex items-start gap-2">
-              <svg class="w-4 h-4 text-budgie-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            <li>
+              <svg class="check-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+              </svg>
               <span data-i18n="data_item3">E-posta ile hesap silme talebinde bulunun</span>
             </li>
           </ul>
         </div>
 
         <!-- Troubleshooting Card -->
-        <div class="bg-white rounded-2xl p-7 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-          <div class="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center text-2xl mb-4">&#x1F527;</div>
-          <h2 class="text-lg font-bold text-gray-900 mb-2" data-i18n="trouble_title">Sorun Giderme</h2>
-          <p class="text-gray-500 text-sm mb-4" data-i18n="trouble_desc">Sık karşılaşılan sorunlar ve hızlı çözümler.</p>
-          <ul class="space-y-2 text-sm text-gray-600">
-            <li class="flex items-start gap-2">
-              <svg class="w-4 h-4 text-primary-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <div class="glass-card fade-up delay-4">
+          <div class="icon-wrap">&#x1F527;</div>
+          <h2 class="card-title" data-i18n="trouble_title">Sorun Giderme</h2>
+          <p class="card-desc" data-i18n="trouble_desc">Sık karşılaşılan sorunlar ve hızlı çözümler.</p>
+          <ul class="check-list">
+            <li>
+              <svg class="info-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
               <span data-i18n="trouble_item1"><strong>Senkronizasyon çalışmıyor mu?</strong> İnternet bağlantınızı kontrol edin ve aşağı çekerek yenileyin</span>
             </li>
-            <li class="flex items-start gap-2">
-              <svg class="w-4 h-4 text-primary-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <li>
+              <svg class="info-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
               <span data-i18n="trouble_item2"><strong>Uygulama çöküyor mu?</strong> Mağazadan en son sürüme güncelleyin</span>
             </li>
-            <li class="flex items-start gap-2">
-              <svg class="w-4 h-4 text-primary-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <li>
+              <svg class="info-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
               <span data-i18n="trouble_item3"><strong>Veri kayboldu mu?</strong> Uygulama içi Ayarlar &gt; Yedekleme bölümünden geri yükleyin</span>
             </li>
           </ul>
@@ -152,15 +848,19 @@
       </div>
 
       <!-- Legal Section -->
-      <div class="bg-white rounded-2xl p-7 border border-gray-100 shadow-sm max-w-2xl mx-auto">
-        <h2 class="text-lg font-bold text-gray-900 mb-4" data-i18n="legal_title">Yasal</h2>
-        <div class="flex flex-wrap gap-4">
-          <a href="https://budgiebreedingtracker.online/privacy-policy.html" class="inline-flex items-center gap-2 px-5 py-2.5 bg-gray-50 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors border border-gray-100">
-            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+      <div class="legal-card fade-up delay-5">
+        <h2 class="legal-title" data-i18n="legal_title">Yasal</h2>
+        <div class="legal-links">
+          <a href="https://budgiebreedingtracker.online/privacy-policy.html" class="legal-link">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
             <span data-i18n="legal_privacy">Gizlilik Politikası</span>
           </a>
-          <a href="https://budgiebreedingtracker.online/terms-of-use.html" class="inline-flex items-center gap-2 px-5 py-2.5 bg-gray-50 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors border border-gray-100">
-            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          <a href="https://budgiebreedingtracker.online/terms-of-use.html" class="legal-link">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
             <span data-i18n="legal_terms">Kullanım Koşulları (EULA)</span>
           </a>
         </div>
@@ -170,13 +870,13 @@
   </main>
 
   <!-- Footer -->
-  <footer class="bg-gray-900 text-gray-400 mt-auto">
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-center">
-      <div class="flex items-center gap-2">
-        <img src="../logo.png" alt="Logo" class="w-7 h-7 rounded-lg">
-        <span class="font-bold text-white text-sm">BudgieBreedingTracker</span>
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-logo">
+        <img src="../logo.png" alt="Logo">
+        <span class="footer-logo-text">BudgieBreedingTracker</span>
       </div>
-      <p class="text-xs text-gray-500" data-i18n="footer">&copy; 2025-2026 BudgieBreedingTracker. Tüm hakları saklıdır.</p>
+      <p class="footer-copy" data-i18n="footer">&copy; 2025-2026 BudgieBreedingTracker. Tüm hakları saklıdır.</p>
     </div>
   </footer>
 
@@ -274,11 +974,9 @@
 
       const t = translations[lang];
 
-      // Update text content
       document.querySelectorAll('[data-i18n]').forEach(el => {
         const key = el.getAttribute('data-i18n');
         if (t[key]) {
-          // Check if the translation contains HTML
           if (t[key].includes('<strong>') || t[key].includes('<')) {
             el.innerHTML = t[key];
           } else {
@@ -287,7 +985,6 @@
         }
       });
 
-      // Update page title
       const titles = {
         tr: 'Destek Merkezi \u2014 BudgieBreedingTracker',
         en: 'Support Center \u2014 BudgieBreedingTracker',
@@ -295,7 +992,6 @@
       };
       document.title = titles[lang];
 
-      // Update meta description
       const descriptions = {
         tr: 'BudgieBreedingTracker destek merkezi. Hesap, abonelik, uygulama kullan\u0131m\u0131 ve daha fazlas\u0131 i\u00e7in yard\u0131m al\u0131n.',
         en: 'BudgieBreedingTracker support center. Get help with your account, subscriptions, app usage, and more.',
@@ -304,7 +1000,6 @@
       const metaDesc = document.querySelector('meta[name="description"]');
       if (metaDesc) metaDesc.setAttribute('content', descriptions[lang]);
 
-      // Update language buttons
       document.querySelectorAll('.lang-btn').forEach(btn => {
         btn.classList.toggle('active', btn.getAttribute('data-lang') === lang);
       });
