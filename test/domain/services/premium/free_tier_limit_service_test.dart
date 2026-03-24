@@ -98,7 +98,7 @@ void main() {
   group('guardBreedingPairLimit', () {
     test('does not throw when only completed pairs exist', () async {
       final pairs = [
-        BreedingPair(
+        const BreedingPair(
           id: '1',
           userId: 'u1',
           status: BreedingStatus.completed,
@@ -170,7 +170,7 @@ void main() {
         ),
       );
       final ongoingPairs = [
-        BreedingPair(
+        const BreedingPair(
           id: 'ongoing_0',
           userId: 'u1',
           status: BreedingStatus.ongoing,
@@ -187,9 +187,9 @@ void main() {
 
     test('does not throw when under limit with mixed statuses', () async {
       final pairs = [
-        BreedingPair(id: '1', userId: 'u1', status: BreedingStatus.active),
-        BreedingPair(id: '2', userId: 'u1', status: BreedingStatus.completed),
-        BreedingPair(id: '3', userId: 'u1', status: BreedingStatus.cancelled),
+        const BreedingPair(id: '1', userId: 'u1', status: BreedingStatus.active),
+        const BreedingPair(id: '2', userId: 'u1', status: BreedingStatus.completed),
+        const BreedingPair(id: '3', userId: 'u1', status: BreedingStatus.cancelled),
       ];
       when(() => mockBreedingRepo.getAll('u1')).thenAnswer((_) async => pairs);
 
