@@ -1080,6 +1080,73 @@
       transform: scaleX(1);
     }
 
+    /* ─── MOBILE PERFORMANCE ─── */
+    @media (max-width: 768px) {
+      /* Kill expensive effects */
+      body::before { display: none !important; } /* noise texture */
+      .hero-gradient::after { display: none !important; } /* hero noise */
+      .texture-overlay::after { display: none !important; }
+      .stats-forest::before { display: none !important; }
+      .cursor-glow { display: none !important; }
+      .page-curtain { display: none !important; }
+
+      /* Kill particles */
+      .particles { display: none !important; }
+
+      /* Kill orbs */
+      .orb, .orb-1, .orb-2, .orb-3 { display: none !important; }
+
+      /* Kill morph blobs */
+      .morph-blob { display: none !important; }
+      .floating-particle { display: none !important; }
+
+      /* Remove backdrop-filter (GPU killer on mobile) */
+      .card-hover {
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        background: rgba(27, 67, 50, 0.45) !important;
+      }
+      .card-hover:hover {
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        transform: none !important;
+      }
+
+      /* Simplify nav blur */
+      nav, #navbar {
+        backdrop-filter: blur(8px) !important;
+        -webkit-backdrop-filter: blur(8px) !important;
+      }
+
+      /* Remove card hover animations on touch */
+      .card-hover::before,
+      .card-hover::after { display: none !important; }
+
+      /* Disable float/glow animations */
+      .glow-pulse { animation: none !important; }
+      .animate-float, .animate-float-delayed, .animate-float-slow { animation: none !important; }
+
+      /* Simplify reveal: no blur filter */
+      .reveal, .reveal-scale, .reveal-left, .reveal-right, .reveal-flip {
+        filter: none !important;
+      }
+
+      /* Kill gradient animations */
+      .gradient-animate, .stats-forest, .btn-shimmer {
+        animation: none !important;
+        background-size: 100% 100% !important;
+      }
+
+      /* Simpler phone mockup */
+      .phone-mockup { animation: none !important; box-shadow: 0 20px 40px rgba(0,0,0,0.3) !important; }
+
+      /* Simpler screenshot hover */
+      .screenshot-item:hover { transform: none !important; }
+
+      /* Kill decorative ring spin */
+      .animate-\\[spin_60s_linear_infinite\\] { animation: none !important; }
+    }
+
     /* ─── PREFERS-REDUCED-MOTION ─── */
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after {
@@ -1092,9 +1159,12 @@
         transform: none !important;
         filter: none !important;
       }
+      body::before { display: none; }
       .page-curtain { display: none; }
       .cursor-glow { display: none; }
       .particle { display: none; }
+      .particles { display: none; }
+      .orb, .orb-1, .orb-2, .orb-3 { display: none; }
     }
   </style>
 </head>
