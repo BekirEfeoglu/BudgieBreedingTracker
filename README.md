@@ -14,6 +14,8 @@
 
 <p align="center">
   <a href="https://budgiebreedingtracker.online"><img src="https://img.shields.io/badge/Website-budgiebreedingtracker.online-FF6F00?style=flat&logo=googlechrome&logoColor=white" alt="Website" /></a>
+  <a href="https://www.facebook.com/BudgieBreedingTracker/"><img src="https://img.shields.io/badge/Facebook-BudgieBreedingTracker-1877F2?style=flat&logo=facebook&logoColor=white" alt="Facebook" /></a>
+  <a href="https://www.instagram.com/budgiebreedingtrackerr/"><img src="https://img.shields.io/badge/Instagram-budgiebreedingtrackerr-E4405F?style=flat&logo=instagram&logoColor=white" alt="Instagram" /></a>
   <a href="https://github.com/BekirEfeoglu/BudgieBreedingTracker/actions/workflows/ci.yml"><img src="https://github.com/BekirEfeoglu/BudgieBreedingTracker/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
   <a href="https://codecov.io/gh/BekirEfeoglu/BudgieBreedingTracker"><img src="https://codecov.io/gh/BekirEfeoglu/BudgieBreedingTracker/graph/badge.svg" alt="Coverage" /></a>
 </p>
