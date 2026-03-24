@@ -9,6 +9,7 @@ import 'package:budgie_breeding_tracker/core/enums/subscription_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/photo_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/reminder_enums.dart';
 import 'package:budgie_breeding_tracker/data/models/health_record_model.dart';
+import 'package:budgie_breeding_tracker/core/enums/sync_enums.dart';
 import 'package:budgie_breeding_tracker/data/models/sync_metadata_model.dart';
 
 /// Generic type converter for storing enums as TEXT in SQLite.
@@ -133,4 +134,9 @@ const reminderTypeConverter = EnumConverter<ReminderType>(
 const syncStatusConverter = EnumConverter<SyncStatus>(
   SyncStatus.values,
   SyncStatus.pending,
+);
+
+const conflictTypeConverter = EnumConverter<ConflictType>(
+  ConflictType.values,
+  ConflictType.unknown,
 );
