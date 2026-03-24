@@ -96,12 +96,12 @@ PODS:
   - package_info_plus (0.4.5):
     - Flutter
   - PromisesObjC (2.4.0)
-  - purchases_flutter (9.15.0):
+  - purchases_flutter (9.15.1):
     - Flutter
-    - PurchasesHybridCommon (= 17.52.0)
-  - PurchasesHybridCommon (17.52.0):
-    - RevenueCat (= 5.65.0)
-  - RevenueCat (5.65.0)
+    - PurchasesHybridCommon (= 17.53.0)
+  - PurchasesHybridCommon (17.53.0):
+    - RevenueCat (= 5.66.0)
+  - RevenueCat (5.66.0)
   - SDWebImage (5.21.7):
     - SDWebImage/Core (= 5.21.7)
   - SDWebImage/Core (5.21.7)
@@ -263,9 +263,9 @@ SPEC CHECKSUMS:
   integration_test: 252f60fa39af5e17c3aa9899d35d908a0721b573
   package_info_plus: c0502532a26c7662a62a356cebe2692ec5fe4ec4
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
-  purchases_flutter: 5e618724eb48d3ac11828aea9f7de40acf9fad77
-  PurchasesHybridCommon: 27cca251e01998c53a6b31bf53baf09f84926609
-  RevenueCat: 9a37739bdf42af84dd87e023db340de7e0f9d874
+  purchases_flutter: 76edf3aa4fa3c1f65250898c28ad206c31216cda
+  PurchasesHybridCommon: 53d966ac5c39df13c3c759289bb3ef3e2f9f1622
+  RevenueCat: a3cf721ad8b1b56a930d748a40342aba16c09bbb
   SDWebImage: e9fc87c1aab89a8ab1bbd74eba378c6f53be8abf
   Sentry: d587a8fe91ca13503ecd69a1905f3e8a0fcf61be
   sentry_flutter: d17e659e7ca47f9a40d65c93605f85b7346ece89
