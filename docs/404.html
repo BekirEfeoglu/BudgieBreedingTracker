@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Page Not Found - BudgieBreedingTracker</title>
   <link rel="icon" type="image/png" href="/logo.png">
-  <link rel="apple-touch-icon" href="/logo.png">
+  <link rel="apple-touch-icon" href="/logo-new.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700;800;900&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
@@ -18,20 +18,20 @@
     }
 
     :root {
-      --forest-deep: #0C1F0F;
-      --forest-mid: #122318;
-      --leaf-dark: #1B4332;
-      --leaf-mid: #2D6A4F;
-      --leaf-light: #40916C;
+      --forest-deep: #0B1A3D;
+      --forest-mid: #0F2247;
+      --leaf-dark: #1A3A6B;
+      --leaf-mid: #2D5A9E;
+      --leaf-light: #4A8FD4;
       --sage: #A3B899;
       --sage-light: #C8D8C2;
       --gold: #D4A853;
       --gold-light: #E8C27A;
       --gold-glow: #F0D080;
       --cream: #F0EBD8;
-      --glass-bg: rgba(27, 67, 50, 0.25);
-      --glass-border: rgba(163, 184, 153, 0.2);
-      --glass-border-hover: rgba(212, 168, 83, 0.4);
+      --glass-bg: rgba(20, 50, 100, 0.25);
+      --glass-border: rgba(140, 180, 220, 0.2);
+      --glass-border-hover: rgba(245, 200, 66, 0.4);
     }
 
     html {
@@ -77,9 +77,9 @@
       position: absolute;
       inset: 0;
       background:
-        radial-gradient(ellipse 80% 60% at 20% 80%, rgba(27, 67, 50, 0.8) 0%, transparent 60%),
-        radial-gradient(ellipse 60% 50% at 80% 20%, rgba(45, 106, 79, 0.4) 0%, transparent 55%),
-        radial-gradient(ellipse 100% 100% at 50% 50%, var(--forest-deep) 0%, #091A0C 100%);
+        radial-gradient(ellipse 80% 60% at 20% 80%, rgba(20, 50, 100, 0.8) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 80% 20%, rgba(30, 70, 140, 0.4) 0%, transparent 55%),
+        radial-gradient(ellipse 100% 100% at 50% 50%, var(--forest-deep) 0%, #071535 100%);
     }
 
     /* Gold accent glow - top center */
@@ -91,7 +91,7 @@
       transform: translateX(-50%);
       width: 600px;
       height: 600px;
-      background: radial-gradient(circle, rgba(212, 168, 83, 0.07) 0%, transparent 70%);
+      background: radial-gradient(circle, rgba(245, 200, 66, 0.07) 0%, transparent 70%);
       border-radius: 50%;
     }
 
@@ -124,26 +124,26 @@
     }
 
     /* Generate 20 particles with varied properties */
-    .particle:nth-child(1)  { left: 8%;   width: 12px; height: 18px; background: rgba(163,184,153,0.25); animation-duration: 18s; animation-delay: 0s;    top: -20px; }
-    .particle:nth-child(2)  { left: 16%;  width: 8px;  height: 12px; background: rgba(212,168,83,0.2);  animation-duration: 22s; animation-delay: -4s;   top: -20px; }
-    .particle:nth-child(3)  { left: 25%;  width: 15px; height: 22px; background: rgba(64,145,108,0.3);  animation-duration: 15s; animation-delay: -8s;   top: -20px; }
-    .particle:nth-child(4)  { left: 35%;  width: 6px;  height: 10px; background: rgba(163,184,153,0.2); animation-duration: 25s; animation-delay: -2s;   top: -20px; }
-    .particle:nth-child(5)  { left: 44%;  width: 10px; height: 16px; background: rgba(212,168,83,0.15); animation-duration: 20s; animation-delay: -12s;  top: -20px; }
-    .particle:nth-child(6)  { left: 55%;  width: 14px; height: 20px; background: rgba(64,145,108,0.25); animation-duration: 17s; animation-delay: -6s;   top: -20px; }
-    .particle:nth-child(7)  { left: 63%;  width: 7px;  height: 11px; background: rgba(163,184,153,0.3); animation-duration: 23s; animation-delay: -10s;  top: -20px; }
-    .particle:nth-child(8)  { left: 72%;  width: 11px; height: 17px; background: rgba(212,168,83,0.2);  animation-duration: 19s; animation-delay: -3s;   top: -20px; }
-    .particle:nth-child(9)  { left: 82%;  width: 9px;  height: 13px; background: rgba(45,106,79,0.3);   animation-duration: 21s; animation-delay: -7s;   top: -20px; }
-    .particle:nth-child(10) { left: 91%;  width: 13px; height: 19px; background: rgba(163,184,153,0.2); animation-duration: 16s; animation-delay: -15s;  top: -20px; }
-    .particle:nth-child(11) { left: 5%;   width: 5px;  height: 8px;  background: rgba(212,168,83,0.25); animation-duration: 24s; animation-delay: -9s;   top: -20px; }
-    .particle:nth-child(12) { left: 20%;  width: 16px; height: 10px; background: rgba(64,145,108,0.2);  animation-duration: 14s; animation-delay: -11s;  top: -20px; }
-    .particle:nth-child(13) { left: 38%;  width: 8px;  height: 14px; background: rgba(163,184,153,0.35);animation-duration: 26s; animation-delay: -5s;   top: -20px; }
-    .particle:nth-child(14) { left: 50%;  width: 12px; height: 8px;  background: rgba(212,168,83,0.15); animation-duration: 18s; animation-delay: -14s;  top: -20px; }
-    .particle:nth-child(15) { left: 68%;  width: 6px;  height: 10px; background: rgba(45,106,79,0.25);  animation-duration: 22s; animation-delay: -1s;   top: -20px; }
-    .particle:nth-child(16) { left: 78%;  width: 18px; height: 12px; background: rgba(163,184,153,0.2); animation-duration: 20s; animation-delay: -13s;  top: -20px; }
-    .particle:nth-child(17) { left: 88%;  width: 9px;  height: 15px; background: rgba(212,168,83,0.3);  animation-duration: 15s; animation-delay: -8s;   top: -20px; }
-    .particle:nth-child(18) { left: 30%;  width: 11px; height: 7px;  background: rgba(64,145,108,0.3);  animation-duration: 19s; animation-delay: -16s;  top: -20px; }
-    .particle:nth-child(19) { left: 57%;  width: 14px; height: 9px;  background: rgba(163,184,153,0.25);animation-duration: 23s; animation-delay: -4s;   top: -20px; }
-    .particle:nth-child(20) { left: 95%;  width: 7px;  height: 12px; background: rgba(212,168,83,0.2);  animation-duration: 17s; animation-delay: -18s;  top: -20px; }
+    .particle:nth-child(1)  { left: 8%;   width: 12px; height: 18px; background: rgba(140,180,220,0.25); animation-duration: 18s; animation-delay: 0s;    top: -20px; }
+    .particle:nth-child(2)  { left: 16%;  width: 8px;  height: 12px; background: rgba(245,200,66,0.2);  animation-duration: 22s; animation-delay: -4s;   top: -20px; }
+    .particle:nth-child(3)  { left: 25%;  width: 15px; height: 22px; background: rgba(50,120,200,0.3);  animation-duration: 15s; animation-delay: -8s;   top: -20px; }
+    .particle:nth-child(4)  { left: 35%;  width: 6px;  height: 10px; background: rgba(140,180,220,0.2); animation-duration: 25s; animation-delay: -2s;   top: -20px; }
+    .particle:nth-child(5)  { left: 44%;  width: 10px; height: 16px; background: rgba(245,200,66,0.15); animation-duration: 20s; animation-delay: -12s;  top: -20px; }
+    .particle:nth-child(6)  { left: 55%;  width: 14px; height: 20px; background: rgba(50,120,200,0.25); animation-duration: 17s; animation-delay: -6s;   top: -20px; }
+    .particle:nth-child(7)  { left: 63%;  width: 7px;  height: 11px; background: rgba(140,180,220,0.3); animation-duration: 23s; animation-delay: -10s;  top: -20px; }
+    .particle:nth-child(8)  { left: 72%;  width: 11px; height: 17px; background: rgba(245,200,66,0.2);  animation-duration: 19s; animation-delay: -3s;   top: -20px; }
+    .particle:nth-child(9)  { left: 82%;  width: 9px;  height: 13px; background: rgba(30,70,140,0.3);   animation-duration: 21s; animation-delay: -7s;   top: -20px; }
+    .particle:nth-child(10) { left: 91%;  width: 13px; height: 19px; background: rgba(140,180,220,0.2); animation-duration: 16s; animation-delay: -15s;  top: -20px; }
+    .particle:nth-child(11) { left: 5%;   width: 5px;  height: 8px;  background: rgba(245,200,66,0.25); animation-duration: 24s; animation-delay: -9s;   top: -20px; }
+    .particle:nth-child(12) { left: 20%;  width: 16px; height: 10px; background: rgba(50,120,200,0.2);  animation-duration: 14s; animation-delay: -11s;  top: -20px; }
+    .particle:nth-child(13) { left: 38%;  width: 8px;  height: 14px; background: rgba(140,180,220,0.35);animation-duration: 26s; animation-delay: -5s;   top: -20px; }
+    .particle:nth-child(14) { left: 50%;  width: 12px; height: 8px;  background: rgba(245,200,66,0.15); animation-duration: 18s; animation-delay: -14s;  top: -20px; }
+    .particle:nth-child(15) { left: 68%;  width: 6px;  height: 10px; background: rgba(30,70,140,0.25);  animation-duration: 22s; animation-delay: -1s;   top: -20px; }
+    .particle:nth-child(16) { left: 78%;  width: 18px; height: 12px; background: rgba(140,180,220,0.2); animation-duration: 20s; animation-delay: -13s;  top: -20px; }
+    .particle:nth-child(17) { left: 88%;  width: 9px;  height: 15px; background: rgba(245,200,66,0.3);  animation-duration: 15s; animation-delay: -8s;   top: -20px; }
+    .particle:nth-child(18) { left: 30%;  width: 11px; height: 7px;  background: rgba(50,120,200,0.3);  animation-duration: 19s; animation-delay: -16s;  top: -20px; }
+    .particle:nth-child(19) { left: 57%;  width: 14px; height: 9px;  background: rgba(140,180,220,0.25);animation-duration: 23s; animation-delay: -4s;   top: -20px; }
+    .particle:nth-child(20) { left: 95%;  width: 7px;  height: 12px; background: rgba(245,200,66,0.2);  animation-duration: 17s; animation-delay: -18s;  top: -20px; }
 
     @keyframes drift {
       0%   { transform: translateY(0)   rotate(0deg)   translateX(0);   opacity: 0; }
@@ -187,13 +187,13 @@
       width: 34px;
       height: 34px;
       border-radius: 8px;
-      border: 1px solid rgba(212, 168, 83, 0.3);
+      border: 1px solid rgba(245, 200, 66, 0.3);
       transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
 
     .logo-link:hover .logo-img {
       transform: scale(1.08) rotate(-3deg);
-      box-shadow: 0 0 12px rgba(212, 168, 83, 0.3);
+      box-shadow: 0 0 12px rgba(245, 200, 66, 0.3);
     }
 
     .logo-text {
@@ -209,7 +209,7 @@
     .lang-group {
       display: flex;
       gap: 4px;
-      background: rgba(27, 67, 50, 0.3);
+      background: rgba(20, 50, 100, 0.3);
       border: 1px solid var(--glass-border);
       border-radius: 12px;
       padding: 4px;
@@ -231,13 +231,13 @@
 
     .lang-btn:hover {
       color: var(--gold-light);
-      background: rgba(212, 168, 83, 0.1);
+      background: rgba(245, 200, 66, 0.1);
     }
 
     .lang-btn.active {
-      background: rgba(212, 168, 83, 0.18);
+      background: rgba(245, 200, 66, 0.18);
       color: var(--gold-light);
-      box-shadow: 0 0 0 1px rgba(212, 168, 83, 0.3);
+      box-shadow: 0 0 0 1px rgba(245, 200, 66, 0.3);
     }
 
     /* ─── MAIN ─── */
@@ -286,7 +286,7 @@
       animation: meshGradient 6s ease infinite, subtleFloat 5s ease-in-out infinite;
       display: block;
       /* Layered text shadow simulation via filter */
-      filter: drop-shadow(0 0 40px rgba(212,168,83,0.25)) drop-shadow(0 0 80px rgba(212,168,83,0.1));
+      filter: drop-shadow(0 0 40px rgba(245,200,66,0.25)) drop-shadow(0 0 80px rgba(245,200,66,0.1));
     }
 
     @keyframes meshGradient {
@@ -326,7 +326,7 @@
       font-weight: 900;
       color: var(--gold);
       animation: questionBob 2.5s ease-in-out infinite;
-      text-shadow: 0 0 12px rgba(212,168,83,0.5);
+      text-shadow: 0 0 12px rgba(245,200,66,0.5);
       filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));
     }
 
@@ -408,20 +408,20 @@
       left: 0;
       right: 0;
       height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(212,168,83,0.3), transparent);
+      background: linear-gradient(90deg, transparent, rgba(245,200,66,0.3), transparent);
     }
 
     .glass-card::after {
       content: '';
       position: absolute;
       inset: 0;
-      background: radial-gradient(ellipse at 50% 0%, rgba(212,168,83,0.05) 0%, transparent 70%);
+      background: radial-gradient(ellipse at 50% 0%, rgba(245,200,66,0.05) 0%, transparent 70%);
       pointer-events: none;
     }
 
     .glass-card:hover {
       border-color: var(--glass-border-hover);
-      box-shadow: 0 0 40px rgba(212,168,83,0.08), 0 20px 60px rgba(0,0,0,0.3);
+      box-shadow: 0 0 40px rgba(245,200,66,0.08), 0 20px 60px rgba(0,0,0,0.3);
     }
 
     /* ─── TEXT CONTENT ─── */
@@ -452,7 +452,7 @@
       gap: 8px;
       padding: 14px 28px;
       background: linear-gradient(135deg, var(--leaf-mid), var(--leaf-dark));
-      border: 1px solid rgba(212, 168, 83, 0.35);
+      border: 1px solid rgba(245, 200, 66, 0.35);
       color: var(--gold-light);
       font-family: 'DM Sans', sans-serif;
       font-size: 15px;
@@ -461,7 +461,7 @@
       text-decoration: none;
       transition: all 0.3s ease;
       box-shadow:
-        0 0 0 0 rgba(212,168,83,0),
+        0 0 0 0 rgba(245,200,66,0),
         0 8px 24px rgba(0,0,0,0.3);
       position: relative;
       overflow: hidden;
@@ -471,17 +471,17 @@
       content: '';
       position: absolute;
       inset: 0;
-      background: linear-gradient(135deg, rgba(212,168,83,0.12), rgba(212,168,83,0));
+      background: linear-gradient(135deg, rgba(245,200,66,0.12), rgba(245,200,66,0));
       opacity: 0;
       transition: opacity 0.3s ease;
     }
 
     .home-btn:hover {
       transform: translateY(-2px) scale(1.02);
-      border-color: rgba(212, 168, 83, 0.6);
+      border-color: rgba(245, 200, 66, 0.6);
       box-shadow:
-        0 0 20px rgba(212,168,83,0.2),
-        0 0 60px rgba(212,168,83,0.08),
+        0 0 20px rgba(245,200,66,0.2),
+        0 0 60px rgba(245,200,66,0.08),
         0 12px 32px rgba(0,0,0,0.35);
       color: var(--gold-glow);
     }
@@ -504,7 +504,7 @@
     .quick-links {
       margin-top: 28px;
       padding-top: 24px;
-      border-top: 1px solid rgba(163, 184, 153, 0.12);
+      border-top: 1px solid rgba(140, 180, 220, 0.12);
     }
 
     .quick-title {
@@ -530,8 +530,8 @@
       align-items: center;
       gap: 5px;
       padding: 7px 14px;
-      background: rgba(27, 67, 50, 0.35);
-      border: 1px solid rgba(163, 184, 153, 0.15);
+      background: rgba(20, 50, 100, 0.35);
+      border: 1px solid rgba(140, 180, 220, 0.15);
       color: var(--sage);
       font-family: 'DM Sans', sans-serif;
       font-size: 13px;
@@ -544,8 +544,8 @@
     }
 
     .quick-link:hover {
-      background: rgba(212, 168, 83, 0.1);
-      border-color: rgba(212, 168, 83, 0.3);
+      background: rgba(245, 200, 66, 0.1);
+      border-color: rgba(245, 200, 66, 0.3);
       color: var(--gold-light);
       transform: translateY(-1px);
       box-shadow: 0 4px 12px rgba(0,0,0,0.2);
@@ -566,7 +566,7 @@
       z-index: 2;
       padding: 20px 24px;
       text-align: center;
-      border-top: 1px solid rgba(163, 184, 153, 0.08);
+      border-top: 1px solid rgba(140, 180, 220, 0.08);
     }
 
     footer p {
@@ -589,7 +589,7 @@
     .orb-1 {
       width: 300px;
       height: 300px;
-      background: radial-gradient(circle, rgba(45,106,79,0.25), transparent 70%);
+      background: radial-gradient(circle, rgba(30,70,140,0.25), transparent 70%);
       bottom: 10%;
       left: -8%;
       animation-duration: 8s;
@@ -599,7 +599,7 @@
     .orb-2 {
       width: 250px;
       height: 250px;
-      background: radial-gradient(circle, rgba(212,168,83,0.08), transparent 70%);
+      background: radial-gradient(circle, rgba(245,200,66,0.08), transparent 70%);
       top: 20%;
       right: -5%;
       animation-duration: 10s;
@@ -609,7 +609,7 @@
     .orb-3 {
       width: 180px;
       height: 180px;
-      background: radial-gradient(circle, rgba(27,67,50,0.4), transparent 70%);
+      background: radial-gradient(circle, rgba(20,50,100,0.4), transparent 70%);
       top: 60%;
       right: 20%;
       animation-duration: 12s;
@@ -679,7 +679,7 @@
       width: 250px;
       height: 250px;
       border-radius: 50%;
-      background: radial-gradient(circle, rgba(212,168,83,0.06) 0%, transparent 70%);
+      background: radial-gradient(circle, rgba(245,200,66,0.06) 0%, transparent 70%);
       pointer-events: none;
       z-index: 2;
       transform: translate(-50%, -50%);
@@ -713,7 +713,7 @@
         -webkit-backdrop-filter: none !important;
       }
       .glass-card {
-        background: rgba(27, 67, 50, 0.5) !important;
+        background: rgba(20, 50, 100, 0.5) !important;
       }
       header {
         backdrop-filter: blur(8px) !important;
@@ -802,48 +802,48 @@
 
           <!-- Tail feathers -->
           <g>
-            <path d="M52 118 Q44 138 38 148 Q50 140 56 124 Z" fill="#1B4332"/>
-            <path d="M58 120 Q55 142 52 152 Q62 143 64 124 Z" fill="#2D6A4F"/>
-            <path d="M66 120 Q68 143 68 153 Q74 143 72 124 Z" fill="#1B4332"/>
-            <path d="M72 118 Q80 138 86 148 Q76 140 70 124 Z" fill="#40916C"/>
+            <path d="M52 118 Q44 138 38 148 Q50 140 56 124 Z" fill="#1A3A6B"/>
+            <path d="M58 120 Q55 142 52 152 Q62 143 64 124 Z" fill="#2D5A9E"/>
+            <path d="M66 120 Q68 143 68 153 Q74 143 72 124 Z" fill="#1A3A6B"/>
+            <path d="M72 118 Q80 138 86 148 Q76 140 70 124 Z" fill="#4A8FD4"/>
           </g>
 
           <!-- Body -->
-          <ellipse cx="62" cy="100" rx="26" ry="30" fill="#40916C"/>
+          <ellipse cx="62" cy="100" rx="26" ry="30" fill="#4A8FD4"/>
 
           <!-- Belly (lighter chest) -->
-          <ellipse cx="62" cy="108" rx="16" ry="20" fill="#52B788"/>
+          <ellipse cx="62" cy="108" rx="16" ry="20" fill="#5BA4E6"/>
           <!-- Belly stripes / barring pattern -->
-          <path d="M50 98 Q62 94 74 98" stroke="rgba(163,184,153,0.4)" stroke-width="1.5" stroke-linecap="round" fill="none"/>
-          <path d="M48 104 Q62 99 76 104" stroke="rgba(163,184,153,0.3)" stroke-width="1.2" stroke-linecap="round" fill="none"/>
-          <path d="M50 110 Q62 106 74 110" stroke="rgba(163,184,153,0.25)" stroke-width="1" stroke-linecap="round" fill="none"/>
+          <path d="M50 98 Q62 94 74 98" stroke="rgba(140,180,220,0.4)" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+          <path d="M48 104 Q62 99 76 104" stroke="rgba(140,180,220,0.3)" stroke-width="1.2" stroke-linecap="round" fill="none"/>
+          <path d="M50 110 Q62 106 74 110" stroke="rgba(140,180,220,0.25)" stroke-width="1" stroke-linecap="round" fill="none"/>
 
           <!-- Left Wing (back) -->
           <g class="wing-left">
-            <path d="M38 80 Q22 90 18 112 Q28 108 42 98 Q44 88 38 80 Z" fill="#2D6A4F"/>
-            <path d="M38 80 Q24 86 20 106 Q30 102 42 94" stroke="rgba(163,184,153,0.3)" stroke-width="1" fill="none"/>
+            <path d="M38 80 Q22 90 18 112 Q28 108 42 98 Q44 88 38 80 Z" fill="#2D5A9E"/>
+            <path d="M38 80 Q24 86 20 106 Q30 102 42 94" stroke="rgba(140,180,220,0.3)" stroke-width="1" fill="none"/>
             <!-- Wing feather tips -->
-            <path d="M18 112 Q16 120 20 122 Q26 116 28 108 Z" fill="#1B4332"/>
-            <path d="M22 116 Q20 124 25 125 Q30 118 30 111 Z" fill="#1B4332"/>
+            <path d="M18 112 Q16 120 20 122 Q26 116 28 108 Z" fill="#1A3A6B"/>
+            <path d="M22 116 Q20 124 25 125 Q30 118 30 111 Z" fill="#1A3A6B"/>
           </g>
 
           <!-- Right Wing (front) -->
           <g class="wing-right">
-            <path d="M86 80 Q102 90 106 112 Q96 108 82 98 Q80 88 86 80 Z" fill="#40916C"/>
-            <path d="M86 80 Q100 86 104 106 Q94 102 82 94" stroke="rgba(163,184,153,0.3)" stroke-width="1" fill="none"/>
+            <path d="M86 80 Q102 90 106 112 Q96 108 82 98 Q80 88 86 80 Z" fill="#4A8FD4"/>
+            <path d="M86 80 Q100 86 104 106 Q94 102 82 94" stroke="rgba(140,180,220,0.3)" stroke-width="1" fill="none"/>
             <!-- Wing feather tips -->
-            <path d="M106 112 Q108 120 104 122 Q98 116 96 108 Z" fill="#2D6A4F"/>
-            <path d="M102 116 Q104 124 99 125 Q94 118 94 111 Z" fill="#2D6A4F"/>
+            <path d="M106 112 Q108 120 104 122 Q98 116 96 108 Z" fill="#2D5A9E"/>
+            <path d="M102 116 Q104 124 99 125 Q94 118 94 111 Z" fill="#2D5A9E"/>
           </g>
 
           <!-- Head group (animated tilt) -->
           <g class="budgie-head">
             <!-- Head -->
-            <ellipse cx="64" cy="62" rx="22" ry="22" fill="#52B788"/>
+            <ellipse cx="64" cy="62" rx="22" ry="22" fill="#5BA4E6"/>
 
             <!-- Forehead barring (young budgie cheek pattern) -->
-            <path d="M46 55 Q55 50 64 50 Q73 50 82 55" stroke="rgba(163,184,153,0.5)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-            <path d="M44 60 Q55 54 64 54 Q73 54 84 60" stroke="rgba(163,184,153,0.35)" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+            <path d="M46 55 Q55 50 64 50 Q73 50 82 55" stroke="rgba(140,180,220,0.5)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+            <path d="M44 60 Q55 54 64 54 Q73 54 84 60" stroke="rgba(140,180,220,0.35)" stroke-width="1.2" fill="none" stroke-linecap="round"/>
 
             <!-- Cheek patches (blue/violet - budgie characteristic) -->
             <ellipse cx="46" cy="68" rx="7" ry="6" fill="rgba(99,102,241,0.6)"/>
@@ -859,10 +859,10 @@
             <!-- Eyes -->
             <!-- Left eye -->
             <g class="eye-blink" style="transform-origin: 54px 60px;">
-              <circle cx="54" cy="60" r="6" fill="#0C1F0F"/>
+              <circle cx="54" cy="60" r="6" fill="#0B1A3D"/>
               <circle cx="54" cy="60" r="4.5" fill="#1a1a1a"/>
               <!-- Iris ring -->
-              <circle cx="54" cy="60" r="4.5" fill="none" stroke="rgba(212,168,83,0.8)" stroke-width="1"/>
+              <circle cx="54" cy="60" r="4.5" fill="none" stroke="rgba(245,200,66,0.8)" stroke-width="1"/>
               <!-- Pupil -->
               <circle cx="54" cy="60" r="2.5" fill="#000"/>
               <!-- Highlight -->
@@ -871,18 +871,18 @@
             </g>
             <!-- Right eye -->
             <g class="eye-blink" style="transform-origin: 74px 60px;">
-              <circle cx="74" cy="60" r="6" fill="#0C1F0F"/>
+              <circle cx="74" cy="60" r="6" fill="#0B1A3D"/>
               <circle cx="74" cy="60" r="4.5" fill="#1a1a1a"/>
-              <circle cx="74" cy="60" r="4.5" fill="none" stroke="rgba(212,168,83,0.8)" stroke-width="1"/>
+              <circle cx="74" cy="60" r="4.5" fill="none" stroke="rgba(245,200,66,0.8)" stroke-width="1"/>
               <circle cx="74" cy="60" r="2.5" fill="#000"/>
               <circle cx="75.5" cy="58.5" r="1.2" fill="white" opacity="0.9"/>
               <circle cx="72.5" cy="62" r="0.6" fill="white" opacity="0.5"/>
             </g>
 
             <!-- Crown feathers (a little ruffled - confused look) -->
-            <path d="M52 44 Q55 36 58 42" stroke="#52B788" stroke-width="3" stroke-linecap="round" fill="none"/>
-            <path d="M60 42 Q62 32 65 41" stroke="#40916C" stroke-width="3" stroke-linecap="round" fill="none"/>
-            <path d="M68 42 Q70 35 74 43" stroke="#52B788" stroke-width="3" stroke-linecap="round" fill="none"/>
+            <path d="M52 44 Q55 36 58 42" stroke="#5BA4E6" stroke-width="3" stroke-linecap="round" fill="none"/>
+            <path d="M60 42 Q62 32 65 41" stroke="#4A8FD4" stroke-width="3" stroke-linecap="round" fill="none"/>
+            <path d="M68 42 Q70 35 74 43" stroke="#5BA4E6" stroke-width="3" stroke-linecap="round" fill="none"/>
             <!-- Crown tips - slightly off axis for confused look -->
             <circle cx="57" cy="36" r="2" fill="#D4A853" opacity="0.7"/>
             <circle cx="65" cy="31" r="2.5" fill="#D4A853" opacity="0.9"/>
