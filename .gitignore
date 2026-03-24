@@ -16,6 +16,7 @@
 .LSOverride
 Icon?
 !web/icons/
+!assets/icons/
 
 # --------------------------------------------------
 # Windows

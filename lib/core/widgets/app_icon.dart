@@ -24,6 +24,8 @@ class AppIcon extends StatelessWidget {
     final effectiveSize = size ?? iconTheme.size ?? 24;
     final effectiveColor = color ?? iconTheme.color;
 
+    final effectiveLabel = semanticsLabel ?? _labelFromAsset(asset);
+
     return SvgPicture.asset(
       asset,
       width: effectiveSize,
@@ -31,7 +33,12 @@ class AppIcon extends StatelessWidget {
       colorFilter: effectiveColor != null
           ? ColorFilter.mode(effectiveColor, BlendMode.srcIn)
           : null,
-      semanticsLabel: semanticsLabel,
+      semanticsLabel: effectiveLabel,
     );
+  }
+
+  static String _labelFromAsset(String path) {
+    final fileName = path.split('/').last.replaceAll('.svg', '');
+    return fileName.replaceAll('_', ' ');
   }
 }
