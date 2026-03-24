@@ -1,7 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
+import 'package:uuid/uuid.dart';
 import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
+import 'package:budgie_breeding_tracker/core/enums/sync_enums.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
+import 'package:budgie_breeding_tracker/data/local/database/dao_providers.dart'
+    show conflictHistoryDaoProvider;
+import 'package:budgie_breeding_tracker/data/models/conflict_history_model.dart';
+import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/sync/sync_providers.dart';
 
@@ -198,14 +204,21 @@ class SyncPullHandler {
     }
   }
 
-  /// Reports detected pull conflicts to [conflictHistoryProvider].
+  /// Reports detected pull conflicts to [conflictHistoryProvider] and persists
+  /// them to the local [ConflictHistoryDao] for offline history.
   void _reportPullConflicts(
     List<({String recordId, String detail})> conflicts,
     String tableName,
   ) {
     if (conflicts.isEmpty) return;
+
     final notifier = _ref.read(conflictHistoryProvider.notifier);
+    final dao = _ref.read(conflictHistoryDaoProvider);
+    final userId = _ref.read(currentUserIdProvider);
+    const uuid = Uuid();
+
     for (final c in conflicts) {
+      // In-memory (existing behavior)
       notifier.addConflict(
         SyncConflict(
           table: tableName,
@@ -214,7 +227,19 @@ class SyncPullHandler {
           description: c.detail,
         ),
       );
+
+      // Persist to DB
+      dao.insert(ConflictHistory(
+        id: uuid.v4(),
+        userId: userId,
+        tableName: tableName,
+        recordId: c.recordId,
+        description: c.detail,
+        conflictType: ConflictType.serverWins,
+        createdAt: DateTime.now(),
+      ));
     }
+
     AppLogger.info(
       '[SyncOrchestrator] ${conflicts.length} conflict(s) detected in $tableName',
     );
