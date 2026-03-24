@@ -1,95 +1,146 @@
 <svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1200" y2="630" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#0F172A"/>
-      <stop offset="50%" stop-color="#1E3A5F"/>
-      <stop offset="100%" stop-color="#0F172A"/>
+      <stop offset="0%" stop-color="#0F2247"/>
+      <stop offset="50%" stop-color="#1A3A6B"/>
+      <stop offset="100%" stop-color="#0B1A3D"/>
     </linearGradient>
     <linearGradient id="textGrad" x1="0" y1="0" x2="600" y2="0" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#3B82F6"/>
-      <stop offset="100%" stop-color="#22C55E"/>
+      <stop offset="0%" stop-color="#5DA4D4"/>
+      <stop offset="100%" stop-color="#4A8FD4"/>
     </linearGradient>
     <linearGradient id="accentGrad" x1="0" y1="0" x2="400" y2="0" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#F59E0B"/>
-      <stop offset="100%" stop-color="#22C55E"/>
+      <stop offset="0%" stop-color="#F0D080"/>
+      <stop offset="100%" stop-color="#D4A853"/>
     </linearGradient>
-    <filter id="glow">
-      <feGaussianBlur stdDeviation="20" result="blur"/>
-      <feMerge>
-        <feMergeNode in="blur"/>
-        <feMergeNode in="SourceGraphic"/>
-      </feMerge>
-    </filter>
+    <linearGradient id="gold" x1="0" y1="0" x2="0.5" y2="1">
+      <stop offset="0%" stop-color="#F0D080"/>
+      <stop offset="40%" stop-color="#D4A853"/>
+      <stop offset="100%" stop-color="#B8862D"/>
+    </linearGradient>
+    <linearGradient id="body" x1="0.2" y1="0" x2="0.8" y2="1">
+      <stop offset="0%" stop-color="#5DA4D4"/>
+      <stop offset="50%" stop-color="#4A8FD4"/>
+      <stop offset="100%" stop-color="#2D5A9E"/>
+    </linearGradient>
+    <linearGradient id="wing" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#2D5A9E"/>
+      <stop offset="100%" stop-color="#1A3A6B"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.12" cy="0.5" r="0.25">
+      <stop offset="0%" stop-color="rgba(245,200,66,0.10)"/>
+      <stop offset="100%" stop-color="transparent"/>
+    </radialGradient>
     <filter id="shadow">
-      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#000000" flood-opacity="0.3"/>
+      <feDropShadow dx="0" dy="3" stdDeviation="6" flood-color="#000" flood-opacity="0.3"/>
+    </filter>
+    <filter id="pillShadow">
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#000000" flood-opacity="0.2"/>
     </filter>
   </defs>
 
   <!-- Background -->
   <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect width="1200" height="630" fill="url(#glow)"/>
 
   <!-- Decorative circles -->
-  <circle cx="950" cy="120" r="200" fill="#3B82F6" opacity="0.06"/>
-  <circle cx="200" cy="500" r="150" fill="#22C55E" opacity="0.05"/>
-  <circle cx="1100" cy="500" r="120" fill="#F59E0B" opacity="0.04"/>
+  <circle cx="950" cy="120" r="200" fill="#2D5A9E" opacity="0.06"/>
+  <circle cx="200" cy="500" r="150" fill="#D4A853" opacity="0.04"/>
+  <circle cx="1100" cy="500" r="120" fill="#4A8FD4" opacity="0.04"/>
 
-  <!-- Logo placeholder circle -->
-  <g filter="shadow">
-    <rect x="80" y="180" width="160" height="160" rx="36" fill="#1E40AF"/>
-    <text x="160" y="285" text-anchor="middle" font-size="80" fill="white">🐦</text>
+  <!-- Embedded shield logo (scaled from logo.png) -->
+  <g transform="translate(60, 135) scale(0.7)">
+    <!-- Shield outline -->
+    <path d="M256 60 C256 60 380 80 420 120 C460 160 450 320 256 460 C62 320 52 160 92 120 C132 80 256 60 256 60Z"
+          fill="none" stroke="rgba(245,200,66,0.15)" stroke-width="2"/>
+
+    <!-- Branch -->
+    <path d="M120 340 Q200 330 260 350 Q320 370 400 345"
+          fill="none" stroke="url(#gold)" stroke-width="6" stroke-linecap="round" filter="url(#shadow)"/>
+    <path d="M180 335 Q170 310 160 295" fill="none" stroke="#B8862D" stroke-width="2.5" stroke-linecap="round" opacity="0.6"/>
+    <path d="M320 355 Q330 330 340 320" fill="none" stroke="#B8862D" stroke-width="2.5" stroke-linecap="round" opacity="0.6"/>
+    <ellipse cx="155" cy="290" rx="10" ry="6" fill="#2D5A9E" transform="rotate(-30 155 290)" opacity="0.7"/>
+    <ellipse cx="345" cy="315" rx="10" ry="6" fill="#2D5A9E" transform="rotate(20 345 315)" opacity="0.7"/>
+
+    <!-- Budgie -->
+    <g filter="url(#shadow)">
+      <path d="M165 330 Q130 400 115 440 Q125 435 140 420 Q135 440 125 460 Q140 445 155 425 Q155 440 150 455 Q165 435 175 400 Q180 370 175 340Z"
+            fill="url(#wing)" opacity="0.9"/>
+      <ellipse cx="240" cy="280" rx="80" ry="90" fill="url(#body)" transform="rotate(-10 240 280)"/>
+      <path d="M195 240 Q180 280 185 330 Q210 310 250 300 Q290 290 300 260 Q280 240 250 235 Q220 230 195 240Z"
+            fill="url(#wing)"/>
+      <path d="M205 255 Q220 250 240 252" fill="none" stroke="rgba(140,180,220,0.3)" stroke-width="1.5"/>
+      <path d="M200 268 Q222 263 248 265" fill="none" stroke="rgba(140,180,220,0.25)" stroke-width="1.5"/>
+      <path d="M198 282 Q225 277 255 280" fill="none" stroke="rgba(140,180,220,0.2)" stroke-width="1.5"/>
+      <ellipse cx="268" cy="300" rx="40" ry="55" fill="#5DA4D4" opacity="0.3" transform="rotate(-5 268 300)"/>
+      <circle cx="290" cy="195" r="58" fill="url(#body)"/>
+      <path d="M255 165 Q275 155 300 158" fill="none" stroke="rgba(15,30,70,0.3)" stroke-width="2"/>
+      <path d="M250 175 Q272 166 302 170" fill="none" stroke="rgba(15,30,70,0.25)" stroke-width="1.8"/>
+      <path d="M248 185 Q270 177 305 182" fill="none" stroke="rgba(15,30,70,0.2)" stroke-width="1.5"/>
+      <path d="M265 152 Q285 135 315 148 Q305 140 290 138 Q275 140 265 152Z"
+            fill="url(#gold)" opacity="0.8"/>
+      <circle cx="315" cy="210" r="10" fill="#6B7DB3" opacity="0.5"/>
+      <ellipse cx="325" cy="188" rx="8" ry="5" fill="#5B8EBF" opacity="0.7"/>
+      <circle cx="305" cy="185" r="10" fill="#0B1A3D"/>
+      <circle cx="305" cy="185" r="7" fill="#1a1a1a"/>
+      <circle cx="305" cy="185" r="4.5" fill="#111"/>
+      <circle cx="305" cy="185" r="6.5" fill="none" stroke="white" stroke-width="1.2" opacity="0.8"/>
+      <circle cx="308" cy="182" r="2.5" fill="white" opacity="0.9"/>
+      <path d="M328 194 Q340 192 342 200 Q340 206 330 204 Q325 200 328 194Z" fill="#E8C27A"/>
+      <path d="M328 198 Q335 197 340 200" fill="none" stroke="#B8862D" stroke-width="0.8" opacity="0.5"/>
+      <g fill="none" stroke="#6E8AAE" stroke-width="2" stroke-linecap="round" opacity="0.8">
+        <path d="M225 340 Q220 355 210 360 M225 340 Q228 358 225 365 M225 340 Q232 355 238 358"/>
+        <path d="M265 345 Q260 360 252 365 M265 345 Q268 363 265 370 M265 345 Q272 360 278 363"/>
+      </g>
+    </g>
+
+    <!-- Corner accents -->
+    <path d="M40 40 L100 40 L40 100Z" fill="url(#gold)" opacity="0.08"/>
+    <path d="M472 472 L412 472 L472 412Z" fill="url(#gold)" opacity="0.08"/>
+    <rect x="24" y="24" width="464" height="464" rx="32" fill="none" stroke="url(#gold)" stroke-width="1" opacity="0.15"/>
   </g>
 
   <!-- App name -->
-  <text x="280" y="240" font-family="Inter, -apple-system, sans-serif" font-weight="900" font-size="56" fill="url(#textGrad)">BudgieBreeding</text>
-  <text x="280" y="310" font-family="Inter, -apple-system, sans-serif" font-weight="900" font-size="56" fill="url(#accentGrad)">Tracker</text>
+  <text x="480" y="230" font-family="Outfit, Inter, -apple-system, sans-serif" font-weight="900" font-size="56" fill="url(#textGrad)">BudgieBreeding</text>
+  <text x="480" y="300" font-family="Outfit, Inter, -apple-system, sans-serif" font-weight="900" font-size="56" fill="url(#accentGrad)">Tracker</text>
 
   <!-- Tagline -->
-  <text x="280" y="370" font-family="Inter, -apple-system, sans-serif" font-weight="400" font-size="24" fill="#94A3B8">Muhabbet kuşu yetiştiricileri için kapsamlı üreme takip uygulaması</text>
+  <text x="480" y="355" font-family="DM Sans, Inter, -apple-system, sans-serif" font-weight="400" font-size="22" fill="#8BA4C4">Muhabbet kuşu yetiştiricileri için</text>
+  <text x="480" y="385" font-family="DM Sans, Inter, -apple-system, sans-serif" font-weight="400" font-size="22" fill="#8BA4C4">kapsamlı üreme takip uygulaması</text>
 
   <!-- Feature pills -->
-  <g font-family="Inter, -apple-system, sans-serif" font-weight="600" font-size="18">
-    <!-- Pill 1 -->
-    <rect x="80" y="430" width="180" height="44" rx="22" fill="#1E3A5F" stroke="#3B82F6" stroke-width="1.5" opacity="0.8"/>
-    <text x="116" y="458" fill="#93C5FD">🐤 Kuş Takibi</text>
+  <g font-family="DM Sans, Inter, -apple-system, sans-serif" font-weight="600" font-size="16" filter="url(#pillShadow)">
+    <rect x="480" y="420" width="160" height="38" rx="19" fill="#162560" stroke="#2D5A9E" stroke-width="1" opacity="0.9"/>
+    <text x="516" y="445" fill="#7DB4E0">🐤 Kuş Takibi</text>
 
-    <!-- Pill 2 -->
-    <rect x="280" y="430" width="200" height="44" rx="22" fill="#1E3A5F" stroke="#22C55E" stroke-width="1.5" opacity="0.8"/>
-    <text x="316" y="458" fill="#86EFAC">🧬 Genetik Analiz</text>
+    <rect x="656" y="420" width="180" height="38" rx="19" fill="#162560" stroke="#2D5A9E" stroke-width="1" opacity="0.9"/>
+    <text x="692" y="445" fill="#7DB4E0">🧬 Genetik Analiz</text>
 
-    <!-- Pill 3 -->
-    <rect x="500" y="430" width="180" height="44" rx="22" fill="#1E3A5F" stroke="#F59E0B" stroke-width="1.5" opacity="0.8"/>
-    <text x="536" y="458" fill="#FDE68A">📊 İstatistikler</text>
+    <rect x="852" y="420" width="160" height="38" rx="19" fill="#162560" stroke="#2D5A9E" stroke-width="1" opacity="0.9"/>
+    <text x="888" y="445" fill="#7DB4E0">📊 İstatistikler</text>
 
-    <!-- Pill 4 -->
-    <rect x="700" y="430" width="200" height="44" rx="22" fill="#1E3A5F" stroke="#3B82F6" stroke-width="1.5" opacity="0.8"/>
-    <text x="736" y="458" fill="#93C5FD">☁️ Bulut Sync</text>
+    <rect x="480" y="470" width="170" height="38" rx="19" fill="#162560" stroke="#D4A853" stroke-width="1" opacity="0.9"/>
+    <text x="516" y="495" fill="#E0C878">☁️ Bulut Sync</text>
 
-    <!-- Pill 5 -->
-    <rect x="920" y="430" width="190" height="44" rx="22" fill="#1E3A5F" stroke="#22C55E" stroke-width="1.5" opacity="0.8"/>
-    <text x="956" y="458" fill="#86EFAC">🥚 Üreme Takibi</text>
+    <rect x="666" y="470" width="180" height="38" rx="19" fill="#162560" stroke="#D4A853" stroke-width="1" opacity="0.9"/>
+    <text x="702" y="495" fill="#E0C878">🥚 Üreme Takibi</text>
   </g>
 
   <!-- Languages -->
-  <g font-family="Inter, -apple-system, sans-serif" font-weight="700" font-size="16">
-    <rect x="80" y="510" width="60" height="34" rx="8" fill="#1E40AF" opacity="0.6"/>
-    <text x="96" y="533" fill="white">🇹🇷 TR</text>
+  <g font-family="DM Sans, Inter, -apple-system, sans-serif" font-weight="700" font-size="15">
+    <rect x="480" y="535" width="56" height="30" rx="8" fill="#1E40AF" opacity="0.5"/>
+    <text x="494" y="556" fill="white">🇹🇷 TR</text>
 
-    <rect x="152" y="510" width="64" height="34" rx="8" fill="#1E40AF" opacity="0.4"/>
-    <text x="168" y="533" fill="#93C5FD">🇬🇧 EN</text>
+    <rect x="546" y="535" width="60" height="30" rx="8" fill="#1E40AF" opacity="0.3"/>
+    <text x="560" y="556" fill="#7DB4E0">🇬🇧 EN</text>
 
-    <rect x="228" y="510" width="64" height="34" rx="8" fill="#1E40AF" opacity="0.4"/>
-    <text x="244" y="533" fill="#93C5FD">🇩🇪 DE</text>
+    <rect x="616" y="535" width="58" height="30" rx="8" fill="#1E40AF" opacity="0.3"/>
+    <text x="630" y="556" fill="#7DB4E0">🇩🇪 DE</text>
   </g>
 
-  <!-- Platform badges -->
-  <g font-family="Inter, -apple-system, sans-serif" font-weight="600" font-size="15" fill="#64748B">
-    <text x="80" y="590">iOS &amp; Android</text>
-    <text x="250" y="590">•</text>
-    <text x="270" y="590">Offline-First</text>
-    <text x="420" y="590">•</text>
-    <text x="440" y="590">Ücretsiz Başla</text>
+  <!-- Platform & Domain -->
+  <g font-family="DM Sans, Inter, -apple-system, sans-serif" fill="#5A7A9E">
+    <text x="480" y="600" font-weight="500" font-size="15">iOS &amp; Android  •  Offline-First  •  Ücretsiz Başla</text>
+    <text x="1120" y="600" text-anchor="end" font-weight="500" font-size="15">budgiebreedingtracker.online</text>
   </g>
-
-  <!-- Domain -->
-  <text x="1120" y="590" text-anchor="end" font-family="Inter, -apple-system, sans-serif" font-weight="500" font-size="16" fill="#475569">budgiebreedingtracker.online</text>
 </svg>

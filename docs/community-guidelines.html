@@ -5,13 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Topluluk Kurallari — BudgieBreedingTracker</title>
   <meta name="description" content="BudgieBreedingTracker topluluk kurallari ve icerik politikasi.">
-  <meta name="theme-color" content="#1B4332">
+  <meta name="theme-color" content="#1A3A6B">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="icon" type="image/png" href="logo.png">
-  <link rel="apple-touch-icon" href="logo.png">
+  <link rel="apple-touch-icon" href="logo-new.png">
 
   <style>
     *, *::before, *::after {
@@ -21,19 +21,19 @@
     }
 
     :root {
-      --forest-deep: #0C1F0F;
-      --forest-mid: #122318;
-      --leaf-dark: #1B4332;
-      --leaf-mid: #2D6A4F;
-      --leaf-light: #40916C;
+      --forest-deep: #0B1A3D;
+      --forest-mid: #0F2247;
+      --leaf-dark: #1A3A6B;
+      --leaf-mid: #2D5A9E;
+      --leaf-light: #4A8FD4;
       --sage: #A3B899;
       --sage-light: #C8D8C2;
       --gold: #D4A853;
       --gold-light: #E8C27A;
       --gold-glow: #F0D080;
-      --glass-bg: rgba(27, 67, 50, 0.25);
-      --glass-border: rgba(163, 184, 153, 0.2);
-      --glass-border-hover: rgba(212, 168, 83, 0.4);
+      --glass-bg: rgba(20, 50, 100, 0.25);
+      --glass-border: rgba(140, 180, 220, 0.2);
+      --glass-border-hover: rgba(245, 200, 66, 0.4);
     }
 
     html {
@@ -78,9 +78,9 @@
       position: absolute;
       inset: 0;
       background:
-        radial-gradient(ellipse 80% 60% at 20% 80%, rgba(27, 67, 50, 0.8) 0%, transparent 60%),
-        radial-gradient(ellipse 60% 50% at 80% 20%, rgba(45, 106, 79, 0.4) 0%, transparent 55%),
-        radial-gradient(ellipse 100% 100% at 50% 50%, var(--forest-deep) 0%, #091A0C 100%);
+        radial-gradient(ellipse 80% 60% at 20% 80%, rgba(20, 50, 100, 0.8) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 80% 20%, rgba(30, 70, 140, 0.4) 0%, transparent 55%),
+        radial-gradient(ellipse 100% 100% at 50% 50%, var(--forest-deep) 0%, #071535 100%);
     }
 
     .bg-layer::after {
@@ -91,7 +91,7 @@
       transform: translateX(-50%);
       width: 700px;
       height: 700px;
-      background: radial-gradient(circle, rgba(212, 168, 83, 0.06) 0%, transparent 70%);
+      background: radial-gradient(circle, rgba(245, 200, 66, 0.06) 0%, transparent 70%);
       border-radius: 50%;
     }
 
@@ -113,26 +113,26 @@
 
     .particle.leaf { border-radius: 0 100% 0 100%; }
 
-    .particle:nth-child(1)  { left: 8%;   width: 12px; height: 18px; background: rgba(163,184,153,0.25); animation-duration: 18s; animation-delay: 0s;    top: -20px; }
-    .particle:nth-child(2)  { left: 16%;  width: 8px;  height: 12px; background: rgba(212,168,83,0.2);  animation-duration: 22s; animation-delay: -4s;   top: -20px; }
-    .particle:nth-child(3)  { left: 25%;  width: 15px; height: 22px; background: rgba(64,145,108,0.3);  animation-duration: 15s; animation-delay: -8s;   top: -20px; }
-    .particle:nth-child(4)  { left: 35%;  width: 6px;  height: 10px; background: rgba(163,184,153,0.2); animation-duration: 25s; animation-delay: -2s;   top: -20px; }
-    .particle:nth-child(5)  { left: 44%;  width: 10px; height: 16px; background: rgba(212,168,83,0.15); animation-duration: 20s; animation-delay: -12s;  top: -20px; }
-    .particle:nth-child(6)  { left: 55%;  width: 14px; height: 20px; background: rgba(64,145,108,0.25); animation-duration: 17s; animation-delay: -6s;   top: -20px; }
-    .particle:nth-child(7)  { left: 63%;  width: 7px;  height: 11px; background: rgba(163,184,153,0.3); animation-duration: 23s; animation-delay: -10s;  top: -20px; }
-    .particle:nth-child(8)  { left: 72%;  width: 11px; height: 17px; background: rgba(212,168,83,0.2);  animation-duration: 19s; animation-delay: -3s;   top: -20px; }
-    .particle:nth-child(9)  { left: 82%;  width: 9px;  height: 13px; background: rgba(45,106,79,0.3);   animation-duration: 21s; animation-delay: -7s;   top: -20px; }
-    .particle:nth-child(10) { left: 91%;  width: 13px; height: 19px; background: rgba(163,184,153,0.2); animation-duration: 16s; animation-delay: -15s;  top: -20px; }
-    .particle:nth-child(11) { left: 5%;   width: 5px;  height: 8px;  background: rgba(212,168,83,0.25); animation-duration: 24s; animation-delay: -9s;   top: -20px; }
-    .particle:nth-child(12) { left: 20%;  width: 16px; height: 10px; background: rgba(64,145,108,0.2);  animation-duration: 14s; animation-delay: -11s;  top: -20px; }
-    .particle:nth-child(13) { left: 38%;  width: 8px;  height: 14px; background: rgba(163,184,153,0.35);animation-duration: 26s; animation-delay: -5s;   top: -20px; }
-    .particle:nth-child(14) { left: 50%;  width: 12px; height: 8px;  background: rgba(212,168,83,0.15); animation-duration: 18s; animation-delay: -14s;  top: -20px; }
-    .particle:nth-child(15) { left: 68%;  width: 6px;  height: 10px; background: rgba(45,106,79,0.25);  animation-duration: 22s; animation-delay: -1s;   top: -20px; }
-    .particle:nth-child(16) { left: 78%;  width: 18px; height: 12px; background: rgba(163,184,153,0.2); animation-duration: 20s; animation-delay: -13s;  top: -20px; }
-    .particle:nth-child(17) { left: 88%;  width: 9px;  height: 15px; background: rgba(212,168,83,0.3);  animation-duration: 15s; animation-delay: -8s;   top: -20px; }
-    .particle:nth-child(18) { left: 30%;  width: 11px; height: 7px;  background: rgba(64,145,108,0.3);  animation-duration: 19s; animation-delay: -16s;  top: -20px; }
-    .particle:nth-child(19) { left: 57%;  width: 14px; height: 9px;  background: rgba(163,184,153,0.25);animation-duration: 23s; animation-delay: -4s;   top: -20px; }
-    .particle:nth-child(20) { left: 95%;  width: 7px;  height: 12px; background: rgba(212,168,83,0.2);  animation-duration: 17s; animation-delay: -18s;  top: -20px; }
+    .particle:nth-child(1)  { left: 8%;   width: 12px; height: 18px; background: rgba(140,180,220,0.25); animation-duration: 18s; animation-delay: 0s;    top: -20px; }
+    .particle:nth-child(2)  { left: 16%;  width: 8px;  height: 12px; background: rgba(245,200,66,0.2);  animation-duration: 22s; animation-delay: -4s;   top: -20px; }
+    .particle:nth-child(3)  { left: 25%;  width: 15px; height: 22px; background: rgba(50,120,200,0.3);  animation-duration: 15s; animation-delay: -8s;   top: -20px; }
+    .particle:nth-child(4)  { left: 35%;  width: 6px;  height: 10px; background: rgba(140,180,220,0.2); animation-duration: 25s; animation-delay: -2s;   top: -20px; }
+    .particle:nth-child(5)  { left: 44%;  width: 10px; height: 16px; background: rgba(245,200,66,0.15); animation-duration: 20s; animation-delay: -12s;  top: -20px; }
+    .particle:nth-child(6)  { left: 55%;  width: 14px; height: 20px; background: rgba(50,120,200,0.25); animation-duration: 17s; animation-delay: -6s;   top: -20px; }
+    .particle:nth-child(7)  { left: 63%;  width: 7px;  height: 11px; background: rgba(140,180,220,0.3); animation-duration: 23s; animation-delay: -10s;  top: -20px; }
+    .particle:nth-child(8)  { left: 72%;  width: 11px; height: 17px; background: rgba(245,200,66,0.2);  animation-duration: 19s; animation-delay: -3s;   top: -20px; }
+    .particle:nth-child(9)  { left: 82%;  width: 9px;  height: 13px; background: rgba(30,70,140,0.3);   animation-duration: 21s; animation-delay: -7s;   top: -20px; }
+    .particle:nth-child(10) { left: 91%;  width: 13px; height: 19px; background: rgba(140,180,220,0.2); animation-duration: 16s; animation-delay: -15s;  top: -20px; }
+    .particle:nth-child(11) { left: 5%;   width: 5px;  height: 8px;  background: rgba(245,200,66,0.25); animation-duration: 24s; animation-delay: -9s;   top: -20px; }
+    .particle:nth-child(12) { left: 20%;  width: 16px; height: 10px; background: rgba(50,120,200,0.2);  animation-duration: 14s; animation-delay: -11s;  top: -20px; }
+    .particle:nth-child(13) { left: 38%;  width: 8px;  height: 14px; background: rgba(140,180,220,0.35);animation-duration: 26s; animation-delay: -5s;   top: -20px; }
+    .particle:nth-child(14) { left: 50%;  width: 12px; height: 8px;  background: rgba(245,200,66,0.15); animation-duration: 18s; animation-delay: -14s;  top: -20px; }
+    .particle:nth-child(15) { left: 68%;  width: 6px;  height: 10px; background: rgba(30,70,140,0.25);  animation-duration: 22s; animation-delay: -1s;   top: -20px; }
+    .particle:nth-child(16) { left: 78%;  width: 18px; height: 12px; background: rgba(140,180,220,0.2); animation-duration: 20s; animation-delay: -13s;  top: -20px; }
+    .particle:nth-child(17) { left: 88%;  width: 9px;  height: 15px; background: rgba(245,200,66,0.3);  animation-duration: 15s; animation-delay: -8s;   top: -20px; }
+    .particle:nth-child(18) { left: 30%;  width: 11px; height: 7px;  background: rgba(50,120,200,0.3);  animation-duration: 19s; animation-delay: -16s;  top: -20px; }
+    .particle:nth-child(19) { left: 57%;  width: 14px; height: 9px;  background: rgba(140,180,220,0.25);animation-duration: 23s; animation-delay: -4s;   top: -20px; }
+    .particle:nth-child(20) { left: 95%;  width: 7px;  height: 12px; background: rgba(245,200,66,0.2);  animation-duration: 17s; animation-delay: -18s;  top: -20px; }
 
     @keyframes drift {
       0%   { transform: translateY(0) rotate(0deg) translateX(0);   opacity: 0; }
@@ -153,7 +153,7 @@
     .orb-1 {
       width: 350px;
       height: 350px;
-      background: radial-gradient(circle, rgba(45,106,79,0.18) 0%, transparent 70%);
+      background: radial-gradient(circle, rgba(30,70,140,0.18) 0%, transparent 70%);
       top: -80px;
       right: -80px;
       animation-duration: 8s;
@@ -163,7 +163,7 @@
     .orb-2 {
       width: 280px;
       height: 280px;
-      background: radial-gradient(circle, rgba(212,168,83,0.1) 0%, transparent 70%);
+      background: radial-gradient(circle, rgba(245,200,66,0.1) 0%, transparent 70%);
       bottom: 10%;
       left: -60px;
       animation-duration: 10s;
@@ -173,7 +173,7 @@
     .orb-3 {
       width: 200px;
       height: 200px;
-      background: radial-gradient(circle, rgba(64,145,108,0.15) 0%, transparent 70%);
+      background: radial-gradient(circle, rgba(50,120,200,0.15) 0%, transparent 70%);
       top: 40%;
       right: 5%;
       animation-duration: 12s;
@@ -220,13 +220,13 @@
       width: 34px;
       height: 34px;
       border-radius: 8px;
-      border: 1px solid rgba(212, 168, 83, 0.3);
+      border: 1px solid rgba(245, 200, 66, 0.3);
       transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
 
     .logo-link:hover .logo-img {
       transform: scale(1.08) rotate(-3deg);
-      box-shadow: 0 0 12px rgba(212, 168, 83, 0.3);
+      box-shadow: 0 0 12px rgba(245, 200, 66, 0.3);
     }
 
     .logo-text {
@@ -253,7 +253,7 @@
     .lang-group {
       display: flex;
       gap: 4px;
-      background: rgba(27, 67, 50, 0.3);
+      background: rgba(20, 50, 100, 0.3);
       border: 1px solid var(--glass-border);
       border-radius: 12px;
       padding: 4px;
@@ -277,13 +277,13 @@
 
     .lang-btn:hover {
       color: var(--gold-light);
-      background: rgba(212, 168, 83, 0.1);
+      background: rgba(245, 200, 66, 0.1);
     }
 
     .lang-btn.active {
-      background: rgba(212, 168, 83, 0.18);
+      background: rgba(245, 200, 66, 0.18);
       color: var(--gold-light);
-      box-shadow: 0 0 0 1px rgba(212, 168, 83, 0.3);
+      box-shadow: 0 0 0 1px rgba(245, 200, 66, 0.3);
     }
 
     .back-link {
@@ -379,8 +379,8 @@
       font-family: 'Outfit', sans-serif;
       font-size: 13px;
       font-weight: 700;
-      box-shadow: 0 2px 12px rgba(27, 67, 50, 0.5);
-      border: 1px solid rgba(212, 168, 83, 0.2);
+      box-shadow: 0 2px 12px rgba(20, 50, 100, 0.5);
+      border: 1px solid rgba(245, 200, 66, 0.2);
     }
 
     .section-heading h2 {
@@ -430,7 +430,7 @@
       transition: background 0.18s;
     }
 
-    .check-list li:hover { background: rgba(64, 145, 108, 0.08); }
+    .check-list li:hover { background: rgba(50, 120, 200, 0.08); }
 
     .check-list li::before {
       content: '';
@@ -439,7 +439,7 @@
       height: 18px;
       min-width: 18px;
       margin-top: 2px;
-      background: linear-gradient(135deg, #2D6A4F, #40916C);
+      background: linear-gradient(135deg, #2D5A9E, #4A8FD4);
       border-radius: 50%;
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E");
       background-size: 11px;
@@ -510,7 +510,7 @@
       transition: background 0.18s;
     }
 
-    .shield-list li:hover { background: rgba(212, 168, 83, 0.06); }
+    .shield-list li:hover { background: rgba(245, 200, 66, 0.06); }
 
     .shield-list li::before {
       content: '';
@@ -549,7 +549,7 @@
       transition: background 0.18s;
     }
 
-    .warn-list li:hover { background: rgba(212, 168, 83, 0.07); }
+    .warn-list li:hover { background: rgba(245, 200, 66, 0.07); }
 
     .warn-list li::before {
       content: '';
@@ -571,7 +571,7 @@
 
     /* ─── CALLOUT ─── */
     .callout {
-      background: rgba(45, 106, 79, 0.12);
+      background: rgba(30, 70, 140, 0.12);
       border-left: 3px solid var(--leaf-mid);
       border-radius: 0 10px 10px 0;
       padding: 12px 16px;
@@ -611,19 +611,19 @@
 
     .contact-card:hover {
       background: rgba(18, 35, 24, 0.7);
-      border-color: rgba(212, 168, 83, 0.55);
+      border-color: rgba(245, 200, 66, 0.55);
     }
 
     .contact-icon {
       width: 44px;
       height: 44px;
       min-width: 44px;
-      background: rgba(212, 168, 83, 0.1);
+      background: rgba(245, 200, 66, 0.1);
       border-radius: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
-      border: 1px solid rgba(212, 168, 83, 0.25);
+      border: 1px solid rgba(245, 200, 66, 0.25);
     }
 
     .contact-label {
@@ -741,7 +741,7 @@
       width: 250px;
       height: 250px;
       border-radius: 50%;
-      background: radial-gradient(circle, rgba(212,168,83,0.05) 0%, transparent 70%);
+      background: radial-gradient(circle, rgba(245,200,66,0.05) 0%, transparent 70%);
       pointer-events: none;
       z-index: 2;
       transform: translate(-50%, -50%);
@@ -761,7 +761,7 @@
         -webkit-backdrop-filter: none !important;
       }
       .glass-card {
-        background: rgba(27, 67, 50, 0.5) !important;
+        background: rgba(20, 50, 100, 0.5) !important;
       }
       header {
         backdrop-filter: blur(8px) !important;
