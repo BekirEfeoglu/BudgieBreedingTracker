@@ -680,9 +680,89 @@
     .delay-4 { animation-delay: 0.45s; }
     .delay-5 { animation-delay: 0.55s; }
     .delay-6 { animation-delay: 0.65s; }
+
+    /* ─── CUSTOM SCROLLBAR ─── */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: var(--forest-deep); }
+    ::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, var(--leaf-mid), var(--leaf-dark));
+      border-radius: 4px;
+      border: 2px solid var(--forest-deep);
+    }
+    ::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, var(--leaf-light), var(--leaf-mid)); }
+    html { scrollbar-color: var(--leaf-mid) var(--forest-deep); scrollbar-width: thin; }
+
+    /* ─── SCROLL PROGRESS BAR ─── */
+    .scroll-progress {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 2px;
+      width: 100%;
+      background: linear-gradient(90deg, var(--leaf-light), var(--gold), var(--gold-glow));
+      z-index: 10000;
+      transform-origin: left;
+      transform: scaleX(0);
+    }
+
+    /* ─── PAGE CURTAIN ─── */
+    .page-curtain {
+      position: fixed;
+      inset: 0;
+      background: var(--forest-deep);
+      z-index: 9999;
+      pointer-events: none;
+      animation: curtainReveal 0.8s cubic-bezier(0.65, 0, 0.35, 1) 0.2s forwards;
+    }
+    @keyframes curtainReveal {
+      0% { clip-path: inset(0 0 0 0); }
+      100% { clip-path: inset(0 0 100% 0); }
+    }
+
+    /* ─── SECTION REVEAL ─── */
+    .section-reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      filter: blur(3px);
+      transition: all 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .section-reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+      filter: blur(0);
+    }
+
+    /* ─── CURSOR GLOW ─── */
+    .cursor-glow {
+      position: fixed;
+      width: 250px;
+      height: 250px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(212,168,83,0.05) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 2;
+      transform: translate(-50%, -50%);
+      will-change: left, top;
+    }
+
+    /* ─── REDUCED MOTION ─── */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+      .section-reveal { opacity: 1 !important; transform: none !important; filter: none !important; }
+      .page-curtain { display: none; }
+      .cursor-glow { display: none; }
+      .particle, .leaf { display: none; }
+    }
   </style>
 </head>
 <body>
+  <div class="page-curtain"></div>
+  <div class="scroll-progress" id="scrollProgress"></div>
+  <div class="cursor-glow" id="cursorGlow"></div>
 
   <!-- Background layers -->
   <div class="bg-layer"></div>
@@ -1016,6 +1096,29 @@
         }
       }
     });
+
+    // Scroll progress bar
+    window.addEventListener('scroll', () => {
+      const p = document.documentElement.scrollTop / (document.documentElement.scrollHeight - window.innerHeight);
+      document.getElementById('scrollProgress').style.transform = 'scaleX(' + p + ')';
+    }, { passive: true });
+
+    // Cursor glow (desktop only)
+    if (window.matchMedia('(pointer: fine)').matches) {
+      const g = document.getElementById('cursorGlow');
+      document.addEventListener('mousemove', (e) => {
+        g.style.left = e.clientX + 'px';
+        g.style.top = e.clientY + 'px';
+      }, { passive: true });
+    }
+
+    // Section reveal on scroll
+    const revealObs = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) { e.target.classList.add('visible'); revealObs.unobserve(e.target); }
+      });
+    }, { threshold: 0.15 });
+    document.querySelectorAll('.section-reveal').forEach(el => revealObs.observe(el));
   </script>
 
 </body>

@@ -683,9 +683,89 @@
     .delay-5  { transition-delay: 0.25s; }
     .delay-6  { transition-delay: 0.30s; }
     .delay-7  { transition-delay: 0.35s; }
+
+    /* ─── CUSTOM SCROLLBAR ─── */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: var(--forest-deep); }
+    ::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, var(--leaf-mid), var(--leaf-dark));
+      border-radius: 4px;
+      border: 2px solid var(--forest-deep);
+    }
+    ::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, var(--leaf-light), var(--leaf-mid)); }
+    html { scrollbar-color: var(--leaf-mid) var(--forest-deep); scrollbar-width: thin; }
+
+    /* ─── SCROLL PROGRESS BAR ─── */
+    .scroll-progress {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 2px;
+      width: 100%;
+      background: linear-gradient(90deg, var(--leaf-light), var(--gold), var(--gold-glow));
+      z-index: 10000;
+      transform-origin: left;
+      transform: scaleX(0);
+    }
+
+    /* ─── PAGE CURTAIN ─── */
+    .page-curtain {
+      position: fixed;
+      inset: 0;
+      background: var(--forest-deep);
+      z-index: 9999;
+      pointer-events: none;
+      animation: curtainReveal 0.8s cubic-bezier(0.65, 0, 0.35, 1) 0.2s forwards;
+    }
+    @keyframes curtainReveal {
+      0% { clip-path: inset(0 0 0 0); }
+      100% { clip-path: inset(0 0 100% 0); }
+    }
+
+    /* ─── SECTION REVEAL ─── */
+    .section-reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      filter: blur(3px);
+      transition: all 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .section-reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+      filter: blur(0);
+    }
+
+    /* ─── CURSOR GLOW ─── */
+    .cursor-glow {
+      position: fixed;
+      width: 250px;
+      height: 250px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(212,168,83,0.05) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 2;
+      transform: translate(-50%, -50%);
+      will-change: left, top;
+    }
+
+    /* ─── REDUCED MOTION ─── */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+      .section-reveal { opacity: 1 !important; transform: none !important; filter: none !important; }
+      .page-curtain { display: none; }
+      .cursor-glow { display: none; }
+      .particle, .leaf { display: none; }
+    }
   </style>
 </head>
 <body>
+  <div class="page-curtain"></div>
+  <div class="scroll-progress" id="scrollProgress"></div>
+  <div class="cursor-glow" id="cursorGlow"></div>
 
   <!-- Background layers -->
   <div class="bg-layer" aria-hidden="true"></div>
@@ -746,7 +826,7 @@
     <div class="content-card">
 
       <!-- ── Section 1: Amac ── -->
-      <section class="fade-up delay-1">
+      <section class="fade-up delay-1 section-reveal">
         <div class="section-heading">
           <span class="section-number">1</span>
           <h2 data-i18n="s1_title">Amac</h2>
@@ -757,7 +837,7 @@
       <div class="section-divider"></div>
 
       <!-- ── Section 2: Saygi ── -->
-      <section class="fade-up delay-2">
+      <section class="fade-up delay-2 section-reveal">
         <div class="section-heading">
           <span class="section-number">2</span>
           <h2 data-i18n="s2_title">Saygi ve Nezaket</h2>
@@ -775,7 +855,7 @@
       <div class="section-divider"></div>
 
       <!-- ── Section 3: Yasaklanan ── -->
-      <section class="fade-up delay-3">
+      <section class="fade-up delay-3 section-reveal">
         <div class="section-heading">
           <span class="section-number">3</span>
           <h2 data-i18n="s3_title">Yasaklanan Icerikler</h2>
@@ -796,7 +876,7 @@
       <div class="section-divider"></div>
 
       <!-- ── Section 4: Paylasim ── -->
-      <section class="fade-up delay-4">
+      <section class="fade-up delay-4 section-reveal">
         <div class="section-heading">
           <span class="section-number">4</span>
           <h2 data-i18n="s4_title">Icerik Paylasim Kurallari</h2>
@@ -815,7 +895,7 @@
       <div class="section-divider"></div>
 
       <!-- ── Section 5: Raporlama ── -->
-      <section class="fade-up delay-5">
+      <section class="fade-up delay-5 section-reveal">
         <div class="section-heading">
           <span class="section-number">5</span>
           <h2 data-i18n="s5_title">Raporlama ve Moderasyon</h2>
@@ -834,7 +914,7 @@
       <div class="section-divider"></div>
 
       <!-- ── Section 6: Yaptirimlar ── -->
-      <section class="fade-up delay-6">
+      <section class="fade-up delay-6 section-reveal">
         <div class="section-heading">
           <span class="section-number">6</span>
           <h2 data-i18n="s6_title">Yaptirimlar</h2>
@@ -853,7 +933,7 @@
       <div class="section-divider"></div>
 
       <!-- ── Section 7: Iletisim ── -->
-      <section class="fade-up delay-7">
+      <section class="fade-up delay-7 section-reveal">
         <div class="section-heading">
           <span class="section-number">7</span>
           <h2 data-i18n="s7_title">Iletisim</h2>
@@ -997,7 +1077,7 @@
         }
       }
 
-      // Entrance animations
+      // Entrance animations (handles both .fade-up and .section-reveal)
       const observer = new IntersectionObserver(
         (entries) => {
           entries.forEach(entry => {
@@ -1010,8 +1090,23 @@
         { threshold: 0.08, rootMargin: '0px 0px -30px 0px' }
       );
 
-      document.querySelectorAll('.fade-up:not(.visible)').forEach(el => observer.observe(el));
+      document.querySelectorAll('.fade-up:not(.visible), .section-reveal:not(.visible)').forEach(el => observer.observe(el));
     });
+
+    // Scroll progress bar
+    window.addEventListener('scroll', () => {
+      const p = document.documentElement.scrollTop / (document.documentElement.scrollHeight - window.innerHeight);
+      document.getElementById('scrollProgress').style.transform = 'scaleX(' + p + ')';
+    }, { passive: true });
+
+    // Cursor glow (desktop only)
+    if (window.matchMedia('(pointer: fine)').matches) {
+      const g = document.getElementById('cursorGlow');
+      document.addEventListener('mousemove', (e) => {
+        g.style.left = e.clientX + 'px';
+        g.style.top = e.clientY + 'px';
+      }, { passive: true });
+    }
   </script>
 
 </body>

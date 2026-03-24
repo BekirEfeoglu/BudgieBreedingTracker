@@ -662,9 +662,60 @@
     .animate-in:nth-child(1) { animation-delay: 0.1s; }
     .animate-in:nth-child(2) { animation-delay: 0.25s; }
     .animate-in:nth-child(3) { animation-delay: 0.4s; }
+
+    /* Custom scrollbar */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: var(--forest-deep); }
+    ::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, var(--leaf-mid), var(--leaf-dark));
+      border-radius: 4px;
+      border: 2px solid var(--forest-deep);
+    }
+    ::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, var(--leaf-light), var(--leaf-mid)); }
+
+    /* Cursor glow */
+    .cursor-glow {
+      position: fixed;
+      width: 250px;
+      height: 250px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(212,168,83,0.06) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 2;
+      transform: translate(-50%, -50%);
+      will-change: left, top;
+    }
+
+    /* Page entrance */
+    .page-curtain {
+      position: fixed;
+      inset: 0;
+      background: var(--forest-deep);
+      z-index: 9999;
+      pointer-events: none;
+      animation: curtainReveal 0.8s cubic-bezier(0.65, 0, 0.35, 1) 0.2s forwards;
+    }
+    @keyframes curtainReveal {
+      0% { clip-path: inset(0 0 0 0); }
+      100% { clip-path: inset(0 0 100% 0); }
+    }
+
+    /* prefers-reduced-motion */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+      .page-curtain, .cursor-glow { display: none; }
+      .particle { display: none; }
+    }
   </style>
 </head>
 <body>
+
+  <div class="page-curtain"></div>
+  <div class="cursor-glow" id="cursorGlow"></div>
 
   <!-- Decorative elements behind content -->
   <div class="bg-layer"></div>
@@ -942,6 +993,15 @@
     const savedLang = localStorage.getItem('bbt-lang') ||
       (navigator.language.startsWith('de') ? 'de' : navigator.language.startsWith('en') ? 'en' : 'tr');
     setLanguage(savedLang);
+
+    // Cursor glow tracking
+    if (window.matchMedia('(pointer: fine)').matches) {
+      const g = document.getElementById('cursorGlow');
+      document.addEventListener('mousemove', (e) => {
+        g.style.left = e.clientX + 'px';
+        g.style.top = e.clientY + 'px';
+      }, { passive: true });
+    }
   </script>
 
 </body>
