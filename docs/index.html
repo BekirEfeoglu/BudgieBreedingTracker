@@ -1062,6 +1062,323 @@
       .lg\:h-96 { height: 24rem; }
     }
 
+    /* ─── ENHANCED HERO DEPTH ─── */
+    .hero-gradient {
+      perspective: 1200px;
+    }
+    .phone-mockup {
+      transform-style: preserve-3d;
+      transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .phone-mockup:hover {
+      transform: translateY(-8px) rotateY(-5deg) rotateX(3deg) scale(1.02);
+    }
+    .phone-glow {
+      position: absolute;
+      inset: -20%;
+      background: radial-gradient(ellipse at center, rgba(212,168,83,0.12) 0%, rgba(64,145,108,0.06) 40%, transparent 70%);
+      border-radius: 50%;
+      filter: blur(40px);
+      animation: glowBreath 4s ease-in-out infinite;
+      pointer-events: none;
+    }
+    @keyframes glowBreath {
+      0%, 100% { opacity: 0.6; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.08); }
+    }
+
+    /* ─── HERO CTA GLOW RING ─── */
+    .cta-primary-enhanced {
+      position: relative;
+      overflow: visible;
+    }
+    .cta-primary-enhanced::after {
+      content: '';
+      position: absolute;
+      inset: -3px;
+      border-radius: inherit;
+      background: linear-gradient(135deg, var(--gold), var(--leaf-light), var(--gold-glow), var(--leaf-mid));
+      background-size: 300% 300%;
+      animation: gradientShift 4s ease infinite;
+      z-index: -1;
+      opacity: 0;
+      transition: opacity 0.4s ease;
+      filter: blur(8px);
+    }
+    .cta-primary-enhanced:hover::after {
+      opacity: 0.7;
+    }
+
+    /* ─── ENHANCED FEATURE CARDS — animated border ─── */
+    .feature-card-enhanced {
+      position: relative;
+      background: var(--glass-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--glass-border);
+      border-radius: 1rem;
+      padding: 1.75rem;
+      transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+      overflow: hidden;
+    }
+    .feature-card-enhanced::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      padding: 1px;
+      background: linear-gradient(135deg, transparent 30%, var(--gold) 50%, var(--leaf-light) 70%, transparent 90%);
+      background-size: 400% 400%;
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+    .feature-card-enhanced:hover::before {
+      opacity: 1;
+      animation: gradientShift 3s ease infinite;
+    }
+    .feature-card-enhanced::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(212,168,83,0.06) 0%, transparent 50%);
+      opacity: 0;
+      transition: opacity 0.4s ease;
+      pointer-events: none;
+    }
+    .feature-card-enhanced:hover::after {
+      opacity: 1;
+    }
+    .feature-card-enhanced:hover {
+      transform: translateY(-8px);
+      box-shadow:
+        0 24px 48px -12px rgba(0, 0, 0, 0.4),
+        0 0 0 1px rgba(212, 168, 83, 0.15);
+      border-color: rgba(212, 168, 83, 0.2);
+    }
+    .feature-card-enhanced .feature-icon {
+      transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .feature-card-enhanced:hover .feature-icon {
+      transform: scale(1.15) rotate(-6deg);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    }
+
+    /* ─── ENHANCED SCREENSHOTS — 3D perspective ─── */
+    .screenshot-item-3d {
+      flex-shrink: 0;
+      width: 220px;
+      border-radius: 24px;
+      overflow: hidden;
+      border: 4px solid var(--leaf-dark);
+      box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5);
+      transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+      background: var(--forest-mid);
+      transform-style: preserve-3d;
+    }
+    .screenshot-item-3d:hover {
+      transform: scale(1.1) translateY(-16px) perspective(800px) rotateY(-4deg);
+      box-shadow:
+        0 40px 80px -20px rgba(0, 0, 0, 0.6),
+        0 0 0 1px rgba(212, 168, 83, 0.3),
+        0 0 40px rgba(212, 168, 83, 0.08);
+      border-color: rgba(212, 168, 83, 0.4);
+    }
+    .screenshot-item-3d img {
+      width: 100%;
+      height: auto;
+      display: block;
+      transition: transform 0.5s ease;
+    }
+    .screenshot-item-3d:hover img {
+      transform: scale(1.03);
+    }
+    @media (max-width: 768px) {
+      .screenshot-item-3d { width: 180px; border-radius: 20px; }
+      .screenshot-item-3d:hover { transform: none; }
+    }
+    @media (max-width: 640px) {
+      .screenshot-item-3d { width: 160px; border-radius: 18px; }
+    }
+
+    /* ─── ENHANCED STATS — glowing dividers & animated bg ─── */
+    .stat-item-enhanced {
+      position: relative;
+      padding: 1.5rem 0;
+    }
+    .stat-item-enhanced .stat-number {
+      position: relative;
+      display: inline-block;
+    }
+    .stat-item-enhanced .stat-number::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 40px;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+      border-radius: 1px;
+      opacity: 0;
+      transition: opacity 0.6s ease, width 0.6s ease;
+    }
+    .stat-item-enhanced.counted .stat-number::after {
+      opacity: 1;
+      width: 60px;
+    }
+
+    /* ─── ENHANCED CTA — dramatic glow ─── */
+    .cta-glow-bg {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+    }
+    .cta-glow-bg::before {
+      content: '';
+      position: absolute;
+      top: -30%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 600px;
+      height: 400px;
+      background: radial-gradient(ellipse, rgba(212,168,83,0.1) 0%, rgba(64,145,108,0.05) 40%, transparent 70%);
+      animation: glowBreath 5s ease-in-out infinite;
+    }
+    .cta-glow-bg::after {
+      content: '';
+      position: absolute;
+      bottom: -20%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 400px;
+      height: 300px;
+      background: radial-gradient(ellipse, rgba(64,145,108,0.08) 0%, transparent 60%);
+      animation: glowBreath 6s ease-in-out infinite;
+      animation-delay: -2s;
+    }
+
+    /* ─── STORE BUTTON ENHANCED ─── */
+    .store-btn-enhanced {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 1rem 1.75rem;
+      border-radius: 1rem;
+      background: rgba(27, 67, 50, 0.5);
+      border: 1px solid var(--glass-border);
+      backdrop-filter: blur(12px);
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      overflow: hidden;
+    }
+    .store-btn-enhanced::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(212,168,83,0.08) 0%, rgba(64,145,108,0.04) 100%);
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+    .store-btn-enhanced:hover {
+      transform: translateY(-4px) scale(1.03);
+      border-color: rgba(212, 168, 83, 0.35);
+      box-shadow:
+        0 16px 40px -8px rgba(0, 0, 0, 0.4),
+        0 0 20px rgba(212, 168, 83, 0.08);
+    }
+    .store-btn-enhanced:hover::before {
+      opacity: 1;
+    }
+
+    /* ─── FAQ ENHANCED — smoother, left accent ─── */
+    .faq-item-enhanced {
+      border-bottom: 1px solid var(--glass-border);
+      position: relative;
+      transition: all 0.3s ease;
+    }
+    .faq-item-enhanced::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 3px;
+      height: 0;
+      background: linear-gradient(180deg, var(--gold), var(--leaf-light));
+      border-radius: 2px;
+      transition: height 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .faq-item-enhanced.open::before {
+      height: 70%;
+    }
+    .faq-item-enhanced.open {
+      padding-left: 1rem;
+    }
+
+    /* ─── SCROLL LABEL PILLS — interactive ─── */
+    .ss-label-pill {
+      padding: 0.5rem 1rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      border-radius: 9999px;
+      border: 1px solid var(--glass-border);
+      background: rgba(45,106,79,0.2);
+      color: var(--sage-light);
+      transition: all 0.3s ease;
+      cursor: default;
+    }
+    .ss-label-pill:hover {
+      background: rgba(45,106,79,0.4);
+      border-color: var(--leaf-light);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    .ss-label-pill.premium {
+      background: rgba(212,168,83,0.12);
+      color: var(--gold-light);
+      border-color: rgba(212,168,83,0.2);
+    }
+    .ss-label-pill.premium:hover {
+      background: rgba(212,168,83,0.25);
+      border-color: var(--gold);
+    }
+
+    /* ─── NAVBAR ENHANCED — blur increases on scroll ─── */
+    .nav-scrolled {
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4) !important;
+      background: rgba(12,31,15,0.88) !important;
+      border-bottom-color: rgba(212,168,83,0.1) !important;
+    }
+
+    /* ─── PERF: will-change hints for animated elements ─── */
+    .phone-mockup,
+    .screenshot-item-3d,
+    .feature-card-enhanced {
+      will-change: transform;
+    }
+
+    /* ─── MOBILE PERF: disable new effects ─── */
+    @media (max-width: 768px) {
+      .feature-card-enhanced::before,
+      .feature-card-enhanced::after { display: none !important; }
+      .feature-card-enhanced:hover { transform: none !important; }
+      .phone-mockup:hover { transform: none !important; }
+      .phone-glow { display: none !important; }
+      .cta-primary-enhanced::after { display: none !important; }
+      .store-btn-enhanced:hover { transform: none !important; }
+      .stat-item-enhanced .stat-number::after { display: none !important; }
+      .faq-item-enhanced.open { padding-left: 0; }
+      .faq-item-enhanced::before { display: none !important; }
+      .ss-label-pill:hover { transform: none; }
+    }
+
     /* ─── BACK TO TOP — JS-toggled state classes ─── */
     #backToTop { opacity: 0; transform: translateY(1rem); pointer-events: none; }
     #backToTop.visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
@@ -1388,7 +1705,7 @@
           </p>
 
           <div class="flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start opacity-0 animate-fade-up-delay-3">
-            <a href="#cta" class="group inline-flex items-center gap-2.5 px-8 py-4 btn-shimmer rounded-2xl transition-all hover:scale-[1.02] magnetic-btn" style="box-shadow: 0 8px 32px rgba(212,168,83,0.2);">
+            <a href="#cta" class="group inline-flex items-center gap-2.5 px-8 py-4 btn-shimmer rounded-2xl transition-all hover:scale-[1.02] magnetic-btn cta-primary-enhanced" style="box-shadow: 0 8px 32px rgba(212,168,83,0.2);">
               <svg class="w-5 h-5 transition-transform group-hover:-translate-y-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
               <span data-i18n="hero_cta_primary">Uygulamayi Indir</span>
             </a>
@@ -1402,6 +1719,8 @@
         <!-- Hero Visual — App Logo + Phone Mockup -->
         <div class="flex-1 flex justify-center lg:justify-end opacity-0 animate-slide-left">
           <div class="relative">
+            <!-- Phone glow backdrop -->
+            <div class="phone-glow" aria-hidden="true"></div>
             <!-- Phone mockup -->
             <div class="phone-mockup animate-float glow-pulse">
               <div class="pt-8 px-4 flex flex-col items-center">
@@ -1596,21 +1915,21 @@
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
 
         <!-- Feature 1 -->
-        <div class="card-hover rounded-2xl p-7 reveal-scale stagger-1">
+        <div class="feature-card-enhanced reveal-scale stagger-1">
           <div class="feature-icon mb-5" style="background: rgba(45,106,79,0.3);">🐦</div>
           <h3 class="text-lg font-bold mb-2" style="color: var(--sage-light);" data-i18n="feature_1_title">Kus Takibi</h3>
           <p class="text-sm leading-relaxed" style="color: var(--sage);" data-i18n="feature_1_desc">Tum kuslarinizi halka numarasi, cinsiyet, mutasyon ve fotograflariyla detayli kayit altina alin.</p>
         </div>
 
         <!-- Feature 2 -->
-        <div class="card-hover rounded-2xl p-7 reveal-scale stagger-2">
+        <div class="feature-card-enhanced reveal-scale stagger-2">
           <div class="feature-icon mb-5" style="background: rgba(45,106,79,0.3);">💕</div>
           <h3 class="text-lg font-bold mb-2" style="color: var(--sage-light);" data-i18n="feature_2_title">Ureme Yonetimi</h3>
           <p class="text-sm leading-relaxed" style="color: var(--sage);" data-i18n="feature_2_desc">Ciftlestirme, yumurta takibi, kulucka sureci ve yavru gelisimini adim adim izleyin.</p>
         </div>
 
         <!-- Feature 3 -->
-        <div class="card-hover rounded-2xl p-7 reveal-scale stagger-3 relative">
+        <div class="feature-card-enhanced reveal-scale stagger-3 relative">
           <div class="premium-badge">⭐ <span data-i18n="badge_premium">Premium</span></div>
           <div class="feature-icon mb-5" style="background: rgba(212,168,83,0.15);">🧬</div>
           <h3 class="text-lg font-bold mb-2" style="color: var(--sage-light);" data-i18n="feature_3_title">Genetik Hesaplayici</h3>
@@ -1618,28 +1937,28 @@
         </div>
 
         <!-- Feature 4 -->
-        <div class="card-hover rounded-2xl p-7 reveal-scale stagger-4">
+        <div class="feature-card-enhanced reveal-scale stagger-4">
           <div class="feature-icon mb-5" style="background: rgba(45,106,79,0.3);">❤️‍🩹</div>
           <h3 class="text-lg font-bold mb-2" style="color: var(--sage-light);" data-i18n="feature_4_title">Saglik Kayitlari</h3>
           <p class="text-sm leading-relaxed" style="color: var(--sage);" data-i18n="feature_4_desc">Veteriner ziyaretleri, tedaviler ve saglik gecmisini kaydedin. Hatirlaticilarla hicbir seyi kacirmayin.</p>
         </div>
 
         <!-- Feature 5 -->
-        <div class="card-hover rounded-2xl p-7 reveal-scale stagger-5">
+        <div class="feature-card-enhanced reveal-scale stagger-5">
           <div class="feature-icon mb-5" style="background: rgba(45,106,79,0.3);">☁️</div>
           <h3 class="text-lg font-bold mb-2" style="color: var(--sage-light);" data-i18n="feature_5_title">Offline-First & Sync</h3>
           <p class="text-sm leading-relaxed" style="color: var(--sage);" data-i18n="feature_5_desc">Internet olmadan da calisin. Baglanti geldiginde verileriniz otomatik olarak senkronize edilir.</p>
         </div>
 
         <!-- Feature 6 -->
-        <div class="card-hover rounded-2xl p-7 reveal-scale stagger-6">
+        <div class="feature-card-enhanced reveal-scale stagger-6">
           <div class="feature-icon mb-5" style="background: rgba(212,168,83,0.15);">🌍</div>
           <h3 class="text-lg font-bold mb-2" style="color: var(--sage-light);" data-i18n="feature_6_title">Cok Dilli Destek</h3>
           <p class="text-sm leading-relaxed" style="color: var(--sage);" data-i18n="feature_6_desc">Turkce, Ingilizce ve Almanca dil destegi. Uygulama dilinizi istediginiz zaman degistirin.</p>
         </div>
 
         <!-- Feature 7 — Statistics (Premium) -->
-        <div class="card-hover rounded-2xl p-7 reveal-scale stagger-7 relative">
+        <div class="feature-card-enhanced reveal-scale stagger-7 relative">
           <div class="premium-badge">⭐ <span data-i18n="badge_premium">Premium</span></div>
           <div class="feature-icon mb-5" style="background: rgba(212,168,83,0.15);">📈</div>
           <h3 class="text-lg font-bold mb-2" style="color: var(--sage-light);" data-i18n="feature_7_title">İstatistikler</h3>
@@ -1647,7 +1966,7 @@
         </div>
 
         <!-- Feature 8 — Genealogy (Premium) -->
-        <div class="card-hover rounded-2xl p-7 reveal-scale stagger-8 relative">
+        <div class="feature-card-enhanced reveal-scale stagger-8 relative">
           <div class="premium-badge">⭐ <span data-i18n="badge_premium">Premium</span></div>
           <div class="feature-icon mb-5" style="background: rgba(212,168,83,0.15);">🌳</div>
           <h3 class="text-lg font-bold mb-2" style="color: var(--sage-light);" data-i18n="feature_8_title">Soy Ağacı</h3>
@@ -1655,14 +1974,14 @@
         </div>
 
         <!-- Feature 9 — Calendar & Reminders -->
-        <div class="card-hover rounded-2xl p-7 reveal-scale stagger-9">
+        <div class="feature-card-enhanced reveal-scale stagger-9">
           <div class="feature-icon mb-5" style="background: rgba(45,106,79,0.3);">📅</div>
           <h3 class="text-lg font-bold mb-2" style="color: var(--sage-light);" data-i18n="feature_9_title">Takvim & Hatırlatıcılar</h3>
           <p class="text-sm leading-relaxed" style="color: var(--sage);" data-i18n="feature_9_desc">Kuluçka tarihleri, veteriner randevuları ve tüm etkinlikleri takvimde görün. Akıllı hatırlatıcılarla hiçbir şeyi kaçırmayın.</p>
         </div>
 
         <!-- Feature 10 — Backup & Export -->
-        <div class="card-hover rounded-2xl p-7 reveal-scale stagger-10">
+        <div class="feature-card-enhanced reveal-scale stagger-10">
           <div class="feature-icon mb-5" style="background: rgba(45,106,79,0.3);">💾</div>
           <h3 class="text-lg font-bold mb-2" style="color: var(--sage-light);" data-i18n="feature_10_title">Yedekleme & Dışa Aktarma</h3>
           <p class="text-sm leading-relaxed" style="color: var(--sage);" data-i18n="feature_10_desc">Verilerinizi PDF ve Excel olarak dışa aktarın. AES-256 şifreli yedeklerle veri güvenliğinizi sağlayın.</p>
@@ -1693,65 +2012,65 @@
         <div class="overflow-hidden">
           <div class="screenshot-track">
             <!-- First set (10 screenshots) -->
-            <div class="screenshot-item">
+            <div class="screenshot-item-3d">
               <img src="screenshots/1.png" alt="Ana Sayfa" loading="lazy">
             </div>
-            <div class="screenshot-item">
+            <div class="screenshot-item-3d">
               <img src="screenshots/2.png" alt="Kuş Listesi" loading="lazy">
             </div>
-            <div class="screenshot-item">
+            <div class="screenshot-item-3d">
               <img src="screenshots/6.png" alt="Sağlık Kayıtları" loading="lazy">
             </div>
-            <div class="screenshot-item">
+            <div class="screenshot-item-3d">
               <img src="screenshots/3.png" alt="Üreme Takibi" loading="lazy">
             </div>
-            <div class="screenshot-item">
+            <div class="screenshot-item-3d">
               <img src="screenshots/10.png" alt="Ayarlar" loading="lazy">
             </div>
-            <div class="screenshot-item">
+            <div class="screenshot-item-3d">
               <img src="screenshots/9.png" alt="Genetik Hesaplayıcı" loading="lazy">
             </div>
-            <div class="screenshot-item">
+            <div class="screenshot-item-3d">
               <img src="screenshots/4.png" alt="Yavrular" loading="lazy">
             </div>
-            <div class="screenshot-item">
+            <div class="screenshot-item-3d">
               <img src="screenshots/5.png" alt="Takvim" loading="lazy">
             </div>
-            <div class="screenshot-item">
+            <div class="screenshot-item-3d">
               <img src="screenshots/7.png" alt="İstatistikler" loading="lazy">
             </div>
-            <div class="screenshot-item">
+            <div class="screenshot-item-3d">
               <img src="screenshots/8.png" alt="Soy Ağacı" loading="lazy">
             </div>
             <!-- Duplicate for infinite scroll -->
-            <div class="screenshot-item">
+            <div class="screenshot-item-3d">
               <img src="screenshots/1.png" alt="Ana Sayfa" loading="lazy">
             </div>
-            <div class="screenshot-item">
+            <div class="screenshot-item-3d">
               <img src="screenshots/2.png" alt="Kuş Listesi" loading="lazy">
             </div>
-            <div class="screenshot-item">
+            <div class="screenshot-item-3d">
               <img src="screenshots/6.png" alt="Sağlık Kayıtları" loading="lazy">
             </div>
-            <div class="screenshot-item">
+            <div class="screenshot-item-3d">
               <img src="screenshots/3.png" alt="Üreme Takibi" loading="lazy">
             </div>
-            <div class="screenshot-item">
+            <div class="screenshot-item-3d">
               <img src="screenshots/10.png" alt="Ayarlar" loading="lazy">
             </div>
-            <div class="screenshot-item">
+            <div class="screenshot-item-3d">
               <img src="screenshots/9.png" alt="Genetik Hesaplayıcı" loading="lazy">
             </div>
-            <div class="screenshot-item">
+            <div class="screenshot-item-3d">
               <img src="screenshots/4.png" alt="Yavrular" loading="lazy">
             </div>
-            <div class="screenshot-item">
+            <div class="screenshot-item-3d">
               <img src="screenshots/5.png" alt="Takvim" loading="lazy">
             </div>
-            <div class="screenshot-item">
+            <div class="screenshot-item-3d">
               <img src="screenshots/7.png" alt="İstatistikler" loading="lazy">
             </div>
-            <div class="screenshot-item">
+            <div class="screenshot-item-3d">
               <img src="screenshots/8.png" alt="Soy Ağacı" loading="lazy">
             </div>
           </div>
@@ -1760,16 +2079,16 @@
 
       <!-- Screenshot labels -->
       <div class="flex flex-wrap items-center justify-center gap-3 mt-10 reveal" style="transition-delay: 0.25s;">
-        <span class="px-4 py-2 text-sm font-medium rounded-full" style="background: rgba(45,106,79,0.25); color: var(--sage-light); border: 1px solid var(--glass-border);" data-i18n="ss_label_dashboard">Ana Sayfa</span>
-        <span class="px-4 py-2 text-sm font-medium rounded-full" style="background: rgba(45,106,79,0.25); color: var(--sage-light); border: 1px solid var(--glass-border);" data-i18n="ss_label_birds">Kus Yonetimi</span>
-        <span class="px-4 py-2 text-sm font-medium rounded-full" style="background: rgba(45,106,79,0.25); color: var(--sage-light); border: 1px solid var(--glass-border);" data-i18n="ss_label_breeding">Ureme Takibi</span>
-        <span class="px-4 py-2 text-sm font-medium rounded-full" style="background: rgba(45,106,79,0.25); color: var(--sage-light); border: 1px solid var(--glass-border);" data-i18n="ss_label_chicks">Yavrular</span>
-        <span class="px-4 py-2 text-sm font-medium rounded-full" style="background: rgba(45,106,79,0.25); color: var(--sage-light); border: 1px solid var(--glass-border);" data-i18n="ss_label_calendar">Takvim</span>
-        <span class="px-4 py-2 text-sm font-medium rounded-full" style="background: rgba(45,106,79,0.25); color: var(--sage-light); border: 1px solid var(--glass-border);" data-i18n="ss_label_health">Saglik Kayitlari</span>
-        <span class="px-4 py-2 text-sm font-medium rounded-full" style="background: rgba(212,168,83,0.15); color: var(--gold-light); border: 1px solid rgba(212,168,83,0.2);" data-i18n="ss_label_statistics">Istatistikler</span>
-        <span class="px-4 py-2 text-sm font-medium rounded-full" style="background: rgba(212,168,83,0.15); color: var(--gold-light); border: 1px solid rgba(212,168,83,0.2);" data-i18n="ss_label_genealogy">Soy Agaci</span>
-        <span class="px-4 py-2 text-sm font-medium rounded-full" style="background: rgba(212,168,83,0.15); color: var(--gold-light); border: 1px solid rgba(212,168,83,0.2);" data-i18n="ss_label_genetics">Genetik</span>
-        <span class="px-4 py-2 text-sm font-medium rounded-full" style="background: rgba(45,106,79,0.25); color: var(--sage-light); border: 1px solid var(--glass-border);" data-i18n="ss_label_settings">Ayarlar</span>
+        <span class="ss-label-pill" data-i18n="ss_label_dashboard">Ana Sayfa</span>
+        <span class="ss-label-pill" data-i18n="ss_label_birds">Kus Yonetimi</span>
+        <span class="ss-label-pill" data-i18n="ss_label_breeding">Ureme Takibi</span>
+        <span class="ss-label-pill" data-i18n="ss_label_chicks">Yavrular</span>
+        <span class="ss-label-pill" data-i18n="ss_label_calendar">Takvim</span>
+        <span class="ss-label-pill" data-i18n="ss_label_health">Saglik Kayitlari</span>
+        <span class="ss-label-pill premium" data-i18n="ss_label_statistics">Istatistikler</span>
+        <span class="ss-label-pill premium" data-i18n="ss_label_genealogy">Soy Agaci</span>
+        <span class="ss-label-pill premium" data-i18n="ss_label_genetics">Genetik</span>
+        <span class="ss-label-pill" data-i18n="ss_label_settings">Ayarlar</span>
       </div>
     </div>
   </section>
@@ -1871,20 +2190,20 @@
 
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
       <div class="grid grid-cols-2 md:grid-cols-4 gap-8 sm:gap-12 text-center">
-        <div class="stat-item reveal">
-          <div class="text-3xl sm:text-5xl font-black text-white mb-2" data-stat="19">19+</div>
+        <div class="stat-item stat-item-enhanced reveal">
+          <div class="text-3xl sm:text-5xl font-black text-white mb-2 stat-number" data-stat="19">19+</div>
           <div class="text-primary-200 text-sm font-medium" data-i18n="stat_1">Veri Kategorisi</div>
         </div>
-        <div class="stat-item reveal" style="transition-delay: 0.1s;">
-          <div class="text-3xl sm:text-5xl font-black text-white mb-2" data-stat="3">3</div>
+        <div class="stat-item stat-item-enhanced reveal" style="transition-delay: 0.1s;">
+          <div class="text-3xl sm:text-5xl font-black text-white mb-2 stat-number" data-stat="3">3</div>
           <div class="text-primary-200 text-sm font-medium" data-i18n="stat_2">Dil Destegi</div>
         </div>
-        <div class="stat-item reveal" style="transition-delay: 0.2s;">
-          <div class="text-3xl sm:text-5xl font-black text-white mb-2">100%</div>
+        <div class="stat-item stat-item-enhanced reveal" style="transition-delay: 0.2s;">
+          <div class="text-3xl sm:text-5xl font-black text-white mb-2 stat-number">100%</div>
           <div class="text-primary-200 text-sm font-medium" data-i18n="stat_3">Offline Calisma</div>
         </div>
-        <div class="stat-item reveal" style="transition-delay: 0.3s;">
-          <div class="text-3xl sm:text-5xl font-black text-white mb-2">256-bit</div>
+        <div class="stat-item stat-item-enhanced reveal" style="transition-delay: 0.3s;">
+          <div class="text-3xl sm:text-5xl font-black text-white mb-2 stat-number">256-bit</div>
           <div class="text-primary-200 text-sm font-medium" data-i18n="stat_4">AES Sifreleme</div>
         </div>
       </div>
@@ -1906,7 +2225,7 @@
       <div class="reveal" style="transition-delay: 0.1s; border-top: 1px solid var(--glass-border);">
 
         <!-- Q1 -->
-        <div class="faq-item py-5">
+        <div class="faq-item faq-item-enhanced py-5">
           <button class="faq-question flex items-center justify-between w-full text-left gap-4 py-1" onclick="toggleFaq(this)">
             <span class="font-semibold" style="color: var(--sage-light);" data-i18n="faq_q1">Uygulama ücretsiz mi?</span>
             <svg class="faq-icon w-5 h-5 flex-shrink-0" style="color: var(--sage);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
@@ -1917,7 +2236,7 @@
         </div>
 
         <!-- Q2 -->
-        <div class="faq-item py-5">
+        <div class="faq-item faq-item-enhanced py-5">
           <button class="faq-question flex items-center justify-between w-full text-left gap-4 py-1" onclick="toggleFaq(this)">
             <span class="font-semibold" style="color: var(--sage-light);" data-i18n="faq_q2">Verilerim güvende mi?</span>
             <svg class="faq-icon w-5 h-5 flex-shrink-0" style="color: var(--sage);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
@@ -1928,7 +2247,7 @@
         </div>
 
         <!-- Q3 -->
-        <div class="faq-item py-5">
+        <div class="faq-item faq-item-enhanced py-5">
           <button class="faq-question flex items-center justify-between w-full text-left gap-4 py-1" onclick="toggleFaq(this)">
             <span class="font-semibold" style="color: var(--sage-light);" data-i18n="faq_q3">Offline çalışıyor mu?</span>
             <svg class="faq-icon w-5 h-5 flex-shrink-0" style="color: var(--sage);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
@@ -1939,7 +2258,7 @@
         </div>
 
         <!-- Q4 -->
-        <div class="faq-item py-5">
+        <div class="faq-item faq-item-enhanced py-5">
           <button class="faq-question flex items-center justify-between w-full text-left gap-4 py-1" onclick="toggleFaq(this)">
             <span class="font-semibold" style="color: var(--sage-light);" data-i18n="faq_q4">Kaç kuş kaydedebilirim?</span>
             <svg class="faq-icon w-5 h-5 flex-shrink-0" style="color: var(--sage);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
@@ -1950,7 +2269,7 @@
         </div>
 
         <!-- Q5 -->
-        <div class="faq-item py-5">
+        <div class="faq-item faq-item-enhanced py-5">
           <button class="faq-question flex items-center justify-between w-full text-left gap-4 py-1" onclick="toggleFaq(this)">
             <span class="font-semibold" style="color: var(--sage-light);" data-i18n="faq_q5">Hangi platformlarda çalışıyor?</span>
             <svg class="faq-icon w-5 h-5 flex-shrink-0" style="color: var(--sage);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
@@ -1961,7 +2280,7 @@
         </div>
 
         <!-- Q6 -->
-        <div class="faq-item py-5">
+        <div class="faq-item faq-item-enhanced py-5">
           <button class="faq-question flex items-center justify-between w-full text-left gap-4 py-1" onclick="toggleFaq(this)">
             <span class="font-semibold" style="color: var(--sage-light);" data-i18n="faq_q6">Genetik hesaplayici nasil calisiyor?</span>
             <svg class="faq-icon w-5 h-5 flex-shrink-0" style="color: var(--sage);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
@@ -1988,7 +2307,8 @@
 
   <!-- CTA Section -->
   <section id="cta" class="py-14 sm:py-20 relative overflow-hidden z-10">
-    <!-- Background decoration -->
+    <!-- Enhanced Background decoration -->
+    <div class="cta-glow-bg" aria-hidden="true"></div>
     <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] rounded-full blur-3xl pointer-events-none" style="background: radial-gradient(ellipse, rgba(212,168,83,0.07) 0%, transparent 70%);"></div>
 
     <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
@@ -2000,8 +2320,8 @@
 
       <div class="flex flex-col sm:flex-row items-center justify-center gap-4 reveal" style="transition-delay: 0.15s;">
         <!-- Google Play -->
-        <a href="#" class="group inline-flex items-center gap-3 px-8 py-4 font-semibold rounded-2xl transition-all duration-300 hover:scale-[1.02] magnetic-btn" style="background: var(--leaf-dark); color: var(--sage-light); border: 1px solid var(--glass-border); box-shadow: 0 8px 24px rgba(0,0,0,0.3);" onmouseover="this.style.borderColor='var(--glass-border-hover)'" onmouseout="this.style.borderColor='var(--glass-border)'">
-          <svg class="w-8 h-8" style="color: var(--gold);" viewBox="0 0 512 512" fill="currentColor"><path d="M325.3 234.3L104.6 13l280.8 161.2-60.1 60.1zM47 0C34 6.8 25.3 19.2 25.3 35.3v441.3c0 16.1 8.7 28.5 21.7 35.3l256.6-256L47 0zm425.2 225.6l-58.9-34.1-65.7 64.5 65.7 64.5 60.1-34.1c18-14.3 18-46.5-1.2-60.8zM104.6 499l280.8-161.2-60.1-60.1L104.6 499z"/></svg>
+        <a href="#" class="store-btn-enhanced magnetic-btn">
+          <svg class="w-8 h-8 flex-shrink-0" style="color: var(--gold);" viewBox="0 0 512 512" fill="currentColor"><path d="M325.3 234.3L104.6 13l280.8 161.2-60.1 60.1zM47 0C34 6.8 25.3 19.2 25.3 35.3v441.3c0 16.1 8.7 28.5 21.7 35.3l256.6-256L47 0zm425.2 225.6l-58.9-34.1-65.7 64.5 65.7 64.5 60.1-34.1c18-14.3 18-46.5-1.2-60.8zM104.6 499l280.8-161.2-60.1-60.1L104.6 499z"/></svg>
           <div class="text-left">
             <div class="text-[10px] uppercase tracking-wider" style="color: var(--sage);" data-i18n="cta_google_label">Google Play'den</div>
             <div class="text-base font-bold" style="color: var(--gold-light);" data-i18n="cta_google_action">Indirin</div>
@@ -2009,8 +2329,8 @@
         </a>
 
         <!-- App Store -->
-        <a href="#" class="group inline-flex items-center gap-3 px-8 py-4 font-semibold rounded-2xl transition-all duration-300 hover:scale-[1.02] magnetic-btn" style="background: var(--leaf-dark); color: var(--sage-light); border: 1px solid var(--glass-border); box-shadow: 0 8px 24px rgba(0,0,0,0.3);" onmouseover="this.style.borderColor='var(--glass-border-hover)'" onmouseout="this.style.borderColor='var(--glass-border)'">
-          <svg class="w-8 h-8" style="color: var(--gold);" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+        <a href="#" class="store-btn-enhanced magnetic-btn">
+          <svg class="w-8 h-8 flex-shrink-0" style="color: var(--gold);" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
           <div class="text-left">
             <div class="text-[10px] uppercase tracking-wider" style="color: var(--sage);" data-i18n="cta_apple_label">App Store'dan</div>
             <div class="text-base font-bold" style="color: var(--gold-light);" data-i18n="cta_apple_action">Indirin</div>
@@ -2655,18 +2975,23 @@
       });
     }
 
-    // ─── 3D Tilt on feature cards ───
+    // ─── 3D Tilt on feature cards (enhanced) ───
     function initTilt() {
-      document.querySelectorAll('.card-hover').forEach(card => {
+      document.querySelectorAll('.feature-card-enhanced').forEach(card => {
         card.addEventListener('mousemove', e => {
           const rect = card.getBoundingClientRect();
           const x = e.clientX - rect.left;
           const y = e.clientY - rect.top;
           const centerX = rect.width / 2;
           const centerY = rect.height / 2;
-          const rotateX = ((y - centerY) / centerY) * -4;
-          const rotateY = ((x - centerX) / centerX) * 4;
-          card.style.transform = 'translateY(-8px) scale(1.02) perspective(800px) rotateX(' + rotateX + 'deg) rotateY(' + rotateY + 'deg)';
+          const rotateX = ((y - centerY) / centerY) * -3;
+          const rotateY = ((x - centerX) / centerX) * 3;
+          // Mouse-follow spotlight
+          const pctX = (x / rect.width * 100).toFixed(0);
+          const pctY = (y / rect.height * 100).toFixed(0);
+          card.style.setProperty('--mouse-x', pctX + '%');
+          card.style.setProperty('--mouse-y', pctY + '%');
+          card.style.transform = 'translateY(-8px) perspective(800px) rotateX(' + rotateX + 'deg) rotateY(' + rotateY + 'deg)';
         });
         card.addEventListener('mouseleave', () => {
           card.style.transform = '';
@@ -2728,7 +3053,7 @@
       // Init 3D tilt on feature cards
       initTilt();
 
-      // Stats count-up via IntersectionObserver
+      // Stats count-up via IntersectionObserver (enhanced with underline reveal)
       const statsObserver = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
           if (entry.isIntersecting) {
@@ -2738,6 +3063,9 @@
               el.setAttribute('data-animated', 'true');
               animateCount(el, target);
             }
+            // Add counted class to parent for underline reveal
+            const parent = el.closest('.stat-item-enhanced');
+            if (parent) setTimeout(() => parent.classList.add('counted'), 600);
             statsObserver.unobserve(el);
           }
         });
