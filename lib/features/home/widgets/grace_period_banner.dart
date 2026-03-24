@@ -27,7 +27,7 @@ class GracePeriodBanner extends ConsumerWidget {
         ? DateTime.now().difference(expiresAt).inDays
         : 0;
     final theme = Theme.of(context);
-    final bannerColor = AppColors.warning;
+    const bannerColor = AppColors.warning;
 
     return Container(
       margin: const EdgeInsets.symmetric(
@@ -42,7 +42,7 @@ class GracePeriodBanner extends ConsumerWidget {
       ),
       child: Row(
         children: [
-          Icon(LucideIcons.alertTriangle, color: bannerColor),
+          const Icon(LucideIcons.alertTriangle, color: bannerColor),
           const SizedBox(width: AppSpacing.md),
           Expanded(
             child: Column(

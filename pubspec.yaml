@@ -29,7 +29,7 @@ dependencies:
 
   # Data Classes
   freezed_annotation: ^3.0.0
-  json_annotation: ^4.10.0
+  json_annotation: ^4.11.0
 
   # Charts
   fl_chart: ^1.2.0
