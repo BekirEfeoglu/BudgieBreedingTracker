@@ -1,3 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-  <path d="M5 9h4v11H5V9zm5-5h4v16h-4V4zm5 8h4v8h-4v-8z"/>
+  <!-- Left bar (shortest) -->
+  <rect x="3.5" y="14" width="4.5" height="7.5" rx="1.2"/>
+  <!-- Middle bar (medium) -->
+  <rect x="9.75" y="9" width="4.5" height="12.5" rx="1.2"/>
+  <!-- Right bar (tallest) -->
+  <rect x="16" y="4.5" width="4.5" height="17" rx="1.2"/>
+  <!-- Trend line diagonal -->
+  <line x1="4.5" y1="13" x2="19.5" y2="3.5" stroke="currentColor" stroke-width="0.7" stroke-linecap="round" opacity="0.5"/>
+  <!-- Trend dot at end -->
+  <circle cx="19.5" cy="3.5" r="1" opacity="0.5"/>
 </svg>
