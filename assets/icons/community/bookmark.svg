@@ -1,3 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-  <path d="M6 2a2 2 0 0 0-2 2v18l8-5 8 5V4a2 2 0 0 0-2-2H6z"/>
+  <!-- Ribbon/flag bookmark with V-notch at bottom -->
+  <path d="M6 2.5h12a1.5 1.5 0 0 1 1.5 1.5v18.2a0.5 0.5 0 0 1-0.78 0.41L12 18.5l-6.72 4.11A0.5 0.5 0 0 1 4.5 22.2V4A1.5 1.5 0 0 1 6 2.5z" stroke="currentColor" stroke-width="0.7" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Subtle fold hint on top-right corner -->
+  <path d="M16 2.5l3.5 3.5h-2a1.5 1.5 0 0 1-1.5-1.5V2.5z" fill="white" opacity="0.2"/>
+  <!-- Inner highlight -->
+  <rect x="8" y="7" width="8" height="1" rx="0.5" fill="white" opacity="0.25"/>
 </svg>
