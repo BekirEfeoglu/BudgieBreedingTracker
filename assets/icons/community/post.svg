@@ -1,3 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-  <path d="M4 2a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H4zm2 4h12a1 1 0 0 1 0 2H6a1 1 0 0 1 0-2zm0 4h12a1 1 0 0 1 0 2H6a1 1 0 0 1 0-2zm0 4h8a1 1 0 0 1 0 2H6a1 1 0 0 1 0-2z"/>
+  <!-- Document/card with rounded corners -->
+  <rect x="3" y="2" width="18" height="20" rx="2.5" stroke="currentColor" stroke-width="0.7"/>
+  <!-- Image placeholder square at top -->
+  <rect x="5.5" y="4.5" width="13" height="7" rx="1.5" fill="white" opacity="0.9"/>
+  <!-- Small mountain/landscape hint inside image area -->
+  <path d="M6.5 10.5l3-2.5 2.5 2 2-1.5 3.5 2.5" stroke="currentColor" stroke-width="0.6" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.4"/>
+  <!-- Two text lines below image -->
+  <line x1="5.5" y1="14.5" x2="18.5" y2="14.5" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+  <line x1="5.5" y1="17.5" x2="14" y2="17.5" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
 </svg>

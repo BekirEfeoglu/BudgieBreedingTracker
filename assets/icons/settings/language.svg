@@ -1,3 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-  <path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm6.93 6h-3.17a15.78 15.78 0 0 0-1.4-3.56A8.03 8.03 0 0 1 18.93 8ZM12 4.04c.83 1.02 1.48 2.18 1.91 3.46h-3.82A13.74 13.74 0 0 1 12 4.04ZM4.26 14a7.82 7.82 0 0 1 0-4h3.64a16.3 16.3 0 0 0 0 4H4.26Zm.81 2h3.17a15.78 15.78 0 0 0 1.4 3.56A8.03 8.03 0 0 1 5.07 16Zm3.17-8H5.07a8.03 8.03 0 0 1 4.57-3.56A15.78 15.78 0 0 0 8.24 8ZM12 19.96c-.83-1.02-1.48-2.18-1.91-3.46h3.82A13.74 13.74 0 0 1 12 19.96ZM14.34 14H9.66a14.36 14.36 0 0 1 0-4h4.68a14.36 14.36 0 0 1 0 4Zm.3 5.56A15.78 15.78 0 0 0 16.04 16h3.17a8.03 8.03 0 0 1-4.57 3.56ZM16.1 14a16.3 16.3 0 0 0 0-4h3.64a7.82 7.82 0 0 1 0 4H16.1Z"/>
+  <!-- Globe with latitude and longitude lines -->
+  <circle cx="12" cy="12" r="9.5" fill="none" stroke="currentColor" stroke-width="1.5"/>
+  <!-- Vertical meridian -->
+  <ellipse cx="12" cy="12" rx="3.8" ry="9.5" fill="none" stroke="currentColor" stroke-width="0.8" stroke-linecap="round"/>
+  <!-- Horizontal latitude lines -->
+  <path d="M3.2 9h17.6" fill="none" stroke="currentColor" stroke-width="0.7" stroke-linecap="round"/>
+  <path d="M2.5 12h19" fill="none" stroke="currentColor" stroke-width="0.7" stroke-linecap="round"/>
+  <path d="M3.2 15h17.6" fill="none" stroke="currentColor" stroke-width="0.7" stroke-linecap="round"/>
 </svg>

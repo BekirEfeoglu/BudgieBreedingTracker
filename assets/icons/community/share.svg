@@ -1,3 +1,16 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-  <path d="M18 8a3 3 0 1 0-2.56-1.43L9.1 9.93a3 3 0 0 0 0 4.14l6.34 3.36a3 3 0 1 0 .94-1.76l-6.34-3.36a3.05 3.05 0 0 0 0-.62l6.34-3.36A2.98 2.98 0 0 0 18 8z"/>
+  <!-- Share graph: three dots connected by diagonal lines -->
+  <!-- Connecting lines -->
+  <line x1="8.5" y1="12" x2="15.5" y2="7.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+  <line x1="8.5" y1="12" x2="15.5" y2="16.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+  <!-- Upper-right dot -->
+  <circle cx="17" cy="6.5" r="2.8" stroke="currentColor" stroke-width="0.7"/>
+  <!-- Middle-left dot -->
+  <circle cx="7" cy="12" r="2.8" stroke="currentColor" stroke-width="0.7"/>
+  <!-- Lower-right dot -->
+  <circle cx="17" cy="17.5" r="2.8" stroke="currentColor" stroke-width="0.7"/>
+  <!-- Inner highlights -->
+  <circle cx="16.5" cy="6" r="0.8" fill="white" opacity="0.2"/>
+  <circle cx="6.5" cy="11.5" r="0.8" fill="white" opacity="0.2"/>
+  <circle cx="16.5" cy="17" r="0.8" fill="white" opacity="0.2"/>
 </svg>
