@@ -85,6 +85,33 @@ ANTI_PATTERN_COVERAGE = {
 # Spacing is an extra checker not directly in CLAUDE.md list but related to #13
 EXTRA_CHECKERS = {"check_hardcoded_spacing": "Hardcoded spacing (AppSpacing convention)"}
 
+# --- Whitelist (checker bazinda dosya/dizin istisna listesi) ---
+WHITELIST = {
+    'check_context_go_forward_nav': [
+        'lib/features/auth/',
+        'lib/features/home/',
+        'lib/features/admin/',
+        'lib/features/more/',
+        'lib/features/profile/widgets/profile_menu_dialog.dart',
+        'lib/features/profile/widgets/account_deletion_dialog.dart',
+        'lib/features/profile/widgets/danger_zone_section.dart',
+        'lib/features/community/widgets/community_feed_list.dart',
+        'lib/core/widgets/not_found_screen.dart',
+    ],
+    'check_hardcoded_colors': [
+        'lib/features/genetics/utils/',
+        'lib/features/genetics/widgets/budgie_painter',
+        'lib/features/auth/widgets/budgie_login_colors.dart',
+    ],
+}
+
+
+def is_whitelisted(checker_name: str, filepath: Path) -> bool:
+    """Check if file is whitelisted for a specific checker."""
+    patterns = WHITELIST.get(checker_name, [])
+    rel = relative_path(filepath)
+    return any(rel.startswith(p) or rel == p for p in patterns)
+
 
 # --- Data Structures ---
 
@@ -94,6 +121,7 @@ class Finding:
     line_num: int
     line_text: str
     suggestion: str
+    severity: str = "error"  # "error" or "warning"
 
 
 @dataclass
@@ -101,6 +129,7 @@ class Category:
     name: str
     tag: str
     description: str
+    severity: str = "error"  # "error" or "warning"
     findings: List[Finding] = field(default_factory=list)
 
 
@@ -147,6 +176,26 @@ def relative_path(filepath: Path) -> str:
         return str(filepath.relative_to(LIB_DIR.parent))
     except ValueError:
         return str(filepath)
+
+
+_KNOWN_ENUMS_CACHE: set = set()
+
+def collect_known_enums() -> set:
+    """lib/core/enums/ altindaki enum tiplerini topla."""
+    enums_dir = LIB_DIR / "core" / "enums"
+    known = set()
+    if not enums_dir.exists():
+        return known
+    for f in enums_dir.glob("*.dart"):
+        if any(f.name.endswith(s) for s in EXCLUDED_SUFFIXES):
+            continue
+        try:
+            content = f.read_text(encoding="utf-8")
+            for m in re.finditer(r'enum\s+(\w+)\s*\{', content):
+                known.add(m.group(1))
+        except Exception:
+            pass
+    return known
 
 
 # --- Anti-Pattern Checkers ---
@@ -455,6 +504,9 @@ def main():
     print(f"Taranan dizin: {LIB_DIR}\n")
 
     dart_files = get_dart_files()
+    # Cache enum types once (check_json_key_unknown_enum icin)
+    global _KNOWN_ENUMS_CACHE
+    _KNOWN_ENUMS_CACHE = collect_known_enums()
     print(f"Toplam Dart dosyasi: {len(dart_files)} (generated dosyalar haric)\n")
 
     # Define categories
