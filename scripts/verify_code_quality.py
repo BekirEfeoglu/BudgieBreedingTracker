@@ -71,13 +71,13 @@ ANTI_PATTERN_COVERAGE = {
     5: "check_print_statements",        # print() -> AppLogger
     6: "check_missing_tr",              # Hardcoded text -> .tr()
     7: "check_icon_icons",             # Icon(Icons.x) -> AppIcon(AppIcons.x)
-    # 8: @JsonKey(unknownEnumValue) — requires AST analysis, not regex
-    # 9: switch without unknown case — requires AST analysis, not regex
-    # 10: context.go() -> context.push() — requires context awareness
-    # 11: Import table via app_database — requires import graph analysis
-    # 12: Route ordering — requires GoRouter config analysis
+    8: "check_json_key_unknown_enum",    # Missing @JsonKey(unknownEnumValue)
+    9: "check_switch_unknown_case",      # switch without unknown (warning)
+    10: "check_context_go_forward_nav",  # context.go() -> context.push()
+    11: "check_dao_import_app_database", # Import table via app_database (warning)
+    12: "check_route_ordering",          # Route ordering (warning)
     13: "check_hardcoded_colors",       # Hardcoded colors -> Theme/AppColors
-    # 14: Missing dispose — requires lifecycle analysis
+    14: "check_controller_dispose",      # Missing controller.dispose() (warning)
     15: "check_freezed3_pattern",       # Missing const Model._() in Freezed
     # 16: Hardcoded SVG paths — low occurrence, covered by AppIcons convention
     17: "check_icondata_param",         # IconData param -> Widget param
@@ -489,6 +489,170 @@ def check_freezed3_pattern(lines: List[str], filepath: Path, cat: Category):
                 break
 
 
+def check_context_go_forward_nav(lines, filepath, cat):
+    """context.go( forward nav -> context.push() kullan"""
+    if is_whitelisted('check_context_go_forward_nav', filepath):
+        return
+    for i, line in enumerate(lines, 1):
+        if is_comment_line(line):
+            continue
+        match = re.search(r'context\.go\s*\(', line)
+        if match and not is_in_string_literal(line, match.start()):
+            cat.findings.append(Finding(
+                file=relative_path(filepath), line_num=i,
+                line_text=line.rstrip(),
+                suggestion="Forward navigation icin context.push() kullan (context.go() stack'i siler)",
+            ))
+
+
+def check_controller_dispose(lines, filepath, cat):
+    """ConsumerStatefulWidget'ta controller dispose eksik"""
+    content = "".join(lines)
+    if "ConsumerStatefulWidget" not in content:
+        return
+    controller_pattern = re.compile(r'(?:final|late final)\s+\w*Controller\s+_?\w+\s*=')
+    dispose_pattern = re.compile(r'_?\w+\.dispose\(\)')
+    controllers = controller_pattern.findall(content)
+    disposes = dispose_pattern.findall(content)
+    if len(controllers) > len(disposes):
+        for i, line in enumerate(lines, 1):
+            if controller_pattern.search(line):
+                cat.findings.append(Finding(
+                    file=relative_path(filepath), line_num=i,
+                    line_text=line.rstrip(),
+                    suggestion=f"Controller dispose() eksik olabilir ({len(controllers)} tanim, {len(disposes)} dispose)",
+                    severity="warning",
+                ))
+                break
+
+
+def check_json_key_unknown_enum(lines, filepath, cat):
+    """Freezed model enum field'larinda @JsonKey(unknownEnumValue:) eksik"""
+    if not filepath.name.endswith("_model.dart"):
+        return
+    content = "".join(lines)
+    if "@freezed" not in content:
+        return
+    known_enums = _KNOWN_ENUMS_CACHE
+    if not known_enums:
+        return
+    for i, line in enumerate(lines, 1):
+        if is_comment_line(line):
+            continue
+        for enum_name in known_enums:
+            pattern = rf'(?:required\s+)?{re.escape(enum_name)}\??\s+\w+'
+            match = re.search(pattern, line)
+            # Skip getter declarations (e.g. `DevelopmentStage get foo`) — not a Freezed field
+            if match and not re.search(rf'{re.escape(enum_name)}\??\s+get\b', line):
+                context_start = max(0, i - 3)
+                context_lines = "".join(lines[context_start:i])
+                if "unknownEnumValue" not in context_lines and "unknownEnumValue" not in line:
+                    cat.findings.append(Finding(
+                        file=relative_path(filepath), line_num=i,
+                        line_text=line.rstrip(),
+                        suggestion=f"@JsonKey(unknownEnumValue: {enum_name}.unknown) ekle",
+                    ))
+
+
+def check_dao_import_app_database(lines, filepath, cat):
+    """DAO dosyasinda table dosyasi dogrudan import edilmeli"""
+    if "_dao.dart" not in filepath.name:
+        return
+    content = "".join(lines)
+    if "@DriftAccessor" not in content:
+        return
+    has_direct_table_import = any(
+        re.search(r'import\s+.*(?:tables/|_table\.dart)', line)
+        for line in lines
+    )
+    if not has_direct_table_import:
+        cat.findings.append(Finding(
+            file=relative_path(filepath), line_num=1,
+            line_text=lines[0].rstrip() if lines else "",
+            suggestion="Table dosyasini dogrudan import et (app_database uzerinden degil)",
+            severity="warning",
+        ))
+
+
+def check_switch_unknown_case(lines, filepath, cat):
+    """Enum switch'lerinde unknown case eksik (warning)"""
+    if not filepath.name.endswith("_model.dart") and "enums" not in str(filepath):
+        return
+    in_switch = False
+    switch_line = 0
+    switch_text = ""
+    brace_depth = 0
+    for i, line in enumerate(lines, 1):
+        if is_comment_line(line):
+            continue
+        if re.search(r'\bswitch\s*\(', line):
+            in_switch = True
+            switch_line = i
+            switch_text = line.rstrip()
+            brace_depth = 0
+        if in_switch:
+            brace_depth += line.count('{')
+            brace_depth -= line.count('}')
+            if 'unknown' in line.lower():
+                in_switch = False
+                continue
+            if brace_depth <= 0 and switch_line > 0:
+                cat.findings.append(Finding(
+                    file=relative_path(filepath), line_num=switch_line,
+                    line_text=switch_text,
+                    suggestion="switch ifadesinde 'unknown' case ekle",
+                    severity="warning",
+                ))
+                in_switch = False
+
+
+def check_route_ordering(lines, filepath, cat):
+    """GoRouter'da parameterized route specific'ten once (warning)"""
+    if "app_router" not in filepath.name:
+        return
+    # Track paths within each GoRoute's routes:[] block by using a stack.
+    # Each entry on the stack represents one routes:[] block.
+    # We push when we see 'routes: [' and pop when the matching ']' closes.
+    routes_stack: list = []  # each element: list of (is_param, line_num, path_val)
+    brace_depth = 0
+    bracket_depth = 0
+    routes_open_brackets: list = []  # bracket depth when each routes:[ was opened
+
+    for i, line in enumerate(lines, 1):
+        if is_comment_line(line):
+            continue
+        brace_depth += line.count('{') - line.count('}')
+        opens = line.count('[')
+        closes = line.count(']')
+
+        # Detect 'routes: [' opening
+        if re.search(r'\broutes\s*:\s*\[', line):
+            routes_stack.append([])
+            routes_open_brackets.append(bracket_depth + opens - (closes if ']' in line.split('routes')[1] else 0))
+
+        bracket_depth += opens - closes
+
+        # Detect closing of a routes:[] block
+        if routes_open_brackets and bracket_depth < routes_open_brackets[-1]:
+            routes_stack.pop()
+            routes_open_brackets.pop()
+
+        path_match = re.search(r"path:\s*['\"]([^'\"]+)['\"]", line)
+        if path_match and routes_stack:
+            path_val = path_match.group(1)
+            is_param = ':' in path_val
+            current_block = routes_stack[-1]
+            if current_block and current_block[-1][0] and not is_param and path_val != '/':
+                prev_line_num = current_block[-1][1]
+                cat.findings.append(Finding(
+                    file=relative_path(filepath), line_num=prev_line_num,
+                    line_text=f"  path: '{path_val}' parametreli route'tan sonra",
+                    suggestion="Specific route'lar parametreli route'lardan ONCE gelmeli",
+                    severity="warning",
+                ))
+            current_block.append((is_param, i, path_val))
+
+
 # --- Main ---
 
 def main():
@@ -522,6 +686,12 @@ def main():
         Category("Drift .equals() Enum", "[Drift]", ".equals() -> .equalsValue() kullan"),
         Category("IconData Param", "[IconData]", "IconData param -> Widget param kullan"),
         Category("Freezed 3 Pattern", "[Freezed3]", "@freezed class -> @freezed abstract class kullan"),
+        Category("context.go() Forward Nav", "[GoRouter]", "context.go() -> context.push() kullan"),
+        Category("Controller Dispose Eksik", "[Dispose]", "Controller.dispose() eksik olabilir", severity="warning"),
+        Category("@JsonKey unknownEnumValue Eksik", "[JsonKey]", "@JsonKey(unknownEnumValue:) ekle"),
+        Category("DAO Table Import", "[DriftDAO]", "Table dosyasini dogrudan import et", severity="warning"),
+        Category("Switch Unknown Case", "[Switch]", "switch'te unknown case ekle", severity="warning"),
+        Category("Route Ordering", "[Router]", "Specific route parametreliden once gelmeli", severity="warning"),
     ]
 
     checkers = [
@@ -536,6 +706,12 @@ def main():
         check_drift_equals,
         check_icondata_param,
         check_freezed3_pattern,
+        check_context_go_forward_nav,
+        check_controller_dispose,
+        check_json_key_unknown_enum,
+        check_dao_import_app_database,
+        check_switch_unknown_case,
+        check_route_ordering,
     ]
 
     # Run all checkers on all files
@@ -551,18 +727,22 @@ def main():
             checker(lines, filepath, cat)
 
     # Report results
-    total_findings = 0
+    total_errors = 0
+    total_warnings = 0
     categories_with_issues = 0
 
     for cat in categories:
         count = len(cat.findings)
-        total_findings += count
-
         if count == 0:
             print(f"  {GREEN}PASS{RESET}  {cat.tag} {cat.name}: 0 sorun")
         else:
             categories_with_issues += 1
-            print(f"  {RED}FAIL{RESET}  {cat.tag} {cat.name}: {count} sorun")
+            if cat.severity == "warning":
+                total_warnings += count
+                print(f"  {YELLOW}WARN{RESET}  {cat.tag} {cat.name}: {count} uyari")
+            else:
+                total_errors += count
+                print(f"  {RED}FAIL{RESET}  {cat.tag} {cat.name}: {count} sorun")
 
             if VERBOSE:
                 for finding in cat.findings:
@@ -571,25 +751,34 @@ def main():
                     print(f"        -> {finding.suggestion}")
                     print()
             else:
-                # Show first 3 findings as sample
                 for finding in cat.findings[:3]:
                     print(f"        {YELLOW}{finding.file}:{finding.line_num}{RESET} -> {finding.suggestion}")
                 if count > 3:
                     print(f"        ... ve {count - 3} sorun daha (--verbose ile tumu)")
 
     # Summary
-    print(f"\n{BOLD}--- Ozet ---{RESET}")
-    print(f"Taranan dosya:      {len(dart_files)}")
-    print(f"Toplam sorun:       {total_findings}")
-    print(f"Sorunlu kategori:   {categories_with_issues}/{len(categories)}")
-    print(f"Temiz kategori:     {len(categories) - categories_with_issues}/{len(categories)}")
+    total_checkers = len(categories)
+    covered = len(ANTI_PATTERN_COVERAGE)
+    error_checkers = sum(1 for c in categories if c.severity == "error")
+    warning_checkers = sum(1 for c in categories if c.severity == "warning")
 
-    if total_findings == 0:
-        print(f"\n{GREEN}{BOLD}Tum anti-pattern kontrolleri basarili!{RESET}")
+    print(f"\n{BOLD}=== Code Quality Report ==={RESET}")
+    print(f"  Checkers:   {total_checkers} ({error_checkers} error + {warning_checkers} warning)")
+    print(f"  Coverage:   {covered}/{total_patterns if total_patterns > 0 else '?'} CLAUDE.md anti-patterns")
+    print(f"  Errors:     {total_errors}")
+    print(f"  Warnings:   {total_warnings}")
+
+    if total_errors == 0 and total_warnings == 0:
+        print(f"  Status:     {GREEN}{BOLD}PASSED{RESET}")
+    elif total_errors == 0:
+        print(f"  Status:     {YELLOW}{BOLD}PASSED (with warnings){RESET}")
     else:
-        print(f"\n{YELLOW}Detay icin: python scripts/verify_code_quality.py --verbose{RESET}")
+        print(f"  Status:     {RED}{BOLD}FAILED{RESET}")
 
-    # Coverage report
+    if total_errors > 0 or total_warnings > 0:
+        print(f"\n  {YELLOW}Detay icin: python scripts/verify_code_quality.py --verbose{RESET}")
+
+    # Coverage report (verbose only)
     if total_patterns > 0 and VERBOSE:
         uncovered = [i for i in range(1, total_patterns + 1) if i not in ANTI_PATTERN_COVERAGE]
         if uncovered:
@@ -597,9 +786,9 @@ def main():
             for idx in uncovered:
                 if idx <= len(claude_patterns):
                     print(f"  {YELLOW}#{idx}{RESET} {claude_patterns[idx - 1]}")
-            print(f"  {CYAN}Bu pattern'ler AST analizi veya context bilgisi gerektirir.{RESET}")
 
-    return 1 if total_findings > 0 else 0
+    # Exit code: 0 for pass/warnings-only, 1 for errors
+    return 1 if total_errors > 0 else 0
 
 
 if __name__ == "__main__":
