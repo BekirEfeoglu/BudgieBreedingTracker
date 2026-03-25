@@ -1,4 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-  <path d="M12 5C9.2 5 7 9.5 7 14c0 3.31 2.24 6 5 6s5-2.69 5-6c0-4.5-2.2-9-5-9z"/>
-  <path d="M5.5 7.5c-.28 0-.5-.22-.5-.5 0-1.1.5-2.13.88-2.75.2-.33.62-.25.62-.25s.42-.08.62.25c.38.62.88 1.65.88 2.75 0 .28-.22.5-.5.5s-.5-.22-.5-.5c0-.55-.2-1.15-.5-1.65-.3.5-.5 1.1-.5 1.65 0 .28-.22.5-.5.5zM3 11c-.28 0-.5-.22-.5-.5 0-1.1.5-2.13.88-2.75.2-.33.62-.25.62-.25s.42-.08.62.25c.38.62.88 1.65.88 2.75 0 .28-.22.5-.5.5s-.5-.22-.5-.5c0-.55-.2-1.15-.5-1.65-.3.5-.5 1.1-.5 1.65 0 .28-.22.5-.5.5zM20.5 8.5c-.28 0-.5-.22-.5-.5 0-1.1.5-2.13.88-2.75.2-.33.62-.25.62-.25s.42-.08.62.25c.38.62.88 1.65.88 2.75 0 .28-.22.5-.5.5s-.5-.22-.5-.5c0-.55-.2-1.15-.5-1.65-.3.5-.5 1.1-.5 1.65 0 .28-.22.5-.5.5z"/>
+  <!-- Organic egg shape - shifted down slightly to make room for heat waves -->
+  <path d="M12 4.5C9.5 4.5 7.2 7.5 6.6 10.8C5.9 14.2 7 21.5 12 21.5C17 21.5 18.1 14.2 17.4 10.8C16.8 7.5 14.5 4.5 12 4.5Z"/>
+  <!-- Subtle highlight ellipse -->
+  <ellipse cx="10" cy="10" rx="2" ry="3.2" opacity="0.1" fill="white" transform="rotate(-15 10 10)"/>
+  <!-- Heat wave line 1 (left) -->
+  <path d="M9.5 4C9.2 3.2 9.8 2.5 9.5 1.8" stroke="currentColor" stroke-width="0.5" stroke-linecap="round" fill="none"/>
+  <!-- Heat wave line 2 (center) -->
+  <path d="M12 3.8C11.7 3 12.3 2.3 12 1.5" stroke="currentColor" stroke-width="0.5" stroke-linecap="round" fill="none"/>
+  <!-- Heat wave line 3 (right) -->
+  <path d="M14.5 4C14.2 3.2 14.8 2.5 14.5 1.8" stroke="currentColor" stroke-width="0.5" stroke-linecap="round" fill="none"/>
 </svg>

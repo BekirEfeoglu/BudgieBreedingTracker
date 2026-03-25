@@ -1,4 +1,15 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-  <path d="M9 2C6.2 2 3.5 6.2 3 10.5l4.5 1.5L5 14c0 3.87 2.24 7 5 7 1.38 0 2.62-.7 3.55-1.83L9 14l4-2.5L9.5 9C10.3 5.5 9.8 2 9 2z"/>
-  <path d="M15 4c-1 0-2 1.5-2.5 3.5l3 2L13 12l4.5 5.17C18.45 15.93 19 14 19 12c0-4.5-2.5-8-4-8z"/>
+  <!-- Bottom half of cracked eggshell with jagged top edge -->
+  <path d="M6.2 13C5.6 16.5 6.8 21.5 12 21.5C17.2 21.5 18.4 16.5 17.8 13L16.5 11.5L15.8 13.2L14.5 10.8L13.2 13L12 10.5L10.8 13L9.5 10.8L8.2 13.2L7.5 11.5Z"/>
+  <!-- Tiny chick head peeking out -->
+  <circle cx="12" cy="8.5" r="3"/>
+  <!-- Chick eye highlight -->
+  <circle cx="13.2" cy="7.8" r="0.7" fill="white"/>
+  <!-- Chick eye pupil -->
+  <circle cx="13.4" cy="7.7" r="0.3"/>
+  <!-- Small beak -->
+  <path d="M14.8 8.8L16 9.2L14.8 9.6Z"/>
+  <!-- Tuft on head -->
+  <path d="M11 5.8C11 5.8 11.5 4.5 12.2 5.2" stroke="currentColor" stroke-width="0.5" stroke-linecap="round" fill="none"/>
+  <path d="M11.8 5.5C11.8 5.5 12.5 4.2 13 5" stroke="currentColor" stroke-width="0.5" stroke-linecap="round" fill="none"/>
 </svg>
