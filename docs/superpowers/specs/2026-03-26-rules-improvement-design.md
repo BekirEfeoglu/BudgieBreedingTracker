@@ -33,13 +33,24 @@ Katmanli iyilestirme — 4 batch halinde, her batch bagimsiz test edilebilir.
 
 **check_json_key_unknown_enum**
 - Pattern: Freezed model dosyalarinda (`_model.dart`) enum tipindeki field'larda `@JsonKey(unknownEnumValue:` eksikligi
-- Yontem: `required <EnumType>` veya `<EnumType>?` field tespiti, sonra @JsonKey kontrolu
+- Yontem: Once `lib/core/enums/` taranarak bilinen enum tipleri listesi olusturulur (enum X { ... } pattern). Sonra model dosyalarinda bu enum tiplerine sahip field'lar tespit edilip @JsonKey kontrolu yapilir. @JsonKey annotasyonu field'in ustundeki satirda da olabilir.
 - Severity: error
 
-**check_dao_import_app_database**
-- Pattern: `_dao.dart` dosyalarinda `import.*app_database` satiri
-- Beklenen: Table dosyasinin dogrudan import edilmesi
-- Severity: error
+**check_dao_import_app_database** (warning only)
+- Pattern: `_dao.dart` dosyalarinda `import.*app_database` satiri OLMADAN table dosyasi import'u OLMAMASI
+- Not: Tum DAO'lar `DatabaseAccessor<AppDatabase>` icin app_database import eder — bu legit. Sorun, table sinifini da app_database uzerinden import etmek. Checker yalnizca dogrudan table import'u OLMAYAN DAO'lari flag eder.
+- Yontem: DAO dosyasinda `import.*tables/` veya `import.*_table.dart` yoksa VE `@DriftAccessor` varsa → warning
+- Severity: warning (mevcut 20 DAO zaten dogru import yapiyor, gelecek hatalari yakalamak icin)
+
+### Checker → Anti-Pattern Eslesmesi
+| Checker | CLAUDE.md Anti-Pattern # |
+|---------|------------------------|
+| check_context_go_forward_nav | #10 (context.go forward nav) |
+| check_controller_dispose | #12 (missing dispose) |
+| check_json_key_unknown_enum | #16 (@JsonKey unknownEnumValue) |
+| check_dao_import_app_database | #11 (import table via app_database) |
+| check_switch_unknown_case | #17 (switch without unknown) |
+| check_route_ordering | #8 (parameterized before specific) |
 
 2 checker uyari modunda eklenir (CI'da bloklamaz):
 
@@ -58,7 +69,13 @@ verify_code_quality.py'a dosya/dizin bazli whitelist destegi:
 WHITELIST = {
     'check_context_go_forward_nav': [
         'lib/features/auth/',
-        'lib/features/home/widgets/main_shell.dart',
+        'lib/features/home/',              # Tum home widget'lari tab navigation icin go() kullanir
+        'lib/features/admin/',             # Admin shell/sidebar navigation
+        'lib/features/more/',              # Tab navigation
+        'lib/features/profile/widgets/profile_menu_dialog.dart',      # logout
+        'lib/features/profile/widgets/account_deletion_dialog.dart',  # account deletion
+        'lib/features/profile/widgets/danger_zone_section.dart',      # logout
+        'lib/features/community/widgets/community_feed_list.dart',    # tab nav
         'lib/core/widgets/not_found_screen.dart',
     ],
     'check_hardcoded_colors': [
@@ -72,6 +89,9 @@ WHITELIST = {
 }
 ```
 
+Not: Bu global whitelist, mevcut checker'lardaki per-checker exclusion'lar (ornegin check_hardcoded_colors'in app_colors.dart hariç tutmasi) ile birlikte calisir. Global whitelist once kontrol edilir; eslesmezse checker'in kendi exclusion'lari devreye girer.
+```
+
 ### 1.3 Raporlama Iyilestirmesi
 
 Script ciktisina ozet ekle:
@@ -83,6 +103,11 @@ Coverage: 100% of CLAUDE.md anti-patterns
 ```
 
 `--verbose` flag ile violation detaylari (dosya:satir:mesaj).
+
+Exit code semantigi:
+- Exit 0: Hic violation yok VEYA sadece warning'ler var
+- Exit 1: En az 1 error severity violation var
+- Bu sayede warning-mode checker'lar CI'yi bloklamaz.
 
 ---
 
@@ -199,7 +224,9 @@ Korunacaklar (ai-workflow'a ozgu):
 - Multi-agent kullanim stratejisi
 - Context yonetimi
 
-Tahmini azalma: ~80-100 satir (322 → ~230 satir).
+Not: "Quality Gates" bolumundeki kompakt checklist formatini tamamen kaldirmak yerine 3 satirlik ozet versiyonunu koruyup detay icin cross-reference veririz. Bu, hizli basvuru ihtiyacini karsilar.
+
+Tahmini azalma: ~70-90 satir (322 → ~240 satir).
 
 ---
 
