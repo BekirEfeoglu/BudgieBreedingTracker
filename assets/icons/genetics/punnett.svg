@@ -1,3 +1,32 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-  <path d="M4 3a1 1 0 0 0-1 1v7h8V3H4Zm9 0v8h8V4a1 1 0 0 0-1-1h-7ZM3 13v7a1 1 0 0 0 1 1h7v-8H3Zm10 0v8h7a1 1 0 0 0 1-1v-7h-8ZM4 1a3 3 0 0 0-3 3v16a3 3 0 0 0 3 3h16a3 3 0 0 0 3-3V4a3 3 0 0 0-3-3H4Z"/>
+  <!-- Outer rounded rectangle -->
+  <rect x="2" y="2" width="20" height="20" rx="2.5" ry="2.5" stroke="currentColor" stroke-width="1.2" fill="none"/>
+  <!-- Vertical divider -->
+  <line x1="12" y1="2" x2="12" y2="22" stroke="currentColor" stroke-width="0.8" stroke-linecap="round"/>
+  <!-- Horizontal divider -->
+  <line x1="2" y1="12" x2="22" y2="12" stroke="currentColor" stroke-width="0.8" stroke-linecap="round"/>
+  <!-- Bird head silhouette top-left cell (offspring) -->
+  <g transform="translate(7, 7)">
+    <!-- Bird head profile -->
+    <path d="M0 0 C0.5 -1.5, 2.5 -2.2, 3 -1 C3.3 -0.2, 2.8 0.5, 2 1 C1.5 1.3, 0.5 1, 0 0Z" opacity="0.7"/>
+    <!-- Tiny beak -->
+    <path d="M3 -0.8 L4.2 -0.5 L3.2 0" fill="currentColor" opacity="0.7"/>
+    <!-- Eye dot -->
+    <circle cx="1.8" cy="-0.5" r="0.35" fill="white"/>
+  </g>
+  <!-- Empty cell top-right — subtle dot -->
+  <circle cx="17" cy="7" r="0.6" opacity="0.15"/>
+  <!-- Empty cell bottom-left — subtle dot -->
+  <circle cx="7" cy="17" r="0.6" opacity="0.15"/>
+  <!-- Bird head silhouette bottom-right cell (offspring) -->
+  <g transform="translate(17, 17)">
+    <path d="M0 0 C0.5 -1.5, 2.5 -2.2, 3 -1 C3.3 -0.2, 2.8 0.5, 2 1 C1.5 1.3, 0.5 1, 0 0Z" opacity="0.7"/>
+    <path d="M3 -0.8 L4.2 -0.5 L3.2 0" fill="currentColor" opacity="0.7"/>
+    <circle cx="1.8" cy="-0.5" r="0.35" fill="white"/>
+  </g>
+  <!-- Header labels — small allele markers -->
+  <text x="7" y="3.8" font-size="2.2" text-anchor="middle" font-weight="bold" opacity="0.35" font-family="sans-serif">A</text>
+  <text x="17" y="3.8" font-size="2.2" text-anchor="middle" font-weight="bold" opacity="0.35" font-family="sans-serif">a</text>
+  <text x="3.5" y="7.8" font-size="2.2" text-anchor="middle" font-weight="bold" opacity="0.35" font-family="sans-serif">A</text>
+  <text x="3.5" y="17.8" font-size="2.2" text-anchor="middle" font-weight="bold" opacity="0.35" font-family="sans-serif">a</text>
 </svg>

@@ -1,3 +1,29 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-  <path d="M12 2a3 3 0 0 1 3 3 3 3 0 0 1-2.25 2.9v1.35h4.5a1.75 1.75 0 0 1 1.75 1.75v1.75A3 3 0 0 1 22 15.75a3 3 0 0 1-6 0A3 3 0 0 1 18.5 13V11a.25.25 0 0 0-.25-.25h-4.5V13A3 3 0 0 1 15 15.75a3 3 0 0 1-6 0A3 3 0 0 1 10.75 13v-2.25h-4.5a.25.25 0 0 0-.25.25v2A3 3 0 0 1 8 15.75a3 3 0 0 1-6 0A3 3 0 0 1 5 12.75V11a1.75 1.75 0 0 1 1.75-1.75h4.5V7.9A3 3 0 0 1 9 5a3 3 0 0 1 3-3Zm0 1.5A1.5 1.5 0 1 0 12 6.5 1.5 1.5 0 0 0 12 3.5ZM5 14.25a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3Zm7 0a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3Zm7 0a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3Z"/>
+  <!-- Connecting branch lines -->
+  <line x1="12" y1="8.5" x2="12" y2="12" stroke="currentColor" stroke-width="0.8" stroke-linecap="round"/>
+  <line x1="12" y1="12" x2="6.5" y2="12" stroke="currentColor" stroke-width="0.8" stroke-linecap="round"/>
+  <line x1="12" y1="12" x2="17.5" y2="12" stroke="currentColor" stroke-width="0.8" stroke-linecap="round"/>
+  <line x1="6.5" y1="12" x2="6.5" y2="15" stroke="currentColor" stroke-width="0.8" stroke-linecap="round"/>
+  <line x1="17.5" y1="12" x2="17.5" y2="15" stroke="currentColor" stroke-width="0.8" stroke-linecap="round"/>
+  <!-- Parent bird node (top) -->
+  <circle cx="12" cy="5.5" r="3.2" stroke="currentColor" stroke-width="0.8" fill="none"/>
+  <!-- Parent bird head silhouette -->
+  <path d="M10.5 5 C11 4, 12.5 3.8, 13 4.5 C13.3 5, 12.8 5.8, 12 6.2 C11.3 6.5, 10.5 6, 10.5 5Z" opacity="0.8"/>
+  <path d="M13 4.7 L14.2 4.8 L13.2 5.3" opacity="0.8"/>
+  <circle cx="11.8" cy="4.8" r="0.3" fill="white"/>
+  <!-- Child bird node left -->
+  <circle cx="6.5" cy="18" r="2.8" stroke="currentColor" stroke-width="0.8" fill="none"/>
+  <!-- Child bird head left -->
+  <path d="M5.2 17.5 C5.6 16.7, 6.8 16.5, 7.2 17.2 C7.4 17.6, 7 18.2, 6.4 18.5 C5.9 18.7, 5.3 18.3, 5.2 17.5Z" opacity="0.8"/>
+  <path d="M7.2 17.3 L8.1 17.3 L7.3 17.8" opacity="0.8"/>
+  <circle cx="6.2" cy="17.3" r="0.25" fill="white"/>
+  <!-- Child bird node right -->
+  <circle cx="17.5" cy="18" r="2.8" stroke="currentColor" stroke-width="0.8" fill="none"/>
+  <!-- Child bird head right -->
+  <path d="M16.2 17.5 C16.6 16.7, 17.8 16.5, 18.2 17.2 C18.4 17.6, 18 18.2, 17.4 18.5 C16.9 18.7, 16.3 18.3, 16.2 17.5Z" opacity="0.8"/>
+  <path d="M18.2 17.3 L19.1 17.3 L18.3 17.8" opacity="0.8"/>
+  <circle cx="17.2" cy="17.3" r="0.25" fill="white"/>
+  <!-- Subtle generation indicator lines -->
+  <line x1="4" y1="10" x2="5" y2="10" stroke="currentColor" stroke-width="0.5" stroke-linecap="round" opacity="0.2"/>
+  <line x1="19" y1="10" x2="20" y2="10" stroke="currentColor" stroke-width="0.5" stroke-linecap="round" opacity="0.2"/>
 </svg>
