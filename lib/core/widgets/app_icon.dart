@@ -30,8 +30,8 @@ class AppIcon extends StatelessWidget {
       asset,
       width: effectiveSize,
       height: effectiveSize,
-      colorFilter: effectiveColor != null
-          ? ColorFilter.mode(effectiveColor, BlendMode.srcIn)
+      theme: effectiveColor != null
+          ? SvgTheme(currentColor: effectiveColor)
           : null,
       semanticsLabel: effectiveLabel,
     );
