@@ -29,6 +29,7 @@ import '../features/splash/screens/splash_screen.dart';
 import '../core/widgets/not_found_screen.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'route_names.dart';
+import 'route_utils.dart';
 import 'router_notifier.dart';
 import 'routes/admin_routes.dart';
 import 'routes/auth_routes.dart';
@@ -177,8 +178,11 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: ':id',
                 parentNavigatorKey: rootNavigatorKey,
-                builder: (context, state) =>
-                    BirdDetailScreen(birdId: state.pathParameters['id']!),
+                builder: (context, state) {
+                  final id = state.pathParameters['id']!;
+                  if (!isValidRouteId(id)) return const NotFoundScreen();
+                  return BirdDetailScreen(birdId: id);
+                },
               ),
             ],
           ),
@@ -199,15 +203,20 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: ':id',
                 parentNavigatorKey: rootNavigatorKey,
-                builder: (context, state) =>
-                    BreedingDetailScreen(pairId: state.pathParameters['id']!),
+                builder: (context, state) {
+                  final id = state.pathParameters['id']!;
+                  if (!isValidRouteId(id)) return const NotFoundScreen();
+                  return BreedingDetailScreen(pairId: id);
+                },
                 routes: [
                   GoRoute(
                     path: 'eggs',
                     parentNavigatorKey: rootNavigatorKey,
-                    builder: (context, state) => EggManagementScreen(
-                      pairId: state.pathParameters['id']!,
-                    ),
+                    builder: (context, state) {
+                      final id = state.pathParameters['id']!;
+                      if (!isValidRouteId(id)) return const NotFoundScreen();
+                      return EggManagementScreen(pairId: id);
+                    },
                   ),
                 ],
               ),
@@ -230,8 +239,11 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: ':id',
                 parentNavigatorKey: rootNavigatorKey,
-                builder: (context, state) =>
-                    ChickDetailScreen(chickId: state.pathParameters['id']!),
+                builder: (context, state) {
+                  final id = state.pathParameters['id']!;
+                  if (!isValidRouteId(id)) return const NotFoundScreen();
+                  return ChickDetailScreen(chickId: id);
+                },
               ),
             ],
           ),

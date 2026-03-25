@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -113,6 +114,15 @@ final periodicSyncProvider = Provider<void>((ref) {
   // Skip periodic sync when auto-sync is disabled
   final autoSync = ref.watch(autoSyncProvider);
   if (!autoSync) return;
+
+  // Add random initial jitter (0-60 seconds) to distribute sync load
+  // across users and prevent thundering herd on the server.
+  final initialJitter = Duration(seconds: Random().nextInt(60));
+  Timer(initialJitter, () {
+    if (userId == 'anonymous') return;
+    final orchestrator = ref.read(syncOrchestratorProvider);
+    orchestrator.fullSync();
+  });
 
   final timer = Timer.periodic(_syncInterval, (_) async {
     // WiFi-only check

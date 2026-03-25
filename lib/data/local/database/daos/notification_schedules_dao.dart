@@ -107,4 +107,16 @@ class NotificationSchedulesDao extends DatabaseAccessor<AppDatabase>
       notificationSchedulesTable,
     )..where((t) => t.id.equals(id))).go();
   }
+
+  /// Deletes old unprocessed schedules that are past their scheduled time
+  /// by more than [daysOld] days. Prevents DB bloat from stale records.
+  Future<int> deleteOldStale(String userId, {int daysOld = 90}) async {
+    final cutoff = DateTime.now().subtract(Duration(days: daysOld));
+    return (delete(notificationSchedulesTable)..where(
+      (t) =>
+          t.userId.equals(userId) &
+          t.scheduledAt.isSmallerThanValue(cutoff) &
+          (t.processedAt.isNotNull() | t.isActive.equals(false)),
+    )).go();
+  }
 }

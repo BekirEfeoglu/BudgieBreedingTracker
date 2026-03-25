@@ -1,6 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-  <!-- Person in circle: circular frame with head and shoulders silhouette -->
-  <path fill-rule="evenodd" d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 1.5a8.5 8.5 0 0 1 5.27 15.17C16.32 16.82 14.3 15.8 12 15.8s-4.32 1.02-5.27 2.87A8.5 8.5 0 0 1 12 3.5Z"/>
-  <circle cx="12" cy="10" r="3.2" fill="white"/>
-  <path d="M12 15.8c-2.8 0-5.12 1.24-5.82 3.1a8.46 8.46 0 0 0 11.64 0C17.12 17.04 14.8 15.8 12 15.8Z" fill="white"/>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M20 21v-2a6 6 0 00-6-6H10a6 6 0 00-6 6v2"/><circle cx="12" cy="8" r="4" fill="currentColor" opacity=".04"/></svg>

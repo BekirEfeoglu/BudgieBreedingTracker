@@ -147,11 +147,18 @@ class CommunityPostRemoteSource {
   }
 
   /// Clears the review flag on a post after admin review.
-  Future<void> clearReviewFlag(String postId) async {
+  ///
+  /// Requires admin authorization. The caller must verify admin status
+  /// before invoking this method. RLS policies enforce this server-side
+  /// as defense-in-depth.
+  Future<void> clearReviewFlag(String postId, {required String adminUserId}) async {
+    if (adminUserId == 'anonymous') {
+      throw Exception('Admin authorization required');
+    }
     try {
       await _client
           .from(SupabaseConstants.communityPostsTable)
-          .update({'needs_review': false})
+          .update({'needs_review': false, 'reviewed_by': adminUserId})
           .eq('id', postId);
     } catch (e, st) {
       AppLogger.error('CommunityPostRemoteSource.clearReviewFlag', e, st);

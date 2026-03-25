@@ -10,6 +10,7 @@ import 'package:budgie_breeding_tracker/core/utils/app_haptics.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
+import 'package:budgie_breeding_tracker/core/widgets/app_screen_title.dart';
 import 'package:budgie_breeding_tracker/core/widgets/buttons/primary_button.dart';
 import 'package:budgie_breeding_tracker/features/feedback/providers/feedback_providers.dart';
 import 'package:budgie_breeding_tracker/features/feedback/widgets/feedback_form_widgets.dart';
@@ -93,12 +94,15 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen>
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('feedback.title'.tr()),
+        title: AppScreenTitle(
+          title: 'feedback.title'.tr(),
+          iconAsset: AppIcons.comment,
+        ),
         bottom: TabBar(
           controller: _tabController,
           tabs: [
             Tab(
-              icon: const Icon(LucideIcons.pencil, size: 18),
+              icon: const AppIcon(AppIcons.comment, size: 18),
               text: 'feedback.new_feedback'.tr(),
             ),
             Tab(

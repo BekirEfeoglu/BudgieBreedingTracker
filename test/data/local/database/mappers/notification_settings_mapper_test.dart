@@ -19,6 +19,7 @@ void main() {
         feedingReminderEnabled: false,
         incubationReminderEnabled: true,
         healthCheckEnabled: true,
+        bandingEnabled: true,
         temperatureMin: 36.5,
         temperatureMax: 38.5,
         humidityMin: 50.0,

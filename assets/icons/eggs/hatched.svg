@@ -1,15 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-  <!-- Bottom half of cracked eggshell with jagged top edge -->
-  <path d="M6.2 13C5.6 16.5 6.8 21.5 12 21.5C17.2 21.5 18.4 16.5 17.8 13L16.5 11.5L15.8 13.2L14.5 10.8L13.2 13L12 10.5L10.8 13L9.5 10.8L8.2 13.2L7.5 11.5Z"/>
-  <!-- Tiny chick head peeking out -->
-  <circle cx="12" cy="8.5" r="3"/>
-  <!-- Chick eye highlight -->
-  <circle cx="13.2" cy="7.8" r="0.7" fill="white"/>
-  <!-- Chick eye pupil -->
-  <circle cx="13.4" cy="7.7" r="0.3"/>
-  <!-- Small beak -->
-  <path d="M14.8 8.8L16 9.2L14.8 9.6Z"/>
-  <!-- Tuft on head -->
-  <path d="M11 5.8C11 5.8 11.5 4.5 12.2 5.2" stroke="currentColor" stroke-width="0.5" stroke-linecap="round" fill="none"/>
-  <path d="M11.8 5.5C11.8 5.5 12.5 4.2 13 5" stroke="currentColor" stroke-width="0.5" stroke-linecap="round" fill="none"/>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 14c0 4.5 3.2 8 7 8s7-3.5 7-8"/><path d="M5 14l2.5-1.5 1.5 2 1.5-2 1.5 1.5 1.5-1.5 1.5 2L17 13l2 1"/><circle cx="12" cy="9" r="3"/><circle cx="11.2" cy="8.5" r=".6" fill="currentColor"/><path d="M13.5 9l1.5-.5"/><path d="M9.5 10c-.5.5-.5 1.5 0 2" stroke-width="1" opacity=".4"/><path d="M16 5c.5-1 1.5-1.5 2-1M7 4c-.5-.5-1-1-1.5-.5" stroke-width="1" opacity=".3"/></svg>

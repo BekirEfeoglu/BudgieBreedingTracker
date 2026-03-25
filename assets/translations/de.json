@@ -159,7 +159,9 @@
     "error_network": "Überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.",
     "error_service_unavailable": "Dienst ist derzeit nicht verfügbar. Bitte versuchen Sie es später erneut.",
     "error_anonymous_disabled": "Gastanmeldung ist derzeit nicht verfügbar. Bitte versuchen Sie es später erneut.",
-    "error_oauth_unavailable": "Diese Anmeldemethode ist derzeit nicht verfügbar. Bitte melden Sie sich mit E-Mail an."
+    "error_oauth_unavailable": "Diese Anmeldemethode ist derzeit nicht verfügbar. Bitte melden Sie sich mit E-Mail an.",
+    "rate_limit_password_reset": "Bitte warten Sie 2 Minuten, bevor Sie ein weiteres Passwort-Reset anfordern",
+    "rate_limit_verification": "Bitte warten Sie 2 Minuten, bevor Sie die Bestätigungs-E-Mail erneut senden"
   },
   "birds": {
     "title": "Meine Vögel",
@@ -864,6 +866,8 @@
     "chick_care_desc": "Erinnert an Küken-Pflegeaufgaben",
     "health_check": "Gesundheitscheck",
     "health_check_desc": "Periodische Gesundheitscheck-Erinnerung",
+    "banding": "Beringung",
+    "banding_desc": "Erinnerungen zum Beringungstag",
     "temperature_alert": "Temperaturwarnung",
     "humidity_alert": "Feuchtigkeitswarnung",
     "feeding_reminder": "Fütterungserinnerung",

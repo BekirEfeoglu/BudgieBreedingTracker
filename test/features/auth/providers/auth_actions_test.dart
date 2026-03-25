@@ -215,6 +215,9 @@ void main() {
           'created_at': '2024-01-01T00:00:00Z',
         }),
       );
+      when(
+        () => mockAuth.signOut(scope: any(named: 'scope')),
+      ).thenAnswer((_) async {});
 
       await actions.changePassword(
         currentPassword: 'current123',
@@ -231,6 +234,9 @@ void main() {
 
       // Then password update
       verify(() => mockAuth.updateUser(any())).called(1);
+
+      // Then invalidate other sessions
+      verify(() => mockAuth.signOut(scope: SignOutScope.others)).called(1);
     });
   });
 

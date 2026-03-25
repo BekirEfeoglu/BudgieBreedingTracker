@@ -2,8 +2,12 @@
 """
 BudgieBreedingTracker - Code Quality Anti-Pattern Scanner
 
-lib/ altindaki Dart dosyalarinda 11 anti-pattern kategorisini tarar.
-Kapsam disi: *.freezed.dart, *.g.dart, test dosyalari, yorum satirlari.
+CLAUDE.md'deki Critical Anti-Patterns listesini referans alarak
+lib/ altindaki Dart dosyalarini tarar.
+
+Otomatik checker'lar mevcut anti-pattern'lerin bir alt kumesini kapsar.
+Script, CLAUDE.md'deki toplam anti-pattern sayisini parse ederek
+kapsam raporunu da sunar.
 
 Kullanim: python scripts/verify_code_quality.py [--verbose]
 """
@@ -17,7 +21,9 @@ from typing import List, Tuple
 
 # --- Configuration ---
 
-LIB_DIR = Path(__file__).resolve().parent.parent / "lib"
+ROOT_DIR = Path(__file__).resolve().parent.parent
+LIB_DIR = ROOT_DIR / "lib"
+CLAUDE_MD = ROOT_DIR / "CLAUDE.md"
 
 EXCLUDED_SUFFIXES = (".freezed.dart", ".g.dart")
 EXCLUDED_DIRS = {"test", "tests", ".dart_tool"}
@@ -31,6 +37,53 @@ BOLD = "\033[1m"
 RESET = "\033[0m"
 
 VERBOSE = "--verbose" in sys.argv
+
+
+# --- CLAUDE.md Parser ---
+
+def parse_anti_patterns_from_claude_md() -> List[str]:
+    """CLAUDE.md'deki Critical Anti-Patterns listesini parse et."""
+    if not CLAUDE_MD.exists():
+        return []
+
+    content = CLAUDE_MD.read_text(encoding="utf-8")
+    patterns = []
+    in_section = False
+
+    for line in content.splitlines():
+        if "## Critical Anti-Patterns" in line:
+            in_section = True
+            continue
+        if in_section and line.startswith("##"):
+            break
+        if in_section and re.match(r'\d+\.', line.strip()):
+            patterns.append(line.strip())
+
+    return patterns
+
+
+# Anti-pattern ID -> checker mapping (hangi CLAUDE.md anti-pattern'i hangi checker ile kapsaniyor)
+ANTI_PATTERN_COVERAGE = {
+    1: "check_with_opacity",           # withOpacity() -> withValues
+    2: "check_dropdown_value",          # value on Dropdown -> initialValue
+    3: "check_drift_equals",            # .equals() -> .equalsValue()
+    4: "check_ref_watch_in_callback",   # ref.watch() in callbacks -> ref.read()
+    5: "check_print_statements",        # print() -> AppLogger
+    6: "check_missing_tr",              # Hardcoded text -> .tr()
+    7: "check_icon_icons",             # Icon(Icons.x) -> AppIcon(AppIcons.x)
+    # 8: @JsonKey(unknownEnumValue) — requires AST analysis, not regex
+    # 9: switch without unknown case — requires AST analysis, not regex
+    # 10: context.go() -> context.push() — requires context awareness
+    # 11: Import table via app_database — requires import graph analysis
+    # 12: Route ordering — requires GoRouter config analysis
+    13: "check_hardcoded_colors",       # Hardcoded colors -> Theme/AppColors
+    # 14: Missing dispose — requires lifecycle analysis
+    15: "check_freezed3_pattern",       # Missing const Model._() in Freezed
+    # 16: Hardcoded SVG paths — low occurrence, covered by AppIcons convention
+    17: "check_icondata_param",         # IconData param -> Widget param
+}
+# Spacing is an extra checker not directly in CLAUDE.md list but related to #13
+EXTRA_CHECKERS = {"check_hardcoded_spacing": "Hardcoded spacing (AppSpacing convention)"}
 
 
 # --- Data Structures ---
@@ -391,6 +444,14 @@ def check_freezed3_pattern(lines: List[str], filepath: Path, cat: Category):
 
 def main():
     print(f"\n{BOLD}{CYAN}=== BudgieBreedingTracker - Code Quality Scanner ==={RESET}\n")
+
+    # Parse CLAUDE.md anti-pattern list for coverage report
+    claude_patterns = parse_anti_patterns_from_claude_md()
+    total_patterns = len(claude_patterns)
+    covered_count = len(ANTI_PATTERN_COVERAGE)
+    if total_patterns > 0:
+        print(f"CLAUDE.md anti-pattern sayisi: {total_patterns}")
+        print(f"Otomatik kapsam: {covered_count}/{total_patterns} ({100 * covered_count // total_patterns}%) + {len(EXTRA_CHECKERS)} ek checker")
     print(f"Taranan dizin: {LIB_DIR}\n")
 
     dart_files = get_dart_files()
@@ -475,6 +536,16 @@ def main():
         print(f"\n{GREEN}{BOLD}Tum anti-pattern kontrolleri basarili!{RESET}")
     else:
         print(f"\n{YELLOW}Detay icin: python scripts/verify_code_quality.py --verbose{RESET}")
+
+    # Coverage report
+    if total_patterns > 0 and VERBOSE:
+        uncovered = [i for i in range(1, total_patterns + 1) if i not in ANTI_PATTERN_COVERAGE]
+        if uncovered:
+            print(f"\n{BOLD}--- Otomatik Kapsam Disi Anti-Pattern'ler ---{RESET}")
+            for idx in uncovered:
+                if idx <= len(claude_patterns):
+                    print(f"  {YELLOW}#{idx}{RESET} {claude_patterns[idx - 1]}")
+            print(f"  {CYAN}Bu pattern'ler AST analizi veya context bilgisi gerektirir.{RESET}")
 
     return 1 if total_findings > 0 else 0
 

@@ -1,14 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-  <!-- Three-column podium: center tallest, left shorter, right shortest -->
-  <!-- 2nd place (left) -->
-  <rect x="2" y="10" width="6" height="11" rx="1.2" stroke="currentColor" stroke-width="0.7"/>
-  <!-- 1st place (center, tallest) -->
-  <rect x="9" y="4" width="6" height="17" rx="1.2" stroke="currentColor" stroke-width="0.7"/>
-  <!-- 3rd place (right, shortest) -->
-  <rect x="16" y="13" width="6" height="8" rx="1.2" stroke="currentColor" stroke-width="0.7"/>
-  <!-- Star on 1st place -->
-  <polygon points="12,6.5 12.7,8.1 14.4,8.3 13.2,9.4 13.5,11.1 12,10.2 10.5,11.1 10.8,9.4 9.6,8.3 11.3,8.1" fill="white"/>
-  <!-- Number labels -->
-  <text x="5" y="18" font-size="3.5" font-weight="bold" fill="white" text-anchor="middle" font-family="sans-serif">2</text>
-  <text x="19" y="19.5" font-size="3.5" font-weight="bold" fill="white" text-anchor="middle" font-family="sans-serif">3</text>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H3V5a1 1 0 011-1h2M18 9h3V5a1 1 0 00-1-1h-2"/><path d="M6 4h12v7c0 3.3-2.7 6-6 6s-6-2.7-6-6V4z"/><path d="M10 17v3M14 17v3M7 21h10"/><circle cx="12" cy="9" r="1.5" fill="currentColor" opacity=".12"/></svg>

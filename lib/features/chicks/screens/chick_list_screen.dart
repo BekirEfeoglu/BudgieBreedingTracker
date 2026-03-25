@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
+import 'package:budgie_breeding_tracker/core/widgets/app_screen_title.dart';
 import 'package:budgie_breeding_tracker/core/widgets/empty_state.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:budgie_breeding_tracker/core/widgets/error_state.dart';
@@ -65,7 +66,10 @@ class _ChickListScreenState extends ConsumerState<ChickListScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('chicks.title'.tr()),
+        title: AppScreenTitle(
+          title: 'chicks.title'.tr(),
+          iconAsset: AppIcons.chick,
+        ),
         actions: [
           PopupMenuButton<ChickSort>(
             icon: const Icon(LucideIcons.arrowUpDown),

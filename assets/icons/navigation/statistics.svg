@@ -1,12 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-  <!-- Left bar (shortest) -->
-  <rect x="3.5" y="14" width="4.5" height="7.5" rx="1.2"/>
-  <!-- Middle bar (medium) -->
-  <rect x="9.75" y="9" width="4.5" height="12.5" rx="1.2"/>
-  <!-- Right bar (tallest) -->
-  <rect x="16" y="4.5" width="4.5" height="17" rx="1.2"/>
-  <!-- Trend line diagonal -->
-  <line x1="4.5" y1="13" x2="19.5" y2="3.5" stroke="currentColor" stroke-width="0.7" stroke-linecap="round" opacity="0.5"/>
-  <!-- Trend dot at end -->
-  <circle cx="19.5" cy="3.5" r="1" opacity="0.5"/>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="14" width="4" height="7" rx="1" fill="currentColor" opacity=".08"/><rect x="3" y="14" width="4" height="7" rx="1"/><rect x="10" y="9" width="4" height="12" rx="1" fill="currentColor" opacity=".12"/><rect x="10" y="9" width="4" height="12" rx="1"/><rect x="17" y="4" width="4" height="17" rx="1" fill="currentColor" opacity=".15"/><rect x="17" y="4" width="4" height="17" rx="1"/><path d="M3 3l5 5 4-2 9 1" stroke-width="1.4"/></svg>

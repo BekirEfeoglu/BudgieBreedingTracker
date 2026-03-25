@@ -67,6 +67,7 @@ void main() {
           incubationReminderEnabled: true,
           feedingReminderEnabled: false,
           healthCheckEnabled: true,
+          bandingEnabled: false,
         ),
       );
       addTearDown(container.dispose);
@@ -82,6 +83,7 @@ void main() {
       expect(loaded.incubation, isTrue);
       expect(loaded.chickCare, isFalse);
       expect(loaded.healthCheck, isTrue);
+      expect(loaded.banding, isFalse);
       verifyNever(() => service.cancelByIdRange(any(), any()));
     });
 
@@ -159,6 +161,74 @@ void main() {
       ).called(1);
     });
 
+    test('setBanding(false) persists to DAO and cancels by ID range', () async {
+      final container = createContainer();
+      addTearDown(container.dispose);
+
+      await container
+          .read(notificationToggleSettingsProvider.notifier)
+          .setBanding(false);
+
+      final state = container.read(notificationToggleSettingsProvider);
+      expect(state.banding, isFalse);
+      verify(() => dao.upsert(any())).called(1);
+      verify(
+        () => service.cancelByIdRange(
+          NotificationScheduler.bandingBaseId,
+          NotificationScheduler.bandingBaseId + 100000,
+        ),
+      ).called(1);
+    });
+
+    test('setBanding(true) persists value and does not cancel', () async {
+      final container = createContainer();
+      addTearDown(container.dispose);
+
+      await container
+          .read(notificationToggleSettingsProvider.notifier)
+          .setBanding(true);
+
+      final state = container.read(notificationToggleSettingsProvider);
+      expect(state.banding, isTrue);
+      verify(() => dao.upsert(any())).called(1);
+      verifyNever(() => service.cancelByIdRange(any(), any()));
+    });
+
+    test('setAll(false) disables banding along with other categories', () async {
+      when(() => service.cancelAll()).thenAnswer((_) async {});
+      final container = createContainer();
+      addTearDown(container.dispose);
+
+      await container
+          .read(notificationToggleSettingsProvider.notifier)
+          .setAll(false);
+
+      final state = container.read(notificationToggleSettingsProvider);
+      expect(state.eggTurning, isFalse);
+      expect(state.incubation, isFalse);
+      expect(state.chickCare, isFalse);
+      expect(state.healthCheck, isFalse);
+      expect(state.banding, isFalse);
+      verify(() => service.cancelAll()).called(1);
+    });
+
+    test('setAll(true) enables banding along with other categories', () async {
+      final container = createContainer();
+      addTearDown(container.dispose);
+
+      await container
+          .read(notificationToggleSettingsProvider.notifier)
+          .setAll(true);
+
+      final state = container.read(notificationToggleSettingsProvider);
+      expect(state.eggTurning, isTrue);
+      expect(state.incubation, isTrue);
+      expect(state.chickCare, isTrue);
+      expect(state.healthCheck, isTrue);
+      expect(state.banding, isTrue);
+      verifyNever(() => service.cancelByIdRange(any(), any()));
+    });
+
     test('setChickCare(false) swallows cancellation errors', () async {
       when(
         () => service.cancelByIdRange(any(), any()),
@@ -188,6 +258,7 @@ void main() {
       expect(state.incubation, isTrue);
       expect(state.chickCare, isTrue);
       expect(state.healthCheck, isTrue);
+      expect(state.banding, isTrue);
     });
 
     test('disposing container before async load completes does not crash', () async {

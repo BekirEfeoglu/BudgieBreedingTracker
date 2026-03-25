@@ -8,6 +8,7 @@ import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
+import 'package:budgie_breeding_tracker/core/widgets/app_screen_title.dart';
 import '../../../router/route_names.dart';
 import 'package:budgie_breeding_tracker/features/notifications/widgets/notification_bell_button.dart';
 import 'package:budgie_breeding_tracker/features/profile/widgets/profile_menu_button.dart';
@@ -27,7 +28,7 @@ class MoreScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('nav.more'.tr()),
+        title: AppScreenTitle(title: 'nav.more'.tr(), iconAsset: AppIcons.more),
         actions: isGuest
             ? [
                 TextButton(

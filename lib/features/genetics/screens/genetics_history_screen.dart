@@ -8,6 +8,7 @@ import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/empty_state.dart';
 import 'package:budgie_breeding_tracker/core/widgets/error_state.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
+import 'package:budgie_breeding_tracker/core/widgets/app_screen_title.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_providers.dart';
 import 'package:budgie_breeding_tracker/features/genetics/providers/genetics_history_providers.dart';
 import 'package:budgie_breeding_tracker/features/genetics/widgets/genetics_history_card.dart';
@@ -49,10 +50,11 @@ class _GeneticsHistoryScreenState extends ConsumerState<GeneticsHistoryScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          isSelectionMode
+        title: AppScreenTitle(
+          title: isSelectionMode
               ? '${_selectedIds.length} ${'common.selected'.tr()}'
               : 'genetics.history'.tr(),
+          iconAsset: AppIcons.calculator,
         ),
         leading: isSelectionMode
             ? IconButton(

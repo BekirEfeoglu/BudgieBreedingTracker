@@ -55,6 +55,7 @@ abstract class SupabaseConstants {
   static const String adminSessionsTable = 'admin_sessions';
   static const String adminRateLimitsTable = 'admin_rate_limits';
   static const String backupSettingsTable = 'backup_settings';
+  static const String mfaLockoutsTable = 'mfa_lockouts';
 
   // Push notification tables (server-side, no client remote source yet)
   static const String fcmTokensTable = 'fcm_tokens';

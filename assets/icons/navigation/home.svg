@@ -1,10 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-  <!-- Roof with rounded peak -->
-  <path d="M11.4 3.6a0.9 0.9 0 0 1 1.2 0l8.6 7.8a0.65 0.65 0 0 1-.44 1.12H3.24a0.65 0.65 0 0 1-.44-1.12L11.4 3.6Z"/>
-  <!-- House body -->
-  <rect x="5.2" y="11.8" width="13.6" height="9" rx="1"/>
-  <!-- Door cutout -->
-  <rect x="9.6" y="15.2" width="4.8" height="5.6" rx="0.7" fill="white"/>
-  <!-- Chimney accent -->
-  <rect x="16" y="6.2" width="2.2" height="4.2" rx="0.5" opacity="0.45"/>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5L12 3l9 7.5"/><path d="M5 9.5V20a1 1 0 001 1h3v-5.5a1 1 0 011-1h4a1 1 0 011 1V21h3a1 1 0 001-1V9.5"/><circle cx="12" cy="4.5" r=".6" fill="currentColor" opacity=".4"/></svg>

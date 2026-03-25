@@ -1,26 +1,31 @@
 #!/usr/bin/env python3
 """
-.claude/rules/ dosyalarindaki sayisal iddialari gercek codebase ile karsilastirir.
+CLAUDE.md'deki Codebase Stats tablosunu parse eder ve gercek codebase ile karsilastirir.
+
+Tek kaynak ilkesi (Single Source of Truth): Beklenen degerler CLAUDE.md'den okunur,
+hardcoded degerler yerine dosyadaki tablo referans alinir.
 
 Kullanim:
-  python scripts/verify_rules.py
+  python scripts/verify_rules.py          # Dogrulama modu (CI icin)
+  python scripts/verify_rules.py --fix    # CLAUDE.md'yi otomatik guncelle
 
 Cikti:
   Her kontrol icin PASS/FAIL ve detay bilgisi.
+  --fix modunda: CLAUDE.md tablosu gercek degerlerle guncellenir.
 """
 
-import os
-import re
 import json
+import re
 import sys
 from pathlib import Path
-from collections import defaultdict
+from typing import Optional
 
-# Proje kok dizini (scriptin bulundugu yere gore)
 ROOT = Path(__file__).resolve().parent.parent
 LIB = ROOT / "lib"
 ASSETS = ROOT / "assets"
-RULES = ROOT / ".claude" / "rules"
+CLAUDE_MD = ROOT / "CLAUDE.md"
+
+FIX_MODE = "--fix" in sys.argv
 
 
 class Colors:
@@ -32,59 +37,50 @@ class Colors:
     BOLD = "\033[1m"
 
 
+# ── Helpers ──────────────────────────────────────────────────────────
+
+
 def count_files(directory: Path, pattern: str = "*.dart") -> int:
-    """Belirli bir dizindeki dosyalari say (alt dizinler haric)."""
     if not directory.exists():
         return 0
     return len(list(directory.glob(pattern)))
 
 
 def count_files_recursive(directory: Path, pattern: str = "*.svg") -> int:
-    """Belirli bir dizindeki dosyalari alt dizinlerle birlikte say."""
     if not directory.exists():
         return 0
     return len(list(directory.rglob(pattern)))
 
 
 def count_dirs(directory: Path) -> int:
-    """Belirli bir dizindeki alt dizin sayisini dondur."""
     if not directory.exists():
         return 0
     return len([d for d in directory.iterdir() if d.is_dir()])
 
 
-def count_json_keys(filepath: Path) -> int:
-    """JSON dosyasindaki tum iç içe anahtar sayisini say."""
+def count_json_leaf_keys(filepath: Path) -> int:
     if not filepath.exists():
         return 0
     with open(filepath, "r", encoding="utf-8") as f:
         data = json.load(f)
-    return _count_leaf_keys(data)
 
-
-def _count_leaf_keys(obj, depth=0) -> int:
-    """Yaprak (leaf) anahtar sayisini recursive say."""
-    if isinstance(obj, dict):
+    def _leaves(obj):
         count = 0
         for v in obj.values():
-            if isinstance(v, dict):
-                count += _count_leaf_keys(v, depth + 1)
-            else:
-                count += 1
+            count += _leaves(v) if isinstance(v, dict) else 1
         return count
-    return 0
+
+    return _leaves(data)
 
 
-def count_string_consts(filepath: Path, pattern: str = r"static const\s+\w+\s*=") -> int:
-    """Bir Dart dosyasindaki static const tanimlarini say."""
+def count_string_consts(filepath: Path) -> int:
     if not filepath.exists():
         return 0
     content = filepath.read_text(encoding="utf-8")
-    return len(re.findall(pattern, content))
+    return len(re.findall(r"static const\s+", content))
 
 
 def count_route_consts(filepath: Path) -> int:
-    """route_names.dart'taki route sabitlerini say."""
     if not filepath.exists():
         return 0
     content = filepath.read_text(encoding="utf-8")
@@ -92,7 +88,6 @@ def count_route_consts(filepath: Path) -> int:
 
 
 def get_schema_version(filepath: Path) -> int:
-    """app_database.dart'tan schemaVersion degerini oku."""
     if not filepath.exists():
         return 0
     content = filepath.read_text(encoding="utf-8")
@@ -100,160 +95,239 @@ def get_schema_version(filepath: Path) -> int:
     return int(match.group(1)) if match else 0
 
 
-def check_rule_claim(description: str, expected, actual, tolerance: int = 0):
-    """Bir kural iddiasini kontrol et ve sonucu yazdir."""
-    passed = abs(actual - expected) <= tolerance if isinstance(expected, int) else actual == expected
+# ── CLAUDE.md Parser ─────────────────────────────────────────────────
+
+
+def parse_claude_md_stats() -> dict:
+    """CLAUDE.md'deki Codebase Stats tablosunu parse et."""
+    content = CLAUDE_MD.read_text(encoding="utf-8")
+
+    in_table = False
+    stats = {}
+    for line in content.splitlines():
+        if "| Metric | Value |" in line:
+            in_table = True
+            continue
+        if in_table and line.startswith("| ---"):
+            continue
+        if in_table and line.startswith("|"):
+            parts = [p.strip() for p in line.split("|")[1:-1]]
+            if len(parts) == 2:
+                stats[parts[0]] = parts[1]
+        elif in_table and not line.startswith("|"):
+            break
+
+    return stats
+
+
+def extract_first_number(text: str) -> Optional[int]:
+    """Bir string'den ilk sayiyi cikar. '~' prefix'ini tolere eder."""
+    text = text.replace("~", "").replace(",", "")
+    match = re.search(r"\d+", text)
+    return int(match.group()) if match else None
+
+
+# ── Fix Mode ─────────────────────────────────────────────────────────
+
+
+def fix_claude_md(updates: dict):
+    """CLAUDE.md'deki Codebase Stats tablosundaki degerleri guncelle."""
+    content = CLAUDE_MD.read_text(encoding="utf-8")
+    lines = content.splitlines()
+    changed = False
+
+    for i, line in enumerate(lines):
+        if not line.startswith("|") or "---" in line or "Metric" in line:
+            continue
+        parts = [p.strip() for p in line.split("|")[1:-1]]
+        if len(parts) != 2:
+            continue
+
+        metric = parts[0]
+        if metric in updates:
+            old_value = parts[1]
+            new_value = updates[metric]
+            if old_value != new_value:
+                lines[i] = f"| {metric} | {new_value} |"
+                changed = True
+                print(f"  {Colors.YELLOW}FIX{Colors.RESET}  {metric}: {old_value} -> {new_value}")
+
+    if changed:
+        CLAUDE_MD.write_text("\n".join(lines) + "\n", encoding="utf-8")
+        print(f"\n  {Colors.GREEN}CLAUDE.md guncellendi!{Colors.RESET}")
+    else:
+        print(f"\n  {Colors.GREEN}CLAUDE.md zaten guncel, degisiklik yok.{Colors.RESET}")
+
+
+# ── Checks ───────────────────────────────────────────────────────────
+
+
+def check(description: str, expected: int, actual: int, tolerance: int = 0) -> bool:
+    passed = abs(actual - expected) <= tolerance
     status = f"{Colors.GREEN}PASS{Colors.RESET}" if passed else f"{Colors.RED}FAIL{Colors.RESET}"
     detail = f"beklenen={expected}, gercek={actual}"
     if not passed:
-        detail += f" {Colors.RED}(fark: {actual - expected if isinstance(expected, int) else 'uyumsuz'}){Colors.RESET}"
+        detail += f" {Colors.RED}(fark: {actual - expected:+d}){Colors.RESET}"
     print(f"  [{status}] {description}: {detail}")
     return passed
 
 
-def main():
-    print(f"\n{Colors.BOLD}{Colors.CYAN}=== .claude/rules Dogrulama Raporu ==={Colors.RESET}\n")
+# ── Actual Value Collectors ──────────────────────────────────────────
 
-    pass_count = 0
-    fail_count = 0
-    total = 0
 
-    def track(result: bool):
-        nonlocal pass_count, fail_count, total
-        total += 1
-        if result:
-            pass_count += 1
-        else:
-            fail_count += 1
-
-    # --- 1. Data Layer Counts ---
-    print(f"{Colors.BOLD}1. Data Layer (Models, Enums, Tables, DAOs, Mappers){Colors.RESET}")
-
-    models_dir = LIB / "data" / "models"
-    model_files = [f for f in models_dir.glob("*_model.dart")] if models_dir.exists() else []
-    freezed_count = len(model_files)
-    # statistics_models.dart (model.dart olmayan ama Freezed iceren dosya) ayri sayilmaz
-    # architecture.md "20 Freezed model files (incl. statistics_models)" der
-    track(check_rule_claim("Freezed model sayisi", 20, freezed_count))
-
-    track(check_rule_claim("Enum dosya sayisi (core/enums/)", 11,
-                           count_files(LIB / "core" / "enums", "*_enums.dart")))
-
-    track(check_rule_claim("Drift table sayisi", 19,
-                           count_files(LIB / "data" / "local" / "database" / "tables", "*_table.dart")))
-
-    track(check_rule_claim("DAO sayisi", 19,
-                           count_files(LIB / "data" / "local" / "database" / "daos", "*_dao.dart")))
-
-    mapper_dir = LIB / "data" / "local" / "database" / "mappers"
-    track(check_rule_claim("Mapper sayisi", 19,
-                           count_files(mapper_dir, "*_mapper.dart"), tolerance=1))
-
-    # --- 2. Remote & Repository Layer ---
-    print(f"\n{Colors.BOLD}2. Remote Sources & Repositories{Colors.RESET}")
-
-    remote_dir = LIB / "data" / "remote" / "api"
-    remote_sources = [f for f in remote_dir.glob("*_remote_source.dart")] if remote_dir.exists() else []
-    base_remote = [f for f in remote_sources if "base_" in f.name]
-    entity_remote = [f for f in remote_sources if "base_" not in f.name]
-    track(check_rule_claim("Entity remote source sayisi", 19, len(entity_remote), tolerance=1))
+def collect_actual_values() -> dict:
+    """Codebase'den gercek degerleri topla."""
+    models = count_files(LIB / "data" / "models", "*_model.dart")
+    enums = count_files(LIB / "core" / "enums", "*_enums.dart")
+    tables = count_files(LIB / "data" / "local" / "database" / "tables", "*_table.dart")
+    daos = count_files(LIB / "data" / "local" / "database" / "daos", "*_dao.dart")
+    mappers = count_files(LIB / "data" / "local" / "database" / "mappers", "*_mapper.dart")
 
     repo_dir = LIB / "data" / "repositories"
-    repo_files = [f for f in repo_dir.glob("*_repository.dart")] if repo_dir.exists() else []
-    base_repo = [f for f in repo_files if "base_" in f.name]
-    entity_repos = [f for f in repo_files if "base_" not in f.name]
-    track(check_rule_claim("Entity repository sayisi", 20, len(entity_repos), tolerance=1))
+    repos = len([f for f in repo_dir.glob("*_repository.dart") if "base_" not in f.name]) if repo_dir.exists() else 0
 
-    # --- 3. Feature Modules ---
-    print(f"\n{Colors.BOLD}3. Feature Modules & Domain Services{Colors.RESET}")
+    remote_dir = LIB / "data" / "remote" / "api"
+    remotes = len([f for f in remote_dir.glob("*_remote_source.dart") if "base_" not in f.name]) if remote_dir.exists() else 0
 
-    track(check_rule_claim("Feature modul sayisi (features/)", 20,
-                           count_dirs(LIB / "features")))
-
-    track(check_rule_claim("Domain service dizin sayisi", 13,
-                           count_dirs(LIB / "domain" / "services")))
-
-    # --- 4. Icons ---
-    print(f"\n{Colors.BOLD}4. SVG Icons{Colors.RESET}")
-
-    track(check_rule_claim("SVG dosya sayisi (assets/icons/)", 82,
-                           count_files_recursive(ASSETS / "icons", "*.svg"), tolerance=3))
-
-    track(check_rule_claim("Icon alt dizin sayisi", 10,
-                           count_dirs(ASSETS / "icons")))
-
-    app_icons_file = LIB / "core" / "constants" / "app_icons.dart"
-    track(check_rule_claim("AppIcons sabit sayisi", 82,
-                           count_string_consts(app_icons_file), tolerance=3))
-
-    # --- 5. Theme & Core ---
-    print(f"\n{Colors.BOLD}5. Core Layer{Colors.RESET}")
-
-    track(check_rule_claim("Theme dosya sayisi", 4,
-                           count_files(LIB / "core" / "theme"), tolerance=2))
-
-    track(check_rule_claim("Utils dosya sayisi", 3,
-                           count_files(LIB / "core" / "utils")))
-
-    track(check_rule_claim("Extensions dosya sayisi", 2,
-                           count_files(LIB / "core" / "extensions")))
-
-    track(check_rule_claim("Errors dosya sayisi", 1,
-                           count_files(LIB / "core" / "errors")))
-
-    # --- 6. Router ---
-    print(f"\n{Colors.BOLD}6. Router{Colors.RESET}")
-
-    route_names = LIB / "router" / "route_names.dart"
-    track(check_rule_claim("Route sabiti sayisi", 58,
-                           count_route_consts(route_names), tolerance=2))
-
-    track(check_rule_claim("Guard dosya sayisi", 2,
-                           count_files(LIB / "router" / "guards"), tolerance=1))
-
-    # --- 7. Database ---
-    print(f"\n{Colors.BOLD}7. Database{Colors.RESET}")
-
-    app_db = LIB / "data" / "local" / "database" / "app_database.dart"
-    track(check_rule_claim("Schema version", 14, get_schema_version(app_db)))
-
-    # --- 8. Translations ---
-    print(f"\n{Colors.BOLD}8. Translations{Colors.RESET}")
-
-    tr_keys = count_json_keys(ASSETS / "translations" / "tr.json")
-    en_keys = count_json_keys(ASSETS / "translations" / "en.json")
-    de_keys = count_json_keys(ASSETS / "translations" / "de.json")
-
-    track(check_rule_claim("TR ceviri anahtar sayisi (~1989)", 1989, tr_keys, tolerance=50))
-    track(check_rule_claim("EN ceviri anahtar sayisi (~1989)", 1989, en_keys, tolerance=50))
-    track(check_rule_claim("DE ceviri anahtar sayisi (~1989)", 1989, de_keys, tolerance=50))
-
-    tr_en_diff = abs(tr_keys - en_keys)
-    tr_de_diff = abs(tr_keys - de_keys)
-    track(check_rule_claim("TR-EN anahtar farki (0 olmali)", 0, tr_en_diff, tolerance=5))
-    track(check_rule_claim("TR-DE anahtar farki (0 olmali)", 0, tr_de_diff, tolerance=5))
-
-    # --- 9. Shared Widgets ---
-    print(f"\n{Colors.BOLD}9. Shared Widgets{Colors.RESET}")
+    features = count_dirs(LIB / "features")
+    services = count_dirs(LIB / "domain" / "services")
+    icons = count_string_consts(LIB / "core" / "constants" / "app_icons.dart")
+    svg_files = count_files_recursive(ASSETS / "icons", "*.svg")
+    routes = count_route_consts(LIB / "router" / "route_names.dart")
+    schema = get_schema_version(LIB / "data" / "local" / "database" / "app_database.dart")
+    tr_keys = count_json_leaf_keys(ASSETS / "translations" / "tr.json")
+    supa = count_string_consts(LIB / "core" / "constants" / "supabase_constants.dart")
 
     widgets_dir = LIB / "core" / "widgets"
-    widget_subdirs = count_dirs(widgets_dir)
-    track(check_rule_claim("Widget alt dizin sayisi (buttons, cards, dialogs)", 3,
-                           widget_subdirs, tolerance=1))
+    root_w = count_files(widgets_dir)
+    sub_w = sum(count_files(d) for d in widgets_dir.iterdir() if d.is_dir()) if widgets_dir.exists() else 0
 
-    # --- 10. Skills ---
-    print(f"\n{Colors.BOLD}10. Skills (.claude/skills/){Colors.RESET}")
+    # Count sub-widget details for display
+    buttons = count_files(widgets_dir / "buttons") if (widgets_dir / "buttons").exists() else 0
+    cards = count_files(widgets_dir / "cards") if (widgets_dir / "cards").exists() else 0
+    dialogs = count_files(widgets_dir / "dialogs") if (widgets_dir / "dialogs").exists() else 0
 
-    skills_dir = ROOT / ".claude" / "skills"
-    track(check_rule_claim("Skill sayisi (.claude/skills/)", 43,
-                           count_dirs(skills_dir), tolerance=3))
+    return {
+        "models": models,
+        "enums": enums,
+        "tables": tables,
+        "daos": daos,
+        "mappers": mappers,
+        "repos": repos,
+        "remotes": remotes,
+        "features": features,
+        "services": services,
+        "icons": icons,
+        "svg_files": svg_files,
+        "routes": routes,
+        "schema": schema,
+        "tr_keys": tr_keys,
+        "supa": supa,
+        "widgets_total": root_w + sub_w,
+        "widgets_root": root_w,
+        "widgets_buttons": buttons,
+        "widgets_cards": cards,
+        "widgets_dialogs": dialogs,
+    }
 
-    # --- Summary ---
+
+def build_fix_updates(actual: dict) -> dict:
+    """Gercek degerlerden CLAUDE.md tablo satir guncellemeleri olustur."""
+    a = actual
+    return {
+        "Freezed models": f"{a['models']} model files + statistics_models + supabase_extensions",
+        "Enum files": str(a["enums"]),
+        "Drift tables / DAOs / Mappers": f"{a['tables']} each",
+        "Repositories": f"{a['repos']} entity + base + sync_metadata",
+        "Remote sources": f"{a['remotes']} entity + base + 2 caches + providers",
+        "Feature modules": str(a["features"]),
+        "Domain services": f"{a['services']} directories",
+        "Custom SVG icons": f"{a['icons']} constants, {a['svg_files']} files on disk",
+        "Routes": str(a["routes"]),
+        "DB schema version": str(a["schema"]),
+        "L10n keys": f"~{a['tr_keys']:,} per language, 35 categories",
+        "Supabase constants": f"{a['supa']} (tables + buckets + columns)",
+        "Shared widgets": f"{a['widgets_total']} ({a['widgets_root']} root + {a['widgets_buttons']} buttons + {a['widgets_cards']} cards + {a['widgets_dialogs']} dialog)",
+    }
+
+
+# ── Main ─────────────────────────────────────────────────────────────
+
+
+def main():
+    mode_label = "FIX" if FIX_MODE else "Dogrulama"
+    print(f"\n{Colors.BOLD}{Colors.CYAN}=== CLAUDE.md {mode_label} Raporu ==={Colors.RESET}")
+    print(f"  Kaynak: {CLAUDE_MD.relative_to(ROOT)}\n")
+
+    stats = parse_claude_md_stats()
+    if not stats:
+        print(f"  {Colors.RED}HATA: CLAUDE.md'de Codebase Stats tablosu bulunamadi!{Colors.RESET}")
+        return 1
+
+    actual = collect_actual_values()
+
+    if FIX_MODE:
+        updates = build_fix_updates(actual)
+        fix_claude_md(updates)
+        return 0
+
+    # ── Verification Mode ──
+    results = []
+
+    def track(result):
+        results.append(result)
+
+    print(f"{Colors.BOLD}1. Data Layer{Colors.RESET}")
+    track(check("Freezed model sayisi", extract_first_number(stats.get("Freezed models", "0")), actual["models"]))
+    track(check("Enum dosya sayisi", extract_first_number(stats.get("Enum files", "0")), actual["enums"]))
+    track(check("Drift table sayisi", extract_first_number(stats.get("Drift tables / DAOs / Mappers", "0")), actual["tables"]))
+    track(check("DAO sayisi", extract_first_number(stats.get("Drift tables / DAOs / Mappers", "0")), actual["daos"]))
+    track(check("Mapper sayisi", extract_first_number(stats.get("Drift tables / DAOs / Mappers", "0")), actual["mappers"]))
+
+    print(f"\n{Colors.BOLD}2. Remote Sources & Repositories{Colors.RESET}")
+    track(check("Entity repository sayisi", extract_first_number(stats.get("Repositories", "0")), actual["repos"], tolerance=1))
+    track(check("Entity remote source sayisi", extract_first_number(stats.get("Remote sources", "0")), actual["remotes"], tolerance=1))
+
+    print(f"\n{Colors.BOLD}3. Feature Modules & Domain Services{Colors.RESET}")
+    track(check("Feature modul sayisi", extract_first_number(stats.get("Feature modules", "0")), actual["features"]))
+    track(check("Domain service dizin sayisi", extract_first_number(stats.get("Domain services", "0")), actual["services"]))
+
+    print(f"\n{Colors.BOLD}4. SVG Icons{Colors.RESET}")
+    track(check("AppIcons sabit sayisi", extract_first_number(stats.get("Custom SVG icons", "0")), actual["icons"], tolerance=3))
+    track(check("SVG dosya sayisi", extract_first_number(stats.get("Custom SVG icons", "0")), actual["svg_files"], tolerance=3))
+
+    print(f"\n{Colors.BOLD}5. Router{Colors.RESET}")
+    track(check("Route sabiti sayisi", extract_first_number(stats.get("Routes", "0")), actual["routes"], tolerance=2))
+
+    print(f"\n{Colors.BOLD}6. Database{Colors.RESET}")
+    track(check("Schema version", extract_first_number(stats.get("DB schema version", "0")), actual["schema"]))
+
+    print(f"\n{Colors.BOLD}7. Translations{Colors.RESET}")
+    expected_keys = extract_first_number(stats.get("L10n keys", "0"))
+    en_keys = count_json_leaf_keys(ASSETS / "translations" / "en.json")
+    de_keys = count_json_leaf_keys(ASSETS / "translations" / "de.json")
+    track(check("TR ceviri anahtar sayisi", expected_keys, actual["tr_keys"], tolerance=50))
+    track(check("EN ceviri anahtar sayisi", expected_keys, en_keys, tolerance=50))
+    track(check("DE ceviri anahtar sayisi", expected_keys, de_keys, tolerance=50))
+    track(check("TR-EN anahtar farki (0 olmali)", 0, abs(actual["tr_keys"] - en_keys), tolerance=5))
+    track(check("TR-DE anahtar farki (0 olmali)", 0, abs(actual["tr_keys"] - de_keys), tolerance=5))
+
+    print(f"\n{Colors.BOLD}8. Supabase Constants{Colors.RESET}")
+    track(check("Supabase sabit sayisi", extract_first_number(stats.get("Supabase constants", "0")), actual["supa"], tolerance=3))
+
+    print(f"\n{Colors.BOLD}9. Shared Widgets{Colors.RESET}")
+    track(check("Toplam widget sayisi", extract_first_number(stats.get("Shared widgets", "0")), actual["widgets_total"], tolerance=2))
+
+    # ── Summary ──
+    pass_count = sum(results)
+    fail_count = len(results) - pass_count
+
     print(f"\n{Colors.BOLD}{Colors.CYAN}=== OZET ==={Colors.RESET}")
-    print(f"  Toplam kontrol: {total}")
+    print(f"  Toplam kontrol: {len(results)}")
     print(f"  {Colors.GREEN}Basarili: {pass_count}{Colors.RESET}")
     if fail_count > 0:
         print(f"  {Colors.RED}Basarisiz: {fail_count}{Colors.RESET}")
+        print(f"\n  {Colors.YELLOW}Ipucu: 'python scripts/verify_rules.py --fix' ile otomatik duzelt{Colors.RESET}")
     else:
         print(f"  {Colors.GREEN}Tum kontroller basarili!{Colors.RESET}")
 

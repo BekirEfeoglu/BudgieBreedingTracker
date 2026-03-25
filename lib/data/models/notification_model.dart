@@ -46,6 +46,7 @@ abstract class NotificationSettings with _$NotificationSettings {
     @Default(true) bool feedingReminderEnabled,
     @Default(true) bool incubationReminderEnabled,
     @Default(true) bool healthCheckEnabled,
+    @Default(true) bool bandingEnabled,
     @Default(37.0) double temperatureMin,
     @Default(38.0) double temperatureMax,
     @Default(55.0) double humidityMin,

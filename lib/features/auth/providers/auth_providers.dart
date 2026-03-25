@@ -133,8 +133,22 @@ Future<void> _checkPendingMfa(Ref ref) async {
       }
     }
   } catch (e, st) {
-    AppLogger.warning('[AppInit] MFA check failed, continuing: $e');
+    AppLogger.warning('[AppInit] MFA check failed, requiring re-verification: $e');
     Sentry.captureException(e, stackTrace: st);
+    // On MFA check failure, force re-verification rather than silently
+    // allowing access. This prevents bypass when network is unavailable.
+    try {
+      final service = ref.read(twoFactorServiceProvider);
+      final factors = await service.getFactors();
+      if (factors.isNotEmpty) {
+        ref.read(pendingMfaFactorIdProvider.notifier).state = factors.first.id;
+      }
+    } catch (_) {
+      // If we can't even get factors, sign the user out for safety.
+      // They can re-authenticate when network is available.
+      final client = ref.read(supabaseClientProvider);
+      await client.auth.signOut();
+    }
   }
 }
 

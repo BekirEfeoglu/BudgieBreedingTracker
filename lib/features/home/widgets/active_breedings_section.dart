@@ -3,9 +3,11 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/enums/breeding_enums.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
+import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/core/widgets/status_badge.dart';
 import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_detail_providers.dart';
@@ -28,6 +30,7 @@ class ActiveBreedingsSection extends ConsumerWidget {
         children: [
           SectionHeader(
             title: 'home.active_breedings_section'.tr(),
+            icon: const AppIcon(AppIcons.breedingActive),
             onViewAll: () => context.go(AppRoutes.breeding),
           ),
           const SizedBox(height: AppSpacing.sm),

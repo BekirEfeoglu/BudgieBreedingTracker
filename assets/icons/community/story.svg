@@ -1,13 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-  <!-- Three overlapping rounded rectangles fanning out (stacked cards) -->
-  <!-- Back card (rightmost, rotated) -->
-  <rect x="7" y="3" width="13" height="17" rx="2" opacity="0.3" transform="rotate(6 13.5 11.5)" stroke="currentColor" stroke-width="0.6"/>
-  <!-- Middle card (slightly rotated) -->
-  <rect x="6" y="3" width="13" height="17" rx="2" opacity="0.6" transform="rotate(3 12.5 11.5)" stroke="currentColor" stroke-width="0.6"/>
-  <!-- Front card (largest, no rotation) -->
-  <rect x="4" y="3.5" width="13.5" height="17.5" rx="2.2" stroke="currentColor" stroke-width="0.7"/>
-  <!-- Content hint on front card -->
-  <rect x="6.5" y="6" width="8.5" height="5" rx="1" fill="white" opacity="0.25"/>
-  <line x1="6.5" y1="13.5" x2="15" y2="13.5" stroke="white" stroke-width="0.8" stroke-linecap="round" opacity="0.4"/>
-  <line x1="6.5" y1="16" x2="12" y2="16" stroke="white" stroke-width="0.8" stroke-linecap="round" opacity="0.4"/>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9" stroke-dasharray="4 2"/><circle cx="12" cy="12" r="5"/><path d="M12 9v3l2 1"/><circle cx="12" cy="12" r="5" fill="currentColor" opacity=".03"/></svg>

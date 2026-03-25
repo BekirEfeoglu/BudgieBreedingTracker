@@ -4,7 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
+import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
+import 'package:budgie_breeding_tracker/core/widgets/app_screen_title.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/core/widgets/empty_state.dart';
 import 'package:budgie_breeding_tracker/core/widgets/error_state.dart';
@@ -26,7 +28,10 @@ class NotificationListScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('notifications.inbox_title'.tr()),
+        title: AppScreenTitle(
+          title: 'notifications.inbox_title'.tr(),
+          iconAsset: AppIcons.notification,
+        ),
         actions: [
           IconButton(
             icon: const Icon(LucideIcons.checkCheck),

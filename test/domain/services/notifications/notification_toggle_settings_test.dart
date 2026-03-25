@@ -13,6 +13,7 @@ void main() {
       expect(settings.incubation, isTrue);
       expect(settings.chickCare, isTrue);
       expect(settings.healthCheck, isTrue);
+      expect(settings.banding, isTrue);
       expect(settings.cleanupDaysOld, 30);
     });
 
@@ -64,6 +65,18 @@ void main() {
       expect(updated.healthCheck, isFalse);
       expect(updated.soundEnabled, isTrue);
       expect(updated.incubation, isTrue);
+    });
+
+    test('allEnabled returns false when banding is disabled', () {
+      const settings = NotificationToggleSettings(banding: false);
+
+      expect(settings.allEnabled, isFalse);
+    });
+
+    test('allEnabled returns true when all categories are enabled', () {
+      const settings = NotificationToggleSettings();
+
+      expect(settings.allEnabled, isTrue);
     });
   });
 }

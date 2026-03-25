@@ -6,6 +6,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
+import 'package:budgie_breeding_tracker/core/widgets/app_screen_title.dart';
 import 'package:budgie_breeding_tracker/core/widgets/empty_state.dart';
 import 'package:budgie_breeding_tracker/core/widgets/error_state.dart';
 import 'package:budgie_breeding_tracker/core/widgets/buttons/fab_button.dart';
@@ -45,7 +46,12 @@ class _HealthRecordListScreenState
     }
 
     return Scaffold(
-      appBar: AppBar(title: Text('health_records.title'.tr())),
+      appBar: AppBar(
+        title: AppScreenTitle(
+          title: 'health_records.title'.tr(),
+          iconAsset: AppIcons.health,
+        ),
+      ),
       body: Column(
         children: [
           // Search bar
@@ -68,10 +74,11 @@ class _HealthRecordListScreenState
                         onPressed: () {
                           _searchController.clear();
                           ref
-                              .read(
-                                healthRecordSearchQueryProvider.notifier,
-                              )
-                              .state = '';
+                                  .read(
+                                    healthRecordSearchQueryProvider.notifier,
+                                  )
+                                  .state =
+                              '';
                         },
                       )
                     : null,

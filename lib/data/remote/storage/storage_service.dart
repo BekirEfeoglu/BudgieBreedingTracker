@@ -36,8 +36,9 @@ class StorageService {
     'heic',
   };
 
-  /// Signed URL expiry: 1 year in seconds.
-  static const int _signedUrlExpiry = 60 * 60 * 24 * 365;
+  /// Signed URL expiry: 7 days in seconds.
+  /// Short-lived URLs reduce exposure window if URLs are leaked or shared.
+  static const int _signedUrlExpiry = 60 * 60 * 24 * 7;
 
   const StorageService(this._client);
 

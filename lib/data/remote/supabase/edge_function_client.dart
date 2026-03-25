@@ -39,11 +39,23 @@ class EdgeFunctionResult {
 }
 
 /// Client for invoking Supabase Edge Functions.
+///
+/// Includes per-function rate limiting to prevent abuse of expensive
+/// server-side operations (genetics calculation, report generation, etc.).
 class EdgeFunctionClient {
   final SupabaseClient _client;
   static const _tag = '[EdgeFunctionClient]';
 
-  const EdgeFunctionClient(this._client);
+  /// Minimum interval between calls to the same Edge Function.
+  static const _defaultCooldown = Duration(seconds: 10);
+
+  /// Edge Functions exempt from rate limiting (need rapid sequential calls).
+  static const _rateLimitExempt = {'mfa-lockout'};
+
+  /// Per-function last invocation timestamps for rate limiting.
+  final Map<String, DateTime> _lastInvocationAt = {};
+
+  EdgeFunctionClient(this._client);
 
   /// Invoke an Edge Function by name.
   ///
@@ -55,6 +67,17 @@ class EdgeFunctionClient {
     Map<String, String>? headers,
   }) async {
     try {
+      // Enforce per-function rate limiting (skip for exempt functions)
+      final lastCall = _lastInvocationAt[functionName];
+      if (!_rateLimitExempt.contains(functionName) &&
+          lastCall != null &&
+          DateTime.now().difference(lastCall) < _defaultCooldown) {
+        AppLogger.warning('$_tag Rate limited: $functionName');
+        return EdgeFunctionResult.failure(
+          'Rate limited: please wait before retrying',
+        );
+      }
+
       AppLogger.info('$_tag Invoking: $functionName');
 
       // Auto-include JWT for authenticated Edge Function calls
@@ -72,6 +95,8 @@ class EdgeFunctionClient {
       );
 
       final result = EdgeFunctionResult.fromResponse(response);
+
+      _lastInvocationAt[functionName] = DateTime.now();
 
       if (result.success) {
         AppLogger.info('$_tag $functionName completed successfully');
@@ -145,5 +170,24 @@ class EdgeFunctionClient {
       'scan-image-safety',
       body: {'image_base64': imageBase64, 'mime_type': mimeType},
     );
+  }
+
+  /// Check if the current user is locked out of MFA verification.
+  ///
+  /// Returns `{ locked: bool, remaining_seconds: int }`.
+  Future<EdgeFunctionResult> checkMfaLockout() {
+    return invoke('mfa-lockout', body: {'action': 'check'});
+  }
+
+  /// Record a failed MFA verification attempt.
+  ///
+  /// Increments server-side counter and triggers lockout at 5 attempts.
+  Future<EdgeFunctionResult> recordMfaFailure() {
+    return invoke('mfa-lockout', body: {'action': 'record-failure'});
+  }
+
+  /// Reset MFA lockout state after successful verification.
+  Future<EdgeFunctionResult> resetMfaLockout() {
+    return invoke('mfa-lockout', body: {'action': 'reset'});
   }
 }

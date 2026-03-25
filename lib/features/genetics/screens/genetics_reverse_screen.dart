@@ -10,6 +10,7 @@ import 'package:budgie_breeding_tracker/core/widgets/buttons/primary_button.dart
 import 'package:budgie_breeding_tracker/core/widgets/empty_state.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
+import 'package:budgie_breeding_tracker/core/widgets/app_screen_title.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/mutation_database.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/reverse_calculator.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/parent_genotype.dart';
@@ -135,7 +136,12 @@ class _GeneticsReverseScreenState extends ConsumerState<GeneticsReverseScreen> {
           ..sort((a, b) => a.category.compareTo(b.category));
 
     return Scaffold(
-      appBar: AppBar(title: Text('genetics.reverse_calculator'.tr())),
+      appBar: AppBar(
+        title: AppScreenTitle(
+          title: 'genetics.reverse_calculator'.tr(),
+          iconAsset: AppIcons.mutation,
+        ),
+      ),
       body: Column(
         children: [
           // Upper half: Offspring Target Selection

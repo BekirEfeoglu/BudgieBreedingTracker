@@ -1,6 +1,9 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
+import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
+import 'package:budgie_breeding_tracker/core/widgets/app_screen_title.dart';
 import 'package:budgie_breeding_tracker/features/statistics/screens/breeding_tab.dart';
 import 'package:budgie_breeding_tracker/features/statistics/screens/health_tab.dart';
 import 'package:budgie_breeding_tracker/features/statistics/screens/overview_tab.dart';
@@ -34,15 +37,27 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('statistics.title'.tr()),
+        title: AppScreenTitle(
+          title: 'statistics.title'.tr(),
+          iconAsset: AppIcons.statistics,
+        ),
         bottom: TabBar(
           controller: _tabController,
           isScrollable: true,
           tabAlignment: TabAlignment.start,
           tabs: [
-            Tab(text: 'statistics.tab_overview'.tr()),
-            Tab(text: 'statistics.tab_breeding'.tr()),
-            Tab(text: 'statistics.tab_health'.tr()),
+            Tab(
+              icon: const AppIcon(AppIcons.statistics, size: 18),
+              text: 'statistics.tab_overview'.tr(),
+            ),
+            Tab(
+              icon: const AppIcon(AppIcons.breedingActive, size: 18),
+              text: 'statistics.tab_breeding'.tr(),
+            ),
+            Tab(
+              icon: const AppIcon(AppIcons.health, size: 18),
+              text: 'statistics.tab_health'.tr(),
+            ),
           ],
         ),
       ),

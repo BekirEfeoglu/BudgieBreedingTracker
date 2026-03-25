@@ -142,6 +142,19 @@ Future<void> _migrateV15ToV16(AppDatabase db, Migrator m) async {
   );
 }
 
+/// Migration v16 -> v17: Add bandingEnabled column to notification_settings
+/// and composite index on notification_schedules for stale cleanup queries.
+Future<void> _migrateV16ToV17(AppDatabase db, Migrator m) async {
+  await m.addColumn(
+    db.notificationSettingsTable,
+    db.notificationSettingsTable.bandingEnabled,
+  );
+  await db.customStatement(
+    'CREATE INDEX IF NOT EXISTS idx_notification_schedules_user_scheduled '
+    'ON notification_schedules (user_id, scheduled_at)',
+  );
+}
+
 // ---------------------------------------------------------------------------
 // Performance indexes — called from both onCreate and onUpgrade.
 // ---------------------------------------------------------------------------
@@ -222,6 +235,10 @@ Future<void> _createPerformanceIndexes(AppDatabase db) async {
   await db.customStatement(
     'CREATE INDEX IF NOT EXISTS idx_notification_schedules_user '
     'ON notification_schedules (user_id)',
+  );
+  await db.customStatement(
+    'CREATE INDEX IF NOT EXISTS idx_notification_schedules_user_scheduled '
+    'ON notification_schedules (user_id, scheduled_at)',
   );
   await db.customStatement(
     'CREATE INDEX IF NOT EXISTS idx_user_preferences_user '

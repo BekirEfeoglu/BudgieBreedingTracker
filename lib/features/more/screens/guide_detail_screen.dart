@@ -5,6 +5,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
+import 'package:budgie_breeding_tracker/core/widgets/app_screen_title.dart';
 import 'package:budgie_breeding_tracker/features/more/widgets/guide_content_widgets.dart';
 import 'package:budgie_breeding_tracker/features/more/widgets/guide_data.dart';
 
@@ -17,7 +18,9 @@ class GuideDetailScreen extends StatelessWidget {
     final topic = guideTopics[topicIndex];
 
     return Scaffold(
-      appBar: AppBar(title: Text(topic.title)),
+      appBar: AppBar(
+        title: AppScreenTitle(title: topic.title, iconAsset: topic.iconAsset),
+      ),
       body: SingleChildScrollView(
         padding: AppSpacing.screenPadding,
         child: Column(

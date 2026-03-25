@@ -53,6 +53,7 @@ class NotificationToggleSettingsNotifier
           incubation: settings.incubationReminderEnabled,
           chickCare: settings.feedingReminderEnabled,
           healthCheck: settings.healthCheckEnabled,
+          banding: settings.bandingEnabled,
           cleanupDaysOld: settings.cleanupDaysOld,
         );
         _syncSoundAndVibrationToService();
@@ -80,6 +81,7 @@ class NotificationToggleSettingsNotifier
                 incubationReminderEnabled: state.incubation,
                 feedingReminderEnabled: state.chickCare,
                 healthCheckEnabled: state.healthCheck,
+                bandingEnabled: state.banding,
                 cleanupDaysOld: state.cleanupDaysOld,
                 updatedAt: DateTime.now(),
               );
@@ -138,6 +140,7 @@ class NotificationToggleSettingsNotifier
       incubation: value,
       chickCare: value,
       healthCheck: value,
+      banding: value,
     );
     await _persistToDao();
 
@@ -215,6 +218,18 @@ class NotificationToggleSettingsNotifier
       NotificationScheduler.healthCheckBaseId,
       NotificationScheduler.healthCheckBaseId + 100000,
       'healthCheck',
+    );
+  }
+
+  /// Toggles the banding notification setting.
+  Future<void> setBanding(bool value) async {
+    state = state.copyWith(banding: value);
+    await _persistToDao();
+    await _cancelCategoryIfDisabled(
+      value,
+      NotificationScheduler.bandingBaseId,
+      NotificationScheduler.bandingBaseId + 100000,
+      'banding',
     );
   }
 

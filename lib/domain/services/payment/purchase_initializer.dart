@@ -47,9 +47,9 @@ mixin PurchaseInitializer on PurchaseErrorMapper {
     required String userId,
   }) async {
     try {
-      final maskedKey = apiKey.length > 8
-          ? '${apiKey.substring(0, 8)}...'
-          : '***';
+      final maskedKey = apiKey.length > 4
+          ? '${apiKey.substring(0, 4)}...'
+          : '****';
       AppLogger.info('Configuring RevenueCat (key=$maskedKey, user=$userId)');
       final config = PurchasesConfiguration(apiKey)..appUserID = userId;
       await Purchases.configure(config);

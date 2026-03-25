@@ -40,12 +40,14 @@ class NotificationProcessor {
     ]);
   }
 
-  /// Deletes old read notifications to prevent DB bloat.
+  /// Deletes old read notifications and stale schedules to prevent DB bloat.
   ///
   /// Reads `cleanupDaysOld` from [NotificationSettings] (default 30 days).
+  /// Also removes processed/inactive schedules older than 90 days.
   Future<void> _cleanupOldNotifications(String userId) async {
     try {
       final notificationsDao = _ref.read(notificationsDaoProvider);
+      final schedulesDao = _ref.read(notificationSchedulesDaoProvider);
       final settingsDao = _ref.read(notificationSettingsDaoProvider);
       final settings = await settingsDao.getByUser(userId);
       final daysOld = settings?.cleanupDaysOld ?? 30;
@@ -55,6 +57,12 @@ class NotificationProcessor {
       );
       if (deleted > 0) {
         AppLogger.info('$_tag Cleaned up $deleted old read notifications');
+      }
+      final staleSchedules = await schedulesDao.deleteOldStale(userId);
+      if (staleSchedules > 0) {
+        AppLogger.info(
+          '$_tag Cleaned up $staleSchedules stale notification schedules',
+        );
       }
     } catch (e, st) {
       AppLogger.warning('$_tag Old notification cleanup failed: $e');
@@ -88,6 +96,15 @@ class NotificationProcessor {
               '$_tag Event ${reminder.eventId} not found for reminder ${reminder.id}',
             );
             // Event was deleted; mark reminder as sent to avoid reprocessing.
+            await eventRemindersDao.markSent(reminder.id);
+            continue;
+          }
+
+          if (reminder.minutesBefore < 0) {
+            AppLogger.warning(
+              '$_tag Invalid minutesBefore (${reminder.minutesBefore}) '
+              'for reminder ${reminder.id} — skipping',
+            );
             await eventRemindersDao.markSent(reminder.id);
             continue;
           }
@@ -220,21 +237,27 @@ class NotificationProcessor {
             processed = true;
           }
 
-          // Handle recurring schedules
+          // Handle recurring schedules with depth limit to prevent
+          // infinite recursion filling the database.
           if (processed &&
               schedule.isRecurring &&
               schedule.intervalMinutes != null &&
               schedule.intervalMinutes! > 0) {
+            // Limit recurring schedules to 90 days ahead to prevent
+            // unbounded growth. Older schedules will be cleaned up.
+            final maxFutureDate = now.add(const Duration(days: 90));
             final nextAt = _nextOccurrenceAfter(
               base: schedule.scheduledAt,
               intervalMinutes: schedule.intervalMinutes!,
               now: now,
             );
-            final nextSchedule = schedule.copyWith(
-              scheduledAt: nextAt,
-              processedAt: null,
-            );
-            await schedulesDao.insertItem(nextSchedule);
+            if (nextAt.isBefore(maxFutureDate)) {
+              final nextSchedule = schedule.copyWith(
+                scheduledAt: nextAt,
+                processedAt: null,
+              );
+              await schedulesDao.insertItem(nextSchedule);
+            }
           }
         } catch (e, st) {
           AppLogger.warning(

@@ -1,10 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-  <!-- Left heart -->
-  <path d="M7 3C4.5 3 2.5 5 2.5 7.5c0 4.5 5.5 8.5 8.2 11 .5.5 1.1.5 1.6 0 .6-.6 1.6-1.5 2.6-2.8C11 12.5 7 10 7 7.5 7 5.8 7.6 4.3 8.6 3.3 8.1 3.1 7.5 3 7 3Z"/>
-  <!-- Right heart -->
-  <path d="M17 3c2.5 0 4.5 2 4.5 4.5 0 4.5-5.5 8.5-8.2 11-.5.5-1.1.5-1.6 0-.6-.6-1.6-1.5-2.6-2.8C13 12.5 17 10 17 7.5c0-1.7-.6-3.2-1.6-4.2.5-.2 1.1-.3 1.6-.3Z"/>
-  <!-- Overlap/intersection area accent -->
-  <path d="M12 6c-.8 1-1.5 2.2-1.5 3.5 0 2 1.5 3.8 3 5.5.3-.4.6-.8.8-1.2-1.2-1.5-2.3-3-2.3-4.3 0-1.3.4-2.5 1-3.5Z" fill="white" opacity="0.3"/>
-  <!-- Center divider line -->
-  <line x1="12" y1="7" x2="12" y2="16" stroke="white" stroke-width="0.6" stroke-linecap="round" opacity="0.45"/>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 8c-2 0-4 1.5-4 4s4 6 8 9c4-3 8-6 8-9s-2-4-4-4c-1.5 0-2.8.8-4 2-1.2-1.2-2.5-2-4-2z"/><circle cx="7.5" cy="5.5" r="2"/><circle cx="7" cy="5" r=".5" fill="currentColor"/><path d="M5.5 5.5l-1-.3"/><circle cx="16.5" cy="5.5" r="2"/><circle cx="17" cy="5" r=".5" fill="currentColor"/><path d="M18.5 5.5l1-.3"/></svg>

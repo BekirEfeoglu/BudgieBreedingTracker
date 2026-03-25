@@ -142,6 +142,7 @@ class _CommunityCreatePostScreenState
             // Title field (optional)
             TextField(
               controller: _titleController,
+              maxLength: 200,
               enabled: !formState.isLoading,
               decoration: InputDecoration(
                 labelText: 'community.post_title_label'.tr(),

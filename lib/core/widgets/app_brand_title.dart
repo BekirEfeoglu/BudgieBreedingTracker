@@ -25,18 +25,19 @@ class AppBrandTitle extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final isCompact = size == AppBrandSize.small;
 
     final primaryColor = theme.colorScheme.primary;
     final accentColor = isDark ? AppColors.accentLight : AppColors.accent;
 
     final double fontSize = switch (size) {
-      AppBrandSize.small => 18,
+      AppBrandSize.small => 17,
       AppBrandSize.medium => 20,
       AppBrandSize.large => 26,
     };
 
     final double iconSize = switch (size) {
-      AppBrandSize.small => 22,
+      AppBrandSize.small => 18,
       AppBrandSize.medium => 26,
       AppBrandSize.large => 52,
     };
@@ -47,18 +48,20 @@ class AppBrandTitle extends StatelessWidget {
       AppBrandSize.large => AppSpacing.md,
     };
 
-    final shadows = [
-      Shadow(
-        color: primaryColor.withValues(alpha: 0.18),
-        blurRadius: 8,
-        offset: const Offset(0, 2),
-      ),
-    ];
+    final shadows = isCompact
+        ? <Shadow>[]
+        : [
+            Shadow(
+              color: primaryColor.withValues(alpha: 0.18),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ];
 
     final baseStyle = TextStyle(
       fontSize: fontSize,
       fontWeight: FontWeight.w900,
-      letterSpacing: -0.5,
+      letterSpacing: isCompact ? -0.2 : -0.5,
       height: 1.2,
       shadows: shadows,
     );
@@ -74,16 +77,18 @@ class AppBrandTitle extends StatelessWidget {
             text: 'Breeding ',
             style: baseStyle.copyWith(
               color: accentColor,
-              fontWeight: FontWeight.w500,
-              letterSpacing: 1.2,
-              fontStyle: FontStyle.italic,
-              shadows: [
-                Shadow(
-                  color: accentColor.withValues(alpha: 0.20),
-                  blurRadius: 6,
-                  offset: const Offset(0, 2),
-                ),
-              ],
+              fontWeight: isCompact ? FontWeight.w700 : FontWeight.w500,
+              letterSpacing: isCompact ? 0.2 : 1.2,
+              fontStyle: isCompact ? FontStyle.normal : FontStyle.italic,
+              shadows: isCompact
+                  ? const []
+                  : [
+                      Shadow(
+                        color: accentColor.withValues(alpha: 0.20),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
             ),
           ),
           TextSpan(
@@ -100,6 +105,15 @@ class AppBrandTitle extends StatelessWidget {
       content = text;
     } else if (size == AppBrandSize.large) {
       content = _LargeIcon(iconSize: iconSize);
+    } else if (isCompact) {
+      content = Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          AppIcon(AppIcons.bird, size: iconSize, color: primaryColor),
+          SizedBox(width: iconSpacing),
+          Flexible(child: text),
+        ],
+      );
     } else {
       content = Row(
         mainAxisSize: MainAxisSize.min,

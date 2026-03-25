@@ -1,10 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-  <!-- Monitor screen frame -->
-  <rect x="2" y="3" width="20" height="14" rx="2" stroke="currentColor" stroke-width="0.7" stroke-linecap="round"/>
-  <!-- Screen inner area (cutout) -->
-  <rect x="3.5" y="4.5" width="17" height="11" rx="1" fill="white"/>
-  <!-- Heartbeat/pulse line (ECG wave) -->
-  <polyline points="4.5,10 7,10 8.5,10 9.5,6 11,13 12.5,8 13.5,10 15,10 16,10 17,7.5 18,10 19.5,10" fill="none" stroke="currentColor" stroke-width="0.8" stroke-linecap="round" stroke-linejoin="round"/>
-  <!-- Monitor stand -->
-  <path d="M10 17v2.5H8.5a0.8 0.8 0 0 0 0 1.6h7a0.8 0.8 0 0 0 0-1.6H14V17" fill="currentColor" stroke="currentColor" stroke-width="0.6" stroke-linecap="round" stroke-linejoin="round"/>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><polyline points="6 10 9 7 12 11 15 8 18 10" stroke-width="1.4"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>

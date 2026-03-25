@@ -6,6 +6,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
+import 'package:budgie_breeding_tracker/core/widgets/app_screen_title.dart';
 import 'package:budgie_breeding_tracker/core/widgets/empty_state.dart';
 import 'package:budgie_breeding_tracker/core/widgets/error_state.dart';
 import 'package:budgie_breeding_tracker/core/widgets/buttons/fab_button.dart';
@@ -60,7 +61,10 @@ class _BreedingListScreenState extends ConsumerState<BreedingListScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('breeding.title'.tr()),
+        title: AppScreenTitle(
+          title: 'breeding.title'.tr(),
+          iconAsset: AppIcons.breeding,
+        ),
         actions: const [NotificationBellButton(), ProfileMenuButton()],
       ),
       body: Column(

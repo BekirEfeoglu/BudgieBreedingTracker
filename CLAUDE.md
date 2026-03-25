@@ -1,6 +1,7 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Muhabbet kusu yetistiricileri icin kapsamli Flutter ureme takip uygulamasi.
+Flutter 3.16+ / Dart 3.8+ / Riverpod 3 / GoRouter 17+ / Supabase / Drift 2.31+ / Freezed 3
 
 ## Build & Development Commands
 
@@ -40,28 +41,30 @@ dart fix --apply
 ### Quality Scripts (Python)
 ```bash
 python scripts/check_l10n_sync.py       # Verify tr/en/de translation keys are in sync
-python scripts/verify_code_quality.py    # Anti-pattern scan (11 automated categories)
-python scripts/verify_rules.py          # Validate .claude/rules numeric claims against codebase
+python scripts/verify_code_quality.py    # Anti-pattern scan (11 checkers, 10/17 CLAUDE.md patterns)
+python scripts/verify_rules.py          # Validate CLAUDE.md stats against codebase (single source of truth)
+python scripts/verify_rules.py --fix    # Auto-fix CLAUDE.md stats table with actual values
 ```
 
 ## Codebase Stats
 
 | Metric | Value |
 | --- | --- |
-| Source files (lib/) | 677 Dart files |
-| Test files (test/) | 644 test files, 7,500+ individual tests |
+| Source files (lib/) | 700 Dart files |
+| Test files (test/) | 656 test files, 7,700+ individual tests |
 | Feature modules | 20 |
 | Drift tables / DAOs / Mappers | 20 each |
-| Repositories | 18 entity + base + sync_metadata |
-| Remote sources | 20 entity + base + 2 caches |
-| Freezed models | 20 model files + statistics_models + supabase_extensions |
-| Domain services | 13 directories |
-| Routes | 59 |
-| Custom SVG icons | 82 constants, 83 files on disk |
-| Shared widgets | 17 (12 root + 5 in subdirs) |
-| Enum files | 11 |
-| L10n keys | ~2,031 per language, 35 categories |
-| DB schema version | 16 |
+| Repositories | 20 entity + base + sync_metadata |
+| Remote sources | 20 entity + base + 2 caches + providers |
+| Freezed models | 21 model files + statistics_models + supabase_extensions |
+| Domain services | 14 directories |
+| Routes | 60 |
+| Custom SVG icons | 82 constants, 82 files on disk |
+| Shared widgets | 18 (13 root + 2 buttons + 2 cards + 1 dialog) |
+| Enum files | 12 |
+| Supabase constants | 94 (tables + buckets + columns) |
+| L10n keys | ~1,909 per language, 35 categories |
+| DB schema version | 17 |
 
 ## Architecture Overview
 
@@ -113,7 +116,7 @@ router/     -> Can import features/ (screens only)
 ## Critical Anti-Patterns (must avoid)
 
 1. `withOpacity()` -> use `withValues(alpha: x)`
-2. `value` on DropdownButtonFormField -> use `initialValue`
+2. `value` on DropdownButtonFormField -> use `initialValue` (deprecated since Flutter 3.33)
 3. `.equals()` on enum Drift column -> use `.equalsValue()`
 4. `ref.watch()` in callbacks -> use `ref.read()`
 5. `print()` -> use `AppLogger`
@@ -124,6 +127,11 @@ router/     -> Can import features/ (screens only)
 10. `context.go()` for forward navigation -> use `context.push()` (go replaces stack)
 11. Import table via app_database for DAO -> import DIRECTLY from table file
 12. Parameterized route before specific in GoRouter -> specific FIRST (`form` before `:id`)
+13. Hardcoded colors/spacing -> use `Theme.of(context)` / `AppSpacing`
+14. Missing `controller.dispose()` -> ALWAYS dispose in ConsumerStatefulWidget
+15. Missing `const Model._()` in Freezed -> ALWAYS add private constructor
+16. Hardcoded SVG paths -> use `AppIcons` constants from `app_icons.dart`
+17. `IconData` param in shared widgets -> use `Widget` param (EmptyState, InfoCard, StatCard, etc.)
 
 ## Project-Specific Conventions
 
@@ -132,22 +140,23 @@ router/     -> Can import features/ (screens only)
 - **Colors/styles**: always via `Theme.of(context)`, never hardcoded
 - **Icons**: 82 custom SVG icons via `AppIcons` constants + `AppIcon` widget; LucideIcons for generic UI icons
 - **Shared widgets accepting `Widget icon`** (not IconData): EmptyState, InfoCard, StatCard, FabButton, PrimaryButton, StatusBadge
-- **Localization**: `'feature.key'.tr()` — master file is `tr.json` (~2,031 keys, 35 categories)
-- **Database**: Schema version 14, migration via for-loop + switch pattern
+- **Localization**: `'feature.key'.tr()` — master file is `tr.json` (~1,909 keys, 35 categories)
+- **Database**: Schema version 17, migration via for-loop + switch pattern
 - **Riverpod 3**: No StateProvider (use NotifierProvider), no `.valueOrNull` (use `.value`)
 - **Freezed 3**: Always add `const Model._()` private constructor
-- **Supabase**: Table/column names via `SupabaseConstants` (77 constants), never hardcoded
+- **Supabase**: Table/column names via `SupabaseConstants` (94 constants), never hardcoded
 - **File limit**: 300 lines per file; split using `part` directive if needed
 - **Error tracking**: Sentry for critical errors, `AppLogger` for all logging
 - **Responsive**: `NavigationBar` (< 600px) / `NavigationRail` (>= 600px) in MainShell
 
 ## CI Pipeline
 
-Four required checks on PRs to `main`:
+Five required checks on PRs to `main`:
 1. **Flutter Analyze** — `flutter analyze --no-fatal-infos`
 2. **Flutter Test** — `flutter test --exclude-tags golden`
 3. **Localization Sync** — `python scripts/check_l10n_sync.py`
 4. **Code Quality** — `python scripts/verify_code_quality.py`
+5. **Rules Sync** — `python scripts/verify_rules.py` (CLAUDE.md stats vs codebase)
 
 Golden tests are tagged and excluded from CI (platform-dependent).
 
@@ -157,26 +166,26 @@ Golden tests are tagged and excluded from CI (platform-dependent).
 Providers:     lib/features/<feature>/providers/
 Screens:       lib/features/<feature>/screens/
 Widgets:       lib/features/<feature>/widgets/
-Models:        lib/data/models/                 (20 Freezed models + statistics_models + supabase_extensions)
-Enums:         lib/core/enums/                  (11 enum files)
+Models:        lib/data/models/                 (21 Freezed models + statistics_models + supabase_extensions)
+Enums:         lib/core/enums/                  (12 enum files)
 Extensions:    lib/core/extensions/             (context_extensions, num_extensions)
 Tables:        lib/data/local/database/tables/  (20 Drift tables)
 DAOs:          lib/data/local/database/daos/    (20 DAOs)
 Mappers:       lib/data/local/database/mappers/ (20 mappers)
-Repos:         lib/data/repositories/           (18 entity repos + base + sync_metadata)
-Remote:        lib/data/remote/api/             (20 entity sources + base + 2 caches)
-Services:      lib/domain/services/             (13 dirs: ads, auth, backup, calendar, encryption, export,
+Repos:         lib/data/repositories/           (20 entity repos + base + sync_metadata)
+Remote:        lib/data/remote/api/             (20 entity sources + base + 2 caches + providers)
+Services:      lib/domain/services/             (14 dirs: ads, auth, backup, calendar, encryption, export,
                                                  genetics, import, incubation, moderation, notifications,
-                                                 payment, sync)
-Router:        lib/router/                      (59 routes, 2 guards: admin, premium; auth inline)
+                                                 payment, premium, sync)
+Router:        lib/router/                      (60 routes, 2 guards: admin, premium; auth inline)
 Theme:         lib/core/theme/                  (4 files: colors, spacing, typography, theme)
-Shared UI:     lib/core/widgets/                (17 widgets: 12 root + 2 buttons + 2 cards + 1 dialog)
+Shared UI:     lib/core/widgets/                (18 widgets: 13 root + 2 buttons + 2 cards + 1 dialog)
 Icons:         lib/core/constants/app_icons.dart (82 SVG path constants)
-SVG Assets:    assets/icons/                    (10 subdirectories, 83 SVG files)
+SVG Assets:    assets/icons/                    (10 subdirectories, 82 SVG files)
 Preferences:   lib/data/local/preferences/      (AppPreferences)
 EdgeFunctions: lib/data/remote/supabase/        (EdgeFunctionClient)
-Translations:  assets/translations/             (~2,031 leaf keys per language, 35 categories)
-Database:      schemaVersion 16 (switch-based migration, 30+ perf indexes)
+Translations:  assets/translations/             (~1,909 leaf keys per language, 35 categories)
+Database:      schemaVersion 17 (switch-based migration, 30+ perf indexes)
 ```
 
 ## Detailed Rules
@@ -187,7 +196,7 @@ Comprehensive rules are in `.claude/rules/` (auto-loaded as project instructions
 - `providers.md` — Riverpod provider types, dependency chain, ref usage
 - `database.md` — Drift tables/DAOs/mappers, migration pattern, repository
 - `widgets.md` — widget types, AsyncValue handling, form/card/list patterns
-- `navigation.md` — GoRouter routes (59), guards, edit mode, route ordering
+- `navigation.md` — GoRouter routes (60), guards, edit mode, route ordering
 - `localization.md` — easy_localization setup, key structure, sync workflow
 - `supabase_rules.md` — auth, remote source, sync, RLS, storage, edge functions
 - `new-feature-checklist.md` — step-by-step guide for adding new features
