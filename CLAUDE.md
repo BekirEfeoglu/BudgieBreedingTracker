@@ -41,7 +41,7 @@ dart fix --apply
 ### Quality Scripts (Python)
 ```bash
 python scripts/check_l10n_sync.py       # Verify tr/en/de translation keys are in sync
-python scripts/verify_code_quality.py    # Anti-pattern scan (11 checkers, 10/17 CLAUDE.md patterns)
+python scripts/verify_code_quality.py    # Anti-pattern scan (17 checkers, 16/17 CLAUDE.md patterns)
 python scripts/verify_rules.py          # Validate CLAUDE.md stats against codebase (single source of truth)
 python scripts/verify_rules.py --fix    # Auto-fix CLAUDE.md stats table with actual values
 ```
@@ -63,7 +63,7 @@ python scripts/verify_rules.py --fix    # Auto-fix CLAUDE.md stats table with ac
 | Shared widgets | 18 (13 root + 2 buttons + 2 cards + 1 dialog) |
 | Enum files | 12 |
 | Supabase constants | 94 (tables + buckets + columns) |
-| L10n keys | ~1,909 per language, 35 categories |
+| L10n keys | ~1,939 per language, 35 categories |
 | DB schema version | 17 |
 
 ## Architecture Overview
@@ -140,7 +140,7 @@ router/     -> Can import features/ (screens only)
 - **Colors/styles**: always via `Theme.of(context)`, never hardcoded
 - **Icons**: 82 custom SVG icons via `AppIcons` constants + `AppIcon` widget; LucideIcons for generic UI icons
 - **Shared widgets accepting `Widget icon`** (not IconData): EmptyState, InfoCard, StatCard, FabButton, PrimaryButton, StatusBadge
-- **Localization**: `'feature.key'.tr()` — master file is `tr.json` (~1,909 keys, 35 categories)
+- **Localization**: `'feature.key'.tr()` — master file is `tr.json` (~1,935 keys, 35 categories)
 - **Database**: Schema version 17, migration via for-loop + switch pattern
 - **Riverpod 3**: No StateProvider (use NotifierProvider), no `.valueOrNull` (use `.value`)
 - **Freezed 3**: Always add `const Model._()` private constructor
@@ -184,7 +184,7 @@ Icons:         lib/core/constants/app_icons.dart (82 SVG path constants)
 SVG Assets:    assets/icons/                    (10 subdirectories, 82 SVG files)
 Preferences:   lib/data/local/preferences/      (AppPreferences)
 EdgeFunctions: lib/data/remote/supabase/        (EdgeFunctionClient)
-Translations:  assets/translations/             (~1,909 leaf keys per language, 35 categories)
+Translations:  assets/translations/             (~1,939 leaf keys per language, 35 categories)
 Database:      schemaVersion 17 (switch-based migration, 30+ perf indexes)
 ```
 
