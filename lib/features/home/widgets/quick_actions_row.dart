@@ -13,73 +13,120 @@ class QuickActionsRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bgColor = Theme.of(context).scaffoldBackgroundColor;
+    final actions = [
+      _QuickAction(
+        icon: const AppIcon(AppIcons.bird, size: 18),
+        label: 'birds.add_bird'.tr(),
+        onPressed: () => context.push(AppRoutes.birdForm),
+      ),
+      _QuickAction(
+        icon: const AppIcon(AppIcons.pair, size: 18),
+        label: 'breeding.add_breeding'.tr(),
+        onPressed: () => context.push(AppRoutes.breedingForm),
+      ),
+      _QuickAction(
+        icon: const AppIcon(AppIcons.chick, size: 18),
+        label: 'chicks.add_chick'.tr(),
+        onPressed: () => context.push(AppRoutes.chickForm),
+      ),
+      _QuickAction(
+        icon: const AppIcon(AppIcons.egg, size: 18),
+        label: 'home.manage_eggs'.tr(),
+        onPressed: () => context.go(AppRoutes.breeding),
+      ),
+    ];
+
     return Padding(
-      padding: const EdgeInsets.only(left: AppSpacing.lg),
-      child: Stack(
-        children: [
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.only(right: AppSpacing.lg),
-            child: Row(
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          if (constraints.maxWidth < 420) {
+            final itemWidth = (constraints.maxWidth - AppSpacing.sm) / 2;
+            return Wrap(
+              spacing: AppSpacing.sm,
+              runSpacing: AppSpacing.sm,
               children: [
-                _ActionButton(
-                  icon: const AppIcon(AppIcons.bird, size: 18),
-                  label: 'birds.add_bird'.tr(),
-                  onPressed: () => context.push(AppRoutes.birdForm),
-                ),
-                const SizedBox(width: AppSpacing.sm),
-                _ActionButton(
-                  icon: const AppIcon(AppIcons.pair, size: 18),
-                  label: 'breeding.add_breeding'.tr(),
-                  onPressed: () => context.push(AppRoutes.breedingForm),
-                ),
-                const SizedBox(width: AppSpacing.sm),
-                _ActionButton(
-                  icon: const AppIcon(AppIcons.chick, size: 18),
-                  label: 'chicks.add_chick'.tr(),
-                  onPressed: () => context.push(AppRoutes.chickForm),
-                ),
-                const SizedBox(width: AppSpacing.sm),
-                _ActionButton(
-                  icon: const AppIcon(AppIcons.egg, size: 18),
-                  label: 'home.manage_eggs'.tr(),
-                  onPressed: () => context.go(AppRoutes.breeding),
-                ),
+                for (final action in actions)
+                  SizedBox(
+                    width: itemWidth,
+                    child: _ActionButton(
+                      icon: action.icon,
+                      label: action.label,
+                      onPressed: action.onPressed,
+                      expand: true,
+                    ),
+                  ),
               ],
-            ),
-          ),
-          Positioned(
-            right: 0,
-            top: 0,
-            bottom: 0,
-            child: IgnorePointer(
-              child: Container(
-                width: 48,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.centerLeft,
-                    end: Alignment.centerRight,
-                    colors: [bgColor.withValues(alpha: 0), bgColor],
+            );
+          }
+
+          return Stack(
+            children: [
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.only(right: AppSpacing.lg),
+                child: Row(
+                  children: [
+                    for (var i = 0; i < actions.length; i++) ...[
+                      _ActionButton(
+                        icon: actions[i].icon,
+                        label: actions[i].label,
+                        onPressed: actions[i].onPressed,
+                      ),
+                      if (i < actions.length - 1)
+                        const SizedBox(width: AppSpacing.sm),
+                    ],
+                  ],
+                ),
+              ),
+              Positioned(
+                right: 0,
+                top: 0,
+                bottom: 0,
+                child: IgnorePointer(
+                  child: Container(
+                    width: 48,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.centerLeft,
+                        end: Alignment.centerRight,
+                        colors: [bgColor.withValues(alpha: 0), bgColor],
+                      ),
+                    ),
                   ),
                 ),
               ),
-            ),
-          ),
-        ],
+            ],
+          );
+        },
       ),
     );
   }
+}
+
+class _QuickAction {
+  final Widget icon;
+  final String label;
+  final VoidCallback onPressed;
+
+  const _QuickAction({
+    required this.icon,
+    required this.label,
+    required this.onPressed,
+  });
 }
 
 class _ActionButton extends StatelessWidget {
   final Widget icon;
   final String label;
   final VoidCallback onPressed;
+  final bool expand;
 
   const _ActionButton({
     required this.icon,
     required this.label,
     required this.onPressed,
+    this.expand = false,
   });
 
   @override
@@ -92,7 +139,7 @@ class _ActionButton extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
         child: Container(
           padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.lg,
+            horizontal: AppSpacing.md,
             vertical: AppSpacing.md,
           ),
           decoration: BoxDecoration(
@@ -111,10 +158,10 @@ class _ActionButton extends StatelessWidget {
             ],
           ),
           child: Row(
-            mainAxisSize: MainAxisSize.min,
+            mainAxisSize: expand ? MainAxisSize.max : MainAxisSize.min,
             children: [
               Container(
-                padding: const EdgeInsets.all(AppSpacing.xs),
+                padding: const EdgeInsets.all(AppSpacing.sm),
                 decoration: BoxDecoration(
                   color: theme.colorScheme.primaryContainer,
                   borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
@@ -128,13 +175,26 @@ class _ActionButton extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: AppSpacing.sm),
-              Text(
-                label,
-                style: theme.textTheme.labelMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: theme.colorScheme.onSurface,
+              if (expand)
+                Expanded(
+                  child: Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.labelMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: theme.colorScheme.onSurface,
+                    ),
+                  ),
+                )
+              else
+                Text(
+                  label,
+                  style: theme.textTheme.labelMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: theme.colorScheme.onSurface,
+                  ),
                 ),
-              ),
             ],
           ),
         ),

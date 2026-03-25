@@ -21,14 +21,18 @@ abstract class RetryScheduler {
     return retryCount < maxRetries;
   }
 
-  /// Calculate the next retry delay using exponential backoff with jitter.
+  /// Calculate the next retry delay using exponential backoff with proportional jitter.
   ///
-  /// Formula: min(base * 2^retryCount + jitter, maxDelay)
+  /// Formula: min(base * 2^retryCount + jitter(20% of delay), maxDelay)
+  /// Proportional jitter prevents thundering herd by distributing retries
+  /// more evenly across a wider time window at higher retry counts.
   static Duration getNextRetryDelay(int retryCount) {
     if (retryCount >= maxRetries) return Duration.zero;
 
     final exponentialDelay = _baseDelaySec * pow(2, retryCount).toInt();
-    final jitter = Random().nextInt(_baseDelaySec);
+    // 20% of exponential delay as jitter range (min 1 second)
+    final jitterRange = max(1, (exponentialDelay * 0.2).ceil());
+    final jitter = Random().nextInt(jitterRange);
     final totalSeconds = exponentialDelay + jitter;
 
     final delay = Duration(seconds: totalSeconds);

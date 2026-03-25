@@ -134,6 +134,19 @@ jobs:
       - name: Anti-pattern scan
         run: python scripts/verify_code_quality.py
 
+  rules-sync:
+    name: Rules Sync
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.x"
+
+      - name: Verify CLAUDE.md stats match codebase
+        run: python scripts/verify_rules.py
+
   android-build:
     name: Android Build
     runs-on: ubuntu-24.04

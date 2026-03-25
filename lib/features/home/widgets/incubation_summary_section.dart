@@ -25,6 +25,7 @@ class IncubationSummarySection extends StatelessWidget {
         children: [
           SectionHeader(
             title: 'home.incubation_summary'.tr(),
+            icon: const AppIcon(AppIcons.incubating),
             onViewAll: () => context.go(AppRoutes.breeding),
           ),
           const SizedBox(height: AppSpacing.sm),

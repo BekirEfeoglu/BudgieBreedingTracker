@@ -9,7 +9,7 @@ void main() {
     testWidgets('renders SvgPicture.asset', (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
-          home: Scaffold(body: AppIcon('assets/icons/general/home.svg')),
+          home: Scaffold(body: AppIcon('assets/icons/navigation/home.svg')),
         ),
       );
 
@@ -20,7 +20,7 @@ void main() {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
-            body: AppIcon('assets/icons/general/home.svg', size: 32),
+            body: AppIcon('assets/icons/navigation/home.svg', size: 32),
           ),
         ),
       );
@@ -30,20 +30,19 @@ void main() {
       expect(svg.height, 32);
     });
 
-    testWidgets('uses explicit color via ColorFilter', (tester) async {
+    testWidgets('uses explicit color via SvgTheme', (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
-            body: AppIcon('assets/icons/general/home.svg', color: Colors.red),
+            body: AppIcon('assets/icons/navigation/home.svg', color: Colors.red),
           ),
         ),
       );
 
       final svg = tester.widget<SvgPicture>(find.byType(SvgPicture));
-      expect(
-        svg.colorFilter,
-        const ColorFilter.mode(Colors.red, BlendMode.srcIn),
-      );
+      final loader = svg.bytesLoader as SvgAssetLoader;
+      expect(svg.colorFilter, isNull);
+      expect(loader.theme, const SvgTheme(currentColor: Colors.red));
     });
 
     testWidgets('reads size from IconTheme when not explicit', (tester) async {
@@ -52,7 +51,7 @@ void main() {
           home: Scaffold(
             body: IconTheme(
               data: IconThemeData(size: 48),
-              child: AppIcon('assets/icons/general/home.svg'),
+              child: AppIcon('assets/icons/navigation/home.svg'),
             ),
           ),
         ),
@@ -69,17 +68,16 @@ void main() {
           home: Scaffold(
             body: IconTheme(
               data: IconThemeData(color: Colors.green),
-              child: AppIcon('assets/icons/general/home.svg'),
+              child: AppIcon('assets/icons/navigation/home.svg'),
             ),
           ),
         ),
       );
 
       final svg = tester.widget<SvgPicture>(find.byType(SvgPicture));
-      expect(
-        svg.colorFilter,
-        const ColorFilter.mode(Colors.green, BlendMode.srcIn),
-      );
+      final loader = svg.bytesLoader as SvgAssetLoader;
+      expect(svg.colorFilter, isNull);
+      expect(loader.theme, const SvgTheme(currentColor: Colors.green));
     });
 
     testWidgets('defaults to size 24 when no IconTheme and no explicit size', (
@@ -87,7 +85,7 @@ void main() {
     ) async {
       await tester.pumpWidget(
         const MaterialApp(
-          home: Scaffold(body: AppIcon('assets/icons/general/home.svg')),
+          home: Scaffold(body: AppIcon('assets/icons/navigation/home.svg')),
         ),
       );
 
@@ -101,7 +99,7 @@ void main() {
         const MaterialApp(
           home: Scaffold(
             body: AppIcon(
-              'assets/icons/general/home.svg',
+              'assets/icons/navigation/home.svg',
               semanticsLabel: 'Home icon',
             ),
           ),

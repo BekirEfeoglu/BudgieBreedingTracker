@@ -11,6 +11,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/logger.dart';
 import '../../../core/widgets/app_icon.dart';
+import '../../../core/widgets/app_screen_title.dart';
 import '../../../domain/services/import/import_providers.dart';
 import '../../../features/auth/providers/auth_providers.dart';
 import '../../../domain/services/ads/ad_reward_providers.dart';
@@ -32,13 +33,21 @@ class BackupScreen extends ConsumerWidget {
     final dateFormat = ref.watch(dateFormatProvider);
 
     return Scaffold(
-      appBar: AppBar(title: Text('backup.title'.tr())),
+      appBar: AppBar(
+        title: AppScreenTitle(
+          title: 'backup.title'.tr(),
+          iconAsset: AppIcons.backup,
+        ),
+      ),
       body: ListView(
         padding: AppSpacing.screenPadding,
         children: [
           _InfoCard(lastExport: lastExport, dateFormat: dateFormat),
           const SizedBox(height: AppSpacing.xl),
-          _SectionHeader(title: 'backup.export_data'.tr()),
+          _SectionHeader(
+            title: 'backup.export_data'.tr(),
+            icon: const AppIcon(AppIcons.export),
+          ),
           const SizedBox(height: AppSpacing.md),
           _ExportTile(
             icon: const AppIcon(AppIcons.pdf),
@@ -58,7 +67,10 @@ class BackupScreen extends ConsumerWidget {
             onTap: () => _handleExport(context, ref, 'excel'),
           ),
           const SizedBox(height: AppSpacing.xxl),
-          _SectionHeader(title: 'backup.quick_export'.tr()),
+          _SectionHeader(
+            title: 'backup.quick_export'.tr(),
+            icon: const AppIcon(AppIcons.bird),
+          ),
           const SizedBox(height: AppSpacing.md),
           _ExportTile(
             icon: const AppIcon(AppIcons.bird),
@@ -69,7 +81,10 @@ class BackupScreen extends ConsumerWidget {
             onTap: () => _handleExport(context, ref, 'birds_pdf'),
           ),
           const SizedBox(height: AppSpacing.xxl),
-          _SectionHeader(title: 'backup.import_data'.tr()),
+          _SectionHeader(
+            title: 'backup.import_data'.tr(),
+            icon: const AppIcon(AppIcons.backup),
+          ),
           const SizedBox(height: AppSpacing.md),
           _ExportTile(
             icon: const AppIcon(AppIcons.backup),

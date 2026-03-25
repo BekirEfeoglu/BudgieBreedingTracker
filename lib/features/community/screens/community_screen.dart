@@ -46,11 +46,22 @@ class CommunityScreen extends ConsumerWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'community.title'.tr(),
-                style: theme.textTheme.headlineMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  AppIcon(
+                    AppIcons.community,
+                    size: 24,
+                    color: theme.colorScheme.primary,
+                  ),
+                  const SizedBox(width: AppSpacing.sm),
+                  Text(
+                    'community.title'.tr(),
+                    style: theme.textTheme.headlineMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
               ),
               Text(
                 'community.content_label'.tr(),
@@ -88,10 +99,22 @@ class CommunityScreen extends ConsumerWidget {
                       ),
                       tabAlignment: TabAlignment.start,
                       tabs: [
-                        Tab(text: 'community.tab_explore'.tr()),
-                        Tab(text: 'community.tab_following'.tr()),
-                        Tab(text: 'community.tab_guides'.tr()),
-                        Tab(text: 'community.tab_questions'.tr()),
+                        Tab(
+                          icon: const AppIcon(AppIcons.community, size: 16),
+                          text: 'community.tab_explore'.tr(),
+                        ),
+                        Tab(
+                          icon: const AppIcon(AppIcons.like, size: 16),
+                          text: 'community.tab_following'.tr(),
+                        ),
+                        Tab(
+                          icon: const AppIcon(AppIcons.guide, size: 16),
+                          text: 'community.tab_guides'.tr(),
+                        ),
+                        Tab(
+                          icon: const AppIcon(AppIcons.comment, size: 16),
+                          text: 'community.tab_questions'.tr(),
+                        ),
                       ],
                     ),
                   ),
@@ -112,7 +135,7 @@ class CommunityScreen extends ConsumerWidget {
             ? FloatingActionButton.extended(
                 onPressed: () => context.push(AppRoutes.communityCreatePost),
                 tooltip: 'community.create_post'.tr(),
-                icon: const Icon(LucideIcons.plus),
+                icon: const AppIcon(AppIcons.post, size: 18),
                 label: Text('community.create_post'.tr()),
               )
             : null,

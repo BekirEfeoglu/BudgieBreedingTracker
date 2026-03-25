@@ -10,6 +10,7 @@ import 'package:budgie_breeding_tracker/core/extensions/context_extensions.dart'
 import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
+import 'package:budgie_breeding_tracker/core/widgets/app_screen_title.dart';
 import 'package:budgie_breeding_tracker/domain/services/payment/purchase_service.dart';
 import 'package:budgie_breeding_tracker/features/premium/widgets/premium_rewarded_ad_section.dart';
 import 'package:budgie_breeding_tracker/features/premium/providers/premium_providers.dart';
@@ -64,7 +65,12 @@ class PremiumScreen extends ConsumerWidget {
     });
 
     return Scaffold(
-      appBar: AppBar(title: Text('premium.title'.tr())),
+      appBar: AppBar(
+        title: AppScreenTitle(
+          title: 'premium.title'.tr(),
+          iconAsset: AppIcons.premium,
+        ),
+      ),
       body: isPremium ? _ActivePremiumBody() : const _PaywallBody(),
     );
   }

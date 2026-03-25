@@ -5,6 +5,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
+import 'package:budgie_breeding_tracker/core/widgets/app_screen_title.dart';
 import 'package:budgie_breeding_tracker/core/widgets/empty_state.dart';
 import 'package:budgie_breeding_tracker/core/widgets/error_state.dart';
 import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
@@ -42,7 +43,10 @@ class _GenealogyScreenState extends ConsumerState<GenealogyScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('genealogy.title'.tr()),
+        title: AppScreenTitle(
+          title: 'genealogy.title'.tr(),
+          iconAsset: AppIcons.genealogy,
+        ),
         actions: [
           DepthChip(
             depth: ref.watch(pedigreeDepthProvider),

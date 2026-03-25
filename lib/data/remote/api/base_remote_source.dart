@@ -76,7 +76,13 @@ abstract class BaseRemoteSource<T> {
     }
   }
 
+  /// Maximum records per incremental pull to prevent memory exhaustion.
+  static const _maxIncrementalPullSize = 5000;
+
   /// Fetches records updated since [since] for a user.
+  ///
+  /// Limits results to [_maxIncrementalPullSize] to prevent memory exhaustion
+  /// on large sync gaps. Callers should use [fetchAllPaginated] for full pulls.
   Future<List<T>> fetchUpdatedSince(String userId, DateTime since) async {
     try {
       final response = await _timed(
@@ -86,7 +92,8 @@ abstract class BaseRemoteSource<T> {
             .eq('user_id', userId)
             .eq('is_deleted', false)
             .gte('updated_at', since.toIso8601String())
-            .order('updated_at'),
+            .order('updated_at')
+            .limit(_maxIncrementalPullSize),
       );
       return response.map((json) => fromJson(json)).toList();
     } catch (e, st) {
@@ -211,7 +218,8 @@ abstract class BaseRemoteSourceNoSoftDelete<T> extends BaseRemoteSource<T> {
             .select()
             .eq('user_id', userId)
             .gte('updated_at', since.toIso8601String())
-            .order('updated_at'),
+            .order('updated_at')
+            .limit(BaseRemoteSource._maxIncrementalPullSize),
       );
       return response.map((json) => fromJson(json)).toList();
     } catch (e, st) {

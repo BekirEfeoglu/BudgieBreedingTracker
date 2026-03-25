@@ -3,9 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:shared_preferences/shared_preferences.dart';
+
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
+import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
+import 'package:budgie_breeding_tracker/data/remote/supabase/edge_function_client.dart';
+import 'package:budgie_breeding_tracker/features/admin/providers/admin_data_providers.dart';
 import 'package:budgie_breeding_tracker/features/auth/providers/two_factor_providers.dart';
 import 'package:budgie_breeding_tracker/features/auth/widgets/otp_input_field.dart';
 import 'package:budgie_breeding_tracker/router/route_names.dart';
@@ -22,8 +27,11 @@ class TwoFactorVerifyScreen extends ConsumerStatefulWidget {
 }
 
 class _TwoFactorVerifyScreenState extends ConsumerState<TwoFactorVerifyScreen> {
+  static const _tag = '[TwoFactorVerify]';
   static const _maxAttempts = 5;
   static const _lockoutDuration = Duration(minutes: 2);
+  static const _prefsKeyAttempts = 'mfa_failed_attempts';
+  static const _prefsKeyLockout = 'mfa_lockout_until';
 
   bool _isVerifying = false;
   String? _error;
@@ -33,9 +41,72 @@ class _TwoFactorVerifyScreenState extends ConsumerState<TwoFactorVerifyScreen> {
   bool get _isLockedOut =>
       _lockoutUntil != null && DateTime.now().isBefore(_lockoutUntil!);
 
+  @override
+  void initState() {
+    super.initState();
+    _initLockoutState();
+  }
+
+  /// Initializes lockout state from server first, falls back to local prefs.
+  Future<void> _initLockoutState() async {
+    await _checkServerLockout();
+    if (!_isLockedOut) {
+      await _restoreLocalLockoutState();
+    }
+  }
+
+  /// Checks server-side lockout status via Edge Function.
+  Future<void> _checkServerLockout() async {
+    try {
+      final client = ref.read(edgeFunctionClientProvider);
+      final result = await client.checkMfaLockout();
+      if (!mounted) return;
+      if (result.success && result.data != null) {
+        final locked = result.data!['locked'] as bool? ?? false;
+        final remaining = result.data!['remaining_seconds'] as int? ?? 0;
+        if (locked && remaining > 0) {
+          setState(() {
+            _lockoutUntil = DateTime.now().add(Duration(seconds: remaining));
+            _error = 'auth.2fa_too_many_attempts'.tr(args: ['$remaining']);
+          });
+        }
+      }
+    } catch (e) {
+      AppLogger.warning('$_tag Server lockout check failed, using local: $e');
+    }
+  }
+
+  /// Restores lockout state from persistent storage as offline fallback.
+  Future<void> _restoreLocalLockoutState() async {
+    final prefs = await SharedPreferences.getInstance();
+    final attempts = prefs.getInt(_prefsKeyAttempts) ?? 0;
+    final lockoutRaw = prefs.getString(_prefsKeyLockout);
+    final lockout = lockoutRaw != null ? DateTime.tryParse(lockoutRaw) : null;
+    if (!mounted) return;
+    setState(() {
+      _failedAttempts = attempts;
+      _lockoutUntil = lockout;
+    });
+  }
+
+  Future<void> _persistLocalLockoutState() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_prefsKeyAttempts, _failedAttempts);
+    if (_lockoutUntil != null) {
+      await prefs.setString(
+        _prefsKeyLockout,
+        _lockoutUntil!.toIso8601String(),
+      );
+    } else {
+      await prefs.remove(_prefsKeyLockout);
+    }
+  }
+
   Future<void> _verify(String code) async {
     if (_isVerifying) return;
 
+    // Check server-side lockout first
+    await _checkServerLockout();
     if (_isLockedOut) {
       final remaining = _lockoutUntil!.difference(DateTime.now()).inSeconds;
       setState(() {
@@ -58,24 +129,71 @@ class _TwoFactorVerifyScreenState extends ConsumerState<TwoFactorVerifyScreen> {
     if (!mounted) return;
 
     if (success) {
-      _failedAttempts = 0;
-      ref.read(pendingMfaFactorIdProvider.notifier).state = null;
-      context.go(AppRoutes.home);
+      await _handleSuccess();
     } else {
+      await _handleFailure();
+    }
+  }
+
+  Future<void> _handleSuccess() async {
+    // Reset server-side lockout
+    try {
+      final client = ref.read(edgeFunctionClientProvider);
+      await client.resetMfaLockout();
+    } catch (e) {
+      AppLogger.warning('$_tag Server lockout reset failed: $e');
+    }
+
+    // Reset local state
+    _failedAttempts = 0;
+    _lockoutUntil = null;
+    await _persistLocalLockoutState();
+    if (!mounted) return;
+    ref.read(pendingMfaFactorIdProvider.notifier).state = null;
+    context.go(AppRoutes.home);
+  }
+
+  Future<void> _handleFailure() async {
+    // Record failure server-side
+    EdgeFunctionResult? serverResult;
+    try {
+      final client = ref.read(edgeFunctionClientProvider);
+      serverResult = await client.recordMfaFailure();
+    } catch (e) {
+      AppLogger.warning('$_tag Server failure recording failed: $e');
+    }
+
+    if (!mounted) return;
+
+    // Check if server responded with lockout
+    final serverLocked =
+        serverResult?.data?['locked'] as bool? ?? false;
+    final serverRemaining =
+        serverResult?.data?['remaining_seconds'] as int? ?? 0;
+
+    if (serverLocked && serverRemaining > 0) {
+      _lockoutUntil = DateTime.now().add(Duration(seconds: serverRemaining));
+      _failedAttempts = 0;
+    } else {
+      // Local fallback tracking
       _failedAttempts++;
       if (_failedAttempts >= _maxAttempts) {
         _lockoutUntil = DateTime.now().add(_lockoutDuration);
         _failedAttempts = 0;
       }
-      setState(() {
-        _error = _isLockedOut
-            ? 'auth.2fa_too_many_attempts'.tr(
-                args: ['${_lockoutDuration.inSeconds}'],
-              )
-            : 'auth.2fa_invalid_code'.tr();
-        _isVerifying = false;
-      });
     }
+
+    await _persistLocalLockoutState();
+    if (!mounted) return;
+
+    setState(() {
+      _error = _isLockedOut
+          ? 'auth.2fa_too_many_attempts'.tr(
+              args: ['${_lockoutUntil!.difference(DateTime.now()).inSeconds}'],
+            )
+          : 'auth.2fa_invalid_code'.tr();
+      _isVerifying = false;
+    });
   }
 
   @override

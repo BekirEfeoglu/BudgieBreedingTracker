@@ -7,6 +7,7 @@ import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
+import 'package:budgie_breeding_tracker/core/widgets/app_screen_title.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/parent_genotype.dart';
 import 'package:budgie_breeding_tracker/features/genetics/providers/genetics_providers.dart';
 import 'package:budgie_breeding_tracker/features/genetics/providers/genetics_history_providers.dart';
@@ -36,7 +37,10 @@ class GeneticsCalculatorScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('genetics.title'.tr()),
+        title: AppScreenTitle(
+          title: 'genetics.title'.tr(),
+          iconAsset: AppIcons.calculator,
+        ),
         actions: [
           IconButton(
             icon: const Icon(LucideIcons.arrowLeftRight),
@@ -194,8 +198,7 @@ class _WizardNavBar extends ConsumerWidget {
         ),
       );
     } finally {
-      WidgetsBinding.instance
-          .addPostFrameCallback((_) => controller.dispose());
+      WidgetsBinding.instance.addPostFrameCallback((_) => controller.dispose());
     }
   }
 

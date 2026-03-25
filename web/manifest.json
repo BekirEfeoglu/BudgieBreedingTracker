@@ -1,6 +1,6 @@
 {
-    "name": "BudgieBreedingTracker",
-    "short_name": "BudgieBreedingTracker",
+    "name": "Budgie Breeding Tracker",
+    "short_name": "BudgieTrack",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

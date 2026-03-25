@@ -6,6 +6,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
+import 'package:budgie_breeding_tracker/core/widgets/app_screen_title.dart';
 import 'package:budgie_breeding_tracker/core/widgets/empty_state.dart';
 import 'package:budgie_breeding_tracker/features/more/widgets/guide_data.dart';
 import 'package:budgie_breeding_tracker/features/more/widgets/guide_topic_list_item.dart';
@@ -107,7 +108,12 @@ class _UserGuideScreenState extends State<UserGuideScreen> {
     final isSearching = _searchQuery.isNotEmpty;
 
     return Scaffold(
-      appBar: AppBar(title: Text('user_guide.title'.tr())),
+      appBar: AppBar(
+        title: AppScreenTitle(
+          title: 'user_guide.title'.tr(),
+          iconAsset: AppIcons.guide,
+        ),
+      ),
       body: Column(
         children: [
           Padding(

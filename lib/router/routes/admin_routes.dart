@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/widgets/not_found_screen.dart';
 import '../../features/admin/widgets/admin_shell.dart';
 import '../../features/admin/screens/admin_dashboard_screen.dart';
 import '../../features/admin/screens/admin_users_screen.dart';
@@ -12,6 +13,7 @@ import '../../features/admin/screens/admin_security_screen.dart';
 import '../../features/admin/screens/admin_settings_screen.dart';
 import '../../features/admin/screens/admin_feedback_screen.dart';
 import '../route_names.dart';
+import '../route_utils.dart';
 
 /// Admin panel routes wrapped in [AdminShell].
 ShellRoute buildAdminRoutes(
@@ -34,8 +36,11 @@ ShellRoute buildAdminRoutes(
       routes: [
         GoRoute(
           path: ':userId',
-          builder: (context, state) =>
-              AdminUserDetailScreen(userId: state.pathParameters['userId']!),
+          builder: (context, state) {
+            final userId = state.pathParameters['userId']!;
+            if (!isValidRouteId(userId)) return const NotFoundScreen();
+            return AdminUserDetailScreen(userId: userId);
+          },
         ),
       ],
     ),

@@ -43,6 +43,11 @@ class AuthActions with _AuthOAuthMixin, _AuthAccountMixin {
   static const _emailRedirectTo =
       'https://budgiebreedingtracker.online/auth/callback/';
 
+  /// Cooldown between sensitive auth operations (password reset, resend).
+  static const _authCooldown = Duration(minutes: 2);
+  DateTime? _lastResetPasswordAt;
+  DateTime? _lastResendVerificationAt;
+
   /// Sign in with email and password.
   Future<AuthResponse> signInWithEmail({
     required String email,
@@ -70,20 +75,42 @@ class AuthActions with _AuthOAuthMixin, _AuthAccountMixin {
     return _client.auth.signInAnonymously();
   }
 
-  /// Send password reset email.
+  /// Send password reset email with rate limiting.
+  ///
+  /// Enforces a 2-minute cooldown between requests to prevent email bombing.
   Future<void> resetPassword(String email) async {
+    _enforceRateLimit(
+      _lastResetPasswordAt,
+      'auth.rate_limit_password_reset'.tr(),
+    );
     await _client.auth.resetPasswordForEmail(
       email,
       redirectTo: _emailRedirectTo,
     );
+    _lastResetPasswordAt = DateTime.now();
   }
 
-  /// Resend email verification.
+  /// Resend email verification with rate limiting.
+  ///
+  /// Enforces a 2-minute cooldown between requests to prevent abuse.
   Future<ResendResponse> resendVerification(String email) async {
-    return _client.auth.resend(
+    _enforceRateLimit(
+      _lastResendVerificationAt,
+      'auth.rate_limit_verification'.tr(),
+    );
+    final response = _client.auth.resend(
       type: OtpType.signup,
       email: email,
       emailRedirectTo: _emailRedirectTo,
     );
+    _lastResendVerificationAt = DateTime.now();
+    return response;
+  }
+
+  void _enforceRateLimit(DateTime? lastCall, String message) {
+    if (lastCall != null &&
+        DateTime.now().difference(lastCall) < _authCooldown) {
+      throw AuthException(message);
+    }
   }
 }

@@ -1,7 +1,9 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
+import '../../../core/constants/app_icons.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../core/widgets/app_screen_title.dart';
 import '../widgets/about_section.dart';
 import '../widgets/accessibility_section.dart';
 import '../widgets/data_storage_section.dart';
@@ -17,7 +19,12 @@ class SettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('settings.title'.tr())),
+      appBar: AppBar(
+        title: AppScreenTitle(
+          title: 'settings.title'.tr(),
+          iconAsset: AppIcons.settings,
+        ),
+      ),
       body: ListView(
         padding: const EdgeInsets.only(bottom: AppSpacing.xxxl * 2),
         children: const [

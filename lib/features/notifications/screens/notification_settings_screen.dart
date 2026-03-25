@@ -6,6 +6,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
+import 'package:budgie_breeding_tracker/core/widgets/app_screen_title.dart';
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_providers.dart';
 import 'package:budgie_breeding_tracker/features/notifications/providers/notification_settings_providers.dart';
 
@@ -25,7 +26,12 @@ class NotificationSettingsScreen extends ConsumerWidget {
     final notifier = ref.read(notificationToggleSettingsProvider.notifier);
 
     return Scaffold(
-      appBar: AppBar(title: Text('notifications.title'.tr())),
+      appBar: AppBar(
+        title: AppScreenTitle(
+          title: 'notifications.title'.tr(),
+          iconAsset: AppIcons.notification,
+        ),
+      ),
       body: ListView(
         padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
         children: [
@@ -91,6 +97,13 @@ class NotificationSettingsScreen extends ConsumerWidget {
             subtitle: 'notifications.health_check_desc'.tr(),
             value: settings.healthCheck,
             onChanged: notifier.setHealthCheck,
+          ),
+          _NotificationToggle(
+            icon: const AppIcon(AppIcons.ring),
+            title: 'notifications.banding'.tr(),
+            subtitle: 'notifications.banding_desc'.tr(),
+            value: settings.banding,
+            onChanged: notifier.setBanding,
           ),
           const Divider(height: AppSpacing.xxxl),
           _CleanupSection(

@@ -94,7 +94,7 @@ class StatCard extends StatelessWidget {
                     children: [
                       if (icon != null)
                         Container(
-                          padding: const EdgeInsets.all(AppSpacing.xs + 2),
+                          padding: const EdgeInsets.all(AppSpacing.sm),
                           decoration: BoxDecoration(
                             color: cardColor.withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(
@@ -102,7 +102,7 @@ class StatCard extends StatelessWidget {
                             ),
                           ),
                           child: IconTheme(
-                            data: IconThemeData(size: 18, color: cardColor),
+                            data: IconThemeData(size: 20, color: cardColor),
                             child: icon!,
                           ),
                         ),

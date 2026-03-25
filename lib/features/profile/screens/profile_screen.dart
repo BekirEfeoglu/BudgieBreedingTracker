@@ -4,9 +4,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
+import '../../../core/constants/app_icons.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/app_haptics.dart';
+import '../../../core/widgets/app_screen_title.dart';
 import '../../../core/widgets/error_state.dart';
 import '../../../data/models/profile_model.dart';
 import '../../../router/route_names.dart';
@@ -86,7 +88,13 @@ class ProfileScreen extends ConsumerWidget {
               physics: const AlwaysScrollableScrollPhysics(),
               slivers: [
                 // Pinned AppBar (title only)
-                SliverAppBar(pinned: true, title: Text('profile.title'.tr())),
+                SliverAppBar(
+                  pinned: true,
+                  title: AppScreenTitle(
+                    title: 'profile.title'.tr(),
+                    iconAsset: AppIcons.profile,
+                  ),
+                ),
 
                 // Profile header (self-sizing — no fixed height)
                 SliverToBoxAdapter(

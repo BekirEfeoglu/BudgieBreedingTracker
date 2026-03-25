@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/widgets/not_found_screen.dart';
+import '../route_utils.dart';
 import '../../features/statistics/screens/statistics_screen.dart';
 import '../../features/premium/screens/premium_screen.dart';
 import '../../features/genealogy/screens/genealogy_screen.dart';
@@ -156,8 +157,11 @@ List<RouteBase> buildUserRoutes() => [
       ),
       GoRoute(
         path: ':id',
-        builder: (context, state) =>
-            HealthRecordDetailScreen(recordId: state.pathParameters['id']!),
+        builder: (context, state) {
+          final id = state.pathParameters['id']!;
+          if (!isValidRouteId(id)) return const NotFoundScreen();
+          return HealthRecordDetailScreen(recordId: id);
+        },
       ),
     ],
   ),

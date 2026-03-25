@@ -20,6 +20,8 @@ class NotificationSettingsTable extends Table {
       boolean().withDefault(const Constant(true))();
   BoolColumn get healthCheckEnabled =>
       boolean().withDefault(const Constant(true))();
+  BoolColumn get bandingEnabled =>
+      boolean().withDefault(const Constant(true))();
   RealColumn get temperatureMin =>
       real().withDefault(const Constant(36.5))();
   RealColumn get temperatureMax =>

@@ -23,6 +23,10 @@ mixin _AuthAccountMixin {
 
     // Update to new password
     await _client.auth.updateUser(UserAttributes(password: newPassword));
+
+    // Invalidate all other sessions to prevent compromised tokens
+    // from remaining active after a password change.
+    await _client.auth.signOut(scope: SignOutScope.others);
   }
 
   /// Sign out current session.

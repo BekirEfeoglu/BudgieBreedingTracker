@@ -1,10 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-  <!-- Container pill (subtle) -->
-  <rect x="2.5" y="9" width="19" height="6" rx="3" opacity="0.12"/>
-  <!-- Left dot -->
-  <circle cx="6" cy="12" r="2"/>
-  <!-- Center dot -->
-  <circle cx="12" cy="12" r="2"/>
-  <!-- Right dot -->
-  <circle cx="18" cy="12" r="2"/>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/><circle cx="12" cy="5" r=".5" fill="currentColor"/><circle cx="12" cy="12" r=".5" fill="currentColor"/><circle cx="12" cy="19" r=".5" fill="currentColor"/></svg>

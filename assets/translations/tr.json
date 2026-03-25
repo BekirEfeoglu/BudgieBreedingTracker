@@ -159,7 +159,9 @@
     "error_network": "İnternet bağlantınızı kontrol edin ve tekrar deneyin.",
     "error_service_unavailable": "Servis şu anda kullanılamıyor. Lütfen daha sonra tekrar deneyin.",
     "error_anonymous_disabled": "Misafir girişi şu anda kullanılamıyor. Lütfen daha sonra tekrar deneyin.",
-    "error_oauth_unavailable": "Bu giriş yöntemi şu anda kullanılamıyor. Lütfen e-posta ile giriş yapın."
+    "error_oauth_unavailable": "Bu giriş yöntemi şu anda kullanılamıyor. Lütfen e-posta ile giriş yapın.",
+    "rate_limit_password_reset": "Lütfen şifre sıfırlama için 2 dakika bekleyin",
+    "rate_limit_verification": "Lütfen doğrulama e-postası için 2 dakika bekleyin"
   },
   "birds": {
     "title": "Kuşlarım",
@@ -864,6 +866,8 @@
     "chick_care_desc": "Yavru bakım görevlerini hatırlatır",
     "health_check": "Sağlık Kontrolü",
     "health_check_desc": "Periyodik sağlık kontrolü hatırlatır",
+    "banding": "Halka Takma",
+    "banding_desc": "Halka takma günü hatırlatmaları",
     "temperature_alert": "Sıcaklık Uyarısı",
     "humidity_alert": "Nem Uyarısı",
     "feeding_reminder": "Besleme Hatırlatıcı",

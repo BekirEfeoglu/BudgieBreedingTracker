@@ -39,7 +39,9 @@ class EncryptionService {
   ///
   /// The MAC protects encrypted backups against tampering.
   Future<String> encrypt(String plainText) async {
-    if (plainText.isEmpty) return plainText;
+    if (plainText.isEmpty) {
+      throw const FormatException('Cannot encrypt empty string');
+    }
 
     try {
       final keyBytes = await _getOrCreateKeyBytes();
@@ -68,7 +70,9 @@ class EncryptionService {
   /// Extracts the IV from the first 16 bytes, then decrypts the
   /// remaining bytes using AES-256-CBC.
   Future<String> decrypt(String cipherText) async {
-    if (cipherText.isEmpty) return cipherText;
+    if (cipherText.isEmpty) {
+      throw const FormatException('Cannot decrypt empty string');
+    }
 
     try {
       final keyBytes = await _getOrCreateKeyBytes();

@@ -1,11 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-  <!-- Center person (front, slightly larger) -->
-  <circle cx="12" cy="8" r="3"/>
-  <path d="M7 18.5c0-2.8 2.2-5 5-5s5 2.2 5 5v.5H7v-.5Z"/>
-  <!-- Left person (behind, offset) -->
-  <circle cx="5.5" cy="9.5" r="2.3" opacity="0.55"/>
-  <path d="M1.5 18c0-2.2 1.8-4 4-4s4 1.8 4 4v1h-8v-1Z" opacity="0.55"/>
-  <!-- Right person (behind, offset) -->
-  <circle cx="18.5" cy="9.5" r="2.3" opacity="0.55"/>
-  <path d="M14.5 18c0-2.2 1.8-4 4-4s4 1.8 4 4v1h-8v-1Z" opacity="0.55"/>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="6" r="3"/><path d="M6 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"/><circle cx="5" cy="8.5" r="2"/><path d="M3 21v-1.5a3 3 0 012-2.8"/><circle cx="19" cy="8.5" r="2"/><path d="M21 21v-1.5a3 3 0 00-2-2.8"/></svg>

@@ -38,6 +38,7 @@ class RecentChicksSection extends ConsumerWidget {
         children: [
           SectionHeader(
             title: 'home.recent_chicks'.tr(),
+            icon: const AppIcon(AppIcons.chick),
             onViewAll: () => context.go(AppRoutes.chicks),
           ),
           const SizedBox(height: AppSpacing.sm),
@@ -151,9 +152,7 @@ class _ChickTile extends StatelessWidget {
                               child: Text(
                                 parents!.maleName ?? '?',
                                 style: Theme.of(context).textTheme.labelSmall
-                                    ?.copyWith(
-                                      color: AppColors.genderMale,
-                                    ),
+                                    ?.copyWith(color: AppColors.genderMale),
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
@@ -169,9 +168,7 @@ class _ChickTile extends StatelessWidget {
                               child: Text(
                                 parents!.femaleName ?? '?',
                                 style: Theme.of(context).textTheme.labelSmall
-                                    ?.copyWith(
-                                      color: AppColors.genderFemale,
-                                    ),
+                                    ?.copyWith(color: AppColors.genderFemale),
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),

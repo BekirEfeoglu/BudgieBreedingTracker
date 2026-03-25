@@ -47,19 +47,31 @@ class _InfoCard extends StatelessWidget {
 }
 
 class _SectionHeader extends StatelessWidget {
-  const _SectionHeader({required this.title});
+  const _SectionHeader({required this.title, this.icon});
 
   final String title;
+  final Widget? icon;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Text(
-      title,
-      style: theme.textTheme.titleSmall?.copyWith(
-        color: theme.colorScheme.primary,
-        fontWeight: FontWeight.bold,
-      ),
+    return Row(
+      children: [
+        if (icon != null) ...[
+          IconTheme(
+            data: IconThemeData(size: 18, color: theme.colorScheme.primary),
+            child: icon!,
+          ),
+          const SizedBox(width: AppSpacing.sm),
+        ],
+        Text(
+          title,
+          style: theme.textTheme.titleSmall?.copyWith(
+            color: theme.colorScheme.primary,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
     );
   }
 }

@@ -26,11 +26,17 @@ class ProfileRemoteSource extends BaseRemoteSourceNoSoftDelete<Profile> {
     return profile != null ? [profile] : [];
   }
 
-  /// Profile id = userId, so we only filter by id (no separate user_id column).
+  /// Profile id = userId, so we validate that id == userId for safety.
+  /// Even though RLS enforces this server-side, client-side assertion
+  /// prevents accidental misuse and provides defense-in-depth.
   @override
   Future<Profile?> fetchById(String id, {required String userId}) async {
+    assert(id == userId, 'Profile ID must match authenticated user ID');
     try {
-      final response = await table.select().eq('id', id).maybeSingle();
+      final response = await table
+          .select()
+          .eq('id', userId)
+          .maybeSingle();
       return response != null ? fromJson(response) : null;
     } catch (e, st) {
       throw handleError(e, st);

@@ -72,6 +72,9 @@ void main() {
           'created_at': '2024-01-01T00:00:00Z',
         }),
       );
+      when(
+        () => mockAuth.signOut(scope: any(named: 'scope')),
+      ).thenAnswer((_) async {});
 
       await actions.changePassword(
         currentPassword: 'oldPass123',
@@ -85,6 +88,8 @@ void main() {
         ),
       ).called(1);
       verify(() => mockAuth.updateUser(any())).called(1);
+      // Verify other sessions are invalidated after password change
+      verify(() => mockAuth.signOut(scope: SignOutScope.others)).called(1);
     });
 
     test('propagates error when re-authentication fails', () async {
