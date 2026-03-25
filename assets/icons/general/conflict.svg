@@ -1,3 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-  <path d="M12.5 6.9c1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-.53.12-1.03.3-1.48.54L12.5 6.9zM5.47 3.92L4.06 5.33 7.5 8.77c0 2.08 1.56 3.22 3.91 3.91l3.51 3.51c-.34.49-1.05.88-2.42.88-2.17 0-3.02-1.01-3.15-2.1H7.13c.15 1.96 1.55 3.06 3.37 3.48V20.5h3v-2.15c.96-.22 1.77-.63 2.36-1.18l2.61 2.61 1.41-1.41L5.47 3.92z"/>
+  <line x1="3" y1="12" x2="9" y2="12" stroke="currentColor" stroke-width="0.8" stroke-linecap="round"/>
+  <polyline points="7,9.5 9.5,12 7,14.5" stroke="currentColor" stroke-width="0.7" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <line x1="21" y1="12" x2="15" y2="12" stroke="currentColor" stroke-width="0.8" stroke-linecap="round"/>
+  <polyline points="17,9.5 14.5,12 17,14.5" stroke="currentColor" stroke-width="0.7" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <polygon points="12,9 13,12 12,15 11,12" fill="currentColor" opacity="0.7"/>
+  <line x1="12" y1="8" x2="12" y2="9" stroke="currentColor" stroke-width="0.6" stroke-linecap="round" opacity="0.5"/>
+  <line x1="12" y1="15" x2="12" y2="16" stroke="currentColor" stroke-width="0.6" stroke-linecap="round" opacity="0.5"/>
+  <line x1="10" y1="10.5" x2="9.5" y2="10" stroke="currentColor" stroke-width="0.5" stroke-linecap="round" opacity="0.4"/>
+  <line x1="14" y1="10.5" x2="14.5" y2="10" stroke="currentColor" stroke-width="0.5" stroke-linecap="round" opacity="0.4"/>
+  <line x1="10" y1="13.5" x2="9.5" y2="14" stroke="currentColor" stroke-width="0.5" stroke-linecap="round" opacity="0.4"/>
+  <line x1="14" y1="13.5" x2="14.5" y2="14" stroke="currentColor" stroke-width="0.5" stroke-linecap="round" opacity="0.4"/>
 </svg>

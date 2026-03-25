@@ -1,6 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-  <circle cx="9" cy="7" r="3.5"/>
-  <path d="M2 19c0-3.31 2.69-5 7-5s7 1.69 7 5v1H2v-1z"/>
-  <circle cx="17.5" cy="8.5" r="2.5"/>
-  <path d="M22 19v1h-5v-1c0-1.52-.58-2.87-1.5-3.85C16.17 14.42 16.8 14 17.5 14c3.04 0 4.5 1.69 4.5 5z"/>
+  <!-- Back person (smaller, offset) -->
+  <circle cx="15.5" cy="7" r="2.5" stroke="currentColor" stroke-width="0.7" stroke-linecap="round"/>
+  <path d="M11 16.5c0-2.5 2-4.5 4.5-4.5s4.5 2 4.5 4.5v0.5a1.5 1.5 0 0 1-1.5 1.5h-6a1.5 1.5 0 0 1-1.5-1.5v-0.5z" stroke="currentColor" stroke-width="0.7" stroke-linecap="round"/>
+  <!-- Front person (larger, overlapping) -->
+  <circle cx="9" cy="8.5" r="3" stroke="currentColor" stroke-width="0.7" stroke-linecap="round"/>
+  <path d="M3.5 18.5c0-3 2.5-5.5 5.5-5.5s5.5 2.5 5.5 5.5v0.5a1.5 1.5 0 0 1-1.5 1.5H5a1.5 1.5 0 0 1-1.5-1.5v-0.5z" stroke="currentColor" stroke-width="0.7" stroke-linecap="round"/>
+  <!-- Small shield accent at bottom-right -->
+  <path d="M19 18.5v1.8c0 0.8-0.5 1.5-1.2 1.8l-0.3 0.15-0.3-0.15c-0.7-0.3-1.2-1-1.2-1.8v-1.8l1.5-0.7 1.5 0.7z" fill="white" stroke="currentColor" stroke-width="0.6" stroke-linecap="round"/>
 </svg>
