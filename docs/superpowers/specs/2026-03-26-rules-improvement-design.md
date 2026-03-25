@@ -46,11 +46,11 @@ Katmanli iyilestirme — 4 batch halinde, her batch bagimsiz test edilebilir.
 | Checker | CLAUDE.md Anti-Pattern # |
 |---------|------------------------|
 | check_context_go_forward_nav | #10 (context.go forward nav) |
-| check_controller_dispose | #12 (missing dispose) |
-| check_json_key_unknown_enum | #16 (@JsonKey unknownEnumValue) |
+| check_controller_dispose | #14 (missing dispose) |
+| check_json_key_unknown_enum | #8 (@JsonKey unknownEnumValue) |
 | check_dao_import_app_database | #11 (import table via app_database) |
-| check_switch_unknown_case | #17 (switch without unknown) |
-| check_route_ordering | #8 (parameterized before specific) |
+| check_switch_unknown_case | #9 (switch without unknown) |
+| check_route_ordering | #12 (parameterized before specific) |
 
 2 checker uyari modunda eklenir (CI'da bloklamaz):
 
