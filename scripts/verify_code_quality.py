@@ -12,12 +12,17 @@ kapsam raporunu da sunar.
 Kullanim: python scripts/verify_code_quality.py [--verbose]
 """
 
-import os
-import re
 import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+import os
+import re
 from dataclasses import dataclass, field
 from typing import List, Tuple
+
+from _rules_utils import Colors
 
 # --- Configuration ---
 
@@ -28,13 +33,13 @@ CLAUDE_MD = ROOT_DIR / "CLAUDE.md"
 EXCLUDED_SUFFIXES = (".freezed.dart", ".g.dart")
 EXCLUDED_DIRS = {"test", "tests", ".dart_tool"}
 
-# ANSI colors
-RED = "\033[91m"
-GREEN = "\033[92m"
-YELLOW = "\033[93m"
-CYAN = "\033[96m"
-BOLD = "\033[1m"
-RESET = "\033[0m"
+# ANSI color aliases (from shared Colors class)
+RED = Colors.RED
+GREEN = Colors.GREEN
+YELLOW = Colors.YELLOW
+CYAN = Colors.CYAN
+BOLD = Colors.BOLD
+RESET = Colors.RESET
 
 VERBOSE = "--verbose" in sys.argv
 
@@ -82,8 +87,14 @@ ANTI_PATTERN_COVERAGE = {
     # 16: Hardcoded SVG paths — low occurrence, covered by AppIcons convention
     17: "check_icondata_param",         # IconData param -> Widget param
 }
-# Spacing is an extra checker not directly in CLAUDE.md list but related to #13
-EXTRA_CHECKERS = {"check_hardcoded_spacing": "Hardcoded spacing (AppSpacing convention)"}
+# Extra checkers not directly numbered in CLAUDE.md list but enforce documented rules
+EXTRA_CHECKERS = {
+    "check_hardcoded_spacing": "Hardcoded spacing (AppSpacing convention)",
+    "check_bare_catch": "Bare catch without logging (coding-standards #17)",
+    "check_mounted_async": "setState after async without mounted (coding-standards #18)",
+    "check_layer_imports": "Layer hierarchy import violations (architecture.md)",
+    "check_freezed_private_constructor": "Missing const Model._() in Freezed (coding-standards #15)",
+}
 
 # --- Whitelist (checker bazinda dosya/dizin istisna listesi) ---
 WHITELIST = {
@@ -102,6 +113,9 @@ WHITELIST = {
         'lib/features/genetics/utils/',
         'lib/features/genetics/widgets/budgie_painter',
         'lib/features/auth/widgets/budgie_login_colors.dart',
+    ],
+    'check_layer_imports': [
+        'lib/core/extensions/',  # Extensions may import data/models (documented exception)
     ],
 }
 
@@ -193,7 +207,7 @@ def collect_known_enums() -> set:
             content = f.read_text(encoding="utf-8")
             for m in re.finditer(r'enum\s+(\w+)\s*\{', content):
                 known.add(m.group(1))
-        except Exception:
+        except OSError:
             pass
     return known
 
@@ -653,6 +667,160 @@ def check_route_ordering(lines, filepath, cat):
             current_block.append((is_param, i, path_val))
 
 
+def check_bare_catch(lines: List[str], filepath: Path, cat: Category):
+    """catch (e) without AppLogger or Sentry logging."""
+    for i, line in enumerate(lines, 1):
+        if is_comment_line(line):
+            continue
+        match = re.search(r'\bcatch\s*\(\s*e\b', line)
+        if not match:
+            continue
+        # Look ahead 5 lines for AppLogger, Sentry, or error delegation
+        lookahead = "".join(lines[i:min(i + 5, len(lines))])
+        if "AppLogger." in lookahead or "Sentry." in lookahead:
+            continue
+        if "handleError" in lookahead or "markError" in lookahead or "markSyncError" in lookahead:
+            continue
+        # Skip short rethrow/return/state patterns (common in Notifiers)
+        short_body = "".join(lines[i:min(i + 5, len(lines))]).strip()
+        if "rethrow" in short_body or "return" in short_body:
+            continue
+        if "state = state.copyWith(" in short_body or "state =" in short_body:
+            continue
+        cat.findings.append(Finding(
+            file=relative_path(filepath),
+            line_num=i,
+            line_text=line.rstrip(),
+            suggestion="catch blogu icinde AppLogger.error() veya Sentry.captureException() kullan",
+            severity="warning",
+        ))
+
+
+def check_mounted_async(lines: List[str], filepath: Path, cat: Category):
+    """setState after await without mounted check in ConsumerStatefulWidget."""
+    content = "".join(lines)
+    if "ConsumerStatefulWidget" not in content:
+        return
+
+    saw_await = False
+    for i, line in enumerate(lines, 1):
+        if is_comment_line(line):
+            continue
+        stripped = line.strip()
+        if re.search(r'\bawait\b', stripped):
+            saw_await = True
+            continue
+        if saw_await and re.search(r'\bsetState\s*\(', stripped):
+            # Check if mounted is checked on same line or in previous 3 lines
+            if "mounted" in stripped:
+                saw_await = False
+                continue
+            lookback = "".join(lines[max(0, i - 6):i - 1])
+            if "mounted" not in lookback:
+                cat.findings.append(Finding(
+                    file=relative_path(filepath),
+                    line_num=i,
+                    line_text=line.rstrip(),
+                    suggestion="await sonrasi setState oncesinde 'if (mounted)' kontrolu ekle",
+                    severity="warning",
+                ))
+            saw_await = False
+        # Reset on method boundaries
+        if re.match(r'\s*(void|Future|Widget|@override)', stripped):
+            saw_await = False
+
+
+def check_layer_imports(lines: List[str], filepath: Path, cat: Category):
+    """Layer hierarchy import violations: core->data/features, data->features."""
+    if is_whitelisted('check_layer_imports', filepath):
+        return
+
+    rel = relative_path(filepath).replace("\\", "/")
+
+    # Determine which layer this file is in
+    is_core = rel.startswith("lib/core/")
+    is_data = rel.startswith("lib/data/")
+
+    if not is_core and not is_data:
+        return
+
+    # Package name for matching package-style imports
+    pkg = "budgie_breeding_tracker"
+
+    def _imports_layer(stripped: str, layer: str) -> bool:
+        """Check if an import line references a specific layer.
+        Matches: package:budgie_breeding_tracker/<layer>/ and relative ../<layer>/"""
+        return (f"{pkg}/{layer}/" in stripped or
+                f"'../" in stripped and f"/{layer}/" in stripped)
+
+    def _imports_sublayer(stripped: str, layer: str, sublayer: str) -> bool:
+        """Check if an import line references a specific sublayer (e.g. data/models/)."""
+        return (f"{pkg}/{layer}/{sublayer}/" in stripped or
+                f"'../" in stripped and f"/{layer}/{sublayer}/" in stripped)
+
+    for i, line in enumerate(lines, 1):
+        stripped = line.strip()
+        if not stripped.startswith("import"):
+            continue
+
+        if is_core:
+            # core/ must NOT import from features/ or data/ (except models)
+            if _imports_layer(stripped, "features"):
+                cat.findings.append(Finding(
+                    file=relative_path(filepath),
+                    line_num=i,
+                    line_text=line.rstrip(),
+                    suggestion="core/ katmani features/ katmanindan import edemez",
+                ))
+            if (_imports_layer(stripped, "data") and
+                    not _imports_sublayer(stripped, "data", "models")):
+                cat.findings.append(Finding(
+                    file=relative_path(filepath),
+                    line_num=i,
+                    line_text=line.rstrip(),
+                    suggestion="core/ katmani data/ katmanindan import edemez (models/ haric)",
+                ))
+        elif is_data:
+            # data/ must NOT import from features/
+            if _imports_layer(stripped, "features"):
+                cat.findings.append(Finding(
+                    file=relative_path(filepath),
+                    line_num=i,
+                    line_text=line.rstrip(),
+                    suggestion="data/ katmani features/ katmanindan import edemez",
+                ))
+
+
+def check_freezed_private_constructor(lines: List[str], filepath: Path, cat: Category):
+    """Missing const Model._() private constructor in @freezed abstract class."""
+    if not filepath.name.endswith("_model.dart"):
+        return
+    content = "".join(lines)
+    if "@freezed" not in content:
+        return
+
+    for idx in range(len(lines)):
+        line = lines[idx]
+        stripped = line.strip()
+        if stripped == "@freezed":
+            # Find class name
+            for j in range(idx + 1, min(idx + 4, len(lines))):
+                class_match = re.match(r'\s*abstract\s+class\s+(\w+)', lines[j])
+                if class_match:
+                    class_name = class_match.group(1)
+                    # Look ahead 8 lines for const ClassName._()
+                    lookahead = "".join(lines[j:min(j + 8, len(lines))])
+                    private_ctor = f"const {class_name}._();"
+                    if private_ctor not in lookahead:
+                        cat.findings.append(Finding(
+                            file=relative_path(filepath),
+                            line_num=j + 1,
+                            line_text=lines[j].rstrip(),
+                            suggestion=f"'{private_ctor}' private constructor ekle (Freezed 3 gerekliligi)",
+                        ))
+                    break
+
+
 # --- Main ---
 
 def main():
@@ -692,6 +860,10 @@ def main():
         Category("DAO Table Import", "[DriftDAO]", "Table dosyasini dogrudan import et", severity="warning"),
         Category("Switch Unknown Case", "[Switch]", "switch'te unknown case ekle", severity="warning"),
         Category("Route Ordering", "[Router]", "Specific route parametreliden once gelmeli", severity="warning"),
+        Category("Bare Catch (Logging Eksik)", "[Catch]", "catch blogu icinde AppLogger/Sentry kullan", severity="warning"),
+        Category("Mounted Check Eksik", "[Mounted]", "await sonrasi setState icin mounted kontrol et", severity="warning"),
+        Category("Layer Import Ihlali", "[Layer]", "Katman hiyerarsisi import ihlali"),
+        Category("Freezed Private Constructor", "[FreezedCtor]", "const Model._() private constructor eksik"),
     ]
 
     checkers = [
@@ -712,6 +884,10 @@ def main():
         check_dao_import_app_database,
         check_switch_unknown_case,
         check_route_ordering,
+        check_bare_catch,
+        check_mounted_async,
+        check_layer_imports,
+        check_freezed_private_constructor,
     ]
 
     # Run all checkers on all files

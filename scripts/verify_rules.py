@@ -24,7 +24,8 @@ from _rules_collectors import (
     count_json_leaf_keys,
     extract_first_number,
 )
-from _rules_fixers import Colors, build_fix_updates, fix_claude_md
+from _rules_fixers import _apply_inline_fixes, build_fix_updates, fix_claude_md
+from _rules_utils import Colors, check, section_factory
 
 ROOT = Path(__file__).resolve().parent.parent
 ASSETS = ROOT / "assets"
@@ -59,19 +60,6 @@ def parse_claude_md_stats() -> dict:
     return stats
 
 
-# ── Checks ───────────────────────────────────────────────────────────
-
-
-def check(description: str, expected: int, actual: int, tolerance: int = 0) -> bool:
-    passed = abs(actual - expected) <= tolerance
-    status = f"{Colors.GREEN}PASS{Colors.RESET}" if passed else f"{Colors.RED}FAIL{Colors.RESET}"
-    detail = f"beklenen={expected}, gercek={actual}"
-    if not passed:
-        detail += f" {Colors.RED}(fark: {actual - expected:+d}){Colors.RESET}"
-    print(f"  [{status}] {description}: {detail}")
-    return passed
-
-
 # ── Main ─────────────────────────────────────────────────────────────
 
 
@@ -94,6 +82,7 @@ def main():
 
     # ── Verification Mode ──
     results = []
+    section, _section = section_factory()
 
     def track(result):
         results.append(result)
@@ -104,32 +93,32 @@ def main():
     if STRICT_MODE:
         print(f"  {Colors.YELLOW}STRICT modu: tum toleranslar 0{Colors.RESET}\n")
 
-    print(f"{Colors.BOLD}1. Data Layer{Colors.RESET}")
+    print(f"{Colors.BOLD}{next(_section)}. Data Layer{Colors.RESET}")
     track(check("Freezed model sayisi", extract_first_number(stats.get("Freezed models", "0")), actual["models"]))
     track(check("Enum dosya sayisi", extract_first_number(stats.get("Enum files", "0")), actual["enums"]))
     track(check("Drift table sayisi", extract_first_number(stats.get("Drift tables / DAOs / Mappers", "0")), actual["tables"]))
     track(check("DAO sayisi", extract_first_number(stats.get("Drift tables / DAOs / Mappers", "0")), actual["daos"]))
     track(check("Mapper sayisi", extract_first_number(stats.get("Drift tables / DAOs / Mappers", "0")), actual["mappers"]))
 
-    print(f"\n{Colors.BOLD}2. Remote Sources & Repositories{Colors.RESET}")
+    print(section("Remote Sources & Repositories"))
     track(check("Entity repository sayisi", extract_first_number(stats.get("Repositories", "0")), actual["repos"], tolerance=tol(1)))
     track(check("Entity remote source sayisi", extract_first_number(stats.get("Remote sources", "0")), actual["remotes"], tolerance=tol(1)))
 
-    print(f"\n{Colors.BOLD}3. Feature Modules & Domain Services{Colors.RESET}")
+    print(section("Feature Modules & Domain Services"))
     track(check("Feature modul sayisi", extract_first_number(stats.get("Feature modules", "0")), actual["features"]))
     track(check("Domain service dizin sayisi", extract_first_number(stats.get("Domain services", "0")), actual["services"]))
 
-    print(f"\n{Colors.BOLD}4. SVG Icons{Colors.RESET}")
+    print(section("SVG Icons"))
     track(check("AppIcons sabit sayisi", extract_first_number(stats.get("Custom SVG icons", "0")), actual["icons"], tolerance=tol(3)))
     track(check("SVG dosya sayisi", extract_first_number(stats.get("Custom SVG icons", "0")), actual["svg_files"], tolerance=tol(3)))
 
-    print(f"\n{Colors.BOLD}5. Router{Colors.RESET}")
+    print(section("Router"))
     track(check("Route sabiti sayisi", extract_first_number(stats.get("Routes", "0")), actual["routes"], tolerance=tol(2)))
 
-    print(f"\n{Colors.BOLD}6. Database{Colors.RESET}")
+    print(section("Database"))
     track(check("Schema version", extract_first_number(stats.get("DB schema version", "0")), actual["schema"]))
 
-    print(f"\n{Colors.BOLD}7. Translations{Colors.RESET}")
+    print(section("Translations"))
     expected_keys = extract_first_number(stats.get("L10n keys", "0"))
     en_keys = count_json_leaf_keys(ASSETS / "translations" / "en.json")
     de_keys = count_json_leaf_keys(ASSETS / "translations" / "de.json")
@@ -139,13 +128,40 @@ def main():
     track(check("TR-EN anahtar farki (0 olmali)", 0, abs(actual["tr_keys"] - en_keys), tolerance=tol(5)))
     track(check("TR-DE anahtar farki (0 olmali)", 0, abs(actual["tr_keys"] - de_keys), tolerance=tol(5)))
 
-    print(f"\n{Colors.BOLD}8. Supabase Constants{Colors.RESET}")
+    print(section("Supabase Constants"))
     track(check("Supabase sabit sayisi", extract_first_number(stats.get("Supabase constants", "0")), actual["supa"], tolerance=tol(3)))
 
-    print(f"\n{Colors.BOLD}9. Shared Widgets{Colors.RESET}")
+    print(section("Shared Widgets"))
     track(check("Toplam widget sayisi", extract_first_number(stats.get("Shared widgets", "0")), actual["widgets_total"], tolerance=tol(2)))
 
-    print(f"\n{Colors.BOLD}10. Cross-References{Colors.RESET}")
+    print(section("Test Suite"))
+    track(check("Test dosya sayisi", extract_first_number(stats.get("Test files (test/)", "0")), actual["test_files"], tolerance=tol(20)))
+    test_stat = stats.get("Test files (test/)", "0")
+    individual_match = re.search(r"([\d,]+)\+?\s*individual", test_stat)
+    expected_individual = int(individual_match.group(1).replace(",", "")) if individual_match else 0
+    track(check("Bireysel test sayisi", expected_individual, actual["individual_tests"], tolerance=tol(200)))
+    track(check("Kaynak dosya sayisi (lib/)", extract_first_number(stats.get("Source files (lib/)", "0")), actual["source_files"], tolerance=tol(20)))
+
+    print(section("Inline Drift"))
+    inline_targets = [CLAUDE_MD]
+    rules_claude = ROOT / ".claude" / "rules" / "CLAUDE.md"
+    if rules_claude.exists():
+        inline_targets.append(rules_claude)
+
+    from _rules_fixers import _file_label
+    inline_drift = 0
+    for filepath in inline_targets:
+        content = filepath.read_text(encoding="utf-8")
+        fixed, messages = _apply_inline_fixes(content, actual)
+        if fixed != content:
+            label = _file_label(filepath)
+            for msg in messages:
+                print(f"  {Colors.YELLOW}WARN{Colors.RESET} [{label}] {msg} (calistir: --fix)")
+            inline_drift += len(messages)
+    if inline_drift == 0:
+        print(f"  {Colors.GREEN}PASS{Colors.RESET} Tum inline referanslar guncel")
+
+    print(section("Cross-References"))
     rules_dir = ROOT / ".claude" / "rules"
     ref_pattern = re.compile(r'`(\w[\w-]*\.md)`\s*\u2192\s*["\u201C]([^"\u201D]+)["\u201D]')
     broken_refs = 0
