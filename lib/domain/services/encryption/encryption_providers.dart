@@ -4,5 +4,7 @@ import 'encryption_service.dart';
 /// Provides a singleton [EncryptionService] for encrypting/decrypting
 /// sensitive bird data fields (ring numbers, genetic info, etc.).
 final encryptionServiceProvider = Provider<EncryptionService>((ref) {
-  return EncryptionService();
+  final service = EncryptionService();
+  ref.onDispose(service.dispose);
+  return service;
 });

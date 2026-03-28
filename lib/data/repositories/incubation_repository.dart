@@ -47,6 +47,10 @@ class IncubationRepository extends BaseRepository<Incubation>
   @override
   Future<List<Incubation>> getAll(String userId) => _localDao.getAll(userId);
 
+  /// Returns the count of active incubations (SQL COUNT).
+  Future<int> getActiveCount(String userId) =>
+      _localDao.getActiveCount(userId);
+
   @override
   Future<Incubation?> getById(String id) => _localDao.getById(id);
 
@@ -112,14 +116,17 @@ class IncubationRepository extends BaseRepository<Incubation>
       final remote = lastSyncedAt != null
           ? await _remoteSource.fetchUpdatedSince(userId, lastSyncedAt)
           : await _remoteSource.fetchAll(userId);
+      // Fetch local state BEFORE overwriting with remote data, so we have
+      // accurate local/pending snapshots for reconciliation.
+      final localItems = lastSyncedAt == null ? await _localDao.getAll(userId) : <Incubation>[];
+      final pendingIds = lastSyncedAt == null ? await _syncDao.getPendingRecordIds(userId) : <String>{};
+
       if (remote.isNotEmpty) {
         await _localDao.insertAll(remote);
       }
       // Full sync reconciliation: remove local orphans not on server
       if (lastSyncedAt == null) {
         final remoteIds = remote.map((r) => r.id).toSet();
-        final localItems = await _localDao.getAll(userId);
-        final pendingIds = await _syncDao.getPendingRecordIds(userId);
         for (final item in localItems) {
           if (!remoteIds.contains(item.id) && !pendingIds.contains(item.id)) {
             await _localDao.hardDelete(item.id);

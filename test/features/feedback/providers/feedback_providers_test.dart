@@ -104,7 +104,7 @@ void main() {
       expect(entry.status, FeedbackStatus.open);
       expect(entry.email, 'user@example.com');
       expect(entry.adminResponse, 'We are looking into it');
-      expect(entry.createdAt, isNotNull);
+      expect(entry.createdAt, DateTime.parse('2024-06-01T12:00:00.000Z'));
     });
 
     test('null email and adminResponse map to null', () {

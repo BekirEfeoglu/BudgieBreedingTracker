@@ -1,5 +1,7 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:budgie_breeding_tracker/core/utils/logger.dart';
+
 part 'app_preferences_extras.dart';
 
 /// Type-safe wrapper around SharedPreferences for app settings.
@@ -42,6 +44,7 @@ class AppPreferences {
   static const keyRewardGeneticsUses = 'pref_reward_genetics_uses';
   static const keyRewardExportUses = 'pref_reward_export_uses';
   static const keyBlockedUserIds = 'pref_blocked_user_ids';
+  static const keyStatsPeriod = 'pref_stats_period';
 
   // ── Theme ──
 
@@ -85,7 +88,11 @@ class AppPreferences {
   DateTime? get lastSyncedAt {
     final value = _prefs.getString(keyLastSyncedAt);
     if (value == null) return null;
-    return DateTime.tryParse(value);
+    final parsed = DateTime.tryParse(value);
+    if (parsed == null) {
+      AppLogger.warning('[AppPreferences] Failed to parse lastSyncedAt: $value');
+    }
+    return parsed;
   }
 
   /// Set last synced timestamp.

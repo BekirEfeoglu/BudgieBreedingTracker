@@ -55,9 +55,16 @@ List<RouteBase> buildUserRoutes() => [
   GoRoute(
     path: AppRoutes.geneticsCompare,
     builder: (context, state) {
+      // Prefer extra for in-app navigation, fall back to query param for deep links
       final extra = state.extra as List<String>?;
-      if (extra == null) return const NotFoundScreen();
-      return GeneticsCompareScreen(historyIds: extra);
+      final idsParam = state.uri.queryParameters['ids'];
+      final ids = extra ??
+          idsParam
+              ?.split(',')
+              .where((s) => isValidRouteId(s))
+              .toList();
+      if (ids == null || ids.isEmpty) return const NotFoundScreen();
+      return GeneticsCompareScreen(historyIds: ids);
     },
   ),
   if (kDebugMode)

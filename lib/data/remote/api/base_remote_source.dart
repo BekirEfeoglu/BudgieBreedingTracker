@@ -83,6 +83,14 @@ abstract class BaseRemoteSource<T> {
   ///
   /// Limits results to [_maxIncrementalPullSize] to prevent memory exhaustion
   /// on large sync gaps. Callers should use [fetchAllPaginated] for full pulls.
+  ///
+  /// Note: `is_deleted` filter is intentionally omitted so that cross-device
+  /// soft-deletes propagate during incremental sync. The [since] timestamp
+  /// limits results to records changed after the last successful pull, so
+  /// deleted records are only fetched once — when their `is_deleted` flag
+  /// changes and `updated_at` advances. Full reconciliation (null [since])
+  /// uses [fetchAll] which filters `is_deleted = false`, keeping that path
+  /// fast even for users with many historical deletions.
   Future<List<T>> fetchUpdatedSince(String userId, DateTime since) async {
     try {
       final response = await _timed(
@@ -90,7 +98,6 @@ abstract class BaseRemoteSource<T> {
         () => table
             .select()
             .eq('user_id', userId)
-            .eq('is_deleted', false)
             .gte('updated_at', since.toIso8601String())
             .order('updated_at')
             .limit(_maxIncrementalPullSize),
@@ -209,6 +216,8 @@ abstract class BaseRemoteSourceNoSoftDelete<T> extends BaseRemoteSource<T> {
     }
   }
 
+  /// No `is_deleted` column on these tables, so no soft-delete filtering
+  /// applies. The [since] timestamp limits results to recently changed records.
   @override
   Future<List<T>> fetchUpdatedSince(String userId, DateTime since) async {
     try {

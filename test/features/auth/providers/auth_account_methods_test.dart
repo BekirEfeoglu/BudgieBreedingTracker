@@ -170,7 +170,7 @@ void main() {
       when(() => mockAuth.currentUser).thenReturn(null);
 
       expect(
-        () => actions.requestAccountDeletion(),
+        () => actions.requestAccountDeletion(currentPassword: 'pass'),
         throwsA(
           isA<AuthException>().having(
             (e) => e.message,
@@ -186,7 +186,7 @@ void main() {
       when(() => mockAuth.currentUser).thenReturn(null);
 
       expect(
-        () => actions.requestAccountDeletion(),
+        () => actions.requestAccountDeletion(currentPassword: 'pass'),
         throwsA(
           isA<AuthException>().having(
             (e) => e.message,

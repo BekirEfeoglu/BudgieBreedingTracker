@@ -57,140 +57,94 @@ Widget _wrapWithRouter({
 
 const _childWidget = Text('Page Content');
 
-/// Drains all overflow exceptions thrown after widget rendering.
-void _drainOverflowErrors(WidgetTester tester) {
-  for (var i = 0; i < 20; i++) {
-    final error = tester.takeException();
-    if (error == null) break;
-  }
+Future<void> _pumpShell(
+  WidgetTester tester, {
+  required Size size,
+  String initialLocation = '/admin/dashboard',
+}) async {
+  tester.view.physicalSize = size;
+  tester.view.devicePixelRatio = 1.0;
+  addTearDown(tester.view.reset);
+  await pumpLocalizedApp(
+    tester,
+    _wrapWithRouter(shellChild: _childWidget, initialLocation: initialLocation),
+  );
 }
 
 void main() {
   group('AdminShell — narrow layout (width < 840)', () {
     testWidgets('renders without crashing', (tester) async {
-      tester.view.physicalSize = const Size(600, 900);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(tester.view.reset);
-
-      await pumpLocalizedApp(tester, _wrapWithRouter(shellChild: _childWidget));
-      _drainOverflowErrors(tester);
+      await _pumpShell(tester, size: const Size(600, 900));
       expect(find.byType(AdminShell), findsOneWidget);
     });
 
     testWidgets('shows AppBar on narrow screen', (tester) async {
-      tester.view.physicalSize = const Size(600, 900);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(tester.view.reset);
-
-      await pumpLocalizedApp(tester, _wrapWithRouter(shellChild: _childWidget));
-      _drainOverflowErrors(tester);
+      await _pumpShell(tester, size: const Size(600, 900));
       expect(find.byType(AppBar), findsOneWidget);
     });
 
     testWidgets('Scaffold has drawer set on narrow screen', (tester) async {
-      tester.view.physicalSize = const Size(600, 900);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(tester.view.reset);
-
-      await pumpLocalizedApp(tester, _wrapWithRouter(shellChild: _childWidget));
-      _drainOverflowErrors(tester);
-      // Closed drawers are not built into the visible widget tree —
-      // verify the Scaffold has a non-null drawer property instead.
+      await _pumpShell(tester, size: const Size(600, 900));
       final scaffold = tester.widget<Scaffold>(find.byType(Scaffold).first);
-      expect(scaffold.drawer, isNotNull);
+      expect(scaffold.drawer, isA<Drawer>());
     });
 
     testWidgets('shows child content', (tester) async {
-      tester.view.physicalSize = const Size(600, 900);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(tester.view.reset);
-
-      await pumpLocalizedApp(tester, _wrapWithRouter(shellChild: _childWidget));
-      _drainOverflowErrors(tester);
+      await _pumpShell(tester, size: const Size(600, 900));
       expect(find.text('Page Content'), findsOneWidget);
     });
 
     testWidgets('title shows admin.dashboard for dashboard route', (
       tester,
     ) async {
-      tester.view.physicalSize = const Size(600, 900);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(tester.view.reset);
-
-      await pumpLocalizedApp(tester, _wrapWithRouter(shellChild: _childWidget));
-      _drainOverflowErrors(tester);
-      // Without easy_localization, .tr() returns key
+      await _pumpShell(tester, size: const Size(600, 900));
       expect(find.text('admin.dashboard'), findsOneWidget);
     });
 
     testWidgets('title shows admin.users for users route', (tester) async {
-      tester.view.physicalSize = const Size(600, 900);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(tester.view.reset);
-
-      await pumpLocalizedApp(
+      await _pumpShell(
         tester,
-        _wrapWithRouter(
-          shellChild: _childWidget,
-          initialLocation: '/admin/users',
-        ),
+        size: const Size(600, 900),
+        initialLocation: '/admin/users',
       );
-      _drainOverflowErrors(tester);
-      expect(find.text('admin.users'), findsAtLeastNWidgets(1));
+      expect(find.text('admin.users'), findsOneWidget);
     });
 
     testWidgets('shows back-to-app icon button', (tester) async {
-      tester.view.physicalSize = const Size(600, 900);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(tester.view.reset);
+      await _pumpShell(tester, size: const Size(600, 900));
+      expect(find.byTooltip('admin.back_to_app'), findsOneWidget);
+    });
 
-      await pumpLocalizedApp(tester, _wrapWithRouter(shellChild: _childWidget));
-      _drainOverflowErrors(tester);
-      // Back to app IconButton is in AppBar actions
-      expect(find.byType(IconButton), findsAtLeastNWidgets(1));
+    testWidgets('back-to-app action navigates home', (tester) async {
+      await _pumpShell(tester, size: const Size(600, 900));
+      await tester.tap(find.byTooltip('admin.back_to_app'));
+      await tester.pumpAndSettle();
+      expect(find.text('Home'), findsOneWidget);
     });
   });
 
   group('AdminShell — wide layout (width >= 840)', () {
     testWidgets('renders without crashing', (tester) async {
-      tester.view.physicalSize = const Size(1200, 900);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(tester.view.reset);
-
-      await pumpLocalizedApp(tester, _wrapWithRouter(shellChild: _childWidget));
-      _drainOverflowErrors(tester);
+      await _pumpShell(tester, size: const Size(1200, 900));
       expect(find.byType(AdminShell), findsOneWidget);
     });
 
     testWidgets('shows AdminSidebar on wide screen', (tester) async {
-      tester.view.physicalSize = const Size(1200, 900);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(tester.view.reset);
-
-      await pumpLocalizedApp(tester, _wrapWithRouter(shellChild: _childWidget));
-      _drainOverflowErrors(tester);
+      await _pumpShell(tester, size: const Size(1200, 900));
+      expect(find.text('admin.panel_title'), findsOneWidget);
       expect(find.byType(VerticalDivider), findsOneWidget);
     });
 
     testWidgets('shows child content on wide screen', (tester) async {
-      tester.view.physicalSize = const Size(1200, 900);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(tester.view.reset);
-
-      await pumpLocalizedApp(tester, _wrapWithRouter(shellChild: _childWidget));
-      _drainOverflowErrors(tester);
+      await _pumpShell(tester, size: const Size(1200, 900));
       expect(find.text('Page Content'), findsOneWidget);
     });
 
     testWidgets('has no AppBar on wide screen', (tester) async {
-      tester.view.physicalSize = const Size(1200, 900);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(tester.view.reset);
-
-      await pumpLocalizedApp(tester, _wrapWithRouter(shellChild: _childWidget));
-      _drainOverflowErrors(tester);
-      // Wide layout uses _WideLayout which has no AppBar (just Row with Sidebar)
+      await _pumpShell(tester, size: const Size(1200, 900));
       expect(find.byType(AppBar), findsNothing);
+      final scaffold = tester.widget<Scaffold>(find.byType(Scaffold).first);
+      expect(scaffold.drawer, isNull);
     });
   });
 }

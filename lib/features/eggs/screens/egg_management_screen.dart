@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/enums/egg_enums.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
@@ -18,6 +17,7 @@ import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
 import 'package:budgie_breeding_tracker/domain/services/incubation/incubation_calculator.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_detail_providers.dart';
 import 'package:budgie_breeding_tracker/features/eggs/providers/egg_providers.dart';
+import 'package:budgie_breeding_tracker/features/notifications/providers/action_feedback_providers.dart';
 import 'package:budgie_breeding_tracker/features/eggs/widgets/egg_list_item.dart';
 import 'package:budgie_breeding_tracker/features/eggs/widgets/egg_status_update_sheet.dart';
 import 'package:budgie_breeding_tracker/features/eggs/widgets/egg_summary_row.dart';
@@ -51,7 +51,10 @@ class EggManagementScreen extends ConsumerWidget {
             iconAsset: AppIcons.egg,
           ),
         ),
-        body: ErrorState(message: 'common.data_load_error'.tr()),
+        body: ErrorState(
+          message: 'common.data_load_error'.tr(),
+          onRetry: () => ref.invalidate(incubationsByPairProvider(pairId)),
+        ),
       ),
       data: (incubations) {
         final incubation = selectPrimaryIncubation(incubations);
@@ -94,14 +97,10 @@ class _EggManagementContent extends ConsumerWidget {
         ).showSnackBar(SnackBar(content: Text(state.error!)));
       }
       if (state.chickCreated) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('eggs.chick_created_from_egg'.tr()),
-            action: SnackBarAction(
-              label: 'eggs.go_to_chicks'.tr(),
-              onPressed: () => context.push('/chicks'),
-            ),
-          ),
+        ActionFeedbackService.show(
+          'eggs.chick_created_from_egg'.tr(),
+          actionRoute: '/chicks',
+          actionLabel: 'eggs.go_to_chicks'.tr(),
         );
       }
     });

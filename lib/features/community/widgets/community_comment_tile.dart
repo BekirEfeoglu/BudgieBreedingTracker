@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 
 import '../../../core/constants/app_icons.dart';
+import '../../notifications/providers/action_feedback_providers.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_icon.dart';
 import '../../../core/widgets/dialogs/confirm_dialog.dart';
@@ -133,7 +134,7 @@ class CommunityCommentTile extends ConsumerWidget {
     );
   }
 
-  void _showDeleteDialog(BuildContext context, WidgetRef ref) async {
+  Future<void> _showDeleteDialog(BuildContext context, WidgetRef ref) async {
     final confirmed = await showConfirmDialog(
       context,
       title: 'community.delete_comment'.tr(),
@@ -152,7 +153,7 @@ class CommunityCommentTile extends ConsumerWidget {
     }
   }
 
-  void _showReportDialog(BuildContext context, WidgetRef ref) async {
+  Future<void> _showReportDialog(BuildContext context, WidgetRef ref) async {
     final reason = await showCommunityReportDialog(
       context,
       title: 'community.report_comment'.tr(),
@@ -168,9 +169,7 @@ class CommunityCommentTile extends ConsumerWidget {
         reason: reason,
       );
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('community.report_submitted'.tr())),
-        );
+        ActionFeedbackService.show('community.report_submitted'.tr());
       }
     } catch (e, st) {
       AppLogger.error('CommunityCommentTile._showReportDialog', e, st);

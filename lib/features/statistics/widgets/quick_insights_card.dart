@@ -6,6 +6,7 @@ import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
+import 'package:budgie_breeding_tracker/core/widgets/skeleton_loader.dart';
 import 'package:budgie_breeding_tracker/data/models/statistics_models.dart';
 import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
 import 'package:budgie_breeding_tracker/features/statistics/providers/statistics_trend_providers.dart';
@@ -20,7 +21,7 @@ class QuickInsightsCard extends ConsumerWidget {
     final insightsAsync = ref.watch(quickInsightsProvider(userId));
 
     return insightsAsync.when(
-      loading: () => const SizedBox.shrink(),
+      loading: () => const _InsightsCardSkeleton(),
       error: (_, __) => const SizedBox.shrink(),
       data: (insights) {
         if (insights.isEmpty) return const SizedBox.shrink();
@@ -121,11 +122,63 @@ class _InsightRow extends StatelessWidget {
           child: Text(
             insight.text,
             style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurface,
+              color: color,
             ),
           ),
         ),
       ],
+    );
+  }
+}
+
+class _InsightsCardSkeleton extends StatelessWidget {
+  const _InsightsCardSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Card(
+      elevation: 0,
+      color: theme.colorScheme.primaryContainer.withValues(alpha: 0.3),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+        side: BorderSide(
+          color: theme.colorScheme.primary.withValues(alpha: 0.2),
+        ),
+      ),
+      child: Padding(
+        padding: AppSpacing.cardPadding,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Row(
+              children: [
+                SkeletonLoader(
+                  width: 18,
+                  height: 18,
+                  borderRadius: AppSpacing.radiusSm,
+                ),
+                SizedBox(width: AppSpacing.sm),
+                SkeletonLoader(width: 100, height: 14),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.md),
+            for (var i = 0; i < 3; i++) ...[
+              const Padding(
+                padding: EdgeInsets.only(bottom: AppSpacing.sm),
+                child: Row(
+                  children: [
+                    SkeletonLoader(width: 14, height: 14),
+                    SizedBox(width: AppSpacing.sm),
+                    Expanded(child: SkeletonLoader(height: 12)),
+                  ],
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
     );
   }
 }

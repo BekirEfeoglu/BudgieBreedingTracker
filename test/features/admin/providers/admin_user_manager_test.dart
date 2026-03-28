@@ -67,7 +67,7 @@ void main() {
         isSuccess: true,
         successMessage: 'Premium subscription granted',
       );
-      expect(state.successMessage, isNotNull);
+      expect(state.successMessage, 'Premium subscription granted');
     });
 
     test('two different error messages are not equal', () {
@@ -77,14 +77,7 @@ void main() {
     });
   });
 
-  group('AdminActionsNotifier — delegation methods exist', () {
-    // Verify that the notifier exposes the expected delegation API
-    // without making real Supabase calls.
-
-    test('adminActionsProvider notifier is non-null', () {
-      expect(adminActionsProvider, isNotNull);
-    });
-
+  group('AdminActionsNotifier — delegation state coverage', () {
     test('AdminActionState can represent all user operation states', () {
       // loading
       const loading = AdminActionState(isLoading: true);

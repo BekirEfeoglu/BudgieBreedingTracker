@@ -66,16 +66,6 @@ void main() {
     );
   }
 
-  // Filter Row overflows when chip labels are full l10n keys.
-  // Consume any layout overflow exception so it does not fail the test.
-  Future<void> pumpAndSettleIgnoringOverflow(WidgetTester tester) async {
-    await tester.pumpAndSettle();
-    final exception = tester.takeException();
-    if (exception != null && !exception.toString().contains('overflowed')) {
-      throw exception;
-    }
-  }
-
   group('NotificationListScreen', () {
     testWidgets('shows loading indicator while data is loading', (
       tester,
@@ -86,8 +76,7 @@ void main() {
         createSubject(notificationsStream: controller.stream),
       );
 
-      // First pump may trigger the overflow; consume the exception
-      tester.takeException();
+      await tester.pump();
 
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
 
@@ -101,7 +90,7 @@ void main() {
         createSubject(notificationsStream: Stream.value([])),
       );
 
-      await pumpAndSettleIgnoringOverflow(tester);
+      await tester.pumpAndSettle();
 
       expect(find.byType(EmptyState), findsOneWidget);
     });
@@ -111,7 +100,7 @@ void main() {
         createSubject(notificationsStream: Stream.error('Network error')),
       );
 
-      await pumpAndSettleIgnoringOverflow(tester);
+      await tester.pumpAndSettle();
 
       expect(find.byType(ErrorState), findsOneWidget);
     });
@@ -129,7 +118,7 @@ void main() {
         createSubject(notificationsStream: Stream.value(notifications)),
       );
 
-      await pumpAndSettleIgnoringOverflow(tester);
+      await tester.pumpAndSettle();
 
       expect(find.byType(NotificationCard), findsNWidgets(3));
     });
@@ -139,7 +128,7 @@ void main() {
         createSubject(notificationsStream: Stream.value([])),
       );
 
-      await pumpAndSettleIgnoringOverflow(tester);
+      await tester.pumpAndSettle();
 
       expect(find.byType(ChoiceChip), findsNWidgets(3));
       expect(find.text('notifications.filter_all'), findsOneWidget);
@@ -152,7 +141,7 @@ void main() {
         createSubject(notificationsStream: Stream.value([])),
       );
 
-      await pumpAndSettleIgnoringOverflow(tester);
+      await tester.pumpAndSettle();
 
       expect(find.text('notifications.inbox_title'), findsOneWidget);
     });
@@ -162,7 +151,7 @@ void main() {
         createSubject(notificationsStream: Stream.value([])),
       );
 
-      await pumpAndSettleIgnoringOverflow(tester);
+      await tester.pumpAndSettle();
 
       expect(find.byType(IconButton), findsOneWidget);
     });
@@ -180,15 +169,10 @@ void main() {
         createSubject(notificationsStream: Stream.value(notifications)),
       );
 
-      await pumpAndSettleIgnoringOverflow(tester);
+      await tester.pumpAndSettle();
 
-      // Chips may be off-screen due to l10n key overflow; set filter via provider directly
-      final container = ProviderScope.containerOf(
-        tester.element(find.byType(NotificationListScreen)),
-      );
-      container.read(notificationFilterProvider.notifier).state =
-          NotificationFilter.unread;
-      await tester.pump();
+      await tester.tap(find.text('notifications.filter_unread'));
+      await tester.pumpAndSettle();
 
       // Should show 2 unread notifications
       expect(find.byType(NotificationCard), findsNWidgets(2));
@@ -206,15 +190,10 @@ void main() {
         createSubject(notificationsStream: Stream.value(notifications)),
       );
 
-      await pumpAndSettleIgnoringOverflow(tester);
+      await tester.pumpAndSettle();
 
-      // Chips may be off-screen due to l10n key overflow; set filter via provider directly
-      final container = ProviderScope.containerOf(
-        tester.element(find.byType(NotificationListScreen)),
-      );
-      container.read(notificationFilterProvider.notifier).state =
-          NotificationFilter.read;
-      await tester.pump();
+      await tester.tap(find.text('notifications.filter_read'));
+      await tester.pumpAndSettle();
 
       // Should show 1 read notification
       expect(find.byType(NotificationCard), findsNWidgets(1));
@@ -230,15 +209,10 @@ void main() {
           createSubject(notificationsStream: Stream.value(notifications)),
         );
 
-        await pumpAndSettleIgnoringOverflow(tester);
+        await tester.pumpAndSettle();
 
-        // Set filter directly via provider
-        final container = ProviderScope.containerOf(
-          tester.element(find.byType(NotificationListScreen)),
-        );
-        container.read(notificationFilterProvider.notifier).state =
-            NotificationFilter.unread;
-        await tester.pump();
+        await tester.tap(find.text('notifications.filter_unread'));
+        await tester.pumpAndSettle();
 
         expect(find.byType(EmptyState), findsOneWidget);
       },

@@ -6,6 +6,7 @@ import '../../../core/constants/supabase_constants.dart';
 import '../../../core/utils/logger.dart';
 import '../../../core/widgets/dialogs/confirm_dialog.dart';
 import '../../auth/providers/auth_providers.dart';
+import '../../notifications/providers/action_feedback_providers.dart';
 import '../providers/admin_providers.dart';
 
 /// Default values for admin system settings.
@@ -100,16 +101,20 @@ class AdminSettingsActionNotifier extends Notifier<AdminSettingsActionState> {
     state = state.copyWith(isLoading: true, error: null, isSuccess: false);
     try {
       final client = ref.read(supabaseClientProvider);
-      for (final entry in settingDefaults.entries) {
-        await client.from(SupabaseConstants.systemSettingsTable).upsert({
-          'key': entry.key,
-          'value': entry.value,
-          'category': categoryForKey(entry.key),
-          'is_public': false,
-          'updated_by': client.auth.currentUser?.id,
-          'updated_at': DateTime.now().toUtc().toIso8601String(),
-        }, onConflict: 'key');
-      }
+      final now = DateTime.now().toUtc().toIso8601String();
+      final userId = client.auth.currentUser?.id;
+      await Future.wait(
+        settingDefaults.entries.map((entry) =>
+          client.from(SupabaseConstants.systemSettingsTable).upsert({
+            'key': entry.key,
+            'value': entry.value,
+            'category': categoryForKey(entry.key),
+            'is_public': false,
+            'updated_by': userId,
+            'updated_at': now,
+          }, onConflict: 'key'),
+        ),
+      );
       ref.invalidate(adminSystemSettingsProvider);
       state = state.copyWith(isLoading: false, isSuccess: true);
       return true;
@@ -153,9 +158,7 @@ Future<void> updateAdminSetting({
   final notifier = ref.read(adminSettingsActionProvider.notifier);
   final success = await notifier.updateSetting(key: key, value: value);
   if (success) {
-    messenger.showSnackBar(
-      SnackBar(content: Text('admin.setting_updated'.tr())),
-    );
+    ActionFeedbackService.show('admin.setting_updated'.tr());
   } else {
     messenger.showSnackBar(
       SnackBar(content: Text('admin.setting_update_error'.tr())),
@@ -179,9 +182,7 @@ Future<bool> resetAdminSettingsToDefaults({
   final notifier = ref.read(adminSettingsActionProvider.notifier);
   final success = await notifier.resetToDefaults();
   if (success) {
-    messenger.showSnackBar(
-      SnackBar(content: Text('admin.defaults_restored'.tr())),
-    );
+    ActionFeedbackService.show('admin.defaults_restored'.tr());
     return true;
   } else {
     messenger.showSnackBar(

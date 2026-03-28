@@ -9,6 +9,16 @@ import 'package:budgie_breeding_tracker/features/genetics/utils/phenotype_locali
 import 'package:budgie_breeding_tracker/features/genetics/widgets/bird_color_simulation.dart';
 import 'package:budgie_breeding_tracker/features/genetics/widgets/offspring_prediction_details.dart';
 
+part 'offspring_prediction_helpers.dart';
+
+// ── Layout constants ──
+const double _kBirdHeightExpanded = 96;
+const double _kBirdHeightGenotype = 80;
+const double _kBirdHeightDefault = 64;
+const double _kProgressSize = AppSpacing.touchTargetLg;
+const int _kMaxVisibleMutations = 3;
+const double _kLowProbabilityThreshold = 0.01;
+
 /// Card showing a predicted offspring phenotype with probability,
 /// sex indicator, carrier status, compound phenotype name,
 /// and optional genotype. Tap to expand full details.
@@ -34,20 +44,10 @@ class _OffspringPredictionState extends State<OffspringPrediction>
     with SingleTickerProviderStateMixin {
   bool _expanded = false;
 
-  void _copyGenotype(BuildContext context, String genotype) {
-    Clipboard.setData(ClipboardData(text: genotype));
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('genetics.genotype_copied'.tr()),
-        duration: const Duration(seconds: 2),
-      ),
-    );
-  }
-
   bool get _hasExpandableContent =>
       widget.result.carriedMutations.length > 2 ||
       widget.result.maskedMutations.isNotEmpty ||
-      (widget.showGenotype && widget.result.genotype != null);
+      widget.result.genotype != null;
 
   @override
   Widget build(BuildContext context) {
@@ -78,17 +78,30 @@ class _OffspringPredictionState extends State<OffspringPrediction>
       if (result.isCarrier) 'genetics.carrier'.tr(),
     ].join(', ');
 
-    return Semantics(
-      label: semanticLabel,
-      child: Card(
-        clipBehavior: Clip.antiAlias,
-        color: _expanded
-            ? theme.colorScheme.surfaceContainerHigh
-            : null,
-        child: InkWell(
-          onTap: _hasExpandableContent
-              ? () => setState(() => _expanded = !_expanded)
-              : null,
+    final borderColor = result.isCarrier
+        ? AppColors.warning
+        : theme.colorScheme.primary;
+
+    final isDark = theme.brightness == Brightness.dark;
+    final cardColor = _expanded
+        ? theme.colorScheme.surfaceContainerHigh
+        : result.isCarrier
+            ? AppColors.warning.withValues(alpha: isDark ? 0.12 : 0.05)
+            : null;
+
+    return RepaintBoundary(
+      child: Semantics(
+        label: semanticLabel,
+        child: Card(
+          clipBehavior: Clip.antiAlias,
+          color: cardColor,
+          child: InkWell(
+            onTap: _hasExpandableContent
+                ? () {
+                    HapticFeedback.lightImpact();
+                    setState(() => _expanded = !_expanded);
+                  }
+                : null,
           child: AnimatedSize(
             duration: const Duration(milliseconds: 200),
             curve: Curves.easeInOut,
@@ -97,9 +110,11 @@ class _OffspringPredictionState extends State<OffspringPrediction>
               children: [
                 AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
-                  width: _expanded ? 3 : 0,
+                  width: _expanded ? AppSpacing.xs : 3,
                   decoration: BoxDecoration(
-                    color: theme.colorScheme.primary,
+                    color: _expanded
+                        ? borderColor
+                        : borderColor.withValues(alpha: 0.4),
                     borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(AppSpacing.radiusMd),
                       bottomLeft: Radius.circular(AppSpacing.radiusMd),
@@ -133,6 +148,7 @@ class _OffspringPredictionState extends State<OffspringPrediction>
               ],
             ),
           ),
+          ),
         ),
       ),
     );
@@ -151,7 +167,11 @@ class _OffspringPredictionState extends State<OffspringPrediction>
           visualMutations: result.visualMutations,
           carriedMutations: result.carriedMutations,
           phenotype: result.compoundPhenotype ?? result.phenotype,
-          height: _expanded ? 96 : (widget.showGenotype ? 80 : 64),
+          height: _expanded
+              ? _kBirdHeightExpanded
+              : (widget.showGenotype
+                  ? _kBirdHeightGenotype
+                  : _kBirdHeightDefault),
           isFemale: switch (result.sex) {
             OffspringSex.female => true,
             OffspringSex.male => false,
@@ -168,15 +188,9 @@ class _OffspringPredictionState extends State<OffspringPrediction>
               PhenotypeBadges(displayName: displayName, result: result),
               if (result.carriedMutations.isNotEmpty && !_expanded) ...[
                 const SizedBox(height: 1),
-                Text(
-                  localizedCarriedMutations.join(', '),
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: AppColors.warningTextAdaptive(context),
-                    fontStyle: FontStyle.italic,
-                    fontSize: 10,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 2,
+                _CarrierMutationsSummary(
+                  mutations: localizedCarriedMutations,
+                  theme: theme,
                 ),
               ],
               if (result.maskedMutations.isNotEmpty && !_expanded) ...[
@@ -202,17 +216,12 @@ class _OffspringPredictionState extends State<OffspringPrediction>
                   widget.showGenotype &&
                   result.genotype != null) ...[
                 const SizedBox(height: 2),
-                GestureDetector(
-                  onLongPress: () => _copyGenotype(context, result.genotype!),
-                  child: Text(
-                    result.genotype!,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
-                      fontFamily: 'monospace',
-                      fontSize: 10,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 1,
+                Text(
+                  'genetics.genotype_detail_label'.tr(),
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.primary,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ],
@@ -221,37 +230,24 @@ class _OffspringPredictionState extends State<OffspringPrediction>
         ),
         if (!widget.hideProgress) ...[
           const SizedBox(width: AppSpacing.sm),
-          SizedBox(
-            width: 52,
-            height: 52,
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                CircularProgressIndicator(
-                  value: result.probability < 0.05 && result.probability > 0
-                      ? 0.05
-                      : result.probability,
-                  backgroundColor: theme.colorScheme.surfaceContainerHighest,
-                  color: theme.colorScheme.primary,
-                  strokeWidth: 5,
-                ),
-                Text(
-                  '%$percentage',
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 10,
-                  ),
-                ),
-              ],
-            ),
+          _ProbabilityIndicator(
+            probability: result.probability,
+            percentage: percentage,
+            theme: theme,
           ),
         ],
         if (_hasExpandableContent) ...[
           const SizedBox(width: AppSpacing.xs),
-          Icon(
-            _expanded ? LucideIcons.chevronUp : LucideIcons.chevronDown,
-            size: 16,
-            color: theme.colorScheme.onSurfaceVariant,
+          AnimatedRotation(
+            turns: _expanded ? 0.5 : 0,
+            duration: const Duration(milliseconds: 200),
+            child: Icon(
+              LucideIcons.chevronDown,
+              size: 24,
+              color: _expanded
+                  ? theme.colorScheme.primary
+                  : theme.colorScheme.onSurfaceVariant,
+            ),
           ),
         ],
       ],

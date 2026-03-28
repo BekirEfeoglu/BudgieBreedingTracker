@@ -43,10 +43,7 @@ void main() {
 
   group('AppLogger — error', () {
     test('does not throw with message only', () {
-      expect(
-        () => AppLogger.error('test error message'),
-        returnsNormally,
-      );
+      expect(() => AppLogger.error('test error message'), returnsNormally);
     });
 
     test('does not throw with error object', () {
@@ -68,10 +65,7 @@ void main() {
     });
 
     test('accepts null error', () {
-      expect(
-        () => AppLogger.error('message', null),
-        returnsNormally,
-      );
+      expect(() => AppLogger.error('message', null), returnsNormally);
     });
 
     test('accepts null stack trace', () {
@@ -79,30 +73,6 @@ void main() {
         () => AppLogger.error('message', Exception('e'), null),
         returnsNormally,
       );
-    });
-  });
-
-  group('AppLogger — method signatures', () {
-    test('debug takes a single string parameter', () {
-      // Verify the method exists with the expected signature.
-      const void Function(String) debugFn = AppLogger.debug;
-      expect(debugFn, isNotNull);
-    });
-
-    test('info takes a single string parameter', () {
-      const void Function(String) infoFn = AppLogger.info;
-      expect(infoFn, isNotNull);
-    });
-
-    test('warning takes a single string parameter', () {
-      const void Function(String) warningFn = AppLogger.warning;
-      expect(warningFn, isNotNull);
-    });
-
-    test('error takes message with optional error and stack trace', () {
-      // The error method signature: (String, [dynamic, StackTrace?])
-      const Function errorFn = AppLogger.error;
-      expect(errorFn, isNotNull);
     });
   });
 
@@ -139,10 +109,7 @@ void main() {
     });
 
     test('handles messages with newlines', () {
-      expect(
-        () => AppLogger.info('Line 1\nLine 2\nLine 3'),
-        returnsNormally,
-      );
+      expect(() => AppLogger.info('Line 1\nLine 2\nLine 3'), returnsNormally);
     });
   });
 }

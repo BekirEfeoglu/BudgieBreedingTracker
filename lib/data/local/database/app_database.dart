@@ -67,6 +67,7 @@ import 'package:budgie_breeding_tracker/data/local/database/converters/enum_conv
 
 part 'app_database.g.dart';
 part 'app_database_migrations.dart';
+part 'app_database_indexes.dart';
 
 @DriftDatabase(
   tables: [

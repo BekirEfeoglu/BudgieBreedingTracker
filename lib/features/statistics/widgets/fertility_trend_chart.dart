@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/features/statistics/widgets/chart_card.dart';
+import 'package:budgie_breeding_tracker/features/statistics/widgets/chart_utils.dart';
 
 /// Line chart showing monthly fertility rate percentages (0-100%).
 class FertilityTrendChart extends StatelessWidget {
@@ -81,17 +82,7 @@ class FertilityTrendChart extends StatelessWidget {
                 ),
               ),
             ),
-            gridData: FlGridData(
-              show: true,
-              drawVerticalLine: false,
-              horizontalInterval: 25,
-              getDrawingHorizontalLine: (value) {
-                return FlLine(
-                  color: theme.dividerColor.withValues(alpha: 0.3),
-                  strokeWidth: 1,
-                );
-              },
-            ),
+            gridData: chartGridData(context, interval: 25),
             borderData: FlBorderData(show: false),
             lineBarsData: [
               LineChartBarData(

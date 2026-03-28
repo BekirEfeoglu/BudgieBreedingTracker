@@ -7,6 +7,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/constants/app_icons.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../core/utils/logger.dart';
 import '../../../core/widgets/app_icon.dart';
 import '../providers/auth_providers.dart';
 import '../widgets/auth_form_field.dart';
@@ -41,6 +42,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
       await auth.resetPassword(_emailCtrl.text.trim());
       if (mounted) setState(() => _sent = true);
     } on AuthException catch (e) {
+      AppLogger.warning('[ForgotPassword] Reset failed: ${e.message}');
       if (mounted) {
         ScaffoldMessenger.of(
           context,

@@ -26,13 +26,30 @@ class StatCard extends StatelessWidget {
     this.isHorizontal = false,
   });
 
+  String _buildSemanticsLabel() {
+    final buffer = StringBuffer('$label: $value');
+    if (trendPercent != null && trendUp != null) {
+      if (trendPercent == 0) {
+        buffer.write(', ${'statistics.trend_stable'.tr()}');
+      } else {
+        final direction = trendUp!
+            ? 'statistics.trend_up'.tr()
+            : 'statistics.trend_down'.tr();
+        buffer.write(', $direction ${trendPercent!.abs().toStringAsFixed(0)}%');
+      }
+    }
+    return buffer.toString();
+  }
+
   @override
   Widget build(BuildContext context) {
     final cardColor = color ?? Theme.of(context).colorScheme.primary;
     final theme = Theme.of(context);
 
+    final semanticsLabel = _buildSemanticsLabel();
+
     return Semantics(
-      label: '$label: $value',
+      label: semanticsLabel,
       button: onTap != null,
       child: Card(
         color: cardColor.withValues(alpha: 0.10),

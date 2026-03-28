@@ -60,8 +60,7 @@ void main() {
         buildGrid(onDateSelected: (d) => tappedDate = d),
       );
       await tester.tap(find.text('15').first);
-      expect(tappedDate, isNotNull);
-      expect(tappedDate!.day, 15);
+      expect(tappedDate, DateTime(2024, 3, 15));
     });
 
     testWidgets('renders event dot container for date with events', (
@@ -71,9 +70,17 @@ void main() {
         DateTime(2024, 3, 15): [makeEvent('e1')],
       };
       await pumpWidgetSimple(tester, buildGrid(eventsMap: eventsMap));
-      // Widget tree contains event dot containers (4x4)
-      // CalendarGrid itself renders without error
-      expect(find.byType(Column), findsWidgets);
+      expect(
+        find.byWidgetPredicate(
+          (widget) =>
+              widget is Container &&
+              widget.constraints ==
+                  const BoxConstraints.tightFor(width: 4, height: 4) &&
+              widget.decoration is BoxDecoration &&
+              (widget.decoration! as BoxDecoration).shape == BoxShape.circle,
+        ),
+        findsOneWidget,
+      );
     });
 
     testWidgets('selected date cell has CircleAvatar-like container', (

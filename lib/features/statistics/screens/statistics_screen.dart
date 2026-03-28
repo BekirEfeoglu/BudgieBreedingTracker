@@ -4,6 +4,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_screen_title.dart';
+import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
+import 'package:budgie_breeding_tracker/features/statistics/providers/statistics_breeding_providers.dart';
+import 'package:budgie_breeding_tracker/features/statistics/providers/statistics_health_providers.dart';
+import 'package:budgie_breeding_tracker/features/statistics/providers/statistics_providers.dart';
+import 'package:budgie_breeding_tracker/features/statistics/providers/statistics_summary_providers.dart';
+import 'package:budgie_breeding_tracker/features/statistics/providers/statistics_trend_providers.dart';
 import 'package:budgie_breeding_tracker/features/statistics/screens/breeding_tab.dart';
 import 'package:budgie_breeding_tracker/features/statistics/screens/health_tab.dart';
 import 'package:budgie_breeding_tracker/features/statistics/screens/overview_tab.dart';
@@ -20,17 +26,43 @@ class StatisticsScreen extends ConsumerStatefulWidget {
 class _StatisticsScreenState extends ConsumerState<StatisticsScreen>
     with SingleTickerProviderStateMixin {
   late final TabController _tabController;
+  late final String _userId;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
+    _userId = ref.read(currentUserIdProvider);
   }
 
   @override
   void dispose() {
+    _invalidateStatisticsProviders();
     _tabController.dispose();
     super.dispose();
+  }
+
+  void _invalidateStatisticsProviders() {
+    // Invalidate shared providers
+    ref.invalidate(summaryStatsProvider(_userId));
+    ref.invalidate(trendStatsProvider(_userId));
+    ref.invalidate(quickInsightsProvider(_userId));
+
+    // Invalidate all tab providers (not just the active tab) to ensure
+    // stale keepAlive caches are cleared when leaving the screen.
+    // Overview
+    ref.invalidate(genderDistributionProvider(_userId));
+    ref.invalidate(colorMutationDistributionProvider(_userId));
+    ref.invalidate(ageDistributionProvider(_userId));
+    // Breeding
+    ref.invalidate(monthlyEggProductionProvider(_userId));
+    ref.invalidate(monthlyHatchedChicksProvider(_userId));
+    ref.invalidate(monthlyBreedingOutcomesProvider(_userId));
+    ref.invalidate(monthlyFertilityRateProvider(_userId));
+    ref.invalidate(incubationDurationProvider(_userId));
+    // Health
+    ref.invalidate(chickSurvivalProvider(_userId));
+    ref.invalidate(healthRecordTypeDistributionProvider(_userId));
   }
 
   @override

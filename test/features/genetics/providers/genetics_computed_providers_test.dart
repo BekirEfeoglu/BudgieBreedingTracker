@@ -8,27 +8,29 @@ import 'package:budgie_breeding_tracker/features/genetics/providers/genetics_pro
 
 void main() {
   group('availablePunnettLociProvider — sort ordering', () {
-    test('allelic series locusIds are used instead of individual mutation IDs',
-        () {
-      final container = ProviderContainer();
-      addTearDown(container.dispose);
+    test(
+      'allelic series locusIds are used instead of individual mutation IDs',
+      () {
+        final container = ProviderContainer();
+        addTearDown(container.dispose);
 
-      // 'blue' belongs to 'blue_series' locus; 'clearwing' belongs to 'dilution'
-      container.read(fatherGenotypeProvider.notifier).state = ParentGenotype(
-        gender: BirdGender.male,
-        mutations: {
-          'blue': AlleleState.visual,
-          'clearwing': AlleleState.visual,
-        },
-      );
+        // 'blue' belongs to 'blue_series' locus; 'clearwing' belongs to 'dilution'
+        container.read(fatherGenotypeProvider.notifier).state = ParentGenotype(
+          gender: BirdGender.male,
+          mutations: {
+            'blue': AlleleState.visual,
+            'clearwing': AlleleState.visual,
+          },
+        );
 
-      final loci = container.read(availablePunnettLociProvider);
-      expect(loci, contains('blue_series'));
-      expect(loci, contains('dilution'));
-      // Individual mutation IDs should NOT appear
-      expect(loci, isNot(contains('blue')));
-      expect(loci, isNot(contains('clearwing')));
-    });
+        final loci = container.read(availablePunnettLociProvider);
+        expect(loci, contains('blue_series'));
+        expect(loci, contains('dilution'));
+        // Individual mutation IDs should NOT appear
+        expect(loci, isNot(contains('blue')));
+        expect(loci, isNot(contains('clearwing')));
+      },
+    );
 
     test('independent mutation IDs are used as-is when no locusId exists', () {
       final container = ProviderContainer();
@@ -49,8 +51,7 @@ void main() {
       expect(loci, contains('recessive_pied'));
     });
 
-    test(
-        'allelic loci sort before independent mutations, '
+    test('allelic loci sort before independent mutations, '
         'alphabetical within groups', () {
       final container = ProviderContainer();
       addTearDown(container.dispose);
@@ -62,10 +63,7 @@ void main() {
       // 'spangle' -> independent (sort key 'spangle')
       container.read(fatherGenotypeProvider.notifier).state = ParentGenotype(
         gender: BirdGender.male,
-        mutations: {
-          'spangle': AlleleState.visual,
-          'blue': AlleleState.visual,
-        },
+        mutations: {'spangle': AlleleState.visual, 'blue': AlleleState.visual},
       );
       container.read(motherGenotypeProvider.notifier).state = ParentGenotype(
         gender: BirdGender.female,
@@ -122,10 +120,7 @@ void main() {
 
       container.read(fatherGenotypeProvider.notifier).state = ParentGenotype(
         gender: BirdGender.male,
-        mutations: {
-          'blue': AlleleState.visual,
-          'opaline': AlleleState.visual,
-        },
+        mutations: {'blue': AlleleState.visual, 'opaline': AlleleState.visual},
       );
 
       // Manually select 'opaline'
@@ -172,73 +167,76 @@ void main() {
       expect(container.read(effectivePunnettLocusProvider), isNull);
     });
 
-    test('tracks parent genotype changes and recovers from stale selection',
-        () {
-      final container = ProviderContainer();
-      addTearDown(container.dispose);
+    test(
+      'tracks parent genotype changes and recovers from stale selection',
+      () {
+        final container = ProviderContainer();
+        addTearDown(container.dispose);
 
-      // Start with two mutations
-      container.read(fatherGenotypeProvider.notifier).state = ParentGenotype(
-        gender: BirdGender.male,
-        mutations: {
-          'blue': AlleleState.visual,
-          'opaline': AlleleState.visual,
-        },
-      );
-      container.read(selectedPunnettLocusProvider.notifier).state = 'opaline';
-      expect(container.read(effectivePunnettLocusProvider), 'opaline');
+        // Start with two mutations
+        container.read(fatherGenotypeProvider.notifier).state = ParentGenotype(
+          gender: BirdGender.male,
+          mutations: {
+            'blue': AlleleState.visual,
+            'opaline': AlleleState.visual,
+          },
+        );
+        container.read(selectedPunnettLocusProvider.notifier).state = 'opaline';
+        expect(container.read(effectivePunnettLocusProvider), 'opaline');
 
-      // Remove opaline — selection becomes stale
-      container.read(fatherGenotypeProvider.notifier).state = ParentGenotype(
-        gender: BirdGender.male,
-        mutations: {'blue': AlleleState.visual},
-      );
+        // Remove opaline — selection becomes stale
+        container.read(fatherGenotypeProvider.notifier).state = ParentGenotype(
+          gender: BirdGender.male,
+          mutations: {'blue': AlleleState.visual},
+        );
 
-      // Should auto-fallback to first available
-      expect(container.read(effectivePunnettLocusProvider), 'blue_series');
-    });
+        // Should auto-fallback to first available
+        expect(container.read(effectivePunnettLocusProvider), 'blue_series');
+      },
+    );
   });
 
   group('epistasisInteractionsProvider — deduplication', () {
-    test('duplicate interaction names keep the one with highest probability',
-        () {
-      // Create two offspring results that both trigger 'Albino' interaction
-      // but with different probabilities.
-      final container = ProviderContainer(
-        overrides: [
-          offspringResultsProvider.overrideWithValue(const [
-            OffspringResult(
-              phenotype: 'Albino',
-              probability: 0.25,
-              visualMutations: ['ino', 'blue'],
-            ),
-            OffspringResult(
-              phenotype: 'Albino (carrier)',
-              probability: 0.50,
-              visualMutations: ['ino', 'blue'],
-            ),
-          ]),
-        ],
-      );
-      addTearDown(container.dispose);
+    test(
+      'duplicate interaction names keep the one with highest probability',
+      () {
+        // Create two offspring results that both trigger 'Albino' interaction
+        // but with different probabilities.
+        final container = ProviderContainer(
+          overrides: [
+            offspringResultsProvider.overrideWithValue(const [
+              OffspringResult(
+                phenotype: 'Albino',
+                probability: 0.25,
+                visualMutations: ['ino', 'blue'],
+              ),
+              OffspringResult(
+                phenotype: 'Albino (carrier)',
+                probability: 0.50,
+                visualMutations: ['ino', 'blue'],
+              ),
+            ]),
+          ],
+        );
+        addTearDown(container.dispose);
 
-      final interactions = container.read(epistasisInteractionsProvider);
+        final interactions = container.read(epistasisInteractionsProvider);
 
-      // 'Albino' should appear only once (deduplicated by resultName)
-      final albinoInteractions =
-          interactions.where((i) => i.resultName == 'Albino').toList();
-      expect(albinoInteractions, hasLength(1));
+        // 'Albino' should appear only once (deduplicated by resultName)
+        final albinoInteractions = interactions
+            .where((i) => i.resultName == 'Albino')
+            .toList();
+        expect(albinoInteractions, hasLength(1));
 
-      // Since both results trigger 'Albino', the one with prob 0.50 wins.
-      // The list is also sorted by probability descending, so Albino is first.
-      expect(interactions.first.resultName, 'Albino');
-    });
+        // Since both results trigger 'Albino', the one with prob 0.50 wins.
+        // The list is also sorted by probability descending, so Albino is first.
+        expect(interactions.first.resultName, 'Albino');
+      },
+    );
 
     test('empty results produce empty interactions list', () {
       final container = ProviderContainer(
-        overrides: [
-          offspringResultsProvider.overrideWithValue(const []),
-        ],
+        overrides: [offspringResultsProvider.overrideWithValue(const [])],
       );
       addTearDown(container.dispose);
 
@@ -247,9 +245,7 @@ void main() {
 
     test('null results produce empty interactions list', () {
       final container = ProviderContainer(
-        overrides: [
-          offspringResultsProvider.overrideWithValue(null),
-        ],
+        overrides: [offspringResultsProvider.overrideWithValue(null)],
       );
       addTearDown(container.dispose);
 
@@ -302,18 +298,21 @@ void main() {
       expect(interactions.length, greaterThanOrEqualTo(2));
 
       // Albino interaction appears in both results; highest prob is 0.40
-      final albinoList =
-          interactions.where((i) => i.resultName == 'Albino').toList();
+      final albinoList = interactions
+          .where((i) => i.resultName == 'Albino')
+          .toList();
       expect(albinoList, hasLength(1));
 
       // Verify descending probability order: Albino (0.40) before Lacewing (0.10)
-      final idxAlbino =
-          interactions.indexWhere((i) => i.resultName == 'Albino');
-      final idxLacewing =
-          interactions.indexWhere((i) => i.resultName == 'Lacewing');
-      if (idxAlbino >= 0 && idxLacewing >= 0) {
-        expect(idxAlbino, lessThan(idxLacewing));
-      }
+      final idxAlbino = interactions.indexWhere(
+        (i) => i.resultName == 'Albino',
+      );
+      final idxLacewing = interactions.indexWhere(
+        (i) => i.resultName == 'Lacewing',
+      );
+      expect(idxAlbino, greaterThanOrEqualTo(0));
+      expect(idxLacewing, greaterThanOrEqualTo(0));
+      expect(idxAlbino, lessThan(idxLacewing));
     });
 
     test('interactions from live parent genotypes with ino + blue produce '
@@ -324,17 +323,11 @@ void main() {
 
       container.read(fatherGenotypeProvider.notifier).state = ParentGenotype(
         gender: BirdGender.male,
-        mutations: {
-          'ino': AlleleState.visual,
-          'blue': AlleleState.visual,
-        },
+        mutations: {'ino': AlleleState.visual, 'blue': AlleleState.visual},
       );
       container.read(motherGenotypeProvider.notifier).state = ParentGenotype(
         gender: BirdGender.female,
-        mutations: {
-          'ino': AlleleState.visual,
-          'blue': AlleleState.visual,
-        },
+        mutations: {'ino': AlleleState.visual, 'blue': AlleleState.visual},
       );
 
       final interactions = container.read(epistasisInteractionsProvider);

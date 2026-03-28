@@ -4,6 +4,7 @@ import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/breeding_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/chick_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/egg_enums.dart';
+import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/data/models/health_record_model.dart';
 
 final _dateFormat = DateFormat('dd.MM.yyyy');
@@ -44,6 +45,7 @@ BirdGender parseGender(String? value) {
   if (lower == 'disi' || lower == 'female' || lower == 'weiblich') {
     return BirdGender.female;
   }
+  AppLogger.warning('[Import] Unknown gender value: "$value"');
   return BirdGender.unknown;
 }
 
@@ -115,6 +117,7 @@ ChickHealthStatus parseHealthStatus(String? value) {
   if (lower == 'vefat' || lower == 'deceased' || lower == 'verstorben') {
     return ChickHealthStatus.deceased;
   }
+  AppLogger.warning('[Import] Unknown health status value: "$value"');
   return ChickHealthStatus.unknown;
 }
 
@@ -142,5 +145,6 @@ HealthRecordType parseHealthRecordType(String? value) {
   if (lower == 'vefat' || lower == 'death' || lower == 'tod') {
     return HealthRecordType.death;
   }
+  AppLogger.warning('[Import] Unknown health record type: "$value"');
   return HealthRecordType.unknown;
 }

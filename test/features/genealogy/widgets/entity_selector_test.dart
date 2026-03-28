@@ -136,9 +136,7 @@ void main() {
       await tester.tap(find.text('Seçilecek Kuş'));
       await tester.pump();
 
-      expect(selected, isNotNull);
-      expect(selected!.id, equals('b1'));
-      expect(selected!.isChick, isFalse);
+      expect(selected, (id: 'b1', isChick: false));
     });
 
     testWidgets('calls onChanged with chick selection when chick tapped', (
@@ -160,9 +158,7 @@ void main() {
       await tester.tap(find.text('Seçilecek Yavru'));
       await tester.pump();
 
-      expect(selected, isNotNull);
-      expect(selected!.id, equals('c1'));
-      expect(selected!.isChick, isTrue);
+      expect(selected, (id: 'c1', isChick: true));
     });
 
     testWidgets('shows ring number as subtitle when bird has ring', (

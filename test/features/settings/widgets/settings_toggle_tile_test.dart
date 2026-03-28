@@ -55,7 +55,7 @@ void main() {
       await tester.pumpWidget(buildSubject(value: false));
       await tester.tap(find.byType(SwitchListTile));
       await tester.pump();
-      expect(changedValue, isNotNull);
+      expect(changedValue, isTrue);
     });
 
     testWidgets('icon verildiginde render edilir', (tester) async {

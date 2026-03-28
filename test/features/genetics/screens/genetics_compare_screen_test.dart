@@ -69,7 +69,6 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(GeneticsCompareScreen), findsOneWidget);
-      expect(tester.takeException(), isNull);
     });
 
     testWidgets('shows AppBar with compare title when historyIds provided', (

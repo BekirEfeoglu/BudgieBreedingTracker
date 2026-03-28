@@ -27,6 +27,7 @@ import '../widgets/profile_menu_tile.dart';
 import '../widgets/profile_skeleton.dart';
 import '../widgets/security_section.dart';
 import '../widgets/subscription_card.dart';
+import '../../notifications/providers/action_feedback_providers.dart';
 
 /// Comprehensive user profile screen with collapsing header.
 class ProfileScreen extends ConsumerWidget {
@@ -43,9 +44,7 @@ class ProfileScreen extends ConsumerWidget {
     ref.listen<AvatarUploadState>(avatarUploadStateProvider, (_, state) {
       if (state.isSuccess) {
         ref.read(avatarUploadStateProvider.notifier).reset();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('profile.avatar_upload_success'.tr())),
-        );
+        ActionFeedbackService.show('profile.avatar_upload_success'.tr());
       }
       if (state.error != null) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -76,12 +75,7 @@ class ProfileScreen extends ConsumerWidget {
               ref.invalidate(profileStatsProvider(userId));
               AppHaptics.mediumImpact();
               if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('profile.refresh_complete'.tr()),
-                    duration: const Duration(seconds: 1),
-                  ),
-                );
+                ActionFeedbackService.show('profile.refresh_complete'.tr());
               }
             },
             child: CustomScrollView(

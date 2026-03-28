@@ -15,6 +15,7 @@ import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
 import 'package:budgie_breeding_tracker/data/models/incubation_model.dart';
 import 'package:budgie_breeding_tracker/domain/services/incubation/incubation_calculator.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_detail_providers.dart';
+import 'package:budgie_breeding_tracker/features/notifications/providers/action_feedback_providers.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_form_providers.dart';
 import 'package:budgie_breeding_tracker/features/breeding/widgets/breeding_pair_info_section.dart';
 import 'package:budgie_breeding_tracker/features/breeding/widgets/breeding_eggs_section.dart';
@@ -68,9 +69,7 @@ class _DetailContent extends ConsumerWidget {
     ref.listen<BreedingFormState>(breedingFormStateProvider, (_, state) {
       if (state.isSuccess) {
         ref.read(breedingFormStateProvider.notifier).reset();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('common.saved_successfully'.tr())),
-        );
+        ActionFeedbackService.show('common.saved_successfully'.tr());
       }
       if (state.error != null) {
         ScaffoldMessenger.of(
@@ -106,38 +105,51 @@ class _DetailContent extends ConsumerWidget {
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.only(bottom: AppSpacing.xxxl * 2),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            BreedingPairInfoSection(pair: pair),
-            incubationsAsync.when(
-              loading: () => const Padding(
-                padding: AppSpacing.screenPadding,
-                child: LinearProgressIndicator(),
-              ),
-              error: (_, __) => const SizedBox.shrink(),
-              data: (incubations) {
-                final incubation = selectPrimaryIncubation(incubations);
-                if (incubation == null) return const SizedBox.shrink();
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _IncubationSection(incubation: incubation),
-                    BreedingEggsSection(
-                      incubationId: incubation.id,
-                      pairId: pair.id,
-                    ),
-                    if (incubation.startDate != null)
-                      BreedingMilestoneSection(
-                        startDate: incubation.startDate!,
-                      ),
-                  ],
-                );
-              },
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(
+              maxWidth: AppSpacing.maxContentWidth,
             ),
-            if (pair.notes != null && pair.notes!.isNotEmpty)
-              BreedingNotesSection(notes: pair.notes!),
-          ],
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                BreedingPairInfoSection(pair: pair),
+                const Divider(height: 1, indent: AppSpacing.lg, endIndent: AppSpacing.lg),
+                incubationsAsync.when(
+                  loading: () => const Padding(
+                    padding: AppSpacing.screenPadding,
+                    child: LinearProgressIndicator(),
+                  ),
+                  error: (_, __) => const SizedBox.shrink(),
+                  data: (incubations) {
+                    final incubation = selectPrimaryIncubation(incubations);
+                    if (incubation == null) return const SizedBox.shrink();
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _IncubationSection(incubation: incubation),
+                        const Divider(height: 1, indent: AppSpacing.lg, endIndent: AppSpacing.lg),
+                        BreedingEggsSection(
+                          incubationId: incubation.id,
+                          pairId: pair.id,
+                        ),
+                        if (incubation.startDate != null) ...[
+                          const Divider(height: 1, indent: AppSpacing.lg, endIndent: AppSpacing.lg),
+                          BreedingMilestoneSection(
+                            startDate: incubation.startDate!,
+                          ),
+                        ],
+                      ],
+                    );
+                  },
+                ),
+                if (pair.notes != null && pair.notes!.isNotEmpty) ...[
+                  const Divider(height: 1, indent: AppSpacing.lg, endIndent: AppSpacing.lg),
+                  BreedingNotesSection(notes: pair.notes!),
+                ],
+              ],
+            ),
+          ),
         ),
       ),
     );

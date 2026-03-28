@@ -8,7 +8,9 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/theme/app_spacing.dart';
+import '../../../core/utils/logger.dart';
 import '../../../router/route_names.dart';
+import '../../notifications/providers/action_feedback_providers.dart';
 import '../providers/auth_providers.dart';
 
 /// Shows a "check your email" screen after registration.
@@ -61,12 +63,11 @@ class _EmailVerificationScreenState
       final auth = ref.read(authActionsProvider);
       await auth.resendVerification(email);
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('auth.resend_success'.tr())));
+        ActionFeedbackService.show('auth.resend_success'.tr());
         _startCooldown();
       }
     } on AuthException catch (e) {
+      AppLogger.warning('[EmailVerification] Resend failed: ${e.message}');
       if (mounted) {
         ScaffoldMessenger.of(
           context,

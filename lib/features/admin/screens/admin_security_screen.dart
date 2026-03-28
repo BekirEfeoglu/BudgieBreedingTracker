@@ -4,6 +4,7 @@ import 'package:easy_localization/easy_localization.dart';
 
 import '../../../core/widgets/error_state.dart';
 import '../../../core/widgets/loading_state.dart';
+import '../../notifications/providers/action_feedback_providers.dart';
 import '../providers/admin_actions_provider.dart';
 import '../providers/admin_providers.dart';
 import '../widgets/admin_security_widgets.dart';
@@ -35,9 +36,7 @@ class _AdminSecurityScreenState extends ConsumerState<AdminSecurityScreen> {
       if (state.isSuccess) {
         ref.read(adminActionsProvider.notifier).reset();
         ref.invalidate(filteredSecurityEventsProvider);
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('admin.event_dismissed'.tr())));
+        ActionFeedbackService.show('admin.event_dismissed'.tr());
       }
       if (state.error != null) {
         ScaffoldMessenger.of(

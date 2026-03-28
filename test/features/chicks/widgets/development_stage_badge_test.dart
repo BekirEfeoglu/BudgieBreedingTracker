@@ -34,9 +34,7 @@ void main() {
 
     testWidgets('renders all stage values without crashing', (tester) async {
       for (final stage in DevelopmentStage.values) {
-        await tester.pumpWidget(
-          _wrap(DevelopmentStageBadge(stage: stage)),
-        );
+        await tester.pumpWidget(_wrap(DevelopmentStageBadge(stage: stage)));
         await tester.pump();
 
         expect(find.byType(DevelopmentStageBadge), findsOneWidget);
@@ -142,14 +140,26 @@ void main() {
 
     // Icon tests
     testWidgets('each stage has a non-null icon', (tester) async {
+      final expectedIconAssets = {
+        DevelopmentStage.newborn: AppIcons.egg,
+        DevelopmentStage.nestling: AppIcons.nest,
+        DevelopmentStage.fledgling: AppIcons.chick,
+        DevelopmentStage.juvenile: AppIcons.bird,
+      };
+
       for (final stage in DevelopmentStage.values) {
-        await tester.pumpWidget(
-          _wrap(DevelopmentStageBadge(stage: stage)),
-        );
+        await tester.pumpWidget(_wrap(DevelopmentStageBadge(stage: stage)));
         await tester.pump();
 
         final badge = tester.widget<StatusBadge>(find.byType(StatusBadge));
-        expect(badge.icon, isNotNull);
+        if (stage == DevelopmentStage.unknown) {
+          expect(badge.icon, isA<Icon>());
+          continue;
+        }
+
+        expect(badge.icon, isA<AppIcon>());
+        final appIcon = badge.icon! as AppIcon;
+        expect(appIcon.asset, expectedIconAssets[stage]);
       }
     });
 
@@ -314,5 +324,4 @@ void main() {
       expect(appIcon.color, Colors.red);
     });
   });
-
 }

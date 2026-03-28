@@ -35,7 +35,7 @@ void main() {
     );
   }
 
-  /// Stubs getAll to return a list under the free tier limit.
+  /// Stubs repository methods to return counts under the free tier limit.
   void stubUnderLimit({int count = 1}) {
     final birds = List.generate(
       count,
@@ -47,6 +47,7 @@ void main() {
       ),
     );
     when(() => repo.getAll(any())).thenAnswer((_) async => birds);
+    when(() => repo.getCount(any())).thenAnswer((_) async => count);
   }
 
   group('BirdFormState', () {
@@ -107,17 +108,7 @@ void main() {
     });
 
     test('createBird blocks duplicate ring number', () async {
-      when(() => repo.getAll(any())).thenAnswer(
-        (_) async => const [
-          Bird(
-            id: 'existing',
-            name: 'Existing',
-            gender: BirdGender.male,
-            userId: 'user-1',
-            ringNumber: 'TR-100',
-          ),
-        ],
-      );
+      when(() => repo.getCount(any())).thenAnswer((_) async => 1);
       when(
         () => repo.hasRingNumber(
           'user-1',

@@ -4,6 +4,8 @@ import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/mendelian_calculator.dart';
 import 'package:budgie_breeding_tracker/features/genetics/widgets/offspring_prediction.dart';
 
+const double _kListCacheExtent = 300;
+
 /// Grouped offspring results list with probability section headers.
 /// When multiple results share the same probability, they are grouped
 /// under a header showing the percentage and count.
@@ -76,6 +78,7 @@ class _GroupedResultsListState extends State<GroupedResultsList> {
           ListView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
+            cacheExtent: _kListCacheExtent,
             itemCount: entry.value.length,
             itemBuilder: (context, index) => Padding(
               padding: const EdgeInsets.only(bottom: AppSpacing.xs),
@@ -178,6 +181,7 @@ class _FlatResultsList extends StatelessWidget {
     return ListView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
+      cacheExtent: 300,
       itemCount: results.length,
       itemBuilder: (context, index) => Padding(
         padding: const EdgeInsets.only(bottom: AppSpacing.xs),

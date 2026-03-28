@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/enums/chick_enums.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
+import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/core/widgets/status_badge.dart';
 import 'package:budgie_breeding_tracker/features/chicks/widgets/chick_health_badge.dart';
 
@@ -116,12 +118,23 @@ void main() {
     });
 
     testWidgets('each status has a non-null icon', (tester) async {
+      final expectedIconAssets = {
+        ChickHealthStatus.healthy: AppIcons.health,
+        ChickHealthStatus.sick: AppIcons.care,
+      };
+
       for (final status in ChickHealthStatus.values) {
         await tester.pumpWidget(_wrap(ChickHealthBadge(status: status)));
         await tester.pump();
 
         final badge = tester.widget<StatusBadge>(find.byType(StatusBadge));
-        expect(badge.icon, isNotNull);
+        if (expectedIconAssets.containsKey(status)) {
+          expect(badge.icon, isA<AppIcon>());
+          final appIcon = badge.icon! as AppIcon;
+          expect(appIcon.asset, expectedIconAssets[status]);
+        } else {
+          expect(badge.icon, isA<Icon>());
+        }
       }
     });
   });

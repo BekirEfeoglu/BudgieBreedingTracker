@@ -58,9 +58,7 @@ void main() {
       expect(find.byType(BreedingCardHeader), findsOneWidget);
     });
 
-    testWidgets('shows fallback names when birds not selected', (
-      tester,
-    ) async {
+    testWidgets('shows fallback names when birds not selected', (tester) async {
       final pair = _buildPair(maleId: null, femaleId: null);
 
       await _pump(tester, BreedingCardHeader(pair: pair));
@@ -142,11 +140,7 @@ void main() {
     });
 
     testWidgets('shows cage number when provided', (tester) async {
-      final pair = _buildPair(
-        maleId: null,
-        femaleId: null,
-        cageNumber: 'C-5',
-      );
+      final pair = _buildPair(maleId: null, femaleId: null, cageNumber: 'C-5');
 
       await _pump(tester, BreedingCardHeader(pair: pair));
 
@@ -158,10 +152,7 @@ void main() {
 
       await _pump(tester, BreedingCardHeader(pair: pair));
 
-      expect(
-        find.textContaining('breeding.cage_label'),
-        findsNothing,
-      );
+      expect(find.textContaining('breeding.cage_label'), findsNothing);
     });
 
     testWidgets('shows StatusBadge', (tester) async {
@@ -172,9 +163,7 @@ void main() {
       expect(find.byType(StatusBadge), findsOneWidget);
     });
 
-    testWidgets('active status shows correct label and color', (
-      tester,
-    ) async {
+    testWidgets('active status shows correct label and color', (tester) async {
       final pair = _buildPair(
         maleId: null,
         femaleId: null,
@@ -188,9 +177,7 @@ void main() {
       expect(badge.color, AppColors.primaryLight);
     });
 
-    testWidgets('ongoing status shows correct label and color', (
-      tester,
-    ) async {
+    testWidgets('ongoing status shows correct label and color', (tester) async {
       final pair = _buildPair(
         maleId: null,
         femaleId: null,
@@ -218,7 +205,8 @@ void main() {
       final badge = tester.widget<StatusBadge>(find.byType(StatusBadge));
       expect(badge.label, 'breeding.completed'.tr());
       expect(badge.color, AppColors.success);
-      expect(badge.icon, isNotNull);
+      final icon = badge.icon! as AppIcon;
+      expect(icon.asset, AppIcons.breedingComplete);
     });
 
     testWidgets('cancelled status shows correct label and color', (
@@ -237,9 +225,7 @@ void main() {
       expect(badge.color, AppColors.neutral400);
     });
 
-    testWidgets('unknown status shows correct label and color', (
-      tester,
-    ) async {
+    testWidgets('unknown status shows correct label and color', (tester) async {
       final pair = _buildPair(
         maleId: null,
         femaleId: null,

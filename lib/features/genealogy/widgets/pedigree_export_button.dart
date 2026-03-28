@@ -5,6 +5,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 // DateFormat provided via easy_localization (re-exports intl)
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:share_plus/share_plus.dart';
@@ -12,6 +13,7 @@ import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/domain/services/export/pdf_export_service.dart';
+import 'package:budgie_breeding_tracker/features/notifications/providers/action_feedback_providers.dart';
 
 /// Export button with menu: PDF and image export options.
 class PedigreeExportButton extends StatefulWidget {
@@ -98,13 +100,11 @@ class _PedigreeExportButtonState extends State<PedigreeExportButton> {
       final timestamp = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
       final safeName = _safeFileSegment(widget.rootBird.name);
       final fileName = 'pedigree_${safeName}_$timestamp.pdf';
-      final file = File('${dir.path}/$fileName');
+      final file = File(p.join(dir.path, fileName));
       await file.writeAsBytes(bytes);
       await SharePlus.instance.share(ShareParams(files: [XFile(file.path)]));
 
-      messenger.showSnackBar(
-        SnackBar(content: Text('genealogy.export_success'.tr())),
-      );
+      ActionFeedbackService.show('genealogy.export_success'.tr());
     } catch (e, st) {
       AppLogger.error('[PedigreeExport]', e, st);
       Sentry.captureException(e, stackTrace: st);
@@ -130,13 +130,11 @@ class _PedigreeExportButtonState extends State<PedigreeExportButton> {
       final timestamp = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
       final safeName = _safeFileSegment(widget.rootBird.name);
       final fileName = 'pedigree_${safeName}_$timestamp.png';
-      final file = File('${dir.path}/$fileName');
+      final file = File(p.join(dir.path, fileName));
       await file.writeAsBytes(byteData.buffer.asUint8List());
       await SharePlus.instance.share(ShareParams(files: [XFile(file.path)]));
 
-      messenger.showSnackBar(
-        SnackBar(content: Text('genealogy.image_export_success'.tr())),
-      );
+      ActionFeedbackService.show('genealogy.image_export_success'.tr());
     } catch (e, st) {
       AppLogger.error('[PedigreeImageExport]', e, st);
       Sentry.captureException(e, stackTrace: st);

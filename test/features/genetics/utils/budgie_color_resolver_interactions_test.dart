@@ -2,63 +2,85 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:budgie_breeding_tracker/features/genetics/utils/budgie_color_resolver.dart';
 
-BudgieColorAppearance _resolve(String phenotype, {
+BudgieColorAppearance _resolve(
+  String phenotype, {
   List<String> mutations = const [],
   List<String> carried = const [],
 }) => BudgieColorResolver.resolve(
-  visualMutations: mutations, phenotype: phenotype, carriedMutations: carried,
+  visualMutations: mutations,
+  phenotype: phenotype,
+  carriedMutations: carried,
 );
 
 void main() {
   group('cheek patch interactions', () {
     test('greywing keeps base cheek per series', () {
-      final blue = _resolve('Greywing Skyblue', mutations: ['greywing', 'blue']);
+      final blue = _resolve(
+        'Greywing Skyblue',
+        mutations: ['greywing', 'blue'],
+      );
       expect(blue.cheekPatchColor, BudgiePhenotypePalette.cheekViolet);
       final green = _resolve('Greywing Light Green', mutations: ['greywing']);
       expect(green.cheekPatchColor, BudgiePhenotypePalette.cheekBlue);
     });
 
     test('greywing + grey overrides cheek to grey', () {
-      final r = _resolve('Greywing Grey Skyblue',
-          mutations: ['greywing', 'grey', 'blue']);
+      final r = _resolve(
+        'Greywing Grey Skyblue',
+        mutations: ['greywing', 'grey', 'blue'],
+      );
       expect(r.cheekPatchColor, BudgiePhenotypePalette.grey);
     });
 
     test('dilute cheek is only slightly diluted at 0.20 mix', () {
       final r = _resolve('Dilute Light Green', mutations: ['dilute']);
       final expected = Color.lerp(
-        BudgiePhenotypePalette.cheekBlue, BudgiePhenotypePalette.maskYellow, 0.20,
+        BudgiePhenotypePalette.cheekBlue,
+        BudgiePhenotypePalette.maskYellow,
+        0.20,
       );
       expect(r.cheekPatchColor, expected);
     });
 
     test('fullbody greywing cheek per series', () {
-      final blue = _resolve('Fullbody Greywing Skyblue',
-          mutations: ['clearwing', 'greywing', 'blue']);
+      final blue = _resolve(
+        'Fullbody Greywing Skyblue',
+        mutations: ['clearwing', 'greywing', 'blue'],
+      );
       expect(blue.cheekPatchColor, BudgiePhenotypePalette.cheekViolet);
-      final green = _resolve('Fullbody Greywing Light Green',
-          mutations: ['clearwing', 'greywing']);
+      final green = _resolve(
+        'Fullbody Greywing Light Green',
+        mutations: ['clearwing', 'greywing'],
+      );
       expect(green.cheekPatchColor, BudgiePhenotypePalette.cheekBlue);
     });
 
     test('anthracite cheek is anthracite-tinted', () {
-      final r = _resolve('Anthracite Skyblue', mutations: ['anthracite', 'blue']);
+      final r = _resolve(
+        'Anthracite Skyblue',
+        mutations: ['anthracite', 'blue'],
+      );
       final expected = Color.lerp(
         BudgiePhenotypePalette.anthraciteSingle,
-        BudgiePhenotypePalette.anthraciteSingle, 0.18,
+        BudgiePhenotypePalette.anthraciteSingle,
+        0.18,
       );
       expect(r.cheekPatchColor, expected);
     });
 
     test('df anthracite cheek equals body color', () {
-      final r = _resolve('Double Factor Anthracite Skyblue',
-          mutations: ['anthracite', 'blue']);
+      final r = _resolve(
+        'Double Factor Anthracite Skyblue',
+        mutations: ['anthracite', 'blue'],
+      );
       expect(r.cheekPatchColor, r.bodyColor);
     });
 
     test('dominant clearbody cheek is smokeGrey', () {
-      final r = _resolve('Dominant Clearbody Light Green',
-          mutations: ['dominant_clearbody']);
+      final r = _resolve(
+        'Dominant Clearbody Light Green',
+        mutations: ['dominant_clearbody'],
+      );
       expect(r.cheekPatchColor, BudgiePhenotypePalette.cheekSmokeGrey);
     });
 
@@ -89,36 +111,46 @@ void main() {
     });
 
     test('english fallow has bright red eye, no ring', () {
-      final r = _resolve('English Fallow Light Green',
-          mutations: ['fallow_english']);
+      final r = _resolve(
+        'English Fallow Light Green',
+        mutations: ['fallow_english'],
+      );
       expect(r.eyeColor, const Color(0xFFCC2838));
       expect(r.showEyeRing, isFalse);
     });
 
     test('german fallow has ruby red eye, ring visible', () {
-      final r = _resolve('German Fallow Light Green',
-          mutations: ['fallow_german']);
+      final r = _resolve(
+        'German Fallow Light Green',
+        mutations: ['fallow_german'],
+      );
       expect(r.eyeColor, const Color(0xFFA82030));
       expect(r.showEyeRing, isTrue);
     });
 
     test('recessive pied has dark plum eye, no ring', () {
-      final r = _resolve('Recessive Pied Light Green',
-          mutations: ['recessive_pied']);
+      final r = _resolve(
+        'Recessive Pied Light Green',
+        mutations: ['recessive_pied'],
+      );
       expect(r.eyeColor, const Color(0xFF1F0F18));
       expect(r.showEyeRing, isFalse);
     });
 
     test('dark-eyed clear has dark eye (recessive pied priority), no ring', () {
-      final r = _resolve('Dark-Eyed Clear Light Green',
-          mutations: ['recessive_pied', 'clearflight_pied']);
+      final r = _resolve(
+        'Dark-Eyed Clear Light Green',
+        mutations: ['recessive_pied', 'clearflight_pied'],
+      );
       expect(r.eyeColor, const Color(0xFF1F0F18));
       expect(r.showEyeRing, isFalse);
     });
 
     test('df spangle has default black eye, ring visible', () {
-      final r = _resolve('Double Factor Spangle Skyblue',
-          mutations: ['spangle']);
+      final r = _resolve(
+        'Double Factor Spangle Skyblue',
+        mutations: ['spangle'],
+      );
       expect(r.eyeColor, const Color(0xFF1A1A1A));
       expect(r.showEyeRing, isTrue);
     });
@@ -126,8 +158,10 @@ void main() {
     test('creamino and lacewing have red eye (ino variants)', () {
       final creamino = _resolve('Creamino', mutations: ['ino', 'blue']);
       expect(creamino.eyeColor, const Color(0xFFCC2233));
-      final lacewing = _resolve('Lacewing Light Green',
-          mutations: ['ino', 'cinnamon']);
+      final lacewing = _resolve(
+        'Lacewing Light Green',
+        mutations: ['ino', 'cinnamon'],
+      );
       expect(lacewing.eyeColor, const Color(0xFFCC2233));
     });
   });
@@ -181,8 +215,10 @@ void main() {
     });
 
     test('opaline + cinnamon has 4 cinnamon spots', () {
-      final r = _resolve('Opaline Cinnamon Light Green',
-          mutations: ['opaline', 'cinnamon']);
+      final r = _resolve(
+        'Opaline Cinnamon Light Green',
+        mutations: ['opaline', 'cinnamon'],
+      );
       expect(r.throatSpotCount, 4);
       expect(r.throatSpotColor, BudgiePhenotypePalette.cinnamon);
     });
@@ -225,16 +261,28 @@ void main() {
     });
 
     test('opaline + cinnamon back is mix of body and cinnamon', () {
-      final r = _resolve('Opaline Cinnamon Light Green',
-          mutations: ['opaline', 'cinnamon']);
-      final expected = Color.lerp(r.bodyColor, BudgiePhenotypePalette.cinnamon, 0.15);
+      final r = _resolve(
+        'Opaline Cinnamon Light Green',
+        mutations: ['opaline', 'cinnamon'],
+      );
+      final expected = Color.lerp(
+        r.bodyColor,
+        BudgiePhenotypePalette.cinnamon,
+        0.15,
+      );
       expect(r.backColor, expected);
     });
 
     test('texas clearbody back is lightened body', () {
-      final r = _resolve('Texas Clearbody Light Green',
-          mutations: ['texas_clearbody']);
-      expect(r.backColor, isNotNull);
+      final r = _resolve(
+        'Texas Clearbody Light Green',
+        mutations: ['texas_clearbody'],
+      );
+      expect(r.backColor, isNot(r.bodyColor));
+      expect(
+        r.backColor!.computeLuminance(),
+        greaterThan(r.bodyColor.computeLuminance()),
+      );
     });
   });
 
@@ -249,8 +297,10 @@ void main() {
     });
 
     test('fallow beak is warm orange', () {
-      final r = _resolve('English Fallow Light Green',
-          mutations: ['fallow_english']);
+      final r = _resolve(
+        'English Fallow Light Green',
+        mutations: ['fallow_english'],
+      );
       expect(r.beakColor, const Color(0xFFE89830));
     });
   });

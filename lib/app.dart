@@ -9,8 +9,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'bootstrap.dart';
 import 'core/enums/bird_enums.dart';
+import 'core/security/inactivity_guard.dart';
 import 'core/theme/app_theme.dart';
 import 'core/utils/logger.dart';
+import 'domain/services/encryption/encryption_providers.dart';
 import 'domain/services/sync/sync_providers.dart';
 import 'domain/services/genetics/parent_genotype.dart';
 import 'features/auth/providers/auth_providers.dart';
@@ -29,6 +31,7 @@ class BudgieBreedingApp extends ConsumerStatefulWidget {
 
 class _BudgieBreedingAppState extends ConsumerState<BudgieBreedingApp> {
   late final AppLifecycleListener _lifecycleListener;
+  late final InactivityGuard _inactivityGuard;
   bool _didApplyDebugStartupRoute = false;
   bool _didApplyDebugGeneticsFixture = false;
 
@@ -48,18 +51,47 @@ class _BudgieBreedingAppState extends ConsumerState<BudgieBreedingApp> {
     // Refresh RevenueCat premium status when app comes to foreground.
     // Catches subscription renewals, expirations, and cancellations that
     // occurred while the app was backgrounded.
-    _lifecycleListener = AppLifecycleListener(onResume: _onAppResumed);
+    _lifecycleListener = AppLifecycleListener(
+      onResume: _onAppResumed,
+      onHide: _onAppHidden,
+    );
+
+    _inactivityGuard = InactivityGuard(
+      timeout: const Duration(minutes: 30),
+      onTimeout: _onInactivityTimeout,
+    );
   }
 
   @override
   void dispose() {
     _lifecycleListener.dispose();
+    _inactivityGuard.dispose();
     super.dispose();
+  }
+
+  /// Clears the cached encryption key from memory when the app is
+  /// backgrounded to reduce the exposure window if the device is compromised.
+  void _onAppHidden() {
+    _inactivityGuard.stop();
+    ref.read(encryptionServiceProvider).dispose();
+  }
+
+  void _onInactivityTimeout() {
+    final userId = ref.read(currentUserIdProvider);
+    if (userId == 'anonymous') return;
+    // Sign out and navigate — catch errors so navigation always proceeds
+    ref.read(authActionsProvider).signOut().catchError((Object e) {
+      AppLogger.warning('[InactivityGuard] Sign-out failed: $e');
+    });
+    final router = ref.read(routerProvider);
+    router.go(AppRoutes.login);
   }
 
   void _onAppResumed() {
     final userId = ref.read(currentUserIdProvider);
     if (userId == 'anonymous') return;
+    // Restart inactivity guard when app comes back to foreground
+    _inactivityGuard.start();
     ref.read(localPremiumProvider.notifier).refresh();
 
     // Push pending local changes on app resume.
@@ -138,6 +170,8 @@ class _BudgieBreedingAppState extends ConsumerState<BudgieBreedingApp> {
   Widget build(BuildContext context) {
     // Mount global auth side-effects (RevenueCat/logout premium reset).
     ref.watch(authSessionSideEffectsProvider);
+    // Mount premium → local cache sync (keep-alive side-effect).
+    ref.watch(premiumSyncProvider);
 
     final router = ref.watch(routerProvider);
     final themeMode = ref.watch(themeModeProvider);
@@ -178,6 +212,15 @@ class _BudgieBreedingAppState extends ConsumerState<BudgieBreedingApp> {
       }
     });
 
+    // Start/stop inactivity guard based on auth state
+    ref.listen<bool>(isAuthenticatedProvider, (previous, next) {
+      if (next) {
+        _inactivityGuard.start();
+      } else {
+        _inactivityGuard.stop();
+      }
+    });
+
     final fontScale = ref.watch(fontScaleProvider);
     final compactView = ref.watch(compactViewProvider);
     final reduceAnimations = ref.watch(reduceAnimationsProvider);
@@ -185,7 +228,7 @@ class _BudgieBreedingAppState extends ConsumerState<BudgieBreedingApp> {
         ? const VisualDensity(horizontal: -1, vertical: -1)
         : VisualDensity.standard;
 
-    return MaterialApp.router(
+    return _inactivityGuard.wrapWithListener(child: MaterialApp.router(
       title: 'BudgieBreedingTracker',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light().copyWith(
@@ -220,6 +263,6 @@ class _BudgieBreedingAppState extends ConsumerState<BudgieBreedingApp> {
           child: child!,
         );
       },
-    );
+    ));
   }
 }

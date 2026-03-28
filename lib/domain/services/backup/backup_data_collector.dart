@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
@@ -47,8 +48,7 @@ class BackupDataCollector {
   }) async {
     try {
       AppLogger.info(
-        '$_tag Creating backup for user: $userId'
-        '${encrypt ? ' (encrypted)' : ''}',
+        '$_tag Creating backup${encrypt ? ' (encrypted)' : ''}',
       );
 
       if (encrypt && _encryptionService == null) {
@@ -93,7 +93,7 @@ class BackupDataCollector {
       final timestamp = DateTime.now().toIso8601String().replaceAll(':', '-');
       final extension = encrypt ? '.enc.json' : '.json';
       final fileName = 'budgie_backup_$timestamp$extension';
-      final file = File('${dir.path}/$fileName');
+      final file = File(p.join(dir.path, fileName));
 
       await file.writeAsString(contentToWrite);
 

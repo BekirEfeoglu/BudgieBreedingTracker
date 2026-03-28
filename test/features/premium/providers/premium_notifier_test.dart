@@ -6,74 +6,13 @@ import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:budgie_breeding_tracker/bootstrap.dart';
-import 'package:budgie_breeding_tracker/domain/services/payment/purchase_service.dart';
 import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
 import 'package:budgie_breeding_tracker/features/premium/providers/premium_providers.dart';
 
+import '../../../helpers/fake_purchase_service.dart';
 import '../../../helpers/test_helpers.dart';
 
 class MockPackage extends Mock implements Package {}
-
-class FakePurchaseService extends PurchaseService {
-  bool initializeResult = true;
-  Object? initializeError;
-  bool isPremiumResult = false;
-  Object? isPremiumError;
-  bool purchaseResult = false;
-  Object? purchaseError;
-  bool restoreResult = false;
-  Object? restoreError;
-  SubscriptionInfo subscriptionInfoResult = const SubscriptionInfo(
-    isActive: false,
-  );
-
-  int initializeCallCount = 0;
-  int isPremiumCallCount = 0;
-  int logoutCallCount = 0;
-  Package? lastPurchasedPackage;
-
-  @override
-  Future<bool> initialize({
-    required String apiKey,
-    required String userId,
-  }) async {
-    initializeCallCount++;
-    if (initializeError != null) throw initializeError!;
-    return initializeResult;
-  }
-
-  @override
-  Future<bool> isPremium() async {
-    isPremiumCallCount++;
-    if (isPremiumError != null) throw isPremiumError!;
-    return isPremiumResult;
-  }
-
-  @override
-  Future<List<Package>> getOfferings() async => [];
-
-  @override
-  Future<bool> purchasePackage(Package package) async {
-    lastPurchasedPackage = package;
-    if (purchaseError != null) throw purchaseError!;
-    return purchaseResult;
-  }
-
-  @override
-  Future<bool> restorePurchases() async {
-    if (restoreError != null) throw restoreError!;
-    return restoreResult;
-  }
-
-  @override
-  Future<SubscriptionInfo> getSubscriptionInfo() async =>
-      subscriptionInfoResult;
-
-  @override
-  Future<void> logout() async {
-    logoutCallCount++;
-  }
-}
 
 Future<void> _flushAsync() async {
   await Future<void>.delayed(const Duration(milliseconds: 1));

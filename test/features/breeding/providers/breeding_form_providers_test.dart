@@ -67,12 +67,18 @@ void main() {
     );
   }
 
-  /// Stubs getAll to return lists under the free tier limits.
+  /// Stubs repository methods to return counts under the free tier limits.
   void stubUnderLimits() {
     when(() => mockPairRepo.getAll(any())).thenAnswer((_) async => [_pair()]);
     when(
       () => mockIncubationRepo.getAll(any()),
     ).thenAnswer((_) async => [_incubation()]);
+    when(
+      () => mockPairRepo.getActiveCount(any()),
+    ).thenAnswer((_) async => 1);
+    when(
+      () => mockIncubationRepo.getActiveCount(any()),
+    ).thenAnswer((_) async => 1);
   }
 
   group('BreedingFormState', () {
@@ -187,11 +193,9 @@ void main() {
   group('BreedingFormNotifier.createBreeding - free tier limits', () {
     test('blocks when breeding pair limit reached', () async {
       // Return exactly freeTierMaxBreedingPairs active pairs
-      final pairs = List.generate(
-        AppConstants.freeTierMaxBreedingPairs,
-        (i) => _pair(id: 'pair-$i'),
-      );
-      when(() => mockPairRepo.getAll(any())).thenAnswer((_) async => pairs);
+      when(
+        () => mockPairRepo.getActiveCount(any()),
+      ).thenAnswer((_) async => AppConstants.freeTierMaxBreedingPairs);
 
       final container = createContainer(isPremium: false);
       addTearDown(container.dispose);
@@ -215,15 +219,13 @@ void main() {
 
     test('blocks when active incubation limit reached', () async {
       // Pairs under limit
-      when(() => mockPairRepo.getAll(any())).thenAnswer((_) async => [_pair()]);
-      // Incubations at limit
-      final incubations = List.generate(
-        AppConstants.freeTierMaxActiveIncubations,
-        (i) => _incubation(id: 'inc-$i'),
-      );
       when(
-        () => mockIncubationRepo.getAll(any()),
-      ).thenAnswer((_) async => incubations);
+        () => mockPairRepo.getActiveCount(any()),
+      ).thenAnswer((_) async => 1);
+      // Incubations at limit
+      when(
+        () => mockIncubationRepo.getActiveCount(any()),
+      ).thenAnswer((_) async => AppConstants.freeTierMaxActiveIncubations);
 
       final container = createContainer(isPremium: false);
       addTearDown(container.dispose);
@@ -269,12 +271,6 @@ void main() {
     });
 
     test('premium user bypasses all limits', () async {
-      // Pairs at limit — should be ignored for premium
-      final pairs = List.generate(
-        AppConstants.freeTierMaxBreedingPairs,
-        (i) => _pair(id: 'pair-$i'),
-      );
-      when(() => mockPairRepo.getAll(any())).thenAnswer((_) async => pairs);
       when(() => mockPairRepo.save(any())).thenAnswer((_) async {});
       when(() => mockIncubationRepo.save(any())).thenAnswer((_) async {});
 
@@ -293,20 +289,18 @@ void main() {
       final state = container.read(breedingFormStateProvider);
       expect(state.isSuccess, isTrue);
       expect(state.isBreedingLimitReached, isFalse);
-      // getAll should NOT have been called since premium skips checks
-      verifyNever(() => mockPairRepo.getAll(any()));
+      // getActiveCount should NOT have been called since premium skips checks
+      verifyNever(() => mockPairRepo.getActiveCount(any()));
     });
 
     test('ignores completed/cancelled pairs in limit count', () async {
-      // All 5 pairs exist but only 4 are active — should pass
-      final pairs = [
-        ...List.generate(4, (i) => _pair(id: 'pair-$i')),
-        _pair(id: 'pair-completed', status: BreedingStatus.completed),
-      ];
-      when(() => mockPairRepo.getAll(any())).thenAnswer((_) async => pairs);
+      // getActiveCount returns only active+ongoing pairs (4 of 5)
       when(
-        () => mockIncubationRepo.getAll(any()),
-      ).thenAnswer((_) async => [_incubation()]);
+        () => mockPairRepo.getActiveCount(any()),
+      ).thenAnswer((_) async => 4);
+      when(
+        () => mockIncubationRepo.getActiveCount(any()),
+      ).thenAnswer((_) async => 1);
       when(() => mockPairRepo.save(any())).thenAnswer((_) async {});
       when(() => mockIncubationRepo.save(any())).thenAnswer((_) async {});
 
@@ -328,11 +322,10 @@ void main() {
     });
 
     test('counts ongoing pairs toward breeding limit', () async {
-      final pairs = List.generate(
-        AppConstants.freeTierMaxBreedingPairs,
-        (i) => _pair(id: 'pair-$i', status: BreedingStatus.ongoing),
-      );
-      when(() => mockPairRepo.getAll(any())).thenAnswer((_) async => pairs);
+      // getActiveCount includes both active and ongoing pairs
+      when(
+        () => mockPairRepo.getActiveCount(any()),
+      ).thenAnswer((_) async => AppConstants.freeTierMaxBreedingPairs);
 
       final container = createContainer(isPremium: false);
       addTearDown(container.dispose);
@@ -353,16 +346,13 @@ void main() {
     });
 
     test('ignores completed incubations in limit count', () async {
-      when(() => mockPairRepo.getAll(any())).thenAnswer((_) async => [_pair()]);
-      // 3 incubations but only 2 active — should pass
-      final incubations = [
-        _incubation(id: 'inc-0'),
-        _incubation(id: 'inc-1'),
-        _incubation(id: 'inc-done', status: IncubationStatus.completed),
-      ];
+      // getActiveCount returns only active incubations (2 of 3)
       when(
-        () => mockIncubationRepo.getAll(any()),
-      ).thenAnswer((_) async => incubations);
+        () => mockPairRepo.getActiveCount(any()),
+      ).thenAnswer((_) async => 1);
+      when(
+        () => mockIncubationRepo.getActiveCount(any()),
+      ).thenAnswer((_) async => 2);
       when(() => mockPairRepo.save(any())).thenAnswer((_) async {});
       when(() => mockIncubationRepo.save(any())).thenAnswer((_) async {});
 

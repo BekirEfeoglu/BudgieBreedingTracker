@@ -17,6 +17,7 @@ import 'package:budgie_breeding_tracker/features/genealogy/providers/genealogy_p
 import 'package:budgie_breeding_tracker/features/genealogy/widgets/depth_chip.dart';
 import 'package:budgie_breeding_tracker/features/genealogy/widgets/entity_selector.dart';
 import 'package:budgie_breeding_tracker/features/genealogy/widgets/tree_content.dart';
+import 'package:budgie_breeding_tracker/features/notifications/providers/action_feedback_providers.dart';
 
 /// Screen with a bird/chick selector, search, bidirectional family tree,
 /// family stats, and offspring section.
@@ -208,10 +209,8 @@ class _GenealogyScreenState extends ConsumerState<GenealogyScreen> {
     if (!mounted) return;
 
     messenger.clearSnackBars();
-    messenger.showSnackBar(
-      SnackBar(
-        content: Text('genealogy.repair_result'.tr(args: [result.toString()])),
-      ),
+    ActionFeedbackService.show(
+      'genealogy.repair_result'.tr(args: [result.toString()]),
     );
 
     if (result > 0) {

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
@@ -41,21 +42,20 @@ class MoreScreen extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
         children: [
-          // Core features promoted from bottom nav
+          // Features section
+          _SectionHeader(title: 'more.section_features'.tr()),
           _MoreTile(
             icon: const AppIcon(AppIcons.chick),
             title: 'nav.chicks'.tr(),
             onTap: () => context.go(AppRoutes.chicks),
           ),
-          const Divider(height: 1, indent: 16, endIndent: 16),
-          // Health records
           _MoreTile(
             icon: const AppIcon(AppIcons.health),
             title: 'health_records.title'.tr(),
             onTap: () => context.push(AppRoutes.healthRecords),
           ),
-          const Divider(height: 1, indent: 16, endIndent: 16),
-          // Premium features
+          // Premium features section
+          _SectionHeader(title: 'more.section_premium'.tr()),
           _MoreTile(
             icon: const AppIcon(AppIcons.statistics),
             title: 'more.statistics'.tr(),
@@ -74,15 +74,15 @@ class MoreScreen extends ConsumerWidget {
             trailing: _PremiumBadge(theme: theme),
             onTap: () => context.push(AppRoutes.genetics),
           ),
-          const Divider(height: 1, indent: 16, endIndent: 16),
-          // Premium
+          // Subscription section
+          _SectionHeader(title: 'more.section_subscription'.tr()),
           _MoreTile(
             icon: const AppIcon(AppIcons.premium),
             title: 'more.premium'.tr(),
             onTap: () => context.push(AppRoutes.premium),
           ),
-          const Divider(height: 1, indent: 16, endIndent: 16),
-          // Help & Support
+          // Support section
+          _SectionHeader(title: 'more.section_support'.tr()),
           _MoreTile(
             icon: const AppIcon(AppIcons.guide),
             title: 'more.user_guide'.tr(),
@@ -103,23 +103,21 @@ class MoreScreen extends ConsumerWidget {
             title: 'settings.terms'.tr(),
             onTap: () => context.push(AppRoutes.termsOfService),
           ),
-          const Divider(height: 1, indent: 16, endIndent: 16),
-          // Settings
+          // Settings section
+          _SectionHeader(title: 'more.section_settings'.tr()),
           _MoreTile(
             icon: const AppIcon(AppIcons.settings),
             title: 'settings.title'.tr(),
             onTap: () => context.push(AppRoutes.settings),
           ),
           // Admin panel (only visible to admin users)
-          if (ref.watch(isAdminProvider).value == true) ...[
-            const Divider(height: 1, indent: 16, endIndent: 16),
+          if (ref.watch(isAdminProvider).value == true)
             _MoreTile(
               icon: const AppIcon(AppIcons.security),
               title: 'more.admin_panel'.tr(),
               onTap: () => context.push(AppRoutes.adminDashboard),
             ),
-          ],
-          const Divider(height: 1, indent: 16, endIndent: 16),
+          // About (standalone, no section header)
           _MoreTile(
             icon: const AppIcon(AppIcons.info),
             title: 'more.about'.tr(),
@@ -138,12 +136,153 @@ class MoreScreen extends ConsumerWidget {
       loading: () => 'v1.0.0',
       error: (_, __) => 'v1.0.0',
     );
-    showAboutDialog(
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    showDialog(
       context: context,
-      applicationName: 'more.about_app_name'.tr(),
-      applicationVersion: version,
-      applicationLegalese: 'more.about_legalese'.tr(args: [year]),
-      applicationIcon: const AppIcon(AppIcons.bird, size: 48),
+      builder: (ctx) => Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.xxl),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
+                child: Image.asset(
+                  'assets/images/app_logo.png',
+                  width: 88,
+                  height: 88,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              Text(
+                'more.about_app_name'.tr(),
+                style: theme.textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: AppSpacing.xs),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.md,
+                  vertical: AppSpacing.xs,
+                ),
+                decoration: BoxDecoration(
+                  color: colorScheme.primaryContainer.withValues(alpha: 0.4),
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+                ),
+                child: Text(
+                  version,
+                  style: theme.textTheme.labelMedium?.copyWith(
+                    color: colorScheme.primary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.xl),
+              Divider(color: colorScheme.outlineVariant.withValues(alpha: 0.5)),
+              const SizedBox(height: AppSpacing.md),
+              Row(
+                children: [
+                  Icon(LucideIcons.user, size: 16, color: colorScheme.onSurfaceVariant),
+                  const SizedBox(width: AppSpacing.sm),
+                  Text(
+                    'more.about_developer'.tr(),
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              GestureDetector(
+                onTap: () => launchUrl(Uri.parse('mailto:support@budgiebreedingtracker.online')),
+                child: Row(
+                  children: [
+                    Icon(LucideIcons.mail, size: 16, color: colorScheme.primary),
+                    const SizedBox(width: AppSpacing.sm),
+                    Text(
+                      'support@budgiebreedingtracker.online',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: colorScheme.primary,
+                        decoration: TextDecoration.underline,
+                        decorationColor: colorScheme.primary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              GestureDetector(
+                onTap: () => launchUrl(Uri.parse('https://budgiebreedingtracker.online/')),
+                child: Row(
+                  children: [
+                    Icon(LucideIcons.globe, size: 16, color: colorScheme.primary),
+                    const SizedBox(width: AppSpacing.sm),
+                    Text(
+                      'budgiebreedingtracker.online',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: colorScheme.primary,
+                        decoration: TextDecoration.underline,
+                        decorationColor: colorScheme.primary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              Row(
+                children: [
+                  Icon(LucideIcons.copyright, size: 16, color: colorScheme.onSurfaceVariant),
+                  const SizedBox(width: AppSpacing.sm),
+                  Expanded(
+                    child: Text(
+                      'more.about_legalese'.tr(args: [year]),
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.xl),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () {
+                        Navigator.of(ctx).pop();
+                        showLicensePage(
+                          context: context,
+                          applicationName: 'more.about_app_name'.tr(),
+                          applicationVersion: version,
+                          applicationIcon: Padding(
+                            padding: const EdgeInsets.all(AppSpacing.sm),
+                            child: AppIcon(AppIcons.bird, size: 48, color: colorScheme.primary),
+                          ),
+                        );
+                      },
+                      child: Text('more.about_licenses'.tr()),
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.md),
+                  Expanded(
+                    child: FilledButton(
+                      onPressed: () => Navigator.of(ctx).pop(),
+                      child: Text('common.close'.tr()),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
@@ -210,6 +349,33 @@ class _PremiumBadge extends StatelessWidget {
         const SizedBox(width: AppSpacing.xs),
         const Icon(LucideIcons.chevronRight, size: 18),
       ],
+    );
+  }
+}
+
+class _SectionHeader extends StatelessWidget {
+  const _SectionHeader({required this.title});
+
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.only(
+        left: AppSpacing.lg,
+        right: AppSpacing.lg,
+        top: AppSpacing.lg,
+        bottom: AppSpacing.xs,
+      ),
+      child: Text(
+        title,
+        style: theme.textTheme.labelMedium?.copyWith(
+          color: theme.colorScheme.onSurfaceVariant,
+          fontWeight: FontWeight.w600,
+          letterSpacing: 0.5,
+        ),
+      ),
     );
   }
 }

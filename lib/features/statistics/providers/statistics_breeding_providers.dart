@@ -22,7 +22,8 @@ final monthlyFertilityRateProvider =
       final period = ref.watch(statsPeriodProvider);
 
       return eggsAsync.whenData((eggs) {
-        final now = DateTime.now();
+        final range = buildStatsDateRange(period);
+        final now = range.currentEnd;
         final monthCount = period.monthCount;
         final fertileMap = <String, int>{};
         final totalMap = <String, int>{};

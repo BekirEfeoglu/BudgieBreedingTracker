@@ -633,18 +633,16 @@ void main() {
         );
 
         expect(parentalCompound, isNotEmpty);
-        if (recombinantOpaline.isNotEmpty) {
-          expect(
-            parentalCompound.first.probability,
-            greaterThan(recombinantOpaline.first.probability),
-          );
-        }
-        if (recombinantCinnamon.isNotEmpty) {
-          expect(
-            parentalCompound.first.probability,
-            greaterThan(recombinantCinnamon.first.probability),
-          );
-        }
+        expect(recombinantOpaline, isNotEmpty);
+        expect(recombinantCinnamon, isNotEmpty);
+        expect(
+          parentalCompound.first.probability,
+          greaterThan(recombinantOpaline.first.probability),
+        );
+        expect(
+          parentalCompound.first.probability,
+          greaterThan(recombinantCinnamon.first.probability),
+        );
       },
     );
 
@@ -760,12 +758,11 @@ void main() {
         final recombinantSlate = females.where((r) => r.phenotype == 'Slate');
 
         expect(parentalCompound, isNotEmpty);
-        if (recombinantSlate.isNotEmpty) {
-          expect(
-            parentalCompound.first.probability,
-            greaterThan(recombinantSlate.first.probability),
-          );
-        }
+        expect(recombinantSlate, isNotEmpty);
+        expect(
+          parentalCompound.first.probability,
+          greaterThan(recombinantSlate.first.probability),
+        );
       },
     );
 
@@ -938,13 +935,11 @@ void main() {
       );
 
       expect(singleCinnamon, isNotEmpty);
-      if (compound.isNotEmpty) {
-        // Parental (single) should be more frequent than recombinant (both)
-        expect(
-          singleCinnamon.first.probability,
-          greaterThan(compound.first.probability),
-        );
-      }
+      expect(compound, isNotEmpty);
+      expect(
+        singleCinnamon.first.probability,
+        greaterThan(compound.first.probability),
+      );
     });
 
     test('slate carrier father x ino visual mother: '

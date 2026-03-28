@@ -81,13 +81,13 @@ void main() {
       );
     });
 
-    test('returns expired when expired more than 7 days ago', () async {
+    test('returns expired when expired more than 30 days ago', () async {
       final container = await createContainer(
         profile: Profile(
           id: 'u1',
           email: 'a@b.com',
           isPremium: false,
-          premiumExpiresAt: DateTime.now().subtract(const Duration(days: 10)),
+          premiumExpiresAt: DateTime.now().subtract(const Duration(days: 35)),
         ),
       );
       addTearDown(container.dispose);

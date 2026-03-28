@@ -22,7 +22,7 @@ class StatsPeriodSelector extends ConsumerWidget {
             .toList(),
         selected: {period},
         onSelectionChanged: (selected) {
-          ref.read(statsPeriodProvider.notifier).state = selected.first;
+          ref.read(statsPeriodProvider.notifier).setPeriod(selected.first);
         },
       ),
     );

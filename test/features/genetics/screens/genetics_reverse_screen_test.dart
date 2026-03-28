@@ -32,11 +32,10 @@ void main() {
       await tester.pump();
 
       expect(find.byType(CircularProgressIndicator), findsWidgets);
-      expect(tester.takeException(), isNull);
 
       await tester.pump(const Duration(milliseconds: 80));
       await tester.pump();
-      expect(tester.takeException(), isNull);
+      expect(find.byType(GeneticsReverseScreen), findsOneWidget);
     });
   });
 }

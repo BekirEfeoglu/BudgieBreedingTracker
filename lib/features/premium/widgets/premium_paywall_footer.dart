@@ -102,6 +102,11 @@ class _PremiumLegalLinksSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final linkStyle = Theme.of(context).textTheme.labelMedium?.copyWith(
+      decoration: TextDecoration.underline,
+      fontWeight: FontWeight.bold,
+    );
+
     return RepaintBoundary(
       child: Column(
         children: [
@@ -118,10 +123,7 @@ class _PremiumLegalLinksSection extends StatelessWidget {
                 ),
                 child: Text(
                   '${'settings.terms'.tr()} (EULA)',
-                  style: const TextStyle(
-                    decoration: TextDecoration.underline,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: linkStyle,
                 ),
               ),
               TextButton(
@@ -132,10 +134,7 @@ class _PremiumLegalLinksSection extends StatelessWidget {
                 ),
                 child: Text(
                   'settings.privacy_policy'.tr(),
-                  style: const TextStyle(
-                    decoration: TextDecoration.underline,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: linkStyle,
                 ),
               ),
             ],

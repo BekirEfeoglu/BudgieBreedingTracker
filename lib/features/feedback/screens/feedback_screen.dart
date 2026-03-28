@@ -13,6 +13,7 @@ import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_screen_title.dart';
 import 'package:budgie_breeding_tracker/core/widgets/buttons/primary_button.dart';
 import 'package:budgie_breeding_tracker/features/feedback/providers/feedback_providers.dart';
+import 'package:budgie_breeding_tracker/features/notifications/providers/action_feedback_providers.dart';
 import 'package:budgie_breeding_tracker/features/feedback/widgets/feedback_form_widgets.dart';
 import 'package:budgie_breeding_tracker/features/feedback/widgets/feedback_history_tab.dart';
 import 'package:budgie_breeding_tracker/features/feedback/widgets/feedback_info_banner.dart';
@@ -76,12 +77,7 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen>
       if (state.isSuccess) {
         ref.read(feedbackFormStateProvider.notifier).reset();
         _resetForm();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('feedback.success'.tr()),
-            backgroundColor: theme.colorScheme.primary,
-          ),
-        );
+        ActionFeedbackService.show('feedback.success'.tr());
         // Switch to history tab to show the submitted feedback
         _tabController.animateTo(1);
       }

@@ -8,6 +8,7 @@ import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/mendelian_calculator.dart';
 import 'package:budgie_breeding_tracker/features/genetics/widgets/z_linked_badge.dart';
+import 'package:budgie_breeding_tracker/features/notifications/providers/action_feedback_providers.dart';
 
 /// Phenotype name row with carrier/lethal/z-linked badges.
 class PhenotypeBadges extends StatelessWidget {
@@ -34,7 +35,7 @@ class PhenotypeBadges extends StatelessWidget {
               fontWeight: FontWeight.bold,
             ),
             overflow: TextOverflow.ellipsis,
-            maxLines: 2,
+            maxLines: 3,
           ),
         ),
         if (result.isCarrier) ...[
@@ -124,8 +125,11 @@ class ExpandedDetails extends StatelessWidget {
       children: [
         if (result.carriedMutations.isNotEmpty)
           _DetailRow(
-            icon: LucideIcons.eyeOff,
-            iconColor: AppColors.warningTextAdaptive(context),
+            icon: Icon(
+              LucideIcons.eyeOff,
+              size: 12,
+              color: AppColors.warningTextAdaptive(context),
+            ),
             child: Text(
               localizedCarriedMutations.join(', '),
               style: theme.textTheme.bodySmall?.copyWith(
@@ -137,8 +141,11 @@ class ExpandedDetails extends StatelessWidget {
         if (result.maskedMutations.isNotEmpty) ...[
           const SizedBox(height: AppSpacing.xs),
           _DetailRow(
-            icon: LucideIcons.eyeOff,
-            iconColor: theme.colorScheme.onSurfaceVariant,
+            icon: Icon(
+              LucideIcons.eyeOff,
+              size: 12,
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
             child: Text(
               'genetics.masked_mutations'.tr(
                 args: [localizedMaskedMutations.join(', ')],
@@ -155,16 +162,14 @@ class ExpandedDetails extends StatelessWidget {
           GestureDetector(
             onLongPress: () {
               Clipboard.setData(ClipboardData(text: result.genotype!));
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('genetics.genotype_copied'.tr()),
-                  duration: const Duration(seconds: 2),
-                ),
-              );
+              ActionFeedbackService.show('genetics.genotype_copied'.tr());
             },
             child: _DetailRow(
-              icon: LucideIcons.dna,
-              iconColor: theme.colorScheme.onSurfaceVariant,
+              icon: AppIcon(
+                AppIcons.dna,
+                size: 12,
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
               child: Text(
                 result.genotype!,
                 style: theme.textTheme.bodySmall?.copyWith(
@@ -183,13 +188,11 @@ class ExpandedDetails extends StatelessWidget {
 
 /// Small icon + content row for expanded details.
 class _DetailRow extends StatelessWidget {
-  final IconData icon;
-  final Color iconColor;
+  final Widget icon;
   final Widget child;
 
   const _DetailRow({
     required this.icon,
-    required this.iconColor,
     required this.child,
   });
 
@@ -200,7 +203,7 @@ class _DetailRow extends StatelessWidget {
       children: [
         Padding(
           padding: const EdgeInsets.only(top: 2),
-          child: Icon(icon, size: 12, color: iconColor),
+          child: icon,
         ),
         const SizedBox(width: AppSpacing.sm),
         Expanded(child: child),
@@ -220,12 +223,12 @@ class SexIcon extends StatelessWidget {
     return switch (sex) {
       OffspringSex.male => const AppIcon(
         AppIcons.male,
-        size: 16,
+        size: 20,
         color: AppColors.genderMale,
       ),
       OffspringSex.female => const AppIcon(
         AppIcons.female,
-        size: 16,
+        size: 20,
         color: AppColors.genderFemale,
       ),
       OffspringSex.both => Column(
@@ -233,7 +236,7 @@ class SexIcon extends StatelessWidget {
         children: [
           AppIcon(
             AppIcons.users,
-            size: 16,
+            size: 20,
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
           const SizedBox(height: 1),

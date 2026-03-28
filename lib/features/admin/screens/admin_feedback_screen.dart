@@ -7,6 +7,7 @@ import '../../../core/enums/admin_enums.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/error_state.dart';
+import '../../notifications/providers/action_feedback_providers.dart';
 import '../providers/admin_feedback_providers.dart';
 import '_feedback_detail_sheet.dart';
 
@@ -121,9 +122,7 @@ class AdminFeedbackScreen extends ConsumerWidget {
       if (context.mounted) {
         if (success) {
           Navigator.of(context).pop();
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('admin.feedback_updated'.tr())),
-          );
+          ActionFeedbackService.show('admin.feedback_updated'.tr());
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('admin.action_error'.tr())),

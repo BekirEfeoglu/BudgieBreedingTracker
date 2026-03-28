@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 
 import 'package:budgie_breeding_tracker/data/repositories/feedback_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
@@ -141,9 +142,9 @@ void main() {
     });
 
     test('has icons', () {
-      for (final cat in FeedbackCategory.values) {
-        expect(cat.icon, isNotNull, reason: '${cat.name} icon is null');
-      }
+      expect(FeedbackCategory.bug.icon, LucideIcons.bug);
+      expect(FeedbackCategory.feature.icon, LucideIcons.lightbulb);
+      expect(FeedbackCategory.general.icon, LucideIcons.messageCircle);
     });
 
     test('has colors', () {
@@ -239,8 +240,7 @@ void main() {
       // Last: error
       expect(states.last.isLoading, isFalse);
       expect(states.last.isSuccess, isFalse);
-      expect(states.last.error, isNotNull);
-      expect(states.last.error, contains('Network failure'));
+      expect(states.last.error, 'Exception: Network failure');
     });
 
     test('reset clears state', () async {

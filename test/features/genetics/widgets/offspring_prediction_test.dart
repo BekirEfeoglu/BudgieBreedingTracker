@@ -151,6 +151,15 @@ void main() {
           ),
         ),
       );
+      // Collapsed view shows hint label instead of full genotype
+      expect(
+        find.text('genetics.genotype_detail_label'),
+        findsAtLeastNWidgets(1),
+      );
+
+      // Tap to expand - full genotype visible
+      await tester.tap(find.byType(OffspringPrediction));
+      await tester.pumpAndSettle();
       expect(find.textContaining('+/+ bl/bl'), findsAtLeastNWidgets(1));
     });
 
@@ -168,21 +177,21 @@ void main() {
       expect(find.byType(Semantics), findsAtLeastNWidgets(1));
     });
 
-    group('circular indicator minimum arc', () {
-      testWidgets('low probability (<5%) uses minimum 0.05 visual value', (
-        tester,
-      ) async {
+    group('probability indicator', () {
+      testWidgets('low probability (<1%) shows text badge instead of circular',
+          (tester) async {
         const lowResult = OffspringResult(
           phenotype: 'Rare Phenotype',
-          probability: 0.02,
+          probability: 0.005,
         );
-        await pumpLocalizedApp(tester,
+        await pumpLocalizedApp(
+          tester,
           _wrap(const OffspringPrediction(result: lowResult)),
         );
-        final indicator = tester.widget<CircularProgressIndicator>(
-          find.byType(CircularProgressIndicator),
-        );
-        expect(indicator.value, 0.05);
+        // No circular indicator for very low probabilities
+        expect(find.byType(CircularProgressIndicator), findsNothing);
+        // Text badge shows actual percentage
+        expect(find.text('%0.5'), findsOneWidget);
       });
 
       testWidgets('low probability still shows actual percentage text', (
@@ -192,10 +201,14 @@ void main() {
           phenotype: 'Rare Phenotype',
           probability: 0.02,
         );
-        await pumpLocalizedApp(tester,
+        await pumpLocalizedApp(
+          tester,
           _wrap(const OffspringPrediction(result: lowResult)),
         );
-        // Text shows actual 2.0%, not the clamped 5.0%
+        final indicator = tester.widget<CircularProgressIndicator>(
+          find.byType(CircularProgressIndicator),
+        );
+        expect(indicator.value, 0.02);
         expect(find.text('%2.0'), findsOneWidget);
       });
 
@@ -206,7 +219,8 @@ void main() {
           phenotype: 'Zero Phenotype',
           probability: 0.0,
         );
-        await pumpLocalizedApp(tester,
+        await pumpLocalizedApp(
+          tester,
           _wrap(const OffspringPrediction(result: zeroResult)),
         );
         final indicator = tester.widget<CircularProgressIndicator>(
@@ -216,7 +230,8 @@ void main() {
       });
 
       testWidgets('high probability (>=5%) uses exact value', (tester) async {
-        await pumpLocalizedApp(tester,
+        await pumpLocalizedApp(
+          tester,
           _wrap(const OffspringPrediction(result: _basicResult)),
         );
         final indicator = tester.widget<CircularProgressIndicator>(
@@ -226,8 +241,9 @@ void main() {
       });
     });
 
-    group('carrier mutations maxLines', () {
-      testWidgets('carrier mutations text allows 2 lines', (tester) async {
+    group('carrier mutations summary', () {
+      testWidgets('shows +N more badge when mutations exceed visible limit',
+          (tester) async {
         const multiCarrierResult = OffspringResult(
           phenotype: 'Normal Green',
           probability: 0.25,
@@ -240,15 +256,28 @@ void main() {
             'Fallow',
           ],
         );
-        await pumpLocalizedApp(tester,
+        await pumpLocalizedApp(
+          tester,
           _wrap(const OffspringPrediction(result: multiCarrierResult)),
         );
-        // Find the carrier mutations Text widget by style (italic + warning)
-        final textWidgets = tester.widgetList<Text>(find.byType(Text));
-        final carrierText = textWidgets.where(
-          (t) => t.maxLines == 2 && t.style?.fontStyle == FontStyle.italic,
+        // Should show "+2 more" badge (5 total - 3 visible = 2 remaining)
+        expect(find.byType(Wrap), findsAtLeastNWidgets(1));
+      });
+
+      testWidgets('shows all mutations when count <= 3', (tester) async {
+        const fewCarrierResult = OffspringResult(
+          phenotype: 'Normal Green',
+          probability: 0.25,
+          isCarrier: true,
+          carriedMutations: ['Blue', 'Opaline'],
         );
-        expect(carrierText, isNotEmpty);
+        await pumpLocalizedApp(
+          tester,
+          _wrap(const OffspringPrediction(result: fewCarrierResult)),
+        );
+        // All mutations visible, no "+N more" badge needed
+        final wrapWidgets = tester.widgetList<Wrap>(find.byType(Wrap));
+        expect(wrapWidgets, isNotEmpty);
       });
     });
 

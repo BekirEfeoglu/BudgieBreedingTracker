@@ -19,6 +19,7 @@ Future<void> pumpLocalizedWidget(
   Widget child, {
   Locale locale = const Locale('tr'),
   ThemeData? theme,
+  bool settle = true,
 }) async {
   await EasyLocalization.ensureInitialized();
   await tester.pumpWidget(
@@ -33,7 +34,11 @@ Future<void> pumpLocalizedWidget(
       ),
     ),
   );
-  await tester.pumpAndSettle();
+  if (settle) {
+    await tester.pumpAndSettle();
+  } else {
+    await tester.pump();
+  }
 }
 
 /// Wraps a pre-built widget tree (e.g., one that already includes

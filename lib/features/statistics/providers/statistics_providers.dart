@@ -1,8 +1,9 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/breeding_enums.dart';
-import 'package:budgie_breeding_tracker/core/enums/egg_enums.dart';
+import 'package:budgie_breeding_tracker/data/local/preferences/app_preferences.dart';
 import 'package:budgie_breeding_tracker/data/models/statistics_models.dart';
 import 'package:budgie_breeding_tracker/features/birds/providers/bird_providers.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_providers.dart';
@@ -29,9 +30,33 @@ enum StatsPeriod {
 }
 
 /// Notifier for selected time period for statistics charts.
+/// Persists the selection to SharedPreferences.
 class StatsPeriodNotifier extends Notifier<StatsPeriod> {
   @override
-  StatsPeriod build() => StatsPeriod.sixMonths;
+  StatsPeriod build() {
+    // Returns default immediately; async _loadFromPrefs() may update state
+    // later, causing a brief double-computation in downstream providers
+    // between the initial default and the persisted value.
+    _loadFromPrefs();
+    return StatsPeriod.sixMonths;
+  }
+
+  Future<void> _loadFromPrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+    final saved = prefs.getString(AppPreferences.keyStatsPeriod);
+    if (saved != null) {
+      final period = StatsPeriod.values.where((p) => p.name == saved);
+      // Guard against setting state after the Notifier has been disposed
+      // (e.g. user navigated away from statistics before prefs loaded).
+      if (period.isNotEmpty && ref.mounted) state = period.first;
+    }
+  }
+
+  Future<void> setPeriod(StatsPeriod period) async {
+    state = period;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(AppPreferences.keyStatsPeriod, period.name);
+  }
 }
 
 /// Selected time period for statistics charts.
@@ -91,8 +116,9 @@ StatsDateRange buildStatsDateRange(StatsPeriod period, {DateTime? now}) {
 }
 
 /// Builds an empty month map for the selected period.
-Map<String, int> _buildEmptyMonthMap(int monthCount) {
-  final now = DateTime.now();
+/// Accepts a [reference] date to stay consistent with [buildStatsDateRange].
+Map<String, int> _buildEmptyMonthMap(int monthCount, {DateTime? reference}) {
+  final now = reference ?? DateTime.now();
   final months = <String, int>{};
   for (var i = monthCount - 1; i >= 0; i--) {
     final month = DateTime(now.year, now.month - i);
@@ -101,71 +127,6 @@ Map<String, int> _buildEmptyMonthMap(int monthCount) {
   }
   return months;
 }
-
-/// Breeding success statistics computed from breeding pair data.
-final breedingStatsProvider =
-    Provider.family<AsyncValue<BreedingStatistics>, String>((ref, userId) {
-      final pairsAsync = ref.watch(breedingPairsStreamProvider(userId));
-
-      return pairsAsync.whenData((pairs) {
-        final active = pairs
-            .where(
-              (p) =>
-                  p.status == BreedingStatus.active ||
-                  p.status == BreedingStatus.ongoing,
-            )
-            .length;
-        final completed = pairs
-            .where((p) => p.status == BreedingStatus.completed)
-            .length;
-        final cancelled = pairs
-            .where((p) => p.status == BreedingStatus.cancelled)
-            .length;
-        final total = completed + cancelled;
-        final successRate = total > 0 ? completed / total : 0.0;
-
-        return BreedingStatistics(
-          active: active,
-          completed: completed,
-          successRate: successRate,
-        );
-      });
-    });
-
-/// Egg production statistics from egg data.
-final eggStatsProvider = Provider.family<AsyncValue<EggStatistics>, String>((
-  ref,
-  userId,
-) {
-  final eggsAsync = ref.watch(eggsStreamProvider(userId));
-
-  return eggsAsync.whenData((eggs) {
-    final total = eggs.length;
-    final incubating = eggs
-        .where((e) => e.status == EggStatus.incubating)
-        .length;
-    final hatched = eggs.where((e) => e.status == EggStatus.hatched).length;
-    final fertile = eggs
-        .where(
-          (e) => e.status == EggStatus.fertile || e.status == EggStatus.hatched,
-        )
-        .length;
-    final infertile = eggs.where((e) => e.status == EggStatus.infertile).length;
-    final checked = fertile + infertile;
-    final fertilityRate = checked > 0 ? fertile / checked : 0.0;
-    final hatchRate = fertile > 0 ? hatched / fertile : 0.0;
-
-    return EggStatistics(
-      total: total,
-      incubating: incubating,
-      hatched: hatched,
-      fertile: fertile,
-      infertile: infertile,
-      hatchRate: hatchRate,
-      fertilityRate: fertilityRate,
-    );
-  });
-});
 
 /// Gender distribution statistics from bird data.
 final genderDistributionProvider =
@@ -201,7 +162,8 @@ final monthlyEggProductionProvider =
       final period = ref.watch(statsPeriodProvider);
 
       return eggsAsync.whenData((eggs) {
-        final months = _buildEmptyMonthMap(period.monthCount);
+        final range = buildStatsDateRange(period);
+        final months = _buildEmptyMonthMap(period.monthCount, reference: range.currentEnd);
 
         for (final egg in eggs) {
           final key =
@@ -222,7 +184,8 @@ final monthlyHatchedChicksProvider =
       final period = ref.watch(statsPeriodProvider);
 
       return chicksAsync.whenData((chicks) {
-        final months = _buildEmptyMonthMap(period.monthCount);
+        final range = buildStatsDateRange(period);
+        final months = _buildEmptyMonthMap(period.monthCount, reference: range.currentEnd);
 
         for (final chick in chicks) {
           final hatch = chick.hatchDate;
@@ -244,8 +207,9 @@ final monthlyBreedingOutcomesProvider =
       final period = ref.watch(statsPeriodProvider);
 
       return pairsAsync.whenData((pairs) {
-        final completedMap = _buildEmptyMonthMap(period.monthCount);
-        final cancelledMap = _buildEmptyMonthMap(period.monthCount);
+        final range = buildStatsDateRange(period);
+        final completedMap = _buildEmptyMonthMap(period.monthCount, reference: range.currentEnd);
+        final cancelledMap = _buildEmptyMonthMap(period.monthCount, reference: range.currentEnd);
 
         for (final pair in pairs) {
           final date = pair.separationDate ?? pair.updatedAt;

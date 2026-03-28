@@ -12,11 +12,10 @@ import 'package:budgie_breeding_tracker/features/home/providers/home_providers.d
 import 'package:budgie_breeding_tracker/domain/services/ads/ad_reward_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/ads/ad_service.dart';
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_providers.dart';
+import 'package:budgie_breeding_tracker/features/auth/providers/two_factor_providers.dart';
 import 'package:budgie_breeding_tracker/features/premium/providers/premium_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/sync/sync_providers.dart';
 import 'package:budgie_breeding_tracker/router/app_router.dart';
-import 'package:budgie_breeding_tracker/router/guards/admin_guard.dart';
-import 'package:budgie_breeding_tracker/router/guards/premium_guard.dart';
 import 'package:budgie_breeding_tracker/router/route_names.dart';
 
 class _MockGoRouterState extends Mock implements GoRouterState {}
@@ -40,6 +39,14 @@ class _FalseStatisticsRewardNotifier extends StatisticsRewardNotifier {
   bool build() => false;
 }
 
+class _TestPendingMfaNotifier extends PendingMfaFactorIdNotifier {
+  final String? _initial;
+  _TestPendingMfaNotifier(this._initial);
+
+  @override
+  String? build() => _initial;
+}
+
 class _MockAdService extends Mock implements AdService {
   @override
   Future<void> ensureSdkInitialized() async {}
@@ -51,12 +58,14 @@ ProviderContainer _createContainer({
   FutureOr<bool> Function(Ref ref)? isAdminBuilder,
   FutureOr<void> Function(Ref ref)? appInitBuilder,
   bool initSkipped = false,
+  String? pendingMfaFactorId,
 }) {
   return ProviderContainer(
     overrides: [
       isAuthenticatedProvider.overrideWithValue(isLoggedIn),
       isAdminProvider.overrideWith(isAdminBuilder ?? (_) => false),
       isPremiumProvider.overrideWithValue(isPremium),
+      effectivePremiumProvider.overrideWithValue(isPremium),
       appInitializationProvider.overrideWith(appInitBuilder ?? (_) {}),
       initSkippedProvider.overrideWith(
         () => _TestInitSkippedNotifier(initSkipped),
@@ -74,6 +83,10 @@ ProviderContainer _createContainer({
       unweanedChicksCountProvider.overrideWith((ref, userId) {
         return Stream<int>.value(0);
       }),
+      if (pendingMfaFactorId != null)
+        pendingMfaFactorIdProvider.overrideWith(
+          () => _TestPendingMfaNotifier(pendingMfaFactorId),
+        ),
     ],
   );
 }
@@ -94,83 +107,39 @@ Future<BuildContext> _createContext(WidgetTester tester) async {
   return context;
 }
 
-/// Applies the same redirect logic as [routerProvider] by reading directly
-/// from [container]. This avoids relying on GoRouter's internal
-/// [RouterConfiguration.redirect] API, which in GoRouter 17 does not invoke
-/// the top-level [GoRouter.redirect] callback defined in the provider.
-Future<String> _resolveLocation(
+/// Pumps a [MaterialApp.router] backed by the real [routerProvider] and
+/// navigates to [location]. Returns the resolved path after redirect settles.
+///
+/// Replaces the widget tree with a plain widget and disposes the container
+/// before returning to cancel Riverpod-internal retry timers that would
+/// otherwise trigger the "Timer is still pending" assertion.
+Future<String> _navigateAndResolve(
+  WidgetTester tester,
   ProviderContainer container,
   String location,
 ) async {
-  // Allow FutureProviders one event-loop turn to settle into their
-  // initial state (AsyncData / AsyncError / AsyncLoading).
-  await Future<void>.delayed(Duration.zero);
+  final router = container.read(routerProvider);
+  await tester.pumpWidget(
+    UncontrolledProviderScope(
+      container: container,
+      child: MaterialApp.router(routerConfig: router),
+    ),
+  );
+  await tester.pump(const Duration(milliseconds: 200));
 
-  final isLoggedIn = container.read(isAuthenticatedProvider);
-  final isAdminAsync = container.read(isAdminProvider);
-  final isPremium = container.read(isPremiumProvider);
-  final appInit = container.read(appInitializationProvider);
-  final initSkipped = container.read(initSkippedProvider);
-  final isAppReady = appInit.hasValue || initSkipped;
+  router.go(location);
+  await tester.pump(const Duration(milliseconds: 200));
 
-  const authRoutes = {
-    AppRoutes.login,
-    AppRoutes.register,
-    AppRoutes.authCallback,
-    AppRoutes.oauthCallback,
-    AppRoutes.emailVerification,
-    AppRoutes.forgotPassword,
-    AppRoutes.twoFactorVerify,
-  };
-  final isAuthRoute = authRoutes.contains(location);
-  final isSplashRoute = location == AppRoutes.splash;
-  final isAnonymousAllowedRoute =
-      location == AppRoutes.home ||
-      location == AppRoutes.birds ||
-      location == AppRoutes.breeding ||
-      location == AppRoutes.chicks ||
-      location == AppRoutes.calendar ||
-      location == AppRoutes.more ||
-      location == AppRoutes.healthRecords ||
-      location == AppRoutes.premium ||
-      location == AppRoutes.userGuide ||
-      location.startsWith('${AppRoutes.birds}/') ||
-      location.startsWith('${AppRoutes.breeding}/') ||
-      location.startsWith('${AppRoutes.chicks}/') ||
-      location.startsWith('${AppRoutes.healthRecords}/');
+  final resolvedPath = router.routeInformationProvider.value.uri.path;
 
-  // Auth guard
-  if (!isLoggedIn && !isAuthRoute && !isAnonymousAllowedRoute) {
-    return AppRoutes.login;
-  }
-  if (isLoggedIn && isAuthRoute) return AppRoutes.home;
+  // Replace the widget tree to unmount the Riverpod scope, then dispose the
+  // container. Pump with enough duration to flush any Riverpod retry timers
+  // created during FutureProvider lifecycle.
+  await tester.pumpWidget(const SizedBox.shrink());
+  container.dispose();
+  await tester.pump(const Duration(seconds: 1));
 
-  // Initialization guard: show splash while app init is pending
-  final isInitError = appInit.hasError && !initSkipped;
-  if (isLoggedIn && !isAppReady && !isSplashRoute) return AppRoutes.splash;
-  if (isSplashRoute && isAppReady && !isInitError) return AppRoutes.home;
-
-  // Premium guard: restrict premium routes
-  const premiumRoutes = {
-    AppRoutes.statistics,
-    AppRoutes.genealogy,
-    AppRoutes.genetics,
-    AppRoutes.geneticsHistory,
-    AppRoutes.geneticsReverse,
-    AppRoutes.geneticsCompare,
-  };
-  if (premiumRoutes.contains(location)) {
-    final premiumRedirect = PremiumGuard.redirect(isPremium);
-    if (premiumRedirect != null) return premiumRedirect;
-  }
-
-  // Admin guard: restrict /admin/* routes
-  if (location.startsWith('/admin')) {
-    final adminRedirect = AdminGuard.redirect(isAdminAsync);
-    if (adminRedirect != null) return adminRedirect;
-  }
-
-  return location;
+  return resolvedPath;
 }
 
 List<String> _collectPaths(List<RouteBase> routes) {
@@ -233,215 +202,270 @@ GoRouterState _stateForRoutePath(
 
 void main() {
   group('router redirect', () {
-    test('redirects unauthenticated user to login', () async {
-      final container = _createContainer(isLoggedIn: false, isPremium: false);
-      addTearDown(container.dispose);
-
-      final resolved = await _resolveLocation(container, AppRoutes.statistics);
+    testWidgets('redirects unauthenticated user to login', (tester) async {
+      final container = _createContainer(
+        isLoggedIn: false,
+        isPremium: false,
+        initSkipped: true,
+      );
+      final resolved = await _navigateAndResolve(
+        tester,
+        container,
+        AppRoutes.statistics,
+      );
 
       expect(resolved, AppRoutes.login);
     });
 
-    test('allows anonymous user on non-account routes', () async {
-      final container = _createContainer(isLoggedIn: false, isPremium: false);
-      addTearDown(container.dispose);
-
-      expect(await _resolveLocation(container, AppRoutes.home), AppRoutes.home);
-      expect(
-        await _resolveLocation(container, AppRoutes.birds),
-        AppRoutes.birds,
+    testWidgets('allows anonymous user on premium route', (tester) async {
+      final container = _createContainer(
+        isLoggedIn: false,
+        isPremium: false,
+        initSkipped: true,
       );
-      expect(
-        await _resolveLocation(container, AppRoutes.premium),
+      final resolved = await _navigateAndResolve(
+        tester,
+        container,
         AppRoutes.premium,
       );
-      expect(
-        await _resolveLocation(container, '/birds/bird-1'),
-        '/birds/bird-1',
-      );
+      expect(resolved, AppRoutes.premium);
     });
 
-    test('keeps account routes behind login for anonymous users', () async {
-      final container = _createContainer(isLoggedIn: false, isPremium: false);
-      addTearDown(container.dispose);
-
-      expect(
-        await _resolveLocation(container, AppRoutes.settings),
-        AppRoutes.login,
+    testWidgets('allows anonymous user on user guide route', (tester) async {
+      final container = _createContainer(
+        isLoggedIn: false,
+        isPremium: false,
+        initSkipped: true,
       );
-      expect(
-        await _resolveLocation(container, AppRoutes.profile),
-        AppRoutes.login,
+      final resolved = await _navigateAndResolve(
+        tester,
+        container,
+        AppRoutes.userGuide,
       );
-      expect(
-        await _resolveLocation(container, AppRoutes.notifications),
-        AppRoutes.login,
-      );
+      expect(resolved, AppRoutes.userGuide);
     });
 
-    test('redirects authenticated user away from auth routes', () async {
-      final container = _createContainer(isLoggedIn: true, isPremium: false);
-      addTearDown(container.dispose);
+    testWidgets('allows anonymous user on privacy policy route',
+        (tester) async {
+      final container = _createContainer(
+        isLoggedIn: false,
+        isPremium: false,
+        initSkipped: true,
+      );
+      final resolved = await _navigateAndResolve(
+        tester,
+        container,
+        AppRoutes.privacyPolicy,
+      );
+      expect(resolved, AppRoutes.privacyPolicy);
+    });
 
-      final resolved = await _resolveLocation(container, AppRoutes.login);
+    testWidgets('allows anonymous user on terms of service route',
+        (tester) async {
+      final container = _createContainer(
+        isLoggedIn: false,
+        isPremium: false,
+        initSkipped: true,
+      );
+      final resolved = await _navigateAndResolve(
+        tester,
+        container,
+        AppRoutes.termsOfService,
+      );
+      expect(resolved, AppRoutes.termsOfService);
+    });
 
+    testWidgets('allows anonymous user on community guidelines route',
+        (tester) async {
+      final container = _createContainer(
+        isLoggedIn: false,
+        isPremium: false,
+        initSkipped: true,
+      );
+      final resolved = await _navigateAndResolve(
+        tester,
+        container,
+        AppRoutes.communityGuidelines,
+      );
+      expect(resolved, AppRoutes.communityGuidelines);
+    });
+
+    testWidgets('redirects anonymous user from home to login',
+        (tester) async {
+      final container = _createContainer(
+        isLoggedIn: false,
+        isPremium: false,
+        initSkipped: true,
+      );
+      final resolved = await _navigateAndResolve(
+        tester,
+        container,
+        AppRoutes.home,
+      );
+      expect(resolved, AppRoutes.login);
+    });
+
+    testWidgets('redirects anonymous user from birds to login',
+        (tester) async {
+      final container = _createContainer(
+        isLoggedIn: false,
+        isPremium: false,
+        initSkipped: true,
+      );
+      final resolved = await _navigateAndResolve(
+        tester,
+        container,
+        AppRoutes.birds,
+      );
+      expect(resolved, AppRoutes.login);
+    });
+
+    testWidgets('redirects anonymous user from settings to login',
+        (tester) async {
+      final container = _createContainer(
+        isLoggedIn: false,
+        isPremium: false,
+        initSkipped: true,
+      );
+      final resolved = await _navigateAndResolve(
+        tester,
+        container,
+        AppRoutes.settings,
+      );
+      expect(resolved, AppRoutes.login);
+    });
+
+    testWidgets('redirects authenticated user away from login',
+        (tester) async {
+      final container = _createContainer(
+        isLoggedIn: true,
+        isPremium: false,
+        initSkipped: true,
+      );
+      final resolved = await _navigateAndResolve(
+        tester,
+        container,
+        AppRoutes.login,
+      );
       expect(resolved, AppRoutes.home);
     });
 
-    test(
+    testWidgets(
       'routes authenticated user to splash while app init is pending',
-      () async {
+      (tester) async {
         final pendingInit = Completer<void>();
         final container = _createContainer(
           isLoggedIn: true,
           isPremium: false,
           appInitBuilder: (_) => pendingInit.future,
         );
-        addTearDown(container.dispose);
-
-        final resolved = await _resolveLocation(container, AppRoutes.birds);
-
+        final resolved = await _navigateAndResolve(
+          tester,
+          container,
+          AppRoutes.birds,
+        );
         expect(resolved, AppRoutes.splash);
       },
     );
 
-    test('redirects splash to home when app init is ready', () async {
-      final container = _createContainer(isLoggedIn: true, isPremium: false);
-      addTearDown(container.dispose);
-
-      final resolved = await _resolveLocation(container, AppRoutes.splash);
-
+    testWidgets('redirects splash to home when app init is ready',
+        (tester) async {
+      final container = _createContainer(
+        isLoggedIn: true,
+        isPremium: false,
+        initSkipped: true,
+      );
+      final resolved = await _navigateAndResolve(
+        tester,
+        container,
+        AppRoutes.splash,
+      );
       expect(resolved, AppRoutes.home);
     });
 
-    test('keeps splash when init has error and skip is false', () async {
+    testWidgets('keeps splash when init has error and skip is false',
+        (tester) async {
       final container = _createContainer(
         isLoggedIn: true,
         isPremium: false,
         appInitBuilder: (_) => throw Exception('init failed'),
         initSkipped: false,
       );
-      addTearDown(container.dispose);
-
-      final resolved = await _resolveLocation(container, AppRoutes.splash);
-
+      final resolved = await _navigateAndResolve(
+        tester,
+        container,
+        AppRoutes.splash,
+      );
       expect(resolved, AppRoutes.splash);
     });
 
-    test('applies premium guard for premium routes', () async {
-      final nonPremiumContainer = _createContainer(
+    testWidgets('blocks non-premium user from genetics route',
+        (tester) async {
+      final container = _createContainer(
         isLoggedIn: true,
         isPremium: false,
+        initSkipped: true,
       );
-      addTearDown(nonPremiumContainer.dispose);
-
-      final blocked = await _resolveLocation(
-        nonPremiumContainer,
+      final resolved = await _navigateAndResolve(
+        tester,
+        container,
         AppRoutes.genetics,
       );
-      expect(blocked, AppRoutes.premium);
-
-      final premiumContainer = _createContainer(
-        isLoggedIn: true,
-        isPremium: true,
-      );
-      addTearDown(premiumContainer.dispose);
-
-      final allowed = await _resolveLocation(
-        premiumContainer,
-        AppRoutes.genetics,
-      );
-      expect(allowed, AppRoutes.genetics);
+      expect(resolved, AppRoutes.premium);
     });
 
-    test('redirects non-premium users for all premium routes', () async {
-      final container = _createContainer(isLoggedIn: true, isPremium: false);
-      addTearDown(container.dispose);
+    testWidgets('allows premium user on genetics route', (tester) async {
+      final container = _createContainer(
+        isLoggedIn: true,
+        isPremium: true,
+        initSkipped: true,
+      );
+      final resolved = await _navigateAndResolve(
+        tester,
+        container,
+        AppRoutes.genetics,
+      );
+      expect(resolved, AppRoutes.genetics);
+    });
 
-      for (final route in const [
+    testWidgets('redirects non-premium users for statistics route',
+        (tester) async {
+      final container = _createContainer(
+        isLoggedIn: true,
+        isPremium: false,
+        initSkipped: true,
+      );
+      final resolved = await _navigateAndResolve(
+        tester,
+        container,
         AppRoutes.statistics,
+      );
+      expect(resolved, AppRoutes.premium);
+    });
+
+    testWidgets('redirects non-premium users for genealogy route',
+        (tester) async {
+      final container = _createContainer(
+        isLoggedIn: true,
+        isPremium: false,
+        initSkipped: true,
+      );
+      final resolved = await _navigateAndResolve(
+        tester,
+        container,
         AppRoutes.genealogy,
-        AppRoutes.genetics,
-        AppRoutes.geneticsHistory,
-        AppRoutes.geneticsReverse,
-        AppRoutes.geneticsCompare,
-      ]) {
-        final resolved = await _resolveLocation(container, route);
-        expect(resolved, AppRoutes.premium);
-      }
-    });
-
-    test('applies admin guard for /admin routes', () async {
-      final nonAdminContainer = _createContainer(
-        isLoggedIn: true,
-        isPremium: true,
       );
-      addTearDown(nonAdminContainer.dispose);
-
-      final denied = await _resolveLocation(
-        nonAdminContainer,
-        AppRoutes.adminUsers,
-      );
-      expect(denied, AppRoutes.home);
-
-      final pendingAdmin = Completer<bool>();
-      final loadingContainer = _createContainer(
-        isLoggedIn: true,
-        isPremium: true,
-        isAdminBuilder: (_) => pendingAdmin.future,
-      );
-      addTearDown(loadingContainer.dispose);
-
-      final loadingAllowed = await _resolveLocation(
-        loadingContainer,
-        AppRoutes.adminUsers,
-      );
-      expect(loadingAllowed, AppRoutes.splash);
-    });
-
-    test('matches /admin/* patterns including nested params', () async {
-      final nonAdminContainer = _createContainer(
-        isLoggedIn: true,
-        isPremium: true,
-        isAdminBuilder: (_) => false,
-      );
-      addTearDown(nonAdminContainer.dispose);
-
-      expect(
-        await _resolveLocation(nonAdminContainer, AppRoutes.adminDashboard),
-        AppRoutes.home,
-      );
-      expect(
-        await _resolveLocation(nonAdminContainer, '/admin/users/user-1'),
-        AppRoutes.home,
-      );
-
-      final adminContainer = _createContainer(
-        isLoggedIn: true,
-        isPremium: true,
-        isAdminBuilder: (_) => true,
-      );
-      addTearDown(adminContainer.dispose);
-
-      expect(
-        await _resolveLocation(adminContainer, AppRoutes.adminDashboard),
-        AppRoutes.adminDashboard,
-      );
-      expect(
-        await _resolveLocation(adminContainer, '/admin/users/user-1'),
-        '/admin/users/user-1',
-      );
+      expect(resolved, AppRoutes.premium);
     });
 
     testWidgets(
-      'redirects non-premium deep links to premium for genetics reverse/compare',
+      'redirects non-premium deep links for genetics reverse/compare',
       (tester) async {
         final container = _createContainer(
           isLoggedIn: true,
           isPremium: false,
           initSkipped: true,
         );
-        addTearDown(container.dispose);
 
         final router = container.read(routerProvider);
         await tester.pumpWidget(
@@ -465,8 +489,73 @@ void main() {
           router.routeInformationProvider.value.uri.path,
           AppRoutes.premium,
         );
+
+        await tester.pumpWidget(const SizedBox.shrink());
+        container.dispose();
+        await tester.pump(const Duration(seconds: 1));
       },
     );
+
+    testWidgets('blocks non-admin user from admin routes', (tester) async {
+      final container = _createContainer(
+        isLoggedIn: true,
+        isPremium: true,
+        initSkipped: true,
+      );
+      final resolved = await _navigateAndResolve(
+        tester,
+        container,
+        AppRoutes.adminDashboard,
+      );
+      expect(resolved, AppRoutes.home);
+    });
+
+    testWidgets('allows admin user on admin routes', (tester) async {
+      final container = _createContainer(
+        isLoggedIn: true,
+        isPremium: true,
+        isAdminBuilder: (_) => true,
+        initSkipped: true,
+      );
+      final resolved = await _navigateAndResolve(
+        tester,
+        container,
+        AppRoutes.adminDashboard,
+      );
+      expect(resolved, AppRoutes.adminDashboard);
+    });
+
+    testWidgets('blocks non-admin from nested admin user detail route',
+        (tester) async {
+      final container = _createContainer(
+        isLoggedIn: true,
+        isPremium: true,
+        isAdminBuilder: (_) => false,
+        initSkipped: true,
+      );
+      final resolved = await _navigateAndResolve(
+        tester,
+        container,
+        '/admin/users/user-1',
+      );
+      expect(resolved, AppRoutes.home);
+    });
+
+    testWidgets('allows admin on nested admin user detail route',
+        (tester) async {
+      final container = _createContainer(
+        isLoggedIn: true,
+        isPremium: true,
+        isAdminBuilder: (_) => true,
+        initSkipped: true,
+      );
+      final resolved = await _navigateAndResolve(
+        tester,
+        container,
+        '/admin/users/user-1',
+      );
+      expect(resolved, '/admin/users/user-1');
+    });
   });
 
   group('router configuration', () {

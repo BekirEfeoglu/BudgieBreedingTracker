@@ -107,8 +107,21 @@ class CommunityPostRemoteSource {
     int limit = 30,
   }) async {
     try {
-      // Escape PostgREST ilike wildcards to prevent injection
-      final sanitized = query.replaceAll('\\', '\\\\').replaceAll('%', r'\%').replaceAll('_', r'\_');
+      // Sanitize PostgREST filter characters to prevent injection.
+      // Remove control chars, then escape ilike wildcards and PostgREST
+      // delimiters (commas, dots, parens) that could alter filter semantics.
+      final sanitized = query
+          .replaceAll(RegExp(r'[\x00-\x1f]'), '')
+          .replaceAll('\\', '\\\\')
+          .replaceAll('%', r'\%')
+          .replaceAll('_', r'\_')
+          .replaceAll(',', '')
+          .replaceAll('.', '')
+          .replaceAll('(', '')
+          .replaceAll(')', '');
+      if (sanitized.isEmpty) return [];
+      // Do NOT Uri.encodeComponent — PostgREST client handles encoding.
+      // Double-encoding would break search (e.g. spaces → %2520).
       final result = await _client
           .from(SupabaseConstants.communityPostsTable)
           .select()
@@ -148,17 +161,18 @@ class CommunityPostRemoteSource {
 
   /// Clears the review flag on a post after admin review.
   ///
-  /// Requires admin authorization. The caller must verify admin status
-  /// before invoking this method. RLS policies enforce this server-side
-  /// as defense-in-depth.
-  Future<void> clearReviewFlag(String postId, {required String adminUserId}) async {
-    if (adminUserId == 'anonymous') {
+  /// Uses the authenticated session's user ID instead of accepting an
+  /// external [adminUserId] parameter to prevent spoofing. RLS policies
+  /// enforce admin access server-side as defense-in-depth.
+  Future<void> clearReviewFlag(String postId) async {
+    final currentUserId = _client.auth.currentUser?.id;
+    if (currentUserId == null) {
       throw Exception('Admin authorization required');
     }
     try {
       await _client
           .from(SupabaseConstants.communityPostsTable)
-          .update({'needs_review': false, 'reviewed_by': adminUserId})
+          .update({'needs_review': false, 'reviewed_by': currentUserId})
           .eq('id', postId);
     } catch (e, st) {
       AppLogger.error('CommunityPostRemoteSource.clearReviewFlag', e, st);

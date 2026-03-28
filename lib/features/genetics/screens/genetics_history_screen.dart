@@ -113,9 +113,10 @@ class _GeneticsHistoryScreenState extends ConsumerState<GeneticsHistoryScreen> {
       floatingActionButton: _selectedIds.length >= 2
           ? FloatingActionButton.extended(
               onPressed: () {
+                final ids = _selectedIds.toList();
                 context.push(
-                  AppRoutes.geneticsCompare,
-                  extra: _selectedIds.toList(),
+                  '${AppRoutes.geneticsCompare}?ids=${ids.join(',')}',
+                  extra: ids,
                 );
                 _clearSelection();
               },

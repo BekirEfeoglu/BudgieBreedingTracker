@@ -9,127 +9,126 @@ final quickInsightsProvider =
       final pairsAsync = ref.watch(breedingPairsStreamProvider(userId));
       final trendAsync = ref.watch(trendStatsProvider(userId));
 
-      return eggsAsync.when(
-        loading: () => const AsyncLoading(),
-        error: (e, st) => AsyncError(e, st),
-        data: (eggs) => chicksAsync.when(
-          loading: () => const AsyncLoading(),
-          error: (e, st) => AsyncError(e, st),
-          data: (chicks) => pairsAsync.when(
-            loading: () => const AsyncLoading(),
-            error: (e, st) => AsyncError(e, st),
-            data: (pairs) {
-              final range = buildStatsDateRange(period);
+      // Fast-fail on any error
+      for (final a in [eggsAsync, chicksAsync, pairsAsync, trendAsync]) {
+        if (a.hasError) return AsyncError(a.error!, a.stackTrace ?? StackTrace.empty);
+      }
+      // Loading if any stream hasn't resolved
+      if (eggsAsync.isLoading ||
+          chicksAsync.isLoading ||
+          pairsAsync.isLoading ||
+          trendAsync.isLoading) {
+        return const AsyncLoading();
+      }
 
-              final insights = <QuickInsight>[];
-              final trends = trendAsync.value;
+      final eggs = eggsAsync.requireValue;
+      final chicks = chicksAsync.requireValue;
+      final pairs = pairsAsync.requireValue;
+      final range = buildStatsDateRange(period);
 
-              // Egg production insight
-              final periodEggs = eggs
-                  .where((e) => range.isInCurrent(e.layDate))
-                  .length;
-              if (periodEggs > 0) {
-                final trendText = trends != null && trends.eggsTrend.abs() > 0
-                    ? ' (${trends.eggsTrend > 0 ? "+" : ""}${trends.eggsTrend.toStringAsFixed(0)}%)'
-                    : '';
-                insights.add(
-                  QuickInsight(
-                    text: 'statistics.insight_egg_production'.tr(
-                      args: ['$periodEggs$trendText'],
-                    ),
-                    sentiment: trends == null
-                        ? InsightSentiment.neutral
-                        : (trends.eggsTrend >= 0
-                              ? InsightSentiment.positive
-                              : InsightSentiment.negative),
-                  ),
-                );
-              }
+      final insights = <QuickInsight>[];
+      final trends = trendAsync.value;
 
-              // Fertility rate insight
-              final fertile = eggs
-                  .where(
-                    (e) =>
-                        range.isInCurrent(e.layDate) &&
-                        (e.status == EggStatus.fertile ||
-                            e.status == EggStatus.hatched),
-                  )
-                  .length;
-              final infertile = eggs
-                  .where(
-                    (e) =>
-                        range.isInCurrent(e.layDate) &&
-                        e.status == EggStatus.infertile,
-                  )
-                  .length;
-              final checked = fertile + infertile;
-              if (checked > 0) {
-                final rate = (fertile / checked * 100).toStringAsFixed(0);
-                insights.add(
-                  QuickInsight(
-                    text: 'statistics.insight_fertility'.tr(args: [rate]),
-                    sentiment: (fertile / checked) >= 0.5
-                        ? InsightSentiment.positive
-                        : InsightSentiment.negative,
-                  ),
-                );
-              }
-
-              // Chick survival insight
-              final periodChicks = chicks
-                  .where(
-                    (c) =>
-                        c.hatchDate != null && range.isInCurrent(c.hatchDate!),
-                  )
-                  .toList();
-              final survivedChicks = periodChicks
-                  .where((c) => c.healthStatus != ChickHealthStatus.deceased)
-                  .length;
-              if (periodChicks.isNotEmpty) {
-                insights.add(
-                  QuickInsight(
-                    text: 'statistics.insight_chick_survival'.tr(
-                      args: ['$survivedChicks'],
-                    ),
-                    sentiment: survivedChicks >= periodChicks.length * 0.7
-                        ? InsightSentiment.positive
-                        : InsightSentiment.negative,
-                  ),
-                );
-              }
-
-              // Active breeding insight
-              final activeBreedings = pairs
-                  .where(
-                    (p) =>
-                        p.status == BreedingStatus.active ||
-                        p.status == BreedingStatus.ongoing,
-                  )
-                  .length;
-              if (activeBreedings > 0) {
-                insights.add(
-                  QuickInsight(
-                    text: 'statistics.insight_breeding_active'.tr(
-                      args: ['$activeBreedings'],
-                    ),
-                    sentiment: InsightSentiment.neutral,
-                  ),
-                );
-              }
-
-              // No data fallback
-              if (insights.isEmpty) {
-                insights.add(
-                  QuickInsight(
-                    text: 'statistics.insight_no_data'.tr(),
-                    sentiment: InsightSentiment.neutral,
-                  ),
-                );
-              }
-
-              return AsyncData(insights);
-            },
+      // Egg production insight
+      final periodEggs =
+          eggs.where((e) => range.isInCurrent(e.layDate)).length;
+      if (periodEggs > 0) {
+        final trendText = trends != null && trends.eggsTrend.abs() > 0
+            ? ' (${trends.eggsTrend > 0 ? "+" : ""}${trends.eggsTrend.toStringAsFixed(0)}%)'
+            : '';
+        insights.add(
+          QuickInsight(
+            text: 'statistics.insight_egg_production'.tr(
+              args: ['$periodEggs$trendText'],
+            ),
+            sentiment: trends == null
+                ? InsightSentiment.neutral
+                : (trends.eggsTrend >= 0
+                      ? InsightSentiment.positive
+                      : InsightSentiment.negative),
           ),
-        ),
-      );
+        );
+      }
+
+      // Fertility rate insight
+      final fertile = eggs
+          .where(
+            (e) =>
+                range.isInCurrent(e.layDate) &&
+                (e.status == EggStatus.fertile ||
+                    e.status == EggStatus.hatched),
+          )
+          .length;
+      final infertile = eggs
+          .where(
+            (e) =>
+                range.isInCurrent(e.layDate) &&
+                e.status == EggStatus.infertile,
+          )
+          .length;
+      final checked = fertile + infertile;
+      if (checked > 0) {
+        final rate = (fertile / checked * 100).toStringAsFixed(0);
+        insights.add(
+          QuickInsight(
+            text: 'statistics.insight_fertility'.tr(args: [rate]),
+            sentiment: (fertile / checked) >= 0.5
+                ? InsightSentiment.positive
+                : InsightSentiment.negative,
+          ),
+        );
+      }
+
+      // Chick survival insight
+      final periodChicks = chicks
+          .where(
+            (c) => c.hatchDate != null && range.isInCurrent(c.hatchDate!),
+          )
+          .toList();
+      final survivedChicks = periodChicks
+          .where((c) => c.healthStatus != ChickHealthStatus.deceased)
+          .length;
+      if (periodChicks.isNotEmpty) {
+        insights.add(
+          QuickInsight(
+            text: 'statistics.insight_chick_survival'.tr(
+              args: ['$survivedChicks'],
+            ),
+            sentiment: survivedChicks >= periodChicks.length * 0.7
+                ? InsightSentiment.positive
+                : InsightSentiment.negative,
+          ),
+        );
+      }
+
+      // Active breeding insight
+      final activeBreedings = pairs
+          .where(
+            (p) =>
+                p.status == BreedingStatus.active ||
+                p.status == BreedingStatus.ongoing,
+          )
+          .length;
+      if (activeBreedings > 0) {
+        insights.add(
+          QuickInsight(
+            text: 'statistics.insight_breeding_active'.tr(
+              args: ['$activeBreedings'],
+            ),
+            sentiment: InsightSentiment.neutral,
+          ),
+        );
+      }
+
+      // No data fallback
+      if (insights.isEmpty) {
+        insights.add(
+          QuickInsight(
+            text: 'statistics.insight_no_data'.tr(),
+            sentiment: InsightSentiment.neutral,
+          ),
+        );
+      }
+
+      return AsyncData(insights);
     });

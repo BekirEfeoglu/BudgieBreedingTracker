@@ -32,7 +32,7 @@ void main() {
     test('does nothing when no session exists', () async {
       when(() => mockAuth.currentSession).thenReturn(null);
 
-      await expectLater(actions.revokeOAuthToken(), completes);
+      await actions.revokeOAuthToken();
 
       verifyNever(() => mockClient.functions);
     });
@@ -43,7 +43,7 @@ void main() {
       when(() => session.providerToken).thenReturn(null);
       when(() => session.providerRefreshToken).thenReturn(null);
 
-      await expectLater(actions.revokeOAuthToken(), completes);
+      await actions.revokeOAuthToken();
 
       verifyNever(
         () => mockFunctions.invoke(any(), body: any(named: 'body')),
@@ -59,7 +59,7 @@ void main() {
       when(() => mockAuth.currentUser).thenReturn(user);
       when(() => user.appMetadata).thenReturn({'provider': 'email'});
 
-      await expectLater(actions.revokeOAuthToken(), completes);
+      await actions.revokeOAuthToken();
 
       verifyNever(
         () => mockFunctions.invoke(any(), body: any(named: 'body')),
@@ -155,7 +155,11 @@ void main() {
       ).thenThrow(Exception('Edge function unavailable'));
 
       // Should NOT throw — errors are caught and logged
-      await expectLater(actions.revokeOAuthToken(), completes);
+      await actions.revokeOAuthToken();
+
+      verify(
+        () => mockFunctions.invoke(any(), body: any(named: 'body')),
+      ).called(1);
     });
 
     test('does nothing when provider is null in metadata', () async {
@@ -167,7 +171,7 @@ void main() {
       when(() => mockAuth.currentUser).thenReturn(user);
       when(() => user.appMetadata).thenReturn(<String, dynamic>{});
 
-      await expectLater(actions.revokeOAuthToken(), completes);
+      await actions.revokeOAuthToken();
 
       verifyNever(
         () => mockFunctions.invoke(any(), body: any(named: 'body')),

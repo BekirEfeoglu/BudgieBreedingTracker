@@ -147,7 +147,7 @@ void main() {
       repository.throwOnPush = true;
       const item = _TestEntity(id: 'entity-1', userId: _userId);
 
-      await expectLater(repository.tryImmediatePush(item), completes);
+      await repository.tryImmediatePush(item);
       expect(repository.pushedIds, isEmpty);
     });
   });
@@ -280,14 +280,27 @@ void main() {
       verifyNever(() => mockSyncDao.deleteByRecord(_tableName, 'entity-4'));
     });
 
-    test('markSyncError is no-op when metadata does not exist', () async {
-      when(
-        () => mockSyncDao.getByRecord(_tableName, 'entity-5'),
-      ).thenAnswer((_) async => null);
+    test(
+      'markSyncError creates new error entry when metadata does not exist',
+      () async {
+        when(
+          () => mockSyncDao.getByRecord(_tableName, 'entity-5'),
+        ).thenAnswer((_) async => null);
+        when(() => mockSyncDao.insertItem(any())).thenAnswer((_) async {});
 
-      await repository.markSyncError('entity-5', _userId, 'missing parent');
+        await repository.markSyncError('entity-5', _userId, 'missing parent');
 
-      verifyNever(() => mockSyncDao.updateItem(any()));
-    });
+        verifyNever(() => mockSyncDao.updateItem(any()));
+        final captured = verify(() => mockSyncDao.insertItem(captureAny()))
+            .captured
+            .single as SyncMetadata;
+        expect(captured.table, _tableName);
+        expect(captured.recordId, 'entity-5');
+        expect(captured.userId, _userId);
+        expect(captured.status, SyncStatus.error);
+        expect(captured.errorMessage, 'missing parent');
+        expect(captured.retryCount, 1);
+      },
+    );
   });
 }

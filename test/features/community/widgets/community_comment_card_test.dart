@@ -11,6 +11,7 @@ import 'package:budgie_breeding_tracker/data/repositories/community_social_repos
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/features/community/providers/community_feed_providers.dart';
 import 'package:budgie_breeding_tracker/features/community/widgets/community_comment_tile.dart';
+import 'package:budgie_breeding_tracker/features/notifications/providers/action_feedback_providers.dart';
 
 class MockCommunityCommentRepository extends Mock
     implements CommunityCommentRepository {}
@@ -268,6 +269,11 @@ void main() {
     });
 
     testWidgets('report submits and shows success snackbar', (tester) async {
+      ActionFeedbackService.resetForTesting();
+      final received = <ActionFeedback>[];
+      final sub = ActionFeedbackService.stream.listen(received.add);
+      addTearDown(sub.cancel);
+
       when(
         () => mockSocialRepo.reportContent(
           userId: any(named: 'userId'),
@@ -290,9 +296,12 @@ void main() {
 
       // Select spam reason
       await tester.tap(find.text('community.report_reason_spam'));
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump();
 
-      expect(find.text('community.report_submitted'), findsOneWidget);
+      // Success goes through ActionFeedbackService
+      expect(received, hasLength(1));
+      expect(received.first.message, 'community.report_submitted');
 
       verify(
         () => mockSocialRepo.reportContent(

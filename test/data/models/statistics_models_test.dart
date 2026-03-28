@@ -33,45 +33,6 @@ void main() {
       expect(restored, stats);
     });
 
-    test('EggStatistics fromJson/toJson round-trip', () {
-      const stats = EggStatistics(
-        total: 50,
-        incubating: 12,
-        hatched: 20,
-        fertile: 25,
-        infertile: 5,
-        hatchRate: 0.8,
-        fertilityRate: 0.83,
-      );
-
-      final restored = EggStatistics.fromJson(stats.toJson());
-      expect(restored, stats);
-    });
-
-    test('ChickStatistics fromJson/toJson round-trip', () {
-      const stats = ChickStatistics(
-        total: 15,
-        thisMonth: 6,
-        averageHatchWeight: 3.4,
-        survivalRate: 0.9,
-      );
-
-      final restored = ChickStatistics.fromJson(stats.toJson());
-      expect(restored, stats);
-    });
-
-    test('BreedingStatistics fromJson/toJson round-trip', () {
-      const stats = BreedingStatistics(
-        active: 2,
-        completed: 8,
-        successRate: 0.75,
-        averageCycleLength: 42.0,
-      );
-
-      final restored = BreedingStatistics.fromJson(stats.toJson());
-      expect(restored, stats);
-    });
-
     test('SummaryStats fromJson/toJson round-trip', () {
       const stats = SummaryStats(
         totalBirds: 100,
@@ -112,17 +73,11 @@ void main() {
     test('defaults are applied when json is empty', () {
       final dashboard = DashboardStats.fromJson({});
       final birdStats = BirdStatistics.fromJson({});
-      final eggStats = EggStatistics.fromJson({});
-      final chickStats = ChickStatistics.fromJson({});
-      final breedingStats = BreedingStatistics.fromJson({});
       final summaryStats = SummaryStats.fromJson({});
       final chickSurvival = ChickSurvivalData.fromJson({});
 
       expect(dashboard.totalBirds, 0);
       expect(birdStats.total, 0);
-      expect(eggStats.hatchRate, 0.0);
-      expect(chickStats.averageHatchWeight, 0.0);
-      expect(breedingStats.successRate, 0.0);
       expect(summaryStats.totalHealthRecords, 0);
       expect(chickSurvival.survivalRate, 0.0);
     });

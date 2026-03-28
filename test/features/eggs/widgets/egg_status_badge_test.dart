@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:budgie_breeding_tracker/core/enums/egg_enums.dart';
+import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
+import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/features/eggs/widgets/egg_status_chip.dart';
 
 void main() {
@@ -33,9 +35,7 @@ void main() {
       expect(find.text('eggs.status_infertile'), findsOneWidget);
     });
 
-    testWidgets('renders incubating status with correct label', (
-      tester,
-    ) async {
+    testWidgets('renders incubating status with correct label', (tester) async {
       await tester.pumpWidget(createSubject(EggStatus.incubating));
       await tester.pump();
 
@@ -106,30 +106,32 @@ void main() {
       await tester.pumpWidget(createSubject(EggStatus.laid));
       await tester.pump();
 
-      final container = tester.widgetList<Container>(
-        find.byType(Container),
-      ).where((c) => c.decoration is BoxDecoration).firstOrNull;
+      final container = tester
+          .widgetList<Container>(find.byType(Container))
+          .where((c) => c.decoration is BoxDecoration)
+          .firstOrNull;
 
-      expect(container, isNotNull);
-      if (container != null) {
-        final decoration = container.decoration! as BoxDecoration;
-        expect(decoration.borderRadius, isNotNull);
-      }
+      final decoration = container!.decoration! as BoxDecoration;
+      expect(
+        decoration.borderRadius,
+        BorderRadius.circular(AppSpacing.radiusFull),
+      );
     });
 
     testWidgets('has a border in the decoration', (tester) async {
       await tester.pumpWidget(createSubject(EggStatus.incubating));
       await tester.pump();
 
-      final container = tester.widgetList<Container>(
-        find.byType(Container),
-      ).where((c) => c.decoration is BoxDecoration).firstOrNull;
+      final container = tester
+          .widgetList<Container>(find.byType(Container))
+          .where((c) => c.decoration is BoxDecoration)
+          .firstOrNull;
 
-      expect(container, isNotNull);
-      if (container != null) {
-        final decoration = container.decoration! as BoxDecoration;
-        expect(decoration.border, isNotNull);
-      }
+      final decoration = container!.decoration! as BoxDecoration;
+      expect(
+        decoration.border,
+        Border.all(color: AppColors.stageOngoing.withValues(alpha: 0.3)),
+      );
     });
 
     testWidgets('text uses small bold font style', (tester) async {
@@ -149,18 +151,19 @@ void main() {
       // Render laid
       await tester.pumpWidget(createSubject(EggStatus.laid));
       await tester.pump();
-      final laidContainer = tester.widgetList<Container>(
-        find.byType(Container),
-      ).where((c) => c.decoration is BoxDecoration).first;
-      final laidColor =
-          (laidContainer.decoration! as BoxDecoration).color;
+      final laidContainer = tester
+          .widgetList<Container>(find.byType(Container))
+          .where((c) => c.decoration is BoxDecoration)
+          .first;
+      final laidColor = (laidContainer.decoration! as BoxDecoration).color;
 
       // Render hatched
       await tester.pumpWidget(createSubject(EggStatus.hatched));
       await tester.pump();
-      final hatchedContainer = tester.widgetList<Container>(
-        find.byType(Container),
-      ).where((c) => c.decoration is BoxDecoration).first;
+      final hatchedContainer = tester
+          .widgetList<Container>(find.byType(Container))
+          .where((c) => c.decoration is BoxDecoration)
+          .first;
       final hatchedColor =
           (hatchedContainer.decoration! as BoxDecoration).color;
 
@@ -173,17 +176,19 @@ void main() {
     ) async {
       await tester.pumpWidget(createSubject(EggStatus.damaged));
       await tester.pump();
-      final damagedContainer = tester.widgetList<Container>(
-        find.byType(Container),
-      ).where((c) => c.decoration is BoxDecoration).first;
+      final damagedContainer = tester
+          .widgetList<Container>(find.byType(Container))
+          .where((c) => c.decoration is BoxDecoration)
+          .first;
       final damagedColor =
           (damagedContainer.decoration! as BoxDecoration).color;
 
       await tester.pumpWidget(createSubject(EggStatus.fertile));
       await tester.pump();
-      final fertileContainer = tester.widgetList<Container>(
-        find.byType(Container),
-      ).where((c) => c.decoration is BoxDecoration).first;
+      final fertileContainer = tester
+          .widgetList<Container>(find.byType(Container))
+          .where((c) => c.decoration is BoxDecoration)
+          .first;
       final fertileColor =
           (fertileContainer.decoration! as BoxDecoration).color;
 

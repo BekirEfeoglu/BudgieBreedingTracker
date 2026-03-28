@@ -4,10 +4,11 @@ import 'package:budgie_breeding_tracker/features/premium/providers/premium_provi
 
 void main() {
   group('PremiumPlan.fromProductId', () {
-    test('maps monthly variants', () {
-      expect(PremiumPlan.fromProductId('premium_monthly'), PremiumPlan.monthly);
-      expect(PremiumPlan.fromProductId('budgie_month_plan'), PremiumPlan.monthly);
-      expect(PremiumPlan.fromProductId('PREMIUM_MONTHLY'), PremiumPlan.monthly);
+    test('maps semi-annual variants', () {
+      expect(PremiumPlan.fromProductId('premium_semi_annual'), PremiumPlan.semiAnnual);
+      expect(PremiumPlan.fromProductId('budgie_semiannual_plan'), PremiumPlan.semiAnnual);
+      expect(PremiumPlan.fromProductId('premium_6_month'), PremiumPlan.semiAnnual);
+      expect(PremiumPlan.fromProductId('budgie_6month_plan'), PremiumPlan.semiAnnual);
     });
 
     test('maps yearly/annual variants', () {
@@ -17,12 +18,6 @@ void main() {
       expect(PremiumPlan.fromProductId('ANNUAL_PLAN'), PremiumPlan.yearly);
     });
 
-    test('maps lifetime variants', () {
-      expect(PremiumPlan.fromProductId('premium_lifetime'), PremiumPlan.lifetime);
-      expect(PremiumPlan.fromProductId('budgie_life_plan'), PremiumPlan.lifetime);
-      expect(PremiumPlan.fromProductId('LIFETIME_ACCESS'), PremiumPlan.lifetime);
-    });
-
     test('returns null for unrecognized product IDs', () {
       expect(PremiumPlan.fromProductId('unknown_plan'), isNull);
       expect(PremiumPlan.fromProductId('premium_weekly'), isNull);
@@ -30,9 +25,9 @@ void main() {
     });
 
     test('is case-insensitive', () {
-      expect(PremiumPlan.fromProductId('Monthly'), PremiumPlan.monthly);
+      expect(PremiumPlan.fromProductId('SEMI_ANNUAL'), PremiumPlan.semiAnnual);
       expect(PremiumPlan.fromProductId('YEARLY'), PremiumPlan.yearly);
-      expect(PremiumPlan.fromProductId('Lifetime'), PremiumPlan.lifetime);
+      expect(PremiumPlan.fromProductId('6_MONTH'), PremiumPlan.semiAnnual);
     });
   });
 

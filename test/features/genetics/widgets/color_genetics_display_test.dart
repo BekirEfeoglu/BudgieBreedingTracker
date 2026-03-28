@@ -177,8 +177,8 @@ void main() {
         phenotype: '',
       );
 
-      expect(appearance, isNotNull);
-      expect(appearance.bodyColor, isNotNull);
+      expect(appearance.bodyColor, BudgiePhenotypePalette.lightGreen);
+      expect(appearance.maskColor, BudgiePhenotypePalette.maskYellow);
     });
   });
 

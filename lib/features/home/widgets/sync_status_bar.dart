@@ -97,7 +97,7 @@ class _SyncStatusBarState extends ConsumerState<SyncStatusBar>
         child: Container(
           width: double.infinity,
           padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
-          color: theme.colorScheme.surfaceContainerLow,
+          color: color.withValues(alpha: 0.12),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             mainAxisSize: MainAxisSize.min,
@@ -113,7 +113,8 @@ class _SyncStatusBarState extends ConsumerState<SyncStatusBar>
                 label,
                 style: theme.textTheme.labelSmall?.copyWith(
                   fontSize: 11,
-                  color: theme.colorScheme.onSurfaceVariant,
+                  fontWeight: FontWeight.w500,
+                  color: color,
                 ),
               ),
             ],

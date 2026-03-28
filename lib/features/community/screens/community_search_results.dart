@@ -34,30 +34,10 @@ class _UserResultsList extends StatelessWidget {
       separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.sm),
       itemBuilder: (context, index) {
         final user = users[index];
-        return Card(
-          child: ListTile(
-            onTap: () => context.push(
-              AppRoutes.communityUserPosts.replaceFirst(':userId', user.userId),
-            ),
-            leading: CircleAvatar(
-              foregroundImage: user.avatarUrl != null
-                  ? NetworkImage(user.avatarUrl!)
-                  : null,
-              child: user.avatarUrl == null
-                  ? Text(
-                      user.username.isNotEmpty
-                          ? user.username[0].toUpperCase()
-                          : '?',
-                    )
-                  : null,
-            ),
-            title: Text(user.username),
-            subtitle: Text(
-              'community.user_posts_count'.tr(args: ['${user.postCount}']),
-            ),
-            trailing: Text(
-              'community.likes_count'.tr(args: ['${user.totalLikes}']),
-            ),
+        return _CommunityUserTile(
+          user: user,
+          trailing: Text(
+            'community.likes_count'.tr(args: ['${user.totalLikes}']),
           ),
         );
       },

@@ -79,10 +79,7 @@ void main() {
         visualMutations: ['cinnamon'],
         phenotype: 'Cinnamon Light Green',
       );
-      expect(
-        result.throatSpotColor,
-        equals(BudgiePhenotypePalette.cinnamon),
-      );
+      expect(result.throatSpotColor, equals(BudgiePhenotypePalette.cinnamon));
     });
 
     test('blue series has dark blue tail', () {
@@ -148,7 +145,11 @@ void main() {
         visualMutations: ['texas_clearbody'],
         phenotype: 'Texas Clearbody Light Green',
       );
-      expect(result.backColor, isNotNull);
+      expect(result.backColor, isNot(result.bodyColor));
+      expect(
+        result.backColor!.computeLuminance(),
+        greaterThan(result.bodyColor.computeLuminance()),
+      );
     });
 
     test('fallow beak color is warm orange', () {

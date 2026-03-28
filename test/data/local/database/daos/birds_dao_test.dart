@@ -107,7 +107,10 @@ void main() {
     });
 
     test('empty list completes without error', () async {
-      await expectLater(dao.insertAll([]), completes);
+      await dao.insertAll([]);
+
+      final all = await dao.getAll(userId);
+      expect(all, isEmpty);
     });
   });
 

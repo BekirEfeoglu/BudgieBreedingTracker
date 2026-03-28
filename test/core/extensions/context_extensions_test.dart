@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:budgie_breeding_tracker/core/extensions/context_extensions.dart';
+import 'package:budgie_breeding_tracker/features/notifications/providers/action_feedback_providers.dart';
 
 void main() {
   group('ContextExtensions', () {
@@ -100,6 +101,11 @@ void main() {
     });
 
     testWidgets('showSnackBar displays a default SnackBar', (tester) async {
+      ActionFeedbackService.resetForTesting();
+      final received = <ActionFeedback>[];
+      final sub = ActionFeedbackService.stream.listen(received.add);
+      addTearDown(sub.cancel);
+
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -116,9 +122,12 @@ void main() {
       );
 
       await tester.tap(find.text('Show'));
-      await tester.pumpAndSettle();
+      await tester.pump();
 
-      expect(find.text('Test message'), findsOneWidget);
+      // Default (non-error) messages go through ActionFeedbackService
+      expect(received, hasLength(1));
+      expect(received.first.message, 'Test message');
+      expect(received.first.type, ActionFeedbackType.info);
     });
 
     testWidgets('showSnackBar with isError uses error color', (tester) async {
@@ -144,7 +153,12 @@ void main() {
       expect(find.text('Error!'), findsOneWidget);
     });
 
-    testWidgets('showSnackBar with isSuccess uses green color', (tester) async {
+    testWidgets('showSnackBar with isSuccess uses ActionFeedbackService', (tester) async {
+      ActionFeedbackService.resetForTesting();
+      final received = <ActionFeedback>[];
+      final sub = ActionFeedbackService.stream.listen(received.add);
+      addTearDown(sub.cancel);
+
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -162,9 +176,12 @@ void main() {
       );
 
       await tester.tap(find.text('Show'));
-      await tester.pumpAndSettle();
+      await tester.pump();
 
-      expect(find.text('Done!'), findsOneWidget);
+      // Success messages go through ActionFeedbackService with success type
+      expect(received, hasLength(1));
+      expect(received.first.message, 'Done!');
+      expect(received.first.type, ActionFeedbackType.success);
     });
   });
 }

@@ -11,6 +11,7 @@ import '../../../core/widgets/dialogs/confirm_dialog.dart';
 import '../../../domain/services/sync/sync_orchestrator.dart';
 import '../../../domain/services/sync/sync_providers.dart';
 import '../providers/admin_actions_provider.dart';
+import '../../notifications/providers/action_feedback_providers.dart';
 import '../providers/admin_providers.dart';
 import 'admin_database_table_widgets.dart';
 
@@ -32,13 +33,7 @@ class DatabaseContent extends ConsumerWidget {
     ref.listen<AdminActionState>(adminActionsProvider, (prev, next) {
       final messenger = ScaffoldMessenger.of(context);
       if (next.isSuccess && next.successMessage != null) {
-        messenger.showSnackBar(
-          SnackBar(
-            content: Text(next.successMessage!),
-            backgroundColor: AppColors.success,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
+        ActionFeedbackService.show(next.successMessage!);
         ref.invalidate(adminDatabaseInfoProvider);
       } else if (next.error != null) {
         messenger.showSnackBar(
@@ -202,8 +197,8 @@ class DatabaseGlobalActionsBar extends ConsumerWidget {
       isDestructive: true,
     );
     if (confirmed != true) return;
-
     if (!context.mounted) return;
+
     final doubleConfirmed = await showConfirmDialog(
       context,
       title: 'admin.reset_all_double_title'.tr(),
@@ -211,9 +206,11 @@ class DatabaseGlobalActionsBar extends ConsumerWidget {
       isDestructive: true,
     );
     if (doubleConfirmed != true) return;
+    if (!context.mounted) return;
 
     final notifier = ref.read(adminActionsProvider.notifier);
     final success = await notifier.resetAllUserData();
+    if (!context.mounted) return;
 
     if (success) {
       final result = await ref.read(syncOrchestratorProvider).forceFullSync();

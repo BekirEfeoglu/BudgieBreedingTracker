@@ -1,0 +1,68 @@
+#!/usr/bin/env bash
+# Pre-commit hook: degisiklige gore hedefli kontroller calistirir.
+#
+# Etkinlestirmek icin:
+#   git config core.hooksPath .githooks
+#
+# Kapsam:
+#   scripts/     degisirse → script unit testleri + coverage (>=83%)
+#   *.dart       degisirse → flutter analyze
+#   translations/ degisirse → check_l10n_sync.py
+
+set -e
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+cd "$REPO_ROOT"
+
+CHANGED=$(git diff --cached --name-only)
+
+# ── 1. Script testleri ─────────────────────────────────────────────────────
+CHANGED_SCRIPTS=$(echo "$CHANGED" | grep '^scripts/' || true)
+if [ -n "$CHANGED_SCRIPTS" ]; then
+  echo "==> Scripts degisikligi tespit edildi, birim testler calistiriliyor..."
+
+  if ! python3 -m coverage --version &>/dev/null; then
+    echo "  [UYARI] 'coverage' paketi bulunamadi. pip install coverage ile yukleyin."
+    echo "  Script testleri atlaniyor."
+  else
+    python3 -m coverage run \
+      --source=scripts \
+      --omit="scripts/test_*.py" \
+      -m unittest discover -s scripts -p "test_*.py" -v --failfast
+
+    python3 -m coverage report \
+      --include="scripts/*.py" \
+      --omit="scripts/test_*.py" \
+      --fail-under=83
+
+    echo "==> Script testleri basarili."
+  fi
+fi
+
+# ── 2. Flutter analyze ─────────────────────────────────────────────────────
+CHANGED_DART=$(echo "$CHANGED" | grep '\.dart$' || true)
+if [ -n "$CHANGED_DART" ]; then
+  echo "==> Dart degisikligi tespit edildi, flutter analyze calistiriliyor..."
+
+  if ! flutter --version &>/dev/null; then
+    echo "  [UYARI] flutter komutu bulunamadi. Analyze atlaniyor."
+  else
+    flutter analyze --no-fatal-infos \
+      --dart-define=SUPABASE_URL=https://placeholder.supabase.co \
+      --dart-define=SUPABASE_ANON_KEY=placeholder_key
+    echo "==> Flutter analyze basarili."
+  fi
+fi
+
+# ── 3. L10n sync ───────────────────────────────────────────────────────────
+CHANGED_L10N=$(echo "$CHANGED" | grep '^assets/translations/' || true)
+if [ -n "$CHANGED_L10N" ]; then
+  echo "==> Ceviri degisikligi tespit edildi, l10n sync kontrol ediliyor..."
+
+  if ! python3 --version &>/dev/null; then
+    echo "  [UYARI] python3 bulunamadi. L10n kontrol atlaniyor."
+  else
+    python3 scripts/check_l10n_sync.py --strict-keys
+    echo "==> L10n sync basarili."
+  fi
+fi

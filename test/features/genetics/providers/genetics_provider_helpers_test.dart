@@ -58,10 +58,7 @@ void main() {
       // For female, sex-linked mutations are always visual (hemizygous)
       container.read(motherGenotypeProvider.notifier).state = ParentGenotype(
         gender: BirdGender.female,
-        mutations: {
-          'ino': AlleleState.visual,
-          'opaline': AlleleState.visual,
-        },
+        mutations: {'ino': AlleleState.visual, 'opaline': AlleleState.visual},
       );
 
       final mutations = container.read(motherMutationsProvider);
@@ -78,10 +75,7 @@ void main() {
         mutations: {'ino': AlleleState.carrier},
       );
 
-      expect(
-        container.read(fatherMutationsProvider),
-        isNot(contains('ino')),
-      );
+      expect(container.read(fatherMutationsProvider), isNot(contains('ino')));
     });
 
     test('sex-linked visual in male IS visual', () {
@@ -104,9 +98,12 @@ void main() {
         gender: BirdGender.male,
         mutations: {
           'blue': AlleleState.visual, // autosomal recessive, visual -> yes
-          'violet': AlleleState.carrier, // autosomal incomplete dominant carrier -> yes
-          'ino': AlleleState.carrier, // sex-linked recessive, carrier in male -> no
-          'spangle': AlleleState.visual, // autosomal incomplete dominant visual -> yes
+          'violet': AlleleState
+              .carrier, // autosomal incomplete dominant carrier -> yes
+          'ino': AlleleState
+              .carrier, // sex-linked recessive, carrier in male -> no
+          'spangle':
+              AlleleState.visual, // autosomal incomplete dominant visual -> yes
         },
       );
 
@@ -142,22 +139,17 @@ void main() {
 
       container.read(fatherGenotypeProvider.notifier).state = ParentGenotype(
         gender: BirdGender.male,
-        mutations: {
-          'opaline': AlleleState.visual,
-          'blue': AlleleState.visual,
-        },
+        mutations: {'opaline': AlleleState.visual, 'blue': AlleleState.visual},
       );
 
       final loci = container.read(availablePunnettLociProvider);
       expect(loci, isNotEmpty);
-      // Should be sorted: blue_series (B) comes before opaline (O)
-      if (loci.length >= 2) {
-        final indexBlue = loci.indexOf('blue_series');
-        final indexOpaline = loci.indexOf('opaline');
-        if (indexBlue >= 0 && indexOpaline >= 0) {
-          expect(indexBlue, lessThan(indexOpaline));
-        }
-      }
+      expect(loci, containsAll(['blue_series', 'opaline']));
+      final indexBlue = loci.indexOf('blue_series');
+      final indexOpaline = loci.indexOf('opaline');
+      expect(indexBlue, greaterThanOrEqualTo(0));
+      expect(indexOpaline, greaterThanOrEqualTo(0));
+      expect(indexBlue, lessThan(indexOpaline));
     });
 
     test('uses known locus display names for sorting', () {

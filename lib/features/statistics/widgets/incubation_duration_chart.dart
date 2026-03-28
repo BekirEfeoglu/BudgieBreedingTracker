@@ -7,6 +7,7 @@ import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/data/models/statistics_models.dart';
 import 'package:budgie_breeding_tracker/features/statistics/widgets/chart_card.dart';
 import 'package:budgie_breeding_tracker/features/statistics/widgets/chart_legend_item.dart';
+import 'package:budgie_breeding_tracker/features/statistics/widgets/chart_utils.dart';
 
 /// Bar chart showing actual incubation days vs the expected 18-day reference.
 class IncubationDurationChart extends StatelessWidget {
@@ -28,6 +29,8 @@ class IncubationDurationChart extends StatelessWidget {
         maxVal = item.actualDays.toDouble();
       }
     }
+    final yInterval = calcChartInterval(maxVal);
+    final maxY = calcChartMaxY(maxVal, yInterval);
 
     return Column(
       children: [
@@ -37,7 +40,7 @@ class IncubationDurationChart extends StatelessWidget {
             child: BarChart(
               BarChartData(
                 alignment: BarChartAlignment.spaceAround,
-                maxY: maxVal + 3,
+                maxY: maxY,
                 barTouchData: BarTouchData(
                   touchTooltipData: BarTouchTooltipData(
                     getTooltipItem: (group, groupIndex, rod, rodIndex) {
@@ -63,9 +66,11 @@ class IncubationDurationChart extends StatelessWidget {
                     sideTitles: SideTitles(
                       showTitles: true,
                       reservedSize: 28,
-                      interval: 3,
+                      interval: yInterval,
                       getTitlesWidget: (value, meta) {
-                        if (value % 3 != 0) return const SizedBox.shrink();
+                        if (value % yInterval != 0 || value == 0) {
+                          return const SizedBox.shrink();
+                        }
                         return Text(
                           value.toInt().toString(),
                           style: theme.textTheme.labelSmall,
@@ -90,7 +95,7 @@ class IncubationDurationChart extends StatelessWidget {
                     ),
                   ),
                 ),
-                gridData: const FlGridData(show: false),
+                gridData: chartGridData(context, interval: yInterval),
                 borderData: FlBorderData(show: false),
                 extraLinesData: ExtraLinesData(
                   horizontalLines: [
@@ -149,6 +154,8 @@ class _Legend extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Legend labels use mathematical notation (< = >) with numeric constants,
+    // intentionally not localized as they are language-neutral symbols.
     return const Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [

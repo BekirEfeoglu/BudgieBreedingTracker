@@ -22,9 +22,9 @@ Future<void> confirmAndDeleteAccount(
   BuildContext context,
   WidgetRef ref,
 ) async {
-  final confirmed = await AccountDeletionDialog.show(context);
-  if (!confirmed || !context.mounted) return;
-  await performAccountDeletion(context, ref);
+  final password = await AccountDeletionDialog.show(context);
+  if (password == null || !context.mounted) return;
+  await performAccountDeletion(context, ref, password: password);
 }
 
 /// Performs full account deletion: local DB wipe, storage cleanup,
@@ -34,7 +34,11 @@ Future<void> confirmAndDeleteAccount(
 /// Local cleanup always completes even if the server-side RPC fails.
 ///
 /// Call this after the user confirms deletion via [AccountDeletionDialog].
-Future<void> performAccountDeletion(BuildContext context, WidgetRef ref) async {
+Future<void> performAccountDeletion(
+  BuildContext context,
+  WidgetRef ref, {
+  required String password,
+}) async {
   final messenger = ScaffoldMessenger.of(context);
   final userId = ref.read(currentUserIdProvider);
 
@@ -64,14 +68,7 @@ Future<void> performAccountDeletion(BuildContext context, WidgetRef ref) async {
       AppLogger.warning('[AccountDeletion] Storage cleanup failed: $e');
     }
 
-    // 2. Wipe local database (atomic transaction)
-    await ref.read(appDatabaseProvider).clearAllUserData(userId);
-
-    // 3. Clear SharedPreferences
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.clear();
-
-    // 4. Revoke OAuth provider token (best-effort — token may not be
+    // 2. Revoke OAuth provider token (best-effort — token may not be
     //    available if the session was restored from storage)
     try {
       await ref.read(authActionsProvider).revokeOAuthToken();
@@ -79,14 +76,31 @@ Future<void> performAccountDeletion(BuildContext context, WidgetRef ref) async {
       AppLogger.warning('[AccountDeletion] OAuth token revocation failed: $e');
     }
 
-    // 5. Request server-side account deletion (best-effort — local
-    //    cleanup already succeeded, so the user can still be signed out
-    //    even if the RPC is not yet deployed on the server)
+    // 3. Request server-side account deletion (best-effort — if server is
+    //    unreachable, still allow local cleanup so the user can sign out)
+    bool serverDeletionOk = false;
     try {
-      await ref.read(authActionsProvider).requestAccountDeletion();
+      await ref.read(authActionsProvider).requestAccountDeletion(
+        currentPassword: password,
+      );
+      serverDeletionOk = true;
     } catch (e) {
-      AppLogger.warning('[AccountDeletion] Server RPC failed: $e');
+      AppLogger.warning('[AccountDeletion] Server deletion failed: $e');
+      // Continue with local cleanup — user should not be stuck
     }
+
+    if (!context.mounted) return;
+
+    // 4. Wipe local database (atomic transaction)
+    await ref.read(appDatabaseProvider).clearAllUserData(userId);
+
+    // 5. Clear SharedPreferences (after all remote ops completed)
+    // NOTE: prefs.clear() removes ALL preferences, not just user-specific
+    // ones. This is acceptable here because account deletion is a full reset.
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
+
+    if (!context.mounted) return;
 
     // 6. Sign out globally (invalidate all sessions across devices)
     await ref.read(authActionsProvider).signOutAllSessions();
@@ -94,9 +108,10 @@ Future<void> performAccountDeletion(BuildContext context, WidgetRef ref) async {
     // 7. Dismiss loading dialog and navigate to login
     if (context.mounted) {
       Navigator.of(context).pop(); // close loading dialog
-      messenger.showSnackBar(
-        SnackBar(content: Text('settings.delete_account_requested'.tr())),
-      );
+      final message = serverDeletionOk
+          ? 'settings.delete_account_requested'.tr()
+          : 'settings.delete_account_local_only'.tr();
+      messenger.showSnackBar(SnackBar(content: Text(message)));
       context.go(AppRoutes.login);
     }
   } catch (e) {
@@ -114,14 +129,13 @@ Future<void> performAccountDeletion(BuildContext context, WidgetRef ref) async {
 class AccountDeletionDialog extends StatefulWidget {
   const AccountDeletionDialog({super.key});
 
-  /// Show the dialog and return true if user confirmed deletion.
-  static Future<bool> show(BuildContext context) async {
-    final result = await showDialog<bool>(
+  /// Show the dialog and return the password if user confirmed, null otherwise.
+  static Future<String?> show(BuildContext context) async {
+    return showDialog<String?>(
       context: context,
       barrierDismissible: false,
       builder: (_) => const AccountDeletionDialog(),
     );
-    return result ?? false;
   }
 
   @override
@@ -130,7 +144,9 @@ class AccountDeletionDialog extends StatefulWidget {
 
 class _AccountDeletionDialogState extends State<AccountDeletionDialog> {
   final _controller = TextEditingController();
+  final _passwordController = TextEditingController();
   bool _canDelete = false;
+  bool _obscurePassword = true;
 
   /// Language-neutral confirmation phrase.
   static const _confirmPhrase = 'DELETE';
@@ -138,23 +154,28 @@ class _AccountDeletionDialogState extends State<AccountDeletionDialog> {
   /// User-friendly display phrase shown to the user.
   static const _displayPhrase = 'DELETE';
 
-  void _onTextChanged() {
-    final matches = _controller.text.trim().toUpperCase() == _confirmPhrase;
-    if (matches != _canDelete) {
-      setState(() => _canDelete = matches);
+  void _onFieldChanged() {
+    final phraseOk = _controller.text.trim().toUpperCase() == _confirmPhrase;
+    final passwordOk = _passwordController.text.isNotEmpty;
+    final canDelete = phraseOk && passwordOk;
+    if (canDelete != _canDelete) {
+      setState(() => _canDelete = canDelete);
     }
   }
 
   @override
   void initState() {
     super.initState();
-    _controller.addListener(_onTextChanged);
+    _controller.addListener(_onFieldChanged);
+    _passwordController.addListener(_onFieldChanged);
   }
 
   @override
   void dispose() {
-    _controller.removeListener(_onTextChanged);
+    _controller.removeListener(_onFieldChanged);
+    _passwordController.removeListener(_onFieldChanged);
     _controller.dispose();
+    _passwordController.dispose();
     super.dispose();
   }
 
@@ -200,15 +221,40 @@ class _AccountDeletionDialogState extends State<AccountDeletionDialog> {
               ),
             ),
           ),
+          const SizedBox(height: AppSpacing.lg),
+          Text(
+            'profile.delete_account_password_hint'.tr(),
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          TextField(
+            controller: _passwordController,
+            obscureText: _obscurePassword,
+            decoration: InputDecoration(
+              border: const OutlineInputBorder(),
+              hintText: 'auth.password'.tr(),
+              suffixIcon: IconButton(
+                icon: Icon(
+                  _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                ),
+                onPressed: () =>
+                    setState(() => _obscurePassword = !_obscurePassword),
+              ),
+            ),
+          ),
         ],
       ),
       actions: [
         TextButton(
-          onPressed: () => Navigator.of(context).pop(false),
+          onPressed: () => Navigator.of(context).pop(null),
           child: Text('common.cancel'.tr()),
         ),
         FilledButton(
-          onPressed: _canDelete ? () => Navigator.of(context).pop(true) : null,
+          onPressed: _canDelete
+              ? () => Navigator.of(context).pop(_passwordController.text)
+              : null,
           style: FilledButton.styleFrom(
             backgroundColor: theme.colorScheme.error,
             foregroundColor: theme.colorScheme.onError,

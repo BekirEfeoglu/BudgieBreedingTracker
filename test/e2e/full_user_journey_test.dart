@@ -64,6 +64,12 @@ void main() {
         when(
           () => mockBirdRepository.getAll(any()),
         ).thenAnswer((_) async => List.of(birds));
+        when(
+          () => mockBirdRepository.getCount(any()),
+        ).thenAnswer((_) async => birds.length);
+        when(
+          () => mockBirdRepository.hasRingNumber(any(), any(), excludeId: any(named: 'excludeId')),
+        ).thenAnswer((_) async => false);
         when(() => mockPairRepository.save(any())).thenAnswer((
           invocation,
         ) async {
@@ -74,6 +80,9 @@ void main() {
         when(
           () => mockPairRepository.getAll(any()),
         ).thenAnswer((_) async => List.of(pairs));
+        when(
+          () => mockPairRepository.getActiveCount(any()),
+        ).thenAnswer((_) async => pairs.where((p) => p.status == BreedingStatus.active || p.status == BreedingStatus.ongoing).length);
         when(() => mockIncubationRepository.save(any())).thenAnswer((
           invocation,
         ) async {
@@ -84,6 +93,9 @@ void main() {
         when(
           () => mockIncubationRepository.getAll(any()),
         ).thenAnswer((_) async => List.of(incubations));
+        when(
+          () => mockIncubationRepository.getActiveCount(any()),
+        ).thenAnswer((_) async => incubations.where((i) => i.status == IncubationStatus.active).length);
         when(
           () => mockIncubationRepository.getByBreedingPairIds(any()),
         ).thenAnswer((invocation) async {

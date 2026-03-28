@@ -1,14 +1,7 @@
-import 'dart:async';
-import 'dart:math';
-
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:budgie_breeding_tracker/core/models/sync_conflict.dart';
-import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/data/local/preferences/app_preferences.dart';
 
-export 'package:budgie_breeding_tracker/core/models/sync_conflict.dart';
 import 'package:budgie_breeding_tracker/data/local/database/dao_providers.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/sync_metadata_dao.dart'
     show SyncErrorDetail;
@@ -16,7 +9,10 @@ import 'package:budgie_breeding_tracker/domain/services/sync/network_status_prov
 import 'package:budgie_breeding_tracker/domain/services/sync/retry_scheduler.dart';
 import 'package:budgie_breeding_tracker/domain/services/sync/sync_orchestrator.dart';
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
-import 'package:budgie_breeding_tracker/domain/services/sync/sync_settings_providers.dart';
+
+// Re-export split provider files for backwards compatibility
+export 'package:budgie_breeding_tracker/domain/services/sync/sync_scheduling_providers.dart';
+export 'package:budgie_breeding_tracker/domain/services/sync/sync_conflict_providers.dart';
 
 /// Provider for the [SyncOrchestrator] singleton.
 final syncOrchestratorProvider = Provider<SyncOrchestrator>((ref) {
@@ -38,6 +34,11 @@ final isSyncingProvider = NotifierProvider<IsSyncingNotifier, bool>(
 class LastSyncTimeNotifier extends Notifier<DateTime?> {
   @override
   DateTime? build() {
+    // NOTE: _loadFromPrefs() is async but build() returns synchronously.
+    // There is a brief race window where state is null before the persisted
+    // value loads. The SyncOrchestrator handles this gracefully by using
+    // _loadLastSyncTime() directly from SharedPreferences, so the null
+    // state here only affects the UI momentarily.
     _loadFromPrefs();
     return null;
   }
@@ -69,9 +70,6 @@ final syncErrorProvider = NotifierProvider<SyncErrorNotifier, bool>(
   SyncErrorNotifier.new,
 );
 
-/// Sync interval for periodic sync (15 minutes).
-const _syncInterval = Duration(minutes: 15);
-
 /// High-level sync status for UI display.
 enum SyncDisplayStatus {
   /// All data is synced with the server.
@@ -101,137 +99,6 @@ final syncStatusProvider = Provider<SyncDisplayStatus>((ref) {
   if (hasError) return SyncDisplayStatus.error;
   return SyncDisplayStatus.synced;
 });
-
-/// Periodic sync provider that triggers fullSync every 15 minutes.
-///
-/// Automatically starts when watched and disposes the Timer on cleanup.
-/// Also retries failed sync records on each cycle.
-/// Respects [wifiOnlySyncProvider] — skips sync when on cellular and WiFi-only is enabled.
-final periodicSyncProvider = Provider<void>((ref) {
-  final userId = ref.watch(currentUserIdProvider);
-  if (userId == 'anonymous') return;
-
-  // Skip periodic sync when auto-sync is disabled
-  final autoSync = ref.watch(autoSyncProvider);
-  if (!autoSync) return;
-
-  // Add random initial jitter (0-60 seconds) to distribute sync load
-  // across users and prevent thundering herd on the server.
-  final initialJitter = Duration(seconds: Random().nextInt(60));
-  Timer(initialJitter, () {
-    if (userId == 'anonymous') return;
-    final orchestrator = ref.read(syncOrchestratorProvider);
-    orchestrator.fullSync();
-  });
-
-  final timer = Timer.periodic(_syncInterval, (_) async {
-    // WiFi-only check
-    final wifiOnly = ref.read(wifiOnlySyncProvider);
-    if (wifiOnly) {
-      final connectivity = await Connectivity().checkConnectivity();
-      final isWifi = connectivity.contains(ConnectivityResult.wifi);
-      if (!isWifi) {
-        AppLogger.info('[PeriodicSync] Skipped: WiFi-only mode, not on WiFi');
-        return;
-      }
-    }
-
-    final orchestrator = ref.read(syncOrchestratorProvider);
-
-    // First retry any failed records
-    try {
-      await orchestrator.retryFailedRecords(userId);
-    } catch (e) {
-      AppLogger.warning('[PeriodicSync] Retry failed: $e');
-    }
-
-    // Then run full sync
-    final result = await orchestrator.fullSync();
-    if (result == SyncResult.success) {
-      ref.read(syncErrorProvider.notifier).state = false;
-    }
-    AppLogger.info('[PeriodicSync] Periodic sync result: ${result.name}');
-  });
-
-  ref.onDispose(() {
-    timer.cancel();
-    AppLogger.info('[PeriodicSync] Timer disposed');
-  });
-});
-
-/// Network-aware sync provider that triggers forceFullSync when device reconnects.
-///
-/// Watches [networkStatusProvider] and triggers sync when transitioning
-/// from offline to online. Uses [forceFullSync] to ensure full
-/// reconciliation after potentially long offline periods.
-/// Prevents duplicate syncs via isSyncing check.
-/// Respects [wifiOnlySyncProvider] — skips sync when on cellular and WiFi-only is enabled.
-final networkAwareSyncProvider = Provider<void>((ref) {
-  final userId = ref.watch(currentUserIdProvider);
-  if (userId == 'anonymous') return;
-
-  bool wasOffline = false;
-
-  ref.listen<AsyncValue<bool>>(networkStatusProvider, (previous, next) async {
-    // Skip network-aware sync when auto-sync is disabled
-    final autoSync = ref.read(autoSyncProvider);
-    if (!autoSync) return;
-
-    final isOnline = next.value ?? true;
-    final previouslyOnline = previous?.value ?? true;
-
-    if (!previouslyOnline) {
-      wasOffline = true;
-    }
-
-    // Trigger full sync when transitioning from offline to online
-    if (isOnline && wasOffline) {
-      wasOffline = false;
-      final isSyncing = ref.read(isSyncingProvider);
-      if (isSyncing) return;
-
-      // WiFi-only check
-      final wifiOnly = ref.read(wifiOnlySyncProvider);
-      if (wifiOnly) {
-        final connectivity = await Connectivity().checkConnectivity();
-        final isWifi = connectivity.contains(ConnectivityResult.wifi);
-        if (!isWifi) {
-          AppLogger.info('[NetworkSync] Skipped: WiFi-only mode, not on WiFi');
-          return;
-        }
-      }
-
-      AppLogger.info('[NetworkSync] Device came online, triggering full sync');
-      final orchestrator = ref.read(syncOrchestratorProvider);
-      final result = await orchestrator.forceFullSync();
-      if (result == SyncResult.success) {
-        ref.read(syncErrorProvider.notifier).state = false;
-      }
-    }
-  });
-});
-
-/// Triggers a manual sync with full reconciliation. Returns the [SyncResult].
-///
-/// Can be called from UI (e.g., manual sync button, pull-to-refresh).
-/// Uses [forceFullSync] to ensure local orphans are cleaned up.
-Future<SyncResult> triggerManualSync(Ref ref) async {
-  final orchestrator = ref.read(syncOrchestratorProvider);
-  final userId = ref.read(currentUserIdProvider);
-
-  // Retry failed records first
-  try {
-    await orchestrator.retryFailedRecords(userId);
-  } catch (e) {
-    AppLogger.debug('[SyncProviders] retryFailedRecords failed: $e');
-  }
-
-  final result = await orchestrator.forceFullSync();
-  if (result == SyncResult.success) {
-    ref.read(syncErrorProvider.notifier).state = false;
-  }
-  return result;
-}
 
 // ---------------------------------------------------------------------------
 // Pending Sync Count (reactive stream)
@@ -281,58 +148,3 @@ final pendingByTableProvider =
   final syncDao = ref.watch(syncMetadataDaoProvider);
   return syncDao.watchPendingByTable(userId);
 });
-
-/// Stream count of persisted conflict history records.
-final persistedConflictCountProvider =
-    StreamProvider.family<int, String>((ref, userId) {
-  if (userId == 'anonymous') return Stream.value(0);
-  final dao = ref.watch(conflictHistoryDaoProvider);
-  return dao.watchRecentCount(userId, const Duration(hours: 24));
-});
-
-// ---------------------------------------------------------------------------
-// Conflict History (DB-backed, max 50 entries, FIFO)
-// ---------------------------------------------------------------------------
-
-class ConflictHistoryNotifier extends Notifier<List<SyncConflict>> {
-  static const _maxEntries = 50;
-
-  @override
-  List<SyncConflict> build() {
-    _restoreFromDb();
-    return [];
-  }
-
-  Future<void> _restoreFromDb() async {
-    try {
-      final userId = ref.read(currentUserIdProvider);
-      if (userId == 'anonymous') return;
-      final dao = ref.read(conflictHistoryDaoProvider);
-      final persisted = await dao.watchAll(userId).first;
-      if (persisted.isNotEmpty) {
-        state = persisted
-            .map((c) => SyncConflict(
-                  table: c.tableName,
-                  recordId: c.recordId,
-                  detectedAt: c.createdAt ?? DateTime.now(),
-                  description: c.description,
-                ))
-            .take(_maxEntries)
-            .toList();
-      }
-    } catch (e) {
-      AppLogger.debug('[ConflictHistory] Restore failed: $e');
-    }
-  }
-
-  void addConflict(SyncConflict conflict) {
-    state = [conflict, ...state].take(_maxEntries).toList();
-  }
-
-  void clear() => state = [];
-}
-
-final conflictHistoryProvider =
-    NotifierProvider<ConflictHistoryNotifier, List<SyncConflict>>(
-      ConflictHistoryNotifier.new,
-    );

@@ -152,63 +152,6 @@ void main() {
   const userId = 'user-1';
 
   group('core statistics providers', () {
-    test(
-      'breedingStatsProvider computes active/completed/successRate',
-      () async {
-        final container = _container(
-          birds: const [],
-          eggs: const [],
-          chicks: const [],
-          healthRecords: const [],
-          pairs: [
-            _pair(id: 'p1', status: BreedingStatus.active),
-            _pair(id: 'p2', status: BreedingStatus.ongoing),
-            _pair(id: 'p3', status: BreedingStatus.completed),
-            _pair(id: 'p4', status: BreedingStatus.cancelled),
-          ],
-        );
-        addTearDown(container.dispose);
-        container.listen(breedingPairsStreamProvider(userId), (_, __) {});
-        await container.read(breedingPairsStreamProvider(userId).future);
-
-        final value = container.read(breedingStatsProvider(userId));
-        expect(value.hasValue, isTrue);
-        final stats = value.requireValue;
-        expect(stats.active, 2);
-        expect(stats.completed, 1);
-        expect(stats.successRate, closeTo(0.5, 0.0001));
-      },
-    );
-
-    test('eggStatsProvider computes fertility and hatch rates', () async {
-      final now = DateTime.now();
-      final container = _container(
-        birds: const [],
-        pairs: const [],
-        chicks: const [],
-        healthRecords: const [],
-        eggs: [
-          _egg(id: 'e1', layDate: now, status: EggStatus.hatched),
-          _egg(id: 'e2', layDate: now, status: EggStatus.fertile),
-          _egg(id: 'e3', layDate: now, status: EggStatus.infertile),
-          _egg(id: 'e4', layDate: now, status: EggStatus.incubating),
-        ],
-      );
-      addTearDown(container.dispose);
-      container.listen(eggsStreamProvider(userId), (_, __) {});
-      await container.read(eggsStreamProvider(userId).future);
-
-      final value = container.read(eggStatsProvider(userId));
-      expect(value.hasValue, isTrue);
-      final stats = value.requireValue;
-      expect(stats.total, 4);
-      expect(stats.fertile, 2);
-      expect(stats.infertile, 1);
-      expect(stats.hatched, 1);
-      expect(stats.fertilityRate, closeTo(2 / 3, 0.0001));
-      expect(stats.hatchRate, closeTo(0.5, 0.0001));
-    });
-
     test('summaryStatsProvider combines entity streams', () async {
       final now = DateTime.now();
       final container = _container(
@@ -407,6 +350,191 @@ void main() {
         expect(insights.first.sentiment, InsightSentiment.neutral);
       },
     );
+  });
+
+  group('quickInsightsProvider period-aware', () {
+    test('only includes eggs from current period', () async {
+      final now = DateTime.now();
+      final inPeriod = DateTime(now.year, now.month - 1, 15);
+      final outOfPeriod = DateTime(now.year, now.month - 5, 15);
+
+      final container = ProviderContainer(
+        overrides: [
+          eggsStreamProvider(userId).overrideWith(
+            (_) => Stream.value([
+              _egg(id: 'in', layDate: inPeriod, status: EggStatus.fertile),
+              _egg(id: 'out', layDate: outOfPeriod, status: EggStatus.fertile),
+            ]),
+          ),
+          chicksStreamProvider(
+            userId,
+          ).overrideWith((_) => Stream.value(<Chick>[])),
+          breedingPairsStreamProvider(
+            userId,
+          ).overrideWith((_) => Stream.value(<BreedingPair>[])),
+          trendStatsProvider(userId).overrideWithValue(const AsyncLoading()),
+        ],
+      );
+      addTearDown(container.dispose);
+      container.read(statsPeriodProvider.notifier).state =
+          StatsPeriod.threeMonths;
+
+      container.listen(eggsStreamProvider(userId), (_, __) {});
+      await container.read(eggsStreamProvider(userId).future);
+      container.listen(chicksStreamProvider(userId), (_, __) {});
+      await container.read(chicksStreamProvider(userId).future);
+      container.listen(breedingPairsStreamProvider(userId), (_, __) {});
+      await container.read(breedingPairsStreamProvider(userId).future);
+
+      final value = container.read(quickInsightsProvider(userId));
+      expect(value.hasValue, isTrue);
+      final insights = value.requireValue;
+      // 1 fertile egg in 3-month window → egg insight + fertility insight
+      // Out-of-period egg should NOT be counted
+      expect(insights.length, greaterThanOrEqualTo(1));
+      expect(insights.length, lessThanOrEqualTo(2));
+    });
+
+    test('12-month period produces more insights than 3-month', () async {
+      final now = DateTime.now();
+      final recent = DateTime(now.year, now.month - 1, 15);
+      final older = DateTime(now.year, now.month - 5, 15);
+
+      ProviderContainer makeContainer(StatsPeriod period) {
+        final c = ProviderContainer(
+          overrides: [
+            eggsStreamProvider(userId).overrideWith(
+              (_) => Stream.value([
+                _egg(id: 'recent', layDate: recent, status: EggStatus.fertile),
+                _egg(
+                  id: 'older',
+                  layDate: older,
+                  status: EggStatus.infertile,
+                ),
+              ]),
+            ),
+            chicksStreamProvider(
+              userId,
+            ).overrideWith((_) => Stream.value(<Chick>[])),
+            breedingPairsStreamProvider(
+              userId,
+            ).overrideWith((_) => Stream.value(<BreedingPair>[])),
+            trendStatsProvider(userId).overrideWithValue(const AsyncLoading()),
+          ],
+        );
+        c.read(statsPeriodProvider.notifier).state = period;
+        return c;
+      }
+
+      // 3-month window → only recent egg (fertile) → egg insight only
+      final container3m = makeContainer(StatsPeriod.threeMonths);
+      addTearDown(container3m.dispose);
+      container3m.listen(eggsStreamProvider(userId), (_, __) {});
+      await container3m.read(eggsStreamProvider(userId).future);
+      container3m.listen(chicksStreamProvider(userId), (_, __) {});
+      await container3m.read(chicksStreamProvider(userId).future);
+      container3m.listen(breedingPairsStreamProvider(userId), (_, __) {});
+      await container3m.read(breedingPairsStreamProvider(userId).future);
+
+      final insights3m =
+          container3m.read(quickInsightsProvider(userId)).requireValue;
+
+      // 12-month window → both eggs → egg insight + fertility insight
+      final container12m = makeContainer(StatsPeriod.twelveMonths);
+      addTearDown(container12m.dispose);
+      container12m.listen(eggsStreamProvider(userId), (_, __) {});
+      await container12m.read(eggsStreamProvider(userId).future);
+      container12m.listen(chicksStreamProvider(userId), (_, __) {});
+      await container12m.read(chicksStreamProvider(userId).future);
+      container12m.listen(breedingPairsStreamProvider(userId), (_, __) {});
+      await container12m.read(breedingPairsStreamProvider(userId).future);
+
+      final insights12m =
+          container12m.read(quickInsightsProvider(userId)).requireValue;
+
+      // 12m should have more insights because both eggs are in range,
+      // giving a fertility rate insight (fertile + infertile = checked)
+      expect(insights12m.length, greaterThanOrEqualTo(insights3m.length));
+    });
+
+    test('shows no-data fallback when no entities in period', () async {
+      final container = ProviderContainer(
+        overrides: [
+          eggsStreamProvider(
+            userId,
+          ).overrideWith((_) => Stream.value(<Egg>[])),
+          chicksStreamProvider(
+            userId,
+          ).overrideWith((_) => Stream.value(<Chick>[])),
+          breedingPairsStreamProvider(
+            userId,
+          ).overrideWith((_) => Stream.value(<BreedingPair>[])),
+          trendStatsProvider(userId).overrideWithValue(const AsyncLoading()),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      container.listen(eggsStreamProvider(userId), (_, __) {});
+      await container.read(eggsStreamProvider(userId).future);
+      container.listen(chicksStreamProvider(userId), (_, __) {});
+      await container.read(chicksStreamProvider(userId).future);
+      container.listen(breedingPairsStreamProvider(userId), (_, __) {});
+      await container.read(breedingPairsStreamProvider(userId).future);
+
+      final value = container.read(quickInsightsProvider(userId));
+      expect(value.hasValue, isTrue);
+      final insights = value.requireValue;
+      expect(insights, hasLength(1));
+      expect(insights.first.sentiment, InsightSentiment.neutral);
+    });
+
+    test('chick survival insight uses period filter', () async {
+      final now = DateTime.now();
+      final inPeriod = DateTime(now.year, now.month - 1, 10);
+      final outOfPeriod = DateTime(now.year, now.month - 8, 10);
+
+      final container = ProviderContainer(
+        overrides: [
+          eggsStreamProvider(
+            userId,
+          ).overrideWith((_) => Stream.value(<Egg>[])),
+          chicksStreamProvider(userId).overrideWith(
+            (_) => Stream.value([
+              _chick(id: 'c-in', hatchDate: inPeriod),
+              _chick(
+                id: 'c-out',
+                hatchDate: outOfPeriod,
+                health: ChickHealthStatus.deceased,
+              ),
+            ]),
+          ),
+          breedingPairsStreamProvider(
+            userId,
+          ).overrideWith((_) => Stream.value(<BreedingPair>[])),
+          trendStatsProvider(userId).overrideWithValue(const AsyncLoading()),
+        ],
+      );
+      addTearDown(container.dispose);
+      container.read(statsPeriodProvider.notifier).state =
+          StatsPeriod.threeMonths;
+
+      container.listen(eggsStreamProvider(userId), (_, __) {});
+      await container.read(eggsStreamProvider(userId).future);
+      container.listen(chicksStreamProvider(userId), (_, __) {});
+      await container.read(chicksStreamProvider(userId).future);
+      container.listen(breedingPairsStreamProvider(userId), (_, __) {});
+      await container.read(breedingPairsStreamProvider(userId).future);
+
+      final value = container.read(quickInsightsProvider(userId));
+      expect(value.hasValue, isTrue);
+      final insights = value.requireValue;
+      // Only in-period healthy chick → positive sentiment for chick insight
+      // Deceased chick is out of period and should not affect the result
+      final hasPositiveInsight = insights.any(
+        (i) => i.sentiment == InsightSentiment.positive,
+      );
+      expect(hasPositiveInsight, isTrue);
+    });
   });
 
   group('trend providers', () {

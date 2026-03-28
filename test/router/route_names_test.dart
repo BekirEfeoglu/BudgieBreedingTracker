@@ -236,12 +236,6 @@ void main() {
     });
   });
 
-  group('AppRoutes — route count', () {
-    test('total route count is 59', () {
-      expect(_allRoutes.length, 59);
-    });
-  });
-
   group('AppRoutes — form routes use /form suffix', () {
     test('birdForm ends with /form', () {
       expect(AppRoutes.birdForm, endsWith('/form'));

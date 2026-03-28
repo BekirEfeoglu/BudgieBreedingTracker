@@ -9,6 +9,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../core/enums/community_enums.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../notifications/providers/action_feedback_providers.dart';
 import '../providers/community_create_providers.dart';
 
 part 'community_create_post_widgets.dart';
@@ -99,9 +100,7 @@ class _CommunityCreatePostScreenState
       if (state.isSuccess) {
         ref.read(createPostProvider.notifier).reset();
         context.pop();
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('community.post_success'.tr())));
+        ActionFeedbackService.show('community.post_success'.tr());
       }
       if (state.error != null) {
         ScaffoldMessenger.of(

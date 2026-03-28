@@ -71,6 +71,19 @@ class IncubationsDao extends DatabaseAccessor<AppDatabase>
         .map((rows) => rows.map((r) => r.toModel()).toList());
   }
 
+  /// One-shot count of active incubations.
+  Future<int> getActiveCount(String userId) async {
+    final count = incubationsTable.id.count();
+    final row = await (selectOnly(incubationsTable)
+          ..addColumns([count])
+          ..where(
+            incubationsTable.userId.equals(userId) &
+                incubationsTable.status.equalsValue(IncubationStatus.active),
+          ))
+        .getSingle();
+    return row.read(count) ?? 0;
+  }
+
   Stream<int> watchActiveCount(String userId) {
     final count = incubationsTable.id.count();
     return (selectOnly(incubationsTable)

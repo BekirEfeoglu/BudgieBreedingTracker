@@ -12,6 +12,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/constants/app_constants.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
+
 import '../../../core/utils/logger.dart';
 import '../../../data/remote/supabase/supabase_client.dart';
 

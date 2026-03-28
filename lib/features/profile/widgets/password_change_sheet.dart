@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_spacing.dart';
+import '../../notifications/providers/action_feedback_providers.dart';
 import '../providers/profile_providers.dart';
 import 'password_change_form.dart';
 
@@ -33,9 +34,7 @@ class _PasswordChangeSheetContent extends ConsumerWidget {
       if (s.isSuccess) {
         ref.read(passwordChangeStateProvider.notifier).reset();
         Navigator.of(context).pop();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('profile.password_changed'.tr())),
-        );
+        ActionFeedbackService.show('profile.password_changed'.tr());
       }
       if (s.error != null) {
         final errorKey = s.error == 'password_incorrect'

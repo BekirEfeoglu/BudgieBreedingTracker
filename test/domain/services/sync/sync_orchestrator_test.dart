@@ -416,7 +416,7 @@ void main() {
       },
     );
 
-    test('returns alreadySyncing when a sync is in progress', () async {
+    test('returns same future when a sync is already in progress', () async {
       final blockPush = Completer<void>();
       when(
         () => mockProfileRepository.pushPending(_userId),
@@ -428,11 +428,15 @@ void main() {
 
       final first = orchestrator.fullSync();
       await Future<void>.delayed(const Duration(milliseconds: 10));
-      final second = await orchestrator.fullSync();
+      final second = orchestrator.fullSync();
 
-      expect(second, SyncResult.alreadySyncing);
+      // Both calls return the same future instance
+      expect(identical(first, second), isTrue);
+      expect(orchestrator.isSyncing, isTrue);
+
       blockPush.complete();
       expect(await first, SyncResult.success);
+      expect(await second, SyncResult.success);
       expect(orchestrator.isSyncing, isFalse);
     });
 

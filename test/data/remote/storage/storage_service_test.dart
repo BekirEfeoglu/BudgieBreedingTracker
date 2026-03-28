@@ -35,13 +35,61 @@ void main() {
     mockFileApi = MockStorageFileApi();
     when(() => mockClient.storage).thenReturn(mockStorage);
     when(() => mockStorage.from(any())).thenReturn(mockFileApi);
+
+    // Stub auth so that getAvatarUrl's currentUser check works
+    final mockAuth = MockGoTrueClient();
+    final mockUser = MockUser();
+    when(() => mockClient.auth).thenReturn(mockAuth);
+    when(() => mockAuth.currentUser).thenReturn(mockUser);
+
     service = StorageService(mockClient);
   });
+
+  /// Returns magic-byte header matching [ext] so _validateMagicBytes passes.
+  Uint8List magicBytesFor(String ext, int totalSize) {
+    final data = Uint8List(totalSize);
+    switch (ext) {
+      case 'jpg' || 'jpeg':
+        data[0] = 0xFF;
+        data[1] = 0xD8;
+        data[2] = 0xFF;
+      case 'png':
+        data[0] = 0x89;
+        data[1] = 0x50;
+        data[2] = 0x4E;
+        data[3] = 0x47;
+      case 'gif':
+        data[0] = 0x47;
+        data[1] = 0x49;
+        data[2] = 0x46;
+      case 'webp':
+        data[0] = 0x52; // R
+        data[1] = 0x49; // I
+        data[2] = 0x46; // F
+        data[3] = 0x46; // F
+        data[8] = 0x57; // W
+        data[9] = 0x45; // E
+        data[10] = 0x42; // B
+        data[11] = 0x50; // P
+      case 'heic':
+        data[4] = 0x66; // f
+        data[5] = 0x74; // t
+        data[6] = 0x79; // y
+        data[7] = 0x70; // p
+        data[8] = 0x68; // h
+        data[9] = 0x65; // e
+        data[10] = 0x69; // i
+        data[11] = 0x63; // c
+    }
+    return data;
+  }
 
   MockXFile makeXFile({String name = 'photo.jpg', int bytes = 100}) {
     final file = MockXFile();
     when(() => file.name).thenReturn(name);
-    when(() => file.readAsBytes()).thenAnswer((_) async => Uint8List(bytes));
+    final ext = name.split('.').last.toLowerCase();
+    final data = magicBytesFor(ext, bytes);
+    when(() => file.readAsBytes()).thenAnswer((_) async => data);
     return file;
   }
 

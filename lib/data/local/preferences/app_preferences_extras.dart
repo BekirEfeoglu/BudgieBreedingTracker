@@ -15,7 +15,13 @@ class _PreferencesExtras {
     final value =
         _prefs.getString(AppPreferences.keyRewardStatisticsUnlockedAt);
     if (value == null) return null;
-    return DateTime.tryParse(value);
+    final parsed = DateTime.tryParse(value);
+    if (parsed == null) {
+      AppLogger.warning(
+        '[AppPreferences] Failed to parse rewardStatisticsUnlockedAt: $value',
+      );
+    }
+    return parsed;
   }
 
   Future<bool> setRewardStatisticsUnlockedAt(DateTime time) => _prefs.setString(

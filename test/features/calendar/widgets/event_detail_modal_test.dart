@@ -68,98 +68,88 @@ void main() {
     );
   }
 
+  Future<void> openModal(
+    WidgetTester tester, {
+    required Event event,
+    VoidCallback? onEdit,
+    VoidCallback? onDelete,
+    ValueChanged<EventStatus>? onStatusChange,
+  }) async {
+    await tester.pumpWidget(
+      buildWithModal(
+        event: event,
+        onEdit: onEdit,
+        onDelete: onDelete,
+        onStatusChange: onStatusChange,
+      ),
+    );
+    await tester.tap(find.text('Open Modal'));
+    await tester.pumpAndSettle();
+  }
+
   group('EventDetailModal', () {
     testWidgets('shows event title after modal opens', (tester) async {
-      await tester.pumpWidget(buildWithModal(event: activeEvent));
-      await tester.pump();
-      await tester.tap(find.text('Open Modal'));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(tester.takeException(), isNull);
+      await openModal(tester, event: activeEvent);
       expect(find.text('Veteriner Kontrolü'), findsOneWidget);
     });
 
     testWidgets('shows event notes when present', (tester) async {
-      await tester.pumpWidget(buildWithModal(event: activeEvent));
-      await tester.pump();
-      await tester.tap(find.text('Open Modal'));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(tester.takeException(), isNull);
+      await openModal(tester, event: activeEvent);
       expect(find.text('Kanat muayenesi'), findsOneWidget);
     });
 
     testWidgets('shows edit button in modal', (tester) async {
-      await tester.pumpWidget(buildWithModal(event: activeEvent));
-      await tester.pump();
-      await tester.tap(find.text('Open Modal'));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(tester.takeException(), isNull);
-      // OutlinedButton.icon with edit text
-      expect(find.byType(OutlinedButton), findsAtLeastNWidgets(1));
+      await openModal(tester, event: activeEvent);
+      expect(
+        find.widgetWithText(OutlinedButton, 'common.edit'),
+        findsOneWidget,
+      );
     });
 
     testWidgets('shows delete button in modal', (tester) async {
-      await tester.pumpWidget(buildWithModal(event: activeEvent));
-      await tester.pump();
-      await tester.tap(find.text('Open Modal'));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(tester.takeException(), isNull);
-      // FilledButton for delete
-      expect(find.byType(FilledButton), findsOneWidget);
+      await openModal(tester, event: activeEvent);
+      expect(
+        find.widgetWithText(FilledButton, 'common.delete'),
+        findsOneWidget,
+      );
     });
 
     testWidgets('shows status change buttons for active event', (tester) async {
-      await tester.pumpWidget(
-        buildWithModal(event: activeEvent, onStatusChange: (_) {}),
+      await openModal(tester, event: activeEvent, onStatusChange: (_) {});
+      expect(
+        find.widgetWithText(OutlinedButton, 'calendar.mark_completed'),
+        findsOneWidget,
       );
-      await tester.pump();
-      await tester.tap(find.text('Open Modal'));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(tester.takeException(), isNull);
-      // Two OutlinedButtons for mark-completed + mark-cancelled, plus edit
-      expect(find.byType(OutlinedButton), findsAtLeastNWidgets(2));
+      expect(
+        find.widgetWithText(OutlinedButton, 'calendar.mark_cancelled'),
+        findsOneWidget,
+      );
     });
 
     testWidgets('no status change buttons for completed event', (tester) async {
-      await tester.pumpWidget(
-        buildWithModal(event: completedEvent, onStatusChange: (_) {}),
+      await openModal(tester, event: completedEvent, onStatusChange: (_) {});
+      expect(
+        find.widgetWithText(OutlinedButton, 'calendar.mark_completed'),
+        findsNothing,
       );
-      await tester.pump();
-      await tester.tap(find.text('Open Modal'));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(tester.takeException(), isNull);
-      // Only 1 OutlinedButton (edit), not 3
-      final outlinedButtons = tester.widgetList<OutlinedButton>(
-        find.byType(OutlinedButton),
+      expect(
+        find.widgetWithText(OutlinedButton, 'calendar.mark_cancelled'),
+        findsNothing,
       );
-      expect(outlinedButtons.length, lessThanOrEqualTo(1));
     });
 
     testWidgets('onEdit callback is invoked when edit button tapped', (
       tester,
     ) async {
       var editCalled = false;
-      await tester.pumpWidget(
-        buildWithModal(event: activeEvent, onEdit: () => editCalled = true),
+      await openModal(
+        tester,
+        event: activeEvent,
+        onEdit: () => editCalled = true,
       );
-      await tester.pump();
-      await tester.tap(find.text('Open Modal'));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(tester.takeException(), isNull);
-      // Tap the edit OutlinedButton (last one in the row at the bottom)
-      final outlinedButtons = find.byType(OutlinedButton);
-      if (tester.widgetList(outlinedButtons).isNotEmpty) {
-        await tester.tap(outlinedButtons.last);
-        await tester.pump();
-        expect(tester.takeException(), isNull);
-      }
-      expect(editCalled, anyOf(isTrue, isFalse)); // depends on exact tap
+      await tester.tap(find.widgetWithText(OutlinedButton, 'common.edit'));
+      await tester.pumpAndSettle();
+      expect(editCalled, isTrue);
     });
   });
 }

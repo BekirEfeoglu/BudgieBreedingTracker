@@ -48,6 +48,10 @@ class BreedingPairRepository extends BaseRepository<BreedingPair>
   @override
   Future<List<BreedingPair>> getAll(String userId) => _localDao.getAll(userId);
 
+  /// Returns the count of active + ongoing breeding pairs (SQL COUNT).
+  Future<int> getActiveCount(String userId) =>
+      _localDao.getActiveCount(userId);
+
   @override
   Future<BreedingPair?> getById(String id) => _localDao.getById(id);
 
@@ -106,9 +110,11 @@ class BreedingPairRepository extends BaseRepository<BreedingPair>
         final pendingIds = await _syncDao.getPendingRecordIds(userId);
         final localMap = {for (final item in localItems) item.id: item};
 
-        // Detect conflicts before overwriting local data
+        // Detect real conflicts: a conflict is when a local record has
+        // PENDING sync metadata AND the remote record overwrites it.
+        // Normal server updates (no pending local changes) are not conflicts.
         for (final remoteItem in remote) {
-          if (pendingIds.contains(remoteItem.id)) continue;
+          if (!pendingIds.contains(remoteItem.id)) continue;
           final localItem = localMap[remoteItem.id];
           if (localItem == null) continue;
           if (localItem.updatedAt != null &&

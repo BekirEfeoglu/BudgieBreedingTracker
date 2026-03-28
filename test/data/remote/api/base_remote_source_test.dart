@@ -104,7 +104,7 @@ void main() {
     });
 
     group('fetchUpdatedSince', () {
-      test('applies gte filter on updated_at and is_deleted filter', () async {
+      test('applies gte filter on updated_at without is_deleted filter', () async {
         selectBuilder.result = const [];
         final since = DateTime(2025, 6, 1);
 
@@ -114,10 +114,11 @@ void main() {
             .map((e) => '${e.key}:${e.value}')
             .toList();
         expect(gteKeys, contains('updated_at:${since.toIso8601String()}'));
-        expect(
-          selectBuilder.eqCalls.map((e) => '${e.key}:${e.value}'),
-          containsAll(['user_id:user-1', 'is_deleted:false']),
-        );
+        final eqKeys = selectBuilder.eqCalls
+            .map((e) => '${e.key}:${e.value}')
+            .toList();
+        expect(eqKeys, contains('user_id:user-1'));
+        expect(eqKeys, isNot(contains('is_deleted:false')));
       });
     });
 

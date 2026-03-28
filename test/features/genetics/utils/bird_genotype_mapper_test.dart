@@ -71,11 +71,10 @@ void main() {
         gender: BirdGender.female,
       );
 
-      final mutationIds = BirdGenotypeMapper.mutationIdsFromGenotype(genotype);
+      final mutationIds = BirdGenotypeMapper.mutationIdsFromGenotype(genotype)!;
 
-      expect(mutationIds, isNotNull);
       expect(mutationIds, hasLength(1));
-      expect(mutationIds!.single, 'ino');
+      expect(mutationIds.single, 'ino');
     });
 
     test('genotypeInfoFromGenotype returns canonical unique map', () {
@@ -89,11 +88,10 @@ void main() {
 
       final genotypeInfo = BirdGenotypeMapper.genotypeInfoFromGenotype(
         genotype,
-      );
+      )!;
 
-      expect(genotypeInfo, isNotNull);
       expect(genotypeInfo, hasLength(1));
-      expect(genotypeInfo!['ino'], 'carrier');
+      expect(genotypeInfo['ino'], 'carrier');
     });
   });
 }

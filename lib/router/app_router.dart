@@ -276,24 +276,12 @@ final routerProvider = Provider<GoRouter>((ref) {
 });
 
 bool _isAnonymousAllowedRoute(String location) {
-  if (location == AppRoutes.home ||
-      location == AppRoutes.birds ||
-      location == AppRoutes.breeding ||
-      location == AppRoutes.chicks ||
-      location == AppRoutes.calendar ||
-      location == AppRoutes.more ||
-      location == AppRoutes.healthRecords ||
-      location == AppRoutes.premium ||
+  // Only truly public routes are allowed without authentication.
+  // Data routes (birds, breeding, chicks, calendar, health-records)
+  // require login to prevent unauthorized data access.
+  return location == AppRoutes.premium ||
       location == AppRoutes.userGuide ||
       location == AppRoutes.privacyPolicy ||
       location == AppRoutes.termsOfService ||
-      location == AppRoutes.communityGuidelines ||
-      (kDebugMode && location == AppRoutes.geneticsColorAudit)) {
-    return true;
-  }
-
-  return location.startsWith('${AppRoutes.birds}/') ||
-      location.startsWith('${AppRoutes.breeding}/') ||
-      location.startsWith('${AppRoutes.chicks}/') ||
-      location.startsWith('${AppRoutes.healthRecords}/');
+      location == AppRoutes.communityGuidelines;
 }

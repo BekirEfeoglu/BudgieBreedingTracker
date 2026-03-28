@@ -105,16 +105,20 @@ class PremiumTrialBannerSection extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final packages = ref.watch(premiumOfferingsProvider).value ?? [];
-    final monthlyPackage = matchPackageForPlan(packages, PremiumPlan.monthly);
+    final semiAnnualPackage =
+        matchPackageForPlan(packages, PremiumPlan.semiAnnual);
 
-    // Show price after trial: "7-day free trial, then $4.99/month"
-    final trialPriceText = monthlyPackage != null
-        ? 'premium.trial_subtitle'.tr(
-            args: [
-              '${monthlyPackage.storeProduct.priceString}${'premium.period_monthly'.tr()}',
-            ],
-          )
-        : 'premium.trial_subtitle_fallback'.tr();
+    // Only show trial banner if the package has an introductory offer
+    final hasIntroOffer =
+        semiAnnualPackage?.storeProduct.introductoryPrice != null;
+    if (!hasIntroOffer) return const SizedBox.shrink();
+
+    // Show price after trial: "7-day free trial, then $15/6 months"
+    final trialPriceText = 'premium.trial_subtitle'.tr(
+      args: [
+        '${semiAnnualPackage!.storeProduct.priceString}${'premium.period_semi_annual'.tr()}',
+      ],
+    );
 
     return Padding(
       padding: AppSpacing.screenPadding,

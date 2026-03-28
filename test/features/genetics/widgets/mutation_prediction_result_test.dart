@@ -146,6 +146,15 @@ void main() {
       await pumpLocalizedApp(tester,
         _wrap(const OffspringPrediction(result: result, showGenotype: true)),
       );
+      // Collapsed view shows hint label
+      expect(
+        find.text('genetics.genotype_detail_label'),
+        findsAtLeastNWidgets(1),
+      );
+
+      // Tap to expand - full genotype visible
+      await tester.tap(find.byType(OffspringPrediction));
+      await tester.pumpAndSettle();
       expect(find.textContaining('+/+ bl/bl'), findsAtLeastNWidgets(1));
     });
 

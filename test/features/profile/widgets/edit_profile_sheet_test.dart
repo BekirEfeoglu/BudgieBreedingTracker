@@ -279,7 +279,7 @@ void main() {
         _consumeOverflowExceptions(tester);
 
         // Error snackbar with localization key
-        expect(find.text('common.data_load_error'), findsAtLeastNWidgets(1));
+        expect(find.text('errors.save_failed'), findsAtLeastNWidgets(1));
       }
     });
 

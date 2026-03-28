@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_theme.dart';
 
 void main() {
@@ -20,7 +21,10 @@ void main() {
     });
 
     test('has a color scheme', () {
-      expect(theme.colorScheme, isNotNull);
+      expect(theme.colorScheme.primary, AppColors.primary);
+      expect(theme.colorScheme.secondary, AppColors.secondary);
+      expect(theme.colorScheme.error, AppColors.error);
+      expect(theme.colorScheme.surface, AppColors.neutral50);
     });
 
     test('color scheme brightness is light', () {
@@ -40,7 +44,10 @@ void main() {
     });
 
     test('has a text theme', () {
-      expect(theme.textTheme, isNotNull);
+      expect(theme.textTheme.bodyMedium?.fontSize, 14);
+      expect(theme.textTheme.bodyMedium?.color, AppColors.neutral900);
+      expect(theme.textTheme.titleLarge?.fontSize, 18);
+      expect(theme.textTheme.titleLarge?.fontWeight, FontWeight.w600);
     });
 
     group('appBar theme', () {
@@ -68,10 +75,7 @@ void main() {
 
       test('card border radius is 12', () {
         final shape = theme.cardTheme.shape as RoundedRectangleBorder;
-        expect(
-          shape.borderRadius,
-          BorderRadius.circular(12),
-        );
+        expect(shape.borderRadius, BorderRadius.circular(12));
       });
     });
 
@@ -81,7 +85,7 @@ void main() {
       });
 
       test('has fill color', () {
-        expect(theme.inputDecorationTheme.fillColor, isNotNull);
+        expect(theme.inputDecorationTheme.fillColor, AppColors.neutral50);
       });
 
       test('border is OutlineInputBorder', () {
@@ -103,13 +107,19 @@ void main() {
       });
 
       test('content padding is defined', () {
-        expect(theme.inputDecorationTheme.contentPadding, isNotNull);
+        expect(
+          theme.inputDecorationTheme.contentPadding,
+          const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        );
       });
     });
 
     group('elevated button theme', () {
       test('style is defined', () {
-        expect(theme.elevatedButtonTheme.style, isNotNull);
+        expect(
+          theme.elevatedButtonTheme.style?.minimumSize?.resolve({}),
+          const Size(double.infinity, 48),
+        );
       });
     });
 
@@ -126,7 +136,10 @@ void main() {
       });
 
       test('indicator color is set', () {
-        expect(theme.navigationBarTheme.indicatorColor, isNotNull);
+        expect(
+          theme.navigationBarTheme.indicatorColor,
+          AppColors.primary.withValues(alpha: 0.1),
+        );
       });
     });
 
@@ -161,11 +174,17 @@ void main() {
     });
 
     test('has a color scheme', () {
-      expect(theme.colorScheme, isNotNull);
+      expect(theme.colorScheme.primary, AppColors.primaryLight);
+      expect(theme.colorScheme.secondary, AppColors.secondaryLight);
+      expect(theme.colorScheme.error, AppColors.error);
+      expect(theme.colorScheme.surface, AppColors.neutral900);
     });
 
     test('has a text theme', () {
-      expect(theme.textTheme, isNotNull);
+      expect(theme.textTheme.bodyMedium?.fontSize, 14);
+      expect(theme.textTheme.bodyMedium?.color, AppColors.neutral50);
+      expect(theme.textTheme.titleLarge?.fontSize, 18);
+      expect(theme.textTheme.titleLarge?.fontWeight, FontWeight.w600);
     });
 
     group('appBar theme', () {
@@ -194,7 +213,7 @@ void main() {
       });
 
       test('has fill color', () {
-        expect(theme.inputDecorationTheme.fillColor, isNotNull);
+        expect(theme.inputDecorationTheme.fillColor, AppColors.neutral800);
       });
     });
 

@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
 import '../../../core/theme/app_colors.dart';
@@ -25,14 +26,14 @@ Future<void> saveBackupFile(
 ) async {
   try {
     final dir = await getApplicationDocumentsDirectory();
-    final backupDir = Directory('${dir.path}/backups');
+    final backupDir = Directory(p.join(dir.path, 'backups'));
     if (!await backupDir.exists()) {
       await backupDir.create(recursive: true);
     }
 
     final timestamp = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
     final fileName = 'backup_${tableName}_$timestamp.json';
-    final file = File('${backupDir.path}/$fileName');
+    final file = File(p.join(backupDir.path, fileName));
     await file.writeAsString(jsonContent);
 
     if (context.mounted) {

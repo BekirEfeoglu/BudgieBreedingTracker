@@ -7,6 +7,8 @@ import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'package:budgie_breeding_tracker/data/remote/supabase/edge_function_client.dart';
+import 'package:budgie_breeding_tracker/features/admin/providers/admin_data_providers.dart';
 import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
 import 'package:budgie_breeding_tracker/features/auth/screens/email_verification_screen.dart';
 import 'package:budgie_breeding_tracker/features/auth/screens/forgot_password_screen.dart';
@@ -17,6 +19,8 @@ import 'package:budgie_breeding_tracker/features/auth/widgets/otp_input_field.da
 import 'package:budgie_breeding_tracker/router/route_names.dart';
 
 import '../helpers/e2e_test_harness.dart';
+
+class _MockEdgeFunctionClient extends Mock implements EdgeFunctionClient {}
 
 Future<void> _tapVisible(WidgetTester tester, Finder finder) async {
   await tester.ensureVisible(finder);
@@ -357,9 +361,24 @@ void main() {
           ),
         ).thenAnswer((_) async => true);
 
+        final mockEdgeFunctionClient = _MockEdgeFunctionClient();
+        when(() => mockEdgeFunctionClient.checkMfaLockout()).thenAnswer(
+          (_) async => const EdgeFunctionResult(
+            success: true,
+            data: {'locked': false, 'remaining_seconds': 0},
+          ),
+        );
+        when(() => mockEdgeFunctionClient.resetMfaLockout()).thenAnswer(
+          (_) async => const EdgeFunctionResult(success: true),
+        );
+
         final container = createTestContainer(
           isAuthenticated: true,
           twoFactorService: mockTwoFactorService,
+          overrides: [
+            edgeFunctionClientProvider
+                .overrideWithValue(mockEdgeFunctionClient),
+          ],
         );
         addTearDown(container.dispose);
 
@@ -384,7 +403,10 @@ void main() {
           find.byType(OtpInputField),
         );
         otpInput.onCompleted('123456');
-        await tester.pump(const Duration(milliseconds: 300));
+        // Allow async _checkServerLockout → challengeAndVerify → _handleSuccess chain
+        for (var i = 0; i < 10; i++) {
+          await tester.pump(const Duration(milliseconds: 100));
+        }
 
         verify(
           () => mockTwoFactorService.challengeAndVerify(
@@ -392,7 +414,7 @@ void main() {
             code: '123456',
           ),
         ).called(1);
-        await tester.pump(const Duration(milliseconds: 150));
+        await tester.pump(const Duration(milliseconds: 300));
         expect(router.state.uri.path, AppRoutes.home);
         expect(find.byType(_FakeHomeAfterLogin), findsOneWidget);
       },

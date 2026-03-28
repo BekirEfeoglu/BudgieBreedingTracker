@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
+import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/domain/services/ads/ad_service.dart';
 import 'package:budgie_breeding_tracker/features/premium/widgets/rewarded_ad_button.dart';
 
@@ -28,10 +29,7 @@ class _FakeAdService extends AdService {
   }
 }
 
-Widget _wrap(
-  Widget child, {
-  required AdService adService,
-}) {
+Widget _wrap(Widget child, {required AdService adService}) {
   return ProviderScope(
     overrides: [adServiceProvider.overrideWithValue(adService)],
     child: MaterialApp(home: Scaffold(body: child)),
@@ -181,10 +179,11 @@ void main() {
       await tester.pump();
 
       // The OutlinedButton should be full-width
-      final button = tester.widget<OutlinedButton>(
-        find.byType(OutlinedButton),
+      final button = tester.widget<OutlinedButton>(find.byType(OutlinedButton));
+      expect(
+        button.style?.minimumSize?.resolve({}),
+        const Size(double.infinity, AppSpacing.touchTargetMin),
       );
-      expect(button.style, isNotNull);
     });
   });
 }

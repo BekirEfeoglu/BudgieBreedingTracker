@@ -77,5 +77,61 @@ void main() {
       // easy_localization returns the key in test env
       expect(find.textContaining('statistics.total_label'), findsOneWidget);
     });
+
+    testWidgets('resets touch state when data changes via didUpdateWidget', (
+      tester,
+    ) async {
+      // Start with initial data
+      final widget = MaterialApp(
+        home: Scaffold(
+          body: _UpdatableGenderChart(),
+        ),
+      );
+      await pumpLocalizedApp(tester, widget, settle: false);
+      await tester.pump(const Duration(milliseconds: 300));
+
+      // PieChart should be rendered
+      expect(find.byType(PieChart), findsOneWidget);
+
+      // Trigger data update by tapping the update button
+      await tester.tap(find.byType(ElevatedButton));
+      await tester.pump(const Duration(milliseconds: 300));
+
+      // Chart should still render without error after data change
+      expect(find.byType(PieChart), findsOneWidget);
+    });
   });
+}
+
+/// Helper widget that allows updating GenderPieChart data via button tap.
+class _UpdatableGenderChart extends StatefulWidget {
+  @override
+  State<_UpdatableGenderChart> createState() => _UpdatableGenderChartState();
+}
+
+class _UpdatableGenderChartState extends State<_UpdatableGenderChart> {
+  int _maleCount = 3;
+  int _femaleCount = 2;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Expanded(
+          child: GenderPieChart(
+            maleCount: _maleCount,
+            femaleCount: _femaleCount,
+            unknownCount: 1,
+          ),
+        ),
+        ElevatedButton(
+          onPressed: () => setState(() {
+            _maleCount = 5;
+            _femaleCount = 4;
+          }),
+          child: const Text('Update'),
+        ),
+      ],
+    );
+  }
 }

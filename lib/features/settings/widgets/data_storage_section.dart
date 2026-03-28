@@ -16,6 +16,7 @@ import '../../../domain/services/sync/sync_orchestrator.dart';
 import '../../../domain/services/sync/sync_providers.dart';
 import '../../../router/route_names.dart';
 import '../providers/settings_providers.dart';
+import '../../notifications/providers/action_feedback_providers.dart';
 import 'data_storage_dialogs.dart';
 import 'settings_action_tile.dart';
 import 'settings_navigation_tile.dart';
@@ -138,12 +139,13 @@ class _DataStorageSectionState extends ConsumerState<DataStorageSection> {
       final orchestrator = ref.read(syncOrchestratorProvider);
       final result = await orchestrator.forceFullSync();
       if (mounted) {
-        final message = result == SyncResult.success
-            ? 'settings.sync_success'.tr()
-            : 'settings.sync_error'.tr();
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(message)));
+        if (result == SyncResult.success) {
+          ActionFeedbackService.show('settings.sync_success'.tr());
+        } else {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('settings.sync_error'.tr())));
+        }
       }
     } catch (e) {
       Sentry.captureException(e, stackTrace: StackTrace.current);
@@ -180,9 +182,7 @@ class _DataStorageSectionState extends ConsumerState<DataStorageSection> {
       ref.invalidate(cacheSizeProvider);
       ref.invalidate(imageStorageSizeProvider);
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('settings.cache_cleared'.tr())));
+        ActionFeedbackService.show('settings.cache_cleared'.tr());
       }
     } finally {
       if (mounted) setState(() => _isClearingCache = false);

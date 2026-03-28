@@ -140,9 +140,10 @@ void main() {
       );
       await tester.pump();
 
-      final btn = tester.widget<FilledButton>(find.byType(FilledButton));
-      // onPressed null değil → aktif
-      expect(btn.onPressed, isNotNull);
+      await tester.tap(find.byType(FilledButton));
+      await tester.pumpAndSettle();
+
+      expect(find.text('genealogy.export_pdf'), findsOneWidget);
     });
   });
 }

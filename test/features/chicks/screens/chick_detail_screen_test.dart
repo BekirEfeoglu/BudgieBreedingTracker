@@ -118,6 +118,10 @@ void main() {
     testWidgets(
       'popup menu shows wean, promote, deceased and delete for healthy unweaned chick',
       (tester) async {
+        tester.view.physicalSize = const Size(1200, 1600);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(tester.view.reset);
+
         await tester.pumpWidget(
           createSubject(chickStream: Stream.value(testChick)),
         );
@@ -127,12 +131,9 @@ void main() {
         await tester.tap(find.byType(PopupMenuButton<String>));
         await tester.pumpAndSettle();
 
-        // Popup menu item for "move to birds" contains a Row with icon + text
-        // which may overflow in test viewport — consume the overflow exception.
-        tester.takeException();
-
         // Healthy unweaned chick with no birdId → all actions visible
         expect(find.text('chicks.wean'), findsOneWidget);
+        expect(find.text('chicks.move_to_birds'), findsOneWidget);
         expect(find.text('chicks.mark_dead'), findsOneWidget);
         expect(find.text('common.delete'), findsOneWidget);
       },
