@@ -188,6 +188,29 @@ dist/
 skills-lock.json
 
 # --------------------------------------------------
+# AI Tool Artifacts (local only - NOT for version control)
+# --------------------------------------------------
+.codex/
+.superpowers/
+.playwright-mcp/
+
+# --------------------------------------------------
+# MCP Server Config (contains API tokens - NEVER commit)
+# --------------------------------------------------
+.mcp.json
+.mcp.local.json
+
+# --------------------------------------------------
+# Output / Build Artifacts
+# --------------------------------------------------
+output/
+build_log.txt
+failing_tests.log
+*.coverage
+.coverage
+coverage_report.html
+
+# --------------------------------------------------
 # Temporary / CI artifacts
 # --------------------------------------------------
 tmp/
