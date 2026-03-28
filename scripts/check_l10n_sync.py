@@ -9,32 +9,29 @@ Kontroller:
   1. Her dilde ayni anahtar seti var mi?
   2. Bos degerler var mi?
   3. Parametre tutarliligi ({} placeholder'lar esit mi?)
+  4. Kodda kullanilan .tr() anahtarlari JSON'da var mi?
 
 Cikti:
   Eksik anahtarlar, fazla anahtarlar ve bos degerler listelenir.
   CI'da exit code 0 = senkron, 1 = uyumsuzluk var.
 """
 
-import json
-import re
 import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+import json
+import re
 from collections import defaultdict
+
+from _rules_utils import Colors
 
 ROOT = Path(__file__).resolve().parent.parent
 TRANSLATIONS_DIR = ROOT / "assets" / "translations"
 
 LANGUAGES = ["tr", "en", "de"]
 MASTER_LANG = "tr"
-
-
-class Colors:
-    GREEN = "\033[92m"
-    RED = "\033[91m"
-    YELLOW = "\033[93m"
-    CYAN = "\033[96m"
-    RESET = "\033[0m"
-    BOLD = "\033[1m"
 
 
 def load_json(filepath: Path) -> dict:
@@ -167,6 +164,42 @@ def main():
     for cat, count in sorted(categories.items(), key=lambda x: -x[1]):
         bar = "#" * min(count // 3, 40)
         print(f"  {cat:20s} {count:4d} {Colors.CYAN}{bar}{Colors.RESET}")
+
+    # Kodda kullanilan .tr() anahtarlarinin JSON'da var olup olmadigini kontrol et
+    print(f"\n{Colors.BOLD}6. Kod-JSON Anahtar Dogrulamasi (.tr() anahtarlari){Colors.RESET}")
+    strict_keys = "--strict-keys" in sys.argv
+    lib_dir = ROOT / "lib"
+    tr_key_pattern = re.compile(r"'([a-z0-9_]+\.[a-z0-9_]+(?:\.[a-z0-9_]+)*)'\.tr\(")
+    missing_in_json = []
+
+    for dart_file in sorted(lib_dir.rglob("*.dart")):
+        if any(dart_file.name.endswith(s) for s in (".freezed.dart", ".g.dart")):
+            continue
+        try:
+            content = dart_file.read_text(encoding="utf-8")
+        except Exception:
+            continue
+        for match in tr_key_pattern.finditer(content):
+            key = match.group(1)
+            if key not in master_keys:
+                rel_path = dart_file.relative_to(ROOT)
+                line_num = content[:match.start()].count("\n") + 1
+                missing_in_json.append((key, str(rel_path), line_num))
+
+    if missing_in_json:
+        if strict_keys:
+            issues += len(missing_in_json)
+        severity = Colors.RED if strict_keys else Colors.YELLOW
+        label = "EKSIK" if strict_keys else "UYARI"
+        print(f"  {severity}{label}: {len(missing_in_json)} anahtar kodda var ama JSON'da yok:{Colors.RESET}")
+        for key, path, line in missing_in_json[:30]:
+            print(f"    - {Colors.YELLOW}{key}{Colors.RESET}  ({path}:{line})")
+        if len(missing_in_json) > 30:
+            print(f"    ... ve {len(missing_in_json) - 30} tane daha")
+        if not strict_keys:
+            print(f"  {Colors.CYAN}(--strict-keys ile CI'da hata olarak sayilir){Colors.RESET}")
+    else:
+        print(f"  {Colors.GREEN}Tum .tr() anahtarlari JSON'da mevcut{Colors.RESET}")
 
     # Ozet
     print(f"\n{Colors.BOLD}{Colors.CYAN}=== OZET ==={Colors.RESET}")
