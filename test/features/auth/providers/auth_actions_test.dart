@@ -245,7 +245,7 @@ void main() {
       when(() => mockAuth.currentSession).thenReturn(null);
 
       // Should return without calling anything else
-      await expectLater(actions.revokeOAuthToken(), completes);
+      await actions.revokeOAuthToken();
 
       verifyNever(() => mockClient.functions);
     });
@@ -256,7 +256,9 @@ void main() {
       when(() => session.providerToken).thenReturn(null);
       when(() => session.providerRefreshToken).thenReturn(null);
 
-      await expectLater(actions.revokeOAuthToken(), completes);
+      await actions.revokeOAuthToken();
+
+      verify(() => mockAuth.currentSession).called(1);
     });
   });
 
@@ -265,7 +267,7 @@ void main() {
       when(() => mockAuth.currentUser).thenReturn(null);
 
       expect(
-        () => actions.requestAccountDeletion(),
+        () => actions.requestAccountDeletion(currentPassword: 'pass'),
         throwsA(isA<AuthException>()),
       );
     });

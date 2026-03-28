@@ -280,8 +280,6 @@ void main() {
       );
       await tester.pump();
 
-      expect(tester.takeException(), isNull);
-
       expect(find.byType(DashboardContent), findsOneWidget);
     });
 
@@ -297,8 +295,6 @@ void main() {
       );
       await tester.pump();
 
-      expect(tester.takeException(), isNull);
-
       expect(find.text('admin.quick_actions'), findsOneWidget);
     });
 
@@ -313,8 +309,6 @@ void main() {
         ),
       );
       await tester.pump();
-
-      expect(tester.takeException(), isNull);
 
       expect(find.text('admin.go_to_settings'), findsOneWidget);
     });

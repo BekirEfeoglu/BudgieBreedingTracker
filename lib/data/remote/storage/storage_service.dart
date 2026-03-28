@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_constants.dart';
 import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
+import 'package:budgie_breeding_tracker/data/remote/storage/storage_utils.dart';
 
 /// Service for uploading and managing files in Supabase Storage.
 ///
@@ -42,6 +43,15 @@ class StorageService {
 
   const StorageService(this._client);
 
+  /// Validates that a path component contains only safe characters (UUID format).
+  /// Prevents path traversal attacks via crafted IDs.
+  static String _sanitizePath(String id) {
+    if (!RegExp(r'^[a-zA-Z0-9\-_]+$').hasMatch(id)) {
+      throw ArgumentError('Invalid path component: $id');
+    }
+    return id;
+  }
+
   /// Uploads a bird photo and returns the public URL.
   ///
   /// File is stored at: `bird-photos/{userId}/{birdId}/{filename}`.
@@ -50,7 +60,9 @@ class StorageService {
     required String birdId,
     required XFile file,
   }) async {
-    final ext = _safeExtension(file.name);
+    _sanitizePath(userId);
+    _sanitizePath(birdId);
+    final ext = StorageUtils.safeExtension(file.name);
     final timestamp = DateTime.now().millisecondsSinceEpoch;
     final path = '$userId/$birdId/$timestamp.$ext';
 
@@ -65,7 +77,8 @@ class StorageService {
     required String userId,
     required XFile file,
   }) async {
-    final ext = _safeExtension(file.name);
+    _sanitizePath(userId);
+    final ext = StorageUtils.safeExtension(file.name);
     final path = '$userId/avatar.$ext';
 
     return _uploadFile(
@@ -88,6 +101,7 @@ class StorageService {
 
   /// Deletes a user avatar.
   Future<void> deleteAvatar({required String userId}) async {
+    _sanitizePath(userId);
     try {
       final files = await _client.storage
           .from(_avatarsBucket)
@@ -111,7 +125,9 @@ class StorageService {
     required String postId,
     required XFile file,
   }) async {
-    final ext = _safeExtension(file.name);
+    _sanitizePath(userId);
+    _sanitizePath(postId);
+    final ext = StorageUtils.safeExtension(file.name);
     final timestamp = DateTime.now().millisecondsSinceEpoch;
     final path = '$userId/$postId/$timestamp.$ext';
 
@@ -135,6 +151,8 @@ class StorageService {
     required String userId,
     required String birdId,
   }) async {
+    _sanitizePath(userId);
+    _sanitizePath(birdId);
     try {
       final files = await _client.storage
           .from(_birdPhotosBucket)
@@ -158,7 +176,12 @@ class StorageService {
   }
 
   /// Gets the avatar URL for a user, or null if not set.
+  ///
+  /// Requires an authenticated session. Returns null if the caller is
+  /// not authenticated to prevent unauthenticated avatar enumeration.
   Future<String?> getAvatarUrl({required String userId}) async {
+    _sanitizePath(userId);
+    if (_client.auth.currentUser == null) return null;
     try {
       final files = await _client.storage
           .from(_avatarsBucket)
@@ -182,7 +205,7 @@ class StorageService {
     bool upsert = false,
   }) async {
     try {
-      final ext = _safeExtension(file.name);
+      final ext = StorageUtils.safeExtension(file.name);
       if (!_allowedExtensions.contains(ext)) {
         throw StorageException(
           'File type .$ext is not allowed. '
@@ -195,7 +218,15 @@ class StorageService {
       if (bytes.length > AppConstants.maxUploadSizeBytes) {
         throw const StorageException('File size exceeds 10 MB limit');
       }
-      final mimeType = _getMimeType(file.name);
+
+      // Validate file content matches claimed extension via magic bytes
+      if (!StorageUtils.validateMagicBytes(bytes, ext)) {
+        throw StorageException(
+          'File content does not match .$ext format',
+        );
+      }
+
+      final mimeType = StorageUtils.getMimeType(file.name);
 
       await _client.storage
           .from(bucket)
@@ -221,6 +252,7 @@ class StorageService {
   /// Errors are logged but do not throw — the server-side RPC also
   /// handles storage cleanup, so client-side deletion is best-effort.
   Future<void> deleteAllUserFiles(String userId) async {
+    _sanitizePath(userId);
     const buckets = [
       _birdPhotosBucket,
       _avatarsBucket,
@@ -260,22 +292,4 @@ class StorageService {
     }
   }
 
-  /// Extracts file extension safely, falling back to 'jpg' if no dot is found.
-  static String _safeExtension(String filename) {
-    final dotIndex = filename.lastIndexOf('.');
-    if (dotIndex < 0 || dotIndex == filename.length - 1) return 'jpg';
-    return filename.substring(dotIndex + 1).toLowerCase();
-  }
-
-  String _getMimeType(String filename) {
-    final ext = filename.split('.').last.toLowerCase();
-    return switch (ext) {
-      'jpg' || 'jpeg' => 'image/jpeg',
-      'png' => 'image/png',
-      'gif' => 'image/gif',
-      'webp' => 'image/webp',
-      'heic' => 'image/heic',
-      _ => 'application/octet-stream',
-    };
-  }
 }

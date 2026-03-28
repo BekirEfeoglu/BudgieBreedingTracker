@@ -28,10 +28,20 @@ class TwoFactorVerifyScreen extends ConsumerStatefulWidget {
 
 class _TwoFactorVerifyScreenState extends ConsumerState<TwoFactorVerifyScreen> {
   static const _tag = '[TwoFactorVerify]';
-  static const _maxAttempts = 5;
-  static const _lockoutDuration = Duration(minutes: 2);
   static const _prefsKeyAttempts = 'mfa_failed_attempts';
   static const _prefsKeyLockout = 'mfa_lockout_until';
+
+  /// Returns lockout duration based on cumulative failed attempts.
+  /// Exponential backoff: 5→2min, 10→5min, 15→15min, 20+→60min.
+  static Duration _lockoutDurationForAttempts(int attempts) {
+    if (attempts >= 20) return const Duration(minutes: 60);
+    if (attempts >= 15) return const Duration(minutes: 15);
+    if (attempts >= 10) return const Duration(minutes: 5);
+    return const Duration(minutes: 2);
+  }
+
+  /// Lockout threshold: first lockout at 5 failures.
+  static bool _shouldLockout(int attempts) => attempts >= 5 && attempts % 5 == 0;
 
   bool _isVerifying = false;
   String? _error;
@@ -72,7 +82,14 @@ class _TwoFactorVerifyScreenState extends ConsumerState<TwoFactorVerifyScreen> {
         }
       }
     } catch (e) {
-      AppLogger.warning('$_tag Server lockout check failed, using local: $e');
+      // Fail closed: if we can't verify server lockout status, block verification
+      AppLogger.warning('$_tag Server lockout check failed — failing closed: $e');
+      if (mounted) {
+        setState(() {
+          _error = 'auth.2fa_server_unavailable'.tr();
+          _lockoutUntil = DateTime.now().add(const Duration(seconds: 30));
+        });
+      }
     }
   }
 
@@ -107,6 +124,7 @@ class _TwoFactorVerifyScreenState extends ConsumerState<TwoFactorVerifyScreen> {
 
     // Check server-side lockout first
     await _checkServerLockout();
+    if (!mounted) return;
     if (_isLockedOut) {
       final remaining = _lockoutUntil!.difference(DateTime.now()).inSeconds;
       setState(() {
@@ -171,16 +189,16 @@ class _TwoFactorVerifyScreenState extends ConsumerState<TwoFactorVerifyScreen> {
     final serverRemaining =
         serverResult?.data?['remaining_seconds'] as int? ?? 0;
 
+    // Always accumulate attempts locally (never reset to 0)
+    _failedAttempts++;
+
     if (serverLocked && serverRemaining > 0) {
       _lockoutUntil = DateTime.now().add(Duration(seconds: serverRemaining));
-      _failedAttempts = 0;
-    } else {
-      // Local fallback tracking
-      _failedAttempts++;
-      if (_failedAttempts >= _maxAttempts) {
-        _lockoutUntil = DateTime.now().add(_lockoutDuration);
-        _failedAttempts = 0;
-      }
+    } else if (_shouldLockout(_failedAttempts)) {
+      // Local fallback: exponential backoff based on cumulative failures
+      _lockoutUntil = DateTime.now().add(
+        _lockoutDurationForAttempts(_failedAttempts),
+      );
     }
 
     await _persistLocalLockoutState();

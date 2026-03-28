@@ -5,6 +5,7 @@ import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/data/models/health_record_model.dart';
 import 'package:budgie_breeding_tracker/features/statistics/widgets/chart_card.dart';
+import 'package:budgie_breeding_tracker/features/statistics/widgets/chart_utils.dart';
 
 /// Vertical bar chart showing health record type distribution.
 class HealthRecordTypeChart extends StatelessWidget {
@@ -45,6 +46,8 @@ class HealthRecordTypeChart extends StatelessWidget {
     for (final v in data.values) {
       if (v.toDouble() > maxVal) maxVal = v.toDouble();
     }
+    final yInterval = calcChartInterval(maxVal);
+    final maxY = calcChartMaxY(maxVal, yInterval);
 
     return SizedBox(
       height: 200,
@@ -52,7 +55,7 @@ class HealthRecordTypeChart extends StatelessWidget {
         child: BarChart(
           BarChartData(
             alignment: BarChartAlignment.spaceAround,
-            maxY: maxVal + 1,
+            maxY: maxY,
             barTouchData: BarTouchData(
               touchTooltipData: BarTouchTooltipData(
                 getTooltipItem: (group, groupIndex, rod, rodIndex) {
@@ -78,9 +81,11 @@ class HealthRecordTypeChart extends StatelessWidget {
                 sideTitles: SideTitles(
                   showTitles: true,
                   reservedSize: 28,
-                  interval: 1,
+                  interval: yInterval,
                   getTitlesWidget: (value, meta) {
-                    if (value % 1 != 0) return const SizedBox.shrink();
+                    if (value % yInterval != 0 || value == 0) {
+                      return const SizedBox.shrink();
+                    }
                     return Text(
                       value.toInt().toString(),
                       style: theme.textTheme.labelSmall,
@@ -106,7 +111,7 @@ class HealthRecordTypeChart extends StatelessWidget {
                 ),
               ),
             ),
-            gridData: const FlGridData(show: false),
+            gridData: chartGridData(context, interval: yInterval),
             borderData: FlBorderData(show: false),
             barGroups: List.generate(_typeOrder.length, (index) {
               final type = _typeOrder[index];

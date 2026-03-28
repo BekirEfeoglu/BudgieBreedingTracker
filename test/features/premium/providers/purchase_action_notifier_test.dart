@@ -9,77 +9,12 @@ import 'package:budgie_breeding_tracker/domain/services/payment/purchase_service
 import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
 import 'package:budgie_breeding_tracker/features/premium/providers/premium_providers.dart';
 
+import '../../../helpers/fake_purchase_service.dart';
 import '../../../helpers/test_helpers.dart';
 
 class MockPackage extends Mock implements Package {}
 
 class MockStoreProduct extends Mock implements StoreProduct {}
-
-class FakePurchaseService extends PurchaseService {
-  bool initializeResult = true;
-  Object? initializeError;
-  bool isPremiumResult = false;
-  Object? isPremiumError;
-  List<Package> offeringsResult = const [];
-  Object? offeringsError;
-  bool purchaseResult = false;
-  Object? purchaseError;
-  bool restoreResult = false;
-  Object? restoreError;
-  SubscriptionInfo subscriptionInfoResult = const SubscriptionInfo(
-    isActive: false,
-  );
-
-  int initializeCallCount = 0;
-  int isPremiumCallCount = 0;
-  int logoutCallCount = 0;
-  Package? lastPurchasedPackage;
-
-  @override
-  Future<bool> initialize({
-    required String apiKey,
-    required String userId,
-  }) async {
-    initializeCallCount++;
-    if (initializeError != null) throw initializeError!;
-    return initializeResult;
-  }
-
-  @override
-  Future<bool> isPremium() async {
-    isPremiumCallCount++;
-    if (isPremiumError != null) throw isPremiumError!;
-    return isPremiumResult;
-  }
-
-  @override
-  Future<List<Package>> getOfferings() async {
-    if (offeringsError != null) throw offeringsError!;
-    return offeringsResult;
-  }
-
-  @override
-  Future<bool> purchasePackage(Package package) async {
-    lastPurchasedPackage = package;
-    if (purchaseError != null) throw purchaseError!;
-    return purchaseResult;
-  }
-
-  @override
-  Future<bool> restorePurchases() async {
-    if (restoreError != null) throw restoreError!;
-    return restoreResult;
-  }
-
-  @override
-  Future<SubscriptionInfo> getSubscriptionInfo() async =>
-      subscriptionInfoResult;
-
-  @override
-  Future<void> logout() async {
-    logoutCallCount++;
-  }
-}
 
 void _stubPackage(
   MockPackage package, {
@@ -138,7 +73,7 @@ void main() {
         isLoading: true,
         error: 'old_error',
         isSuccess: false,
-        purchasingPlan: PremiumPlan.monthly,
+        purchasingPlan: PremiumPlan.semiAnnual,
       );
 
       final updated = state.copyWith(isSuccess: true);
@@ -199,7 +134,7 @@ void main() {
       // Start the purchase but don't await — check intermediate state
       await container
           .read(purchaseActionProvider.notifier)
-          .purchasePlan(PremiumPlan.monthly);
+          .purchasePlan(PremiumPlan.semiAnnual);
 
       // After completion, loading should be cleared
       final state = container.read(purchaseActionProvider);
@@ -214,7 +149,7 @@ void main() {
 
       await container
           .read(purchaseActionProvider.notifier)
-          .purchasePlan(PremiumPlan.monthly);
+          .purchasePlan(PremiumPlan.semiAnnual);
 
       final state = container.read(purchaseActionProvider);
       expect(state.isSuccess, isFalse);
@@ -233,7 +168,7 @@ void main() {
 
       await container
           .read(purchaseActionProvider.notifier)
-          .purchasePlan(PremiumPlan.monthly);
+          .purchasePlan(PremiumPlan.semiAnnual);
 
       final state = container.read(purchaseActionProvider);
       expect(state.isSuccess, isFalse);
@@ -255,7 +190,7 @@ void main() {
 
       await container
           .read(purchaseActionProvider.notifier)
-          .purchasePlan(PremiumPlan.monthly);
+          .purchasePlan(PremiumPlan.semiAnnual);
 
       final state = container.read(purchaseActionProvider);
       expect(state.error, PurchaseErrorCodes.packageNotFound);
@@ -266,9 +201,9 @@ void main() {
       final monthly = MockPackage();
       _stubPackage(
         monthly,
-        packageType: PackageType.monthly,
-        identifier: 'monthly',
-        productIdentifier: 'budgie_premium_monthly',
+        packageType: PackageType.sixMonth,
+        identifier: 'six_month',
+        productIdentifier: 'budgie_premium_semi_annual',
       );
       service.offeringsResult = [monthly];
       service.purchaseResult = true;
@@ -278,7 +213,7 @@ void main() {
 
       await container
           .read(purchaseActionProvider.notifier)
-          .purchasePlan(PremiumPlan.monthly);
+          .purchasePlan(PremiumPlan.semiAnnual);
 
       final state = container.read(purchaseActionProvider);
       expect(state.isSuccess, isTrue);
@@ -289,9 +224,9 @@ void main() {
       final monthly = MockPackage();
       _stubPackage(
         monthly,
-        packageType: PackageType.monthly,
-        identifier: 'monthly',
-        productIdentifier: 'budgie_premium_monthly',
+        packageType: PackageType.sixMonth,
+        identifier: 'six_month',
+        productIdentifier: 'budgie_premium_semi_annual',
       );
       service.offeringsResult = [monthly];
       service.purchaseResult = false;
@@ -301,7 +236,7 @@ void main() {
 
       await container
           .read(purchaseActionProvider.notifier)
-          .purchasePlan(PremiumPlan.monthly);
+          .purchasePlan(PremiumPlan.semiAnnual);
 
       final state = container.read(purchaseActionProvider);
       expect(state.isSuccess, isFalse);
@@ -312,9 +247,9 @@ void main() {
       final monthly = MockPackage();
       _stubPackage(
         monthly,
-        packageType: PackageType.monthly,
-        identifier: 'monthly',
-        productIdentifier: 'budgie_premium_monthly',
+        packageType: PackageType.sixMonth,
+        identifier: 'six_month',
+        productIdentifier: 'budgie_premium_semi_annual',
       );
       service.offeringsResult = [monthly];
       service.purchaseError = const PurchaseException(
@@ -326,7 +261,7 @@ void main() {
 
       await container
           .read(purchaseActionProvider.notifier)
-          .purchasePlan(PremiumPlan.monthly);
+          .purchasePlan(PremiumPlan.semiAnnual);
 
       final state = container.read(purchaseActionProvider);
       expect(state.error, PurchaseErrorCodes.pending);
@@ -345,7 +280,7 @@ void main() {
 
       await container
           .read(purchaseActionProvider.notifier)
-          .purchasePlan(PremiumPlan.monthly);
+          .purchasePlan(PremiumPlan.semiAnnual);
 
       final state = container.read(purchaseActionProvider);
       expect(state.isSuccess, isFalse);
@@ -378,9 +313,9 @@ void main() {
       final lifetime = MockPackage();
       _stubPackage(
         lifetime,
-        packageType: PackageType.lifetime,
-        identifier: 'lifetime',
-        productIdentifier: 'budgie_premium_lifetime',
+        packageType: PackageType.annual,
+        identifier: 'annual',
+        productIdentifier: 'budgie_premium_yearly',
       );
       service.offeringsResult = [lifetime];
       service.purchaseResult = true;
@@ -390,7 +325,7 @@ void main() {
 
       await container
           .read(purchaseActionProvider.notifier)
-          .purchasePlan(PremiumPlan.lifetime);
+          .purchasePlan(PremiumPlan.yearly);
 
       expect(service.lastPurchasedPackage, same(lifetime));
       expect(container.read(purchaseActionProvider).isSuccess, isTrue);
@@ -404,9 +339,7 @@ void main() {
       final container = _containerWithService(service);
       addTearDown(container.dispose);
 
-      await container
-          .read(purchaseActionProvider.notifier)
-          .restorePurchases();
+      await container.read(purchaseActionProvider.notifier).restorePurchases();
 
       // After completion, check final state
       final state = container.read(purchaseActionProvider);
@@ -419,9 +352,7 @@ void main() {
       final container = _containerWithService(service);
       addTearDown(container.dispose);
 
-      await container
-          .read(purchaseActionProvider.notifier)
-          .restorePurchases();
+      await container.read(purchaseActionProvider.notifier).restorePurchases();
 
       final state = container.read(purchaseActionProvider);
       expect(state.error, PurchaseErrorCodes.noOfferings);
@@ -433,9 +364,7 @@ void main() {
       final container = _containerWithService(service);
       addTearDown(container.dispose);
 
-      await container
-          .read(purchaseActionProvider.notifier)
-          .restorePurchases();
+      await container.read(purchaseActionProvider.notifier).restorePurchases();
 
       final state = container.read(purchaseActionProvider);
       expect(state.isSuccess, isTrue);
@@ -448,9 +377,7 @@ void main() {
       final container = _containerWithService(service);
       addTearDown(container.dispose);
 
-      await container
-          .read(purchaseActionProvider.notifier)
-          .restorePurchases();
+      await container.read(purchaseActionProvider.notifier).restorePurchases();
 
       final state = container.read(purchaseActionProvider);
       expect(state.isSuccess, isFalse);
@@ -465,9 +392,7 @@ void main() {
       final container = _containerWithService(service);
       addTearDown(container.dispose);
 
-      await container
-          .read(purchaseActionProvider.notifier)
-          .restorePurchases();
+      await container.read(purchaseActionProvider.notifier).restorePurchases();
 
       final state = container.read(purchaseActionProvider);
       expect(state.error, PurchaseErrorCodes.networkError);
@@ -479,9 +404,7 @@ void main() {
       final container = _containerWithService(service);
       addTearDown(container.dispose);
 
-      await container
-          .read(purchaseActionProvider.notifier)
-          .restorePurchases();
+      await container.read(purchaseActionProvider.notifier).restorePurchases();
 
       final state = container.read(purchaseActionProvider);
       expect(state.error, PurchaseErrorCodes.restoreFailed);
@@ -493,9 +416,9 @@ void main() {
       final monthly = MockPackage();
       _stubPackage(
         monthly,
-        packageType: PackageType.monthly,
-        identifier: 'monthly',
-        productIdentifier: 'budgie_premium_monthly',
+        packageType: PackageType.sixMonth,
+        identifier: 'six_month',
+        productIdentifier: 'budgie_premium_semi_annual',
       );
       service.offeringsResult = [monthly];
       service.purchaseResult = false;
@@ -505,8 +428,11 @@ void main() {
 
       await container
           .read(purchaseActionProvider.notifier)
-          .purchasePlan(PremiumPlan.monthly);
-      expect(container.read(purchaseActionProvider).error, isNotNull);
+          .purchasePlan(PremiumPlan.semiAnnual);
+      expect(
+        container.read(purchaseActionProvider).error,
+        PurchaseErrorCodes.cancelled,
+      );
 
       container.read(purchaseActionProvider.notifier).reset();
 
@@ -534,9 +460,9 @@ void main() {
       final monthly = MockPackage();
       _stubPackage(
         monthly,
-        packageType: PackageType.monthly,
-        identifier: 'monthly',
-        productIdentifier: 'budgie_premium_monthly',
+        packageType: PackageType.sixMonth,
+        identifier: 'six_month',
+        productIdentifier: 'budgie_premium_semi_annual',
       );
       service.offeringsResult = [monthly];
 
@@ -547,14 +473,17 @@ void main() {
       service.purchaseResult = false;
       await container
           .read(purchaseActionProvider.notifier)
-          .purchasePlan(PremiumPlan.monthly);
-      expect(container.read(purchaseActionProvider).error, isNotNull);
+          .purchasePlan(PremiumPlan.semiAnnual);
+      expect(
+        container.read(purchaseActionProvider).error,
+        PurchaseErrorCodes.cancelled,
+      );
 
       // Second: success
       service.purchaseResult = true;
       await container
           .read(purchaseActionProvider.notifier)
-          .purchasePlan(PremiumPlan.monthly);
+          .purchasePlan(PremiumPlan.semiAnnual);
 
       final state = container.read(purchaseActionProvider);
       expect(state.isSuccess, isTrue);
@@ -568,13 +497,14 @@ void main() {
 
       await container
           .read(purchaseActionProvider.notifier)
-          .purchasePlan(PremiumPlan.monthly);
-      expect(container.read(purchaseActionProvider).error, isNotNull);
+          .purchasePlan(PremiumPlan.semiAnnual);
+      expect(
+        container.read(purchaseActionProvider).error,
+        PurchaseErrorCodes.noOfferings,
+      );
 
       // Restore also fails when service not ready
-      await container
-          .read(purchaseActionProvider.notifier)
-          .restorePurchases();
+      await container.read(purchaseActionProvider.notifier).restorePurchases();
       expect(
         container.read(purchaseActionProvider).error,
         PurchaseErrorCodes.noOfferings,

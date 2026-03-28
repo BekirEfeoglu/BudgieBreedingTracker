@@ -40,6 +40,8 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen> {
   @override
   Widget build(BuildContext context) {
     final searchState = ref.watch(communitySearchProvider);
+    // Watched (not read) because feedState.isLoading drives the loading
+    // indicator below — reactivity is needed to rebuild when loading completes.
     final feedState = ref.watch(communityFeedProvider);
 
     return DefaultTabController(
@@ -91,6 +93,40 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen> {
       selection: TextSelection.collapsed(offset: query.length),
     );
     ref.read(communitySearchProvider.notifier).setQuery(query);
+  }
+}
+
+class _CommunityUserTile extends StatelessWidget {
+  final CommunitySearchUserResult user;
+  final Widget? trailing;
+
+  const _CommunityUserTile({required this.user, this.trailing});
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: ListTile(
+        onTap: () => context.push(
+          AppRoutes.communityUserPosts.replaceFirst(':userId', user.userId),
+        ),
+        leading: CircleAvatar(
+          foregroundImage:
+              user.avatarUrl != null ? NetworkImage(user.avatarUrl!) : null,
+          child: user.avatarUrl == null
+              ? Text(
+                  user.username.isNotEmpty
+                      ? user.username[0].toUpperCase()
+                      : '?',
+                )
+              : null,
+        ),
+        title: Text(user.username),
+        subtitle: Text(
+          'community.user_posts_count'.tr(args: ['${user.postCount}']),
+        ),
+        trailing: trailing ?? const Icon(LucideIcons.chevronRight),
+      ),
+    );
   }
 }
 
@@ -165,33 +201,7 @@ class _SearchSuggestionsBody extends ConsumerWidget {
           )
         else
           ...suggestedUsers.map(
-            (user) => Card(
-              child: ListTile(
-                onTap: () => context.push(
-                  AppRoutes.communityUserPosts.replaceFirst(
-                    ':userId',
-                    user.userId,
-                  ),
-                ),
-                leading: CircleAvatar(
-                  foregroundImage: user.avatarUrl != null
-                      ? NetworkImage(user.avatarUrl!)
-                      : null,
-                  child: user.avatarUrl == null
-                      ? Text(
-                          user.username.isNotEmpty
-                              ? user.username[0].toUpperCase()
-                              : '?',
-                        )
-                      : null,
-                ),
-                title: Text(user.username),
-                subtitle: Text(
-                  'community.user_posts_count'.tr(args: ['${user.postCount}']),
-                ),
-                trailing: const Icon(LucideIcons.chevronRight),
-              ),
-            ),
+            (user) => _CommunityUserTile(user: user),
           ),
       ],
     );

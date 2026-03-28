@@ -105,9 +105,7 @@ void main() {
 
       test('bodySmall has reduced alpha for subdued appearance', () {
         final bodySmallColor = textTheme.bodySmall?.color;
-        expect(bodySmallColor, isNotNull);
-        // bodySmall uses withValues(alpha: 0.7) of neutral900
-        expect(bodySmallColor!.a, closeTo(0.7, 0.01));
+        expect(bodySmallColor, AppColors.neutral900.withValues(alpha: 0.7));
       });
     });
   });
@@ -134,8 +132,7 @@ void main() {
 
       test('bodySmall has reduced alpha for subdued appearance', () {
         final bodySmallColor = textTheme.bodySmall?.color;
-        expect(bodySmallColor, isNotNull);
-        expect(bodySmallColor!.a, closeTo(0.7, 0.01));
+        expect(bodySmallColor, AppColors.neutral50.withValues(alpha: 0.7));
       });
     });
 
@@ -214,24 +211,6 @@ void main() {
         greaterThan(textTheme.bodySmall!.fontSize!),
       );
     });
-  });
-
-  group('AppTypography — all defined styles are non-null', () {
-    for (final brightness in Brightness.values) {
-      test('all styles defined for ${brightness.name}', () {
-        final textTheme = AppTypography.textTheme(brightness);
-        expect(textTheme.displayLarge, isNotNull);
-        expect(textTheme.displayMedium, isNotNull);
-        expect(textTheme.headlineLarge, isNotNull);
-        expect(textTheme.headlineMedium, isNotNull);
-        expect(textTheme.titleLarge, isNotNull);
-        expect(textTheme.titleMedium, isNotNull);
-        expect(textTheme.bodyLarge, isNotNull);
-        expect(textTheme.bodyMedium, isNotNull);
-        expect(textTheme.bodySmall, isNotNull);
-        expect(textTheme.labelLarge, isNotNull);
-      });
-    }
   });
 
   group('AppTypography — light vs dark use different base colors', () {

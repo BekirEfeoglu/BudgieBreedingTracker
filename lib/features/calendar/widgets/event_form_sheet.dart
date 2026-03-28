@@ -12,6 +12,7 @@ import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.d
 import 'package:budgie_breeding_tracker/features/calendar/providers/calendar_form_providers.dart';
 import 'package:budgie_breeding_tracker/features/settings/providers/settings_providers.dart';
 import 'package:budgie_breeding_tracker/features/calendar/widgets/event_card.dart';
+import 'package:budgie_breeding_tracker/features/notifications/providers/action_feedback_providers.dart';
 
 part 'event_form_fields.dart';
 
@@ -93,14 +94,10 @@ class _EventFormContentState extends ConsumerState<_EventFormContent> {
       if (state.isSuccess) {
         ref.read(eventFormStateProvider.notifier).reset();
         Navigator.of(context).pop();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              _isEditing
-                  ? 'calendar.event_updated'.tr()
-                  : 'calendar.event_saved'.tr(),
-            ),
-          ),
+        ActionFeedbackService.show(
+          _isEditing
+              ? 'calendar.event_updated'.tr()
+              : 'calendar.event_saved'.tr(),
         );
       }
       if (state.error != null) {

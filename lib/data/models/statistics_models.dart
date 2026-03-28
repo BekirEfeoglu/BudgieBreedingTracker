@@ -5,6 +5,7 @@ part 'statistics_models.g.dart';
 
 @freezed
 abstract class DashboardStats with _$DashboardStats {
+  const DashboardStats._(); // ignore: unused_element
   const factory DashboardStats({
     @Default(0) int totalBirds,
     @Default(0) int totalEggs,
@@ -20,6 +21,7 @@ abstract class DashboardStats with _$DashboardStats {
 
 @freezed
 abstract class BirdStatistics with _$BirdStatistics {
+  const BirdStatistics._(); // ignore: unused_element
   const factory BirdStatistics({
     @Default(0) int total,
     @Default(0) int male,
@@ -33,48 +35,6 @@ abstract class BirdStatistics with _$BirdStatistics {
 
   factory BirdStatistics.fromJson(Map<String, dynamic> json) =>
       _$BirdStatisticsFromJson(json);
-}
-
-@freezed
-abstract class EggStatistics with _$EggStatistics {
-  const factory EggStatistics({
-    @Default(0) int total,
-    @Default(0) int incubating,
-    @Default(0) int hatched,
-    @Default(0) int fertile,
-    @Default(0) int infertile,
-    @Default(0.0) double hatchRate,
-    @Default(0.0) double fertilityRate,
-  }) = _EggStatistics;
-
-  factory EggStatistics.fromJson(Map<String, dynamic> json) =>
-      _$EggStatisticsFromJson(json);
-}
-
-@freezed
-abstract class ChickStatistics with _$ChickStatistics {
-  const factory ChickStatistics({
-    @Default(0) int total,
-    @Default(0) int thisMonth,
-    @Default(0.0) double averageHatchWeight,
-    @Default(0.0) double survivalRate,
-  }) = _ChickStatistics;
-
-  factory ChickStatistics.fromJson(Map<String, dynamic> json) =>
-      _$ChickStatisticsFromJson(json);
-}
-
-@freezed
-abstract class BreedingStatistics with _$BreedingStatistics {
-  const factory BreedingStatistics({
-    @Default(0) int active,
-    @Default(0) int completed,
-    @Default(0.0) double successRate,
-    @Default(0.0) double averageCycleLength,
-  }) = _BreedingStatistics;
-
-  factory BreedingStatistics.fromJson(Map<String, dynamic> json) =>
-      _$BreedingStatisticsFromJson(json);
 }
 
 @freezed

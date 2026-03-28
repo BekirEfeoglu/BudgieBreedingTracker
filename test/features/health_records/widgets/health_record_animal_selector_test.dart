@@ -6,7 +6,7 @@ import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
 import 'package:budgie_breeding_tracker/features/health_records/widgets/health_record_animal_selector.dart';
 
-import '../../../helpers/pump_helpers.dart';
+import '../../../helpers/test_localization.dart';
 
 const _testBird1 = Bird(
   id: 'bird-1',
@@ -29,7 +29,7 @@ void main() {
     testWidgets('shows LinearProgressIndicator when loading with empty lists', (
       tester,
     ) async {
-      await pumpWidgetSimple(
+      await pumpLocalizedWidget(
         tester,
         HealthRecordAnimalSelector(
           selectedId: null,
@@ -38,6 +38,7 @@ void main() {
           isLoading: true,
           onChanged: (_) {},
         ),
+        settle: false,
       );
 
       expect(find.byType(LinearProgressIndicator), findsOneWidget);
@@ -46,7 +47,7 @@ void main() {
     testWidgets('shows DropdownButtonFormField when not loading', (
       tester,
     ) async {
-      await pumpWidgetSimple(
+      await pumpLocalizedWidget(
         tester,
         HealthRecordAnimalSelector(
           selectedId: null,
@@ -55,6 +56,7 @@ void main() {
           isLoading: false,
           onChanged: (_) {},
         ),
+        settle: false,
       );
 
       expect(
@@ -66,7 +68,7 @@ void main() {
     testWidgets('shows DropdownButtonFormField even when loading with data', (
       tester,
     ) async {
-      await pumpWidgetSimple(
+      await pumpLocalizedWidget(
         tester,
         HealthRecordAnimalSelector(
           selectedId: null,
@@ -75,6 +77,7 @@ void main() {
           isLoading: true,
           onChanged: (_) {},
         ),
+        settle: false,
       );
 
       // isLoading is true but lists are not empty → shows dropdown
@@ -85,7 +88,7 @@ void main() {
     });
 
     testWidgets('shows label text from l10n', (tester) async {
-      await pumpWidgetSimple(
+      await pumpLocalizedWidget(
         tester,
         HealthRecordAnimalSelector(
           selectedId: null,
@@ -94,13 +97,14 @@ void main() {
           isLoading: false,
           onChanged: (_) {},
         ),
+        settle: false,
       );
 
       expect(find.text('health_records.select_animal'), findsOneWidget);
     });
 
     testWidgets('renders with bird list', (tester) async {
-      await pumpWidgetSimple(
+      await pumpLocalizedWidget(
         tester,
         HealthRecordAnimalSelector(
           selectedId: null,
@@ -109,6 +113,7 @@ void main() {
           isLoading: false,
           onChanged: (_) {},
         ),
+        settle: false,
       );
 
       expect(
@@ -118,7 +123,7 @@ void main() {
     });
 
     testWidgets('renders with chick list', (tester) async {
-      await pumpWidgetSimple(
+      await pumpLocalizedWidget(
         tester,
         HealthRecordAnimalSelector(
           selectedId: null,
@@ -127,6 +132,7 @@ void main() {
           isLoading: false,
           onChanged: (_) {},
         ),
+        settle: false,
       );
 
       expect(
@@ -138,19 +144,26 @@ void main() {
     testWidgets('calls onChanged when value selected', (tester) async {
       String? changedValue;
 
-      await pumpWidgetSimple(
+      await pumpLocalizedWidget(
         tester,
         HealthRecordAnimalSelector(
           selectedId: null,
-          birds: const [],
-          chicks: const [],
+          birds: [_testBird1],
+          chicks: [_testChick],
           isLoading: false,
           onChanged: (value) => changedValue = value,
         ),
+        settle: false,
       );
 
-      // Widget rendered correctly (onChanged stored for interaction)
-      expect(changedValue, isNull);
+      await tester.tap(
+        find.byWidgetPredicate((w) => w is DropdownButtonFormField<String>),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Tweety').last);
+      await tester.pumpAndSettle();
+
+      expect(changedValue, 'bird-1');
     });
   });
 }

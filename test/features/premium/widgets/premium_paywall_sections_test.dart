@@ -104,31 +104,17 @@ void main() {
       expect(find.byType(PremiumTrialBannerSection), findsOneWidget);
     });
 
-    testWidgets('shows trial badge text', (tester) async {
+    testWidgets('hides when no packages have introductory offer', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         _wrapWithProviders(const PremiumTrialBannerSection()),
       );
-      await tester.pump();
+      await tester.pumpAndSettle();
 
-      expect(find.text('premium.trial_badge'), findsOneWidget);
-    });
-
-    testWidgets('shows trial subtitle text', (tester) async {
-      await tester.pumpWidget(
-        _wrapWithProviders(const PremiumTrialBannerSection()),
-      );
-      await tester.pump();
-
-      expect(find.text('premium.trial_subtitle_fallback'), findsOneWidget);
-    });
-
-    testWidgets('shows value proposition text', (tester) async {
-      await tester.pumpWidget(
-        _wrapWithProviders(const PremiumTrialBannerSection()),
-      );
-      await tester.pump();
-
-      expect(find.text('premium.value_proposition'), findsOneWidget);
+      // No introductory offer → SizedBox.shrink, no trial badge visible
+      expect(find.text('premium.trial_badge'), findsNothing);
+      expect(find.text('premium.value_proposition'), findsNothing);
     });
   });
 
@@ -162,10 +148,10 @@ void main() {
         final offerings = [
           Package.fromJson(
             _packageJson(
-              identifier: r'$rc_monthly',
+              identifier: r'$rc_six_month',
               packageType: 'CUSTOM',
-              productIdentifier: 'budgie_premium_monthly',
-              priceString: '\$4.99',
+              productIdentifier: 'budgie_premium_semi_annual',
+              priceString: '\$15.00',
             ),
           ),
           Package.fromJson(
@@ -173,15 +159,7 @@ void main() {
               identifier: r'$rc_annual',
               packageType: 'CUSTOM',
               productIdentifier: 'budgie_premium_yearly',
-              priceString: '\$34.99',
-            ),
-          ),
-          Package.fromJson(
-            _packageJson(
-              identifier: r'$rc_lifetime',
-              packageType: 'CUSTOM',
-              productIdentifier: 'budgie_premium_lifetime',
-              priceString: '\$89.99',
+              priceString: '\$25.00',
             ),
           ),
         ];
@@ -195,19 +173,15 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(
-          find.textContaining('\$4.99', findRichText: true),
-          findsOneWidget,
+          find.textContaining('\$15.00', findRichText: true),
+          findsAtLeastNWidgets(1),
         );
         expect(
-          find.textContaining('\$34.99', findRichText: true),
-          findsOneWidget,
+          find.textContaining('\$25.00', findRichText: true),
+          findsAtLeastNWidgets(1),
         );
-        expect(
-          find.textContaining('\$89.99', findRichText: true),
-          findsOneWidget,
-        );
+        expect(find.text('premium.price_semi_annual'), findsNothing);
         expect(find.text('premium.price_yearly'), findsNothing);
-        expect(find.text('premium.price_lifetime'), findsNothing);
       },
     );
 
@@ -228,15 +202,11 @@ void main() {
         );
         // Fallback localized prices shown instead of "price unavailable"
         expect(
-          find.textContaining('premium.price_monthly', findRichText: true),
+          find.textContaining('premium.price_semi_annual', findRichText: true),
           findsOneWidget,
         );
         expect(
           find.textContaining('premium.price_yearly', findRichText: true),
-          findsOneWidget,
-        );
-        expect(
-          find.textContaining('premium.price_lifetime', findRichText: true),
           findsOneWidget,
         );
         expect(find.text('common.retry'), findsOneWidget);
@@ -286,22 +256,17 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // All three plan cards render with localized fallback prices
+      // Both plan cards render with localized fallback prices
       expect(
-        find.textContaining('premium.price_monthly', findRichText: true),
+        find.textContaining('premium.price_semi_annual', findRichText: true),
         findsOneWidget,
       );
       expect(
         find.textContaining('premium.price_yearly', findRichText: true),
         findsOneWidget,
       );
-      expect(
-        find.textContaining('premium.price_lifetime', findRichText: true),
-        findsOneWidget,
-      );
-      expect(find.text('premium.plan_monthly'), findsOneWidget);
+      expect(find.text('premium.plan_semi_annual'), findsOneWidget);
       expect(find.text('premium.plan_yearly'), findsOneWidget);
-      expect(find.text('premium.plan_lifetime'), findsOneWidget);
     });
 
     testWidgets('shows guest access card for anonymous users', (tester) async {
@@ -314,18 +279,15 @@ void main() {
       expect(find.text('premium.sign_in_to_purchase'), findsAtLeastNWidgets(1));
     });
 
-    testWidgets(
-      'shows trial text subordinate to price on monthly card only',
-      (tester) async {
-        await tester.pumpWidget(
-          _wrapWithProviders(const PremiumPricingSection()),
-        );
-        await tester.pumpAndSettle();
+    testWidgets('does not show trial text on pricing cards', (tester) async {
+      await tester.pumpWidget(
+        _wrapWithProviders(const PremiumPricingSection()),
+      );
+      await tester.pumpAndSettle();
 
-        // Trial info appears only on monthly card per App Store Guidelines
-        expect(find.text('premium.trial_after_price'), findsOneWidget);
-      },
-    );
+      // Trial text not shown on pricing cards (no monthly plan)
+      expect(find.text('premium.trial_after_price'), findsNothing);
+    });
 
     testWidgets('shows store prices with standard PackageType identifiers', (
       tester,
@@ -333,10 +295,10 @@ void main() {
       final offerings = [
         Package.fromJson(
           _packageJson(
-            identifier: r'$rc_monthly',
-            packageType: 'MONTHLY',
-            productIdentifier: 'budgie_premium_monthly',
-            priceString: '₺49,99',
+            identifier: r'$rc_six_month',
+            packageType: 'SIX_MONTH',
+            productIdentifier: 'budgie_premium_semi_annual',
+            priceString: '\$15,00',
           ),
         ),
         Package.fromJson(
@@ -344,15 +306,7 @@ void main() {
             identifier: r'$rc_annual',
             packageType: 'ANNUAL',
             productIdentifier: 'budgie_premium_yearly',
-            priceString: '₺299,99',
-          ),
-        ),
-        Package.fromJson(
-          _packageJson(
-            identifier: r'$rc_lifetime',
-            packageType: 'LIFETIME',
-            productIdentifier: 'budgie_premium_lifetime',
-            priceString: '₺249,99',
+            priceString: '\$25,00',
           ),
         ),
       ];
@@ -362,13 +316,12 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.textContaining('₺49,99', findRichText: true), findsOneWidget);
       expect(
-        find.textContaining('₺299,99', findRichText: true),
+        find.textContaining('\$15,00', findRichText: true),
         findsOneWidget,
       );
       expect(
-        find.textContaining('₺249,99', findRichText: true),
+        find.textContaining('\$25,00', findRichText: true),
         findsOneWidget,
       );
     });
@@ -415,20 +368,19 @@ void main() {
   });
 
   group('matchPackageForPlan', () {
-    test('matches monthly by PackageType.monthly', () {
+    test('matches semi-annual by PackageType.sixMonth', () {
       final packages = [
         Package.fromJson(
           _packageJson(
-            identifier: r'$rc_monthly',
-            packageType: 'MONTHLY',
-            productIdentifier: 'budgie_premium_monthly',
-            priceString: '\$49.99',
+            identifier: r'$rc_six_month',
+            packageType: 'SIX_MONTH',
+            productIdentifier: 'budgie_premium_semi_annual',
+            priceString: '\$15.00',
           ),
         ),
       ];
-      final result = matchPackageForPlan(packages, PremiumPlan.monthly);
-      expect(result, isNotNull);
-      expect(result!.storeProduct.identifier, 'budgie_premium_monthly');
+      final result = matchPackageForPlan(packages, PremiumPlan.semiAnnual)!;
+      expect(result.storeProduct.identifier, 'budgie_premium_semi_annual');
     });
 
     test('matches yearly by PackageType.annual', () {
@@ -438,39 +390,22 @@ void main() {
             identifier: r'$rc_annual',
             packageType: 'ANNUAL',
             productIdentifier: 'budgie_premium_yearly',
-            priceString: '\$299.99',
+            priceString: '\$25.00',
           ),
         ),
       ];
-      final result = matchPackageForPlan(packages, PremiumPlan.yearly);
-      expect(result, isNotNull);
-      expect(result!.storeProduct.identifier, 'budgie_premium_yearly');
-    });
-
-    test('matches lifetime by PackageType.lifetime', () {
-      final packages = [
-        Package.fromJson(
-          _packageJson(
-            identifier: r'$rc_lifetime',
-            packageType: 'LIFETIME',
-            productIdentifier: 'budgie_premium_lifetime',
-            priceString: '\$249.99',
-          ),
-        ),
-      ];
-      final result = matchPackageForPlan(packages, PremiumPlan.lifetime);
-      expect(result, isNotNull);
-      expect(result!.storeProduct.identifier, 'budgie_premium_lifetime');
+      final result = matchPackageForPlan(packages, PremiumPlan.yearly)!;
+      expect(result.storeProduct.identifier, 'budgie_premium_yearly');
     });
 
     test('falls back to identifier hint for CUSTOM package types', () {
       final packages = [
         Package.fromJson(
           _packageJson(
-            identifier: r'$rc_monthly',
+            identifier: ':six_month',
             packageType: 'CUSTOM',
-            productIdentifier: 'budgie_premium_monthly',
-            priceString: '\$49.99',
+            productIdentifier: 'budgie_premium_semi_annual',
+            priceString: '\$15.00',
           ),
         ),
         Package.fromJson(
@@ -478,15 +413,7 @@ void main() {
             identifier: r'$rc_annual',
             packageType: 'CUSTOM',
             productIdentifier: 'budgie_premium_yearly',
-            priceString: '\$299.99',
-          ),
-        ),
-        Package.fromJson(
-          _packageJson(
-            identifier: r'$rc_lifetime',
-            packageType: 'CUSTOM',
-            productIdentifier: 'budgie_premium_lifetime',
-            priceString: '\$249.99',
+            priceString: '\$25.00',
           ),
         ),
       ];
@@ -494,9 +421,9 @@ void main() {
       expect(
         matchPackageForPlan(
           packages,
-          PremiumPlan.monthly,
+          PremiumPlan.semiAnnual,
         )?.storeProduct.identifier,
-        'budgie_premium_monthly',
+        'budgie_premium_semi_annual',
       );
       expect(
         matchPackageForPlan(
@@ -504,13 +431,6 @@ void main() {
           PremiumPlan.yearly,
         )?.storeProduct.identifier,
         'budgie_premium_yearly',
-      );
-      expect(
-        matchPackageForPlan(
-          packages,
-          PremiumPlan.lifetime,
-        )?.storeProduct.identifier,
-        'budgie_premium_lifetime',
       );
     });
 
@@ -525,15 +445,15 @@ void main() {
           ),
         ),
       ];
-      expect(matchPackageForPlan(packages, PremiumPlan.monthly), isNull);
+      expect(matchPackageForPlan(packages, PremiumPlan.semiAnnual), isNull);
       expect(matchPackageForPlan(packages, PremiumPlan.yearly), isNull);
-      expect(matchPackageForPlan(packages, PremiumPlan.lifetime), isNull);
+      expect(matchPackageForPlan(packages, PremiumPlan.yearly), isNull);
     });
 
     test('returns null for empty package list', () {
-      expect(matchPackageForPlan([], PremiumPlan.monthly), isNull);
+      expect(matchPackageForPlan([], PremiumPlan.semiAnnual), isNull);
       expect(matchPackageForPlan([], PremiumPlan.yearly), isNull);
-      expect(matchPackageForPlan([], PremiumPlan.lifetime), isNull);
+      expect(matchPackageForPlan([], PremiumPlan.yearly), isNull);
     });
   });
 
@@ -546,7 +466,7 @@ void main() {
           SubscriptionInfoCard(
             subscriptionInfo: SubscriptionInfo(
               isActive: true,
-              productId: 'budgie_premium_monthly',
+              productId: 'budgie_premium_semi_annual',
               expirationDate: DateTime(2026, 12, 31),
               willRenew: true,
             ),
@@ -556,7 +476,7 @@ void main() {
       await tester.pump();
 
       expect(find.text('premium.active_badge'), findsOneWidget);
-      expect(find.text('premium.plan_monthly'), findsOneWidget);
+      expect(find.text('premium.plan_semi_annual'), findsOneWidget);
       expect(find.text('31.12.2026'), findsOneWidget);
       expect(find.text('common.yes'), findsOneWidget);
     });
@@ -569,7 +489,7 @@ void main() {
           SubscriptionInfoCard(
             subscriptionInfo: SubscriptionInfo(
               isActive: true,
-              productId: 'budgie_premium_monthly',
+              productId: 'budgie_premium_semi_annual',
               expirationDate: DateTime(2026, 4, 1),
               willRenew: true,
               isTrial: true,
@@ -599,25 +519,6 @@ void main() {
 
       expect(find.text('premium.plan_yearly'), findsOneWidget);
       expect(find.text('common.no'), findsOneWidget);
-    });
-
-    testWidgets('hides expiry fields for lifetime plan', (tester) async {
-      await tester.pumpWidget(
-        _wrap(
-          const SubscriptionInfoCard(
-            subscriptionInfo: SubscriptionInfo(
-              isActive: true,
-              productId: 'budgie_premium_lifetime',
-            ),
-          ),
-        ),
-      );
-      await tester.pump();
-
-      expect(find.text('premium.plan_lifetime'), findsOneWidget);
-      // No expiration date or remaining days for lifetime
-      expect(find.text('premium.expires_at'), findsNothing);
-      expect(find.text('premium.remaining_days'), findsNothing);
     });
   });
 }

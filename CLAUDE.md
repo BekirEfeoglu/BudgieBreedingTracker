@@ -41,7 +41,7 @@ dart fix --apply
 ### Quality Scripts (Python)
 ```bash
 python scripts/check_l10n_sync.py       # Verify tr/en/de translation keys are in sync
-python scripts/verify_code_quality.py    # Anti-pattern scan (17 checkers, 16/17 CLAUDE.md patterns)
+python scripts/verify_code_quality.py    # Anti-pattern scan (21 checkers, 16/17 CLAUDE.md patterns + 5 extra)
 python scripts/verify_rules.py          # Validate CLAUDE.md stats against codebase (single source of truth)
 python scripts/verify_rules.py --fix    # Auto-fix CLAUDE.md stats table with actual values
 ```
@@ -50,8 +50,8 @@ python scripts/verify_rules.py --fix    # Auto-fix CLAUDE.md stats table with ac
 
 | Metric | Value |
 | --- | --- |
-| Source files (lib/) | 700 Dart files |
-| Test files (test/) | 656 test files, 7,700+ individual tests |
+| Source files (lib/) | 717 Dart files |
+| Test files (test/) | 680 test files, 7,974+ individual tests |
 | Feature modules | 20 |
 | Drift tables / DAOs / Mappers | 20 each |
 | Repositories | 20 entity + base + sync_metadata |
@@ -60,10 +60,10 @@ python scripts/verify_rules.py --fix    # Auto-fix CLAUDE.md stats table with ac
 | Domain services | 14 directories |
 | Routes | 60 |
 | Custom SVG icons | 82 constants, 82 files on disk |
-| Shared widgets | 18 (13 root + 2 buttons + 2 cards + 1 dialog) |
+| Shared widgets | 19 (14 root + 2 buttons + 2 cards + 1 dialog) |
 | Enum files | 12 |
 | Supabase constants | 94 (tables + buckets + columns) |
-| L10n keys | ~1,939 per language, 35 categories |
+| L10n keys | ~3 per language, 35 categories |
 | DB schema version | 17 |
 
 ## Architecture Overview
@@ -168,6 +168,7 @@ Screens:       lib/features/<feature>/screens/
 Widgets:       lib/features/<feature>/widgets/
 Models:        lib/data/models/                 (21 Freezed models + statistics_models + supabase_extensions)
 Enums:         lib/core/enums/                  (12 enum files)
+Security:      lib/core/security/               (certificate_pinning, inactivity_guard)
 Extensions:    lib/core/extensions/             (context_extensions, num_extensions)
 Tables:        lib/data/local/database/tables/  (20 Drift tables)
 DAOs:          lib/data/local/database/daos/    (20 DAOs)
@@ -179,19 +180,19 @@ Services:      lib/domain/services/             (14 dirs: ads, auth, backup, cal
                                                  payment, premium, sync)
 Router:        lib/router/                      (60 routes, 2 guards: admin, premium; auth inline)
 Theme:         lib/core/theme/                  (4 files: colors, spacing, typography, theme)
-Shared UI:     lib/core/widgets/                (18 widgets: 13 root + 2 buttons + 2 cards + 1 dialog)
+Shared UI:     lib/core/widgets/                (19 widgets: 14 root + 2 buttons + 2 cards + 1 dialog)
 Icons:         lib/core/constants/app_icons.dart (82 SVG path constants)
 SVG Assets:    assets/icons/                    (10 subdirectories, 82 SVG files)
 Preferences:   lib/data/local/preferences/      (AppPreferences)
 EdgeFunctions: lib/data/remote/supabase/        (EdgeFunctionClient)
-Translations:  assets/translations/             (~1,939 leaf keys per language, 35 categories)
+Translations:  assets/translations/             (~3 leaf keys per language, 35 categories)
 Database:      schemaVersion 17 (switch-based migration, 30+ perf indexes)
 ```
 
 ## Detailed Rules
 
 Comprehensive rules are in `.claude/rules/` (auto-loaded as project instructions):
-- `architecture.md` — tech stack, folder structure, data flow, sync, storage
+- `architecture.md` — tech stack, folder structure, data flow, sync, storage, security, encryption
 - `coding-standards.md` — naming, style, anti-patterns, model/enum rules, testing
 - `providers.md` — Riverpod provider types, dependency chain, ref usage
 - `database.md` — Drift tables/DAOs/mappers, migration pattern, repository

@@ -5,6 +5,7 @@ import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/features/statistics/widgets/chart_card.dart';
+import 'package:budgie_breeding_tracker/features/statistics/widgets/chart_utils.dart';
 
 /// Horizontal bar chart showing bird color mutation distribution.
 class ColorMutationChart extends StatelessWidget {
@@ -24,7 +25,9 @@ class ColorMutationChart extends StatelessWidget {
       return const ChartEmpty();
     }
 
-    final maxY = entries.first.value.toDouble() + 1;
+    final maxValue = entries.first.value.toDouble();
+    final yInterval = calcChartInterval(maxValue);
+    final maxY = calcChartMaxY(maxValue, yInterval);
 
     return SizedBox(
       height: 200,
@@ -58,9 +61,11 @@ class ColorMutationChart extends StatelessWidget {
                 sideTitles: SideTitles(
                   showTitles: true,
                   reservedSize: 28,
-                  interval: 1,
+                  interval: yInterval,
                   getTitlesWidget: (value, meta) {
-                    if (value % 1 != 0) return const SizedBox.shrink();
+                    if (value % yInterval != 0 || value == 0) {
+                      return const SizedBox.shrink();
+                    }
                     return Text(
                       value.toInt().toString(),
                       style: theme.textTheme.labelSmall,
@@ -86,7 +91,7 @@ class ColorMutationChart extends StatelessWidget {
                 ),
               ),
             ),
-            gridData: const FlGridData(show: false),
+            gridData: chartGridData(context, interval: yInterval),
             borderData: FlBorderData(show: false),
             barGroups: List.generate(entries.length, (index) {
               final entry = entries[index];

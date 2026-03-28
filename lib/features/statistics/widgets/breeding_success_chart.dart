@@ -5,6 +5,7 @@ import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/features/statistics/widgets/chart_card.dart';
 import 'package:budgie_breeding_tracker/features/statistics/widgets/chart_legend_item.dart';
+import 'package:budgie_breeding_tracker/features/statistics/widgets/chart_utils.dart';
 
 /// Bar chart showing completed vs cancelled breedings per month.
 ///
@@ -32,7 +33,9 @@ class BreedingSuccessChart extends StatelessWidget {
       return const ChartEmpty();
     }
 
-    final maxY = _calculateMaxY(keys);
+    final maxValue = _calculateMaxValue(keys);
+    final yInterval = calcChartInterval(maxValue);
+    final maxY = calcChartMaxY(maxValue, yInterval);
 
     return Column(
       children: [
@@ -56,9 +59,11 @@ class BreedingSuccessChart extends StatelessWidget {
                     sideTitles: SideTitles(
                       showTitles: true,
                       reservedSize: 28,
-                      interval: 1,
+                      interval: yInterval,
                       getTitlesWidget: (value, meta) {
-                        if (value % 1 != 0) return const SizedBox.shrink();
+                        if (value % yInterval != 0 || value == 0) {
+                          return const SizedBox.shrink();
+                        }
                         return Text(
                           value.toInt().toString(),
                           style: theme.textTheme.labelSmall,
@@ -84,7 +89,7 @@ class BreedingSuccessChart extends StatelessWidget {
                     ),
                   ),
                 ),
-                gridData: const FlGridData(show: false),
+                gridData: chartGridData(context, interval: yInterval),
                 borderData: FlBorderData(show: false),
                 barGroups: _buildBarGroups(keys),
               ),
@@ -92,12 +97,12 @@ class BreedingSuccessChart extends StatelessWidget {
           ),
         ),
         const SizedBox(height: AppSpacing.sm),
-        _Legend(theme: theme),
+        const _Legend(),
       ],
     );
   }
 
-  double _calculateMaxY(List<String> keys) {
+  double _calculateMaxValue(List<String> keys) {
     var max = 1.0;
     for (final key in keys) {
       final c = (completed[key] ?? 0).toDouble();
@@ -105,7 +110,7 @@ class BreedingSuccessChart extends StatelessWidget {
       if (c > max) max = c;
       if (x > max) max = x;
     }
-    return max + 1;
+    return max;
   }
 
   List<BarChartGroupData> _buildBarGroups(List<String> keys) {
@@ -137,9 +142,7 @@ class BreedingSuccessChart extends StatelessWidget {
 }
 
 class _Legend extends StatelessWidget {
-  const _Legend({required this.theme});
-
-  final ThemeData theme;
+  const _Legend();
 
   @override
   Widget build(BuildContext context) {

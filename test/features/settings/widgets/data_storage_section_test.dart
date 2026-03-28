@@ -8,6 +8,7 @@ import 'package:mocktail/mocktail.dart';
 
 import 'package:budgie_breeding_tracker/domain/services/sync/sync_orchestrator.dart';
 import 'package:budgie_breeding_tracker/domain/services/sync/sync_providers.dart';
+import 'package:budgie_breeding_tracker/features/notifications/providers/action_feedback_providers.dart';
 import 'package:budgie_breeding_tracker/features/settings/providers/settings_providers.dart';
 import 'package:budgie_breeding_tracker/features/settings/widgets/data_storage_section.dart';
 
@@ -133,6 +134,11 @@ void main() {
     });
 
     testWidgets('shows success SnackBar on sync success', (tester) async {
+      ActionFeedbackService.resetForTesting();
+      final received = <ActionFeedback>[];
+      final sub = ActionFeedbackService.stream.listen(received.add);
+      addTearDown(sub.cancel);
+
       when(
         () => mockOrchestrator.forceFullSync(),
       ).thenAnswer((_) async => SyncResult.success);
@@ -146,8 +152,9 @@ void main() {
       await tester.pump(); // let future resolve
       await tester.pump(const Duration(milliseconds: 100));
 
-      // Should show SnackBar
-      expect(find.byType(SnackBar), findsOneWidget);
+      // Success goes through ActionFeedbackService, not SnackBar
+      expect(received, hasLength(1));
+      expect(received.first.type, ActionFeedbackType.success);
     });
 
     testWidgets('shows error SnackBar on sync error', (tester) async {

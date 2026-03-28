@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/features/statistics/widgets/chart_card.dart';
+import 'package:budgie_breeding_tracker/features/statistics/widgets/chart_utils.dart';
 
 /// Line chart showing hatched chicks per month.
 ///
@@ -24,7 +25,9 @@ class MonthlyTrendChart extends StatelessWidget {
     }
 
     final spots = _buildSpots(keys);
-    final maxY = _calculateMaxY();
+    final maxValue = _calculateMaxValue();
+    final yInterval = calcChartInterval(maxValue);
+    final maxY = calcChartMaxY(maxValue, yInterval);
 
     return SizedBox(
       height: 200,
@@ -59,9 +62,11 @@ class MonthlyTrendChart extends StatelessWidget {
                 sideTitles: SideTitles(
                   showTitles: true,
                   reservedSize: 28,
-                  interval: 1,
+                  interval: yInterval,
                   getTitlesWidget: (value, meta) {
-                    if (value % 1 != 0) return const SizedBox.shrink();
+                    if (value % yInterval != 0 || value == 0) {
+                      return const SizedBox.shrink();
+                    }
                     return Text(
                       value.toInt().toString(),
                       style: theme.textTheme.labelSmall,
@@ -84,17 +89,7 @@ class MonthlyTrendChart extends StatelessWidget {
                 ),
               ),
             ),
-            gridData: FlGridData(
-              show: true,
-              drawVerticalLine: false,
-              horizontalInterval: 1,
-              getDrawingHorizontalLine: (value) {
-                return FlLine(
-                  color: theme.dividerColor.withValues(alpha: 0.3),
-                  strokeWidth: 1,
-                );
-              },
-            ),
+            gridData: chartGridData(context, interval: yInterval),
             borderData: FlBorderData(show: false),
             lineBarsData: [
               LineChartBarData(
@@ -135,11 +130,11 @@ class MonthlyTrendChart extends StatelessWidget {
     });
   }
 
-  double _calculateMaxY() {
+  double _calculateMaxValue() {
     var max = 1.0;
     for (final value in monthlyData.values) {
       if (value.toDouble() > max) max = value.toDouble();
     }
-    return max + 1;
+    return max;
   }
 }

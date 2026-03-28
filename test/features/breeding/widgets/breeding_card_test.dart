@@ -7,6 +7,7 @@ import 'package:budgie_breeding_tracker/core/enums/egg_enums.dart';
 import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
 import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
 import 'package:budgie_breeding_tracker/data/models/incubation_model.dart';
+import 'package:budgie_breeding_tracker/domain/services/incubation/incubation_calculator.dart';
 import 'package:budgie_breeding_tracker/features/breeding/widgets/breeding_card.dart';
 import 'package:budgie_breeding_tracker/features/breeding/widgets/breeding_card_eggs.dart';
 import 'package:budgie_breeding_tracker/features/breeding/widgets/breeding_card_footer.dart';
@@ -102,14 +103,9 @@ void main() {
       tester,
     ) async {
       final pair = _buildPair();
-      final incubation = _buildIncubation(
-        startDate: DateTime(2026, 2, 1),
-      );
+      final incubation = _buildIncubation(startDate: DateTime(2026, 2, 1));
 
-      await _pump(
-        tester,
-        BreedingCard(pair: pair, incubation: incubation),
-      );
+      await _pump(tester, BreedingCard(pair: pair, incubation: incubation));
 
       expect(find.byType(BreedingCardProgress), findsOneWidget);
     });
@@ -124,9 +120,7 @@ void main() {
       expect(find.byType(BreedingCardProgress), findsNothing);
     });
 
-    testWidgets('shows BreedingCardEggs when eggs are present', (
-      tester,
-    ) async {
+    testWidgets('shows BreedingCardEggs when eggs are present', (tester) async {
       final pair = _buildPair();
       final eggs = [
         _buildEgg(id: 'egg-1', status: EggStatus.laid),
@@ -138,9 +132,7 @@ void main() {
       expect(find.byType(BreedingCardEggs), findsOneWidget);
     });
 
-    testWidgets('does not show BreedingCardEggs when no eggs', (
-      tester,
-    ) async {
+    testWidgets('does not show BreedingCardEggs when no eggs', (tester) async {
       final pair = _buildPair();
 
       await _pump(tester, BreedingCard(pair: pair));
@@ -152,9 +144,7 @@ void main() {
       tester,
     ) async {
       final pair = _buildPair();
-      final incubation = _buildIncubation(
-        startDate: DateTime(2026, 2, 1),
-      );
+      final incubation = _buildIncubation(startDate: DateTime(2026, 2, 1));
       final eggs = [_buildEgg()];
 
       await _pump(
@@ -197,10 +187,7 @@ void main() {
       final pair = _buildPair();
       var tapped = false;
 
-      await _pump(
-        tester,
-        BreedingCard(pair: pair, onTap: () => tapped = true),
-      );
+      await _pump(tester, BreedingCard(pair: pair, onTap: () => tapped = true));
 
       await tester.tap(find.byType(InkWell));
       await tester.pump();
@@ -213,11 +200,13 @@ void main() {
 
       await _pump(tester, BreedingCard(pair: pair));
 
-      final container = tester.widget<Container>(
-        find.byType(Container).first,
+      final container = tester.widget<Container>(find.byType(Container).first);
+      final decoration = container.decoration! as BoxDecoration;
+      final border = decoration.border! as Border;
+      expect(
+        border.left,
+        BorderSide(color: IncubationCalculator.getStageColor(0), width: 4),
       );
-      // Container has a BoxDecoration with left border
-      expect(container.decoration, isNotNull);
     });
 
     testWidgets('shows completed stage color when incubation is complete', (
@@ -230,12 +219,18 @@ void main() {
         endDate: DateTime(2026, 1, 19),
       );
 
-      await _pump(
-        tester,
-        BreedingCard(pair: pair, incubation: incubation),
-      );
+      await _pump(tester, BreedingCard(pair: pair, incubation: incubation));
 
-      expect(find.byType(BreedingCard), findsOneWidget);
+      final container = tester.widget<Container>(find.byType(Container).first);
+      final decoration = container.decoration! as BoxDecoration;
+      final border = decoration.border! as Border;
+      expect(
+        border.left,
+        BorderSide(
+          color: IncubationCalculator.getCompletedStageColor(),
+          width: 4,
+        ),
+      );
     });
   });
 }

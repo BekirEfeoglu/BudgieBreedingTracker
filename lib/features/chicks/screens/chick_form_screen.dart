@@ -15,6 +15,7 @@ import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_providers.dart';
 import 'package:budgie_breeding_tracker/features/chicks/providers/chick_providers.dart';
 import 'package:budgie_breeding_tracker/features/chicks/providers/chick_form_providers.dart';
+import 'package:budgie_breeding_tracker/core/widgets/unsaved_changes_scope.dart';
 import 'package:budgie_breeding_tracker/features/chicks/widgets/chick_form_fields.dart';
 import 'package:budgie_breeding_tracker/features/settings/providers/settings_providers.dart';
 
@@ -42,6 +43,17 @@ class _ChickFormScreenState extends ConsumerState<ChickFormScreen> {
   bool _isEdit = false;
   bool _didPopulateFromExisting = false;
   Chick? _existingChick;
+  bool _savedSuccessfully = false;
+
+  bool get _isDirty {
+    if (_savedSuccessfully) return false;
+    if (_isEdit) return true;
+    return _nameController.text.isNotEmpty ||
+        _ringController.text.isNotEmpty ||
+        _hatchDate != null ||
+        _notesController.text.isNotEmpty ||
+        _hatchWeightController.text.isNotEmpty;
+  }
 
   @override
   void initState() {
@@ -85,6 +97,7 @@ class _ChickFormScreenState extends ConsumerState<ChickFormScreen> {
         ).showSnackBar(SnackBar(content: Text(state.warning!)));
       }
       if (state.isSuccess) {
+        _savedSuccessfully = true;
         ref.read(chickFormStateProvider.notifier).reset();
         context.pop();
       }
@@ -133,8 +146,10 @@ class _ChickFormScreenState extends ConsumerState<ChickFormScreen> {
     return _buildFormScaffold(context, formState);
   }
 
-  Scaffold _buildFormScaffold(BuildContext context, ChickFormState formState) {
-    return Scaffold(
+  Widget _buildFormScaffold(BuildContext context, ChickFormState formState) {
+    return UnsavedChangesScope(
+      isDirty: _isDirty,
+      child: Scaffold(
       appBar: AppBar(
         title: Text(
           _isEdit ? 'chicks.edit_chick'.tr() : 'chicks.new_chick'.tr(),
@@ -205,6 +220,7 @@ class _ChickFormScreenState extends ConsumerState<ChickFormScreen> {
             ),
           ),
         ),
+      ),
       ),
     );
   }

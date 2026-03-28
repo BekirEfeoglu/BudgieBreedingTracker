@@ -78,6 +78,16 @@ class BudgiePainter extends CustomPainter {
       }
     }
 
+    // 5a. Wing feather texture (subtle layering between bars)
+    if (h >= 56) {
+      canvas.save();
+      canvas.clipPath(BudgiePaths.wing(w, h));
+      BudgieDetails.paintWingFeatherTexture(
+        canvas, w, h, appearance.bodyColor,
+      );
+      canvas.restore();
+    }
+
     // 5b. Wing edge highlight for definition
     _paintWingEdge(canvas, w, h);
 
@@ -136,15 +146,41 @@ class BudgiePainter extends CustomPainter {
       );
     }
 
-    // 12. Pied patches
-    if (appearance.showPiedPatch) {
-      _paintZone(
-        canvas, BudgiePaths.piedPatch(w, h), appearance.piedPatchColor,
+    // 11b. Body feather texture (subtle breast feathering)
+    if (h >= 56) {
+      canvas.save();
+      canvas.clipPath(BudgiePaths.belly(w, h));
+      BudgieDetails.paintBodyFeatherTexture(
+        canvas, w, h, appearance.bodyColor,
       );
+      canvas.restore();
+    }
+
+    // 12. Pied patches (gradient shaded for visibility)
+    if (appearance.showPiedPatch) {
+      _paintZoneShaded(
+        canvas, BudgiePaths.piedPatch(w, h), appearance.piedPatchColor,
+        Offset(w * 0.36, h * 0.66), w * 0.12,
+      );
+      // Dutch Pied: additional wing patch (characteristic large patches)
+      if (appearance.isDutchPied) {
+        _paintZoneShaded(
+          canvas, BudgiePaths.dutchPiedWingPatch(w, h),
+          appearance.piedPatchColor,
+          Offset(w * 0.56, h * 0.56), w * 0.10,
+        );
+      }
+      // Dominant Pied: scattered smaller patches on body and wing
+      if (appearance.isDominantPied && !appearance.isDutchPied) {
+        _paintDominantPiedPatches(canvas, w, h);
+      }
     }
 
     // 12b. Belly highlight for 3D roundness
     _paintBellyHighlight(canvas, w, h);
+
+    // 12c. Wing under-shadow for depth separation from body
+    _paintWingUnderShadow(canvas, w, h);
 
     // 13. Carrier accent dot
     if (appearance.showCarrierAccent) {
@@ -159,17 +195,20 @@ class BudgiePainter extends CustomPainter {
     canvas.drawPath(path, Paint()..color = color);
   }
 
-  /// Paints a zone with adaptive radial gradient for 3D depth.
+  /// Paints a zone with adaptive 4-stop radial gradient for 3D depth.
   ///
   /// Darker colors receive more highlight to remain visible;
   /// lighter colors receive less to avoid washing out.
+  /// The 4-stop gradient adds a specular highlight and smoother shadow
+  /// falloff for a more realistic rounded appearance.
   void _paintZoneShaded(
     Canvas canvas, Path path, Color color,
     Offset lightCenter, double radius,
   ) {
     final lightness = HSLColor.fromColor(color).lightness;
-    final highlightAmt = 0.15 + (1.0 - lightness) * 0.12;
-    final shadowAmt = 0.08 + lightness * 0.12;
+    final highlightAmt = 0.18 + (1.0 - lightness) * 0.14;
+    final specularAmt = 0.06 + (1.0 - lightness) * 0.06;
+    final shadowAmt = 0.10 + lightness * 0.14;
 
     final paint = Paint()
       ..shader = ui.Gradient.radial(
@@ -177,35 +216,79 @@ class BudgiePainter extends CustomPainter {
         radius,
         [
           Color.lerp(color, Colors.white, highlightAmt)!,
+          Color.lerp(color, Colors.white, specularAmt)!,
           color,
           Color.lerp(color, Colors.black, shadowAmt)!,
         ],
-        [0.0, 0.50, 1.0],
+        [0.0, 0.25, 0.55, 1.0],
       );
     canvas.drawPath(path, paint);
   }
 
   void _paintShadow(Canvas canvas, double w, double h) {
+    final shadowCenter = Offset(w * 0.42, h * 0.96);
+    // Outer soft shadow
     canvas.drawOval(
       Rect.fromCenter(
-        center: Offset(w * 0.42, h * 0.96),
-        width: w * 0.32,
-        height: h * 0.030,
+        center: shadowCenter,
+        width: w * 0.40,
+        height: h * 0.045,
       ),
-      Paint()..color = const Color(0x20000000),
+      Paint()
+        ..color = const Color(0x10000000)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3),
+    );
+    // Inner dense shadow
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: shadowCenter,
+        width: w * 0.28,
+        height: h * 0.025,
+      ),
+      Paint()..color = const Color(0x22000000),
     );
   }
 
   void _paintBellyHighlight(Canvas canvas, double w, double h) {
     canvas.save();
     canvas.clipPath(BudgiePaths.belly(w, h));
+    // Primary belly highlight (chest area)
     canvas.drawOval(
       Rect.fromCenter(
-        center: Offset(w * 0.52, h * 0.54),
-        width: w * 0.22,
-        height: h * 0.16,
+        center: Offset(w * 0.54, h * 0.52),
+        width: w * 0.24,
+        height: h * 0.18,
       ),
-      Paint()..color = Colors.white.withValues(alpha: 0.12),
+      Paint()..color = Colors.white.withValues(alpha: 0.14),
+    );
+    // Secondary smaller specular highlight (breast center)
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: Offset(w * 0.56, h * 0.48),
+        width: w * 0.10,
+        height: h * 0.08,
+      ),
+      Paint()..color = Colors.white.withValues(alpha: 0.08),
+    );
+    canvas.restore();
+  }
+
+  void _paintWingUnderShadow(Canvas canvas, double w, double h) {
+    // Subtle shadow along the top edge of the wing to separate from body
+    final shadowPath = Path()
+      ..moveTo(w * 0.38, h * 0.40)
+      ..quadraticBezierTo(w * 0.54, h * 0.36, w * 0.66, h * 0.42)
+      ..lineTo(w * 0.66, h * 0.44)
+      ..quadraticBezierTo(w * 0.54, h * 0.38, w * 0.38, h * 0.42)
+      ..close();
+
+    canvas.save();
+    canvas.clipPath(BudgiePaths.belly(w, h));
+    canvas.drawPath(
+      shadowPath,
+      Paint()
+        ..color = Colors.black.withValues(alpha: 0.06)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2),
     );
     canvas.restore();
   }
@@ -213,24 +296,45 @@ class BudgiePainter extends CustomPainter {
   void _paintHeadHighlight(Canvas canvas, double w, double h) {
     canvas.save();
     canvas.clipPath(BudgiePaths.head(w, h));
+    // Primary head highlight (crown area)
     canvas.drawOval(
       Rect.fromCenter(
-        center: Offset(w * 0.62, h * 0.14),
-        width: w * 0.12,
-        height: h * 0.08,
+        center: Offset(w * 0.62, h * 0.13),
+        width: w * 0.14,
+        height: h * 0.09,
       ),
-      Paint()..color = Colors.white.withValues(alpha: 0.10),
+      Paint()..color = Colors.white.withValues(alpha: 0.12),
+    );
+    // Small specular spot (top of head)
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: Offset(w * 0.63, h * 0.10),
+        width: w * 0.06,
+        height: h * 0.04,
+      ),
+      Paint()..color = Colors.white.withValues(alpha: 0.07),
     );
     canvas.restore();
   }
 
   void _paintWingEdge(Canvas canvas, double w, double h) {
+    // Soft outer glow for wing separation
     canvas.drawPath(
       BudgiePaths.wing(w, h),
       Paint()
-        ..color = Colors.white.withValues(alpha: 0.15)
+        ..color = Colors.white.withValues(alpha: 0.08)
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 0.8
+        ..strokeWidth = 1.6
+        ..strokeJoin = StrokeJoin.round
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 1),
+    );
+    // Crisp inner edge highlight
+    canvas.drawPath(
+      BudgiePaths.wing(w, h),
+      Paint()
+        ..color = Colors.white.withValues(alpha: 0.18)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 0.7
         ..strokeJoin = StrokeJoin.round,
     );
   }
@@ -260,6 +364,50 @@ class BudgiePainter extends CustomPainter {
         ..strokeWidth = 1.0
         ..strokeJoin = StrokeJoin.round,
     );
+  }
+
+  /// Paints small scattered pied patches for Dominant Pied variant.
+  ///
+  /// Unlike Dutch Pied (large wing patch) or Recessive Pied (belly),
+  /// Dominant Pied shows smaller, randomly-placed patches across body.
+  void _paintDominantPiedPatches(Canvas canvas, double w, double h) {
+    final color = appearance.piedPatchColor;
+    final paint = Paint()..color = color;
+
+    // Small chest patch
+    canvas.save();
+    canvas.clipPath(BudgiePaths.belly(w, h));
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: Offset(w * 0.58, h * 0.46),
+        width: w * 0.10,
+        height: h * 0.06,
+      ),
+      paint,
+    );
+    // Small lower belly patch
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: Offset(w * 0.44, h * 0.70),
+        width: w * 0.08,
+        height: h * 0.05,
+      ),
+      paint,
+    );
+    canvas.restore();
+
+    // Small wing patch
+    canvas.save();
+    canvas.clipPath(BudgiePaths.wing(w, h));
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: Offset(w * 0.54, h * 0.58),
+        width: w * 0.09,
+        height: h * 0.05,
+      ),
+      paint,
+    );
+    canvas.restore();
   }
 
   void _paintCarrierAccent(Canvas canvas, double w, double h) {

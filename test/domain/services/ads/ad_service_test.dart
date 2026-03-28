@@ -37,14 +37,14 @@ void main() {
       }, returnsNormally);
     });
 
-    test('cooldown constant is 3 minutes', () {
+    test('repeated fallback calls still invoke onAdClosed each time', () async {
       final service = AdService();
       var callCount = 0;
-      int onClosed() => callCount++;
+      void onClosed() => callCount++;
 
-      service.showInterstitialAd(onAdClosed: onClosed);
-      service.showInterstitialAd(onAdClosed: onClosed);
-      expect(callCount, greaterThanOrEqualTo(0));
+      await service.showInterstitialAd(onAdClosed: onClosed);
+      await service.showInterstitialAd(onAdClosed: onClosed);
+      expect(callCount, 2);
     });
 
     test(
@@ -90,7 +90,8 @@ void main() {
       'showRewardedAd with no callback does not throw when no ad loaded',
       () async {
         final service = AdService();
-        await expectLater(service.showRewardedAd(onRewarded: () {}), completes);
+        await service.showRewardedAd(onRewarded: () {});
+        expect(service.isRewardedAdReady, isFalse);
       },
     );
   });

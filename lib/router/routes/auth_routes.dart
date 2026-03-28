@@ -6,6 +6,7 @@ import '../../features/auth/screens/forgot_password_screen.dart';
 import '../../features/auth/screens/email_verification_screen.dart';
 import '../../features/auth/screens/auth_callback_screen.dart';
 import '../route_names.dart';
+import '../route_utils.dart';
 
 /// Public authentication routes (login, register, etc.).
 List<GoRoute> buildAuthRoutes() => [
@@ -27,8 +28,12 @@ List<GoRoute> buildAuthRoutes() => [
   ),
   GoRoute(
     path: AppRoutes.emailVerification,
-    builder: (context, state) =>
-        EmailVerificationScreen(email: state.uri.queryParameters['email']),
+    builder: (context, state) {
+      final email = state.uri.queryParameters['email'];
+      return EmailVerificationScreen(
+        email: isValidRouteEmail(email) ? email : null,
+      );
+    },
   ),
   GoRoute(
     path: AppRoutes.forgotPassword,

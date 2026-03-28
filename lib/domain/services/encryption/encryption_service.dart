@@ -7,6 +7,8 @@ import 'package:encrypt/encrypt.dart' as enc;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 
+part 'encryption_payload_codec.dart';
+
 /// Provides AES-256-CBC encryption for sensitive fields.
 ///
 /// Uses [FlutterSecureStorage] for key management. The encryption key is
@@ -21,6 +23,8 @@ class EncryptionService {
   final FlutterSecureStorage _secureStorage;
 
   static const String _keyName = 'budgie_encryption_key';
+  static const String _keyVersionName = 'budgie_encryption_key_version';
+  static const String _previousKeyPrefix = 'budgie_encryption_key_v';
   static const int _keyLength = 32; // 256 bits for AES-256
   static const int _ivLength = 16;
   static const int _macLength = 32; // HMAC-SHA256 output size
@@ -28,6 +32,34 @@ class EncryptionService {
   static final List<int> _payloadMagicBytes = ascii.encode(_payloadMagic);
 
   Uint8List? _cachedKeyBytes;
+
+  // Sub-key cache to avoid recomputing HMAC-SHA256 on every encrypt/decrypt call.
+  List<int>? _cachedMasterKeyHash;
+  ({List<int> encKey, List<int> macKey})? _cachedSubKeys;
+
+  /// Derives separate encryption and MAC keys from master key using HMAC-SHA256 PRF.
+  ({List<int> encKey, List<int> macKey}) _deriveSubKeys(List<int> masterKey) {
+    final keyHash = crypto.sha256.convert(masterKey).bytes;
+    if (_cachedSubKeys != null && _listEquals(_cachedMasterKeyHash!, keyHash)) {
+      return _cachedSubKeys!;
+    }
+
+    final hmac = crypto.Hmac(crypto.sha256, masterKey);
+    final encKey = hmac.convert(utf8.encode('BBTENC')).bytes;
+    final macKey = hmac.convert(utf8.encode('BBTMAC')).bytes;
+
+    _cachedMasterKeyHash = keyHash;
+    _cachedSubKeys = (encKey: encKey.sublist(0, 32), macKey: macKey.sublist(0, 32));
+    return _cachedSubKeys!;
+  }
+
+  static bool _listEquals(List<int> a, List<int> b) {
+    if (a.length != b.length) return false;
+    for (int i = 0; i < a.length; i++) {
+      if (a[i] != b[i]) return false;
+    }
+    return true;
+  }
 
   EncryptionService([FlutterSecureStorage? secureStorage])
     : _secureStorage = secureStorage ?? const FlutterSecureStorage();
@@ -45,7 +77,8 @@ class EncryptionService {
 
     try {
       final keyBytes = await _getOrCreateKeyBytes();
-      final key = enc.Key(keyBytes);
+      final subKeys = _deriveSubKeys(keyBytes);
+      final key = enc.Key(Uint8List.fromList(subKeys.encKey));
       final iv = enc.IV.fromSecureRandom(_ivLength);
       final encrypter = enc.Encrypter(enc.AES(key, mode: enc.AESMode.cbc));
 
@@ -56,7 +89,7 @@ class EncryptionService {
         ...iv.bytes,
         ...encrypted.bytes,
       ];
-      final mac = _computeMac(payload, keyBytes);
+      final mac = _computeMac(payload, Uint8List.fromList(subKeys.macKey));
       final combined = <int>[...payload, ...mac];
       return base64Encode(combined);
     } catch (e, st) {
@@ -67,95 +100,95 @@ class EncryptionService {
 
   /// Decrypts a Base64-encoded [cipherText] back to plain text.
   ///
-  /// Extracts the IV from the first 16 bytes, then decrypts the
-  /// remaining bytes using AES-256-CBC.
+  /// Tries the active key first. If decryption or HMAC verification fails,
+  /// falls back to previous key versions (for post-rotation compatibility).
   Future<String> decrypt(String cipherText) async {
     if (cipherText.isEmpty) {
       throw const FormatException('Cannot decrypt empty string');
     }
 
+    final Object firstError;
+    final StackTrace firstStack;
     try {
       final keyBytes = await _getOrCreateKeyBytes();
-      final key = enc.Key(keyBytes);
-
-      final combined = base64Decode(cipherText);
-      final encrypted = _decodeEncryptedPayload(combined, keyBytes);
-
-      final encrypter = enc.Encrypter(enc.AES(key, mode: enc.AESMode.cbc));
-      return encrypter.decrypt(encrypted.$1, iv: encrypted.$2);
+      return _decryptWithKey(cipherText, keyBytes);
     } catch (e, st) {
-      AppLogger.error('Decryption failed', e, st);
-      rethrow; // Never fallback to ciphertext — caller must handle
+      AppLogger.warning('[Encryption] Active key decrypt failed, trying previous keys: $e');
+      firstError = e;
+      firstStack = st;
     }
+
+    // Active key failed — try previous versions
+    final previousKeys = await _loadPreviousKeys();
+    for (final prevKey in previousKeys) {
+      try {
+        return _decryptWithKey(cipherText, prevKey);
+      } catch (_) {
+        continue;
+      }
+    }
+
+    // All keys exhausted — throw original error
+    AppLogger.error('Decryption failed with all key versions', firstError, firstStack);
+    Error.throwWithStackTrace(firstError, firstStack);
   }
 
-  (enc.Encrypted, enc.IV) _decodeEncryptedPayload(
-    List<int> combined,
-    Uint8List keyBytes,
-  ) {
-    // New authenticated format: MAGIC + IV + ciphertext + HMAC
-    if (_hasMagicPrefix(combined)) {
-      final minimumLength =
-          _payloadMagicBytes.length + _ivLength + 1 + _macLength;
-      if (combined.length < minimumLength) {
-        throw FormatException(
-          'Invalid ciphertext: too short authenticated payload '
-          '(${combined.length} bytes)',
-        );
-      }
+  String _decryptWithKey(String cipherText, Uint8List keyBytes) {
+    final combined = base64Decode(cipherText);
+    final isAuthenticated = _hasMagicPrefix(combined);
 
-      final payloadEnd = combined.length - _macLength;
-      final payload = combined.sublist(0, payloadEnd);
-      final providedMac = combined.sublist(payloadEnd);
-      final expectedMac = _computeMac(payload, keyBytes);
-      if (!_constantTimeEquals(providedMac, expectedMac)) {
-        throw const FormatException(
-          'Invalid ciphertext: integrity check failed',
-        );
-      }
-
-      final ivStart = _payloadMagicBytes.length;
-      final ivEnd = ivStart + _ivLength;
-      final iv = enc.IV(Uint8List.fromList(combined.sublist(ivStart, ivEnd)));
-      final cipherBytes = combined.sublist(ivEnd, payloadEnd);
-      if (cipherBytes.isEmpty) {
-        throw const FormatException('Invalid ciphertext: empty payload');
-      }
-      return (enc.Encrypted(Uint8List.fromList(cipherBytes)), iv);
-    }
-
-    // Legacy format: IV + ciphertext (no MAC)
-    if (combined.length < _ivLength + 1) {
-      throw FormatException(
-        'Invalid ciphertext: too short (${combined.length} bytes, minimum 17)',
+    // Try derived sub-keys first (new format)
+    try {
+      final subKeys = _deriveSubKeys(keyBytes);
+      final encKeyBytes = Uint8List.fromList(subKeys.encKey);
+      final macKeyBytes = Uint8List.fromList(subKeys.macKey);
+      final encrypted = _decodeEncryptedPayload(combined, macKeyBytes);
+      final encrypter = enc.Encrypter(
+        enc.AES(enc.Key(encKeyBytes), mode: enc.AESMode.cbc),
       );
+      return encrypter.decrypt(encrypted.$1, iv: encrypted.$2);
+    } catch (_) {
+      // Authenticated payloads (magic prefix) must NOT fall back to legacy
+      // unauthenticated decryption — the HMAC failure is authoritative.
+      if (isAuthenticated) rethrow;
     }
-    final iv = enc.IV(Uint8List.fromList(combined.sublist(0, _ivLength)));
-    final cipherBytes = combined.sublist(_ivLength);
-    return (enc.Encrypted(Uint8List.fromList(cipherBytes)), iv);
+
+    // Legacy only: same key for AES and HMAC (no magic prefix)
+    final key = enc.Key(keyBytes);
+    final encrypted = _decodeEncryptedPayload(combined, keyBytes);
+    final encrypter = enc.Encrypter(enc.AES(key, mode: enc.AESMode.cbc));
+    return encrypter.decrypt(encrypted.$1, iv: encrypted.$2);
   }
 
-  bool _hasMagicPrefix(List<int> bytes) {
-    if (bytes.length < _payloadMagicBytes.length) return false;
-    for (var i = 0; i < _payloadMagicBytes.length; i++) {
-      if (bytes[i] != _payloadMagicBytes[i]) return false;
+  /// Loads all archived previous key versions from secure storage.
+  Future<List<Uint8List>> _loadPreviousKeys() async {
+    final keys = <Uint8List>[];
+    try {
+      final currentVersion = await _getCurrentKeyVersion();
+      // Iterate from newest to oldest for faster match
+      for (var v = currentVersion - 1; v >= 0; v--) {
+        final keyString = await _secureStorage.read(
+          key: '$_previousKeyPrefix$v',
+        );
+        if (keyString != null) {
+          final decoded = base64Decode(keyString);
+          if (decoded.length < _keyLength) {
+            AppLogger.warning(
+              'Skipping corrupted archived key v$v '
+              '(${decoded.length} bytes, expected $_keyLength)',
+            );
+            continue;
+          }
+          keys.add(Uint8List.fromList(decoded.sublist(0, _keyLength)));
+        }
+      }
+    } catch (_) {
+      // No previous keys available (e.g. first install, storage error)
     }
-    return true;
+    return keys;
   }
 
-  List<int> _computeMac(List<int> payload, Uint8List keyBytes) {
-    final hmac = crypto.Hmac(crypto.sha256, keyBytes);
-    return hmac.convert(payload).bytes;
-  }
-
-  bool _constantTimeEquals(List<int> a, List<int> b) {
-    if (a.length != b.length) return false;
-    var diff = 0;
-    for (var i = 0; i < a.length; i++) {
-      diff |= a[i] ^ b[i];
-    }
-    return diff == 0;
-  }
+  // Payload codec methods are in encryption_payload_codec.dart (part file)
 
   /// Returns whether the encryption key exists in secure storage.
   ///
@@ -178,12 +211,84 @@ class EncryptionService {
     _zeroCachedKey();
   }
 
+  /// Rotates the encryption key: saves the current key as a previous version
+  /// and generates a new active key.
+  ///
+  /// After rotation, [encrypt] uses the new key while [decrypt] tries the
+  /// active key first, then falls back to previous versions.
+  /// Call [reEncrypt] on each encrypted value to migrate to the new key.
+  Future<int> rotateKey() async {
+    final currentVersion = await _getCurrentKeyVersion();
+    final currentKeyString = await _secureStorage.read(key: _keyName);
+
+    // Archive current key under its version number
+    if (currentKeyString != null) {
+      await _secureStorage.write(
+        key: '$_previousKeyPrefix$currentVersion',
+        value: currentKeyString,
+      );
+    }
+
+    // Generate and store new key
+    _zeroCachedKey();
+    final newKey = _generateKey();
+    final newVersion = currentVersion + 1;
+    await _secureStorage.write(key: _keyName, value: newKey);
+    await _secureStorage.write(
+      key: _keyVersionName,
+      value: newVersion.toString(),
+    );
+    AppLogger.info('Encryption key rotated to version $newVersion');
+    return newVersion;
+  }
+
+  /// Re-encrypts a value: decrypts with any matching key, re-encrypts with
+  /// the current active key using derived sub-keys and HMAC.
+  ///
+  /// Handles both key rotation (old key → new key) and format migration
+  /// (legacy IV+ciphertext → authenticated BBTENC1! format).
+  /// Returns null if the value cannot be decrypted.
+  Future<String?> reEncrypt(String cipherText) async {
+    try {
+      final plainText = await decrypt(cipherText);
+      return encrypt(plainText);
+    } catch (e) {
+      AppLogger.warning('Re-encryption failed: $e');
+      return null;
+    }
+  }
+
+  /// Returns `true` if [encryptedData] uses the legacy format (no BBTENC1!
+  /// magic prefix) and should be re-encrypted with the current format.
+  ///
+  /// This is a cheap check that only inspects the first few bytes of the
+  /// Base64-decoded payload — no decryption or key access is performed.
+  /// Returns `false` for empty/invalid input instead of throwing.
+  bool needsReEncryption(String encryptedData) {
+    if (encryptedData.isEmpty) return false;
+    try {
+      final combined = base64Decode(encryptedData);
+      return !_hasMagicPrefix(combined);
+    } catch (_) {
+      // Not valid Base64 — caller should handle separately
+      return false;
+    }
+  }
+
+  /// Returns the current key version number (0 for the original key).
+  Future<int> _getCurrentKeyVersion() async {
+    final versionStr = await _secureStorage.read(key: _keyVersionName);
+    return int.tryParse(versionStr ?? '') ?? 0;
+  }
+
   /// Clears the in-memory key cache, overwriting bytes with zeros.
   void dispose() => _zeroCachedKey();
 
   void _zeroCachedKey() {
     _cachedKeyBytes?.fillRange(0, _cachedKeyBytes!.length, 0);
     _cachedKeyBytes = null;
+    _cachedMasterKeyHash = null;
+    _cachedSubKeys = null;
   }
 
   /// Returns the raw 32-byte key as [Uint8List] for AES-256.
@@ -207,15 +312,34 @@ class EncryptionService {
     final decoded = base64Decode(keyString);
 
     // Ensure exactly 32 bytes for AES-256
-    if (decoded.length >= _keyLength) {
-      _cachedKeyBytes = Uint8List.fromList(decoded.sublist(0, _keyLength));
+    if (decoded.length < _keyLength) {
+      AppLogger.error(
+        'Active encryption key is corrupted '
+        '(${decoded.length} bytes, expected $_keyLength) — regenerating',
+        null,
+        StackTrace.current,
+      );
+      // Archive corrupted key under current version before deleting,
+      // so it can still be tried during decryption of old data.
+      final currentVersion = await _getCurrentKeyVersion();
+      await _secureStorage.write(
+        key: '$_previousKeyPrefix$currentVersion',
+        value: keyString,
+      );
+      await _secureStorage.delete(key: _keyName);
+      final freshKey = _generateKey();
+      final newVersion = currentVersion + 1;
+      await _secureStorage.write(key: _keyName, value: freshKey);
+      await _secureStorage.write(
+        key: _keyVersionName,
+        value: newVersion.toString(),
+      );
+      final freshDecoded = base64Decode(freshKey);
+      _cachedKeyBytes = Uint8List.fromList(
+        freshDecoded.sublist(0, _keyLength),
+      );
     } else {
-      // Pad with zeros if somehow shorter (should not happen with _generateKey)
-      final padded = Uint8List(_keyLength);
-      for (int i = 0; i < decoded.length; i++) {
-        padded[i] = decoded[i];
-      }
-      _cachedKeyBytes = padded;
+      _cachedKeyBytes = Uint8List.fromList(decoded.sublist(0, _keyLength));
     }
     return _cachedKeyBytes!;
   }

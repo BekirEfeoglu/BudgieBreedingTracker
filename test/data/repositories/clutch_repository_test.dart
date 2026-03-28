@@ -246,7 +246,9 @@ void main() {
         () => remoteSource.fetchAll(userId),
       ).thenThrow(Exception('unexpected'));
 
-      await expectLater(repository.pull(userId), completes);
+      await repository.pull(userId);
+
+      verify(() => remoteSource.fetchAll(userId)).called(1);
     });
 
     test('push upserts remote and clears sync metadata on success', () async {

@@ -64,16 +64,7 @@ void main() {
         mutationId: GeneticsConstants.locusDilution,
       );
 
-      // May return null (no locus match) or a trivial wild-type square
-      if (square != null) {
-        expect(square.cells, isNotEmpty);
-        // All cells should be wild-type
-        for (final row in square.cells) {
-          for (final cell in row) {
-            expect(cell, contains('+'));
-          }
-        }
-      }
+      expect(square, isNull);
     });
 
     test('sex-linked square produces Z and W alleles', () {
@@ -153,13 +144,12 @@ void main() {
         mother: _toGenotype({'blue'}, BirdGender.female),
       );
 
-      if (results.isNotEmpty) {
-        final totalProbability = results.fold(
-          0.0,
-          (sum, r) => sum + r.probability,
-        );
-        expect(totalProbability, closeTo(1.0, 0.0001));
-      }
+      expect(results, isNotEmpty);
+      final totalProbability = results.fold(
+        0.0,
+        (sum, r) => sum + r.probability,
+      );
+      expect(totalProbability, closeTo(1.0, 0.0001));
     });
   });
 }

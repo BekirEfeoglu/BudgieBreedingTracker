@@ -38,6 +38,7 @@ Widget _buildSheet({Map<String, dynamic>? item, FeedbackSaveCallback? onSave}) {
     ),
   );
 }
+
 void main() {
   group('FeedbackDetailSheet', () {
     testWidgets('renders without crashing', (tester) async {
@@ -46,7 +47,7 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
 
-      await pumpLocalizedApp(tester,_buildSheet());
+      await pumpLocalizedApp(tester, _buildSheet());
       await tester.pump(const Duration(milliseconds: 300));
       expect(find.byType(FeedbackDetailSheet), findsOneWidget);
     });
@@ -57,7 +58,7 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
 
-      await pumpLocalizedApp(tester,_buildSheet());
+      await pumpLocalizedApp(tester, _buildSheet());
       expect(find.text('admin.feedback_detail'), findsOneWidget);
     });
 
@@ -67,7 +68,7 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
 
-      await pumpLocalizedApp(tester,_buildSheet());
+      await pumpLocalizedApp(tester, _buildSheet());
       expect(find.text('Test Subject'), findsAtLeastNWidgets(1));
     });
 
@@ -77,7 +78,7 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
 
-      await pumpLocalizedApp(tester,_buildSheet());
+      await pumpLocalizedApp(tester, _buildSheet());
       expect(find.text('Test message content'), findsOneWidget);
     });
 
@@ -87,7 +88,7 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
 
-      await pumpLocalizedApp(tester,_buildSheet());
+      await pumpLocalizedApp(tester, _buildSheet());
       expect(find.text('user@example.com'), findsOneWidget);
     });
 
@@ -97,7 +98,7 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
 
-      await pumpLocalizedApp(tester,_buildSheet());
+      await pumpLocalizedApp(tester, _buildSheet());
       expect(find.text('android'), findsOneWidget);
     });
 
@@ -107,7 +108,7 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
 
-      await pumpLocalizedApp(tester,_buildSheet());
+      await pumpLocalizedApp(tester, _buildSheet());
       expect(find.text('1.0.0'), findsOneWidget);
     });
 
@@ -117,7 +118,7 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
 
-      await pumpLocalizedApp(tester,_buildSheet());
+      await pumpLocalizedApp(tester, _buildSheet());
       expect(find.byType(SegmentedButton<String>), findsAtLeastNWidgets(1));
     });
 
@@ -127,7 +128,7 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
 
-      await pumpLocalizedApp(tester,_buildSheet());
+      await pumpLocalizedApp(tester, _buildSheet());
       expect(find.text('admin.feedback_save'), findsOneWidget);
     });
 
@@ -137,7 +138,7 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
 
-      await pumpLocalizedApp(tester,_buildSheet());
+      await pumpLocalizedApp(tester, _buildSheet());
       expect(find.byType(TextFormField), findsOneWidget);
     });
 
@@ -147,7 +148,7 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
 
-      await pumpLocalizedApp(tester,_buildSheet());
+      await pumpLocalizedApp(tester, _buildSheet());
       expect(find.byType(DraggableScrollableSheet), findsOneWidget);
     });
 
@@ -162,7 +163,7 @@ void main() {
       final itemWithoutEmail = Map<String, dynamic>.from(_testItem)
         ..remove('email');
 
-      await pumpLocalizedApp(tester,_buildSheet(item: itemWithoutEmail));
+      await pumpLocalizedApp(tester, _buildSheet(item: itemWithoutEmail));
       expect(find.text('user@example.com'), findsNothing);
     });
 
@@ -177,7 +178,7 @@ void main() {
       final itemWithResponse = Map<String, dynamic>.from(_testItem)
         ..['admin_response'] = 'Previous response';
 
-      await pumpLocalizedApp(tester,_buildSheet(item: itemWithResponse));
+      await pumpLocalizedApp(tester, _buildSheet(item: itemWithResponse));
       expect(find.text('Previous response'), findsOneWidget);
     });
 
@@ -188,7 +189,8 @@ void main() {
       addTearDown(tester.view.resetDevicePixelRatio);
 
       var callCount = 0;
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _buildSheet(
           onSave:
               ({
@@ -211,11 +213,15 @@ void main() {
 
   group('FeedbackSaveCallback typedef', () {
     test('callback can be defined and called with required params', () async {
+      var callCount = 0;
+
       Future<void> callback({
         required String status,
         String? adminResponse,
         required String priority,
-      }) async {}
+      }) async {
+        callCount++;
+      }
 
       await callback(status: 'open', priority: 'normal');
       await callback(
@@ -223,7 +229,7 @@ void main() {
         adminResponse: 'Done',
         priority: 'high',
       );
-      expect(callback, isNotNull);
+      expect(callCount, 2);
     });
 
     test('callback works with null adminResponse', () async {

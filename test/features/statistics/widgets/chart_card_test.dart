@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:budgie_breeding_tracker/core/widgets/skeleton_loader.dart';
 import 'package:budgie_breeding_tracker/features/statistics/widgets/chart_card.dart';
 
 import '../../../helpers/pump_helpers.dart';
@@ -75,10 +76,10 @@ void main() {
   });
 
   group('ChartLoading', () {
-    testWidgets('shows CircularProgressIndicator', (tester) async {
+    testWidgets('shows skeleton loaders', (tester) async {
       await pumpWidgetSimple(tester, const ChartLoading());
 
-      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      expect(find.byType(SkeletonLoader), findsWidgets);
     });
 
     testWidgets('renders in a SizedBox', (tester) async {
@@ -125,6 +126,86 @@ void main() {
       await tester.pump();
 
       expect(retried, isTrue);
+    });
+  });
+
+  group('ChartCard dataCount / ChartLowData', () {
+    testWidgets('shows low data banner when dataCount > 0 and < threshold', (
+      tester,
+    ) async {
+      await pumpWidgetSimple(
+        tester,
+        const ChartCard(
+          title: 'Test',
+          icon: Icon(Icons.bar_chart),
+          dataCount: 1,
+          child: Text('Chart'),
+        ),
+      );
+
+      expect(find.text('statistics.low_data_hint'), findsOneWidget);
+      expect(find.text('Chart'), findsOneWidget);
+    });
+
+    testWidgets('hides low data banner when dataCount >= threshold', (
+      tester,
+    ) async {
+      await pumpWidgetSimple(
+        tester,
+        const ChartCard(
+          title: 'Test',
+          icon: Icon(Icons.bar_chart),
+          dataCount: 5,
+          child: Text('Chart'),
+        ),
+      );
+
+      expect(find.text('statistics.low_data_hint'), findsNothing);
+      expect(find.text('Chart'), findsOneWidget);
+    });
+
+    testWidgets('hides low data banner when dataCount is null', (
+      tester,
+    ) async {
+      await pumpWidgetSimple(
+        tester,
+        const ChartCard(
+          title: 'Test',
+          icon: Icon(Icons.bar_chart),
+          child: Text('Chart'),
+        ),
+      );
+
+      expect(find.text('statistics.low_data_hint'), findsNothing);
+    });
+
+    testWidgets('hides low data banner when dataCount is 0', (tester) async {
+      await pumpWidgetSimple(
+        tester,
+        const ChartCard(
+          title: 'Test',
+          icon: Icon(Icons.bar_chart),
+          dataCount: 0,
+          child: Text('Chart'),
+        ),
+      );
+
+      expect(find.text('statistics.low_data_hint'), findsNothing);
+    });
+
+    testWidgets('respects custom lowDataThreshold', (tester) async {
+      await pumpWidgetSimple(
+        tester,
+        const ChartCard(
+          title: 'Test',
+          icon: Icon(Icons.bar_chart),
+          dataCount: 4,
+          lowDataThreshold: 5,
+          child: Text('Chart'),
+        ),
+      );
+
+      expect(find.text('statistics.low_data_hint'), findsOneWidget);
     });
   });
 

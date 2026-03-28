@@ -10,6 +10,7 @@ import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/core/widgets/error_state.dart';
 import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
 import 'package:budgie_breeding_tracker/core/widgets/dialogs/confirm_dialog.dart';
+import 'package:budgie_breeding_tracker/features/notifications/providers/action_feedback_providers.dart';
 import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
 import 'package:budgie_breeding_tracker/features/chicks/providers/chick_providers.dart';
 import 'package:budgie_breeding_tracker/features/chicks/providers/chick_form_providers.dart';
@@ -41,7 +42,10 @@ class ChickDetailScreen extends ConsumerWidget {
       ),
       error: (error, _) => Scaffold(
         appBar: AppBar(title: Text('common.error'.tr())),
-        body: ErrorState(message: error.toString()),
+        body: ErrorState(
+          message: 'common.data_load_error'.tr(),
+          onRetry: () => ref.invalidate(chickByIdProvider(chickId)),
+        ),
       ),
       data: (chick) {
         if (chick == null) {
@@ -68,6 +72,7 @@ class _DetailContent extends ConsumerWidget {
     ref.listen<ChickFormState>(chickFormStateProvider, (_, state) {
       if (state.isSuccess) {
         ref.read(chickFormStateProvider.notifier).reset();
+        ActionFeedbackService.show('common.saved_successfully'.tr());
       }
       if (state.error != null) {
         ScaffoldMessenger.of(
@@ -96,10 +101,16 @@ class _DetailContent extends ConsumerWidget {
                 PopupMenuItem(
                   value: 'promote',
                   child: Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       const AppIcon(AppIcons.promote, size: 18),
                       const SizedBox(width: AppSpacing.sm),
-                      Text('chicks.move_to_birds'.tr()),
+                      Flexible(
+                        child: Text(
+                          'chicks.move_to_birds'.tr(),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -117,14 +128,32 @@ class _DetailContent extends ConsumerWidget {
           ? const LoadingState()
           : SingleChildScrollView(
               padding: const EdgeInsets.only(bottom: AppSpacing.xxxl * 2),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  ChickDetailHeader(chick: chick),
-                  ChickDetailInfo(chick: chick),
-                  if (chick.notes != null && chick.notes!.isNotEmpty)
-                    ChickDetailNotes(notes: chick.notes!),
-                ],
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(
+                    maxWidth: AppSpacing.maxContentWidth,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      ChickDetailHeader(chick: chick),
+                      const Divider(
+                        height: 1,
+                        indent: AppSpacing.lg,
+                        endIndent: AppSpacing.lg,
+                      ),
+                      ChickDetailInfo(chick: chick),
+                      if (chick.notes != null && chick.notes!.isNotEmpty) ...[
+                        const Divider(
+                          height: 1,
+                          indent: AppSpacing.lg,
+                          endIndent: AppSpacing.lg,
+                        ),
+                        ChickDetailNotes(notes: chick.notes!),
+                      ],
+                    ],
+                  ),
+                ),
               ),
             ),
     );
@@ -148,9 +177,7 @@ class _DetailContent extends ConsumerWidget {
         if (confirmed == true) {
           await notifier.markAsWeaned(chick.id);
           if (context.mounted) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text('chicks.wean_success'.tr())));
+            ActionFeedbackService.show('chicks.wean_success'.tr());
           }
         }
       case 'promote':

@@ -62,7 +62,6 @@ void main() {
     ) async {
       await tester.pumpWidget(_wrap(overrides: _emptyOverrides()));
       await tester.pump();
-      expect(tester.takeException(), isNull);
 
       expect(find.text('genetics.no_results'), findsOneWidget);
     });
@@ -72,15 +71,16 @@ void main() {
     ) async {
       await tester.pumpWidget(_wrap(overrides: _dataOverrides()));
       await tester.pump();
-      expect(tester.takeException(), isNull);
 
-      expect(find.text('genetics.results_title'), findsOneWidget);
+      expect(
+        find.textContaining('genetics.results_title_with_count'),
+        findsOneWidget,
+      );
     });
 
     testWidgets('shows show_sex_specific toggle label', (tester) async {
       await tester.pumpWidget(_wrap(overrides: _dataOverrides()));
       await tester.pump();
-      expect(tester.takeException(), isNull);
 
       expect(find.text('genetics.show_sex_specific'), findsOneWidget);
     });
@@ -88,7 +88,6 @@ void main() {
     testWidgets('shows show_genotype toggle label', (tester) async {
       await tester.pumpWidget(_wrap(overrides: _dataOverrides()));
       await tester.pump();
-      expect(tester.takeException(), isNull);
 
       expect(find.text('genetics.show_genotype'), findsOneWidget);
     });
@@ -96,7 +95,6 @@ void main() {
     testWidgets('shows two Switch widgets for toggles', (tester) async {
       await tester.pumpWidget(_wrap(overrides: _dataOverrides()));
       await tester.pump();
-      expect(tester.takeException(), isNull);
 
       expect(find.byType(Switch), findsNWidgets(2));
     });
@@ -106,7 +104,6 @@ void main() {
     ) async {
       await tester.pumpWidget(_wrap(overrides: _dataOverrides()));
       await tester.pump();
-      expect(tester.takeException(), isNull);
 
       expect(find.byType(OffspringProbabilityBarChart), findsOneWidget);
     });
@@ -114,7 +111,6 @@ void main() {
     testWidgets('shows phenotype names in results', (tester) async {
       await tester.pumpWidget(_wrap(overrides: _dataOverrides()));
       await tester.pump();
-      expect(tester.takeException(), isNull);
 
       expect(
         find.textContaining('genetics.mutation_normal'),
@@ -125,7 +121,6 @@ void main() {
     testWidgets('shows no PunnettSquare when punnett is null', (tester) async {
       await tester.pumpWidget(_wrap(overrides: _dataOverrides()));
       await tester.pump();
-      expect(tester.takeException(), isNull);
 
       // No punnett data => no PunnettSquareWidget
       expect(find.byKey(const ValueKey('punnett_square')), findsNothing);
@@ -171,7 +166,6 @@ void main() {
         ),
       );
       await tester.pump();
-      expect(tester.takeException(), isNull);
 
       expect(find.text('genetics.lethal_warning_title'), findsOneWidget);
     });
@@ -204,7 +198,6 @@ void main() {
         ),
       );
       await tester.pump();
-      expect(tester.takeException(), isNull);
       expect(find.byType(EpistasisInteractionsCard), findsOneWidget);
     });
   });

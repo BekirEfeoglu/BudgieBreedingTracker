@@ -43,6 +43,7 @@ import 'package:budgie_breeding_tracker/features/notifications/providers/notific
 import 'package:budgie_breeding_tracker/features/premium/providers/premium_providers.dart';
 
 import 'mocks.dart';
+import 'test_fixtures.dart';
 export 'mocks.dart';
 
 const e2eTimeout = Timeout(Duration(seconds: 30));
@@ -67,8 +68,8 @@ void registerCommonFallbackValues() {
       name: 'Fallback',
       gender: BirdGender.unknown,
       status: BirdStatus.alive,
-      createdAt: DateTime(2024, 1, 1),
-      updatedAt: DateTime(2024, 1, 1),
+      createdAt: TestDates.baseline,
+      updatedAt: TestDates.baseline,
     ),
   );
   registerFallbackValue(
@@ -76,18 +77,18 @@ void registerCommonFallbackValues() {
       id: 'fallback-pair',
       userId: 'fallback-user',
       status: BreedingStatus.active,
-      createdAt: DateTime(2024, 1, 1),
-      updatedAt: DateTime(2024, 1, 1),
+      createdAt: TestDates.baseline,
+      updatedAt: TestDates.baseline,
     ),
   );
   registerFallbackValue(
     Egg(
       id: 'fallback-egg',
       userId: 'fallback-user',
-      layDate: DateTime(2024, 1, 1),
+      layDate: TestDates.baseline,
       status: EggStatus.incubating,
-      createdAt: DateTime(2024, 1, 1),
-      updatedAt: DateTime(2024, 1, 1),
+      createdAt: TestDates.baseline,
+      updatedAt: TestDates.baseline,
     ),
   );
   registerFallbackValue(
@@ -95,8 +96,8 @@ void registerCommonFallbackValues() {
       id: 'fallback-incubation',
       userId: 'fallback-user',
       breedingPairId: 'fallback-pair',
-      startDate: DateTime(2024, 1, 1),
-      expectedHatchDate: DateTime(2024, 1, 19),
+      startDate: TestDates.baseline,
+      expectedHatchDate: TestDates.expectedHatch,
     ),
   );
   registerFallbackValue(
@@ -105,8 +106,8 @@ void registerCommonFallbackValues() {
       userId: 'fallback-user',
       gender: BirdGender.unknown,
       healthStatus: ChickHealthStatus.healthy,
-      createdAt: DateTime(2024, 1, 1),
-      updatedAt: DateTime(2024, 1, 1),
+      createdAt: TestDates.baseline,
+      updatedAt: TestDates.baseline,
     ),
   );
   registerFallbackValue(
@@ -115,15 +116,15 @@ void registerCommonFallbackValues() {
       userId: 'fallback-user',
       title: 'Fallback',
       type: HealthRecordType.checkup,
-      date: DateTime(2024, 1, 1),
-      createdAt: DateTime(2024, 1, 1),
+      date: TestDates.baseline,
+      createdAt: TestDates.baseline,
     ),
   );
   registerFallbackValue(
     Event(
       id: 'fallback-event',
       title: 'Fallback Event',
-      eventDate: DateTime(2024, 1, 1),
+      eventDate: TestDates.baseline,
       type: EventType.custom,
       userId: 'fallback-user',
     ),
@@ -133,7 +134,7 @@ void registerCommonFallbackValues() {
       id: 'fallback-growth',
       chickId: 'fallback-chick',
       weight: 1.0,
-      measurementDate: DateTime(2024, 1, 1),
+      measurementDate: TestDates.baseline,
       userId: 'fallback-user',
     ),
   );
@@ -158,7 +159,7 @@ void registerCommonFallbackValues() {
     const Profile(id: 'fallback-profile', email: 'fallback@example.com'),
   );
   registerFallbackValue(const notif_settings.NotificationToggleSettings());
-  registerFallbackValue(DateTime(2024, 1, 1));
+  registerFallbackValue(TestDates.baseline);
   registerFallbackValue(const Duration(seconds: 1));
   registerFallbackValue(<Event>[]);
 }

@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import 'package:budgie_breeding_tracker/core/enums/community_enums.dart';
+import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/data/models/community_post_model.dart';
 import 'package:budgie_breeding_tracker/features/community/widgets/community_post_card_parts.dart';
 
@@ -66,7 +67,10 @@ void main() {
 
       final container = tester.widget<Container>(find.byType(Container));
       final decoration = container.decoration! as BoxDecoration;
-      expect(decoration.borderRadius, isNotNull);
+      expect(
+        decoration.borderRadius,
+        BorderRadius.circular(AppSpacing.radiusFull),
+      );
     });
   });
 

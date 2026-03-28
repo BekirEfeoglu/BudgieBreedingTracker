@@ -85,9 +85,9 @@ class _ChickListScreenState extends ConsumerState<ChickListScreen> {
                   child: Row(
                     children: [
                       if (sort == currentSort)
-                        const Icon(LucideIcons.check, size: 20)
+                        const Icon(LucideIcons.check, size: AppSpacing.xl)
                       else
-                        const SizedBox(width: 20),
+                        const SizedBox(width: AppSpacing.xl),
                       const SizedBox(width: AppSpacing.sm),
                       Text(sort.label),
                     ],

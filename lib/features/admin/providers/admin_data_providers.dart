@@ -87,6 +87,8 @@ final isFounderProvider = FutureProvider<bool>((ref) async {
 
 /// Admin dashboard statistics.
 /// Uses server-side RPC to bypass RLS and get accurate counts.
+/// requireAdmin() is called outside try-catch so permission failures
+/// propagate directly without falling through to the fallback.
 final adminStatsProvider = FutureProvider<AdminStats>((ref) async {
   await requireAdmin(ref);
   final client = ref.watch(supabaseClientProvider);
@@ -97,7 +99,9 @@ final adminStatsProvider = FutureProvider<AdminStats>((ref) async {
     return AdminStats.fromJson(data);
   } catch (e, st) {
     AppLogger.error('adminStatsProvider RPC fallback', e, st);
-    // Fallback to client-side queries
+    // Fallback to client-side queries — safe because:
+    // 1. requireAdmin() already verified admin status above (outside try-catch)
+    // 2. Supabase RLS policies enforce server-side access control on these tables
     final usersCount = await client
         .from(SupabaseConstants.profilesTable)
         .count();
@@ -128,12 +132,16 @@ final adminUsersProvider = FutureProvider.family<List<AdminUser>, String>((
       .select('id, email, full_name, avatar_url, created_at, is_active');
 
   if (query.isNotEmpty) {
-    // Sanitize PostgREST special characters to prevent filter injection
+    // Sanitize PostgREST special characters to prevent filter injection.
+    // Remove control chars and PostgREST delimiters, then escape wildcards
+    // and URI-encode to prevent semantic manipulation of the filter string.
     final sanitized = query
-        .replaceAll(RegExp(r'[,.()\[\]]'), '')
+        .replaceAll(RegExp(r'[\x00-\x1f]'), '')
+        .replaceAll(RegExp(r'[,.()\[\]\\]'), '')
         .replaceAll('%', r'\%')
         .replaceAll('_', r'\_');
     if (sanitized.isNotEmpty) {
+      // Do NOT Uri.encodeComponent — PostgREST client handles encoding.
       request = request.or(
         'email.ilike.%$sanitized%,full_name.ilike.%$sanitized%',
       );

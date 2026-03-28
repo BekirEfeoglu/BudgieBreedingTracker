@@ -59,7 +59,7 @@ void main() {
         breedingPairByIdProvider('bp1').future,
       );
 
-      expect(result, isNotNull);
+      expect(result, pair);
       expect(result!.id, 'bp1');
       expect(result.status, BreedingStatus.active);
     });
@@ -154,7 +154,7 @@ void main() {
       container.listen(birdByIdProvider('b1'), (_, __) {});
       final result = await container.read(birdByIdProvider('b1').future);
 
-      expect(result, isNotNull);
+      expect(result, bird);
       expect(result!.name, 'Tweety');
     });
   });

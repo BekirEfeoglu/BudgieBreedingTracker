@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
 import 'package:budgie_breeding_tracker/features/admin/providers/admin_models.dart';
 import 'package:budgie_breeding_tracker/features/admin/widgets/admin_monitoring_table_widgets.dart';
 
@@ -28,7 +29,8 @@ void main() {
         ),
       ];
 
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(const MonitoringTableDetailsSection(tables: tables)),
       );
       expect(find.byType(MonitoringTableDetailsSection), findsOneWidget);
@@ -44,7 +46,8 @@ void main() {
         ),
       ];
 
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(const MonitoringTableDetailsSection(tables: tables)),
       );
       expect(find.text('admin.table_details'), findsOneWidget);
@@ -66,11 +69,11 @@ void main() {
         ),
       ];
 
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(const MonitoringTableDetailsSection(tables: tables)),
       );
-      // 2 tables shown in header
-      expect(find.text('admin.tables'), findsAtLeastNWidgets(1));
+      expect(find.text('2 admin.tables'), findsOneWidget);
     });
 
     testWidgets('shows table name in rows', (tester) async {
@@ -83,14 +86,16 @@ void main() {
         ),
       ];
 
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(const MonitoringTableDetailsSection(tables: tables)),
       );
       expect(find.text('chicks'), findsOneWidget);
     });
 
     testWidgets('renders empty without crashing', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(const MonitoringTableDetailsSection(tables: [])),
       );
       // Empty list → SizedBox.shrink, no crash
@@ -119,7 +124,8 @@ void main() {
         ),
       ];
 
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(const MonitoringTableDetailsSection(tables: tables)),
       );
       // All table names appear in the widget
@@ -174,23 +180,23 @@ void main() {
 
   group('capacityColor helper', () {
     test('returns success for ratio < 0.70', () {
-      expect(capacityColor(0.5), isNotNull);
+      expect(capacityColor(0.5), AppColors.success);
     });
 
     test('returns warning for ratio between 0.70 and 0.90', () {
-      expect(capacityColor(0.8), isNotNull);
+      expect(capacityColor(0.8), AppColors.warning);
     });
 
     test('returns error for ratio >= 0.90', () {
-      expect(capacityColor(0.95), isNotNull);
+      expect(capacityColor(0.95), AppColors.error);
     });
 
     test('inverted: returns success for ratio >= 0.95', () {
-      expect(capacityColor(0.95, true), isNotNull);
+      expect(capacityColor(0.95, true), AppColors.success);
     });
 
     test('inverted: returns error for ratio < 0.80', () {
-      expect(capacityColor(0.5, true), isNotNull);
+      expect(capacityColor(0.5, true), AppColors.error);
     });
   });
 }

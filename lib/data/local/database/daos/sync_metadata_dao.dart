@@ -216,7 +216,6 @@ class SyncMetadataDao extends DatabaseAccessor<AppDatabase>
         .go();
   }
 
-  /// Watches pending sync record count as a reactive stream.
   Stream<int> watchPendingCount(String userId) {
     final count = syncMetadataTable.id.count();
     return (selectOnly(syncMetadataTable)
@@ -229,90 +228,64 @@ class SyncMetadataDao extends DatabaseAccessor<AppDatabase>
         .map((row) => row.read(count) ?? 0);
   }
 
-  /// Counts stale error records older than [maxAge] with retryCount >= [minRetries].
-  Future<int> countStaleErrors(
-    String userId,
-    Duration maxAge,
-    int minRetries,
-  ) async {
+  Future<int> countStaleErrors(String userId, Duration maxAge, int minRetries) async {
     final count = syncMetadataTable.id.count();
     final cutoff = DateTime.now().subtract(maxAge);
-    final row =
-        await (selectOnly(syncMetadataTable)
-              ..addColumns([count])
-              ..where(
-                syncMetadataTable.userId.equals(userId) &
-                    syncMetadataTable.status.equalsValue(SyncStatus.error) &
-                    syncMetadataTable.createdAt.isSmallerOrEqualValue(cutoff) &
-                    syncMetadataTable.retryCount.isBiggerOrEqualValue(
-                      minRetries,
-                    ),
-              ))
-            .getSingle();
+    final row = await (selectOnly(syncMetadataTable)
+          ..addColumns([count])
+          ..where(syncMetadataTable.userId.equals(userId) &
+              syncMetadataTable.status.equalsValue(SyncStatus.error) &
+              syncMetadataTable.createdAt.isSmallerOrEqualValue(cutoff) &
+              syncMetadataTable.retryCount.isBiggerOrEqualValue(minRetries)))
+        .getSingle();
     return row.read(count) ?? 0;
   }
 
-  /// Deletes stale error records older than [maxAge] with retryCount >= [minRetries].
-  /// Returns the number of deleted records.
-  Future<int> deleteStaleErrors(
-    String userId,
-    Duration maxAge,
-    int minRetries,
-  ) async {
+  Future<int> deleteStaleErrors(String userId, Duration maxAge, int minRetries) async {
     final cutoff = DateTime.now().subtract(maxAge);
-    return (delete(syncMetadataTable)..where(
-          (t) =>
-              t.userId.equals(userId) &
-              t.status.equalsValue(SyncStatus.error) &
-              t.createdAt.isSmallerOrEqualValue(cutoff) &
-              t.retryCount.isBiggerOrEqualValue(minRetries),
-        ))
+    return (delete(syncMetadataTable)..where((t) =>
+            t.userId.equals(userId) &
+            t.status.equalsValue(SyncStatus.error) &
+            t.createdAt.isSmallerOrEqualValue(cutoff) &
+            t.retryCount.isBiggerOrEqualValue(minRetries)))
         .go();
   }
 
-  /// Watches error records grouped by table name.
   Stream<List<SyncErrorDetail>> watchErrorsByTable(String userId) {
     final tbl = syncMetadataTable.tableName_;
     final cnt = syncMetadataTable.id.count();
     final lastErr = syncMetadataTable.errorMessage.max();
     final lastTime = syncMetadataTable.updatedAt.max();
-
     return (selectOnly(syncMetadataTable)
           ..addColumns([tbl, cnt, lastErr, lastTime])
-          ..where(
-            syncMetadataTable.userId.equals(userId) &
-                syncMetadataTable.status.equalsValue(SyncStatus.error),
-          )
+          ..where(syncMetadataTable.userId.equals(userId) &
+              syncMetadataTable.status.equalsValue(SyncStatus.error))
           ..groupBy([tbl]))
         .watch()
-        .map((rows) => rows.map((row) {
-              return SyncErrorDetail(
-                tableName: row.read(tbl) ?? '',
-                errorCount: row.read(cnt) ?? 0,
-                lastError: row.read(lastErr),
-                lastAttempt: row.read(lastTime),
-              );
-            }).toList());
+        .map((rows) => rows
+            .map((row) => SyncErrorDetail(
+                  tableName: row.read(tbl) ?? '',
+                  errorCount: row.read(cnt) ?? 0,
+                  lastError: row.read(lastErr),
+                  lastAttempt: row.read(lastTime),
+                ))
+            .toList());
   }
 
-  /// Watches pending records grouped by table name.
   Stream<List<SyncErrorDetail>> watchPendingByTable(String userId) {
     final tbl = syncMetadataTable.tableName_;
     final cnt = syncMetadataTable.id.count();
-
     return (selectOnly(syncMetadataTable)
           ..addColumns([tbl, cnt])
-          ..where(
-            syncMetadataTable.userId.equals(userId) &
-                syncMetadataTable.status.equalsValue(SyncStatus.pending),
-          )
+          ..where(syncMetadataTable.userId.equals(userId) &
+              syncMetadataTable.status.equalsValue(SyncStatus.pending))
           ..groupBy([tbl]))
         .watch()
-        .map((rows) => rows.map((row) {
-              return SyncErrorDetail(
-                tableName: row.read(tbl) ?? '',
-                errorCount: row.read(cnt) ?? 0,
-              );
-            }).toList());
+        .map((rows) => rows
+            .map((row) => SyncErrorDetail(
+                  tableName: row.read(tbl) ?? '',
+                  errorCount: row.read(cnt) ?? 0,
+                ))
+            .toList());
   }
 }

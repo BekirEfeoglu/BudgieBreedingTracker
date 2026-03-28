@@ -14,9 +14,7 @@ import '../../../helpers/test_localization.dart';
 Widget _wrap(Widget child, {List<dynamic> overrides = const []}) {
   return ProviderScope(
     overrides: overrides.cast(),
-    child: MaterialApp(
-      home: Scaffold(body: child),
-    ),
+    child: MaterialApp(home: Scaffold(body: child)),
   );
 }
 
@@ -35,9 +33,11 @@ void _suppressOverflowErrors() {
 
 void main() {
   group('ParentSelectionStep', () {
-    testWidgets('renders without crashing with empty genotypes',
-        (tester) async {
-      await pumpLocalizedApp(tester,
+    testWidgets('renders without crashing with empty genotypes', (
+      tester,
+    ) async {
+      await pumpLocalizedApp(
+        tester,
         _wrap(
           const ParentSelectionStep(
             fatherGenotype: ParentGenotype.empty(gender: BirdGender.male),
@@ -49,7 +49,8 @@ void main() {
     });
 
     testWidgets('shows two MutationSelector widgets', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(
           const ParentSelectionStep(
             fatherGenotype: ParentGenotype.empty(gender: BirdGender.male),
@@ -60,9 +61,11 @@ void main() {
       expect(find.byType(MutationSelector), findsNWidgets(2));
     });
 
-    testWidgets('shows father_mutations and mother_mutations labels',
-        (tester) async {
-      await pumpLocalizedApp(tester,
+    testWidgets('shows father_mutations and mother_mutations labels', (
+      tester,
+    ) async {
+      await pumpLocalizedApp(
+        tester,
         _wrap(
           const ParentSelectionStep(
             fatherGenotype: ParentGenotype.empty(gender: BirdGender.male),
@@ -75,7 +78,8 @@ void main() {
     });
 
     testWidgets('shows two bird picker buttons', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(
           const ParentSelectionStep(
             fatherGenotype: ParentGenotype.empty(gender: BirdGender.male),
@@ -84,15 +88,14 @@ void main() {
         ),
       );
       expect(find.byType(OutlinedButton), findsNWidgets(2));
-      expect(
-        find.text('genetics.select_from_birds'),
-        findsNWidgets(2),
-      );
+      expect(find.text('genetics.select_from_birds'), findsNWidgets(2));
     });
 
-    testWidgets('shows Divider between father and mother sections',
-        (tester) async {
-      await pumpLocalizedApp(tester,
+    testWidgets('shows Divider between father and mother sections', (
+      tester,
+    ) async {
+      await pumpLocalizedApp(
+        tester,
         _wrap(
           const ParentSelectionStep(
             fatherGenotype: ParentGenotype.empty(gender: BirdGender.male),
@@ -109,15 +112,15 @@ void main() {
       container.read(selectedFatherBirdNameProvider.notifier).state =
           'Mavi Kus';
 
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         UncontrolledProviderScope(
           container: container,
           child: const MaterialApp(
             home: Scaffold(
               body: ParentSelectionStep(
                 fatherGenotype: ParentGenotype.empty(gender: BirdGender.male),
-                motherGenotype:
-                    ParentGenotype.empty(gender: BirdGender.female),
+                motherGenotype: ParentGenotype.empty(gender: BirdGender.female),
               ),
             ),
           ),
@@ -133,15 +136,15 @@ void main() {
       container.read(selectedMotherBirdNameProvider.notifier).state =
           'Yesil Kus';
 
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         UncontrolledProviderScope(
           container: container,
           child: const MaterialApp(
             home: Scaffold(
               body: ParentSelectionStep(
                 fatherGenotype: ParentGenotype.empty(gender: BirdGender.male),
-                motherGenotype:
-                    ParentGenotype.empty(gender: BirdGender.female),
+                motherGenotype: ParentGenotype.empty(gender: BirdGender.female),
               ),
             ),
           ),
@@ -151,9 +154,11 @@ void main() {
       expect(find.byType(Chip), findsAtLeastNWidgets(1));
     });
 
-    testWidgets('does not show bird name chip when not selected',
-        (tester) async {
-      await pumpLocalizedApp(tester,
+    testWidgets('does not show bird name chip when not selected', (
+      tester,
+    ) async {
+      await pumpLocalizedApp(
+        tester,
         _wrap(
           const ParentSelectionStep(
             fatherGenotype: ParentGenotype.empty(gender: BirdGender.male),
@@ -167,7 +172,8 @@ void main() {
     });
 
     testWidgets('shows AppIcon for male and female icons', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(
           const ParentSelectionStep(
             fatherGenotype: ParentGenotype.empty(gender: BirdGender.male),
@@ -180,7 +186,8 @@ void main() {
     });
 
     testWidgets('renders with SingleChildScrollView', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(
           const ParentSelectionStep(
             fatherGenotype: ParentGenotype.empty(gender: BirdGender.male),
@@ -191,30 +198,30 @@ void main() {
       expect(find.byType(SingleChildScrollView), findsAtLeastNWidgets(1));
     });
 
-    testWidgets('father chip has delete button to clear selection',
-        (tester) async {
+    testWidgets('father chip has delete button to clear selection', (
+      tester,
+    ) async {
       final container = ProviderContainer();
       addTearDown(container.dispose);
       container.read(selectedFatherBirdNameProvider.notifier).state =
           'TestBird';
 
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         UncontrolledProviderScope(
           container: container,
           child: const MaterialApp(
             home: Scaffold(
               body: ParentSelectionStep(
                 fatherGenotype: ParentGenotype.empty(gender: BirdGender.male),
-                motherGenotype:
-                    ParentGenotype.empty(gender: BirdGender.female),
+                motherGenotype: ParentGenotype.empty(gender: BirdGender.female),
               ),
             ),
           ),
         ),
       );
       // The Chip should have an onDeleted callback (visible as delete icon)
-      final chip = tester.widget<Chip>(find.byType(Chip).first);
-      expect(chip.onDeleted, isNotNull);
+      expect(find.byIcon(Icons.cancel), findsOneWidget);
     });
 
     testWidgets('renders with genotypes that have mutations', (tester) async {
@@ -228,7 +235,8 @@ void main() {
         gender: BirdGender.female,
       );
 
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(
           ParentSelectionStep(
             fatherGenotype: fatherGenotype,

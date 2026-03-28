@@ -18,6 +18,7 @@ import 'package:budgie_breeding_tracker/features/profile/providers/profile_provi
 
 part 'premium_notifier.dart';
 part 'premium_plan_utilities.dart';
+part 'premium_sync_helpers.dart';
 part 'purchase_action_notifier.dart';
 
 /// Singleton [PurchaseService] instance.
@@ -27,7 +28,9 @@ final purchaseServiceProvider = Provider<PurchaseService>((ref) {
 
 /// Whether user has premium subscription.
 /// Combines profile database state with RevenueCat/SharedPreferences cache.
-/// Syncs profile premium status to SharedPreferences for faster startup.
+/// Primary source is the profile (server-synced); local cache is used only
+/// as a fallback while profile is still loading. This prevents premium bypass
+/// via SharedPreferences tampering on rooted/jailbroken devices.
 /// Admin and founder roles always get premium access regardless of subscription.
 final isPremiumProvider = Provider<bool>((ref) {
   // Primary source: profile from database (real-time)
@@ -37,22 +40,26 @@ final isPremiumProvider = Provider<bool>((ref) {
   final profile = profileAsync.value;
   if (profile != null && (profile.isAdmin || profile.isFounder)) return true;
 
-  final profileHasPremium = profileAsync.hasValue
-      ? (profileAsync.value?.hasPremium ?? false)
-      : null;
+  // Fallback source: local cache (RevenueCat / SharedPreferences)
+  final localPremium = ref.watch(localPremiumProvider);
 
-  // Sync profile premium status to local cache for next startup
+  // Fallback logic: use local cache only while profile is loading.
+  // Once profile has loaded, trust the server-side value exclusively.
+  // This prevents premium bypass via SharedPreferences tampering.
+  if (!profileAsync.hasValue) return localPremium;
+  return profileAsync.value?.hasPremium ?? false;
+});
+
+/// Syncs profile premium status to local cache whenever profile changes.
+/// Keep-alive so this runs for the lifetime of the app.
+final premiumSyncProvider = Provider<void>((ref) {
+  ref.keepAlive();
   ref.listen<AsyncValue<Profile?>>(userProfileProvider, (prev, next) {
     next.whenData((profile) {
       final hasPremium = profile?.hasPremium ?? false;
       ref.read(localPremiumProvider.notifier).setPremium(hasPremium);
     });
   });
-
-  // Fallback source: local cache (RevenueCat / SharedPreferences)
-  final localPremium = ref.watch(localPremiumProvider);
-
-  return profileHasPremium ?? localPremium;
 });
 
 /// Local premium cache backed by SharedPreferences + RevenueCat.

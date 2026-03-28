@@ -9,7 +9,7 @@ void main() {
     final baseInfo = SubscriptionInfo(
       isActive: true,
       willRenew: true,
-      productId: 'budgie_monthly',
+      productId: 'budgie_semi_annual',
       expirationDate: DateTime(2027, 12, 31),
       isTrial: false,
     );
@@ -54,12 +54,12 @@ void main() {
       expect(find.text('premium.trial_subtitle'), findsOneWidget);
     });
 
-    testWidgets('shows plan name for monthly product', (tester) async {
+    testWidgets('shows plan name for semi-annual product', (tester) async {
       await tester.pumpWidget(createSubject());
       await tester.pump();
 
       expect(find.text('premium.current_plan'), findsOneWidget);
-      expect(find.text('premium.plan_monthly'), findsOneWidget);
+      expect(find.text('premium.plan_semi_annual'), findsOneWidget);
     });
 
     testWidgets('shows plan name for yearly product', (tester) async {
@@ -74,16 +74,17 @@ void main() {
       expect(find.text('premium.plan_yearly'), findsOneWidget);
     });
 
-    testWidgets('shows plan name for lifetime product', (tester) async {
-      const lifetimeInfo = SubscriptionInfo(
+    testWidgets('shows raw productId for unknown plan', (tester) async {
+      const unknownInfo = SubscriptionInfo(
         isActive: true,
         productId: 'budgie_lifetime',
         willRenew: false,
       );
-      await tester.pumpWidget(createSubject(info: lifetimeInfo));
+      await tester.pumpWidget(createSubject(info: unknownInfo));
       await tester.pump();
 
-      expect(find.text('premium.plan_lifetime'), findsOneWidget);
+      // Unknown productIds are shown as raw string (fallback)
+      expect(find.text('budgie_lifetime'), findsOneWidget);
     });
 
     testWidgets('shows expiry date when expirationDate is provided', (
@@ -138,7 +139,7 @@ void main() {
       const noRenewInfo = SubscriptionInfo(
         isActive: true,
         willRenew: false,
-        productId: 'budgie_monthly',
+        productId: 'budgie_semi_annual',
         isTrial: false,
       );
       await tester.pumpWidget(createSubject(info: noRenewInfo));
@@ -167,7 +168,7 @@ void main() {
     ) async {
       const noExpiryInfo = SubscriptionInfo(
         isActive: true,
-        productId: 'budgie_lifetime',
+        productId: 'budgie_yearly',
         willRenew: false,
       );
       await tester.pumpWidget(createSubject(info: noExpiryInfo));

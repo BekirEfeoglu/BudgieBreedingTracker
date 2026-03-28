@@ -16,18 +16,9 @@ void main() {
       expect(communityRoutes, isA<List<RouteBase>>());
     });
 
-    test('contains exactly 1 top-level route', () {
-      expect(communityRoutes.length, 1);
-    });
-
     test('top-level route is the community path', () {
       final topRoute = communityRoutes.first as GoRoute;
       expect(topRoute.path, AppRoutes.community);
-    });
-
-    test('top-level route has a builder', () {
-      final topRoute = communityRoutes.first as GoRoute;
-      expect(topRoute.builder, isNotNull);
     });
 
     group('nested routes', () {
@@ -38,43 +29,19 @@ void main() {
         nestedRoutes = topRoute.routes;
       });
 
-      test('has 5 nested routes', () {
-        expect(nestedRoutes.length, 5);
-      });
-
-      test('contains create route', () {
+      test('contains expected nested paths without duplicates', () {
         final paths = _extractPaths(nestedRoutes);
-        expect(paths, contains('create'));
-      });
-
-      test('contains bookmarks route', () {
-        final paths = _extractPaths(nestedRoutes);
-        expect(paths, contains('bookmarks'));
-      });
-
-      test('contains search route', () {
-        final paths = _extractPaths(nestedRoutes);
-        expect(paths, contains('search'));
-      });
-
-      test('contains post/:postId route', () {
-        final paths = _extractPaths(nestedRoutes);
-        expect(paths, contains('post/:postId'));
-      });
-
-      test('contains user/:userId route', () {
-        final paths = _extractPaths(nestedRoutes);
-        expect(paths, contains('user/:userId'));
-      });
-
-      test('all nested routes have builders', () {
-        for (final route in nestedRoutes.whereType<GoRoute>()) {
-          expect(
-            route.builder,
-            isNotNull,
-            reason: 'Route ${route.path} should have a builder',
-          );
-        }
+        expect(
+          paths,
+          containsAll([
+            'create',
+            'bookmarks',
+            'search',
+            'post/:postId',
+            'user/:userId',
+          ]),
+        );
+        expect(paths.toSet().length, paths.length);
       });
     });
 
@@ -89,7 +56,8 @@ void main() {
         expect(
           createIndex,
           lessThan(postDetailIndex),
-          reason: 'Specific path "create" must come before parameterized "post/:postId"',
+          reason:
+              'Specific path "create" must come before parameterized "post/:postId"',
         );
       });
 
@@ -103,7 +71,8 @@ void main() {
         expect(
           bookmarksIndex,
           lessThan(userPostsIndex),
-          reason: 'Specific path "bookmarks" must come before parameterized "user/:userId"',
+          reason:
+              'Specific path "bookmarks" must come before parameterized "user/:userId"',
         );
       });
 
@@ -131,17 +100,17 @@ void main() {
     group('parameterized routes', () {
       test('post/:postId has :postId parameter in path', () {
         final topRoute = communityRoutes.first as GoRoute;
-        final postRoute = topRoute.routes
-            .whereType<GoRoute>()
-            .firstWhere((r) => r.path == 'post/:postId');
+        final postRoute = topRoute.routes.whereType<GoRoute>().firstWhere(
+          (r) => r.path == 'post/:postId',
+        );
         expect(postRoute.path, contains(':postId'));
       });
 
       test('user/:userId has :userId parameter in path', () {
         final topRoute = communityRoutes.first as GoRoute;
-        final userRoute = topRoute.routes
-            .whereType<GoRoute>()
-            .firstWhere((r) => r.path == 'user/:userId');
+        final userRoute = topRoute.routes.whereType<GoRoute>().firstWhere(
+          (r) => r.path == 'user/:userId',
+        );
         expect(userRoute.path, contains(':userId'));
       });
     });

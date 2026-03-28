@@ -56,9 +56,8 @@ void main() {
         mutations: {'blue': AlleleState.carrier},
       );
 
-      final results = container.read(offspringResultsProvider);
-      expect(results, isNotNull);
-      expect(results!.isNotEmpty, isTrue);
+      final results = container.read(offspringResultsProvider)!;
+      expect(results, isNotEmpty);
       final total = results.fold<double>(
         0,
         (sum, item) => sum + item.probability,
@@ -116,9 +115,8 @@ void main() {
       );
       container.read(selectedPunnettLocusProvider.notifier).state = 'blue';
 
-      final square = container.read(punnettSquareProvider);
-      expect(square, isNotNull);
-      expect(square!.cells, isNotEmpty);
+      final square = container.read(punnettSquareProvider)!;
+      expect(square.cells, isNotEmpty);
       expect(square.mutationName, isNotEmpty);
     });
 
@@ -137,11 +135,10 @@ void main() {
       container.read(selectedPunnettLocusProvider.notifier).state = 'opaline';
 
       final effectiveLocus = container.read(effectivePunnettLocusProvider);
-      final square = container.read(punnettSquareProvider);
+      final square = container.read(punnettSquareProvider)!;
 
       expect(effectiveLocus, 'blue_series');
-      expect(square, isNotNull);
-      expect(square!.mutationName, 'Blue Series');
+      expect(square.mutationName, 'Blue Series');
     });
 
     test('offspringChartDataProvider maps results to chart items', () {
@@ -188,8 +185,8 @@ void main() {
 
     test('phenotypeColor maps known and unknown labels', () {
       expect(phenotypeColor('Albino'), AppColors.phenotypeAlbino);
-      expect(phenotypeColor('Blue'), isNotNull);
-      expect(phenotypeColor('UnknownPhenotype'), isNotNull);
+      expect(phenotypeColor('Blue'), AppColors.budgieBlue);
+      expect(phenotypeColor('UnknownPhenotype'), AppColors.neutral500);
     });
 
     test('phenotypeColorFromMutations detects compound phenotypes', () {
@@ -302,10 +299,9 @@ void main() {
           mutations: {'ino': AlleleState.visual},
         );
 
-        final analysis = container.read(lethalAnalysisProvider);
-        expect(analysis, isNotNull);
+        final analysis = container.read(lethalAnalysisProvider)!;
         expect(
-          analysis!.warnings.where((w) => w.combination.id == 'ino_x_ino'),
+          analysis.warnings.where((w) => w.combination.id == 'ino_x_ino'),
           isEmpty,
         );
       },

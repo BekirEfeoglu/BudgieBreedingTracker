@@ -68,11 +68,17 @@ void main() {
           () => mockPairRepository.getAll(any()),
         ).thenAnswer((_) async => []);
         when(
+          () => mockPairRepository.getActiveCount(any()),
+        ).thenAnswer((_) async => 0);
+        when(
           () => mockIncubationRepository.save(any()),
         ).thenAnswer((_) async {});
         when(
           () => mockIncubationRepository.getAll(any()),
         ).thenAnswer((_) async => []);
+        when(
+          () => mockIncubationRepository.getActiveCount(any()),
+        ).thenAnswer((_) async => 0);
         when(
           () => mockNotificationScheduler.scheduleIncubationMilestones(
             incubationId: any(named: 'incubationId'),

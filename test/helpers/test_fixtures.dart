@@ -8,6 +8,22 @@ import 'package:budgie_breeding_tracker/data/models/clutch_model.dart';
 import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
 import 'package:budgie_breeding_tracker/data/models/sync_metadata_model.dart';
 
+/// Stable reference dates for tests. Use these instead of hardcoded DateTime
+/// literals so tests remain valid regardless of when they run.
+abstract final class TestDates {
+  /// A fixed past date used as default createdAt/updatedAt.
+  static final baseline = DateTime(2024, 1, 1);
+
+  /// 10 days after baseline — used for egg lay dates.
+  static final layDate = DateTime(2024, 1, 10);
+
+  /// 28 days after baseline — used for chick hatch dates.
+  static final hatchDate = DateTime(2024, 1, 28);
+
+  /// 19 days after baseline — used for expected hatch (incubation).
+  static final expectedHatch = DateTime(2024, 1, 19);
+}
+
 /// Creates a test [Bird] with sensible defaults.
 ///
 /// Override any field as needed for specific test scenarios.
@@ -116,8 +132,8 @@ class TestFixtures {
       gender: gender,
       userId: userId,
       status: status,
-      createdAt: DateTime(2024, 1, 1),
-      updatedAt: DateTime(2024, 1, 1),
+      createdAt: TestDates.baseline,
+      updatedAt: TestDates.baseline,
     );
   }
 
@@ -132,12 +148,12 @@ class TestFixtures {
     return Egg(
       id: id,
       userId: userId,
-      layDate: layDate ?? DateTime(2024, 1, 10),
+      layDate: layDate ?? TestDates.layDate,
       status: status,
       clutchId: clutchId,
       incubationId: incubationId,
-      createdAt: DateTime(2024, 1, 10),
-      updatedAt: DateTime(2024, 1, 10),
+      createdAt: TestDates.layDate,
+      updatedAt: TestDates.layDate,
     );
   }
 
@@ -153,11 +169,11 @@ class TestFixtures {
       id: id,
       userId: userId,
       gender: gender,
-      hatchDate: hatchDate ?? DateTime(2024, 1, 28),
+      hatchDate: hatchDate ?? TestDates.hatchDate,
       eggId: eggId,
       clutchId: clutchId,
-      createdAt: DateTime(2024, 1, 28),
-      updatedAt: DateTime(2024, 1, 28),
+      createdAt: TestDates.hatchDate,
+      updatedAt: TestDates.hatchDate,
     );
   }
 
@@ -174,8 +190,8 @@ class TestFixtures {
       maleId: maleId,
       femaleId: femaleId,
       status: status,
-      createdAt: DateTime(2024, 1, 1),
-      updatedAt: DateTime(2024, 1, 1),
+      createdAt: TestDates.baseline,
+      updatedAt: TestDates.baseline,
     );
   }
 
@@ -190,8 +206,8 @@ class TestFixtures {
       userId: userId,
       breedingId: breedingId,
       incubationId: incubationId,
-      createdAt: DateTime(2024, 1, 1),
-      updatedAt: DateTime(2024, 1, 1),
+      createdAt: TestDates.baseline,
+      updatedAt: TestDates.baseline,
     );
   }
 
@@ -212,8 +228,8 @@ class TestFixtures {
       status: status,
       retryCount: retryCount,
       errorMessage: errorMessage,
-      createdAt: DateTime(2024, 1, 1),
-      updatedAt: DateTime(2024, 1, 1),
+      createdAt: TestDates.baseline,
+      updatedAt: TestDates.baseline,
     );
   }
 }

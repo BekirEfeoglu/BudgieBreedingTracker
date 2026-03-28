@@ -235,4 +235,161 @@ void main() {
       });
     });
   });
+
+  group('isValidRouteEmail', () {
+    group('valid emails', () {
+      test('accepts standard email', () {
+        expect(isValidRouteEmail('user@example.com'), isTrue);
+      });
+
+      test('accepts email with subdomain', () {
+        expect(isValidRouteEmail('user@mail.example.com'), isTrue);
+      });
+
+      test('accepts email with dots in local part', () {
+        expect(isValidRouteEmail('first.last@example.com'), isTrue);
+      });
+
+      test('accepts email with plus addressing', () {
+        expect(isValidRouteEmail('user+tag@example.com'), isTrue);
+      });
+
+      test('accepts email with hyphen in domain', () {
+        expect(isValidRouteEmail('user@my-domain.com'), isTrue);
+      });
+
+      test('accepts email with numbers', () {
+        expect(isValidRouteEmail('user123@example456.com'), isTrue);
+      });
+
+      test('accepts email with underscore', () {
+        expect(isValidRouteEmail('user_name@example.com'), isTrue);
+      });
+
+      test('accepts email with percent', () {
+        expect(isValidRouteEmail('user%name@example.com'), isTrue);
+      });
+
+      test('accepts common TLDs', () {
+        expect(isValidRouteEmail('a@b.co'), isTrue);
+        expect(isValidRouteEmail('a@b.org'), isTrue);
+        expect(isValidRouteEmail('a@b.io'), isTrue);
+      });
+    });
+
+    group('null and empty', () {
+      test('rejects null', () {
+        expect(isValidRouteEmail(null), isFalse);
+      });
+
+      test('rejects empty string', () {
+        expect(isValidRouteEmail(''), isFalse);
+      });
+
+      test('rejects whitespace-only string', () {
+        expect(isValidRouteEmail('   '), isFalse);
+      });
+    });
+
+    group('malformed emails', () {
+      test('rejects missing @ sign', () {
+        expect(isValidRouteEmail('userexample.com'), isFalse);
+      });
+
+      test('rejects missing domain', () {
+        expect(isValidRouteEmail('user@'), isFalse);
+      });
+
+      test('rejects missing local part', () {
+        expect(isValidRouteEmail('@example.com'), isFalse);
+      });
+
+      test('rejects missing TLD', () {
+        expect(isValidRouteEmail('user@example'), isFalse);
+      });
+
+      test('rejects single character TLD', () {
+        expect(isValidRouteEmail('user@example.c'), isFalse);
+      });
+
+      test('rejects double @ sign', () {
+        expect(isValidRouteEmail('user@@example.com'), isFalse);
+      });
+
+      test('rejects spaces in email', () {
+        expect(isValidRouteEmail('user @example.com'), isFalse);
+      });
+    });
+
+    group('length limits', () {
+      test('rejects email exceeding 254 characters', () {
+        final longLocal = 'a' * 243;
+        final longEmail = '$longLocal@example.com';
+        expect(longEmail.length > 254, isTrue);
+        expect(isValidRouteEmail(longEmail), isFalse);
+      });
+
+      test('accepts email at exactly 254 characters', () {
+        // local@domain.com = local(242) + @example.com(12) = 254
+        final local = 'a' * 242;
+        final email = '$local@example.com';
+        expect(email.length, 254);
+        expect(isValidRouteEmail(email), isTrue);
+      });
+    });
+
+    group('injection attacks', () {
+      test('rejects script tag injection', () {
+        expect(
+          isValidRouteEmail('<script>alert(1)</script>@example.com'),
+          isFalse,
+        );
+      });
+
+      test('rejects newline injection', () {
+        expect(isValidRouteEmail('user\n@example.com'), isFalse);
+      });
+
+      test('rejects null byte injection', () {
+        expect(isValidRouteEmail('user\x00@example.com'), isFalse);
+      });
+
+      test('rejects SQL injection in email', () {
+        expect(isValidRouteEmail("' OR 1=1 --@example.com"), isFalse);
+      });
+
+      test('rejects angle bracket injection via encoded chars', () {
+        // %3C and %3E are URL-encoded < and > — the % char itself is
+        // allowed in RFC 5321, so the encoded form passes email regex.
+        // The raw angle brackets are what matters for XSS prevention.
+        expect(isValidRouteEmail('<script>@example.com'), isFalse);
+      });
+
+      test('rejects CRLF injection', () {
+        expect(isValidRouteEmail('user\r\n@example.com'), isFalse);
+      });
+    });
+
+    group('unicode and special characters', () {
+      test('rejects emoji in email', () {
+        expect(isValidRouteEmail('\u{1F600}@example.com'), isFalse);
+      });
+
+      test('rejects CJK characters', () {
+        expect(isValidRouteEmail('\u4F60\u597D@example.com'), isFalse);
+      });
+
+      test('rejects backslash', () {
+        expect(isValidRouteEmail('user\\name@example.com'), isFalse);
+      });
+
+      test('rejects parentheses', () {
+        expect(isValidRouteEmail('user(comment)@example.com'), isFalse);
+      });
+
+      test('rejects angle brackets', () {
+        expect(isValidRouteEmail('User <user@example.com>'), isFalse);
+      });
+    });
+  });
 }

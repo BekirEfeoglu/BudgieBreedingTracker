@@ -57,31 +57,45 @@ class BirdListScreen extends ConsumerWidget {
             ) ??
             AppScreenTitle(title: 'birds.title'.tr(), iconAsset: AppIcons.bird),
         actions: [
-          PopupMenuButton<BirdSort>(
+          IconButton(
             icon: const Icon(LucideIcons.arrowUpDown),
             tooltip: 'common.sort'.tr(),
-            onSelected: (sort) {
-              ref.read(birdSortProvider.notifier).state = sort;
-            },
-            itemBuilder: (context) => BirdSort.values.map((sort) {
-              return PopupMenuItem(
-                value: sort,
-                child: Row(
-                  children: [
-                    if (sort == currentSort)
-                      Icon(
-                        LucideIcons.check,
-                        size: 20,
-                        color: Theme.of(context).colorScheme.primary,
-                      )
-                    else
-                      const SizedBox(width: AppSpacing.xl),
-                    const SizedBox(width: AppSpacing.sm),
-                    Text(sort.label),
-                  ],
+            onPressed: () {
+              showModalBottomSheet(
+                context: context,
+                builder: (ctx) => SafeArea(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(
+                          AppSpacing.lg, AppSpacing.lg, AppSpacing.lg, AppSpacing.sm,
+                        ),
+                        child: Text(
+                          'common.sort'.tr(),
+                          style: Theme.of(ctx).textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      ...BirdSort.values.map((sort) => ListTile(
+                        leading: sort == currentSort
+                            ? Icon(LucideIcons.check, color: Theme.of(ctx).colorScheme.primary)
+                            : const SizedBox(width: 24),
+                        title: Text(sort.label),
+                        selected: sort == currentSort,
+                        onTap: () {
+                          ref.read(birdSortProvider.notifier).state = sort;
+                          Navigator.of(ctx).pop();
+                        },
+                      )),
+                      const SizedBox(height: AppSpacing.sm),
+                    ],
+                  ),
                 ),
               );
-            }).toList(),
+            },
           ),
           const NotificationBellButton(),
           const ProfileMenuButton(),

@@ -213,10 +213,13 @@ class AdminSidebar extends StatelessWidget {
                   color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
                 ),
                 const SizedBox(width: AppSpacing.md),
-                Text(
-                  'admin.back_to_app'.tr(),
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                Expanded(
+                  child: Text(
+                    'admin.back_to_app'.tr(),
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                    ),
                   ),
                 ),
               ],

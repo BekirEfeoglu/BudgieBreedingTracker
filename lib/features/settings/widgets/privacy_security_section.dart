@@ -10,6 +10,7 @@ import '../../../core/utils/logger.dart';
 import '../../../core/widgets/app_icon.dart';
 import '../../../router/route_names.dart';
 import '../../auth/providers/auth_providers.dart';
+import '../../notifications/providers/action_feedback_providers.dart';
 import '../../profile/widgets/account_deletion_dialog.dart';
 import '../../profile/widgets/password_change_form.dart';
 import 'settings_action_tile.dart';
@@ -101,9 +102,7 @@ class PrivacySecuritySection extends ConsumerWidget {
                           newPassword: newPassword,
                         );
                     navigator.pop();
-                    messenger.showSnackBar(
-                      SnackBar(content: Text('settings.password_changed'.tr())),
-                    );
+                    ActionFeedbackService.show('settings.password_changed'.tr());
                   } catch (e) {
                     AppLogger.error(
                       '[PrivacySecurity] Password change failed',
@@ -167,9 +166,7 @@ class PrivacySecuritySection extends ConsumerWidget {
               try {
                 await ref.read(authActionsProvider).signOutAllSessions();
                 navigator.pop();
-                messenger.showSnackBar(
-                  SnackBar(content: Text('settings.sessions_signed_out'.tr())),
-                );
+                ActionFeedbackService.show('settings.sessions_signed_out'.tr());
               } catch (e) {
                 AppLogger.error('[PrivacySecurity] Sign out all failed', e, StackTrace.current);
                 navigator.pop();

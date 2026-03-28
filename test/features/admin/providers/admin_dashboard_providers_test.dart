@@ -94,20 +94,4 @@ void main() {
       expect(log.targetUserId, 'user1');
     });
   });
-
-  group('AdminSystemSettingsProvider', () {
-    // adminSystemSettingsProvider depends on requireAdmin + Supabase client,
-    // so we only test the state container behavior here.
-    test('adminSystemAlertsProvider exists', () {
-      expect(adminSystemAlertsProvider, isNotNull);
-    });
-
-    test('recentAdminActionsProvider exists', () {
-      expect(recentAdminActionsProvider, isNotNull);
-    });
-
-    test('adminSystemSettingsProvider exists', () {
-      expect(adminSystemSettingsProvider, isNotNull);
-    });
-  });
 }

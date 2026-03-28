@@ -2,8 +2,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
+import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/mendelian_calculator.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/parent_genotype.dart';
+import 'package:budgie_breeding_tracker/domain/services/genetics/viability_analyzer.dart';
 import 'package:budgie_breeding_tracker/features/genetics/providers/genetics_providers.dart';
 
 void main() {
@@ -60,7 +62,7 @@ void main() {
       addTearDown(container.dispose);
 
       final chart = container.read(offspringChartDataProvider);
-      expect(chart.first.color, isNotNull);
+      expect(chart.first.color, AppColors.budgieBlue);
     });
 
     test('falls back to phenotype color when no visual mutations', () {
@@ -78,7 +80,7 @@ void main() {
       addTearDown(container.dispose);
 
       final chart = container.read(offspringChartDataProvider);
-      expect(chart.first.color, isNotNull);
+      expect(chart.first.color, AppColors.neutral500);
     });
   });
 
@@ -88,7 +90,7 @@ void main() {
       addTearDown(container.dispose);
 
       final analyzer = container.read(viabilityAnalyzerProvider);
-      expect(analyzer, isNotNull);
+      expect(analyzer, isA<ViabilityAnalyzer>());
     });
   });
 
@@ -124,8 +126,8 @@ void main() {
         mutations: {'blue': AlleleState.carrier},
       );
 
-      final analysis = container.read(lethalAnalysisProvider);
-      expect(analysis, isNotNull);
+      final analysis = container.read(lethalAnalysisProvider)!;
+      expect(analysis.warnings, isEmpty);
     });
   });
 
@@ -149,41 +151,40 @@ void main() {
       );
       addTearDown(container.dispose);
 
-      final enriched = container.read(enrichedOffspringResultsProvider);
-      expect(enriched, isNotNull);
+      final enriched = container.read(enrichedOffspringResultsProvider)!;
       expect(enriched, hasLength(2));
       // Results without warnings should have empty lethalCombinationIds
-      for (final result in enriched!) {
+      for (final result in enriched) {
         expect(result.lethalCombinationIds, isEmpty);
       }
     });
 
-    test('enriches results with lethal combination IDs when warnings present',
-        () {
-      // Use ino visual on both parents to trigger ino_x_ino warning
-      final container = ProviderContainer();
-      addTearDown(container.dispose);
+    test(
+      'enriches results with lethal combination IDs when warnings present',
+      () {
+        // Use ino visual on both parents to trigger ino_x_ino warning
+        final container = ProviderContainer();
+        addTearDown(container.dispose);
 
-      container.read(fatherGenotypeProvider.notifier).state = ParentGenotype(
-        gender: BirdGender.male,
-        mutations: {'ino': AlleleState.visual},
-      );
-      container.read(motherGenotypeProvider.notifier).state = ParentGenotype(
-        gender: BirdGender.female,
-        mutations: {'ino': AlleleState.visual},
-      );
+        container.read(fatherGenotypeProvider.notifier).state = ParentGenotype(
+          gender: BirdGender.male,
+          mutations: {'ino': AlleleState.visual},
+        );
+        container.read(motherGenotypeProvider.notifier).state = ParentGenotype(
+          gender: BirdGender.female,
+          mutations: {'ino': AlleleState.visual},
+        );
 
-      final analysis = container.read(lethalAnalysisProvider);
-      final enriched = container.read(enrichedOffspringResultsProvider);
+        final analysis = container.read(lethalAnalysisProvider)!;
+        final enriched = container.read(enrichedOffspringResultsProvider)!;
 
-      expect(enriched, isNotNull);
-      if (analysis != null && analysis.hasWarnings) {
-        final anyHasLethalIds = enriched!.any(
+        expect(analysis.hasWarnings, isTrue);
+        final anyHasLethalIds = enriched.any(
           (r) => r.lethalCombinationIds.isNotEmpty,
         );
         expect(anyHasLethalIds, isTrue);
-      }
-    });
+      },
+    );
   });
 
   group('epistasisInteractionsProvider', () {
@@ -263,8 +264,9 @@ void main() {
       addTearDown(container.dispose);
 
       final interactions = container.read(epistasisInteractionsProvider);
-      final albinoCount =
-          interactions.where((i) => i.resultName == 'Albino').length;
+      final albinoCount = interactions
+          .where((i) => i.resultName == 'Albino')
+          .length;
       expect(albinoCount, 1);
     });
 
@@ -273,9 +275,9 @@ void main() {
         overrides: [
           offspringResultsProvider.overrideWithValue(const [
             OffspringResult(
-              phenotype: 'Lutino',
+              phenotype: 'Lacewing',
               probability: 0.25,
-              visualMutations: ['ino'],
+              visualMutations: ['ino', 'cinnamon'],
             ),
             OffspringResult(
               phenotype: 'Albino',
@@ -288,11 +290,11 @@ void main() {
       addTearDown(container.dispose);
 
       final interactions = container.read(epistasisInteractionsProvider);
-      if (interactions.length >= 2) {
-        // Interactions from higher probability offspring should come first
-        // The exact order depends on internal logic, but highest prob first
-        expect(interactions, isNotEmpty);
-      }
+      expect(interactions.first.resultName, 'Albino');
+      expect(
+        interactions.map((interaction) => interaction.resultName),
+        contains('Lacewing'),
+      );
     });
 
     test('skips offspring with single visual mutation (no interaction)', () {
@@ -312,9 +314,7 @@ void main() {
       // Blue alone does not create epistatic interactions
       // The EpistasisEngine needs multiple mutations to find interactions
       final interactions = container.read(epistasisInteractionsProvider);
-      // May or may not have entries depending on EpistasisEngine rules
-      // but should not throw
-      expect(interactions, isA<List>());
+      expect(interactions, isEmpty);
     });
   });
 }

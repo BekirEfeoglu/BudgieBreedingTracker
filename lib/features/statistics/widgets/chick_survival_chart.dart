@@ -24,7 +24,9 @@ class ChickSurvivalChart extends StatelessWidget {
 
     return Column(
       children: [
-        SizedBox(
+        Semantics(
+          label: 'statistics.survival_chart_a11y'.tr(args: ['$total']),
+          child: SizedBox(
           height: 200,
           child: RepaintBoundary(
             child: PieChart(
@@ -35,6 +37,7 @@ class ChickSurvivalChart extends StatelessWidget {
               ),
             ),
           ),
+        ),
         ),
         const SizedBox(height: AppSpacing.md),
         _buildLegend(theme, total),

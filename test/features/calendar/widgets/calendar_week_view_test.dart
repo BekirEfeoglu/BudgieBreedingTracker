@@ -58,7 +58,7 @@ void main() {
       );
       // Tap the first GestureDetector (Monday)
       await tester.tap(find.byType(GestureDetector).first);
-      expect(tappedDate, isNotNull);
+      expect(tappedDate, DateTime(2024, 3, 11));
     });
 
     testWidgets('shows day numbers for the week', (tester) async {
@@ -113,17 +113,17 @@ void main() {
           onDateSelected: (_) {},
         ),
       );
-      // Dot containers (5x5) exist
-      final containers = tester.widgetList<Container>(find.byType(Container));
-      final hasDotContainer = containers.any(
-        (c) =>
-            c.constraints == null &&
-            c.decoration is BoxDecoration &&
-            (c.decoration as BoxDecoration).shape == BoxShape.circle,
+      expect(
+        find.byWidgetPredicate(
+          (widget) =>
+              widget is Container &&
+              widget.constraints ==
+                  const BoxConstraints.tightFor(width: 5, height: 5) &&
+              widget.decoration is BoxDecoration &&
+              (widget.decoration! as BoxDecoration).shape == BoxShape.circle,
+        ),
+        findsOneWidget,
       );
-      // Just verify the widget renders without errors
-      expect(find.byType(CalendarWeekView), findsOneWidget);
-      expect(hasDotContainer || !hasDotContainer, isTrue);
     });
   });
 }

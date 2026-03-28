@@ -13,6 +13,7 @@ import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
 import 'package:budgie_breeding_tracker/core/widgets/dialogs/confirm_dialog.dart';
 import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_detail_providers.dart';
+import 'package:budgie_breeding_tracker/features/notifications/providers/action_feedback_providers.dart';
 import 'package:budgie_breeding_tracker/features/birds/providers/bird_form_providers.dart';
 import 'package:budgie_breeding_tracker/features/genealogy/providers/genealogy_providers.dart';
 import 'package:budgie_breeding_tracker/features/birds/widgets/bird_detail_header.dart';
@@ -70,9 +71,7 @@ class _DetailContent extends ConsumerWidget {
     ref.listen<BirdFormState>(birdFormStateProvider, (_, state) {
       if (state.isSuccess) {
         ref.read(birdFormStateProvider.notifier).reset();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('common.saved_successfully'.tr())),
-        );
+        ActionFeedbackService.show('common.saved_successfully'.tr());
       }
       if (state.error != null) {
         ScaffoldMessenger.of(
@@ -113,18 +112,30 @@ class _DetailContent extends ConsumerWidget {
           ? const LoadingState()
           : SingleChildScrollView(
               padding: const EdgeInsets.only(bottom: AppSpacing.xxxl * 2),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  BirdDetailHeader(bird: bird),
-                  BirdDetailPhotos(bird: bird),
-                  BirdDetailInfo(bird: bird),
-                  BirdDetailParents(bird: bird),
-                  BirdFamilyInfo(bird: bird),
-                  BirdDetailHealth(birdId: bird.id),
-                  if (bird.notes != null && bird.notes!.isNotEmpty)
-                    BirdDetailNotes(notes: bird.notes!),
-                ],
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(
+                    maxWidth: AppSpacing.maxContentWidth,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      BirdDetailHeader(bird: bird),
+                      BirdDetailPhotos(bird: bird),
+                      const Divider(height: 1, indent: AppSpacing.lg, endIndent: AppSpacing.lg),
+                      BirdDetailInfo(bird: bird),
+                      const Divider(height: 1, indent: AppSpacing.lg, endIndent: AppSpacing.lg),
+                      BirdDetailParents(bird: bird),
+                      BirdFamilyInfo(bird: bird),
+                      const Divider(height: 1, indent: AppSpacing.lg, endIndent: AppSpacing.lg),
+                      BirdDetailHealth(birdId: bird.id),
+                      if (bird.notes != null && bird.notes!.isNotEmpty) ...[
+                        const Divider(height: 1, indent: AppSpacing.lg, endIndent: AppSpacing.lg),
+                        BirdDetailNotes(notes: bird.notes!),
+                      ],
+                    ],
+                  ),
+                ),
               ),
             ),
     );
@@ -181,9 +192,7 @@ class _DetailContent extends ConsumerWidget {
           AppHaptics.heavyImpact();
           await notifier.deleteBird(bird.id);
           if (context.mounted) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text('birds.bird_deleted'.tr())));
+            ActionFeedbackService.show('birds.bird_deleted'.tr());
             context.pop();
           }
         }

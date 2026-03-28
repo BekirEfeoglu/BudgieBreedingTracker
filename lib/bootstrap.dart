@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'core/security/certificate_pinning.dart';
 import 'core/utils/logger.dart';
 
 /// Compile-time environment values (from --dart-define or --dart-define-from-file).
@@ -96,6 +97,9 @@ Future<void> bootstrapPreInit() async {
       DeviceOrientation.portraitDown,
     ]);
 
+    // Install certificate pinning before any network calls.
+    CertificatePinning.install();
+
     // Android fallback: read config injected from Gradle (env/local.properties/.env).
     await _resolveAndroidBuildConfigFallbacks();
 
@@ -147,6 +151,16 @@ Future<void> _initSupabase() async {
   );
 
   if (hasSupabaseCredentials) {
+    // Reject placeholder/test keys in release mode to prevent accidental
+    // production deploys with invalid credentials.
+    if (!_isValidSupabaseUrl(_resolvedSupabaseUrl) ||
+        !_isValidAnonKey(_resolvedAnonKey)) {
+      AppLogger.warning(
+        'Supabase credentials appear invalid or are placeholders. '
+        'Check SUPABASE_URL and SUPABASE_ANON_KEY values.',
+      );
+      return;
+    }
     try {
       await Supabase.initialize(
         url: _resolvedSupabaseUrl,
@@ -176,6 +190,17 @@ void _resolveRevenueCatKeys() {
   revenueCatApiKeyAndroid = _resolvedRevenueCatAndroid;
   googleWebClientIdResolved = _resolvedGoogleWebClientId;
   googleIosClientIdResolved = _resolvedGoogleIosClientId;
+
+  // Warn at startup if RevenueCat keys are missing — purchases will be
+  // disabled at runtime but the app will still function in free-tier mode.
+  final platformKey = Platform.isIOS ? revenueCatApiKeyIos : revenueCatApiKeyAndroid;
+  if (platformKey.isEmpty) {
+    AppLogger.warning(
+      '[Bootstrap] RevenueCat API key not configured for ${Platform.isIOS ? 'iOS' : 'Android'}. '
+      'Premium purchases will be unavailable. '
+      'Set REVENUECAT_API_KEY_${Platform.isIOS ? 'IOS' : 'ANDROID'} via --dart-define.',
+    );
+  }
 }
 
 Future<void> _resolveAndroidBuildConfigFallbacks() async {
@@ -228,4 +253,27 @@ String _preferNonEmpty(String primary, Object? fallback) {
   final trimmedPrimary = primary.trim();
   if (trimmedPrimary.isNotEmpty) return trimmedPrimary;
   return fallback?.toString().trim() ?? '';
+}
+
+/// Validates that the Supabase URL looks like a real project URL.
+bool _isValidSupabaseUrl(String url) {
+  if (url.isEmpty) return false;
+  final uri = Uri.tryParse(url);
+  if (uri == null || !uri.hasScheme || !uri.hasAuthority) return false;
+  // Reject common placeholder values
+  const placeholders = ['placeholder', 'your-project', 'example', 'test'];
+  final host = uri.host.toLowerCase();
+  return !placeholders.any((p) => host.contains(p));
+}
+
+/// Validates that the anon key looks like a real JWT (3 dot-separated parts).
+bool _isValidAnonKey(String key) {
+  if (key.isEmpty) return false;
+  final parts = key.split('.');
+  if (parts.length != 3) return false;
+  // Reject common placeholder values — only check the header segment
+  // to avoid false positives from base64 payload containing "test".
+  const placeholders = ['placeholder', 'your-anon', 'example'];
+  final lower = parts.first.toLowerCase();
+  return !placeholders.any((p) => lower.contains(p));
 }

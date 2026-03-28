@@ -5,6 +5,7 @@ import 'package:easy_localization/easy_localization.dart';
 import '../../../core/widgets/error_state.dart';
 import '../../../core/widgets/loading_state.dart';
 import '../../../core/widgets/dialogs/confirm_dialog.dart';
+import '../../notifications/providers/action_feedback_providers.dart';
 import '../providers/admin_actions_provider.dart';
 import '../providers/admin_providers.dart';
 import '../widgets/admin_audit_widgets.dart';
@@ -35,9 +36,7 @@ class _AdminAuditScreenState extends ConsumerState<AdminAuditScreen> {
       if (state.isSuccess) {
         ref.read(adminActionsProvider.notifier).reset();
         ref.invalidate(filteredAuditLogsProvider);
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('admin.logs_cleared'.tr())));
+        ActionFeedbackService.show('admin.logs_cleared'.tr());
       }
       if (state.error != null) {
         ScaffoldMessenger.of(

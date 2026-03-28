@@ -76,10 +76,6 @@ void main() {
       expect(state.isSuccess, isFalse);
     });
 
-    test('adminActionsProvider exists', () {
-      expect(adminActionsProvider, isNotNull);
-    });
-
     test('notifier type is AdminActionsNotifier', () {
       final container = ProviderContainer();
       addTearDown(container.dispose);

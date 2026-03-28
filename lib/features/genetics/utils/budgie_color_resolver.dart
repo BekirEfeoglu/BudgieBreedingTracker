@@ -75,6 +75,8 @@ class BudgieColorAppearance {
   final int throatSpotCount;
   final bool showEyeRing;
   final bool isSpangle;
+  final bool isDutchPied;
+  final bool isDominantPied;
 
   const BudgieColorAppearance({
     required this.bodyColor,
@@ -98,6 +100,8 @@ class BudgieColorAppearance {
     this.throatSpotCount = 6,
     this.showEyeRing = true,
     this.isSpangle = false,
+    this.isDutchPied = false,
+    this.isDominantPied = false,
   });
 
   Color get effectiveBackColor => backColor ?? bodyColor;
@@ -126,7 +130,9 @@ class BudgieColorAppearance {
           showThroatSpots == other.showThroatSpots &&
           throatSpotCount == other.throatSpotCount &&
           showEyeRing == other.showEyeRing &&
-          isSpangle == other.isSpangle;
+          isSpangle == other.isSpangle &&
+          isDutchPied == other.isDutchPied &&
+          isDominantPied == other.isDominantPied;
 
   @override
   int get hashCode => Object.hash(
@@ -137,7 +143,7 @@ class BudgieColorAppearance {
         Object.hash(
           showPiedPatch, showMantleHighlight, showCarrierAccent,
           hideWingMarkings, showThroatSpots, throatSpotCount,
-          showEyeRing, isSpangle,
+          showEyeRing, isSpangle, isDutchPied, isDominantPied,
         ),
       );
 }

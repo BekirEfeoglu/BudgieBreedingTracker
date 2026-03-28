@@ -10,7 +10,9 @@ import 'package:budgie_breeding_tracker/features/eggs/widgets/egg_status_chip.da
 /// Pumps widget inside ProviderScope + MaterialApp for EggListItem tests.
 Future<void> _pumpEggListItem(WidgetTester tester, Widget widget) async {
   await tester.pumpWidget(
-    ProviderScope(child: MaterialApp(home: Scaffold(body: widget))),
+    ProviderScope(
+      child: MaterialApp(home: Scaffold(body: widget)),
+    ),
   );
 }
 
@@ -79,9 +81,7 @@ void main() {
       expect(find.textContaining('eggs.days_count'), findsOneWidget);
     });
 
-    testWidgets('renders question mark when eggNumber is null', (
-      tester,
-    ) async {
+    testWidgets('renders question mark when eggNumber is null', (tester) async {
       await _pumpEggListItem(
         tester,
         EggListItem(egg: _createEgg(eggNumber: null)),
@@ -166,9 +166,7 @@ void main() {
       expect(find.byType(EggStatusChip), findsOneWidget);
     });
 
-    testWidgets('all EggStatus values render without crashing', (
-      tester,
-    ) async {
+    testWidgets('all EggStatus values render without crashing', (tester) async {
       for (final status in EggStatus.values) {
         final egg = _createEgg(id: 'egg-$status', status: status);
         await _pumpEggListItem(tester, EggListItem(egg: egg));
@@ -234,10 +232,7 @@ void main() {
 
       await _pumpEggListItem(
         tester,
-        EggListItem(
-          egg: _createEgg(),
-          onDelete: () => deleteCalled = true,
-        ),
+        EggListItem(egg: _createEgg(), onDelete: () => deleteCalled = true),
       );
 
       await tester.tap(find.byType(IconButton).first);
@@ -255,11 +250,7 @@ void main() {
     ) async {
       await _pumpEggListItem(
         tester,
-        EggListItem(
-          egg: _createEgg(),
-          onStatusUpdate: () {},
-          onDelete: () {},
-        ),
+        EggListItem(egg: _createEgg(), onStatusUpdate: () {}, onDelete: () {}),
       );
 
       expect(find.byType(IconButton), findsNWidgets(2));
@@ -285,8 +276,7 @@ void main() {
       final iconButton = tester.widget<IconButton>(
         find.byType(IconButton).first,
       );
-      expect(iconButton.tooltip, isNotNull);
-      expect(iconButton.tooltip, isNotEmpty);
+      expect(iconButton.tooltip, 'eggs.update_status');
     });
 
     testWidgets('delete button has tooltip', (tester) async {
@@ -298,8 +288,7 @@ void main() {
       final iconButton = tester.widget<IconButton>(
         find.byType(IconButton).first,
       );
-      expect(iconButton.tooltip, isNotNull);
-      expect(iconButton.tooltip, isNotEmpty);
+      expect(iconButton.tooltip, 'common.delete');
     });
   });
 }

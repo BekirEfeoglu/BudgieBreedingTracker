@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:budgie_breeding_tracker/core/widgets/skeleton_loader.dart';
 import 'package:budgie_breeding_tracker/data/models/statistics_models.dart';
 import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
 import 'package:budgie_breeding_tracker/features/statistics/providers/statistics_trend_providers.dart';
@@ -30,14 +31,15 @@ void main() {
       expect(find.byType(QuickInsightsCard), findsOneWidget);
     });
 
-    testWidgets('shows nothing (SizedBox) while loading', (tester) async {
+    testWidgets('shows skeleton loader while loading', (tester) async {
       await tester.pumpWidget(
         _createSubject(insightsAsync: const AsyncLoading()),
       );
       await tester.pump();
 
-      // Loading → SizedBox.shrink() — no Card shown
-      expect(find.byType(Card), findsNothing);
+      // Loading → skeleton card with SkeletonLoader placeholders
+      expect(find.byType(Card), findsOneWidget);
+      expect(find.byType(SkeletonLoader), findsWidgets);
     });
 
     testWidgets('shows nothing on error', (tester) async {
@@ -88,6 +90,33 @@ void main() {
       await tester.pump();
 
       expect(find.text('statistics.insights_title'), findsOneWidget);
+    });
+
+    testWidgets('skeleton does not show insight text', (tester) async {
+      await tester.pumpWidget(
+        _createSubject(insightsAsync: const AsyncLoading()),
+      );
+      await tester.pump();
+
+      expect(find.byType(SkeletonLoader), findsWidgets);
+      expect(find.text('statistics.insights_title'), findsNothing);
+    });
+
+    testWidgets('data state does not show skeleton', (tester) async {
+      const insights = [
+        QuickInsight(
+          text: 'Active insight',
+          sentiment: InsightSentiment.positive,
+        ),
+      ];
+
+      await tester.pumpWidget(
+        _createSubject(insightsAsync: const AsyncData(insights)),
+      );
+      await tester.pump();
+
+      expect(find.text('Active insight'), findsOneWidget);
+      expect(find.byType(SkeletonLoader), findsNothing);
     });
 
     testWidgets('shows multiple insights', (tester) async {

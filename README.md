@@ -249,6 +249,7 @@ The app can still boot without Supabase credentials, but authentication, sync, a
 | `python scripts/check_l10n_sync.py` | Verify translation key parity |
 | `python scripts/verify_code_quality.py` | Anti-pattern scan (17 categories) |
 | `python scripts/verify_rules.py` | Validate rule claims against codebase |
+| `git config core.hooksPath .githooks` | Enable local pre-commit hook (runs script tests + coverage check before each commit) |
 
 ## Project Structure
 

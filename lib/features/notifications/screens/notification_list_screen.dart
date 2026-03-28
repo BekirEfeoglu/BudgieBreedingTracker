@@ -13,7 +13,9 @@ import 'package:budgie_breeding_tracker/core/widgets/error_state.dart';
 import 'package:budgie_breeding_tracker/data/models/notification_model.dart';
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_service.dart';
 import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
+import 'package:budgie_breeding_tracker/features/notifications/providers/action_feedback_providers.dart';
 import 'package:budgie_breeding_tracker/features/notifications/providers/notification_list_providers.dart';
+import 'package:budgie_breeding_tracker/features/notifications/widgets/notification_action_feedback_section.dart';
 import 'package:budgie_breeding_tracker/features/notifications/widgets/notification_card.dart';
 
 /// Screen showing the user's notification inbox.
@@ -50,17 +52,16 @@ class NotificationListScreen extends ConsumerWidget {
               AppSpacing.lg,
               AppSpacing.xs,
             ),
-            child: Row(
+            child: Wrap(
+              spacing: AppSpacing.sm,
+              runSpacing: AppSpacing.xs,
               children: NotificationFilter.values.map((f) {
                 final isSelected = f == filter;
-                return Padding(
-                  padding: const EdgeInsets.only(right: AppSpacing.sm),
-                  child: ChoiceChip(
-                    label: Text(f.label),
-                    selected: isSelected,
-                    onSelected: (_) =>
-                        ref.read(notificationFilterProvider.notifier).state = f,
-                  ),
+                return ChoiceChip(
+                  label: Text(f.label),
+                  selected: isSelected,
+                  onSelected: (_) =>
+                      ref.read(notificationFilterProvider.notifier).state = f,
                 );
               }).toList(),
             ),
@@ -85,8 +86,10 @@ class NotificationListScreen extends ConsumerWidget {
                   final filtered = ref.watch(
                     filteredNotificationsProvider(allNotifications),
                   );
+                  final feedbacks = ref.watch(actionFeedbackProvider);
+                  final hasFeedbacks = feedbacks.isNotEmpty;
 
-                  if (allNotifications.isEmpty) {
+                  if (allNotifications.isEmpty && !hasFeedbacks) {
                     return EmptyState(
                       icon: const Icon(LucideIcons.bellOff),
                       title: 'notifications.no_notifications'.tr(),
@@ -94,35 +97,45 @@ class NotificationListScreen extends ConsumerWidget {
                     );
                   }
 
-                  if (filtered.isEmpty) {
-                    return EmptyState(
-                      icon: const Icon(LucideIcons.searchX),
-                      title: 'common.no_results'.tr(),
-                      subtitle: 'common.no_results_hint'.tr(),
-                    );
-                  }
-
                   return Center(
                     child: ConstrainedBox(
                       constraints: const BoxConstraints(maxWidth: 800),
-                      child: ListView.builder(
+                      child: ListView(
                         physics: const AlwaysScrollableScrollPhysics(),
                         padding: const EdgeInsets.only(
                           top: AppSpacing.sm,
                           bottom: AppSpacing.xxxl * 2,
                         ),
-                        itemCount: filtered.length,
-                        itemBuilder: (context, index) {
-                          final notification = filtered[index];
-                          return NotificationCard(
-                            key: ValueKey(notification.id),
-                            notification: notification,
-                            onTap: () =>
-                                _onNotificationTap(context, ref, notification),
-                            onDismiss: () =>
-                                _onDelete(context, ref, notification.id),
-                          );
-                        },
+                        children: [
+                          // Action feedbacks section
+                          if (hasFeedbacks) ...[
+                            ActionFeedbacksSection(feedbacks: feedbacks),
+                            if (filtered.isNotEmpty)
+                              const Divider(height: AppSpacing.lg),
+                          ],
+
+                          // Notifications
+                          if (filtered.isEmpty && allNotifications.isNotEmpty)
+                            EmptyState(
+                              icon: const Icon(LucideIcons.searchX),
+                              title: 'common.no_results'.tr(),
+                              subtitle: 'common.no_results_hint'.tr(),
+                            )
+                          else
+                            ...filtered.map(
+                              (notification) => NotificationCard(
+                                key: ValueKey(notification.id),
+                                notification: notification,
+                                onTap: () => _onNotificationTap(
+                                  context,
+                                  ref,
+                                  notification,
+                                ),
+                                onDismiss: () =>
+                                    _onDelete(context, ref, notification.id),
+                              ),
+                            ),
+                        ],
                       ),
                     ),
                   );

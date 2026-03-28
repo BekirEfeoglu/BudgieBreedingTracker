@@ -118,6 +118,87 @@ abstract final class BudgieDetails {
     canvas.restore();
   }
 
+  /// Draw subtle feather texture lines on the body/belly zone.
+  ///
+  /// Very light curved lines suggesting layered breast feathers.
+  /// Only rendered at h >= 56px to avoid clutter at small sizes.
+  static void paintBodyFeatherTexture(
+    Canvas canvas,
+    double w,
+    double h,
+    Color bodyColor,
+  ) {
+    final lightness = HSLColor.fromColor(bodyColor).lightness;
+    // Lighter feather lines on dark bodies, darker on light bodies
+    final lineColor = lightness < 0.5
+        ? Colors.white.withValues(alpha: 0.06)
+        : Colors.black.withValues(alpha: 0.04);
+
+    final paint = Paint()
+      ..color = lineColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = (w * 0.010).clamp(0.5, 1.2)
+      ..strokeCap = StrokeCap.round;
+
+    const lineCount = 5;
+    for (var i = 0; i < lineCount; i++) {
+      final t = (i + 1) / (lineCount + 1);
+
+      // Horizontal curves following belly contour
+      final startX = w * (0.24 + t * 0.08);
+      final startY = h * (0.50 + t * 0.10);
+      final endX = w * (0.58 + t * 0.04);
+      final endY = h * (0.48 + t * 0.12);
+      final ctrlX = w * (0.40 + t * 0.06);
+      final ctrlY = h * (0.46 + t * 0.14);
+
+      final featherPath = Path()
+        ..moveTo(startX, startY)
+        ..quadraticBezierTo(ctrlX, ctrlY, endX, endY);
+
+      canvas.drawPath(featherPath, paint);
+    }
+  }
+
+  /// Draw subtle feather layering on the wing zone.
+  ///
+  /// Adds depth between wing bars, suggesting individual feather rows.
+  static void paintWingFeatherTexture(
+    Canvas canvas,
+    double w,
+    double h,
+    Color wingColor,
+  ) {
+    final lightness = HSLColor.fromColor(wingColor).lightness;
+    final lineColor = lightness < 0.5
+        ? Colors.white.withValues(alpha: 0.05)
+        : Colors.black.withValues(alpha: 0.03);
+
+    final paint = Paint()
+      ..color = lineColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = (w * 0.008).clamp(0.4, 1.0)
+      ..strokeCap = StrokeCap.round;
+
+    const lineCount = 4;
+    for (var i = 0; i < lineCount; i++) {
+      final t = (i + 1) / (lineCount + 1);
+
+      final startX = w * (0.36 + t * 0.14);
+      final startY = h * (0.48 + t * 0.06);
+      final endX = w * (0.52 + t * 0.12);
+      final endY = h * (0.64 + t * 0.08);
+      final ctrlX = w * (0.44 + t * 0.14);
+      final ctrlY = h * (0.54 + t * 0.10);
+
+      final featherPath = Path()
+        ..moveTo(startX, startY)
+        ..quadraticBezierTo(ctrlX, ctrlY, endX, endY);
+
+      canvas.drawPath(featherPath, paint);
+    }
+  }
+
   /// Draw longitudinal stripes along the tail feathers.
   ///
   /// Clipped to the tail shape. Three curved lines following the

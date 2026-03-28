@@ -13,6 +13,7 @@ import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/core/widgets/buttons/primary_button.dart';
 import 'package:budgie_breeding_tracker/features/auth/providers/two_factor_providers.dart';
+import 'package:budgie_breeding_tracker/features/notifications/providers/action_feedback_providers.dart';
 import 'package:budgie_breeding_tracker/features/auth/widgets/otp_input_field.dart';
 
 /// Screen for setting up two-factor authentication (TOTP).
@@ -25,6 +26,9 @@ class TwoFactorSetupScreen extends ConsumerStatefulWidget {
 }
 
 class _TwoFactorSetupScreenState extends ConsumerState<TwoFactorSetupScreen> {
+  static const _maxVerifyAttempts = 5;
+  static const _verifyLockoutDuration = Duration(minutes: 2);
+
   String? _factorId;
   String? _secret;
   String? _qrCode;
@@ -32,6 +36,12 @@ class _TwoFactorSetupScreenState extends ConsumerState<TwoFactorSetupScreen> {
   bool _isVerifying = false;
   String? _error;
   bool _enrollmentComplete = false;
+  int _failedVerifyAttempts = 0;
+  DateTime? _verifyLockoutUntil;
+
+  bool get _isVerifyLockedOut =>
+      _verifyLockoutUntil != null &&
+      DateTime.now().isBefore(_verifyLockoutUntil!);
 
   @override
   void initState() {
@@ -70,6 +80,15 @@ class _TwoFactorSetupScreenState extends ConsumerState<TwoFactorSetupScreen> {
   Future<void> _verifyCode(String code) async {
     if (_factorId == null || _isVerifying) return;
 
+    if (_isVerifyLockedOut) {
+      final remaining =
+          _verifyLockoutUntil!.difference(DateTime.now()).inSeconds;
+      setState(() {
+        _error = 'auth.2fa_too_many_attempts'.tr(args: ['$remaining']);
+      });
+      return;
+    }
+
     setState(() {
       _isVerifying = true;
       _error = null;
@@ -84,16 +103,35 @@ class _TwoFactorSetupScreenState extends ConsumerState<TwoFactorSetupScreen> {
     if (!mounted) return;
 
     if (success) {
+      _failedVerifyAttempts = 0;
+      _verifyLockoutUntil = null;
       setState(() {
         _enrollmentComplete = true;
         _isVerifying = false;
       });
     } else {
+      _failedVerifyAttempts++;
+      if (_failedVerifyAttempts >= _maxVerifyAttempts) {
+        _verifyLockoutUntil = DateTime.now().add(_verifyLockoutDuration);
+      }
       setState(() {
-        _error = 'auth.2fa_invalid_code'.tr();
+        _error = _isVerifyLockedOut
+            ? 'auth.2fa_too_many_attempts'.tr(
+                args: [
+                  '${_verifyLockoutUntil!.difference(DateTime.now()).inSeconds}',
+                ],
+              )
+            : 'auth.2fa_invalid_code'.tr();
         _isVerifying = false;
       });
     }
+  }
+
+  @override
+  void dispose() {
+    _secret = null;
+    _qrCode = null;
+    super.dispose();
   }
 
   @override
@@ -212,9 +250,7 @@ class _TwoFactorSetupScreenState extends ConsumerState<TwoFactorSetupScreen> {
                   TextButton.icon(
                     onPressed: () {
                       Clipboard.setData(ClipboardData(text: _secret!));
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('auth.2fa_key_copied'.tr())),
-                      );
+                      ActionFeedbackService.show('auth.2fa_key_copied'.tr());
                     },
                     icon: const Icon(LucideIcons.copy, size: 16),
                     label: Text('auth.2fa_copy_key'.tr()),

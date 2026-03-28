@@ -6,6 +6,7 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/app_haptics.dart';
 import '../../../core/utils/logger.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
+import 'package:budgie_breeding_tracker/features/notifications/providers/action_feedback_providers.dart';
 import '../../../data/models/profile_model.dart';
 import '../../../data/repositories/repository_providers.dart';
 import '../../auth/providers/auth_providers.dart';
@@ -122,9 +123,7 @@ class _EditProfileSheetState extends ConsumerState<EditProfileSheet> {
       if (mounted) {
         AppHaptics.mediumImpact();
         Navigator.of(context).pop();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('common.saved_successfully'.tr())),
-        );
+        ActionFeedbackService.show('common.saved_successfully'.tr());
       }
     } catch (e) {
       AppLogger.error('[EditProfileSheet] Failed to save profile', e, StackTrace.current);
@@ -133,7 +132,7 @@ class _EditProfileSheetState extends ConsumerState<EditProfileSheet> {
         setState(() => _isLoading = false);
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('common.data_load_error'.tr())));
+        ).showSnackBar(SnackBar(content: Text('errors.save_failed'.tr())));
       }
     }
   }

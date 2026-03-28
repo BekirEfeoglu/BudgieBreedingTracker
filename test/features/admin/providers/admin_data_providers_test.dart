@@ -183,34 +183,4 @@ void main() {
       expect(cap.lastAnalyze, isNull);
     });
   });
-
-  group('Provider existence checks', () {
-    test('adminStatsProvider exists', () {
-      expect(adminStatsProvider, isNotNull);
-    });
-
-    test('adminUsersProvider exists', () {
-      expect(adminUsersProvider, isNotNull);
-    });
-
-    test('adminDatabaseInfoProvider exists', () {
-      expect(adminDatabaseInfoProvider, isNotNull);
-    });
-
-    test('isAdminProvider exists', () {
-      expect(isAdminProvider, isNotNull);
-    });
-
-    test('isFounderProvider exists', () {
-      expect(isFounderProvider, isNotNull);
-    });
-
-    test('serverCapacityProvider exists', () {
-      expect(serverCapacityProvider, isNotNull);
-    });
-
-    test('systemHealthProvider exists', () {
-      expect(systemHealthProvider, isNotNull);
-    });
-  });
 }

@@ -12,6 +12,8 @@ import 'package:budgie_breeding_tracker/data/local/database/dao_providers.dart'
     show conflictHistoryDaoProvider;
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 
+part 'sync_time_helpers.dart';
+
 /// Orchestrates offline-first sync between local Drift DB and Supabase.
 ///
 /// Follows push-then-pull strategy: local changes are pushed first,
@@ -34,12 +36,12 @@ class SyncOrchestrator {
   final SyncPullHandler _pullHandler;
   late final SyncErrorHandler _errorHandler;
 
-  bool _isSyncing = false;
+  Future<SyncResult>? _activeSyncFuture;
   SharedPreferences? _prefs;
   DateTime? _lastForceFullSyncAt;
 
   /// Whether a sync operation is currently in progress.
-  bool get isSyncing => _isSyncing;
+  bool get isSyncing => _activeSyncFuture != null;
 
   /// Interval between automatic full reconciliation runs.
   static const _reconcileInterval = Duration(hours: 6);
@@ -54,9 +56,15 @@ class SyncOrchestrator {
   ///
   /// Returns [SyncResult.alreadySyncing] if a sync is already running.
   /// Updates [isSyncingProvider] and [lastSyncTimeProvider] automatically.
-  Future<SyncResult> fullSync() async {
-    if (_isSyncing) return SyncResult.alreadySyncing;
-    _isSyncing = true;
+  Future<SyncResult> fullSync() {
+    if (_activeSyncFuture != null) return _activeSyncFuture!;
+    _activeSyncFuture = _doFullSync().whenComplete(() {
+      _activeSyncFuture = null;
+    });
+    return _activeSyncFuture!;
+  }
+
+  Future<SyncResult> _doFullSync() async {
     _ref.read(isSyncingProvider.notifier).state = true;
     _ref.read(syncErrorProvider.notifier).state = false;
 
@@ -123,7 +131,6 @@ class SyncOrchestrator {
       _ref.read(syncErrorProvider.notifier).state = true;
       return SyncResult.error;
     } finally {
-      _isSyncing = false;
       _ref.read(isSyncingProvider.notifier).state = false;
     }
   }
@@ -132,18 +139,24 @@ class SyncOrchestrator {
   ///
   /// Removes local records that no longer exist on the server.
   /// Use when the user explicitly requests a full refresh.
-  Future<SyncResult> forceFullSync() async {
-    if (_isSyncing) return SyncResult.alreadySyncing;
+  Future<SyncResult> forceFullSync() {
+    if (_activeSyncFuture != null) return _activeSyncFuture!;
 
     // Throttle rapid consecutive calls
     if (_lastForceFullSyncAt != null &&
         DateTime.now().difference(_lastForceFullSyncAt!) <
             _forceFullSyncCooldown) {
       AppLogger.info('[SyncOrchestrator] Force full sync skipped (cooldown)');
-      return SyncResult.throttled;
+      return Future.value(SyncResult.throttled);
     }
 
-    _isSyncing = true;
+    _activeSyncFuture = _doForceFullSync().whenComplete(() {
+      _activeSyncFuture = null;
+    });
+    return _activeSyncFuture!;
+  }
+
+  Future<SyncResult> _doForceFullSync() async {
     _ref.read(isSyncingProvider.notifier).state = true;
     _ref.read(syncErrorProvider.notifier).state = false;
 
@@ -191,7 +204,6 @@ class SyncOrchestrator {
       _ref.read(syncErrorProvider.notifier).state = true;
       return SyncResult.error;
     } finally {
-      _isSyncing = false;
       _ref.read(isSyncingProvider.notifier).state = false;
     }
   }
@@ -211,80 +223,8 @@ class SyncOrchestrator {
   Future<int> cleanupUnrecoverableErrors(String userId) =>
       _errorHandler.cleanupUnrecoverableErrors(userId);
 
-  /// Processes pending event reminders and notification schedules.
-  ///
-  /// Called after pull to handle any new or existing unsent items.
-  /// Errors are caught and logged — they should not break the sync cycle.
-  Future<void> _processNotifications() async {
-    try {
-      final processor = _ref.read(notificationProcessorProvider);
-      await processor.processAll();
-    } catch (e, st) {
-      AppLogger.warning(
-        '[SyncOrchestrator] Notification processing failed: $e',
-      );
-      Sentry.captureException(e, stackTrace: st);
-    }
-  }
-
-  /// Returns cached SharedPreferences instance.
-  Future<SharedPreferences> _getPrefs() async {
-    return _prefs ??= await SharedPreferences.getInstance();
-  }
-
-  /// Loads persisted last sync timestamp from SharedPreferences.
-  Future<DateTime?> _loadLastSyncTime() async {
-    try {
-      final prefs = await _getPrefs();
-      final value = prefs.getString(AppPreferences.keyLastSyncedAt);
-      if (value == null) return null;
-      return DateTime.tryParse(value);
-    } catch (_) {
-      return null;
-    }
-  }
-
-  /// Persists the last sync timestamp to SharedPreferences.
-  Future<void> _persistLastSyncTime(DateTime time) async {
-    try {
-      final prefs = await _getPrefs();
-      await prefs.setString(
-        AppPreferences.keyLastSyncedAt,
-        time.toIso8601String(),
-      );
-    } catch (e) {
-      AppLogger.warning('[SyncOrchestrator] Failed to persist sync time: $e');
-    }
-  }
-
-  /// Checks whether a full reconciliation is due based on the interval.
-  Future<bool> _isReconcileDue() async {
-    try {
-      final prefs = await _getPrefs();
-      final value = prefs.getString(AppPreferences.keyLastReconciledAt);
-      if (value == null) return true; // Never reconciled
-      final lastReconcile = DateTime.tryParse(value);
-      if (lastReconcile == null) return true;
-      return DateTime.now().difference(lastReconcile) >= _reconcileInterval;
-    } catch (_) {
-      return true;
-    }
-  }
-
-  /// Persists the last reconciliation timestamp.
-  Future<void> _persistLastReconcileTime(DateTime time) async {
-    try {
-      final prefs = await _getPrefs();
-      await prefs.setString(
-        AppPreferences.keyLastReconciledAt,
-        time.toIso8601String(),
-      );
-    } catch (e) {
-      AppLogger.warning(
-        '[SyncOrchestrator] Failed to persist reconcile time: $e',
-      );
-    }
-  }
+  // Timestamp management and notification processing helpers are in
+  // sync_time_helpers.dart (part file)
 }
 
 /// Result of a sync operation.

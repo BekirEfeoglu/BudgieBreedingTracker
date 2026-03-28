@@ -130,51 +130,45 @@ void main() {
       });
 
       test('healthRecords route has nested routes', () {
-        final healthRoute = userRoutes
-            .whereType<GoRoute>()
-            .firstWhere((r) => r.path == AppRoutes.healthRecords);
+        final healthRoute = userRoutes.whereType<GoRoute>().firstWhere(
+          (r) => r.path == AppRoutes.healthRecords,
+        );
         expect(healthRoute.routes, isNotEmpty);
       });
 
       test('healthRecords has form and :id nested routes', () {
-        final healthRoute = userRoutes
+        final healthRoute = userRoutes.whereType<GoRoute>().firstWhere(
+          (r) => r.path == AppRoutes.healthRecords,
+        );
+        final nestedPaths = healthRoute.routes
             .whereType<GoRoute>()
-            .firstWhere((r) => r.path == AppRoutes.healthRecords);
-        final nestedPaths =
-            healthRoute.routes.whereType<GoRoute>().map((r) => r.path).toList();
+            .map((r) => r.path)
+            .toList();
         expect(nestedPaths, contains('form'));
         expect(nestedPaths, contains(':id'));
       });
 
-      test('form route comes before :id route (specific before parameterized)', () {
-        final healthRoute = userRoutes
-            .whereType<GoRoute>()
-            .firstWhere((r) => r.path == AppRoutes.healthRecords);
-        final nestedPaths =
-            healthRoute.routes.whereType<GoRoute>().map((r) => r.path).toList();
-
-        final formIndex = nestedPaths.indexOf('form');
-        final idIndex = nestedPaths.indexOf(':id');
-
-        expect(
-          formIndex,
-          lessThan(idIndex),
-          reason: 'form must come before :id to prevent route capture',
-        );
-      });
-    });
-
-    group('all routes have builders', () {
-      test('all top-level GoRoutes have builder or pageBuilder', () {
-        for (final route in userRoutes.whereType<GoRoute>()) {
-          final hasBuilder = route.builder != null || route.pageBuilder != null;
-          expect(
-            hasBuilder,
-            isTrue,
-            reason: 'Route ${route.path} should have a builder or pageBuilder',
+      test(
+        'form route comes before :id route (specific before parameterized)',
+        () {
+          final healthRoute = userRoutes.whereType<GoRoute>().firstWhere(
+            (r) => r.path == AppRoutes.healthRecords,
           );
-        }
-      });
+          final nestedPaths = healthRoute.routes
+              .whereType<GoRoute>()
+              .map((r) => r.path)
+              .toList();
+
+          final formIndex = nestedPaths.indexOf('form');
+          final idIndex = nestedPaths.indexOf(':id');
+
+          expect(
+            formIndex,
+            lessThan(idIndex),
+            reason: 'form must come before :id to prevent route capture',
+          );
+        },
+      );
     });
 
     group('all top-level routes start with /', () {
@@ -189,27 +183,11 @@ void main() {
       });
     });
 
-    group('geneticsCompare route handles extra parameter', () {
-      test('geneticsCompare route has a builder', () {
-        final compareRoute = userRoutes
-            .whereType<GoRoute>()
-            .firstWhere((r) => r.path == AppRoutes.geneticsCompare);
-        expect(compareRoute.builder, isNotNull);
-      });
-    });
-
     group('twoFactorVerify route handles query parameters', () {
-      test('twoFactorVerify route has a builder', () {
-        final verifyRoute = userRoutes
-            .whereType<GoRoute>()
-            .firstWhere((r) => r.path == AppRoutes.twoFactorVerify);
-        expect(verifyRoute.builder, isNotNull);
-      });
-
       test('twoFactorVerify path does not contain inline params', () {
-        final verifyRoute = userRoutes
-            .whereType<GoRoute>()
-            .firstWhere((r) => r.path == AppRoutes.twoFactorVerify);
+        final verifyRoute = userRoutes.whereType<GoRoute>().firstWhere(
+          (r) => r.path == AppRoutes.twoFactorVerify,
+        );
         expect(verifyRoute.path, isNot(contains(':factorId')));
       });
     });

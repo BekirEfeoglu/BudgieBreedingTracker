@@ -19,6 +19,7 @@ import 'package:budgie_breeding_tracker/features/birds/providers/bird_providers.
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_providers.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_detail_providers.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_form_providers.dart';
+import 'package:budgie_breeding_tracker/core/widgets/unsaved_changes_scope.dart';
 import 'package:budgie_breeding_tracker/features/breeding/widgets/bird_selector_field.dart';
 import 'package:budgie_breeding_tracker/router/route_names.dart';
 
@@ -42,6 +43,16 @@ class _BreedingFormScreenState extends ConsumerState<BreedingFormScreen> {
   bool _isEdit = false;
   bool _isLoadingExistingPair = false;
   BreedingPair? _existingPair;
+  bool _savedSuccessfully = false;
+
+  bool get _isDirty {
+    if (_savedSuccessfully) return false;
+    if (_isEdit) return true;
+    return _maleId != null ||
+        _femaleId != null ||
+        _cageController.text.isNotEmpty ||
+        _notesController.text.isNotEmpty;
+  }
 
   @override
   void initState() {
@@ -100,6 +111,7 @@ class _BreedingFormScreenState extends ConsumerState<BreedingFormScreen> {
 
     ref.listen<BreedingFormState>(breedingFormStateProvider, (_, state) {
       if (state.isSuccess) {
+        _savedSuccessfully = true;
         ref.read(breedingFormStateProvider.notifier).reset();
         context.pop();
       }
@@ -132,15 +144,17 @@ class _BreedingFormScreenState extends ConsumerState<BreedingFormScreen> {
       }
     });
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          _isEdit
-              ? 'breeding.edit_breeding'.tr()
-              : 'breeding.new_breeding'.tr(),
+    return UnsavedChangesScope(
+      isDirty: _isDirty,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(
+            _isEdit
+                ? 'breeding.edit_breeding'.tr()
+                : 'breeding.new_breeding'.tr(),
+          ),
         ),
-      ),
-      body: birdsAsync.when(
+        body: birdsAsync.when(
         loading: () => const LoadingState(),
         error: (_, __) => ErrorState(
           message: 'common.data_load_error'.tr(),
@@ -240,6 +254,7 @@ class _BreedingFormScreenState extends ConsumerState<BreedingFormScreen> {
             ),
           );
         },
+      ),
       ),
     );
   }

@@ -68,15 +68,17 @@ void main() {
     testWidgets('fires onEditEvent callback', (tester) async {
       Event? editedEvent;
       final events = [makeEvent('e1', 'Veteriner')];
+      final event = events.single;
       await tester.pumpWidget(
         buildSliver(events: events, onEditEvent: (e) => editedEvent = e),
       );
       final iconButtons = find.byType(IconButton);
-      if (tester.widgetList(iconButtons).isNotEmpty) {
-        await tester.tap(iconButtons.first);
-      }
-      expect(find.byType(CalendarEventListSliver), findsOneWidget);
-      expect(editedEvent, anyOf(isNull, isNotNull));
+      expect(iconButtons, findsNWidgets(2));
+
+      await tester.tap(iconButtons.first);
+      await tester.pump();
+
+      expect(editedEvent, same(event));
     });
 
     testWidgets('renders in CustomScrollView without crash', (tester) async {

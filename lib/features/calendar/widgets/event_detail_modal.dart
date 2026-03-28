@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:budgie_breeding_tracker/core/utils/app_haptics.dart';
+import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/enums/event_enums.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
@@ -11,6 +12,7 @@ import 'package:budgie_breeding_tracker/core/widgets/buttons/primary_button.dart
 import 'package:budgie_breeding_tracker/data/models/event_model.dart';
 import 'package:budgie_breeding_tracker/features/calendar/widgets/event_card.dart';
 import 'package:budgie_breeding_tracker/features/chicks/providers/chick_providers.dart';
+import 'package:budgie_breeding_tracker/features/notifications/providers/action_feedback_providers.dart';
 
 /// Shows an event detail bottom sheet.
 Future<void> showEventDetailModal(
@@ -198,14 +200,21 @@ class _EventDetailContent extends ConsumerWidget {
       label: 'common.complete'.tr(),
       icon: const Icon(LucideIcons.checkCircle, size: 18),
       onPressed: () async {
-        await ref
-            .read(bandingActionProvider.notifier)
-            .markBandingComplete(event.chickId!);
-        if (context.mounted) {
-          Navigator.pop(context);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('chicks.banding_success'.tr())),
-          );
+        try {
+          await ref
+              .read(bandingActionProvider.notifier)
+              .markBandingComplete(event.chickId!);
+          if (context.mounted) {
+            Navigator.pop(context);
+            ActionFeedbackService.show('chicks.banding_success'.tr());
+          }
+        } catch (e, st) {
+          AppLogger.error('Banding action failed', e, st);
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('common.data_load_error'.tr())),
+            );
+          }
         }
       },
     );

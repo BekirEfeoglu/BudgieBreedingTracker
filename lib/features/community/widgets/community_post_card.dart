@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 
 import '../../../core/enums/community_enums.dart';
+import '../../notifications/providers/action_feedback_providers.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/logger.dart';
 import '../../../core/widgets/dialogs/confirm_dialog.dart';
@@ -162,7 +163,7 @@ class CommunityPostCard extends ConsumerWidget {
     );
   }
 
-  void _handleDelete(BuildContext context, WidgetRef ref) async {
+  Future<void> _handleDelete(BuildContext context, WidgetRef ref) async {
     final confirmed = await showConfirmDialog(
       context,
       title: 'community.delete_post'.tr(),
@@ -174,7 +175,7 @@ class CommunityPostCard extends ConsumerWidget {
     ref.read(postDeleteProvider.notifier).deletePost(post.id);
   }
 
-  void _handleReport(BuildContext context, WidgetRef ref) async {
+  Future<void> _handleReport(BuildContext context, WidgetRef ref) async {
     final reason = await showCommunityReportDialog(
       context,
       title: 'community.report_post'.tr(),
@@ -191,9 +192,7 @@ class CommunityPostCard extends ConsumerWidget {
       );
       ref.read(communityFeedProvider.notifier).removePost(post.id);
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('community.report_submitted'.tr())),
-        );
+        ActionFeedbackService.show('community.report_submitted'.tr());
       }
     } catch (e, st) {
       AppLogger.error('CommunityPostCard._handleReport', e, st);
@@ -206,7 +205,7 @@ class CommunityPostCard extends ConsumerWidget {
     }
   }
 
-  void _handleBlock(BuildContext context, WidgetRef ref) async {
+  Future<void> _handleBlock(BuildContext context, WidgetRef ref) async {
     final confirmed = await showConfirmDialog(
       context,
       title: 'community.block_user_confirm'.tr(),
@@ -217,9 +216,7 @@ class CommunityPostCard extends ConsumerWidget {
     if (confirmed != true || !context.mounted) return;
     await ref.read(blockedUsersProvider.notifier).block(post.userId);
     if (context.mounted) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('community.user_blocked'.tr())));
+      ActionFeedbackService.show('community.user_blocked'.tr());
     }
   }
 

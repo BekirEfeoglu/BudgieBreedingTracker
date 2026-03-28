@@ -8,8 +8,8 @@ import 'package:budgie_breeding_tracker/domain/services/genetics/mendelian_calcu
 import 'package:budgie_breeding_tracker/features/genetics/providers/genetics_providers.dart';
 import 'package:budgie_breeding_tracker/features/genetics/widgets/genetic_charts.dart';
 import 'package:budgie_breeding_tracker/features/genetics/widgets/epistasis_interactions_card.dart';
-import 'package:budgie_breeding_tracker/features/genetics/widgets/grouped_results_list.dart';
 import 'package:budgie_breeding_tracker/features/genetics/widgets/lethal_warning.dart';
+import 'package:budgie_breeding_tracker/features/genetics/widgets/offspring_prediction.dart';
 import 'package:budgie_breeding_tracker/features/genetics/widgets/dihybrid_punnett_section.dart';
 import 'package:budgie_breeding_tracker/features/genetics/widgets/punnett_square.dart';
 import 'package:budgie_breeding_tracker/features/genetics/widgets/results_summary_banner.dart';
@@ -65,6 +65,8 @@ class GeneticsResultsStep extends ConsumerWidget {
           showSexSpecific: showSexSpecific,
           showGenotype: showGenotype,
           activeFilter: activeFilter,
+          totalResultCount: results.length,
+          filteredResultCount: filteredResults.length,
           onToggleSex: (value) {
             ref.read(showSexSpecificProvider.notifier).state = value;
           },
@@ -77,77 +79,109 @@ class GeneticsResultsStep extends ConsumerWidget {
         ),
         const Divider(height: 1),
         Expanded(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.only(bottom: AppSpacing.xxxl * 2),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: AppSpacing.sm),
-                Padding(
-                  padding: AppSpacing.screenPadding,
-                  child: ResultsSummaryBanner(results: results),
+          child: CustomScrollView(
+            slivers: [
+              // Summary banner
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.only(top: AppSpacing.sm),
+                  child: Padding(
+                    padding: AppSpacing.screenPadding,
+                    child: ResultsSummaryBanner(results: results),
+                  ),
                 ),
-                if (lethalAnalysis != null &&
-                    lethalAnalysis.hasWarnings) ...[
-                  const SizedBox(height: AppSpacing.sm),
-                  Padding(
-                    padding: AppSpacing.screenPadding,
-                    child: LethalWarning(analysis: lethalAnalysis),
-                  ),
-                ],
-                if (epistasisInteractions.isNotEmpty) ...[
-                  const SizedBox(height: AppSpacing.sm),
-                  Padding(
-                    padding: AppSpacing.screenPadding,
-                    child: EpistasisInteractionsCard(
-                      interactions: epistasisInteractions,
-                    ),
-                  ),
-                ],
-                const SizedBox(height: AppSpacing.sm),
-                Padding(
-                  padding: AppSpacing.screenPadding,
-                  child: showSexSpecific
-                      ? SexSpecificResults(
-                          results: filteredResults,
-                          showGenotype: showGenotype,
-                        )
-                      : GroupedResultsList(
-                          results: filteredResults,
-                          showGenotype: showGenotype,
-                        ),
-                ),
-                const SizedBox(height: AppSpacing.lg),
-                if (chartData.isNotEmpty)
-                  Padding(
-                    padding: AppSpacing.screenPadding,
-                    child: OffspringProbabilityBarChart(
-                      data: _localizeChartData(chartData, context),
-                      title: 'genetics.probability_chart'.tr(),
-                    ),
-                  ),
-                const SizedBox(height: AppSpacing.lg),
-                if (punnett != null) ...[
-                  if (availableLoci.length > 1)
-                    Padding(
+              ),
+              // Lethal warning
+              if (lethalAnalysis != null &&
+                  lethalAnalysis.hasWarnings)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: AppSpacing.sm),
+                    child: Padding(
                       padding: AppSpacing.screenPadding,
-                      child: PunnettLocusSelector(
-                        availableLoci: availableLoci,
+                      child: LethalWarning(analysis: lethalAnalysis),
+                    ),
+                  ),
+                ),
+              // Epistasis interactions
+              if (epistasisInteractions.isNotEmpty)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: AppSpacing.sm),
+                    child: Padding(
+                      padding: AppSpacing.screenPadding,
+                      child: EpistasisInteractionsCard(
+                        interactions: epistasisInteractions,
                       ),
                     ),
-                  Padding(
+                  ),
+                ),
+              // Results list — sex-specific uses box adapter (has "show more"),
+              // grouped list uses SliverList for true lazy rendering
+              const SliverToBoxAdapter(
+                child: SizedBox(height: AppSpacing.sm),
+              ),
+              if (showSexSpecific)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: AppSpacing.screenPadding,
+                    child: SexSpecificResults(
+                      results: filteredResults,
+                      showGenotype: showGenotype,
+                    ),
+                  ),
+                )
+              else
+                ..._buildGroupedSlivers(filteredResults, showGenotype),
+              // Chart
+              if (chartData.isNotEmpty)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: AppSpacing.lg),
+                    child: Padding(
+                      padding: AppSpacing.screenPadding,
+                      child: OffspringProbabilityBarChart(
+                        data: _localizeChartData(chartData, context),
+                        title: 'genetics.probability_chart'.tr(),
+                      ),
+                    ),
+                  ),
+                ),
+              // Punnett square
+              if (punnett != null) ...[
+                if (availableLoci.length > 1)
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: AppSpacing.lg),
+                      child: Padding(
+                        padding: AppSpacing.screenPadding,
+                        child: PunnettLocusSelector(
+                          availableLoci: availableLoci,
+                        ),
+                      ),
+                    ),
+                  ),
+                SliverToBoxAdapter(
+                  child: Padding(
                     padding: AppSpacing.screenPadding,
                     child: PunnettSquareWidget(data: punnett),
                   ),
-                  if (availableLoci.length >= 2) ...[
-                    const SizedBox(height: AppSpacing.lg),
-                    DihybridPunnettSection(
-                      availableLoci: availableLoci,
+                ),
+                if (availableLoci.length >= 2)
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: AppSpacing.lg),
+                      child: DihybridPunnettSection(
+                        availableLoci: availableLoci,
+                      ),
                     ),
-                  ],
-                ],
+                  ),
               ],
-            ),
+              // Bottom padding for FAB clearance
+              const SliverToBoxAdapter(
+                child: SizedBox(height: AppSpacing.xxxl * 2),
+              ),
+            ],
           ),
         ),
       ],

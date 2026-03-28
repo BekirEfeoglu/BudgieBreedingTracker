@@ -130,13 +130,11 @@ void main() {
       );
       // EventCard shows IconButtons for edit/delete
       final iconButtons = find.byType(IconButton);
-      if (tester.widgetList(iconButtons).isNotEmpty) {
-        await tester.tap(iconButtons.first);
-        // editedEvent may or may not be set depending on which button was tapped
-      }
-      // Widget renders without crash
-      expect(find.byType(CalendarDayView), findsOneWidget);
-      expect(editedEvent, anyOf(isNull, isNotNull));
+      expect(iconButtons, findsNWidgets(2));
+      await tester.tap(iconButtons.first);
+      await tester.pump();
+
+      expect(editedEvent, same(event));
     });
   });
 }

@@ -218,25 +218,33 @@ class _ProfileStatsRow extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        _AnimatedStatItem(
-          count: stats.totalBirds,
-          label: 'profile.total_birds_stat'.tr(),
-          color: theme.colorScheme.primary,
+        Expanded(
+          child: _AnimatedStatItem(
+            count: stats.totalBirds,
+            label: 'profile.total_birds_stat'.tr(),
+            color: theme.colorScheme.primary,
+          ),
         ),
-        _AnimatedStatItem(
-          count: stats.totalPairs,
-          label: 'profile.total_pairs_stat'.tr(),
-          color: AppColors.success,
+        Expanded(
+          child: _AnimatedStatItem(
+            count: stats.totalPairs,
+            label: 'profile.total_pairs_stat'.tr(),
+            color: AppColors.success,
+          ),
         ),
-        _AnimatedStatItem(
-          count: stats.totalEggs,
-          label: 'profile.total_eggs_stat'.tr(),
-          color: AppColors.info,
+        Expanded(
+          child: _AnimatedStatItem(
+            count: stats.totalEggs,
+            label: 'profile.total_eggs_stat'.tr(),
+            color: AppColors.info,
+          ),
         ),
-        _AnimatedStatItem(
-          count: stats.totalChicks,
-          label: 'profile.total_chicks_stat'.tr(),
-          color: AppColors.warning,
+        Expanded(
+          child: _AnimatedStatItem(
+            count: stats.totalChicks,
+            label: 'profile.total_chicks_stat'.tr(),
+            color: AppColors.warning,
+          ),
         ),
       ],
     );
@@ -279,6 +287,9 @@ class _AnimatedStatItem extends StatelessWidget {
           const SizedBox(height: 2),
           Text(
             label,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
             style: theme.textTheme.labelSmall?.copyWith(
               color: theme.colorScheme.onSurfaceVariant,
             ),

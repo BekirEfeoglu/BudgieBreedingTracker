@@ -9,6 +9,7 @@ import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
 import 'package:budgie_breeding_tracker/core/enums/photo_enums.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
+import 'package:budgie_breeding_tracker/features/notifications/providers/action_feedback_providers.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/core/widgets/dialogs/confirm_dialog.dart';
 import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
@@ -139,9 +140,7 @@ class _BirdDetailPhotosState extends ConsumerState<BirdDetailPhotos> {
     try {
       await photoRepo.remove(photo.id);
       if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('birds.photo_deleted'.tr())));
+        ActionFeedbackService.show('birds.photo_deleted'.tr());
       }
     } catch (e) {
       AppLogger.error('[BirdDetailPhotos]', e, StackTrace.current);
@@ -177,6 +176,7 @@ class _BirdDetailPhotosState extends ConsumerState<BirdDetailPhotos> {
     }
 
     if (picked == null) return;
+    if (!mounted) return;
 
     setState(() => _isUploading = true);
 

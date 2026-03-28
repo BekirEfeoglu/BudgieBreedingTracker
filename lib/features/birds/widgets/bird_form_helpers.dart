@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/features/birds/providers/bird_form_providers.dart';
+import 'package:budgie_breeding_tracker/features/notifications/providers/action_feedback_providers.dart';
 import 'package:budgie_breeding_tracker/router/route_names.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/mutation_database.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/parent_genotype.dart';
@@ -146,19 +147,22 @@ void handleBirdFormSuccess(
   BuildContext context, {
   required int? remainingBirds,
 }) {
-  final snackBar =
-      (remainingBirds != null && remainingBirds <= 5 && remainingBirds > 0)
-      ? SnackBar(
-          content: Text(
-            'premium.limit_approaching_birds'.tr(args: ['$remainingBirds']),
-          ),
-          action: SnackBarAction(
-            label: 'premium.try_free_trial'.tr(),
-            onPressed: () => context.push(AppRoutes.premium),
-          ),
-        )
-      : SnackBar(content: Text('common.saved_successfully'.tr()));
-  ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  if (!context.mounted) return;
+  if (remainingBirds != null && remainingBirds <= 5 && remainingBirds > 0) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'premium.limit_approaching_birds'.tr(args: ['$remainingBirds']),
+        ),
+        action: SnackBarAction(
+          label: 'premium.try_free_trial'.tr(),
+          onPressed: () => context.push(AppRoutes.premium),
+        ),
+      ),
+    );
+  } else {
+    ActionFeedbackService.show('common.saved_successfully'.tr());
+  }
   context.pop();
 }
 

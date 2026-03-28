@@ -31,23 +31,37 @@ void main() {
     ) async {
       await pumpDialog(tester);
 
-      await tester.enterText(find.byType(TextField), 'wrong text');
+      await tester.enterText(find.byType(TextField).first, 'wrong text');
       await tester.pump();
 
       final button = findDeleteButton(tester);
       expect(button.onPressed, isNull);
     });
 
-    testWidgets('delete button enables when DELETE is entered', (
+    testWidgets('delete button enables when DELETE and password are entered', (
       tester,
     ) async {
       await pumpDialog(tester);
 
-      await tester.enterText(find.byType(TextField), 'DELETE');
+      final textFields = find.byType(TextField);
+      await tester.enterText(textFields.first, 'DELETE');
+      await tester.enterText(textFields.last, 'password123');
       await tester.pump();
 
       final button = findDeleteButton(tester);
       expect(button.onPressed, isNotNull);
+    });
+
+    testWidgets('delete button stays disabled without password', (
+      tester,
+    ) async {
+      await pumpDialog(tester);
+
+      await tester.enterText(find.byType(TextField).first, 'DELETE');
+      await tester.pump();
+
+      final button = findDeleteButton(tester);
+      expect(button.onPressed, isNull);
     });
 
     testWidgets('delete button enables with lowercase delete', (
@@ -55,7 +69,9 @@ void main() {
     ) async {
       await pumpDialog(tester);
 
-      await tester.enterText(find.byType(TextField), 'delete');
+      final textFields = find.byType(TextField);
+      await tester.enterText(textFields.first, 'delete');
+      await tester.enterText(textFields.last, 'pass');
       await tester.pump();
 
       final button = findDeleteButton(tester);
@@ -65,7 +81,9 @@ void main() {
     testWidgets('delete button enables with mixed case', (tester) async {
       await pumpDialog(tester);
 
-      await tester.enterText(find.byType(TextField), 'Delete');
+      final textFields = find.byType(TextField);
+      await tester.enterText(textFields.first, 'Delete');
+      await tester.enterText(textFields.last, 'pass');
       await tester.pump();
 
       final button = findDeleteButton(tester);
@@ -75,15 +93,17 @@ void main() {
     testWidgets('leading/trailing whitespace is trimmed', (tester) async {
       await pumpDialog(tester);
 
-      await tester.enterText(find.byType(TextField), '  DELETE  ');
+      final textFields = find.byType(TextField);
+      await tester.enterText(textFields.first, '  DELETE  ');
+      await tester.enterText(textFields.last, 'pass');
       await tester.pump();
 
       final button = findDeleteButton(tester);
       expect(button.onPressed, isNotNull);
     });
 
-    testWidgets('cancel returns false', (tester) async {
-      bool? dialogResult;
+    testWidgets('cancel returns null', (tester) async {
+      String? dialogResult = 'sentinel';
 
       await pumpLocalizedApp(
         tester,
@@ -109,11 +129,11 @@ void main() {
       await tester.tap(find.text('common.cancel'));
       await tester.pumpAndSettle();
 
-      expect(dialogResult, isFalse);
+      expect(dialogResult, isNull);
     });
 
-    testWidgets('confirm returns true when phrase is entered', (tester) async {
-      bool? dialogResult;
+    testWidgets('confirm returns password when phrase and password entered', (tester) async {
+      String? dialogResult;
 
       await pumpLocalizedApp(
         tester,
@@ -135,8 +155,11 @@ void main() {
       await tester.tap(find.text('open'));
       await tester.pumpAndSettle();
 
-      // Enter confirmation phrase (language-neutral: DELETE)
-      await tester.enterText(find.byType(TextField), 'DELETE');
+      // Enter confirmation phrase and password
+      final textFields = find.byType(TextField);
+      await tester.enterText(textFields.first, 'DELETE');
+      await tester.pump();
+      await tester.enterText(textFields.last, 'myPassword123!');
       await tester.pump();
 
       // Tap delete button
@@ -145,7 +168,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(dialogResult, isTrue);
+      expect(dialogResult, equals('myPassword123!'));
     });
   });
 }

@@ -281,6 +281,11 @@ abstract final class BudgieColorResolver {
       hasTexasClearbody: hasTexasClearbody, body: body,
     );
 
+    final hasDutchPied =
+        ids.contains('dutch_pied') || lower.contains('dutch pied');
+    final hasDominantPied =
+        ids.contains('dominant_pied') || lower.contains('dominant pied');
+
     return BudgieColorAppearance(
       bodyColor: body, maskColor: mask,
       wingMarkingColor: wingMarkings, wingFillColor: wingFill,
@@ -294,6 +299,8 @@ abstract final class BudgieColorResolver {
       showPiedPatch: showPiedPatch, showMantleHighlight: showMantleHighlight,
       showCarrierAccent: showCarrierAccent, hideWingMarkings: hideWingMarkings,
       isSpangle: hasSpangle && !isDoubleFactorSpangle,
+      isDutchPied: hasDutchPied,
+      isDominantPied: hasDominantPied,
     );
   }
 }

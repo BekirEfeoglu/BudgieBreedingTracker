@@ -126,30 +126,29 @@ void main() {
 
       container.read(fatherGenotypeProvider.notifier).state = ParentGenotype(
         gender: BirdGender.male,
-        mutations: {
-          'blue': AlleleState.visual,
-          'opaline': AlleleState.visual,
-        },
+        mutations: {'blue': AlleleState.visual, 'opaline': AlleleState.visual},
       );
       container.read(selectedPunnettLocusProvider.notifier).state = 'opaline';
 
       expect(container.read(effectivePunnettLocusProvider), 'opaline');
     });
 
-    test('falls back to first available locus when selected is not in list',
-        () {
-      final container = ProviderContainer();
-      addTearDown(container.dispose);
+    test(
+      'falls back to first available locus when selected is not in list',
+      () {
+        final container = ProviderContainer();
+        addTearDown(container.dispose);
 
-      container.read(fatherGenotypeProvider.notifier).state = ParentGenotype(
-        gender: BirdGender.male,
-        mutations: {'blue': AlleleState.visual},
-      );
-      container.read(selectedPunnettLocusProvider.notifier).state =
-          'nonexistent';
+        container.read(fatherGenotypeProvider.notifier).state = ParentGenotype(
+          gender: BirdGender.male,
+          mutations: {'blue': AlleleState.visual},
+        );
+        container.read(selectedPunnettLocusProvider.notifier).state =
+            'nonexistent';
 
-      expect(container.read(effectivePunnettLocusProvider), 'blue_series');
-    });
+        expect(container.read(effectivePunnettLocusProvider), 'blue_series');
+      },
+    );
 
     test('falls back to first when selected locus is null', () {
       final container = ProviderContainer();
@@ -164,30 +163,32 @@ void main() {
       expect(container.read(effectivePunnettLocusProvider), 'blue_series');
     });
 
-    test('updates when parent genotype changes and selected becomes invalid',
-        () {
-      final container = ProviderContainer();
-      addTearDown(container.dispose);
+    test(
+      'updates when parent genotype changes and selected becomes invalid',
+      () {
+        final container = ProviderContainer();
+        addTearDown(container.dispose);
 
-      container.read(fatherGenotypeProvider.notifier).state = ParentGenotype(
-        gender: BirdGender.male,
-        mutations: {
-          'blue': AlleleState.visual,
-          'opaline': AlleleState.visual,
-        },
-      );
-      container.read(selectedPunnettLocusProvider.notifier).state = 'opaline';
-      expect(container.read(effectivePunnettLocusProvider), 'opaline');
+        container.read(fatherGenotypeProvider.notifier).state = ParentGenotype(
+          gender: BirdGender.male,
+          mutations: {
+            'blue': AlleleState.visual,
+            'opaline': AlleleState.visual,
+          },
+        );
+        container.read(selectedPunnettLocusProvider.notifier).state = 'opaline';
+        expect(container.read(effectivePunnettLocusProvider), 'opaline');
 
-      // Remove opaline from father — now only blue is available
-      container.read(fatherGenotypeProvider.notifier).state = ParentGenotype(
-        gender: BirdGender.male,
-        mutations: {'blue': AlleleState.visual},
-      );
+        // Remove opaline from father — now only blue is available
+        container.read(fatherGenotypeProvider.notifier).state = ParentGenotype(
+          gender: BirdGender.male,
+          mutations: {'blue': AlleleState.visual},
+        );
 
-      // Should fall back since opaline is no longer available
-      expect(container.read(effectivePunnettLocusProvider), 'blue_series');
-    });
+        // Should fall back since opaline is no longer available
+        expect(container.read(effectivePunnettLocusProvider), 'blue_series');
+      },
+    );
   });
 
   group('punnettSquareProvider', () {
@@ -219,9 +220,8 @@ void main() {
         mutations: {'blue': AlleleState.carrier},
       );
 
-      final square = container.read(punnettSquareProvider);
-      expect(square, isNotNull);
-      expect(square!.cells, isNotEmpty);
+      final square = container.read(punnettSquareProvider)!;
+      expect(square.cells, isNotEmpty);
       expect(square.mutationName, isNotEmpty);
       expect(square.fatherAlleles, isNotEmpty);
       expect(square.motherAlleles, isNotEmpty);
@@ -233,29 +233,21 @@ void main() {
 
       container.read(fatherGenotypeProvider.notifier).state = ParentGenotype(
         gender: BirdGender.male,
-        mutations: {
-          'blue': AlleleState.visual,
-          'opaline': AlleleState.visual,
-        },
+        mutations: {'blue': AlleleState.visual, 'opaline': AlleleState.visual},
       );
       container.read(motherGenotypeProvider.notifier).state = ParentGenotype(
         gender: BirdGender.female,
-        mutations: {
-          'blue': AlleleState.carrier,
-          'opaline': AlleleState.visual,
-        },
+        mutations: {'blue': AlleleState.carrier, 'opaline': AlleleState.visual},
       );
 
       container.read(selectedPunnettLocusProvider.notifier).state =
           'blue_series';
-      final squareBlue = container.read(punnettSquareProvider);
+      final squareBlue = container.read(punnettSquareProvider)!;
 
       container.read(selectedPunnettLocusProvider.notifier).state = 'opaline';
-      final squareOpaline = container.read(punnettSquareProvider);
+      final squareOpaline = container.read(punnettSquareProvider)!;
 
-      expect(squareBlue, isNotNull);
-      expect(squareOpaline, isNotNull);
-      expect(squareBlue!.mutationName, isNot(squareOpaline!.mutationName));
+      expect(squareBlue.mutationName, isNot(squareOpaline.mutationName));
     });
   });
 
@@ -290,10 +282,7 @@ void main() {
 
       container.read(fatherGenotypeProvider.notifier).state = ParentGenotype(
         gender: BirdGender.male,
-        mutations: {
-          'blue': AlleleState.visual,
-          'opaline': AlleleState.visual,
-        },
+        mutations: {'blue': AlleleState.visual, 'opaline': AlleleState.visual},
       );
       // locus2 is null by default
       expect(container.read(dihybridPunnettSquareProvider), isNull);
@@ -328,32 +317,34 @@ void main() {
       expect(container.read(dihybridPunnettSquareProvider), isNull);
     });
 
-    test('builds dihybrid square when two valid distinct loci are selected',
-        () {
-      final container = ProviderContainer();
-      addTearDown(container.dispose);
+    test(
+      'builds dihybrid square when two valid distinct loci are selected',
+      () {
+        final container = ProviderContainer();
+        addTearDown(container.dispose);
 
-      container.read(fatherGenotypeProvider.notifier).state = ParentGenotype(
-        gender: BirdGender.male,
-        mutations: {
-          'blue': AlleleState.visual,
-          'opaline': AlleleState.visual,
-        },
-      );
-      container.read(motherGenotypeProvider.notifier).state = ParentGenotype(
-        gender: BirdGender.female,
-        mutations: {
-          'blue': AlleleState.carrier,
-          'opaline': AlleleState.visual,
-        },
-      );
+        container.read(fatherGenotypeProvider.notifier).state = ParentGenotype(
+          gender: BirdGender.male,
+          mutations: {
+            'blue': AlleleState.visual,
+            'opaline': AlleleState.visual,
+          },
+        );
+        container.read(motherGenotypeProvider.notifier).state = ParentGenotype(
+          gender: BirdGender.female,
+          mutations: {
+            'blue': AlleleState.carrier,
+            'opaline': AlleleState.visual,
+          },
+        );
 
-      // effectivePunnettLocus will be blue_series (first sorted)
-      container.read(selectedPunnettLocus2Provider.notifier).state = 'opaline';
+        // effectivePunnettLocus will be blue_series (first sorted)
+        container.read(selectedPunnettLocus2Provider.notifier).state =
+            'opaline';
 
-      final dihybrid = container.read(dihybridPunnettSquareProvider);
-      expect(dihybrid, isNotNull);
-      expect(dihybrid!.cells, isNotEmpty);
-    });
+        final dihybrid = container.read(dihybridPunnettSquareProvider)!;
+        expect(dihybrid.cells, isNotEmpty);
+      },
+    );
   });
 }

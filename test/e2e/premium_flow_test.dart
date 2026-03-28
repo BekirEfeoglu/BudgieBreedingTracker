@@ -51,6 +51,7 @@ void main() {
       (tester) async {
         final mockPurchaseService = MockPurchaseService();
         final annualPackage = _annualPackage();
+        when(() => mockPurchaseService.isInitialized).thenReturn(false);
         when(
           () => mockPurchaseService.initialize(
             apiKey: any(named: 'apiKey'),
@@ -109,6 +110,7 @@ void main() {
         final mockPurchaseService = MockPurchaseService();
         final annualPackage = _annualPackage();
 
+        when(() => mockPurchaseService.isInitialized).thenReturn(false);
         when(
           () => mockPurchaseService.initialize(
             apiKey: any(named: 'apiKey'),
@@ -153,6 +155,7 @@ void main() {
         SharedPreferences.setMockInitialValues(<String, Object>{});
         final mockPurchaseService = MockPurchaseService();
 
+        when(() => mockPurchaseService.isInitialized).thenReturn(false);
         when(
           () => mockPurchaseService.initialize(
             apiKey: any(named: 'apiKey'),

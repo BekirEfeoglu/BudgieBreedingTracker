@@ -20,9 +20,8 @@ void main() {
       });
       await prefs.setString(pendingSyncKey(userId), data);
 
-      final raw = prefs.getString(pendingSyncKey(userId));
-      expect(raw, isNotNull);
-      final map = jsonDecode(raw!) as Map<String, dynamic>;
+      final raw = prefs.getString(pendingSyncKey(userId))!;
+      final map = jsonDecode(raw) as Map<String, dynamic>;
       expect(map['isPremium'], true);
       expect(map['retryCount'], 0);
     });
@@ -46,9 +45,9 @@ void main() {
       });
       await prefs.setString(pendingSyncKey(userId), updated);
 
-      final result = jsonDecode(
-        prefs.getString(pendingSyncKey(userId))!,
-      ) as Map<String, dynamic>;
+      final result =
+          jsonDecode(prefs.getString(pendingSyncKey(userId))!)
+              as Map<String, dynamic>;
       expect(result['retryCount'], 2);
     });
 

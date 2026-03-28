@@ -58,7 +58,6 @@ void main() {
       );
       await tester.pump();
 
-      expect(tester.takeException(), isNull);
       expect(find.text('admin.quick_actions'), findsOneWidget);
     });
 

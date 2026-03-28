@@ -91,6 +91,9 @@ mixin SyncableRepository<T> on BaseRepository<T> {
   }
 
   /// Marks a record as sync error with incremented retry count.
+  ///
+  /// If no existing SyncMetadata is found, creates a new error entry
+  /// instead of silently dropping the error.
   Future<void> markError(String recordId, String userId, String message) async {
     final existing = await syncDao.getByRecord(syncTableName, recordId);
     if (existing != null) {
@@ -99,6 +102,19 @@ mixin SyncableRepository<T> on BaseRepository<T> {
           status: SyncStatus.error,
           errorMessage: message,
           retryCount: (existing.retryCount ?? 0) + 1,
+        ),
+      );
+    } else {
+      await syncDao.insertItem(
+        SyncMetadata(
+          id: _uuid.v4(),
+          table: syncTableName,
+          userId: userId,
+          status: SyncStatus.error,
+          recordId: recordId,
+          errorMessage: message,
+          retryCount: 1,
+          createdAt: DateTime.now(),
         ),
       );
     }

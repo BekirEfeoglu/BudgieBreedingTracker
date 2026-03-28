@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -88,7 +89,7 @@ class BackupService {
 
         final dir = await getTemporaryDirectory();
         final encFile = File(
-          '${dir.path}/upload_encrypted_$timestamp.enc.json',
+          p.join(dir.path, 'upload_encrypted_$timestamp.enc.json'),
         );
         await encFile.writeAsString(encryptedContent);
         tempEncryptedFile = encFile;

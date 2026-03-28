@@ -56,13 +56,19 @@ void main() {
 
   group('Yellowface Type II', () {
     test('YF2 on blue series has yellow mask', () {
-      final r = _resolve(['blue', 'yellowface_type2'], 'Yellowface Type II Skyblue');
+      final r = _resolve([
+        'blue',
+        'yellowface_type2',
+      ], 'Yellowface Type II Skyblue');
       expect(r.maskColor, BudgiePhenotypePalette.maskYellow);
     });
 
     test('YF2 body shows yellow suffusion', () {
       final plain = _resolve(['blue'], 'Skyblue');
-      final yf2 = _resolve(['blue', 'yellowface_type2'], 'Yellowface Type II Skyblue');
+      final yf2 = _resolve([
+        'blue',
+        'yellowface_type2',
+      ], 'Yellowface Type II Skyblue');
       final expected = _mix(
         BudgiePhenotypePalette.skyBlue,
         BudgiePhenotypePalette.maskYellow,
@@ -76,7 +82,11 @@ void main() {
   group('Pallid', () {
     test('body is mixed toward mask at 0.30', () {
       final r = _resolve(['blue', 'pallid'], 'Skyblue Pallid');
-      final expected = _mix(BudgiePhenotypePalette.skyBlue, BudgiePhenotypePalette.maskWhite, 0.30);
+      final expected = _mix(
+        BudgiePhenotypePalette.skyBlue,
+        BudgiePhenotypePalette.maskWhite,
+        0.30,
+      );
       expect(r.bodyColor, expected);
     });
 
@@ -107,13 +117,20 @@ void main() {
   group('Pearly', () {
     test('wing markings mixed with mask at 0.20', () {
       final r = _resolve(['blue', 'pearly'], 'Skyblue Pearly');
-      final expected = _mix(BudgiePhenotypePalette.wingBlack, BudgiePhenotypePalette.maskWhite, 0.20);
+      final expected = _mix(
+        BudgiePhenotypePalette.wingBlack,
+        BudgiePhenotypePalette.maskWhite,
+        0.20,
+      );
       expect(r.wingMarkingColor, expected);
     });
 
     test('wing fill is mask at 0.20 alpha', () {
       final r = _resolve(['blue', 'pearly'], 'Skyblue Pearly');
-      expect(r.wingFillColor, BudgiePhenotypePalette.maskWhite.withValues(alpha: 0.20));
+      expect(
+        r.wingFillColor,
+        BudgiePhenotypePalette.maskWhite.withValues(alpha: 0.20),
+      );
     });
 
     test('showMantleHighlight is true', () {
@@ -147,13 +164,19 @@ void main() {
 
     test('wing fill shows mask color at alpha 0.28', () {
       final r = _resolve(['clearflight_pied'], 'Clearflight Pied Light Green');
-      expect(r.wingFillColor, BudgiePhenotypePalette.maskYellow.withValues(alpha: 0.28));
+      expect(
+        r.wingFillColor,
+        BudgiePhenotypePalette.maskYellow.withValues(alpha: 0.28),
+      );
     });
 
     test('body NOT lightened unlike recessive pied', () {
       final cf = _resolve(['clearflight_pied'], 'Clearflight Pied Light Green');
       final rec = _resolve(['recessive_pied'], 'Recessive Pied Light Green');
-      expect(cf.bodyColor.computeLuminance(), lessThanOrEqualTo(rec.bodyColor.computeLuminance()));
+      expect(
+        cf.bodyColor.computeLuminance(),
+        lessThanOrEqualTo(rec.bodyColor.computeLuminance()),
+      );
     });
   });
 
@@ -171,7 +194,11 @@ void main() {
 
     test('pied patch color is mix of mask and body', () {
       final r = _resolve(['dutch_pied'], 'Dutch Pied Light Green');
-      final expected = _mix(BudgiePhenotypePalette.maskYellow, BudgiePhenotypePalette.lightGreen, 0.30);
+      final expected = _mix(
+        BudgiePhenotypePalette.maskYellow,
+        BudgiePhenotypePalette.lightGreen,
+        0.30,
+      );
       expect(r.piedPatchColor, expected);
     });
   });
@@ -184,13 +211,21 @@ void main() {
 
     test('violet + mauve = mix(mauve, violet, 0.40)', () {
       final r = _resolve(['blue', 'violet'], 'Mauve Violet');
-      final expected = _mix(BudgiePhenotypePalette.mauve, BudgiePhenotypePalette.violet, 0.40);
+      final expected = _mix(
+        BudgiePhenotypePalette.mauve,
+        BudgiePhenotypePalette.violet,
+        0.40,
+      );
       expect(r.bodyColor, expected);
     });
 
     test('violet + skyblue = mix(skyblue, violet, 0.55)', () {
       final r = _resolve(['blue', 'violet'], 'Skyblue Violet');
-      final expected = _mix(BudgiePhenotypePalette.skyBlue, BudgiePhenotypePalette.violet, 0.55);
+      final expected = _mix(
+        BudgiePhenotypePalette.skyBlue,
+        BudgiePhenotypePalette.violet,
+        0.55,
+      );
       expect(r.bodyColor, expected);
     });
 
@@ -202,17 +237,27 @@ void main() {
   });
 
   group('Compound phenotype rendering', () {
-    test('opaline + cinnamon: body mixed, cinnamon wings, mantle highlight', () {
-      final r = _resolve(['opaline', 'cinnamon'], 'Light Green Opaline Cinnamon');
-      expect(r.showMantleHighlight, isTrue);
-      const cinnamonMarkings = BudgiePhenotypePalette.cinnamon;
-      final opalineAdjusted = _mix(cinnamonMarkings, r.bodyColor, 0.35);
-      expect(r.wingMarkingColor, opalineAdjusted);
-      expect(r.backColor, isNotNull);
-    });
+    test(
+      'opaline + cinnamon: body mixed, cinnamon wings, mantle highlight',
+      () {
+        final r = _resolve([
+          'opaline',
+          'cinnamon',
+        ], 'Light Green Opaline Cinnamon');
+        expect(r.showMantleHighlight, isTrue);
+        const cinnamonMarkings = BudgiePhenotypePalette.cinnamon;
+        final opalineAdjusted = _mix(cinnamonMarkings, r.bodyColor, 0.35);
+        expect(r.wingMarkingColor, opalineAdjusted);
+        expect(r.backColor, isNot(r.bodyColor));
+      },
+    );
 
     test('spangle + opaline: wing fill and body-tinted markings', () {
-      final r = _resolve(['blue', 'spangle', 'opaline'], 'Skyblue Spangle Opaline');
+      final r = _resolve([
+        'blue',
+        'spangle',
+        'opaline',
+      ], 'Skyblue Spangle Opaline');
       expect(r.wingFillColor, isNot(Colors.transparent));
       expect(r.showMantleHighlight, isTrue);
     });
@@ -224,9 +269,16 @@ void main() {
     });
 
     test('cinnamon + spangle: cinnamon wing markings with spangle fill', () {
-      final r = _resolve(['cinnamon', 'spangle'], 'Light Green Cinnamon Spangle');
+      final r = _resolve([
+        'cinnamon',
+        'spangle',
+      ], 'Light Green Cinnamon Spangle');
       expect(r.wingFillColor, isNot(Colors.transparent));
-      final spangleMarkings = _mix(r.bodyColor, BudgiePhenotypePalette.cinnamon, 0.85);
+      final spangleMarkings = _mix(
+        r.bodyColor,
+        BudgiePhenotypePalette.cinnamon,
+        0.85,
+      );
       expect(r.wingMarkingColor, spangleMarkings);
     });
 
@@ -246,17 +298,38 @@ void main() {
 
   group('Clearbody ratio validation', () {
     test('texas clearbody retains MORE body color than dominant', () {
-      final texas = _resolve(['blue', 'texas_clearbody'], 'Skyblue Texas Clearbody');
-      final dominant = _resolve(['blue', 'dominant_clearbody'], 'Dominant Clearbody Skyblue');
-      expect(texas.bodyColor.computeLuminance(), lessThan(dominant.bodyColor.computeLuminance()));
+      final texas = _resolve([
+        'blue',
+        'texas_clearbody',
+      ], 'Skyblue Texas Clearbody');
+      final dominant = _resolve([
+        'blue',
+        'dominant_clearbody',
+      ], 'Dominant Clearbody Skyblue');
+      expect(
+        texas.bodyColor.computeLuminance(),
+        lessThan(dominant.bodyColor.computeLuminance()),
+      );
     });
 
     test('both clearbodies are lighter than normal skyblue', () {
       final normal = _resolve(['blue'], 'Skyblue');
-      final texas = _resolve(['blue', 'texas_clearbody'], 'Skyblue Texas Clearbody');
-      final dominant = _resolve(['blue', 'dominant_clearbody'], 'Dominant Clearbody Skyblue');
-      expect(texas.bodyColor.computeLuminance(), greaterThan(normal.bodyColor.computeLuminance()));
-      expect(dominant.bodyColor.computeLuminance(), greaterThan(normal.bodyColor.computeLuminance()));
+      final texas = _resolve([
+        'blue',
+        'texas_clearbody',
+      ], 'Skyblue Texas Clearbody');
+      final dominant = _resolve([
+        'blue',
+        'dominant_clearbody',
+      ], 'Dominant Clearbody Skyblue');
+      expect(
+        texas.bodyColor.computeLuminance(),
+        greaterThan(normal.bodyColor.computeLuminance()),
+      );
+      expect(
+        dominant.bodyColor.computeLuminance(),
+        greaterThan(normal.bodyColor.computeLuminance()),
+      );
     });
   });
 

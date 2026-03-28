@@ -35,6 +35,7 @@ class BreedingPairRemoteSource extends BaseRemoteSource<BreedingPair> {
   /// Fetches breeding pairs that include a specific bird.
   Future<List<BreedingPair>> fetchByBird(String userId, String birdId) async {
     try {
+      // Do NOT Uri.encodeComponent — PostgREST client handles encoding.
       final response = await table
           .select()
           .eq('user_id', userId)

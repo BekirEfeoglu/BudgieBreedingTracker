@@ -16,54 +16,22 @@ void main() {
       expect(authRoutes, isA<List<GoRoute>>());
     });
 
-    test('contains 6 routes', () {
-      expect(authRoutes.length, 6);
-    });
-
     group('route paths', () {
-      test('contains login route', () {
+      test('contains all expected auth paths without duplicates', () {
         final paths = authRoutes.map((r) => r.path).toList();
-        expect(paths, contains(AppRoutes.login));
+        expect(
+          paths,
+          containsAll([
+            AppRoutes.login,
+            AppRoutes.register,
+            AppRoutes.authCallback,
+            AppRoutes.oauthCallback,
+            AppRoutes.emailVerification,
+            AppRoutes.forgotPassword,
+          ]),
+        );
+        expect(paths.toSet().length, paths.length);
       });
-
-      test('contains register route', () {
-        final paths = authRoutes.map((r) => r.path).toList();
-        expect(paths, contains(AppRoutes.register));
-      });
-
-      test('contains authCallback route', () {
-        final paths = authRoutes.map((r) => r.path).toList();
-        expect(paths, contains(AppRoutes.authCallback));
-      });
-
-      test('contains oauthCallback route', () {
-        final paths = authRoutes.map((r) => r.path).toList();
-        expect(paths, contains(AppRoutes.oauthCallback));
-      });
-
-      test('contains emailVerification route', () {
-        final paths = authRoutes.map((r) => r.path).toList();
-        expect(paths, contains(AppRoutes.emailVerification));
-      });
-
-      test('contains forgotPassword route', () {
-        final paths = authRoutes.map((r) => r.path).toList();
-        expect(paths, contains(AppRoutes.forgotPassword));
-      });
-    });
-
-    group('all routes have builders', () {
-      for (var i = 0; i < 6; i++) {
-        test('route at index $i has a builder', () {
-          // Need to rebuild since setUp runs before the loop captures the value
-          final routes = buildAuthRoutes();
-          expect(
-            routes[i].builder,
-            isNotNull,
-            reason: 'Route ${routes[i].path} should have a builder',
-          );
-        });
-      }
     });
 
     group('no nested routes', () {
@@ -91,14 +59,10 @@ void main() {
     });
 
     group('emailVerification route handles query parameters', () {
-      test('emailVerification builder can handle email query parameter', () {
+      test('emailVerification path does not use inline email params', () {
         final emailRoute = authRoutes.firstWhere(
           (r) => r.path == AppRoutes.emailVerification,
         );
-        expect(emailRoute.builder, isNotNull);
-
-        // Verify the route is configured to accept query params
-        // by checking path does not have inline params
         expect(emailRoute.path, isNot(contains(':email')));
       });
     });

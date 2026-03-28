@@ -151,7 +151,7 @@ void main() {
       addTearDown(container.dispose);
       final runCheck = container.read(_requireAdminRunnerProvider);
 
-      await expectLater(runCheck(), completes);
+      await runCheck();
       expect(client.requestedTables, [SupabaseConstants.adminUsersTable]);
       expect(queryBuilder.selectedColumns, ['id']);
       expect(filterBuilder.eqCalls, hasLength(1));

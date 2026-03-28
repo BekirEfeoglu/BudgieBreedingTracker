@@ -197,8 +197,8 @@ void main() {
 
       // 'profile.security_factor_2fa' is incomplete → tappable
       await tester.tap(find.text('profile.security_factor_2fa'));
-      expect(tappedFactor, isNotNull);
-      expect(tappedFactor?.labelKey, 'profile.security_factor_2fa');
+      expect(tappedFactor, _lowScore.factors[1]);
+      expect(tappedFactor?.points, 30);
     });
 
     testWidgets('does NOT call onFactorTap for completed factor', (

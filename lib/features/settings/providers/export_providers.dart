@@ -1,7 +1,8 @@
 import 'dart:io';
 
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
+import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -13,6 +14,8 @@ import '../../../data/repositories/repository_providers.dart';
 import '../../../domain/services/export/excel_export_service.dart';
 import '../../../domain/services/export/pdf_export_service.dart';
 import '../../auth/providers/auth_providers.dart';
+import '../../notifications/providers/action_feedback_providers.dart';
+import '../../../core/utils/logger.dart';
 
 /// Notifier for export loading state.
 class ExportLoadingNotifier extends Notifier<bool> {
@@ -71,6 +74,12 @@ class ExportActions {
       );
       await _shareFile(bytes, 'budgie_rapor.pdf');
       _ref.read(lastExportDateProvider.notifier).state = DateTime.now();
+    } catch (e, st) {
+      AppLogger.error('ExportActions.exportPdf', e, st);
+      ActionFeedbackService.show(
+        'backup.export_error'.tr(),
+        type: ActionFeedbackType.error,
+      );
     } finally {
       _ref.read(exportLoadingProvider.notifier).state = false;
     }
@@ -90,6 +99,12 @@ class ExportActions {
       );
       await _shareFile(bytes, 'budgie_veri.xlsx');
       _ref.read(lastExportDateProvider.notifier).state = DateTime.now();
+    } catch (e, st) {
+      AppLogger.error('ExportActions.exportExcel', e, st);
+      ActionFeedbackService.show(
+        'backup.export_error'.tr(),
+        type: ActionFeedbackType.error,
+      );
     } finally {
       _ref.read(exportLoadingProvider.notifier).state = false;
     }
@@ -104,6 +119,12 @@ class ExportActions {
       final pdfService = _ref.read(pdfExportServiceProvider);
       final bytes = await pdfService.generateBirdReport(birds);
       await _shareFile(bytes, 'kuslar.pdf');
+    } catch (e, st) {
+      AppLogger.error('ExportActions.exportBirdsPdf', e, st);
+      ActionFeedbackService.show(
+        'backup.export_error'.tr(),
+        type: ActionFeedbackType.error,
+      );
     } finally {
       _ref.read(exportLoadingProvider.notifier).state = false;
     }
@@ -129,7 +150,7 @@ class ExportActions {
     final dir = await getTemporaryDirectory();
     final timestamp = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
     final name = fileName.replaceAll('.', '_$timestamp.');
-    final file = File('${dir.path}/$name');
+    final file = File(p.join(dir.path, name));
     await file.writeAsBytes(bytes);
     await SharePlus.instance.share(ShareParams(files: [XFile(file.path)]));
   }

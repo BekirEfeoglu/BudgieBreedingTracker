@@ -12,6 +12,7 @@ import '../../../domain/services/sync/sync_orchestrator.dart';
 import '../../../domain/services/sync/sync_providers.dart';
 import '../providers/admin_actions_provider.dart';
 import '../providers/admin_providers.dart';
+import '../../notifications/providers/action_feedback_providers.dart';
 import 'admin_database_backup_utils.dart';
 export 'admin_database_backup_utils.dart';
 
@@ -269,20 +270,20 @@ class DatabaseTableRow extends ConsumerWidget {
       isDestructive: true,
     );
     if (confirmed != true) return;
+    if (!context.mounted) return;
 
     final notifier = ref.read(adminActionsProvider.notifier);
     final success = await notifier.resetTable(table.name);
+    if (!context.mounted) return;
 
     if (success) {
       final result = await ref.read(syncOrchestratorProvider).forceFullSync();
-      if (context.mounted) {
+      if (result == SyncResult.success) {
+        ActionFeedbackService.show('sync.sync_success'.tr());
+      } else if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-              result == SyncResult.success
-                  ? 'sync.sync_success'.tr()
-                  : 'sync.sync_failed'.tr(),
-            ),
+            content: Text('sync.sync_failed'.tr()),
             behavior: SnackBarBehavior.floating,
           ),
         );

@@ -12,20 +12,16 @@ class PremiumPricingSection extends ConsumerWidget {
     final purchaseIssue = ref.watch(premiumPurchaseIssueProvider);
     final canPurchase = !actionState.isLoading && purchaseIssue == null;
 
-    String monthlyPrice = 'premium.price_monthly'.tr();
+    String semiAnnualPrice = 'premium.price_semi_annual'.tr();
     String yearlyPrice = 'premium.price_yearly'.tr();
-    String lifetimePrice = 'premium.price_lifetime'.tr();
 
-    final monthlyPackage = matchPackageForPlan(packages, PremiumPlan.monthly);
+    final semiAnnualPackage =
+        matchPackageForPlan(packages, PremiumPlan.semiAnnual);
     final yearlyPackage = matchPackageForPlan(packages, PremiumPlan.yearly);
-    final lifetimePackage = matchPackageForPlan(packages, PremiumPlan.lifetime);
 
-    monthlyPrice = monthlyPackage?.storeProduct.priceString ?? monthlyPrice;
+    semiAnnualPrice =
+        semiAnnualPackage?.storeProduct.priceString ?? semiAnnualPrice;
     yearlyPrice = yearlyPackage?.storeProduct.priceString ?? yearlyPrice;
-    lifetimePrice = lifetimePackage?.storeProduct.priceString ?? lifetimePrice;
-
-    // Trial info displayed subordinate to price per App Store Guidelines 3.1.2(c)
-    final monthlyTrialText = 'premium.trial_after_price'.tr();
 
     // When offerings are unavailable, keep localized fallback prices
     // as reference instead of showing "price unavailable" for all plans.
@@ -56,22 +52,19 @@ class PremiumPricingSection extends ConsumerWidget {
             const SizedBox(height: AppSpacing.lg),
           ],
           PricingCard(
-            planName: 'premium.plan_monthly'.tr(),
-            price: monthlyPrice,
-            period: 'premium.period_monthly'.tr(),
-            trialText: monthlyTrialText,
-            isEnabled: purchaseIssue == null,
+            planName: 'premium.plan_semi_annual'.tr(),
+            price: semiAnnualPrice,
+            period: 'premium.period_semi_annual'.tr(),
+            isEnabled: canPurchase,
             isLoading:
                 actionState.isLoading &&
-                actionState.purchasingPlan == PremiumPlan.monthly,
-            onSubscribe: !canPurchase
-                ? () {}
-                : () => _handleSubscribe(
-                    context,
-                    ref,
-                    isGuest: isGuest,
-                    plan: PremiumPlan.monthly,
-                  ),
+                actionState.purchasingPlan == PremiumPlan.semiAnnual,
+            onSubscribe: () => _handleSubscribe(
+              context,
+              ref,
+              isGuest: isGuest,
+              plan: PremiumPlan.semiAnnual,
+            ),
           ),
           const SizedBox(height: AppSpacing.lg),
           PricingCard(
@@ -80,38 +73,17 @@ class PremiumPricingSection extends ConsumerWidget {
             period: 'premium.period_yearly'.tr(),
             isHighlighted: true,
             badge: 'premium.best_value'.tr(),
-            savingsText: 'premium.save_percent'.tr(args: ['50']),
-            isEnabled: purchaseIssue == null,
+            savingsText: 'premium.save_percent'.tr(args: ['17']),
+            isEnabled: canPurchase,
             isLoading:
                 actionState.isLoading &&
                 actionState.purchasingPlan == PremiumPlan.yearly,
-            onSubscribe: !canPurchase
-                ? () {}
-                : () => _handleSubscribe(
-                    context,
-                    ref,
-                    isGuest: isGuest,
-                    plan: PremiumPlan.yearly,
-                  ),
-          ),
-          const SizedBox(height: AppSpacing.lg),
-          PricingCard(
-            planName: 'premium.plan_lifetime'.tr(),
-            price: lifetimePrice,
-            period: 'premium.period_lifetime'.tr(),
-            savingsText: 'premium.lifetime_deal'.tr(),
-            isEnabled: purchaseIssue == null,
-            isLoading:
-                actionState.isLoading &&
-                actionState.purchasingPlan == PremiumPlan.lifetime,
-            onSubscribe: !canPurchase
-                ? () {}
-                : () => _handleSubscribe(
-                    context,
-                    ref,
-                    isGuest: isGuest,
-                    plan: PremiumPlan.lifetime,
-                  ),
+            onSubscribe: () => _handleSubscribe(
+              context,
+              ref,
+              isGuest: isGuest,
+              plan: PremiumPlan.yearly,
+            ),
           ),
           const SizedBox(height: AppSpacing.md),
           // Auto-renewal disclosure — must be prominent and close to

@@ -122,7 +122,6 @@ void main() {
         await tester.pump(const Duration(milliseconds: 100));
 
         expect(find.text('BirdList(1)'), findsOneWidget);
-        expect(tester.takeException(), isNull);
       },
       timeout: e2eTimeout,
     );

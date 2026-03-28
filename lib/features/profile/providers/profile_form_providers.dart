@@ -142,6 +142,7 @@ class PasswordChangeNotifier extends Notifier<PasswordChangeState> {
       );
       state = state.copyWith(isLoading: false, isSuccess: true);
     } on AuthException catch (e) {
+      AppLogger.warning('[PasswordChange] AuthException: ${e.message}');
       final msg = e.message.toLowerCase();
       // Error keys are localized by the consuming widget via .tr()
       final errorKey = msg.contains('invalid') || msg.contains('credentials')

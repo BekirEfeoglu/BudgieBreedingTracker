@@ -16,6 +16,7 @@ import 'package:budgie_breeding_tracker/features/eggs/widgets/egg_status_update_
 import 'package:budgie_breeding_tracker/features/eggs/widgets/egg_summary_row.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_detail_providers.dart';
 import 'package:budgie_breeding_tracker/features/eggs/providers/egg_providers.dart';
+import 'package:budgie_breeding_tracker/features/notifications/providers/action_feedback_providers.dart';
 
 class BreedingEggsSection extends ConsumerWidget {
   final String incubationId;
@@ -45,14 +46,10 @@ class BreedingEggsSection extends ConsumerWidget {
         ).showSnackBar(SnackBar(content: Text(state.error!)));
       }
       if (state.chickCreated) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('eggs.chick_created_from_egg'.tr()),
-            action: SnackBarAction(
-              label: 'eggs.go_to_chicks'.tr(),
-              onPressed: () => context.push('/chicks'),
-            ),
-          ),
+        ActionFeedbackService.show(
+          'eggs.chick_created_from_egg'.tr(),
+          actionRoute: '/chicks',
+          actionLabel: 'eggs.go_to_chicks'.tr(),
         );
       }
     });

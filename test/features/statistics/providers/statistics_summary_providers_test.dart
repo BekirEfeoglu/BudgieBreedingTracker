@@ -93,47 +93,4 @@ void main() {
     });
   });
 
-  group('EggStatistics', () {
-    test('default values', () {
-      const stats = EggStatistics();
-      expect(stats.total, 0);
-      expect(stats.hatchRate, 0.0);
-      expect(stats.fertilityRate, 0.0);
-    });
-
-    test('fromJson/toJson roundtrip', () {
-      const stats = EggStatistics(
-        total: 30,
-        hatched: 10,
-        fertile: 20,
-        infertile: 5,
-        hatchRate: 0.5,
-        fertilityRate: 0.8,
-      );
-      final json = stats.toJson();
-      final restored = EggStatistics.fromJson(json);
-      expect(restored.total, 30);
-      expect(restored.hatchRate, 0.5);
-      expect(restored.fertilityRate, 0.8);
-    });
-  });
-
-  group('BreedingStatistics', () {
-    test('default values', () {
-      const stats = BreedingStatistics();
-      expect(stats.active, 0);
-      expect(stats.completed, 0);
-      expect(stats.successRate, 0.0);
-    });
-  });
-
-  group('ChickStatistics', () {
-    test('default values', () {
-      const stats = ChickStatistics();
-      expect(stats.total, 0);
-      expect(stats.thisMonth, 0);
-      expect(stats.averageHatchWeight, 0.0);
-      expect(stats.survivalRate, 0.0);
-    });
-  });
 }

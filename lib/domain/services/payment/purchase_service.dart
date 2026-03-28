@@ -123,6 +123,15 @@ class PurchaseService with PurchaseErrorMapper, PurchaseInitializer {
         purchasesCode: errorCode,
         message: e.message,
       );
+    } on PurchaseException {
+      rethrow;
+    } catch (e, st) {
+      AppLogger.error('Unexpected purchase error', e, st);
+      Sentry.captureException(e, stackTrace: st);
+      throw PurchaseException(
+        PurchaseErrorCodes.genericError,
+        message: e.toString(),
+      );
     }
   }
 

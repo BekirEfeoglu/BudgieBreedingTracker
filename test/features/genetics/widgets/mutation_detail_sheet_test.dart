@@ -46,7 +46,7 @@ void main() {
   group('showMutationDetailSheet', () {
     testWidgets('opens bottom sheet when button is tapped', (tester) async {
       final mutation = _makeMutation();
-      await pumpLocalizedApp(tester,_contentWrap(mutation));
+      await pumpLocalizedApp(tester, _contentWrap(mutation));
       await tester.tap(find.text('open'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
@@ -55,7 +55,7 @@ void main() {
 
     testWidgets('shows mutation localizationKey as title', (tester) async {
       final mutation = _makeMutation(id: 'blue');
-      await pumpLocalizedApp(tester,_contentWrap(mutation));
+      await pumpLocalizedApp(tester, _contentWrap(mutation));
       await tester.tap(find.text('open'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
@@ -64,7 +64,7 @@ void main() {
 
     testWidgets('shows InheritanceBadge in sheet', (tester) async {
       final mutation = _makeMutation();
-      await pumpLocalizedApp(tester,_contentWrap(mutation));
+      await pumpLocalizedApp(tester, _contentWrap(mutation));
       await tester.tap(find.text('open'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
@@ -73,7 +73,7 @@ void main() {
 
     testWidgets('shows inheritance_type label key', (tester) async {
       final mutation = _makeMutation();
-      await pumpLocalizedApp(tester,_contentWrap(mutation));
+      await pumpLocalizedApp(tester, _contentWrap(mutation));
       await tester.tap(find.text('open'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
@@ -82,7 +82,7 @@ void main() {
 
     testWidgets('shows alleles label key', (tester) async {
       final mutation = _makeMutation();
-      await pumpLocalizedApp(tester,_contentWrap(mutation));
+      await pumpLocalizedApp(tester, _contentWrap(mutation));
       await tester.tap(find.text('open'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
@@ -91,7 +91,7 @@ void main() {
 
     testWidgets('shows allele_symbol label key', (tester) async {
       final mutation = _makeMutation();
-      await pumpLocalizedApp(tester,_contentWrap(mutation));
+      await pumpLocalizedApp(tester, _contentWrap(mutation));
       await tester.tap(find.text('open'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
@@ -100,7 +100,7 @@ void main() {
 
     testWidgets('shows visual_effect when provided', (tester) async {
       final mutation = _makeMutation(visualEffect: 'Makes feathers blue');
-      await pumpLocalizedApp(tester,_contentWrap(mutation));
+      await pumpLocalizedApp(tester, _contentWrap(mutation));
       await tester.tap(find.text('open'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
@@ -112,7 +112,7 @@ void main() {
       tester,
     ) async {
       final mutation = _makeMutation(visualEffect: null);
-      await pumpLocalizedApp(tester,_contentWrap(mutation));
+      await pumpLocalizedApp(tester, _contentWrap(mutation));
       await tester.tap(find.text('open'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
@@ -121,7 +121,7 @@ void main() {
 
     testWidgets('shows allele symbols joined with slash', (tester) async {
       final mutation = _makeMutation();
-      await pumpLocalizedApp(tester,_contentWrap(mutation));
+      await pumpLocalizedApp(tester, _contentWrap(mutation));
       await tester.tap(find.text('open'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
@@ -134,7 +134,7 @@ void main() {
       tester,
     ) async {
       final cinnamon = MutationDatabase.getById('cinnamon')!;
-      await pumpLocalizedApp(tester,_contentWrap(cinnamon));
+      await pumpLocalizedApp(tester, _contentWrap(cinnamon));
       await tester.tap(find.text('open'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
@@ -152,7 +152,7 @@ void main() {
       tester,
     ) async {
       final blue = MutationDatabase.getById('blue')!;
-      await pumpLocalizedApp(tester,_contentWrap(blue));
+      await pumpLocalizedApp(tester, _contentWrap(blue));
       await tester.tap(find.text('open'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
@@ -167,7 +167,7 @@ void main() {
           id: 'custom_sl',
           type: InheritanceType.sexLinkedRecessive,
         );
-        await pumpLocalizedApp(tester,_contentWrap(custom));
+        await pumpLocalizedApp(tester, _contentWrap(custom));
         await tester.tap(find.text('open'));
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 300));
@@ -180,7 +180,7 @@ void main() {
       tester,
     ) async {
       final pearly = MutationDatabase.getById('pearly')!;
-      await pumpLocalizedApp(tester,_contentWrap(pearly));
+      await pumpLocalizedApp(tester, _contentWrap(pearly));
       await tester.tap(find.text('open'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
@@ -191,19 +191,18 @@ void main() {
 
   group('MutationDatabase real mutations', () {
     test('blue mutation exists', () {
-      final mutation = MutationDatabase.getById('blue');
-      expect(mutation, isNotNull);
-      expect(mutation!.name, isNotEmpty);
+      final mutation = MutationDatabase.getById('blue')!;
+      expect(mutation.name, 'Blue');
     });
 
     test('ino mutation exists', () {
-      final mutation = MutationDatabase.getById('ino');
-      expect(mutation, isNotNull);
+      final mutation = MutationDatabase.getById('ino')!;
+      expect(mutation.name, 'Ino');
     });
 
     testWidgets('real blue mutation renders in sheet', (tester) async {
       final mutation = MutationDatabase.getById('blue')!;
-      await pumpLocalizedApp(tester,_contentWrap(mutation));
+      await pumpLocalizedApp(tester, _contentWrap(mutation));
       await tester.tap(find.text('open'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));

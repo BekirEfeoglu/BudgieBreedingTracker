@@ -30,6 +30,16 @@ class _GenderPieChartState extends State<GenderPieChart> {
   int _touchedIndex = -1;
 
   @override
+  void didUpdateWidget(covariant GenderPieChart oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.maleCount != widget.maleCount ||
+        oldWidget.femaleCount != widget.femaleCount ||
+        oldWidget.unknownCount != widget.unknownCount) {
+      _touchedIndex = -1;
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final total = widget.maleCount + widget.femaleCount + widget.unknownCount;
@@ -40,7 +50,9 @@ class _GenderPieChartState extends State<GenderPieChart> {
 
     return Column(
       children: [
-        SizedBox(
+        Semantics(
+          label: 'statistics.gender_chart_a11y'.tr(args: ['$total']),
+          child: SizedBox(
           height: 200,
           child: RepaintBoundary(
             child: PieChart(
@@ -66,6 +78,7 @@ class _GenderPieChartState extends State<GenderPieChart> {
             ),
           ),
         ),
+        ),
         const SizedBox(height: AppSpacing.sm),
         Text(
           'statistics.total_label'.tr(args: ['$total']),
@@ -81,11 +94,10 @@ class _GenderPieChartState extends State<GenderPieChart> {
 
   List<PieChartSectionData> _buildSections(BuildContext context, int total) {
     final sections = <PieChartSectionData>[];
-    var index = 0;
 
     void addSection(int count, Color color) {
       if (count > 0) {
-        final isTouched = index == _touchedIndex;
+        final isTouched = sections.length == _touchedIndex;
         sections.add(
           PieChartSectionData(
             color: color,
@@ -100,7 +112,6 @@ class _GenderPieChartState extends State<GenderPieChart> {
           ),
         );
       }
-      index++;
     }
 
     addSection(widget.maleCount, AppColors.genderMale);

@@ -9,7 +9,7 @@ void main() {
     final baseInfo = SubscriptionInfo(
       isActive: true,
       willRenew: true,
-      productId: 'budgie_monthly',
+      productId: 'budgie_semi_annual',
       expirationDate: DateTime(2027, 12, 31),
       isTrial: false,
     );
@@ -70,11 +70,11 @@ void main() {
       expect(find.text('premium.current_plan'), findsOneWidget);
     });
 
-    testWidgets('shows plan_monthly for monthly product id', (tester) async {
+    testWidgets('shows plan_semi_annual for semi-annual product id', (tester) async {
       await tester.pumpWidget(createSubject());
       await tester.pump();
 
-      expect(find.text('premium.plan_monthly'), findsOneWidget);
+      expect(find.text('premium.plan_semi_annual'), findsOneWidget);
     });
 
     testWidgets('shows plan_yearly for yearly product id', (tester) async {

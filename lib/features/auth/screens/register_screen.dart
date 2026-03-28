@@ -111,7 +111,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
         '[Register] Supabase not initialized after runtime retry',
       );
       _showSnack('auth.error_service_unavailable'.tr(), isError: true);
-      setState(() => _loading = false);
+      if (mounted) setState(() => _loading = false);
     }
     return ok;
   }
@@ -119,6 +119,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     if (!await _ensureSupabase()) return;
+    if (!mounted) return;
 
     setState(() => _loading = true);
     try {

@@ -3,7 +3,9 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
+import 'package:budgie_breeding_tracker/features/statistics/providers/statistics_summary_providers.dart';
 import 'package:budgie_breeding_tracker/features/statistics/widgets/chart_card.dart';
+import 'package:budgie_breeding_tracker/features/statistics/widgets/chart_utils.dart';
 
 /// Vertical bar chart showing bird age distribution in 5 brackets.
 class AgeDistributionChart extends StatelessWidget {
@@ -12,7 +14,7 @@ class AgeDistributionChart extends StatelessWidget {
   /// Age group counts. Keys: '0-6m', '6-12m', '1-2y', '2-3y', '3+y'.
   final Map<String, int> data;
 
-  static const _groupKeys = ['0-6m', '6-12m', '1-2y', '2-3y', '3+y'];
+  static const _groupKeys = ageBracketKeys;
 
   static const _groupColors = [
     AppColors.budgieGreen,
@@ -35,6 +37,8 @@ class AgeDistributionChart extends StatelessWidget {
     for (final v in data.values) {
       if (v.toDouble() > maxVal) maxVal = v.toDouble();
     }
+    final yInterval = calcChartInterval(maxVal);
+    final maxY = calcChartMaxY(maxVal, yInterval);
 
     return SizedBox(
       height: 200,
@@ -42,7 +46,7 @@ class AgeDistributionChart extends StatelessWidget {
         child: BarChart(
           BarChartData(
             alignment: BarChartAlignment.spaceAround,
-            maxY: maxVal + 1,
+            maxY: maxY,
             barTouchData: BarTouchData(
               touchTooltipData: BarTouchTooltipData(
                 getTooltipItem: (group, groupIndex, rod, rodIndex) {
@@ -68,9 +72,11 @@ class AgeDistributionChart extends StatelessWidget {
                 sideTitles: SideTitles(
                   showTitles: true,
                   reservedSize: 28,
-                  interval: 1,
+                  interval: yInterval,
                   getTitlesWidget: (value, meta) {
-                    if (value % 1 != 0) return const SizedBox.shrink();
+                    if (value % yInterval != 0 || value == 0) {
+                      return const SizedBox.shrink();
+                    }
                     return Text(
                       value.toInt().toString(),
                       style: theme.textTheme.labelSmall,
@@ -95,7 +101,7 @@ class AgeDistributionChart extends StatelessWidget {
                 ),
               ),
             ),
-            gridData: const FlGridData(show: false),
+            gridData: chartGridData(context, interval: yInterval),
             borderData: FlBorderData(show: false),
             barGroups: List.generate(_groupKeys.length, (index) {
               final key = _groupKeys[index];

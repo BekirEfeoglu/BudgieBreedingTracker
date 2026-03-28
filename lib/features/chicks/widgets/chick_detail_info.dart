@@ -9,6 +9,7 @@ import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/core/widgets/cards/info_card.dart';
 import 'package:budgie_breeding_tracker/core/widgets/dialogs/confirm_dialog.dart';
+import 'package:budgie_breeding_tracker/features/notifications/providers/action_feedback_providers.dart';
 import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
 import 'package:budgie_breeding_tracker/features/chicks/providers/chick_providers.dart';
 import 'package:budgie_breeding_tracker/features/settings/providers/settings_providers.dart';
@@ -112,7 +113,7 @@ class ChickDetailInfo extends ConsumerWidget {
               Expanded(
                 child: InfoCard(
                   icon: const Icon(LucideIcons.checkCircle2),
-                  title: chick.isWeaned
+                  title: chick.isWeaned && chick.weanDate != null
                       ? dateFormat.format(chick.weanDate!)
                       : 'chicks.not_yet'.tr(),
                   subtitle: 'chicks.weaning'.tr(),
@@ -189,9 +190,7 @@ class ChickDetailInfo extends ConsumerWidget {
       if (!context.mounted) return;
       final state = ref.read(bandingActionProvider);
       state.when(
-        data: (_) => ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('chicks.banding_success'.tr())),
-        ),
+        data: (_) => ActionFeedbackService.show('chicks.banding_success'.tr()),
         error: (e, _) => ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('${'common.error'.tr()}: $e')),
         ),

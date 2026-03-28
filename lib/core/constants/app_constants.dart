@@ -35,7 +35,7 @@ abstract class AppConstants {
   /// Ratio threshold for critical state (bird count very close to limit).
   static const double freeTierCriticalRatio = 0.93;
 
-  static const int gracePeriodDays = 7;
+  static const int gracePeriodDays = 30;
 
   // Social Login Credentials — resolved at runtime from .env / BuildConfig / --dart-define.
   static String get googleWebClientId => googleWebClientIdResolved;

@@ -12,6 +12,7 @@ import 'package:budgie_breeding_tracker/data/repositories/repository_providers.d
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_providers.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_detail_providers.dart';
 import 'package:budgie_breeding_tracker/features/birds/providers/bird_form_providers.dart';
+import 'package:budgie_breeding_tracker/core/widgets/unsaved_changes_scope.dart';
 import 'package:budgie_breeding_tracker/features/birds/widgets/bird_form_body.dart';
 import 'package:budgie_breeding_tracker/features/birds/widgets/bird_form_helpers.dart';
 
@@ -48,6 +49,18 @@ class _BirdFormScreenState extends ConsumerState<BirdFormScreen> {
   Object? _editLoadError;
   ProviderSubscription<AsyncValue<Bird?>>? _editBirdSubscription;
   Bird? _existingBird;
+  bool _savedSuccessfully = false;
+
+  bool get _isDirty {
+    if (_savedSuccessfully) return false;
+    if (_isEdit) return true;
+    return _nameController.text.isNotEmpty ||
+        _ringController.text.isNotEmpty ||
+        _cageController.text.isNotEmpty ||
+        _notesController.text.isNotEmpty ||
+        _colorNoteController.text.isNotEmpty ||
+        _birthDate != null;
+  }
 
   @override
   void initState() {
@@ -183,6 +196,7 @@ class _BirdFormScreenState extends ConsumerState<BirdFormScreen> {
     ref.listen<BirdFormState>(birdFormStateProvider, (_, state) {
       final notifier = ref.read(birdFormStateProvider.notifier);
       if (state.isSuccess) {
+        _savedSuccessfully = true;
         notifier.reset();
         handleBirdFormSuccess(context, remainingBirds: state.remainingBirds);
       } else if (state.isBirdLimitReached) {
@@ -217,11 +231,15 @@ class _BirdFormScreenState extends ConsumerState<BirdFormScreen> {
       );
     }
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(_isEdit ? 'birds.edit_bird'.tr() : 'birds.new_bird'.tr()),
-      ),
-      body: BirdFormBody(
+    return UnsavedChangesScope(
+      isDirty: _isDirty,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(
+            _isEdit ? 'birds.edit_bird'.tr() : 'birds.new_bird'.tr(),
+          ),
+        ),
+        body: BirdFormBody(
         formKey: _formKey,
         nameController: _nameController,
         ringController: _ringController,
@@ -257,6 +275,7 @@ class _BirdFormScreenState extends ConsumerState<BirdFormScreen> {
         onFatherChanged: (id) => setState(() => _fatherId = id),
         onMotherChanged: (id) => setState(() => _motherId = id),
         onSubmit: _submit,
+      ),
       ),
     );
   }
