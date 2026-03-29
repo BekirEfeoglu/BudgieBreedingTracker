@@ -29,13 +29,13 @@ class _AdminSecurityScreenState extends ConsumerState<AdminSecurityScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final eventsAsync = ref.watch(filteredSecurityEventsProvider);
+    final eventsAsync = ref.watch(adminSecurityEventsProvider);
     final filter = ref.watch(securityEventFilterProvider);
 
     ref.listen<AdminActionState>(adminActionsProvider, (_, state) {
       if (state.isSuccess) {
         ref.read(adminActionsProvider.notifier).reset();
-        ref.invalidate(filteredSecurityEventsProvider);
+        ref.invalidate(adminSecurityEventsProvider);
         ActionFeedbackService.show('admin.event_dismissed'.tr());
       }
       if (state.error != null) {
@@ -62,12 +62,12 @@ class _AdminSecurityScreenState extends ConsumerState<AdminSecurityScreen> {
           Expanded(
             child: RefreshIndicator(
               onRefresh: () async =>
-                  ref.invalidate(filteredSecurityEventsProvider),
+                  ref.invalidate(adminSecurityEventsProvider),
               child: eventsAsync.when(
                 loading: () => const LoadingState(),
                 error: (error, _) => ErrorState(
                   message: 'common.data_load_error'.tr(),
-                  onRetry: () => ref.invalidate(filteredSecurityEventsProvider),
+                  onRetry: () => ref.invalidate(adminSecurityEventsProvider),
                 ),
                 data: (events) => SecurityContent(events: events),
               ),

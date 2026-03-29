@@ -33,7 +33,7 @@ Widget _createSubject({
 }) {
   return ProviderScope(
     overrides: [
-      filteredAuditLogsProvider.overrideWithValue(logsAsync),
+      adminAuditLogsProvider.overrideWithValue(logsAsync),
       adminActionsProvider.overrideWith(_FakeAdminActionsNotifier.new),
       auditLogFilterProvider.overrideWith(_FakeAuditLogFilterNotifier.new),
       adminAuditLimitProvider.overrideWith(_FakeAuditLimitNotifier.new),

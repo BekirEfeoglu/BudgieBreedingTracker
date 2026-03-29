@@ -29,7 +29,7 @@ Widget _createSubject({
 }) {
   return ProviderScope(
     overrides: [
-      filteredSecurityEventsProvider.overrideWithValue(eventsAsync),
+      adminSecurityEventsProvider.overrideWithValue(eventsAsync),
       adminActionsProvider.overrideWith(_FakeAdminActionsNotifier.new),
       securityEventFilterProvider
           .overrideWith(_FakeSecurityEventFilterNotifier.new),

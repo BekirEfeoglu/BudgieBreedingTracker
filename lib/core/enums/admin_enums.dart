@@ -32,6 +32,15 @@ enum SecuritySeverityLevel {
       return SecuritySeverityLevel.unknown;
     }
   }
+
+  /// PostgREST `.ilike` patterns for `event_type` values that correspond to
+  /// this severity level. Used for server-side filtering.
+  List<String> get eventTypePatterns => switch (this) {
+    high => ['%bruteForce%', '%brute_force%', '%unauthorizedAccess%', '%unauthorized_access%'],
+    medium => ['%suspiciousActivity%', '%suspicious_activity%', '%mfaFailure%', '%mfa_failure%'],
+    low => ['%failedLogin%', '%failed_login%', '%rateLimited%', '%rate_limited%'],
+    unknown => [],
+  };
 }
 
 /// Admin user roles.

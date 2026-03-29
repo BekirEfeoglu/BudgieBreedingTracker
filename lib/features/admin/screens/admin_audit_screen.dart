@@ -29,13 +29,13 @@ class _AdminAuditScreenState extends ConsumerState<AdminAuditScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final logsAsync = ref.watch(filteredAuditLogsProvider);
+    final logsAsync = ref.watch(adminAuditLogsProvider);
     final filter = ref.watch(auditLogFilterProvider);
 
     ref.listen<AdminActionState>(adminActionsProvider, (_, state) {
       if (state.isSuccess) {
         ref.read(adminActionsProvider.notifier).reset();
-        ref.invalidate(filteredAuditLogsProvider);
+        ref.invalidate(adminAuditLogsProvider);
         ActionFeedbackService.show('admin.logs_cleared'.tr());
       }
       if (state.error != null) {
@@ -68,12 +68,12 @@ class _AdminAuditScreenState extends ConsumerState<AdminAuditScreen> {
           ),
           Expanded(
             child: RefreshIndicator(
-              onRefresh: () async => ref.invalidate(filteredAuditLogsProvider),
+              onRefresh: () async => ref.invalidate(adminAuditLogsProvider),
               child: logsAsync.when(
                 loading: () => const LoadingState(),
                 error: (error, _) => ErrorState(
                   message: 'common.data_load_error'.tr(),
-                  onRetry: () => ref.invalidate(filteredAuditLogsProvider),
+                  onRetry: () => ref.invalidate(adminAuditLogsProvider),
                 ),
                 data: (logs) => AuditContent(
                   logs: logs,
