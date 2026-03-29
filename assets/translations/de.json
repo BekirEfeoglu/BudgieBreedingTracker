@@ -1562,7 +1562,19 @@
     "export_json": "JSON",
     "export_truncated": "Export bei {} Zeilen abgeschnitten",
     "reset_transaction_failed": "Zuruecksetzung fehlgeschlagen, Aenderungen rueckgaengig gemacht",
-    "search_feedback": "Feedback durchsuchen..."
+    "search_feedback": "Feedback durchsuchen...",
+    "bulk_actions": "Massenaktionen",
+    "selected_count": "{} ausgewaehlt",
+    "select_all": "Alle auswaehlen",
+    "clear_selection": "Auswahl aufheben",
+    "bulk_activate": "Aktivieren",
+    "bulk_deactivate": "Deaktivieren",
+    "bulk_grant_premium": "Premium gewaehren",
+    "bulk_revoke_premium": "Premium entziehen",
+    "bulk_export": "Exportieren",
+    "bulk_delete": "Daten loeschen",
+    "bulk_delete_confirm": "Geben Sie {} ein um zu bestaetigen",
+    "protected_users_skipped": "{} geschuetzte Benutzer uebersprungen"
   },
   "user_guide": {
     "title": "Benutzerhandbuch",

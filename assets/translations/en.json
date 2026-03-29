@@ -1562,7 +1562,19 @@
     "export_json": "JSON",
     "export_truncated": "Export truncated at {} rows",
     "reset_transaction_failed": "Reset operation failed, changes rolled back",
-    "search_feedback": "Search feedback..."
+    "search_feedback": "Search feedback...",
+    "bulk_actions": "Bulk Actions",
+    "selected_count": "{} selected",
+    "select_all": "Select All",
+    "clear_selection": "Clear Selection",
+    "bulk_activate": "Activate",
+    "bulk_deactivate": "Deactivate",
+    "bulk_grant_premium": "Grant Premium",
+    "bulk_revoke_premium": "Revoke Premium",
+    "bulk_export": "Export",
+    "bulk_delete": "Delete Data",
+    "bulk_delete_confirm": "Type {} to confirm",
+    "protected_users_skipped": "{} protected user(s) skipped"
   },
   "user_guide": {
     "title": "User Guide",

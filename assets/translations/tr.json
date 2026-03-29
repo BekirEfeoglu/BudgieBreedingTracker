@@ -1562,7 +1562,19 @@
     "export_json": "JSON",
     "export_truncated": "Dışa aktarma {} satırda kesildi",
     "reset_transaction_failed": "Sıfırlama işlemi başarısız oldu",
-    "search_feedback": "Geri bildirimlerde ara..."
+    "search_feedback": "Geri bildirimlerde ara...",
+    "bulk_actions": "Toplu Islemler",
+    "selected_count": "{} secildi",
+    "select_all": "Tumunu Sec",
+    "clear_selection": "Secimi Temizle",
+    "bulk_activate": "Aktif Et",
+    "bulk_deactivate": "Deaktif Et",
+    "bulk_grant_premium": "Premium Ver",
+    "bulk_revoke_premium": "Premium Kaldir",
+    "bulk_export": "Disa Aktar",
+    "bulk_delete": "Verileri Sil",
+    "bulk_delete_confirm": "Silmek icin {} yazin",
+    "protected_users_skipped": "{} korunmus kullanici atlandi"
   },
   "user_guide": {
     "title": "Kullanım Kılavuzu",
