@@ -4,18 +4,16 @@ import '../../../core/constants/supabase_constants.dart';
 import '../../../core/utils/logger.dart';
 import '../../../data/remote/supabase/edge_function_client.dart';
 import '../../auth/providers/auth_providers.dart';
+import '../constants/admin_constants.dart';
 import 'admin_auth_utils.dart';
 import 'admin_models.dart';
 
 export 'admin_capacity_providers.dart';
 
-/// Page size for admin list pagination.
-const kAdminPageSize = 50;
-
 /// Notifier for admin users list limit (increases on "load more").
 class AdminUsersLimitNotifier extends Notifier<int> {
   @override
-  int build() => kAdminPageSize;
+  int build() => AdminConstants.usersPageSize;
 }
 
 /// Current limit for admin users list (increases on "load more").
@@ -119,8 +117,9 @@ final adminStatsProvider = FutureProvider<AdminStats>((ref) async {
   }
 });
 
-/// Admin users list provider with optional search query.
-final adminUsersProvider = FutureProvider.family<List<AdminUser>, String>((
+/// Admin users list provider with server-side filtering via [AdminUsersQuery].
+final adminUsersProvider =
+    FutureProvider.family<List<AdminUser>, AdminUsersQuery>((
   ref,
   query,
 ) async {
@@ -131,11 +130,11 @@ final adminUsersProvider = FutureProvider.family<List<AdminUser>, String>((
       .from(SupabaseConstants.profilesTable)
       .select('id, email, full_name, avatar_url, created_at, is_active');
 
-  if (query.isNotEmpty) {
+  if (query.searchTerm.isNotEmpty) {
     // Sanitize PostgREST special characters to prevent filter injection.
     // Remove control chars and PostgREST delimiters, then escape wildcards
     // and URI-encode to prevent semantic manipulation of the filter string.
-    final sanitized = query
+    final sanitized = query.searchTerm
         .replaceAll(RegExp(r'[\x00-\x1f]'), '')
         .replaceAll(RegExp(r'[,.()\[\]\\]'), '')
         .replaceAll('%', r'\%')
@@ -148,10 +147,13 @@ final adminUsersProvider = FutureProvider.family<List<AdminUser>, String>((
     }
   }
 
-  final limit = ref.watch(adminUsersLimitProvider);
+  if (query.isActiveFilter != null) {
+    request = request.eq('is_active', query.isActiveFilter!);
+  }
+
   final result = await request
-      .order('created_at', ascending: false)
-      .limit(limit);
+      .order(query.sortField, ascending: query.sortAscending)
+      .limit(query.limit);
 
   return (result as List)
       .map((row) => AdminUser.fromJson(row as Map<String, dynamic>))
@@ -188,7 +190,7 @@ final adminUserDetailProvider = FutureProvider.family<AdminUserDetail, String>((
       .select()
       .eq('target_user_id', userId)
       .order('created_at', ascending: false)
-      .limit(20);
+      .limit(AdminConstants.userActivityLogsLimit);
 
   final (profile, subscriptionRows, birdsCount, logsResult) = await (
     profileFuture,

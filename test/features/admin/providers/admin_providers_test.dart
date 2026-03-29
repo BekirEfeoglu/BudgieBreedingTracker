@@ -10,14 +10,20 @@ void main() {
     setUp(() => container = ProviderContainer());
     tearDown(() => container.dispose());
 
-    test('default limit is kAdminPageSize (50)', () {
-      expect(container.read(adminUsersLimitProvider), kAdminPageSize);
+    test('default limit is AdminConstants.usersPageSize (50)', () {
+      expect(
+        container.read(adminUsersLimitProvider),
+        AdminConstants.usersPageSize,
+      );
     });
 
     test('can increment limit', () {
       container.read(adminUsersLimitProvider.notifier).state =
-          kAdminPageSize + 50;
-      expect(container.read(adminUsersLimitProvider), kAdminPageSize + 50);
+          AdminConstants.usersPageSize + 50;
+      expect(
+        container.read(adminUsersLimitProvider),
+        AdminConstants.usersPageSize + 50,
+      );
     });
   });
 

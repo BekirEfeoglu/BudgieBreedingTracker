@@ -55,13 +55,13 @@ void main() {
 
         final initialLimit = container.read(adminUsersLimitProvider);
         container.read(adminUsersLimitProvider.notifier).state +=
-            kAdminPageSize;
+            AdminConstants.usersPageSize;
         final updatedLimit = container.read(adminUsersLimitProvider);
 
         expect(sampleUser.email, contains('@'));
         expect(sampleUser.isActive, isTrue);
-        expect(initialLimit, kAdminPageSize);
-        expect(updatedLimit, kAdminPageSize * 2);
+        expect(initialLimit, AdminConstants.usersPageSize);
+        expect(updatedLimit, AdminConstants.usersPageSize * 2);
       },
       timeout: e2eTimeout,
     );

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
@@ -47,7 +48,9 @@ Widget _createSubject({
   );
 
   return ProviderScope(
-    overrides: [adminUsersProvider('').overrideWithValue(usersAsync)],
+    overrides: [
+      adminUsersProvider(const AdminUsersQuery()).overrideWithValue(usersAsync),
+    ],
     child: MaterialApp.router(routerConfig: router),
   );
 }
@@ -108,21 +111,21 @@ void main() {
       await tester.pump();
 
       // inactive badge text 'admin.inactive' rendered in user card
-      expect(find.text('admin.inactive'), findsWidgets);
+      expect(find.text(l10n('admin.inactive')), findsWidgets);
     });
 
     testWidgets('shows empty state when no users found', (tester) async {
       await tester.pumpWidget(_createSubject(usersAsync: const AsyncData([])));
       await tester.pump();
 
-      expect(find.text('admin.no_users_found'), findsOneWidget);
+      expect(find.text(l10n('admin.no_users_found')), findsOneWidget);
     });
 
     testWidgets('search hint text is visible', (tester) async {
       await tester.pumpWidget(_createSubject(usersAsync: const AsyncData([])));
       await tester.pump();
 
-      expect(find.text('admin.search_users'), findsOneWidget);
+      expect(find.text(l10n('admin.search_users')), findsOneWidget);
     });
 
     testWidgets('shows user status filter chips', (tester) async {
@@ -131,9 +134,9 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.widgetWithText(ChoiceChip, 'common.all'), findsOneWidget);
-      expect(find.widgetWithText(ChoiceChip, 'common.active'), findsOneWidget);
-      expect(find.widgetWithText(ChoiceChip, 'admin.inactive'), findsOneWidget);
+      expect(find.widgetWithText(ChoiceChip, l10n('common.all')), findsOneWidget);
+      expect(find.widgetWithText(ChoiceChip, l10n('common.active')), findsOneWidget);
+      expect(find.widgetWithText(ChoiceChip, l10n('admin.inactive')), findsOneWidget);
     });
 
     testWidgets('filters list when inactive chip is selected', (tester) async {
@@ -142,7 +145,7 @@ void main() {
       );
       await tester.pump();
 
-      await tester.tap(find.widgetWithText(ChoiceChip, 'admin.inactive'));
+      await tester.tap(find.widgetWithText(ChoiceChip, l10n('admin.inactive')));
       await tester.pumpAndSettle();
 
       expect(find.text('Bob Test'), findsOneWidget);
@@ -155,13 +158,13 @@ void main() {
       );
       await tester.pump();
 
-      await tester.tap(find.text('common.sort').first);
+      await tester.tap(find.text(l10n('common.sort')).first);
       await tester.pumpAndSettle();
 
-      expect(find.text('breeding.sort_newest'), findsOneWidget);
-      expect(find.text('breeding.sort_oldest'), findsOneWidget);
-      expect(find.text('birds.sort_name_asc'), findsOneWidget);
-      expect(find.text('auth.email'), findsOneWidget);
+      expect(find.text(l10n('breeding.sort_newest')), findsOneWidget);
+      expect(find.text(l10n('breeding.sort_oldest')), findsOneWidget);
+      expect(find.text(l10n('birds.sort_name_asc')), findsOneWidget);
+      expect(find.text(l10n('auth.email')), findsOneWidget);
     });
   });
 }

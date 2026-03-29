@@ -56,17 +56,23 @@ class _AdminUsersScreenState extends ConsumerState<AdminUsersScreen> {
     super.dispose();
   }
 
+  AdminUsersQuery get _buildQuery => AdminUsersQuery(
+        searchTerm: _query,
+        limit: ref.read(adminUsersLimitProvider),
+      );
+
   Future<void> _refreshUsers() async {
     try {
-      ref.invalidate(adminUsersProvider(_query));
-      await ref.read(adminUsersProvider(_query).future);
+      ref.invalidate(adminUsersProvider(_buildQuery));
+      await ref.read(adminUsersProvider(_buildQuery).future);
     } catch (_) {
       // Error state is handled by the provider/UI.
     }
   }
 
   void _resetPagination() {
-    ref.read(adminUsersLimitProvider.notifier).state = kAdminPageSize;
+    ref.read(adminUsersLimitProvider.notifier).state =
+        AdminConstants.usersPageSize;
   }
 
   void _onSearchChanged(String raw) {
@@ -133,8 +139,12 @@ class _AdminUsersScreenState extends ConsumerState<AdminUsersScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final usersAsync = ref.watch(adminUsersProvider(_query));
     final limit = ref.watch(adminUsersLimitProvider);
+    final usersAsync = ref.watch(
+      adminUsersProvider(
+        AdminUsersQuery(searchTerm: _query, limit: limit),
+      ),
+    );
 
     return Scaffold(
       body: Column(
@@ -155,7 +165,11 @@ class _AdminUsersScreenState extends ConsumerState<AdminUsersScreen> {
               loading: () => const LoadingState(),
               error: (error, _) => ErrorState(
                 message: 'common.data_load_error'.tr(),
-                onRetry: () => ref.invalidate(adminUsersProvider(_query)),
+                onRetry: () => ref.invalidate(
+                  adminUsersProvider(
+                    AdminUsersQuery(searchTerm: _query, limit: limit),
+                  ),
+                ),
               ),
               data: (users) {
                 final filteredUsers = _applyFiltersAndSort(users);
@@ -182,7 +196,7 @@ class _AdminUsersScreenState extends ConsumerState<AdminUsersScreen> {
                         onClearFilter: _clearFilters,
                         onLoadMore: () {
                           ref.read(adminUsersLimitProvider.notifier).state +=
-                              kAdminPageSize;
+                              AdminConstants.usersPageSize;
                         },
                       ),
                     ),

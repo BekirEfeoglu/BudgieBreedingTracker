@@ -4,27 +4,64 @@ import '../../../core/constants/supabase_constants.dart';
 import '../../../core/enums/admin_enums.dart';
 import '../../../core/utils/logger.dart';
 import '../../auth/providers/auth_providers.dart';
+import '../constants/admin_constants.dart';
 import 'admin_auth_utils.dart';
+import 'admin_models.dart';
 
-/// Admin feedback list — fetches all rows ordered by newest first.
+/// Query state for admin feedback list (server-side filtering).
+class FeedbackQueryNotifier extends Notifier<FeedbackQuery> {
+  @override
+  FeedbackQuery build() =>
+      const FeedbackQuery(limit: AdminConstants.feedbackPageSize);
+}
+
+final feedbackQueryProvider =
+    NotifierProvider<FeedbackQueryNotifier, FeedbackQuery>(
+  FeedbackQueryNotifier.new,
+);
+
+/// Admin feedback list with server-side filtering via [FeedbackQuery].
 final adminFeedbackProvider =
     FutureProvider.autoDispose<List<Map<String, dynamic>>>((ref) async {
-      try {
-        await requireAdmin(ref);
-        final client = ref.watch(supabaseClientProvider);
-        final result = await client
-            .from(SupabaseConstants.feedbackTable)
-            .select()
-            .order('created_at', ascending: false)
-            .limit(300);
-        return List<Map<String, dynamic>>.from(result as List);
-      } catch (e, st) {
-        AppLogger.error('adminFeedbackProvider', e, st);
-        return <Map<String, dynamic>>[];
+      await requireAdmin(ref);
+      final client = ref.watch(supabaseClientProvider);
+      final query = ref.watch(feedbackQueryProvider);
+
+      // Build filter chain before order/limit (PostgREST filter methods are
+      // only available on PostgrestFilterBuilder, not PostgrestTransformBuilder).
+      var filterRequest = client
+          .from(SupabaseConstants.feedbackTable)
+          .select();
+
+      if (query.statusFilter != null) {
+        filterRequest = filterRequest.eq(
+          'status',
+          query.statusFilter!.toJson(),
+        );
       }
+
+      if (query.searchQuery.isNotEmpty) {
+        // Sanitize PostgREST special characters to prevent filter injection.
+        final sanitized = query.searchQuery
+            .replaceAll(RegExp(r'[\x00-\x1f]'), '')
+            .replaceAll(RegExp(r'[,.()\[\]\\]'), '')
+            .replaceAll('%', r'\%')
+            .replaceAll('_', r'\_');
+        if (sanitized.isNotEmpty) {
+          filterRequest = filterRequest.or(
+            'message.ilike.%$sanitized%,subject.ilike.%$sanitized%',
+          );
+        }
+      }
+
+      final result = await filterRequest
+          .order('created_at', ascending: false)
+          .limit(query.limit);
+      return List<Map<String, dynamic>>.from(result as List);
     });
 
 /// Status filter for the admin feedback list (null = all).
+/// Kept for backward compatibility — updates [feedbackQueryProvider] internally.
 class FeedbackStatusFilterNotifier extends Notifier<FeedbackStatus?> {
   @override
   FeedbackStatus? build() => null;

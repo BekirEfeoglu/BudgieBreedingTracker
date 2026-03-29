@@ -2,16 +2,20 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:budgie_breeding_tracker/core/enums/admin_enums.dart';
+import 'package:budgie_breeding_tracker/features/admin/constants/admin_constants.dart';
 import 'package:budgie_breeding_tracker/features/admin/providers/admin_data_providers.dart';
 import 'package:budgie_breeding_tracker/features/admin/providers/admin_models.dart';
 
 void main() {
   group('AdminUsersLimitNotifier', () {
-    test('initial state is kAdminPageSize (50)', () {
+    test('initial state is AdminConstants.usersPageSize (50)', () {
       final container = ProviderContainer();
       addTearDown(container.dispose);
 
-      expect(container.read(adminUsersLimitProvider), kAdminPageSize);
+      expect(
+        container.read(adminUsersLimitProvider),
+        AdminConstants.usersPageSize,
+      );
       expect(container.read(adminUsersLimitProvider), 50);
     });
 
@@ -33,9 +37,9 @@ void main() {
     });
   });
 
-  group('kAdminPageSize', () {
+  group('AdminConstants.usersPageSize', () {
     test('is 50', () {
-      expect(kAdminPageSize, 50);
+      expect(AdminConstants.usersPageSize, 50);
     });
   });
 

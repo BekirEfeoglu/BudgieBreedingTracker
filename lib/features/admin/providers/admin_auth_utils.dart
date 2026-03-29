@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/constants/supabase_constants.dart';
@@ -44,6 +45,7 @@ Future<void> logAdminAction(
       if (details != null) 'details': details,
     });
   } catch (e, st) {
-    AppLogger.error('logAdminAction', e, st);
+    AppLogger.error('logAdminAction: failed to log action: $action', e, st);
+    Sentry.captureException(e, stackTrace: st);
   }
 }

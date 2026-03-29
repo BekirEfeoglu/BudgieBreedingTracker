@@ -6,6 +6,7 @@ import 'package:sentry_flutter/sentry_flutter.dart';
 import '../../../core/constants/supabase_constants.dart';
 import '../../../core/utils/logger.dart';
 import '../../auth/providers/auth_providers.dart';
+import '../constants/admin_constants.dart';
 import 'admin_auth_utils.dart';
 import 'admin_models.dart';
 
@@ -77,9 +78,6 @@ final adminDatabaseInfoProvider = FutureProvider<List<TableInfo>>((ref) async {
   }
 });
 
-/// Capacity threshold above which a Sentry warning is sent (90%).
-const _capacityCriticalThreshold = 0.9;
-
 /// Server capacity provider — queries PostgreSQL system catalogs via RPC.
 /// Falls back to basic table counts if the RPC function is unavailable.
 final serverCapacityProvider = FutureProvider<ServerCapacity>((ref) async {
@@ -96,7 +94,7 @@ final serverCapacityProvider = FutureProvider<ServerCapacity>((ref) async {
     final connRatio = capacity.connectionUsageRatio;
     final worstRatio = math.max(dbRatio, connRatio);
 
-    if (worstRatio >= _capacityCriticalThreshold) {
+    if (worstRatio >= AdminConstants.capacityWarningPercent) {
       Sentry.captureMessage(
         'Server capacity critical: DB ${(dbRatio * 100).toStringAsFixed(1)}%, '
         'Connections ${(connRatio * 100).toStringAsFixed(1)}%',
