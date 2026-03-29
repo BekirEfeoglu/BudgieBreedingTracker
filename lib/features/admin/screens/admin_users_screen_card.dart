@@ -2,8 +2,16 @@ part of 'admin_users_screen.dart';
 
 class _UserCard extends StatelessWidget {
   final AdminUser user;
+  final bool isSelected;
+  final bool isSelectionMode;
+  final VoidCallback? onSelectionToggle;
 
-  const _UserCard({required this.user});
+  const _UserCard({
+    required this.user,
+    this.isSelected = false,
+    this.isSelectionMode = false,
+    this.onSelectionToggle,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -17,16 +25,30 @@ class _UserCard extends StatelessWidget {
     final showEmail = displayName.toLowerCase() != user.email.toLowerCase();
 
     return Card(
+      color: isSelected
+          ? theme.colorScheme.primaryContainer.withValues(alpha: 0.3)
+          : null,
       child: InkWell(
-        onTap: () => context.push(
-          AppRoutes.adminUserDetail.replaceFirst(':userId', user.id),
-        ),
+        onTap: isSelectionMode
+            ? onSelectionToggle
+            : () => context.push(
+                  AppRoutes.adminUserDetail.replaceFirst(':userId', user.id),
+                ),
+        onLongPress: onSelectionToggle,
         borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
         child: Padding(
           padding: AppSpacing.cardPadding,
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              if (isSelectionMode) ...[
+                Checkbox(
+                  value: isSelected,
+                  onChanged: (_) => onSelectionToggle?.call(),
+                  visualDensity: VisualDensity.compact,
+                ),
+                const SizedBox(width: AppSpacing.xs),
+              ],
               CircleAvatar(
                 radius: 22,
                 backgroundColor: theme.colorScheme.primaryContainer,
@@ -108,11 +130,12 @@ class _UserCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: AppSpacing.sm),
-              Icon(
-                LucideIcons.chevronRight,
-                size: 16,
-                color: theme.colorScheme.outline,
-              ),
+              if (!isSelectionMode)
+                Icon(
+                  LucideIcons.chevronRight,
+                  size: 16,
+                  color: theme.colorScheme.outline,
+                ),
             ],
           ),
         ),

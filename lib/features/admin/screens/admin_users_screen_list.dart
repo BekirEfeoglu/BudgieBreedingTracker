@@ -58,14 +58,20 @@ class _UsersList extends StatelessWidget {
   final Future<void> Function() onRefresh;
   final VoidCallback? onClearFilter;
   final VoidCallback? onLoadMore;
+  final Set<String> selectedIds;
+  final bool isSelectionMode;
+  final void Function(String userId) onToggleSelection;
 
   const _UsersList({
     required this.users,
     required this.hasFilter,
     required this.onRefresh,
+    required this.onToggleSelection,
     this.hasMore = false,
     this.onClearFilter,
     this.onLoadMore,
+    this.selectedIds = const {},
+    this.isSelectionMode = false,
   });
 
   @override
@@ -119,7 +125,12 @@ class _UsersList extends StatelessWidget {
               ),
             );
           }
-          return _UserCard(user: users[index]);
+          return _UserCard(
+            user: users[index],
+            isSelected: selectedIds.contains(users[index].id),
+            isSelectionMode: isSelectionMode,
+            onSelectionToggle: () => onToggleSelection(users[index].id),
+          );
         },
       ),
     );
