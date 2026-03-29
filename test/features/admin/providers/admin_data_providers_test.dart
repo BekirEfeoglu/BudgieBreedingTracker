@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:budgie_breeding_tracker/core/enums/admin_enums.dart';
 import 'package:budgie_breeding_tracker/features/admin/providers/admin_data_providers.dart';
 import 'package:budgie_breeding_tracker/features/admin/providers/admin_models.dart';
 
@@ -106,7 +107,7 @@ void main() {
   group('SecurityEvent model', () {
     test('construction with defaults', () {
       final event = SecurityEvent(id: 's1', createdAt: DateTime(2024, 6, 1));
-      expect(event.eventType, '');
+      expect(event.eventType, SecurityEventType.unknown);
       expect(event.userId, isNull);
       expect(event.ipAddress, isNull);
       expect(event.details, isNull);
@@ -115,12 +116,12 @@ void main() {
     test('construction with full data', () {
       final event = SecurityEvent(
         id: 's2',
-        eventType: 'brute_force',
+        eventType: SecurityEventType.bruteForce,
         userId: 'u1',
         ipAddress: '192.168.1.1',
         createdAt: DateTime(2024, 6, 1),
       );
-      expect(event.eventType, 'brute_force');
+      expect(event.eventType, SecurityEventType.bruteForce);
       expect(event.ipAddress, '192.168.1.1');
     });
   });

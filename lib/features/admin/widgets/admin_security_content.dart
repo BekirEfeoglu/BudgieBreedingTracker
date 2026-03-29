@@ -56,10 +56,10 @@ class SecuritySummary extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final failedLogins = events
-        .where((e) => e.eventType.toLowerCase().contains('login_failed'))
+        .where((e) => e.eventType == SecurityEventType.failedLogin)
         .length;
     final rateLimits = events
-        .where((e) => e.eventType.toLowerCase().contains('rate_limit'))
+        .where((e) => e.eventType == SecurityEventType.rateLimited)
         .length;
     return Row(
       children: [
@@ -146,26 +146,23 @@ class SecurityEventItem extends ConsumerWidget {
   const SecurityEventItem({super.key, required this.event});
 
   ({IconData icon, Color color, String label}) _severity(BuildContext context) {
-    final lower = event.eventType.toLowerCase();
-    if (lower.contains('suspicious') || lower.contains('attack')) {
-      return (
+    return switch (event.eventType.inferredSeverity) {
+      SecuritySeverityLevel.high => (
         icon: LucideIcons.alertOctagon,
         color: AppColors.error,
         label: 'admin.severity_high'.tr(),
-      );
-    }
-    if (lower.contains('failed') || lower.contains('rate_limit')) {
-      return (
+      ),
+      SecuritySeverityLevel.medium => (
         icon: LucideIcons.alertTriangle,
         color: AppColors.warning,
         label: 'admin.severity_medium'.tr(),
-      );
-    }
-    return (
-      icon: LucideIcons.info,
-      color: AppColors.info,
-      label: 'admin.severity_low'.tr(),
-    );
+      ),
+      _ => (
+        icon: LucideIcons.info,
+        color: AppColors.info,
+        label: 'admin.severity_low'.tr(),
+      ),
+    };
   }
 
   @override
@@ -185,7 +182,7 @@ class SecurityEventItem extends ConsumerWidget {
                 const SizedBox(width: AppSpacing.sm),
                 Expanded(
                   child: Text(
-                    event.eventType,
+                    event.eventType.toJson(),
                     style: theme.textTheme.titleSmall?.copyWith(
                       fontWeight: FontWeight.w600,
                     ),

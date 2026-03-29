@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
+import 'package:budgie_breeding_tracker/core/enums/admin_enums.dart';
 import 'package:budgie_breeding_tracker/features/admin/providers/admin_models.dart';
 import 'package:budgie_breeding_tracker/features/admin/widgets/admin_security_content.dart';
 import 'package:budgie_breeding_tracker/core/widgets/empty_state.dart';
 
 final _failedLoginEvent = SecurityEvent(
   id: 'evt-1',
-  eventType: 'login_failed',
+  eventType: SecurityEventType.failedLogin,
   userId: 'user-1',
   ipAddress: '192.168.1.100',
   details: 'Invalid password attempt',
@@ -18,7 +20,7 @@ final _failedLoginEvent = SecurityEvent(
 
 final _rateLimitEvent = SecurityEvent(
   id: 'evt-2',
-  eventType: 'rate_limit_exceeded',
+  eventType: SecurityEventType.rateLimited,
   userId: 'user-2',
   ipAddress: '10.0.0.50',
   createdAt: DateTime(2024, 3, 15, 15, 0),
@@ -26,7 +28,7 @@ final _rateLimitEvent = SecurityEvent(
 
 final _suspiciousEvent = SecurityEvent(
   id: 'evt-3',
-  eventType: 'suspicious_activity',
+  eventType: SecurityEventType.suspiciousActivity,
   userId: 'user-3',
   ipAddress: '172.16.0.1',
   details: 'Multiple failed attempts from same IP',
@@ -35,7 +37,7 @@ final _suspiciousEvent = SecurityEvent(
 
 final _infoEvent = SecurityEvent(
   id: 'evt-4',
-  eventType: 'password_changed',
+  eventType: SecurityEventType.unknown,
   userId: 'user-4',
   createdAt: DateTime(2024, 3, 15, 17, 0),
 );
@@ -73,7 +75,7 @@ void main() {
         _wrap(const SecurityContent(events: [])),
       );
       await tester.pump();
-      expect(find.text('admin.no_security_events'), findsOneWidget);
+      expect(find.text(l10n('admin.no_security_events')), findsOneWidget);
     });
 
     testWidgets('shows empty state subtitle text', (tester) async {
@@ -81,7 +83,7 @@ void main() {
         _wrap(const SecurityContent(events: [])),
       );
       await tester.pump();
-      expect(find.text('admin.no_security_events_desc'), findsOneWidget);
+      expect(find.text(l10n('admin.no_security_events_desc')), findsOneWidget);
     });
 
     testWidgets('shows CustomScrollView when events are non-empty', (
@@ -178,7 +180,7 @@ void main() {
         ),
       );
       await tester.pump();
-      expect(find.text('admin.failed_logins'), findsOneWidget);
+      expect(find.text(l10n('admin.failed_logins')), findsOneWidget);
     });
 
     testWidgets('shows rate_limits label', (tester) async {
@@ -190,7 +192,7 @@ void main() {
         ),
       );
       await tester.pump();
-      expect(find.text('admin.rate_limits'), findsOneWidget);
+      expect(find.text(l10n('admin.rate_limits')), findsOneWidget);
     });
 
     testWidgets('shows total_events label', (tester) async {
@@ -202,7 +204,7 @@ void main() {
         ),
       );
       await tester.pump();
-      expect(find.text('admin.total_events'), findsOneWidget);
+      expect(find.text(l10n('admin.total_events')), findsOneWidget);
     });
 
     testWidgets('renders three SecuritySummaryCard widgets', (tester) async {
@@ -302,7 +304,7 @@ void main() {
         _wrap(SecurityEventItem(event: _failedLoginEvent)),
       );
       await tester.pump();
-      expect(find.text('login_failed'), findsOneWidget);
+      expect(find.text(SecurityEventType.failedLogin.toJson()), findsOneWidget);
     });
 
     testWidgets('shows details when provided', (tester) async {
@@ -316,7 +318,7 @@ void main() {
     testWidgets('hides details when null', (tester) async {
       final eventNoDetails = SecurityEvent(
         id: 'evt-5',
-        eventType: 'test_event',
+        eventType: SecurityEventType.unknown,
         createdAt: DateTime(2024, 3, 15),
       );
       await tester.pumpWidget(
@@ -324,7 +326,7 @@ void main() {
       );
       await tester.pump();
       // Should only render the event type, not a details section
-      expect(find.text('test_event'), findsOneWidget);
+      expect(find.text(SecurityEventType.unknown.toJson()), findsOneWidget);
     });
 
     testWidgets('shows severity_medium label for failed login', (
@@ -334,7 +336,7 @@ void main() {
         _wrap(SecurityEventItem(event: _failedLoginEvent)),
       );
       await tester.pump();
-      expect(find.text('admin.severity_medium'), findsOneWidget);
+      expect(find.text(l10n('admin.severity_medium')), findsOneWidget);
     });
 
     testWidgets('shows severity_medium label for rate_limit event', (
@@ -344,7 +346,7 @@ void main() {
         _wrap(SecurityEventItem(event: _rateLimitEvent)),
       );
       await tester.pump();
-      expect(find.text('admin.severity_medium'), findsOneWidget);
+      expect(find.text(l10n('admin.severity_medium')), findsOneWidget);
     });
 
     testWidgets('shows severity_high label for suspicious event', (
@@ -354,7 +356,7 @@ void main() {
         _wrap(SecurityEventItem(event: _suspiciousEvent)),
       );
       await tester.pump();
-      expect(find.text('admin.severity_high'), findsOneWidget);
+      expect(find.text(l10n('admin.severity_high')), findsOneWidget);
     });
 
     testWidgets('shows severity_low label for info event', (tester) async {
@@ -362,7 +364,7 @@ void main() {
         _wrap(SecurityEventItem(event: _infoEvent)),
       );
       await tester.pump();
-      expect(find.text('admin.severity_low'), findsOneWidget);
+      expect(find.text(l10n('admin.severity_low')), findsOneWidget);
     });
 
     testWidgets('shows dismiss button with tooltip', (tester) async {

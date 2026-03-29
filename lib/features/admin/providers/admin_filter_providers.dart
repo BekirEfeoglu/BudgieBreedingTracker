@@ -193,19 +193,7 @@ final filteredSecurityEventsProvider = FutureProvider<List<SecurityEvent>>((
   // Filter by severity
   if (filter.severity != null) {
     events = events.where((e) {
-      final lower = e.eventType.toLowerCase();
-      return switch (filter.severity!) {
-        SecuritySeverityLevel.high =>
-          lower.contains('suspicious') || lower.contains('attack'),
-        SecuritySeverityLevel.medium =>
-          lower.contains('failed') || lower.contains('rate_limit'),
-        SecuritySeverityLevel.low =>
-          !lower.contains('suspicious') &&
-              !lower.contains('attack') &&
-              !lower.contains('failed') &&
-              !lower.contains('rate_limit'),
-        SecuritySeverityLevel.unknown => true,
-      };
+      return e.eventType.inferredSeverity == filter.severity!;
     }).toList();
   }
 
@@ -215,7 +203,7 @@ final filteredSecurityEventsProvider = FutureProvider<List<SecurityEvent>>((
     events = events
         .where(
           (e) =>
-              e.eventType.toLowerCase().contains(q) ||
+              e.eventType.toJson().toLowerCase().contains(q) ||
               (e.details?.toLowerCase().contains(q) ?? false) ||
               (e.ipAddress?.contains(q) ?? false),
         )

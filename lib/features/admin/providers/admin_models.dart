@@ -100,7 +100,12 @@ abstract class SecurityEvent with _$SecurityEvent {
   const SecurityEvent._();
   const factory SecurityEvent({
     required String id,
-    @Default('') String eventType,
+    @JsonKey(
+      fromJson: SecurityEventType.fromJson,
+      toJson: _securityEventTypeToJson,
+    )
+    @Default(SecurityEventType.unknown)
+    SecurityEventType eventType,
     String? userId,
     String? ipAddress,
     @JsonKey(fromJson: _jsonbToString) String? details,
@@ -109,7 +114,12 @@ abstract class SecurityEvent with _$SecurityEvent {
 
   factory SecurityEvent.fromJson(Map<String, dynamic> json) =>
       _$SecurityEventFromJson(json);
+
+  /// Severity derived from event type.
+  SecuritySeverityLevel get severity => eventType.inferredSeverity;
 }
+
+String _securityEventTypeToJson(SecurityEventType type) => type.toJson();
 
 /// Database table info.
 @freezed
@@ -183,4 +193,96 @@ abstract class TableCapacity with _$TableCapacity {
 
   factory TableCapacity.fromJson(Map<String, dynamic> json) =>
       _$TableCapacityFromJson(json);
+}
+
+/// Query parameters for admin users list (server-side filtering).
+@freezed
+abstract class AdminUsersQuery with _$AdminUsersQuery {
+  const AdminUsersQuery._();
+  const factory AdminUsersQuery({
+    @Default('') String searchTerm,
+    @Default(null) bool? isActiveFilter,
+    @Default('created_at') String sortField,
+    @Default(false) bool sortAscending,
+    @Default(50) int limit,
+  }) = _AdminUsersQuery;
+
+  factory AdminUsersQuery.fromJson(Map<String, dynamic> json) =>
+      _$AdminUsersQueryFromJson(json);
+}
+
+/// Query parameters for admin feedback list (server-side filtering).
+@freezed
+abstract class FeedbackQuery with _$FeedbackQuery {
+  const FeedbackQuery._();
+  const factory FeedbackQuery({
+    @Default(null) FeedbackStatus? statusFilter,
+    @Default('') String searchQuery,
+    @Default(50) int limit,
+  }) = _FeedbackQuery;
+
+  factory FeedbackQuery.fromJson(Map<String, dynamic> json) =>
+      _$FeedbackQueryFromJson(json);
+}
+
+/// Typed model for admin system settings.
+/// Replaces `Map<String, Map<String, dynamic>>` loose typing.
+@freezed
+abstract class AdminSystemSettings with _$AdminSystemSettings {
+  const AdminSystemSettings._();
+  const factory AdminSystemSettings({
+    @Default(false) bool maintenanceMode,
+    @Default(true) bool registrationOpen,
+    @Default(true) bool emailVerificationRequired,
+    @Default(true) bool premiumEnabled,
+    @Default(true) bool rateLimitingEnabled,
+    @Default(false) bool twoFactorRequired,
+    @Default(false) bool autoBackupEnabled,
+    @Default(false) bool autoCleanupEnabled,
+    @Default(true) bool globalPushEnabled,
+    @Default(true) bool emailAlertsEnabled,
+    DateTime? lastUpdated,
+  }) = _AdminSystemSettings;
+
+  factory AdminSystemSettings.fromJson(Map<String, dynamic> json) =>
+      _$AdminSystemSettingsFromJson(json);
+
+  /// Build from the raw settings map returned by adminSystemSettingsProvider.
+  factory AdminSystemSettings.fromSettingsMap(
+    Map<String, Map<String, dynamic>> map,
+  ) {
+    bool val(String key, bool fallback) {
+      final entry = map[key];
+      if (entry == null) return fallback;
+      final v = entry['value'];
+      if (v is bool) return v;
+      if (v is String) return v.toLowerCase() == 'true';
+      return fallback;
+    }
+
+    DateTime? latestUpdate;
+    for (final entry in map.values) {
+      final raw = entry['updated_at'] as String?;
+      if (raw != null) {
+        final dt = DateTime.tryParse(raw);
+        if (dt != null && (latestUpdate == null || dt.isAfter(latestUpdate))) {
+          latestUpdate = dt;
+        }
+      }
+    }
+
+    return AdminSystemSettings(
+      maintenanceMode: val('maintenance_mode', false),
+      registrationOpen: val('registration_open', true),
+      emailVerificationRequired: val('email_verification_required', true),
+      premiumEnabled: val('premium_enabled', true),
+      rateLimitingEnabled: val('rate_limiting_enabled', true),
+      twoFactorRequired: val('two_factor_required', false),
+      autoBackupEnabled: val('auto_backup_enabled', false),
+      autoCleanupEnabled: val('auto_cleanup_enabled', false),
+      globalPushEnabled: val('global_push_enabled', true),
+      emailAlertsEnabled: val('email_alerts_enabled', true),
+      lastUpdated: latestUpdate,
+    );
+  }
 }

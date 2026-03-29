@@ -5,6 +5,7 @@ import 'package:intl/date_symbol_data_local.dart';
 
 import 'package:budgie_breeding_tracker/features/admin/providers/admin_actions_provider.dart';
 import 'package:budgie_breeding_tracker/features/admin/providers/admin_filter_providers.dart';
+import 'package:budgie_breeding_tracker/core/enums/admin_enums.dart';
 import 'package:budgie_breeding_tracker/features/admin/providers/admin_models.dart';
 import 'package:budgie_breeding_tracker/features/admin/screens/admin_security_screen.dart';
 import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
@@ -78,12 +79,12 @@ void main() {
       final events = [
         SecurityEvent(
           id: 'event-1',
-          eventType: 'failed_login',
+          eventType: SecurityEventType.failedLogin,
           createdAt: DateTime(2024, 6, 1),
         ),
         SecurityEvent(
           id: 'event-2',
-          eventType: 'suspicious_activity',
+          eventType: SecurityEventType.suspiciousActivity,
           createdAt: DateTime(2024, 6, 2),
         ),
       ];
