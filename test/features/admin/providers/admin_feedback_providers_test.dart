@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
 import 'package:budgie_breeding_tracker/core/enums/admin_enums.dart';
 import 'package:budgie_breeding_tracker/features/admin/providers/admin_feedback_providers.dart';
+import 'package:budgie_breeding_tracker/features/admin/providers/admin_models.dart';
 import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -108,9 +109,17 @@ class _FakeAdminSupabaseClient extends Fake implements SupabaseClient {
   }
 }
 
+/// Test-only notifier that returns the default [FeedbackQuery] from [build()].
+/// Used to override [feedbackQueryProvider] without accessing state in the
+/// constructor (which is forbidden in Riverpod 3).
+class _FeedbackQueryNotifier extends FeedbackQueryNotifier {
+  @override
+  FeedbackQuery build() => const FeedbackQuery(limit: 50);
+}
+
 void main() {
   group('adminFeedbackProvider', () {
-    test('returns empty list when admin check fails for anonymous user',
+    test('throws AsyncError when admin check fails for anonymous user',
         () async {
       final maybeSingleBuilder = _FakeAdminMaybeSingleBuilder();
       final filterBuilder = _FakeAdminSelectBuilder(
@@ -135,8 +144,10 @@ void main() {
         container.dispose();
       });
 
-      final result = await container.read(adminFeedbackProvider.future);
-      expect(result, isEmpty);
+      expect(
+        () => container.read(adminFeedbackProvider.future),
+        throwsA(isA<Exception>()),
+      );
     });
 
     test(
@@ -158,6 +169,7 @@ void main() {
           overrides: [
             currentUserIdProvider.overrideWithValue('user-1'),
             supabaseClientProvider.overrideWithValue(client),
+            feedbackQueryProvider.overrideWith(_FeedbackQueryNotifier.new),
           ],
           retry: (_, __) => null,
         );
@@ -178,7 +190,7 @@ void main() {
         expect(queryBuilder.selectedColumns, ['id', '*']);
         expect(filterBuilder.orderColumn, 'created_at');
         expect(filterBuilder.orderAscending, isFalse);
-        expect(filterBuilder.limitCount, 300);
+        expect(filterBuilder.limitCount, 50);
       },
     );
   });
