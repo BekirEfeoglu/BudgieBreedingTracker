@@ -7,3 +7,4 @@ export 'admin_models.dart';
 export 'admin_data_providers.dart';
 export 'admin_filter_providers.dart';
 export 'admin_dashboard_providers.dart';
+export 'admin_user_selection_provider.dart';
