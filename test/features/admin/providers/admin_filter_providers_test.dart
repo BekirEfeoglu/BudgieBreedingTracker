@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:budgie_breeding_tracker/core/enums/admin_enums.dart';
+import 'package:budgie_breeding_tracker/features/admin/constants/admin_constants.dart';
 import 'package:budgie_breeding_tracker/features/admin/providers/admin_filter_providers.dart';
 
 void main() {
@@ -95,11 +96,14 @@ void main() {
   });
 
   group('AdminAuditLimitNotifier', () {
-    test('initial state is 100', () {
+    test('initial state is AdminConstants.auditLogsPageSize', () {
       final container = ProviderContainer();
       addTearDown(container.dispose);
 
-      expect(container.read(adminAuditLimitProvider), 100);
+      expect(
+        container.read(adminAuditLimitProvider),
+        AdminConstants.auditLogsPageSize,
+      );
     });
 
     test('state can be increased', () {
@@ -108,6 +112,26 @@ void main() {
 
       container.read(adminAuditLimitProvider.notifier).state = 200;
       expect(container.read(adminAuditLimitProvider), 200);
+    });
+  });
+
+  group('AdminSecurityLimitNotifier', () {
+    test('initial state is AdminConstants.securityEventsPageSize', () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      expect(
+        container.read(adminSecurityLimitProvider),
+        AdminConstants.securityEventsPageSize,
+      );
+    });
+
+    test('state can be increased', () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      container.read(adminSecurityLimitProvider.notifier).state = 250;
+      expect(container.read(adminSecurityLimitProvider), 250);
     });
   });
 
