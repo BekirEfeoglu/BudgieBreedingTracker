@@ -123,10 +123,13 @@ class AdminUserManager {
           .update({'is_premium': false, 'subscription_status': 'free'})
           .eq('id', targetUserId);
 
-      // Remove subscription record entirely (no orphan 'free' records)
+      // Soft-revoke subscription record to preserve audit trail
       await client
           .from(SupabaseConstants.userSubscriptionsTable)
-          .delete()
+          .update({
+            'status': 'revoked',
+            'updated_at': DateTime.now().toUtc().toIso8601String(),
+          })
           .eq('user_id', targetUserId);
 
       await logAdminAction(

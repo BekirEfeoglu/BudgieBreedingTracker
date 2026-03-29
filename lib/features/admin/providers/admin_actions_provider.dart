@@ -5,8 +5,24 @@ import '../../../core/constants/supabase_constants.dart';
 import '../../../core/utils/logger.dart';
 import '../../auth/providers/auth_providers.dart';
 import 'admin_auth_utils.dart';
+import 'admin_dashboard_providers.dart';
 import 'admin_database_manager.dart';
+import 'admin_filter_providers.dart';
 import 'admin_user_manager.dart';
+
+enum ExportFormat { json, csv }
+
+// ignore: unused_element
+String _toCsv(List<Map<String, dynamic>> rows) {
+  if (rows.isEmpty) return '';
+  final headers = rows.first.keys.join(',');
+  final lines = rows.map(
+    (r) => r.values
+        .map((v) => '"${(v ?? '').toString().replaceAll('"', '""')}"')
+        .join(','),
+  );
+  return [headers, ...lines].join('\n');
+}
 
 /// State for admin actions (loading, error, success).
 class AdminActionState {
@@ -120,6 +136,8 @@ class AdminActionsNotifier extends Notifier<AdminActionState> {
       );
 
       state = state.copyWith(isLoading: false, isSuccess: true);
+      ref.invalidate(adminSecurityEventsProvider);
+      ref.invalidate(adminSystemAlertsProvider);
     } catch (e, st) {
       AppLogger.error('AdminActions.dismissSecurityEvent', e, st);
       state = state.copyWith(

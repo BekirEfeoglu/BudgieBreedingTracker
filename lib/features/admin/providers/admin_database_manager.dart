@@ -7,6 +7,7 @@ import 'package:sentry_flutter/sentry_flutter.dart';
 import '../../../core/constants/supabase_constants.dart';
 import '../../../core/utils/logger.dart';
 import '../../auth/providers/auth_providers.dart';
+import '../constants/admin_constants.dart';
 import 'admin_auth_utils.dart';
 
 /// Manages admin database operations (export, reset).
@@ -95,7 +96,7 @@ class AdminDatabaseManager {
           rpcError,
           StackTrace.current,
         );
-        result = await client.from(tableName).select().limit(10000);
+        result = await _exportTableChunked(tableName);
       }
 
       final jsonStr = const JsonEncoder.withIndent('  ').convert(result);
@@ -136,7 +137,7 @@ class AdminDatabaseManager {
         final allData = <String, dynamic>{};
         for (final table in _allowedTables) {
           try {
-            allData[table] = await client.from(table).select().limit(10000);
+            allData[table] = await _exportTableChunked(table);
           } catch (tableError) {
             AppLogger.error(
               'AdminDatabaseManager.exportAllTables fallback: $table',
@@ -246,6 +247,10 @@ class AdminDatabaseManager {
           'Admin resetAllUserData fallback triggered',
           level: SentryLevel.warning,
         );
+        AppLogger.warning(
+          'admin: resetAllUserData fallback path — no transaction guarantee, '
+          'partial deletes are possible if interrupted',
+        );
         for (final table in _deletionOrder) {
           try {
             final count = await client.from(table).count();
@@ -276,6 +281,37 @@ class AdminDatabaseManager {
       _updateState(isLoading: false, error: '${'admin.action_error'.tr()}: $e');
       return false;
     }
+  }
+
+  /// Fetches all rows for [tableName] in chunks to avoid query size limits.
+  Future<List<Map<String, dynamic>>> _exportTableChunked(
+    String tableName,
+  ) async {
+    final client = _ref.read(supabaseClientProvider);
+    final allRows = <Map<String, dynamic>>[];
+    var offset = 0;
+
+    while (true) {
+      final chunk = await client
+          .from(tableName)
+          .select()
+          .range(offset, offset + AdminConstants.exportChunkSize - 1);
+
+      final rows = List<Map<String, dynamic>>.from(chunk);
+      allRows.addAll(rows);
+
+      if (rows.length < AdminConstants.exportChunkSize) break;
+      offset += AdminConstants.exportChunkSize;
+
+      if (allRows.length >= AdminConstants.maxExportRows) {
+        AppLogger.warning(
+          'admin: Export truncated at ${AdminConstants.maxExportRows} rows for $tableName',
+        );
+        break;
+      }
+    }
+
+    return allRows;
   }
 
   String _formatBytes(int bytes) {
