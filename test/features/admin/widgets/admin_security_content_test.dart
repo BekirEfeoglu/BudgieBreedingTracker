@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
@@ -329,42 +330,112 @@ void main() {
       expect(find.text(SecurityEventType.unknown.toJson()), findsOneWidget);
     });
 
-    testWidgets('shows severity_medium label for failed login', (
+    // SecurityEventType.inferredSeverity mapping (from admin_enums.dart):
+    //   bruteForce | unauthorizedAccess → high
+    //   suspiciousActivity | mfaFailure → medium
+    //   failedLogin | rateLimited       → low
+    //   unknown                         → low (falls through to _ case)
+
+    testWidgets('shows severity_low label for failed login', (
       tester,
     ) async {
       await tester.pumpWidget(
         _wrap(SecurityEventItem(event: _failedLoginEvent)),
       );
       await tester.pump();
-      expect(find.text(l10n('admin.severity_medium')), findsOneWidget);
+      expect(find.text(l10n('admin.severity_low')), findsOneWidget);
     });
 
-    testWidgets('shows severity_medium label for rate_limit event', (
+    testWidgets('shows severity_low label for rate_limit event', (
       tester,
     ) async {
       await tester.pumpWidget(
         _wrap(SecurityEventItem(event: _rateLimitEvent)),
       );
       await tester.pump();
-      expect(find.text(l10n('admin.severity_medium')), findsOneWidget);
+      expect(find.text(l10n('admin.severity_low')), findsOneWidget);
     });
 
-    testWidgets('shows severity_high label for suspicious event', (
+    testWidgets('shows severity_medium label for suspicious event', (
       tester,
     ) async {
       await tester.pumpWidget(
         _wrap(SecurityEventItem(event: _suspiciousEvent)),
       );
       await tester.pump();
-      expect(find.text(l10n('admin.severity_high')), findsOneWidget);
+      expect(find.text(l10n('admin.severity_medium')), findsOneWidget);
     });
 
-    testWidgets('shows severity_low label for info event', (tester) async {
+    testWidgets('shows severity_low label for unknown event', (tester) async {
       await tester.pumpWidget(
         _wrap(SecurityEventItem(event: _infoEvent)),
       );
       await tester.pump();
       expect(find.text(l10n('admin.severity_low')), findsOneWidget);
+    });
+
+    testWidgets('shows severity_high label for brute force event', (
+      tester,
+    ) async {
+      final bruteForceEvent = SecurityEvent(
+        id: 'evt-bf',
+        eventType: SecurityEventType.bruteForce,
+        createdAt: DateTime(2024, 1, 15),
+      );
+      await tester.pumpWidget(
+        _wrap(SecurityEventItem(event: bruteForceEvent)),
+      );
+      await tester.pump();
+      expect(find.text(l10n('admin.severity_high')), findsOneWidget);
+    });
+
+    testWidgets('shows severity_high icon for unauthorized access', (
+      tester,
+    ) async {
+      final unauthorizedEvent = SecurityEvent(
+        id: 'evt-ua',
+        eventType: SecurityEventType.unauthorizedAccess,
+        createdAt: DateTime(2024, 1, 15),
+      );
+      await tester.pumpWidget(
+        _wrap(SecurityEventItem(event: unauthorizedEvent)),
+      );
+      await tester.pump();
+      expect(find.text(l10n('admin.severity_high')), findsOneWidget);
+    });
+
+    testWidgets('shows severity icon for high severity event', (tester) async {
+      final bruteForceEvent = SecurityEvent(
+        id: 'evt-bf2',
+        eventType: SecurityEventType.bruteForce,
+        createdAt: DateTime(2024, 1, 15),
+      );
+      await tester.pumpWidget(
+        _wrap(SecurityEventItem(event: bruteForceEvent)),
+      );
+      await tester.pump();
+      // alertOctagon icon is rendered for high severity events
+      expect(find.byIcon(LucideIcons.alertOctagon), findsOneWidget);
+    });
+
+    testWidgets('shows alertTriangle icon for medium severity event', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(SecurityEventItem(event: _suspiciousEvent)),
+      );
+      await tester.pump();
+      // alertTriangle icon is rendered for medium severity events
+      expect(find.byIcon(LucideIcons.alertTriangle), findsOneWidget);
+    });
+
+    testWidgets('shows info icon for low severity event', (tester) async {
+      await tester.pumpWidget(
+        _wrap(SecurityEventItem(event: _failedLoginEvent)),
+      );
+      await tester.pump();
+      // info icon is rendered for low/unknown severity events
+      expect(find.byIcon(LucideIcons.info), findsOneWidget);
     });
 
     testWidgets('shows dismiss button with tooltip', (tester) async {
