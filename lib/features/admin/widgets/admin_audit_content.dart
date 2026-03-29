@@ -47,7 +47,7 @@ class AuditContent extends StatelessWidget {
                   height: AppSpacing.touchTargetMin,
                   child: TextButton.icon(
                     onPressed: onClearLogs,
-                    icon: const AppIcon(AppIcons.delete, size: 16),
+                    icon: AppIcon(AppIcons.delete, size: 16, semanticsLabel: 'common.delete'.tr()),
                     label: Text('admin.clear_old_logs'.tr()),
                     style: TextButton.styleFrom(
                       foregroundColor: Theme.of(context).colorScheme.error,
@@ -106,7 +106,7 @@ class AuditSummary extends StatelessWidget {
         padding: AppSpacing.cardPadding,
         child: Row(
           children: [
-            const AppIcon(AppIcons.audit, color: AppColors.primary),
+            AppIcon(AppIcons.audit, color: AppColors.primary, semanticsLabel: 'admin.audit'.tr()),
             const SizedBox(width: AppSpacing.md),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -186,6 +186,7 @@ class AuditLogItem extends StatelessWidget {
                       AppIcons.users,
                       size: 12,
                       color: theme.colorScheme.outline,
+                      semanticsLabel: 'admin.by'.tr(),
                     ),
                     const SizedBox(width: AppSpacing.xs),
                     Text(
@@ -197,10 +198,13 @@ class AuditLogItem extends StatelessWidget {
                   ],
                   if (log.targetUserId != null) ...[
                     const SizedBox(width: AppSpacing.md),
-                    Icon(
-                      LucideIcons.userCheck,
-                      size: 12,
-                      color: theme.colorScheme.outline,
+                    Semantics(
+                      label: 'admin.target'.tr(),
+                      child: Icon(
+                        LucideIcons.userCheck,
+                        size: 12,
+                        color: theme.colorScheme.outline,
+                      ),
                     ),
                     const SizedBox(width: AppSpacing.xs),
                     Text(
@@ -220,33 +224,68 @@ class AuditLogItem extends StatelessWidget {
   }
 
   Widget _iconForAction(String action) {
-    final lower = action.toLowerCase();
-    if (lower.contains('delete')) {
-      return AppIcon(
-        AppIcons.delete,
-        size: 18,
-        semanticsLabel: 'common.delete'.tr(),
-      );
-    }
-    if (lower.contains('create')) {
-      return AppIcon(
-        AppIcons.add,
-        size: 18,
-        semanticsLabel: 'common.add'.tr(),
-      );
-    }
-    if (lower.contains('update')) {
-      return AppIcon(
-        AppIcons.edit,
-        size: 18,
-        semanticsLabel: 'common.edit'.tr(),
-      );
-    }
-    if (lower.contains('login')) return const Icon(LucideIcons.logIn, size: 18);
-    if (lower.contains('ban') || lower.contains('block')) {
-      return const Icon(LucideIcons.ban, size: 18);
-    }
-    return const AppIcon(AppIcons.audit, size: 18);
+    final type = AdminActionType.fromJson(action);
+    return switch (type) {
+      AdminActionType.delete => AppIcon(
+          AppIcons.delete,
+          size: 18,
+          semanticsLabel: 'common.delete'.tr(),
+        ),
+      AdminActionType.create => AppIcon(
+          AppIcons.add,
+          size: 18,
+          semanticsLabel: 'common.add'.tr(),
+        ),
+      AdminActionType.update => AppIcon(
+          AppIcons.edit,
+          size: 18,
+          semanticsLabel: 'common.edit'.tr(),
+        ),
+      AdminActionType.login => Semantics(
+          label: 'auth.login'.tr(),
+          child: const Icon(LucideIcons.logIn, size: 18),
+        ),
+      AdminActionType.logout => Semantics(
+          label: 'auth.logout'.tr(),
+          child: const Icon(LucideIcons.logOut, size: 18),
+        ),
+      AdminActionType.grantPremium => AppIcon(
+          AppIcons.premium,
+          size: 18,
+          semanticsLabel: 'admin.grant_premium'.tr(),
+        ),
+      AdminActionType.revokePremium => Semantics(
+          label: 'admin.revoke_premium'.tr(),
+          child: const Icon(LucideIcons.xCircle, size: 18),
+        ),
+      AdminActionType.toggleActive => Semantics(
+          label: action,
+          child: const Icon(LucideIcons.toggleLeft, size: 18),
+        ),
+      AdminActionType.export => AppIcon(
+          AppIcons.export,
+          size: 18,
+          semanticsLabel: 'export.title'.tr(),
+        ),
+      AdminActionType.reset => Semantics(
+          label: action,
+          child: const Icon(LucideIcons.rotateCcw, size: 18),
+        ),
+      AdminActionType.clearLogs => AppIcon(
+          AppIcons.delete,
+          size: 18,
+          semanticsLabel: 'admin.clear_old_logs'.tr(),
+        ),
+      AdminActionType.dismissEvent => Semantics(
+          label: 'admin.dismiss_event'.tr(),
+          child: const Icon(LucideIcons.checkCircle, size: 18),
+        ),
+      AdminActionType.unknown => AppIcon(
+          AppIcons.audit,
+          size: 18,
+          semanticsLabel: action,
+        ),
+    };
   }
 
   String _formatTimestamp(BuildContext context, DateTime dt) {

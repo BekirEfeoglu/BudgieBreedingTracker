@@ -79,6 +79,7 @@ class UserDetailProfileHeader extends StatelessWidget {
                       AppIcons.users,
                       size: 28,
                       color: theme.colorScheme.onPrimaryContainer,
+                      semanticsLabel: 'admin.no_name'.tr(),
                     )
                   : null,
             ),
@@ -163,6 +164,7 @@ class UserDetailSubscriptionSection extends StatelessWidget {
                   color: isPremium
                       ? AppColors.accent
                       : theme.colorScheme.outline,
+                  semanticsLabel: 'admin.subscription'.tr(),
                 ),
                 const SizedBox(width: AppSpacing.sm),
                 Text(
@@ -216,7 +218,10 @@ class UserDetailSubscriptionSection extends StatelessWidget {
                 child: isPremium
                     ? OutlinedButton.icon(
                         onPressed: onRevokePremium,
-                        icon: const Icon(LucideIcons.xCircle, size: 18),
+                        icon: Semantics(
+                          label: 'admin.revoke_premium'.tr(),
+                          child: const Icon(LucideIcons.xCircle, size: 18),
+                        ),
                         label: Text('admin.revoke_premium'.tr()),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: AppColors.error,
@@ -227,7 +232,7 @@ class UserDetailSubscriptionSection extends StatelessWidget {
                       )
                     : FilledButton.icon(
                         onPressed: onGrantPremium,
-                        icon: const AppIcon(AppIcons.premium, size: 18),
+                        icon: AppIcon(AppIcons.premium, size: 18, semanticsLabel: 'admin.grant_premium'.tr()),
                         label: Text('admin.grant_premium'.tr()),
                         style: FilledButton.styleFrom(
                           backgroundColor: AppColors.success,

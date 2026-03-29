@@ -50,7 +50,10 @@ class _LogItem extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(LucideIcons.clock, size: 14, color: theme.colorScheme.outline),
+          Semantics(
+            label: 'admin.time'.tr(),
+            child: Icon(LucideIcons.clock, size: 14, color: theme.colorScheme.outline),
+          ),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Column(

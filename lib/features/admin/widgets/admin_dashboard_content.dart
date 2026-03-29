@@ -43,7 +43,7 @@ class DashboardContent extends StatelessWidget {
             children: [
               Expanded(
                 child: DashboardQuickActionButton(
-                  icon: const AppIcon(AppIcons.settings),
+                  icon: AppIcon(AppIcons.settings, semanticsLabel: 'admin.go_to_settings'.tr()),
                   label: 'admin.go_to_settings'.tr(),
                   onTap: () => context.go(AppRoutes.adminSettings),
                 ),
@@ -51,7 +51,7 @@ class DashboardContent extends StatelessWidget {
               const SizedBox(width: AppSpacing.md),
               Expanded(
                 child: DashboardQuickActionButton(
-                  icon: const AppIcon(AppIcons.users),
+                  icon: AppIcon(AppIcons.users, semanticsLabel: 'admin.go_to_users'.tr()),
                   label: 'admin.go_to_users'.tr(),
                   onTap: () => context.go(AppRoutes.adminUsers),
                 ),
@@ -131,7 +131,7 @@ class DashboardSystemHealthBanner extends ConsumerWidget {
               child: CircularProgressIndicator(strokeWidth: 2, color: color),
             )
           else
-            AppIcon(AppIcons.health, color: color),
+            AppIcon(AppIcons.health, color: color, semanticsLabel: title),
           const SizedBox(width: AppSpacing.md),
           Expanded(
             child: Column(
@@ -164,7 +164,7 @@ class DashboardStatsGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final crossAxisCount = constraints.maxWidth > 600 ? 4 : 2;
+        final crossAxisCount = constraints.maxWidth > AdminConstants.gridColumnBreakpoint ? 4 : 2;
         return GridView.count(
           crossAxisCount: crossAxisCount,
           shrinkWrap: true,
@@ -172,34 +172,36 @@ class DashboardStatsGrid extends StatelessWidget {
           mainAxisSpacing: AppSpacing.md,
           crossAxisSpacing: AppSpacing.md,
           // On narrow viewports, taller cards prevent text/value overflow.
-          childAspectRatio: constraints.maxWidth > 600 ? 1.4 : 1.15,
+          childAspectRatio: constraints.maxWidth > AdminConstants.gridColumnBreakpoint
+              ? AdminConstants.gridAspectRatioWide
+              : AdminConstants.gridAspectRatioNarrow,
           children: [
             DashboardStatCard(
-              icon: const AppIcon(AppIcons.users),
+              icon: AppIcon(AppIcons.users, semanticsLabel: 'admin.total_users'.tr()),
               label: 'admin.total_users'.tr(),
               value: '${stats.totalUsers}',
               color: AppColors.primary,
             ),
             DashboardStatCard(
-              icon: const Icon(LucideIcons.userCheck),
+              icon: Semantics(label: 'admin.active_today'.tr(), child: const Icon(LucideIcons.userCheck)),
               label: 'admin.active_today'.tr(),
               value: '${stats.activeToday}',
               color: AppColors.success,
             ),
             DashboardStatCard(
-              icon: const Icon(LucideIcons.userPlus),
+              icon: Semantics(label: 'admin.new_today'.tr(), child: const Icon(LucideIcons.userPlus)),
               label: 'admin.new_today'.tr(),
               value: '${stats.newUsersToday}',
               color: AppColors.info,
             ),
             DashboardStatCard(
-              icon: const AppIcon(AppIcons.bird),
+              icon: AppIcon(AppIcons.bird, semanticsLabel: 'admin.total_birds'.tr()),
               label: 'admin.total_birds'.tr(),
               value: '${stats.totalBirds}',
               color: AppColors.budgieGreen,
             ),
             DashboardStatCard(
-              icon: const AppIcon(AppIcons.breedingActive),
+              icon: AppIcon(AppIcons.breedingActive, semanticsLabel: 'admin.active_breedings'.tr()),
               label: 'admin.active_breedings'.tr(),
               value: '${stats.activeBreedings}',
               color: AppColors.budgieYellow,

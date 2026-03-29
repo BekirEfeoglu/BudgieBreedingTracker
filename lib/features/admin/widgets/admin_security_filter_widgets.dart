@@ -37,10 +37,14 @@ class SecurityFilterBar extends StatelessWidget {
             controller: controller,
             decoration: InputDecoration(
               hintText: 'admin.search_events'.tr(),
-              prefixIcon: const AppIcon(AppIcons.search, size: 18),
+              prefixIcon: AppIcon(AppIcons.search, size: 18, semanticsLabel: 'common.search'.tr()),
               suffixIcon: filter.searchQuery.isNotEmpty
                   ? IconButton(
-                      icon: const Icon(LucideIcons.x, size: 18),
+                      tooltip: 'common.clear'.tr(),
+                      icon: Semantics(
+                        label: 'common.clear'.tr(),
+                        child: const Icon(LucideIcons.x, size: 18),
+                      ),
                       onPressed: () {
                         controller.clear();
                         onSearchChanged('');

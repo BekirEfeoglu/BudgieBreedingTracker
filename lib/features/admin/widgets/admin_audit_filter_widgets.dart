@@ -36,10 +36,14 @@ class AuditFilterBar extends StatelessWidget {
             controller: controller,
             decoration: InputDecoration(
               hintText: 'admin.search_logs'.tr(),
-              prefixIcon: const AppIcon(AppIcons.search, size: 18),
+              prefixIcon: AppIcon(AppIcons.search, size: 18, semanticsLabel: 'common.search'.tr()),
               suffixIcon: filter.hasFilter
                   ? IconButton(
-                      icon: const Icon(LucideIcons.x, size: 18),
+                      tooltip: 'common.clear'.tr(),
+                      icon: Semantics(
+                        label: 'common.clear'.tr(),
+                        child: const Icon(LucideIcons.x, size: 18),
+                      ),
                       onPressed: onClear,
                     )
                   : null,
@@ -142,12 +146,15 @@ class AuditDateChip extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              LucideIcons.calendar,
-              size: 14,
-              color: isActive
-                  ? theme.colorScheme.primary
-                  : theme.colorScheme.outline,
+            Semantics(
+              label: 'calendar.title'.tr(),
+              child: Icon(
+                LucideIcons.calendar,
+                size: 14,
+                color: isActive
+                    ? theme.colorScheme.primary
+                    : theme.colorScheme.outline,
+              ),
             ),
             const SizedBox(width: AppSpacing.xs),
             Expanded(

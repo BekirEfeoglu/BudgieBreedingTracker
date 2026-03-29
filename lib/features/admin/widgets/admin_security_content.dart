@@ -178,7 +178,10 @@ class SecurityEventItem extends ConsumerWidget {
           children: [
             Row(
               children: [
-                Icon(sev.icon, size: 18, color: sev.color),
+                Semantics(
+                label: sev.label,
+                child: Icon(sev.icon, size: 18, color: sev.color),
+              ),
                 const SizedBox(width: AppSpacing.sm),
                 Expanded(
                   child: Text(
@@ -209,7 +212,10 @@ class SecurityEventItem extends ConsumerWidget {
                 ),
                 const SizedBox(width: AppSpacing.xs),
                 IconButton(
-                  icon: const Icon(LucideIcons.checkCircle, size: 18),
+                  icon: Semantics(
+                    label: 'admin.dismiss_event'.tr(),
+                    child: const Icon(LucideIcons.checkCircle, size: 18),
+                  ),
                   tooltip: 'admin.dismiss_event'.tr(),
                   onPressed: () {
                     ref
@@ -255,7 +261,10 @@ class SecurityMetadataRow extends StatelessWidget {
     return Row(
       children: [
         if (event.ipAddress != null) ...[
-          Icon(LucideIcons.globe, size: 12, color: outline),
+          Semantics(
+            label: 'IP',
+            child: Icon(LucideIcons.globe, size: 12, color: outline),
+          ),
           const SizedBox(width: AppSpacing.xs),
           Text(
             _maskIp(event.ipAddress!),
@@ -263,7 +272,10 @@ class SecurityMetadataRow extends StatelessWidget {
           ),
           const SizedBox(width: AppSpacing.md),
         ],
-        Icon(LucideIcons.clock, size: 12, color: outline),
+        Semantics(
+          label: 'admin.time'.tr(),
+          child: Icon(LucideIcons.clock, size: 12, color: outline),
+        ),
         const SizedBox(width: 4),
         Text(_formatTimestamp(event.createdAt, context), style: style),
       ],

@@ -50,16 +50,16 @@ class MonitoringStatusBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final dbRatio = capacity.databaseSizeBytes / (500 * 1024 * 1024);
+    final dbRatio = capacity.databaseSizeBytes / AdminConstants.dbSizeLimitBytes;
     final connRatio = capacity.connectionUsageRatio;
     final worstRatio = math.max(dbRatio, connRatio);
 
     final String statusKey;
     final Color color;
-    if (worstRatio < 0.7) {
+    if (worstRatio < AdminConstants.healthyThreshold) {
       statusKey = 'admin.db_status_healthy';
       color = AppColors.success;
-    } else if (worstRatio < 0.9) {
+    } else if (worstRatio < AdminConstants.warningThreshold) {
       statusKey = 'admin.db_status_warning';
       color = AppColors.warning;
     } else {
@@ -77,13 +77,16 @@ class MonitoringStatusBanner extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(
-            worstRatio < 0.7
-                ? LucideIcons.checkCircle
-                : worstRatio < 0.9
-                ? LucideIcons.alertTriangle
-                : LucideIcons.alertOctagon,
-            color: color,
+          Semantics(
+            label: statusKey,
+            child: Icon(
+              worstRatio < AdminConstants.healthyThreshold
+                  ? LucideIcons.checkCircle
+                  : worstRatio < AdminConstants.warningThreshold
+                  ? LucideIcons.alertTriangle
+                  : LucideIcons.alertOctagon,
+              color: color,
+            ),
           ),
           const SizedBox(width: AppSpacing.md),
           Expanded(
@@ -122,38 +125,38 @@ class MonitoringCapacityGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final crossAxisCount = constraints.maxWidth > 600 ? 4 : 2;
+        final crossAxisCount = constraints.maxWidth > AdminConstants.gridColumnBreakpoint ? 4 : 2;
         return GridView.count(
           crossAxisCount: crossAxisCount,
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           mainAxisSpacing: AppSpacing.md,
           crossAxisSpacing: AppSpacing.md,
-          childAspectRatio: constraints.maxWidth > 600 ? 1.1 : 1.0,
+          childAspectRatio: constraints.maxWidth > AdminConstants.gridColumnBreakpoint ? 1.1 : 1.0,
           children: [
             MonitoringCapacityCard(
-              icon: const AppIcon(AppIcons.database),
+              icon: AppIcon(AppIcons.database, semanticsLabel: 'admin.database_size'.tr()),
               label: 'admin.database_size'.tr(),
               value: formatBytes(capacity.databaseSizeBytes),
-              ratio: capacity.databaseSizeBytes / (500 * 1024 * 1024),
+              ratio: capacity.databaseSizeBytes / AdminConstants.dbSizeLimitBytes,
               subtitle: 'admin.database_limit_suffix'.tr(),
             ),
             MonitoringCapacityCard(
-              icon: const Icon(LucideIcons.plug),
+              icon: Semantics(label: 'admin.connection_pool'.tr(), child: const Icon(LucideIcons.plug)),
               label: 'admin.connection_pool'.tr(),
               value: '${capacity.totalConnections}',
               ratio: capacity.connectionUsageRatio,
               subtitle: '/ ${capacity.maxConnections}',
             ),
             MonitoringCapacityCard(
-              icon: const Icon(LucideIcons.zap),
+              icon: Semantics(label: 'admin.cache_hit_ratio'.tr(), child: const Icon(LucideIcons.zap)),
               label: 'admin.cache_hit_ratio'.tr(),
               value: '${capacity.cacheHitRatio.toStringAsFixed(1)}%',
               ratio: capacity.cacheHitRatio / 100,
               invertColor: true,
             ),
             MonitoringCapacityCard(
-              icon: const Icon(LucideIcons.list),
+              icon: Semantics(label: 'admin.total_rows'.tr(), child: const Icon(LucideIcons.list)),
               label: 'admin.total_rows'.tr(),
               value: formatNumber(capacity.totalRows),
               ratio: null,

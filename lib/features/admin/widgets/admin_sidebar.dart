@@ -99,6 +99,7 @@ class AdminSidebar extends StatelessWidget {
             AppIcons.security,
             color: theme.colorScheme.primary,
             size: 28,
+            semanticsLabel: 'admin.panel_title'.tr(),
           ),
           const SizedBox(width: AppSpacing.md),
           Expanded(
@@ -191,7 +192,9 @@ class AdminSidebar extends StatelessWidget {
         // Transparent to let the surface show through
         color: theme.colorScheme.surface.withValues(alpha: 0),
         borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-        child: InkWell(
+        child: Tooltip(
+          message: 'admin.back_to_app'.tr(),
+          child: InkWell(
           onTap: () {
             final scaffold = Scaffold.maybeOf(context);
             if (scaffold != null && scaffold.isDrawerOpen) {
@@ -207,10 +210,13 @@ class AdminSidebar extends StatelessWidget {
             ),
             child: Row(
               children: [
-                Icon(
-                  LucideIcons.arrowLeft,
-                  size: 20,
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                Semantics(
+                  label: 'admin.back_to_app'.tr(),
+                  child: Icon(
+                    LucideIcons.arrowLeft,
+                    size: 20,
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                  ),
                 ),
                 const SizedBox(width: AppSpacing.md),
                 Expanded(
@@ -225,6 +231,7 @@ class AdminSidebar extends StatelessWidget {
               ],
             ),
           ),
+        ),
         ),
       ),
     );
