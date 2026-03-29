@@ -79,7 +79,8 @@ class _AdminAuditScreenState extends ConsumerState<AdminAuditScreen> {
                   logs: logs,
                   hasMore: logs.length >= ref.watch(adminAuditLimitProvider),
                   onLoadMore: () {
-                    ref.read(adminAuditLimitProvider.notifier).state += 100;
+                    ref.read(adminAuditLimitProvider.notifier).state +=
+                        AdminConstants.auditLogsPageSize;
                   },
                   onClearLogs: _onClearLogs,
                 ),

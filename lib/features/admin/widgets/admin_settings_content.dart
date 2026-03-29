@@ -7,6 +7,7 @@ import '../../../core/constants/app_icons.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_icon.dart';
+import '../providers/admin_models.dart';
 import 'admin_settings_actions.dart';
 import 'admin_settings_widgets.dart';
 
@@ -43,17 +44,6 @@ class _AdminSettingsContentState extends ConsumerState<AdminSettingsContent> {
   }
 
   int _activeIn(List<String> keys) => keys.where(_val).length;
-
-  DateTime? get _lastGlobalUpdate {
-    DateTime? latest;
-    for (final entry in widget.settings.values) {
-      final raw = entry['updated_at'] as String?;
-      if (raw == null) continue;
-      final dt = DateTime.tryParse(raw);
-      if (dt != null && (latest == null || dt.isAfter(latest))) latest = dt;
-    }
-    return latest;
-  }
 
   Widget _toggle(
     String key,
@@ -111,6 +101,9 @@ class _AdminSettingsContentState extends ConsumerState<AdminSettingsContent> {
 
   @override
   Widget build(BuildContext context) {
+    // Typed snapshot for read-only access — writes still use string-keyed updateSetting().
+    final typedSettings = AdminSystemSettings.fromSettingsMap(widget.settings);
+
     const systemKeys = [
       'maintenance_mode',
       'registration_open',
@@ -137,7 +130,7 @@ class _AdminSettingsContentState extends ConsumerState<AdminSettingsContent> {
           SettingsOverviewBanner(
             activeCount: _activeIn(allKeys),
             totalCount: allKeys.length,
-            lastUpdatedAt: _lastGlobalUpdate,
+            lastUpdatedAt: typedSettings.lastUpdated,
           ),
           const SizedBox(height: AppSpacing.lg),
           _buildSystemSection(systemKeys),

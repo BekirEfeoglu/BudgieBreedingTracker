@@ -9,9 +9,6 @@ import '../../../core/widgets/loading_state.dart';
 import '../providers/admin_providers.dart';
 import '../widgets/admin_monitoring_widgets.dart';
 
-/// Auto-refresh interval for monitoring data.
-const _autoRefreshInterval = Duration(seconds: 30);
-
 /// System monitoring dashboard — shows real Supabase server capacity metrics.
 class AdminMonitoringScreen extends ConsumerStatefulWidget {
   const AdminMonitoringScreen({super.key});
@@ -27,7 +24,7 @@ class _AdminMonitoringScreenState extends ConsumerState<AdminMonitoringScreen> {
   @override
   void initState() {
     super.initState();
-    _refreshTimer = Timer.periodic(_autoRefreshInterval, (_) {
+    _refreshTimer = Timer.periodic(AdminConstants.monitoringRefreshInterval, (_) {
       ref.invalidate(serverCapacityProvider);
     });
   }

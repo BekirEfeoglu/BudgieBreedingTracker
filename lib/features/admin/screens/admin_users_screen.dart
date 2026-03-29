@@ -34,7 +34,6 @@ class AdminUsersScreen extends ConsumerStatefulWidget {
 }
 
 class _AdminUsersScreenState extends ConsumerState<AdminUsersScreen> {
-  static const _searchDebounce = Duration(milliseconds: 350);
 
   late final TextEditingController _searchController;
   Timer? _debounceTimer;
@@ -78,7 +77,7 @@ class _AdminUsersScreenState extends ConsumerState<AdminUsersScreen> {
   void _onSearchChanged(String raw) {
     final normalized = raw.trim();
     _debounceTimer?.cancel();
-    _debounceTimer = Timer(_searchDebounce, () {
+    _debounceTimer = Timer(AdminConstants.searchDebounceDuration, () {
       if (!mounted || normalized == _query) return;
       setState(() => _query = normalized);
       _resetPagination();

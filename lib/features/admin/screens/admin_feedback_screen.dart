@@ -1,25 +1,72 @@
+import 'dart:async';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
+import '../../../core/constants/app_icons.dart';
 import '../../../core/enums/admin_enums.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../core/widgets/app_icon.dart';
 import '../../../core/widgets/error_state.dart';
 import '../../notifications/providers/action_feedback_providers.dart';
+import '../constants/admin_constants.dart';
 import '../providers/admin_feedback_providers.dart';
 import '_feedback_detail_sheet.dart';
 
 part 'admin_feedback_screen_tiles.dart';
 
-class AdminFeedbackScreen extends ConsumerWidget {
+class AdminFeedbackScreen extends ConsumerStatefulWidget {
   const AdminFeedbackScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<AdminFeedbackScreen> createState() =>
+      _AdminFeedbackScreenState();
+}
+
+class _AdminFeedbackScreenState extends ConsumerState<AdminFeedbackScreen> {
+  late final TextEditingController _searchController;
+  Timer? _debounce;
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _debounce?.cancel();
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _onSearchChanged(String value) {
+    _debounce?.cancel();
+    _debounce = Timer(AdminConstants.searchDebounceDuration, () {
+      if (!mounted) return;
+      final current = ref.read(feedbackQueryProvider);
+      ref.read(feedbackQueryProvider.notifier).state = current.copyWith(
+        searchQuery: value.trim(),
+      );
+    });
+  }
+
+  void _clearSearch() {
+    _debounce?.cancel();
+    _searchController.clear();
+    final current = ref.read(feedbackQueryProvider);
+    ref.read(feedbackQueryProvider.notifier).state = current.copyWith(
+      searchQuery: '',
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final feedbackAsync = ref.watch(adminFeedbackProvider);
-    final statusFilter = ref.watch(feedbackStatusFilterProvider);
+    final query = ref.watch(feedbackQueryProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -39,32 +86,58 @@ class AdminFeedbackScreen extends ConsumerWidget {
           onRetry: () => ref.invalidate(adminFeedbackProvider),
         ),
         data: (items) {
-          final statusName = statusFilter?.toJson();
-          final filtered = statusName == null
-              ? items
-              : items.where((f) => f['status'] == statusName).toList();
-
           return Column(
             children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.lg,
+                  vertical: AppSpacing.sm,
+                ),
+                child: TextField(
+                  controller: _searchController,
+                  onChanged: _onSearchChanged,
+                  decoration: InputDecoration(
+                    hintText: 'admin.search_feedback'.tr(),
+                    prefixIcon: const Padding(
+                      padding: EdgeInsets.all(AppSpacing.md),
+                      child: AppIcon(AppIcons.search, size: 18),
+                    ),
+                    suffixIcon: _searchController.text.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(LucideIcons.x, size: 18),
+                            onPressed: _clearSearch,
+                            tooltip: 'common.cancel'.tr(),
+                          )
+                        : null,
+                    isDense: true,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                    ),
+                  ),
+                ),
+              ),
               _StatusFilterBar(
-                selected: statusFilter,
+                selected: query.statusFilter,
                 total: items.length,
-                onChanged: (v) =>
-                    ref.read(feedbackStatusFilterProvider.notifier).state = v,
+                onChanged: (v) {
+                  final current = ref.read(feedbackQueryProvider);
+                  ref.read(feedbackQueryProvider.notifier).state =
+                      current.copyWith(statusFilter: v);
+                },
               ),
               Expanded(
-                child: filtered.isEmpty
+                child: items.isEmpty
                     ? _buildEmpty(context)
                     : ListView.builder(
                         padding: const EdgeInsets.only(
                           top: AppSpacing.sm,
                           bottom: AppSpacing.xxxl,
                         ),
-                        itemCount: filtered.length,
+                        itemCount: items.length,
                         itemBuilder: (ctx, i) => _FeedbackTile(
-                          key: ValueKey(filtered[i]['id']),
-                          item: filtered[i],
-                          onTap: () => _showDetail(ctx, ref, filtered[i]),
+                          key: ValueKey(items[i]['id']),
+                          item: items[i],
+                          onTap: () => _showDetail(ctx, items[i]),
                         ),
                       ),
               ),
@@ -102,11 +175,7 @@ class AdminFeedbackScreen extends ConsumerWidget {
     );
   }
 
-  void _showDetail(
-    BuildContext context,
-    WidgetRef ref,
-    Map<String, dynamic> item,
-  ) {
+  void _showDetail(BuildContext context, Map<String, dynamic> item) {
     Future<void> onSave({
       required String status,
       String? adminResponse,
