@@ -20,7 +20,7 @@ dependencies:
   go_router: ^17.0.0
 
   # Backend
-  supabase_flutter: ^2.5.0
+  supabase_flutter: ^2.12.2
 
   # Local Database
   drift: ^2.31.0
