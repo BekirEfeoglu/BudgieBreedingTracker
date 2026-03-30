@@ -48,7 +48,7 @@ python scripts/verify_rules.py --fix    # Auto-fix CLAUDE.md stats table with ac
 | Metric | Value |
 | --- | --- |
 | Source files (lib/) | 720 Dart files |
-| Test files (test/) | 679 test files, 8,018+ individual tests |
+| Test files (test/) | 679 test files, 8,025+ individual tests |
 | Feature modules | 20 |
 | Drift tables / DAOs / Mappers | 20 each |
 | Repositories | 20 entity + base + sync_metadata |
