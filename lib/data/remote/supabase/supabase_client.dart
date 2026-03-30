@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -32,7 +33,12 @@ final SupabaseClient _fallbackSupabaseClient = SupabaseClient(
 int _fallbackRecheckAttempts = 0;
 Timer? _fallbackRecheckTimer;
 
+/// Set to `true` in test setup to prevent fallback recheck timers from firing.
+@visibleForTesting
+bool skipFallbackRecheck = false;
+
 void _scheduleFallbackRecheck(Ref ref) {
+  if (skipFallbackRecheck) return;
   if (!hasSupabaseCredentials) return;
   if (_fallbackRecheckTimer?.isActive == true) return;
   if (_fallbackRecheckAttempts >= _maxFallbackRechecks) return;
