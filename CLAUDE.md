@@ -60,7 +60,7 @@ python scripts/verify_rules.py --fix    # Auto-fix CLAUDE.md stats table with ac
 | Shared widgets | 19 (14 root + 2 buttons + 2 cards + 1 dialog) |
 | Enum files | 12 |
 | Supabase constants | 94 (tables + buckets + columns) |
-| L10n keys | ~1,940 per language, 34 categories |
+| L10n keys | ~1,961 per language, 34 categories |
 | DB schema version | 17 |
 
 ## Rules
