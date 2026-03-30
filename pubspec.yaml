@@ -72,7 +72,7 @@ dependencies:
   google_mobile_ads: ^7.0.0
 
   # Error Tracking
-  sentry_flutter: ^9.0.0
+  sentry_flutter: ^9.16.0
 
   # Icons
   lucide_icons: ^0.257.0
