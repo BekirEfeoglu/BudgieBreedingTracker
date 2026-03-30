@@ -137,39 +137,38 @@ class EncryptionService {
     final combined = base64Decode(cipherText);
     final isAuthenticated = _hasMagicPrefix(combined);
 
-    // Try derived sub-keys first (new format)
-    try {
-      final subKeys = _deriveSubKeys(keyBytes);
-      final encKeyBytes = Uint8List.fromList(subKeys.encKey);
-      final macKeyBytes = Uint8List.fromList(subKeys.macKey);
-      final encrypted = _decodeEncryptedPayload(combined, macKeyBytes);
-      final encrypter = enc.Encrypter(
-        enc.AES(enc.Key(encKeyBytes), mode: enc.AESMode.cbc),
-      );
-      return encrypter.decrypt(encrypted.$1, iv: encrypted.$2);
-    } on FormatException {
-      // HMAC mismatch with derived keys — fall through to raw key attempt
-      // for pre-separation payloads. Only FormatException (HMAC/format
-      // failure) is caught; other errors (e.g. ArgumentError) propagate.
-    }
-
-    // For authenticated payloads: try raw master key as fallback.
-    // Handles the "pre-separation" format — BBTENC1! magic prefix + AES(rawKey)
-    // + HMAC(rawKey) — which predates _deriveSubKeys being introduced.
-    // HMAC is still verified inside _decodeEncryptedPayload using rawKey.
     if (isAuthenticated) {
-      final encrypted = _decodeEncryptedPayload(combined, keyBytes);
-      final encrypter = enc.Encrypter(
+      // Try derived sub-keys first (new format: BBTENC1! + AES(derivedEncKey) + HMAC(derivedMacKey)).
+      try {
+        final subKeys = _deriveSubKeys(keyBytes);
+        final encKeyBytes = Uint8List.fromList(subKeys.encKey);
+        final macKeyBytes = Uint8List.fromList(subKeys.macKey);
+        final decrypted = _decodeEncryptedPayload(combined, macKeyBytes);
+        final encrypter = enc.Encrypter(
+          enc.AES(enc.Key(encKeyBytes), mode: enc.AESMode.cbc),
+        );
+        return encrypter.decrypt(decrypted.$1, iv: decrypted.$2);
+      } on FormatException {
+        // HMAC mismatch with derived keys — fall through to raw key attempt
+        // for pre-separation payloads.
+      }
+
+      // Pre-separation fallback: BBTENC1! + AES(rawKey) + HMAC(rawKey).
+      // Handles payloads encrypted before _deriveSubKeys was introduced.
+      // HMAC is still verified inside _decodeEncryptedPayload using rawKey.
+      final rawDecrypted = _decodeEncryptedPayload(combined, keyBytes);
+      final rawEncrypter = enc.Encrypter(
         enc.AES(enc.Key(keyBytes), mode: enc.AESMode.cbc),
       );
-      return encrypter.decrypt(encrypted.$1, iv: encrypted.$2);
+      return rawEncrypter.decrypt(rawDecrypted.$1, iv: rawDecrypted.$2);
     }
 
     // Legacy only: IV+ciphertext, no magic prefix, no HMAC verification.
-    final key = enc.Key(keyBytes);
-    final encrypted = _decodeEncryptedPayload(combined, keyBytes);
-    final encrypter = enc.Encrypter(enc.AES(key, mode: enc.AESMode.cbc));
-    return encrypter.decrypt(encrypted.$1, iv: encrypted.$2);
+    final legacyDecrypted = _decodeEncryptedPayload(combined, keyBytes);
+    final legacyEncrypter = enc.Encrypter(
+      enc.AES(enc.Key(keyBytes), mode: enc.AESMode.cbc),
+    );
+    return legacyEncrypter.decrypt(legacyDecrypted.$1, iv: legacyDecrypted.$2);
   }
 
   /// Loads all archived previous key versions from secure storage.
