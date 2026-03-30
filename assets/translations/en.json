@@ -627,7 +627,11 @@
     "debug_offline_mode": "Offline Simulation (Debug)",
     "debug_offline_desc": "Simulates turning off network connectivity",
     "password_changed": "Password changed successfully",
-    "password_change_error": "Error changing password"
+    "password_change_error": "Error changing password",
+    "just_now": "Just now",
+    "minutes_ago": "{} minutes ago",
+    "hours_ago": "{} hours ago",
+    "days_ago": "{} days ago"
   },
   "backup": {
     "title": "Data Export",
@@ -761,7 +765,11 @@
     "copy_email": "Copy Email",
     "email_copied": "Email copied",
     "user_guide": "User Guide",
-    "set_avatar_hint": "Add a profile photo"
+    "set_avatar_hint": "Add a profile photo",
+    "just_now": "Just now",
+    "minutes_ago": "{} minutes ago",
+    "hours_ago": "{} hours ago",
+    "days_ago": "{} days ago"
   },
   "statistics": {
     "title": "Statistics",
@@ -949,7 +957,11 @@
     "banding_main_body": "{} should be banded today",
     "banding_followup_title": "Banding Reminder",
     "banding_followup_body": "{} has not been banded yet",
-    "high_priority": "High priority"
+    "high_priority": "High priority",
+    "time_just_now": "Just now",
+    "time_minutes_ago": "{} minutes ago",
+    "time_hours_ago": "{} hours ago",
+    "time_days_ago": "{} days ago"
   },
   "premium": {
     "title": "Premium",
@@ -1082,7 +1094,8 @@
     "export_options": "Export Options",
     "repair_parents": "Repair Parent Info",
     "image_export_success": "Image generated successfully",
-    "zoom_to_fit": "Zoom to Fit"
+    "zoom_to_fit": "Zoom to Fit",
+    "bird_not_found": "Bird not found"
   },
   "genetics": {
     "title": "Genetics Calculator",
@@ -1512,7 +1525,11 @@
     "bulk_delete": "Delete Data",
     "bulk_delete_confirm": "Type {} to confirm",
     "protected_users_skipped": "{} protected user(s) skipped",
-    "time": "Time"
+    "time": "Time",
+    "just_now": "Just now",
+    "minutes_ago": "{} minutes ago",
+    "hours_ago": "{} hours ago",
+    "days_ago": "{} days ago"
   },
   "user_guide": {
     "title": "User Guide",
@@ -1820,7 +1837,11 @@
     "subject_required": "Subject is required",
     "submit": "Submit",
     "success": "Your feedback has been submitted successfully. Thank you!",
-    "title": "Feedback"
+    "title": "Feedback",
+    "just_now": "Just now",
+    "minutes_ago": "{} minutes ago",
+    "hours_ago": "{} hours ago",
+    "days_ago": "{} days ago"
   },
   "splash": {
     "error_title": "Connection error",

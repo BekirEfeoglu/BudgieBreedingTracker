@@ -47,8 +47,8 @@ python scripts/verify_rules.py --fix    # Auto-fix CLAUDE.md stats table with ac
 
 | Metric | Value |
 | --- | --- |
-| Source files (lib/) | 726 Dart files |
-| Test files (test/) | 683 test files, 8,118+ individual tests |
+| Source files (lib/) | 720 Dart files |
+| Test files (test/) | 679 test files, 8,018+ individual tests |
 | Feature modules | 20 |
 | Drift tables / DAOs / Mappers | 20 each |
 | Repositories | 20 entity + base + sync_metadata |
@@ -56,12 +56,12 @@ python scripts/verify_rules.py --fix    # Auto-fix CLAUDE.md stats table with ac
 | Freezed models | 21 model files + statistics_models + supabase_extensions |
 | Domain services | 14 directories |
 | Routes | 60 |
-| Custom SVG icons | 83 constants, 83 files on disk |
+| Custom SVG icons | 82 constants, 82 files on disk |
 | Shared widgets | 19 (14 root + 2 buttons + 2 cards + 1 dialog) |
 | Enum files | 12 |
 | Supabase constants | 94 (tables + buckets + columns) |
 | L10n keys | ~1,940 per language, 34 categories |
-| DB schema version | 19 |
+| DB schema version | 17 |
 
 ## Rules
 
@@ -81,6 +81,26 @@ Comprehensive rules in `.claude/rules/` (auto-loaded):
 | `git-rules.md` | Conventional commits, branch naming, PR workflow |
 | `ai-workflow.md` | Task approach, quality gates, prohibited actions |
 | `chat.md` | Response language (Turkish), post-coding suggestions |
+
+## Critical Anti-Patterns (must avoid)
+
+1. `withOpacity()` -> use `withValues(alpha: x)`
+2. `value` on DropdownButtonFormField -> use `initialValue` (deprecated since Flutter 3.33)
+3. `.equals()` on enum Drift column -> use `.equalsValue()`
+4. `ref.watch()` in callbacks -> use `ref.read()`
+5. `print()` -> use `AppLogger`
+6. Hardcoded text -> use `.tr()` (easy_localization, 3 languages: tr/en/de)
+7. `Icon(Icons.x)` for domain icons -> use `AppIcon(AppIcons.x)` (SVG via flutter_svg)
+8. Missing `@JsonKey(unknownEnumValue: X.unknown)` on enum fields in Freezed models
+9. `switch` without `unknown` case for server-side enums
+10. `context.go()` for forward navigation -> use `context.push()` (go replaces stack)
+11. Import table via app_database for DAO -> import DIRECTLY from table file
+12. Parameterized route before specific in GoRouter -> specific FIRST (`form` before `:id`)
+13. Hardcoded colors/spacing -> use `Theme.of(context)` / `AppSpacing`
+14. Missing `controller.dispose()` -> ALWAYS dispose in ConsumerStatefulWidget
+15. Missing `const Model._()` in Freezed -> ALWAYS add private constructor
+16. Hardcoded SVG paths -> use `AppIcons` constants from `app_icons.dart`
+17. `IconData` param in shared widgets -> use `Widget` param (EmptyState, InfoCard, StatCard, etc.)
 
 ## Key File Locations
 

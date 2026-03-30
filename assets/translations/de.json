@@ -627,7 +627,11 @@
     "debug_offline_mode": "Offline-Simulation (Debug)",
     "debug_offline_desc": "Simuliert das Ausschalten der Netzwerkverbindung",
     "password_changed": "Passwort erfolgreich geändert",
-    "password_change_error": "Fehler beim Ändern des Passworts"
+    "password_change_error": "Fehler beim Ändern des Passworts",
+    "just_now": "Gerade eben",
+    "minutes_ago": "Vor {} Minuten",
+    "hours_ago": "Vor {} Stunden",
+    "days_ago": "Vor {} Tagen"
   },
   "backup": {
     "title": "Datenexport",
@@ -761,7 +765,11 @@
     "copy_email": "E-Mail kopieren",
     "email_copied": "E-Mail kopiert",
     "user_guide": "Benutzerhandbuch",
-    "set_avatar_hint": "Profilfoto hinzufügen"
+    "set_avatar_hint": "Profilfoto hinzufügen",
+    "just_now": "Gerade eben",
+    "minutes_ago": "Vor {} Minuten",
+    "hours_ago": "Vor {} Stunden",
+    "days_ago": "Vor {} Tagen"
   },
   "statistics": {
     "title": "Statistiken",
@@ -949,7 +957,11 @@
     "banding_main_body": "{} sollte heute beringt werden",
     "banding_followup_title": "Beringungserinnerung",
     "banding_followup_body": "{} wurde noch nicht beringt",
-    "high_priority": "Hohe Priorität"
+    "high_priority": "Hohe Priorität",
+    "time_just_now": "Gerade eben",
+    "time_minutes_ago": "Vor {} Minuten",
+    "time_hours_ago": "Vor {} Stunden",
+    "time_days_ago": "Vor {} Tagen"
   },
   "premium": {
     "title": "Premium",
@@ -1082,7 +1094,8 @@
     "export_options": "Exportoptionen",
     "repair_parents": "Elterninfo reparieren",
     "image_export_success": "Bild erfolgreich erstellt",
-    "zoom_to_fit": "Ansicht anpassen"
+    "zoom_to_fit": "Ansicht anpassen",
+    "bird_not_found": "Vogel nicht gefunden"
   },
   "genetics": {
     "title": "Genetik-Rechner",
@@ -1512,7 +1525,11 @@
     "bulk_delete": "Daten loeschen",
     "bulk_delete_confirm": "Geben Sie {} ein um zu bestaetigen",
     "protected_users_skipped": "{} geschuetzte Benutzer uebersprungen",
-    "time": "Zeit"
+    "time": "Zeit",
+    "just_now": "Gerade eben",
+    "minutes_ago": "Vor {} Minuten",
+    "hours_ago": "Vor {} Stunden",
+    "days_ago": "Vor {} Tagen"
   },
   "user_guide": {
     "title": "Benutzerhandbuch",
@@ -1820,7 +1837,11 @@
     "subject_required": "Betreff ist erforderlich",
     "submit": "Absenden",
     "success": "Ihr Feedback wurde erfolgreich gesendet. Vielen Dank!",
-    "title": "Feedback"
+    "title": "Feedback",
+    "just_now": "Gerade eben",
+    "minutes_ago": "Vor {} Minuten",
+    "hours_ago": "Vor {} Stunden",
+    "days_ago": "Vor {} Tagen"
   },
   "splash": {
     "error_title": "Verbindungsfehler",

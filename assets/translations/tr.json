@@ -627,7 +627,11 @@
     "debug_offline_mode": "Offline Simülasyon (Debug)",
     "debug_offline_desc": "Ağ bağlantısını simüle olarak kapatır",
     "password_changed": "Şifre başarıyla değiştirildi",
-    "password_change_error": "Şifre değiştirilirken hata oluştu"
+    "password_change_error": "Şifre değiştirilirken hata oluştu",
+    "just_now": "Az önce",
+    "minutes_ago": "{} dakika önce",
+    "hours_ago": "{} saat önce",
+    "days_ago": "{} gün önce"
   },
   "backup": {
     "title": "Veri Aktarımı",
@@ -761,7 +765,11 @@
     "copy_email": "E-postayı Kopyala",
     "email_copied": "E-posta kopyalandı",
     "user_guide": "Kullanım Kılavuzu",
-    "set_avatar_hint": "Profil fotoğrafı ekleyin"
+    "set_avatar_hint": "Profil fotoğrafı ekleyin",
+    "just_now": "Az önce",
+    "minutes_ago": "{} dakika önce",
+    "hours_ago": "{} saat önce",
+    "days_ago": "{} gün önce"
   },
   "statistics": {
     "title": "İstatistikler",
@@ -949,7 +957,11 @@
     "banding_main_body": "{} için bugün halka takılmalı",
     "banding_followup_title": "Halka Hatırlatma",
     "banding_followup_body": "{} için halka henüz takılmadı",
-    "high_priority": "Yüksek öncelik"
+    "high_priority": "Yüksek öncelik",
+    "time_just_now": "Az önce",
+    "time_minutes_ago": "{} dakika önce",
+    "time_hours_ago": "{} saat önce",
+    "time_days_ago": "{} gün önce"
   },
   "premium": {
     "title": "Premium",
@@ -1082,7 +1094,8 @@
     "export_options": "Dışa Aktarma Seçenekleri",
     "repair_parents": "Ebeveyn Bilgilerini Onar",
     "image_export_success": "Görsel başarıyla oluşturuldu",
-    "zoom_to_fit": "Görünümü Sığdır"
+    "zoom_to_fit": "Görünümü Sığdır",
+    "bird_not_found": "Kuş bulunamadı"
   },
   "genetics": {
     "title": "Genetik Hesaplayıcı",
@@ -1512,7 +1525,11 @@
     "bulk_delete": "Verileri Sil",
     "bulk_delete_confirm": "Silmek icin {} yazin",
     "protected_users_skipped": "{} korunmus kullanici atlandi",
-    "time": "Zaman"
+    "time": "Zaman",
+    "just_now": "Az önce",
+    "minutes_ago": "{} dakika önce",
+    "hours_ago": "{} saat önce",
+    "days_ago": "{} gün önce"
   },
   "user_guide": {
     "title": "Kullanım Kılavuzu",
@@ -1820,7 +1837,11 @@
     "subject_required": "Konu alanı zorunludur",
     "submit": "Gönder",
     "success": "Geri bildiriminiz başarıyla gönderildi. Teşekkürler!",
-    "title": "Geri Bildirim"
+    "title": "Geri Bildirim",
+    "just_now": "Az önce",
+    "minutes_ago": "{} dakika önce",
+    "hours_ago": "{} saat önce",
+    "days_ago": "{} gün önce"
   },
   "splash": {
     "error_title": "Bağlantı hatası",
