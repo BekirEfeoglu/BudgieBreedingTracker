@@ -57,7 +57,6 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen>
     // Invalidate all tab providers (not just the active tab) to ensure
     // stale keepAlive caches are cleared when leaving the screen.
     // Overview
-    ref.invalidate(speciesDistributionProvider(_userId));
     ref.invalidate(genderDistributionProvider(_userId));
     ref.invalidate(colorMutationDistributionProvider(_userId));
     ref.invalidate(ageDistributionProvider(_userId));
