@@ -10,6 +10,7 @@ import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
 import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
 import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
 import 'package:budgie_breeding_tracker/data/models/health_record_model.dart';
+import 'package:budgie_breeding_tracker/data/models/incubation_model.dart';
 import 'package:budgie_breeding_tracker/data/models/statistics_models.dart';
 import 'package:budgie_breeding_tracker/features/birds/providers/bird_providers.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_providers.dart';
@@ -66,11 +67,13 @@ Egg _egg({
   required String id,
   required DateTime layDate,
   EggStatus status = EggStatus.laid,
+  String? incubationId,
 }) {
   return Egg(
     id: id,
     userId: 'user-1',
     layDate: layDate,
+    incubationId: incubationId,
     status: status,
     createdAt: DateTime(2024, 1, 1),
     updatedAt: DateTime(2024, 1, 1),
@@ -111,6 +114,7 @@ HealthRecord _record({
 ProviderContainer _container({
   required List<Bird> birds,
   required List<BreedingPair> pairs,
+  List<Incubation> incubations = const [],
   required List<Egg> eggs,
   required List<Chick> chicks,
   required List<HealthRecord> healthRecords,
@@ -129,6 +133,9 @@ ProviderContainer _container({
       breedingPairsStreamProvider(
         'user-1',
       ).overrideWith((_) => Stream.value(pairs)),
+      incubationsStreamProvider(
+        'user-1',
+      ).overrideWith((_) => Stream.value(incubations)),
       eggsStreamProvider('user-1').overrideWith((_) => Stream.value(eggs)),
       chicksStreamProvider('user-1').overrideWith((_) => Stream.value(chicks)),
       healthRecordsStreamProvider(
@@ -231,6 +238,8 @@ void main() {
       addTearDown(container.dispose);
       container.read(statsPeriodProvider.notifier).state =
           StatsPeriod.threeMonths;
+      container.listen(incubationsStreamProvider(userId), (_, __) {});
+      await container.read(incubationsStreamProvider(userId).future);
       container.listen(eggsStreamProvider(userId), (_, __) {});
       await container.read(eggsStreamProvider(userId).future);
 
@@ -240,6 +249,105 @@ void main() {
       expect(map[currentKey], isNotNull);
       expect(map[currentKey]!, closeTo(66.666, 0.1));
     });
+
+    test(
+      'monthlyEggProductionProvider filters eggs by selected species',
+      () async {
+        final now = DateTime.now();
+        final currentKey =
+            '${now.year}-${now.month.toString().padLeft(2, '0')}';
+
+        final container = _container(
+          birds: const [],
+          pairs: const [],
+          incubations: [
+            const Incubation(id: 'i-canary', userId: userId, species: Species.canary),
+            const Incubation(id: 'i-budgie', userId: userId, species: Species.budgie),
+          ],
+          chicks: const [],
+          healthRecords: const [],
+          eggs: [
+            _egg(id: 'e1', layDate: now, incubationId: 'i-canary'),
+            _egg(id: 'e2', layDate: now, incubationId: 'i-canary'),
+            _egg(id: 'e3', layDate: now, incubationId: 'i-budgie'),
+            _egg(id: 'e4', layDate: now),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        container.read(statsPeriodProvider.notifier).state =
+            StatsPeriod.threeMonths;
+        container
+            .read(statsSpeciesFilterProvider.notifier)
+            .setSpecies(Species.canary);
+        container.listen(incubationsStreamProvider(userId), (_, __) {});
+        await container.read(incubationsStreamProvider(userId).future);
+        container.listen(eggsStreamProvider(userId), (_, __) {});
+        await container.read(eggsStreamProvider(userId).future);
+
+        final value = container.read(monthlyEggProductionProvider(userId));
+        expect(value.hasValue, isTrue);
+        expect(value.requireValue[currentKey], 2);
+      },
+    );
+
+    test(
+      'monthlyBreedingOutcomesProvider filters pairs by selected species',
+      () async {
+        final now = DateTime.now();
+        final currentKey =
+            '${now.year}-${now.month.toString().padLeft(2, '0')}';
+
+        final container = _container(
+          birds: const [],
+          pairs: [
+            _pair(
+              id: 'p-canary',
+              status: BreedingStatus.completed,
+              separationDate: now,
+            ),
+            _pair(
+              id: 'p-budgie',
+              status: BreedingStatus.cancelled,
+              separationDate: now,
+            ),
+          ],
+          incubations: const [
+            Incubation(
+              id: 'i-canary',
+              userId: userId,
+              species: Species.canary,
+              breedingPairId: 'p-canary',
+            ),
+            Incubation(
+              id: 'i-budgie',
+              userId: userId,
+              species: Species.budgie,
+              breedingPairId: 'p-budgie',
+            ),
+          ],
+          eggs: const [],
+          chicks: const [],
+          healthRecords: const [],
+        );
+        addTearDown(container.dispose);
+
+        container.read(statsPeriodProvider.notifier).state =
+            StatsPeriod.threeMonths;
+        container
+            .read(statsSpeciesFilterProvider.notifier)
+            .setSpecies(Species.canary);
+        container.listen(incubationsStreamProvider(userId), (_, __) {});
+        await container.read(incubationsStreamProvider(userId).future);
+        container.listen(breedingPairsStreamProvider(userId), (_, __) {});
+        await container.read(breedingPairsStreamProvider(userId).future);
+
+        final value = container.read(monthlyBreedingOutcomesProvider(userId));
+        expect(value.hasValue, isTrue);
+        expect(value.requireValue.completed[currentKey], 1);
+        expect(value.requireValue.cancelled[currentKey], 0);
+      },
+    );
 
     test('chickSurvivalProvider returns counts and survival rate', () async {
       final container = _container(
@@ -406,11 +514,7 @@ void main() {
             eggsStreamProvider(userId).overrideWith(
               (_) => Stream.value([
                 _egg(id: 'recent', layDate: recent, status: EggStatus.fertile),
-                _egg(
-                  id: 'older',
-                  layDate: older,
-                  status: EggStatus.infertile,
-                ),
+                _egg(id: 'older', layDate: older, status: EggStatus.infertile),
               ]),
             ),
             chicksStreamProvider(
@@ -436,8 +540,9 @@ void main() {
       container3m.listen(breedingPairsStreamProvider(userId), (_, __) {});
       await container3m.read(breedingPairsStreamProvider(userId).future);
 
-      final insights3m =
-          container3m.read(quickInsightsProvider(userId)).requireValue;
+      final insights3m = container3m
+          .read(quickInsightsProvider(userId))
+          .requireValue;
 
       // 12-month window → both eggs → egg insight + fertility insight
       final container12m = makeContainer(StatsPeriod.twelveMonths);
@@ -449,8 +554,9 @@ void main() {
       container12m.listen(breedingPairsStreamProvider(userId), (_, __) {});
       await container12m.read(breedingPairsStreamProvider(userId).future);
 
-      final insights12m =
-          container12m.read(quickInsightsProvider(userId)).requireValue;
+      final insights12m = container12m
+          .read(quickInsightsProvider(userId))
+          .requireValue;
 
       // 12m should have more insights because both eggs are in range,
       // giving a fertility rate insight (fertile + infertile = checked)
@@ -460,9 +566,7 @@ void main() {
     test('shows no-data fallback when no entities in period', () async {
       final container = ProviderContainer(
         overrides: [
-          eggsStreamProvider(
-            userId,
-          ).overrideWith((_) => Stream.value(<Egg>[])),
+          eggsStreamProvider(userId).overrideWith((_) => Stream.value(<Egg>[])),
           chicksStreamProvider(
             userId,
           ).overrideWith((_) => Stream.value(<Chick>[])),
@@ -495,9 +599,7 @@ void main() {
 
       final container = ProviderContainer(
         overrides: [
-          eggsStreamProvider(
-            userId,
-          ).overrideWith((_) => Stream.value(<Egg>[])),
+          eggsStreamProvider(userId).overrideWith((_) => Stream.value(<Egg>[])),
           chicksStreamProvider(userId).overrideWith(
             (_) => Stream.value([
               _chick(id: 'c-in', hatchDate: inPeriod),

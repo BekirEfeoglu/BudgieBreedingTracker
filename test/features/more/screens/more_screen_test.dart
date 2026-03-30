@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
@@ -94,7 +95,7 @@ void main() {
       await tester.pumpWidget(createSubject());
       await tester.pumpAndSettle();
 
-      expect(find.text('nav.more'), findsOneWidget);
+      expect(find.text(l10n('nav.more')), findsOneWidget);
     });
 
     testWidgets('shows core menu items', (tester) async {
@@ -102,41 +103,49 @@ void main() {
       await tester.pumpAndSettle();
 
       // Promoted nav items at the top
-      expect(find.text('nav.chicks'), findsOneWidget);
+      expect(find.text(l10n('nav.chicks')), findsOneWidget);
 
       expect(find.text('health_records.title'), findsOneWidget);
-      expect(find.text('more.statistics'), findsOneWidget);
-      expect(find.text('more.genealogy'), findsOneWidget);
-      expect(find.text('more.genetics'), findsOneWidget);
-      expect(find.text('more.premium'), findsOneWidget);
-      expect(find.text('more.user_guide'), findsOneWidget);
-      expect(find.text('more.feedback'), findsOneWidget);
+      expect(find.text(l10n('more.statistics')), findsOneWidget);
+      expect(find.text(l10n('more.genealogy')), findsOneWidget);
+      expect(find.text(l10n('more.genetics')), findsOneWidget);
+      expect(find.text(l10n('more.premium')), findsOneWidget);
+      expect(find.text(l10n('more.user_guide')), findsOneWidget);
 
+      // feedback may fall just below the fold depending on item heights
       await tester.scrollUntilVisible(
-        find.text('settings.terms'),
+        find.text(l10n('more.feedback')),
         200,
         scrollable: find.byType(Scrollable),
       );
       await tester.pumpAndSettle();
-      expect(find.text('settings.privacy_policy'), findsOneWidget);
-      expect(find.text('settings.terms'), findsOneWidget);
+      expect(find.text(l10n('more.feedback')), findsOneWidget);
+
+      await tester.scrollUntilVisible(
+        find.text(l10n('settings.terms')),
+        200,
+        scrollable: find.byType(Scrollable),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text(l10n('settings.privacy_policy')), findsOneWidget);
+      expect(find.text(l10n('settings.terms')), findsOneWidget);
 
       // Items at the bottom require scrolling (ListView lazy rendering)
       await tester.scrollUntilVisible(
-        find.text('settings.title'),
+        find.text(l10n('settings.title')),
         200,
         scrollable: find.byType(Scrollable),
       );
       await tester.pumpAndSettle();
-      expect(find.text('settings.title'), findsOneWidget);
+      expect(find.text(l10n('settings.title')), findsOneWidget);
 
       await tester.scrollUntilVisible(
-        find.text('more.about'),
+        find.text(l10n('more.about')),
         200,
         scrollable: find.byType(Scrollable),
       );
       await tester.pumpAndSettle();
-      expect(find.text('more.about'), findsOneWidget);
+      expect(find.text(l10n('more.about')), findsOneWidget);
     });
 
     testWidgets('does not show admin panel for non-admin users', (
@@ -145,7 +154,7 @@ void main() {
       await tester.pumpWidget(createSubject(isAdmin: false));
       await tester.pumpAndSettle();
 
-      expect(find.text('more.admin_panel'), findsNothing);
+      expect(find.text(l10n('more.admin_panel')), findsNothing);
     });
 
     testWidgets('shows admin panel for admin users', (tester) async {
@@ -154,12 +163,12 @@ void main() {
 
       // Admin panel is at the bottom — scroll to make it visible
       await tester.scrollUntilVisible(
-        find.text('more.admin_panel'),
+        find.text(l10n('more.admin_panel')),
         200,
         scrollable: find.byType(Scrollable),
       );
       await tester.pumpAndSettle();
-      expect(find.text('more.admin_panel'), findsOneWidget);
+      expect(find.text(l10n('more.admin_panel')), findsOneWidget);
     });
 
     testWidgets('shows premium badge next to premium features', (tester) async {
@@ -167,7 +176,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // premium.pro_badge should appear for statistics, genealogy, genetics
-      expect(find.text('premium.pro_badge'), findsAtLeastNWidgets(3));
+      expect(find.text(l10n('premium.pro_badge')), findsAtLeastNWidgets(3));
     });
 
     testWidgets('tapping health records navigates to health screen', (
@@ -189,13 +198,13 @@ void main() {
       await tester.pumpAndSettle();
 
       await tester.scrollUntilVisible(
-        find.text('settings.title'),
+        find.text(l10n('settings.title')),
         200,
         scrollable: find.byType(Scrollable),
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('settings.title'));
+      await tester.tap(find.text(l10n('settings.title')));
       await tester.pumpAndSettle();
 
       expect(find.text('Settings'), findsOneWidget);
@@ -205,7 +214,7 @@ void main() {
       await tester.pumpWidget(createSubject(isGuest: true));
       await tester.pumpAndSettle();
 
-      expect(find.text('auth.login'), findsOneWidget);
+      expect(find.text(l10n('auth.login')), findsOneWidget);
       expect(find.byType(IconButton), findsNothing);
     });
 
@@ -215,16 +224,17 @@ void main() {
 
       // 'more.about' is at the bottom — scroll until visible (lazy ListView)
       await tester.scrollUntilVisible(
-        find.text('more.about'),
+        find.text(l10n('more.about')),
         200,
         scrollable: find.byType(Scrollable),
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('more.about'));
+      await tester.tap(find.text(l10n('more.about')));
       await tester.pumpAndSettle();
 
-      expect(find.byType(AboutDialog), findsOneWidget);
+      // The about dialog is a custom Dialog (not the Material AboutDialog)
+      expect(find.byType(Dialog), findsOneWidget);
     });
   });
 }

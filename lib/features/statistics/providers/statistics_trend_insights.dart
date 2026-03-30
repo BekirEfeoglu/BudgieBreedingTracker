@@ -13,11 +13,9 @@ final quickInsightsProvider =
       for (final a in [eggsAsync, chicksAsync, pairsAsync, trendAsync]) {
         if (a.hasError) return AsyncError(a.error!, a.stackTrace ?? StackTrace.empty);
       }
-      // Loading if any stream hasn't resolved
-      if (eggsAsync.isLoading ||
-          chicksAsync.isLoading ||
-          pairsAsync.isLoading ||
-          trendAsync.isLoading) {
+      // Loading if any data stream hasn't resolved (trend loading is handled
+      // below via trendAsync.value returning null → neutral sentiment)
+      if (eggsAsync.isLoading || chicksAsync.isLoading || pairsAsync.isLoading) {
         return const AsyncLoading();
       }
 

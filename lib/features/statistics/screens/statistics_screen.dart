@@ -33,11 +33,17 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen>
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
     _userId = ref.read(currentUserIdProvider);
+    // Invalidate on mount so stale keepAlive caches are cleared when
+    // returning to this screen. Schedule after the first frame so Riverpod's
+    // inherited scope is fully available.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _invalidateStatisticsProviders();
+    });
   }
 
   @override
   void dispose() {
-    _invalidateStatisticsProviders();
     _tabController.dispose();
     super.dispose();
   }
@@ -51,6 +57,7 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen>
     // Invalidate all tab providers (not just the active tab) to ensure
     // stale keepAlive caches are cleared when leaving the screen.
     // Overview
+    ref.invalidate(speciesDistributionProvider(_userId));
     ref.invalidate(genderDistributionProvider(_userId));
     ref.invalidate(colorMutationDistributionProvider(_userId));
     ref.invalidate(ageDistributionProvider(_userId));

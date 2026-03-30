@@ -147,13 +147,25 @@ class EncryptionService {
         enc.AES(enc.Key(encKeyBytes), mode: enc.AESMode.cbc),
       );
       return encrypter.decrypt(encrypted.$1, iv: encrypted.$2);
-    } catch (_) {
-      // Authenticated payloads (magic prefix) must NOT fall back to legacy
-      // unauthenticated decryption — the HMAC failure is authoritative.
-      if (isAuthenticated) rethrow;
+    } on FormatException {
+      // HMAC mismatch with derived keys — fall through to raw key attempt
+      // for pre-separation payloads. Only FormatException (HMAC/format
+      // failure) is caught; other errors (e.g. ArgumentError) propagate.
     }
 
-    // Legacy only: same key for AES and HMAC (no magic prefix)
+    // For authenticated payloads: try raw master key as fallback.
+    // Handles the "pre-separation" format — BBTENC1! magic prefix + AES(rawKey)
+    // + HMAC(rawKey) — which predates _deriveSubKeys being introduced.
+    // HMAC is still verified inside _decodeEncryptedPayload using rawKey.
+    if (isAuthenticated) {
+      final encrypted = _decodeEncryptedPayload(combined, keyBytes);
+      final encrypter = enc.Encrypter(
+        enc.AES(enc.Key(keyBytes), mode: enc.AESMode.cbc),
+      );
+      return encrypter.decrypt(encrypted.$1, iv: encrypted.$2);
+    }
+
+    // Legacy only: IV+ciphertext, no magic prefix, no HMAC verification.
     final key = enc.Key(keyBytes);
     final encrypted = _decodeEncryptedPayload(combined, keyBytes);
     final encrypter = enc.Encrypter(enc.AES(key, mode: enc.AESMode.cbc));
