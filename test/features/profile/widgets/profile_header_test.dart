@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/data/models/profile_model.dart';
 import 'package:budgie_breeding_tracker/features/profile/providers/profile_providers.dart';
@@ -185,19 +186,19 @@ void main() {
 
     testWidgets('does not show stats row when stats is null', (tester) async {
       await _pumpHeader(tester, stats: null);
-      expect(find.text('profile.total_birds_stat'), findsNothing);
+      expect(find.text(l10n('profile.total_birds_stat')), findsNothing);
     });
 
     testWidgets('shows premium badge for premium profile', (tester) async {
       final profile = _fakeProfile(isPremium: true);
       await _pumpHeader(tester, profile: profile);
-      expect(find.text('profile.premium_badge'), findsOneWidget);
+      expect(find.text(l10n('profile.premium_badge')), findsOneWidget);
     });
 
     testWidgets('shows founder badge for founder profile', (tester) async {
       final profile = _fakeProfile(role: 'founder');
       await _pumpHeader(tester, profile: profile);
-      expect(find.text('profile.founder_badge'), findsOneWidget);
+      expect(find.text(l10n('profile.founder_badge')), findsOneWidget);
     });
 
     testWidgets('shows admin badge for admin profile (not founder)', (
@@ -205,7 +206,7 @@ void main() {
     ) async {
       final profile = _fakeProfile(role: 'admin');
       await _pumpHeader(tester, profile: profile);
-      expect(find.text('profile.admin_badge'), findsOneWidget);
+      expect(find.text(l10n('profile.admin_badge')), findsOneWidget);
     });
 
     testWidgets('does not show badges when profile has no special role', (
@@ -213,15 +214,15 @@ void main() {
     ) async {
       final profile = _fakeProfile();
       await _pumpHeader(tester, profile: profile);
-      expect(find.text('profile.premium_badge'), findsNothing);
-      expect(find.text('profile.founder_badge'), findsNothing);
-      expect(find.text('profile.admin_badge'), findsNothing);
+      expect(find.text(l10n('profile.premium_badge')), findsNothing);
+      expect(find.text(l10n('profile.founder_badge')), findsNothing);
+      expect(find.text(l10n('profile.admin_badge')), findsNothing);
     });
 
     testWidgets('does not show badges when profile is null', (tester) async {
       await _pumpHeader(tester, profile: null);
-      expect(find.text('profile.premium_badge'), findsNothing);
-      expect(find.text('profile.founder_badge'), findsNothing);
+      expect(find.text(l10n('profile.premium_badge')), findsNothing);
+      expect(find.text(l10n('profile.founder_badge')), findsNothing);
     });
 
     testWidgets('stat items animate from 0 to final value', (tester) async {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
@@ -57,7 +58,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('genealogy.no_offspring'), findsOneWidget);
+      expect(find.text(l10n('genealogy.no_offspring')), findsOneWidget);
     });
 
     testWidgets('shows offspring count in header when birds are provided', (
@@ -135,7 +136,7 @@ void main() {
       await tester.pump();
 
       // 'birds.male' key'ini içeren FilterChip'e tap
-      final maleChip = find.widgetWithText(FilterChip, 'birds.male');
+      final maleChip = find.widgetWithText(FilterChip, l10n('birds.male'));
       if (maleChip.evaluate().isNotEmpty) {
         await tester.tap(maleChip);
         await tester.pump();
@@ -167,7 +168,7 @@ void main() {
         chips[4].onSelected?.call(true);
         await tester.pump();
 
-        expect(find.text('common.no_results'), findsOneWidget);
+        expect(find.text(l10n('common.no_results')), findsOneWidget);
       } else {
         // FilterChip sayısı beklenenden az → widget yapısı doğru render edildi
         expect(find.byType(FilterChip), findsAtLeastNWidgets(1));
@@ -198,7 +199,7 @@ void main() {
       await tester.pump();
 
       // 'genealogy.offspring_birds' section label
-      expect(find.text('genealogy.offspring_birds'), findsOneWidget);
+      expect(find.text(l10n('genealogy.offspring_birds')), findsOneWidget);
     });
 
     testWidgets(
@@ -218,7 +219,7 @@ void main() {
         );
         await tester.pump();
 
-        expect(find.text('genealogy.offspring_chicks'), findsOneWidget);
+        expect(find.text(l10n('genealogy.offspring_chicks')), findsOneWidget);
       },
     );
   });

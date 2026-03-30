@@ -13,9 +13,14 @@ Future<void> waitUntil(
   int maxAttempts = 500,
   Duration interval = const Duration(milliseconds: 1),
 }) async {
+  var nextDelay = interval;
   for (var i = 0; i < maxAttempts; i++) {
     if (predicate()) return;
-    await Future<void>.delayed(interval);
+    await Future<void>.delayed(nextDelay);
+    await Future<void>.delayed(Duration.zero);
+    if (nextDelay < const Duration(milliseconds: 16)) {
+      nextDelay *= 2;
+    }
   }
 
   throw TestFailure(

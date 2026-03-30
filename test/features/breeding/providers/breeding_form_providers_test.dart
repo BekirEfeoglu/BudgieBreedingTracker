@@ -3,10 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_form_providers.dart';
+import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
 import 'package:budgie_breeding_tracker/data/models/incubation_model.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_constants.dart';
+import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/breeding_enums.dart';
+import 'package:budgie_breeding_tracker/core/errors/app_exception.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/features/premium/providers/premium_providers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -45,14 +48,34 @@ void main() {
 
   late MockBreedingPairRepository mockPairRepo;
   late MockIncubationRepository mockIncubationRepo;
+  late MockBirdRepository mockBirdRepo;
 
   setUp(() {
     SharedPreferences.setMockInitialValues({});
     mockPairRepo = MockBreedingPairRepository();
     mockIncubationRepo = MockIncubationRepository();
+    mockBirdRepo = MockBirdRepository();
     registerFallbackValue(_pair());
     registerFallbackValue(
       const Incubation(id: 'fallback', userId: 'fallback-user'),
+    );
+    when(() => mockBirdRepo.getById('male-1')).thenAnswer(
+      (_) async => const Bird(
+        id: 'male-1',
+        userId: 'user-1',
+        name: 'Male',
+        gender: BirdGender.male,
+        species: Species.budgie,
+      ),
+    );
+    when(() => mockBirdRepo.getById('female-1')).thenAnswer(
+      (_) async => const Bird(
+        id: 'female-1',
+        userId: 'user-1',
+        name: 'Female',
+        gender: BirdGender.female,
+        species: Species.budgie,
+      ),
     );
   });
 
@@ -61,6 +84,7 @@ void main() {
       overrides: [
         breedingPairRepositoryProvider.overrideWithValue(mockPairRepo),
         incubationRepositoryProvider.overrideWithValue(mockIncubationRepo),
+        birdRepositoryProvider.overrideWithValue(mockBirdRepo),
         isPremiumProvider.overrideWithValue(isPremium),
         effectivePremiumProvider.overrideWithValue(isPremium),
       ],
@@ -73,9 +97,7 @@ void main() {
     when(
       () => mockIncubationRepo.getAll(any()),
     ).thenAnswer((_) async => [_incubation()]);
-    when(
-      () => mockPairRepo.getActiveCount(any()),
-    ).thenAnswer((_) async => 1);
+    when(() => mockPairRepo.getActiveCount(any())).thenAnswer((_) async => 1);
     when(
       () => mockIncubationRepo.getActiveCount(any()),
     ).thenAnswer((_) async => 1);
@@ -188,6 +210,97 @@ void main() {
       expect(state.error, isNotNull);
       expect(state.isLoading, isFalse);
     });
+
+    test('maps DB invalid female gender error to localized message', () async {
+      stubUnderLimits();
+      when(() => mockPairRepo.save(any())).thenThrow(
+        const DatabaseException('breeding_pair_invalid_female_gender'),
+      );
+      when(() => mockIncubationRepo.save(any())).thenAnswer((_) async {});
+
+      final container = createContainer();
+      addTearDown(container.dispose);
+
+      await container
+          .read(breedingFormStateProvider.notifier)
+          .createBreeding(
+            userId: 'user-1',
+            maleId: 'male-1',
+            femaleId: 'female-1',
+            pairingDate: DateTime(2025, 1, 1),
+          );
+
+      final state = container.read(breedingFormStateProvider);
+      expect(state.error, 'breeding.invalid_female');
+    });
+
+    test('rejects pairing birds from different species', () async {
+      stubUnderLimits();
+      when(() => mockBirdRepo.getById('female-1')).thenAnswer(
+        (_) async => const Bird(
+          id: 'female-1',
+          userId: 'user-1',
+          name: 'Female',
+          gender: BirdGender.female,
+          species: Species.canary,
+        ),
+      );
+
+      final container = createContainer();
+      addTearDown(container.dispose);
+
+      await container
+          .read(breedingFormStateProvider.notifier)
+          .createBreeding(
+            userId: 'user-1',
+            maleId: 'male-1',
+            femaleId: 'female-1',
+            pairingDate: DateTime(2025, 1, 1),
+          );
+
+      final state = container.read(breedingFormStateProvider);
+      expect(state.isSuccess, isFalse);
+      expect(state.error, isNotNull);
+      verifyNever(() => mockPairRepo.save(any()));
+    });
+  });
+
+  group('BreedingFormNotifier.updateBreeding', () {
+    test(
+      'rejects updated pair when birds are from different species',
+      () async {
+        when(() => mockBirdRepo.getById('male-1')).thenAnswer(
+          (_) async => const Bird(
+            id: 'male-1',
+            userId: 'user-1',
+            name: 'Male',
+            gender: BirdGender.male,
+            species: Species.budgie,
+          ),
+        );
+        when(() => mockBirdRepo.getById('female-1')).thenAnswer(
+          (_) async => const Bird(
+            id: 'female-1',
+            userId: 'user-1',
+            name: 'Female',
+            gender: BirdGender.female,
+            species: Species.canary,
+          ),
+        );
+
+        final container = createContainer();
+        addTearDown(container.dispose);
+
+        await container
+            .read(breedingFormStateProvider.notifier)
+            .updateBreeding(_pair());
+
+        final state = container.read(breedingFormStateProvider);
+        expect(state.isSuccess, isFalse);
+        expect(state.error, 'breeding.same_species_required');
+        verifyNever(() => mockPairRepo.save(any()));
+      },
+    );
   });
 
   group('BreedingFormNotifier.createBreeding - free tier limits', () {
@@ -219,9 +332,7 @@ void main() {
 
     test('blocks when active incubation limit reached', () async {
       // Pairs under limit
-      when(
-        () => mockPairRepo.getActiveCount(any()),
-      ).thenAnswer((_) async => 1);
+      when(() => mockPairRepo.getActiveCount(any())).thenAnswer((_) async => 1);
       // Incubations at limit
       when(
         () => mockIncubationRepo.getActiveCount(any()),
@@ -295,9 +406,7 @@ void main() {
 
     test('ignores completed/cancelled pairs in limit count', () async {
       // getActiveCount returns only active+ongoing pairs (4 of 5)
-      when(
-        () => mockPairRepo.getActiveCount(any()),
-      ).thenAnswer((_) async => 4);
+      when(() => mockPairRepo.getActiveCount(any())).thenAnswer((_) async => 4);
       when(
         () => mockIncubationRepo.getActiveCount(any()),
       ).thenAnswer((_) async => 1);
@@ -347,9 +456,7 @@ void main() {
 
     test('ignores completed incubations in limit count', () async {
       // getActiveCount returns only active incubations (2 of 3)
-      when(
-        () => mockPairRepo.getActiveCount(any()),
-      ).thenAnswer((_) async => 1);
+      when(() => mockPairRepo.getActiveCount(any())).thenAnswer((_) async => 1);
       when(
         () => mockIncubationRepo.getActiveCount(any()),
       ).thenAnswer((_) async => 2);

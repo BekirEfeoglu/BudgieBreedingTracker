@@ -5,6 +5,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
+import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
+import 'package:budgie_breeding_tracker/core/enums/breeding_enums.dart';
+import 'package:budgie_breeding_tracker/data/models/incubation_model.dart';
 import 'package:budgie_breeding_tracker/data/repositories/bird_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/breeding_pair_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/chick_repository.dart';
@@ -218,6 +221,34 @@ void main() {
         expect(decoded['data'], isA<Map<String, dynamic>>());
       });
 
+      test('includes incubation species in exported backup data', () async {
+        stubAllRepositoriesEmpty();
+        when(() => incubationRepo.getAll('user-1')).thenAnswer(
+          (_) async => const [
+            Incubation(
+              id: 'inc-1',
+              userId: 'user-1',
+              species: Species.cockatiel,
+              status: IncubationStatus.active,
+            ),
+          ],
+        );
+
+        final result = await collector.createBackup('user-1');
+
+        expect(result.success, isTrue);
+        final file = File(result.filePath!);
+        final decoded =
+            jsonDecode(await file.readAsString()) as Map<String, dynamic>;
+        final data = decoded['data'] as Map<String, dynamic>;
+        final incubations = data['incubations'] as List<dynamic>;
+        expect(incubations, hasLength(1));
+        expect(
+          (incubations.first as Map<String, dynamic>)['species'],
+          'cockatiel',
+        );
+      });
+
       test('includes all 12 entity keys in data section', () async {
         stubAllRepositoriesEmpty();
 
@@ -252,7 +283,8 @@ void main() {
         final file = File(result.filePath!);
         final decoded =
             jsonDecode(await file.readAsString()) as Map<String, dynamic>;
-        final dataKeys = (decoded['data'] as Map<String, dynamic>).keys.toList();
+        final dataKeys = (decoded['data'] as Map<String, dynamic>).keys
+            .toList();
 
         // Export registry order must be stable across serialization.
         expect(dataKeys, [

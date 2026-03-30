@@ -5,8 +5,10 @@ import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 String speciesLabel(Species species) => switch (species) {
   Species.budgie => 'birds.budgie'.tr(),
   Species.canary => 'birds.canary'.tr(),
+  Species.cockatiel => 'birds.cockatiel'.tr(),
   Species.finch => 'birds.finch'.tr(),
-  Species.other || Species.unknown => 'birds.other_species'.tr(),
+  Species.other => 'birds.other_species'.tr(),
+  Species.unknown => 'common.unknown'.tr(),
 };
 
 /// Returns the localized long age format for bird detail screen.

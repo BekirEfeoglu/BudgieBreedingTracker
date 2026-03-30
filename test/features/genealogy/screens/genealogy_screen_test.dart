@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
@@ -63,7 +64,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(EmptyState), findsOneWidget);
-      expect(find.text('genealogy.no_birds'), findsOneWidget);
+      expect(find.text(l10n('genealogy.no_birds')), findsOneWidget);
     });
 
     testWidgets('shows AppBar with genealogy title', (tester) async {
@@ -71,7 +72,7 @@ void main() {
 
       await tester.pumpWidget(createSubject(birdsStream: controller.stream));
 
-      expect(find.text('genealogy.title'), findsOneWidget);
+      expect(find.text(l10n('genealogy.title')), findsOneWidget);
 
       controller.close();
     });

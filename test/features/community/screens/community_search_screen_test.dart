@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:budgie_breeding_tracker/data/models/community_post_model.dart';
@@ -54,7 +55,7 @@ void main() {
       await tester.pumpWidget(buildScope());
       await tester.pump();
 
-      expect(find.text('community.search_hint'), findsOneWidget);
+      expect(find.text(l10n('community.search_hint')), findsOneWidget);
 
       await tester.pumpWidget(const MaterialApp(home: SizedBox()));
     });
@@ -73,8 +74,8 @@ void main() {
       await tester.pumpWidget(buildScope(posts: posts));
       await tester.pump();
 
-      expect(find.text('community.popular_tags'), findsOneWidget);
-      expect(find.text('community.suggested_users'), findsOneWidget);
+      expect(find.text(l10n('community.popular_tags')), findsOneWidget);
+      expect(find.text(l10n('community.suggested_users')), findsOneWidget);
 
       await tester.pumpWidget(const MaterialApp(home: SizedBox()));
     });
@@ -86,9 +87,9 @@ void main() {
       await tester.enterText(find.byType(TextField), 'budgie');
       await tester.pump();
 
-      expect(find.text('community.search_posts'), findsOneWidget);
-      expect(find.text('community.search_users'), findsOneWidget);
-      expect(find.text('community.search_tags'), findsOneWidget);
+      expect(find.text(l10n('community.search_posts')), findsOneWidget);
+      expect(find.text(l10n('community.search_users')), findsOneWidget);
+      expect(find.text(l10n('community.search_tags')), findsOneWidget);
 
       await tester.pumpWidget(const MaterialApp(home: SizedBox()));
     });

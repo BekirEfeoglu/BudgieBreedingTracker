@@ -6,6 +6,7 @@ import 'package:budgie_breeding_tracker/features/auth/widgets/legal_links_text.d
 import 'package:budgie_breeding_tracker/features/auth/widgets/social_login_buttons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 import '../../../helpers/pump_helpers.dart';
@@ -84,7 +85,7 @@ void main() {
       await pumpWidgetSimple(tester, buildSubject());
 
       // .tr() returns the key in test context
-      expect(find.text('auth.welcome_back'), findsOneWidget);
+      expect(find.text(l10n('auth.welcome_back')), findsOneWidget);
     });
 
     testWidgets('shows logging_in title in loading state', (tester) async {
@@ -93,7 +94,7 @@ void main() {
         buildSubject(loginState: LoginState.loading),
       );
 
-      expect(find.text('auth.logging_in'), findsOneWidget);
+      expect(find.text(l10n('auth.logging_in')), findsOneWidget);
     });
 
     testWidgets('shows welcome_success title in success state', (
@@ -104,7 +105,7 @@ void main() {
         buildSubject(loginState: LoginState.success),
       );
 
-      expect(find.text('auth.welcome_success'), findsOneWidget);
+      expect(find.text(l10n('auth.welcome_success')), findsOneWidget);
     });
 
     testWidgets('shows try_again title in error state', (tester) async {
@@ -113,27 +114,27 @@ void main() {
         buildSubject(loginState: LoginState.error),
       );
 
-      expect(find.text('auth.try_again'), findsOneWidget);
+      expect(find.text(l10n('auth.try_again')), findsOneWidget);
     });
 
     testWidgets('shows register link text', (tester) async {
       await pumpWidgetSimple(tester, buildSubject());
 
-      expect(find.text('auth.no_account'), findsOneWidget);
-      expect(find.text('auth.register'), findsOneWidget);
+      expect(find.text(l10n('auth.no_account')), findsOneWidget);
+      expect(find.text(l10n('auth.register')), findsOneWidget);
     });
 
     testWidgets('shows forgot password button', (tester) async {
       await pumpWidgetSimple(tester, buildSubject());
 
-      expect(find.text('auth.forgot_password'), findsOneWidget);
+      expect(find.text(l10n('auth.forgot_password')), findsOneWidget);
     });
 
     testWidgets('shows login button with text in idle state', (tester) async {
       await pumpWidgetSimple(tester, buildSubject());
 
       expect(find.byType(FilledButton), findsOneWidget);
-      expect(find.text('auth.login'), findsOneWidget);
+      expect(find.text(l10n('auth.login')), findsOneWidget);
     });
 
     testWidgets('shows CircularProgressIndicator in loading state', (
@@ -172,13 +173,13 @@ void main() {
     testWidgets('shows guest login button', (tester) async {
       await pumpWidgetSimple(tester, buildSubject());
 
-      expect(find.text('auth.continue_as_guest'), findsOneWidget);
+      expect(find.text(l10n('auth.continue_as_guest')), findsOneWidget);
     });
 
     testWidgets('shows guest limitation hint', (tester) async {
       await pumpWidgetSimple(tester, buildSubject());
 
-      expect(find.text('auth.guest_limitation_hint'), findsOneWidget);
+      expect(find.text(l10n('auth.guest_limitation_hint')), findsOneWidget);
     });
 
     testWidgets('validates empty email field', (tester) async {
@@ -187,7 +188,7 @@ void main() {
       formKey.currentState!.validate();
       await tester.pump();
 
-      expect(find.text('common.required_field'), findsWidgets);
+      expect(find.text(l10n('common.required_field')), findsWidgets);
     });
 
     testWidgets('validates invalid email format', (tester) async {
@@ -198,7 +199,7 @@ void main() {
       formKey.currentState!.validate();
       await tester.pump();
 
-      expect(find.text('common.email_invalid'), findsOneWidget);
+      expect(find.text(l10n('common.email_invalid')), findsOneWidget);
     });
 
     testWidgets('validates short password', (tester) async {
@@ -209,7 +210,7 @@ void main() {
       formKey.currentState!.validate();
       await tester.pump();
 
-      expect(find.text('common.password_short'), findsOneWidget);
+      expect(find.text(l10n('common.password_short')), findsOneWidget);
     });
 
     testWidgets('passes validation with valid credentials', (tester) async {
@@ -238,7 +239,7 @@ void main() {
     ) async {
       await pumpWidgetSimple(tester, buildSubject());
 
-      await tester.tap(find.text('auth.forgot_password'));
+      await tester.tap(find.text(l10n('auth.forgot_password')));
       await tester.pump();
 
       expect(forgotPasswordCalled, isTrue);
@@ -247,7 +248,7 @@ void main() {
     testWidgets('calls onRegister when register link tapped', (tester) async {
       await pumpWidgetSimple(tester, buildSubject());
 
-      await tester.tap(find.text('auth.register'));
+      await tester.tap(find.text(l10n('auth.register')));
       await tester.pump();
 
       expect(registerCalled, isTrue);
@@ -256,9 +257,9 @@ void main() {
     testWidgets('calls onGuestTap when guest button tapped', (tester) async {
       await pumpWidgetSimple(tester, buildSubject());
 
-      await tester.ensureVisible(find.text('auth.continue_as_guest'));
+      await tester.ensureVisible(find.text(l10n('auth.continue_as_guest')));
       await tester.pump();
-      await tester.tap(find.text('auth.continue_as_guest'));
+      await tester.tap(find.text(l10n('auth.continue_as_guest')));
       await tester.pump();
 
       expect(guestCalled, isTrue);

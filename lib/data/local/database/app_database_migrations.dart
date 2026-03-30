@@ -155,4 +155,54 @@ Future<void> _migrateV16ToV17(AppDatabase db, Migrator m) async {
   );
 }
 
+/// Migration v17 -> v18: Add species to incubations and backfill from birds.
+Future<void> _migrateV17ToV18(AppDatabase db, Migrator m) async {
+  final hasSpeciesColumn = await _tableHasColumn(db, 'incubations', 'species');
+  if (!hasSpeciesColumn) {
+    await m.addColumn(db.incubationsTable, db.incubationsTable.species);
+  }
+  await db.customStatement('''
+    UPDATE incubations
+    SET species = COALESCE(
+      (
+        SELECT birds.species
+        FROM breeding_pairs
+        JOIN birds ON birds.id = breeding_pairs.male_id
+        WHERE breeding_pairs.id = incubations.breeding_pair_id
+      ),
+      'budgie'
+    )
+    WHERE species = 'budgie'
+  ''');
+}
+
+/// Migration v18 -> v19: Normalize missing incubation species to unknown.
+///
+/// Existing rows already store an explicit species value. This migration keeps
+/// data intact and only corrects truly missing/empty values.
+Future<void> _migrateV18ToV19(AppDatabase db, Migrator m) async {
+  await db.customStatement(
+    "UPDATE incubations SET species = 'unknown' "
+    "WHERE species IS NULL OR TRIM(species) = ''",
+  );
+}
+
+/// Checks whether [tableName] has a column named [columnName] via PRAGMA.
+///
+/// Internal migration helper only — [tableName] and [columnName] must be
+/// hardcoded string literals, never user input.
+Future<bool> _tableHasColumn(
+  AppDatabase db,
+  String tableName,
+  String columnName,
+) async {
+  assert(
+    RegExp(r'^[a-z_]+$').hasMatch(tableName) &&
+        RegExp(r'^[a-z_]+$').hasMatch(columnName),
+    '_tableHasColumn must only be called with hardcoded identifiers',
+  );
+  final result = await db.customSelect("PRAGMA table_info('$tableName')").get();
+  return result.any((row) => row.data['name'] == columnName);
+}
+
 // Performance indexes are in app_database_indexes.dart (part file)

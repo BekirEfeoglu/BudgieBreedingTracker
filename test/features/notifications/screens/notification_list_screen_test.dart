@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:budgie_breeding_tracker/core/widgets/empty_state.dart';
@@ -131,9 +132,9 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(ChoiceChip), findsNWidgets(3));
-      expect(find.text('notifications.filter_all'), findsOneWidget);
-      expect(find.text('notifications.filter_unread'), findsOneWidget);
-      expect(find.text('notifications.filter_read'), findsOneWidget);
+      expect(find.text(l10n('notifications.filter_all')), findsOneWidget);
+      expect(find.text(l10n('notifications.filter_unread')), findsOneWidget);
+      expect(find.text(l10n('notifications.filter_read')), findsOneWidget);
     });
 
     testWidgets('shows AppBar with inbox title', (tester) async {
@@ -143,7 +144,7 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      expect(find.text('notifications.inbox_title'), findsOneWidget);
+      expect(find.text(l10n('notifications.inbox_title')), findsOneWidget);
     });
 
     testWidgets('shows mark all read button in AppBar', (tester) async {
@@ -171,7 +172,7 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('notifications.filter_unread'));
+      await tester.tap(find.text(l10n('notifications.filter_unread')));
       await tester.pumpAndSettle();
 
       // Should show 2 unread notifications
@@ -192,7 +193,7 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('notifications.filter_read'));
+      await tester.tap(find.text(l10n('notifications.filter_read')));
       await tester.pumpAndSettle();
 
       // Should show 1 read notification
@@ -211,7 +212,7 @@ void main() {
 
         await tester.pumpAndSettle();
 
-        await tester.tap(find.text('notifications.filter_unread'));
+        await tester.tap(find.text(l10n('notifications.filter_unread')));
         await tester.pumpAndSettle();
 
         expect(find.byType(EmptyState), findsOneWidget);

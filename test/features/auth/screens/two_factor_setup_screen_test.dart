@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -73,7 +74,7 @@ void main() {
       await tester.pumpWidget(createSubject());
       await tester.pump();
 
-      expect(find.text('auth.2fa_setup'), findsOneWidget);
+      expect(find.text(l10n('auth.2fa_setup')), findsOneWidget);
     });
 
     testWidgets('shows loading indicator while enrolling', (tester) async {
@@ -105,7 +106,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 100)); // enroll() resolves
 
       // After enrollment, the scan QR label should appear
-      expect(find.text('auth.2fa_scan_qr'), findsOneWidget);
+      expect(find.text(l10n('auth.2fa_scan_qr')), findsOneWidget);
     });
 
     testWidgets('shows secret key after enrollment', (tester) async {
@@ -121,7 +122,7 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 100));
 
-      expect(find.text('auth.2fa_manual_key'), findsOneWidget);
+      expect(find.text(l10n('auth.2fa_manual_key')), findsOneWidget);
     });
 
     testWidgets('shows enter code prompt', (tester) async {
@@ -129,7 +130,7 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 100));
 
-      expect(find.text('auth.2fa_enter_code'), findsOneWidget);
+      expect(find.text(l10n('auth.2fa_enter_code')), findsOneWidget);
     });
 
     testWidgets('shows error view and retry button when enrollment fails', (
@@ -143,8 +144,8 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 100));
 
-      expect(find.text('auth.2fa_enrollment_error'), findsOneWidget);
-      expect(find.text('auth.2fa_retry'), findsOneWidget);
+      expect(find.text(l10n('auth.2fa_enrollment_error')), findsOneWidget);
+      expect(find.text(l10n('auth.2fa_retry')), findsOneWidget);
     });
   });
 }

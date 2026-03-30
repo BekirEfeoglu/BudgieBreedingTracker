@@ -2,10 +2,13 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
+import 'package:budgie_breeding_tracker/core/species/species_profile.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
+import 'package:budgie_breeding_tracker/core/widgets/cards/info_card.dart';
 import 'package:budgie_breeding_tracker/core/widgets/date_picker_field.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/parent_genotype.dart';
+import 'package:budgie_breeding_tracker/features/birds/utils/bird_display_utils.dart';
 import 'package:budgie_breeding_tracker/features/genetics/widgets/mutation_selector.dart';
 import 'package:budgie_breeding_tracker/features/birds/widgets/bird_parent_selector.dart';
 
@@ -13,12 +16,16 @@ export 'bird_form_basic_info_section.dart';
 
 /// Genetics section: optional detailed mutation and allele-state profile.
 class BirdFormGeneticsSection extends StatelessWidget {
+  final Species species;
+  final GeneticsMode geneticsMode;
   final BirdGender gender;
   final ParentGenotype genotype;
   final ValueChanged<ParentGenotype> onGenotypeChanged;
 
   const BirdFormGeneticsSection({
     super.key,
+    required this.species,
+    required this.geneticsMode,
     required this.gender,
     required this.genotype,
     required this.onGenotypeChanged,
@@ -31,16 +38,29 @@ class BirdFormGeneticsSection extends StatelessWidget {
       gender: gender,
     );
 
+    final helpKey = switch (geneticsMode) {
+      GeneticsMode.full => 'birds.genetics_help_full',
+      GeneticsMode.limited => 'birds.genetics_help_limited',
+      GeneticsMode.none => 'birds.genetics_help_none',
+    };
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         BirdFormSectionHeader('genetics.title'.tr()),
-        MutationSelector(
-          label: 'genetics.individual_mutations'.tr(),
-          icon: const AppIcon(AppIcons.dna),
-          genotype: normalized,
-          onGenotypeChanged: onGenotypeChanged,
-        ),
+        if (geneticsMode == GeneticsMode.full)
+          MutationSelector(
+            label: 'genetics.individual_mutations'.tr(),
+            icon: const AppIcon(AppIcons.dna),
+            genotype: normalized,
+            onGenotypeChanged: onGenotypeChanged,
+          )
+        else
+          InfoCard(
+            icon: const AppIcon(AppIcons.info),
+            title: 'genetics.title'.tr(),
+            subtitle: helpKey.tr(args: [speciesLabel(species)]),
+          ),
       ],
     );
   }
@@ -111,6 +131,7 @@ class BirdFormIdentitySection extends StatelessWidget {
 
 /// Parents section: father and mother selectors.
 class BirdFormParentsSection extends StatelessWidget {
+  final Species species;
   final String? fatherId;
   final String? motherId;
   final String? editBirdId;
@@ -119,6 +140,7 @@ class BirdFormParentsSection extends StatelessWidget {
 
   const BirdFormParentsSection({
     super.key,
+    required this.species,
     required this.fatherId,
     required this.motherId,
     this.editBirdId,
@@ -137,6 +159,7 @@ class BirdFormParentsSection extends StatelessWidget {
           icon: const AppIcon(AppIcons.male, size: 20),
           selectedId: fatherId,
           excludeId: editBirdId,
+          speciesFilter: species,
           genderFilter: BirdGender.male,
           onChanged: onFatherChanged,
         ),
@@ -146,6 +169,7 @@ class BirdFormParentsSection extends StatelessWidget {
           icon: const AppIcon(AppIcons.female, size: 20),
           selectedId: motherId,
           excludeId: editBirdId,
+          speciesFilter: species,
           genderFilter: BirdGender.female,
           onChanged: onMotherChanged,
         ),

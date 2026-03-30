@@ -174,15 +174,15 @@ class FeedbackHistoryCard extends StatelessWidget {
   String _formatDate(DateTime date) {
     final now = DateTime.now();
     final diff = now.difference(date);
-    if (diff.inMinutes < 1) return 'feedback.just_now'.tr();
+    if (diff.inMinutes < 1) return 'common.just_now'.tr();
     if (diff.inHours < 1) {
-      return 'feedback.minutes_ago'.tr(args: ['${diff.inMinutes}']);
+      return 'common.minutes_ago'.tr(args: ['${diff.inMinutes}']);
     }
     if (diff.inDays < 1) {
-      return 'feedback.hours_ago'.tr(args: ['${diff.inHours}']);
+      return 'common.hours_ago'.tr(args: ['${diff.inHours}']);
     }
     if (diff.inDays < 7) {
-      return 'feedback.days_ago'.tr(args: ['${diff.inDays}']);
+      return 'common.days_ago'.tr(args: ['${diff.inDays}']);
     }
     return '${date.day.toString().padLeft(2, '0')}.'
         '${date.month.toString().padLeft(2, '0')}.'

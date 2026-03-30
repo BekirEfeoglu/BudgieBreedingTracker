@@ -231,6 +231,13 @@ Future<void> _initNotifications(Ref ref) async {
 /// Initializes RevenueCat with the platform-specific API key and user ID.
 /// Runs in the background — does NOT block splash screen.
 Future<void> _initRevenueCat(Ref ref, String userId) async {
+  if (shouldDeferRevenueCatOnDebugIosSimulator) {
+    AppLogger.info(
+      '[AppInit] Skipping RevenueCat init on iOS simulator debug build',
+    );
+    return;
+  }
+
   final apiKey = Platform.isIOS ? revenueCatApiKeyIos : revenueCatApiKeyAndroid;
   if (apiKey.isEmpty) {
     AppLogger.warning(

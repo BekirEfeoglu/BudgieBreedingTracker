@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/enums/chick_enums.dart';
@@ -29,7 +30,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('chicks.status_healthy'), findsOneWidget);
+      expect(find.text(l10n('chicks.status_healthy')), findsOneWidget);
     });
 
     testWidgets('shows sick label text', (tester) async {
@@ -38,7 +39,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('chicks.status_sick'), findsOneWidget);
+      expect(find.text(l10n('chicks.status_sick')), findsOneWidget);
     });
 
     testWidgets('shows deceased label text', (tester) async {
@@ -47,7 +48,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('chicks.status_deceased'), findsOneWidget);
+      expect(find.text(l10n('chicks.status_deceased')), findsOneWidget);
     });
 
     testWidgets('shows unknown label text', (tester) async {
@@ -56,7 +57,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('chicks.status_unknown'), findsOneWidget);
+      expect(find.text(l10n('chicks.status_unknown')), findsOneWidget);
     });
 
     testWidgets('renders all status values without crashing', (tester) async {

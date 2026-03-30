@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 import 'package:budgie_breeding_tracker/features/feedback/providers/feedback_providers.dart';
@@ -54,7 +55,7 @@ void main() {
       await tester.pumpWidget(buildSubject(historyValue: const AsyncData([])));
       await tester.pump();
 
-      expect(find.text('feedback.no_submissions'), findsAtLeastNWidgets(1));
+      expect(find.text(l10n('feedback.no_submissions')), findsAtLeastNWidgets(1));
     });
 
     testWidgets('shows no_submissions_hint text in empty state', (
@@ -64,7 +65,7 @@ void main() {
       await tester.pump();
 
       expect(
-        find.text('feedback.no_submissions_hint'),
+        find.text(l10n('feedback.no_submissions_hint')),
         findsAtLeastNWidgets(1),
       );
     });
@@ -98,7 +99,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('common.retry'), findsAtLeastNWidgets(1));
+      expect(find.text(l10n('common.retry')), findsAtLeastNWidgets(1));
     });
 
     testWidgets('error state shows history_error key text', (tester) async {
@@ -107,7 +108,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('feedback.history_error'), findsAtLeastNWidgets(1));
+      expect(find.text(l10n('feedback.history_error')), findsAtLeastNWidgets(1));
     });
 
     testWidgets('RefreshIndicator wraps the list', (tester) async {

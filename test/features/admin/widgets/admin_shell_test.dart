@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:budgie_breeding_tracker/features/admin/widgets/admin_shell.dart';
@@ -98,7 +99,7 @@ void main() {
       tester,
     ) async {
       await _pumpShell(tester, size: const Size(600, 900));
-      expect(find.text('admin.dashboard'), findsOneWidget);
+      expect(find.text(l10n('admin.dashboard')), findsOneWidget);
     });
 
     testWidgets('title shows admin.users for users route', (tester) async {
@@ -107,7 +108,7 @@ void main() {
         size: const Size(600, 900),
         initialLocation: '/admin/users',
       );
-      expect(find.text('admin.users'), findsOneWidget);
+      expect(find.text(l10n('admin.users')), findsOneWidget);
     });
 
     testWidgets('shows back-to-app icon button', (tester) async {
@@ -131,7 +132,7 @@ void main() {
 
     testWidgets('shows AdminSidebar on wide screen', (tester) async {
       await _pumpShell(tester, size: const Size(1200, 900));
-      expect(find.text('admin.panel_title'), findsOneWidget);
+      expect(find.text(l10n('admin.panel_title')), findsOneWidget);
       expect(find.byType(VerticalDivider), findsOneWidget);
     });
 

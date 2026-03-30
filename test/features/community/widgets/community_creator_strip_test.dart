@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:budgie_breeding_tracker/data/models/community_post_model.dart';
@@ -47,7 +48,7 @@ void main() {
       await tester.pumpWidget(wrap(CommunityCreatorStrip(creators: creators)));
       await tester.pumpAndSettle();
 
-      expect(find.text('community.top_creators'), findsOneWidget);
+      expect(find.text(l10n('community.top_creators')), findsOneWidget);
       expect(find.text('Ali'), findsOneWidget);
       expect(find.text('Veli'), findsOneWidget);
     });
@@ -56,7 +57,7 @@ void main() {
       await tester.pumpWidget(wrap(const CommunityCreatorStrip(creators: [])));
       await tester.pumpAndSettle();
 
-      expect(find.text('community.top_creators'), findsOneWidget);
+      expect(find.text(l10n('community.top_creators')), findsOneWidget);
     });
   });
 

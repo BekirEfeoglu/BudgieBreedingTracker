@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:budgie_breeding_tracker/features/community/widgets/community_user_header.dart';
@@ -66,7 +67,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('community.my_post'), findsOneWidget);
+      expect(find.text(l10n('community.my_post')), findsOneWidget);
     });
 
     testWidgets('shows follow button for non-own posts', (tester) async {
@@ -84,7 +85,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('community.follow'), findsOneWidget);
+      expect(find.text(l10n('community.follow')), findsOneWidget);
     });
 
     testWidgets('shows following label when already following', (tester) async {
@@ -102,7 +103,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('community.following_label'), findsOneWidget);
+      expect(find.text(l10n('community.following_label')), findsOneWidget);
     });
 
     testWidgets('shows delete option in popup for own posts', (tester) async {
@@ -123,7 +124,7 @@ void main() {
       await tester.tap(find.byType(PopupMenuButton<String>));
       await tester.pumpAndSettle();
 
-      expect(find.text('community.delete_post'), findsOneWidget);
+      expect(find.text(l10n('community.delete_post')), findsOneWidget);
     });
   });
 }

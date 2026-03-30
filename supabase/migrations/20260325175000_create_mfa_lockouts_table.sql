@@ -10,25 +10,20 @@ create table if not exists public.mfa_lockouts (
   created_at timestamptz not null default now(),
   constraint mfa_lockouts_user_id_key unique (user_id)
 );
-
 -- Enable RLS
 alter table public.mfa_lockouts enable row level security;
-
 -- Users can read their own lockout row
 create policy "Users can read own mfa_lockout"
   on public.mfa_lockouts for select
   using (auth.uid() = user_id);
-
 -- Users can update their own lockout row
 create policy "Users can update own mfa_lockout"
   on public.mfa_lockouts for update
   using (auth.uid() = user_id);
-
 -- Users can insert their own lockout row
 create policy "Users can insert own mfa_lockout"
   on public.mfa_lockouts for insert
   with check (auth.uid() = user_id);
-
 -- Index for fast lookups by user_id
 create index if not exists idx_mfa_lockouts_user_id
   on public.mfa_lockouts(user_id);

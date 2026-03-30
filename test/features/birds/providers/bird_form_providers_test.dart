@@ -4,6 +4,7 @@ import 'package:mocktail/mocktail.dart';
 
 import 'package:budgie_breeding_tracker/core/constants/app_constants.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
+import 'package:budgie_breeding_tracker/core/errors/app_exception.dart';
 import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/features/birds/providers/bird_form_providers.dart';
@@ -23,6 +24,7 @@ void main() {
       () =>
           repo.hasRingNumber(any(), any(), excludeId: any(named: 'excludeId')),
     ).thenAnswer((_) async => false);
+    when(() => repo.getById(any())).thenAnswer((_) async => null);
   });
 
   ProviderContainer makeContainer({bool isPremium = false}) {
@@ -161,6 +163,68 @@ void main() {
       },
     );
 
+    test('createBird rejects father from different species', () async {
+      stubUnderLimit();
+      when(() => repo.getById('father-1')).thenAnswer(
+        (_) async => const Bird(
+          id: 'father-1',
+          name: 'Father',
+          gender: BirdGender.male,
+          userId: 'user-1',
+          species: Species.canary,
+        ),
+      );
+
+      final container = makeContainer();
+      addTearDown(container.dispose);
+
+      await container
+          .read(birdFormStateProvider.notifier)
+          .createBird(
+            userId: 'user-1',
+            name: 'Alpha',
+            gender: BirdGender.male,
+            species: Species.budgie,
+            fatherId: 'father-1',
+          );
+
+      final state = container.read(birdFormStateProvider);
+      expect(state.isSuccess, isFalse);
+      expect(state.error, 'birds.parent_species_mismatch');
+      verifyNever(() => repo.save(any()));
+    });
+
+    test('createBird rejects mother with wrong gender', () async {
+      stubUnderLimit();
+      when(() => repo.getById('mother-1')).thenAnswer(
+        (_) async => const Bird(
+          id: 'mother-1',
+          name: 'Mother',
+          gender: BirdGender.male,
+          userId: 'user-1',
+          species: Species.budgie,
+        ),
+      );
+
+      final container = makeContainer();
+      addTearDown(container.dispose);
+
+      await container
+          .read(birdFormStateProvider.notifier)
+          .createBird(
+            userId: 'user-1',
+            name: 'Alpha',
+            gender: BirdGender.male,
+            species: Species.budgie,
+            motherId: 'mother-1',
+          );
+
+      final state = container.read(birdFormStateProvider);
+      expect(state.isSuccess, isFalse);
+      expect(state.error, 'birds.invalid_mother');
+      verifyNever(() => repo.save(any()));
+    });
+
     test('createBird sets error on failure', () async {
       stubUnderLimit();
       when(() => repo.save(any())).thenThrow(Exception('DB error'));
@@ -176,6 +240,30 @@ void main() {
       expect(state.error, isNotNull);
       expect(state.isLoading, isFalse);
     });
+
+    test(
+      'createBird maps DB parent species mismatch to localized error',
+      () async {
+        stubUnderLimit();
+        when(
+          () => repo.save(any()),
+        ).thenThrow(const DatabaseException('bird_parent_species_mismatch'));
+
+        final container = makeContainer();
+        addTearDown(container.dispose);
+
+        await container
+            .read(birdFormStateProvider.notifier)
+            .createBird(
+              userId: 'user-1',
+              name: 'Alpha',
+              gender: BirdGender.male,
+            );
+
+        final state = container.read(birdFormStateProvider);
+        expect(state.error, 'birds.parent_species_mismatch');
+      },
+    );
 
     test('createBird returns remainingBirds for free tier', () async {
       stubUnderLimit(count: 10);
@@ -257,6 +345,29 @@ void main() {
       final state = container.read(birdFormStateProvider);
       expect(state.isSuccess, isFalse);
       expect(state.error, 'birds.ring_number_not_unique');
+      verifyNever(() => repo.save(any()));
+    });
+
+    test('updateBird rejects self as parent', () async {
+      final container = makeContainer();
+      addTearDown(container.dispose);
+
+      await container
+          .read(birdFormStateProvider.notifier)
+          .updateBird(
+            const Bird(
+              id: 'b2',
+              name: 'Bird Two',
+              gender: BirdGender.female,
+              userId: 'user-1',
+              fatherId: 'b2',
+              species: Species.budgie,
+            ),
+          );
+
+      final state = container.read(birdFormStateProvider);
+      expect(state.isSuccess, isFalse);
+      expect(state.error, 'birds.not_found');
       verifyNever(() => repo.save(any()));
     });
 

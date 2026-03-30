@@ -3,6 +3,7 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -91,14 +92,14 @@ void main() {
 
         await _tapVisible(
           tester,
-          find.widgetWithText(FilledButton, 'auth.register'),
+          find.widgetWithText(FilledButton, l10n('auth.register')),
         );
         await tester.pump(const Duration(milliseconds: 900));
         await tester.pump(const Duration(milliseconds: 500));
 
         expect(router.state.uri.path, AppRoutes.emailVerification);
         expect(find.byType(EmailVerificationScreen), findsWidgets);
-        expect(find.text('auth.email_verification_title'), findsOneWidget);
+        expect(find.text(l10n('auth.email_verification_title')), findsOneWidget);
         verify(
           () => mockAuthActions.signUpWithEmail(
             email: 'test@example.com',
@@ -151,10 +152,10 @@ void main() {
 
         await _tapVisible(
           tester,
-          find.widgetWithText(FilledButton, 'auth.register'),
+          find.widgetWithText(FilledButton, l10n('auth.register')),
         );
 
-        expect(find.text('common.password_short'), findsOneWidget);
+        expect(find.text(l10n('common.password_short')), findsOneWidget);
         verifyNever(
           () => mockAuthActions.signUpWithEmail(
             email: any(named: 'email'),
@@ -209,7 +210,7 @@ void main() {
         // Directly invoke the login button callback (animated overlay can
         // intercept taps in the budgie login screen).
         final loginBtn = tester.widget<FilledButton>(
-          find.widgetWithText(FilledButton, 'auth.login'),
+          find.widgetWithText(FilledButton, l10n('auth.login')),
         );
         loginBtn.onPressed!();
         // Fire the 1200ms success delay timer and resolve 2FA check async chain
@@ -270,7 +271,7 @@ void main() {
 
         // Directly invoke to bypass animated overlay hit-test.
         final loginBtn = tester.widget<FilledButton>(
-          find.widgetWithText(FilledButton, 'auth.login'),
+          find.widgetWithText(FilledButton, l10n('auth.login')),
         );
         loginBtn.onPressed!();
         await tester.pump(); // resolve thrown exception
@@ -279,7 +280,7 @@ void main() {
         ); // SnackBar animation
 
         expect(find.byType(BudgieLoginScreen), findsOneWidget);
-        expect(find.text('auth.error_invalid_credentials'), findsOneWidget);
+        expect(find.text(l10n('auth.error_invalid_credentials')), findsOneWidget);
       },
       timeout: e2eTimeout,
     );
@@ -325,7 +326,7 @@ void main() {
 
         await _tapVisible(
           tester,
-          find.widgetWithText(TextButton, 'auth.forgot_password'),
+          find.widgetWithText(TextButton, l10n('auth.forgot_password')),
         );
         await tester.pump(const Duration(milliseconds: 700));
 
@@ -339,7 +340,7 @@ void main() {
         await tester.enterText(forgotEmailField.first, 'test@example.com');
         await _tapVisible(
           tester,
-          find.widgetWithText(FilledButton, 'auth.reset_password'),
+          find.widgetWithText(FilledButton, l10n('auth.reset_password')),
         );
 
         verify(

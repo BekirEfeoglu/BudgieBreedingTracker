@@ -100,8 +100,8 @@ Future<void> bootstrapPreInit() async {
     // Install certificate pinning before any network calls.
     CertificatePinning.install();
 
-    // Android fallback: read config injected from Gradle (env/local.properties/.env).
-    await _resolveAndroidBuildConfigFallbacks();
+    // Native fallback: read config injected from Gradle/Xcode (env/local.properties/.env).
+    await _resolveNativeBuildConfigFallbacks();
 
     // Supabase init — apply timeout to prevent indefinite hang on network issues.
     await ensureSupabaseInitialized(timeout: const Duration(seconds: 10));
@@ -154,7 +154,7 @@ Future<void> _initSupabase() async {
     // Reject placeholder/test keys in release mode to prevent accidental
     // production deploys with invalid credentials.
     if (!_isValidSupabaseUrl(_resolvedSupabaseUrl) ||
-        !_isValidAnonKey(_resolvedAnonKey)) {
+        !_isValidSupabaseApiKey(_resolvedAnonKey)) {
       AppLogger.warning(
         'Supabase credentials appear invalid or are placeholders. '
         'Check SUPABASE_URL and SUPABASE_ANON_KEY values.',
@@ -201,10 +201,20 @@ void _resolveRevenueCatKeys() {
       'Set REVENUECAT_API_KEY_${Platform.isIOS ? 'IOS' : 'ANDROID'} via --dart-define.',
     );
   }
+
+  // Warn at startup if Google OAuth keys are missing — Google sign-in will
+  // fall back to browser OAuth (or fail) without these.
+  if (googleWebClientIdResolved.isEmpty) {
+    AppLogger.warning(
+      '[Bootstrap] GOOGLE_WEB_CLIENT_ID not configured. '
+      'Native Google sign-in will be unavailable. '
+      'Set via --dart-define or .env file.',
+    );
+  }
 }
 
-Future<void> _resolveAndroidBuildConfigFallbacks() async {
-  if (!Platform.isAndroid) return;
+Future<void> _resolveNativeBuildConfigFallbacks() async {
+  if (!Platform.isAndroid && !Platform.isIOS) return;
 
   try {
     final config = await _nativeConfigChannel.invokeMapMethod<String, dynamic>(
@@ -245,7 +255,7 @@ Future<void> _resolveAndroidBuildConfigFallbacks() async {
       config['GOOGLE_IOS_CLIENT_ID'],
     );
   } catch (e) {
-    AppLogger.warning('[Bootstrap] Android config fallback unavailable: $e');
+    AppLogger.warning('[Bootstrap] Native config fallback unavailable: $e');
   }
 }
 
@@ -266,10 +276,19 @@ bool _isValidSupabaseUrl(String url) {
   return !placeholders.any((p) => host.contains(p));
 }
 
-/// Validates that the anon key looks like a real JWT (3 dot-separated parts).
-bool _isValidAnonKey(String key) {
+/// Validates that the Supabase client key looks like a real JWT anon key
+/// or a modern `sb_publishable_...` key.
+bool _isValidSupabaseApiKey(String key) {
   if (key.isEmpty) return false;
-  final parts = key.split('.');
+  final trimmedKey = key.trim();
+
+  if (trimmedKey.startsWith('sb_publishable_')) {
+    const placeholders = ['placeholder', 'your-key', 'example'];
+    final lower = trimmedKey.toLowerCase();
+    return !placeholders.any((p) => lower.contains(p));
+  }
+
+  final parts = trimmedKey.split('.');
   if (parts.length != 3) return false;
   // Reject common placeholder values — only check the header segment
   // to avoid false positives from base64 payload containing "test".
@@ -277,3 +296,9 @@ bool _isValidAnonKey(String key) {
   final lower = parts.first.toLowerCase();
   return !placeholders.any((p) => lower.contains(p));
 }
+
+@visibleForTesting
+bool debugIsValidSupabaseUrl(String url) => _isValidSupabaseUrl(url);
+
+@visibleForTesting
+bool debugIsValidSupabaseApiKey(String key) => _isValidSupabaseApiKey(key);

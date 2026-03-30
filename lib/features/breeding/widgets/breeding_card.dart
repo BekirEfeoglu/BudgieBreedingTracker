@@ -29,10 +29,11 @@ class BreedingCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final daysElapsed = incubation?.daysElapsed ?? 0;
+    final totalDays = incubation?.totalIncubationDays();
     final isComplete = incubation?.isComplete ?? false;
     final stageColor = isComplete
         ? IncubationCalculator.getCompletedStageColor()
-        : IncubationCalculator.getStageColor(daysElapsed);
+        : IncubationCalculator.getStageColor(daysElapsed, totalDays: totalDays);
 
     return Card(
       margin: const EdgeInsets.symmetric(

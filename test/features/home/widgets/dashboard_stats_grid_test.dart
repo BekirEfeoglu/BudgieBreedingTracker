@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:budgie_breeding_tracker/data/models/statistics_models.dart';
@@ -58,35 +59,35 @@ void main() {
       await tester.pumpWidget(_createSubject());
       await tester.pump();
 
-      expect(find.text('home.total_birds'), findsOneWidget);
+      expect(find.text(l10n('home.total_birds')), findsOneWidget);
     });
 
     testWidgets('shows active_breedings label', (tester) async {
       await tester.pumpWidget(_createSubject());
       await tester.pump();
 
-      expect(find.text('home.active_breedings'), findsOneWidget);
+      expect(find.text(l10n('home.active_breedings')), findsOneWidget);
     });
 
     testWidgets('shows total_chicks label', (tester) async {
       await tester.pumpWidget(_createSubject());
       await tester.pump();
 
-      expect(find.text('home.total_chicks'), findsOneWidget);
+      expect(find.text(l10n('home.total_chicks')), findsOneWidget);
     });
 
     testWidgets('shows total_eggs label', (tester) async {
       await tester.pumpWidget(_createSubject());
       await tester.pump();
 
-      expect(find.text('home.total_eggs'), findsOneWidget);
+      expect(find.text(l10n('home.total_eggs')), findsOneWidget);
     });
 
     testWidgets('shows incubating_eggs label', (tester) async {
       await tester.pumpWidget(_createSubject());
       await tester.pump();
 
-      expect(find.text('home.incubating_eggs'), findsOneWidget);
+      expect(find.text(l10n('home.incubating_eggs')), findsOneWidget);
     });
 
     testWidgets('shows stat values from DashboardStats', (tester) async {
@@ -111,7 +112,7 @@ void main() {
       await tester.pump();
 
       // AppProgressBar renders a usage label in free mode
-      expect(find.text('premium.usage_birds'), findsOneWidget);
+      expect(find.text(l10n('premium.usage_birds')), findsOneWidget);
     });
 
     testWidgets('does not show free tier progress bar when premium', (
@@ -120,7 +121,7 @@ void main() {
       await tester.pumpWidget(_createSubject(isPremium: true));
       await tester.pump();
 
-      expect(find.text('premium.usage_birds'), findsNothing);
+      expect(find.text(l10n('premium.usage_birds')), findsNothing);
     });
 
     testWidgets('renders Column layout', (tester) async {

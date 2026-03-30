@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_providers.dart';
@@ -47,7 +48,7 @@ void main() {
       await tester.pumpWidget(createSubject());
       await tester.pumpAndSettle();
 
-      expect(find.text('notifications.title'), findsOneWidget);
+      expect(find.text(l10n('notifications.title')), findsOneWidget);
     });
 
     testWidgets('shows SwitchListTile widgets for toggles', (tester) async {
@@ -61,14 +62,14 @@ void main() {
       await tester.pumpWidget(createSubject());
       await tester.pumpAndSettle();
 
-      expect(find.text('notifications.egg_turning'), findsOneWidget);
+      expect(find.text(l10n('notifications.egg_turning')), findsOneWidget);
     });
 
     testWidgets('shows incubation toggle', (tester) async {
       await tester.pumpWidget(createSubject());
       await tester.pumpAndSettle();
 
-      expect(find.text('notifications.incubation'), findsOneWidget);
+      expect(find.text(l10n('notifications.incubation')), findsOneWidget);
     });
 
     testWidgets('shows DND section title', (tester) async {
@@ -80,14 +81,14 @@ void main() {
       await tester.drag(find.byType(ListView), const Offset(0, -600));
       await tester.pumpAndSettle();
 
-      expect(find.text('notifications.dnd_title'), findsOneWidget);
+      expect(find.text(l10n('notifications.dnd_title')), findsOneWidget);
     });
 
     testWidgets('shows sound toggle', (tester) async {
       await tester.pumpWidget(createSubject());
       await tester.pumpAndSettle();
 
-      expect(find.text('notifications.sound'), findsOneWidget);
+      expect(find.text(l10n('notifications.sound')), findsOneWidget);
     });
   });
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 
 import 'package:budgie_breeding_tracker/domain/services/payment/purchase_service.dart';
@@ -76,14 +77,14 @@ void main() {
       await tester.pumpWidget(_wrap(const PremiumHeaderSection()));
       await tester.pump();
 
-      expect(find.text('premium.headline'), findsOneWidget);
+      expect(find.text(l10n('premium.headline')), findsOneWidget);
     });
 
     testWidgets('shows subtitle text', (tester) async {
       await tester.pumpWidget(_wrap(const PremiumHeaderSection()));
       await tester.pump();
 
-      expect(find.text('premium.subtitle'), findsOneWidget);
+      expect(find.text(l10n('premium.subtitle')), findsOneWidget);
     });
 
     testWidgets('renders gradient Container', (tester) async {
@@ -113,8 +114,8 @@ void main() {
       await tester.pumpAndSettle();
 
       // No introductory offer → SizedBox.shrink, no trial badge visible
-      expect(find.text('premium.trial_badge'), findsNothing);
-      expect(find.text('premium.value_proposition'), findsNothing);
+      expect(find.text(l10n('premium.trial_badge')), findsNothing);
+      expect(find.text(l10n('premium.value_proposition')), findsNothing);
     });
   });
 
@@ -130,7 +131,7 @@ void main() {
       await tester.pumpWidget(_wrap(const PremiumFeatureListSection()));
       await tester.pump();
 
-      expect(find.text('premium.features_title'), findsOneWidget);
+      expect(find.text(l10n('premium.features_title')), findsOneWidget);
     });
 
     testWidgets('shows multiple PremiumFeatureItem widgets', (tester) async {
@@ -180,8 +181,8 @@ void main() {
           find.textContaining('\$25.00', findRichText: true),
           findsAtLeastNWidgets(1),
         );
-        expect(find.text('premium.price_semi_annual'), findsNothing);
-        expect(find.text('premium.price_yearly'), findsNothing);
+        expect(find.text(l10n('premium.price_semi_annual')), findsNothing);
+        expect(find.text(l10n('premium.price_yearly')), findsNothing);
       },
     );
 
@@ -197,7 +198,7 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(
-          find.text('premium.offerings_unavailable_title'),
+          find.text(l10n('premium.offerings_unavailable_title')),
           findsOneWidget,
         );
         // Fallback localized prices shown instead of "price unavailable"
@@ -209,7 +210,7 @@ void main() {
           find.textContaining('premium.price_yearly', findRichText: true),
           findsOneWidget,
         );
-        expect(find.text('common.retry'), findsOneWidget);
+        expect(find.text(l10n('common.retry')), findsOneWidget);
       },
     );
 
@@ -224,10 +225,10 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('premium.purchase_setup_missing_title'), findsOneWidget);
-      expect(find.text('premium.purchase_setup_missing_body'), findsOneWidget);
+      expect(find.text(l10n('premium.purchase_setup_missing_title')), findsOneWidget);
+      expect(find.text(l10n('premium.purchase_setup_missing_body')), findsOneWidget);
       // missingApiKey has no retry button
-      expect(find.text('common.retry'), findsNothing);
+      expect(find.text(l10n('common.retry')), findsNothing);
     });
 
     testWidgets('shows iOS debug StoreKit guidance', (tester) async {
@@ -239,10 +240,10 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('premium.ios_debug_purchase_title'), findsOneWidget);
-      expect(find.text('premium.ios_debug_purchase_body'), findsOneWidget);
+      expect(find.text(l10n('premium.ios_debug_purchase_title')), findsOneWidget);
+      expect(find.text(l10n('premium.ios_debug_purchase_body')), findsOneWidget);
       // iosDebugStoreKitRequired has no retry button
-      expect(find.text('common.retry'), findsNothing);
+      expect(find.text(l10n('common.retry')), findsNothing);
     });
 
     testWidgets('disables subscribe buttons when purchase issue exists', (
@@ -265,8 +266,8 @@ void main() {
         find.textContaining('premium.price_yearly', findRichText: true),
         findsOneWidget,
       );
-      expect(find.text('premium.plan_semi_annual'), findsOneWidget);
-      expect(find.text('premium.plan_yearly'), findsOneWidget);
+      expect(find.text(l10n('premium.plan_semi_annual')), findsOneWidget);
+      expect(find.text(l10n('premium.plan_yearly')), findsOneWidget);
     });
 
     testWidgets('shows guest access card for anonymous users', (tester) async {
@@ -275,8 +276,8 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('premium.account_required_title'), findsOneWidget);
-      expect(find.text('premium.sign_in_to_purchase'), findsAtLeastNWidgets(1));
+      expect(find.text(l10n('premium.account_required_title')), findsOneWidget);
+      expect(find.text(l10n('premium.sign_in_to_purchase')), findsAtLeastNWidgets(1));
     });
 
     testWidgets('does not show trial text on pricing cards', (tester) async {
@@ -286,7 +287,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Trial text not shown on pricing cards (no monthly plan)
-      expect(find.text('premium.trial_after_price'), findsNothing);
+      expect(find.text(l10n('premium.trial_after_price')), findsNothing);
     });
 
     testWidgets('shows store prices with standard PackageType identifiers', (
@@ -345,7 +346,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('premium.feature_genetics'), findsOneWidget);
+      expect(find.text(l10n('premium.feature_genetics')), findsOneWidget);
     });
 
     testWidgets('shows check Icon', (tester) async {
@@ -475,10 +476,10 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('premium.active_badge'), findsOneWidget);
-      expect(find.text('premium.plan_semi_annual'), findsOneWidget);
+      expect(find.text(l10n('premium.active_badge')), findsOneWidget);
+      expect(find.text(l10n('premium.plan_semi_annual')), findsOneWidget);
       expect(find.text('31.12.2026'), findsOneWidget);
-      expect(find.text('common.yes'), findsOneWidget);
+      expect(find.text(l10n('common.yes')), findsOneWidget);
     });
 
     testWidgets('shows trial badge when subscription is in trial', (
@@ -499,7 +500,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('premium.trial_active_badge'), findsOneWidget);
+      expect(find.text(l10n('premium.trial_active_badge')), findsOneWidget);
     });
 
     testWidgets('shows yearly plan name for yearly product', (tester) async {
@@ -517,8 +518,8 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('premium.plan_yearly'), findsOneWidget);
-      expect(find.text('common.no'), findsOneWidget);
+      expect(find.text(l10n('premium.plan_yearly')), findsOneWidget);
+      expect(find.text(l10n('common.no')), findsOneWidget);
     });
   });
 }

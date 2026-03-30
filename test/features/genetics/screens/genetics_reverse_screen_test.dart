@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/features/genetics/screens/genetics_reverse_screen.dart';
 
@@ -16,7 +17,7 @@ void main() {
       await tester.pumpWidget(_wrap());
       await tester.pump();
 
-      expect(find.text('genetics.reverse_no_selection'), findsOneWidget);
+      expect(find.text(l10n('genetics.reverse_no_selection')), findsOneWidget);
     });
 
     testWidgets('renders loading state safely after starting calculation', (
@@ -28,7 +29,7 @@ void main() {
       await tester.tap(find.byType(CheckboxListTile).first);
       await tester.pump();
 
-      await tester.tap(find.text('genetics.find_parents'));
+      await tester.tap(find.text(l10n('genetics.find_parents')));
       await tester.pump();
 
       expect(find.byType(CircularProgressIndicator), findsWidgets);

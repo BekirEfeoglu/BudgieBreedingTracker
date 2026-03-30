@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import 'package:budgie_breeding_tracker/data/models/community_post_model.dart';
@@ -24,8 +25,8 @@ void main() {
       await tester.pumpWidget(wrap(const CommunityHeroCard(posts: [])));
       await tester.pumpAndSettle();
 
-      expect(find.text('community.title'), findsOneWidget);
-      expect(find.text('community.content_label'), findsOneWidget);
+      expect(find.text(l10n('community.title')), findsOneWidget);
+      expect(find.text(l10n('community.content_label')), findsOneWidget);
     });
 
     testWidgets('shows aggregated stats', (tester) async {

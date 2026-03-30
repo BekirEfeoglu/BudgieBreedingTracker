@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/features/health_records/providers/health_record_providers.dart';
 import 'package:budgie_breeding_tracker/features/health_records/widgets/health_record_filter_bar.dart';
@@ -48,7 +49,7 @@ void main() {
       await tester.pumpWidget(_createSubject());
       await tester.pump();
 
-      expect(find.text('common.all'), findsOneWidget);
+      expect(find.text(l10n('common.all')), findsOneWidget);
     });
 
     testWidgets('shows l10n label for "checkup" filter', (tester) async {

@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/features/chicks/widgets/chick_age_formatter.dart';
 
@@ -17,13 +18,13 @@ void main() {
 
       // With no asset loader in pure unit test, .tr() returns the raw key.
       // The function uses 'chicks.age_days_only' key with args.
-      expect(result, contains('chicks.age_days_only'));
+      expect(result, contains(l10n('chicks.age_days_only')));
     });
 
     test('returns weeks-and-days key when weeks > 0', () {
       final result = formatChickAge((weeks: 2, days: 3, totalDays: 17));
 
-      expect(result, contains('chicks.age_weeks_days'));
+      expect(result, contains(l10n('chicks.age_weeks_days')));
     });
 
     test('returns short days-only key when short is true and weeks is 0', () {
@@ -32,7 +33,7 @@ void main() {
         short: true,
       );
 
-      expect(result, contains('chicks.age_days_only_short'));
+      expect(result, contains(l10n('chicks.age_days_only_short')));
     });
 
     test('returns short weeks-days key when short is true and weeks > 0', () {
@@ -41,19 +42,19 @@ void main() {
         short: true,
       );
 
-      expect(result, contains('chicks.age_weeks_days_short'));
+      expect(result, contains(l10n('chicks.age_weeks_days_short')));
     });
 
     test('handles zero total days', () {
       final result = formatChickAge((weeks: 0, days: 0, totalDays: 0));
 
-      expect(result, contains('chicks.age_days_only'));
+      expect(result, contains(l10n('chicks.age_days_only')));
     });
 
     test('handles exact week boundary (e.g. 2 weeks, 0 days)', () {
       final result = formatChickAge((weeks: 2, days: 0, totalDays: 14));
 
-      expect(result, contains('chicks.age_weeks_days'));
+      expect(result, contains(l10n('chicks.age_weeks_days')));
     });
   });
 }

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
+import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/errors/app_exception.dart';
 import 'package:budgie_breeding_tracker/data/models/incubation_model.dart';
 import 'package:budgie_breeding_tracker/data/models/sync_metadata_model.dart';
@@ -15,10 +16,15 @@ import '../../helpers/test_fixtures.dart';
 class MockIncubationRemoteSource extends Mock
     implements IncubationRemoteSource {}
 
-Incubation _makeIncubation({String id = 'inc-1', String userId = 'user-1'}) {
+Incubation _makeIncubation({
+  String id = 'inc-1',
+  String userId = 'user-1',
+  Species species = Species.budgie,
+}) {
   return Incubation(
     id: id,
     userId: userId,
+    species: species,
     createdAt: DateTime(2024, 1, 1),
     updatedAt: DateTime(2024, 1, 1),
   );
@@ -222,7 +228,9 @@ void main() {
 
     test('pull uses fetchUpdatedSince when lastSyncedAt is provided', () async {
       final since = DateTime(2024, 1, 1);
-      final remoteItems = [_makeIncubation(id: 'inc-remote')];
+      final remoteItems = [
+        _makeIncubation(id: 'inc-remote', species: Species.cockatiel),
+      ];
       when(
         () => remoteSource.fetchUpdatedSince(userId, since),
       ).thenAnswer((_) async => remoteItems);
@@ -232,6 +240,20 @@ void main() {
       verify(() => remoteSource.fetchUpdatedSince(userId, since)).called(1);
       verify(() => localDao.insertAll(remoteItems)).called(1);
       verifyNever(() => remoteSource.fetchAll(any()));
+    });
+
+    test('save forwards incubation species to remote source', () async {
+      final incubation = _makeIncubation(
+        id: 'inc-species',
+        species: Species.canary,
+      );
+
+      await repository.save(incubation);
+
+      final captured =
+          verify(() => remoteSource.upsert(captureAny())).captured.single
+              as Incubation;
+      expect(captured.species, Species.canary);
     });
 
     test('pull uses fetchAll when lastSyncedAt is null', () async {

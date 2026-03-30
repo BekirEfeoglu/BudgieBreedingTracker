@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/features/birds/providers/bird_providers.dart';
 import 'package:budgie_breeding_tracker/features/birds/widgets/bird_family_info.dart';
@@ -40,7 +41,7 @@ void main() {
         ],
       );
 
-      expect(find.text('birds.family_info'), findsNothing);
+      expect(find.text(l10n('birds.family_info')), findsNothing);
     });
 
     testWidgets('shows nothing when no offspring or siblings', (tester) async {
@@ -64,7 +65,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('birds.family_info'), findsNothing);
+      expect(find.text(l10n('birds.family_info')), findsNothing);
     });
 
     testWidgets('shows offspring section when bird has children', (
@@ -89,8 +90,8 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('birds.family_info'), findsOneWidget);
-      expect(find.textContaining('birds.offspring'), findsAtLeastNWidgets(1));
+      expect(find.text(l10n('birds.family_info')), findsOneWidget);
+      expect(find.textContaining(l10nContains('birds.offspring')), findsAtLeastNWidgets(1));
     });
 
     testWidgets('shows offspring chip with bird name', (tester) async {
@@ -143,7 +144,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.textContaining('birds.siblings'), findsAtLeastNWidgets(1));
+      expect(find.textContaining(l10nContains('birds.siblings')), findsAtLeastNWidgets(1));
       expect(find.text('Kardes'), findsOneWidget);
     });
 
@@ -192,7 +193,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // No siblings except itself
-      expect(find.text('birds.siblings'), findsNothing);
+      expect(find.text(l10n('birds.siblings')), findsNothing);
     });
 
     testWidgets('shows both offspring and siblings when applicable', (
@@ -227,8 +228,8 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.textContaining('birds.offspring'), findsAtLeastNWidgets(1));
-      expect(find.textContaining('birds.siblings'), findsAtLeastNWidgets(1));
+      expect(find.textContaining(l10nContains('birds.offspring')), findsAtLeastNWidgets(1));
+      expect(find.textContaining(l10nContains('birds.siblings')), findsAtLeastNWidgets(1));
     });
   });
 

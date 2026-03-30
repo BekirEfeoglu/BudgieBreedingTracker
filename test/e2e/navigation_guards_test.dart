@@ -3,6 +3,7 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
@@ -132,23 +133,23 @@ void main() {
         await tester.pumpAndSettle();
         expect(find.text('bird_item_40'), findsWidgets);
 
-        await tester.tap(find.text('nav.home'));
+        await tester.tap(find.text(l10n('nav.home')));
         await tester.pumpAndSettle();
         expect(find.text('home_tab'), findsOneWidget);
 
-        await tester.tap(find.text('nav.breeding'));
+        await tester.tap(find.text(l10n('nav.breeding')));
         await tester.pumpAndSettle();
         expect(find.text('breeding_tab'), findsOneWidget);
 
-        await tester.tap(find.text('nav.calendar'));
+        await tester.tap(find.text(l10n('nav.calendar')));
         await tester.pumpAndSettle();
         expect(find.text('calendar_tab'), findsOneWidget);
 
-        await tester.tap(find.text('nav.more'));
+        await tester.tap(find.text(l10n('nav.more')));
         await tester.pumpAndSettle();
         expect(find.text('more_tab'), findsOneWidget);
 
-        await tester.tap(find.text('nav.birds'));
+        await tester.tap(find.text(l10n('nav.birds')));
         await tester.pumpAndSettle();
 
         expect(find.text('typed:persisted'), findsOneWidget);

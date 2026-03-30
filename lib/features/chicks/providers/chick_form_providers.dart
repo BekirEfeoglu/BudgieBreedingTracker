@@ -9,6 +9,7 @@ import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/calendar/calendar_event_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/incubation/egg_species_resolver.dart';
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_providers.dart';
 import 'package:budgie_breeding_tracker/features/notifications/providers/notification_settings_providers.dart';
 import 'package:uuid/uuid.dart';

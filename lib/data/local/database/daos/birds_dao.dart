@@ -114,6 +114,36 @@ class BirdsDao extends DatabaseAccessor<AppDatabase> with _$BirdsDaoMixin {
     return rows.map((r) => r.toModel()).toList();
   }
 
+  /// Returns only birds that have a non-null ring number (lightweight).
+  ///
+  /// Used by the encryption migration pipeline to avoid fetching all
+  /// birds when only those with encrypted ring numbers are needed.
+  Future<List<Bird>> getWithRingNumber(String userId) async {
+    final rows = await (select(birdsTable)
+          ..where(
+            (t) =>
+                t.userId.equals(userId) &
+                t.isDeleted.equals(false) &
+                t.ringNumber.isNotNull(),
+          ))
+        .get();
+    return rows.map((r) => r.toModel()).toList();
+  }
+
+  /// Updates the encrypted ring number for a single bird.
+  ///
+  /// Used by the encryption migration pipeline to upgrade legacy
+  /// payloads to the current authenticated format without touching
+  /// other fields or triggering a full model save.
+  Future<void> updateRingNumber(String id, String ringNumber) {
+    return (update(birdsTable)..where((t) => t.id.equals(id))).write(
+      BirdsTableCompanion(
+        ringNumber: Value(ringNumber),
+        updatedAt: Value(DateTime.now()),
+      ),
+    );
+  }
+
   /// Checks if a ring number already exists for a given user.
   ///
   /// When [excludeId] is provided the bird with that id is skipped

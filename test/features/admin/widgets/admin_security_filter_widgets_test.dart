@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/core/enums/admin_enums.dart';
 import 'package:budgie_breeding_tracker/features/admin/providers/admin_filter_providers.dart';
@@ -50,7 +51,7 @@ void main() {
         _wrapSecurityFilter(controller: controller, filter: _emptyFilter),
       );
       await tester.pump();
-      expect(find.text('admin.search_events'), findsOneWidget);
+      expect(find.text(l10n('admin.search_events')), findsOneWidget);
     });
 
     testWidgets('hides clear button when search query is empty', (
@@ -126,10 +127,10 @@ void main() {
         _wrapSecurityFilter(controller: controller, filter: _emptyFilter),
       );
       await tester.pump();
-      expect(find.text('admin.severity_all'), findsOneWidget);
-      expect(find.text('admin.severity_high'), findsOneWidget);
-      expect(find.text('admin.severity_medium'), findsOneWidget);
-      expect(find.text('admin.severity_low'), findsOneWidget);
+      expect(find.text(l10n('admin.severity_all')), findsOneWidget);
+      expect(find.text(l10n('admin.severity_high')), findsOneWidget);
+      expect(find.text(l10n('admin.severity_medium')), findsOneWidget);
+      expect(find.text(l10n('admin.severity_low')), findsOneWidget);
     });
 
     testWidgets('shows "All" segment as selected by default', (tester) async {

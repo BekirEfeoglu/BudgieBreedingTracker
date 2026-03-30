@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/core/widgets/cards/stat_card.dart';
 import 'package:budgie_breeding_tracker/data/models/statistics_models.dart';
@@ -42,12 +43,12 @@ void main() {
     testWidgets('shows correct labels for each stat card', (tester) async {
       await pumpLocalizedApp(tester,buildSubject());
       // easy_localization returns key strings in test env
-      expect(find.text('statistics.summary_total_birds'), findsOneWidget);
-      expect(find.text('statistics.summary_active_breedings'), findsOneWidget);
-      expect(find.text('statistics.summary_incubating_eggs'), findsOneWidget);
-      expect(find.text('statistics.summary_fertility_rate'), findsOneWidget);
-      expect(find.text('statistics.summary_survival_rate'), findsOneWidget);
-      expect(find.text('statistics.summary_health_records'), findsOneWidget);
+      expect(find.text(l10n('statistics.summary_total_birds')), findsOneWidget);
+      expect(find.text(l10n('statistics.summary_active_breedings')), findsOneWidget);
+      expect(find.text(l10n('statistics.summary_incubating_eggs')), findsOneWidget);
+      expect(find.text(l10n('statistics.summary_fertility_rate')), findsOneWidget);
+      expect(find.text(l10n('statistics.summary_survival_rate')), findsOneWidget);
+      expect(find.text(l10n('statistics.summary_health_records')), findsOneWidget);
     });
 
     testWidgets('displays totalBirds value', (tester) async {

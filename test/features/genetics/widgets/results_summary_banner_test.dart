@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/domain/services/genetics/mendelian_calculator.dart';
 import 'package:budgie_breeding_tracker/features/genetics/widgets/results_summary_banner.dart';
@@ -49,7 +50,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('genetics.total_variations'), findsOneWidget);
+      expect(find.text(l10n('genetics.total_variations')), findsOneWidget);
     });
 
     testWidgets('shows variation count as text', (tester) async {
@@ -82,7 +83,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.textContaining('genetics.mutation'), findsAtLeastNWidgets(1));
+      expect(find.textContaining(l10nContains('genetics.mutation')), findsAtLeastNWidgets(1));
     });
 
     testWidgets('shows carrier_ratio when carrier results exist', (
@@ -97,7 +98,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('genetics.carrier_ratio'), findsOneWidget);
+      expect(find.text(l10n('genetics.carrier_ratio')), findsOneWidget);
     });
 
     testWidgets('does not show carrier_ratio when no carrier results', (
@@ -109,7 +110,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('genetics.carrier_ratio'), findsNothing);
+      expect(find.text(l10n('genetics.carrier_ratio')), findsNothing);
     });
 
     testWidgets('shows Row layout for the stat columns', (tester) async {

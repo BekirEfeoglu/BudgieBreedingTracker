@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
+import 'package:budgie_breeding_tracker/core/species/species_profile.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/parent_genotype.dart';
 import 'package:budgie_breeding_tracker/features/birds/providers/bird_providers.dart';
 import 'package:budgie_breeding_tracker/features/birds/widgets/bird_form_sections.dart';
@@ -58,7 +60,7 @@ void main() {
         ),
       );
 
-      expect(find.text('birds.name_label'), findsOneWidget);
+      expect(find.text(l10n('birds.name_label')), findsOneWidget);
     });
 
     testWidgets('shows gender segmented button', (tester) async {
@@ -100,7 +102,7 @@ void main() {
         ),
       );
 
-      expect(find.text('birds.species'), findsAtLeastNWidgets(1));
+      expect(find.text(l10n('birds.species')), findsAtLeastNWidgets(1));
     });
 
     testWidgets('species dropdown keeps current non-budgie value visible', (
@@ -137,7 +139,47 @@ void main() {
           .toList();
 
       expect(speciesDropdown.value, Species.canary);
-      expect(speciesValues, equals([Species.budgie, Species.canary]));
+      expect(
+        speciesValues,
+        equals([
+          Species.budgie,
+          Species.canary,
+          Species.cockatiel,
+          Species.finch,
+          Species.other,
+        ]),
+      );
+    });
+
+    testWidgets('species dropdown starts empty for unknown species', (
+      tester,
+    ) async {
+      final nameCtrl = TextEditingController();
+      final colorCtrl = TextEditingController();
+
+      await _pumpSimple(
+        tester,
+        BirdFormBasicInfoSection(
+          nameController: nameCtrl,
+          gender: BirdGender.male,
+          species: Species.unknown,
+          colorMutation: null,
+          colorNoteController: colorCtrl,
+          onGenderChanged: (_) {},
+          onSpeciesChanged: (_) {},
+          onColorChanged: (_) {},
+        ),
+      );
+
+      final speciesDropdownFinder = find.byWidgetPredicate(
+        (widget) => widget is DropdownButton<Species>,
+      );
+      expect(speciesDropdownFinder, findsOneWidget);
+
+      final speciesDropdown = tester.widget<DropdownButton<Species>>(
+        speciesDropdownFinder,
+      );
+      expect(speciesDropdown.value, isNull);
     });
 
     testWidgets(
@@ -203,7 +245,7 @@ void main() {
           ),
         );
 
-        expect(find.text('birds.color_name'), findsOneWidget);
+        expect(find.text(l10n('birds.color_name')), findsOneWidget);
       },
     );
 
@@ -227,7 +269,7 @@ void main() {
         ),
       );
 
-      expect(find.text('birds.color_name'), findsNothing);
+      expect(find.text(l10n('birds.color_name')), findsNothing);
     });
 
     testWidgets('validates empty name', (tester) async {
@@ -261,7 +303,7 @@ void main() {
       formKey.currentState?.validate();
       await tester.pump();
 
-      expect(find.text('birds.name_required'), findsOneWidget);
+      expect(find.text(l10n('birds.name_required')), findsOneWidget);
     });
 
     testWidgets('gender change callback is invoked', (tester) async {
@@ -283,7 +325,7 @@ void main() {
         ),
       );
 
-      await tester.tap(find.text('birds.female'));
+      await tester.tap(find.text(l10n('birds.female')));
       await tester.pump();
 
       expect(changedGender, BirdGender.female);
@@ -305,7 +347,7 @@ void main() {
         ),
       );
 
-      expect(find.text('birds.ring_number'), findsAtLeastNWidgets(1));
+      expect(find.text(l10n('birds.ring_number')), findsAtLeastNWidgets(1));
     });
 
     testWidgets('shows cage number field', (tester) async {
@@ -322,7 +364,7 @@ void main() {
         ),
       );
 
-      expect(find.text('birds.cage_number'), findsAtLeastNWidgets(1));
+      expect(find.text(l10n('birds.cage_number')), findsAtLeastNWidgets(1));
     });
 
     testWidgets('shows birth date picker field', (tester) async {
@@ -339,7 +381,7 @@ void main() {
         ),
       );
 
-      expect(find.text('birds.birth_date'), findsAtLeastNWidgets(1));
+      expect(find.text(l10n('birds.birth_date')), findsAtLeastNWidgets(1));
     });
   });
 
@@ -348,13 +390,15 @@ void main() {
       await _pumpSimple(
         tester,
         BirdFormGeneticsSection(
+          species: Species.budgie,
+          geneticsMode: GeneticsMode.full,
           gender: BirdGender.male,
           genotype: const ParentGenotype.empty(gender: BirdGender.male),
           onGenotypeChanged: (_) {},
         ),
       );
 
-      expect(find.text('genetics.title'), findsOneWidget);
+      expect(find.text(l10n('genetics.title')), findsOneWidget);
     });
   });
 
@@ -367,7 +411,7 @@ void main() {
         BirdFormNotesSection(notesController: notesCtrl),
       );
 
-      expect(find.text('common.notes_optional'), findsAtLeastNWidgets(1));
+      expect(find.text(l10n('common.notes_optional')), findsAtLeastNWidgets(1));
     });
 
     testWidgets('field has max lines of 4', (tester) async {
@@ -390,6 +434,7 @@ void main() {
       await _pumpWithProvider(
         tester,
         BirdFormParentsSection(
+          species: Species.budgie,
           fatherId: null,
           motherId: null,
           onFatherChanged: (_) {},
@@ -402,13 +447,14 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('birds.parents'), findsAtLeastNWidgets(1));
+      expect(find.text(l10n('birds.parents')), findsAtLeastNWidgets(1));
     });
 
     testWidgets('shows father selector label', (tester) async {
       await _pumpWithProvider(
         tester,
         BirdFormParentsSection(
+          species: Species.budgie,
           fatherId: null,
           motherId: null,
           onFatherChanged: (_) {},
@@ -421,13 +467,14 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('birds.select_father'), findsAtLeastNWidgets(1));
+      expect(find.text(l10n('birds.select_father')), findsAtLeastNWidgets(1));
     });
 
     testWidgets('shows mother selector label', (tester) async {
       await _pumpWithProvider(
         tester,
         BirdFormParentsSection(
+          species: Species.budgie,
           fatherId: null,
           motherId: null,
           onFatherChanged: (_) {},
@@ -440,7 +487,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('birds.select_mother'), findsAtLeastNWidgets(1));
+      expect(find.text(l10n('birds.select_mother')), findsAtLeastNWidgets(1));
     });
   });
 }

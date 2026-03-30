@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/domain/services/incubation/environment_monitor.dart';
 
@@ -50,13 +51,13 @@ void main() {
     test('includes low temperature recommendation key', () {
       final reading = monitor.evaluate(temperature: 36.5, humidity: 60.0);
       final recommendation = monitor.getRecommendation(reading);
-      expect(recommendation, contains('environment.temp_too_low'));
+      expect(recommendation, contains(l10n('environment.temp_too_low')));
     });
 
     test('includes high humidity recommendation key', () {
       final reading = monitor.evaluate(temperature: 37.5, humidity: 70.0);
       final recommendation = monitor.getRecommendation(reading);
-      expect(recommendation, contains('environment.humidity_too_high'));
+      expect(recommendation, contains(l10n('environment.humidity_too_high')));
     });
   });
 }

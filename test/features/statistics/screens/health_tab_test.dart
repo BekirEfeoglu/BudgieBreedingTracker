@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/features/chicks/providers/chick_providers.dart';
 import 'package:budgie_breeding_tracker/features/health_records/providers/health_record_providers.dart';
@@ -49,14 +50,14 @@ void main() {
       await tester.pumpWidget(_createSubject());
       await tester.pumpAndSettle();
 
-      expect(find.text('statistics.monthly_trend'), findsOneWidget);
+      expect(find.text(l10n('statistics.monthly_trend')), findsOneWidget);
     });
 
     testWidgets('shows chick survival section', (tester) async {
       await tester.pumpWidget(_createSubject());
       await tester.pumpAndSettle();
 
-      expect(find.text('statistics.chick_survival'), findsOneWidget);
+      expect(find.text(l10n('statistics.chick_survival')), findsOneWidget);
     });
 
     testWidgets('shows health record type distribution section', (
@@ -65,7 +66,7 @@ void main() {
       await tester.pumpWidget(_createSubject());
       await tester.pumpAndSettle();
 
-      expect(find.text('statistics.health_type_distribution'), findsOneWidget);
+      expect(find.text(l10n('statistics.health_type_distribution')), findsOneWidget);
     });
   });
 }

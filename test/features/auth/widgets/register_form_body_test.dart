@@ -5,6 +5,7 @@ import 'package:budgie_breeding_tracker/features/auth/widgets/register_form_body
 import 'package:budgie_breeding_tracker/features/auth/widgets/social_login_buttons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 import '../../../helpers/pump_helpers.dart';
@@ -71,19 +72,19 @@ void main() {
     testWidgets('shows name field with localized label', (tester) async {
       await pumpWidgetSimple(tester, buildSubject());
 
-      expect(find.text('auth.full_name'), findsOneWidget);
+      expect(find.text(l10n('auth.full_name')), findsOneWidget);
     });
 
     testWidgets('shows email field with localized label', (tester) async {
       await pumpWidgetSimple(tester, buildSubject());
 
-      expect(find.text('auth.email'), findsOneWidget);
+      expect(find.text(l10n('auth.email')), findsOneWidget);
     });
 
     testWidgets('shows password field with localized label', (tester) async {
       await pumpWidgetSimple(tester, buildSubject());
 
-      expect(find.text('auth.password'), findsOneWidget);
+      expect(find.text(l10n('auth.password')), findsOneWidget);
     });
 
     testWidgets('shows confirm password field with localized label', (
@@ -91,14 +92,14 @@ void main() {
     ) async {
       await pumpWidgetSimple(tester, buildSubject());
 
-      expect(find.text('auth.confirm_password'), findsOneWidget);
+      expect(find.text(l10n('auth.confirm_password')), findsOneWidget);
     });
 
     testWidgets('shows register button', (tester) async {
       await pumpWidgetSimple(tester, buildSubject());
 
       expect(find.byType(FilledButton), findsOneWidget);
-      expect(find.text('auth.register'), findsOneWidget);
+      expect(find.text(l10n('auth.register')), findsOneWidget);
     });
 
     testWidgets('shows CircularProgressIndicator when loading', (
@@ -136,8 +137,8 @@ void main() {
     testWidgets('shows login link text', (tester) async {
       await pumpWidgetSimple(tester, buildSubject());
 
-      expect(find.text('auth.have_account'), findsOneWidget);
-      expect(find.text('auth.login'), findsOneWidget);
+      expect(find.text(l10n('auth.have_account')), findsOneWidget);
+      expect(find.text(l10n('auth.login')), findsOneWidget);
     });
 
     testWidgets('contains PasswordStrengthMeter', (tester) async {
@@ -149,14 +150,14 @@ void main() {
     testWidgets('contains age confirmation checkbox', (tester) async {
       await pumpWidgetSimple(tester, buildSubject());
 
-      expect(find.text('auth.age_confirm'), findsOneWidget);
+      expect(find.text(l10n('auth.age_confirm')), findsOneWidget);
       expect(find.byType(Checkbox), findsNWidgets(2)); // age + consent
     });
 
     testWidgets('contains consent checkbox', (tester) async {
       await pumpWidgetSimple(tester, buildSubject());
 
-      expect(find.text('auth.consent_checkbox'), findsOneWidget);
+      expect(find.text(l10n('auth.consent_checkbox')), findsOneWidget);
     });
 
     group('validation', () {
@@ -166,7 +167,7 @@ void main() {
         formKey.currentState!.validate();
         await tester.pump();
 
-        expect(find.text('common.required_field'), findsWidgets);
+        expect(find.text(l10n('common.required_field')), findsWidgets);
       });
 
       testWidgets('validates empty email field', (tester) async {
@@ -176,7 +177,7 @@ void main() {
         formKey.currentState!.validate();
         await tester.pump();
 
-        expect(find.text('common.required_field'), findsWidgets);
+        expect(find.text(l10n('common.required_field')), findsWidgets);
       });
 
       testWidgets('validates invalid email format', (tester) async {
@@ -189,7 +190,7 @@ void main() {
         formKey.currentState!.validate();
         await tester.pump();
 
-        expect(find.text('common.email_invalid'), findsOneWidget);
+        expect(find.text(l10n('common.email_invalid')), findsOneWidget);
       });
 
       testWidgets('validates short password', (tester) async {
@@ -202,7 +203,7 @@ void main() {
         formKey.currentState!.validate();
         await tester.pump();
 
-        expect(find.text('common.password_short'), findsOneWidget);
+        expect(find.text(l10n('common.password_short')), findsOneWidget);
       });
 
       testWidgets('validates password missing uppercase', (tester) async {
@@ -215,7 +216,7 @@ void main() {
         formKey.currentState!.validate();
         await tester.pump();
 
-        expect(find.text('auth.rule_uppercase'), findsWidgets);
+        expect(find.text(l10n('auth.rule_uppercase')), findsWidgets);
       });
 
       testWidgets('validates password missing lowercase', (tester) async {
@@ -228,7 +229,7 @@ void main() {
         formKey.currentState!.validate();
         await tester.pump();
 
-        expect(find.text('auth.rule_lowercase'), findsWidgets);
+        expect(find.text(l10n('auth.rule_lowercase')), findsWidgets);
       });
 
       testWidgets('validates password missing digit', (tester) async {
@@ -241,7 +242,7 @@ void main() {
         formKey.currentState!.validate();
         await tester.pump();
 
-        expect(find.text('auth.rule_digit'), findsWidgets);
+        expect(find.text(l10n('auth.rule_digit')), findsWidgets);
       });
 
       testWidgets('validates password missing special char', (tester) async {
@@ -254,7 +255,7 @@ void main() {
         formKey.currentState!.validate();
         await tester.pump();
 
-        expect(find.text('auth.rule_special_char'), findsWidgets);
+        expect(find.text(l10n('auth.rule_special_char')), findsWidgets);
       });
 
       testWidgets('validates password mismatch', (tester) async {
@@ -267,7 +268,7 @@ void main() {
         formKey.currentState!.validate();
         await tester.pump();
 
-        expect(find.text('common.password_mismatch'), findsOneWidget);
+        expect(find.text(l10n('common.password_mismatch')), findsOneWidget);
       });
 
       testWidgets('validates unchecked age confirmation', (tester) async {
@@ -281,8 +282,8 @@ void main() {
         await tester.pump();
 
         // Age and consent checkboxes are not checked
-        expect(find.text('auth.age_confirm_required'), findsOneWidget);
-        expect(find.text('auth.consent_required'), findsOneWidget);
+        expect(find.text(l10n('auth.age_confirm_required')), findsOneWidget);
+        expect(find.text(l10n('auth.consent_required')), findsOneWidget);
       });
     });
 
@@ -303,9 +304,9 @@ void main() {
       testWidgets('calls onLoginTap when login link tapped', (tester) async {
         await pumpWidgetSimple(tester, buildSubject());
 
-        await tester.ensureVisible(find.text('auth.login'));
+        await tester.ensureVisible(find.text(l10n('auth.login')));
         await tester.pump();
-        await tester.tap(find.text('auth.login'));
+        await tester.tap(find.text(l10n('auth.login')));
         await tester.pump();
 
         expect(loginCalled, isTrue);
@@ -325,7 +326,7 @@ void main() {
 
         // Find the login TextButton
         final loginButtons = tester.widgetList<TextButton>(
-          find.widgetWithText(TextButton, 'auth.login'),
+          find.widgetWithText(TextButton, l10n('auth.login')),
         );
         for (final button in loginButtons) {
           expect(button.onPressed, isNull);
@@ -338,7 +339,7 @@ void main() {
         await pumpWidgetSimple(tester, buildSubject());
 
         expect(find.byType(OutlinedButton), findsOneWidget);
-        expect(find.text('auth.sign_in_with_google'), findsOneWidget);
+        expect(find.text(l10n('auth.sign_in_with_google')), findsOneWidget);
       });
 
       testWidgets('shows Apple login button', (tester) async {

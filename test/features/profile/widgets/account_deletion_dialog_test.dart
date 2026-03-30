@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/features/profile/widgets/account_deletion_dialog.dart';
 
@@ -16,7 +17,7 @@ void main() {
 
     FilledButton findDeleteButton(WidgetTester tester) {
       return tester.widget<FilledButton>(
-        find.widgetWithText(FilledButton, 'profile.delete_account'),
+        find.widgetWithText(FilledButton, l10n('profile.delete_account')),
       );
     }
 
@@ -126,7 +127,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Tap cancel
-      await tester.tap(find.text('common.cancel'));
+      await tester.tap(find.text(l10n('common.cancel')));
       await tester.pumpAndSettle();
 
       expect(dialogResult, isNull);
@@ -164,7 +165,7 @@ void main() {
 
       // Tap delete button
       await tester.tap(
-        find.widgetWithText(FilledButton, 'profile.delete_account'),
+        find.widgetWithText(FilledButton, l10n('profile.delete_account')),
       );
       await tester.pumpAndSettle();
 

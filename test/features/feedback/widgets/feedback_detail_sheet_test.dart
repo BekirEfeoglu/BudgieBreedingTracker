@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/features/feedback/providers/feedback_providers.dart';
 import 'package:budgie_breeding_tracker/features/feedback/widgets/feedback_detail_sheet.dart';
@@ -119,7 +120,7 @@ void main() {
         await pumpLocalizedApp(tester,buildSubject(entry));
         expect(find.text('We are working on it!'), findsAtLeastNWidgets(1));
         // admin_response key label
-        expect(find.text('feedback.admin_response'), findsAtLeastNWidgets(1));
+        expect(find.text(l10n('feedback.admin_response')), findsAtLeastNWidgets(1));
       },
     );
 
@@ -128,7 +129,7 @@ void main() {
       (tester) async {
         final entry = _makeEntry(adminResponse: null);
         await pumpLocalizedApp(tester,buildSubject(entry));
-        expect(find.text('feedback.admin_response'), findsNothing);
+        expect(find.text(l10n('feedback.admin_response')), findsNothing);
       },
     );
 

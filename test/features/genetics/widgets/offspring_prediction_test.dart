@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/mendelian_calculator.dart';
@@ -63,7 +64,7 @@ void main() {
         _wrap(const OffspringPrediction(result: _basicResult)),
       );
       expect(
-        find.textContaining('genetics.mutation_normal'),
+        find.textContaining(l10nContains('genetics.mutation_normal')),
         findsAtLeastNWidgets(1),
       );
     });
@@ -79,7 +80,7 @@ void main() {
       await pumpLocalizedApp(tester,
         _wrap(const OffspringPrediction(result: _carrierResult)),
       );
-      expect(find.text('genetics.carrier'), findsAtLeastNWidgets(1));
+      expect(find.text(l10n('genetics.carrier')), findsAtLeastNWidgets(1));
     });
 
     testWidgets('shows lethal badge when lethalCombinationIds is not empty', (
@@ -88,7 +89,7 @@ void main() {
       await pumpLocalizedApp(tester,
         _wrap(const OffspringPrediction(result: _lethalResult)),
       );
-      expect(find.text('genetics.lethal_badge'), findsOneWidget);
+      expect(find.text(l10n('genetics.lethal_badge')), findsOneWidget);
     });
 
     testWidgets('shows Card widget', (tester) async {
@@ -130,7 +131,7 @@ void main() {
         _wrap(const OffspringPrediction(result: _carrierResult)),
       );
       expect(
-        find.textContaining('genetics.mutation_blue'),
+        find.textContaining(l10nContains('genetics.mutation_blue')),
         findsAtLeastNWidgets(1),
       );
     });
@@ -153,7 +154,7 @@ void main() {
       );
       // Collapsed view shows hint label instead of full genotype
       expect(
-        find.text('genetics.genotype_detail_label'),
+        find.text(l10n('genetics.genotype_detail_label')),
         findsAtLeastNWidgets(1),
       );
 

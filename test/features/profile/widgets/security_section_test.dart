@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -71,13 +72,13 @@ void main() {
     testWidgets('shows change_password tile label', (tester) async {
       await _pump(tester);
 
-      expect(find.text('profile.change_password'), findsOneWidget);
+      expect(find.text(l10n('profile.change_password')), findsOneWidget);
     });
 
     testWidgets('shows two_factor_auth tile label', (tester) async {
       await _pump(tester);
 
-      expect(find.text('profile.two_factor_auth'), findsOneWidget);
+      expect(find.text(l10n('profile.two_factor_auth')), findsOneWidget);
     });
 
     testWidgets('calls onChangePassword when password tile tapped', (
@@ -86,7 +87,7 @@ void main() {
       var called = false;
       await _pump(tester, onChangePassword: () => called = true);
 
-      await tester.tap(find.text('profile.change_password'));
+      await tester.tap(find.text(l10n('profile.change_password')));
       expect(called, isTrue);
     });
 
@@ -112,7 +113,7 @@ void main() {
       await _pump(tester);
 
       // score 45 >= 40 and < 60 → 'profile.security_medium'
-      expect(find.text('profile.security_medium'), findsOneWidget);
+      expect(find.text(l10n('profile.security_medium')), findsOneWidget);
     });
   });
 }

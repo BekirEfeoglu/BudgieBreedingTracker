@@ -31,6 +31,7 @@ enum BirdStatus {
 enum Species {
   budgie,
   canary,
+  cockatiel,
   finch,
   other,
   unknown;
@@ -39,6 +40,10 @@ enum Species {
   static Species fromJson(String json) => switch (json) {
     'budgie' || 'muhabbet' => Species.budgie,
     'canary' || 'kanarya' => Species.canary,
+    'cockatiel' ||
+    'sultan' ||
+    'sultan_papaganı' ||
+    'sultan_papagani' => Species.cockatiel,
     'finch' || 'ispinoz' => Species.finch,
     'other' => Species.other,
     _ => Species.unknown,
@@ -59,6 +64,9 @@ enum BirdColor {
   spangle,
   pied,
   clearwing,
+  red,
+  pearl,
+  whiteface,
   other,
   unknown;
 
@@ -78,6 +86,11 @@ Widget speciesIconWidget(Species species, {double? size, Color? color}) =>
     switch (species) {
       Species.budgie => AppIcon(AppIcons.budgie, size: size, color: color),
       Species.canary => AppIcon(AppIcons.canary, size: size, color: color),
+      Species.cockatiel => AppIcon(
+        AppIcons.cockatiel,
+        size: size,
+        color: color,
+      ),
       Species.finch => AppIcon(AppIcons.finch, size: size, color: color),
       Species.other ||
       Species.unknown => AppIcon(AppIcons.birdOther, size: size, color: color),

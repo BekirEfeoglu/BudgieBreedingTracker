@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:budgie_breeding_tracker/data/models/profile_model.dart';
@@ -40,7 +41,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('profile.email'), findsOneWidget);
+      expect(find.text(l10n('profile.email')), findsOneWidget);
       expect(find.text(email), findsOneWidget);
     });
 
@@ -64,7 +65,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('profile.full_name'), findsOneWidget);
+      expect(find.text(l10n('profile.full_name')), findsOneWidget);
       expect(find.text('Test User'), findsOneWidget);
     });
 
@@ -78,7 +79,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('profile.full_name'), findsNothing);
+      expect(find.text(l10n('profile.full_name')), findsNothing);
     });
 
     testWidgets('shows admin role label', (tester) async {
@@ -89,8 +90,8 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('profile.role_label'), findsOneWidget);
-      expect(find.text('profile.role_admin'), findsOneWidget);
+      expect(find.text(l10n('profile.role_label')), findsOneWidget);
+      expect(find.text(l10n('profile.role_admin')), findsOneWidget);
     });
 
     testWidgets('shows founder role label', (tester) async {
@@ -101,7 +102,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('profile.role_founder'), findsOneWidget);
+      expect(find.text(l10n('profile.role_founder')), findsOneWidget);
     });
 
     testWidgets('shows user role label for unknown role', (tester) async {
@@ -112,7 +113,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('profile.role_user'), findsOneWidget);
+      expect(find.text(l10n('profile.role_user')), findsOneWidget);
     });
 
     testWidgets('hides role row when profile is null', (tester) async {
@@ -121,7 +122,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('profile.role_label'), findsNothing);
+      expect(find.text(l10n('profile.role_label')), findsNothing);
     });
   });
 }

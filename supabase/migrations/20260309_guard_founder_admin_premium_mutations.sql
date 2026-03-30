@@ -20,9 +20,7 @@ begin
   return new;
 end;
 $$;
-
 drop trigger if exists trg_guard_protected_role_premium_mutation on public.profiles;
-
 create trigger trg_guard_protected_role_premium_mutation
 before update on public.profiles
 for each row

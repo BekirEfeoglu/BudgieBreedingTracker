@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -46,43 +47,43 @@ void main() {
       await tester.pumpWidget(createSubject());
       await tester.pumpAndSettle();
 
-      expect(find.text('backup.title'), findsOneWidget);
+      expect(find.text(l10n('backup.title')), findsOneWidget);
     });
 
     testWidgets('shows export PDF tile', (tester) async {
       await tester.pumpWidget(createSubject());
       await tester.pumpAndSettle();
 
-      expect(find.text('backup.export_pdf'), findsOneWidget);
+      expect(find.text(l10n('backup.export_pdf')), findsOneWidget);
     });
 
     testWidgets('shows export Excel tile', (tester) async {
       await tester.pumpWidget(createSubject());
       await tester.pumpAndSettle();
 
-      expect(find.text('backup.export_excel'), findsOneWidget);
+      expect(find.text(l10n('backup.export_excel')), findsOneWidget);
     });
 
     testWidgets('shows import Excel tile', (tester) async {
       await tester.pumpWidget(createSubject());
       await tester.pumpAndSettle();
 
-      expect(find.text('backup.import_excel'), findsOneWidget);
+      expect(find.text(l10n('backup.import_excel')), findsOneWidget);
     });
 
     testWidgets('shows never text when no export date', (tester) async {
       await tester.pumpWidget(createSubject());
       await tester.pumpAndSettle();
 
-      expect(find.text('backup.never'), findsOneWidget);
+      expect(find.text(l10n('backup.never')), findsOneWidget);
     });
 
     testWidgets('shows section headers', (tester) async {
       await tester.pumpWidget(createSubject());
       await tester.pumpAndSettle();
 
-      expect(find.text('backup.export_data'), findsOneWidget);
-      expect(find.text('backup.import_data'), findsOneWidget);
+      expect(find.text(l10n('backup.export_data')), findsOneWidget);
+      expect(find.text(l10n('backup.import_data')), findsOneWidget);
     });
   });
 }

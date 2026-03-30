@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import 'package:budgie_breeding_tracker/core/enums/community_enums.dart';
@@ -151,7 +152,7 @@ void main() {
       await tester.pump();
 
       expect(find.text('Short text'), findsOneWidget);
-      expect(find.text('community.read_more'), findsNothing);
+      expect(find.text(l10n('community.read_more')), findsNothing);
     });
 
     testWidgets('long text shows read more', (tester) async {
@@ -160,7 +161,7 @@ void main() {
       await tester.pumpWidget(createContentText(content: longContent));
       await tester.pump();
 
-      expect(find.text('community.read_more'), findsOneWidget);
+      expect(find.text(l10n('community.read_more')), findsOneWidget);
     });
 
     testWidgets('text with many newlines shows read more', (tester) async {
@@ -168,7 +169,7 @@ void main() {
       await tester.pumpWidget(createContentText(content: multiline));
       await tester.pump();
 
-      expect(find.text('community.read_more'), findsOneWidget);
+      expect(find.text(l10n('community.read_more')), findsOneWidget);
     });
 
     testWidgets('text with few newlines does not show read more', (
@@ -178,7 +179,7 @@ void main() {
       await tester.pumpWidget(createContentText(content: twoLines));
       await tester.pump();
 
-      expect(find.text('community.read_more'), findsNothing);
+      expect(find.text(l10n('community.read_more')), findsNothing);
     });
 
     testWidgets('showFull displays full content without truncation', (
@@ -190,7 +191,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('community.read_more'), findsNothing);
+      expect(find.text(l10n('community.read_more')), findsNothing);
       // Full content is shown
       expect(find.text(longContent), findsOneWidget);
     });
@@ -201,14 +202,14 @@ void main() {
       await tester.pumpWidget(createContentText(content: content, maxLines: 1));
       await tester.pump();
 
-      expect(find.text('community.read_more'), findsOneWidget);
+      expect(find.text(l10n('community.read_more')), findsOneWidget);
     });
 
     testWidgets('empty content renders without error', (tester) async {
       await tester.pumpWidget(createContentText(content: ''));
       await tester.pump();
 
-      expect(find.text('community.read_more'), findsNothing);
+      expect(find.text(l10n('community.read_more')), findsNothing);
     });
 
     testWidgets('exactly at threshold does not show read more', (tester) async {
@@ -217,7 +218,7 @@ void main() {
       await tester.pumpWidget(createContentText(content: exactContent));
       await tester.pump();
 
-      expect(find.text('community.read_more'), findsNothing);
+      expect(find.text(l10n('community.read_more')), findsNothing);
     });
 
     testWidgets('one char over threshold shows read more', (tester) async {
@@ -225,7 +226,7 @@ void main() {
       await tester.pumpWidget(createContentText(content: overContent));
       await tester.pump();
 
-      expect(find.text('community.read_more'), findsOneWidget);
+      expect(find.text(l10n('community.read_more')), findsOneWidget);
     });
   });
 
@@ -250,7 +251,7 @@ void main() {
       await tester.pump();
 
       // Falls back to localization key (not translated in test)
-      expect(find.text('community.linked_bird'), findsOneWidget);
+      expect(find.text(l10n('community.linked_bird')), findsOneWidget);
     });
 
     testWidgets('renders as ActionChip', (tester) async {

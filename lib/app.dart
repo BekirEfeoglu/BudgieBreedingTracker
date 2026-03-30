@@ -190,6 +190,7 @@ class _BudgieBreedingAppState extends ConsumerState<BudgieBreedingApp> {
           ? revenueCatApiKeyIos
           : revenueCatApiKeyAndroid;
       if (apiKey.isEmpty) return;
+      if (shouldDeferRevenueCatOnDebugIosSimulator) return;
 
       unawaited(
         purchaseService

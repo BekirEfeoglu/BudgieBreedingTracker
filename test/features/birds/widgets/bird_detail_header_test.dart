@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/features/birds/widgets/bird_detail_header.dart';
 import 'package:budgie_breeding_tracker/features/birds/widgets/bird_gender_icon.dart';
@@ -33,7 +34,7 @@ void main() {
 
       await pumpWidgetSimple(tester, BirdDetailHeader(bird: bird));
 
-      expect(find.textContaining('birds.ring_number'), findsNothing);
+      expect(find.textContaining(l10nContains('birds.ring_number')), findsNothing);
     });
 
     testWidgets('shows status badge with correct status', (tester) async {

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/domain/services/genetics/mendelian_calculator.dart';
 import 'package:budgie_breeding_tracker/features/genetics/providers/genetics_providers.dart';
@@ -45,7 +46,7 @@ void main() {
         ),
       );
       // The widget renders but is essentially invisible (SizedBox.shrink)
-      expect(find.text('genetics.dihybrid_punnett'), findsNothing);
+      expect(find.text(l10n('genetics.dihybrid_punnett')), findsNothing);
     });
 
     testWidgets('shows dihybrid title text when multiple loci available',
@@ -60,7 +61,7 @@ void main() {
           ],
         ),
       );
-      expect(find.text('genetics.dihybrid_punnett'), findsOneWidget);
+      expect(find.text(l10n('genetics.dihybrid_punnett')), findsOneWidget);
     });
 
     testWidgets('shows second locus label text', (tester) async {
@@ -74,7 +75,7 @@ void main() {
           ],
         ),
       );
-      expect(find.text('genetics.second_locus'), findsOneWidget);
+      expect(find.text(l10n('genetics.second_locus')), findsOneWidget);
     });
 
     testWidgets('shows dropdown for second locus selection', (tester) async {
@@ -174,7 +175,7 @@ void main() {
           const PunnettLocusSelector(availableLoci: ['blue', 'opaline']),
         ),
       );
-      expect(find.text('genetics.select_punnett_locus'), findsOneWidget);
+      expect(find.text(l10n('genetics.select_punnett_locus')), findsOneWidget);
     });
 
     testWidgets('shows dropdown form field for locus selection', (tester) async {

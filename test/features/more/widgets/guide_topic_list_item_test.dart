@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/features/more/widgets/guide_data.dart';
 import 'package:budgie_breeding_tracker/features/more/widgets/guide_topic_list_item.dart';
+
+import '../../../helpers/test_localization.dart';
 
 GuideTopic _createTopic({
   String titleKey = 'test.title',
@@ -28,40 +31,36 @@ void main() {
   setUp(() => tapped = false);
 
   Widget createSubject({GuideTopic? topic, bool showDivider = true}) {
-    return MaterialApp(
-      home: Scaffold(
-        body: GuideTopicListItem(
-          topic: topic ?? _createTopic(),
-          onTap: () => tapped = true,
-          showDivider: showDivider,
-        ),
-      ),
+    return GuideTopicListItem(
+      topic: topic ?? _createTopic(),
+      onTap: () => tapped = true,
+      showDivider: showDivider,
     );
   }
 
   group('GuideTopicListItem', () {
     testWidgets('renders topic title text', (tester) async {
       final topic = _createTopic(titleKey: 'some.topic_title');
-      await tester.pumpWidget(createSubject(topic: topic));
+      await pumpTranslatedWidget(tester, createSubject(topic: topic));
 
-      expect(find.text('some.topic_title'), findsOneWidget);
+      expect(find.text(resolvedL10n('some.topic_title')), findsOneWidget);
     });
 
     testWidgets('renders subtitle text key', (tester) async {
       final topic = _createTopic(subtitleKey: 'some.subtitle_key');
-      await tester.pumpWidget(createSubject(topic: topic));
+      await pumpTranslatedWidget(tester, createSubject(topic: topic));
 
-      expect(find.text('some.subtitle_key'), findsOneWidget);
+      expect(find.text(resolvedL10n('some.subtitle_key')), findsOneWidget);
     });
 
     testWidgets('renders chevron icon', (tester) async {
-      await tester.pumpWidget(createSubject());
+      await pumpTranslatedWidget(tester, createSubject());
 
       expect(find.byIcon(LucideIcons.chevronRight), findsOneWidget);
     });
 
     testWidgets('renders AppIcon widget', (tester) async {
-      await tester.pumpWidget(createSubject());
+      await pumpTranslatedWidget(tester, createSubject());
 
       expect(find.byType(AppIcon), findsOneWidget);
     });
@@ -70,22 +69,22 @@ void main() {
       tester,
     ) async {
       final topic = _createTopic(isPremium: true);
-      await tester.pumpWidget(createSubject(topic: topic));
+      await pumpTranslatedWidget(tester, createSubject(topic: topic));
 
-      expect(find.text('user_guide.premium_feature'), findsOneWidget);
+      expect(find.text(resolvedL10n('user_guide.premium_feature')), findsOneWidget);
     });
 
     testWidgets('hides premium badge when topic.isPremium is false', (
       tester,
     ) async {
       final topic = _createTopic(isPremium: false);
-      await tester.pumpWidget(createSubject(topic: topic));
+      await pumpTranslatedWidget(tester, createSubject(topic: topic));
 
-      expect(find.text('user_guide.premium_feature'), findsNothing);
+      expect(find.text(resolvedL10n('user_guide.premium_feature')), findsNothing);
     });
 
     testWidgets('calls onTap callback when tapped', (tester) async {
-      await tester.pumpWidget(createSubject());
+      await pumpTranslatedWidget(tester, createSubject());
 
       await tester.tap(find.byType(InkWell));
       await tester.pump();
@@ -96,13 +95,13 @@ void main() {
     testWidgets('shows divider when showDivider is true (default)', (
       tester,
     ) async {
-      await tester.pumpWidget(createSubject(showDivider: true));
+      await pumpTranslatedWidget(tester, createSubject(showDivider: true));
 
       expect(find.byType(Divider), findsOneWidget);
     });
 
     testWidgets('hides divider when showDivider is false', (tester) async {
-      await tester.pumpWidget(createSubject(showDivider: false));
+      await pumpTranslatedWidget(tester, createSubject(showDivider: false));
 
       expect(find.byType(Divider), findsNothing);
     });

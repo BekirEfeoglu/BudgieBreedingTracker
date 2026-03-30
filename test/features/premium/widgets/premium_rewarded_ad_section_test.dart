@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -43,8 +44,8 @@ void main() {
     testWidgets('renders section title and subtitle', (tester) async {
       await pumpLocalizedApp(tester, buildSubject());
 
-      expect(find.text('ads.free_access_title'), findsOneWidget);
-      expect(find.text('ads.free_access_subtitle'), findsOneWidget);
+      expect(find.text(l10n('ads.free_access_title')), findsOneWidget);
+      expect(find.text(l10n('ads.free_access_subtitle')), findsOneWidget);
     });
 
     testWidgets('renders gift icon', (tester) async {
@@ -56,9 +57,9 @@ void main() {
     testWidgets('shows ad buttons when all rewards inactive', (tester) async {
       await pumpLocalizedApp(tester, buildSubject());
 
-      expect(find.text('ads.watch_for_statistics'), findsOneWidget);
-      expect(find.text('ads.watch_for_genetics'), findsOneWidget);
-      expect(find.text('ads.watch_for_export'), findsOneWidget);
+      expect(find.text(l10n('ads.watch_for_statistics')), findsOneWidget);
+      expect(find.text(l10n('ads.watch_for_genetics')), findsOneWidget);
+      expect(find.text(l10n('ads.watch_for_export')), findsOneWidget);
     });
 
     testWidgets('shows status chip when statistics reward is active', (
@@ -69,8 +70,8 @@ void main() {
         buildSubject(statsActive: true),
       );
 
-      expect(find.text('ads.reward_statistics_active'), findsOneWidget);
-      expect(find.text('ads.watch_for_statistics'), findsNothing);
+      expect(find.text(l10n('ads.reward_statistics_active')), findsOneWidget);
+      expect(find.text(l10n('ads.watch_for_statistics')), findsNothing);
     });
 
     testWidgets('shows status chip when genetics reward is active', (
@@ -81,8 +82,8 @@ void main() {
         buildSubject(geneticsActive: true),
       );
 
-      expect(find.text('ads.reward_genetics_remaining'), findsOneWidget);
-      expect(find.text('ads.watch_for_genetics'), findsNothing);
+      expect(find.text(l10n('ads.reward_genetics_remaining')), findsOneWidget);
+      expect(find.text(l10n('ads.watch_for_genetics')), findsNothing);
     });
 
     testWidgets('shows status chip when export reward is active', (
@@ -93,8 +94,8 @@ void main() {
         buildSubject(exportActive: true),
       );
 
-      expect(find.text('ads.reward_export_remaining'), findsOneWidget);
-      expect(find.text('ads.watch_for_export'), findsNothing);
+      expect(find.text(l10n('ads.reward_export_remaining')), findsOneWidget);
+      expect(find.text(l10n('ads.watch_for_export')), findsNothing);
     });
 
     testWidgets('shows all chips when all rewards active', (tester) async {
@@ -113,9 +114,9 @@ void main() {
     testWidgets('shows subtitles for ad buttons', (tester) async {
       await pumpLocalizedApp(tester, buildSubject());
 
-      expect(find.text('ads.reward_duration_24h'), findsOneWidget);
+      expect(find.text(l10n('ads.reward_duration_24h')), findsOneWidget);
       // genetics and export share session duration
-      expect(find.text('ads.reward_duration_session'), findsNWidgets(2));
+      expect(find.text(l10n('ads.reward_duration_session')), findsNWidgets(2));
     });
   });
 

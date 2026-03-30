@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:budgie_breeding_tracker/core/enums/breeding_enums.dart';
@@ -114,7 +115,7 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      expect(find.text('breeding.not_found'), findsOneWidget);
+      expect(find.text(l10n('breeding.not_found')), findsOneWidget);
     });
 
     testWidgets('shows detail content with pair data', (tester) async {
@@ -126,7 +127,7 @@ void main() {
 
       expect(find.byType(BreedingPairInfoSection), findsOneWidget);
       // AppBar should show the detail title key
-      expect(find.text('breeding.detail'), findsOneWidget);
+      expect(find.text(l10n('breeding.detail')), findsOneWidget);
     });
 
     testWidgets('shows incubation progress when incubation exists', (
@@ -152,7 +153,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Incubation section header text
-      expect(find.text('breeding.incubation_process'), findsOneWidget);
+      expect(find.text(l10n('breeding.incubation_process')), findsOneWidget);
       // The progress label includes day count with period days
       expect(find.textContaining('/ 18'), findsOneWidget);
 

@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
+import 'package:budgie_breeding_tracker/core/species/species_registry.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/buttons/primary_button.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/parent_genotype.dart';
@@ -65,6 +66,8 @@ class BirdFormBody extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final speciesProfile = SpeciesRegistry.of(species);
+
     return Form(
       key: formKey,
       autovalidateMode: AutovalidateMode.onUserInteraction,
@@ -89,12 +92,16 @@ class BirdFormBody extends ConsumerWidget {
                   onColorChanged: onColorChanged,
                 ),
                 const SizedBox(height: AppSpacing.xl),
-                BirdFormGeneticsSection(
-                  gender: gender,
-                  genotype: genotype,
-                  onGenotypeChanged: onGenotypeChanged,
-                ),
-                const SizedBox(height: AppSpacing.xl),
+                if (speciesProfile.supportsGenetics) ...[
+                  BirdFormGeneticsSection(
+                    species: species,
+                    geneticsMode: speciesProfile.geneticsMode,
+                    gender: gender,
+                    genotype: genotype,
+                    onGenotypeChanged: onGenotypeChanged,
+                  ),
+                  const SizedBox(height: AppSpacing.xl),
+                ],
                 BirdFormIdentitySection(
                   ringController: ringController,
                   cageController: cageController,
@@ -104,6 +111,7 @@ class BirdFormBody extends ConsumerWidget {
                 ),
                 const SizedBox(height: AppSpacing.xl),
                 BirdFormParentsSection(
+                  species: species,
                   fatherId: fatherId,
                   motherId: motherId,
                   editBirdId: editBirdId,

@@ -1,7 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-import 'package:budgie_breeding_tracker/core/constants/incubation_constants.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/data/models/statistics_models.dart';
@@ -9,7 +8,11 @@ import 'package:budgie_breeding_tracker/features/statistics/widgets/chart_card.d
 import 'package:budgie_breeding_tracker/features/statistics/widgets/chart_legend_item.dart';
 import 'package:budgie_breeding_tracker/features/statistics/widgets/chart_utils.dart';
 
-/// Bar chart showing actual incubation days vs the expected 18-day reference.
+/// Bar chart showing actual incubation days vs species-aware expected days.
+///
+/// Each [IncubationDurationData] carries its own `expectedDays`. The reference
+/// line and legend use the most common expected value in the data set.
+/// Bar colors compare each item against its own expected days.
 class IncubationDurationChart extends StatelessWidget {
   const IncubationDurationChart({super.key, required this.data});
 
@@ -23,7 +26,17 @@ class IncubationDurationChart extends StatelessWidget {
       return const ChartEmpty();
     }
 
-    var maxVal = IncubationConstants.incubationPeriodDays.toDouble();
+    // Use the most common expectedDays for the reference line and legend.
+    final expectedCounts = <int, int>{};
+    for (final item in data) {
+      expectedCounts[item.expectedDays] =
+          (expectedCounts[item.expectedDays] ?? 0) + 1;
+    }
+    final referenceExpected = expectedCounts.entries
+        .reduce((a, b) => a.value >= b.value ? a : b)
+        .key;
+
+    var maxVal = referenceExpected.toDouble();
     for (final item in data) {
       if (item.actualDays.toDouble() > maxVal) {
         maxVal = item.actualDays.toDouble();
@@ -100,7 +113,7 @@ class IncubationDurationChart extends StatelessWidget {
                 extraLinesData: ExtraLinesData(
                   horizontalLines: [
                     HorizontalLine(
-                      y: IncubationConstants.incubationPeriodDays.toDouble(),
+                      y: referenceExpected.toDouble(),
                       color: AppColors.info,
                       strokeWidth: 2,
                       dashArray: [5, 5],
@@ -111,7 +124,7 @@ class IncubationDurationChart extends StatelessWidget {
                           color: AppColors.info,
                         ),
                         labelResolver: (_) =>
-                            '${IncubationConstants.incubationPeriodDays} ${'statistics.expected_days'.tr()}',
+                            '$referenceExpected ${'statistics.expected_days'.tr()}',
                       ),
                     ),
                   ],
@@ -123,7 +136,7 @@ class IncubationDurationChart extends StatelessWidget {
                     barRods: [
                       BarChartRodData(
                         toY: item.actualDays.toDouble(),
-                        color: _barColor(item.actualDays),
+                        color: _barColor(item.actualDays, item.expectedDays),
                         width: 16,
                         borderRadius: const BorderRadius.vertical(
                           top: Radius.circular(AppSpacing.radiusSm),
@@ -137,43 +150,45 @@ class IncubationDurationChart extends StatelessWidget {
           ),
         ),
         const SizedBox(height: AppSpacing.sm),
-        const _Legend(),
+        _Legend(expectedDays: referenceExpected),
       ],
     );
   }
 
-  static Color _barColor(int days) {
-    if (days < IncubationConstants.incubationPeriodDays) return AppColors.success;
-    if (days == IncubationConstants.incubationPeriodDays) return AppColors.budgieBlue;
+  static Color _barColor(int days, int expectedDays) {
+    if (days < expectedDays) return AppColors.success;
+    if (days == expectedDays) return AppColors.budgieBlue;
     return AppColors.warning;
   }
 }
 
 class _Legend extends StatelessWidget {
-  const _Legend();
+  final int expectedDays;
+
+  const _Legend({required this.expectedDays});
 
   @override
   Widget build(BuildContext context) {
     // Legend labels use mathematical notation (< = >) with numeric constants,
     // intentionally not localized as they are language-neutral symbols.
-    return const Row(
+    return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         ChartLegendItem(
           color: AppColors.success,
-          label: '<${IncubationConstants.incubationPeriodDays}',
+          label: '<$expectedDays',
           useCircle: false,
         ),
-        SizedBox(width: AppSpacing.md),
+        const SizedBox(width: AppSpacing.md),
         ChartLegendItem(
           color: AppColors.budgieBlue,
-          label: '=${IncubationConstants.incubationPeriodDays}',
+          label: '=$expectedDays',
           useCircle: false,
         ),
-        SizedBox(width: AppSpacing.md),
+        const SizedBox(width: AppSpacing.md),
         ChartLegendItem(
           color: AppColors.warning,
-          label: '>${IncubationConstants.incubationPeriodDays}',
+          label: '>$expectedDays',
           useCircle: false,
         ),
       ],

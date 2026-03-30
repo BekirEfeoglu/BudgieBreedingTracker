@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/core/widgets/skeleton_loader.dart';
 import 'package:budgie_breeding_tracker/features/statistics/widgets/chart_states.dart';
@@ -45,7 +46,7 @@ void main() {
 
   group('ChartError', () {
     testWidgets('renders error message', (tester) async {
-      await pumpLocalizedWidget(
+      await pumpTranslatedWidget(
         tester,
         const ChartError(message: 'Something went wrong'),
       );
@@ -55,18 +56,18 @@ void main() {
 
     testWidgets('shows retry button when onRetry is provided',
         (tester) async {
-      await pumpLocalizedWidget(
+      await pumpTranslatedWidget(
         tester,
         ChartError(message: 'Error', onRetry: () {}),
       );
 
       expect(find.byType(TextButton), findsOneWidget);
-      expect(find.text('common.retry'), findsOneWidget);
+      expect(find.text(resolvedL10n('common.retry')), findsOneWidget);
     });
 
     testWidgets('does not show retry button when onRetry is null',
         (tester) async {
-      await pumpLocalizedWidget(
+      await pumpTranslatedWidget(
         tester,
         const ChartError(message: 'Error'),
       );
@@ -76,7 +77,7 @@ void main() {
 
     testWidgets('taps retry callback', (tester) async {
       var retryTapped = false;
-      await pumpLocalizedWidget(
+      await pumpTranslatedWidget(
         tester,
         ChartError(message: 'Error', onRetry: () => retryTapped = true),
       );
@@ -90,24 +91,24 @@ void main() {
 
   group('ChartEmpty', () {
     testWidgets('renders default no data message', (tester) async {
-      await pumpLocalizedWidget(tester, const ChartEmpty());
+      await pumpTranslatedWidget(tester, const ChartEmpty());
 
-      expect(find.text('statistics.no_data'), findsOneWidget);
-      expect(find.text('statistics.no_data_hint'), findsOneWidget);
+      expect(find.text(resolvedL10n('statistics.no_data')), findsOneWidget);
+      expect(find.text(resolvedL10n('statistics.no_data_hint')), findsOneWidget);
     });
 
     testWidgets('renders custom message when provided', (tester) async {
-      await pumpLocalizedWidget(
+      await pumpTranslatedWidget(
         tester,
         const ChartEmpty(message: 'Custom empty message'),
       );
 
       expect(find.text('Custom empty message'), findsOneWidget);
-      expect(find.text('statistics.no_data_hint'), findsOneWidget);
+      expect(find.text(resolvedL10n('statistics.no_data_hint')), findsOneWidget);
     });
 
     testWidgets('has correct height', (tester) async {
-      await pumpLocalizedWidget(tester, const ChartEmpty());
+      await pumpTranslatedWidget(tester, const ChartEmpty());
 
       final sizedBox = tester.widget<SizedBox>(
         find.descendant(
@@ -121,18 +122,18 @@ void main() {
 
   group('ChartLowData', () {
     testWidgets('wraps child widget with info banner', (tester) async {
-      await pumpLocalizedWidget(
+      await pumpTranslatedWidget(
         tester,
         const ChartLowData(child: Text('Chart content')),
       );
 
-      expect(find.text('statistics.low_data_hint'), findsOneWidget);
+      expect(find.text(resolvedL10n('statistics.low_data_hint')), findsOneWidget);
       expect(find.text('Chart content'), findsOneWidget);
     });
 
     testWidgets('shows action button when onAction is provided',
         (tester) async {
-      await pumpLocalizedWidget(
+      await pumpTranslatedWidget(
         tester,
         ChartLowData(
           onAction: () {},
@@ -140,11 +141,11 @@ void main() {
         ),
       );
 
-      expect(find.text('common.add'), findsOneWidget);
+      expect(find.text(resolvedL10n('common.add')), findsOneWidget);
     });
 
     testWidgets('shows custom action label', (tester) async {
-      await pumpLocalizedWidget(
+      await pumpTranslatedWidget(
         tester,
         ChartLowData(
           onAction: () {},
@@ -158,7 +159,7 @@ void main() {
 
     testWidgets('taps action callback', (tester) async {
       var tapped = false;
-      await pumpLocalizedWidget(
+      await pumpTranslatedWidget(
         tester,
         ChartLowData(
           onAction: () => tapped = true,
@@ -173,7 +174,7 @@ void main() {
     });
 
     testWidgets('hides action button when onAction is null', (tester) async {
-      await pumpLocalizedWidget(
+      await pumpTranslatedWidget(
         tester,
         const ChartLowData(child: Text('Chart')),
       );

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -61,7 +62,7 @@ void main() {
       await tester.pumpAndSettle();
       await scrollToDndSection(tester);
 
-      expect(find.text('notifications.dnd_title'), findsOneWidget);
+      expect(find.text(l10n('notifications.dnd_title')), findsOneWidget);
     });
 
     testWidgets('shows DnD description text', (tester) async {
@@ -69,7 +70,7 @@ void main() {
       await tester.pumpAndSettle();
       await scrollToDndSection(tester);
 
-      expect(find.text('notifications.dnd_description'), findsOneWidget);
+      expect(find.text(l10n('notifications.dnd_description')), findsOneWidget);
     });
 
     testWidgets('shows start and end time labels', (tester) async {
@@ -77,8 +78,8 @@ void main() {
       await tester.pumpAndSettle();
       await scrollToDndSection(tester);
 
-      expect(find.text('notifications.dnd_start'), findsOneWidget);
-      expect(find.text('notifications.dnd_end'), findsOneWidget);
+      expect(find.text(l10n('notifications.dnd_start')), findsOneWidget);
+      expect(find.text(l10n('notifications.dnd_end')), findsOneWidget);
     });
 
     testWidgets('displays default DnD hours (23:00 and 07:00)', (

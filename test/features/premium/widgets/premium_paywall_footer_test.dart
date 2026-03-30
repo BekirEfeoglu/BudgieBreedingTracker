@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
@@ -43,7 +44,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('premium.restore_info'), findsOneWidget);
+      expect(find.text(l10n('premium.restore_info')), findsOneWidget);
     });
 
     testWidgets('shows restore purchases button for logged-in user', (
@@ -54,7 +55,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('premium.restore_purchases'), findsOneWidget);
+      expect(find.text(l10n('premium.restore_purchases')), findsOneWidget);
     });
 
     testWidgets('shows rotate icon for logged-in user', (tester) async {
@@ -83,7 +84,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('premium.sign_in_to_purchase'), findsOneWidget);
+      expect(find.text(l10n('premium.sign_in_to_purchase')), findsOneWidget);
     });
 
     testWidgets('shows login button for anonymous user', (tester) async {
@@ -95,7 +96,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('auth.login'), findsOneWidget);
+      expect(find.text(l10n('auth.login')), findsOneWidget);
     });
 
     testWidgets('shows logIn icon for anonymous user', (tester) async {

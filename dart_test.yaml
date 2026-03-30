@@ -3,3 +3,5 @@ tags:
     description: "Platform-dependent golden (snapshot) tests"
   e2e:
     description: "End-to-end flow tests"
+  scenario:
+    description: "High-level provider/service journey tests that do not drive the full UI"

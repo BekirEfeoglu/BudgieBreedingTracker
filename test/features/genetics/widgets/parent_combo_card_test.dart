@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
@@ -76,15 +77,15 @@ void main() {
       await pumpLocalizedApp(tester,
         _wrap(ParentComboCard(result: _makeResult(), rank: 1)),
       );
-      expect(find.textContaining('common.chance'), findsOneWidget);
+      expect(find.textContaining(l10nContains('common.chance')), findsOneWidget);
     });
 
     testWidgets('shows father and mother labels', (tester) async {
       await pumpLocalizedApp(tester,
         _wrap(ParentComboCard(result: _makeResult(), rank: 1)),
       );
-      expect(find.text('genetics.father'), findsOneWidget);
-      expect(find.text('genetics.mother'), findsOneWidget);
+      expect(find.text(l10n('genetics.father')), findsOneWidget);
+      expect(find.text(l10n('genetics.mother')), findsOneWidget);
     });
 
     testWidgets('shows X cross icon between parents', (tester) async {
@@ -114,7 +115,7 @@ void main() {
       await pumpLocalizedApp(tester,
         _wrap(const ParentComboCard(result: result, rank: 1)),
       );
-      expect(find.text('genetics.mutation_normal'), findsNWidgets(2));
+      expect(find.text(l10n('genetics.mutation_normal')), findsNWidgets(2));
     });
 
     testWidgets('shows carrier label for carrier mutations', (tester) async {
@@ -126,7 +127,7 @@ void main() {
       await pumpLocalizedApp(tester,
         _wrap(ParentComboCard(result: result, rank: 1)),
       );
-      expect(find.textContaining('genetics.carrier'), findsAtLeastNWidgets(1));
+      expect(find.textContaining(l10nContains('genetics.carrier')), findsAtLeastNWidgets(1));
     });
 
     testWidgets('renders with different ranks', (tester) async {
@@ -176,7 +177,7 @@ void main() {
           ),
         ),
       );
-      expect(find.text('genetics.father'), findsOneWidget);
+      expect(find.text(l10n('genetics.father')), findsOneWidget);
     });
 
     testWidgets('shows mutation_normal when no mutations', (tester) async {
@@ -189,7 +190,7 @@ void main() {
           ),
         ),
       );
-      expect(find.text('genetics.mutation_normal'), findsOneWidget);
+      expect(find.text(l10n('genetics.mutation_normal')), findsOneWidget);
     });
 
     testWidgets('shows mutation labels when parent has mutations',
@@ -209,7 +210,7 @@ void main() {
         ),
       );
       // Should show the mutation name and not show "Normal"
-      expect(find.text('genetics.mutation_normal'), findsNothing);
+      expect(find.text(l10n('genetics.mutation_normal')), findsNothing);
     });
 
     testWidgets('shows AppIcon for gender', (tester) async {

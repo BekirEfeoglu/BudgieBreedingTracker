@@ -133,14 +133,14 @@ class SyncStatusTile extends ConsumerWidget {
 
   String _relativeTime(DateTime time) {
     final diff = DateTime.now().difference(time);
-    if (diff.inMinutes < 1) return 'profile.just_now'.tr();
+    if (diff.inMinutes < 1) return 'common.just_now'.tr();
     if (diff.inMinutes < 60) {
-      return 'profile.minutes_ago'.tr(args: ['${diff.inMinutes}']);
+      return 'common.minutes_ago'.tr(args: ['${diff.inMinutes}']);
     }
     if (diff.inHours < 24) {
-      return 'profile.hours_ago'.tr(args: ['${diff.inHours}']);
+      return 'common.hours_ago'.tr(args: ['${diff.inHours}']);
     }
-    return 'profile.days_ago'.tr(args: ['${diff.inDays}']);
+    return 'common.days_ago'.tr(args: ['${diff.inDays}']);
   }
 
   Future<void> _triggerSync(WidgetRef ref) async {

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/features/auth/widgets/auth_form_field.dart';
 import 'package:budgie_breeding_tracker/features/auth/widgets/password_strength_meter.dart';
@@ -45,7 +46,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('profile.current_password'), findsOneWidget);
+      expect(find.text(l10n('profile.current_password')), findsOneWidget);
     });
 
     testWidgets('shows new password field', (tester) async {
@@ -61,7 +62,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('profile.new_password'), findsOneWidget);
+      expect(find.text(l10n('profile.new_password')), findsOneWidget);
     });
 
     testWidgets('shows confirm password field', (tester) async {
@@ -77,7 +78,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('profile.confirm_password'), findsOneWidget);
+      expect(find.text(l10n('profile.confirm_password')), findsOneWidget);
     });
 
     testWidgets('shows submit button with change password label', (
@@ -95,7 +96,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('profile.change_password'), findsOneWidget);
+      expect(find.text(l10n('profile.change_password')), findsOneWidget);
     });
 
     testWidgets('has three AuthFormField widgets', (tester) async {
@@ -128,11 +129,11 @@ void main() {
       await tester.pump();
 
       // Tap the submit button without entering any text
-      await tester.tap(find.text('profile.change_password'));
+      await tester.tap(find.text(l10n('profile.change_password')));
       await tester.pump();
 
       expect(
-        find.text('profile.current_password_required'),
+        find.text(l10n('profile.current_password_required')),
         findsOneWidget,
       );
     });
@@ -155,10 +156,10 @@ void main() {
         find.byType(TextFormField).first,
         'oldpassword',
       );
-      await tester.tap(find.text('profile.change_password'));
+      await tester.tap(find.text(l10n('profile.change_password')));
       await tester.pump();
 
-      expect(find.text('profile.new_password_required'), findsOneWidget);
+      expect(find.text(l10n('profile.new_password_required')), findsOneWidget);
     });
 
     testWidgets('validates new password minimum length', (tester) async {
@@ -180,10 +181,10 @@ void main() {
         'oldpassword',
       );
       await tester.enterText(find.byType(TextFormField).at(1), 'short');
-      await tester.tap(find.text('profile.change_password'));
+      await tester.tap(find.text(l10n('profile.change_password')));
       await tester.pump();
 
-      expect(find.text('auth.rule_min_length'), findsAtLeastNWidgets(1));
+      expect(find.text(l10n('auth.rule_min_length')), findsAtLeastNWidgets(1));
     });
 
     testWidgets('validates passwords do not match', (tester) async {
@@ -211,10 +212,10 @@ void main() {
         find.byType(TextFormField).at(2),
         'differentpassword',
       );
-      await tester.tap(find.text('profile.change_password'));
+      await tester.tap(find.text(l10n('profile.change_password')));
       await tester.pump();
 
-      expect(find.text('profile.passwords_not_match'), findsOneWidget);
+      expect(find.text(l10n('profile.passwords_not_match')), findsOneWidget);
     });
 
     testWidgets('validates empty confirm password', (tester) async {
@@ -239,11 +240,11 @@ void main() {
         'newpassword123',
       );
       // Leave confirm password empty
-      await tester.tap(find.text('profile.change_password'));
+      await tester.tap(find.text(l10n('profile.change_password')));
       await tester.pump();
 
       expect(
-        find.text('profile.confirm_password_required'),
+        find.text(l10n('profile.confirm_password_required')),
         findsOneWidget,
       );
     });
@@ -279,7 +280,7 @@ void main() {
         find.byType(TextFormField).at(2),
         'newpassword123',
       );
-      await tester.tap(find.text('profile.change_password'));
+      await tester.tap(find.text(l10n('profile.change_password')));
       await tester.pump();
 
       expect(capturedCurrentPassword, 'oldpassword');

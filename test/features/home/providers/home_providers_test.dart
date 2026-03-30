@@ -4,16 +4,20 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
+import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/breeding_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/chick_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/egg_enums.dart';
 import 'package:budgie_breeding_tracker/data/local/database/dao_providers.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/breeding_pairs_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/chicks_dao.dart';
+import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
 import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
 import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
+import 'package:budgie_breeding_tracker/data/models/incubation_model.dart';
 import 'package:budgie_breeding_tracker/data/models/statistics_models.dart';
+import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/features/home/providers/home_providers.dart';
 
 import '../../../helpers/mocks.dart';
@@ -54,10 +58,12 @@ Egg _egg({
   required String id,
   required DateTime layDate,
   EggStatus status = EggStatus.laid,
+  String? incubationId,
 }) {
   return Egg(
     id: id,
     userId: 'user-1',
+    incubationId: incubationId,
     layDate: layDate,
     status: status,
     createdAt: DateTime(2024, 1, 1),
@@ -71,11 +77,17 @@ void main() {
   late MockEggsDao mockEggsDao;
   late MockChicksDao mockChicksDao;
   late MockBreedingPairsDao mockBreedingPairsDao;
+  late MockIncubationRepository mockIncubationRepo;
+  late MockBreedingPairRepository mockBreedingPairRepo;
+  late MockBirdRepository mockBirdRepo;
 
   setUp(() {
     mockEggsDao = MockEggsDao();
     mockChicksDao = MockChicksDao();
     mockBreedingPairsDao = MockBreedingPairsDao();
+    mockIncubationRepo = MockIncubationRepository();
+    mockBreedingPairRepo = MockBreedingPairRepository();
+    mockBirdRepo = MockBirdRepository();
   });
 
   group('dashboardStatsProvider', () {
@@ -284,29 +296,63 @@ void main() {
           id: 'inc-3',
           layDate: now.subtract(const Duration(days: 17)),
           status: EggStatus.incubating,
+          incubationId: 'i-3',
         ),
         _egg(
           id: 'inc-1',
           layDate: now.subtract(const Duration(days: 16)),
           status: EggStatus.incubating,
+          incubationId: 'i-1',
         ),
         _egg(
           id: 'inc-4',
           layDate: now.subtract(const Duration(days: 12)),
           status: EggStatus.incubating,
+          incubationId: 'i-4',
         ),
       ];
       when(
         () => mockEggsDao.watchIncubatingLimited(userId, limit: 3),
       ).thenAnswer((_) => Stream.value(incubatingEggs));
+      when(() => mockIncubationRepo.getById(any())).thenAnswer(
+        (invocation) async => Incubation(
+          id: invocation.positionalArguments.first as String,
+          userId: userId,
+          breedingPairId: 'pair-${invocation.positionalArguments.first}',
+        ),
+      );
+      when(() => mockBreedingPairRepo.getById(any())).thenAnswer(
+        (invocation) async => BreedingPair(
+          id: invocation.positionalArguments.first as String,
+          userId: userId,
+          maleId: 'male-${invocation.positionalArguments.first}',
+        ),
+      );
+      when(() => mockBirdRepo.getById(any())).thenAnswer(
+        (_) async => const Bird(
+          id: 'male',
+          userId: userId,
+          name: 'M',
+          gender: BirdGender.male,
+          species: Species.budgie,
+        ),
+      );
 
       final container = ProviderContainer(
-        overrides: [eggsDaoProvider.overrideWithValue(mockEggsDao)],
+        overrides: [
+          eggsDaoProvider.overrideWithValue(mockEggsDao),
+          incubationRepositoryProvider.overrideWithValue(mockIncubationRepo),
+          breedingPairRepositoryProvider.overrideWithValue(
+            mockBreedingPairRepo,
+          ),
+          birdRepositoryProvider.overrideWithValue(mockBirdRepo),
+        ],
       );
       addTearDown(container.dispose);
 
       container.listen(incubatingEggsLimitedProvider(userId), (_, __) {});
       await container.read(incubatingEggsLimitedProvider(userId).future);
+      await container.read(incubatingEggsSummaryProvider(userId).future);
       final asyncResult = container.read(incubatingEggsSummaryProvider(userId));
       expect(asyncResult.hasValue, isTrue);
       final result = asyncResult.requireValue;
@@ -317,5 +363,68 @@ void main() {
       expect(result[0].daysRemaining <= result[1].daysRemaining, isTrue);
       expect(result[1].daysRemaining <= result[2].daysRemaining, isTrue);
     });
+
+    test(
+      'resolves unknown incubation species from breeding pair male bird',
+      () async {
+        final now = DateTime.now();
+        final incubatingEggs = [
+          _egg(
+            id: 'inc-1',
+            layDate: now.subtract(const Duration(days: 5)),
+            status: EggStatus.incubating,
+            incubationId: 'i-1',
+          ),
+        ];
+        when(
+          () => mockEggsDao.watchIncubatingLimited(userId, limit: 3),
+        ).thenAnswer((_) => Stream.value(incubatingEggs));
+        when(() => mockIncubationRepo.getById('i-1')).thenAnswer(
+          (_) async => const Incubation(
+            id: 'i-1',
+            userId: userId,
+            species: Species.unknown,
+            breedingPairId: 'pair-i-1',
+          ),
+        );
+        when(() => mockBreedingPairRepo.getById('pair-i-1')).thenAnswer(
+          (_) async => const BreedingPair(
+            id: 'pair-i-1',
+            userId: userId,
+            maleId: 'male-pair-i-1',
+          ),
+        );
+        when(() => mockBirdRepo.getById('male-pair-i-1')).thenAnswer(
+          (_) async => const Bird(
+            id: 'male-pair-i-1',
+            userId: userId,
+            name: 'Male',
+            gender: BirdGender.male,
+            species: Species.canary,
+          ),
+        );
+
+        final container = ProviderContainer(
+          overrides: [
+            eggsDaoProvider.overrideWithValue(mockEggsDao),
+            incubationRepositoryProvider.overrideWithValue(mockIncubationRepo),
+            breedingPairRepositoryProvider.overrideWithValue(
+              mockBreedingPairRepo,
+            ),
+            birdRepositoryProvider.overrideWithValue(mockBirdRepo),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        container.listen(incubatingEggsLimitedProvider(userId), (_, __) {});
+        await container.read(incubatingEggsLimitedProvider(userId).future);
+        final result = await container.read(
+          incubatingEggsSummaryProvider(userId).future,
+        );
+
+        expect(result, hasLength(1));
+        expect(result.single.species, Species.canary);
+      },
+    );
   });
 }

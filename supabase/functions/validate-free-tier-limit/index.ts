@@ -51,8 +51,11 @@ serve(async (req) => {
     let query = supabase
       .from(table)
       .select("id", { count: "exact", head: true })
-      .eq("user_id", user_id)
-      .eq("is_deleted", false);
+      .eq("user_id", user_id);
+
+    if (table !== "incubations") {
+      query = query.eq("is_deleted", false);
+    }
 
     if (table === "breeding_pairs") {
       query = query.in("status", ["active", "ongoing"]);

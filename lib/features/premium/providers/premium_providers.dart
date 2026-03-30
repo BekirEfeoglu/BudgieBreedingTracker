@@ -26,6 +26,11 @@ final purchaseServiceProvider = Provider<PurchaseService>((ref) {
   return PurchaseService();
 });
 
+bool get shouldDeferRevenueCatOnDebugIosSimulator =>
+    !kReleaseMode &&
+    Platform.isIOS &&
+    Platform.environment.containsKey('SIMULATOR_DEVICE_NAME');
+
 /// Whether user has premium subscription.
 /// Combines profile database state with RevenueCat/SharedPreferences cache.
 /// Primary source is the profile (server-synced); local cache is used only
@@ -70,6 +75,13 @@ final localPremiumProvider = NotifierProvider<PremiumNotifier, bool>(
 
 /// Ensures RevenueCat is initialized for the current authenticated user.
 final purchaseServiceReadyProvider = FutureProvider<bool>((ref) async {
+  if (shouldDeferRevenueCatOnDebugIosSimulator) {
+    AppLogger.info(
+      '[Premium] Skipping automatic RevenueCat init on iOS simulator debug build',
+    );
+    return false;
+  }
+
   final apiKey = Platform.isIOS ? revenueCatApiKeyIos : revenueCatApiKeyAndroid;
   if (apiKey.isEmpty) {
     AppLogger.warning('[Premium] RevenueCat API key missing');

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
@@ -143,7 +144,7 @@ void main() {
       await tester.tap(find.byType(OutlinedButton));
       await tester.pump();
 
-      expect(find.text('ads.ad_not_available'), findsOneWidget);
+      expect(find.text(l10n('ads.ad_not_available')), findsOneWidget);
     });
 
     testWidgets('calls onRewarded when ad completes successfully', (

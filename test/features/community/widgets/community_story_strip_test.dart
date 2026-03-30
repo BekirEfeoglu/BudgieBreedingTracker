@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
@@ -47,7 +48,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byIcon(LucideIcons.plus), findsOneWidget);
-      expect(find.text('community.create_post'), findsOneWidget);
+      expect(find.text(l10n('community.create_post')), findsOneWidget);
       expect(find.text('Ali'), findsOneWidget);
       expect(find.text('Veli'), findsOneWidget);
     });

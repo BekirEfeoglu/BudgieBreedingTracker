@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/domain/services/genetics/epistasis_engine.dart';
 import 'package:budgie_breeding_tracker/features/genetics/widgets/epistasis_interactions_card.dart';
@@ -22,7 +23,7 @@ void main() {
       await tester.pump();
 
       // With empty interactions, the card should not render any Container
-      expect(find.text('genetics.interaction_info'), findsNothing);
+      expect(find.text(l10n('genetics.interaction_info')), findsNothing);
     });
 
     testWidgets('renders without crashing with one interaction',
@@ -57,7 +58,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('genetics.interaction_info'), findsOneWidget);
+      expect(find.text(l10n('genetics.interaction_info')), findsOneWidget);
     });
 
     testWidgets('shows epistasis_note text', (tester) async {
@@ -74,7 +75,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('genetics.epistasis_note'), findsOneWidget);
+      expect(find.text(l10n('genetics.epistasis_note')), findsOneWidget);
     });
 
     testWidgets('shows interaction result name with bullet point',

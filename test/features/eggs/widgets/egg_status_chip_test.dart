@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/core/enums/egg_enums.dart';
 import 'package:budgie_breeding_tracker/features/eggs/widgets/egg_status_chip.dart';
@@ -23,56 +24,56 @@ void main() {
       await tester.pumpWidget(createSubject(EggStatus.laid));
       await tester.pump();
 
-      expect(find.text('eggs.status_laid'), findsOneWidget);
+      expect(find.text(l10n('eggs.status_laid')), findsOneWidget);
     });
 
     testWidgets('shows fertile status label', (tester) async {
       await tester.pumpWidget(createSubject(EggStatus.fertile));
       await tester.pump();
 
-      expect(find.text('eggs.status_fertile'), findsOneWidget);
+      expect(find.text(l10n('eggs.status_fertile')), findsOneWidget);
     });
 
     testWidgets('shows hatched status label', (tester) async {
       await tester.pumpWidget(createSubject(EggStatus.hatched));
       await tester.pump();
 
-      expect(find.text('eggs.status_hatched'), findsOneWidget);
+      expect(find.text(l10n('eggs.status_hatched')), findsOneWidget);
     });
 
     testWidgets('shows incubating status label', (tester) async {
       await tester.pumpWidget(createSubject(EggStatus.incubating));
       await tester.pump();
 
-      expect(find.text('eggs.status_incubating'), findsOneWidget);
+      expect(find.text(l10n('eggs.status_incubating')), findsOneWidget);
     });
 
     testWidgets('shows infertile status label', (tester) async {
       await tester.pumpWidget(createSubject(EggStatus.infertile));
       await tester.pump();
 
-      expect(find.text('eggs.status_infertile'), findsOneWidget);
+      expect(find.text(l10n('eggs.status_infertile')), findsOneWidget);
     });
 
     testWidgets('shows damaged status label', (tester) async {
       await tester.pumpWidget(createSubject(EggStatus.damaged));
       await tester.pump();
 
-      expect(find.text('eggs.status_damaged'), findsOneWidget);
+      expect(find.text(l10n('eggs.status_damaged')), findsOneWidget);
     });
 
     testWidgets('shows discarded status label', (tester) async {
       await tester.pumpWidget(createSubject(EggStatus.discarded));
       await tester.pump();
 
-      expect(find.text('eggs.status_discarded'), findsOneWidget);
+      expect(find.text(l10n('eggs.status_discarded')), findsOneWidget);
     });
 
     testWidgets('shows unknown status label', (tester) async {
       await tester.pumpWidget(createSubject(EggStatus.unknown));
       await tester.pump();
 
-      expect(find.text('eggs.status_unknown'), findsOneWidget);
+      expect(find.text(l10n('eggs.status_unknown')), findsOneWidget);
     });
 
     testWidgets('renders Container with decoration', (tester) async {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
@@ -79,7 +80,7 @@ void main() {
       await tester.pump();
 
       // Risk none → 'genealogy.no_inbreeding' key gösterilmeli
-      expect(find.text('genealogy.no_inbreeding'), findsOneWidget);
+      expect(find.text(l10n('genealogy.no_inbreeding')), findsOneWidget);
     });
 
     testWidgets('shows LinearProgressIndicator for completeness', (
@@ -181,7 +182,7 @@ void main() {
 
       // InbreedingWarning widget render edilmeli
       // 'genealogy.no_inbreeding' görünmemeli
-      expect(find.text('genealogy.no_inbreeding'), findsNothing);
+      expect(find.text(l10n('genealogy.no_inbreeding')), findsNothing);
     });
 
     testWidgets('renders Card widget for stats display', (tester) async {
@@ -218,7 +219,7 @@ void main() {
       await tester.pump();
 
       // 'genealogy.deepest_generation' label key görünmeli
-      expect(find.text('genealogy.deepest_generation'), findsOneWidget);
+      expect(find.text(l10n('genealogy.deepest_generation')), findsOneWidget);
     });
   });
 }

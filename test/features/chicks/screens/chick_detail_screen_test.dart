@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
@@ -92,7 +93,7 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      expect(find.text('chicks.not_found'), findsOneWidget);
+      expect(find.text(l10n('chicks.not_found')), findsOneWidget);
     });
 
     testWidgets('shows chick name in AppBar when data loads', (tester) async {
@@ -132,10 +133,10 @@ void main() {
         await tester.pumpAndSettle();
 
         // Healthy unweaned chick with no birdId → all actions visible
-        expect(find.text('chicks.wean'), findsOneWidget);
-        expect(find.text('chicks.move_to_birds'), findsOneWidget);
-        expect(find.text('chicks.mark_dead'), findsOneWidget);
-        expect(find.text('common.delete'), findsOneWidget);
+        expect(find.text(l10n('chicks.wean')), findsOneWidget);
+        expect(find.text(l10n('chicks.move_to_birds')), findsOneWidget);
+        expect(find.text(l10n('chicks.mark_dead')), findsOneWidget);
+        expect(find.text(l10n('common.delete')), findsOneWidget);
       },
     );
 
@@ -155,11 +156,11 @@ void main() {
         await tester.tap(find.byType(PopupMenuButton<String>));
         await tester.pumpAndSettle();
 
-        expect(find.text('chicks.wean'), findsNothing);
-        expect(find.text('chicks.move_to_birds'), findsNothing);
-        expect(find.text('chicks.mark_dead'), findsNothing);
+        expect(find.text(l10n('chicks.wean')), findsNothing);
+        expect(find.text(l10n('chicks.move_to_birds')), findsNothing);
+        expect(find.text(l10n('chicks.mark_dead')), findsNothing);
         // Delete is always shown
-        expect(find.text('common.delete'), findsOneWidget);
+        expect(find.text(l10n('common.delete')), findsOneWidget);
       },
     );
 

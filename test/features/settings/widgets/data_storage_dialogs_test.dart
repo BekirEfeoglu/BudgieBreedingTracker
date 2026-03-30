@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/domain/services/sync/sync_conflict_providers.dart';
 import 'package:budgie_breeding_tracker/features/settings/widgets/data_storage_dialogs.dart';
@@ -30,25 +31,25 @@ void main() {
   group('formatTimeSince', () {
     test('returns just now for less than 1 minute', () {
       final result = formatTimeSince(DateTime.now());
-      expect(result, 'settings.just_now');
+      expect(result, 'common.just_now');
     });
 
     test('returns minutes ago for less than 1 hour', () {
       final time = DateTime.now().subtract(const Duration(minutes: 30));
       final result = formatTimeSince(time);
-      expect(result, contains('settings.minutes_ago'));
+      expect(result, contains(l10n('common.minutes_ago')));
     });
 
     test('returns hours ago for less than 24 hours', () {
       final time = DateTime.now().subtract(const Duration(hours: 5));
       final result = formatTimeSince(time);
-      expect(result, contains('settings.hours_ago'));
+      expect(result, contains(l10n('common.hours_ago')));
     });
 
     test('returns days ago for 24+ hours', () {
       final time = DateTime.now().subtract(const Duration(days: 3));
       final result = formatTimeSince(time);
-      expect(result, contains('settings.days_ago'));
+      expect(result, contains(l10n('common.days_ago')));
     });
   });
 
@@ -91,7 +92,7 @@ void main() {
       );
 
       expect(find.text('Cache'), findsOneWidget);
-      expect(find.text('settings.storage_calculating'), findsOneWidget);
+      expect(find.text(l10n('settings.storage_calculating')), findsOneWidget);
     });
 
     testWidgets('renders icon widget', (tester) async {
@@ -141,11 +142,11 @@ void main() {
       await tester.pumpAndSettle();
 
       // Dialog title
-      expect(find.text('settings.storage_info'), findsOneWidget);
+      expect(find.text(l10n('settings.storage_info')), findsOneWidget);
       // Three StorageInfoRow widgets
       expect(find.byType(StorageInfoRow), findsNWidgets(3));
       // Close button
-      expect(find.text('common.close'), findsOneWidget);
+      expect(find.text(l10n('common.close')), findsOneWidget);
     });
 
     testWidgets('close button dismisses dialog', (tester) async {
@@ -172,7 +173,7 @@ void main() {
 
       expect(find.byType(AlertDialog), findsOneWidget);
 
-      await tester.tap(find.text('common.close'));
+      await tester.tap(find.text(l10n('common.close')));
       await tester.pumpAndSettle();
 
       expect(find.byType(AlertDialog), findsNothing);
@@ -206,8 +207,8 @@ void main() {
       await tester.tap(find.text('Open'));
       await tester.pumpAndSettle();
 
-      expect(find.text('sync.conflict_history'), findsOneWidget);
-      expect(find.text('sync.no_conflicts'), findsOneWidget);
+      expect(find.text(l10n('sync.conflict_history')), findsOneWidget);
+      expect(find.text(l10n('sync.no_conflicts')), findsOneWidget);
     });
 
     testWidgets('shows conflict entries', (tester) async {
@@ -283,7 +284,7 @@ void main() {
       await tester.tap(find.text('Open'));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('common.delete'));
+      await tester.tap(find.text(l10n('common.delete')));
       await tester.pumpAndSettle();
 
       expect(find.byType(AlertDialog), findsNothing);
@@ -315,7 +316,7 @@ void main() {
       await tester.tap(find.text('Open'));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('common.close'));
+      await tester.tap(find.text(l10n('common.close')));
       await tester.pumpAndSettle();
 
       expect(find.byType(AlertDialog), findsNothing);

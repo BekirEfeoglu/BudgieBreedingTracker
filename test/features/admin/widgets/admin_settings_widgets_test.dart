@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/features/admin/widgets/admin_settings_widgets.dart';
 
@@ -31,7 +32,7 @@ void main() {
       );
       await tester.pump();
       expect(
-        find.textContaining('admin.settings_active_count'),
+        find.textContaining(l10nContains('admin.settings_active_count')),
         findsOneWidget,
       );
     });
@@ -51,7 +52,7 @@ void main() {
       );
       await tester.pump();
       expect(
-        find.textContaining('admin.settings_last_updated'),
+        find.textContaining(l10nContains('admin.settings_last_updated')),
         findsOneWidget,
       );
     });
@@ -63,7 +64,7 @@ void main() {
         _wrap(const SettingsOverviewBanner(activeCount: 0, totalCount: 3)),
       );
       await tester.pump();
-      expect(find.textContaining('admin.settings_last_updated'), findsNothing);
+      expect(find.textContaining(l10nContains('admin.settings_last_updated')), findsNothing);
     });
 
     testWidgets('renders Card widget', (tester) async {
@@ -341,7 +342,7 @@ void main() {
     testWidgets('shows admin.reset_defaults label', (tester) async {
       await tester.pumpWidget(_wrap(ResetDefaultsButton(onPressed: () {})));
       await tester.pump();
-      expect(find.text('admin.reset_defaults'), findsOneWidget);
+      expect(find.text(l10n('admin.reset_defaults')), findsOneWidget);
     });
 
     testWidgets('shows progress indicator when isLoading', (tester) async {

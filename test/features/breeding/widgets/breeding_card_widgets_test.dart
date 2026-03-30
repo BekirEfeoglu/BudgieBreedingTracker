@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/breeding_enums.dart';
@@ -93,8 +94,8 @@ void main() {
 
       await _pumpBreedingWidget(tester, BreedingCardHeader(pair: pair));
 
-      expect(find.text('breeding.male_not_selected'), findsOneWidget);
-      expect(find.text('breeding.female_not_selected'), findsOneWidget);
+      expect(find.text(l10n('breeding.male_not_selected')), findsOneWidget);
+      expect(find.text(l10n('breeding.female_not_selected')), findsOneWidget);
     });
 
     testWidgets('shows bird names from providers when available', (

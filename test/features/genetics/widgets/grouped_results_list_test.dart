@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/domain/services/genetics/mendelian_calculator.dart';
 import 'package:budgie_breeding_tracker/features/genetics/widgets/grouped_results_list.dart';
@@ -25,7 +26,7 @@ void main() {
         _wrap(const GroupedResultsList(results: [])),
       );
 
-      expect(find.text('genetics.no_results'), findsOneWidget);
+      expect(find.text(l10n('genetics.no_results')), findsOneWidget);
     });
 
     testWidgets('renders flat list when no grouping needed', (tester) async {
@@ -84,7 +85,7 @@ void main() {
       expect(find.text('%25.0'), findsOneWidget);
       // Group header shows count
       expect(
-        find.textContaining('genetics.probability_group_header'),
+        find.textContaining(l10nContains('genetics.probability_group_header')),
         findsOneWidget,
       );
     });
@@ -102,7 +103,7 @@ void main() {
       expect(find.byType(OffspringPrediction), findsOneWidget);
       // No group headers for single result (no duplicate probabilities)
       expect(
-        find.textContaining('genetics.probability_group_header'),
+        find.textContaining(l10nContains('genetics.probability_group_header')),
         findsNothing,
       );
     });
@@ -128,7 +129,7 @@ void main() {
 
       // Genotype is shown as a hint label in collapsed view
       expect(
-        find.text('genetics.genotype_detail_label'),
+        find.text(l10n('genetics.genotype_detail_label')),
         findsAtLeastNWidgets(1),
       );
 
@@ -181,7 +182,7 @@ void main() {
       expect(find.text('%25.0'), findsOneWidget);
       expect(find.text('%12.5'), findsOneWidget);
       expect(
-        find.textContaining('genetics.probability_group_header'),
+        find.textContaining(l10nContains('genetics.probability_group_header')),
         findsNWidgets(2),
       );
     });

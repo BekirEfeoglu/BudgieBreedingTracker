@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/features/admin/providers/admin_data_providers.dart';
 import 'package:budgie_breeding_tracker/features/admin/providers/admin_models.dart';
@@ -69,7 +70,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('common.data_load_error'), findsOneWidget);
+      expect(find.text(l10n('common.data_load_error')), findsOneWidget);
     });
 
     testWidgets('shows empty list when no tables', (tester) async {

@@ -1,6 +1,7 @@
 import 'package:budgie_breeding_tracker/features/auth/widgets/social_login_buttons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 import '../../../helpers/pump_helpers.dart';
@@ -34,14 +35,14 @@ void main() {
 
       expect(find.byType(Divider), findsNWidgets(2));
       // .tr() returns the key in test context
-      expect(find.text('common.or'), findsOneWidget);
+      expect(find.text(l10n('common.or')), findsOneWidget);
     });
 
     testWidgets('shows Google sign-in button', (tester) async {
       await pumpWidgetSimple(tester, buildSubject());
 
       expect(find.byType(OutlinedButton), findsOneWidget);
-      expect(find.text('auth.sign_in_with_google'), findsOneWidget);
+      expect(find.text(l10n('auth.sign_in_with_google')), findsOneWidget);
     });
 
     testWidgets('shows Apple sign-in button', (tester) async {
@@ -110,7 +111,7 @@ void main() {
 
       // The OutlinedButton should have icon and label
       expect(find.byType(OutlinedButton), findsOneWidget);
-      expect(find.text('auth.sign_in_with_google'), findsOneWidget);
+      expect(find.text(l10n('auth.sign_in_with_google')), findsOneWidget);
     });
 
     testWidgets('Google button has press scale animation wrapper', (

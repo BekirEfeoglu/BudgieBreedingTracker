@@ -1,11 +1,64 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/egg_enums.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
 import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
 import 'package:budgie_breeding_tracker/domain/services/incubation/incubation_calculator.dart';
 import 'package:budgie_breeding_tracker/domain/services/incubation/incubation_milestone.dart';
+import 'package:budgie_breeding_tracker/domain/services/incubation/species_incubation_config.dart';
 
 void main() {
+  group('incubationDaysFromDates', () {
+    test('returns species default when no dates provided', () {
+      expect(
+        incubationDaysFromDates(
+          startDate: null,
+          expectedHatchDate: null,
+          species: Species.canary,
+        ),
+        13,
+      );
+      expect(
+        incubationDaysFromDates(
+          startDate: null,
+          expectedHatchDate: null,
+          species: Species.cockatiel,
+        ),
+        19,
+      );
+    });
+
+    test('prefers stored dates over species default', () {
+      // Old canary record created with 14-day period
+      final result = incubationDaysFromDates(
+        startDate: DateTime(2026, 1, 1),
+        expectedHatchDate: DateTime(2026, 1, 15), // 14 days
+        species: Species.canary,
+      );
+      expect(result, 14, reason: 'stored dates should take precedence');
+    });
+
+    test('falls back to species default for invalid date diff', () {
+      final result = incubationDaysFromDates(
+        startDate: DateTime(2026, 1, 15),
+        expectedHatchDate: DateTime(2026, 1, 1), // negative diff
+        species: Species.canary,
+      );
+      expect(result, 13);
+    });
+  });
+
+  group('incubationDaysForSpecies', () {
+    test('returns correct days for each species', () {
+      expect(incubationDaysForSpecies(Species.budgie), 18);
+      expect(incubationDaysForSpecies(Species.canary), 13);
+      expect(incubationDaysForSpecies(Species.cockatiel), 19);
+      expect(incubationDaysForSpecies(Species.finch), 14);
+      expect(incubationDaysForSpecies(Species.other), 18);
+      expect(incubationDaysForSpecies(Species.unknown), 18);
+    });
+  });
+
   group('IncubationCalculator', () {
     group('getStageColor', () {
       test('returns stageNew for day 0', () {
@@ -54,6 +107,18 @@ void main() {
           equals(AppColors.stageOverdue),
         );
       });
+
+      test('supports species-aware stage thresholds', () {
+        // Canary: sensitivePeriodDay=11, expectedHatchDay=13
+        expect(
+          IncubationCalculator.getStageColor(11, species: Species.canary),
+          equals(AppColors.stageNearHatch),
+        );
+        expect(
+          IncubationCalculator.getStageColor(14, species: Species.canary),
+          equals(AppColors.stageOverdue),
+        );
+      });
     });
 
     group('getStageLabel', () {
@@ -94,6 +159,13 @@ void main() {
           'incubation.stage_overdue',
         );
       });
+
+      test('supports totalDays-based fallback thresholds', () {
+        expect(
+          IncubationCalculator.getStageLabel(12, totalDays: 14),
+          'incubation.stage_near_hatch',
+        );
+      });
     });
 
     group('getCompletedStageColor', () {
@@ -128,6 +200,34 @@ void main() {
         expect(milestones[2].day, 16); // sensitive
         expect(milestones[3].day, 18); // expected hatch
         expect(milestones[4].day, 21); // late hatch
+      });
+
+      test('supports species-aware milestone days', () {
+        final startDate = DateTime(2025, 1, 1);
+        final milestones = IncubationCalculator.getMilestones(
+          startDate,
+          species: Species.canary,
+        );
+        // Canary: candling=5, secondCheck=10, sensitive=11, hatch=13, late=16
+        expect(milestones[0].day, 5);
+        expect(milestones[1].day, 10);
+        expect(milestones[2].day, 11);
+        expect(milestones[3].day, 13);
+        expect(milestones[4].day, 16);
+      });
+
+      test('cockatiel has correct milestone days including late=23', () {
+        final startDate = DateTime(2025, 1, 1);
+        final milestones = IncubationCalculator.getMilestones(
+          startDate,
+          species: Species.cockatiel,
+        );
+        // Cockatiel: candling=7, secondCheck=14, sensitive=17, hatch=19, late=23
+        expect(milestones[0].day, 7);
+        expect(milestones[1].day, 14);
+        expect(milestones[2].day, 17);
+        expect(milestones[3].day, 19);
+        expect(milestones[4].day, 23);
       });
 
       test('milestone dates are correctly offset from start', () {

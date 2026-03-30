@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/features/home/widgets/section_header.dart';
 
@@ -8,7 +9,7 @@ import '../../../helpers/test_localization.dart';
 void main() {
   group('SectionHeader', () {
     testWidgets('renders title text', (tester) async {
-      await pumpLocalizedWidget(
+      await pumpTranslatedWidget(
         tester,
         const SectionHeader(title: 'My Section'),
       );
@@ -17,7 +18,7 @@ void main() {
     });
 
     testWidgets('renders icon when provided', (tester) async {
-      await pumpLocalizedWidget(
+      await pumpTranslatedWidget(
         tester,
         const SectionHeader(
           title: 'With Icon',
@@ -30,7 +31,7 @@ void main() {
     });
 
     testWidgets('does not render icon when null', (tester) async {
-      await pumpLocalizedWidget(
+      await pumpTranslatedWidget(
         tester,
         const SectionHeader(title: 'No Icon'),
       );
@@ -41,19 +42,18 @@ void main() {
 
     testWidgets('shows view all button when onViewAll is provided',
         (tester) async {
-      await pumpLocalizedWidget(
+      await pumpTranslatedWidget(
         tester,
         SectionHeader(title: 'Section', onViewAll: () {}),
       );
 
-      // Localized key rendered as raw key in test
-      expect(find.text('common.view_all'), findsOneWidget);
+      expect(find.text(resolvedL10n('common.view_all')), findsOneWidget);
       expect(find.byType(TextButton), findsOneWidget);
     });
 
     testWidgets('hides view all button when onViewAll is null',
         (tester) async {
-      await pumpLocalizedWidget(
+      await pumpTranslatedWidget(
         tester,
         const SectionHeader(title: 'Section'),
       );
@@ -63,7 +63,7 @@ void main() {
 
     testWidgets('taps view all callback', (tester) async {
       var tapped = false;
-      await pumpLocalizedWidget(
+      await pumpTranslatedWidget(
         tester,
         SectionHeader(title: 'Section', onViewAll: () => tapped = true),
       );
@@ -75,7 +75,7 @@ void main() {
     });
 
     testWidgets('applies bold font weight to title', (tester) async {
-      await pumpLocalizedWidget(
+      await pumpTranslatedWidget(
         tester,
         const SectionHeader(title: 'Bold Title'),
       );

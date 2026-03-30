@@ -10,6 +10,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:budgie_breeding_tracker/core/enums/breeding_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/egg_enums.dart';
+import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
+import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
 import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
 import 'package:budgie_breeding_tracker/data/models/incubation_model.dart';
@@ -58,11 +60,36 @@ void main() {
     test(
       'GIVEN male and female birds WHEN a breeding pair is created THEN pair is active and repository.save is called',
       () async {
+        final mockBirdRepository = MockBirdRepository();
         final mockPairRepository = MockBreedingPairRepository();
         final mockIncubationRepository = MockIncubationRepository();
         final mockNotificationScheduler = MockNotificationScheduler();
         final mockCalendarGenerator = MockCalendarEventGenerator();
+        final maleBird = Bird(
+          id: 'male-1',
+          userId: 'test-user',
+          name: 'Male',
+          gender: BirdGender.male,
+          species: Species.budgie,
+          createdAt: DateTime(2024, 1, 1),
+          updatedAt: DateTime(2024, 1, 1),
+        );
+        final femaleBird = Bird(
+          id: 'female-1',
+          userId: 'test-user',
+          name: 'Female',
+          gender: BirdGender.female,
+          species: Species.budgie,
+          createdAt: DateTime(2024, 1, 1),
+          updatedAt: DateTime(2024, 1, 1),
+        );
 
+        when(() => mockBirdRepository.getById('male-1')).thenAnswer(
+          (_) async => maleBird,
+        );
+        when(() => mockBirdRepository.getById('female-1')).thenAnswer(
+          (_) async => femaleBird,
+        );
         when(() => mockPairRepository.save(any())).thenAnswer((_) async {});
         when(
           () => mockPairRepository.getAll(any()),
@@ -84,6 +111,7 @@ void main() {
             incubationId: any(named: 'incubationId'),
             startDate: any(named: 'startDate'),
             label: any(named: 'label'),
+            species: any(named: 'species'),
             settings: any(named: 'settings'),
           ),
         ).thenAnswer((_) async {});
@@ -92,6 +120,7 @@ void main() {
             eggId: any(named: 'eggId'),
             startDate: any(named: 'startDate'),
             eggLabel: any(named: 'eggLabel'),
+            species: any(named: 'species'),
             settings: any(named: 'settings'),
           ),
         ).thenAnswer((_) async {});
@@ -101,11 +130,13 @@ void main() {
             breedingPairId: any(named: 'breedingPairId'),
             startDate: any(named: 'startDate'),
             pairLabel: any(named: 'pairLabel'),
+            species: any(named: 'species'),
           ),
         ).thenAnswer((_) async {});
 
         final container = createTestContainer(
           overrides: [
+            birdRepositoryProvider.overrideWithValue(mockBirdRepository),
             breedingPairRepositoryProvider.overrideWithValue(
               mockPairRepository,
             ),
@@ -219,6 +250,7 @@ void main() {
             layDate: any(named: 'layDate'),
             eggNumber: any(named: 'eggNumber'),
             incubationId: any(named: 'incubationId'),
+            species: any(named: 'species'),
           ),
         ).thenAnswer((_) async {});
         when(
@@ -226,6 +258,7 @@ void main() {
             eggId: any(named: 'eggId'),
             startDate: any(named: 'startDate'),
             eggLabel: any(named: 'eggLabel'),
+            species: any(named: 'species'),
             settings: any(named: 'settings'),
           ),
         ).thenAnswer((_) async {});
@@ -270,6 +303,7 @@ void main() {
             layDate: any(named: 'layDate'),
             eggNumber: any(named: 'eggNumber'),
             incubationId: any(named: 'incubationId'),
+            species: any(named: 'species'),
           ),
         ).called(4);
       },

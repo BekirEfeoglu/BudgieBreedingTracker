@@ -35,7 +35,7 @@
           "locale" : "de"
         }
       ],
-      "productID" : "budgie_premium_lifetime",
+      "productID" : "budgie_pro_lifetime",
       "referenceName" : "Premium Lifetime",
       "type" : "NonConsumable"
     }
@@ -117,7 +117,7 @@
               "locale" : "de"
             }
           ],
-          "productID" : "budgie_premium_monthly",
+          "productID" : "budgie_pro_monthly",
           "recurringSubscriptionPeriod" : "P1M",
           "referenceName" : "Premium Monthly",
           "subscriptionGroupID" : "F1E2D3C4-B5A6-9870-FEDC-BA0987654321",
@@ -157,7 +157,7 @@
               "locale" : "de"
             }
           ],
-          "productID" : "budgie_premium_yearly",
+          "productID" : "budgie_pro_yearly",
           "recurringSubscriptionPeriod" : "P1Y",
           "referenceName" : "Premium Yearly",
           "subscriptionGroupID" : "F1E2D3C4-B5A6-9870-FEDC-BA0987654321",

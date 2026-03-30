@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/mendelian_calculator.dart';
@@ -51,7 +52,7 @@ void main() {
         )),
       );
 
-      expect(find.text('genetics.carrier'), findsOneWidget);
+      expect(find.text(l10n('genetics.carrier')), findsOneWidget);
     });
 
     testWidgets('does not show carrier badge when not carrier', (
@@ -70,7 +71,7 @@ void main() {
         )),
       );
 
-      expect(find.text('genetics.carrier'), findsNothing);
+      expect(find.text(l10n('genetics.carrier')), findsNothing);
     });
 
     testWidgets('shows lethal badge when lethalCombinationIds is not empty', (
@@ -90,7 +91,7 @@ void main() {
         )),
       );
 
-      expect(find.text('genetics.lethal_badge'), findsOneWidget);
+      expect(find.text(l10n('genetics.lethal_badge')), findsOneWidget);
     });
 
     testWidgets('does not show lethal badge when no lethal combinations', (
@@ -109,7 +110,7 @@ void main() {
         )),
       );
 
-      expect(find.text('genetics.lethal_badge'), findsNothing);
+      expect(find.text(l10n('genetics.lethal_badge')), findsNothing);
     });
   });
 
@@ -153,7 +154,7 @@ void main() {
       );
 
       expect(
-        find.textContaining('genetics.masked_mutations'),
+        find.textContaining(l10nContains('genetics.masked_mutations')),
         findsOneWidget,
       );
     });
@@ -247,7 +248,7 @@ void main() {
       );
 
       expect(find.byType(AppIcon), findsOneWidget);
-      expect(find.text('genetics.both_sexes_label'), findsOneWidget);
+      expect(find.text(l10n('genetics.both_sexes_label')), findsOneWidget);
     });
   });
 }

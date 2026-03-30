@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import 'package:budgie_breeding_tracker/features/genetics/widgets/genetics_history_parent_chip.dart';
@@ -51,7 +52,7 @@ void main() {
       await tester.pump();
 
       // Without EasyLocalization, .tr() returns the key
-      expect(find.text('genetics.mutation_normal'), findsOneWidget);
+      expect(find.text(l10n('genetics.mutation_normal')), findsOneWidget);
     });
 
     testWidgets('displays the provided icon', (tester) async {

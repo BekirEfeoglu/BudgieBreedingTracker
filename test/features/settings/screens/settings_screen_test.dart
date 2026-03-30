@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:go_router/go_router.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
@@ -109,7 +110,7 @@ void main() {
       await tester.pumpWidget(createSubject());
       await tester.pump();
 
-      expect(find.text('settings.title'), findsOneWidget);
+      expect(find.text(l10n('settings.title')), findsOneWidget);
     });
 
     testWidgets('shows all setting sections', (tester) async {

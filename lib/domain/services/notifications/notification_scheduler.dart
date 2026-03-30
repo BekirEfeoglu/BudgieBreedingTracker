@@ -1,8 +1,9 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart' show visibleForTesting;
 
-import 'package:budgie_breeding_tracker/core/constants/incubation_constants.dart';
+import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
+import 'package:budgie_breeding_tracker/domain/services/incubation/species_incubation_config.dart';
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_ids.dart';
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_rate_limiter.dart';
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_scheduler_cancel.dart';
@@ -21,7 +22,10 @@ export 'package:budgie_breeding_tracker/domain/services/notifications/notificati
 /// Respects user [NotificationToggleSettings] toggles per category and
 /// [NotificationRateLimiter] for immediate notification display.
 class NotificationScheduler
-    with NotificationSchedulerCancel, NotificationSchedulerReminders, NotificationSchedulerHealthBanding {
+    with
+        NotificationSchedulerCancel,
+        NotificationSchedulerReminders,
+        NotificationSchedulerHealthBanding {
   NotificationScheduler(this._service, this._rateLimiter);
 
   final NotificationService _service;
@@ -54,6 +58,7 @@ class NotificationScheduler
     required String eggId,
     required DateTime startDate,
     required String eggLabel,
+    Species species = Species.unknown,
     NotificationToggleSettings? settings,
     @visibleForTesting DateTime? now,
   }) async {
@@ -64,8 +69,8 @@ class NotificationScheduler
       return;
     }
 
-    const turningHours = IncubationConstants.eggTurningHours;
-    const days = IncubationConstants.incubationPeriodDays;
+    final turningHours = eggTurningHoursForSpecies(species);
+    final days = incubationDaysForSpecies(species);
     final now0 = now ?? DateTime.now();
     final futures = <Future<void>>[];
 
@@ -87,7 +92,7 @@ class NotificationScheduler
         final id = NotificationIds.generate(
           NotificationIds.eggTurningBaseId,
           eggId,
-          day * 3 + t,
+          day * turningHours.length + t,
         );
 
         futures.add(
@@ -117,6 +122,7 @@ class NotificationScheduler
     required String incubationId,
     required DateTime startDate,
     required String label,
+    Species species = Species.unknown,
     int preferredHour = 8,
     NotificationToggleSettings? settings,
     @visibleForTesting DateTime? now,
@@ -128,15 +134,17 @@ class NotificationScheduler
       return;
     }
 
+    final milestonesForSpecies = incubationMilestonesForSpecies(species);
     final milestones = {
-      IncubationConstants.candlingDay: 'notifications.incubation_candling'.tr(),
-      IncubationConstants.secondCheckDay:
+      milestonesForSpecies.candlingDay: 'notifications.incubation_candling'
+          .tr(),
+      milestonesForSpecies.secondCheckDay:
           'notifications.incubation_second_check'.tr(),
-      IncubationConstants.sensitivePeriodDay:
+      milestonesForSpecies.sensitivePeriodDay:
           'notifications.incubation_sensitive_period'.tr(),
-      IncubationConstants.expectedHatchDay:
+      milestonesForSpecies.expectedHatchDay:
           'notifications.incubation_expected_hatch'.tr(),
-      IncubationConstants.lateHatchDay: 'notifications.incubation_late_hatch'
+      milestonesForSpecies.lateHatchDay: 'notifications.incubation_late_hatch'
           .tr(),
     };
 

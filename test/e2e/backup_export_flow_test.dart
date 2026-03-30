@@ -10,6 +10,7 @@ import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
 import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
 import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
+import 'package:budgie_breeding_tracker/data/models/incubation_model.dart';
 import 'package:budgie_breeding_tracker/domain/services/import/import_result.dart';
 import 'package:budgie_breeding_tracker/domain/services/import/import_providers.dart';
 import 'package:budgie_breeding_tracker/features/settings/providers/export_providers.dart';
@@ -70,12 +71,14 @@ void main() {
         final mockPdfExportService = MockPdfExportService();
         const birds = <Bird>[];
         const pairs = <BreedingPair>[];
+        const incubations = <Incubation>[];
         const eggs = <Egg>[];
         const chicks = <Chick>[];
         when(
           () => mockPdfExportService.generateFullReport(
             birds: birds,
             pairs: pairs,
+            incubations: incubations,
             eggs: eggs,
             chicks: chicks,
           ),
@@ -93,6 +96,7 @@ void main() {
             .generateFullReport(
               birds: birds,
               pairs: pairs,
+              incubations: incubations,
               eggs: eggs,
               chicks: chicks,
             );
@@ -102,6 +106,7 @@ void main() {
           () => mockPdfExportService.generateFullReport(
             birds: birds,
             pairs: pairs,
+            incubations: incubations,
             eggs: eggs,
             chicks: chicks,
           ),
@@ -116,12 +121,14 @@ void main() {
         final mockExcelExportService = MockExcelExportService();
         const birds = <Bird>[];
         const pairs = <BreedingPair>[];
+        const incubations = <Incubation>[];
         const eggs = <Egg>[];
         const chicks = <Chick>[];
         when(
           () => mockExcelExportService.exportAll(
             birds: birds,
             pairs: pairs,
+            incubations: incubations,
             eggs: eggs,
             chicks: chicks,
           ),
@@ -138,13 +145,20 @@ void main() {
 
         final bytes = await container
             .read(excelExportServiceProvider)
-            .exportAll(birds: birds, pairs: pairs, eggs: eggs, chicks: chicks);
+            .exportAll(
+              birds: birds,
+              pairs: pairs,
+              incubations: incubations,
+              eggs: eggs,
+              chicks: chicks,
+            );
 
         expect(bytes, isNotEmpty);
         verify(
           () => mockExcelExportService.exportAll(
             birds: birds,
             pairs: pairs,
+            incubations: incubations,
             eggs: eggs,
             chicks: chicks,
           ),

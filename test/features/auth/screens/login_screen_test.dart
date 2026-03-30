@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
@@ -96,8 +97,8 @@ void main() {
       await tester.pumpWidget(buildSubject());
       await tester.pump(const Duration(milliseconds: 500));
       // EasyLocalization returns key directly in test context
-      expect(find.text('auth.no_account'), findsOneWidget);
-      expect(find.text('auth.register'), findsOneWidget);
+      expect(find.text(l10n('auth.no_account')), findsOneWidget);
+      expect(find.text(l10n('auth.register')), findsOneWidget);
     });
 
     testWidgets('shows login button', (tester) async {
@@ -116,7 +117,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 300));
 
       // Validation errors should appear (key returned without translation)
-      expect(find.text('common.required_field'), findsWidgets);
+      expect(find.text(l10n('common.required_field')), findsWidgets);
 
       // signInWithEmail should NOT be called
       verifyNever(
@@ -172,7 +173,7 @@ void main() {
       expect(find.byType(OutlinedButton), findsOneWidget);
       expect(find.byType(SignInWithAppleButton), findsOneWidget);
       // Verify Google label (key returned in test context)
-      expect(find.text('auth.sign_in_with_google'), findsOneWidget);
+      expect(find.text(l10n('auth.sign_in_with_google')), findsOneWidget);
       // Note: SignInWithAppleButton renders its own internal label,
       // not our localized 'auth.sign_in_with_apple' text.
     });
@@ -232,7 +233,7 @@ void main() {
       await tester.pumpWidget(buildSubject());
       await tester.pump(const Duration(milliseconds: 500));
 
-      final guestBtn = find.text('auth.continue_as_guest');
+      final guestBtn = find.text(l10n('auth.continue_as_guest'));
       await tester.ensureVisible(guestBtn);
       await tester.pump(const Duration(milliseconds: 100));
       await tester.tap(guestBtn);
@@ -287,7 +288,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 500));
 
       // Canceled should not show error and should NOT fall back to browser
-      expect(find.text('auth.login'), findsOneWidget);
+      expect(find.text(l10n('auth.login')), findsOneWidget);
       verifyNever(() => mockAuth.signInWithOAuth(any()));
 
       await tester.pump(const Duration(seconds: 5));
@@ -302,7 +303,7 @@ void main() {
       await tester.pumpWidget(buildSubject());
       await tester.pump(const Duration(milliseconds: 500));
 
-      final guestBtn = find.text('auth.continue_as_guest');
+      final guestBtn = find.text(l10n('auth.continue_as_guest'));
       await tester.ensureVisible(guestBtn);
       await tester.pump(const Duration(milliseconds: 100));
       await tester.tap(guestBtn);

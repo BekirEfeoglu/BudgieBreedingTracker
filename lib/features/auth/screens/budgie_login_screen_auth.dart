@@ -240,9 +240,18 @@ abstract class _BudgieLoginAuthBase extends ConsumerState<BudgieLoginScreen>
           return;
         } on AuthException catch (e) {
           if (e.message == 'Canceled') rethrow;
-          AppLogger.warning(
-            '[Login] Native Google sign-in unavailable, trying browser: ${e.message}',
-          );
+          // If error is about configuration (not available), fall back to browser.
+          // If error is about token exchange (user already picked account), show it.
+          if (e.message == 'Google sign-in not configured') {
+            AppLogger.warning(
+              '[Login] Native Google sign-in not configured, trying browser: ${e.message}',
+            );
+          } else {
+            AppLogger.error(
+              '[Login] Native Google sign-in failed after account selection: ${e.message}',
+            );
+            rethrow;
+          }
         }
       }
 

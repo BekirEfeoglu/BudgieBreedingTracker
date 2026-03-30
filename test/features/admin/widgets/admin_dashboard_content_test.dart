@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:budgie_breeding_tracker/features/admin/providers/admin_data_providers.dart';
@@ -91,7 +92,7 @@ void main() {
         ),
       );
       await tester.pump();
-      expect(find.text('admin.checking_health'), findsOneWidget);
+      expect(find.text(l10n('admin.checking_health')), findsOneWidget);
     });
 
     testWidgets('shows system_healthy text on healthy status', (tester) async {
@@ -102,7 +103,7 @@ void main() {
         ),
       );
       await tester.pump();
-      expect(find.text('admin.system_healthy'), findsOneWidget);
+      expect(find.text(l10n('admin.system_healthy')), findsOneWidget);
     });
 
     testWidgets('shows system_degraded text on error status', (tester) async {
@@ -116,7 +117,7 @@ void main() {
         ),
       );
       await tester.pump();
-      expect(find.text('admin.system_degraded'), findsOneWidget);
+      expect(find.text(l10n('admin.system_degraded')), findsOneWidget);
     });
 
     testWidgets('shows health_unavailable text on unavailable status', (
@@ -129,7 +130,7 @@ void main() {
         ),
       );
       await tester.pump();
-      expect(find.text('admin.health_unavailable'), findsOneWidget);
+      expect(find.text(l10n('admin.health_unavailable')), findsOneWidget);
     });
 
     testWidgets('shows error message from data on error status', (
@@ -158,7 +159,7 @@ void main() {
         ),
       );
       await tester.pump();
-      expect(find.text('admin.all_services_running'), findsOneWidget);
+      expect(find.text(l10n('admin.all_services_running')), findsOneWidget);
     });
   });
 
@@ -295,7 +296,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('admin.quick_actions'), findsOneWidget);
+      expect(find.text(l10n('admin.quick_actions')), findsOneWidget);
     });
 
     testWidgets('shows go_to_settings quick action', (tester) async {
@@ -310,7 +311,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('admin.go_to_settings'), findsOneWidget);
+      expect(find.text(l10n('admin.go_to_settings')), findsOneWidget);
     });
   });
 }

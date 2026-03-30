@@ -66,6 +66,9 @@ abstract final class BirdGenotypeMapper {
       BirdColor.green ||
       BirdColor.yellow ||
       BirdColor.white ||
+      BirdColor.red ||
+      BirdColor.pearl ||
+      BirdColor.whiteface ||
       BirdColor.other ||
       BirdColor.unknown => const [],
     };

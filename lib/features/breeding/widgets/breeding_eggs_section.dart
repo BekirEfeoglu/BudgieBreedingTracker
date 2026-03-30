@@ -168,12 +168,20 @@ class BreedingEggsSection extends ConsumerWidget {
 
 class BreedingMilestoneSection extends StatelessWidget {
   final DateTime startDate;
+  final int? totalDays;
 
-  const BreedingMilestoneSection({super.key, required this.startDate});
+  const BreedingMilestoneSection({
+    super.key,
+    required this.startDate,
+    this.totalDays,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final milestones = IncubationCalculator.getMilestones(startDate);
+    final milestones = IncubationCalculator.getMilestones(
+      startDate,
+      totalDays: totalDays,
+    );
 
     return Padding(
       padding: AppSpacing.screenPadding,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/domain/services/genetics/mendelian_calculator.dart';
 import 'package:budgie_breeding_tracker/features/genetics/widgets/offspring_prediction.dart';
@@ -32,7 +33,7 @@ void main() {
 
       await pumpLocalizedApp(tester,_wrap(const OffspringPrediction(result: result)));
       // PhenotypeLocalizer converts 'Normal Blue' to localization keys
-      expect(find.textContaining('genetics.mutation'), findsAtLeastNWidgets(1));
+      expect(find.textContaining(l10nContains('genetics.mutation')), findsAtLeastNWidgets(1));
     });
 
     testWidgets('shows probability percentage for 50%', (tester) async {
@@ -96,7 +97,7 @@ void main() {
       );
 
       await pumpLocalizedApp(tester,_wrap(const OffspringPrediction(result: result)));
-      expect(find.text('genetics.carrier'), findsAtLeastNWidgets(1));
+      expect(find.text(l10n('genetics.carrier')), findsAtLeastNWidgets(1));
     });
 
     testWidgets('does not show carrier badge for non-carrier', (tester) async {
@@ -107,7 +108,7 @@ void main() {
 
       await pumpLocalizedApp(tester,_wrap(const OffspringPrediction(result: result)));
       // Carrier text appears only inside carrier badge and semantics
-      final carrierFinder = find.text('genetics.carrier');
+      final carrierFinder = find.text(l10n('genetics.carrier'));
       expect(carrierFinder, findsNothing);
     });
 
@@ -119,7 +120,7 @@ void main() {
       );
 
       await pumpLocalizedApp(tester,_wrap(const OffspringPrediction(result: result)));
-      expect(find.text('genetics.lethal_badge'), findsOneWidget);
+      expect(find.text(l10n('genetics.lethal_badge')), findsOneWidget);
     });
 
     testWidgets('does not show lethal badge when no lethal combinations', (
@@ -131,7 +132,7 @@ void main() {
       );
 
       await pumpLocalizedApp(tester,_wrap(const OffspringPrediction(result: result)));
-      expect(find.text('genetics.lethal_badge'), findsNothing);
+      expect(find.text(l10n('genetics.lethal_badge')), findsNothing);
     });
 
     testWidgets('shows genotype text when showGenotype is true', (
@@ -148,7 +149,7 @@ void main() {
       );
       // Collapsed view shows hint label
       expect(
-        find.text('genetics.genotype_detail_label'),
+        find.text(l10n('genetics.genotype_detail_label')),
         findsAtLeastNWidgets(1),
       );
 
@@ -181,7 +182,7 @@ void main() {
 
       await pumpLocalizedApp(tester,_wrap(const OffspringPrediction(result: result)));
       expect(
-        find.textContaining('genetics.mutation_blue'),
+        find.textContaining(l10nContains('genetics.mutation_blue')),
         findsAtLeastNWidgets(1),
       );
     });
@@ -194,7 +195,7 @@ void main() {
       );
 
       await pumpLocalizedApp(tester,_wrap(const OffspringPrediction(result: result)));
-      expect(find.text('genetics.masked_mutations'), findsAtLeastNWidgets(1));
+      expect(find.text(l10n('genetics.masked_mutations')), findsAtLeastNWidgets(1));
     });
 
     testWidgets('has Semantics wrapper for accessibility', (tester) async {
@@ -216,7 +217,7 @@ void main() {
 
       await pumpLocalizedApp(tester,_wrap(const OffspringPrediction(result: result)));
       expect(
-        find.textContaining('genetics.mutation_opaline'),
+        find.textContaining(l10nContains('genetics.mutation_opaline')),
         findsAtLeastNWidgets(1),
       );
     });

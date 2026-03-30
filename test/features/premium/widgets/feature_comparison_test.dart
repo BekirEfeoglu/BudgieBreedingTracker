@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/features/premium/widgets/feature_comparison.dart';
 
@@ -22,28 +23,28 @@ void main() {
       await tester.pumpWidget(createSubject());
       await tester.pump();
 
-      expect(find.text('premium.comparison_title'), findsOneWidget);
+      expect(find.text(l10n('premium.comparison_title')), findsOneWidget);
     });
 
     testWidgets('shows feature column header', (tester) async {
       await tester.pumpWidget(createSubject());
       await tester.pump();
 
-      expect(find.text('premium.feature'), findsAtLeastNWidgets(1));
+      expect(find.text(l10n('premium.feature')), findsAtLeastNWidgets(1));
     });
 
     testWidgets('shows free column header', (tester) async {
       await tester.pumpWidget(createSubject());
       await tester.pump();
 
-      expect(find.text('premium.free'), findsOneWidget);
+      expect(find.text(l10n('premium.free')), findsOneWidget);
     });
 
     testWidgets('shows pro column header', (tester) async {
       await tester.pumpWidget(createSubject());
       await tester.pump();
 
-      expect(find.text('premium.pro'), findsOneWidget);
+      expect(find.text(l10n('premium.pro')), findsOneWidget);
     });
 
     testWidgets('renders Column as root', (tester) async {
@@ -58,8 +59,8 @@ void main() {
       await tester.pump();
 
       // 10 features defined in _features list
-      expect(find.text('premium.feature_bird_tracking'), findsOneWidget);
-      expect(find.text('premium.feature_genealogy'), findsOneWidget);
+      expect(find.text(l10n('premium.feature_bird_tracking')), findsOneWidget);
+      expect(find.text(l10n('premium.feature_genealogy')), findsOneWidget);
     });
 
     testWidgets('shows check icons for available features', (tester) async {

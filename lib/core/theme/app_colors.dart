@@ -121,6 +121,9 @@ abstract class AppColors {
   static const birdSpangle = Color(0xFF7CB342);
   static const birdPied = Color(0xFFBDBDBD);
   static const birdClearwing = Color(0xFFB3E5FC);
+  static const birdRed = Color(0xFFE53935);
+  static const birdPearl = Color(0xFFCE93D8);
+  static const birdWhiteface = Color(0xFFECEFF1);
   static const birdOther = Color(0xFFFF9800);
 
   // Chart Bird Color Variants (higher contrast for charts)
@@ -137,6 +140,9 @@ abstract class AppColors {
   static const chartSpangle = Color(0xFF10B981);
   static const chartPied = Color(0xFFF97316);
   static const chartClearwing = Color(0xFF60A5FA);
+  static const chartRed = Color(0xFFDC2626);
+  static const chartPearl = Color(0xFFA855F7);
+  static const chartWhiteface = Color(0xFFD1D5DB);
   static const chartOther = Color(0xFF64748B);
 
   // Carrier Text Colors (WCAG AA compliant)

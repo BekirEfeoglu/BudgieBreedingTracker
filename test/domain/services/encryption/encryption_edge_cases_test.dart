@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:math';
+import 'dart:typed_data';
 
+import 'package:encrypt/encrypt.dart' as enc;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -288,6 +290,208 @@ void main() {
         final decrypted2 = await service.decrypt(decrypted1);
 
         expect(decrypted2, original);
+      });
+    });
+
+    group('auditPayloads', () {
+      test('classifies current, legacy, and invalid payloads', () async {
+        // Current format (authenticated)
+        final current1 = await service.encrypt('current-data-1');
+        final current2 = await service.encrypt('current-data-2');
+
+        // Legacy format (IV + ciphertext, no magic prefix)
+        final rawKey = Uint8List.fromList(base64Decode(_validBase64Key));
+        final iv = enc.IV.fromLength(16);
+        final encrypter = enc.Encrypter(
+          enc.AES(enc.Key(rawKey), mode: enc.AESMode.cbc),
+        );
+        final encrypted = encrypter.encrypt('legacy-data', iv: iv);
+        final legacy = base64Encode([...iv.bytes, ...encrypted.bytes]);
+
+        final result = service.auditPayloads([
+          current1,
+          current2,
+          legacy,
+          '', // invalid (empty)
+          'not-base64!!!', // invalid
+        ]);
+
+        expect(result.current, 2);
+        expect(result.legacy, 1);
+        expect(result.invalid, 2);
+      });
+
+      test('returns all zeros for empty list', () {
+        final result = service.auditPayloads([]);
+        expect(result.current, 0);
+        expect(result.legacy, 0);
+        expect(result.invalid, 0);
+      });
+
+      test('auditAndReport returns same result as auditPayloads', () async {
+        final current = await service.encrypt('current-data');
+        final rawKey = Uint8List.fromList(base64Decode(_validBase64Key));
+        final iv = enc.IV.fromLength(16);
+        final encrypter = enc.Encrypter(
+          enc.AES(enc.Key(rawKey), mode: enc.AESMode.cbc),
+        );
+        final encrypted = encrypter.encrypt('legacy-data', iv: iv);
+        final legacy = base64Encode([...iv.bytes, ...encrypted.bytes]);
+
+        final values = [current, legacy, ''];
+        final auditResult = service.auditPayloads(values);
+        final reportResult = service.auditAndReport(
+          values,
+          source: 'test',
+        );
+
+        expect(reportResult.current, auditResult.current);
+        expect(reportResult.legacy, auditResult.legacy);
+        expect(reportResult.invalid, auditResult.invalid);
+      });
+
+      test('auditAndReport does not report when all payloads are current',
+          () async {
+        final c1 = await service.encrypt('data-1');
+        final c2 = await service.encrypt('data-2');
+
+        // Should not throw or report — all payloads are current format
+        final result = service.auditAndReport([c1, c2], source: 'test');
+        expect(result.current, 2);
+        expect(result.legacy, 0);
+        expect(result.invalid, 0);
+      });
+    });
+
+    group('batchReEncrypt', () {
+      test('upgrades legacy payloads and skips current ones', () async {
+        // Current format
+        final current = await service.encrypt('already-current');
+
+        // Legacy format
+        final rawKey = Uint8List.fromList(base64Decode(_validBase64Key));
+        final iv = enc.IV.fromLength(16);
+        final encrypter = enc.Encrypter(
+          enc.AES(enc.Key(rawKey), mode: enc.AESMode.cbc),
+        );
+        final encrypted = encrypter.encrypt('needs-upgrade', iv: iv);
+        final legacy = base64Encode([...iv.bytes, ...encrypted.bytes]);
+
+        final results = await service.batchReEncrypt({
+          'id-1': current,
+          'id-2': legacy,
+        });
+
+        // Only the legacy payload should be re-encrypted
+        expect(results.length, 1);
+        expect(results.containsKey('id-2'), isTrue);
+        expect(results.containsKey('id-1'), isFalse);
+
+        // Upgraded payload should be in current format
+        expect(service.needsReEncryption(results['id-2']!), isFalse);
+
+        // Content should be preserved
+        final decrypted = await service.decrypt(results['id-2']!);
+        expect(decrypted, 'needs-upgrade');
+      });
+
+      test('returns empty map when all payloads are current', () async {
+        final c1 = await service.encrypt('data-1');
+        final c2 = await service.encrypt('data-2');
+
+        final results = await service.batchReEncrypt({
+          'id-1': c1,
+          'id-2': c2,
+        });
+
+        expect(results, isEmpty);
+      });
+
+      test('respects chunk limit of 50 legacy payloads', () async {
+        // Build 60 legacy payloads — only first 50 should be processed
+        final rawKey = Uint8List.fromList(base64Decode(_validBase64Key));
+        final idToCipher = <String, String>{};
+        for (var i = 0; i < 60; i++) {
+          final iv = enc.IV.fromSecureRandom(16);
+          final encrypter = enc.Encrypter(
+            enc.AES(enc.Key(rawKey), mode: enc.AESMode.cbc),
+          );
+          final encrypted = encrypter.encrypt('data-$i', iv: iv);
+          idToCipher['id-$i'] = base64Encode([
+            ...iv.bytes,
+            ...encrypted.bytes,
+          ]);
+        }
+
+        final results = await service.batchReEncrypt(idToCipher);
+
+        // Exactly 50 should be upgraded (chunk limit)
+        expect(results.length, 50);
+
+        // All upgraded values should be in current format
+        for (final value in results.values) {
+          expect(service.needsReEncryption(value), isFalse);
+        }
+      });
+
+      test('skips payloads that fail decryption', () async {
+        // A legacy-format payload encrypted with a different key
+        final wrongKey = Uint8List.fromList(
+          List<int>.generate(32, (i) => 255 - i),
+        );
+        final iv = enc.IV.fromLength(16);
+        final encrypter = enc.Encrypter(
+          enc.AES(enc.Key(wrongKey), mode: enc.AESMode.cbc),
+        );
+        final encrypted = encrypter.encrypt('wrong-key-data', iv: iv);
+        final badLegacy = base64Encode([...iv.bytes, ...encrypted.bytes]);
+
+        final results = await service.batchReEncrypt({
+          'id-bad': badLegacy,
+        });
+
+        // Should be empty — reEncrypt returns null for failed decryption
+        expect(results, isEmpty);
+      });
+    });
+
+    group('looksLikeEncrypted heuristic', () {
+      test('returns false for empty string', () {
+        expect(looksLikeEncrypted(''), isFalse);
+      });
+
+      test('returns false for plain text ring numbers', () {
+        expect(looksLikeEncrypted('TR-2024-001'), isFalse);
+        expect(looksLikeEncrypted('AB123'), isFalse);
+        expect(looksLikeEncrypted('RING-456-XYZ'), isFalse);
+      });
+
+      test('returns false for short Base64 values', () {
+        // 16 bytes decoded = just IV, no ciphertext
+        final shortB64 = base64Encode(List<int>.filled(16, 0));
+        expect(looksLikeEncrypted(shortB64), isFalse);
+      });
+
+      test('returns true for legacy encrypted payload', () {
+        // IV(16) + ciphertext(16) = 32 bytes
+        final rawKey = Uint8List.fromList(List<int>.generate(32, (i) => i));
+        final iv = enc.IV.fromLength(16);
+        final encrypter = enc.Encrypter(
+          enc.AES(enc.Key(rawKey), mode: enc.AESMode.cbc),
+        );
+        final encrypted = encrypter.encrypt('ring-data', iv: iv);
+        final legacy = base64Encode([...iv.bytes, ...encrypted.bytes]);
+        expect(looksLikeEncrypted(legacy), isTrue);
+      });
+
+      test('returns true for authenticated encrypted payload', () async {
+        final encrypted = await service.encrypt('ring-number');
+        expect(looksLikeEncrypted(encrypted), isTrue);
+      });
+
+      test('returns false for non-Base64 strings', () {
+        expect(looksLikeEncrypted('not valid base64!!!'), isFalse);
+        expect(looksLikeEncrypted('hello world'), isFalse);
       });
     });
 

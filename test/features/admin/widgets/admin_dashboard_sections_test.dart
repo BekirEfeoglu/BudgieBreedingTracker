@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 import 'package:budgie_breeding_tracker/features/admin/providers/admin_dashboard_providers.dart';
@@ -81,19 +82,19 @@ void main() {
         ),
       );
       await tester.pump();
-      expect(find.text('admin.action_error'), findsOneWidget);
+      expect(find.text(l10n('admin.action_error')), findsOneWidget);
     });
 
     testWidgets('shows no alerts message when list is empty', (tester) async {
       await tester.pumpWidget(_alertsSection(alerts: const AsyncData([])));
       await tester.pump();
-      expect(find.text('admin.no_active_alerts'), findsOneWidget);
+      expect(find.text(l10n('admin.no_active_alerts')), findsOneWidget);
     });
 
     testWidgets('shows section title', (tester) async {
       await tester.pumpWidget(_alertsSection(alerts: const AsyncData([])));
       await tester.pump();
-      expect(find.text('admin.active_alerts'), findsOneWidget);
+      expect(find.text(l10n('admin.active_alerts')), findsOneWidget);
     });
 
     testWidgets('shows alert message when data has critical alert', (
@@ -113,7 +114,7 @@ void main() {
         _alertsSection(alerts: AsyncData([_criticalAlert])),
       );
       await tester.pump();
-      expect(find.text('admin.alert_critical'), findsOneWidget);
+      expect(find.text(l10n('admin.alert_critical')), findsOneWidget);
     });
 
     testWidgets('shows admin.alert_warning label for warning alert', (
@@ -123,7 +124,7 @@ void main() {
         _alertsSection(alerts: AsyncData([_warningAlert])),
       );
       await tester.pump();
-      expect(find.text('admin.alert_warning'), findsOneWidget);
+      expect(find.text(l10n('admin.alert_warning')), findsOneWidget);
     });
 
     testWidgets('renders multiple alerts', (tester) async {
@@ -154,19 +155,19 @@ void main() {
         _actionsSection(actions: const AsyncError('error', StackTrace.empty)),
       );
       await tester.pump();
-      expect(find.text('admin.action_error'), findsOneWidget);
+      expect(find.text(l10n('admin.action_error')), findsOneWidget);
     });
 
     testWidgets('shows section title', (tester) async {
       await tester.pumpWidget(_actionsSection(actions: const AsyncData([])));
       await tester.pump();
-      expect(find.text('admin.recent_actions'), findsOneWidget);
+      expect(find.text(l10n('admin.recent_actions')), findsOneWidget);
     });
 
     testWidgets('shows admin.no_activity when empty', (tester) async {
       await tester.pumpWidget(_actionsSection(actions: const AsyncData([])));
       await tester.pump();
-      expect(find.text('admin.no_activity'), findsOneWidget);
+      expect(find.text(l10n('admin.no_activity')), findsOneWidget);
     });
 
     testWidgets('shows action text when data present', (tester) async {

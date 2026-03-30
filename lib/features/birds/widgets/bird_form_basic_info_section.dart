@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
+import 'package:budgie_breeding_tracker/core/species/species_registry.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/features/birds/utils/bird_color_utils.dart';
@@ -34,16 +35,15 @@ class BirdFormBasicInfoSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final profile = SpeciesRegistry.of(species);
     final normalizedColorMutation = colorMutation == BirdColor.unknown
         ? null
         : colorMutation;
-    final selectableSpecies = <Species>[
-      Species.budgie,
-      if (species != Species.budgie && species != Species.unknown) species,
-    ];
+    final supportedSpecies = SpeciesRegistry.supportedSpecies;
+    final selectableSpecies = supportedSpecies;
     final selectedSpecies = selectableSpecies.contains(species)
         ? species
-        : Species.budgie;
+        : null;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -105,7 +105,13 @@ class BirdFormBasicInfoSection extends StatelessWidget {
             border: const OutlineInputBorder(),
             prefixIcon: Padding(
               padding: const EdgeInsets.all(AppSpacing.md),
-              child: speciesIconWidget(selectedSpecies, size: 20),
+              child: speciesIconWidget(species, size: 24),
+            ),
+          ),
+          hint: Text(
+            'birds.select_species'.tr(),
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ),
           items: selectableSpecies
@@ -114,7 +120,7 @@ class BirdFormBasicInfoSection extends StatelessWidget {
                   value: s,
                   child: Row(
                     children: [
-                      speciesIconWidget(s, size: 20),
+                      speciesIconWidget(s, size: 24),
                       const SizedBox(width: AppSpacing.sm),
                       Text(speciesLabel(s)),
                     ],
@@ -127,8 +133,21 @@ class BirdFormBasicInfoSection extends StatelessWidget {
               onSpeciesChanged(value);
             }
           },
+          validator: (value) {
+            if (value == null) return 'birds.species_required'.tr();
+            return null;
+          },
           isExpanded: true,
         ),
+        if (selectedSpecies != null) ...[
+          const SizedBox(height: AppSpacing.sm),
+          Text(
+            profile.helpTextKey.tr(),
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ],
         const SizedBox(height: AppSpacing.md),
         DropdownButtonFormField<BirdColor?>(
           initialValue: normalizedColorMutation,
@@ -150,33 +169,31 @@ class BirdFormBasicInfoSection extends StatelessWidget {
                 ),
               ),
             ),
-            ...BirdColor.values
-                .where((color) => color != BirdColor.unknown)
-                .map(
-                  (color) => DropdownMenuItem<BirdColor?>(
-                    value: color,
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 16,
-                          height: 16,
-                          decoration: BoxDecoration(
-                            color: birdColorToColor(color),
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: Theme.of(
-                                context,
-                              ).colorScheme.outline.withValues(alpha: 0.3),
-                              width: 0.5,
-                            ),
-                          ),
+            ...profile.supportedColors.map(
+              (color) => DropdownMenuItem<BirdColor?>(
+                value: color,
+                child: Row(
+                  children: [
+                    Container(
+                      width: 16,
+                      height: 16,
+                      decoration: BoxDecoration(
+                        color: birdColorToColor(color),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.outline.withValues(alpha: 0.3),
+                          width: 0.5,
                         ),
-                        const SizedBox(width: AppSpacing.sm),
-                        Text(birdColorLabel(color)),
-                      ],
+                      ),
                     ),
-                  ),
+                    const SizedBox(width: AppSpacing.sm),
+                    Text(birdColorLabel(color)),
+                  ],
                 ),
+              ),
+            ),
           ],
           onChanged: (value) {
             onColorChanged(value);

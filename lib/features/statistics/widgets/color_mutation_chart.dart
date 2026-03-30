@@ -129,6 +129,9 @@ class ColorMutationChart extends StatelessWidget {
     BirdColor.spangle => AppColors.chartSpangle,
     BirdColor.pied => AppColors.chartPied,
     BirdColor.clearwing => AppColors.chartClearwing,
+    BirdColor.red => AppColors.chartRed,
+    BirdColor.pearl => AppColors.chartPearl,
+    BirdColor.whiteface => AppColors.chartWhiteface,
     BirdColor.other => AppColors.chartOther,
     BirdColor.unknown => AppColors.chartOther,
   };
@@ -147,6 +150,9 @@ class ColorMutationChart extends StatelessWidget {
     BirdColor.spangle => 'statistics.color_spangle'.tr(),
     BirdColor.pied => 'statistics.color_pied'.tr(),
     BirdColor.clearwing => 'statistics.color_clearwing'.tr(),
+    BirdColor.red => 'statistics.color_red'.tr(),
+    BirdColor.pearl => 'statistics.color_pearl'.tr(),
+    BirdColor.whiteface => 'statistics.color_whiteface'.tr(),
     BirdColor.other => 'statistics.color_other'.tr(),
     BirdColor.unknown => 'statistics.color_other'.tr(),
   };
@@ -166,6 +172,9 @@ class ColorMutationChart extends StatelessWidget {
     BirdColor.spangle => 'statistics.color_short_spangle'.tr(),
     BirdColor.pied => 'statistics.color_short_pied'.tr(),
     BirdColor.clearwing => 'statistics.color_short_clearwing'.tr(),
+    BirdColor.red => 'statistics.color_short_red'.tr(),
+    BirdColor.pearl => 'statistics.color_short_pearl'.tr(),
+    BirdColor.whiteface => 'statistics.color_short_whiteface'.tr(),
     BirdColor.other => 'statistics.color_short_other'.tr(),
     BirdColor.unknown => 'statistics.color_short_other'.tr(),
   };

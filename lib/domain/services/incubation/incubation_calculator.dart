@@ -1,9 +1,11 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:budgie_breeding_tracker/core/constants/incubation_constants.dart';
+import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/egg_enums.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
 import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
+import 'package:budgie_breeding_tracker/domain/services/incubation/species_incubation_config.dart';
 
 import 'incubation_milestone.dart';
 
@@ -12,15 +14,62 @@ import 'incubation_milestone.dart';
 /// Provides stage colors, milestone generation, validation helpers,
 /// and egg status transition rules for the breeding module.
 abstract class IncubationCalculator {
+  static ({
+    int candlingDay,
+    int secondCheckDay,
+    int sensitivePeriodDay,
+    int expectedHatchDay,
+    int lateHatchDay,
+  })
+  _resolveMilestones({Species? species, int? totalDays}) {
+    if (species != null) {
+      return incubationMilestonesForSpecies(species);
+    }
+
+    final resolvedTotalDays =
+        totalDays ?? IncubationConstants.incubationPeriodDays;
+    if (resolvedTotalDays == IncubationConstants.incubationPeriodDays) {
+      return incubationMilestonesForSpecies(Species.unknown);
+    }
+
+    final candlingDay = (resolvedTotalDays * 0.39).round().clamp(
+      1,
+      resolvedTotalDays,
+    );
+    final secondCheckDay = (resolvedTotalDays * 0.78).round().clamp(
+      candlingDay + 1,
+      resolvedTotalDays,
+    );
+    final sensitivePeriodDay = (resolvedTotalDays - 2).clamp(
+      secondCheckDay,
+      resolvedTotalDays,
+    );
+    return (
+      candlingDay: candlingDay,
+      secondCheckDay: secondCheckDay,
+      sensitivePeriodDay: sensitivePeriodDay,
+      expectedHatchDay: resolvedTotalDays,
+      lateHatchDay: resolvedTotalDays + 3,
+    );
+  }
+
   /// Returns the stage color based on elapsed incubation days.
-  static Color getStageColor(int daysElapsed) {
-    if (daysElapsed > IncubationConstants.incubationPeriodDays) {
+  static Color getStageColor(
+    int daysElapsed, {
+    Species? species,
+    int? totalDays,
+  }) {
+    final milestones = _resolveMilestones(
+      species: species,
+      totalDays: totalDays,
+    );
+    if (daysElapsed > milestones.expectedHatchDay) {
       return AppColors.stageOverdue;
     }
-    if (daysElapsed >= IncubationConstants.sensitivePeriodDay) {
+    if (daysElapsed >= milestones.sensitivePeriodDay) {
       return AppColors.stageNearHatch;
     }
-    if (daysElapsed >= IncubationConstants.candlingDay) {
+    if (daysElapsed >= milestones.candlingDay) {
       return AppColors.stageOngoing;
     }
     if (daysElapsed > 0) {
@@ -30,14 +79,22 @@ abstract class IncubationCalculator {
   }
 
   /// Returns a human-readable stage label based on elapsed days.
-  static String getStageLabel(int daysElapsed) {
-    if (daysElapsed > IncubationConstants.incubationPeriodDays) {
+  static String getStageLabel(
+    int daysElapsed, {
+    Species? species,
+    int? totalDays,
+  }) {
+    final milestones = _resolveMilestones(
+      species: species,
+      totalDays: totalDays,
+    );
+    if (daysElapsed > milestones.expectedHatchDay) {
       return 'incubation.stage_overdue'.tr();
     }
-    if (daysElapsed >= IncubationConstants.sensitivePeriodDay) {
+    if (daysElapsed >= milestones.sensitivePeriodDay) {
       return 'incubation.stage_near_hatch'.tr();
     }
-    if (daysElapsed >= IncubationConstants.candlingDay) {
+    if (daysElapsed >= milestones.candlingDay) {
       return 'incubation.stage_ongoing'.tr();
     }
     return 'incubation.stage_new'.tr();
@@ -47,81 +104,81 @@ abstract class IncubationCalculator {
   static Color getCompletedStageColor() => AppColors.stageCompleted;
 
   /// Generates all milestones for an incubation starting at [startDate].
-  static List<IncubationMilestone> getMilestones(DateTime startDate) {
+  static List<IncubationMilestone> getMilestones(
+    DateTime startDate, {
+    Species? species,
+    int? totalDays,
+  }) {
     final now = DateTime.now();
+    final milestones = _resolveMilestones(
+      species: species,
+      totalDays: totalDays,
+    );
     return [
       IncubationMilestone(
-        day: IncubationConstants.candlingDay,
+        day: milestones.candlingDay,
         title: 'incubation.milestone_candling'.tr(),
         description: 'incubation.milestone_candling_desc'.tr(),
         type: MilestoneType.candling,
-        date: startDate.add(
-          const Duration(days: IncubationConstants.candlingDay),
-        ),
+        date: startDate.add(Duration(days: milestones.candlingDay)),
         isPassed: now.isAfter(
-          startDate.add(const Duration(days: IncubationConstants.candlingDay)),
+          startDate.add(Duration(days: milestones.candlingDay)),
         ),
       ),
       IncubationMilestone(
-        day: IncubationConstants.secondCheckDay,
+        day: milestones.secondCheckDay,
         title: 'incubation.milestone_second_check'.tr(),
         description: 'incubation.milestone_second_check_desc'.tr(),
         type: MilestoneType.check,
-        date: startDate.add(
-          const Duration(days: IncubationConstants.secondCheckDay),
-        ),
+        date: startDate.add(Duration(days: milestones.secondCheckDay)),
         isPassed: now.isAfter(
-          startDate.add(
-            const Duration(days: IncubationConstants.secondCheckDay),
-          ),
+          startDate.add(Duration(days: milestones.secondCheckDay)),
         ),
       ),
       IncubationMilestone(
-        day: IncubationConstants.sensitivePeriodDay,
+        day: milestones.sensitivePeriodDay,
         title: 'incubation.milestone_sensitive'.tr(),
         description: 'incubation.milestone_sensitive_desc'.tr(),
         type: MilestoneType.sensitive,
-        date: startDate.add(
-          const Duration(days: IncubationConstants.sensitivePeriodDay),
-        ),
+        date: startDate.add(Duration(days: milestones.sensitivePeriodDay)),
         isPassed: now.isAfter(
-          startDate.add(
-            const Duration(days: IncubationConstants.sensitivePeriodDay),
-          ),
+          startDate.add(Duration(days: milestones.sensitivePeriodDay)),
         ),
       ),
       IncubationMilestone(
-        day: IncubationConstants.expectedHatchDay,
+        day: milestones.expectedHatchDay,
         title: 'incubation.milestone_hatch'.tr(),
         description: 'incubation.milestone_hatch_desc'.tr(),
         type: MilestoneType.hatch,
-        date: startDate.add(
-          const Duration(days: IncubationConstants.expectedHatchDay),
-        ),
+        date: startDate.add(Duration(days: milestones.expectedHatchDay)),
         isPassed: now.isAfter(
-          startDate.add(
-            const Duration(days: IncubationConstants.expectedHatchDay),
-          ),
+          startDate.add(Duration(days: milestones.expectedHatchDay)),
         ),
       ),
       IncubationMilestone(
-        day: IncubationConstants.lateHatchDay,
+        day: milestones.lateHatchDay,
         title: 'incubation.milestone_late'.tr(),
         description: 'incubation.milestone_late_desc'.tr(),
         type: MilestoneType.late,
-        date: startDate.add(
-          const Duration(days: IncubationConstants.lateHatchDay),
-        ),
+        date: startDate.add(Duration(days: milestones.lateHatchDay)),
         isPassed: now.isAfter(
-          startDate.add(const Duration(days: IncubationConstants.lateHatchDay)),
+          startDate.add(Duration(days: milestones.lateHatchDay)),
         ),
       ),
     ];
   }
 
   /// Returns the next upcoming milestone, or null if all have passed.
-  static IncubationMilestone? getNextMilestone(DateTime startDate) {
-    final milestones = getMilestones(startDate);
+  static IncubationMilestone? getNextMilestone(
+    DateTime startDate, {
+    Species? species,
+    int? totalDays,
+  }) {
+    final milestones = getMilestones(
+      startDate,
+      species: species,
+      totalDays: totalDays,
+    );
     for (final milestone in milestones) {
       if (!milestone.isPassed) return milestone;
     }

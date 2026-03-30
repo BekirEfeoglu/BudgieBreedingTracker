@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:budgie_breeding_tracker/core/utils/app_haptics.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
+import 'package:budgie_breeding_tracker/core/species/species_profile.dart';
+import 'package:budgie_breeding_tracker/core/species/species_registry.dart';
 import 'package:budgie_breeding_tracker/core/widgets/error_state.dart';
 import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
 import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
@@ -35,7 +37,7 @@ class _BirdFormScreenState extends ConsumerState<BirdFormScreen> {
   final _colorNoteController = TextEditingController();
 
   BirdGender _gender = BirdGender.unknown;
-  Species _species = Species.budgie;
+  Species _species = Species.unknown;
   BirdColor? _colorMutation;
   DateTime? _birthDate;
   String? _fatherId;
@@ -235,47 +237,57 @@ class _BirdFormScreenState extends ConsumerState<BirdFormScreen> {
       isDirty: _isDirty,
       child: Scaffold(
         appBar: AppBar(
-          title: Text(
-            _isEdit ? 'birds.edit_bird'.tr() : 'birds.new_bird'.tr(),
-          ),
+          title: Text(_isEdit ? 'birds.edit_bird'.tr() : 'birds.new_bird'.tr()),
         ),
         body: BirdFormBody(
-        formKey: _formKey,
-        nameController: _nameController,
-        ringController: _ringController,
-        cageController: _cageController,
-        notesController: _notesController,
-        colorNoteController: _colorNoteController,
-        gender: _gender,
-        species: _species,
-        colorMutation: _colorMutation,
-        birthDate: _birthDate,
-        fatherId: _fatherId,
-        motherId: _motherId,
-        editBirdId: widget.editBirdId,
-        genotype: _genotype,
-        isEdit: _isEdit,
-        isLoading: formState.isLoading,
-        onGenderChanged: (g) => setState(() {
-          _gender = g;
-          _genotype = normalizeGenotypeForGender(
-            genotype: _genotype,
-            gender: g,
-          );
-        }),
-        onSpeciesChanged: (s) => setState(() => _species = s),
-        onColorChanged: (c) => setState(() => _colorMutation = c),
-        onGenotypeChanged: (genotype) => setState(() {
-          _genotype = normalizeGenotypeForGender(
-            genotype: genotype,
-            gender: _gender,
-          );
-        }),
-        onBirthDateChanged: (d) => setState(() => _birthDate = d),
-        onFatherChanged: (id) => setState(() => _fatherId = id),
-        onMotherChanged: (id) => setState(() => _motherId = id),
-        onSubmit: _submit,
-      ),
+          formKey: _formKey,
+          nameController: _nameController,
+          ringController: _ringController,
+          cageController: _cageController,
+          notesController: _notesController,
+          colorNoteController: _colorNoteController,
+          gender: _gender,
+          species: _species,
+          colorMutation: _colorMutation,
+          birthDate: _birthDate,
+          fatherId: _fatherId,
+          motherId: _motherId,
+          editBirdId: widget.editBirdId,
+          genotype: _genotype,
+          isEdit: _isEdit,
+          isLoading: formState.isLoading,
+          onGenderChanged: (g) => setState(() {
+            _gender = g;
+            _genotype = normalizeGenotypeForGender(
+              genotype: _genotype,
+              gender: g,
+            );
+          }),
+          onSpeciesChanged: (s) => setState(() {
+            final profile = SpeciesRegistry.of(s);
+            _species = s;
+            _fatherId = null;
+            _motherId = null;
+            if (!profile.supportedColors.contains(_colorMutation)) {
+              _colorMutation = null;
+              _colorNoteController.clear();
+            }
+            if (profile.geneticsMode != GeneticsMode.full) {
+              _genotype = ParentGenotype.empty(gender: _gender);
+            }
+          }),
+          onColorChanged: (c) => setState(() => _colorMutation = c),
+          onGenotypeChanged: (genotype) => setState(() {
+            _genotype = normalizeGenotypeForGender(
+              genotype: genotype,
+              gender: _gender,
+            );
+          }),
+          onBirthDateChanged: (d) => setState(() => _birthDate = d),
+          onFatherChanged: (id) => setState(() => _fatherId = id),
+          onMotherChanged: (id) => setState(() => _motherId = id),
+          onSubmit: _submit,
+        ),
       ),
     );
   }

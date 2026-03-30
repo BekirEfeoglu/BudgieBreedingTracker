@@ -2,10 +2,13 @@ import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
+import 'package:budgie_breeding_tracker/core/enums/breeding_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/egg_enums.dart';
 import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
 import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
 import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
+import 'package:budgie_breeding_tracker/data/models/incubation_model.dart';
 import 'package:budgie_breeding_tracker/domain/services/export/pdf_export_service.dart';
 
 import '../../../helpers/test_helpers.dart';
@@ -40,6 +43,16 @@ void main() {
           eggNumber: 1,
         ),
       ];
+      final incubations = [
+        Incubation(
+          id: 'inc-0001',
+          userId: 'user-1',
+          breedingPairId: 'pair-0001',
+          species: Species.cockatiel,
+          status: IncubationStatus.active,
+          startDate: DateTime(2026, 1, 1),
+        ),
+      ];
       final chicks = [
         Chick(
           id: 'chick-0001',
@@ -52,6 +65,7 @@ void main() {
       final bytes = await service.generateFullReport(
         birds: birds,
         pairs: pairs,
+        incubations: incubations,
         eggs: eggs,
         chicks: chicks,
       );
@@ -66,6 +80,7 @@ void main() {
         final bytes = await service.generateFullReport(
           birds: const [],
           pairs: const [],
+          incubations: const [],
           eggs: const [],
           chicks: const [],
         );

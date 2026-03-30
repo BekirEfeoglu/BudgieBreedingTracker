@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
-import 'package:budgie_breeding_tracker/core/constants/incubation_constants.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/core/widgets/error_state.dart';
@@ -114,7 +113,11 @@ class _DetailContent extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 BreedingPairInfoSection(pair: pair),
-                const Divider(height: 1, indent: AppSpacing.lg, endIndent: AppSpacing.lg),
+                const Divider(
+                  height: 1,
+                  indent: AppSpacing.lg,
+                  endIndent: AppSpacing.lg,
+                ),
                 incubationsAsync.when(
                   loading: () => const Padding(
                     padding: AppSpacing.screenPadding,
@@ -128,15 +131,24 @@ class _DetailContent extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         _IncubationSection(incubation: incubation),
-                        const Divider(height: 1, indent: AppSpacing.lg, endIndent: AppSpacing.lg),
+                        const Divider(
+                          height: 1,
+                          indent: AppSpacing.lg,
+                          endIndent: AppSpacing.lg,
+                        ),
                         BreedingEggsSection(
                           incubationId: incubation.id,
                           pairId: pair.id,
                         ),
                         if (incubation.startDate != null) ...[
-                          const Divider(height: 1, indent: AppSpacing.lg, endIndent: AppSpacing.lg),
+                          const Divider(
+                            height: 1,
+                            indent: AppSpacing.lg,
+                            endIndent: AppSpacing.lg,
+                          ),
                           BreedingMilestoneSection(
                             startDate: incubation.startDate!,
+                            totalDays: incubation.totalIncubationDays(),
                           ),
                         ],
                       ],
@@ -144,7 +156,11 @@ class _DetailContent extends ConsumerWidget {
                   },
                 ),
                 if (pair.notes != null && pair.notes!.isNotEmpty) ...[
-                  const Divider(height: 1, indent: AppSpacing.lg, endIndent: AppSpacing.lg),
+                  const Divider(
+                    height: 1,
+                    indent: AppSpacing.lg,
+                    endIndent: AppSpacing.lg,
+                  ),
                   BreedingNotesSection(notes: pair.notes!),
                 ],
               ],
@@ -212,13 +228,14 @@ class _IncubationSection extends ConsumerWidget {
     final theme = Theme.of(context);
     final dateFormat = ref.watch(dateFormatProvider).formatter();
     final daysElapsed = incubation.daysElapsed;
+    final totalDays = incubation.totalIncubationDays();
     final isComplete = incubation.isComplete;
     final stageColor = isComplete
         ? IncubationCalculator.getCompletedStageColor()
-        : IncubationCalculator.getStageColor(daysElapsed);
+        : IncubationCalculator.getStageColor(daysElapsed, totalDays: totalDays);
     final stageLabel = isComplete
         ? 'breeding.completed'.tr()
-        : IncubationCalculator.getStageLabel(daysElapsed);
+        : IncubationCalculator.getStageLabel(daysElapsed, totalDays: totalDays);
 
     return Padding(
       padding: AppSpacing.screenPadding,
@@ -256,8 +273,7 @@ class _IncubationSection extends ConsumerWidget {
           AppProgressBar(
             value: incubation.percentageComplete,
             color: stageColor,
-            label:
-                '${'breeding.day'.tr()} $daysElapsed / ${IncubationConstants.incubationPeriodDays}',
+            label: '${'breeding.day'.tr()} $daysElapsed / $totalDays',
             showPercentage: true,
           ),
           const SizedBox(height: AppSpacing.md),

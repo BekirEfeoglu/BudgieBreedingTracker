@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/domain/services/sync/sync_providers.dart';
 import 'package:budgie_breeding_tracker/features/profile/widgets/sync_status_tile.dart';
@@ -52,7 +53,7 @@ void main() {
       await tester.pumpWidget(_createSubject());
       await tester.pump();
 
-      expect(find.text('profile.sync_status'), findsOneWidget);
+      expect(find.text(l10n('profile.sync_status')), findsOneWidget);
     });
 
     testWidgets('shows IconButton when not syncing', (tester) async {
@@ -79,7 +80,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('sync.syncing'), findsOneWidget);
+      expect(find.text(l10n('sync.syncing')), findsOneWidget);
     });
 
     testWidgets('shows offline subtitle when status is offline', (
@@ -90,14 +91,14 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('sync.offline'), findsOneWidget);
+      expect(find.text(l10n('sync.offline')), findsOneWidget);
     });
 
     testWidgets('shows error subtitle when status is error', (tester) async {
       await tester.pumpWidget(_createSubject(status: SyncDisplayStatus.error));
       await tester.pump();
 
-      expect(find.text('profile.sync_error'), findsOneWidget);
+      expect(find.text(l10n('profile.sync_error')), findsOneWidget);
     });
 
     testWidgets('shows never-synced text when lastSync is null', (
@@ -108,7 +109,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('profile.sync_never'), findsOneWidget);
+      expect(find.text(l10n('profile.sync_never')), findsOneWidget);
     });
 
     testWidgets('shows stale error count when staleCount > 0', (tester) async {
@@ -116,7 +117,7 @@ void main() {
       await tester.pump();
 
       // 'sync.stale_errors' with args: ['3']
-      expect(find.textContaining('sync.stale_errors'), findsOneWidget);
+      expect(find.textContaining(l10nContains('sync.stale_errors')), findsOneWidget);
     });
 
     testWidgets('does NOT show stale error count when staleCount is 0', (
@@ -125,7 +126,7 @@ void main() {
       await tester.pumpWidget(_createSubject(staleCount: 0));
       await tester.pump();
 
-      expect(find.textContaining('sync.stale_errors'), findsNothing);
+      expect(find.textContaining(l10nContains('sync.stale_errors')), findsNothing);
     });
   });
 }

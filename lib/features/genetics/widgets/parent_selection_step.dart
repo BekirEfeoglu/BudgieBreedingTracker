@@ -26,7 +26,11 @@ class ParentSelectionStep extends ConsumerWidget {
     WidgetRef ref,
     BirdGender gender,
   ) async {
-    final bird = await showBirdPickerDialog(context, genderFilter: gender);
+    final bird = await showBirdPickerDialog(
+      context,
+      genderFilter: gender,
+      speciesFilter: Species.budgie,
+    );
     if (bird == null || !context.mounted) return;
 
     final genotype = birdToGenotype(bird);

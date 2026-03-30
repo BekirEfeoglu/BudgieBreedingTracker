@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/mutation_database.dart';
@@ -124,7 +125,7 @@ void main() {
           ),
         ),
       );
-      expect(find.text('genetics.mutation_opaline'), findsOneWidget);
+      expect(find.text(l10n('genetics.mutation_opaline')), findsOneWidget);
     });
 
     testWidgets('chip is not selected when mutation is not in genotype', (
@@ -230,7 +231,7 @@ void main() {
           ),
         ),
       );
-      expect(find.text('genetics.allele_df_short'), findsOneWidget);
+      expect(find.text(l10n('genetics.allele_df_short')), findsOneWidget);
     });
 
     testWidgets('uses real blue mutation from database', (tester) async {
@@ -317,7 +318,7 @@ void main() {
           ),
         ),
       );
-      expect(find.text('genetics.compound_heterozygote'), findsOneWidget);
+      expect(find.text(l10n('genetics.compound_heterozygote')), findsOneWidget);
     });
 
     testWidgets(
@@ -342,7 +343,7 @@ void main() {
             ),
           ),
         );
-        expect(find.text('genetics.compound_heterozygote'), findsNothing);
+        expect(find.text(l10n('genetics.compound_heterozygote')), findsNothing);
       },
     );
 

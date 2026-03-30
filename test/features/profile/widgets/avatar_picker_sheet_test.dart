@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:budgie_breeding_tracker/features/profile/widgets/avatar_picker_sheet.dart';
@@ -43,19 +44,19 @@ void main() {
     testWidgets('shows sheet title', (tester) async {
       await _openSheet(tester);
 
-      expect(find.text('profile.edit_avatar'), findsOneWidget);
+      expect(find.text(l10n('profile.edit_avatar')), findsOneWidget);
     });
 
     testWidgets('shows gallery option', (tester) async {
       await _openSheet(tester);
 
-      expect(find.text('profile.avatar_source_gallery'), findsOneWidget);
+      expect(find.text(l10n('profile.avatar_source_gallery')), findsOneWidget);
     });
 
     testWidgets('shows camera option', (tester) async {
       await _openSheet(tester);
 
-      expect(find.text('profile.avatar_source_camera'), findsOneWidget);
+      expect(find.text(l10n('profile.avatar_source_camera')), findsOneWidget);
     });
 
     testWidgets('does not show remove option when hasAvatar is false', (
@@ -63,13 +64,13 @@ void main() {
     ) async {
       await _openSheet(tester, hasAvatar: false);
 
-      expect(find.text('profile.avatar_remove'), findsNothing);
+      expect(find.text(l10n('profile.avatar_remove')), findsNothing);
     });
 
     testWidgets('shows remove option when hasAvatar is true', (tester) async {
       await _openSheet(tester, hasAvatar: true);
 
-      expect(find.text('profile.avatar_remove'), findsOneWidget);
+      expect(find.text(l10n('profile.avatar_remove')), findsOneWidget);
     });
 
     testWidgets('shows exactly 2 ListTiles when no avatar', (tester) async {
@@ -93,7 +94,7 @@ void main() {
       await tester.tapAt(const Offset(200, 50));
       await tester.pumpAndSettle();
 
-      expect(find.text('profile.edit_avatar'), findsNothing);
+      expect(find.text(l10n('profile.edit_avatar')), findsNothing);
     });
   });
 }

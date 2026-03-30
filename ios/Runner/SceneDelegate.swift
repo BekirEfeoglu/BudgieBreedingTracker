@@ -11,6 +11,7 @@ class SceneDelegate: FlutterSceneDelegate {
   // Strong references to keep MethodChannels alive for the app's lifetime.
   private var keyboardFixChannel: FlutterMethodChannel?
   private var attChannel: FlutterMethodChannel?
+  private var configChannel: FlutterMethodChannel?
 
   override func scene(
     _ scene: UIScene,
@@ -22,6 +23,7 @@ class SceneDelegate: FlutterSceneDelegate {
     SceneDelegate.flutterWindow = window
     setupKeyboardFixChannel()
     setupATTChannel()
+    setupConfigChannel()
   }
 
   /// Sets up the MethodChannel that Dart calls on every text-field tap
@@ -86,6 +88,30 @@ class SceneDelegate: FlutterSceneDelegate {
       }
     }
     attChannel = channel
+  }
+
+  /// Exposes build-time config values (from Env.xcconfig → Info.plist) to Dart,
+  /// mirroring the Android MethodChannel in MainActivity.kt.
+  private func setupConfigChannel() {
+    guard let flutterVC = window?.rootViewController as? FlutterViewController else { return }
+    let engine = flutterVC.engine
+
+    let channel = FlutterMethodChannel(
+      name: "com.budgiebreeding.budgie_breeding_tracker/config",
+      binaryMessenger: engine.binaryMessenger
+    )
+    channel.setMethodCallHandler { (call: FlutterMethodCall, result: @escaping FlutterResult) in
+      guard call.method == "getConfig" else {
+        result(FlutterMethodNotImplemented)
+        return
+      }
+      let info = Bundle.main.infoDictionary ?? [:]
+      result([
+        "GOOGLE_WEB_CLIENT_ID": info["GIDServerClientID"] as? String ?? "",
+        "GOOGLE_IOS_CLIENT_ID": info["GIDClientID"] as? String ?? "",
+      ])
+    }
+    configChannel = channel
   }
 
   // Required for supabase_flutter (app_links) to process deep link callbacks on iOS 13+.

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:budgie_breeding_tracker/data/models/profile_model.dart';
@@ -47,7 +48,7 @@ void main() {
       );
 
       // Upsell card shows 'premium_membership' title
-      expect(find.text('profile.premium_membership'), findsOneWidget);
+      expect(find.text(l10n('profile.premium_membership')), findsOneWidget);
     });
 
     testWidgets('shows upsell upgrade button for free user', (tester) async {
@@ -56,7 +57,7 @@ void main() {
         _wrap(const SubscriptionCard(profile: null)),
       );
 
-      expect(find.text('profile.subscription_upgrade'), findsOneWidget);
+      expect(find.text(l10n('profile.subscription_upgrade')), findsOneWidget);
     });
 
     testWidgets('shows upsell benefit rows', (tester) async {
@@ -65,13 +66,13 @@ void main() {
         _wrap(const SubscriptionCard(profile: null)),
       );
 
-      expect(find.text('profile.subscription_benefit_stats'), findsOneWidget);
+      expect(find.text(l10n('profile.subscription_benefit_stats')), findsOneWidget);
       expect(
-        find.text('profile.subscription_benefit_genealogy'),
+        find.text(l10n('profile.subscription_benefit_genealogy')),
         findsOneWidget,
       );
       expect(
-        find.text('profile.subscription_benefit_genetics'),
+        find.text(l10n('profile.subscription_benefit_genetics')),
         findsOneWidget,
       );
     });
@@ -87,7 +88,7 @@ void main() {
 
       await pumpLocalizedApp(tester, _wrap(SubscriptionCard(profile: profile)));
 
-      expect(find.text('profile.subscription_active'), findsAtLeastNWidgets(1));
+      expect(find.text(l10n('profile.subscription_active')), findsAtLeastNWidgets(1));
     });
 
     testWidgets('shows manage button for premium user', (tester) async {
@@ -101,7 +102,7 @@ void main() {
 
       await pumpLocalizedApp(tester, _wrap(SubscriptionCard(profile: profile)));
 
-      expect(find.text('profile.subscription_manage'), findsOneWidget);
+      expect(find.text(l10n('profile.subscription_manage')), findsOneWidget);
     });
 
     testWidgets('shows days remaining for premium user with future expiry', (
@@ -119,7 +120,7 @@ void main() {
 
       // 'profile.subscription_days_remaining' should be present
       expect(
-        find.textContaining('profile.subscription_days_remaining'),
+        find.textContaining(l10nContains('profile.subscription_days_remaining')),
         findsAtLeastNWidgets(1),
       );
     });

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/domain/services/genetics/lethal_combination_database.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/mendelian_calculator.dart';
@@ -84,7 +85,7 @@ void main() {
       await tester.pumpWidget(_wrap(LethalWarning(analysis: analysis)));
       await tester.pump();
 
-      expect(find.text('genetics.lethal_warning_title'), findsOneWidget);
+      expect(find.text(l10n('genetics.lethal_warning_title')), findsOneWidget);
     });
 
     testWidgets('shows Container for lethal severity', (tester) async {
@@ -126,7 +127,7 @@ void main() {
       await tester.pump();
 
       // severity.labelKey.tr() returns key string in test environment
-      expect(find.text('genetics.lethal_severity_lethal'), findsOneWidget);
+      expect(find.text(l10n('genetics.lethal_severity_lethal')), findsOneWidget);
     });
 
     testWidgets('shows severity labelKey for semiLethal severity', (
@@ -141,7 +142,7 @@ void main() {
       await tester.pumpWidget(_wrap(LethalWarning(analysis: analysis)));
       await tester.pump();
 
-      expect(find.text('genetics.lethal_severity_semi_lethal'), findsOneWidget);
+      expect(find.text(l10n('genetics.lethal_severity_semi_lethal')), findsOneWidget);
     });
 
     testWidgets('renders without crashing for subVital severity', (
@@ -170,7 +171,7 @@ void main() {
       await tester.pump();
 
       // combo.nameKey.tr() returns the key in test environment
-      expect(find.text('genetics.lethal_df_crested_name'), findsOneWidget);
+      expect(find.text(l10n('genetics.lethal_df_crested_name')), findsOneWidget);
     });
 
     testWidgets('shows affected ratio text', (tester) async {
@@ -183,7 +184,7 @@ void main() {
       await tester.pumpWidget(_wrap(LethalWarning(analysis: analysis)));
       await tester.pump();
 
-      expect(find.text('genetics.lethal_affected_ratio'), findsOneWidget);
+      expect(find.text(l10n('genetics.lethal_affected_ratio')), findsOneWidget);
     });
   });
 }

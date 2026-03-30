@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import 'package:budgie_breeding_tracker/features/community/providers/community_providers.dart';
@@ -24,9 +25,9 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('community.tab_explore'), findsOneWidget);
-      expect(find.text('community.sort_newest'), findsOneWidget);
-      expect(find.text('community.sort_trending'), findsOneWidget);
+      expect(find.text(l10n('community.tab_explore')), findsOneWidget);
+      expect(find.text(l10n('community.sort_newest')), findsOneWidget);
+      expect(find.text(l10n('community.sort_trending')), findsOneWidget);
     });
 
     testWidgets('renders following tab without sort controls', (tester) async {
@@ -42,8 +43,8 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('community.tab_following'), findsOneWidget);
-      expect(find.text('community.sort_newest'), findsNothing);
+      expect(find.text(l10n('community.tab_following')), findsOneWidget);
+      expect(find.text(l10n('community.sort_newest')), findsNothing);
     });
 
     testWidgets('shows result count', (tester) async {
@@ -60,7 +61,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // .tr(args:) without easy_localization returns the key name
-      expect(find.text('community.filter_results'), findsOneWidget);
+      expect(find.text(l10n('community.filter_results')), findsOneWidget);
     });
 
     testWidgets('sort filter icons are present on explore', (tester) async {

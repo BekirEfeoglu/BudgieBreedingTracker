@@ -61,6 +61,7 @@ void registerCommonFallbackValues() {
   _fallbacksRegistered = true;
 
   registerFallbackValue(OAuthProvider.google);
+  registerFallbackValue(Species.unknown);
   registerFallbackValue(
     Bird(
       id: 'fallback-bird',

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_providers.dart';
 import 'package:budgie_breeding_tracker/features/eggs/providers/egg_providers.dart';
@@ -49,32 +50,39 @@ void main() {
       expect(find.byType(ChartCard), findsNWidgets(4));
     });
 
+    testWidgets('shows species filter selector', (tester) async {
+      await tester.pumpWidget(_createSubject());
+      await tester.pumpAndSettle();
+
+      expect(find.text(l10n('statistics.filter_species')), findsOneWidget);
+    });
+
     testWidgets('shows breeding success section', (tester) async {
       await tester.pumpWidget(_createSubject());
       await tester.pumpAndSettle();
 
-      expect(find.text('statistics.breeding_success'), findsOneWidget);
+      expect(find.text(l10n('statistics.breeding_success')), findsOneWidget);
     });
 
     testWidgets('shows egg production section', (tester) async {
       await tester.pumpWidget(_createSubject());
       await tester.pumpAndSettle();
 
-      expect(find.text('statistics.egg_production'), findsOneWidget);
+      expect(find.text(l10n('statistics.egg_production')), findsOneWidget);
     });
 
     testWidgets('shows fertility trend section', (tester) async {
       await tester.pumpWidget(_createSubject());
       await tester.pumpAndSettle();
 
-      expect(find.text('statistics.fertility_trend'), findsOneWidget);
+      expect(find.text(l10n('statistics.fertility_trend')), findsOneWidget);
     });
 
     testWidgets('shows incubation duration section', (tester) async {
       await tester.pumpWidget(_createSubject());
       await tester.pumpAndSettle();
 
-      expect(find.text('statistics.incubation_duration'), findsOneWidget);
+      expect(find.text(l10n('statistics.incubation_duration')), findsOneWidget);
     });
   });
 }

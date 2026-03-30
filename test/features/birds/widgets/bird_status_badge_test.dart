@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/features/birds/widgets/bird_status_badge.dart';
@@ -25,7 +26,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('birds.status_alive'), findsOneWidget);
+      expect(find.text(l10n('birds.status_alive')), findsOneWidget);
     });
 
     testWidgets('shows dead label text', (tester) async {
@@ -34,7 +35,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('birds.status_dead'), findsOneWidget);
+      expect(find.text(l10n('birds.status_dead')), findsOneWidget);
     });
 
     testWidgets('shows sold label text', (tester) async {
@@ -43,7 +44,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('birds.status_sold'), findsOneWidget);
+      expect(find.text(l10n('birds.status_sold')), findsOneWidget);
     });
 
     testWidgets('shows unknown label text', (tester) async {
@@ -52,7 +53,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('birds.unknown'), findsOneWidget);
+      expect(find.text(l10n('birds.unknown')), findsOneWidget);
     });
 
     testWidgets('renders all status values without crashing', (tester) async {

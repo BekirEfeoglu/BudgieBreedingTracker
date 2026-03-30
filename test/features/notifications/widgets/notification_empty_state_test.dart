@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import 'package:budgie_breeding_tracker/core/widgets/empty_state.dart';
@@ -7,12 +8,12 @@ import 'package:budgie_breeding_tracker/core/widgets/empty_state.dart';
 void main() {
   group('Notification EmptyState (no data)', () {
     Widget createSubject() {
-      return const MaterialApp(
+      return MaterialApp(
         home: Scaffold(
           body: EmptyState(
-            icon: Icon(LucideIcons.bellOff),
-            title: 'notifications.no_notifications',
-            subtitle: 'notifications.no_notifications_hint',
+            icon: const Icon(LucideIcons.bellOff),
+            title: resolvedL10n('notifications.no_notifications'),
+            subtitle: resolvedL10n('notifications.no_notifications_hint'),
           ),
         ),
       );
@@ -27,13 +28,19 @@ void main() {
     testWidgets('shows correct title text', (tester) async {
       await tester.pumpWidget(createSubject());
 
-      expect(find.text('notifications.no_notifications'), findsOneWidget);
+      expect(
+        find.text(resolvedL10n('notifications.no_notifications')),
+        findsOneWidget,
+      );
     });
 
     testWidgets('shows correct subtitle text', (tester) async {
       await tester.pumpWidget(createSubject());
 
-      expect(find.text('notifications.no_notifications_hint'), findsOneWidget);
+      expect(
+        find.text(resolvedL10n('notifications.no_notifications_hint')),
+        findsOneWidget,
+      );
     });
 
     testWidgets('shows bellOff icon', (tester) async {
@@ -51,12 +58,12 @@ void main() {
 
   group('Notification EmptyState (no search results)', () {
     Widget createSubject() {
-      return const MaterialApp(
+      return MaterialApp(
         home: Scaffold(
           body: EmptyState(
-            icon: Icon(LucideIcons.searchX),
-            title: 'common.no_results',
-            subtitle: 'common.no_results_hint',
+            icon: const Icon(LucideIcons.searchX),
+            title: resolvedL10n('common.no_results'),
+            subtitle: resolvedL10n('common.no_results_hint'),
           ),
         ),
       );
@@ -71,13 +78,16 @@ void main() {
     testWidgets('shows correct title text', (tester) async {
       await tester.pumpWidget(createSubject());
 
-      expect(find.text('common.no_results'), findsOneWidget);
+      expect(find.text(resolvedL10n('common.no_results')), findsOneWidget);
     });
 
     testWidgets('shows correct subtitle text', (tester) async {
       await tester.pumpWidget(createSubject());
 
-      expect(find.text('common.no_results_hint'), findsOneWidget);
+      expect(
+        find.text(resolvedL10n('common.no_results_hint')),
+        findsOneWidget,
+      );
     });
 
     testWidgets('shows searchX icon', (tester) async {

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:budgie_breeding_tracker/features/birds/providers/bird_providers.dart';
 import 'package:budgie_breeding_tracker/features/birds/widgets/bird_detail_photos.dart';
 import 'package:budgie_breeding_tracker/features/birds/widgets/bird_photo_gallery.dart';
@@ -43,7 +44,7 @@ void main() {
       );
 
       expect(find.byType(BirdPhotoGallery), findsNothing);
-      expect(find.text('birds.add_photo'), findsNothing);
+      expect(find.text(l10n('birds.add_photo')), findsNothing);
 
       addTearDown(() {
         if (!controller.isClosed) controller.close();
@@ -66,7 +67,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('birds.add_photo'), findsOneWidget);
+      expect(find.text(l10n('birds.add_photo')), findsOneWidget);
       expect(find.byType(BirdPhotoGallery), findsNothing);
     });
 
@@ -89,7 +90,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 100));
 
       expect(find.byType(BirdPhotoGallery), findsOneWidget);
-      expect(find.text('birds.add_photo'), findsOneWidget);
+      expect(find.text(l10n('birds.add_photo')), findsOneWidget);
     });
 
     testWidgets('shows gallery and camera options when add photo tapped', (
@@ -108,11 +109,11 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('birds.add_photo'));
+      await tester.tap(find.text(l10n('birds.add_photo')));
       await tester.pumpAndSettle();
 
-      expect(find.text('birds.photo_source_gallery'), findsOneWidget);
-      expect(find.text('birds.photo_source_camera'), findsOneWidget);
+      expect(find.text(l10n('birds.photo_source_gallery')), findsOneWidget);
+      expect(find.text(l10n('birds.photo_source_camera')), findsOneWidget);
     });
 
     testWidgets('shows error state with add photo button on error', (
@@ -133,10 +134,10 @@ void main() {
       await tester.pump(const Duration(milliseconds: 50));
 
       // If AsyncError state reached, verify error text
-      final errorTextFinder = find.text('birds.photos_load_error');
+      final errorTextFinder = find.text(l10n('birds.photos_load_error'));
       if (errorTextFinder.evaluate().isNotEmpty) {
         expect(errorTextFinder, findsOneWidget);
-        expect(find.text('birds.add_photo'), findsOneWidget);
+        expect(find.text(l10n('birds.add_photo')), findsOneWidget);
       } else {
         // Widget is in loading state — verify widget renders without crashing
         expect(find.byType(BirdDetailPhotos), findsOneWidget);

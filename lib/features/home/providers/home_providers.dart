@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:budgie_breeding_tracker/core/constants/incubation_constants.dart';
+import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/data/local/database/dao_providers.dart';
 import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
@@ -9,6 +9,7 @@ import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
 import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
 import 'package:budgie_breeding_tracker/data/models/statistics_models.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/incubation/egg_species_resolver.dart';
 
 /// Lightweight count streams for dashboard (SQL COUNT instead of full list).
 final birdCountProvider = StreamProvider.family<int, String>((ref, userId) {
@@ -136,28 +137,44 @@ final unweanedChicksCountProvider = StreamProvider.family<int, String>((
 /// Summary of incubating eggs with remaining days until expected hatch.
 class IncubatingEggSummary {
   final Egg egg;
+  final Species species;
   final int daysRemaining;
+  final double progressPercent;
 
-  const IncubatingEggSummary({required this.egg, required this.daysRemaining});
+  const IncubatingEggSummary({
+    required this.egg,
+    required this.species,
+    required this.daysRemaining,
+    required this.progressPercent,
+  });
 }
 
 final incubatingEggsSummaryProvider =
-    Provider.family<AsyncValue<List<IncubatingEggSummary>>, String>((
+    FutureProvider.family<List<IncubatingEggSummary>, String>((
       ref,
       userId,
-    ) {
-      final eggsAsync = ref.watch(incubatingEggsLimitedProvider(userId));
+    ) async {
+      final eggs = await ref.watch(
+        incubatingEggsLimitedProvider(userId).future,
+      );
+      final now = DateTime.now();
 
-      return eggsAsync.whenData((eggs) {
-        final now = DateTime.now();
-        return eggs.map((e) {
-          final expectedHatch = e.layDate.add(
-            const Duration(days: IncubationConstants.incubationPeriodDays),
-          );
-          final remaining = expectedHatch.difference(now).inDays;
-          return IncubatingEggSummary(egg: e, daysRemaining: remaining);
-        }).toList()..sort((a, b) => a.daysRemaining.compareTo(b.daysRemaining));
-      });
+      final speciesMap = await resolveEggSpeciesBatch(ref, eggs);
+
+      final summaries = eggs.map((egg) {
+        final species = speciesMap[egg.id] ?? Species.unknown;
+        final expectedHatch = egg.expectedHatchDateFor(species: species);
+        final remaining = expectedHatch.difference(now).inDays;
+        return IncubatingEggSummary(
+          egg: egg,
+          species: species,
+          daysRemaining: remaining,
+          progressPercent: egg.progressPercentFor(species: species),
+        );
+      }).toList();
+
+      summaries.sort((a, b) => a.daysRemaining.compareTo(b.daysRemaining));
+      return summaries;
     });
 
 /// Incubating eggs with SQL LIMIT (for dashboard).

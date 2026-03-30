@@ -4,6 +4,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -96,7 +97,7 @@ void main() {
       await tester.pumpWidget(createSubject(eventsStream: controller.stream));
       await tester.pump();
 
-      expect(find.text('calendar.title'), findsOneWidget);
+      expect(find.text(l10n('calendar.title')), findsOneWidget);
 
       controller.close();
     });
@@ -156,7 +157,7 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      expect(find.text('calendar.title'), findsOneWidget);
+      expect(find.text(l10n('calendar.title')), findsOneWidget);
     });
   });
 }

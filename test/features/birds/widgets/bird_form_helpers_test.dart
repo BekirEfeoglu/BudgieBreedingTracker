@@ -237,4 +237,36 @@ void main() {
       expect(normalized.getState('blue'), AlleleState.visual);
     });
   });
+
+  group('prepareBirdGenotypeData', () {
+    test('returns no genotype payload for limited-genetics species', () {
+      final result = prepareBirdGenotypeData(
+        genotype: ParentGenotype(
+          mutations: const {'cinnamon': AlleleState.visual},
+          gender: BirdGender.male,
+        ),
+        gender: BirdGender.male,
+        species: Species.canary,
+        colorMutation: BirdColor.cinnamon,
+      );
+
+      expect(result.mutationIds, isNull);
+      expect(result.genotypeInfo, isNull);
+    });
+
+    test(
+      'maps color mutation to genotype payload for full-genetics species',
+      () {
+        final result = prepareBirdGenotypeData(
+          genotype: const ParentGenotype.empty(gender: BirdGender.male),
+          gender: BirdGender.male,
+          species: Species.budgie,
+          colorMutation: BirdColor.blue,
+        );
+
+        expect(result.mutationIds, ['blue']);
+        expect(result.genotypeInfo, {'blue': 'visual'});
+      },
+    );
+  });
 }

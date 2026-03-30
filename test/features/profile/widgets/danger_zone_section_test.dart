@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -41,13 +42,13 @@ void main() {
     testWidgets('shows logout tile', (tester) async {
       await _pump(tester);
 
-      expect(find.text('auth.logout'), findsAtLeastNWidgets(1));
+      expect(find.text(l10n('auth.logout')), findsAtLeastNWidgets(1));
     });
 
     testWidgets('shows delete account tile', (tester) async {
       await _pump(tester);
 
-      expect(find.text('profile.delete_account'), findsOneWidget);
+      expect(find.text(l10n('profile.delete_account')), findsOneWidget);
     });
 
     testWidgets('shows logout confirmation dialog when logout tile tapped', (
@@ -55,7 +56,7 @@ void main() {
     ) async {
       await _pump(tester);
 
-      await tester.tap(find.text('auth.logout').first);
+      await tester.tap(find.text(l10n('auth.logout')).first);
       await tester.pump();
 
       // AlertDialog should appear
@@ -67,22 +68,22 @@ void main() {
     ) async {
       await _pump(tester);
 
-      await tester.tap(find.text('auth.logout').first);
+      await tester.tap(find.text(l10n('auth.logout')).first);
       await tester.pump();
 
-      expect(find.text('common.cancel'), findsOneWidget);
+      expect(find.text(l10n('common.cancel')), findsOneWidget);
       // 'auth.logout' appears in dialog title and confirm button
-      expect(find.text('auth.logout'), findsAtLeastNWidgets(2));
+      expect(find.text(l10n('auth.logout')), findsAtLeastNWidgets(2));
     });
 
     testWidgets('cancel dismisses dialog without signing out', (tester) async {
       final mockActions = MockAuthActions();
       await _pump(tester, authActions: mockActions);
 
-      await tester.tap(find.text('auth.logout').first);
+      await tester.tap(find.text(l10n('auth.logout')).first);
       await tester.pump();
 
-      await tester.tap(find.text('common.cancel'));
+      await tester.tap(find.text(l10n('common.cancel')));
       await tester.pump();
 
       // Dialog dismissed

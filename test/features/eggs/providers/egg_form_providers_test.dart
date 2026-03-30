@@ -2,10 +2,14 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:budgie_breeding_tracker/core/enums/egg_enums.dart';
+import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
+import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
 import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
+import 'package:budgie_breeding_tracker/data/models/incubation_model.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
@@ -27,20 +31,26 @@ class _TestNotificationToggleSettingsNotifier
 void main() {
   late MockEggRepository eggRepo;
   late MockChickRepository chickRepo;
+  late MockIncubationRepository incubationRepo;
+  late MockBreedingPairRepository breedingPairRepo;
+  late MockBirdRepository birdRepo;
   late MockNotificationScheduler mockScheduler;
   late MockCalendarEventGenerator mockCalendarGen;
+
+  setUpAll(() {
+    registerFallbackValue(Species.budgie);
+  });
 
   setUp(() {
     eggRepo = MockEggRepository();
     chickRepo = MockChickRepository();
+    incubationRepo = MockIncubationRepository();
+    breedingPairRepo = MockBreedingPairRepository();
+    birdRepo = MockBirdRepository();
     mockScheduler = MockNotificationScheduler();
     mockCalendarGen = MockCalendarEventGenerator();
     registerFallbackValue(
-      Egg(
-        id: 'fallback',
-        userId: 'user-1',
-        layDate: DateTime(2024, 1, 1),
-      ),
+      Egg(id: 'fallback', userId: 'user-1', layDate: DateTime(2024, 1, 1)),
     );
     registerFallbackValue(
       Chick(
@@ -58,6 +68,7 @@ void main() {
         eggId: any(named: 'eggId'),
         startDate: any(named: 'startDate'),
         eggLabel: any(named: 'eggLabel'),
+        species: any(named: 'species'),
         settings: any(named: 'settings'),
       ),
     ).thenAnswer((_) async {});
@@ -77,6 +88,7 @@ void main() {
         layDate: any(named: 'layDate'),
         eggNumber: any(named: 'eggNumber'),
         incubationId: any(named: 'incubationId'),
+        species: any(named: 'species'),
       ),
     ).thenAnswer((_) async {});
     when(
@@ -86,6 +98,31 @@ void main() {
         chickLabel: any(named: 'chickLabel'),
       ),
     ).thenAnswer((_) async {});
+
+    when(() => incubationRepo.getById(any())).thenAnswer(
+      (_) async => const Incubation(
+        id: 'inc-1',
+        userId: 'user-1',
+        breedingPairId: 'pair-1',
+      ),
+    );
+    when(() => breedingPairRepo.getById(any())).thenAnswer(
+      (_) async => const BreedingPair(
+        id: 'pair-1',
+        userId: 'user-1',
+        maleId: 'male-1',
+        femaleId: 'female-1',
+      ),
+    );
+    when(() => birdRepo.getById(any())).thenAnswer(
+      (_) async => const Bird(
+        id: 'male-1',
+        userId: 'user-1',
+        name: 'Male',
+        gender: BirdGender.male,
+        species: Species.budgie,
+      ),
+    );
   });
 
   ProviderContainer makeContainer() {
@@ -93,6 +130,9 @@ void main() {
       overrides: [
         eggRepositoryProvider.overrideWithValue(eggRepo),
         chickRepositoryProvider.overrideWithValue(chickRepo),
+        incubationRepositoryProvider.overrideWithValue(incubationRepo),
+        breedingPairRepositoryProvider.overrideWithValue(breedingPairRepo),
+        birdRepositoryProvider.overrideWithValue(birdRepo),
         currentUserIdProvider.overrideWithValue('test-user'),
         notificationSchedulerProvider.overrideWithValue(mockScheduler),
         notificationToggleSettingsProvider.overrideWith(
@@ -135,11 +175,13 @@ void main() {
       final states = <EggActionsState>[];
       container.listen(eggActionsProvider, (_, next) => states.add(next));
 
-      await container.read(eggActionsProvider.notifier).addEgg(
-        incubationId: 'inc-1',
-        layDate: DateTime(2024, 1, 10),
-        eggNumber: 1,
-      );
+      await container
+          .read(eggActionsProvider.notifier)
+          .addEgg(
+            incubationId: 'inc-1',
+            layDate: DateTime(2024, 1, 10),
+            eggNumber: 1,
+          );
 
       // Should have at least loading and success states
       expect(states.any((s) => s.isLoading), isTrue);
@@ -153,12 +195,14 @@ void main() {
       final container = makeContainer();
       addTearDown(container.dispose);
 
-      await container.read(eggActionsProvider.notifier).addEgg(
-        incubationId: 'inc-1',
-        layDate: DateTime(2024, 1, 10),
-        eggNumber: 3,
-        notes: 'Test notes',
-      );
+      await container
+          .read(eggActionsProvider.notifier)
+          .addEgg(
+            incubationId: 'inc-1',
+            layDate: DateTime(2024, 1, 10),
+            eggNumber: 3,
+            notes: 'Test notes',
+          );
 
       final captured = verify(() => eggRepo.save(captureAny())).captured;
       expect(captured, hasLength(1));
@@ -172,24 +216,24 @@ void main() {
     });
 
     test('sets error state when save fails', () async {
-      when(() => eggRepo.save(any())).thenThrow(
-        Exception('Database error'),
-      );
+      when(() => eggRepo.save(any())).thenThrow(Exception('Database error'));
 
       final container = makeContainer();
       addTearDown(container.dispose);
 
-      await container.read(eggActionsProvider.notifier).addEgg(
-        incubationId: 'inc-1',
-        layDate: DateTime(2024, 1, 10),
-        eggNumber: 1,
-      );
+      await container
+          .read(eggActionsProvider.notifier)
+          .addEgg(
+            incubationId: 'inc-1',
+            layDate: DateTime(2024, 1, 10),
+            eggNumber: 1,
+          );
 
       final state = container.read(eggActionsProvider);
       expect(state.isLoading, isFalse);
       expect(state.isSuccess, isFalse);
       expect(state.error, isNotNull);
-      expect(state.error, contains('errors.unknown'));
+      expect(state.error, contains(l10n('errors.unknown')));
     });
 
     test('generates unique id for each egg', () async {
@@ -198,19 +242,23 @@ void main() {
       final container = makeContainer();
       addTearDown(container.dispose);
 
-      await container.read(eggActionsProvider.notifier).addEgg(
-        incubationId: 'inc-1',
-        layDate: DateTime(2024, 1, 10),
-        eggNumber: 1,
-      );
+      await container
+          .read(eggActionsProvider.notifier)
+          .addEgg(
+            incubationId: 'inc-1',
+            layDate: DateTime(2024, 1, 10),
+            eggNumber: 1,
+          );
 
       container.read(eggActionsProvider.notifier).reset();
 
-      await container.read(eggActionsProvider.notifier).addEgg(
-        incubationId: 'inc-1',
-        layDate: DateTime(2024, 1, 11),
-        eggNumber: 2,
-      );
+      await container
+          .read(eggActionsProvider.notifier)
+          .addEgg(
+            incubationId: 'inc-1',
+            layDate: DateTime(2024, 1, 11),
+            eggNumber: 2,
+          );
 
       final captured = verify(() => eggRepo.save(captureAny())).captured;
       final egg1 = captured[0] as Egg;
@@ -224,15 +272,52 @@ void main() {
       final container = makeContainer();
       addTearDown(container.dispose);
 
-      await container.read(eggActionsProvider.notifier).addEgg(
-        incubationId: 'inc-1',
-        layDate: DateTime(2024, 1, 10),
-        eggNumber: 1,
-      );
+      await container
+          .read(eggActionsProvider.notifier)
+          .addEgg(
+            incubationId: 'inc-1',
+            layDate: DateTime(2024, 1, 10),
+            eggNumber: 1,
+          );
 
       final captured = verify(() => eggRepo.save(captureAny())).captured;
       final savedEgg = captured.first as Egg;
       expect(savedEgg.notes, isNull);
+    });
+
+    test('uses unknown species when incubation cannot be resolved', () async {
+      when(() => eggRepo.save(any())).thenAnswer((_) async {});
+      when(() => incubationRepo.getById(any())).thenAnswer((_) async => null);
+
+      final container = makeContainer();
+      addTearDown(container.dispose);
+
+      await container
+          .read(eggActionsProvider.notifier)
+          .addEgg(
+            incubationId: 'missing-incubation',
+            layDate: DateTime(2024, 1, 10),
+            eggNumber: 1,
+          );
+
+      verify(
+        () => mockScheduler.scheduleEggTurningReminders(
+          eggId: any(named: 'eggId'),
+          startDate: any(named: 'startDate'),
+          eggLabel: any(named: 'eggLabel'),
+          species: Species.unknown,
+          settings: any(named: 'settings'),
+        ),
+      ).called(1);
+      verify(
+        () => mockCalendarGen.generateEggEvents(
+          userId: any(named: 'userId'),
+          layDate: any(named: 'layDate'),
+          eggNumber: any(named: 'eggNumber'),
+          incubationId: any(named: 'incubationId'),
+          species: Species.unknown,
+        ),
+      ).called(1);
     });
   });
 
@@ -253,10 +338,9 @@ void main() {
       final container = makeContainer();
       addTearDown(container.dispose);
 
-      await container.read(eggActionsProvider.notifier).updateEggStatus(
-        testEgg(),
-        EggStatus.fertile,
-      );
+      await container
+          .read(eggActionsProvider.notifier)
+          .updateEggStatus(testEgg(), EggStatus.fertile);
 
       final state = container.read(eggActionsProvider);
       expect(state.isLoading, isFalse);
@@ -269,10 +353,9 @@ void main() {
       final container = makeContainer();
       addTearDown(container.dispose);
 
-      await container.read(eggActionsProvider.notifier).updateEggStatus(
-        testEgg(),
-        EggStatus.fertile,
-      );
+      await container
+          .read(eggActionsProvider.notifier)
+          .updateEggStatus(testEgg(), EggStatus.fertile);
 
       final captured = verify(() => eggRepo.save(captureAny())).captured;
       final savedEgg = captured.first as Egg;
@@ -286,10 +369,9 @@ void main() {
       final container = makeContainer();
       addTearDown(container.dispose);
 
-      await container.read(eggActionsProvider.notifier).updateEggStatus(
-        testEgg(),
-        EggStatus.discarded,
-      );
+      await container
+          .read(eggActionsProvider.notifier)
+          .updateEggStatus(testEgg(), EggStatus.discarded);
 
       final captured = verify(() => eggRepo.save(captureAny())).captured;
       final savedEgg = captured.first as Egg;
@@ -305,10 +387,12 @@ void main() {
       final container = makeContainer();
       addTearDown(container.dispose);
 
-      await container.read(eggActionsProvider.notifier).updateEggStatus(
-        testEgg(status: EggStatus.incubating),
-        EggStatus.hatched,
-      );
+      await container
+          .read(eggActionsProvider.notifier)
+          .updateEggStatus(
+            testEgg(status: EggStatus.incubating),
+            EggStatus.hatched,
+          );
 
       final captured = verify(() => eggRepo.save(captureAny())).captured;
       final savedEgg = captured.first as Egg;
@@ -324,10 +408,12 @@ void main() {
       final container = makeContainer();
       addTearDown(container.dispose);
 
-      await container.read(eggActionsProvider.notifier).updateEggStatus(
-        testEgg(status: EggStatus.incubating),
-        EggStatus.hatched,
-      );
+      await container
+          .read(eggActionsProvider.notifier)
+          .updateEggStatus(
+            testEgg(status: EggStatus.incubating),
+            EggStatus.hatched,
+          );
 
       final state = container.read(eggActionsProvider);
       expect(state.chickCreated, isTrue);
@@ -335,22 +421,19 @@ void main() {
     });
 
     test('sets error state when status update fails', () async {
-      when(() => eggRepo.save(any())).thenThrow(
-        Exception('Save failed'),
-      );
+      when(() => eggRepo.save(any())).thenThrow(Exception('Save failed'));
 
       final container = makeContainer();
       addTearDown(container.dispose);
 
-      await container.read(eggActionsProvider.notifier).updateEggStatus(
-        testEgg(),
-        EggStatus.fertile,
-      );
+      await container
+          .read(eggActionsProvider.notifier)
+          .updateEggStatus(testEgg(), EggStatus.fertile);
 
       final state = container.read(eggActionsProvider);
       expect(state.isLoading, isFalse);
       expect(state.isSuccess, isFalse);
-      expect(state.error, contains('errors.unknown'));
+      expect(state.error, contains(l10n('errors.unknown')));
     });
 
     test('loading state is set before async operation', () async {
@@ -360,9 +443,9 @@ void main() {
       final container = makeContainer();
       addTearDown(container.dispose);
 
-      final future = container.read(
-        eggActionsProvider.notifier,
-      ).updateEggStatus(testEgg(), EggStatus.fertile);
+      final future = container
+          .read(eggActionsProvider.notifier)
+          .updateEggStatus(testEgg(), EggStatus.fertile);
 
       final state = container.read(eggActionsProvider);
       expect(state.isLoading, isTrue);

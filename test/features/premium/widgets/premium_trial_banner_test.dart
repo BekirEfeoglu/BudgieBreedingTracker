@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 
 import 'package:budgie_breeding_tracker/features/premium/providers/premium_providers.dart';
@@ -25,7 +26,7 @@ void main() {
 
       // Should render SizedBox.shrink (no visible content)
       expect(find.byType(Container), findsNothing);
-      expect(find.text('premium.trial_badge'), findsNothing);
+      expect(find.text(l10n('premium.trial_badge')), findsNothing);
     });
 
     testWidgets('hides when package has no introductory offer', (tester) async {
@@ -59,7 +60,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('premium.trial_badge'), findsNothing);
+      expect(find.text(l10n('premium.trial_badge')), findsNothing);
     });
   });
 }

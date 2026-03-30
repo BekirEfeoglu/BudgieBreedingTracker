@@ -69,24 +69,27 @@ void main() {
         });
 
         expect(bird.status, BirdStatus.alive);
-        expect(bird.species, Species.budgie);
+        expect(bird.species, Species.unknown);
         expect(bird.isDeleted, false);
       });
 
-      test('unknown enum values fall back to defaults', () {
-        final bird = Bird.fromJson({
-          'id': 'bird-1',
-          'name': 'Test',
-          'gender': 'nonexistent_gender',
-          'user_id': 'user-1',
-          'status': 'nonexistent_status',
-          'species': 'nonexistent_species',
-        });
+      test(
+        'unknown species stays unknown instead of falling back to budgie',
+        () {
+          final bird = Bird.fromJson({
+            'id': 'bird-1',
+            'name': 'Test',
+            'gender': 'nonexistent_gender',
+            'user_id': 'user-1',
+            'status': 'nonexistent_status',
+            'species': 'nonexistent_species',
+          });
 
-        expect(bird.gender, BirdGender.unknown);
-        expect(bird.status, BirdStatus.unknown);
-        expect(bird.species, Species.budgie);
-      });
+          expect(bird.gender, BirdGender.unknown);
+          expect(bird.status, BirdStatus.unknown);
+          expect(bird.species, Species.unknown);
+        },
+      );
 
       test('toJson produces snake_case keys', () {
         final bird = createTestBird(

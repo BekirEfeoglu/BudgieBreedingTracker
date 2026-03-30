@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -53,21 +54,21 @@ void main() {
       await tester.pumpWidget(createSubject());
       await tester.pump();
 
-      expect(find.text('auth.email_verification_title'), findsOneWidget);
+      expect(find.text(l10n('auth.email_verification_title')), findsOneWidget);
     });
 
     testWidgets('shows email_verification_desc', (tester) async {
       await tester.pumpWidget(createSubject());
       await tester.pump();
 
-      expect(find.text('auth.email_verification_desc'), findsOneWidget);
+      expect(find.text(l10n('auth.email_verification_desc')), findsOneWidget);
     });
 
     testWidgets('shows back_to_login button', (tester) async {
       await tester.pumpWidget(createSubject());
       await tester.pump();
 
-      expect(find.text('auth.back_to_login'), findsOneWidget);
+      expect(find.text(l10n('auth.back_to_login')), findsOneWidget);
     });
 
     testWidgets('shows provided email address', (tester) async {
@@ -83,14 +84,14 @@ void main() {
       await tester.pumpWidget(createSubject(email: 'test@example.com'));
       await tester.pump();
 
-      expect(find.text('auth.resend_email'), findsOneWidget);
+      expect(find.text(l10n('auth.resend_email')), findsOneWidget);
     });
 
     testWidgets('does not show resend button when no email', (tester) async {
       await tester.pumpWidget(createSubject());
       await tester.pump();
 
-      expect(find.text('auth.resend_email'), findsNothing);
+      expect(find.text(l10n('auth.resend_email')), findsNothing);
     });
 
     testWidgets('shows mail icon', (tester) async {
@@ -106,7 +107,7 @@ void main() {
       await tester.pumpWidget(createSubject());
       await tester.pump();
 
-      await tester.tap(find.text('auth.back_to_login'));
+      await tester.tap(find.text(l10n('auth.back_to_login')));
       await tester.pumpAndSettle();
 
       expect(find.text('Login'), findsOneWidget);
@@ -118,7 +119,7 @@ void main() {
       await tester.pumpWidget(createSubject(email: 'test@example.com'));
       await tester.pump();
 
-      await tester.tap(find.text('auth.resend_email'));
+      await tester.tap(find.text(l10n('auth.resend_email')));
       await tester.pump();
 
       verify(() => mockAuth.resendVerification('test@example.com')).called(1);

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/features/birds/widgets/bird_search_bar.dart';
 
@@ -23,7 +24,7 @@ void main() {
       await tester.pumpWidget(_wrap(const BirdSearchBar()));
       await tester.pump();
 
-      expect(find.text('birds.search_hint'), findsOneWidget);
+      expect(find.text(l10n('birds.search_hint')), findsOneWidget);
     });
 
     testWidgets('renders TextField', (tester) async {

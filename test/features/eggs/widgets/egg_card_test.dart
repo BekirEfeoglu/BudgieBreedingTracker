@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/core/enums/egg_enums.dart';
 import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
@@ -59,7 +60,7 @@ void main() {
       await _pumpEggListItem(tester, EggListItem(egg: _createEgg()));
 
       // .tr() returns the key in test, so look for the key pattern
-      expect(find.textContaining('eggs.egg_label'), findsAtLeastNWidgets(1));
+      expect(find.textContaining(l10nContains('eggs.egg_label')), findsAtLeastNWidgets(1));
     });
 
     testWidgets('shows EggStatusChip for current status', (tester) async {
@@ -78,7 +79,7 @@ void main() {
     testWidgets('shows incubation days count', (tester) async {
       await _pumpEggListItem(tester, EggListItem(egg: _createEgg()));
 
-      expect(find.textContaining('eggs.days_count'), findsOneWidget);
+      expect(find.textContaining(l10nContains('eggs.days_count')), findsOneWidget);
     });
 
     testWidgets('renders question mark when eggNumber is null', (tester) async {

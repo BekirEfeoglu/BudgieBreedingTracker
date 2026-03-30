@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 import 'package:budgie_breeding_tracker/features/admin/providers/admin_models.dart';
@@ -171,7 +172,7 @@ void main() {
         _wrap(UserDetailProfileHeader(detail: _noNameUserDetail)),
       );
       await tester.pump();
-      expect(find.text('admin.no_name'), findsOneWidget);
+      expect(find.text(l10n('admin.no_name')), findsOneWidget);
     });
 
     testWidgets('shows joined date text', (tester) async {
@@ -179,7 +180,7 @@ void main() {
         _wrap(UserDetailProfileHeader(detail: _freeUserDetail)),
       );
       await tester.pump();
-      expect(find.textContaining('admin.joined'), findsOneWidget);
+      expect(find.textContaining(l10nContains('admin.joined')), findsOneWidget);
     });
 
     testWidgets('renders CircleAvatar', (tester) async {
@@ -213,7 +214,7 @@ void main() {
         _wrap(UserDetailSubscriptionSection(detail: _freeUserDetail)),
       );
       await tester.pump();
-      expect(find.text('admin.subscription'), findsOneWidget);
+      expect(find.text(l10n('admin.subscription')), findsOneWidget);
     });
 
     testWidgets('shows free plan label for free user', (tester) async {
@@ -221,7 +222,7 @@ void main() {
         _wrap(UserDetailSubscriptionSection(detail: _freeUserDetail)),
       );
       await tester.pump();
-      expect(find.text('premium.free'), findsAtLeastNWidgets(1));
+      expect(find.text(l10n('premium.free')), findsAtLeastNWidgets(1));
     });
 
     testWidgets('shows pro plan label for premium user', (tester) async {
@@ -229,7 +230,7 @@ void main() {
         _wrap(UserDetailSubscriptionSection(detail: _premiumUserDetail)),
       );
       await tester.pump();
-      expect(find.text('premium.pro'), findsOneWidget);
+      expect(find.text(l10n('premium.pro')), findsOneWidget);
     });
 
     testWidgets('shows active status for premium user', (tester) async {
@@ -237,7 +238,7 @@ void main() {
         _wrap(UserDetailSubscriptionSection(detail: _premiumUserDetail)),
       );
       await tester.pump();
-      expect(find.text('common.active'), findsOneWidget);
+      expect(find.text(l10n('common.active')), findsOneWidget);
     });
 
     testWidgets('shows revoke_premium button for premium user', (
@@ -252,7 +253,7 @@ void main() {
         ),
       );
       await tester.pump();
-      expect(find.text('admin.revoke_premium'), findsOneWidget);
+      expect(find.text(l10n('admin.revoke_premium')), findsOneWidget);
     });
 
     testWidgets('shows grant_premium button for free user', (tester) async {
@@ -265,7 +266,7 @@ void main() {
         ),
       );
       await tester.pump();
-      expect(find.text('admin.grant_premium'), findsOneWidget);
+      expect(find.text(l10n('admin.grant_premium')), findsOneWidget);
     });
 
     testWidgets('triggers onGrantPremium callback', (tester) async {
@@ -279,7 +280,7 @@ void main() {
         ),
       );
       await tester.pump();
-      await tester.tap(find.text('admin.grant_premium'));
+      await tester.tap(find.text(l10n('admin.grant_premium')));
       expect(granted, isTrue);
     });
 
@@ -294,7 +295,7 @@ void main() {
         ),
       );
       await tester.pump();
-      await tester.tap(find.text('admin.revoke_premium'));
+      await tester.tap(find.text(l10n('admin.revoke_premium')));
       expect(revoked, isTrue);
     });
 
@@ -303,7 +304,7 @@ void main() {
         _wrap(UserDetailSubscriptionSection(detail: _founderUserDetail)),
       );
       await tester.pump();
-      expect(find.text('admin.role_based_premium'), findsOneWidget);
+      expect(find.text(l10n('admin.role_based_premium')), findsOneWidget);
     });
 
     testWidgets('shows role_based_premium text for admin', (tester) async {
@@ -311,7 +312,7 @@ void main() {
         _wrap(UserDetailSubscriptionSection(detail: _adminUserDetail)),
       );
       await tester.pump();
-      expect(find.text('admin.role_based_premium'), findsOneWidget);
+      expect(find.text(l10n('admin.role_based_premium')), findsOneWidget);
     });
 
     testWidgets('hides grant/revoke buttons for founder', (tester) async {
@@ -325,8 +326,8 @@ void main() {
         ),
       );
       await tester.pump();
-      expect(find.text('admin.grant_premium'), findsNothing);
-      expect(find.text('admin.revoke_premium'), findsNothing);
+      expect(find.text(l10n('admin.grant_premium')), findsNothing);
+      expect(find.text(l10n('admin.revoke_premium')), findsNothing);
     });
 
     testWidgets('shows founder status label for founder user', (tester) async {
@@ -334,7 +335,7 @@ void main() {
         _wrap(UserDetailSubscriptionSection(detail: _founderUserDetail)),
       );
       await tester.pump();
-      expect(find.text('profile.role_founder'), findsOneWidget);
+      expect(find.text(l10n('profile.role_founder')), findsOneWidget);
     });
 
     testWidgets('shows admin status label for admin user', (tester) async {
@@ -342,7 +343,7 @@ void main() {
         _wrap(UserDetailSubscriptionSection(detail: _adminUserDetail)),
       );
       await tester.pump();
-      expect(find.text('profile.role_admin'), findsOneWidget);
+      expect(find.text(l10n('profile.role_admin')), findsOneWidget);
     });
 
     testWidgets('shows trial badge for trial user', (tester) async {
@@ -350,7 +351,7 @@ void main() {
         _wrap(UserDetailSubscriptionSection(detail: _trialUserDetail)),
       );
       await tester.pump();
-      expect(find.text('premium.trial_badge'), findsOneWidget);
+      expect(find.text(l10n('premium.trial_badge')), findsOneWidget);
     });
 
     testWidgets('shows subscription_updated when date is provided', (
@@ -361,7 +362,7 @@ void main() {
       );
       await tester.pump();
       expect(
-        find.textContaining('admin.subscription_updated'),
+        find.textContaining(l10nContains('admin.subscription_updated')),
         findsOneWidget,
       );
     });
@@ -373,7 +374,7 @@ void main() {
         _wrap(UserDetailSubscriptionSection(detail: _freeUserDetail)),
       );
       await tester.pump();
-      expect(find.textContaining('admin.subscription_updated'), findsNothing);
+      expect(find.textContaining(l10nContains('admin.subscription_updated')), findsNothing);
     });
 
     testWidgets('renders Card widget', (tester) async {
@@ -416,7 +417,7 @@ void main() {
         _wrap(UserDetailStatsRow(detail: _freeUserDetail)),
       );
       await tester.pump();
-      expect(find.text('admin.birds'), findsOneWidget);
+      expect(find.text(l10n('admin.birds')), findsOneWidget);
     });
 
     testWidgets('shows log_entries label', (tester) async {
@@ -424,7 +425,7 @@ void main() {
         _wrap(UserDetailStatsRow(detail: _freeUserDetail)),
       );
       await tester.pump();
-      expect(find.text('admin.log_entries'), findsOneWidget);
+      expect(find.text(l10n('admin.log_entries')), findsOneWidget);
     });
 
     testWidgets('renders two Card widgets for stats', (tester) async {

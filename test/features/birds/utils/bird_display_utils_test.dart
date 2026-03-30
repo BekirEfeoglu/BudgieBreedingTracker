@@ -10,6 +10,10 @@ void main() {
         expect(speciesLabel(species), isNotEmpty);
       }
     });
+
+    test('distinguishes unknown from other', () {
+      expect(speciesLabel(Species.unknown), isNot(speciesLabel(Species.other)));
+    });
   });
 
   group('formatBirdAge', () {

@@ -14,6 +14,7 @@ import 'package:budgie_breeding_tracker/features/statistics/widgets/chart_card.d
 import 'package:budgie_breeding_tracker/features/statistics/widgets/color_mutation_chart.dart';
 import 'package:budgie_breeding_tracker/features/statistics/widgets/gender_pie_chart.dart';
 import 'package:budgie_breeding_tracker/features/statistics/widgets/quick_insights_card.dart';
+import 'package:budgie_breeding_tracker/features/statistics/widgets/species_breakdown_card.dart';
 import 'package:budgie_breeding_tracker/features/statistics/widgets/summary_stats_grid.dart';
 import 'package:budgie_breeding_tracker/router/route_names.dart';
 
@@ -52,6 +53,7 @@ class _OverviewTabState extends ConsumerState<OverviewTab> {
       onRefresh: () async {
         ref.invalidate(summaryStatsProvider(userId));
         ref.invalidate(trendStatsProvider(userId));
+        ref.invalidate(speciesDistributionProvider(userId));
         ref.invalidate(genderDistributionProvider(userId));
         ref.invalidate(colorMutationDistributionProvider(userId));
         ref.invalidate(ageDistributionProvider(userId));
@@ -67,6 +69,8 @@ class _OverviewTabState extends ConsumerState<OverviewTab> {
             const SizedBox(height: AppSpacing.lg),
             _SummarySection(userId: userId),
             const SizedBox(height: AppSpacing.lg),
+            _SpeciesDistributionSection(userId: userId),
+            const SizedBox(height: AppSpacing.lg),
             _GenderDistributionSection(userId: userId),
             const SizedBox(height: AppSpacing.lg),
             _ColorMutationSection(userId: userId),
@@ -75,6 +79,30 @@ class _OverviewTabState extends ConsumerState<OverviewTab> {
             const SizedBox(height: AppSpacing.xxxl),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _SpeciesDistributionSection extends ConsumerWidget {
+  const _SpeciesDistributionSection({required this.userId});
+  final String userId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final speciesAsync = ref.watch(speciesDistributionProvider(userId));
+    final dataCount = speciesAsync.value?.length;
+
+    return ChartCard(
+      title: 'statistics.species_distribution'.tr(),
+      icon: const AppIcon(AppIcons.species),
+      dataCount: dataCount,
+      onLowDataAction: () => context.push(AppRoutes.birdForm),
+      lowDataActionLabel: 'birds.add_bird'.tr(),
+      child: speciesAsync.when(
+        loading: () => const ChartLoading(),
+        error: (e, _) => ChartError(message: 'common.data_load_error'.tr()),
+        data: (data) => SpeciesBreakdownCard(data: data),
       ),
     );
   }
@@ -110,8 +138,8 @@ class _GenderDistributionSection extends ConsumerWidget {
 
     final total = genderAsync.value != null
         ? genderAsync.value!.male +
-            genderAsync.value!.female +
-            genderAsync.value!.unknown
+              genderAsync.value!.female +
+              genderAsync.value!.unknown
         : null;
     return ChartCard(
       title: 'statistics.gender_distribution'.tr(),
@@ -140,9 +168,7 @@ class _ColorMutationSection extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final colorAsync = ref.watch(colorMutationDistributionProvider(userId));
 
-    final dataCount = colorAsync.value?.values
-        .where((v) => v > 0)
-        .length;
+    final dataCount = colorAsync.value?.values.where((v) => v > 0).length;
     return ChartCard(
       title: 'statistics.color_mutation'.tr(),
       icon: const AppIcon(AppIcons.colorPalette),
@@ -166,9 +192,7 @@ class _AgeDistributionSection extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final ageAsync = ref.watch(ageDistributionProvider(userId));
 
-    final dataCount = ageAsync.value?.values
-        .where((v) => v > 0)
-        .length;
+    final dataCount = ageAsync.value?.values.where((v) => v > 0).length;
     return ChartCard(
       title: 'statistics.age_distribution'.tr(),
       icon: const AppIcon(AppIcons.bird),

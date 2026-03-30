@@ -10,6 +10,7 @@ import '../../../data/models/bird_model.dart';
 import '../../../data/models/breeding_pair_model.dart';
 import '../../../data/models/chick_model.dart';
 import '../../../data/models/egg_model.dart';
+import '../../../data/models/incubation_model.dart';
 import '../../../data/repositories/repository_providers.dart';
 import '../../../domain/services/export/excel_export_service.dart';
 import '../../../domain/services/export/pdf_export_service.dart';
@@ -69,6 +70,7 @@ class ExportActions {
       final bytes = await pdfService.generateFullReport(
         birds: data.birds,
         pairs: data.pairs,
+        incubations: data.incubations,
         eggs: data.eggs,
         chicks: data.chicks,
       );
@@ -94,6 +96,7 @@ class ExportActions {
       final bytes = await excelService.exportAll(
         birds: data.birds,
         pairs: data.pairs,
+        incubations: data.incubations,
         eggs: data.eggs,
         chicks: data.chicks,
       );
@@ -135,14 +138,16 @@ class ExportActions {
     final results = await (
       _ref.read(birdRepositoryProvider).getAll(userId),
       _ref.read(breedingPairRepositoryProvider).getAll(userId),
+      _ref.read(incubationRepositoryProvider).getAll(userId),
       _ref.read(eggRepositoryProvider).getAll(userId),
       _ref.read(chickRepositoryProvider).getAll(userId),
     ).wait;
     return _ExportData(
       birds: results.$1,
       pairs: results.$2,
-      eggs: results.$3,
-      chicks: results.$4,
+      incubations: results.$3,
+      eggs: results.$4,
+      chicks: results.$5,
     );
   }
 
@@ -159,12 +164,14 @@ class ExportActions {
 class _ExportData {
   final List<Bird> birds;
   final List<BreedingPair> pairs;
+  final List<Incubation> incubations;
   final List<Egg> eggs;
   final List<Chick> chicks;
 
   _ExportData({
     required this.birds,
     required this.pairs,
+    required this.incubations,
     required this.eggs,
     required this.chicks,
   });

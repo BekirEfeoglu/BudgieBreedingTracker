@@ -15,6 +15,7 @@ class BirdParentSelector extends ConsumerWidget {
   final Widget icon;
   final String? selectedId;
   final String? excludeId;
+  final Species? speciesFilter;
   final BirdGender genderFilter;
   final ValueChanged<String?> onChanged;
 
@@ -24,6 +25,7 @@ class BirdParentSelector extends ConsumerWidget {
     required this.icon,
     required this.selectedId,
     required this.excludeId,
+    this.speciesFilter,
     required this.genderFilter,
     required this.onChanged,
   });
@@ -63,18 +65,23 @@ class BirdParentSelector extends ConsumerWidget {
             birds
                 .where((b) => b.gender == genderFilter)
                 .where((b) => b.id != excludeId)
+                .where(
+                  (b) => speciesFilter == null || b.species == speciesFilter,
+                )
                 .where((b) => b.status == BirdStatus.alive)
                 .toList()
               ..sort((a, b) => a.name.compareTo(b.name));
-        final displayCandidates =
-            candidates.take(_maxDisplayCandidates).toList();
+        final displayCandidates = candidates
+            .take(_maxDisplayCandidates)
+            .toList();
 
         Bird? selectedBird;
         if (selectedId != null) {
           for (final bird in birds) {
             if (bird.id == selectedId &&
                 bird.id != excludeId &&
-                bird.gender == genderFilter) {
+                bird.gender == genderFilter &&
+                (speciesFilter == null || bird.species == speciesFilter)) {
               selectedBird = bird;
               break;
             }

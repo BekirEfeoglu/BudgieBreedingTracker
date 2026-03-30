@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
 import 'package:budgie_breeding_tracker/features/admin/providers/admin_models.dart';
@@ -50,7 +51,7 @@ void main() {
         tester,
         _wrap(const MonitoringTableDetailsSection(tables: tables)),
       );
-      expect(find.text('admin.table_details'), findsOneWidget);
+      expect(find.text(l10n('admin.table_details')), findsOneWidget);
     });
 
     testWidgets('shows table count in header', (tester) async {

@@ -69,11 +69,66 @@ class BirdFormNotifier extends Notifier<BirdFormState> {
     if (normalizedRing == null) return false;
 
     final repo = ref.read(birdRepositoryProvider);
-    return repo.hasRingNumber(
-      userId,
-      normalizedRing,
-      excludeId: excludeBirdId,
-    );
+    return repo.hasRingNumber(userId, normalizedRing, excludeId: excludeBirdId);
+  }
+
+  Future<String?> _validateParents({
+    required Species species,
+    required String? fatherId,
+    required String? motherId,
+    String? excludeBirdId,
+  }) async {
+    final repo = ref.read(birdRepositoryProvider);
+
+    if (excludeBirdId != null &&
+        (fatherId == excludeBirdId || motherId == excludeBirdId)) {
+      return 'birds.not_found'.tr();
+    }
+
+    if (fatherId != null) {
+      final father = await repo.getById(fatherId);
+      if (father == null) return 'birds.not_found'.tr();
+      if (father.gender != BirdGender.male) return 'birds.invalid_father'.tr();
+      if (father.species != species) {
+        return 'birds.parent_species_mismatch'.tr();
+      }
+    }
+
+    if (motherId != null) {
+      final mother = await repo.getById(motherId);
+      if (mother == null) return 'birds.not_found'.tr();
+      if (mother.gender != BirdGender.female) {
+        return 'birds.invalid_mother'.tr();
+      }
+      if (mother.species != species) {
+        return 'birds.parent_species_mismatch'.tr();
+      }
+    }
+
+    return null;
+  }
+
+  String? _mapIntegrityError(Object error) {
+    final message = switch (error) {
+      AppException() => error.message,
+      _ => error.toString(),
+    }.toLowerCase();
+
+    if (message.contains('bird_parent_species_mismatch')) {
+      return 'birds.parent_species_mismatch'.tr();
+    }
+    if (message.contains('bird_invalid_father_gender')) {
+      return 'birds.invalid_father'.tr();
+    }
+    if (message.contains('bird_invalid_mother_gender')) {
+      return 'birds.invalid_mother'.tr();
+    }
+    if (message.contains('bird_parent_self_reference') ||
+        message.contains('bird_father_not_found') ||
+        message.contains('bird_mother_not_found')) {
+      return 'birds.not_found'.tr();
+    }
+    return null;
   }
 
   /// Creates a new bird.
@@ -81,7 +136,7 @@ class BirdFormNotifier extends Notifier<BirdFormState> {
     required String userId,
     required String name,
     required BirdGender gender,
-    Species species = Species.budgie,
+    Species species = Species.unknown,
     BirdColor? colorMutation,
     String? ringNumber,
     DateTime? birthDate,
@@ -97,6 +152,15 @@ class BirdFormNotifier extends Notifier<BirdFormState> {
       final repo = ref.read(birdRepositoryProvider);
       final normalizedRingNumber = _normalizeOptionalText(ringNumber);
       final normalizedCageNumber = _normalizeOptionalText(cageNumber);
+      final parentError = await _validateParents(
+        species: species,
+        fatherId: fatherId,
+        motherId: motherId,
+      );
+      if (parentError != null) {
+        state = state.copyWith(isLoading: false, error: parentError);
+        return;
+      }
 
       // Free tier bird limit check
       final isPremium = ref.read(effectivePremiumProvider);
@@ -106,9 +170,7 @@ class BirdFormNotifier extends Notifier<BirdFormState> {
         } on FreeTierLimitException catch (e) {
           state = state.copyWith(
             isLoading: false,
-            error: 'premium.bird_limit_reached'.tr(
-              args: ['${e.limit}'],
-            ),
+            error: 'premium.bird_limit_reached'.tr(args: ['${e.limit}']),
             isBirdLimitReached: true,
           );
           return;
@@ -162,7 +224,10 @@ class BirdFormNotifier extends Notifier<BirdFormState> {
     } catch (e) {
       AppLogger.error('BirdFormNotifier', e, StackTrace.current);
       Sentry.captureException(e, stackTrace: StackTrace.current);
-      state = state.copyWith(isLoading: false, error: 'errors.unknown'.tr());
+      state = state.copyWith(
+        isLoading: false,
+        error: _mapIntegrityError(e) ?? 'errors.unknown'.tr(),
+      );
     }
   }
 
@@ -173,6 +238,16 @@ class BirdFormNotifier extends Notifier<BirdFormState> {
       final repo = ref.read(birdRepositoryProvider);
       final normalizedRingNumber = _normalizeOptionalText(bird.ringNumber);
       final normalizedCageNumber = _normalizeOptionalText(bird.cageNumber);
+      final parentError = await _validateParents(
+        species: bird.species,
+        fatherId: bird.fatherId,
+        motherId: bird.motherId,
+        excludeBirdId: bird.id,
+      );
+      if (parentError != null) {
+        state = state.copyWith(isLoading: false, error: parentError);
+        return;
+      }
 
       if (await _hasRingNumberConflict(
         userId: bird.userId,
@@ -197,7 +272,10 @@ class BirdFormNotifier extends Notifier<BirdFormState> {
     } catch (e) {
       AppLogger.error('BirdFormNotifier', e, StackTrace.current);
       Sentry.captureException(e, stackTrace: StackTrace.current);
-      state = state.copyWith(isLoading: false, error: 'errors.unknown'.tr());
+      state = state.copyWith(
+        isLoading: false,
+        error: _mapIntegrityError(e) ?? 'errors.unknown'.tr(),
+      );
     }
   }
 

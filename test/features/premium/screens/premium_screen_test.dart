@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
 import 'package:budgie_breeding_tracker/features/premium/providers/premium_providers.dart';
@@ -38,7 +39,7 @@ void main() {
       await tester.pumpWidget(createSubject());
       await tester.pumpAndSettle();
 
-      expect(find.text('premium.title'), findsOneWidget);
+      expect(find.text(l10n('premium.title')), findsOneWidget);
     });
 
     testWidgets('shows paywall body for non-premium user', (tester) async {
@@ -53,7 +54,7 @@ void main() {
       await tester.pumpWidget(createSubject(isPremium: true));
       await tester.pumpAndSettle();
 
-      expect(find.text('premium.already_premium'), findsOneWidget);
+      expect(find.text(l10n('premium.already_premium')), findsOneWidget);
     });
 
     testWidgets('paywall shows pricing section', (tester) async {
@@ -72,8 +73,8 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('premium.account_required_title'), findsOneWidget);
-      expect(find.text('settings.privacy_policy'), findsOneWidget);
+      expect(find.text(l10n('premium.account_required_title')), findsOneWidget);
+      expect(find.text(l10n('settings.privacy_policy')), findsOneWidget);
       expect(find.text('settings.terms (EULA)'), findsOneWidget);
     });
   });

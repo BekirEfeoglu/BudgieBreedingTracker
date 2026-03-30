@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:budgie_breeding_tracker/core/widgets/error_state.dart';
@@ -76,7 +77,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Should show the no-history message
-      expect(find.text('genetics.no_history'), findsOneWidget);
+      expect(find.text(l10n('genetics.no_history')), findsOneWidget);
     });
 
     testWidgets('shows error state on stream error', (tester) async {
@@ -107,7 +108,7 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      expect(find.text('genetics.history'), findsOneWidget);
+      expect(find.text(l10n('genetics.history')), findsOneWidget);
     });
   });
 }

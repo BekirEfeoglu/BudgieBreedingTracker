@@ -9,8 +9,10 @@ import 'package:budgie_breeding_tracker/domain/services/sync/sync_push_handler.d
 import 'package:budgie_breeding_tracker/domain/services/sync/sync_pull_handler.dart';
 import 'package:budgie_breeding_tracker/domain/services/sync/sync_error_handler.dart';
 import 'package:budgie_breeding_tracker/data/local/database/dao_providers.dart'
-    show conflictHistoryDaoProvider;
+    show birdsDaoProvider, conflictHistoryDaoProvider;
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/encryption/encryption_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/encryption/encryption_service.dart';
 
 part 'sync_time_helpers.dart';
 
@@ -112,6 +114,13 @@ class SyncOrchestrator {
       // Process pending event reminders and notification schedules
       await _processNotifications();
 
+      // Migrate legacy encrypted payloads during full reconciliation,
+      // or when a previous migration was incomplete (pending flag).
+      final pendingMigration = await _hasPendingMigration();
+      if (needsReconcile || lastSync == null || pendingMigration) {
+        await _migrateEncryptedPayloads();
+      }
+
       if (pullSuccess) {
         // Only advance sync checkpoint when pull fully succeeded.
         // Partial failures retry from the same point on next cycle.
@@ -186,6 +195,9 @@ class SyncOrchestrator {
 
       // Process pending event reminders and notification schedules
       await _processNotifications();
+
+      // Migrate legacy encrypted payloads during forced reconciliation
+      await _migrateEncryptedPayloads();
 
       if (pullSuccess) {
         final now = DateTime.now();

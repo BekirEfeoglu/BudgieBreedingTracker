@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/chick_enums.dart';
@@ -78,7 +79,7 @@ void main() {
 
       await _pumpChickDetailInfo(tester, chick);
 
-      expect(find.text('chicks.info'), findsOneWidget);
+      expect(find.text(l10n('chicks.info')), findsOneWidget);
     });
 
     testWidgets('shows male gender label for male chick', (tester) async {
@@ -86,7 +87,7 @@ void main() {
 
       await _pumpChickDetailInfo(tester, chick);
 
-      expect(find.text('chicks.male'), findsAtLeastNWidgets(1));
+      expect(find.text(l10n('chicks.male')), findsAtLeastNWidgets(1));
     });
 
     testWidgets('shows female gender label for female chick', (tester) async {
@@ -94,7 +95,7 @@ void main() {
 
       await _pumpChickDetailInfo(tester, chick);
 
-      expect(find.text('chicks.female'), findsAtLeastNWidgets(1));
+      expect(find.text(l10n('chicks.female')), findsAtLeastNWidgets(1));
     });
 
     testWidgets('shows unknown gender label for unknown gender', (
@@ -104,7 +105,7 @@ void main() {
 
       await _pumpChickDetailInfo(tester, chick);
 
-      expect(find.text('chicks.unknown_gender'), findsAtLeastNWidgets(1));
+      expect(find.text(l10n('chicks.unknown_gender')), findsAtLeastNWidgets(1));
     });
 
     testWidgets('shows hatch date when available', (tester) async {
@@ -121,9 +122,9 @@ void main() {
       await _pumpChickDetailInfo(tester, chick);
 
       // The hatch date card shows 'common.no_data' as fallback text
-      expect(find.text('common.no_data'), findsAtLeastNWidgets(1));
+      expect(find.text(l10n('common.no_data')), findsAtLeastNWidgets(1));
       // Gender card shows unknown_gender
-      expect(find.text('chicks.unknown_gender'), findsAtLeastNWidgets(1));
+      expect(find.text(l10n('chicks.unknown_gender')), findsAtLeastNWidgets(1));
     });
 
     testWidgets('shows weight information when available', (tester) async {
@@ -140,7 +141,7 @@ void main() {
       await _pumpChickDetailInfo(tester, chick);
 
       // Weight card shows 'common.no_data' as fallback
-      expect(find.text('common.no_data'), findsAtLeastNWidgets(1));
+      expect(find.text(l10n('common.no_data')), findsAtLeastNWidgets(1));
     });
 
     testWidgets('shows birth weight subtitle', (tester) async {
@@ -148,7 +149,7 @@ void main() {
 
       await _pumpChickDetailInfo(tester, chick);
 
-      expect(find.text('chicks.birth_weight'), findsOneWidget);
+      expect(find.text(l10n('chicks.birth_weight')), findsOneWidget);
     });
 
     testWidgets('handles null eggId gracefully (no parent info)', (
@@ -160,8 +161,8 @@ void main() {
 
       // Should render without error; no parent cards shown
       expect(find.byType(ChickDetailInfo), findsOneWidget);
-      expect(find.text('chicks.father'), findsNothing);
-      expect(find.text('chicks.mother'), findsNothing);
+      expect(find.text(l10n('chicks.father')), findsNothing);
+      expect(find.text(l10n('chicks.mother')), findsNothing);
     });
 
     testWidgets('shows parent cards when parents info is available', (
@@ -179,8 +180,8 @@ void main() {
 
       expect(find.text('Mavi'), findsOneWidget);
       expect(find.text('Sarı'), findsOneWidget);
-      expect(find.text('chicks.father'), findsOneWidget);
-      expect(find.text('chicks.mother'), findsOneWidget);
+      expect(find.text(l10n('chicks.father')), findsOneWidget);
+      expect(find.text(l10n('chicks.mother')), findsOneWidget);
     });
 
     testWidgets('shows fallback name when parent name is null', (tester) async {
@@ -196,7 +197,7 @@ void main() {
 
       // Both parent cards show the unknown_gender fallback text
       // Plus gender card shows it too
-      expect(find.text('chicks.unknown_gender'), findsAtLeastNWidgets(3));
+      expect(find.text(l10n('chicks.unknown_gender')), findsAtLeastNWidgets(3));
     });
 
     testWidgets('shows weaning date when chick is weaned', (tester) async {
@@ -205,7 +206,7 @@ void main() {
       await _pumpChickDetailInfo(tester, chick);
 
       expect(find.text('01.03.2024'), findsOneWidget);
-      expect(find.text('chicks.weaning'), findsOneWidget);
+      expect(find.text(l10n('chicks.weaning')), findsOneWidget);
     });
 
     testWidgets('shows not yet label when chick is not weaned', (tester) async {
@@ -213,7 +214,7 @@ void main() {
 
       await _pumpChickDetailInfo(tester, chick);
 
-      expect(find.text('chicks.not_yet'), findsOneWidget);
+      expect(find.text(l10n('chicks.not_yet')), findsOneWidget);
     });
 
     testWidgets('shows death date when chick is deceased', (tester) async {
@@ -225,7 +226,7 @@ void main() {
       await _pumpChickDetailInfo(tester, chick);
 
       expect(find.text('10.04.2024'), findsOneWidget);
-      expect(find.text('chicks.death_date'), findsOneWidget);
+      expect(find.text(l10n('chicks.death_date')), findsOneWidget);
     });
 
     testWidgets('does not show death date for healthy chick', (tester) async {
@@ -233,7 +234,7 @@ void main() {
 
       await _pumpChickDetailInfo(tester, chick);
 
-      expect(find.text('chicks.death_date'), findsNothing);
+      expect(find.text(l10n('chicks.death_date')), findsNothing);
     });
 
     testWidgets('shows bird record card when birdId is set', (tester) async {
@@ -241,8 +242,8 @@ void main() {
 
       await _pumpChickDetailInfo(tester, chick);
 
-      expect(find.text('chicks.converted_to_bird'), findsOneWidget);
-      expect(find.text('chicks.bird_record'), findsOneWidget);
+      expect(find.text(l10n('chicks.converted_to_bird')), findsOneWidget);
+      expect(find.text(l10n('chicks.bird_record')), findsOneWidget);
     });
 
     testWidgets('does not show bird record card when birdId is null', (
@@ -252,7 +253,7 @@ void main() {
 
       await _pumpChickDetailInfo(tester, chick);
 
-      expect(find.text('chicks.converted_to_bird'), findsNothing);
+      expect(find.text(l10n('chicks.converted_to_bird')), findsNothing);
     });
 
     testWidgets('contains multiple InfoCards', (tester) async {
@@ -269,7 +270,7 @@ void main() {
 
       await _pumpChickDetailInfo(tester, chick);
 
-      expect(find.text('chicks.gender'), findsOneWidget);
+      expect(find.text(l10n('chicks.gender')), findsOneWidget);
     });
 
     testWidgets('hatch date subtitle is shown', (tester) async {
@@ -277,7 +278,7 @@ void main() {
 
       await _pumpChickDetailInfo(tester, chick);
 
-      expect(find.text('chicks.hatch_date'), findsOneWidget);
+      expect(find.text(l10n('chicks.hatch_date')), findsOneWidget);
     });
   });
 
@@ -299,7 +300,7 @@ void main() {
         ),
       );
 
-      expect(find.text('common.notes'), findsOneWidget);
+      expect(find.text(l10n('common.notes')), findsOneWidget);
     });
   });
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/features/genealogy/widgets/genetic_info_card.dart';
 
@@ -24,7 +25,7 @@ void main() {
         ),
       );
 
-      expect(find.text('genetics.genetic_info'), findsOneWidget);
+      expect(find.text(l10n('genetics.genetic_info')), findsOneWidget);
     });
 
     testWidgets('shows no_mutations text when list is empty', (tester) async {
@@ -34,7 +35,7 @@ void main() {
         ),
       );
 
-      expect(find.text('genetics.no_mutations'), findsOneWidget);
+      expect(find.text(l10n('genetics.no_mutations')), findsOneWidget);
     });
 
     testWidgets('renders mutation chips for non-empty list', (tester) async {
@@ -115,9 +116,9 @@ void main() {
         ),
       );
 
-      expect(find.text('common.view'), findsOneWidget);
+      expect(find.text(l10n('common.view')), findsOneWidget);
 
-      await tester.tap(find.text('common.view'));
+      await tester.tap(find.text(l10n('common.view')));
       expect(pressed, isTrue);
     });
 
@@ -130,7 +131,7 @@ void main() {
         ),
       );
 
-      expect(find.text('common.view'), findsNothing);
+      expect(find.text(l10n('common.view')), findsNothing);
     });
   });
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/chick_enums.dart';
@@ -66,7 +67,7 @@ void main() {
 
       // chickDisplayName falls back to localization key with id substring
       // In test env without easy_localization, the raw key is rendered
-      expect(find.textContaining('chicks.unnamed_chick'), findsOneWidget);
+      expect(find.textContaining(l10nContains('chicks.unnamed_chick')), findsOneWidget);
     });
 
     testWidgets('shows health badge', (tester) async {
@@ -188,7 +189,7 @@ void main() {
       );
 
       // In test env without easy_localization, .tr() returns the raw key
-      expect(find.textContaining('chicks.ring_label'), findsOneWidget);
+      expect(find.textContaining(l10nContains('chicks.ring_label')), findsOneWidget);
     });
 
     testWidgets('does not show ring number when null', (tester) async {
@@ -199,7 +200,7 @@ void main() {
         SingleChildScrollView(child: ChickDetailHeader(chick: chick)),
       );
 
-      expect(find.textContaining('chicks.ring_label'), findsNothing);
+      expect(find.textContaining(l10nContains('chicks.ring_label')), findsNothing);
     });
 
     testWidgets('shows age text when hatchDate is set', (tester) async {
@@ -215,7 +216,7 @@ void main() {
       );
 
       // Age is rendered via localization keys; in test env the raw key appears
-      expect(find.textContaining('chicks.age_weeks_days'), findsOneWidget);
+      expect(find.textContaining(l10nContains('chicks.age_weeks_days')), findsOneWidget);
     });
 
     testWidgets('does not show age text when hatchDate is null', (
@@ -228,8 +229,8 @@ void main() {
         SingleChildScrollView(child: ChickDetailHeader(chick: chick)),
       );
 
-      expect(find.textContaining('chicks.age_weeks_days'), findsNothing);
-      expect(find.textContaining('chicks.age_days_only'), findsNothing);
+      expect(find.textContaining(l10nContains('chicks.age_weeks_days')), findsNothing);
+      expect(find.textContaining(l10nContains('chicks.age_days_only')), findsNothing);
     });
 
     testWidgets('renders inside Column layout', (tester) async {

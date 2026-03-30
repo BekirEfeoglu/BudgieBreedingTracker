@@ -11,8 +11,10 @@ void main() {
       final expected = {
         Species.budgie: AppIcons.budgie,
         Species.canary: AppIcons.canary,
+        Species.cockatiel: AppIcons.cockatiel,
         Species.finch: AppIcons.finch,
         Species.other: AppIcons.birdOther,
+        Species.unknown: AppIcons.birdOther,
       };
 
       for (final entry in expected.entries) {

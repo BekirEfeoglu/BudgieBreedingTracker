@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:budgie_breeding_tracker/features/admin/widgets/admin_sidebar.dart';
@@ -82,31 +83,31 @@ void main() {
 
     testWidgets('shows panel title header', (tester) async {
       await _pumpSidebar(tester);
-      expect(find.text('admin.panel_title'), findsOneWidget);
+      expect(find.text(l10n('admin.panel_title')), findsOneWidget);
     });
 
     testWidgets('shows back to app link', (tester) async {
       await _pumpSidebar(tester);
-      expect(find.text('admin.back_to_app'), findsOneWidget);
+      expect(find.text(l10n('admin.back_to_app')), findsOneWidget);
     });
 
     testWidgets('shows all 8 menu item labels', (tester) async {
       await _pumpSidebar(tester);
-      expect(find.text('admin.dashboard'), findsOneWidget);
-      expect(find.text('admin.users'), findsOneWidget);
-      expect(find.text('admin.monitoring'), findsOneWidget);
-      expect(find.text('admin.database'), findsOneWidget);
-      expect(find.text('admin.audit'), findsOneWidget);
-      expect(find.text('admin.security'), findsOneWidget);
-      expect(find.text('admin.settings'), findsOneWidget);
-      expect(find.text('admin.feedback_admin'), findsOneWidget);
+      expect(find.text(l10n('admin.dashboard')), findsOneWidget);
+      expect(find.text(l10n('admin.users')), findsOneWidget);
+      expect(find.text(l10n('admin.monitoring')), findsOneWidget);
+      expect(find.text(l10n('admin.database')), findsOneWidget);
+      expect(find.text(l10n('admin.audit')), findsOneWidget);
+      expect(find.text(l10n('admin.security')), findsOneWidget);
+      expect(find.text(l10n('admin.settings')), findsOneWidget);
+      expect(find.text(l10n('admin.feedback_admin')), findsOneWidget);
     });
 
     testWidgets('dashboard item is selected on dashboard route', (
       tester,
     ) async {
       await _pumpSidebar(tester, initialLocation: '/admin/dashboard');
-      expect(find.text('admin.dashboard'), findsOneWidget);
+      expect(find.text(l10n('admin.dashboard')), findsOneWidget);
       expect(
         find.byWidgetPredicate(
           (widget) =>
@@ -127,14 +128,14 @@ void main() {
       tester,
     ) async {
       await _pumpSidebar(tester);
-      await tester.tap(find.text('admin.users'));
+      await tester.tap(find.text(l10n('admin.users')));
       await tester.pumpAndSettle();
       expect(find.text('Users Screen'), findsOneWidget);
     });
 
     testWidgets('tapping back to app navigates to home', (tester) async {
       await _pumpSidebar(tester);
-      await tester.tap(find.text('admin.back_to_app'));
+      await tester.tap(find.text(l10n('admin.back_to_app')));
       await tester.pumpAndSettle();
       expect(find.text('Home Screen'), findsOneWidget);
     });

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:budgie_breeding_tracker/core/enums/egg_enums.dart';
 import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
 import 'package:budgie_breeding_tracker/domain/services/incubation/incubation_calculator.dart';
@@ -54,7 +55,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('breeding.eggs'), findsOneWidget);
+      expect(find.text(l10n('breeding.eggs')), findsOneWidget);
     });
 
     testWidgets('shows manage button', (tester) async {
@@ -71,7 +72,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('breeding.manage'), findsOneWidget);
+      expect(find.text(l10n('breeding.manage')), findsOneWidget);
     });
 
     testWidgets('shows loading indicator while loading', (tester) async {
@@ -104,7 +105,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('breeding.no_eggs'), findsOneWidget);
+      expect(find.text(l10n('breeding.no_eggs')), findsOneWidget);
     });
 
     testWidgets('shows EggSummaryRow when eggs exist', (tester) async {
@@ -145,7 +146,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('breeding.all_eggs_hatched'), findsOneWidget);
+      expect(find.text(l10n('breeding.all_eggs_hatched')), findsOneWidget);
     });
 
     testWidgets('shows nothing on error', (tester) async {
@@ -182,7 +183,7 @@ void main() {
         ),
       );
 
-      expect(find.text('breeding.milestones'), findsOneWidget);
+      expect(find.text(l10n('breeding.milestones')), findsOneWidget);
     });
 
     testWidgets('shows MilestoneTimeline widget', (tester) async {
@@ -216,7 +217,7 @@ void main() {
           home: Scaffold(body: BreedingNotesSection(notes: 'Test notlar')),
         ),
       );
-      expect(find.text('common.notes'), findsOneWidget);
+      expect(find.text(l10n('common.notes')), findsOneWidget);
     });
 
     testWidgets('shows notes content', (tester) async {
@@ -235,7 +236,7 @@ void main() {
           home: Scaffold(body: BreedingNotesSection(notes: '')),
         ),
       );
-      expect(find.text('common.notes'), findsOneWidget);
+      expect(find.text(l10n('common.notes')), findsOneWidget);
     });
   });
 }

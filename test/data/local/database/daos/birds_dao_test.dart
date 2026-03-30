@@ -368,4 +368,70 @@ void main() {
       expect(deleted, isEmpty);
     });
   });
+
+  group('updateRingNumber', () {
+    test('updates only ringNumber and updatedAt', () async {
+      await dao.insertItem(
+        makeBird(id: 'b1', name: 'Original', ringNumber: 'OLD-001'),
+      );
+
+      await dao.updateRingNumber('b1', 'NEW-ENCRYPTED-VALUE');
+
+      final bird = await dao.getById('b1');
+      expect(bird, isNotNull);
+      expect(bird!.ringNumber, 'NEW-ENCRYPTED-VALUE');
+      expect(bird.name, 'Original'); // other fields untouched
+    });
+
+    test('sets ringNumber on bird that had none', () async {
+      await dao.insertItem(makeBird(id: 'b2'));
+
+      await dao.updateRingNumber('b2', 'ENCRYPTED-RING');
+
+      final bird = await dao.getById('b2');
+      expect(bird!.ringNumber, 'ENCRYPTED-RING');
+    });
+  });
+
+  group('getWithRingNumber', () {
+    test('returns only birds with non-null ring numbers', () async {
+      await dao.insertItem(makeBird(id: 'b1', ringNumber: 'TR-001'));
+      await dao.insertItem(makeBird(id: 'b2')); // no ring number
+      await dao.insertItem(makeBird(id: 'b3', ringNumber: 'TR-002'));
+
+      final results = await dao.getWithRingNumber(userId);
+      expect(results.length, 2);
+      expect(results.map((b) => b.id).toSet(), {'b1', 'b3'});
+    });
+
+    test('excludes soft-deleted birds', () async {
+      await dao.insertItem(
+        makeBird(id: 'b1', ringNumber: 'TR-001', isDeleted: true),
+      );
+      await dao.insertItem(makeBird(id: 'b2', ringNumber: 'TR-002'));
+
+      final results = await dao.getWithRingNumber(userId);
+      expect(results.length, 1);
+      expect(results.first.id, 'b2');
+    });
+
+    test('scoped by userId', () async {
+      await dao.insertItem(makeBird(id: 'b1', ringNumber: 'TR-001'));
+      await dao.insertItem(
+        makeBird(id: 'b2', user: otherId, ringNumber: 'TR-002'),
+      );
+
+      final results = await dao.getWithRingNumber(userId);
+      expect(results.length, 1);
+      expect(results.first.id, 'b1');
+    });
+
+    test('returns empty list when no birds have ring numbers', () async {
+      await dao.insertItem(makeBird(id: 'b1'));
+      await dao.insertItem(makeBird(id: 'b2'));
+
+      final results = await dao.getWithRingNumber(userId);
+      expect(results, isEmpty);
+    });
+  });
 }

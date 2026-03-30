@@ -15,6 +15,7 @@ import 'package:budgie_breeding_tracker/core/widgets/error_state.dart';
 import 'package:budgie_breeding_tracker/features/settings/providers/settings_providers.dart';
 import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
 import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
+import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/features/birds/providers/bird_providers.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_providers.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_detail_providers.dart';
@@ -155,106 +156,162 @@ class _BreedingFormScreenState extends ConsumerState<BreedingFormScreen> {
           ),
         ),
         body: birdsAsync.when(
-        loading: () => const LoadingState(),
-        error: (_, __) => ErrorState(
-          message: 'common.data_load_error'.tr(),
-          onRetry: () => ref.invalidate(birdsStreamProvider(userId)),
-        ),
-        data: (allBirds) {
-          if (_isEdit && _isLoadingExistingPair) {
-            return const LoadingState();
-          }
-          if (_isEdit && _existingPair == null) {
-            return Center(child: Text('breeding.not_found'.tr()));
-          }
+          loading: () => const LoadingState(),
+          error: (_, __) => ErrorState(
+            message: 'common.data_load_error'.tr(),
+            onRetry: () => ref.invalidate(birdsStreamProvider(userId)),
+          ),
+          data: (allBirds) {
+            Bird? selectedMale;
+            Bird? selectedFemale;
+            for (final bird in allBirds) {
+              if (bird.id == _maleId) selectedMale = bird;
+              if (bird.id == _femaleId) selectedFemale = bird;
+            }
 
-          if (allBirds.isEmpty && !_isEdit) {
-            return EmptyState(
-              icon: const AppIcon(AppIcons.bird),
-              title: 'breeding.no_birds_to_pair'.tr(),
-              subtitle: 'breeding.no_birds_to_pair_hint'.tr(),
-              actionLabel: 'birds.add_bird'.tr(),
-              onAction: () => context.push('/birds/form'),
-            );
-          }
+            final availableMaleBirds = maleBirds.where((bird) {
+              if (selectedFemale == null) return true;
+              return bird.species == selectedFemale.species;
+            }).toList();
+            final availableFemaleBirds = femaleBirds.where((bird) {
+              if (selectedMale == null) return true;
+              return bird.species == selectedMale.species;
+            }).toList();
 
-          return Form(
-            key: _formKey,
-            autovalidateMode: AutovalidateMode.onUserInteraction,
-            child: SingleChildScrollView(
-              padding: AppSpacing.screenPadding,
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(
-                    maxWidth: AppSpacing.maxContentWidth,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      BirdSelectorField(
-                        label:
-                            '${'breeding.male_bird'.tr()} (${maleBirds.length})',
-                        birds: maleBirds,
-                        selectedId: _maleId,
-                        onChanged: (id) => setState(() => _maleId = id),
-                        gender: BirdGender.male,
-                      ),
-                      const SizedBox(height: AppSpacing.lg),
-                      BirdSelectorField(
-                        label:
-                            '${'breeding.female_bird'.tr()} (${femaleBirds.length})',
-                        birds: femaleBirds,
-                        selectedId: _femaleId,
-                        onChanged: (id) => setState(() => _femaleId = id),
-                        gender: BirdGender.female,
-                      ),
-                      const SizedBox(height: AppSpacing.lg),
-                      DatePickerField(
-                        label: 'breeding.pairing_date'.tr(),
-                        value: _pairingDate,
-                        onChanged: (date) =>
-                            setState(() => _pairingDate = date),
-                        dateFormatter: ref
-                            .watch(dateFormatProvider)
-                            .formatter(),
-                      ),
-                      const SizedBox(height: AppSpacing.lg),
-                      TextFormField(
-                        controller: _cageController,
-                        decoration: InputDecoration(
-                          labelText: 'breeding.cage_number'.tr(),
-                          border: const OutlineInputBorder(),
-                          prefixIcon: const AppIcon(AppIcons.nest),
+            if (_isEdit && _isLoadingExistingPair) {
+              return const LoadingState();
+            }
+            if (_isEdit && _existingPair == null) {
+              return Center(child: Text('breeding.not_found'.tr()));
+            }
+
+            if (allBirds.isEmpty && !_isEdit) {
+              return EmptyState(
+                icon: const AppIcon(AppIcons.bird),
+                title: 'breeding.no_birds_to_pair'.tr(),
+                subtitle: 'breeding.no_birds_to_pair_hint'.tr(),
+                actionLabel: 'birds.add_bird'.tr(),
+                onAction: () => context.push('/birds/form'),
+              );
+            }
+
+            return Form(
+              key: _formKey,
+              autovalidateMode: AutovalidateMode.onUserInteraction,
+              child: SingleChildScrollView(
+                padding: AppSpacing.screenPadding,
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(
+                      maxWidth: AppSpacing.maxContentWidth,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        BirdSelectorField(
+                          label:
+                              '${'breeding.male_bird'.tr()} (${availableMaleBirds.length})',
+                          birds: availableMaleBirds,
+                          selectedId: _maleId,
+                          onChanged: (id) => setState(() {
+                            _maleId = id;
+                            Bird? nextMale;
+                            for (final bird in allBirds) {
+                              if (bird.id == id) {
+                                nextMale = bird;
+                                break;
+                              }
+                            }
+                            if (nextMale != null &&
+                                selectedFemale != null &&
+                                nextMale.species != selectedFemale.species) {
+                              _femaleId = null;
+                            }
+                          }),
+                          gender: BirdGender.male,
                         ),
-                        textInputAction: TextInputAction.next,
-                      ),
-                      const SizedBox(height: AppSpacing.lg),
-                      TextFormField(
-                        controller: _notesController,
-                        decoration: InputDecoration(
-                          labelText: 'common.notes'.tr(),
-                          border: const OutlineInputBorder(),
-                          prefixIcon: const Icon(LucideIcons.stickyNote),
+                        const SizedBox(height: AppSpacing.lg),
+                        BirdSelectorField(
+                          label:
+                              '${'breeding.female_bird'.tr()} (${availableFemaleBirds.length})',
+                          birds: availableFemaleBirds,
+                          selectedId: _femaleId,
+                          onChanged: (id) => setState(() {
+                            _femaleId = id;
+                            Bird? nextFemale;
+                            for (final bird in allBirds) {
+                              if (bird.id == id) {
+                                nextFemale = bird;
+                                break;
+                              }
+                            }
+                            if (nextFemale != null &&
+                                selectedMale != null &&
+                                nextFemale.species != selectedMale.species) {
+                              _maleId = null;
+                            }
+                          }),
+                          gender: BirdGender.female,
                         ),
-                        maxLines: 3,
-                        textInputAction: TextInputAction.done,
-                      ),
-                      const SizedBox(height: AppSpacing.xxl),
-                      PrimaryButton(
-                        label: _isEdit
-                            ? 'common.update'.tr()
-                            : 'common.save'.tr(),
-                        isLoading: formState.isLoading,
-                        onPressed: _submit,
-                      ),
-                    ],
+                        if (selectedMale != null &&
+                            selectedFemale != null &&
+                            selectedMale.species != selectedFemale.species) ...[
+                          const SizedBox(height: AppSpacing.sm),
+                          Text(
+                            'breeding.same_species_required'.tr(),
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(
+                                  color: Theme.of(context).colorScheme.error,
+                                ),
+                          ),
+                        ],
+                        const SizedBox(height: AppSpacing.lg),
+                        DatePickerField(
+                          label: 'breeding.pairing_date'.tr(),
+                          value: _pairingDate,
+                          onChanged: (date) =>
+                              setState(() => _pairingDate = date),
+                          dateFormatter: ref
+                              .watch(dateFormatProvider)
+                              .formatter(),
+                        ),
+                        const SizedBox(height: AppSpacing.lg),
+                        TextFormField(
+                          controller: _cageController,
+                          decoration: InputDecoration(
+                            labelText: 'breeding.cage_number'.tr(),
+                            border: const OutlineInputBorder(),
+                            prefixIcon: const AppIcon(AppIcons.nest),
+                          ),
+                          textInputAction: TextInputAction.next,
+                        ),
+                        const SizedBox(height: AppSpacing.lg),
+                        TextFormField(
+                          controller: _notesController,
+                          decoration: InputDecoration(
+                            labelText: 'common.notes'.tr(),
+                            border: const OutlineInputBorder(),
+                            prefixIcon: const Icon(LucideIcons.stickyNote),
+                          ),
+                          maxLines: 3,
+                          textInputAction: TextInputAction.done,
+                        ),
+                        const SizedBox(height: AppSpacing.xxl),
+                        PrimaryButton(
+                          label: _isEdit
+                              ? 'common.update'.tr()
+                              : 'common.save'.tr(),
+                          isLoading: formState.isLoading,
+                          onPressed: _submit,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
-          );
-        },
-      ),
+            );
+          },
+        ),
       ),
     );
   }

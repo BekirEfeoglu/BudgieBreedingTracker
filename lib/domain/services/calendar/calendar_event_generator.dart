@@ -1,8 +1,9 @@
-import 'package:budgie_breeding_tracker/core/constants/incubation_constants.dart';
+import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/event_enums.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/data/models/event_model.dart';
 import 'package:budgie_breeding_tracker/data/repositories/event_repository.dart';
+import 'package:budgie_breeding_tracker/domain/services/incubation/species_incubation_config.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:uuid/uuid.dart';
@@ -27,17 +28,19 @@ class CalendarEventGenerator {
     required String breedingPairId,
     required DateTime startDate,
     required String pairLabel,
+    Species species = Species.unknown,
   }) async {
     try {
+      final milestonesForSpecies = incubationMilestonesForSpecies(species);
       final milestones = <int, String>{
-        IncubationConstants.candlingDay: 'calendar.milestone_candling'.tr(),
-        IncubationConstants.secondCheckDay: 'calendar.milestone_second_check'
+        milestonesForSpecies.candlingDay: 'calendar.milestone_candling'.tr(),
+        milestonesForSpecies.secondCheckDay: 'calendar.milestone_second_check'
             .tr(),
-        IncubationConstants.sensitivePeriodDay: 'calendar.milestone_sensitive'
+        milestonesForSpecies.sensitivePeriodDay: 'calendar.milestone_sensitive'
             .tr(),
-        IncubationConstants.expectedHatchDay:
+        milestonesForSpecies.expectedHatchDay:
             'calendar.milestone_expected_hatch'.tr(),
-        IncubationConstants.lateHatchDay: 'calendar.milestone_late_hatch'.tr(),
+        milestonesForSpecies.lateHatchDay: 'calendar.milestone_late_hatch'.tr(),
       };
 
       final events = <Event>[];
@@ -80,6 +83,7 @@ class CalendarEventGenerator {
     required DateTime layDate,
     required int eggNumber,
     required String incubationId,
+    Species species = Species.unknown,
   }) async {
     try {
       // 1. Egg laying date event
@@ -97,7 +101,7 @@ class CalendarEventGenerator {
 
       // 2. Expected hatch date event
       final hatchDate = layDate.add(
-        const Duration(days: IncubationConstants.incubationPeriodDays),
+        Duration(days: incubationDaysForSpecies(species)),
       );
       if (!hatchDate.isBefore(DateTime.now())) {
         final hatchEvent = Event(
@@ -138,7 +142,11 @@ class CalendarEventGenerator {
     try {
       final milestones = <int, (String, EventType, String?)>{
         7: ('calendar.milestone_first_week'.tr(), EventType.chick, null),
-        bandingDay: ('calendar.milestone_banding'.tr(), EventType.banding, chickId),
+        bandingDay: (
+          'calendar.milestone_banding'.tr(),
+          EventType.banding,
+          chickId,
+        ),
         35: ('calendar.milestone_weaning'.tr(), EventType.chick, null),
       };
 

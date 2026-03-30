@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/features/admin/providers/admin_feedback_providers.dart';
 import 'package:budgie_breeding_tracker/features/admin/screens/admin_feedback_screen.dart';
@@ -57,7 +58,7 @@ void main() {
       await tester.pumpWidget(_createSubject());
       await tester.pump();
 
-      expect(find.text('admin.feedback_admin'), findsOneWidget);
+      expect(find.text(l10n('admin.feedback_admin')), findsOneWidget);
     });
 
     testWidgets('shows loading indicator when loading', (tester) async {
@@ -75,7 +76,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('common.data_load_error'), findsOneWidget);
+      expect(find.text(l10n('common.data_load_error')), findsOneWidget);
     });
 
     testWidgets('shows status filter bar when data loaded', (tester) async {
@@ -102,7 +103,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('admin.no_feedback'), findsOneWidget);
+      expect(find.text(l10n('admin.no_feedback')), findsOneWidget);
     });
 
     testWidgets('shows item count in filter bar', (tester) async {
@@ -124,7 +125,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('admin.feedback_status_all'), findsOneWidget);
+      expect(find.text(l10n('admin.feedback_status_all')), findsOneWidget);
     });
 
     testWidgets('shows refresh icon button in AppBar', (tester) async {

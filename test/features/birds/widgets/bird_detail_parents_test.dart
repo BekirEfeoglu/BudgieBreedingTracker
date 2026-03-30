@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/features/birds/widgets/bird_detail_parents.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_detail_providers.dart';
@@ -28,7 +29,7 @@ void main() {
 
       await _pump(tester, BirdDetailParents(bird: bird));
 
-      expect(find.text('birds.parents'), findsNothing);
+      expect(find.text(l10n('birds.parents')), findsNothing);
       expect(find.byType(SizedBox), findsAtLeastNWidgets(1));
     });
 
@@ -52,7 +53,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('birds.parents'), findsOneWidget);
+      expect(find.text(l10n('birds.parents')), findsOneWidget);
     });
 
     testWidgets('shows father name when father is loaded', (tester) async {
@@ -117,7 +118,7 @@ void main() {
       );
 
       // Before data loads, loading text should appear
-      expect(find.text('common.loading'), findsAtLeastNWidgets(1));
+      expect(find.text(l10n('common.loading')), findsAtLeastNWidgets(1));
     });
 
     testWidgets('shows unknown when parent is null', (tester) async {
@@ -132,7 +133,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('birds.unknown'), findsAtLeastNWidgets(1));
+      expect(find.text(l10n('birds.unknown')), findsAtLeastNWidgets(1));
     });
 
     testWidgets('shows mother label', (tester) async {
@@ -152,7 +153,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('birds.mother'), findsAtLeastNWidgets(1));
+      expect(find.text(l10n('birds.mother')), findsAtLeastNWidgets(1));
     });
 
     testWidgets('shows father label', (tester) async {
@@ -172,7 +173,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('birds.father'), findsAtLeastNWidgets(1));
+      expect(find.text(l10n('birds.father')), findsAtLeastNWidgets(1));
     });
   });
 }

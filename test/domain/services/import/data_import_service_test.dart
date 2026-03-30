@@ -2,8 +2,11 @@ import 'dart:typed_data';
 
 import 'package:excel/excel.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:mocktail/mocktail.dart';
 
+import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
+import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/core/enums/breeding_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/chick_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/egg_enums.dart';
@@ -75,6 +78,7 @@ void main() {
 
     when(() => birdRepo.save(any())).thenAnswer((_) async {});
     when(() => birdRepo.getAll(any())).thenAnswer((_) async => []);
+    when(() => birdRepo.getById(any())).thenAnswer((_) async => null);
     when(() => breedingRepo.save(any())).thenAnswer((_) async {});
     when(() => breedingRepo.getAll(any())).thenAnswer((_) async => []);
     when(() => eggRepo.save(any())).thenAnswer((_) async {});
@@ -133,6 +137,130 @@ void main() {
         verify(() => birdRepo.save(any())).called(1);
       },
     );
+
+    test(
+      'importBirdsFromExcel reads parent ids from exported columns',
+      () async {
+        when(() => birdRepo.getById('father-1')).thenAnswer(
+          (_) async => const Bird(
+            id: 'father-1',
+            name: 'Father',
+            gender: BirdGender.male,
+            userId: 'user-1',
+            species: Species.budgie,
+          ),
+        );
+        when(() => birdRepo.getById('mother-1')).thenAnswer(
+          (_) async => const Bird(
+            id: 'mother-1',
+            name: 'Mother',
+            gender: BirdGender.female,
+            userId: 'user-1',
+            species: Species.budgie,
+          ),
+        );
+
+        final bytes = _buildWorkbook({
+          'Kuslar': [
+            [
+              'Ad',
+              'Halka No',
+              'Cinsiyet',
+              'Tur',
+              'Durum',
+              'Dogum Tarihi',
+              'Renk',
+              'Kafes',
+              'Legacy Notlar',
+              'Baba ID',
+              'Anne ID',
+              'Notlar',
+            ],
+            [
+              'Mavi',
+              'TR-1',
+              'Erkek',
+              'Budgie',
+              'Alive',
+              '01.01.2025',
+              '',
+              'A1',
+              '',
+              'father-1',
+              'mother-1',
+              'family-linked',
+            ],
+          ],
+        });
+
+        final result = await service.importBirdsFromExcel(
+          bytes: bytes,
+          userId: 'user-1',
+        );
+
+        expect(result.importedCount, 1);
+        final captured =
+            verify(() => birdRepo.save(captureAny())).captured.single as Bird;
+        expect(captured.fatherId, 'father-1');
+        expect(captured.motherId, 'mother-1');
+        expect(captured.notes, 'family-linked');
+      },
+    );
+
+    test('importBirdsFromExcel rejects parent species mismatch', () async {
+      when(() => birdRepo.getById('father-1')).thenAnswer(
+        (_) async => const Bird(
+          id: 'father-1',
+          name: 'Father',
+          gender: BirdGender.male,
+          userId: 'user-1',
+          species: Species.canary,
+        ),
+      );
+
+      final bytes = _buildWorkbook({
+        'Kuslar': [
+          [
+            'Ad',
+            'Halka No',
+            'Cinsiyet',
+            'Tur',
+            'Durum',
+            'Dogum Tarihi',
+            'Renk',
+            'Kafes',
+            'Legacy Notlar',
+            'Baba ID',
+            'Anne ID',
+            'Notlar',
+          ],
+          [
+            'Mavi',
+            'TR-1',
+            'Erkek',
+            'Budgie',
+            'Alive',
+            '01.01.2025',
+            '',
+            'A1',
+            '',
+            'father-1',
+            '',
+            '',
+          ],
+        ],
+      });
+
+      final result = await service.importBirdsFromExcel(
+        bytes: bytes,
+        userId: 'user-1',
+      );
+
+      expect(result.importedCount, 0);
+      expect(result.skippedCount, 1);
+      expect(result.errors, contains(l10n('birds.parent_species_mismatch')));
+      verifyNever(() => birdRepo.save(any()));
+    });
 
     test(
       'importBirdsFromExcel enforces maxTotalBirds limit for free tier',
@@ -207,6 +335,55 @@ void main() {
       expect(result.skippedCount, 1);
       verifyNever(() => eggRepo.save(any()));
     });
+
+    test(
+      'importBreedingPairsFromExcel rejects different-species pair',
+      () async {
+        when(() => birdRepo.getById('male-1')).thenAnswer(
+          (_) async => const Bird(
+            id: 'male-1',
+            name: 'Male',
+            gender: BirdGender.male,
+            userId: 'user-1',
+            species: Species.budgie,
+          ),
+        );
+        when(() => birdRepo.getById('female-1')).thenAnswer(
+          (_) async => const Bird(
+            id: 'female-1',
+            name: 'Female',
+            gender: BirdGender.female,
+            userId: 'user-1',
+            species: Species.canary,
+          ),
+        );
+
+        final bytes = _buildWorkbook({
+          'Ureme Ciftleri': [
+            [
+              'Erkek ID',
+              'Disi ID',
+              'Kafes',
+              'Durum',
+              'Eslestirme',
+              'Ayrilma',
+              'Notlar',
+            ],
+            ['male-1', 'female-1', 'B3', 'active', '01.01.2025', '', ''],
+          ],
+        });
+
+        final result = await service.importBreedingPairsFromExcel(
+          bytes: bytes,
+          userId: 'user-1',
+        );
+
+        expect(result.importedCount, 0);
+        expect(result.skippedCount, 1);
+        expect(result.errors, contains(l10n('breeding.same_species_required')));
+        verifyNever(() => breedingRepo.save(any()));
+      },
+    );
 
     test('importAllFromExcel returns per-entity result map', () async {
       final bytes = _buildWorkbook({

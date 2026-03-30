@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/enums/chick_enums.dart';
@@ -48,7 +49,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('chicks.stage_newborn'), findsOneWidget);
+      expect(find.text(l10n('chicks.stage_newborn')), findsOneWidget);
     });
 
     testWidgets('nestling shows correct label', (tester) async {
@@ -57,7 +58,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('chicks.stage_nestling'), findsOneWidget);
+      expect(find.text(l10n('chicks.stage_nestling')), findsOneWidget);
     });
 
     testWidgets('fledgling shows correct label', (tester) async {
@@ -66,7 +67,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('chicks.stage_fledgling'), findsOneWidget);
+      expect(find.text(l10n('chicks.stage_fledgling')), findsOneWidget);
     });
 
     testWidgets('juvenile shows correct label', (tester) async {
@@ -75,7 +76,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('chicks.stage_juvenile'), findsOneWidget);
+      expect(find.text(l10n('chicks.stage_juvenile')), findsOneWidget);
     });
 
     testWidgets('unknown shows correct label', (tester) async {
@@ -84,7 +85,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('birds.unknown'), findsOneWidget);
+      expect(find.text(l10n('birds.unknown')), findsOneWidget);
     });
 
     // Color tests

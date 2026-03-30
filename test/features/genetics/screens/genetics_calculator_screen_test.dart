@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -61,7 +62,7 @@ void main() {
       await tester.pumpWidget(buildSubject());
       await tester.pumpAndSettle();
       // EasyLocalization returns key in test context
-      expect(find.text('genetics.title'), findsOneWidget);
+      expect(find.text(l10n('genetics.title')), findsOneWidget);
     });
 
     testWidgets('starts on step 0 (wizard step is 0 by default)', (

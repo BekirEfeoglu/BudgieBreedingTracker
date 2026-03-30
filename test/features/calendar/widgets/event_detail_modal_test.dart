@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -101,7 +102,7 @@ void main() {
     testWidgets('shows edit button in modal', (tester) async {
       await openModal(tester, event: activeEvent);
       expect(
-        find.widgetWithText(OutlinedButton, 'common.edit'),
+        find.widgetWithText(OutlinedButton, l10n('common.edit')),
         findsOneWidget,
       );
     });
@@ -109,7 +110,7 @@ void main() {
     testWidgets('shows delete button in modal', (tester) async {
       await openModal(tester, event: activeEvent);
       expect(
-        find.widgetWithText(FilledButton, 'common.delete'),
+        find.widgetWithText(FilledButton, l10n('common.delete')),
         findsOneWidget,
       );
     });
@@ -117,11 +118,11 @@ void main() {
     testWidgets('shows status change buttons for active event', (tester) async {
       await openModal(tester, event: activeEvent, onStatusChange: (_) {});
       expect(
-        find.widgetWithText(OutlinedButton, 'calendar.mark_completed'),
+        find.widgetWithText(OutlinedButton, l10n('calendar.mark_completed')),
         findsOneWidget,
       );
       expect(
-        find.widgetWithText(OutlinedButton, 'calendar.mark_cancelled'),
+        find.widgetWithText(OutlinedButton, l10n('calendar.mark_cancelled')),
         findsOneWidget,
       );
     });
@@ -129,11 +130,11 @@ void main() {
     testWidgets('no status change buttons for completed event', (tester) async {
       await openModal(tester, event: completedEvent, onStatusChange: (_) {});
       expect(
-        find.widgetWithText(OutlinedButton, 'calendar.mark_completed'),
+        find.widgetWithText(OutlinedButton, l10n('calendar.mark_completed')),
         findsNothing,
       );
       expect(
-        find.widgetWithText(OutlinedButton, 'calendar.mark_cancelled'),
+        find.widgetWithText(OutlinedButton, l10n('calendar.mark_cancelled')),
         findsNothing,
       );
     });
@@ -147,7 +148,7 @@ void main() {
         event: activeEvent,
         onEdit: () => editCalled = true,
       );
-      await tester.tap(find.widgetWithText(OutlinedButton, 'common.edit'));
+      await tester.tap(find.widgetWithText(OutlinedButton, l10n('common.edit')));
       await tester.pumpAndSettle();
       expect(editCalled, isTrue);
     });

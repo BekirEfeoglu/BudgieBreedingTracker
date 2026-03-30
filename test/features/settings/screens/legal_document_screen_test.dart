@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:budgie_breeding_tracker/features/settings/screens/legal_document_screen.dart';
@@ -32,7 +33,7 @@ void main() {
         await tester.pumpWidget(createSubject(LegalDocumentType.privacyPolicy));
         await tester.pumpAndSettle();
 
-        expect(find.text('settings.privacy_policy'), findsOneWidget);
+        expect(find.text(l10n('settings.privacy_policy')), findsOneWidget);
       });
 
       testWidgets('contains scrollable ListView', (tester) async {
@@ -53,7 +54,7 @@ void main() {
         await tester.pumpWidget(createSubject(LegalDocumentType.privacyPolicy));
         await tester.pumpAndSettle();
 
-        expect(find.text('legal.last_updated'), findsOneWidget);
+        expect(find.text(l10n('legal.last_updated')), findsOneWidget);
       });
     });
 
@@ -73,7 +74,7 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        expect(find.text('settings.terms'), findsOneWidget);
+        expect(find.text(l10n('settings.terms')), findsOneWidget);
       });
 
       testWidgets('contains scrollable ListView', (tester) async {
@@ -100,7 +101,7 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        expect(find.text('legal.last_updated'), findsOneWidget);
+        expect(find.text(l10n('legal.last_updated')), findsOneWidget);
       });
     });
 
@@ -120,7 +121,7 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        expect(find.text('legal.community_guidelines_title'), findsOneWidget);
+        expect(find.text(l10n('legal.community_guidelines_title')), findsOneWidget);
       });
 
       testWidgets('contains scrollable ListView', (tester) async {
@@ -147,7 +148,7 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        expect(find.text('legal.last_updated'), findsOneWidget);
+        expect(find.text(l10n('legal.last_updated')), findsOneWidget);
       });
     });
 
@@ -158,27 +159,27 @@ void main() {
         // Privacy Policy
         await tester.pumpWidget(createSubject(LegalDocumentType.privacyPolicy));
         await tester.pumpAndSettle();
-        expect(find.text('settings.privacy_policy'), findsOneWidget);
-        expect(find.text('settings.terms'), findsNothing);
-        expect(find.text('legal.community_guidelines_title'), findsNothing);
+        expect(find.text(l10n('settings.privacy_policy')), findsOneWidget);
+        expect(find.text(l10n('settings.terms')), findsNothing);
+        expect(find.text(l10n('legal.community_guidelines_title')), findsNothing);
 
         // Terms of Service
         await tester.pumpWidget(
           createSubject(LegalDocumentType.termsOfService),
         );
         await tester.pumpAndSettle();
-        expect(find.text('settings.terms'), findsOneWidget);
-        expect(find.text('settings.privacy_policy'), findsNothing);
-        expect(find.text('legal.community_guidelines_title'), findsNothing);
+        expect(find.text(l10n('settings.terms')), findsOneWidget);
+        expect(find.text(l10n('settings.privacy_policy')), findsNothing);
+        expect(find.text(l10n('legal.community_guidelines_title')), findsNothing);
 
         // Community Guidelines
         await tester.pumpWidget(
           createSubject(LegalDocumentType.communityGuidelines),
         );
         await tester.pumpAndSettle();
-        expect(find.text('legal.community_guidelines_title'), findsOneWidget);
-        expect(find.text('settings.privacy_policy'), findsNothing);
-        expect(find.text('settings.terms'), findsNothing);
+        expect(find.text(l10n('legal.community_guidelines_title')), findsOneWidget);
+        expect(find.text(l10n('settings.privacy_policy')), findsNothing);
+        expect(find.text(l10n('settings.terms')), findsNothing);
       });
 
       testWidgets('body is scrollable', (tester) async {

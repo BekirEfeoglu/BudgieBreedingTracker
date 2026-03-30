@@ -19,6 +19,9 @@ String birdColorLabel(BirdColor color) => switch (color) {
   BirdColor.spangle => 'birds.color_spangle'.tr(),
   BirdColor.pied => 'birds.color_pied'.tr(),
   BirdColor.clearwing => 'birds.color_clearwing'.tr(),
+  BirdColor.red => 'birds.color_red'.tr(),
+  BirdColor.pearl => 'birds.color_pearl'.tr(),
+  BirdColor.whiteface => 'birds.color_whiteface'.tr(),
   BirdColor.other => 'birds.color_other'.tr(),
   BirdColor.unknown => 'birds.color_other'.tr(),
 };
@@ -38,6 +41,9 @@ Color birdColorToColor(BirdColor color) => switch (color) {
   BirdColor.spangle => AppColors.birdSpangle,
   BirdColor.pied => AppColors.birdPied,
   BirdColor.clearwing => AppColors.birdClearwing,
+  BirdColor.red => AppColors.birdRed,
+  BirdColor.pearl => AppColors.birdPearl,
+  BirdColor.whiteface => AppColors.birdWhiteface,
   BirdColor.other => AppColors.birdOther,
   BirdColor.unknown => AppColors.birdOther,
 };

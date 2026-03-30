@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/breeding_enums.dart';
 import 'package:budgie_breeding_tracker/data/local/database/app_database.dart';
 import 'package:budgie_breeding_tracker/data/local/database/mappers/incubation_mapper.dart';
@@ -14,6 +15,7 @@ void main() {
       final row = IncubationRow(
         id: 'i1',
         userId: 'u1',
+        species: Species.canary,
         status: IncubationStatus.active,
         version: 2,
         clutchId: 'cl1',
@@ -27,6 +29,7 @@ void main() {
 
       expect(model.id, 'i1');
       expect(model.userId, 'u1');
+      expect(model.species, Species.canary);
       expect(model.status, IncubationStatus.active);
       expect(model.version, 2);
       expect(model.clutchId, 'cl1');
@@ -40,6 +43,7 @@ void main() {
       const row = IncubationRow(
         id: 'i2',
         userId: 'u1',
+        species: Species.budgie,
         status: IncubationStatus.active,
         version: 1,
       );
@@ -58,6 +62,7 @@ void main() {
       final model = Incubation(
         id: 'i1',
         userId: 'u1',
+        species: Species.cockatiel,
         status: IncubationStatus.completed,
         version: 3,
         breedingPairId: 'bp1',
@@ -68,6 +73,7 @@ void main() {
 
       expect(companion.id.value, 'i1');
       expect(companion.userId.value, 'u1');
+      expect(companion.species.value, Species.cockatiel);
       expect(companion.status.value, IncubationStatus.completed);
       expect(companion.version.value, 3);
       expect(companion.breedingPairId.value, 'bp1');

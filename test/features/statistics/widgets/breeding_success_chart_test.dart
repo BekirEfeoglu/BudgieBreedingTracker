@@ -1,6 +1,7 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/features/statistics/widgets/breeding_success_chart.dart';
 import 'package:budgie_breeding_tracker/features/statistics/widgets/chart_card.dart';
@@ -79,8 +80,8 @@ void main() {
       );
       await tester.pump(const Duration(milliseconds: 300));
       // easy_localization returns key strings in test env
-      expect(find.text('statistics.completed'), findsOneWidget);
-      expect(find.text('statistics.cancelled'), findsOneWidget);
+      expect(find.text(l10n('statistics.completed')), findsOneWidget);
+      expect(find.text(l10n('statistics.cancelled')), findsOneWidget);
     });
   });
 }

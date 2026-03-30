@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/features/admin/providers/admin_models.dart';
 import 'package:budgie_breeding_tracker/features/admin/widgets/admin_monitoring_content.dart';
@@ -52,21 +53,21 @@ void main() {
       await pumpLocalizedApp(tester,
         _wrap(const MonitoringStatusBanner(capacity: _healthyCapacity)),
       );
-      expect(find.text('admin.system_status'), findsOneWidget);
+      expect(find.text(l10n('admin.system_status')), findsOneWidget);
     });
 
     testWidgets('shows db_status_healthy for healthy capacity', (tester) async {
       await pumpLocalizedApp(tester,
         _wrap(const MonitoringStatusBanner(capacity: _healthyCapacity)),
       );
-      expect(find.text('admin.db_status_healthy'), findsOneWidget);
+      expect(find.text(l10n('admin.db_status_healthy')), findsOneWidget);
     });
 
     testWidgets('shows db_status_warning for warning capacity', (tester) async {
       await pumpLocalizedApp(tester,
         _wrap(const MonitoringStatusBanner(capacity: _warningCapacity)),
       );
-      expect(find.text('admin.db_status_warning'), findsOneWidget);
+      expect(find.text(l10n('admin.db_status_warning')), findsOneWidget);
     });
 
     testWidgets('shows db_status_critical for critical capacity', (
@@ -75,7 +76,7 @@ void main() {
       await pumpLocalizedApp(tester,
         _wrap(const MonitoringStatusBanner(capacity: _criticalCapacity)),
       );
-      expect(find.text('admin.db_status_critical'), findsOneWidget);
+      expect(find.text(l10n('admin.db_status_critical')), findsOneWidget);
     });
   });
 
@@ -183,7 +184,7 @@ void main() {
       await pumpLocalizedApp(tester,
         _wrap(const MonitoringIndexUsageCard(indexHitRatio: 85.0)),
       );
-      expect(find.text('admin.index_usage'), findsOneWidget);
+      expect(find.text(l10n('admin.index_usage')), findsOneWidget);
     });
 
     testWidgets('shows index ratio percentage', (tester) async {

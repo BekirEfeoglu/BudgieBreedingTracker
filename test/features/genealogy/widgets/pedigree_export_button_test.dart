@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
@@ -47,7 +48,7 @@ void main() {
       await tester.pump();
 
       // 'genealogy.export_options' key → test ortamında raw string olarak çıkar
-      expect(find.text('genealogy.export_options'), findsOneWidget);
+      expect(find.text(l10n('genealogy.export_options')), findsOneWidget);
     });
 
     testWidgets('shows FilledButton.tonal as main button', (tester) async {
@@ -143,7 +144,7 @@ void main() {
       await tester.tap(find.byType(FilledButton));
       await tester.pumpAndSettle();
 
-      expect(find.text('genealogy.export_pdf'), findsOneWidget);
+      expect(find.text(l10n('genealogy.export_pdf')), findsOneWidget);
     });
   });
 }

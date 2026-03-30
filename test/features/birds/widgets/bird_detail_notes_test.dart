@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:budgie_breeding_tracker/features/birds/widgets/bird_detail_notes.dart';
 
 import '../../../helpers/pump_helpers.dart';
@@ -16,7 +17,7 @@ void main() {
     testWidgets('displays section title key', (tester) async {
       await pumpWidgetSimple(tester, const BirdDetailNotes(notes: 'test'));
 
-      expect(find.text('common.notes'), findsOneWidget);
+      expect(find.text(l10n('common.notes')), findsOneWidget);
     });
 
     testWidgets('displays multiline notes correctly', (tester) async {
@@ -30,7 +31,7 @@ void main() {
     testWidgets('displays empty notes without error', (tester) async {
       await pumpWidgetSimple(tester, const BirdDetailNotes(notes: ''));
 
-      expect(find.text('common.notes'), findsOneWidget);
+      expect(find.text(l10n('common.notes')), findsOneWidget);
     });
 
     testWidgets('is a StatelessWidget', (tester) async {

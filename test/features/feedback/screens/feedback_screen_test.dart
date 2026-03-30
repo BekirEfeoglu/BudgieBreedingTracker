@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/features/feedback/providers/feedback_providers.dart';
 import 'package:budgie_breeding_tracker/features/feedback/screens/feedback_screen.dart';
@@ -29,15 +30,15 @@ void main() {
       await tester.pumpWidget(createSubject());
       await tester.pumpAndSettle();
 
-      expect(find.text('feedback.title'), findsOneWidget);
+      expect(find.text(l10n('feedback.title')), findsOneWidget);
     });
 
     testWidgets('shows two tab labels', (tester) async {
       await tester.pumpWidget(createSubject());
       await tester.pumpAndSettle();
 
-      expect(find.text('feedback.new_feedback'), findsOneWidget);
-      expect(find.text('feedback.my_submissions'), findsOneWidget);
+      expect(find.text(l10n('feedback.new_feedback')), findsOneWidget);
+      expect(find.text(l10n('feedback.my_submissions')), findsOneWidget);
     });
 
     testWidgets('shows text form fields on form tab', (tester) async {
@@ -52,7 +53,7 @@ void main() {
       await tester.pumpWidget(createSubject());
       await tester.pumpAndSettle();
 
-      expect(find.text('feedback.submit'), findsOneWidget);
+      expect(find.text(l10n('feedback.submit')), findsOneWidget);
     });
 
     testWidgets('shows TabBar widget', (tester) async {

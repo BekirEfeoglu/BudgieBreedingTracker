@@ -1,6 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:budgie_breeding_tracker/core/constants/incubation_constants.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/progress_bar.dart';
 import 'package:budgie_breeding_tracker/data/models/incubation_model.dart';
@@ -16,12 +15,13 @@ class BreedingCardProgress extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final daysElapsed = incubation.daysElapsed;
+    final totalDays = incubation.totalIncubationDays();
     final stageColor = incubation.isComplete
         ? IncubationCalculator.getCompletedStageColor()
-        : IncubationCalculator.getStageColor(daysElapsed);
+        : IncubationCalculator.getStageColor(daysElapsed, totalDays: totalDays);
     final stageLabel = incubation.isComplete
         ? 'breeding.completed'.tr()
-        : IncubationCalculator.getStageLabel(daysElapsed);
+        : IncubationCalculator.getStageLabel(daysElapsed, totalDays: totalDays);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -38,10 +38,7 @@ class BreedingCardProgress extends StatelessWidget {
             ),
             Text(
               'breeding.day_progress'.tr(
-                args: [
-                  daysElapsed.toString(),
-                  IncubationConstants.incubationPeriodDays.toString(),
-                ],
+                args: [daysElapsed.toString(), totalDays.toString()],
               ),
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,

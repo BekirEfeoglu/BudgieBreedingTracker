@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:budgie_breeding_tracker/data/models/health_record_model.dart';
 import 'package:budgie_breeding_tracker/features/birds/widgets/bird_detail_health.dart';
 import 'package:budgie_breeding_tracker/features/health_records/providers/health_record_providers.dart';
@@ -205,7 +206,7 @@ void main() {
       final errorTextFinder = find.text('health_records.load_error');
       if (errorTextFinder.evaluate().isNotEmpty) {
         expect(errorTextFinder, findsOneWidget);
-        expect(find.text('common.retry'), findsOneWidget);
+        expect(find.text(l10n('common.retry')), findsOneWidget);
       } else {
         // Widget is in loading state — verify widget renders without crashing
         expect(find.byType(BirdDetailHealth), findsOneWidget);

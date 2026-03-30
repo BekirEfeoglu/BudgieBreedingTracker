@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:budgie_breeding_tracker/features/home/widgets/quick_actions_row.dart';
@@ -51,35 +52,35 @@ void main() {
       await tester.pumpWidget(_createSubject());
       await tester.pump();
 
-      expect(find.text('birds.add_bird'), findsOneWidget);
+      expect(find.text(l10n('birds.add_bird')), findsOneWidget);
     });
 
     testWidgets('shows add breeding action label', (tester) async {
       await tester.pumpWidget(_createSubject());
       await tester.pump();
 
-      expect(find.text('breeding.add_breeding'), findsOneWidget);
+      expect(find.text(l10n('breeding.add_breeding')), findsOneWidget);
     });
 
     testWidgets('shows add chick action label', (tester) async {
       await tester.pumpWidget(_createSubject());
       await tester.pump();
 
-      expect(find.text('chicks.add_chick'), findsOneWidget);
+      expect(find.text(l10n('chicks.add_chick')), findsOneWidget);
     });
 
     testWidgets('shows manage eggs action label', (tester) async {
       await tester.pumpWidget(_createSubject());
       await tester.pump();
 
-      expect(find.text('home.manage_eggs'), findsOneWidget);
+      expect(find.text(l10n('home.manage_eggs')), findsOneWidget);
     });
 
     testWidgets('tapping add bird navigates to bird form', (tester) async {
       await tester.pumpWidget(_createSubject());
       await tester.pump();
 
-      await tester.tap(find.text('birds.add_bird'));
+      await tester.tap(find.text(l10n('birds.add_bird')));
       await tester.pumpAndSettle();
 
       expect(find.text('BirdForm'), findsOneWidget);
@@ -91,7 +92,7 @@ void main() {
       await tester.pumpWidget(_createSubject());
       await tester.pump();
 
-      await tester.tap(find.text('breeding.add_breeding'));
+      await tester.tap(find.text(l10n('breeding.add_breeding')));
       await tester.pumpAndSettle();
 
       expect(find.text('BreedingForm'), findsOneWidget);

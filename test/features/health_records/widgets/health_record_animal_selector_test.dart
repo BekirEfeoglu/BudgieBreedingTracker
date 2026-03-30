@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
@@ -29,7 +30,7 @@ void main() {
     testWidgets('shows LinearProgressIndicator when loading with empty lists', (
       tester,
     ) async {
-      await pumpLocalizedWidget(
+      await pumpTranslatedWidget(
         tester,
         HealthRecordAnimalSelector(
           selectedId: null,
@@ -47,7 +48,7 @@ void main() {
     testWidgets('shows DropdownButtonFormField when not loading', (
       tester,
     ) async {
-      await pumpLocalizedWidget(
+      await pumpTranslatedWidget(
         tester,
         HealthRecordAnimalSelector(
           selectedId: null,
@@ -68,7 +69,7 @@ void main() {
     testWidgets('shows DropdownButtonFormField even when loading with data', (
       tester,
     ) async {
-      await pumpLocalizedWidget(
+      await pumpTranslatedWidget(
         tester,
         HealthRecordAnimalSelector(
           selectedId: null,
@@ -88,7 +89,7 @@ void main() {
     });
 
     testWidgets('shows label text from l10n', (tester) async {
-      await pumpLocalizedWidget(
+      await pumpTranslatedWidget(
         tester,
         HealthRecordAnimalSelector(
           selectedId: null,
@@ -100,11 +101,14 @@ void main() {
         settle: false,
       );
 
-      expect(find.text('health_records.select_animal'), findsOneWidget);
+      expect(
+        find.text(resolvedL10n('health_records.select_animal')),
+        findsOneWidget,
+      );
     });
 
     testWidgets('renders with bird list', (tester) async {
-      await pumpLocalizedWidget(
+      await pumpTranslatedWidget(
         tester,
         HealthRecordAnimalSelector(
           selectedId: null,
@@ -123,7 +127,7 @@ void main() {
     });
 
     testWidgets('renders with chick list', (tester) async {
-      await pumpLocalizedWidget(
+      await pumpTranslatedWidget(
         tester,
         HealthRecordAnimalSelector(
           selectedId: null,
@@ -144,7 +148,7 @@ void main() {
     testWidgets('calls onChanged when value selected', (tester) async {
       String? changedValue;
 
-      await pumpLocalizedWidget(
+      await pumpTranslatedWidget(
         tester,
         HealthRecordAnimalSelector(
           selectedId: null,

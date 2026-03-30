@@ -44,12 +44,25 @@ mixin _AuthOAuthMixin {
         );
       }
 
-      if (!_isGoogleInitialized) {
+      // iOS requires nonce for Credential Manager flow; Android does not.
+      final String? rawNonce;
+      final String? hashedNonce;
+      if (Platform.isIOS) {
+        rawNonce = _client.auth.generateRawNonce();
+        hashedNonce = sha256.convert(utf8.encode(rawNonce)).toString();
+      } else {
+        rawNonce = null;
+        hashedNonce = null;
+      }
+
+      // Re-initialize on iOS every time because nonce changes per attempt.
+      if (!_isGoogleInitialized || Platform.isIOS) {
         await GoogleSignIn.instance.initialize(
           clientId: Platform.isIOS
               ? (iosClientId.isEmpty ? null : iosClientId)
               : null,
           serverClientId: webClientId.isEmpty ? null : webClientId,
+          nonce: hashedNonce,
         );
         _isGoogleInitialized = true;
       }
@@ -77,6 +90,7 @@ mixin _AuthOAuthMixin {
         provider: OAuthProvider.google,
         idToken: idToken,
         accessToken: accessToken,
+        nonce: rawNonce,
       );
     } catch (e) {
       if (e is AuthException) rethrow;

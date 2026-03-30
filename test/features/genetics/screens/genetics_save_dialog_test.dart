@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -104,16 +105,16 @@ void main() {
       await tester.pumpAndSettle();
 
       // Find and tap save button
-      final saveButton = find.text('genetics.save_calculation');
+      final saveButton = find.text(l10n('genetics.save_calculation'));
       expect(saveButton, findsOneWidget);
       await tester.tap(saveButton);
       await tester.pumpAndSettle();
 
       // Verify note dialog appeared
-      expect(find.text('genetics.save_note_title'), findsOneWidget);
-      expect(find.text('genetics.save_note_hint'), findsOneWidget);
-      expect(find.text('common.cancel'), findsOneWidget);
-      expect(find.text('common.save'), findsOneWidget);
+      expect(find.text(l10n('genetics.save_note_title')), findsOneWidget);
+      expect(find.text(l10n('genetics.save_note_hint')), findsOneWidget);
+      expect(find.text(l10n('common.cancel')), findsOneWidget);
+      expect(find.text(l10n('common.save')), findsOneWidget);
     });
 
     testWidgets('cancel button dismisses note dialog without saving', (
@@ -132,16 +133,16 @@ void main() {
       container.read(wizardStepProvider.notifier).state = 2;
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('genetics.save_calculation'));
+      await tester.tap(find.text(l10n('genetics.save_calculation')));
       await tester.pumpAndSettle();
 
       // Tap cancel
-      await tester.tap(find.text('common.cancel'));
+      await tester.tap(find.text(l10n('common.cancel')));
       await tester.pumpAndSettle();
 
       // Dialog dismissed, no snackbar shown
-      expect(find.text('genetics.save_note_title'), findsNothing);
-      expect(find.text('genetics.calculation_saved'), findsNothing);
+      expect(find.text(l10n('genetics.save_note_title')), findsNothing);
+      expect(find.text(l10n('genetics.calculation_saved')), findsNothing);
     });
 
     testWidgets('save button triggers save and shows success snackbar', (
@@ -160,16 +161,16 @@ void main() {
       container.read(wizardStepProvider.notifier).state = 2;
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('genetics.save_calculation'));
+      await tester.tap(find.text(l10n('genetics.save_calculation')));
       await tester.pumpAndSettle();
 
       // Tap save in dialog
-      await tester.tap(find.text('common.save'));
+      await tester.tap(find.text(l10n('common.save')));
       await tester.pumpAndSettle();
 
       // Verify success snackbar with history action
-      expect(find.text('genetics.calculation_saved'), findsOneWidget);
-      expect(find.text('genetics.history'), findsAtLeastNWidgets(1));
+      expect(find.text(l10n('genetics.calculation_saved')), findsOneWidget);
+      expect(find.text(l10n('genetics.history')), findsAtLeastNWidgets(1));
     });
 
     testWidgets('note text is passed to the text field in dialog', (
@@ -188,7 +189,7 @@ void main() {
       container.read(wizardStepProvider.notifier).state = 2;
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('genetics.save_calculation'));
+      await tester.tap(find.text(l10n('genetics.save_calculation')));
       await tester.pumpAndSettle();
 
       // Enter a note
@@ -199,7 +200,7 @@ void main() {
       expect(find.text('Test note'), findsOneWidget);
 
       // Tap save
-      await tester.tap(find.text('common.save'));
+      await tester.tap(find.text(l10n('common.save')));
       await tester.pumpAndSettle();
 
       // Verify save was called

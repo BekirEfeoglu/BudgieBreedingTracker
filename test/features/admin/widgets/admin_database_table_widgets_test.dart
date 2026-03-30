@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 import 'package:budgie_breeding_tracker/features/admin/providers/admin_actions_provider.dart';
@@ -88,7 +89,7 @@ void main() {
           ),
         ),
       );
-      expect(find.text('admin.protected_table'), findsOneWidget);
+      expect(find.text(l10n('admin.protected_table')), findsOneWidget);
     });
 
     testWidgets('does not show protected label for unprotected table', (
@@ -99,7 +100,7 @@ void main() {
           const DatabaseTableRow(table: TableInfo(name: 'birds', rowCount: 10)),
         ),
       );
-      expect(find.text('admin.protected_table'), findsNothing);
+      expect(find.text(l10n('admin.protected_table')), findsNothing);
     });
 
     testWidgets('shows warning icon for negative row count (error state)', (

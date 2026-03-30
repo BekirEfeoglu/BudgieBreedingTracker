@@ -17,8 +17,13 @@ import 'package:budgie_breeding_tracker/features/birds/providers/bird_providers.
 /// genotype information in the genetics calculator.
 class BirdPickerDialog extends ConsumerStatefulWidget {
   final BirdGender genderFilter;
+  final Species speciesFilter;
 
-  const BirdPickerDialog({super.key, required this.genderFilter});
+  const BirdPickerDialog({
+    super.key,
+    required this.genderFilter,
+    this.speciesFilter = Species.budgie,
+  });
 
   @override
   ConsumerState<BirdPickerDialog> createState() => _BirdPickerDialogState();
@@ -90,6 +95,7 @@ class _BirdPickerDialogState extends ConsumerState<BirdPickerDialog> {
                       .where(
                         (b) =>
                             b.gender == widget.genderFilter &&
+                            b.species == widget.speciesFilter &&
                             b.status == BirdStatus.alive,
                       )
                       .toList();
@@ -198,10 +204,14 @@ class _BirdTile extends StatelessWidget {
 Future<Bird?> showBirdPickerDialog(
   BuildContext context, {
   required BirdGender genderFilter,
+  Species speciesFilter = Species.budgie,
 }) {
   return showDialog<Bird>(
     context: context,
-    builder: (context) => BirdPickerDialog(genderFilter: genderFilter),
+    builder: (context) => BirdPickerDialog(
+      genderFilter: genderFilter,
+      speciesFilter: speciesFilter,
+    ),
   );
 }
 

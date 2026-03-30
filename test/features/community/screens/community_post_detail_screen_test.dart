@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
@@ -41,7 +42,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('community.post_detail'), findsOneWidget);
+      expect(find.text(l10n('community.post_detail')), findsOneWidget);
     });
 
     testWidgets('shows post not found when post is null', (tester) async {
@@ -50,7 +51,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('community.post_not_found'), findsOneWidget);
+      expect(find.text(l10n('community.post_not_found')), findsOneWidget);
     });
 
     testWidgets('shows comments header', (tester) async {
@@ -59,7 +60,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('community.comments'), findsOneWidget);
+      expect(find.text(l10n('community.comments')), findsOneWidget);
     });
 
     testWidgets('shows no comments text when empty', (tester) async {
@@ -68,7 +69,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('community.no_comments'), findsOneWidget);
+      expect(find.text(l10n('community.no_comments')), findsOneWidget);
     });
 
     testWidgets('has comment input at bottom', (tester) async {

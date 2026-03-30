@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:budgie_breeding_tracker/features/birds/widgets/bird_photo_gallery.dart';
 
 void main() {
@@ -11,7 +12,7 @@ void main() {
         ),
       );
 
-      expect(find.text('birds.photos'), findsNothing);
+      expect(find.text(l10n('birds.photos')), findsNothing);
       expect(find.byType(ListView), findsNothing);
     });
 
@@ -24,7 +25,7 @@ void main() {
         ),
       );
 
-      expect(find.text('birds.photos'), findsOneWidget);
+      expect(find.text(l10n('birds.photos')), findsOneWidget);
     });
 
     testWidgets('shows horizontal ListView with correct item count', (

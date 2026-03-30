@@ -19,9 +19,38 @@ final incubationsStreamProvider =
 final monthlyFertilityRateProvider =
     Provider.family<AsyncValue<Map<String, double>>, String>((ref, userId) {
       final eggsAsync = ref.watch(eggsStreamProvider(userId));
+      final incubationsAsync = ref.watch(incubationsStreamProvider(userId));
       final period = ref.watch(statsPeriodProvider);
+      final speciesFilter = ref.watch(statsSpeciesFilterProvider);
 
-      return eggsAsync.whenData((eggs) {
+      for (final async in [eggsAsync, incubationsAsync]) {
+        if (async.hasError) {
+          return AsyncError(async.error!, async.stackTrace ?? StackTrace.empty);
+        }
+      }
+      if (eggsAsync.isLoading || incubationsAsync.isLoading) {
+        return const AsyncLoading();
+      }
+
+      final eggs = eggsAsync.requireValue;
+      final incubations = incubationsAsync.requireValue;
+      final allowedIncubationIds = speciesFilter == null
+          ? null
+          : incubations
+                .where((incubation) => incubation.species == speciesFilter)
+                .map((incubation) => incubation.id)
+                .toSet();
+      final filteredEggs = allowedIncubationIds == null
+          ? eggs
+          : eggs
+                .where(
+                  (egg) =>
+                      egg.incubationId != null &&
+                      allowedIncubationIds.contains(egg.incubationId),
+                )
+                .toList();
+
+      return AsyncData(() {
         final range = buildStatsDateRange(period);
         final now = range.currentEnd;
         final monthCount = period.monthCount;
@@ -37,7 +66,7 @@ final monthlyFertilityRateProvider =
           result[key] = 0.0;
         }
 
-        for (final egg in eggs) {
+        for (final egg in filteredEggs) {
           final key =
               '${egg.layDate.year}-${egg.layDate.month.toString().padLeft(2, '0')}';
           if (!totalMap.containsKey(key)) continue;
@@ -58,21 +87,27 @@ final monthlyFertilityRateProvider =
         }
 
         return result;
-      });
+      }());
     });
 
 /// Incubation duration data for completed incubations.
-/// Returns actual days vs expected 18 days for the last 10 incubations.
+/// Returns actual days vs species-aware expected days for the last 10 incubations.
 final incubationDurationProvider =
     Provider.family<AsyncValue<List<IncubationDurationData>>, String>((
       ref,
       userId,
     ) {
       final incubationsAsync = ref.watch(incubationsStreamProvider(userId));
+      final speciesFilter = ref.watch(statsSpeciesFilterProvider);
 
       return incubationsAsync.whenData((incubations) {
+        final source = speciesFilter == null
+            ? incubations
+            : incubations
+                  .where((incubation) => incubation.species == speciesFilter)
+                  .toList();
         final completed =
-            incubations
+            source
                 .where(
                   (i) =>
                       i.status == IncubationStatus.completed &&
@@ -90,7 +125,11 @@ final incubationDurationProvider =
 
         return recent.map((i) {
           final days = i.endDate!.difference(i.startDate!).inDays;
-          return IncubationDurationData(id: i.id, actualDays: days);
+          return IncubationDurationData(
+            id: i.id,
+            actualDays: days,
+            expectedDays: i.totalIncubationDays(),
+          );
         }).toList();
       });
     });

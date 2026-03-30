@@ -67,6 +67,7 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
       );
 
       await repo.save(egg);
+      final species = await resolveEggSpecies(ref, egg);
 
       // Schedule egg turning reminders
       try {
@@ -76,6 +77,7 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
           eggId: egg.id,
           startDate: layDate,
           eggLabel: 'eggs.egg_label'.tr(args: ['$eggNumber']),
+          species: species,
           settings: settings,
         );
       } catch (e) {
@@ -91,6 +93,7 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
           layDate: layDate,
           eggNumber: eggNumber,
           incubationId: incubationId,
+          species: species,
         );
       } catch (e) {
         if (isSupabaseUnavailableError(e)) {
@@ -152,7 +155,9 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
 
       state = state.copyWith(
         isLoading: false,
-        warning: sideEffectError ? 'errors.background_tasks_partial'.tr() : null,
+        warning: sideEffectError
+            ? 'errors.background_tasks_partial'.tr()
+            : null,
         isSuccess: true,
         chickCreated: didCreateChick,
       );

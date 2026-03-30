@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
@@ -18,7 +19,7 @@ class StatsPeriodSelector extends ConsumerWidget {
       ),
       child: SegmentedButton<StatsPeriod>(
         segments: StatsPeriod.values
-            .map((p) => ButtonSegment(value: p, label: Text(p.label)))
+            .map((p) => ButtonSegment(value: p, label: Text(p.labelKey.tr())))
             .toList(),
         selected: {period},
         onSelectionChanged: (selected) {

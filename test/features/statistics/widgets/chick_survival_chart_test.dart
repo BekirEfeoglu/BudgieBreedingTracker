@@ -1,6 +1,7 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/data/models/statistics_models.dart';
 import 'package:budgie_breeding_tracker/features/statistics/widgets/chick_survival_chart.dart';
@@ -60,12 +61,12 @@ void main() {
       await tester.pump(const Duration(milliseconds: 300));
       // easy_localization returns the key strings in test
       expect(
-        find.textContaining('statistics.survival_healthy'),
+        find.textContaining(l10nContains('statistics.survival_healthy')),
         findsOneWidget,
       );
-      expect(find.textContaining('statistics.survival_sick'), findsOneWidget);
+      expect(find.textContaining(l10nContains('statistics.survival_sick')), findsOneWidget);
       expect(
-        find.textContaining('statistics.survival_deceased'),
+        find.textContaining(l10nContains('statistics.survival_deceased')),
         findsOneWidget,
       );
     });

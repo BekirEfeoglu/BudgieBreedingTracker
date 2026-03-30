@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/features/admin/screens/_feedback_detail_sheet.dart';
 
@@ -59,7 +60,7 @@ void main() {
       addTearDown(tester.view.resetDevicePixelRatio);
 
       await pumpLocalizedApp(tester, _buildSheet());
-      expect(find.text('admin.feedback_detail'), findsOneWidget);
+      expect(find.text(l10n('admin.feedback_detail')), findsOneWidget);
     });
 
     testWidgets('shows subject value', (tester) async {
@@ -129,7 +130,7 @@ void main() {
       addTearDown(tester.view.resetDevicePixelRatio);
 
       await pumpLocalizedApp(tester, _buildSheet());
-      expect(find.text('admin.feedback_save'), findsOneWidget);
+      expect(find.text(l10n('admin.feedback_save')), findsOneWidget);
     });
 
     testWidgets('shows admin response TextFormField', (tester) async {

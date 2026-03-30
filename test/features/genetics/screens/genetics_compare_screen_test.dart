@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/core/widgets/error_state.dart';
 import 'package:budgie_breeding_tracker/data/models/genetics_history_model.dart';
@@ -86,7 +87,7 @@ void main() {
 
       // EasyLocalization returns raw key in test context
       expect(find.byType(AppBar), findsOneWidget);
-      expect(find.text('genetics.compare_title'), findsOneWidget);
+      expect(find.text(l10n('genetics.compare_title')), findsOneWidget);
     });
 
     testWidgets('shows AppBar with compare key when historyIds is empty', (
@@ -101,7 +102,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('genetics.compare'), findsOneWidget);
+      expect(find.text(l10n('genetics.compare')), findsOneWidget);
     });
 
     testWidgets('shows empty state when historyIds is empty', (tester) async {
@@ -113,7 +114,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // The no_results message is shown in the body center
-      expect(find.text('genetics.no_results'), findsOneWidget);
+      expect(find.text(l10n('genetics.no_results')), findsOneWidget);
     });
 
     testWidgets('shows empty state when selected entries not found in stream', (
@@ -130,7 +131,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('genetics.no_results'), findsOneWidget);
+      expect(find.text(l10n('genetics.no_results')), findsOneWidget);
     });
 
     testWidgets('shows loading state while data is loading', (tester) async {

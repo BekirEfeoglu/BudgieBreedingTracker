@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:budgie_breeding_tracker/features/home/widgets/unweaned_alert_banner.dart';
@@ -40,8 +41,8 @@ void main() {
       await tester.pump();
 
       // count=0 returns SizedBox.shrink — no alert text visible
-      expect(find.text('home.unweaned_alert'), findsNothing);
-      expect(find.text('common.view'), findsNothing);
+      expect(find.text(l10n('home.unweaned_alert')), findsNothing);
+      expect(find.text(l10n('common.view')), findsNothing);
     });
 
     testWidgets('shows banner container when count > 0', (tester) async {
@@ -55,21 +56,21 @@ void main() {
       await tester.pumpWidget(createSubject(5));
       await tester.pump();
 
-      expect(find.text('home.unweaned_alert'), findsOneWidget);
+      expect(find.text(l10n('home.unweaned_alert')), findsOneWidget);
     });
 
     testWidgets('shows view button when count > 0', (tester) async {
       await tester.pumpWidget(createSubject(2));
       await tester.pump();
 
-      expect(find.text('common.view'), findsOneWidget);
+      expect(find.text(l10n('common.view')), findsOneWidget);
     });
 
     testWidgets('tapping view navigates to chicks screen', (tester) async {
       await tester.pumpWidget(createSubject(2));
       await tester.pump();
 
-      await tester.tap(find.text('common.view'));
+      await tester.tap(find.text(l10n('common.view')));
       await tester.pumpAndSettle();
 
       expect(find.text('Chicks'), findsOneWidget);
@@ -79,7 +80,7 @@ void main() {
       await tester.pumpWidget(createSubject(1));
       await tester.pump();
 
-      expect(find.text('home.unweaned_alert'), findsOneWidget);
+      expect(find.text(l10n('home.unweaned_alert')), findsOneWidget);
     });
   });
 }

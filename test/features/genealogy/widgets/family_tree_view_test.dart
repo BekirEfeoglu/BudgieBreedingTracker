@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
@@ -271,7 +272,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('genealogy.unknown_parent'), findsNothing);
+      expect(find.text(l10n('genealogy.unknown_parent')), findsNothing);
     });
   });
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/chick_enums.dart';
@@ -64,13 +65,13 @@ void main() {
   group('ChickFormFields', () {
     testWidgets('renders name field', (tester) async {
       await pumpFields(tester);
-      expect(find.text('chicks.name_optional'), findsOneWidget);
+      expect(find.text(l10n('chicks.name_optional')), findsOneWidget);
     });
 
     testWidgets('renders gender selector', (tester) async {
       await pumpFields(tester);
       expect(find.byType(SegmentedButton<BirdGender>), findsOneWidget);
-      expect(find.text('chicks.gender'), findsOneWidget);
+      expect(find.text(l10n('chicks.gender')), findsOneWidget);
     });
 
     testWidgets('renders health status selector', (tester) async {
@@ -79,28 +80,28 @@ void main() {
         find.byType(SegmentedButton<ChickHealthStatus>),
         findsOneWidget,
       );
-      expect(find.text('chicks.health_status'), findsOneWidget);
+      expect(find.text(l10n('chicks.health_status')), findsOneWidget);
     });
 
     testWidgets('renders hatch date picker', (tester) async {
       await pumpFields(tester);
       expect(find.byType(DatePickerField), findsOneWidget);
-      expect(find.text('chicks.hatch_date_required'), findsOneWidget);
+      expect(find.text(l10n('chicks.hatch_date_required')), findsOneWidget);
     });
 
     testWidgets('renders hatch weight field', (tester) async {
       await pumpFields(tester);
-      expect(find.text('chicks.birth_weight_label'), findsOneWidget);
+      expect(find.text(l10n('chicks.birth_weight_label')), findsOneWidget);
     });
 
     testWidgets('renders ring number field', (tester) async {
       await pumpFields(tester);
-      expect(find.text('chicks.ring_number'), findsOneWidget);
+      expect(find.text(l10n('chicks.ring_number')), findsOneWidget);
     });
 
     testWidgets('renders notes field', (tester) async {
       await pumpFields(tester);
-      expect(find.text('common.notes'), findsOneWidget);
+      expect(find.text(l10n('common.notes')), findsOneWidget);
     });
 
     testWidgets('gender callback is invoked on selection', (tester) async {
@@ -111,7 +112,7 @@ void main() {
         onGenderChanged: (g) => changed = g,
       );
 
-      await tester.tap(find.text('chicks.male'));
+      await tester.tap(find.text(l10n('chicks.male')));
       await tester.pump();
 
       expect(changed, BirdGender.male);
@@ -127,7 +128,7 @@ void main() {
         onHealthStatusChanged: (s) => changed = s,
       );
 
-      await tester.tap(find.text('chicks.sick'));
+      await tester.tap(find.text(l10n('chicks.sick')));
       await tester.pump();
 
       expect(changed, ChickHealthStatus.sick);
@@ -166,7 +167,7 @@ void main() {
       formKey.currentState?.validate();
       await tester.pump();
 
-      expect(find.text('chicks.invalid_number'), findsOneWidget);
+      expect(find.text(l10n('chicks.invalid_number')), findsOneWidget);
     });
 
     testWidgets('hatch weight validates negative number', (tester) async {
@@ -202,7 +203,7 @@ void main() {
       formKey.currentState?.validate();
       await tester.pump();
 
-      expect(find.text('chicks.invalid_number'), findsOneWidget);
+      expect(find.text(l10n('chicks.invalid_number')), findsOneWidget);
     });
 
     testWidgets('hatch weight accepts valid number', (tester) async {

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 import 'package:budgie_breeding_tracker/features/admin/providers/admin_actions_provider.dart';
@@ -70,7 +71,7 @@ void main() {
       await pumpLocalizedApp(tester, _createSubject(), settle: false);
       await tester.pump();
       expect(find.byType(AppBar), findsOneWidget);
-      expect(find.text('admin.user_detail'), findsOneWidget);
+      expect(find.text(l10n('admin.user_detail')), findsOneWidget);
     });
 
     testWidgets('shows RefreshIndicator in all states', (tester) async {

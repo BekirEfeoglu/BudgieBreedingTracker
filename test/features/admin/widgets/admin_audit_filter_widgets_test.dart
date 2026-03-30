@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 import 'package:budgie_breeding_tracker/features/admin/providers/admin_filter_providers.dart';
@@ -58,7 +59,7 @@ void main() {
         _wrapFilterBar(controller: controller, filter: _emptyFilter),
       );
       await tester.pump();
-      expect(find.text('admin.search_logs'), findsOneWidget);
+      expect(find.text(l10n('admin.search_logs')), findsOneWidget);
     });
 
     testWidgets('hides clear icon when filter has no search query', (
@@ -130,7 +131,7 @@ void main() {
         _wrapFilterBar(controller: controller, filter: _emptyFilter),
       );
       await tester.pump();
-      expect(find.text('admin.start_date'), findsOneWidget);
+      expect(find.text(l10n('admin.start_date')), findsOneWidget);
     });
 
     testWidgets('shows admin.end_date on inactive end chip', (tester) async {
@@ -138,7 +139,7 @@ void main() {
         _wrapFilterBar(controller: controller, filter: _emptyFilter),
       );
       await tester.pump();
-      expect(find.text('admin.end_date'), findsOneWidget);
+      expect(find.text(l10n('admin.end_date')), findsOneWidget);
     });
 
     testWidgets('active date filter shows formatted date on chip', (
@@ -151,7 +152,7 @@ void main() {
       );
       await tester.pump();
       // The chip should now show a formatted date, not the placeholder key
-      expect(find.text('admin.start_date'), findsNothing);
+      expect(find.text(l10n('admin.start_date')), findsNothing);
     });
   });
 

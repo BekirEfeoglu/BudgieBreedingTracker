@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/core/widgets/skeleton_loader.dart';
 import 'package:budgie_breeding_tracker/data/models/statistics_models.dart';
@@ -89,7 +90,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('statistics.insights_title'), findsOneWidget);
+      expect(find.text(l10n('statistics.insights_title')), findsOneWidget);
     });
 
     testWidgets('skeleton does not show insight text', (tester) async {
@@ -99,7 +100,7 @@ void main() {
       await tester.pump();
 
       expect(find.byType(SkeletonLoader), findsWidgets);
-      expect(find.text('statistics.insights_title'), findsNothing);
+      expect(find.text(l10n('statistics.insights_title')), findsNothing);
     });
 
     testWidgets('data state does not show skeleton', (tester) async {

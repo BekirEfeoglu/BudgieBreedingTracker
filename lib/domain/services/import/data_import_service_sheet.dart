@@ -96,3 +96,8 @@ class _BreedingPairLimitExceededException implements Exception {
   final int maxPairs;
   const _BreedingPairLimitExceededException(this.maxPairs);
 }
+
+class _ImportValidationException implements Exception {
+  final String messageKey;
+  const _ImportValidationException(this.messageKey);
+}

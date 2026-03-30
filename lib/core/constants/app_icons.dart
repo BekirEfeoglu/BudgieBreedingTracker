@@ -20,6 +20,7 @@ abstract final class AppIcons {
   static const budgie = 'assets/icons/birds/budgie.svg';
   static const canary = 'assets/icons/birds/canary.svg';
   static const finch = 'assets/icons/birds/finch.svg';
+  static const cockatiel = 'assets/icons/birds/cockatiel.svg';
   static const birdOther = 'assets/icons/birds/bird_other.svg';
   static const statusDead = 'assets/icons/birds/status_dead.svg';
   static const photo = 'assets/icons/birds/photo.svg';

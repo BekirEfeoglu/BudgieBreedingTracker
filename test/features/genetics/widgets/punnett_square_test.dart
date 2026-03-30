@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/mendelian_calculator.dart';
@@ -78,7 +79,7 @@ void main() {
       await pumpLocalizedApp(tester,
         _wrap(const PunnettSquareWidget(data: _autosomalData)),
       );
-      expect(find.text('genetics.punnett_square'), findsOneWidget);
+      expect(find.text(l10n('genetics.punnett_square')), findsOneWidget);
     });
 
     testWidgets('shows mutation name for known locus', (tester) async {
@@ -86,7 +87,7 @@ void main() {
         _wrap(const PunnettSquareWidget(data: _autosomalData)),
       );
       // "Blue Series" maps to 'genetics.locus_blue_series' localization key
-      expect(find.text('genetics.locus_blue_series'), findsOneWidget);
+      expect(find.text(l10n('genetics.locus_blue_series')), findsOneWidget);
     });
 
     testWidgets('shows raw mutation name for unknown locus', (tester) async {
@@ -111,7 +112,7 @@ void main() {
       await pumpLocalizedApp(tester,
         _wrap(const PunnettSquareWidget(data: _sexLinkedData)),
       );
-      expect(find.text('genetics.sex_linked'), findsOneWidget);
+      expect(find.text(l10n('genetics.sex_linked')), findsOneWidget);
     });
 
     testWidgets('does not show sex_linked badge for autosomal data',
@@ -119,7 +120,7 @@ void main() {
       await pumpLocalizedApp(tester,
         _wrap(const PunnettSquareWidget(data: _autosomalData)),
       );
-      expect(find.text('genetics.sex_linked'), findsNothing);
+      expect(find.text(l10n('genetics.sex_linked')), findsNothing);
     });
 
     testWidgets('shows AppIcon for punnett icon', (tester) async {

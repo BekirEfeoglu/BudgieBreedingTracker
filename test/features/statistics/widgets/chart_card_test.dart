@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/core/widgets/skeleton_loader.dart';
 import 'package:budgie_breeding_tracker/features/statistics/widgets/chart_card.dart';
@@ -143,7 +144,7 @@ void main() {
         ),
       );
 
-      expect(find.text('statistics.low_data_hint'), findsOneWidget);
+      expect(find.text(l10n('statistics.low_data_hint')), findsOneWidget);
       expect(find.text('Chart'), findsOneWidget);
     });
 
@@ -160,7 +161,7 @@ void main() {
         ),
       );
 
-      expect(find.text('statistics.low_data_hint'), findsNothing);
+      expect(find.text(l10n('statistics.low_data_hint')), findsNothing);
       expect(find.text('Chart'), findsOneWidget);
     });
 
@@ -176,7 +177,7 @@ void main() {
         ),
       );
 
-      expect(find.text('statistics.low_data_hint'), findsNothing);
+      expect(find.text(l10n('statistics.low_data_hint')), findsNothing);
     });
 
     testWidgets('hides low data banner when dataCount is 0', (tester) async {
@@ -190,7 +191,7 @@ void main() {
         ),
       );
 
-      expect(find.text('statistics.low_data_hint'), findsNothing);
+      expect(find.text(l10n('statistics.low_data_hint')), findsNothing);
     });
 
     testWidgets('respects custom lowDataThreshold', (tester) async {
@@ -205,7 +206,7 @@ void main() {
         ),
       );
 
-      expect(find.text('statistics.low_data_hint'), findsOneWidget);
+      expect(find.text(l10n('statistics.low_data_hint')), findsOneWidget);
     });
   });
 
@@ -215,8 +216,8 @@ void main() {
     ) async {
       await pumpWidgetSimple(tester, const ChartEmpty());
 
-      expect(find.text('statistics.no_data'), findsOneWidget);
-      expect(find.text('statistics.no_data_hint'), findsOneWidget);
+      expect(find.text(l10n('statistics.no_data')), findsOneWidget);
+      expect(find.text(l10n('statistics.no_data_hint')), findsOneWidget);
     });
 
     testWidgets('shows custom message when provided', (tester) async {

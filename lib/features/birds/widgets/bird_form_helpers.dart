@@ -2,6 +2,8 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
+import 'package:budgie_breeding_tracker/core/species/species_profile.dart';
+import 'package:budgie_breeding_tracker/core/species/species_registry.dart';
 import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/features/birds/providers/bird_form_providers.dart';
 import 'package:budgie_breeding_tracker/features/notifications/providers/action_feedback_providers.dart';
@@ -121,8 +123,14 @@ class BirdGenotypeData {
 BirdGenotypeData prepareBirdGenotypeData({
   required ParentGenotype genotype,
   required BirdGender gender,
+  required Species species,
   required BirdColor? colorMutation,
 }) {
+  final speciesProfile = SpeciesRegistry.of(species);
+  if (speciesProfile.geneticsMode != GeneticsMode.full) {
+    return const BirdGenotypeData(mutationIds: null, genotypeInfo: null);
+  }
+
   final selectedGenotype = normalizeGenotypeForGender(
     genotype: ParentGenotype(
       mutations: Map<String, AlleleState>.from(genotype.mutations),
@@ -219,6 +227,7 @@ void submitBirdForm({
   final gData = prepareBirdGenotypeData(
     genotype: genotype,
     gender: gender,
+    species: species,
     colorMutation: colorMutation,
   );
   final ring = ringNumber.isEmpty ? null : ringNumber;

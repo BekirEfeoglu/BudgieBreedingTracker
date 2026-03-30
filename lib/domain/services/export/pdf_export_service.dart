@@ -9,6 +9,7 @@ import 'pedigree_pdf_builder.dart';
 import '../../../data/models/breeding_pair_model.dart';
 import '../../../data/models/chick_model.dart';
 import '../../../data/models/egg_model.dart';
+import '../../../data/models/incubation_model.dart';
 
 /// Generates PDF reports for birds, breeding pairs, eggs, and chicks.
 /// Uses bundled Roboto TTF fonts for full Turkish character support.
@@ -38,6 +39,7 @@ class PdfExportService {
   Future<Uint8List> generateFullReport({
     required List<Bird> birds,
     required List<BreedingPair> pairs,
+    required List<Incubation> incubations,
     required List<Egg> eggs,
     required List<Chick> chicks,
   }) async {
@@ -51,6 +53,9 @@ class PdfExportService {
     pdf.addPage(_buildCoverPage());
     if (birds.isNotEmpty) pdf.addPage(_buildBirdsPage(birds));
     if (pairs.isNotEmpty) pdf.addPage(_buildBreedingPage(pairs));
+    if (incubations.isNotEmpty) {
+      pdf.addPage(_buildIncubationsPage(incubations));
+    }
     if (eggs.isNotEmpty) pdf.addPage(_buildEggsPage(eggs));
     if (chicks.isNotEmpty) pdf.addPage(_buildChicksPage(chicks));
 
@@ -214,6 +219,40 @@ class PdfExportService {
               _dateFormat.format(e.layDate),
               e.status.name,
               e.hatchDate != null ? _dateFormat.format(e.hatchDate!) : '-',
+            ];
+          }).toList(),
+        ),
+      ],
+    );
+  }
+
+  pw.Page _buildIncubationsPage(List<Incubation> incubations) {
+    return pw.MultiPage(
+      pageFormat: PdfPageFormat.a4,
+      header: (context) => _header(
+        'export.section_incubations'.tr(args: ['${incubations.length}']),
+      ),
+      build: (context) => [
+        pw.TableHelper.fromTextArray(
+          headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+          headerDecoration: const pw.BoxDecoration(color: PdfColors.grey200),
+          cellPadding: const pw.EdgeInsets.all(4),
+          headers: [
+            'export.header_id'.tr(),
+            'export.header_breeding_pair_id'.tr(),
+            'export.header_species'.tr(),
+            'export.header_status'.tr(),
+            'export.header_expected_hatch_date'.tr(),
+          ],
+          data: incubations.map((incubation) {
+            return [
+              incubation.id.substring(0, 8),
+              incubation.breedingPairId ?? '-',
+              incubation.species.name,
+              incubation.status.name,
+              incubation.computedExpectedHatchDate != null
+                  ? _dateFormat.format(incubation.computedExpectedHatchDate!)
+                  : '-',
             ];
           }).toList(),
         ),

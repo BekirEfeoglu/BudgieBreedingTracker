@@ -60,6 +60,12 @@ void main() {
       expect(parseGender('unknown-value'), BirdGender.unknown);
     });
 
+    test('parseSpecies returns unknown for null or empty values', () {
+      expect(parseSpecies(null), Species.unknown);
+      expect(parseSpecies(''), Species.unknown);
+      expect(parseSpecies('   '), Species.unknown);
+    });
+
     test('parseBreedingStatus maps known values', () {
       expect(parseBreedingStatus('aktiv'), BreedingStatus.active);
       expect(parseBreedingStatus('ongoing'), BreedingStatus.ongoing);

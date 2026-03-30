@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 import 'package:budgie_breeding_tracker/features/community/providers/community_feed_providers.dart';
@@ -60,9 +61,9 @@ void main() {
       await tester.drag(find.byType(CustomScrollView), const Offset(0, -500));
       await tester.pumpAndSettle();
 
-      expect(find.text('community.sort_newest'), findsOneWidget);
-      expect(find.text('community.sort_trending'), findsOneWidget);
-      expect(find.text('community.top_creators'), findsOneWidget);
+      expect(find.text(l10n('community.sort_newest')), findsOneWidget);
+      expect(find.text(l10n('community.sort_trending')), findsOneWidget);
+      expect(find.text(l10n('community.top_creators')), findsOneWidget);
       expect(find.text('Alpha Loft'), findsWidgets);
     });
 

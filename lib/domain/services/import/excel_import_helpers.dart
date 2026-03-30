@@ -49,6 +49,46 @@ BirdGender parseGender(String? value) {
   return BirdGender.unknown;
 }
 
+Species parseSpecies(String? value) {
+  if (value == null) return Species.unknown;
+  final lower = value.toLowerCase().trim();
+  if (lower.isEmpty) return Species.unknown;
+
+  return switch (lower) {
+    'budgie' ||
+    'muhabbet' ||
+    'muhabbet kusu' ||
+    'muhabbet kuşu' => Species.budgie,
+    'canary' || 'kanarya' => Species.canary,
+    'cockatiel' ||
+    'sultan' ||
+    'sultan papagani' ||
+    'sultan papağani' ||
+    'sultan papaganı' ||
+    'sultan papağanı' => Species.cockatiel,
+    'finch' || 'ispinoz' => Species.finch,
+    'other' || 'diger' || 'diğer' => Species.other,
+    _ => Species.unknown,
+  };
+}
+
+BirdStatus parseBirdStatus(String? value) {
+  if (value == null) return BirdStatus.alive;
+  final lower = value.toLowerCase().trim();
+  if (lower.isEmpty) return BirdStatus.alive;
+
+  if (lower == 'alive' || lower == 'hayatta' || lower == 'aktif') {
+    return BirdStatus.alive;
+  }
+  if (lower == 'dead' || lower == 'olu' || lower == 'ölü') {
+    return BirdStatus.dead;
+  }
+  if (lower == 'sold' || lower == 'satildi' || lower == 'satıldı') {
+    return BirdStatus.sold;
+  }
+  return BirdStatus.unknown;
+}
+
 BreedingStatus parseBreedingStatus(String? value) {
   if (value == null) return BreedingStatus.active;
   final lower = value.toLowerCase().trim();

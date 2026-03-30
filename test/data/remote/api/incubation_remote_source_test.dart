@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
+import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/breeding_enums.dart';
 import 'package:budgie_breeding_tracker/core/errors/app_exception.dart';
 import 'package:budgie_breeding_tracker/data/models/incubation_model.dart';
@@ -59,6 +60,7 @@ void main() {
       const incubation = Incubation(
         id: 'inc-1',
         userId: 'user-1',
+        species: Species.canary,
         status: IncubationStatus.active,
       );
 
@@ -67,6 +69,7 @@ void main() {
       final payload = queryBuilder.upsertPayload as Map<String, dynamic>;
       expect(payload['id'], 'inc-1');
       expect(payload['user_id'], 'user-1');
+      expect(payload['species'], 'canary');
       expect(payload['status'], 'active');
     });
 

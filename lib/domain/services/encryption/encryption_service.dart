@@ -5,9 +5,11 @@ import 'dart:typed_data';
 import 'package:crypto/crypto.dart' as crypto;
 import 'package:encrypt/encrypt.dart' as enc;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 
 part 'encryption_payload_codec.dart';
+part 'encryption_migration.dart';
 
 /// Provides AES-256-CBC encryption for sensitive fields.
 ///
@@ -156,6 +158,12 @@ class EncryptionService {
       // Pre-separation fallback: BBTENC1! + AES(rawKey) + HMAC(rawKey).
       // Handles payloads encrypted before _deriveSubKeys was introduced.
       // HMAC is still verified inside _decodeEncryptedPayload using rawKey.
+      Sentry.addBreadcrumb(Breadcrumb(
+        message: 'Pre-separation authenticated payload detected — HMAC uses raw key',
+        category: 'encryption',
+        level: SentryLevel.warning,
+        data: {'payloadLength': combined.length},
+      ));
       final rawDecrypted = _decodeEncryptedPayload(combined, keyBytes);
       final rawEncrypter = enc.Encrypter(
         enc.AES(enc.Key(keyBytes), mode: enc.AESMode.cbc),
@@ -164,6 +172,12 @@ class EncryptionService {
     }
 
     // Legacy only: IV+ciphertext, no magic prefix, no HMAC verification.
+    Sentry.addBreadcrumb(Breadcrumb(
+      message: 'Legacy encryption payload without HMAC detected',
+      category: 'encryption',
+      level: SentryLevel.warning,
+      data: {'payloadLength': combined.length},
+    ));
     final legacyDecrypted = _decodeEncryptedPayload(combined, keyBytes);
     final legacyEncrypter = enc.Encrypter(
       enc.AES(enc.Key(keyBytes), mode: enc.AESMode.cbc),
@@ -285,6 +299,9 @@ class EncryptionService {
       return false;
     }
   }
+
+  // Batch re-encryption and audit methods are in
+  // encryption_migration.dart (part file)
 
   /// Returns the current key version number (0 for the original key).
   Future<int> _getCurrentKeyVersion() async {

@@ -4,8 +4,14 @@ import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:budgie_breeding_tracker/core/enums/chick_enums.dart';
+import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
+import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
+import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
+import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
+import 'package:budgie_breeding_tracker/data/models/incubation_model.dart';
 import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
+import 'package:budgie_breeding_tracker/features/chicks/providers/chick_form_providers.dart';
 import 'package:budgie_breeding_tracker/features/chicks/providers/chick_providers.dart';
 
 import '../../../helpers/mocks.dart';
@@ -35,18 +41,48 @@ Chick _chick({
 
 void main() {
   late MockChickRepository chickRepo;
+  late MockBirdRepository birdRepo;
+  late MockEggRepository eggRepo;
+  late MockIncubationRepository incubationRepo;
+  late MockBreedingPairRepository breedingPairRepo;
 
   ProviderContainer makeContainer() {
     return ProviderContainer(
       overrides: [
         chickRepositoryProvider.overrideWithValue(chickRepo),
+        birdRepositoryProvider.overrideWithValue(birdRepo),
+        eggRepositoryProvider.overrideWithValue(eggRepo),
+        incubationRepositoryProvider.overrideWithValue(incubationRepo),
+        breedingPairRepositoryProvider.overrideWithValue(breedingPairRepo),
       ],
     );
   }
 
+  setUpAll(() {
+    registerFallbackValue(
+      const Chick(
+        id: 'fallback-chick',
+        userId: 'user-1',
+        healthStatus: ChickHealthStatus.healthy,
+      ),
+    );
+  });
+
   setUp(() {
     SharedPreferences.setMockInitialValues({});
     chickRepo = MockChickRepository();
+    birdRepo = MockBirdRepository();
+    eggRepo = MockEggRepository();
+    incubationRepo = MockIncubationRepository();
+    breedingPairRepo = MockBreedingPairRepository();
+    registerFallbackValue(
+      const Bird(
+        id: 'fallback',
+        name: 'Fallback',
+        gender: BirdGender.unknown,
+        userId: 'user-1',
+      ),
+    );
 
     when(() => chickRepo.watchAll(any())).thenAnswer(
       (_) => Stream.value([
@@ -64,6 +100,8 @@ void main() {
         ),
       ]),
     );
+    when(() => chickRepo.save(any())).thenAnswer((_) async {});
+    when(() => birdRepo.save(any())).thenAnswer((_) async {});
   });
 
   group('chicksStreamProvider', () {
@@ -131,6 +169,60 @@ void main() {
 
       final result = container.read(searchedAndFilteredChicksProvider(chicks));
       expect(result.single.id, 'c2');
+    });
+  });
+
+  group('chick form actions', () {
+    test('promoteToBird inherits species from egg incubation chain', () async {
+      final chick = _chick(
+        id: 'c1',
+        name: 'Lemon',
+        ring: 'R-1',
+      ).copyWith(eggId: 'egg-1');
+      when(() => eggRepo.getById('egg-1')).thenAnswer(
+        (_) async => Egg(
+          id: 'egg-1',
+          userId: 'user-1',
+          incubationId: 'inc-1',
+          layDate: DateTime(2024, 1, 1),
+        ),
+      );
+      when(() => incubationRepo.getById('inc-1')).thenAnswer(
+        (_) async => const Incubation(
+          id: 'inc-1',
+          userId: 'user-1',
+          species: Species.unknown,
+          breedingPairId: 'pair-1',
+        ),
+      );
+      when(() => breedingPairRepo.getById('pair-1')).thenAnswer(
+        (_) async => const BreedingPair(
+          id: 'pair-1',
+          userId: 'user-1',
+          maleId: 'male-1',
+          femaleId: 'female-1',
+        ),
+      );
+      when(() => birdRepo.getById('male-1')).thenAnswer(
+        (_) async => const Bird(
+          id: 'male-1',
+          name: 'Father',
+          gender: BirdGender.male,
+          userId: 'user-1',
+          species: Species.canary,
+        ),
+      );
+
+      final container = makeContainer();
+      addTearDown(container.dispose);
+
+      await container
+          .read(chickFormStateProvider.notifier)
+          .promoteToBird(chick);
+
+      final savedBird =
+          verify(() => birdRepo.save(captureAny())).captured.single as Bird;
+      expect(savedBird.species, Species.canary);
     });
   });
 }

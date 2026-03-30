@@ -49,7 +49,9 @@ extension ChickFormStatusActions on ChickFormNotifier {
       }
       state = state.copyWith(
         isLoading: false,
-        warning: sideEffectError ? 'errors.background_tasks_partial'.tr() : null,
+        warning: sideEffectError
+            ? 'errors.background_tasks_partial'.tr()
+            : null,
         isSuccess: true,
       );
     } catch (e) {
@@ -75,10 +77,17 @@ extension ChickFormStatusActions on ChickFormNotifier {
       // Resolve parent IDs from breeding pair chain
       final (:fatherId, :motherId) = await _resolveParentIds(ref, chick.eggId);
 
-      final chickLabel = chick.name ??
+      final chickLabel =
+          chick.name ??
           'chicks.unnamed_chick'.tr(
             args: [chick.ringNumber ?? chick.id.substring(0, 6)],
           );
+      final sourceEgg = chick.eggId == null
+          ? null
+          : await ref.read(eggRepositoryProvider).getById(chick.eggId!);
+      final species = sourceEgg == null
+          ? Species.unknown
+          : await resolveEggSpecies(ref, sourceEgg);
 
       final birdId = const Uuid().v4();
       final bird = Bird(
@@ -86,7 +95,7 @@ extension ChickFormStatusActions on ChickFormNotifier {
         userId: chick.userId,
         name: chickLabel,
         gender: chick.gender,
-        species: Species.budgie,
+        species: species,
         status: BirdStatus.alive,
         ringNumber: chick.ringNumber,
         birthDate: chick.hatchDate,

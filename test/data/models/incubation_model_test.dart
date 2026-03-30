@@ -1,11 +1,13 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:budgie_breeding_tracker/core/constants/incubation_constants.dart';
+import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/breeding_enums.dart';
 import 'package:budgie_breeding_tracker/data/models/incubation_model.dart';
 
 Incubation _buildIncubation({
   String id = 'inc-1',
   String userId = 'user-1',
+  Species species = Species.budgie,
   IncubationStatus status = IncubationStatus.active,
   int version = 1,
   String? clutchId,
@@ -20,6 +22,7 @@ Incubation _buildIncubation({
   return Incubation(
     id: id,
     userId: userId,
+    species: species,
     status: status,
     version: version,
     clutchId: clutchId,
@@ -40,6 +43,7 @@ void main() {
         final incubation = _buildIncubation(
           id: 'inc-42',
           userId: 'user-42',
+          species: Species.canary,
           status: IncubationStatus.completed,
           version: 3,
           clutchId: 'clutch-1',
@@ -56,6 +60,7 @@ void main() {
 
         expect(restored.id, incubation.id);
         expect(restored.userId, incubation.userId);
+        expect(restored.species, incubation.species);
         expect(restored.status, incubation.status);
         expect(restored.version, incubation.version);
         expect(restored.clutchId, incubation.clutchId);
@@ -75,6 +80,7 @@ void main() {
         });
 
         expect(incubation.status, IncubationStatus.active);
+        expect(incubation.species, Species.unknown);
         expect(incubation.version, 1);
         expect(incubation.clutchId, isNull);
         expect(incubation.breedingPairId, isNull);
@@ -90,6 +96,16 @@ void main() {
         });
 
         expect(incubation.status, IncubationStatus.active);
+      });
+
+      test('preserves unknown species instead of falling back to budgie', () {
+        final incubation = Incubation.fromJson({
+          'id': 'inc-1',
+          'user_id': 'user-1',
+          'species': 'dragon',
+        });
+
+        expect(incubation.species, Species.unknown);
       });
     });
 
@@ -146,6 +162,19 @@ void main() {
         startDate.add(
           const Duration(days: IncubationConstants.incubationPeriodDays),
         ),
+      );
+    });
+
+    test('computedExpectedHatchDate uses incubation species by default', () {
+      final startDate = DateTime(2024, 1, 1);
+      final incubation = _buildIncubation(
+        startDate: startDate,
+        species: Species.canary,
+      );
+
+      expect(
+        incubation.computedExpectedHatchDate,
+        startDate.add(const Duration(days: 14)),
       );
     });
 

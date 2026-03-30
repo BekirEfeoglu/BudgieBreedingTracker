@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/domain/services/genetics/mendelian_calculator.dart';
 import 'package:budgie_breeding_tracker/features/genetics/widgets/offspring_prediction.dart';
@@ -65,9 +66,9 @@ void main() {
       await pumpLocalizedApp(tester,
         _wrap(const SexSpecificResults(results: [_maleResult, _femaleResult])),
       );
-      expect(find.text('genetics.all_offspring'), findsOneWidget);
-      expect(find.text('genetics.male_offspring'), findsOneWidget);
-      expect(find.text('genetics.female_offspring'), findsOneWidget);
+      expect(find.text(l10n('genetics.all_offspring')), findsOneWidget);
+      expect(find.text(l10n('genetics.male_offspring')), findsOneWidget);
+      expect(find.text(l10n('genetics.female_offspring')), findsOneWidget);
     });
 
     testWidgets('shows OffspringPrediction cards for results', (tester) async {
@@ -82,7 +83,7 @@ void main() {
     ) async {
       await pumpLocalizedApp(tester,_wrap(const SexSpecificResults(results: [])));
       // _ResultsList shows no_results text
-      expect(find.text('genetics.no_results'), findsOneWidget);
+      expect(find.text(l10n('genetics.no_results')), findsOneWidget);
     });
 
     testWidgets(
@@ -98,7 +99,7 @@ void main() {
           ),
         );
         await pumpLocalizedApp(tester,_wrap(SexSpecificResults(results: results)));
-        expect(find.text('genetics.show_more_results'), findsOneWidget);
+        expect(find.text(l10n('genetics.show_more_results')), findsOneWidget);
       },
     );
 
@@ -114,7 +115,7 @@ void main() {
         ),
       );
       await pumpLocalizedApp(tester,_wrap(SexSpecificResults(results: results)));
-      expect(find.text('genetics.show_more_results'), findsNothing);
+      expect(find.text(l10n('genetics.show_more_results')), findsNothing);
     });
 
     testWidgets('tapping show_more expands list', (tester) async {
@@ -127,12 +128,12 @@ void main() {
         ),
       );
       await pumpLocalizedApp(tester,_wrap(SexSpecificResults(results: results)));
-      final showMoreFinder = find.text('genetics.show_more_results');
+      final showMoreFinder = find.text(l10n('genetics.show_more_results'));
       await tester.ensureVisible(showMoreFinder);
       await tester.tap(showMoreFinder, warnIfMissed: false);
       await tester.pumpAndSettle();
 
-      expect(find.text('genetics.show_less_results'), findsOneWidget);
+      expect(find.text(l10n('genetics.show_less_results')), findsOneWidget);
     });
 
     testWidgets('renders with mixed sex results', (tester) async {

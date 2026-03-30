@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/egg_enums.dart';
 import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
 import 'package:budgie_breeding_tracker/features/home/providers/home_providers.dart';
@@ -64,11 +65,15 @@ void main() {
       final eggs = [
         IncubatingEggSummary(
           egg: makeEgg(id: 'e1', eggNumber: 1),
+          species: Species.budgie,
           daysRemaining: 5,
+          progressPercent: 0.5,
         ),
         IncubatingEggSummary(
           egg: makeEgg(id: 'e2', eggNumber: 2),
+          species: Species.budgie,
           daysRemaining: 10,
+          progressPercent: 0.2,
         ),
       ];
       await tester.pumpWidget(buildSubject(eggs: eggs));
@@ -83,7 +88,9 @@ void main() {
       final eggs = [
         IncubatingEggSummary(
           egg: makeEgg(id: 'e1', eggNumber: 1),
+          species: Species.budgie,
           daysRemaining: 5,
+          progressPercent: 0.5,
         ),
       ];
       await tester.pumpWidget(buildSubject(eggs: eggs));
@@ -95,7 +102,9 @@ void main() {
       final eggs = [
         IncubatingEggSummary(
           egg: makeEgg(id: 'e1', eggNumber: 1),
+          species: Species.budgie,
           daysRemaining: -2,
+          progressPercent: 1,
         ),
       ];
       await tester.pumpWidget(buildSubject(eggs: eggs));

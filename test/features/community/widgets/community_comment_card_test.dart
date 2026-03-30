@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:budgie_breeding_tracker/core/enums/community_enums.dart';
@@ -205,7 +206,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(SimpleDialog), findsOneWidget);
-      expect(find.text('community.report_comment'), findsOneWidget);
+      expect(find.text(l10n('community.report_comment')), findsOneWidget);
     });
 
     testWidgets('report dialog shows all reason options', (tester) async {
@@ -220,17 +221,17 @@ void main() {
       await tester.longPress(find.text('Test comment content'));
       await tester.pumpAndSettle();
 
-      expect(find.text('community.report_reason_spam'), findsOneWidget);
-      expect(find.text('community.report_reason_harassment'), findsOneWidget);
+      expect(find.text(l10n('community.report_reason_spam')), findsOneWidget);
+      expect(find.text(l10n('community.report_reason_harassment')), findsOneWidget);
       expect(
-        find.text('community.report_reason_inappropriate'),
+        find.text(l10n('community.report_reason_inappropriate')),
         findsOneWidget,
       );
       expect(
-        find.text('community.report_reason_misinformation'),
+        find.text(l10n('community.report_reason_misinformation')),
         findsOneWidget,
       );
-      expect(find.text('community.report_reason_other'), findsOneWidget);
+      expect(find.text(l10n('community.report_reason_other')), findsOneWidget);
     });
 
     testWidgets('long press shows delete dialog for own comment', (
@@ -262,7 +263,7 @@ void main() {
       await tester.longPress(find.text('Test comment content'));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.widgetWithText(TextButton, 'common.cancel'));
+      await tester.tap(find.widgetWithText(TextButton, l10n('common.cancel')));
       await tester.pumpAndSettle();
 
       expect(find.byType(AlertDialog), findsNothing);
@@ -295,7 +296,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Select spam reason
-      await tester.tap(find.text('community.report_reason_spam'));
+      await tester.tap(find.text(l10n('community.report_reason_spam')));
       await tester.pump();
       await tester.pump();
 

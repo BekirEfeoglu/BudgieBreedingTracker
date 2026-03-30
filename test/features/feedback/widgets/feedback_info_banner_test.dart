@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/features/feedback/widgets/feedback_info_banner.dart';
 
@@ -29,7 +30,7 @@ void main() {
     testWidgets('shows feedback.info localization key', (tester) async {
       await pumpLocalizedApp(tester,buildSubject());
       // easy_localization returns key string in test environment
-      expect(find.text('feedback.info'), findsAtLeastNWidgets(1));
+      expect(find.text(l10n('feedback.info')), findsAtLeastNWidgets(1));
     });
 
     testWidgets('renders an AppIcon (SvgPicture)', (tester) async {

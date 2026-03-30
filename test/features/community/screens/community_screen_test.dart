@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/core/widgets/empty_state.dart';
 import 'package:budgie_breeding_tracker/features/community/providers/community_providers.dart';
@@ -33,7 +34,7 @@ void main() {
       await tester.pumpWidget(createSubject());
       await tester.pumpAndSettle();
 
-      expect(find.text('community.title'), findsOneWidget);
+      expect(find.text(l10n('community.title')), findsOneWidget);
     });
 
     testWidgets('shows coming soon empty state when community is disabled', (
@@ -43,7 +44,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(EmptyState), findsOneWidget);
-      expect(find.text('community.coming_soon'), findsOneWidget);
+      expect(find.text(l10n('community.coming_soon')), findsOneWidget);
     });
 
     testWidgets('shows empty feed state when community enabled but no posts', (

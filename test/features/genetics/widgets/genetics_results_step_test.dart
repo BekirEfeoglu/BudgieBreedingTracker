@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/domain/services/genetics/lethal_combination_database.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/mendelian_calculator.dart';
@@ -63,7 +64,7 @@ void main() {
       await tester.pumpWidget(_wrap(overrides: _emptyOverrides()));
       await tester.pump();
 
-      expect(find.text('genetics.no_results'), findsOneWidget);
+      expect(find.text(l10n('genetics.no_results')), findsOneWidget);
     });
 
     testWidgets('shows results when offspringResults is not null', (
@@ -73,7 +74,7 @@ void main() {
       await tester.pump();
 
       expect(
-        find.textContaining('genetics.results_title_with_count'),
+        find.textContaining(l10nContains('genetics.results_title_with_count')),
         findsOneWidget,
       );
     });
@@ -82,14 +83,14 @@ void main() {
       await tester.pumpWidget(_wrap(overrides: _dataOverrides()));
       await tester.pump();
 
-      expect(find.text('genetics.show_sex_specific'), findsOneWidget);
+      expect(find.text(l10n('genetics.show_sex_specific')), findsOneWidget);
     });
 
     testWidgets('shows show_genotype toggle label', (tester) async {
       await tester.pumpWidget(_wrap(overrides: _dataOverrides()));
       await tester.pump();
 
-      expect(find.text('genetics.show_genotype'), findsOneWidget);
+      expect(find.text(l10n('genetics.show_genotype')), findsOneWidget);
     });
 
     testWidgets('shows two Switch widgets for toggles', (tester) async {
@@ -113,7 +114,7 @@ void main() {
       await tester.pump();
 
       expect(
-        find.textContaining('genetics.mutation_normal'),
+        find.textContaining(l10nContains('genetics.mutation_normal')),
         findsAtLeastNWidgets(1),
       );
     });
@@ -167,7 +168,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('genetics.lethal_warning_title'), findsOneWidget);
+      expect(find.text(l10n('genetics.lethal_warning_title')), findsOneWidget);
     });
 
     testWidgets('shows epistasis interaction card when interactions exist', (

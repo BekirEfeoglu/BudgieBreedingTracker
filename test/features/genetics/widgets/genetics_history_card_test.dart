@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
@@ -179,7 +180,7 @@ void main() {
         ),
       );
       expect(
-        find.textContaining('genetics.total_variations'),
+        find.textContaining(l10nContains('genetics.total_variations')),
         findsOneWidget,
       );
     });
@@ -349,8 +350,8 @@ void main() {
       );
       await tester.tap(find.byType(IconButton));
       await tester.pumpAndSettle();
-      expect(find.text('common.confirm_delete'), findsOneWidget);
-      expect(find.text('genetics.delete_history_confirm'), findsOneWidget);
+      expect(find.text(l10n('common.confirm_delete')), findsOneWidget);
+      expect(find.text(l10n('genetics.delete_history_confirm')), findsOneWidget);
     });
 
     testWidgets('shows date as dash when createdAt is null', (tester) async {
@@ -387,7 +388,7 @@ void main() {
       );
       // Both father and mother should show "Normal" when no mutations
       expect(
-        find.text('genetics.mutation_normal'),
+        find.text(l10n('genetics.mutation_normal')),
         findsNWidgets(2),
       );
     });

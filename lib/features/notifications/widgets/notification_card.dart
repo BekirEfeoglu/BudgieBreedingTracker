@@ -160,15 +160,15 @@ class NotificationCard extends StatelessWidget {
     final now = DateTime.now();
     final diff = now.difference(dateTime);
 
-    if (diff.inMinutes < 1) return 'notifications.time_just_now'.tr();
+    if (diff.inMinutes < 1) return 'common.just_now'.tr();
     if (diff.inMinutes < 60) {
-      return 'notifications.time_minutes_ago'.tr(args: ['${diff.inMinutes}']);
+      return 'common.minutes_ago'.tr(args: ['${diff.inMinutes}']);
     }
     if (diff.inHours < 24) {
-      return 'notifications.time_hours_ago'.tr(args: ['${diff.inHours}']);
+      return 'common.hours_ago'.tr(args: ['${diff.inHours}']);
     }
     if (diff.inDays < 7) {
-      return 'notifications.time_days_ago'.tr(args: ['${diff.inDays}']);
+      return 'common.days_ago'.tr(args: ['${diff.inDays}']);
     }
     return DateFormat.yMMMd(Intl.getCurrentLocale()).format(dateTime);
   }

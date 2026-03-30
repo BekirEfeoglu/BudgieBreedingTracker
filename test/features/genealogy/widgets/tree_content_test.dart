@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/widgets/error_state.dart';
@@ -80,7 +81,7 @@ void main() {
           ),
         ),
       );
-      expect(find.text('genealogy.bird_not_found'), findsOneWidget);
+      expect(find.text(l10n('birds.not_found')), findsOneWidget);
     });
 
     testWidgets('renders SegmentedButton for view mode when data loaded', (
@@ -145,7 +146,7 @@ void main() {
       await tester.pump();
 
       // list segment'e tap — 'genealogy.list_view' raw key
-      final listSeg = find.text('genealogy.list_view');
+      final listSeg = find.text(l10n('genealogy.list_view'));
       if (listSeg.evaluate().isNotEmpty) {
         await tester.tap(listSeg);
         await tester.pump(const Duration(milliseconds: 400));
@@ -172,7 +173,7 @@ void main() {
           ),
         ),
       );
-      expect(find.text('genealogy.tree_error'), findsOneWidget);
+      expect(find.text(l10n('genealogy.tree_error')), findsOneWidget);
     });
   });
 }

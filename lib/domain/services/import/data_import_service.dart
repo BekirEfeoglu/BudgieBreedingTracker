@@ -2,8 +2,11 @@ import 'dart:typed_data';
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:excel/excel.dart';
+import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/breeding_enums.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
+import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
+import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
 import 'package:budgie_breeding_tracker/data/repositories/bird_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/breeding_pair_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/chick_repository.dart';
@@ -34,6 +37,51 @@ class DataImportService {
   final ChickRepository _chickRepo;
   final HealthRecordRepository _healthRecordRepo;
 
+  Future<void> _validateBirdParents(Bird bird) async {
+    if (bird.fatherId != null) {
+      final father = await _birdRepo.getById(bird.fatherId!);
+      if (father == null) {
+        throw const _ImportValidationException('birds.not_found');
+      }
+      if (father.gender != BirdGender.male) {
+        throw const _ImportValidationException('birds.invalid_father');
+      }
+      if (father.species != bird.species) {
+        throw const _ImportValidationException('birds.parent_species_mismatch');
+      }
+    }
+
+    if (bird.motherId != null) {
+      final mother = await _birdRepo.getById(bird.motherId!);
+      if (mother == null) {
+        throw const _ImportValidationException('birds.not_found');
+      }
+      if (mother.gender != BirdGender.female) {
+        throw const _ImportValidationException('birds.invalid_mother');
+      }
+      if (mother.species != bird.species) {
+        throw const _ImportValidationException('birds.parent_species_mismatch');
+      }
+    }
+  }
+
+  Future<void> _validateBreedingPairBirds(BreedingPair pair) async {
+    if (pair.maleId == null || pair.femaleId == null) return;
+
+    final maleBird = await _birdRepo.getById(pair.maleId!);
+    final femaleBird = await _birdRepo.getById(pair.femaleId!);
+    if (maleBird == null || femaleBird == null) {
+      throw const _ImportValidationException('birds.not_found');
+    }
+    if (maleBird.gender != BirdGender.male ||
+        femaleBird.gender != BirdGender.female) {
+      throw const _ImportValidationException('birds.not_found');
+    }
+    if (maleBird.species != femaleBird.species) {
+      throw const _ImportValidationException('breeding.same_species_required');
+    }
+  }
+
   // ---------------------------------------------------------------------------
   // Public API
   // ---------------------------------------------------------------------------
@@ -62,6 +110,9 @@ class DataImportService {
       parseRow: (row, uid) => ExcelRowParsers.parseBirdRow(row, uid),
       onSkip: (_, rowIndex) => 'import.row_name_empty'.tr(args: ['$rowIndex']),
       onError: (error, rowIndex) {
+        if (error is _ImportValidationException) {
+          return error.messageKey.tr();
+        }
         if (error is _BirdLimitExceededException) {
           return 'premium.bird_limit_reached'.tr(args: ['${error.maxBirds}']);
         }
@@ -72,6 +123,7 @@ class DataImportService {
             existingBirdCount + importedBirds >= maxTotalBirds) {
           throw _BirdLimitExceededException(maxTotalBirds);
         }
+        await _validateBirdParents(bird);
         await _birdRepo.save(bird);
         importedBirds++;
       },
@@ -103,6 +155,9 @@ class DataImportService {
       label: 'Breeding pairs',
       parseRow: (row, uid) => ExcelRowParsers.parseBreedingPairRow(row, uid),
       onError: (error, rowIndex) {
+        if (error is _ImportValidationException) {
+          return error.messageKey.tr();
+        }
         if (error is _BreedingPairLimitExceededException) {
           return 'premium.breeding_limit_reached'.tr(
             args: ['${error.maxPairs}'],
@@ -117,6 +172,7 @@ class DataImportService {
             existingActivePairs + importedActivePairs >= maxActivePairs) {
           throw _BreedingPairLimitExceededException(maxActivePairs);
         }
+        await _validateBreedingPairBirds(pair);
         await _breedingPairRepo.save(pair);
         if (isActive) importedActivePairs++;
       },
@@ -214,5 +270,4 @@ class DataImportService {
       ),
     };
   }
-
 }

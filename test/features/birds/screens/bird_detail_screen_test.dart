@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
@@ -113,7 +114,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // "birds.not_found" key should be rendered (untranslated in tests)
-      expect(find.text('birds.not_found'), findsOneWidget);
+      expect(find.text(l10n('birds.not_found')), findsOneWidget);
     });
 
     testWidgets('shows bird name in AppBar when data loads', (tester) async {
@@ -150,9 +151,9 @@ void main() {
       await tester.tap(find.byType(PopupMenuButton<String>));
       await tester.pumpAndSettle();
 
-      expect(find.text('birds.mark_dead'), findsOneWidget);
-      expect(find.text('birds.sold'), findsOneWidget);
-      expect(find.text('common.delete'), findsOneWidget);
+      expect(find.text(l10n('birds.mark_dead')), findsOneWidget);
+      expect(find.text(l10n('birds.sold')), findsOneWidget);
+      expect(find.text(l10n('common.delete')), findsOneWidget);
     });
 
     testWidgets('popup menu hides dead/sold options for non-alive bird', (
@@ -168,9 +169,9 @@ void main() {
       await tester.tap(find.byType(PopupMenuButton<String>));
       await tester.pumpAndSettle();
 
-      expect(find.text('birds.mark_dead'), findsNothing);
-      expect(find.text('birds.sold'), findsNothing);
-      expect(find.text('common.delete'), findsOneWidget);
+      expect(find.text(l10n('birds.mark_dead')), findsNothing);
+      expect(find.text(l10n('birds.sold')), findsNothing);
+      expect(find.text(l10n('common.delete')), findsOneWidget);
     });
 
     testWidgets('shows scrollable content when bird data is available', (

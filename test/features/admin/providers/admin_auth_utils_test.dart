@@ -5,6 +5,7 @@ import 'package:budgie_breeding_tracker/features/admin/providers/admin_auth_util
 import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class _FakeMaybeSingleBuilder extends Fake
@@ -101,7 +102,7 @@ void main() {
       }
 
       expect(caught, isA<Exception>());
-      expect(caught.toString(), contains('admin.auth_required'));
+      expect(caught.toString(), contains(l10n('admin.auth_required')));
       expect(client.requestedTables, isEmpty);
     });
 
@@ -128,7 +129,7 @@ void main() {
       }
 
       expect(caught, isA<Exception>());
-      expect(caught.toString(), contains('admin.permission_denied'));
+      expect(caught.toString(), contains(l10n('admin.permission_denied')));
       expect(client.requestedTables, [SupabaseConstants.adminUsersTable]);
       expect(queryBuilder.selectedColumns, ['id']);
       expect(filterBuilder.eqCalls, hasLength(1));

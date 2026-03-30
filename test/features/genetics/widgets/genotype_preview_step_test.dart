@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/parent_genotype.dart';
@@ -59,7 +60,7 @@ void main() {
         ),
       );
       await tester.pump();
-      expect(find.text('genetics.genotype_preview'), findsOneWidget);
+      expect(find.text(l10n('genetics.genotype_preview')), findsOneWidget);
     });
 
     testWidgets('shows carrier_info_tip text', (tester) async {
@@ -73,7 +74,7 @@ void main() {
         ),
       );
       await tester.pump();
-      expect(find.text('genetics.carrier_info_tip'), findsOneWidget);
+      expect(find.text(l10n('genetics.carrier_info_tip')), findsOneWidget);
     });
 
     testWidgets('shows two SelectionSummary widgets', (tester) async {
@@ -101,7 +102,7 @@ void main() {
         ),
       );
       await tester.pump();
-      expect(find.text('genetics.father_mutations'), findsOneWidget);
+      expect(find.text(l10n('genetics.father_mutations')), findsOneWidget);
     });
 
     testWidgets('shows mother_mutations label key', (tester) async {
@@ -115,7 +116,7 @@ void main() {
         ),
       );
       await tester.pump();
-      expect(find.text('genetics.mother_mutations'), findsOneWidget);
+      expect(find.text(l10n('genetics.mother_mutations')), findsOneWidget);
     });
 
     testWidgets('renders with non-empty father genotype', (tester) async {

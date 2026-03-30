@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/core/widgets/app_brand_title.dart';
 import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
@@ -89,8 +90,8 @@ void main() {
       await tester.pump();
 
       // Error title and message localization keys appear as raw keys in test.
-      expect(find.text('splash.error_title'), findsOneWidget);
-      expect(find.text('splash.error_message'), findsOneWidget);
+      expect(find.text(l10n('splash.error_title')), findsOneWidget);
+      expect(find.text(l10n('splash.error_message')), findsOneWidget);
     });
 
     testWidgets('shows retry button and continue offline button', (
@@ -105,11 +106,11 @@ void main() {
 
       // Retry button (FilledButton.icon)
       expect(find.byType(FilledButton), findsOneWidget);
-      expect(find.text('splash.retry'), findsOneWidget);
+      expect(find.text(l10n('splash.retry')), findsOneWidget);
 
       // Continue offline button (OutlinedButton)
       expect(find.byType(OutlinedButton), findsOneWidget);
-      expect(find.text('splash.continue_offline'), findsOneWidget);
+      expect(find.text(l10n('splash.continue_offline')), findsOneWidget);
     });
 
     testWidgets('tapping retry button invalidates provider without crash', (

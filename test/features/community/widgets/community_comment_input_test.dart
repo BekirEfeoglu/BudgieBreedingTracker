@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import 'package:budgie_breeding_tracker/features/community/providers/community_comment_providers.dart';
@@ -37,7 +38,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('community.add_comment'), findsOneWidget);
+      expect(find.text(l10n('community.add_comment')), findsOneWidget);
     });
 
     testWidgets('shows loading indicator when submitting', (tester) async {

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -147,7 +148,7 @@ void main() {
       await tester.pump();
 
       // EngagementSummary should not render any metric badges
-      expect(find.text('community.like'), findsNothing);
+      expect(find.text(l10n('community.like')), findsNothing);
     });
 
     testWidgets('shows delete option in popup for own post', (tester) async {
@@ -160,7 +161,7 @@ void main() {
       await tester.tap(find.byType(PopupMenuButton<String>));
       await tester.pumpAndSettle();
 
-      expect(find.text('community.delete_post'), findsOneWidget);
+      expect(find.text(l10n('community.delete_post')), findsOneWidget);
     });
 
     testWidgets('shows report option for other user post', (tester) async {
@@ -172,7 +173,7 @@ void main() {
       await tester.tap(find.byType(PopupMenuButton<String>));
       await tester.pumpAndSettle();
 
-      expect(find.text('community.report_post'), findsOneWidget);
+      expect(find.text(l10n('community.report_post')), findsOneWidget);
     });
 
     testWidgets('delete dialog appears and cancel dismisses', (tester) async {
@@ -184,14 +185,14 @@ void main() {
       // Open popup and tap delete
       await tester.tap(find.byType(PopupMenuButton<String>));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('community.delete_post'));
+      await tester.tap(find.text(l10n('community.delete_post')));
       await tester.pumpAndSettle();
 
       expect(find.byType(AlertDialog), findsOneWidget);
-      expect(find.text('community.confirm_delete_post'), findsOneWidget);
+      expect(find.text(l10n('community.confirm_delete_post')), findsOneWidget);
 
       // Cancel
-      await tester.tap(find.widgetWithText(TextButton, 'common.cancel'));
+      await tester.tap(find.widgetWithText(TextButton, l10n('common.cancel')));
       await tester.pumpAndSettle();
 
       expect(find.byType(AlertDialog), findsNothing);
@@ -216,9 +217,9 @@ void main() {
       // Open popup -> delete -> confirm
       await tester.tap(find.byType(PopupMenuButton<String>));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('community.delete_post'));
+      await tester.tap(find.text(l10n('community.delete_post')));
       await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(TextButton, 'common.delete'));
+      await tester.tap(find.widgetWithText(TextButton, l10n('common.delete')));
       await tester.pumpAndSettle();
 
       verify(
@@ -235,12 +236,12 @@ void main() {
       // Open popup -> report
       await tester.tap(find.byType(PopupMenuButton<String>));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('community.report_post'));
+      await tester.tap(find.text(l10n('community.report_post')));
       await tester.pumpAndSettle();
 
       expect(find.byType(SimpleDialog), findsOneWidget);
-      expect(find.text('community.report_reason_spam'), findsOneWidget);
-      expect(find.text('community.report_reason_harassment'), findsOneWidget);
+      expect(find.text(l10n('community.report_reason_spam')), findsOneWidget);
+      expect(find.text(l10n('community.report_reason_harassment')), findsOneWidget);
     });
 
     testWidgets('report submits and shows snackbar on success', (tester) async {
@@ -269,9 +270,9 @@ void main() {
       // Open popup -> report -> select reason
       await tester.tap(find.byType(PopupMenuButton<String>));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('community.report_post'));
+      await tester.tap(find.text(l10n('community.report_post')));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('community.report_reason_spam'));
+      await tester.tap(find.text(l10n('community.report_reason_spam')));
       await tester.pump();
       await tester.pump();
 

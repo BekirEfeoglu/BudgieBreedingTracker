@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/features/admin/providers/admin_dashboard_providers.dart';
 import 'package:budgie_breeding_tracker/features/admin/screens/admin_settings_screen.dart';
@@ -50,7 +51,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('admin.system_settings'), findsOneWidget);
+      expect(find.text(l10n('admin.system_settings')), findsOneWidget);
     });
 
     testWidgets('shows feature flags section', (tester) async {
@@ -59,7 +60,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('admin.feature_flags'), findsOneWidget);
+      expect(find.text(l10n('admin.feature_flags')), findsOneWidget);
     });
 
     testWidgets('shows security section', (tester) async {
@@ -68,7 +69,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('admin.security'), findsOneWidget);
+      expect(find.text(l10n('admin.security')), findsOneWidget);
     });
 
     testWidgets('shows RefreshIndicator', (tester) async {

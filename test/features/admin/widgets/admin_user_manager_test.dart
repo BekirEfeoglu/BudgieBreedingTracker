@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 import 'package:budgie_breeding_tracker/features/admin/providers/admin_models.dart';
@@ -70,7 +71,7 @@ void main() {
       await pumpLocalizedApp(tester,
         _wrap(UserDetailProfileHeader(detail: _makeDetail(fullName: null))),
       );
-      expect(find.text('admin.no_name'), findsOneWidget);
+      expect(find.text(l10n('admin.no_name')), findsOneWidget);
     });
 
     testWidgets('shows CircleAvatar', (tester) async {
@@ -105,7 +106,7 @@ void main() {
           ),
         ),
       );
-      expect(find.text('admin.grant_premium'), findsOneWidget);
+      expect(find.text(l10n('admin.grant_premium')), findsOneWidget);
     });
 
     testWidgets('shows revoke_premium button for premium user', (tester) async {
@@ -118,7 +119,7 @@ void main() {
           ),
         ),
       );
-      expect(find.text('admin.revoke_premium'), findsOneWidget);
+      expect(find.text(l10n('admin.revoke_premium')), findsOneWidget);
     });
 
     testWidgets('calls onGrantPremium when grant button tapped', (
@@ -169,7 +170,7 @@ void main() {
           ),
         ),
       );
-      expect(find.text('admin.subscription'), findsOneWidget);
+      expect(find.text(l10n('admin.subscription')), findsOneWidget);
     });
 
     testWidgets(
@@ -189,7 +190,7 @@ void main() {
         );
         expect(find.byType(FilledButton), findsNothing);
         expect(find.byType(OutlinedButton), findsNothing);
-        expect(find.text('admin.role_based_premium'), findsOneWidget);
+        expect(find.text(l10n('admin.role_based_premium')), findsOneWidget);
       },
     );
   });
@@ -211,7 +212,7 @@ void main() {
 
     testWidgets('shows admin.birds label', (tester) async {
       await pumpLocalizedApp(tester,_wrap(UserDetailStatsRow(detail: _makeDetail())));
-      expect(find.text('admin.birds'), findsOneWidget);
+      expect(find.text(l10n('admin.birds')), findsOneWidget);
     });
 
     testWidgets('shows activity log count', (tester) async {

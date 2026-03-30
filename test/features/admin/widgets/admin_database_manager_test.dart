@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 import 'package:budgie_breeding_tracker/features/admin/providers/admin_actions_provider.dart';
@@ -67,7 +68,7 @@ void main() {
           ),
         ),
       );
-      expect(find.text('admin.tables'), findsAtLeastNWidgets(1));
+      expect(find.text(l10n('admin.tables')), findsAtLeastNWidgets(1));
     });
 
     testWidgets('shows admin.total_rows label', (tester) async {
@@ -78,7 +79,7 @@ void main() {
           ),
         ),
       );
-      expect(find.text('admin.total_rows'), findsOneWidget);
+      expect(find.text(l10n('admin.total_rows')), findsOneWidget);
     });
 
     testWidgets('formats large total rows with K suffix', (tester) async {
@@ -208,12 +209,12 @@ void main() {
 
     testWidgets('shows backup_all button', (tester) async {
       await pumpLocalizedApp(tester,_wrap(const DatabaseGlobalActionsBar()));
-      expect(find.text('admin.backup_all'), findsOneWidget);
+      expect(find.text(l10n('admin.backup_all')), findsOneWidget);
     });
 
     testWidgets('shows reset_all button', (tester) async {
       await pumpLocalizedApp(tester,_wrap(const DatabaseGlobalActionsBar()));
-      expect(find.text('admin.reset_all'), findsOneWidget);
+      expect(find.text(l10n('admin.reset_all')), findsOneWidget);
     });
 
     testWidgets('shows two DatabaseActionButton widgets', (tester) async {
@@ -240,7 +241,7 @@ void main() {
 
     testWidgets('shows admin.tables section label', (tester) async {
       await pumpLocalizedApp(tester,_wrap(const DatabaseContent(tables: tables)));
-      expect(find.text('admin.tables'), findsAtLeastNWidgets(1));
+      expect(find.text(l10n('admin.tables')), findsAtLeastNWidgets(1));
     });
   });
 }

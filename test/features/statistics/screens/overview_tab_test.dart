@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/features/birds/providers/bird_providers.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_providers.dart';
@@ -62,30 +63,37 @@ void main() {
       await tester.pumpWidget(_createSubject());
       await tester.pumpAndSettle();
 
-      expect(find.text('statistics.gender_distribution'), findsOneWidget);
+      expect(find.text(l10n('statistics.gender_distribution')), findsOneWidget);
+    });
+
+    testWidgets('shows species distribution section', (tester) async {
+      await tester.pumpWidget(_createSubject());
+      await tester.pumpAndSettle();
+
+      expect(find.text(l10n('statistics.species_distribution')), findsOneWidget);
     });
 
     testWidgets('shows color mutation chart section', (tester) async {
       await tester.pumpWidget(_createSubject());
       await tester.pumpAndSettle();
 
-      expect(find.text('statistics.color_mutation'), findsOneWidget);
+      expect(find.text(l10n('statistics.color_mutation')), findsOneWidget);
     });
 
     testWidgets('shows age distribution chart section', (tester) async {
       await tester.pumpWidget(_createSubject());
       await tester.pumpAndSettle();
 
-      expect(find.text('statistics.age_distribution'), findsOneWidget);
+      expect(find.text(l10n('statistics.age_distribution')), findsOneWidget);
     });
 
-    testWidgets('shows three ChartCard widgets for distributions', (
+    testWidgets('shows four ChartCard widgets for distributions', (
       tester,
     ) async {
       await tester.pumpWidget(_createSubject());
       await tester.pumpAndSettle();
 
-      expect(find.byType(ChartCard), findsNWidgets(3));
+      expect(find.byType(ChartCard), findsNWidgets(4));
     });
   });
 }

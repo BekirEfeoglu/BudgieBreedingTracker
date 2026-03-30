@@ -45,6 +45,7 @@ class AppPreferences {
   static const keyRewardExportUses = 'pref_reward_export_uses';
   static const keyBlockedUserIds = 'pref_blocked_user_ids';
   static const keyStatsPeriod = 'pref_stats_period';
+  static const keyStatsSpeciesFilter = 'pref_stats_species_filter';
 
   // ── Theme ──
 

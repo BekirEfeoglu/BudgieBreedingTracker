@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/core/widgets/date_picker_field.dart';
 import 'package:budgie_breeding_tracker/data/models/health_record_model.dart';
@@ -92,7 +93,7 @@ void main() {
 
     testWidgets('renders type selector with choice chips', (tester) async {
       await pumpFields(tester);
-      expect(find.text('common.type'), findsOneWidget);
+      expect(find.text(l10n('common.type')), findsOneWidget);
       expect(find.byType(ChoiceChip), findsAtLeastNWidgets(1));
     });
 
@@ -104,7 +105,7 @@ void main() {
 
     testWidgets('renders description field', (tester) async {
       await pumpFields(tester);
-      expect(find.text('common.description'), findsOneWidget);
+      expect(find.text(l10n('common.description')), findsOneWidget);
     });
 
     testWidgets('renders treatment field', (tester) async {
@@ -129,7 +130,7 @@ void main() {
 
     testWidgets('renders notes field', (tester) async {
       await pumpFields(tester);
-      expect(find.text('common.notes_optional'), findsOneWidget);
+      expect(find.text(l10n('common.notes_optional')), findsOneWidget);
     });
 
     testWidgets('renders follow-up date field', (tester) async {
@@ -171,7 +172,7 @@ void main() {
       formKey.currentState?.validate();
       await tester.pump();
 
-      expect(find.text('chicks.invalid_number'), findsOneWidget);
+      expect(find.text(l10n('chicks.invalid_number')), findsOneWidget);
     });
 
     testWidgets('weight validation rejects zero or negative value', (
@@ -186,7 +187,7 @@ void main() {
       formKey.currentState?.validate();
       await tester.pump();
 
-      expect(find.text('validation.weight_positive'), findsOneWidget);
+      expect(find.text(l10n('validation.weight_positive')), findsOneWidget);
     });
 
     testWidgets('cost validation rejects non-numeric value', (tester) async {
@@ -199,7 +200,7 @@ void main() {
       formKey.currentState?.validate();
       await tester.pump();
 
-      expect(find.text('chicks.invalid_number'), findsOneWidget);
+      expect(find.text(l10n('chicks.invalid_number')), findsOneWidget);
     });
 
     testWidgets('type selector excludes unknown type', (tester) async {

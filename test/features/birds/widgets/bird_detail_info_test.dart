@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/widgets/cards/info_card.dart';
 import 'package:budgie_breeding_tracker/features/birds/widgets/bird_detail_info.dart';
@@ -18,7 +19,7 @@ void main() {
       );
 
       // gender card shows male label key
-      expect(find.text('birds.male'), findsAtLeastNWidgets(1));
+      expect(find.text(l10n('birds.male')), findsAtLeastNWidgets(1));
     });
 
     testWidgets('shows female gender label for female bird', (tester) async {
@@ -29,7 +30,7 @@ void main() {
         SingleChildScrollView(child: BirdDetailInfo(bird: bird)),
       );
 
-      expect(find.text('birds.female'), findsAtLeastNWidgets(1));
+      expect(find.text(l10n('birds.female')), findsAtLeastNWidgets(1));
     });
 
     testWidgets('shows unknown gender label for unknown bird', (tester) async {
@@ -40,7 +41,7 @@ void main() {
         SingleChildScrollView(child: BirdDetailInfo(bird: bird)),
       );
 
-      expect(find.text('birds.unknown'), findsAtLeastNWidgets(1));
+      expect(find.text(l10n('birds.unknown')), findsAtLeastNWidgets(1));
     });
 
     testWidgets('shows birth date when set', (tester) async {
@@ -62,7 +63,7 @@ void main() {
         SingleChildScrollView(child: BirdDetailInfo(bird: bird)),
       );
 
-      expect(find.text('birds.unknown'), findsAtLeastNWidgets(1));
+      expect(find.text(l10n('birds.unknown')), findsAtLeastNWidgets(1));
     });
 
     testWidgets('shows cage number when set', (tester) async {
@@ -84,7 +85,7 @@ void main() {
         SingleChildScrollView(child: BirdDetailInfo(bird: bird)),
       );
 
-      expect(find.text('birds.cage_number'), findsNothing);
+      expect(find.text(l10n('birds.cage_number')), findsNothing);
     });
 
     testWidgets('shows death date card for dead bird with deathDate', (
@@ -111,7 +112,7 @@ void main() {
         SingleChildScrollView(child: BirdDetailInfo(bird: bird)),
       );
 
-      expect(find.text('birds.death_date'), findsNothing);
+      expect(find.text(l10n('birds.death_date')), findsNothing);
     });
 
     testWidgets('shows sold date card for sold bird with soldDate', (
@@ -151,7 +152,7 @@ void main() {
         SingleChildScrollView(child: BirdDetailInfo(bird: bird)),
       );
 
-      expect(find.text('common.info'), findsOneWidget);
+      expect(find.text(l10n('common.info')), findsOneWidget);
     });
   });
 }

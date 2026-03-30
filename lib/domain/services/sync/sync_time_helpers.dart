@@ -7,6 +7,113 @@ part of 'sync_orchestrator.dart';
 // ---------------------------------------------------------------------------
 
 extension _SyncTimeHelpers on SyncOrchestrator {
+  /// Audits encrypted payloads and migrates legacy formats during reconciliation.
+  ///
+  /// Runs as part of the 6-hour full reconciliation cycle. Collects all
+  /// encrypted field values from local DB, audits their format, and
+  /// batch-upgrades any legacy payloads to the current authenticated format.
+  /// Reports audit results to Sentry when legacy payloads are found.
+  ///
+  /// Errors are caught and logged — they should not break the sync cycle.
+  /// SharedPreferences key for pending encryption migration flag.
+  static const _keyPendingEncryptionMigration =
+      'budgie_pending_encryption_migration';
+
+  Future<void> _migrateEncryptedPayloads() async {
+    try {
+      final userId = _ref.read(currentUserIdProvider);
+      if (userId == 'anonymous') return;
+
+      final encryptionService = _ref.read(encryptionServiceProvider);
+      final birdsDao = _ref.read(birdsDaoProvider);
+
+      // Fetch only birds with ring numbers (lightweight query).
+      // When additional encrypted fields are added (geneticInfo, etc.),
+      // add their collection logic here following the same pattern.
+      final birds = await birdsDao.getWithRingNumber(userId);
+      final encryptedValues = <String>[];
+      final idToValue = <String, String>{};
+      for (final bird in birds) {
+        if (bird.ringNumber != null && bird.ringNumber!.isNotEmpty) {
+          if (looksLikeEncrypted(bird.ringNumber!)) {
+            encryptedValues.add(bird.ringNumber!);
+            idToValue[bird.id] = bird.ringNumber!;
+          }
+        }
+      }
+
+      if (encryptedValues.isEmpty) {
+        await _clearPendingMigration();
+        return;
+      }
+
+      // Audit and report to Sentry
+      final audit = encryptionService.auditAndReport(
+        encryptedValues,
+        source: 'sync_reconciliation',
+      );
+
+      if (audit.legacy == 0) {
+        await _clearPendingMigration();
+        return;
+      }
+
+      // Batch re-encrypt legacy payloads (chunk-limited to 50 per cycle)
+      final upgraded = await encryptionService.batchReEncrypt(idToValue);
+      if (upgraded.isNotEmpty) {
+        for (final entry in upgraded.entries) {
+          await birdsDao.updateRingNumber(entry.key, entry.value);
+        }
+        AppLogger.info(
+          '[SyncOrchestrator] Encryption migration: '
+          '${upgraded.length} ring numbers upgraded',
+        );
+      }
+
+      // If there are still remaining legacy payloads, flag for next cycle
+      final remaining = audit.legacy - upgraded.length;
+      if (remaining > 0) {
+        await _setPendingMigration();
+        AppLogger.info(
+          '[SyncOrchestrator] Encryption migration incomplete: '
+          '$remaining legacy payloads remaining — will retry next sync cycle',
+        );
+      } else {
+        await _clearPendingMigration();
+      }
+    } catch (e, st) {
+      AppLogger.warning(
+        '[SyncOrchestrator] Encryption migration failed: $e',
+      );
+      Sentry.captureException(e, stackTrace: st);
+    }
+  }
+
+  /// Returns true if a previous migration cycle was incomplete and
+  /// there are still legacy payloads to process.
+  Future<bool> _hasPendingMigration() async {
+    try {
+      final prefs = await _getPrefs();
+      return prefs.getBool(_keyPendingEncryptionMigration) ?? false;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<void> _setPendingMigration() async {
+    try {
+      final prefs = await _getPrefs();
+      await prefs.setBool(_keyPendingEncryptionMigration, true);
+    } catch (_) {}
+  }
+
+  Future<void> _clearPendingMigration() async {
+    try {
+      final prefs = await _getPrefs();
+      await prefs.remove(_keyPendingEncryptionMigration);
+    } catch (_) {}
+  }
+
   /// Processes pending event reminders and notification schedules.
   ///
   /// Called after pull to handle any new or existing unsent items.

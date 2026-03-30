@@ -4,6 +4,8 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
+import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
+import 'package:budgie_breeding_tracker/core/enums/breeding_enums.dart';
 import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
 import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
@@ -225,6 +227,34 @@ void main() {
 
         expect(result.success, isFalse);
         expect(result.error, contains('Unsupported backup version: null'));
+      });
+
+      test('restores incubation species from backup payload', () async {
+        stubAllSaveAll();
+        final file = await writeBackupFile('species_restore.json', {
+          'version': 2,
+          'user_id': 'user-1',
+          'data': {
+            'incubations': [
+              {
+                'id': 'inc-1',
+                'user_id': 'user-1',
+                'species': 'canary',
+                'status': 'active',
+              },
+            ],
+          },
+        });
+
+        final result = await restorer.restoreBackup('user-1', file.path);
+
+        expect(result.success, isTrue);
+        final captured =
+            verify(() => incubationRepo.saveAll(captureAny())).captured.single
+                as List<Incubation>;
+        expect(captured, hasLength(1));
+        expect(captured.first.species, Species.canary);
+        expect(captured.first.status, IncubationStatus.active);
       });
 
       test('handles empty backup data gracefully', () async {
@@ -494,71 +524,69 @@ void main() {
         expect(result.filePath, file.path);
       });
 
-      test('restores entities in FK-safe order (parents before children)',
-          () async {
-        stubAllSaveAll();
-        final bird = createTestBird(
-          id: 'b1',
-          userId: 'user-1',
-          name: 'B',
-        );
+      test(
+        'restores entities in FK-safe order (parents before children)',
+        () async {
+          stubAllSaveAll();
+          final bird = createTestBird(id: 'b1', userId: 'user-1', name: 'B');
 
-        final file = await writeBackupFile('fk_order.json', {
-          'version': 2,
-          'data': {
-            'birds': [bird.toJson()],
-            'nests': [
-              {'id': 'n1', 'user_id': 'user-1', 'name': 'Nest 1'},
-            ],
-            'breeding_pairs': [
-              {'id': 'bp1', 'user_id': 'user-1'},
-            ],
-            'clutches': [
-              {'id': 'cl1', 'user_id': 'user-1', 'breeding_pair_id': 'bp1'},
-            ],
-            'incubations': [
-              {'id': 'inc1', 'user_id': 'user-1', 'breeding_pair_id': 'bp1'},
-            ],
-            'eggs': [
-              {
-                'id': 'e1',
-                'user_id': 'user-1',
-                'incubation_id': 'inc1',
-                'status': 'incubating',
-                'egg_number': 1,
-                'lay_date': '2025-01-01T00:00:00.000',
-              },
-            ],
-            'chicks': [
-              {
-                'id': 'ch1',
-                'user_id': 'user-1',
-                'egg_id': 'e1',
-                'gender': 'unknown',
-                'health_status': 'healthy',
-              },
-            ],
-          },
-        });
+          final file = await writeBackupFile('fk_order.json', {
+            'version': 2,
+            'data': {
+              'birds': [bird.toJson()],
+              'nests': [
+                {'id': 'n1', 'user_id': 'user-1', 'name': 'Nest 1'},
+              ],
+              'breeding_pairs': [
+                {'id': 'bp1', 'user_id': 'user-1'},
+              ],
+              'clutches': [
+                {'id': 'cl1', 'user_id': 'user-1', 'breeding_pair_id': 'bp1'},
+              ],
+              'incubations': [
+                {'id': 'inc1', 'user_id': 'user-1', 'breeding_pair_id': 'bp1'},
+              ],
+              'eggs': [
+                {
+                  'id': 'e1',
+                  'user_id': 'user-1',
+                  'incubation_id': 'inc1',
+                  'status': 'incubating',
+                  'egg_number': 1,
+                  'lay_date': '2025-01-01T00:00:00.000',
+                },
+              ],
+              'chicks': [
+                {
+                  'id': 'ch1',
+                  'user_id': 'user-1',
+                  'egg_id': 'e1',
+                  'gender': 'unknown',
+                  'health_status': 'healthy',
+                },
+              ],
+            },
+          });
 
-        await restorer.restoreBackup('user-1', file.path);
+          await restorer.restoreBackup('user-1', file.path);
 
-        // Verify FK-safe order: parents must be restored before children.
-        verifyInOrder([
-          () => birdRepo.saveAll(any()),
-          () => nestRepo.saveAll(any()),
-          () => breedingRepo.saveAll(any()),
-          () => clutchRepo.saveAll(any()),
-          () => incubationRepo.saveAll(any()),
-          () => eggRepo.saveAll(any()),
-          () => chickRepo.saveAll(any()),
-        ]);
-      });
+          // Verify FK-safe order: parents must be restored before children.
+          verifyInOrder([
+            () => birdRepo.saveAll(any()),
+            () => nestRepo.saveAll(any()),
+            () => breedingRepo.saveAll(any()),
+            () => clutchRepo.saveAll(any()),
+            () => incubationRepo.saveAll(any()),
+            () => eggRepo.saveAll(any()),
+            () => chickRepo.saveAll(any()),
+          ]);
+        },
+      );
 
       test(
         'continues restoring other entities when one entity type fails',
         () async {
-        stubAllSaveAll();
+          stubAllSaveAll();
           when(
             () => birdRepo.saveAll(any<List<Bird>>()),
           ).thenThrow(Exception('DB error'));
@@ -576,14 +604,14 @@ void main() {
             },
           });
 
-        final result = await restorer.restoreBackup('user-1', file.path);
+          final result = await restorer.restoreBackup('user-1', file.path);
 
-        // Entity-level failure now returns partial-failure result.
-        expect(result.success, isFalse);
-        expect(result.error, contains('partially'));
-        verify(() => birdRepo.saveAll(any())).called(1);
-      },
-    );
+          // Entity-level failure now returns partial-failure result.
+          expect(result.success, isFalse);
+          expect(result.error, contains('partially'));
+          verify(() => birdRepo.saveAll(any())).called(1);
+        },
+      );
 
       test(
         'returns total record count across all restored entity types',

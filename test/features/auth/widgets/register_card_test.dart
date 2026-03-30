@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/features/auth/widgets/register_card.dart';
@@ -54,20 +55,19 @@ void main() {
 
   group('RegisterCard', () {
     testWidgets('renders card container', (tester) async {
-      await pumpLocalizedWidget(tester, buildSubject());
+      await pumpTranslatedWidget(tester, buildSubject());
 
       expect(find.byType(RegisterCard), findsOneWidget);
     });
 
     testWidgets('displays create account title', (tester) async {
-      await pumpLocalizedWidget(tester, buildSubject());
+      await pumpTranslatedWidget(tester, buildSubject());
 
-      // With test asset loader raw key is shown
-      expect(find.text('auth.create_account'), findsOneWidget);
+      expect(find.text(resolvedL10n('auth.create_account')), findsOneWidget);
     });
 
     testWidgets('contains a Form widget', (tester) async {
-      await pumpLocalizedWidget(tester, buildSubject());
+      await pumpTranslatedWidget(tester, buildSubject());
 
       expect(find.byType(Form), findsOneWidget);
     });
@@ -79,10 +79,15 @@ void main() {
         EasyLocalization(
           supportedLocales: const [Locale('tr'), Locale('en'), Locale('de')],
           path: 'assets/translations',
-          assetLoader: TestAssetLoader(),
+          assetLoader: const RealTestAssetLoader(),
           fallbackLocale: const Locale('tr'),
-          child: MaterialApp(
-            home: Scaffold(body: buildSubject(isLoading: true)),
+          child: Builder(
+            builder: (context) => MaterialApp(
+              locale: context.locale,
+              supportedLocales: context.supportedLocales,
+              localizationsDelegates: context.localizationDelegates,
+              home: Scaffold(body: buildSubject(isLoading: true)),
+            ),
           ),
         ),
       );
@@ -95,13 +100,13 @@ void main() {
     testWidgets('renders without error when isLoading is false', (
       tester,
     ) async {
-      await pumpLocalizedWidget(tester, buildSubject(isLoading: false));
+      await pumpTranslatedWidget(tester, buildSubject(isLoading: false));
 
       expect(find.byType(RegisterCard), findsOneWidget);
     });
 
     testWidgets('card has rounded border decoration', (tester) async {
-      await pumpLocalizedWidget(tester, buildSubject());
+      await pumpTranslatedWidget(tester, buildSubject());
 
       final container = tester.widget<Container>(
         find

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/parent_genotype.dart';
@@ -44,7 +45,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('genetics.no_mutations_selected'), findsOneWidget);
+      expect(find.text(l10n('genetics.no_mutations_selected')), findsOneWidget);
     });
 
     testWidgets('shows label text when genotype is empty', (tester) async {
@@ -60,7 +61,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('test.my.label'), findsOneWidget);
+      expect(find.text(l10n('test.my.label')), findsOneWidget);
     });
 
     testWidgets('renders Row layout when genotype is empty', (tester) async {
@@ -98,7 +99,7 @@ void main() {
         );
         await tester.pump();
 
-        expect(find.text('genetics.no_mutations_selected'), findsNothing);
+        expect(find.text(l10n('genetics.no_mutations_selected')), findsNothing);
       },
     );
 
@@ -138,7 +139,7 @@ void main() {
       await tester.pump();
 
       expect(find.byType(SelectionSummary), findsOneWidget);
-      expect(find.text('genetics.no_mutations_selected'), findsOneWidget);
+      expect(find.text(l10n('genetics.no_mutations_selected')), findsOneWidget);
     });
 
     testWidgets('shows label text when genotype has mutations', (tester) async {
@@ -158,7 +159,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('test.female.selected.label'), findsOneWidget);
+      expect(find.text(l10n('test.female.selected.label')), findsOneWidget);
     });
   });
 }

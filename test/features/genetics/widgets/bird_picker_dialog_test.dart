@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
@@ -16,11 +17,13 @@ Widget _wrap(Widget child, {List<dynamic> overrides = const []}) {
     child: MaterialApp(home: Scaffold(body: child)),
   );
 }
+
 Bird _makeBird({
   required String id,
   required String name,
   required BirdGender gender,
   BirdStatus status = BirdStatus.alive,
+  Species species = Species.budgie,
   String? ringNumber,
 }) {
   return Bird(
@@ -29,6 +32,7 @@ Bird _makeBird({
     gender: gender,
     userId: 'user1',
     status: status,
+    species: species,
     ringNumber: ringNumber,
   );
 }
@@ -36,7 +40,8 @@ Bird _makeBird({
 void main() {
   group('BirdPickerDialog', () {
     testWidgets('renders without crashing with loading state', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(
           const SizedBox.shrink(),
           overrides: [
@@ -52,7 +57,8 @@ void main() {
 
     testWidgets('shows CircularProgressIndicator when loading', (tester) async {
       // Stream.empty() keeps provider in loading state; spinner never settles.
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         ProviderScope(
           overrides: [
             currentUserIdProvider.overrideWithValue('user1'),
@@ -75,7 +81,8 @@ void main() {
       tester,
     ) async {
       // Stream with a female bird but dialog filters for male
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         ProviderScope(
           overrides: [
             currentUserIdProvider.overrideWithValue('user1'),
@@ -96,11 +103,12 @@ void main() {
           ),
         ),
       );
-      expect(find.text('common.no_results'), findsOneWidget);
+      expect(find.text(l10n('common.no_results')), findsOneWidget);
     });
 
     testWidgets('shows bird name when matching bird exists', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         ProviderScope(
           overrides: [
             currentUserIdProvider.overrideWithValue('user1'),
@@ -125,7 +133,8 @@ void main() {
     });
 
     testWidgets('filters out dead birds', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         ProviderScope(
           overrides: [
             currentUserIdProvider.overrideWithValue('user1'),
@@ -147,12 +156,40 @@ void main() {
           ),
         ),
       );
-      expect(find.text('common.no_results'), findsOneWidget);
+      expect(find.text(l10n('common.no_results')), findsOneWidget);
+    });
+
+    testWidgets('filters out birds from other species', (tester) async {
+      await pumpLocalizedApp(
+        tester,
+        ProviderScope(
+          overrides: [
+            currentUserIdProvider.overrideWithValue('user1'),
+            birdsStreamProvider('user1').overrideWith(
+              (_) => Stream.value([
+                _makeBird(
+                  id: 'b1',
+                  name: 'Kanarya Erkek',
+                  gender: BirdGender.male,
+                  species: Species.canary,
+                ),
+              ]),
+            ),
+          ],
+          child: const MaterialApp(
+            home: Scaffold(
+              body: BirdPickerDialog(genderFilter: BirdGender.male),
+            ),
+          ),
+        ),
+      );
+      expect(find.text(l10n('common.no_results')), findsOneWidget);
     });
 
     testWidgets('shows search TextField', (tester) async {
       // Stream.empty() keeps provider in loading state; spinner never settles.
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         ProviderScope(
           overrides: [
             currentUserIdProvider.overrideWithValue('user1'),
@@ -173,7 +210,8 @@ void main() {
 
     testWidgets('shows close IconButton', (tester) async {
       // Stream.empty() keeps provider in loading state; spinner never settles.
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         ProviderScope(
           overrides: [
             currentUserIdProvider.overrideWithValue('user1'),
@@ -193,7 +231,8 @@ void main() {
     });
 
     testWidgets('filters birds by search query', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         ProviderScope(
           overrides: [
             currentUserIdProvider.overrideWithValue('user1'),

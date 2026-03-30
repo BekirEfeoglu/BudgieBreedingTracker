@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
@@ -61,7 +62,7 @@ void main() {
       await tester.pumpWidget(_wrap(birds: [], chicks: []));
       await tester.pump();
 
-      expect(find.text('common.no_results'), findsOneWidget);
+      expect(find.text(l10n('common.no_results')), findsOneWidget);
     });
 
     testWidgets('shows bird names when birds list is provided', (tester) async {
@@ -121,7 +122,7 @@ void main() {
       await tester.enterText(find.byType(TextField), 'xyz_bulunamaz');
       await tester.pump();
 
-      expect(find.text('common.no_results'), findsOneWidget);
+      expect(find.text(l10n('common.no_results')), findsOneWidget);
     });
 
     testWidgets('calls onChanged when a bird tile is tapped', (tester) async {
@@ -234,7 +235,7 @@ void main() {
       await tester.pump();
 
       // SliverPersistentHeader → 'birds.title' raw key
-      expect(find.text('birds.title'), findsOneWidget);
+      expect(find.text(l10n('birds.title')), findsOneWidget);
     });
 
     testWidgets('renders chicks.title section header when chicks present', (
@@ -250,7 +251,7 @@ void main() {
       await tester.pumpWidget(_wrap(birds: [], chicks: [chick]));
       await tester.pump();
 
-      expect(find.text('chicks.title'), findsOneWidget);
+      expect(find.text(l10n('chicks.title')), findsOneWidget);
     });
   });
 }

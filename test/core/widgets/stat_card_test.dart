@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/core/widgets/cards/stat_card.dart';
 
@@ -168,7 +169,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // percent == 0 shows 'statistics.trend_stable' key
-      expect(find.text('statistics.trend_stable'), findsOneWidget);
+      expect(find.text(l10n('statistics.trend_stable')), findsOneWidget);
     });
   });
 }

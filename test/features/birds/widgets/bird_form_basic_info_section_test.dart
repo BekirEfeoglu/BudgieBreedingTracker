@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
@@ -57,7 +58,7 @@ void main() {
         ),
       );
 
-      expect(find.text('birds.section_basic'), findsOneWidget);
+      expect(find.text(l10n('birds.section_basic')), findsOneWidget);
     });
 
     testWidgets('shows name field with label', (tester) async {
@@ -78,7 +79,7 @@ void main() {
         ),
       );
 
-      expect(find.text('birds.name_label'), findsOneWidget);
+      expect(find.text(l10n('birds.name_label')), findsOneWidget);
     });
 
     testWidgets('shows gender segmented button with three options', (
@@ -102,9 +103,9 @@ void main() {
       );
 
       expect(find.byType(SegmentedButton<BirdGender>), findsOneWidget);
-      expect(find.text('birds.male'), findsOneWidget);
-      expect(find.text('birds.female'), findsOneWidget);
-      expect(find.text('birds.unknown'), findsOneWidget);
+      expect(find.text(l10n('birds.male')), findsOneWidget);
+      expect(find.text(l10n('birds.female')), findsOneWidget);
+      expect(find.text(l10n('birds.unknown')), findsOneWidget);
     });
 
     testWidgets('shows gender label text', (tester) async {
@@ -125,7 +126,7 @@ void main() {
         ),
       );
 
-      expect(find.text('birds.gender'), findsOneWidget);
+      expect(find.text(l10n('birds.gender')), findsOneWidget);
     });
 
     testWidgets('shows species dropdown', (tester) async {
@@ -146,7 +147,7 @@ void main() {
         ),
       );
 
-      expect(find.text('birds.species'), findsAtLeastNWidgets(1));
+      expect(find.text(l10n('birds.species')), findsAtLeastNWidgets(1));
     });
 
     testWidgets('shows color dropdown', (tester) async {
@@ -167,7 +168,7 @@ void main() {
         ),
       );
 
-      expect(find.text('birds.color'), findsAtLeastNWidgets(1));
+      expect(find.text(l10n('birds.color')), findsAtLeastNWidgets(1));
     });
 
     testWidgets('validates empty name field', (tester) async {
@@ -201,7 +202,41 @@ void main() {
       formKey.currentState?.validate();
       await tester.pump();
 
-      expect(find.text('birds.name_required'), findsOneWidget);
+      expect(find.text(l10n('birds.name_required')), findsOneWidget);
+    });
+
+    testWidgets('validates missing species selection', (tester) async {
+      final nameCtrl = TextEditingController(text: 'Mavi');
+      final colorCtrl = TextEditingController();
+      final formKey = GlobalKey<FormState>();
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Form(
+              key: formKey,
+              child: SingleChildScrollView(
+                child: BirdFormBasicInfoSection(
+                  nameController: nameCtrl,
+                  gender: BirdGender.male,
+                  species: Species.unknown,
+                  colorMutation: null,
+                  colorNoteController: colorCtrl,
+                  onGenderChanged: (_) {},
+                  onSpeciesChanged: (_) {},
+                  onColorChanged: (_) {},
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      formKey.currentState?.validate();
+      await tester.pump();
+
+      expect(find.text(l10n('birds.species_required')), findsOneWidget);
     });
 
     testWidgets('does not show error when name is provided', (tester) async {
@@ -235,12 +270,10 @@ void main() {
       formKey.currentState?.validate();
       await tester.pump();
 
-      expect(find.text('birds.name_required'), findsNothing);
+      expect(find.text(l10n('birds.name_required')), findsNothing);
     });
 
-    testWidgets('calls onGenderChanged when gender is tapped', (
-      tester,
-    ) async {
+    testWidgets('calls onGenderChanged when gender is tapped', (tester) async {
       final nameCtrl = TextEditingController();
       final colorCtrl = TextEditingController();
       BirdGender? changedGender;
@@ -259,7 +292,7 @@ void main() {
         ),
       );
 
-      await tester.tap(find.text('birds.female'));
+      await tester.tap(find.text(l10n('birds.female')));
       await tester.pump();
 
       expect(changedGender, BirdGender.female);
@@ -285,7 +318,7 @@ void main() {
         ),
       );
 
-      expect(find.text('birds.color_name'), findsOneWidget);
+      expect(find.text(l10n('birds.color_name')), findsOneWidget);
     });
 
     testWidgets('hides color note field when colorMutation is not other', (
@@ -308,12 +341,10 @@ void main() {
         ),
       );
 
-      expect(find.text('birds.color_name'), findsNothing);
+      expect(find.text(l10n('birds.color_name')), findsNothing);
     });
 
-    testWidgets('normalizes unknown color to null in dropdown', (
-      tester,
-    ) async {
+    testWidgets('normalizes unknown color to null in dropdown', (tester) async {
       final nameCtrl = TextEditingController();
       final colorCtrl = TextEditingController();
 
@@ -405,6 +436,37 @@ void main() {
       expect(speciesDropdown.value, Species.canary);
     });
 
+    testWidgets('species dropdown starts empty for unknown species', (
+      tester,
+    ) async {
+      final nameCtrl = TextEditingController();
+      final colorCtrl = TextEditingController();
+
+      await _pump(
+        tester,
+        BirdFormBasicInfoSection(
+          nameController: nameCtrl,
+          gender: BirdGender.male,
+          species: Species.unknown,
+          colorMutation: null,
+          colorNoteController: colorCtrl,
+          onGenderChanged: (_) {},
+          onSpeciesChanged: (_) {},
+          onColorChanged: (_) {},
+        ),
+      );
+
+      final speciesDropdownFinder = find.byWidgetPredicate(
+        (widget) => widget is DropdownButton<Species>,
+      );
+      expect(speciesDropdownFinder, findsOneWidget);
+
+      final speciesDropdown = tester.widget<DropdownButton<Species>>(
+        speciesDropdownFinder,
+      );
+      expect(speciesDropdown.value, isNull);
+    });
+
     testWidgets('shows AppIcon for bird name prefix icon', (tester) async {
       final nameCtrl = TextEditingController();
       final colorCtrl = TextEditingController();
@@ -446,7 +508,7 @@ void main() {
         ),
       );
 
-      expect(find.text('birds.no_color_selected'), findsOneWidget);
+      expect(find.text(l10n('birds.no_color_selected')), findsOneWidget);
     });
   });
 }

@@ -1,5 +1,4 @@
 import 'package:excel/excel.dart';
-import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
 import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
@@ -23,7 +22,8 @@ abstract final class ExcelRowParsers {
   /// Parses a single Excel row into a [Bird].
   ///
   /// Expected columns: Ad (0), Halka No (1), Cinsiyet (2), Tur (3),
-  /// Durum (4), Dogum Tarihi (5), Renk (6), Kafes (7), Notlar (8)
+  /// Durum (4), Dogum Tarihi (5), Renk (6), Kafes (7),
+  /// Notlar (8) or Baba ID (9), Anne ID (10), Notlar (11)
   ///
   /// Returns `null` when name is empty (row skipped).
   static Bird? parseBirdRow(List<Data?> row, String userId) {
@@ -32,11 +32,17 @@ abstract final class ExcelRowParsers {
 
     final ringNumber = cellToString(row, 1);
     final genderStr = cellToString(row, 2);
+    final speciesStr = cellToString(row, 3);
+    final statusStr = cellToString(row, 4);
     final birthDateStr = cellToString(row, 5);
     final cage = cellToString(row, 7);
-    final notes = cellToString(row, 8);
+    final fatherId = cellToString(row, 9);
+    final motherId = cellToString(row, 10);
+    final notes = cellToString(row, 11) ?? cellToString(row, 8);
 
     final gender = parseGender(genderStr);
+    final species = parseSpecies(speciesStr);
+    final status = parseBirdStatus(statusStr);
     final birthDate = parseDate(birthDateStr);
 
     return Bird(
@@ -45,9 +51,11 @@ abstract final class ExcelRowParsers {
       name: name,
       ringNumber: ringNumber,
       gender: gender,
-      species: Species.budgie,
-      status: BirdStatus.alive,
+      species: species,
+      status: status,
       birthDate: birthDate,
+      fatherId: fatherId,
+      motherId: motherId,
       cageNumber: cage,
       notes: notes,
       createdAt: DateTime.now(),

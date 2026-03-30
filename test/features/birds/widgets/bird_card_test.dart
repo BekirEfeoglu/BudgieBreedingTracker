@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
@@ -51,7 +52,7 @@ void main() {
 
       await pumpWidget(tester, Scaffold(body: BirdCard(bird: bird)));
 
-      expect(find.textContaining('birds.age_short_ym'), findsOneWidget);
+      expect(find.textContaining(l10nContains('birds.age_short_ym')), findsOneWidget);
     });
 
     testWidgets('shows status badge', (tester) async {
@@ -70,7 +71,7 @@ void main() {
 
       await pumpWidget(tester, Scaffold(body: BirdCard(bird: bird)));
 
-      expect(find.text('birds.canary'), findsOneWidget);
+      expect(find.text(l10n('birds.canary')), findsOneWidget);
     });
 
     testWidgets('does not show species label for budgie', (tester) async {
@@ -78,7 +79,7 @@ void main() {
 
       await pumpWidget(tester, Scaffold(body: BirdCard(bird: bird)));
 
-      expect(find.text('birds.budgie'), findsNothing);
+      expect(find.text(l10n('birds.budgie')), findsNothing);
     });
 
     testWidgets('shows male icon for male bird', (tester) async {

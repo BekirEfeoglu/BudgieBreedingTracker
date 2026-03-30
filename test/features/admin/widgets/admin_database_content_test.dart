@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/features/admin/providers/admin_models.dart';
 import 'package:budgie_breeding_tracker/features/admin/widgets/admin_database_content.dart';
@@ -97,7 +98,7 @@ void main() {
         ),
       );
       await tester.pump();
-      expect(find.text('admin.tables'), findsOneWidget);
+      expect(find.text(l10n('admin.tables')), findsOneWidget);
     });
 
     testWidgets('shows admin.total_rows label', (tester) async {
@@ -109,7 +110,7 @@ void main() {
         ),
       );
       await tester.pump();
-      expect(find.text('admin.total_rows'), findsOneWidget);
+      expect(find.text(l10n('admin.total_rows')), findsOneWidget);
     });
 
     testWidgets('renders Card widget', (tester) async {
@@ -303,13 +304,13 @@ void main() {
     testWidgets('shows backup all button', (tester) async {
       await tester.pumpWidget(_wrap(const DatabaseGlobalActionsBar()));
       await tester.pump();
-      expect(find.text('admin.backup_all'), findsOneWidget);
+      expect(find.text(l10n('admin.backup_all')), findsOneWidget);
     });
 
     testWidgets('shows reset all button', (tester) async {
       await tester.pumpWidget(_wrap(const DatabaseGlobalActionsBar()));
       await tester.pump();
-      expect(find.text('admin.reset_all'), findsOneWidget);
+      expect(find.text(l10n('admin.reset_all')), findsOneWidget);
     });
 
     testWidgets('renders two DatabaseActionButton widgets', (tester) async {
@@ -358,7 +359,7 @@ void main() {
       );
       await tester.pump();
       // admin.tables appears in summary card and section title
-      expect(find.text('admin.tables'), findsAtLeastNWidgets(1));
+      expect(find.text(l10n('admin.tables')), findsAtLeastNWidgets(1));
     });
 
     testWidgets('computes totalRows from all tables', (tester) async {

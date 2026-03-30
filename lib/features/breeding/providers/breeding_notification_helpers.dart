@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/breeding_enums.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
@@ -47,9 +48,7 @@ class BreedingNotificationHelper {
         for (final egg in loadedEggs) egg.id,
       };
       await Future.wait(
-        turningReminderIds.map(
-          (id) => scheduler.cancelEggTurningReminders(id),
-        ),
+        turningReminderIds.map((id) => scheduler.cancelEggTurningReminders(id)),
       );
     } catch (e) {
       AppLogger.warning('Failed to cancel breeding notifications: $e');
@@ -105,6 +104,7 @@ class BreedingNotificationHelper {
     String pairId,
     String incubationId,
     DateTime pairingDate,
+    Species species,
   ) {
     try {
       final scheduler = _ref.read(notificationSchedulerProvider);
@@ -117,6 +117,7 @@ class BreedingNotificationHelper {
         incubationId: incubationId,
         startDate: pairingDate,
         label: pairLabel,
+        species: species,
         settings: settings,
       );
 
@@ -124,6 +125,7 @@ class BreedingNotificationHelper {
         eggId: incubationId,
         startDate: pairingDate,
         eggLabel: pairLabel,
+        species: species,
         settings: settings,
       );
     } catch (e) {
@@ -136,6 +138,7 @@ class BreedingNotificationHelper {
     String userId,
     String pairId,
     DateTime pairingDate,
+    Species species,
   ) {
     try {
       final calendarGen = _ref.read(calendarEventGeneratorProvider);
@@ -144,6 +147,7 @@ class BreedingNotificationHelper {
         breedingPairId: pairId,
         startDate: pairingDate,
         pairLabel: 'breeding.pair_label'.tr(args: [pairId.substring(0, 6)]),
+        species: species,
       );
     } catch (e) {
       if (isSupabaseUnavailableError(e)) {

@@ -74,6 +74,8 @@ void main() {
       expect(bird!.name, 'Sari');
       expect(bird.ringNumber, isNull);
       expect(bird.gender, BirdGender.unknown);
+      expect(bird.species, Species.unknown);
+      expect(bird.status, BirdStatus.alive);
       expect(bird.birthDate, isNull);
       expect(bird.cageNumber, isNull);
       expect(bird.notes, isNull);
@@ -136,6 +138,50 @@ void main() {
       expect(bird!.gender, BirdGender.unknown);
     });
 
+    test('parses canary species and sold status', () {
+      final row = _buildRow(['Limon', 'KN-01', 'female', 'kanarya', 'satildi']);
+
+      final bird = ExcelRowParsers.parseBirdRow(row, _userId);
+
+      expect(bird, isNotNull);
+      expect(bird!.species, Species.canary);
+      expect(bird.status, BirdStatus.sold);
+    });
+
+    test('parses cockatiel aliases and dead status', () {
+      final row = _buildRow([
+        'Sultan',
+        'SP-01',
+        'male',
+        'sultan papağanı',
+        'ölü',
+      ]);
+
+      final bird = ExcelRowParsers.parseBirdRow(row, _userId);
+
+      expect(bird, isNotNull);
+      expect(bird!.species, Species.cockatiel);
+      expect(bird.status, BirdStatus.dead);
+    });
+
+    test('defaults species to unknown for unrecognized value', () {
+      final row = _buildRow(['Test', null, 'male', 'dragon-bird']);
+
+      final bird = ExcelRowParsers.parseBirdRow(row, _userId);
+
+      expect(bird, isNotNull);
+      expect(bird!.species, Species.unknown);
+    });
+
+    test('defaults status to unknown for unrecognized value', () {
+      final row = _buildRow(['Test', null, 'male', 'budgie', 'mystery']);
+
+      final bird = ExcelRowParsers.parseBirdRow(row, _userId);
+
+      expect(bird, isNotNull);
+      expect(bird!.status, BirdStatus.unknown);
+    });
+
     test('parses ISO 8601 date format', () {
       // arrange
       final row = _buildRow([
@@ -185,6 +231,30 @@ void main() {
 
       // assert
       expect(bird1!.id, isNot(bird2!.id));
+    });
+
+    test('parses parent ids from extended export columns', () {
+      final row = _buildRow([
+        'Mavis',
+        'TR-001',
+        'erkek',
+        'budgie',
+        'alive',
+        '15.03.2025',
+        'green',
+        'A1',
+        'legacy-notes',
+        'father-1',
+        'mother-1',
+        'Extended notes',
+      ]);
+
+      final bird = ExcelRowParsers.parseBirdRow(row, _userId);
+
+      expect(bird, isNotNull);
+      expect(bird!.fatherId, 'father-1');
+      expect(bird.motherId, 'mother-1');
+      expect(bird.notes, 'Extended notes');
     });
   });
 

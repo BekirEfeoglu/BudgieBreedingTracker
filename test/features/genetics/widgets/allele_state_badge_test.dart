@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/domain/services/genetics/parent_genotype.dart';
 import 'package:budgie_breeding_tracker/features/genetics/widgets/allele_state_badge.dart';
@@ -59,7 +60,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('genetics.allele_visual_short'), findsOneWidget);
+      expect(find.text(l10n('genetics.allele_visual_short')), findsOneWidget);
     });
 
     testWidgets('shows localized label for carrier state', (tester) async {
@@ -72,7 +73,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('genetics.allele_carrier_short'), findsOneWidget);
+      expect(find.text(l10n('genetics.allele_carrier_short')), findsOneWidget);
     });
 
     testWidgets('shows localized label for split state', (tester) async {
@@ -85,7 +86,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('genetics.allele_split_short'), findsOneWidget);
+      expect(find.text(l10n('genetics.allele_split_short')), findsOneWidget);
     });
 
     testWidgets('shows DF label for dosage-based visual', (tester) async {
@@ -99,7 +100,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('genetics.allele_df_short'), findsOneWidget);
+      expect(find.text(l10n('genetics.allele_df_short')), findsOneWidget);
     });
 
     testWidgets('shows SF label for dosage-based carrier', (tester) async {
@@ -113,7 +114,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('genetics.allele_sf_short'), findsOneWidget);
+      expect(find.text(l10n('genetics.allele_sf_short')), findsOneWidget);
     });
 
     testWidgets('calls onToggle when canToggle is true', (tester) async {

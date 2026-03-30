@@ -1,27 +1,27 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/core/constants/app_constants.dart';
 import 'package:budgie_breeding_tracker/core/enums/subscription_enums.dart';
 import 'package:budgie_breeding_tracker/data/models/profile_model.dart';
 import 'package:budgie_breeding_tracker/features/premium/providers/premium_providers.dart';
 import 'package:budgie_breeding_tracker/features/profile/providers/profile_providers.dart';
 import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
 
+Future<ProviderContainer> createContainer({Profile? profile}) async {
+  final container = ProviderContainer(
+    overrides: [
+      userProfileProvider.overrideWith((ref) => Stream.value(profile)),
+      currentUserIdProvider.overrideWith((ref) => profile?.id ?? 'anon'),
+      isAuthenticatedProvider.overrideWith((ref) => true),
+    ],
+  );
+  container.listen(userProfileProvider, (_, __) {});
+  await container.read(userProfileProvider.future);
+  return container;
+}
+
 void main() {
   group('premiumGracePeriodProvider', () {
-    Future<ProviderContainer> createContainer({Profile? profile}) async {
-      final container = ProviderContainer(
-        overrides: [
-          userProfileProvider.overrideWith((ref) => Stream.value(profile)),
-          currentUserIdProvider.overrideWith((ref) => profile?.id ?? 'anon'),
-          isAuthenticatedProvider.overrideWith((ref) => true),
-        ],
-      );
-      // Activate the provider so the stream emits and .value is populated.
-      container.listen(userProfileProvider, (_, __) {});
-      await container.read(userProfileProvider.future);
-      return container;
-    }
-
     test('returns active when isPremium is true', () async {
       final container = await createContainer(
         profile: const Profile(id: 'u1', email: 'a@b.com', isPremium: true),
@@ -65,13 +65,36 @@ void main() {
       );
     });
 
-    test('returns gracePeriod when expired within 7 days', () async {
+    test('uses the configured 30-day grace period window', () {
+      expect(AppConstants.gracePeriodDays, 30);
+    });
+
+    test(
+      'returns gracePeriod when expired within the grace-period window',
+      () async {
+        final container = await createContainer(
+          profile: Profile(
+            id: 'u1',
+            email: 'a@b.com',
+            isPremium: false,
+            premiumExpiresAt: DateTime.now().subtract(const Duration(days: 3)),
+          ),
+        );
+        addTearDown(container.dispose);
+        expect(
+          container.read(premiumGracePeriodProvider),
+          GracePeriodStatus.gracePeriod,
+        );
+      },
+    );
+
+    test('returns gracePeriod when expired 29 days ago', () async {
       final container = await createContainer(
         profile: Profile(
           id: 'u1',
           email: 'a@b.com',
           isPremium: false,
-          premiumExpiresAt: DateTime.now().subtract(const Duration(days: 3)),
+          premiumExpiresAt: DateTime.now().subtract(const Duration(days: 29)),
         ),
       );
       addTearDown(container.dispose);
@@ -88,6 +111,22 @@ void main() {
           email: 'a@b.com',
           isPremium: false,
           premiumExpiresAt: DateTime.now().subtract(const Duration(days: 35)),
+        ),
+      );
+      addTearDown(container.dispose);
+      expect(
+        container.read(premiumGracePeriodProvider),
+        GracePeriodStatus.expired,
+      );
+    });
+
+    test('returns expired when expired 31 days ago', () async {
+      final container = await createContainer(
+        profile: Profile(
+          id: 'u1',
+          email: 'a@b.com',
+          isPremium: false,
+          premiumExpiresAt: DateTime.now().subtract(const Duration(days: 31)),
         ),
       );
       addTearDown(container.dispose);
@@ -143,6 +182,19 @@ void main() {
       expect(container.read(effectivePremiumProvider), true);
     });
 
+    test('returns true for an actual profile in grace period', () async {
+      final container = await createContainer(
+        profile: Profile(
+          id: 'u1',
+          email: 'test@test.com',
+          isPremium: false,
+          premiumExpiresAt: DateTime.now().subtract(const Duration(days: 20)),
+        ),
+      );
+      addTearDown(container.dispose);
+      expect(container.read(effectivePremiumProvider), isTrue);
+    });
+
     test('returns false for expired', () {
       final container = ProviderContainer(
         overrides: [
@@ -153,6 +205,19 @@ void main() {
       );
       addTearDown(container.dispose);
       expect(container.read(effectivePremiumProvider), false);
+    });
+
+    test('returns false for an actual profile after grace period', () async {
+      final container = await createContainer(
+        profile: Profile(
+          id: 'u1',
+          email: 'test@test.com',
+          isPremium: false,
+          premiumExpiresAt: DateTime.now().subtract(const Duration(days: 45)),
+        ),
+      );
+      addTearDown(container.dispose);
+      expect(container.read(effectivePremiumProvider), isFalse);
     });
 
     test('returns false for free', () {

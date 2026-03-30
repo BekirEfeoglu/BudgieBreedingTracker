@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/core/enums/subscription_enums.dart';
 import 'package:budgie_breeding_tracker/features/home/widgets/grace_period_banner.dart';
@@ -31,7 +32,7 @@ void main() {
         _createSubject(gracePeriodStatus: GracePeriodStatus.gracePeriod),
       );
 
-      expect(find.text('premium.grace_period_title'), findsOneWidget);
+      expect(find.text(l10n('premium.grace_period_title')), findsOneWidget);
     });
 
     testWidgets('renders nothing when status is active', (tester) async {
@@ -41,7 +42,7 @@ void main() {
       );
 
       expect(find.byType(SizedBox), findsWidgets);
-      expect(find.text('premium.grace_period_title'), findsNothing);
+      expect(find.text(l10n('premium.grace_period_title')), findsNothing);
     });
 
     testWidgets('renders nothing when status is free', (tester) async {
@@ -50,7 +51,7 @@ void main() {
         _createSubject(gracePeriodStatus: GracePeriodStatus.free),
       );
 
-      expect(find.text('premium.grace_period_title'), findsNothing);
+      expect(find.text(l10n('premium.grace_period_title')), findsNothing);
     });
 
     testWidgets('renders nothing when status is expired', (tester) async {
@@ -59,7 +60,7 @@ void main() {
         _createSubject(gracePeriodStatus: GracePeriodStatus.expired),
       );
 
-      expect(find.text('premium.grace_period_title'), findsNothing);
+      expect(find.text(l10n('premium.grace_period_title')), findsNothing);
     });
 
     testWidgets('shows renew button', (tester) async {
@@ -68,7 +69,7 @@ void main() {
         _createSubject(gracePeriodStatus: GracePeriodStatus.gracePeriod),
       );
 
-      expect(find.text('premium.grace_period_renew'), findsOneWidget);
+      expect(find.text(l10n('premium.grace_period_renew')), findsOneWidget);
     });
 
     testWidgets('shows grace period message', (tester) async {
@@ -78,7 +79,7 @@ void main() {
       );
 
       // Message uses .tr(args:) — with TestAssetLoader it renders the raw key
-      expect(find.text('premium.grace_period_message'), findsOneWidget);
+      expect(find.text(l10n('premium.grace_period_message')), findsOneWidget);
     });
   });
 }

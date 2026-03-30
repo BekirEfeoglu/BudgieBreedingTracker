@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -61,7 +62,7 @@ void main() {
     testWidgets('shows theme_mode label', (tester) async {
       await _pump(tester);
 
-      expect(find.text('profile.theme_mode'), findsOneWidget);
+      expect(find.text(l10n('profile.theme_mode')), findsOneWidget);
     });
 
     testWidgets('shows SegmentedButton for theme selection', (tester) async {
@@ -75,9 +76,9 @@ void main() {
     ) async {
       await _pump(tester);
 
-      expect(find.text('profile.theme_light'), findsOneWidget);
-      expect(find.text('profile.theme_system'), findsOneWidget);
-      expect(find.text('profile.theme_dark'), findsOneWidget);
+      expect(find.text(l10n('profile.theme_light')), findsOneWidget);
+      expect(find.text(l10n('profile.theme_system')), findsOneWidget);
+      expect(find.text(l10n('profile.theme_dark')), findsOneWidget);
     });
 
     testWidgets('shows SyncStatusTile', (tester) async {
@@ -89,25 +90,25 @@ void main() {
     testWidgets('shows notifications tile', (tester) async {
       await _pump(tester);
 
-      expect(find.text('profile.notifications'), findsOneWidget);
+      expect(find.text(l10n('profile.notifications')), findsOneWidget);
     });
 
     testWidgets('shows backup export tile', (tester) async {
       await _pump(tester);
 
-      expect(find.text('profile.backup_export'), findsOneWidget);
+      expect(find.text(l10n('profile.backup_export')), findsOneWidget);
     });
 
     testWidgets('shows premium membership tile', (tester) async {
       await _pump(tester);
 
-      expect(find.text('profile.premium_membership'), findsOneWidget);
+      expect(find.text(l10n('profile.premium_membership')), findsOneWidget);
     });
 
     testWidgets('shows language tile', (tester) async {
       await _pump(tester);
 
-      expect(find.text('profile.language'), findsOneWidget);
+      expect(find.text(l10n('profile.language')), findsOneWidget);
     });
 
     testWidgets('shows current language native label', (tester) async {

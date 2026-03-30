@@ -5,7 +5,6 @@ import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
-import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
 import 'package:budgie_breeding_tracker/features/home/providers/home_providers.dart';
 import 'package:budgie_breeding_tracker/features/home/widgets/section_header.dart';
 import 'package:budgie_breeding_tracker/router/route_names.dart';
@@ -98,7 +97,7 @@ class _IncubatingEggTile extends StatelessWidget {
               ),
             ),
             _ProgressIndicator(
-              progress: summary.egg.progressPercent,
+              progress: summary.progressPercent,
               color: statusColor,
             ),
           ],

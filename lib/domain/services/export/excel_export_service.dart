@@ -7,6 +7,7 @@ import '../../../data/models/bird_model.dart';
 import '../../../data/models/breeding_pair_model.dart';
 import '../../../data/models/chick_model.dart';
 import '../../../data/models/egg_model.dart';
+import '../../../data/models/incubation_model.dart';
 
 /// Generates Excel workbooks with separate sheets for each entity type.
 class ExcelExportService {
@@ -18,6 +19,7 @@ class ExcelExportService {
   Future<Uint8List> exportAll({
     required List<Bird> birds,
     required List<BreedingPair> pairs,
+    required List<Incubation> incubations,
     required List<Egg> eggs,
     required List<Chick> chicks,
   }) async {
@@ -25,6 +27,7 @@ class ExcelExportService {
 
     _addBirdsSheet(excel, birds);
     _addBreedingSheet(excel, pairs);
+    _addIncubationsSheet(excel, incubations);
     _addEggsSheet(excel, eggs);
     _addChicksSheet(excel, chicks);
 
@@ -177,6 +180,56 @@ class ExcelExportService {
             ? _dateFormat.format(e.fertileCheckDate!)
             : '',
         e.notes ?? '',
+      ];
+      for (var col = 0; col < values.length; col++) {
+        sheet
+            .cell(
+              CellIndex.indexByColumnRow(columnIndex: col, rowIndex: row + 1),
+            )
+            .value = TextCellValue(
+          values[col],
+        );
+      }
+    }
+  }
+
+  void _addIncubationsSheet(Excel excel, List<Incubation> incubations) {
+    final sheet = excel['export.sheet_incubations'.tr()];
+    final headerStyle = CellStyle(bold: true);
+
+    final headers = [
+      'export.header_id'.tr(),
+      'export.header_breeding_pair_id'.tr(),
+      'export.header_species'.tr(),
+      'export.header_status'.tr(),
+      'export.header_start_date'.tr(),
+      'export.header_expected_hatch_date'.tr(),
+      'export.header_total_days'.tr(),
+      'export.header_notes'.tr(),
+    ];
+    for (var i = 0; i < headers.length; i++) {
+      final cell = sheet.cell(
+        CellIndex.indexByColumnRow(columnIndex: i, rowIndex: 0),
+      );
+      cell.value = TextCellValue(headers[i]);
+      cell.cellStyle = headerStyle;
+    }
+
+    for (var row = 0; row < incubations.length; row++) {
+      final incubation = incubations[row];
+      final values = [
+        incubation.id.substring(0, 8),
+        incubation.breedingPairId ?? '',
+        incubation.species.name,
+        incubation.status.name,
+        incubation.startDate != null
+            ? _dateFormat.format(incubation.startDate!)
+            : '',
+        incubation.computedExpectedHatchDate != null
+            ? _dateFormat.format(incubation.computedExpectedHatchDate!)
+            : '',
+        incubation.totalIncubationDays().toString(),
+        incubation.notes ?? '',
       ];
       for (var col = 0; col < values.length; col++) {
         sheet

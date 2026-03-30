@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:budgie_breeding_tracker/features/profile/providers/profile_providers.dart';
@@ -62,7 +63,7 @@ void main() {
     testWidgets('shows change_password title', (tester) async {
       await _openSheet(tester);
 
-      expect(find.text('profile.change_password'), findsAtLeastNWidgets(1));
+      expect(find.text(l10n('profile.change_password')), findsAtLeastNWidgets(1));
     });
 
     testWidgets('shows PasswordChangeForm', (tester) async {
@@ -74,26 +75,26 @@ void main() {
     testWidgets('shows current_password field label', (tester) async {
       await _openSheet(tester);
 
-      expect(find.text('profile.current_password'), findsOneWidget);
+      expect(find.text(l10n('profile.current_password')), findsOneWidget);
     });
 
     testWidgets('shows new_password field label', (tester) async {
       await _openSheet(tester);
 
-      expect(find.text('profile.new_password'), findsOneWidget);
+      expect(find.text(l10n('profile.new_password')), findsOneWidget);
     });
 
     testWidgets('shows confirm_password field label', (tester) async {
       await _openSheet(tester);
 
-      expect(find.text('profile.confirm_password'), findsOneWidget);
+      expect(find.text(l10n('profile.confirm_password')), findsOneWidget);
     });
 
     testWidgets('shows change_password submit button', (tester) async {
       await _openSheet(tester);
 
       // change_password key appears in title + button
-      expect(find.text('profile.change_password'), findsAtLeastNWidgets(1));
+      expect(find.text(l10n('profile.change_password')), findsAtLeastNWidgets(1));
     });
 
     testWidgets('shows loading state when isLoading is true', (tester) async {

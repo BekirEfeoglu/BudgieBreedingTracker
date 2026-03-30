@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/core/constants/app_constants.dart';
 
@@ -76,11 +77,11 @@ void main() {
     });
 
     test('appStoreUrl contains Apple domain', () {
-      expect(AppConstants.appStoreUrl, contains('apple.com'));
+      expect(AppConstants.appStoreUrl, contains(l10n('apple.com')));
     });
 
     test('playStoreUrl contains Google domain', () {
-      expect(AppConstants.playStoreUrl, contains('google.com'));
+      expect(AppConstants.playStoreUrl, contains(l10n('google.com')));
     });
   });
 

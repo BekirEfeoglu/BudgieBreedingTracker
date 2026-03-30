@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/domain/services/payment/purchase_service.dart';
 import 'package:budgie_breeding_tracker/features/premium/widgets/subscription_info_card.dart';
@@ -37,7 +38,7 @@ void main() {
       await tester.pumpWidget(createSubject());
       await tester.pump();
 
-      expect(find.text('premium.active_badge'), findsOneWidget);
+      expect(find.text(l10n('premium.active_badge')), findsOneWidget);
     });
 
     testWidgets('shows trial_active_badge text for trial subscription', (
@@ -51,14 +52,14 @@ void main() {
       await tester.pumpWidget(createSubject(info: trialInfo));
       await tester.pump();
 
-      expect(find.text('premium.trial_active_badge'), findsOneWidget);
+      expect(find.text(l10n('premium.trial_active_badge')), findsOneWidget);
     });
 
     testWidgets('shows will_renew label', (tester) async {
       await tester.pumpWidget(createSubject());
       await tester.pump();
 
-      expect(find.text('premium.will_renew'), findsOneWidget);
+      expect(find.text(l10n('premium.will_renew')), findsOneWidget);
     });
 
     testWidgets('shows current_plan label when productId is provided', (
@@ -67,14 +68,14 @@ void main() {
       await tester.pumpWidget(createSubject());
       await tester.pump();
 
-      expect(find.text('premium.current_plan'), findsOneWidget);
+      expect(find.text(l10n('premium.current_plan')), findsOneWidget);
     });
 
     testWidgets('shows plan_semi_annual for semi-annual product id', (tester) async {
       await tester.pumpWidget(createSubject());
       await tester.pump();
 
-      expect(find.text('premium.plan_semi_annual'), findsOneWidget);
+      expect(find.text(l10n('premium.plan_semi_annual')), findsOneWidget);
     });
 
     testWidgets('shows plan_yearly for yearly product id', (tester) async {
@@ -86,7 +87,7 @@ void main() {
       await tester.pumpWidget(createSubject(info: yearlyInfo));
       await tester.pump();
 
-      expect(find.text('premium.plan_yearly'), findsOneWidget);
+      expect(find.text(l10n('premium.plan_yearly')), findsOneWidget);
     });
 
     testWidgets('shows expires_at label when expirationDate is provided', (
@@ -95,7 +96,7 @@ void main() {
       await tester.pumpWidget(createSubject());
       await tester.pump();
 
-      expect(find.text('premium.expires_at'), findsOneWidget);
+      expect(find.text(l10n('premium.expires_at')), findsOneWidget);
     });
 
     testWidgets('shows formatted expiration date', (tester) async {
@@ -115,7 +116,7 @@ void main() {
       await tester.pumpWidget(createSubject(info: futureInfo));
       await tester.pump();
 
-      expect(find.text('premium.remaining_days'), findsOneWidget);
+      expect(find.text(l10n('premium.remaining_days')), findsOneWidget);
     });
 
     testWidgets('shows Card widget', (tester) async {
@@ -136,7 +137,7 @@ void main() {
       await tester.pumpWidget(createSubject(info: noProductInfo));
       await tester.pump();
 
-      expect(find.text('premium.current_plan'), findsNothing);
+      expect(find.text(l10n('premium.current_plan')), findsNothing);
     });
   });
 }

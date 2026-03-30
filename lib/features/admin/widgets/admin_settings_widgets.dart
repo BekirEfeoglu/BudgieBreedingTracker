@@ -8,14 +8,14 @@ part 'admin_settings_widgets_items.dart';
 
 String _relativeTime(DateTime dateTime) {
   final diff = DateTime.now().toUtc().difference(dateTime.toUtc());
-  if (diff.inMinutes < 1) return 'admin.just_now'.tr();
+  if (diff.inMinutes < 1) return 'common.just_now'.tr();
   if (diff.inMinutes < 60) {
-    return 'admin.minutes_ago'.tr(args: [diff.inMinutes.toString()]);
+    return 'common.minutes_ago'.tr(args: [diff.inMinutes.toString()]);
   }
   if (diff.inHours < 24) {
-    return 'admin.hours_ago'.tr(args: [diff.inHours.toString()]);
+    return 'common.hours_ago'.tr(args: [diff.inHours.toString()]);
   }
-  return 'admin.days_ago'.tr(args: [diff.inDays.toString()]);
+  return 'common.days_ago'.tr(args: [diff.inDays.toString()]);
 }
 
 /// Overview banner showing active settings count and last update time.

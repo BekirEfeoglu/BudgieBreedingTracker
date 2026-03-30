@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
@@ -44,6 +45,7 @@ void main() {
     bool isEdit = false,
     bool isLoading = false,
     BirdGender gender = BirdGender.male,
+    Species species = Species.budgie,
   }) {
     return BirdFormBody(
       formKey: formKey,
@@ -53,7 +55,7 @@ void main() {
       notesController: notesCtrl,
       colorNoteController: colorNoteCtrl,
       gender: gender,
-      species: Species.budgie,
+      species: species,
       colorMutation: null,
       birthDate: null,
       fatherId: null,
@@ -78,14 +80,13 @@ void main() {
     bool isEdit = false,
     bool isLoading = false,
     BirdGender gender = BirdGender.male,
+    Species species = Species.budgie,
   }) async {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
           currentUserIdProvider.overrideWithValue('test-user'),
-          birdsStreamProvider.overrideWith(
-            (ref, userId) => Stream.value([]),
-          ),
+          birdsStreamProvider.overrideWith((ref, userId) => Stream.value([])),
           dateFormatProvider.overrideWith(TestDateFormatNotifier.new),
         ],
         child: MaterialApp(
@@ -94,6 +95,7 @@ void main() {
               isEdit: isEdit,
               isLoading: isLoading,
               gender: gender,
+              species: species,
             ),
           ),
         ),
@@ -113,30 +115,34 @@ void main() {
       expect(find.byType(BirdFormNotesSection), findsOneWidget);
     });
 
+    testWidgets('hides genetics section for species without genetics support', (
+      tester,
+    ) async {
+      await pumpBody(tester, species: Species.finch);
+
+      expect(find.byType(BirdFormGeneticsSection), findsNothing);
+      expect(find.byType(BirdFormIdentitySection), findsOneWidget);
+    });
+
     testWidgets('renders save button when not in edit mode', (tester) async {
       await pumpBody(tester, isEdit: false);
 
       expect(find.byType(PrimaryButton), findsOneWidget);
-      expect(find.text('common.save'), findsOneWidget);
+      expect(find.text(l10n('common.save')), findsOneWidget);
     });
 
     testWidgets('renders update button when in edit mode', (tester) async {
       await pumpBody(tester, isEdit: true);
 
       expect(find.byType(PrimaryButton), findsOneWidget);
-      expect(find.text('common.update'), findsOneWidget);
+      expect(find.text(l10n('common.update')), findsOneWidget);
     });
 
-    testWidgets('renders Form widget with autovalidate mode', (
-      tester,
-    ) async {
+    testWidgets('renders Form widget with autovalidate mode', (tester) async {
       await pumpBody(tester);
 
       final form = tester.widget<Form>(find.byType(Form));
-      expect(
-        form.autovalidateMode,
-        AutovalidateMode.onUserInteraction,
-      );
+      expect(form.autovalidateMode, AutovalidateMode.onUserInteraction);
     });
 
     testWidgets('submit button invokes onSubmit callback', (tester) async {
@@ -146,9 +152,7 @@ void main() {
         ProviderScope(
           overrides: [
             currentUserIdProvider.overrideWithValue('test-user'),
-            birdsStreamProvider.overrideWith(
-              (ref, userId) => Stream.value([]),
-            ),
+            birdsStreamProvider.overrideWith((ref, userId) => Stream.value([])),
             dateFormatProvider.overrideWith(TestDateFormatNotifier.new),
           ],
           child: MaterialApp(
@@ -167,9 +171,7 @@ void main() {
                 fatherId: null,
                 motherId: null,
                 editBirdId: null,
-                genotype: const ParentGenotype.empty(
-                  gender: BirdGender.male,
-                ),
+                genotype: const ParentGenotype.empty(gender: BirdGender.male),
                 isEdit: false,
                 isLoading: false,
                 onGenderChanged: (_) {},

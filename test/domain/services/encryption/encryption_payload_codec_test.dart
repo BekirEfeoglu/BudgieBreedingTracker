@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:crypto/crypto.dart' as crypto;
+import 'package:encrypt/encrypt.dart' as enc;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -214,6 +215,66 @@ void main() {
         service.decrypt(encoded),
         throwsA(anything),
       );
+    });
+  });
+
+  group('legacy payload with derived-key system', () {
+    test('legacy payload decrypts correctly despite derived-key system', () async {
+      // Build a legacy payload: IV + AES-CBC(rawKey, plaintext) — no magic prefix
+      final rawKey = Uint8List.fromList(List<int>.generate(32, (i) => i));
+      final iv = enc.IV.fromLength(16);
+      final encrypter = enc.Encrypter(
+        enc.AES(enc.Key(rawKey), mode: enc.AESMode.cbc),
+      );
+      final encrypted = encrypter.encrypt('legacy-derived-clash', iv: iv);
+      final legacyCipher = base64Encode([...iv.bytes, ...encrypted.bytes]);
+
+      // Service uses derived keys for new encryptions, but the legacy path
+      // must use the raw master key directly (no HMAC, no magic prefix).
+      final decrypted = await service.decrypt(legacyCipher);
+      expect(decrypted, 'legacy-derived-clash');
+    });
+
+    test('needsReEncryption detects legacy payload for upgrade', () {
+      final rawKey = Uint8List.fromList(List<int>.generate(32, (i) => i));
+      final iv = enc.IV.fromLength(16);
+      final encrypter = enc.Encrypter(
+        enc.AES(enc.Key(rawKey), mode: enc.AESMode.cbc),
+      );
+      final encrypted = encrypter.encrypt('needs-upgrade', iv: iv);
+      final legacyCipher = base64Encode([...iv.bytes, ...encrypted.bytes]);
+
+      expect(service.needsReEncryption(legacyCipher), isTrue);
+    });
+
+    test('legacy payload re-encrypted to authenticated derived-key format', () async {
+      final rawKey = Uint8List.fromList(List<int>.generate(32, (i) => i));
+      final iv = enc.IV.fromLength(16);
+      final encrypter = enc.Encrypter(
+        enc.AES(enc.Key(rawKey), mode: enc.AESMode.cbc),
+      );
+      final encrypted = encrypter.encrypt('upgrade-to-derived', iv: iv);
+      final legacyCipher = base64Encode([...iv.bytes, ...encrypted.bytes]);
+
+      // Re-encrypt: decrypt with raw key (legacy), encrypt with derived keys
+      final reEncrypted = await service.reEncrypt(legacyCipher);
+      expect(reEncrypted, isNotNull);
+      expect(service.needsReEncryption(reEncrypted!), isFalse);
+
+      // Verify the re-encrypted payload uses derived-key HMAC (not raw key)
+      final combined = base64Decode(reEncrypted);
+      final payloadEnd = combined.length - 32;
+      final payload = combined.sublist(0, payloadEnd);
+      final providedMac = combined.sublist(payloadEnd);
+
+      // HMAC with raw key should NOT match (proving derived macKey was used)
+      final rawHmac = crypto.Hmac(crypto.sha256, rawKey);
+      final rawMac = rawHmac.convert(payload).bytes;
+      expect(providedMac, isNot(equals(rawMac)));
+
+      // Content should still be recoverable
+      final decrypted = await service.decrypt(reEncrypted);
+      expect(decrypted, 'upgrade-to-derived');
     });
   });
 }

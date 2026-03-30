@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 import 'package:budgie_breeding_tracker/features/admin/providers/admin_models.dart';
@@ -45,7 +46,7 @@ void main() {
         _wrap(const UserDetailActivityLogSection(logs: [])),
       );
       await tester.pump();
-      expect(find.text('admin.activity_log'), findsOneWidget);
+      expect(find.text(l10n('admin.activity_log')), findsOneWidget);
     });
 
     testWidgets('shows admin.no_activity when logs are empty', (tester) async {
@@ -53,7 +54,7 @@ void main() {
         _wrap(const UserDetailActivityLogSection(logs: [])),
       );
       await tester.pump();
-      expect(find.text('admin.no_activity'), findsOneWidget);
+      expect(find.text(l10n('admin.no_activity')), findsOneWidget);
     });
 
     testWidgets('hides no_activity text when logs present', (tester) async {
@@ -61,7 +62,7 @@ void main() {
         _wrap(UserDetailActivityLogSection(logs: [_log1])),
       );
       await tester.pump();
-      expect(find.text('admin.no_activity'), findsNothing);
+      expect(find.text(l10n('admin.no_activity')), findsNothing);
     });
 
     testWidgets('shows action text of log', (tester) async {

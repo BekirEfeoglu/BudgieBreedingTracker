@@ -5,6 +5,8 @@ import 'package:budgie_breeding_tracker/data/local/database/converters/enum_conv
 class IncubationsTable extends Table {
   TextColumn get id => text()();
   TextColumn get userId => text()();
+  TextColumn get species =>
+      text().map(speciesConverter).withDefault(const Constant('unknown'))();
   TextColumn get status => text().map(incubationStatusConverter)();
   IntColumn get version => integer().withDefault(const Constant(1))();
   TextColumn get clutchId => text().nullable()();

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -36,39 +37,39 @@ void main() {
       await tester.pumpWidget(buildScope(const CommunityCreatePostScreen()));
       await tester.pumpAndSettle();
 
-      expect(find.text('community.create_post'), findsOneWidget);
+      expect(find.text(l10n('community.create_post')), findsOneWidget);
     });
 
     testWidgets('shows share action in app bar', (tester) async {
       await tester.pumpWidget(buildScope(const CommunityCreatePostScreen()));
       await tester.pumpAndSettle();
 
-      expect(find.text('community.share_action'), findsOneWidget);
+      expect(find.text(l10n('community.share_action')), findsOneWidget);
     });
 
     testWidgets('renders post type selector chips', (tester) async {
       await tester.pumpWidget(buildScope(const CommunityCreatePostScreen()));
       await tester.pumpAndSettle();
 
-      expect(find.text('community.post_type_general'), findsOneWidget);
-      expect(find.text('community.post_type_photo'), findsOneWidget);
-      expect(find.text('community.post_type_question'), findsOneWidget);
+      expect(find.text(l10n('community.post_type_general')), findsOneWidget);
+      expect(find.text(l10n('community.post_type_photo')), findsOneWidget);
+      expect(find.text(l10n('community.post_type_question')), findsOneWidget);
     });
 
     testWidgets('renders title and content fields', (tester) async {
       await tester.pumpWidget(buildScope(const CommunityCreatePostScreen()));
       await tester.pumpAndSettle();
 
-      expect(find.text('community.post_title_label'), findsOneWidget);
-      expect(find.text('community.content_label'), findsOneWidget);
+      expect(find.text(l10n('community.post_title_label')), findsOneWidget);
+      expect(find.text(l10n('community.content_label')), findsOneWidget);
     });
 
     testWidgets('renders tag input and add photo button', (tester) async {
       await tester.pumpWidget(buildScope(const CommunityCreatePostScreen()));
       await tester.pumpAndSettle();
 
-      expect(find.text('community.add_tags'), findsOneWidget);
-      expect(find.text('community.add_photo'), findsOneWidget);
+      expect(find.text(l10n('community.add_tags')), findsOneWidget);
+      expect(find.text(l10n('community.add_photo')), findsOneWidget);
       expect(find.byIcon(LucideIcons.image), findsOneWidget);
       expect(find.byIcon(LucideIcons.plus), findsOneWidget);
     });

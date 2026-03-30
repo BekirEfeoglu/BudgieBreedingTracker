@@ -1,5 +1,6 @@
-import 'package:budgie_breeding_tracker/core/constants/incubation_constants.dart';
+import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
+import 'package:budgie_breeding_tracker/domain/services/incubation/species_incubation_config.dart';
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_ids.dart';
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_service.dart';
 
@@ -11,9 +12,12 @@ mixin NotificationSchedulerCancel {
   NotificationService get notificationService;
 
   /// Cancels egg turning reminders for a specific egg.
-  Future<void> cancelEggTurningReminders(String eggId) async {
-    const turningHours = IncubationConstants.eggTurningHours;
-    const days = IncubationConstants.incubationPeriodDays;
+  Future<void> cancelEggTurningReminders(
+    String eggId, {
+    Species species = Species.unknown,
+  }) async {
+    final turningHours = eggTurningHoursForSpecies(species);
+    final days = incubationDaysForSpecies(species);
 
     final futures = <Future<void>>[];
     for (var day = 0; day < days; day++) {
@@ -21,7 +25,7 @@ mixin NotificationSchedulerCancel {
         final id = NotificationIds.generate(
           NotificationIds.eggTurningBaseId,
           eggId,
-          day * 3 + t,
+          day * turningHours.length + t,
         );
         futures.add(notificationService.cancel(id));
       }

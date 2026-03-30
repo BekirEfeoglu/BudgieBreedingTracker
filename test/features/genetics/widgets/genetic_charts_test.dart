@@ -1,6 +1,7 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/features/genetics/widgets/genetic_charts.dart';
 
@@ -47,7 +48,7 @@ void main() {
       await pumpLocalizedApp(tester,
         _wrap(const MutationDistributionPieChart(data: [])),
       );
-      expect(find.text('genetics.no_data'), findsOneWidget);
+      expect(find.text(l10n('genetics.no_data')), findsOneWidget);
     });
 
     testWidgets('shows title when provided', (tester) async {
@@ -89,7 +90,7 @@ void main() {
       await pumpLocalizedApp(tester,
         _wrap(MutationDistributionPieChart(data: zeroData)),
       );
-      expect(find.text('genetics.no_data'), findsOneWidget);
+      expect(find.text(l10n('genetics.no_data')), findsOneWidget);
     });
 
     testWidgets('shows RepaintBoundary for PieChart', (tester) async {
@@ -112,7 +113,7 @@ void main() {
       await pumpLocalizedApp(tester,
         _wrap(const OffspringProbabilityBarChart(data: [])),
       );
-      expect(find.text('genetics.no_data'), findsOneWidget);
+      expect(find.text(l10n('genetics.no_data')), findsOneWidget);
     });
 
     testWidgets('shows title when provided', (tester) async {

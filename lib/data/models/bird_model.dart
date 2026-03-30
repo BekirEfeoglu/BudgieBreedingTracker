@@ -16,8 +16,8 @@ abstract class Bird with _$Bird {
     @Default(BirdStatus.alive)
     @JsonKey(unknownEnumValue: BirdStatus.unknown)
     BirdStatus status,
-    @Default(Species.budgie)
-    @JsonKey(unknownEnumValue: Species.budgie)
+    @Default(Species.unknown)
+    @JsonKey(unknownEnumValue: Species.unknown)
     Species species,
     String? ringNumber,
     String? photoUrl,

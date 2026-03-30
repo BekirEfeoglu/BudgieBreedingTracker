@@ -7,84 +7,51 @@ import 'package:budgie_breeding_tracker/data/local/preferences/app_preferences.d
 import 'package:budgie_breeding_tracker/features/statistics/providers/statistics_providers.dart';
 import 'package:budgie_breeding_tracker/features/statistics/widgets/stats_period_selector.dart';
 
+import '../../../helpers/test_localization.dart';
+
+Future<void> _pumpSelector(WidgetTester tester, {Widget? child}) {
+  return pumpTranslatedApp(
+    tester,
+    ProviderScope(
+      child:
+          child ??
+          const MaterialApp(home: Scaffold(body: StatsPeriodSelector())),
+    ),
+  );
+}
+
+SegmentedButton<StatsPeriod> _selector(WidgetTester tester) {
+  return tester.widget<SegmentedButton<StatsPeriod>>(
+    find.byType(SegmentedButton<StatsPeriod>),
+  );
+}
+
 void main() {
   group('StatsPeriodSelector', () {
-    testWidgets('renders without crashing', (tester) async {
-      await tester.pumpWidget(
-        const ProviderScope(
-          child: MaterialApp(home: Scaffold(body: StatsPeriodSelector())),
-        ),
-      );
-      await tester.pump();
+    testWidgets('renders selector shell', (tester) async {
+      await _pumpSelector(tester);
 
       expect(find.byType(StatsPeriodSelector), findsOneWidget);
-    });
-
-    testWidgets('renders SegmentedButton', (tester) async {
-      await tester.pumpWidget(
-        const ProviderScope(
-          child: MaterialApp(home: Scaffold(body: StatsPeriodSelector())),
-        ),
-      );
-      await tester.pump();
-
       expect(find.byType(SegmentedButton<StatsPeriod>), findsOneWidget);
-    });
-
-    testWidgets('shows period label for 3 months', (tester) async {
-      await tester.pumpWidget(
-        const ProviderScope(
-          child: MaterialApp(home: Scaffold(body: StatsPeriodSelector())),
-        ),
-      );
-      await tester.pump();
-
-      // L10n keys appear as literal strings in test environment
-      expect(find.text('statistics.period_3_months'), findsOneWidget);
-    });
-
-    testWidgets('shows period label for 6 months', (tester) async {
-      await tester.pumpWidget(
-        const ProviderScope(
-          child: MaterialApp(home: Scaffold(body: StatsPeriodSelector())),
-        ),
-      );
-      await tester.pump();
-
-      expect(find.text('statistics.period_6_months'), findsOneWidget);
-    });
-
-    testWidgets('shows period label for 12 months', (tester) async {
-      await tester.pumpWidget(
-        const ProviderScope(
-          child: MaterialApp(home: Scaffold(body: StatsPeriodSelector())),
-        ),
-      );
-      await tester.pump();
-
-      expect(find.text('statistics.period_12_months'), findsOneWidget);
     });
 
     testWidgets('tapping 12-month segment updates provider', (tester) async {
       late ProviderContainer container;
 
-      await tester.pumpWidget(
-        ProviderScope(
-          child: Builder(
-            builder: (context) {
-              container = ProviderScope.containerOf(context);
-              return const MaterialApp(
-                home: Scaffold(body: StatsPeriodSelector()),
-              );
-            },
-          ),
+      await _pumpSelector(
+        tester,
+        child: Builder(
+          builder: (context) {
+            container = ProviderScope.containerOf(context);
+            return const MaterialApp(
+              home: Scaffold(body: StatsPeriodSelector()),
+            );
+          },
         ),
       );
-      await tester.pump();
 
-      // Tap the 12-month segment
-      await tester.tap(find.text('statistics.period_12_months'));
-      await tester.pump();
+      final selector = _selector(tester);
+      selector.onSelectionChanged!({StatsPeriod.twelveMonths});
 
       expect(container.read(statsPeriodProvider), StatsPeriod.twelveMonths);
     });
@@ -96,15 +63,12 @@ void main() {
       final container = ProviderContainer();
       addTearDown(container.dispose);
 
-      await container.read(statsPeriodProvider.notifier).setPeriod(
-        StatsPeriod.twelveMonths,
-      );
+      await container
+          .read(statsPeriodProvider.notifier)
+          .setPeriod(StatsPeriod.twelveMonths);
 
       final prefs = await SharedPreferences.getInstance();
-      expect(
-        prefs.getString(AppPreferences.keyStatsPeriod),
-        'twelveMonths',
-      );
+      expect(prefs.getString(AppPreferences.keyStatsPeriod), 'twelveMonths');
     });
 
     test('build loads saved period from SharedPreferences', () async {

@@ -1,6 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/egg_enums.dart';
-import 'package:budgie_breeding_tracker/core/constants/incubation_constants.dart';
+import 'package:budgie_breeding_tracker/domain/services/incubation/species_incubation_config.dart';
 
 part 'egg_model.freezed.dart';
 part 'egg_model.g.dart';
@@ -33,25 +34,33 @@ abstract class Egg with _$Egg {
 }
 
 extension EggX on Egg {
+  int totalIncubationDays({Species species = Species.unknown}) =>
+      incubationDaysForSpecies(species);
+
   int get incubationDays {
     final end = hatchDate ?? DateTime.now();
     return end.difference(layDate).inDays;
   }
 
-  DateTime get expectedHatchDate => layDate.add(
-    const Duration(days: IncubationConstants.incubationPeriodDays),
-  );
+  DateTime expectedHatchDateFor({Species species = Species.unknown}) =>
+      layDate.add(Duration(days: totalIncubationDays(species: species)));
 
-  bool get isOverdue =>
+  DateTime get expectedHatchDate => expectedHatchDateFor();
+
+  bool isOverdueFor({Species species = Species.unknown}) =>
       !isHatched &&
       DateTime.now().difference(layDate).inDays >
-          IncubationConstants.incubationPeriodDays;
+          totalIncubationDays(species: species);
 
-  double get progressPercent {
+  bool get isOverdue => isOverdueFor();
+
+  double progressPercentFor({Species species = Species.unknown}) {
     final days = DateTime.now().difference(layDate).inDays;
-    final percent = days / IncubationConstants.incubationPeriodDays;
+    final percent = days / totalIncubationDays(species: species);
     return percent.clamp(0.0, 1.0);
   }
+
+  double get progressPercent => progressPercentFor();
 
   bool get isHatched => status == EggStatus.hatched;
   bool get isFertile =>

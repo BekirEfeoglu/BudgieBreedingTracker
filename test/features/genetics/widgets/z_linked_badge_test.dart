@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import 'package:budgie_breeding_tracker/domain/services/genetics/mendelian_calculator.dart';
@@ -26,7 +27,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('genetics.z_linked'), findsOneWidget);
+      expect(find.text(l10n('genetics.z_linked')), findsOneWidget);
     });
 
     testWidgets('shows link icon', (tester) async {
@@ -68,7 +69,7 @@ void main() {
       await tester.tap(find.byType(GestureDetector));
       await tester.pumpAndSettle();
 
-      expect(find.text('genetics.z_linkage'), findsOneWidget);
+      expect(find.text(l10n('genetics.z_linkage')), findsOneWidget);
     });
 
     testWidgets('popup shows z_gene_order description', (tester) async {
@@ -80,7 +81,7 @@ void main() {
       await tester.tap(find.byType(GestureDetector));
       await tester.pumpAndSettle();
 
-      expect(find.text('genetics.z_gene_order'), findsOneWidget);
+      expect(find.text(l10n('genetics.z_gene_order')), findsOneWidget);
     });
 
     testWidgets('popup shows linkage rate with cM unit', (tester) async {
@@ -105,7 +106,7 @@ void main() {
       await tester.tap(find.byType(GestureDetector));
       await tester.pumpAndSettle();
 
-      expect(find.text('common.close'), findsOneWidget);
+      expect(find.text(l10n('common.close')), findsOneWidget);
     });
 
     testWidgets('popup closes when close button is tapped', (tester) async {
@@ -119,7 +120,7 @@ void main() {
 
       expect(find.byType(AlertDialog), findsOneWidget);
 
-      await tester.tap(find.text('common.close'));
+      await tester.tap(find.text(l10n('common.close')));
       await tester.pumpAndSettle();
 
       expect(find.byType(AlertDialog), findsNothing);

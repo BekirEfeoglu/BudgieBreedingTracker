@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 
 import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
@@ -88,8 +89,8 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('premium.plan_semi_annual'), findsOneWidget);
-      expect(find.text('premium.plan_yearly'), findsOneWidget);
+      expect(find.text(l10n('premium.plan_semi_annual')), findsOneWidget);
+      expect(find.text(l10n('premium.plan_yearly')), findsOneWidget);
     });
 
     testWidgets('shows fallback prices when no packages available', (
@@ -156,7 +157,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('premium.best_value'), findsOneWidget);
+      expect(find.text(l10n('premium.best_value')), findsOneWidget);
     });
 
     testWidgets('shows savings text on yearly plan', (tester) async {
@@ -165,7 +166,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('premium.save_percent'), findsOneWidget);
+      expect(find.text(l10n('premium.save_percent')), findsOneWidget);
     });
 
     testWidgets('does not show trial text on pricing cards', (tester) async {
@@ -174,7 +175,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('premium.trial_after_price'), findsNothing);
+      expect(find.text(l10n('premium.trial_after_price')), findsNothing);
     });
 
     testWidgets('shows terms note disclosure', (tester) async {
@@ -183,7 +184,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('premium.terms_note'), findsOneWidget);
+      expect(find.text(l10n('premium.terms_note')), findsOneWidget);
     });
 
     testWidgets('shows guest access card for anonymous user', (tester) async {
@@ -195,9 +196,9 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('premium.account_required_title'), findsOneWidget);
+      expect(find.text(l10n('premium.account_required_title')), findsOneWidget);
       expect(
-        find.text('premium.sign_in_to_purchase'),
+        find.text(l10n('premium.sign_in_to_purchase')),
         findsAtLeastNWidgets(1),
       );
     });
@@ -210,7 +211,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('premium.account_required_title'), findsNothing);
+      expect(find.text(l10n('premium.account_required_title')), findsNothing);
     });
 
     testWidgets('shows purchase issue card when issue exists', (
@@ -225,11 +226,11 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(
-        find.text('premium.purchase_setup_missing_title'),
+        find.text(l10n('premium.purchase_setup_missing_title')),
         findsOneWidget,
       );
       expect(
-        find.text('premium.purchase_setup_missing_body'),
+        find.text(l10n('premium.purchase_setup_missing_body')),
         findsOneWidget,
       );
     });
@@ -245,7 +246,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('common.retry'), findsOneWidget);
+      expect(find.text(l10n('common.retry')), findsOneWidget);
     });
 
     testWidgets('does not show retry button for missing API key issue', (
@@ -259,7 +260,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('common.retry'), findsNothing);
+      expect(find.text(l10n('common.retry')), findsNothing);
     });
 
     testWidgets('shows iOS debug StoreKit guidance', (tester) async {
@@ -271,8 +272,8 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('premium.ios_debug_purchase_title'), findsOneWidget);
-      expect(find.text('premium.ios_debug_purchase_body'), findsOneWidget);
+      expect(find.text(l10n('premium.ios_debug_purchase_title')), findsOneWidget);
+      expect(find.text(l10n('premium.ios_debug_purchase_body')), findsOneWidget);
     });
 
     testWidgets('shows legal links section', (tester) async {
@@ -281,7 +282,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('settings.privacy_policy'), findsOneWidget);
+      expect(find.text(l10n('settings.privacy_policy')), findsOneWidget);
     });
 
     testWidgets('shows period labels in RichText for all plans', (

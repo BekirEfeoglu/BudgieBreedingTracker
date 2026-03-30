@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:budgie_breeding_tracker/data/models/profile_model.dart';
@@ -74,7 +75,7 @@ void main() {
       );
       _consumeOverflowExceptions(tester);
 
-      expect(find.text('profile.edit_profile'), findsAtLeastNWidgets(1));
+      expect(find.text(l10n('profile.edit_profile')), findsAtLeastNWidgets(1));
     });
 
     testWidgets('renders ProfileForm', (tester) async {
@@ -146,7 +147,7 @@ void main() {
       await tester.pump();
 
       // Tap save button
-      final saveButton = find.text('common.save');
+      final saveButton = find.text(l10n('common.save'));
       if (saveButton.evaluate().isNotEmpty) {
         await tester.tap(saveButton);
         await tester.pump();
@@ -154,7 +155,7 @@ void main() {
 
         // Validation error key should appear
         expect(
-          find.text('profile.full_name_required'),
+          find.text(l10n('profile.full_name_required')),
           findsAtLeastNWidgets(1),
         );
       }
@@ -189,7 +190,7 @@ void main() {
       _consumeOverflowExceptions(tester);
 
       // Tap save
-      final saveButton = find.text('common.save');
+      final saveButton = find.text(l10n('common.save'));
       if (saveButton.evaluate().isNotEmpty) {
         await tester.tap(saveButton);
         await tester.pump(const Duration(milliseconds: 200));
@@ -227,7 +228,7 @@ void main() {
       );
       _consumeOverflowExceptions(tester);
 
-      final saveButton = find.text('common.save');
+      final saveButton = find.text(l10n('common.save'));
       if (saveButton.evaluate().isNotEmpty) {
         await tester.tap(saveButton);
         await tester.pump();
@@ -271,7 +272,7 @@ void main() {
       );
       _consumeOverflowExceptions(tester);
 
-      final saveButton = find.text('common.save');
+      final saveButton = find.text(l10n('common.save'));
       if (saveButton.evaluate().isNotEmpty) {
         await tester.tap(saveButton);
         await tester.pump();
@@ -279,7 +280,7 @@ void main() {
         _consumeOverflowExceptions(tester);
 
         // Error snackbar with localization key
-        expect(find.text('errors.save_failed'), findsAtLeastNWidgets(1));
+        expect(find.text(l10n('errors.save_failed')), findsAtLeastNWidgets(1));
       }
     });
 

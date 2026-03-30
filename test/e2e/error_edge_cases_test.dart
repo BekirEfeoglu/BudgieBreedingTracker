@@ -6,6 +6,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -179,11 +180,11 @@ void main() {
         await tester.enterText(find.byType(TextFormField).first, '');
         await tester.pumpAndSettle();
 
-        await tester.ensureVisible(find.text('common.save'));
-        await tester.tap(find.text('common.save'));
+        await tester.ensureVisible(find.text(l10n('common.save')));
+        await tester.tap(find.text(l10n('common.save')));
         await tester.pumpAndSettle();
 
-        expect(find.text('birds.name_required'), findsOneWidget);
+        expect(find.text(l10n('birds.name_required')), findsOneWidget);
         verifyNever(() => mockBirdRepository.save(any()));
       },
       timeout: e2eTimeout,

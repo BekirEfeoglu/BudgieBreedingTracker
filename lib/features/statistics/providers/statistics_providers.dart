@@ -1,4 +1,3 @@
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
@@ -9,6 +8,7 @@ import 'package:budgie_breeding_tracker/features/birds/providers/bird_providers.
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_providers.dart';
 import 'package:budgie_breeding_tracker/features/chicks/providers/chick_providers.dart';
 import 'package:budgie_breeding_tracker/features/eggs/providers/egg_providers.dart';
+import 'package:budgie_breeding_tracker/features/statistics/providers/statistics_breeding_providers.dart';
 
 /// Period options for statistics date range filtering.
 enum StatsPeriod {
@@ -16,10 +16,10 @@ enum StatsPeriod {
   sixMonths,
   twelveMonths;
 
-  String get label => switch (this) {
-    StatsPeriod.threeMonths => 'statistics.period_3_months'.tr(),
-    StatsPeriod.sixMonths => 'statistics.period_6_months'.tr(),
-    StatsPeriod.twelveMonths => 'statistics.period_12_months'.tr(),
+  String get labelKey => switch (this) {
+    StatsPeriod.threeMonths => 'statistics.period_3_months',
+    StatsPeriod.sixMonths => 'statistics.period_6_months',
+    StatsPeriod.twelveMonths => 'statistics.period_12_months',
   };
 
   int get monthCount => switch (this) {
@@ -63,6 +63,55 @@ class StatsPeriodNotifier extends Notifier<StatsPeriod> {
 final statsPeriodProvider = NotifierProvider<StatsPeriodNotifier, StatsPeriod>(
   StatsPeriodNotifier.new,
 );
+
+/// Optional species filter for statistics views. `null` means all species.
+/// Persists the selection to SharedPreferences.
+class StatsSpeciesFilterNotifier extends Notifier<Species?> {
+  bool _loaded = false;
+
+  bool get isLoaded => _loaded;
+
+  @override
+  Species? build() {
+    _loaded = false;
+    _loadFromPrefs();
+    return null;
+  }
+
+  Future<void> _loadFromPrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+    final saved = prefs.getString(AppPreferences.keyStatsSpeciesFilter);
+    if (!ref.mounted) return;
+    _loaded = true;
+    if (saved != null) {
+      final match = Species.values.where((s) => s.name == saved);
+      if (match.isNotEmpty) {
+        state = match.first;
+        return;
+      }
+    }
+    // Trigger rebuild so isLoaded becomes true even when value stays null.
+    ref.notifyListeners();
+  }
+
+  Future<void> setSpecies(Species? species) async {
+    state = species;
+    final prefs = await SharedPreferences.getInstance();
+    if (species != null) {
+      await prefs.setString(
+        AppPreferences.keyStatsSpeciesFilter,
+        species.name,
+      );
+    } else {
+      await prefs.remove(AppPreferences.keyStatsSpeciesFilter);
+    }
+  }
+}
+
+final statsSpeciesFilterProvider =
+    NotifierProvider<StatsSpeciesFilterNotifier, Species?>(
+      StatsSpeciesFilterNotifier.new,
+    );
 
 /// Month-aligned date windows used by statistics providers.
 ///
@@ -155,17 +204,71 @@ final genderDistributionProvider =
       });
     });
 
+/// Species distribution statistics from bird data.
+final speciesDistributionProvider =
+    Provider.family<AsyncValue<Map<Species, int>>, String>((ref, userId) {
+      final birdsAsync = ref.watch(birdsStreamProvider(userId));
+
+      return birdsAsync.whenData((birds) {
+        final counts = <Species, int>{};
+        for (final bird in birds) {
+          counts[bird.species] = (counts[bird.species] ?? 0) + 1;
+        }
+
+        final entries = counts.entries.toList()
+          ..sort((a, b) {
+            final countCompare = b.value.compareTo(a.value);
+            if (countCompare != 0) return countCompare;
+            return a.key.name.compareTo(b.key.name);
+          });
+
+        return Map<Species, int>.fromEntries(entries);
+      });
+    });
+
 /// Monthly egg production data — period-aware.
 final monthlyEggProductionProvider =
     Provider.family<AsyncValue<Map<String, int>>, String>((ref, userId) {
       final eggsAsync = ref.watch(eggsStreamProvider(userId));
+      final incubationsAsync = ref.watch(incubationsStreamProvider(userId));
       final period = ref.watch(statsPeriodProvider);
+      final speciesFilter = ref.watch(statsSpeciesFilterProvider);
 
-      return eggsAsync.whenData((eggs) {
+      for (final async in [eggsAsync, incubationsAsync]) {
+        if (async.hasError) {
+          return AsyncError(async.error!, async.stackTrace ?? StackTrace.empty);
+        }
+      }
+      if (eggsAsync.isLoading || incubationsAsync.isLoading) {
+        return const AsyncLoading();
+      }
+
+      final eggs = eggsAsync.requireValue;
+      final incubations = incubationsAsync.requireValue;
+      final allowedIncubationIds = speciesFilter == null
+          ? null
+          : incubations
+                .where((incubation) => incubation.species == speciesFilter)
+                .map((incubation) => incubation.id)
+                .toSet();
+      final filteredEggs = allowedIncubationIds == null
+          ? eggs
+          : eggs
+                .where(
+                  (egg) =>
+                      egg.incubationId != null &&
+                      allowedIncubationIds.contains(egg.incubationId),
+                )
+                .toList();
+
+      return AsyncData(() {
         final range = buildStatsDateRange(period);
-        final months = _buildEmptyMonthMap(period.monthCount, reference: range.currentEnd);
+        final months = _buildEmptyMonthMap(
+          period.monthCount,
+          reference: range.currentEnd,
+        );
 
-        for (final egg in eggs) {
+        for (final egg in filteredEggs) {
           final key =
               '${egg.layDate.year}-${egg.layDate.month.toString().padLeft(2, '0')}';
           if (months.containsKey(key)) {
@@ -174,7 +277,7 @@ final monthlyEggProductionProvider =
         }
 
         return months;
-      });
+      }());
     });
 
 /// Monthly hatched chicks data — period-aware.
@@ -185,7 +288,10 @@ final monthlyHatchedChicksProvider =
 
       return chicksAsync.whenData((chicks) {
         final range = buildStatsDateRange(period);
-        final months = _buildEmptyMonthMap(period.monthCount, reference: range.currentEnd);
+        final months = _buildEmptyMonthMap(
+          period.monthCount,
+          reference: range.currentEnd,
+        );
 
         for (final chick in chicks) {
           final hatch = chick.hatchDate;
@@ -204,14 +310,44 @@ final monthlyHatchedChicksProvider =
 final monthlyBreedingOutcomesProvider =
     Provider.family<AsyncValue<MonthlyBreedingData>, String>((ref, userId) {
       final pairsAsync = ref.watch(breedingPairsStreamProvider(userId));
+      final incubationsAsync = ref.watch(incubationsStreamProvider(userId));
       final period = ref.watch(statsPeriodProvider);
+      final speciesFilter = ref.watch(statsSpeciesFilterProvider);
 
-      return pairsAsync.whenData((pairs) {
+      for (final async in [pairsAsync, incubationsAsync]) {
+        if (async.hasError) {
+          return AsyncError(async.error!, async.stackTrace ?? StackTrace.empty);
+        }
+      }
+      if (pairsAsync.isLoading || incubationsAsync.isLoading) {
+        return const AsyncLoading();
+      }
+
+      final pairs = pairsAsync.requireValue;
+      final incubations = incubationsAsync.requireValue;
+      final allowedPairIds = speciesFilter == null
+          ? null
+          : incubations
+                .where((incubation) => incubation.species == speciesFilter)
+                .map((incubation) => incubation.breedingPairId)
+                .whereType<String>()
+                .toSet();
+      final filteredPairs = allowedPairIds == null
+          ? pairs
+          : pairs.where((pair) => allowedPairIds.contains(pair.id)).toList();
+
+      return AsyncData(() {
         final range = buildStatsDateRange(period);
-        final completedMap = _buildEmptyMonthMap(period.monthCount, reference: range.currentEnd);
-        final cancelledMap = _buildEmptyMonthMap(period.monthCount, reference: range.currentEnd);
+        final completedMap = _buildEmptyMonthMap(
+          period.monthCount,
+          reference: range.currentEnd,
+        );
+        final cancelledMap = _buildEmptyMonthMap(
+          period.monthCount,
+          reference: range.currentEnd,
+        );
 
-        for (final pair in pairs) {
+        for (final pair in filteredPairs) {
           final date = pair.separationDate ?? pair.updatedAt;
           if (date == null) continue;
           final key = '${date.year}-${date.month.toString().padLeft(2, '0')}';
@@ -229,7 +365,7 @@ final monthlyBreedingOutcomesProvider =
           completed: completedMap,
           cancelled: cancelledMap,
         );
-      });
+      }());
     });
 
 /// Data class holding monthly breeding outcome maps.

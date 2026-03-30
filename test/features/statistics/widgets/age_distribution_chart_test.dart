@@ -1,6 +1,7 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/features/statistics/widgets/age_distribution_chart.dart';
 import 'package:budgie_breeding_tracker/features/statistics/widgets/chart_card.dart';
@@ -93,11 +94,11 @@ void main() {
       );
       await tester.pump(const Duration(milliseconds: 300));
       // easy_localization returns key strings in test env
-      expect(find.text('statistics.age_short_0_6m'), findsOneWidget);
-      expect(find.text('statistics.age_short_6_12m'), findsOneWidget);
-      expect(find.text('statistics.age_short_1_2y'), findsOneWidget);
-      expect(find.text('statistics.age_short_2_3y'), findsOneWidget);
-      expect(find.text('statistics.age_short_3_plus'), findsOneWidget);
+      expect(find.text(l10n('statistics.age_short_0_6m')), findsOneWidget);
+      expect(find.text(l10n('statistics.age_short_6_12m')), findsOneWidget);
+      expect(find.text(l10n('statistics.age_short_1_2y')), findsOneWidget);
+      expect(find.text(l10n('statistics.age_short_2_3y')), findsOneWidget);
+      expect(find.text(l10n('statistics.age_short_3_plus')), findsOneWidget);
     });
 
     testWidgets('handles partial data map gracefully', (tester) async {

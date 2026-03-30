@@ -56,7 +56,7 @@ class _TreeContentState extends ConsumerState<TreeContent> {
       data: (ancestors) {
         final rootBird = ancestors[widget.entityId];
         if (rootBird == null) {
-          return Center(child: Text('genealogy.bird_not_found'.tr()));
+          return Center(child: Text('birds.not_found'.tr()));
         }
 
         final offspringBirds = offspringAsync?.whenOrNull(

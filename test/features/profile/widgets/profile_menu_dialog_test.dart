@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:go_router/go_router.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -181,7 +182,7 @@ void main() {
       await pumpLocalizedApp(tester,MaterialApp.router(routerConfig: router));
       _consumeOverflowExceptions(tester);
 
-      expect(find.text('profile.title'), findsAtLeastNWidgets(1));
+      expect(find.text(l10n('profile.title')), findsAtLeastNWidgets(1));
     });
 
     testWidgets('shows settings.title menu item key', (tester) async {
@@ -214,7 +215,7 @@ void main() {
       await pumpLocalizedApp(tester,MaterialApp.router(routerConfig: router));
       _consumeOverflowExceptions(tester);
 
-      expect(find.text('settings.title'), findsAtLeastNWidgets(1));
+      expect(find.text(l10n('settings.title')), findsAtLeastNWidgets(1));
     });
 
     testWidgets('shows auth.logout menu item key', (tester) async {
@@ -247,7 +248,7 @@ void main() {
       await pumpLocalizedApp(tester,MaterialApp.router(routerConfig: router));
       _consumeOverflowExceptions(tester);
 
-      expect(find.text('auth.logout'), findsAtLeastNWidgets(1));
+      expect(find.text(l10n('auth.logout')), findsAtLeastNWidgets(1));
     });
 
     testWidgets('shows profile.delete_account key', (tester) async {
@@ -280,7 +281,7 @@ void main() {
       await pumpLocalizedApp(tester,MaterialApp.router(routerConfig: router));
       _consumeOverflowExceptions(tester);
 
-      expect(find.text('profile.delete_account'), findsAtLeastNWidgets(1));
+      expect(find.text(l10n('profile.delete_account')), findsAtLeastNWidgets(1));
     });
 
     testWidgets('shows founder panel item when isFounder', (tester) async {
@@ -313,7 +314,7 @@ void main() {
       await pumpLocalizedApp(tester,MaterialApp.router(routerConfig: router));
       _consumeOverflowExceptions(tester);
 
-      expect(find.text('profile.founder_panel'), findsAtLeastNWidgets(1));
+      expect(find.text(l10n('profile.founder_panel')), findsAtLeastNWidgets(1));
     });
 
     testWidgets('does not show founder panel when not founder', (tester) async {
@@ -346,7 +347,7 @@ void main() {
       await pumpLocalizedApp(tester,MaterialApp.router(routerConfig: router));
       _consumeOverflowExceptions(tester);
 
-      expect(find.text('profile.founder_panel'), findsNothing);
+      expect(find.text(l10n('profile.founder_panel')), findsNothing);
     });
 
     testWidgets('uses resolvedDisplayName from profile.fullName', (
@@ -638,13 +639,13 @@ void main() {
       await tester.pumpAndSettle();
       _consumeOverflowExceptions(tester);
 
-      await tester.tap(find.text('auth.logout').first);
+      await tester.tap(find.text(l10n('auth.logout')).first);
       await tester.pumpAndSettle();
       _consumeOverflowExceptions(tester);
 
       expect(find.byType(AlertDialog), findsOneWidget);
 
-      await tester.tap(find.widgetWithText(FilledButton, 'auth.logout'));
+      await tester.tap(find.widgetWithText(FilledButton, l10n('auth.logout')));
       await tester.pumpAndSettle();
       _consumeOverflowExceptions(tester);
 

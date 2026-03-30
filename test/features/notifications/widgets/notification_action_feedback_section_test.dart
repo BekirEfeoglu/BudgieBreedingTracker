@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
@@ -64,9 +65,8 @@ void main() {
         buildSubject(feedbacks: []),
       );
 
-      // With test asset loader raw key is shown
       expect(
-        find.text('notifications.recent_actions'),
+        find.text(l10n('notifications.recent_actions')),
         findsOneWidget,
       );
     });
@@ -79,7 +79,7 @@ void main() {
         buildSubject(feedbacks: [_makeFeedback()]),
       );
 
-      expect(find.text('common.clear'), findsOneWidget);
+      expect(find.text(l10n('common.clear')), findsOneWidget);
     });
 
     testWidgets('hides clear button when feedbacks list is empty', (
@@ -186,8 +186,10 @@ void main() {
         ]),
       );
 
-      // Just-now time text (raw key with test loader)
-      expect(find.text('notifications.time_just_now'), findsOneWidget);
+      expect(
+        find.text(l10n('common.just_now')),
+        findsOneWidget,
+      );
     });
   });
 }

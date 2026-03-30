@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:budgie_breeding_tracker/core/enums/egg_enums.dart';
@@ -138,7 +139,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(ErrorState), findsOneWidget);
-      expect(find.text('eggs.incubation_not_found'), findsOneWidget);
+      expect(find.text(l10n('eggs.incubation_not_found')), findsOneWidget);
     });
 
     testWidgets('shows empty state when eggs list is empty', (tester) async {
@@ -160,7 +161,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(EmptyState), findsOneWidget);
-      expect(find.text('eggs.no_eggs'), findsOneWidget);
+      expect(find.text(l10n('eggs.no_eggs')), findsOneWidget);
     });
 
     testWidgets('shows egg list when data is available', (tester) async {
@@ -232,7 +233,7 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      expect(find.text('eggs.all_hatched'), findsOneWidget);
+      expect(find.text(l10n('eggs.all_hatched')), findsOneWidget);
       expect(find.byType(EggListItem), findsNothing);
     });
 
@@ -254,7 +255,7 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      expect(find.text('eggs.management'), findsOneWidget);
+      expect(find.text(l10n('eggs.management')), findsOneWidget);
     });
   });
 }

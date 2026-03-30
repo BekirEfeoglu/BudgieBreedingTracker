@@ -35,6 +35,7 @@ void main() {
           icon: const AppIcon('assets/icons/birds/male.svg'),
           selectedId: null,
           excludeId: null,
+          speciesFilter: Species.budgie,
           genderFilter: BirdGender.male,
           onChanged: (_) {},
         ),
@@ -61,6 +62,7 @@ void main() {
           icon: const AppIcon('assets/icons/birds/male.svg'),
           selectedId: null,
           excludeId: null,
+          speciesFilter: Species.budgie,
           genderFilter: BirdGender.male,
           onChanged: (_) {},
         ),
@@ -93,6 +95,7 @@ void main() {
           icon: const AppIcon('assets/icons/birds/male.svg'),
           selectedId: null,
           excludeId: null,
+          speciesFilter: Species.budgie,
           genderFilter: BirdGender.male,
           onChanged: (_) {},
         ),
@@ -137,6 +140,7 @@ void main() {
           icon: const AppIcon('assets/icons/birds/male.svg'),
           selectedId: 'm-2',
           excludeId: 'm-1',
+          speciesFilter: Species.budgie,
           genderFilter: BirdGender.male,
           onChanged: (_) {},
         ),
@@ -168,6 +172,7 @@ void main() {
           icon: const AppIcon('assets/icons/birds/male.svg'),
           selectedId: null,
           excludeId: null,
+          speciesFilter: Species.budgie,
           genderFilter: BirdGender.male,
           onChanged: (_) {},
         ),
@@ -213,6 +218,7 @@ void main() {
             icon: const AppIcon('assets/icons/birds/male.svg'),
             selectedId: selectedDeadMale.id,
             excludeId: null,
+            speciesFilter: Species.budgie,
             genderFilter: BirdGender.male,
             onChanged: (_) {},
           ),
@@ -227,6 +233,79 @@ void main() {
 
         // selected value must still be renderable even if not in default candidate set
         expect(find.text('Secili Baba'), findsOneWidget);
+      },
+    );
+
+    testWidgets('filters birds by species', (tester) async {
+      final budgieMale = createTestBird(
+        id: 'm-budgie',
+        name: 'Budgie Baba',
+        gender: BirdGender.male,
+        species: Species.budgie,
+      );
+      final canaryMale = createTestBird(
+        id: 'm-canary',
+        name: 'Kanarya Baba',
+        gender: BirdGender.male,
+        species: Species.canary,
+      );
+
+      await _pump(
+        tester,
+        BirdParentSelector(
+          label: 'Baba',
+          icon: const AppIcon('assets/icons/birds/male.svg'),
+          selectedId: null,
+          excludeId: null,
+          speciesFilter: Species.budgie,
+          genderFilter: BirdGender.male,
+          onChanged: (_) {},
+        ),
+        overrides: [
+          currentUserIdProvider.overrideWithValue('user-1'),
+          birdsStreamProvider.overrideWith(
+            (ref, userId) => Stream.value([budgieMale, canaryMale]),
+          ),
+        ],
+      );
+      await tester.tap(find.byType(DropdownButtonFormField<String>));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Budgie Baba'), findsOneWidget);
+      expect(find.text('Kanarya Baba'), findsNothing);
+    });
+
+    testWidgets(
+      'does not keep selected parent visible when species filter no longer matches',
+      (tester) async {
+        final canaryMale = createTestBird(
+          id: 'm-canary',
+          name: 'Kanarya Baba',
+          gender: BirdGender.male,
+          species: Species.canary,
+        );
+
+        await _pump(
+          tester,
+          BirdParentSelector(
+            label: 'Baba',
+            icon: const AppIcon('assets/icons/birds/male.svg'),
+            selectedId: canaryMale.id,
+            excludeId: null,
+            speciesFilter: Species.budgie,
+            genderFilter: BirdGender.male,
+            onChanged: (_) {},
+          ),
+          overrides: [
+            currentUserIdProvider.overrideWithValue('user-1'),
+            birdsStreamProvider.overrideWith(
+              (ref, userId) => Stream.value([canaryMale]),
+            ),
+          ],
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.text('Kanarya Baba'), findsNothing);
       },
     );
   });

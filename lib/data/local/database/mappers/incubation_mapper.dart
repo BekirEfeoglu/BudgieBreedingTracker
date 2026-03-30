@@ -6,6 +6,7 @@ extension IncubationRowMapper on IncubationRow {
   Incubation toModel() => Incubation(
     id: id,
     userId: userId,
+    species: species,
     status: status,
     version: version,
     clutchId: clutchId,
@@ -23,6 +24,7 @@ extension IncubationModelMapper on Incubation {
   IncubationsTableCompanion toCompanion() => IncubationsTableCompanion(
     id: Value(id),
     userId: Value(userId),
+    species: Value(species),
     status: Value(status),
     version: Value(version),
     clutchId: Value(clutchId),

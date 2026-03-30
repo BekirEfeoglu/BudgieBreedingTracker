@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:budgie_breeding_tracker/core/widgets/buttons/primary_button.dart';
@@ -60,7 +61,7 @@ void main() {
     testWidgets('full name field has profile.full_name label', (tester) async {
       await _pump(tester);
 
-      expect(find.text('profile.full_name'), findsOneWidget);
+      expect(find.text(l10n('profile.full_name')), findsOneWidget);
     });
 
     testWidgets('shows email field when email is provided', (tester) async {
@@ -73,7 +74,7 @@ void main() {
       await _pump(tester, email: null);
 
       // Only one TextFormField (full name), no email field
-      expect(find.text('profile.email'), findsNothing);
+      expect(find.text(l10n('profile.email')), findsNothing);
     });
 
     testWidgets('pre-fills full name from initialFullName', (tester) async {
@@ -89,7 +90,7 @@ void main() {
       await _pump(tester);
 
       expect(find.byType(PrimaryButton), findsOneWidget);
-      expect(find.text('common.save'), findsOneWidget);
+      expect(find.text(l10n('common.save')), findsOneWidget);
     });
 
     testWidgets('shows loading indicator when isLoading is true', (
@@ -110,7 +111,7 @@ void main() {
       await tester.tap(find.byType(PrimaryButton));
       await tester.pump();
 
-      expect(find.text('profile.full_name_required'), findsOneWidget);
+      expect(find.text(l10n('profile.full_name_required')), findsOneWidget);
     });
 
     testWidgets('calls onSave with trimmed name when valid', (tester) async {

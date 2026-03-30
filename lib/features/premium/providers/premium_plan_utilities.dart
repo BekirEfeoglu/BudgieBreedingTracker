@@ -29,6 +29,10 @@ enum PremiumPurchaseIssue {
 }
 
 final premiumPurchaseIssueProvider = Provider<PremiumPurchaseIssue?>((ref) {
+  if (shouldDeferRevenueCatOnDebugIosSimulator) {
+    return PremiumPurchaseIssue.iosDebugStoreKitRequired;
+  }
+
   final apiKey = Platform.isIOS ? revenueCatApiKeyIos : revenueCatApiKeyAndroid;
   if (apiKey.isEmpty) {
     return PremiumPurchaseIssue.missingApiKey;
@@ -48,10 +52,6 @@ final premiumPurchaseIssueProvider = Provider<PremiumPurchaseIssue?>((ref) {
   if (packages == null || packages.isNotEmpty) return null;
 
   // Offerings resolved but empty → diagnose the issue
-
-  if (Platform.isIOS && kDebugMode) {
-    return PremiumPurchaseIssue.iosDebugStoreKitRequired;
-  }
 
   return PremiumPurchaseIssue.offeringsUnavailable;
 });

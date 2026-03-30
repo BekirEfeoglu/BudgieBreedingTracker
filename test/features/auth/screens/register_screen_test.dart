@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -76,7 +77,7 @@ void main() {
       await tester.pumpWidget(createSubject());
       await tester.pump(const Duration(milliseconds: 500));
 
-      expect(find.text('auth.create_account'), findsOneWidget);
+      expect(find.text(l10n('auth.create_account')), findsOneWidget);
     });
 
     testWidgets('shows form with text fields', (tester) async {
@@ -91,14 +92,14 @@ void main() {
       await tester.pumpWidget(createSubject());
       await tester.pump(const Duration(milliseconds: 500));
 
-      expect(find.text('auth.sign_in_with_google'), findsOneWidget);
+      expect(find.text(l10n('auth.sign_in_with_google')), findsOneWidget);
     });
 
     testWidgets('shows already_have_account text', (tester) async {
       await tester.pumpWidget(createSubject());
       await tester.pump(const Duration(milliseconds: 500));
 
-      expect(find.text('auth.have_account'), findsOneWidget);
+      expect(find.text(l10n('auth.have_account')), findsOneWidget);
     });
 
     testWidgets('shows register submit button', (tester) async {
@@ -137,8 +138,8 @@ void main() {
 
       // Should find 2 checkboxes for age and consent
       expect(find.byType(Checkbox), findsNWidgets(2));
-      expect(find.text('auth.age_confirm'), findsOneWidget);
-      expect(find.text('auth.consent_checkbox'), findsOneWidget);
+      expect(find.text(l10n('auth.age_confirm')), findsOneWidget);
+      expect(find.text(l10n('auth.consent_checkbox')), findsOneWidget);
     });
 
     testWidgets('unchecked checkboxes block form submission', (tester) async {

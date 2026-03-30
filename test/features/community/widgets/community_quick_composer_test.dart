@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import 'package:budgie_breeding_tracker/features/community/widgets/community_quick_composer.dart';
@@ -49,7 +50,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('community.content_label'), findsOneWidget);
+      expect(find.text(l10n('community.content_label')), findsOneWidget);
     });
 
     testWidgets('shows photo and create buttons', (tester) async {
@@ -63,8 +64,8 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('community.add_photo'), findsOneWidget);
-      expect(find.text('community.create_post'), findsOneWidget);
+      expect(find.text(l10n('community.add_photo')), findsOneWidget);
+      expect(find.text(l10n('community.create_post')), findsOneWidget);
       expect(find.byIcon(LucideIcons.image), findsOneWidget);
       expect(find.byIcon(LucideIcons.pencil), findsOneWidget);
     });
@@ -81,7 +82,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('community.content_label'));
+      await tester.tap(find.text(l10n('community.content_label')));
       expect(called, isTrue);
     });
   });

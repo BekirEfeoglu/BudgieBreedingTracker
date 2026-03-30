@@ -13,6 +13,7 @@ import 'package:budgie_breeding_tracker/features/statistics/widgets/chart_card.d
 import 'package:budgie_breeding_tracker/features/statistics/widgets/egg_production_chart.dart';
 import 'package:budgie_breeding_tracker/features/statistics/widgets/fertility_trend_chart.dart';
 import 'package:budgie_breeding_tracker/features/statistics/widgets/incubation_duration_chart.dart';
+import 'package:budgie_breeding_tracker/features/statistics/widgets/stats_species_filter_selector.dart';
 import 'package:budgie_breeding_tracker/router/route_names.dart';
 
 /// Breeding & Eggs tab: breeding success, egg production, fertility, incubation.
@@ -59,6 +60,8 @@ class _BreedingTabState extends ConsumerState<BreedingTab> {
         padding: AppSpacing.screenPadding,
         child: Column(
           children: [
+            const StatsSpeciesFilterSelector(),
+            const SizedBox(height: AppSpacing.lg),
             _BreedingSuccessSection(userId: userId),
             const SizedBox(height: AppSpacing.lg),
             _EggProductionSection(userId: userId),
@@ -82,7 +85,9 @@ class _BreedingSuccessSection extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final outcomesAsync = ref.watch(monthlyBreedingOutcomesProvider(userId));
 
-    final dataCount = outcomesAsync.value?.completed.values.where((v) => v > 0).length;
+    final dataCount = outcomesAsync.value?.completed.values
+        .where((v) => v > 0)
+        .length;
     return ChartCard(
       title: 'statistics.breeding_success'.tr(),
       subtitle: 'statistics.breeding_success_subtitle'.tr(),

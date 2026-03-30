@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:budgie_breeding_tracker/core/enums/egg_enums.dart';
@@ -39,9 +40,7 @@ void main() {
     repo = MockEggRepository();
   });
 
-  ProviderContainer makeContainer({
-    List<dynamic> overrides = const [],
-  }) {
+  ProviderContainer makeContainer({List<dynamic> overrides = const []}) {
     return ProviderContainer(
       overrides: [
         eggRepositoryProvider.overrideWithValue(repo),
@@ -53,43 +52,34 @@ void main() {
   group('eggsStreamProvider', () {
     test('returns eggs from repository watchAll', () async {
       final eggs = [_egg(id: 'e1'), _egg(id: 'e2'), _egg(id: 'e3')];
-      when(() => repo.watchAll('user-1')).thenAnswer(
-        (_) => Stream.value(eggs),
-      );
+      when(() => repo.watchAll('user-1')).thenAnswer((_) => Stream.value(eggs));
 
       final container = makeContainer();
       addTearDown(container.dispose);
 
       container.listen(eggsStreamProvider('user-1'), (_, __) {});
-      final result = await container.read(
-        eggsStreamProvider('user-1').future,
-      );
+      final result = await container.read(eggsStreamProvider('user-1').future);
 
       expect(result, hasLength(3));
       expect(result.map((e) => e.id), containsAll(['e1', 'e2', 'e3']));
+      verify(() => repo.watchAll('user-1')).called(1);
     });
 
     test('returns empty list when no eggs exist', () async {
-      when(() => repo.watchAll('user-1')).thenAnswer(
-        (_) => Stream.value([]),
-      );
+      when(() => repo.watchAll('user-1')).thenAnswer((_) => Stream.value([]));
 
       final container = makeContainer();
       addTearDown(container.dispose);
 
       container.listen(eggsStreamProvider('user-1'), (_, __) {});
-      final result = await container.read(
-        eggsStreamProvider('user-1').future,
-      );
+      final result = await container.read(eggsStreamProvider('user-1').future);
 
       expect(result, isEmpty);
     });
 
     test('streams multiple emissions reactively', () async {
       final controller = StreamController<List<Egg>>.broadcast();
-      when(() => repo.watchAll('user-1')).thenAnswer(
-        (_) => controller.stream,
-      );
+      when(() => repo.watchAll('user-1')).thenAnswer((_) => controller.stream);
 
       final container = makeContainer();
       addTearDown(() {
@@ -112,12 +102,12 @@ void main() {
     });
 
     test('different userIds create separate providers', () async {
-      when(() => repo.watchAll('user-1')).thenAnswer(
-        (_) => Stream.value([_egg(id: 'e1')]),
-      );
-      when(() => repo.watchAll('user-2')).thenAnswer(
-        (_) => Stream.value([_egg(id: 'e2'), _egg(id: 'e3')]),
-      );
+      when(
+        () => repo.watchAll('user-1'),
+      ).thenAnswer((_) => Stream.value([_egg(id: 'e1')]));
+      when(
+        () => repo.watchAll('user-2'),
+      ).thenAnswer((_) => Stream.value([_egg(id: 'e2'), _egg(id: 'e3')]));
 
       final container = makeContainer();
       addTearDown(container.dispose);
@@ -143,9 +133,9 @@ void main() {
         _egg(id: 'e1', incubationId: 'inc-1'),
         _egg(id: 'e2', incubationId: 'inc-1'),
       ];
-      when(() => repo.watchByIncubation('inc-1')).thenAnswer(
-        (_) => Stream.value(eggs),
-      );
+      when(
+        () => repo.watchByIncubation('inc-1'),
+      ).thenAnswer((_) => Stream.value(eggs));
 
       final container = makeContainer();
       addTearDown(container.dispose);
@@ -160,9 +150,9 @@ void main() {
     });
 
     test('returns empty list for incubation with no eggs', () async {
-      when(() => repo.watchByIncubation('inc-empty')).thenAnswer(
-        (_) => Stream.value([]),
-      );
+      when(
+        () => repo.watchByIncubation('inc-empty'),
+      ).thenAnswer((_) => Stream.value([]));
 
       final container = makeContainer();
       addTearDown(container.dispose);
@@ -212,9 +202,9 @@ void main() {
       final container = makeContainer();
       addTearDown(container.dispose);
 
-      final future = container.read(eggActionsProvider.notifier).deleteEgg(
-        'e1',
-      );
+      final future = container
+          .read(eggActionsProvider.notifier)
+          .deleteEgg('e1');
 
       final state = container.read(eggActionsProvider);
       expect(state.isLoading, isTrue);
@@ -236,12 +226,11 @@ void main() {
       expect(state.isLoading, isFalse);
       expect(state.isSuccess, isTrue);
       expect(state.error, isNull);
+      verify(() => repo.remove('e1')).called(1);
     });
 
     test('sets error on failure', () async {
-      when(() => repo.remove('e-fail')).thenThrow(
-        StateError('Network error'),
-      );
+      when(() => repo.remove('e-fail')).thenThrow(StateError('Network error'));
 
       final container = makeContainer();
       addTearDown(container.dispose);
@@ -251,7 +240,7 @@ void main() {
       final state = container.read(eggActionsProvider);
       expect(state.isLoading, isFalse);
       expect(state.isSuccess, isFalse);
-      expect(state.error, contains('errors.unknown'));
+      expect(state.error, contains(l10n('errors.unknown')));
     });
 
     test('reset clears all state', () async {

@@ -1,4 +1,4 @@
-@Tags(['e2e'])
+@Tags(['scenario'])
 library;
 
 import 'dart:typed_data';
@@ -67,8 +67,21 @@ void main() {
         when(
           () => mockBirdRepository.getCount(any()),
         ).thenAnswer((_) async => birds.length);
+        when(() => mockBirdRepository.getById(any())).thenAnswer((
+          invocation,
+        ) async {
+          final id = invocation.positionalArguments.first as String;
+          for (final bird in birds) {
+            if (bird.id == id) return bird;
+          }
+          return null;
+        });
         when(
-          () => mockBirdRepository.hasRingNumber(any(), any(), excludeId: any(named: 'excludeId')),
+          () => mockBirdRepository.hasRingNumber(
+            any(),
+            any(),
+            excludeId: any(named: 'excludeId'),
+          ),
         ).thenAnswer((_) async => false);
         when(() => mockPairRepository.save(any())).thenAnswer((
           invocation,
@@ -80,9 +93,24 @@ void main() {
         when(
           () => mockPairRepository.getAll(any()),
         ).thenAnswer((_) async => List.of(pairs));
-        when(
-          () => mockPairRepository.getActiveCount(any()),
-        ).thenAnswer((_) async => pairs.where((p) => p.status == BreedingStatus.active || p.status == BreedingStatus.ongoing).length);
+        when(() => mockPairRepository.getById(any())).thenAnswer((
+          invocation,
+        ) async {
+          final id = invocation.positionalArguments.first as String;
+          for (final pair in pairs) {
+            if (pair.id == id) return pair;
+          }
+          return null;
+        });
+        when(() => mockPairRepository.getActiveCount(any())).thenAnswer(
+          (_) async => pairs
+              .where(
+                (p) =>
+                    p.status == BreedingStatus.active ||
+                    p.status == BreedingStatus.ongoing,
+              )
+              .length,
+        );
         when(() => mockIncubationRepository.save(any())).thenAnswer((
           invocation,
         ) async {
@@ -93,9 +121,20 @@ void main() {
         when(
           () => mockIncubationRepository.getAll(any()),
         ).thenAnswer((_) async => List.of(incubations));
-        when(
-          () => mockIncubationRepository.getActiveCount(any()),
-        ).thenAnswer((_) async => incubations.where((i) => i.status == IncubationStatus.active).length);
+        when(() => mockIncubationRepository.getById(any())).thenAnswer((
+          invocation,
+        ) async {
+          final id = invocation.positionalArguments.first as String;
+          for (final incubation in incubations) {
+            if (incubation.id == id) return incubation;
+          }
+          return null;
+        });
+        when(() => mockIncubationRepository.getActiveCount(any())).thenAnswer(
+          (_) async => incubations
+              .where((i) => i.status == IncubationStatus.active)
+              .length,
+        );
         when(
           () => mockIncubationRepository.getByBreedingPairIds(any()),
         ).thenAnswer((invocation) async {
@@ -135,6 +174,7 @@ void main() {
             incubationId: any(named: 'incubationId'),
             startDate: any(named: 'startDate'),
             label: any(named: 'label'),
+            species: any(named: 'species'),
             settings: any(named: 'settings'),
           ),
         ).thenAnswer((_) async {});
@@ -143,6 +183,7 @@ void main() {
             eggId: any(named: 'eggId'),
             startDate: any(named: 'startDate'),
             eggLabel: any(named: 'eggLabel'),
+            species: any(named: 'species'),
             settings: any(named: 'settings'),
           ),
         ).thenAnswer((_) async {});
@@ -157,11 +198,21 @@ void main() {
           ),
         ).thenAnswer((_) async {});
         when(
+          () => mockNotificationScheduler.scheduleBandingReminders(
+            chickId: any(named: 'chickId'),
+            chickLabel: any(named: 'chickLabel'),
+            hatchDate: any(named: 'hatchDate'),
+            bandingDay: any(named: 'bandingDay'),
+            settings: any(named: 'settings'),
+          ),
+        ).thenAnswer((_) async {});
+        when(
           () => mockCalendarGenerator.generateIncubationEvents(
             userId: any(named: 'userId'),
             breedingPairId: any(named: 'breedingPairId'),
             startDate: any(named: 'startDate'),
             pairLabel: any(named: 'pairLabel'),
+            species: any(named: 'species'),
           ),
         ).thenAnswer((_) async {});
         when(
@@ -170,6 +221,7 @@ void main() {
             layDate: any(named: 'layDate'),
             eggNumber: any(named: 'eggNumber'),
             incubationId: any(named: 'incubationId'),
+            species: any(named: 'species'),
           ),
         ).thenAnswer((_) async {});
         when(
@@ -177,12 +229,15 @@ void main() {
             userId: any(named: 'userId'),
             hatchDate: any(named: 'hatchDate'),
             chickLabel: any(named: 'chickLabel'),
+            chickId: any(named: 'chickId'),
+            bandingDay: any(named: 'bandingDay'),
           ),
         ).thenAnswer((_) async {});
         when(
           () => mockPdfExportService.generateFullReport(
             birds: any(named: 'birds'),
             pairs: any(named: 'pairs'),
+            incubations: any(named: 'incubations'),
             eggs: any(named: 'eggs'),
             chicks: any(named: 'chicks'),
           ),
@@ -302,6 +357,7 @@ void main() {
             layDate: any(named: 'layDate'),
             eggNumber: any(named: 'eggNumber'),
             incubationId: any(named: 'incubationId'),
+            species: any(named: 'species'),
           ),
         ).called(5);
 
@@ -365,6 +421,7 @@ void main() {
             .generateFullReport(
               birds: birds,
               pairs: pairs,
+              incubations: incubations,
               eggs: eggs,
               chicks: chicks,
             );
@@ -373,6 +430,7 @@ void main() {
           () => mockPdfExportService.generateFullReport(
             birds: birds,
             pairs: pairs,
+            incubations: incubations,
             eggs: eggs,
             chicks: chicks,
           ),

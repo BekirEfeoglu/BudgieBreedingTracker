@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -43,7 +44,7 @@ void main() {
       await tester.pumpWidget(createSubject(status: SyncDisplayStatus.synced));
       await tester.pump();
 
-      expect(find.text('sync.synced'), findsOneWidget);
+      expect(find.text(l10n('sync.synced')), findsOneWidget);
     });
 
     testWidgets('shows cloud icon when synced', (tester) async {
@@ -57,7 +58,7 @@ void main() {
       await tester.pumpWidget(createSubject(status: SyncDisplayStatus.syncing));
       await tester.pump();
 
-      expect(find.text('sync.syncing'), findsOneWidget);
+      expect(find.text(l10n('sync.syncing')), findsOneWidget);
     });
 
     testWidgets('shows sync AppIcon with rotation when syncing', (tester) async {
@@ -79,7 +80,7 @@ void main() {
       await tester.pumpWidget(createSubject(status: SyncDisplayStatus.offline));
       await tester.pump();
 
-      expect(find.text('sync.offline'), findsOneWidget);
+      expect(find.text(l10n('sync.offline')), findsOneWidget);
     });
 
     testWidgets('shows offline AppIcon when offline', (tester) async {
@@ -93,7 +94,7 @@ void main() {
       await tester.pumpWidget(createSubject(status: SyncDisplayStatus.error));
       await tester.pump();
 
-      expect(find.text('sync.sync_error'), findsOneWidget);
+      expect(find.text(l10n('sync.sync_error')), findsOneWidget);
     });
 
     testWidgets('shows offline AppIcon when error', (tester) async {

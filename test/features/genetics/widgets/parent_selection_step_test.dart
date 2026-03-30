@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
@@ -73,8 +74,8 @@ void main() {
           ),
         ),
       );
-      expect(find.text('genetics.father_mutations'), findsOneWidget);
-      expect(find.text('genetics.mother_mutations'), findsOneWidget);
+      expect(find.text(l10n('genetics.father_mutations')), findsOneWidget);
+      expect(find.text(l10n('genetics.mother_mutations')), findsOneWidget);
     });
 
     testWidgets('shows two bird picker buttons', (tester) async {
@@ -88,7 +89,7 @@ void main() {
         ),
       );
       expect(find.byType(OutlinedButton), findsNWidgets(2));
-      expect(find.text('genetics.select_from_birds'), findsNWidgets(2));
+      expect(find.text(l10n('genetics.select_from_birds')), findsNWidgets(2));
     });
 
     testWidgets('shows Divider between father and mother sections', (

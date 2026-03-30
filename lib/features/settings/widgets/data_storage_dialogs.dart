@@ -192,12 +192,12 @@ String formatBytes(int bytes) {
 /// Formats time difference as a localized relative string.
 String formatTimeSince(DateTime time) {
   final diff = DateTime.now().difference(time);
-  if (diff.inMinutes < 1) return 'settings.just_now'.tr();
+  if (diff.inMinutes < 1) return 'common.just_now'.tr();
   if (diff.inMinutes < 60) {
-    return 'settings.minutes_ago'.tr(args: [diff.inMinutes.toString()]);
+    return 'common.minutes_ago'.tr(args: [diff.inMinutes.toString()]);
   }
   if (diff.inHours < 24) {
-    return 'settings.hours_ago'.tr(args: [diff.inHours.toString()]);
+    return 'common.hours_ago'.tr(args: [diff.inHours.toString()]);
   }
-  return 'settings.days_ago'.tr(args: [diff.inDays.toString()]);
+  return 'common.days_ago'.tr(args: [diff.inDays.toString()]);
 }

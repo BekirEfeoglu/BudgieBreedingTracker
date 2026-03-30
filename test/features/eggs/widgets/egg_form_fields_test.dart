@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:budgie_breeding_tracker/core/enums/breeding_enums.dart';
@@ -82,7 +83,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(EmptyState), findsOneWidget);
-      expect(find.text('eggs.no_eggs'), findsOneWidget);
+      expect(find.text(l10n('eggs.no_eggs')), findsOneWidget);
     });
 
     testWidgets('empty state shows hint text', (tester) async {
@@ -103,7 +104,7 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      expect(find.text('eggs.no_eggs_hint'), findsOneWidget);
+      expect(find.text(l10n('eggs.no_eggs_hint')), findsOneWidget);
     });
 
     testWidgets('empty state shows add egg action label', (tester) async {
@@ -124,7 +125,7 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      expect(find.text('eggs.add_egg'), findsAtLeastNWidgets(1));
+      expect(find.text(l10n('eggs.add_egg')), findsAtLeastNWidgets(1));
     });
   });
 
@@ -185,7 +186,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(ErrorState), findsOneWidget);
-      expect(find.text('eggs.incubation_not_found'), findsOneWidget);
+      expect(find.text(l10n('eggs.incubation_not_found')), findsOneWidget);
     });
 
     testWidgets('shows management title in AppBar', (tester) async {
@@ -206,7 +207,7 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      expect(find.text('eggs.management'), findsOneWidget);
+      expect(find.text(l10n('eggs.management')), findsOneWidget);
     });
   });
 
@@ -332,7 +333,7 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      expect(find.text('eggs.all_hatched'), findsOneWidget);
+      expect(find.text(l10n('eggs.all_hatched')), findsOneWidget);
       expect(find.byType(EggListItem), findsNothing);
     });
 
@@ -460,7 +461,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 300));
 
       // Bottom sheet should appear with add_new_egg title
-      expect(find.text('eggs.add_new_egg'), findsOneWidget);
+      expect(find.text(l10n('eggs.add_new_egg')), findsOneWidget);
     });
 
     testWidgets('add egg sheet shows egg number field', (tester) async {
@@ -487,7 +488,7 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
 
-      expect(find.text('eggs.egg_number'), findsOneWidget);
+      expect(find.text(l10n('eggs.egg_number')), findsOneWidget);
     });
 
     testWidgets('add egg sheet shows notes field', (tester) async {
@@ -514,7 +515,7 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
 
-      expect(find.text('common.notes_optional'), findsOneWidget);
+      expect(find.text(l10n('common.notes_optional')), findsOneWidget);
     });
 
     testWidgets('add egg sheet shows add button', (tester) async {
@@ -541,7 +542,7 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
 
-      expect(find.text('common.add'), findsOneWidget);
+      expect(find.text(l10n('common.add')), findsOneWidget);
     });
   });
 }

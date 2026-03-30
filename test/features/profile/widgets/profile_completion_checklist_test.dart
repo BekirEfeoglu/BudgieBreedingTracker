@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import 'package:budgie_breeding_tracker/features/profile/providers/profile_providers.dart';
@@ -99,7 +100,7 @@ void main() {
       );
 
       // Without easy_localization setup, key itself is displayed
-      expect(find.text('profile.completion_name'), findsOneWidget);
+      expect(find.text(l10n('profile.completion_name')), findsOneWidget);
     });
 
     testWidgets('shows circle icon when not completed', (tester) async {
@@ -237,7 +238,7 @@ void main() {
       );
 
       // Without l10n setup, shows raw key
-      expect(find.text('profile.completion_title'), findsOneWidget);
+      expect(find.text(l10n('profile.completion_title')), findsOneWidget);
     });
 
     testWidgets('shows one CompletionCheckItem per completion item', (
