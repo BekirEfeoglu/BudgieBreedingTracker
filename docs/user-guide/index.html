@@ -726,6 +726,101 @@
 
     .detail-body { display: flex; flex-direction: column; gap: 18px; }
 
+    /* Screenshot gallery */
+    .detail-screenshots {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+
+    .screenshot-frame {
+      position: relative;
+      width: 200px;
+      border-radius: 24px;
+      background: #111;
+      padding: 8px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.08);
+      cursor: pointer;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .screenshot-frame:hover {
+      transform: translateY(-4px) scale(1.02);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(245,200,66,0.3);
+    }
+
+    .screenshot-frame::before {
+      content: '';
+      position: absolute;
+      top: 6px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 40px;
+      height: 4px;
+      background: #333;
+      border-radius: 4px;
+      z-index: 2;
+    }
+
+    .screenshot-frame img {
+      width: 100%;
+      border-radius: 16px;
+      display: block;
+    }
+
+    .screenshot-caption {
+      text-align: center;
+      font-size: 12px;
+      color: var(--sage);
+      margin-top: 8px;
+      opacity: 0.7;
+    }
+
+    /* Lightbox */
+    .screenshot-lightbox {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.9);
+      z-index: 10000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      cursor: zoom-out;
+    }
+    .screenshot-lightbox.active { display: flex; }
+    .screenshot-lightbox img {
+      max-height: 90vh;
+      max-width: 90vw;
+      border-radius: 16px;
+      box-shadow: 0 0 60px rgba(0,0,0,0.5);
+    }
+    .lightbox-close {
+      position: absolute;
+      top: 20px;
+      right: 24px;
+      width: 40px;
+      height: 40px;
+      border: none;
+      background: rgba(255,255,255,0.1);
+      color: #fff;
+      border-radius: 50%;
+      font-size: 20px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(8px);
+    }
+    .lightbox-close:hover { background: rgba(255,255,255,0.2); }
+
+    @media (max-width: 639px) {
+      .screenshot-frame { width: 150px; border-radius: 18px; padding: 6px; }
+      .screenshot-frame img { border-radius: 12px; }
+      .screenshot-frame::before { width: 30px; height: 3px; top: 5px; }
+      .detail-screenshots { gap: 10px; }
+    }
+
     /* Content blocks */
     .block-text {
       font-size: 15px;
@@ -1145,6 +1240,12 @@
     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/></svg>
   </button>
 
+  <!-- Lightbox -->
+  <div class="screenshot-lightbox" id="screenshotLightbox" role="dialog" aria-modal="true" aria-label="Screenshot preview" onclick="closeLightbox()">
+    <button class="lightbox-close" onclick="closeLightbox()" aria-label="Close preview">&times;</button>
+    <img id="lightboxImg" src="" alt="Enlarged app screenshot">
+  </div>
+
   <!-- Footer -->
   <footer>
     <div class="footer-inner">
@@ -1173,6 +1274,7 @@
         category: 'gettingStarted',
         icon: '&#x1F464;',
         isPremium: false,
+        screenshots: [],
         related: [1, 2],
         tr: {
           title: 'Kayıt ve Giriş',
@@ -1210,6 +1312,7 @@
         category: 'gettingStarted',
         icon: '&#x1F3E0;',
         isPremium: false,
+        screenshots: [{ src: '../screenshots/1.png', tr: 'Toplam ku\u015f, aktif \u00fcreme, yavru ve yumurta say\u0131lar\u0131n\u0131 g\u00f6steren dashboard ekran\u0131', en: 'Dashboard showing total birds, active breeding, chicks and egg counts', de: 'Dashboard mit Gesamt-V\u00f6geln, aktiver Zucht, K\u00fcken- und Eierz\u00e4hlung' }],
         related: [0, 2],
         tr: {
           title: 'Dashboard Tanıtımı',
@@ -1247,6 +1350,7 @@
         category: 'gettingStarted',
         icon: '&#x1F9ED;',
         isPremium: false,
+        screenshots: [{ src: '../screenshots/1.png', tr: 'Ana Sayfa, Ku\u015flar, \u00dcreme, Takvim ve Daha Fazla sekmelerini g\u00f6steren alt navigasyon \u00e7ubu\u011fu', en: 'Bottom navigation bar with Home, Birds, Breeding, Calendar and More tabs', de: 'Untere Navigationsleiste mit Startseite, V\u00f6gel, Zucht, Kalender und Mehr' }],
         related: [1],
         tr: {
           title: 'Uygulama Navigasyonu',
@@ -1284,6 +1388,7 @@
         category: 'birdManagement',
         icon: '&#x1F426;',
         isPremium: false,
+        screenshots: [{ src: '../screenshots/2.png', tr: 'Erkek/Di\u015fi filtresi, arama \u00e7ubu\u011fu ve ku\u015f kartlar\u0131yla ku\u015f listesi ekran\u0131', en: 'Bird list screen with gender filters, search bar and bird cards', de: 'Vogelliste mit Geschlechtsfiltern, Suchleiste und Vogelkarten' }],
         related: [4, 5],
         tr: {
           title: 'Kuş Ekleme ve Düzenleme',
@@ -1321,6 +1426,7 @@
         category: 'birdManagement',
         icon: '&#x1F50D;',
         isPremium: false,
+        screenshots: [{ src: '../screenshots/2.png', tr: 'T\u00fcm\u00fc, Erkek, Di\u015fi, Ya\u015fayan filtre se\u00e7enekleri ve isim/ring no ile arama', en: 'All, Male, Female, Alive filter options with name/ring number search', de: 'Alle, M\u00e4nnlich, Weiblich, Lebend Filteroptionen mit Name/Ringnummer-Suche' }],
         related: [3],
         tr: {
           title: 'Filtreleme ve Arama',
@@ -1358,6 +1464,7 @@
         category: 'birdManagement',
         icon: '&#x1FA7A;',
         isPremium: false,
+        screenshots: [{ src: '../screenshots/6.png', tr: 'Kontrol, hastal\u0131k ve yaralanma t\u00fcr filtreli sa\u011fl\u0131k kay\u0131tlar\u0131 listesi', en: 'Health records list with checkup, illness and injury type filters', de: 'Gesundheitsaufzeichnungen mit Kontroll-, Krankheits- und Verletzungsfiltern' }],
         related: [3],
         tr: {
           title: 'Sağlık Kayıtları',
@@ -1392,6 +1499,7 @@
         category: 'breedingProcess',
         icon: '&#x1F48C;',
         isPremium: false,
+        screenshots: [{ src: '../screenshots/3.png', tr: '\u00c7ift bilgisi, kulu\u00e7ka g\u00fcn say\u0131s\u0131 ve durum \u00e7ubu\u011fu ile \u00fcreme takibi ekran\u0131', en: 'Breeding tracking screen with pair info, incubation day count and progress bar', de: 'Zuchtverfolgungs-Bildschirm mit Paarinfo, Bruttage und Fortschrittsbalken' }],
         related: [7, 8],
         tr: {
           title: 'Üreme Çifti Oluşturma',
@@ -1429,6 +1537,7 @@
         category: 'breedingProcess',
         icon: '&#x1F95A;',
         isPremium: false,
+        screenshots: [{ src: '../screenshots/3.png', tr: 'Yumurta say\u0131s\u0131, \u00e7\u0131kan yavru ve 18 g\u00fcnl\u00fck kulu\u00e7ka s\u00fcreci takibi', en: 'Egg count, hatched chicks and 18-day incubation period tracking', de: 'Eierz\u00e4hlung, geschl\u00fcpfte K\u00fcken und 18-t\u00e4gige Brutzeitverfolgung' }],
         related: [6, 8],
         tr: {
           title: 'Yumurta ve Kuluçka Takibi',
@@ -1466,6 +1575,7 @@
         category: 'breedingProcess',
         icon: '&#x1F423;',
         isPremium: false,
+        screenshots: [{ src: '../screenshots/4.png', tr: 'Sa\u011fl\u0131k durumu, ya\u015f bilgisi ve yuva ata\u011f\u0131 ile yavru listesi', en: 'Chick list with health status, age info and nest assignment', de: 'K\u00fckenliste mit Gesundheitsstatus, Altersinfo und Nestzuweisung' }],
         related: [6, 7],
         tr: {
           title: 'Yavru Takibi ve Büyüme',
@@ -1503,6 +1613,7 @@
         category: 'tools',
         icon: '&#x1F4C5;',
         isPremium: false,
+        screenshots: [{ src: '../screenshots/5.png', tr: 'Ay/Hafta/G\u00fcn g\u00f6r\u00fcn\u00fcml\u00fc takvim, kulu\u00e7ka ve kontrol etkinlikleri', en: 'Calendar with Month/Week/Day views, incubation and checkup events', de: 'Kalender mit Monats-/Wochen-/Tagesansicht, Brut- und Kontrollereignissen' }],
         related: [],
         tr: {
           title: 'Takvim ve Bildirimler',
@@ -1540,6 +1651,10 @@
         category: 'tools',
         icon: '&#x1F9EC;',
         isPremium: true,
+        screenshots: [
+          { src: '../screenshots/8.png', tr: 'Anne-baba d\u00fc\u011f\u00fcmleri ve akrabal\u0131k ba\u011flant\u0131lar\u0131yla soy a\u011fac\u0131 g\u00f6r\u00fcn\u00fcm\u00fc', en: 'Family tree view with parent nodes and lineage connections', de: 'Stammbaumansicht mit Elternknoten und Abstammungsverbindungen' },
+          { src: '../screenshots/9.png', tr: 'Mutasyon se\u00e7imleri ve 3 ad\u0131ml\u0131 Punnett karesi hesaplay\u0131c\u0131s\u0131', en: 'Mutation selections and 3-step Punnett square calculator', de: 'Mutationsauswahl und 3-stufiger Punnett-Quadrat-Rechner' }
+        ],
         related: [6],
         tr: {
           title: 'Soy Ağacı ve Genetik Hesaplama',
@@ -1580,6 +1695,7 @@
         category: 'dataManagement',
         icon: '&#x1F4E6;',
         isPremium: false,
+        screenshots: [],
         related: [12],
         tr: {
           title: 'Yedekleme ve Dışa Aktarma',
@@ -1617,6 +1733,7 @@
         category: 'dataManagement',
         icon: '&#x1F504;',
         isPremium: false,
+        screenshots: [{ src: '../screenshots/1.png', tr: 'Dashboard \u00fcst\u00fcnde "Senkronize edildi" durum \u00e7ubu\u011fu ile bulut senkronizasyonu', en: 'Cloud sync with "Synchronized" status bar at the top of dashboard', de: 'Cloud-Synchronisation mit "Synchronisiert" Statusleiste oben auf dem Dashboard' }],
         related: [11],
         tr: {
           title: 'Veri Senkronizasyonu',
@@ -1657,6 +1774,7 @@
         category: 'accountSettings',
         icon: '&#x2699;',
         isPremium: false,
+        screenshots: [{ src: '../screenshots/10.png', tr: 'Tema, dil, tarih format\u0131, yaz\u0131 boyutu ve bildirim tercihlerini g\u00f6steren ayarlar ekran\u0131', en: 'Settings screen showing theme, language, date format, font size and notification preferences', de: 'Einstellungen mit Design, Sprache, Datumsformat, Schriftgr\u00f6\u00dfe und Benachrichtigungen' }],
         related: [14],
         tr: {
           title: 'Profil ve Ayarlar',
@@ -1694,6 +1812,7 @@
         category: 'accountSettings',
         icon: '&#x1F451;',
         isPremium: false,
+        screenshots: [{ src: '../screenshots/7.png', tr: 'Toplam ku\u015f, d\u00f6ll\u00fclük oran\u0131, hayatta kalma ve sa\u011fl\u0131k istatistikleri grafikleri', en: 'Statistics charts with total birds, fertility rate, survival and health metrics', de: 'Statistikdiagramme mit Gesamtv\u00f6geln, Fruchtbarkeitsrate, \u00dcberlebens- und Gesundheitskennzahlen' }],
         related: [13],
         tr: {
           title: 'Premium Üyelik',
@@ -2067,12 +2186,31 @@
           </div>
         </div>`;
 
+      // Screenshots
+      let screenshotHtml = '';
+      if (topic.screenshots && topic.screenshots.length > 0) {
+        const ssLabel = { tr: 'Uygulama ekran g\u00f6r\u00fcnt\u00fcleri', en: 'App screenshots', de: 'App-Screenshots' };
+        const zoomLabel = { tr: 'B\u00fcy\u00fctmek i\u00e7in t\u0131klay\u0131n', en: 'Click to enlarge', de: 'Zum Vergr\u00f6\u00dfern klicken' };
+        screenshotHtml = `<div class="detail-screenshots" role="group" aria-label="${ssLabel[currentLang] || ssLabel.en}">`;
+        topic.screenshots.forEach(ss => {
+          const caption = ss[currentLang] || '';
+          const altText = `${data.title} \u2014 ${caption}`;
+          screenshotHtml += `
+            <div class="screenshot-frame" role="button" tabindex="0" aria-label="${caption}. ${zoomLabel[currentLang] || zoomLabel.en}" onclick="openLightbox('${ss.src}')" onkeydown="if(event.key==='Enter')openLightbox('${ss.src}')">
+              <img src="${ss.src}" alt="${altText}" loading="lazy">
+              <div class="screenshot-caption">${caption}</div>
+            </div>`;
+        });
+        screenshotHtml += '</div>';
+      }
+
       document.getElementById('detailContent').innerHTML = `
         <div class="detail-header">
           <div class="detail-icon">${topic.icon}</div>
           <h2 class="detail-title" id="detailTitleId">${data.title}</h2>
         </div>
         ${breadcrumbHtml}
+        ${screenshotHtml}
         <div class="detail-body">${blocksHtml}</div>
         ${relatedHtml}
         ${navHtml}
@@ -2096,6 +2234,29 @@
       document.body.style.overflow = '';
       if (_previousFocus) { _previousFocus.focus(); _previousFocus = null; }
     }
+
+    function openLightbox(src) {
+      event.stopPropagation();
+      const lb = document.getElementById('screenshotLightbox');
+      const img = document.getElementById('lightboxImg');
+      // Find the clicked frame's alt text for the lightbox image
+      const frame = document.querySelector(`.screenshot-frame img[src="${src}"]`);
+      img.alt = frame ? frame.alt : 'Enlarged app screenshot';
+      img.src = src;
+      lb.classList.add('active');
+      document.querySelector('.lightbox-close').focus();
+    }
+
+    function closeLightbox() {
+      document.getElementById('screenshotLightbox').classList.remove('active');
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        const lb = document.getElementById('screenshotLightbox');
+        if (lb.classList.contains('active')) { closeLightbox(); e.stopPropagation(); }
+      }
+    });
 
     // ─── LANGUAGE ───
     function setLanguage(lang) {
