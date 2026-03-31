@@ -1,0 +1,1854 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kullanım Kılavuzu — BudgieBreedingTracker</title>
+  <meta name="description" content="BudgieBreedingTracker kullanım kılavuzu. Kuş ekleme, üreme takibi, genetik hesaplama ve daha fazlası için adım adım rehber.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://budgiebreedingtracker.online/user-guide/">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Kullanım Kılavuzu — BudgieBreedingTracker">
+  <meta property="og:description" content="Kuş kayıtlarından genetik hesaplamalara kadar tüm özellikleri adım adım öğrenin.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://budgiebreedingtracker.online/user-guide/">
+  <meta property="og:image" content="https://budgiebreedingtracker.online/og-image.svg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="User Guide — BudgieBreedingTracker">
+  <meta name="twitter:description" content="Learn all features step by step, from bird records to genetic calculations.">
+  <meta name="twitter:image" content="https://budgiebreedingtracker.online/og-image.svg">
+
+  <link rel="icon" type="image/png" href="../logo.png">
+  <link rel="apple-touch-icon" href="../logo-new.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --forest-deep: #0B1A3D;
+      --forest-mid: #0F2247;
+      --leaf-dark: #1A3A6B;
+      --leaf-mid: #2D5A9E;
+      --leaf-light: #4A8FD4;
+      --sage: #A3B899;
+      --sage-light: #C8D8C2;
+      --gold: #D4A853;
+      --gold-light: #E8C27A;
+      --gold-glow: #F0D080;
+      --glass-bg: rgba(20, 50, 100, 0.25);
+      --glass-border: rgba(140, 180, 220, 0.2);
+      --glass-border-hover: rgba(245, 200, 66, 0.4);
+      --tip-bg: rgba(74, 143, 212, 0.12);
+      --tip-border: rgba(74, 143, 212, 0.35);
+      --warning-bg: rgba(212, 168, 83, 0.12);
+      --warning-border: rgba(212, 168, 83, 0.35);
+      --premium-bg: rgba(245, 200, 66, 0.1);
+      --premium-border: rgba(245, 200, 66, 0.35);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+      background-color: var(--forest-deep);
+      color: var(--sage-light);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+      opacity: 0.04;
+      pointer-events: none;
+      z-index: 1000;
+      mix-blend-mode: overlay;
+    }
+
+    .bg-layer {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .bg-layer::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 20% 80%, rgba(20, 50, 100, 0.8) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 80% 20%, rgba(30, 70, 140, 0.4) 0%, transparent 55%),
+        radial-gradient(ellipse 100% 100% at 50% 50%, var(--forest-deep) 0%, #071535 100%);
+    }
+
+    .bg-layer::after {
+      content: '';
+      position: absolute;
+      top: -20%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 700px;
+      height: 700px;
+      background: radial-gradient(circle, rgba(245, 200, 66, 0.07) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+
+    .orb {
+      position: fixed;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 0;
+      animation: orbPulse ease-in-out infinite;
+    }
+    .orb-1 { width: 500px; height: 500px; top: -150px; right: -100px; background: radial-gradient(circle, rgba(30, 70, 140, 0.18) 0%, transparent 70%); animation-duration: 12s; }
+    .orb-2 { width: 400px; height: 400px; bottom: -100px; left: -80px; background: radial-gradient(circle, rgba(20, 50, 100, 0.25) 0%, transparent 70%); animation-duration: 16s; animation-delay: -5s; }
+    .orb-3 { width: 300px; height: 300px; top: 40%; right: 5%; background: radial-gradient(circle, rgba(245, 200, 66, 0.06) 0%, transparent 70%); animation-duration: 20s; animation-delay: -8s; }
+
+    @keyframes orbPulse {
+      0%, 100% { transform: scale(1);    opacity: 0.7; }
+      50%       { transform: scale(1.12); opacity: 1;   }
+    }
+
+    .particles { position: fixed; inset: 0; pointer-events: none; z-index: 1; overflow: hidden; }
+    .particle { position: absolute; border-radius: 50% 0 50% 0; animation: drift linear infinite; opacity: 0; }
+    .particle.leaf  { border-radius: 0 100% 0 100%; }
+    .particle.feather { width: 3px; border-radius: 50%; background: linear-gradient(180deg, transparent, var(--sage), transparent); }
+    .particle:nth-child(1)  { left: 8%;   width: 12px; height: 18px; background: rgba(140,180,220,0.25); animation-duration: 18s; animation-delay: 0s;    top: -20px; }
+    .particle:nth-child(2)  { left: 16%;  width: 8px;  height: 12px; background: rgba(245,200,66,0.2);   animation-duration: 22s; animation-delay: -4s;   top: -20px; }
+    .particle:nth-child(3)  { left: 25%;  width: 15px; height: 22px; background: rgba(50,120,200,0.3);   animation-duration: 15s; animation-delay: -8s;   top: -20px; }
+    .particle:nth-child(4)  { left: 35%;  width: 6px;  height: 10px; background: rgba(140,180,220,0.2);  animation-duration: 25s; animation-delay: -2s;   top: -20px; }
+    .particle:nth-child(5)  { left: 44%;  width: 10px; height: 16px; background: rgba(245,200,66,0.15);  animation-duration: 20s; animation-delay: -12s;  top: -20px; }
+    .particle:nth-child(6)  { left: 55%;  width: 14px; height: 20px; background: rgba(50,120,200,0.25);  animation-duration: 17s; animation-delay: -6s;   top: -20px; }
+    .particle:nth-child(7)  { left: 63%;  width: 7px;  height: 11px; background: rgba(140,180,220,0.3);  animation-duration: 23s; animation-delay: -10s;  top: -20px; }
+    .particle:nth-child(8)  { left: 72%;  width: 11px; height: 17px; background: rgba(245,200,66,0.2);   animation-duration: 19s; animation-delay: -3s;   top: -20px; }
+    .particle:nth-child(9)  { left: 82%;  width: 9px;  height: 13px; background: rgba(30,70,140,0.3);    animation-duration: 21s; animation-delay: -7s;   top: -20px; }
+    .particle:nth-child(10) { left: 91%;  width: 13px; height: 19px; background: rgba(140,180,220,0.2);  animation-duration: 16s; animation-delay: -15s;  top: -20px; }
+
+    @keyframes drift {
+      0%   { transform: translateY(0) rotate(0deg) translateX(0); opacity: 0; }
+      5%   { opacity: 0.8; }
+      90%  { opacity: 0.6; }
+      100% { transform: translateY(110vh) rotate(360deg) translateX(40px); opacity: 0; }
+    }
+
+    /* ─── HEADER ─── */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(12, 31, 15, 0.6);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--glass-border);
+    }
+
+    .header-inner {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    @media (min-width: 640px) { .header-inner { padding: 16px 32px; } }
+
+    .logo-link {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      transition: opacity 0.2s;
+    }
+    .logo-link:hover { opacity: 0.85; }
+
+    .logo-img {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      border: 1px solid rgba(245, 200, 66, 0.3);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .logo-link:hover .logo-img {
+      transform: scale(1.08) rotate(-3deg);
+      box-shadow: 0 0 12px rgba(245, 200, 66, 0.3);
+    }
+
+    .logo-text {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 800;
+      font-size: 16px;
+      color: var(--gold-light);
+      letter-spacing: -0.02em;
+    }
+    @media (min-width: 640px) { .logo-text { font-size: 18px; } }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .back-link {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--sage);
+      text-decoration: none;
+      transition: color 0.2s ease;
+      white-space: nowrap;
+    }
+    .back-link:hover { color: var(--gold-light); }
+
+    .lang-group {
+      display: flex;
+      gap: 4px;
+      background: rgba(20, 50, 100, 0.3);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      padding: 4px;
+    }
+
+    .lang-btn {
+      padding: 5px 12px;
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      border: none;
+      background: transparent;
+      color: var(--sage);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      letter-spacing: 0.03em;
+    }
+    .lang-btn:hover { color: var(--gold-light); background: rgba(245, 200, 66, 0.1); }
+    .lang-btn.active { background: rgba(245, 200, 66, 0.18); color: var(--gold-light); box-shadow: 0 0 0 1px rgba(245, 200, 66, 0.3); }
+
+    /* ─── MAIN ─── */
+    main {
+      flex: 1;
+      position: relative;
+      z-index: 2;
+      padding: 48px 20px 80px;
+    }
+
+    .container { max-width: 960px; margin: 0 auto; }
+
+    /* ─── PAGE HEADER ─── */
+    .page-header { text-align: center; margin-bottom: 40px; }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(20, 50, 100, 0.4);
+      border: 1px solid rgba(245, 200, 66, 0.3);
+      border-radius: 999px;
+      padding: 6px 18px;
+      margin-bottom: 20px;
+    }
+    .badge span {
+      font-family: 'Outfit', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--gold-light);
+    }
+    .badge-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--gold);
+      box-shadow: 0 0 6px rgba(245, 200, 66, 0.6);
+      animation: pulseDot 2s ease-in-out infinite;
+    }
+    @keyframes pulseDot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: 0.6; transform: scale(0.8); }
+    }
+
+    .page-title {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 800;
+      font-size: clamp(28px, 5vw, 42px);
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, var(--sage-light) 0%, var(--gold-light) 50%, var(--sage-light) 100%);
+      background-size: 200% 200%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: shimmer 6s ease infinite;
+      margin-bottom: 14px;
+    }
+    @keyframes shimmer {
+      0%   { background-position: 0% 50%; }
+      50%  { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .page-subtitle {
+      font-size: 16px;
+      color: var(--sage);
+      max-width: 560px;
+      margin: 0 auto;
+      line-height: 1.65;
+    }
+
+    /* ─── SEARCH ─── */
+    .search-wrap {
+      max-width: 480px;
+      margin: 0 auto 40px;
+      position: relative;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 14px 20px 14px 48px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      color: var(--sage-light);
+      background: var(--glass-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--glass-border);
+      border-radius: 16px;
+      outline: none;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+    .search-input::placeholder { color: rgba(163, 184, 153, 0.5); }
+    .search-input:focus {
+      border-color: rgba(245, 200, 66, 0.4);
+      box-shadow: 0 0 0 3px rgba(245, 200, 66, 0.08), 0 4px 24px rgba(0,0,0,0.2);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 20px;
+      height: 20px;
+      color: var(--sage);
+      pointer-events: none;
+    }
+
+    .search-clear {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 20px;
+      height: 20px;
+      color: var(--sage);
+      cursor: pointer;
+      display: none;
+      background: none;
+      border: none;
+      padding: 0;
+      transition: color 0.2s;
+    }
+    .search-clear:hover { color: var(--gold-light); }
+    .search-clear.visible { display: block; }
+
+    /* ─── CATEGORY SECTION ─── */
+    .category-section { margin-bottom: 40px; }
+
+    .category-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+      padding-left: 4px;
+    }
+
+    .category-icon {
+      font-size: 22px;
+      line-height: 1;
+    }
+
+    .category-title {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      font-size: 20px;
+      color: var(--sage-light);
+      letter-spacing: -0.01em;
+    }
+
+    .category-count {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--gold);
+      background: rgba(245, 200, 66, 0.12);
+      border: 1px solid rgba(245, 200, 66, 0.25);
+      padding: 2px 10px;
+      border-radius: 999px;
+    }
+
+    /* ─── TOPIC CARDS ─── */
+    .topics-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+    @media (min-width: 640px) { .topics-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (min-width: 900px) { .topics-grid { grid-template-columns: repeat(3, 1fr); } }
+
+    .topic-card {
+      position: relative;
+      background: var(--glass-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--glass-border);
+      border-radius: 16px;
+      padding: 22px;
+      cursor: pointer;
+      overflow: hidden;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .topic-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 16px;
+      right: 16px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(245, 200, 66, 0.4), transparent);
+    }
+    .topic-card:hover {
+      border-color: var(--glass-border-hover);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3), 0 0 0 1px rgba(245, 200, 66, 0.15), 0 0 40px rgba(245, 200, 66, 0.06);
+      transform: translateY(-3px);
+    }
+
+    .topic-card-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      margin-bottom: 10px;
+    }
+
+    .topic-icon-wrap {
+      position: relative;
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      flex-shrink: 0;
+      background: rgba(20, 50, 100, 0.5);
+      border: 1px solid var(--glass-border);
+      transition: box-shadow 0.3s ease, border-color 0.3s ease;
+    }
+    .topic-card:hover .topic-icon-wrap {
+      border-color: rgba(245, 200, 66, 0.35);
+      box-shadow: 0 0 16px rgba(245, 200, 66, 0.15);
+    }
+
+    .topic-title {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      font-size: 15px;
+      color: var(--sage-light);
+      line-height: 1.3;
+      margin-bottom: 2px;
+    }
+
+    .topic-subtitle {
+      font-size: 13px;
+      color: var(--sage);
+      line-height: 1.5;
+    }
+
+    .topic-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .step-badge {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--leaf-light);
+      background: rgba(74, 143, 212, 0.12);
+      border: 1px solid rgba(74, 143, 212, 0.25);
+      padding: 2px 10px;
+      border-radius: 999px;
+    }
+
+    .premium-badge {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--gold);
+      background: rgba(245, 200, 66, 0.12);
+      border: 1px solid rgba(245, 200, 66, 0.3);
+      padding: 2px 10px;
+      border-radius: 999px;
+      letter-spacing: 0.05em;
+    }
+
+    .topic-chevron {
+      position: absolute;
+      right: 18px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 16px;
+      height: 16px;
+      color: var(--sage);
+      opacity: 0;
+      transition: opacity 0.3s, transform 0.3s;
+    }
+    .topic-card:hover .topic-chevron {
+      opacity: 1;
+      transform: translateY(-50%) translateX(3px);
+    }
+
+    /* ─── DETAIL OVERLAY ─── */
+    .detail-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      background: rgba(11, 26, 61, 0.85);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      animation: fadeIn 0.2s ease;
+    }
+    .detail-overlay.active { display: flex; align-items: flex-start; justify-content: center; overflow-y: auto; padding: 40px 20px; }
+
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+
+    .detail-panel {
+      position: relative;
+      width: 100%;
+      max-width: 720px;
+      background: rgba(15, 34, 71, 0.95);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid var(--glass-border);
+      border-radius: 24px;
+      padding: 36px 32px 40px;
+      animation: slideUp 0.3s ease;
+      overflow: hidden;
+    }
+    .detail-panel::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 24px;
+      right: 24px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(245, 200, 66, 0.5), transparent);
+    }
+
+    @media (max-width: 639px) {
+      .detail-panel { padding: 28px 20px 32px; border-radius: 20px; }
+    }
+
+    .detail-close {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      width: 36px;
+      height: 36px;
+      border: 1px solid var(--glass-border);
+      border-radius: 10px;
+      background: rgba(20, 50, 100, 0.4);
+      color: var(--sage);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+    .detail-close:hover { border-color: var(--glass-border-hover); color: var(--gold-light); background: rgba(245, 200, 66, 0.1); }
+
+    .detail-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 8px;
+      padding-right: 40px;
+    }
+
+    .detail-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      flex-shrink: 0;
+      background: rgba(20, 50, 100, 0.5);
+      border: 1px solid var(--glass-border);
+    }
+
+    .detail-title {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 800;
+      font-size: clamp(20px, 4vw, 26px);
+      color: var(--sage-light);
+      line-height: 1.2;
+    }
+
+    .detail-category {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--gold);
+      margin-bottom: 24px;
+      padding-left: 68px;
+    }
+
+    @media (max-width: 639px) { .detail-category { padding-left: 0; } }
+
+    .detail-body { display: flex; flex-direction: column; gap: 18px; }
+
+    /* Content blocks */
+    .block-text {
+      font-size: 15px;
+      color: var(--sage);
+      line-height: 1.75;
+    }
+
+    .block-tip, .block-warning, .block-premium {
+      padding: 16px 20px;
+      border-radius: 14px;
+      font-size: 14px;
+      line-height: 1.65;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+    .block-tip {
+      background: var(--tip-bg);
+      border: 1px solid var(--tip-border);
+      color: var(--leaf-light);
+    }
+    .block-warning {
+      background: var(--warning-bg);
+      border: 1px solid var(--warning-border);
+      color: var(--gold-light);
+    }
+    .block-premium {
+      background: var(--premium-bg);
+      border: 1px solid var(--premium-border);
+      color: var(--gold);
+    }
+
+    .block-icon {
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .block-label {
+      font-weight: 700;
+      margin-right: 4px;
+    }
+
+    /* Steps */
+    .block-steps { margin: 0; }
+
+    .steps-title {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      font-size: 16px;
+      color: var(--sage-light);
+      margin-bottom: 14px;
+    }
+
+    .steps-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      counter-reset: step;
+    }
+
+    .steps-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      font-size: 14px;
+      color: var(--sage);
+      line-height: 1.6;
+      counter-increment: step;
+    }
+
+    .step-number {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: rgba(74, 143, 212, 0.18);
+      border: 1px solid rgba(74, 143, 212, 0.35);
+      color: var(--leaf-light);
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    /* Related topics */
+    .related-section {
+      margin-top: 12px;
+      padding-top: 20px;
+      border-top: 1px solid var(--glass-border);
+    }
+
+    .related-title {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      font-size: 15px;
+      color: var(--sage-light);
+      margin-bottom: 12px;
+    }
+
+    .related-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .related-chip {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--sage);
+      background: rgba(20, 50, 100, 0.4);
+      border: 1px solid var(--glass-border);
+      border-radius: 10px;
+      padding: 8px 16px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-decoration: none;
+    }
+    .related-chip:hover {
+      color: var(--gold-light);
+      border-color: var(--glass-border-hover);
+      background: rgba(245, 200, 66, 0.08);
+    }
+
+    /* ─── NO RESULTS ─── */
+    .no-results {
+      text-align: center;
+      padding: 60px 20px;
+      display: none;
+    }
+    .no-results.visible { display: block; }
+
+    .no-results-icon { font-size: 48px; margin-bottom: 16px; opacity: 0.6; }
+
+    .no-results-title {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      font-size: 20px;
+      color: var(--sage-light);
+      margin-bottom: 8px;
+    }
+
+    .no-results-text {
+      font-size: 14px;
+      color: var(--sage);
+    }
+
+    /* ─── FOOTER ─── */
+    footer {
+      position: relative;
+      z-index: 2;
+      border-top: 1px solid var(--glass-border);
+      padding: 24px 20px;
+    }
+
+    .footer-inner {
+      max-width: 960px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .footer-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .footer-logo img { width: 28px; height: 28px; border-radius: 6px; }
+
+    .footer-logo-text {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      font-size: 15px;
+      color: var(--gold-light);
+    }
+
+    .footer-copy {
+      font-size: 13px;
+      color: var(--sage);
+      opacity: 0.7;
+    }
+
+    /* ─── ANIMATIONS ─── */
+    .fade-up {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    .fade-up.visible { opacity: 1; transform: translateY(0); }
+    .delay-1 { transition-delay: 0.1s; }
+    .delay-2 { transition-delay: 0.2s; }
+    .delay-3 { transition-delay: 0.3s; }
+
+    /* Reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="bg-layer"></div>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+
+  <div class="particles">
+    <div class="particle leaf"></div>
+    <div class="particle"></div>
+    <div class="particle leaf"></div>
+    <div class="particle feather"></div>
+    <div class="particle"></div>
+    <div class="particle leaf"></div>
+    <div class="particle"></div>
+    <div class="particle feather"></div>
+    <div class="particle leaf"></div>
+    <div class="particle"></div>
+  </div>
+
+  <!-- Header -->
+  <header>
+    <div class="header-inner">
+      <a href="../" class="logo-link">
+        <img src="../logo.png" alt="BudgieBreedingTracker" class="logo-img">
+        <span class="logo-text">BudgieBreedingTracker</span>
+      </a>
+      <div class="header-right">
+        <a href="../" class="back-link" data-i18n="back">&larr; Ana Sayfa</a>
+        <div class="lang-group">
+          <button class="lang-btn active" onclick="setLanguage('tr')">TR</button>
+          <button class="lang-btn" onclick="setLanguage('en')">EN</button>
+          <button class="lang-btn" onclick="setLanguage('de')">DE</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main>
+    <div class="container">
+
+      <!-- Page Header -->
+      <div class="page-header fade-up">
+        <div class="badge">
+          <div class="badge-dot"></div>
+          <span data-i18n="badge">Kullanım Kılavuzu</span>
+        </div>
+        <h1 class="page-title" data-i18n="title">Uygulamayı Keşfedin</h1>
+        <p class="page-subtitle" data-i18n="subtitle">Kuş kayıtlarından genetik hesaplamalara kadar tüm özellikleri adım adım öğrenin.</p>
+      </div>
+
+      <!-- Search -->
+      <div class="search-wrap fade-up delay-1">
+        <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg>
+        <input type="text" class="search-input" id="searchInput" data-i18n-placeholder="search_hint" placeholder="Konularda ara...">
+        <button class="search-clear" id="searchClear" aria-label="Clear search">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <!-- Guide Content (rendered by JS) -->
+      <div id="guideContent"></div>
+
+      <!-- No Results -->
+      <div class="no-results" id="noResults">
+        <div class="no-results-icon">&#x1F50D;</div>
+        <div class="no-results-title" data-i18n="no_results">Sonuç bulunamadı</div>
+        <div class="no-results-text" data-i18n="no_results_hint">Arama kriterlerini değiştirin</div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Detail Overlay -->
+  <div class="detail-overlay" id="detailOverlay" role="dialog" aria-modal="true" aria-labelledby="detailTitleId">
+    <div class="detail-panel" id="detailPanel">
+      <button class="detail-close" id="detailClose" aria-label="Close" tabindex="0">
+        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+      <div id="detailContent"></div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-logo">
+        <img src="../logo.png" alt="Logo">
+        <span class="footer-logo-text">BudgieBreedingTracker</span>
+      </div>
+      <p class="footer-copy" data-i18n="footer">&copy; 2025-2026 BudgieBreedingTracker. Tüm hakları saklıdır.</p>
+    </div>
+  </footer>
+
+  <script>
+    // ─── GUIDE DATA ───
+    const categories = [
+      { id: 'gettingStarted', icon: '&#x1F680;', tr: 'Başlangıç', en: 'Getting Started', de: 'Erste Schritte' },
+      { id: 'birdManagement', icon: '&#x1F426;', tr: 'Kuş Yönetimi', en: 'Bird Management', de: 'Vogelverwaltung' },
+      { id: 'breedingProcess', icon: '&#x1F48C;', tr: 'Üreme Süreci', en: 'Breeding Process', de: 'Zuchtprozess' },
+      { id: 'tools', icon: '&#x1F6E0;', tr: 'Araçlar', en: 'Tools', de: 'Werkzeuge' },
+      { id: 'dataManagement', icon: '&#x1F4BE;', tr: 'Veri Yönetimi', en: 'Data Management', de: 'Datenverwaltung' },
+      { id: 'accountSettings', icon: '&#x2699;', tr: 'Hesap ve Ayarlar', en: 'Account & Settings', de: 'Konto & Einstellungen' },
+    ];
+
+    const topics = [
+      {
+        id: 'registration',
+        category: 'gettingStarted',
+        icon: '&#x1F464;',
+        isPremium: false,
+        related: [1, 2],
+        tr: {
+          title: 'Kayıt ve Giriş',
+          subtitle: 'Uygulamayı kullanmaya başlamak için kayıt olun',
+          blocks: [
+            { type: 'text', text: 'Uygulamayı kullanmaya başlamak için bir hesap oluşturmanız gerekir. E-posta adresiniz ve bir şifre ile hızlıca kayıt olabilirsiniz.' },
+            { type: 'steps', title: 'Kayıt adımları', steps: ['Giriş ekranında \'Kayıt Ol\' butonuna tıklayın.', 'E-posta adresinizi ve güvenli bir şifre girin.', 'E-postanıza gelen doğrulama linkine tıklayın.', 'Hesabınız doğrulandıktan sonra giriş yapın.'] },
+            { type: 'tip', text: 'Güçlü bir şifre için en az 8 karakter, büyük/küçük harf ve rakam kullanın.' },
+            { type: 'tip', text: 'Ekstra güvenlik için Ayarlar > İki Faktörlü Doğrulama\'yı etkinleştirebilirsiniz.' },
+          ]
+        },
+        en: {
+          title: 'Registration & Login',
+          subtitle: 'Sign up to start using the app',
+          blocks: [
+            { type: 'text', text: 'You need to create an account to start using the app. You can quickly register with your email address and a password.' },
+            { type: 'steps', title: 'Registration steps', steps: ['Tap the \'Register\' button on the login screen.', 'Enter your email address and a secure password.', 'Tap the verification link sent to your email.', 'Log in after your account is verified.'] },
+            { type: 'tip', text: 'Use at least 8 characters with uppercase, lowercase letters, and numbers for a strong password.' },
+            { type: 'tip', text: 'You can enable Two-Factor Authentication in Settings for extra security.' },
+          ]
+        },
+        de: {
+          title: 'Registrierung & Anmeldung',
+          subtitle: 'Registrieren Sie sich, um die App zu nutzen',
+          blocks: [
+            { type: 'text', text: 'Sie müssen ein Konto erstellen, um die App nutzen zu können. Sie können sich schnell mit Ihrer E-Mail-Adresse und einem Passwort registrieren.' },
+            { type: 'steps', title: 'Registrierungsschritte', steps: ['Tippen Sie auf die Schaltfläche \'Registrieren\' auf dem Anmeldebildschirm.', 'Geben Sie Ihre E-Mail-Adresse und ein sicheres Passwort ein.', 'Tippen Sie auf den Bestätigungslink in Ihrer E-Mail.', 'Melden Sie sich an, nachdem Ihr Konto verifiziert wurde.'] },
+            { type: 'tip', text: 'Verwenden Sie mindestens 8 Zeichen mit Groß-/Kleinbuchstaben und Zahlen für ein starkes Passwort.' },
+            { type: 'tip', text: 'Sie können die Zwei-Faktor-Authentifizierung in den Einstellungen für zusätzliche Sicherheit aktivieren.' },
+          ]
+        }
+      },
+      {
+        id: 'dashboard',
+        category: 'gettingStarted',
+        icon: '&#x1F3E0;',
+        isPremium: false,
+        related: [0, 2],
+        tr: {
+          title: 'Dashboard Tanıtımı',
+          subtitle: 'Ana ekranda istatistikler ve hızlı erişim',
+          blocks: [
+            { type: 'text', text: 'Ana sayfa, tüm verilerinizin özetini sunar. Toplam kuş sayısı, aktif üreme çiftleri, son eklenen yavrular ve bekleyen bildirimler gibi bilgileri tek bakışta görebilirsiniz.' },
+            { type: 'text', text: 'İstatistik kartları toplam kuş, aktif çift, yumurta ve yavru sayılarınızı gösterir. Detaylar için kartlara tıklayın.' },
+            { type: 'text', text: 'Hızlı işlem butonları ile yeni kuş, üreme çifti veya yumurta ekleyebilirsiniz.' },
+            { type: 'tip', text: 'Verileri güncellemek için ekranı aşağı çekerek yenileyin.' },
+          ]
+        },
+        en: {
+          title: 'Dashboard Overview',
+          subtitle: 'Statistics and quick access on the home screen',
+          blocks: [
+            { type: 'text', text: 'The home screen provides a summary of all your data. You can see total bird count, active breeding pairs, recently added chicks, and pending notifications at a glance.' },
+            { type: 'text', text: 'Stat cards show your total birds, active pairs, eggs, and chick counts. Tap on cards for details.' },
+            { type: 'text', text: 'Use quick action buttons to add new birds, breeding pairs, or eggs.' },
+            { type: 'tip', text: 'Pull down on the screen to refresh the data.' },
+          ]
+        },
+        de: {
+          title: 'Dashboard-Übersicht',
+          subtitle: 'Statistiken und Schnellzugriff auf dem Startbildschirm',
+          blocks: [
+            { type: 'text', text: 'Der Startbildschirm bietet eine Zusammenfassung aller Ihrer Daten. Sie können Gesamtvogelanzahl, aktive Zuchtpaare, zuletzt hinzugefügte Küken und ausstehende Benachrichtigungen auf einen Blick sehen.' },
+            { type: 'text', text: 'Statistikkarten zeigen Ihre Gesamtvögel, aktive Paare, Eier und Kükenanzahl. Tippen Sie auf Karten für Details.' },
+            { type: 'text', text: 'Verwenden Sie Schnellaktions-Schaltflächen, um neue Vögel, Zuchtpaare oder Eier hinzuzufügen.' },
+            { type: 'tip', text: 'Ziehen Sie den Bildschirm nach unten, um die Daten zu aktualisieren.' },
+          ]
+        }
+      },
+      {
+        id: 'navigation',
+        category: 'gettingStarted',
+        icon: '&#x1F9ED;',
+        isPremium: false,
+        related: [1],
+        tr: {
+          title: 'Uygulama Navigasyonu',
+          subtitle: 'Sekmeler ve menüler arasında gezinme',
+          blocks: [
+            { type: 'text', text: 'Uygulama beş ana bölümden oluşur. Alt navigasyon çubuğu ile bu bölümler arasında hızlıca geçiş yapabilirsiniz.' },
+            { type: 'text', text: 'Alt çubukta Ana Sayfa, Kuşlar, Üreme, Takvim ve Daha Fazla sekmeleri bulunur.' },
+            { type: 'text', text: 'Daha Fazla menüsünden İstatistikler, Soy Ağacı, Genetik, Ayarlar, Profil, Bildirimler, Yedekleme ve bu kılavuza erişebilirsiniz.' },
+            { type: 'tip', text: 'Detay sayfalarından geri dönmek için sol üst köşedeki geri okunu kullanın.' },
+          ]
+        },
+        en: {
+          title: 'App Navigation',
+          subtitle: 'Navigate between tabs and menus',
+          blocks: [
+            { type: 'text', text: 'The app consists of five main sections. You can quickly switch between them using the bottom navigation bar.' },
+            { type: 'text', text: 'The bottom bar includes Home, Birds, Breeding, Calendar, and More tabs.' },
+            { type: 'text', text: 'From the More menu, you can access Statistics, Genealogy, Genetics, Settings, Profile, Notifications, Backup, and this guide.' },
+            { type: 'tip', text: 'Use the back arrow in the top-left corner to return from detail pages.' },
+          ]
+        },
+        de: {
+          title: 'App-Navigation',
+          subtitle: 'Zwischen Tabs und Menüs navigieren',
+          blocks: [
+            { type: 'text', text: 'Die App besteht aus fünf Hauptbereichen. Sie können über die untere Navigationsleiste schnell zwischen ihnen wechseln.' },
+            { type: 'text', text: 'Die untere Leiste enthält die Registerkarten Startseite, Vögel, Zucht, Kalender und Mehr.' },
+            { type: 'text', text: 'Über das Mehr-Menü können Sie auf Statistiken, Stammbaum, Genetik, Einstellungen, Profil, Benachrichtigungen, Sicherung und dieses Handbuch zugreifen.' },
+            { type: 'tip', text: 'Verwenden Sie den Zurückpfeil in der oberen linken Ecke, um von Detailseiten zurückzukehren.' },
+          ]
+        }
+      },
+      {
+        id: 'bird_management',
+        category: 'birdManagement',
+        icon: '&#x1F426;',
+        isPremium: false,
+        related: [4, 5],
+        tr: {
+          title: 'Kuş Ekleme ve Düzenleme',
+          subtitle: 'Kuşlarınızı kayıt altına alın ve düzenleyin',
+          blocks: [
+            { type: 'text', text: 'Kuşlarım bölümünde tüm kuşlarınızı görebilir, yeni kuş ekleyebilir ve mevcut kayıtları düzenleyebilirsiniz.' },
+            { type: 'steps', title: 'Yeni kuş ekleme adımları', steps: ['Kuşlar ekranında sağ alttaki \'+\' butonuna tıklayın.', 'Kuş adı, cinsiyeti, türü ve halka numarasını girin.', 'İsteğe bağlı olarak doğum tarihi ve renk mutasyonu ekleyin.', '\'Kaydet\' butonuna tıklayarak kuşu kaydedin.'] },
+            { type: 'tip', text: 'Halka numarası her kuş için benzersiz olmalıdır. Bu numara soy ağacında ve genetik hesaplamalarda kullanılır.' },
+            { type: 'warning', text: 'Bir kuşu sildiğinizde, o kuşa bağlı tüm üreme kayıtları ve yavru bilgileri de etkilenebilir.' },
+          ]
+        },
+        en: {
+          title: 'Adding & Editing Birds',
+          subtitle: 'Register and edit your birds',
+          blocks: [
+            { type: 'text', text: 'In the Birds section, you can view all your birds, add new ones, and edit existing records.' },
+            { type: 'steps', title: 'Adding a new bird', steps: ['Tap the \'+\' button at the bottom-right of the Birds screen.', 'Enter the bird\'s name, gender, species, and ring number.', 'Optionally add birth date and color mutation.', 'Tap \'Save\' to save the bird.'] },
+            { type: 'tip', text: 'Ring number should be unique for each bird. This number is used in the genealogy tree and genetic calculations.' },
+            { type: 'warning', text: 'Deleting a bird may affect all related breeding records and chick information.' },
+          ]
+        },
+        de: {
+          title: 'Vögel hinzufügen & bearbeiten',
+          subtitle: 'Registrieren und bearbeiten Sie Ihre Vögel',
+          blocks: [
+            { type: 'text', text: 'Im Bereich Vögel können Sie alle Ihre Vögel anzeigen, neue hinzufügen und vorhandene Datensätze bearbeiten.' },
+            { type: 'steps', title: 'Einen neuen Vogel hinzufügen', steps: ['Tippen Sie auf die \'+\'-Schaltfläche unten rechts auf dem Vögel-Bildschirm.', 'Geben Sie Name, Geschlecht, Art und Ringnummer des Vogels ein.', 'Optional können Sie Geburtsdatum und Farbmutation hinzufügen.', 'Tippen Sie auf \'Speichern\', um den Vogel zu speichern.'] },
+            { type: 'tip', text: 'Die Ringnummer sollte für jeden Vogel einzigartig sein. Diese Nummer wird im Stammbaum und bei genetischen Berechnungen verwendet.' },
+            { type: 'warning', text: 'Das Löschen eines Vogels kann alle zugehörigen Zuchtdatensätze und Kükeninformationen beeinflussen.' },
+          ]
+        }
+      },
+      {
+        id: 'filtering',
+        category: 'birdManagement',
+        icon: '&#x1F50D;',
+        isPremium: false,
+        related: [3],
+        tr: {
+          title: 'Filtreleme ve Arama',
+          subtitle: 'Kuşlarınızı hızla bulmak için filtre ve arama',
+          blocks: [
+            { type: 'text', text: 'Kuş listenizde hızlıca arama yapabilir ve çeşitli filtreleme seçeneklerini kullanabilirsiniz.' },
+            { type: 'text', text: 'Filtre seçenekleri: Tümü, Erkek, Dişi, Yaşayan, Ölü, Satılmış. Filtre çubuğundaki seçeneklere tıklayarak listenizi daraltabilirsiniz.' },
+            { type: 'text', text: 'Arama çubuğuna kuş adı veya halka numarası yazarak anında sonuç görebilirsiniz.' },
+            { type: 'tip', text: 'Filtre ve aramayı birlikte kullanabilirsiniz. Örneğin \'Erkek\' filtresini seçip ardından isim ile arama yapabilirsiniz.' },
+          ]
+        },
+        en: {
+          title: 'Filtering & Search',
+          subtitle: 'Quickly find your birds with filters and search',
+          blocks: [
+            { type: 'text', text: 'You can quickly search your bird list and use various filtering options.' },
+            { type: 'text', text: 'Filter options: All, Male, Female, Alive, Dead, Sold. Tap the options in the filter bar to narrow your list.' },
+            { type: 'text', text: 'Type a bird name or ring number in the search bar to see instant results.' },
+            { type: 'tip', text: 'You can combine filters and search. For example, select \'Male\' filter then search by name.' },
+          ]
+        },
+        de: {
+          title: 'Filtern & Suchen',
+          subtitle: 'Finden Sie Ihre Vögel schnell mit Filtern und Suche',
+          blocks: [
+            { type: 'text', text: 'Sie können Ihre Vogelliste schnell durchsuchen und verschiedene Filteroptionen verwenden.' },
+            { type: 'text', text: 'Filteroptionen: Alle, Männlich, Weiblich, Lebend, Verstorben, Verkauft. Tippen Sie auf die Optionen in der Filterleiste, um Ihre Liste einzugrenzen.' },
+            { type: 'text', text: 'Geben Sie einen Vogelnamen oder eine Ringnummer in die Suchleiste ein, um sofortige Ergebnisse zu sehen.' },
+            { type: 'tip', text: 'Sie können Filter und Suche kombinieren. Wählen Sie beispielsweise den Filter \'Männlich\' und suchen Sie dann nach Namen.' },
+          ]
+        }
+      },
+      {
+        id: 'health_records',
+        category: 'birdManagement',
+        icon: '&#x1FA7A;',
+        isPremium: false,
+        related: [3],
+        tr: {
+          title: 'Sağlık Kayıtları',
+          subtitle: 'Kuşlarınızın sağlık geçmişini takip edin',
+          blocks: [
+            { type: 'text', text: 'Kuşlarınızın sağlık durumunu takip edin. Veteriner ziyaretleri, aşı kayıtları ve tedavi bilgilerini kaydedebilirsiniz.' },
+            { type: 'steps', title: 'Sağlık kaydı ekleme', steps: ['Kuş detay sayfasından \'Sağlık Kayıtları\' bölümüne gidin.', 'Kayıt türünü seçin (muayene, aşı, tedavi vb.).', 'Detayları girin ve kaydedin.'] },
+            { type: 'warning', text: 'Bu uygulama veteriner tavsiyesinin yerini almaz. Ciddi sağlık sorunlarında mutlaka bir kuş veterinerine başvurun.' },
+          ]
+        },
+        en: {
+          title: 'Health Records',
+          subtitle: 'Track your birds\' health history',
+          blocks: [
+            { type: 'text', text: 'Track the health status of your birds. You can record vet visits, vaccination records, and treatment information.' },
+            { type: 'steps', title: 'Adding a health record', steps: ['Go to the \'Health Records\' section from the bird detail page.', 'Select the record type (examination, vaccination, treatment, etc.).', 'Enter the details and save.'] },
+            { type: 'warning', text: 'This app does not replace veterinary advice. Always consult an avian veterinarian for serious health issues.' },
+          ]
+        },
+        de: {
+          title: 'Gesundheitsaufzeichnungen',
+          subtitle: 'Verfolgen Sie die Gesundheitshistorie Ihrer Vögel',
+          blocks: [
+            { type: 'text', text: 'Verfolgen Sie den Gesundheitszustand Ihrer Vögel. Sie können Tierarztbesuche, Impfungen und Behandlungsinformationen erfassen.' },
+            { type: 'steps', title: 'Gesundheitseintrag hinzufügen', steps: ['Gehen Sie zum Abschnitt \'Gesundheitsaufzeichnungen\' auf der Vogeldetailseite.', 'Wählen Sie den Eintragstyp (Untersuchung, Impfung, Behandlung usw.).', 'Geben Sie die Details ein und speichern Sie.'] },
+            { type: 'warning', text: 'Diese App ersetzt keinen tierärztlichen Rat. Konsultieren Sie bei ernsthaften Gesundheitsproblemen immer einen Vogelarzt.' },
+          ]
+        }
+      },
+      {
+        id: 'breeding_pair',
+        category: 'breedingProcess',
+        icon: '&#x1F48C;',
+        isPremium: false,
+        related: [7, 8],
+        tr: {
+          title: 'Üreme Çifti Oluşturma',
+          subtitle: 'Üreme çifti oluşturun ve yönetin',
+          blocks: [
+            { type: 'text', text: 'Üreme bölümünde kuşlarınız arasında üreme çiftleri oluşturabilir ve üreme sürecini başından sonuna takip edebilirsiniz.' },
+            { type: 'steps', title: 'Çift oluşturma adımları', steps: ['Üreme ekranında \'+\' butonuna tıklayın.', 'Erkek kuşu listeden seçin.', 'Dişi kuşu listeden seçin.', 'Eşleştirme tarihini girin ve kaydedin.'] },
+            { type: 'warning', text: 'Akraba kuşlar arasında eşleştirme yapmaktan kaçının. Uygulama, soy ağacı verilerine göre akrabalık uyarısı verir.' },
+            { type: 'tip', text: 'Çifti oluştururken bir yuva atayabilirsiniz. Bu, birden fazla çifti takip ederken kolaylık sağlar.' },
+          ]
+        },
+        en: {
+          title: 'Creating Breeding Pairs',
+          subtitle: 'Create and manage breeding pairs',
+          blocks: [
+            { type: 'text', text: 'In the Breeding section, you can create breeding pairs from your birds and track the breeding process from start to finish.' },
+            { type: 'steps', title: 'Creating a pair', steps: ['Tap the \'+\' button on the Breeding screen.', 'Select the male bird from the list.', 'Select the female bird from the list.', 'Enter the pairing date and save.'] },
+            { type: 'warning', text: 'Avoid pairing closely related birds. The app will warn about inbreeding based on genealogy data.' },
+            { type: 'tip', text: 'You can assign a nest when creating a pair. This is helpful when tracking multiple pairs.' },
+          ]
+        },
+        de: {
+          title: 'Zuchtpaar erstellen',
+          subtitle: 'Zuchtpaare erstellen und verwalten',
+          blocks: [
+            { type: 'text', text: 'Im Zuchtbereich können Sie Zuchtpaare aus Ihren Vögeln erstellen und den Zuchtprozess von Anfang bis Ende verfolgen.' },
+            { type: 'steps', title: 'Ein Paar erstellen', steps: ['Tippen Sie auf die \'+\'-Schaltfläche auf dem Zucht-Bildschirm.', 'Wählen Sie den männlichen Vogel aus der Liste.', 'Wählen Sie den weiblichen Vogel aus der Liste.', 'Geben Sie das Paarungsdatum ein und speichern Sie.'] },
+            { type: 'warning', text: 'Vermeiden Sie die Paarung eng verwandter Vögel. Die App warnt basierend auf Stammbaumdaten vor Inzucht.' },
+            { type: 'tip', text: 'Sie können beim Erstellen eines Paares ein Nest zuweisen. Dies ist hilfreich bei der Verfolgung mehrerer Paare.' },
+          ]
+        }
+      },
+      {
+        id: 'eggs_incubation',
+        category: 'breedingProcess',
+        icon: '&#x1F95A;',
+        isPremium: false,
+        related: [6, 8],
+        tr: {
+          title: 'Yumurta ve Kuluçka Takibi',
+          subtitle: 'Yumurta kaydı ve kuluçka süreci takibi',
+          blocks: [
+            { type: 'text', text: 'Üreme çifti detay sayfasından yumurta ekleyebilir ve kuluçka sürecini gün gün takip edebilirsiniz.' },
+            { type: 'steps', title: 'Yumurta takip adımları', steps: ['Üreme çifti detay sayfasında \'Yumurta Ekle\' butonuna tıklayın.', 'Yumurtanın yumurtlanma tarihini girin.', 'Kuluçka süreci otomatik hesaplanır (18 gün).', 'Yumurta durumunu güncelleyin (dolu, boş, hasarlı, çıkmış).'] },
+            { type: 'tip', text: 'Yumurtayı 7-10 gün sonra ışıkla kontrol ederek (candling) dolu olup olmadığını anlayabilirsiniz.' },
+            { type: 'tip', text: 'Muhabbet kuşu yumurtaları genellikle 18 günde çıkar. Geç kalanlar için 21 güne kadar bekleyin.' },
+          ]
+        },
+        en: {
+          title: 'Egg & Incubation Tracking',
+          subtitle: 'Egg registration and incubation tracking',
+          blocks: [
+            { type: 'text', text: 'From the breeding pair detail page, you can add eggs and track the incubation process day by day.' },
+            { type: 'steps', title: 'Egg tracking steps', steps: ['Tap \'Add Egg\' on the breeding pair detail page.', 'Enter the date the egg was laid.', 'The incubation period is automatically calculated (18 days).', 'Update the egg status (fertile, infertile, damaged, hatched).'] },
+            { type: 'tip', text: 'You can check if the egg is fertile by candling (light checking) after 7-10 days.' },
+            { type: 'tip', text: 'Budgie eggs typically hatch in 18 days. Wait up to 21 days for late ones.' },
+          ]
+        },
+        de: {
+          title: 'Eier- & Brutverfolgung',
+          subtitle: 'Eierregistrierung und Brutüberwachung',
+          blocks: [
+            { type: 'text', text: 'Von der Zuchtpaar-Detailseite aus können Sie Eier hinzufügen und den Brutprozess Tag für Tag verfolgen.' },
+            { type: 'steps', title: 'Eierverfolgungsschritte', steps: ['Tippen Sie auf \'Ei hinzufügen\' auf der Zuchtpaar-Detailseite.', 'Geben Sie das Legedatum des Eies ein.', 'Die Brutzeit wird automatisch berechnet (18 Tage).', 'Aktualisieren Sie den Eistatus (befruchtet, unbefruchtet, beschädigt, geschlüpft).'] },
+            { type: 'tip', text: 'Sie können nach 7-10 Tagen durch Schieren (Lichtprüfung) feststellen, ob das Ei befruchtet ist.' },
+            { type: 'tip', text: 'Wellensitticheier schlüpfen normalerweise in 18 Tagen. Warten Sie bei Spätschlüpfern bis zu 21 Tage.' },
+          ]
+        }
+      },
+      {
+        id: 'chick_tracking',
+        category: 'breedingProcess',
+        icon: '&#x1F423;',
+        isPremium: false,
+        related: [6, 7],
+        tr: {
+          title: 'Yavru Takibi ve Büyüme',
+          subtitle: 'Yavru gelişimini ve büyümesini izleyin',
+          blocks: [
+            { type: 'text', text: 'Çıkmış yavruların büyüme sürecini detaylı olarak takip edin. Ağırlık ölçümleri, gelişim aşamaları ve sağlık durumunu kaydedebilirsiniz.' },
+            { type: 'steps', title: 'Yavru takip adımları', steps: ['Yavrular ekranında yavruyu seçin veya yeni yavru ekleyin.', 'Düzenli olarak ağırlık ölçümü ekleyin (Detay > Ölçüm Ekle).', 'Yavru yetişkin olduğunda \'Kuşa Terfi Et\' ile kuşlara aktarın.'] },
+            { type: 'text', text: 'Yavruyu kuşa terfi ettirdiğinizde, otomatik olarak yeni bir kuş kaydı oluşturulur ve yavrunun tüm bilgileri aktarılır.' },
+            { type: 'tip', text: 'İlk 2 hafta boyunca günlük ağırlık ölçümü yapmak, yavrunun sağlıklı gelişip gelişmediğini anlamanızı sağlar.' },
+          ]
+        },
+        en: {
+          title: 'Chick Tracking & Growth',
+          subtitle: 'Monitor chick development and growth',
+          blocks: [
+            { type: 'text', text: 'Track the growth process of hatched chicks in detail. You can record weight measurements, development stages, and health status.' },
+            { type: 'steps', title: 'Chick tracking steps', steps: ['Select a chick from the Chicks screen or add a new one.', 'Add regular weight measurements (Detail > Add Measurement).', 'When the chick is mature, use \'Convert to Bird\' to transfer it to the birds list.'] },
+            { type: 'text', text: 'When you convert a chick to a bird, a new bird record is automatically created and all the chick\'s information is transferred.' },
+            { type: 'tip', text: 'Daily weight measurements during the first 2 weeks help you understand if the chick is developing healthily.' },
+          ]
+        },
+        de: {
+          title: 'Kükenverfolgung & Wachstum',
+          subtitle: 'Kükenentwicklung und Wachstum überwachen',
+          blocks: [
+            { type: 'text', text: 'Verfolgen Sie den Wachstumsprozess geschlüpfter Küken im Detail. Sie können Gewichtsmessungen, Entwicklungsstadien und Gesundheitsstatus erfassen.' },
+            { type: 'steps', title: 'Kükenverfolgungsschritte', steps: ['Wählen Sie ein Küken auf dem Küken-Bildschirm oder fügen Sie ein neues hinzu.', 'Fügen Sie regelmäßig Gewichtsmessungen hinzu (Detail > Messung hinzufügen).', 'Wenn das Küken ausgewachsen ist, verwenden Sie \'In Vogel umwandeln\', um es in die Vogelliste zu übertragen.'] },
+            { type: 'text', text: 'Wenn Sie ein Küken in einen Vogel umwandeln, wird automatisch ein neuer Vogeldatensatz erstellt und alle Informationen des Kükens übertragen.' },
+            { type: 'tip', text: 'Tägliche Gewichtsmessungen während der ersten 2 Wochen helfen Ihnen zu verstehen, ob sich das Küken gesund entwickelt.' },
+          ]
+        }
+      },
+      {
+        id: 'calendar_notifications',
+        category: 'tools',
+        icon: '&#x1F4C5;',
+        isPremium: false,
+        related: [],
+        tr: {
+          title: 'Takvim ve Bildirimler',
+          subtitle: 'Takvim etkinlikleri ve hatırlatıcılar',
+          blocks: [
+            { type: 'text', text: 'Takvim bölümünde tüm önemli etkinliklerinizi görebilir, yeni etkinlik ekleyebilir ve hatırlatıcılar ayarlayabilirsiniz.' },
+            { type: 'text', text: 'Takvimde üreme tarihleri, kuluçka bitiş günleri, veteriner randevuları ve özel etkinlikler görüntülenir. Bir güne tıklayarak o günün detaylarını görün.' },
+            { type: 'text', text: 'Bildirimler bölümünden hatırlatıcı tercihlerinizi yönetebilirsiniz. Kuluçka bitiş, aşı hatırlatma ve özel bildirimler ayarlanabilir.' },
+            { type: 'tip', text: 'Önemli kuluçka günleri için otomatik bildirimler ayarlayın, böylece hiçbir önemli tarihi kaçırmazsınız.' },
+          ]
+        },
+        en: {
+          title: 'Calendar & Notifications',
+          subtitle: 'Calendar events and reminders',
+          blocks: [
+            { type: 'text', text: 'In the Calendar section, you can view all important events, add new events, and set up reminders.' },
+            { type: 'text', text: 'The calendar displays breeding dates, incubation end dates, vet appointments, and custom events. Tap a day to see its details.' },
+            { type: 'text', text: 'From the Notifications section, you can manage your reminder preferences. Incubation end, vaccination reminders, and custom notifications can be configured.' },
+            { type: 'tip', text: 'Set up automatic notifications for important incubation days so you never miss an important date.' },
+          ]
+        },
+        de: {
+          title: 'Kalender & Benachrichtigungen',
+          subtitle: 'Kalenderereignisse und Erinnerungen',
+          blocks: [
+            { type: 'text', text: 'Im Kalenderbereich können Sie alle wichtigen Ereignisse anzeigen, neue Ereignisse hinzufügen und Erinnerungen einrichten.' },
+            { type: 'text', text: 'Der Kalender zeigt Zuchttermine, Brutende-Daten, Tierarzttermine und benutzerdefinierte Ereignisse an. Tippen Sie auf einen Tag, um seine Details zu sehen.' },
+            { type: 'text', text: 'Im Bereich Benachrichtigungen können Sie Ihre Erinnerungseinstellungen verwalten. Brutende-, Impferinnerungen und benutzerdefinierte Benachrichtigungen können konfiguriert werden.' },
+            { type: 'tip', text: 'Richten Sie automatische Benachrichtigungen für wichtige Bruttage ein, damit Sie kein wichtiges Datum verpassen.' },
+          ]
+        }
+      },
+      {
+        id: 'genealogy_genetics',
+        category: 'tools',
+        icon: '&#x1F9EC;',
+        isPremium: true,
+        related: [6],
+        tr: {
+          title: 'Soy Ağacı ve Genetik Hesaplama',
+          subtitle: 'Soy ağacı ve genetik hesaplamalar',
+          blocks: [
+            { type: 'text', text: 'Kuşlarınızın soy ağacını görsel olarak inceleyin ve genetik hesaplamalar ile olası yavru renklerini tahmin edin.' },
+            { type: 'text', text: 'Soy ağacı görünümü, bir kuşun anne, baba ve daha önceki nesillere kadar soyunu gösterir. Her kuş için detay sayfasından erişebilirsiniz.' },
+            { type: 'text', text: 'Punnett karesi ile iki kuşun olası yavru renklerini ve mutasyonlarını hesaplayabilirsiniz. Anne ve baba kuşun mutasyonlarını seçin, sonuçları görüntüleyin.' },
+            { type: 'premium', text: 'Soy ağacı ve genetik hesaplama özellikleri Premium üyelik gerektirir.' },
+            { type: 'warning', text: 'Akraba eşleştirmelerinde genetik hesaplama sonuçları farklı olabilir. Akrabalık katsayısını kontrol edin.' },
+          ]
+        },
+        en: {
+          title: 'Genealogy & Genetic Calculation',
+          subtitle: 'Family tree and genetic calculations',
+          blocks: [
+            { type: 'text', text: 'Visually explore your birds\' family tree and predict possible offspring colors with genetic calculations.' },
+            { type: 'text', text: 'The genealogy view shows a bird\'s lineage going back to mother, father, and earlier generations. Accessible from each bird\'s detail page.' },
+            { type: 'text', text: 'With the Punnett square, you can calculate possible offspring colors and mutations from two birds. Select the parents\' mutations and view the results.' },
+            { type: 'premium', text: 'Genealogy and genetic calculation features require a Premium membership.' },
+            { type: 'warning', text: 'Genetic calculation results may differ for inbred pairings. Check the inbreeding coefficient.' },
+          ]
+        },
+        de: {
+          title: 'Stammbaum & Genetische Berechnung',
+          subtitle: 'Stammbaum und genetische Berechnungen',
+          blocks: [
+            { type: 'text', text: 'Erkunden Sie den Stammbaum Ihrer Vögel visuell und sagen Sie mögliche Nachkommenfarben mit genetischen Berechnungen voraus.' },
+            { type: 'text', text: 'Die Stammbaumansicht zeigt die Abstammung eines Vogels zurück zu Mutter, Vater und früheren Generationen. Zugänglich über die Detailseite jedes Vogels.' },
+            { type: 'text', text: 'Mit dem Punnett-Quadrat können Sie mögliche Nachkommenfarben und Mutationen von zwei Vögeln berechnen. Wählen Sie die Mutationen der Eltern und sehen Sie die Ergebnisse.' },
+            { type: 'premium', text: 'Stammbaum- und genetische Berechnungsfunktionen erfordern eine Premium-Mitgliedschaft.' },
+            { type: 'warning', text: 'Genetische Berechnungsergebnisse können bei Inzuchtpaarungen abweichen. Überprüfen Sie den Inzuchtkoeffizienten.' },
+          ]
+        }
+      },
+      {
+        id: 'backup_export',
+        category: 'dataManagement',
+        icon: '&#x1F4E6;',
+        isPremium: false,
+        related: [12],
+        tr: {
+          title: 'Yedekleme ve Dışa Aktarma',
+          subtitle: 'Verilerinizi yedekleyin ve dışa aktarın',
+          blocks: [
+            { type: 'text', text: 'Verilerinizi güvenle yedekleyin ve PDF veya Excel formatında dışa aktarın.' },
+            { type: 'steps', title: 'Yedekleme adımları', steps: ['Ayarlar > Yedekleme bölümüne gidin.', '\'Yedek Oluştur\' butonuna tıklayın.', 'Yedek dosyası oluşturulur ve paylaşılabilir.'] },
+            { type: 'text', text: 'PDF ve Excel formatında raporlar oluşturabilirsiniz. PDF raporlar kuş kartları, üreme kayıtları ve istatistikleri içerir. Excel dosyaları tüm verileri tablo formatında sunar.' },
+            { type: 'warning', text: 'Yedek geri yüklerken mevcut verilerinizin üzerine yazılır. Geri yükleme öncesi mevcut verilerin yedeğini almayı unutmayın.' },
+          ]
+        },
+        en: {
+          title: 'Backup & Export',
+          subtitle: 'Back up and export your data',
+          blocks: [
+            { type: 'text', text: 'Safely back up your data and export it in PDF or Excel format.' },
+            { type: 'steps', title: 'Backup steps', steps: ['Go to Settings > Backup section.', 'Tap the \'Create Backup\' button.', 'The backup file is created and can be shared.'] },
+            { type: 'text', text: 'You can create reports in PDF and Excel formats. PDF reports include bird cards, breeding records, and statistics. Excel files present all data in table format.' },
+            { type: 'warning', text: 'Restoring a backup will overwrite your current data. Remember to backup your current data before restoring.' },
+          ]
+        },
+        de: {
+          title: 'Sicherung & Export',
+          subtitle: 'Sichern und exportieren Sie Ihre Daten',
+          blocks: [
+            { type: 'text', text: 'Sichern Sie Ihre Daten sicher und exportieren Sie sie im PDF- oder Excel-Format.' },
+            { type: 'steps', title: 'Sicherungsschritte', steps: ['Gehen Sie zu Einstellungen > Sicherung.', 'Tippen Sie auf die Schaltfläche \'Sicherung erstellen\'.', 'Die Sicherungsdatei wird erstellt und kann geteilt werden.'] },
+            { type: 'text', text: 'Sie können Berichte im PDF- und Excel-Format erstellen. PDF-Berichte enthalten Vogelkarten, Zuchtdatensätze und Statistiken. Excel-Dateien präsentieren alle Daten im Tabellenformat.' },
+            { type: 'warning', text: 'Das Wiederherstellen einer Sicherung überschreibt Ihre aktuellen Daten. Vergessen Sie nicht, Ihre aktuellen Daten vor der Wiederherstellung zu sichern.' },
+          ]
+        }
+      },
+      {
+        id: 'sync',
+        category: 'dataManagement',
+        icon: '&#x1F504;',
+        isPremium: false,
+        related: [11],
+        tr: {
+          title: 'Veri Senkronizasyonu',
+          subtitle: 'Cihazlar arası veri senkronizasyonu',
+          blocks: [
+            { type: 'text', text: 'Verileriniz otomatik olarak bulut ile senkronize edilir. Çevrimdışı çalışabilir, internet bağlantısı geri geldiğinde veriler otomatik olarak güncellenir.' },
+            { type: 'text', text: 'İnternet bağlantısı olmadan da veri ekleyebilir ve düzenleyebilirsiniz. Tüm değişiklikler yerel veritabanında saklanır.' },
+            { type: 'text', text: 'Birden fazla cihazda aynı kaydı düzenlerseniz, sunucu tarafındaki en son versiyon geçerli olur (sunucu öncelikli).' },
+            { type: 'tip', text: 'Önemli değişiklikler yaptıktan sonra internet bağlantınızı kontrol edin ve senkronizasyonun tamamlanmasını bekleyin.' },
+            { type: 'warning', text: 'Senkronizasyon tamamlanmadan uygulamayı silmeyin veya hesabınızı kapatmayın. Aksi halde bekleyen değişiklikler kaybolabilir.' },
+          ]
+        },
+        en: {
+          title: 'Data Synchronization',
+          subtitle: 'Cross-device data synchronization',
+          blocks: [
+            { type: 'text', text: 'Your data is automatically synchronized with the cloud. You can work offline, and changes are automatically updated when the internet connection returns.' },
+            { type: 'text', text: 'You can add and edit data without an internet connection. All changes are stored in the local database.' },
+            { type: 'text', text: 'If you edit the same record on multiple devices, the latest server version takes priority (server-wins).' },
+            { type: 'tip', text: 'After making important changes, check your internet connection and wait for synchronization to complete.' },
+            { type: 'warning', text: 'Do not uninstall the app or close your account before synchronization is complete. Otherwise, pending changes may be lost.' },
+          ]
+        },
+        de: {
+          title: 'Datensynchronisation',
+          subtitle: 'Geräteübergreifende Datensynchronisierung',
+          blocks: [
+            { type: 'text', text: 'Ihre Daten werden automatisch mit der Cloud synchronisiert. Sie können offline arbeiten, und Änderungen werden automatisch aktualisiert, wenn die Internetverbindung wiederhergestellt ist.' },
+            { type: 'text', text: 'Sie können Daten ohne Internetverbindung hinzufügen und bearbeiten. Alle Änderungen werden in der lokalen Datenbank gespeichert.' },
+            { type: 'text', text: 'Wenn Sie denselben Datensatz auf mehreren Geräten bearbeiten, hat die neueste Serverversion Vorrang (Server-gewinnt).' },
+            { type: 'tip', text: 'Überprüfen Sie nach wichtigen Änderungen Ihre Internetverbindung und warten Sie, bis die Synchronisation abgeschlossen ist.' },
+            { type: 'warning', text: 'Deinstallieren Sie die App nicht und schließen Sie Ihr Konto nicht, bevor die Synchronisation abgeschlossen ist. Andernfalls könnten ausstehende Änderungen verloren gehen.' },
+          ]
+        }
+      },
+      {
+        id: 'profile_settings',
+        category: 'accountSettings',
+        icon: '&#x2699;',
+        isPremium: false,
+        related: [14],
+        tr: {
+          title: 'Profil ve Ayarlar',
+          subtitle: 'Profil bilgileri ve uygulama ayarları',
+          blocks: [
+            { type: 'text', text: 'Profil bilgilerinizi güncelleyebilir ve uygulama ayarlarını kişiselleştirebilirsiniz.' },
+            { type: 'text', text: 'Profil sayfasından adınızı, avatar fotoğrafınızı ve iletişim bilgilerinizi düzenleyebilirsiniz.' },
+            { type: 'text', text: 'Ayarlar bölümünden tema (açık/koyu), dil (Türkçe, İngilizce, Almanca), bildirim tercihleri ve güvenlik ayarlarını yönetebilirsiniz.' },
+            { type: 'tip', text: 'Uygulama dilini değiştirmek için Ayarlar > Dil bölümüne gidin. Değişiklik anında uygulanır.' },
+          ]
+        },
+        en: {
+          title: 'Profile & Settings',
+          subtitle: 'Profile information and app settings',
+          blocks: [
+            { type: 'text', text: 'You can update your profile information and customize app settings.' },
+            { type: 'text', text: 'From the Profile page, you can edit your name, avatar photo, and contact information.' },
+            { type: 'text', text: 'From the Settings section, you can manage theme (light/dark), language (Turkish, English, German), notification preferences, and security settings.' },
+            { type: 'tip', text: 'To change the app language, go to Settings > Language. The change is applied immediately.' },
+          ]
+        },
+        de: {
+          title: 'Profil & Einstellungen',
+          subtitle: 'Profilinformationen und App-Einstellungen',
+          blocks: [
+            { type: 'text', text: 'Sie können Ihre Profilinformationen aktualisieren und App-Einstellungen anpassen.' },
+            { type: 'text', text: 'Auf der Profilseite können Sie Ihren Namen, Ihr Avatarfoto und Ihre Kontaktinformationen bearbeiten.' },
+            { type: 'text', text: 'Im Bereich Einstellungen können Sie Design (hell/dunkel), Sprache (Türkisch, Englisch, Deutsch), Benachrichtigungseinstellungen und Sicherheitseinstellungen verwalten.' },
+            { type: 'tip', text: 'Um die App-Sprache zu ändern, gehen Sie zu Einstellungen > Sprache. Die Änderung wird sofort angewendet.' },
+          ]
+        }
+      },
+      {
+        id: 'premium',
+        category: 'accountSettings',
+        icon: '&#x1F451;',
+        isPremium: false,
+        related: [13],
+        tr: {
+          title: 'Premium Üyelik',
+          subtitle: 'Premium özelliklere erişim ve abonelik',
+          blocks: [
+            { type: 'text', text: 'Premium üyelik ile tüm özelliklere sınırsız erişim kazanın ve yetiştiriclik deneyiminizi bir üst seviyeye taşıyın.' },
+            { type: 'text', text: 'Premium özellikler: Sınırsız kuş kaydı, detaylı istatistikler ve grafikler, soy ağacı görüntüleme, genetik hesaplama (Punnett karesi), öncelikli destek.' },
+            { type: 'steps', title: 'Premium\'a geçiş adımları', steps: ['Daha Fazla > Premium Üyelik bölümüne gidin.', 'Aylık veya yıllık planı seçin.', 'Ödeme işlemini tamamlayın, özellikler anında aktif olur.'] },
+            { type: 'premium', text: 'Premium üyelik istediğiniz zaman iptal edilebilir. İptal sonrası dönem sonuna kadar özellikler aktif kalır.' },
+          ]
+        },
+        en: {
+          title: 'Premium Membership',
+          subtitle: 'Access premium features and subscription',
+          blocks: [
+            { type: 'text', text: 'Get unlimited access to all features with Premium membership and take your breeding experience to the next level.' },
+            { type: 'text', text: 'Premium features: Unlimited bird records, detailed statistics and charts, genealogy tree view, genetic calculation (Punnett square), priority support.' },
+            { type: 'steps', title: 'Steps to go Premium', steps: ['Go to More > Premium Membership section.', 'Choose a monthly or yearly plan.', 'Complete the payment, features are activated instantly.'] },
+            { type: 'premium', text: 'Premium membership can be cancelled at any time. After cancellation, features remain active until the end of the period.' },
+          ]
+        },
+        de: {
+          title: 'Premium-Mitgliedschaft',
+          subtitle: 'Zugang zu Premium-Funktionen und Abonnement',
+          blocks: [
+            { type: 'text', text: 'Erhalten Sie mit der Premium-Mitgliedschaft unbegrenzten Zugang zu allen Funktionen und heben Sie Ihre Zuchterfahrung auf die nächste Stufe.' },
+            { type: 'text', text: 'Premium-Funktionen: Unbegrenzte Vogeldatensätze, detaillierte Statistiken und Diagramme, Stammbaumansicht, genetische Berechnung (Punnett-Quadrat), prioritärer Support.' },
+            { type: 'steps', title: 'Schritte zum Premium-Upgrade', steps: ['Gehen Sie zu Mehr > Premium-Mitgliedschaft.', 'Wählen Sie einen monatlichen oder jährlichen Plan.', 'Schließen Sie die Zahlung ab, Funktionen werden sofort aktiviert.'] },
+            { type: 'premium', text: 'Die Premium-Mitgliedschaft kann jederzeit gekündigt werden. Nach der Kündigung bleiben die Funktionen bis zum Ende des Zeitraums aktiv.' },
+          ]
+        }
+      },
+    ];
+
+    // ─── UI TRANSLATIONS ───
+    const uiTranslations = {
+      tr: {
+        back: '\u2190 Ana Sayfa',
+        badge: 'Kullan\u0131m K\u0131lavuzu',
+        title: 'Uygulamay\u0131 Ke\u015ffedin',
+        subtitle: 'Ku\u015f kay\u0131tlar\u0131ndan genetik hesaplamalara kadar t\u00fcm \u00f6zellikleri ad\u0131m ad\u0131m \u00f6\u011frenin.',
+        search_hint: 'Konularda ara...',
+        no_results: 'Sonu\u00e7 bulunamad\u0131',
+        no_results_hint: 'Arama kriterlerini de\u011fi\u015ftirin',
+        step_count: '{} ad\u0131m',
+        premium_label: 'Premium',
+        tip_label: '\u0130pucu:',
+        warning_label: 'Uyar\u0131:',
+        premium_note_label: 'Premium:',
+        related_topics: '\u0130lgili Konular',
+        footer: '\u00a9 2025-2026 BudgieBreedingTracker. T\u00fcm haklar\u0131 sakl\u0131d\u0131r.',
+      },
+      en: {
+        back: '\u2190 Home',
+        badge: 'User Guide',
+        title: 'Explore the App',
+        subtitle: 'Learn all features step by step, from bird records to genetic calculations.',
+        search_hint: 'Search topics...',
+        no_results: 'No results found',
+        no_results_hint: 'Try different search criteria',
+        step_count: '{} steps',
+        premium_label: 'Premium',
+        tip_label: 'Tip:',
+        warning_label: 'Warning:',
+        premium_note_label: 'Premium:',
+        related_topics: 'Related Topics',
+        footer: '\u00a9 2025-2026 BudgieBreedingTracker. All rights reserved.',
+      },
+      de: {
+        back: '\u2190 Startseite',
+        badge: 'Benutzerhandbuch',
+        title: 'Entdecken Sie die App',
+        subtitle: 'Lernen Sie alle Funktionen Schritt f\u00fcr Schritt, von Vogeldatens\u00e4tzen bis zu genetischen Berechnungen.',
+        search_hint: 'Themen durchsuchen...',
+        no_results: 'Keine Ergebnisse gefunden',
+        no_results_hint: 'Versuchen Sie andere Suchbegriffe',
+        step_count: '{} Schritte',
+        premium_label: 'Premium',
+        tip_label: 'Tipp:',
+        warning_label: 'Warnung:',
+        premium_note_label: 'Premium:',
+        related_topics: 'Verwandte Themen',
+        footer: '\u00a9 2025-2026 BudgieBreedingTracker. Alle Rechte vorbehalten.',
+      },
+    };
+
+    let currentLang = 'tr';
+
+    // ─── HELPERS ───
+    const turkishFold = { '\u015f': 's', '\u00e7': 'c', '\u011f': 'g', '\u00fc': 'u', '\u00f6': 'o', '\u0131': 'i', '\u0130': 'i', '\u015e': 's', '\u00c7': 'c', '\u011e': 'g', '\u00dc': 'u', '\u00d6': 'o', '\u00e4': 'a', '\u00f1': 'n', '\u00df': 'ss' };
+    function normalize(str) {
+      return str.toLowerCase().replace(/[şçğüöıİŞÇĞÜÖäñß]/g, c => turkishFold[c] || c);
+    }
+
+    function getStepCount(topic) {
+      const data = topic[currentLang];
+      let count = 0;
+      for (const block of data.blocks) {
+        if (block.type === 'steps' && block.steps) count += block.steps.length;
+      }
+      return count;
+    }
+
+    // ─── RENDER ───
+    function renderGuide(query) {
+      const container = document.getElementById('guideContent');
+      const noResults = document.getElementById('noResults');
+      const t = uiTranslations[currentLang];
+      const q = normalize(query || '');
+
+      let html = '';
+      let totalVisible = 0;
+
+      if (q) {
+        // Flat search mode
+        const matching = topics.filter(topic => {
+          const data = topic[currentLang];
+          const haystack = normalize(data.title + ' ' + data.subtitle + ' ' + data.blocks.map(b => b.text || (b.steps || []).join(' ')).join(' '));
+          return haystack.includes(q);
+        });
+
+        totalVisible = matching.length;
+
+        if (matching.length > 0) {
+          html += '<div class="topics-grid">';
+          matching.forEach((topic, i) => {
+            html += renderTopicCard(topic, topics.indexOf(topic), i);
+          });
+          html += '</div>';
+        }
+      } else {
+        // Grouped mode
+        for (const cat of categories) {
+          const catTopics = topics.filter(t => t.category === cat.id);
+          if (catTopics.length === 0) continue;
+
+          totalVisible += catTopics.length;
+
+          html += `<div class="category-section fade-up">`;
+          html += `<div class="category-header">`;
+          html += `<span class="category-icon">${cat.icon}</span>`;
+          html += `<span class="category-title">${cat[currentLang]}</span>`;
+          html += `<span class="category-count">${catTopics.length}</span>`;
+          html += `</div>`;
+          html += `<div class="topics-grid">`;
+          catTopics.forEach((topic, i) => {
+            html += renderTopicCard(topic, topics.indexOf(topic), i);
+          });
+          html += `</div></div>`;
+        }
+      }
+
+      container.innerHTML = html;
+
+      if (totalVisible === 0) {
+        noResults.classList.add('visible');
+      } else {
+        noResults.classList.remove('visible');
+      }
+
+      // Trigger fade-up
+      requestAnimationFrame(() => {
+        container.querySelectorAll('.fade-up').forEach(el => el.classList.add('visible'));
+      });
+    }
+
+    function renderTopicCard(topic, index, delay) {
+      const data = topic[currentLang];
+      const t = uiTranslations[currentLang];
+      const stepCount = getStepCount(topic);
+
+      let meta = '';
+      if (stepCount > 0) {
+        meta += `<span class="step-badge">${t.step_count.replace('{}', stepCount)}</span>`;
+      }
+      if (topic.isPremium) {
+        meta += `<span class="premium-badge">${t.premium_label}</span>`;
+      }
+
+      return `
+        <div class="topic-card fade-up delay-${Math.min(delay, 3)}" onclick="openDetail(${index})">
+          <div class="topic-card-header">
+            <div class="topic-icon-wrap">${topic.icon}</div>
+            <div>
+              <div class="topic-title">${data.title}</div>
+              <div class="topic-subtitle">${data.subtitle}</div>
+            </div>
+          </div>
+          ${meta ? `<div class="topic-meta">${meta}</div>` : ''}
+          <svg class="topic-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </div>
+      `;
+    }
+
+    // ─── DETAIL ───
+    function openDetail(index) {
+      _previousFocus = document.activeElement;
+      const topic = topics[index];
+      const data = topic[currentLang];
+      const t = uiTranslations[currentLang];
+      const cat = categories.find(c => c.id === topic.category);
+
+      let blocksHtml = '';
+      for (const block of data.blocks) {
+        switch (block.type) {
+          case 'text':
+            blocksHtml += `<p class="block-text">${block.text}</p>`;
+            break;
+          case 'tip':
+            blocksHtml += `
+              <div class="block-tip">
+                <svg class="block-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <span><span class="block-label">${t.tip_label}</span> ${block.text}</span>
+              </div>`;
+            break;
+          case 'warning':
+            blocksHtml += `
+              <div class="block-warning">
+                <svg class="block-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.832c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+                <span><span class="block-label">${t.warning_label}</span> ${block.text}</span>
+              </div>`;
+            break;
+          case 'premium':
+            blocksHtml += `
+              <div class="block-premium">
+                <svg class="block-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3l3.057 7.371L12 13l3.943-2.629L19 3M5 3l7 18 7-18"/></svg>
+                <span><span class="block-label">${t.premium_note_label}</span> ${block.text}</span>
+              </div>`;
+            break;
+          case 'steps':
+            blocksHtml += `<div class="block-steps"><div class="steps-title">${block.title}</div><ol class="steps-list">`;
+            block.steps.forEach((step, i) => {
+              blocksHtml += `<li><span class="step-number">${i + 1}</span><span>${step}</span></li>`;
+            });
+            blocksHtml += `</ol></div>`;
+            break;
+        }
+      }
+
+      // Related topics
+      let relatedHtml = '';
+      if (topic.related && topic.related.length > 0) {
+        relatedHtml = `<div class="related-section"><div class="related-title">${t.related_topics}</div><div class="related-chips">`;
+        topic.related.forEach(ri => {
+          if (ri >= 0 && ri < topics.length) {
+            const rt = topics[ri][currentLang];
+            relatedHtml += `<button class="related-chip" onclick="openDetail(${ri})">${topics[ri].icon} ${rt.title}</button>`;
+          }
+        });
+        relatedHtml += `</div></div>`;
+      }
+
+      document.getElementById('detailContent').innerHTML = `
+        <div class="detail-header">
+          <div class="detail-icon">${topic.icon}</div>
+          <h2 class="detail-title" id="detailTitleId">${data.title}</h2>
+        </div>
+        <div class="detail-category">${cat ? cat.icon + ' ' + cat[currentLang] : ''}</div>
+        <div class="detail-body">${blocksHtml}</div>
+        ${relatedHtml}
+      `;
+
+      const overlay = document.getElementById('detailOverlay');
+      overlay.classList.add('active');
+      overlay.scrollTop = 0;
+      document.body.style.overflow = 'hidden';
+
+      // Focus trap: focus close button on open
+      requestAnimationFrame(() => {
+        document.getElementById('detailClose').focus();
+      });
+    }
+
+    let _previousFocus = null;
+
+    function closeDetail() {
+      document.getElementById('detailOverlay').classList.remove('active');
+      document.body.style.overflow = '';
+      if (_previousFocus) { _previousFocus.focus(); _previousFocus = null; }
+    }
+
+    // ─── LANGUAGE ───
+    function setLanguage(lang) {
+      currentLang = lang;
+      localStorage.setItem('bbt-lang', lang);
+      document.documentElement.lang = lang;
+
+      const t = uiTranslations[lang];
+
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (t[key]) el.textContent = t[key];
+      });
+
+      document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+        const key = el.getAttribute('data-i18n-placeholder');
+        if (t[key]) el.placeholder = t[key];
+      });
+
+      const titles = {
+        tr: 'Kullan\u0131m K\u0131lavuzu \u2014 BudgieBreedingTracker',
+        en: 'User Guide \u2014 BudgieBreedingTracker',
+        de: 'Benutzerhandbuch \u2014 BudgieBreedingTracker',
+      };
+      document.title = titles[lang];
+
+      document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.textContent.trim().toLowerCase() === lang);
+      });
+
+      renderGuide(document.getElementById('searchInput').value);
+    }
+
+    // ─── SEARCH ───
+    const searchInput = document.getElementById('searchInput');
+    const searchClear = document.getElementById('searchClear');
+
+    searchInput.addEventListener('input', () => {
+      const val = searchInput.value.trim();
+      searchClear.classList.toggle('visible', val.length > 0);
+      renderGuide(val);
+    });
+
+    searchClear.addEventListener('click', () => {
+      searchInput.value = '';
+      searchClear.classList.remove('visible');
+      renderGuide('');
+      searchInput.focus();
+    });
+
+    // ─── OVERLAY EVENTS ───
+    document.getElementById('detailClose').addEventListener('click', closeDetail);
+    document.getElementById('detailOverlay').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('detailOverlay')) closeDetail();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeDetail();
+
+      // Focus trap within detail panel
+      if (e.key === 'Tab' && document.getElementById('detailOverlay').classList.contains('active')) {
+        const panel = document.getElementById('detailPanel');
+        const focusable = panel.querySelectorAll('button, [href], [tabindex]:not([tabindex="-1"])');
+        if (focusable.length === 0) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (e.shiftKey) {
+          if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+        } else {
+          if (document.activeElement === last) { e.preventDefault(); first.focus(); }
+        }
+      }
+    });
+
+    // ─── INIT ───
+    (function init() {
+      const saved = localStorage.getItem('bbt-lang');
+      if (saved && ['tr', 'en', 'de'].includes(saved)) {
+        setLanguage(saved);
+      } else {
+        const browserLang = navigator.language?.slice(0, 2);
+        if (['tr', 'en', 'de'].includes(browserLang)) {
+          setLanguage(browserLang);
+        } else {
+          setLanguage('tr');
+        }
+      }
+
+      // Fade-up observer
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.1 });
+
+      document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+    })();
+  </script>
+
+</body>
+</html>
