@@ -315,10 +315,80 @@
       line-height: 1.65;
     }
 
+    /* ─── STATS BAR ─── */
+    .guide-stats {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      margin-bottom: 32px;
+      flex-wrap: wrap;
+    }
+    .guide-stat {
+      text-align: center;
+    }
+    .guide-stat-value {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 800;
+      font-size: 28px;
+      color: var(--gold-light);
+      line-height: 1;
+    }
+    .guide-stat-label {
+      font-size: 12px;
+      color: var(--sage);
+      margin-top: 4px;
+      font-weight: 500;
+    }
+
+    /* ─── CATEGORY CHIPS ─── */
+    .category-chips {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 32px;
+    }
+    .category-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--sage);
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      padding: 8px 16px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+    .category-chip:hover {
+      color: var(--gold-light);
+      border-color: var(--glass-border-hover);
+      background: rgba(245, 200, 66, 0.08);
+    }
+    .category-chip.active {
+      color: var(--gold-light);
+      background: rgba(245, 200, 66, 0.15);
+      border-color: rgba(245, 200, 66, 0.4);
+      box-shadow: 0 0 12px rgba(245, 200, 66, 0.1);
+    }
+    .category-chip-icon { font-size: 15px; }
+    .category-chip-count {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--gold);
+      background: rgba(245, 200, 66, 0.12);
+      padding: 1px 7px;
+      border-radius: 999px;
+      margin-left: 2px;
+    }
+
     /* ─── SEARCH ─── */
     .search-wrap {
-      max-width: 480px;
-      margin: 0 auto 40px;
+      max-width: 520px;
+      margin: 0 auto 16px;
       position: relative;
     }
 
@@ -370,6 +440,33 @@
     }
     .search-clear:hover { color: var(--gold-light); }
     .search-clear.visible { display: block; }
+
+    .search-result-count {
+      text-align: center;
+      font-size: 13px;
+      color: var(--sage);
+      margin-bottom: 24px;
+      display: none;
+    }
+    .search-result-count.visible { display: block; }
+    .search-result-count strong { color: var(--gold-light); font-weight: 700; }
+
+    .search-highlight {
+      background: rgba(245, 200, 66, 0.25);
+      color: var(--gold-light);
+      border-radius: 3px;
+      padding: 0 2px;
+    }
+
+    .topic-category-badge {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--leaf-light);
+      background: rgba(74, 143, 212, 0.1);
+      border: 1px solid rgba(74, 143, 212, 0.2);
+      padding: 2px 8px;
+      border-radius: 999px;
+    }
 
     /* ─── CATEGORY SECTION ─── */
     .category-section { margin-bottom: 40px; }
@@ -780,6 +877,121 @@
       color: var(--sage);
     }
 
+    /* ─── DETAIL BREADCRUMB ─── */
+    .detail-breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--sage);
+      margin-bottom: 16px;
+      padding-left: 68px;
+      opacity: 0.8;
+    }
+    @media (max-width: 639px) { .detail-breadcrumb { padding-left: 0; } }
+    .detail-breadcrumb-sep { color: var(--sage); opacity: 0.5; }
+    .detail-breadcrumb-cat { color: var(--gold); font-weight: 600; cursor: pointer; transition: color 0.2s; }
+    .detail-breadcrumb-cat:hover { color: var(--gold-light); }
+    .detail-breadcrumb-current { color: var(--sage-light); font-weight: 500; }
+
+    /* ─── DETAIL LAST UPDATED ─── */
+    .detail-footer {
+      margin-top: 24px;
+      padding-top: 16px;
+      border-top: 1px solid var(--glass-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .detail-updated {
+      font-size: 12px;
+      color: var(--sage);
+      opacity: 0.6;
+    }
+
+    /* ─── DETAIL NAV ARROWS ─── */
+    .detail-nav {
+      display: flex;
+      gap: 8px;
+    }
+    .detail-nav-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--sage);
+      background: rgba(20, 50, 100, 0.4);
+      border: 1px solid var(--glass-border);
+      border-radius: 10px;
+      padding: 8px 14px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .detail-nav-btn:hover {
+      color: var(--gold-light);
+      border-color: var(--glass-border-hover);
+      background: rgba(245, 200, 66, 0.08);
+    }
+    .detail-nav-btn:disabled {
+      opacity: 0.3;
+      cursor: default;
+      pointer-events: none;
+    }
+    .detail-nav-btn svg { width: 14px; height: 14px; }
+
+    /* ─── SCROLL TO TOP ─── */
+    .scroll-top {
+      position: fixed;
+      bottom: 28px;
+      right: 28px;
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      background: rgba(20, 50, 100, 0.7);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--glass-border);
+      color: var(--sage);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+      opacity: 0;
+      transform: translateY(16px);
+      pointer-events: none;
+      transition: all 0.3s ease;
+    }
+    .scroll-top.visible {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+    .scroll-top:hover {
+      border-color: var(--glass-border-hover);
+      color: var(--gold-light);
+      background: rgba(245, 200, 66, 0.12);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    }
+    .scroll-top svg { width: 20px; height: 20px; }
+
+    /* ─── TOPIC COUNT IN HEADER ─── */
+    .page-topic-count {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 14px;
+      color: var(--sage);
+      margin-top: 12px;
+    }
+    .page-topic-count strong {
+      color: var(--gold-light);
+      font-weight: 700;
+    }
+
     /* ─── FOOTER ─── */
     footer {
       position: relative;
@@ -884,10 +1096,14 @@
         </div>
         <h1 class="page-title" data-i18n="title">Uygulamayı Keşfedin</h1>
         <p class="page-subtitle" data-i18n="subtitle">Kuş kayıtlarından genetik hesaplamalara kadar tüm özellikleri adım adım öğrenin.</p>
+        <div class="guide-stats fade-up delay-1" id="guideStats"></div>
       </div>
 
+      <!-- Category Chips -->
+      <div class="category-chips fade-up delay-1" id="categoryChips"></div>
+
       <!-- Search -->
-      <div class="search-wrap fade-up delay-1">
+      <div class="search-wrap fade-up delay-2">
         <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
         </svg>
@@ -896,6 +1112,9 @@
           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
         </button>
       </div>
+
+      <!-- Search Result Count -->
+      <div class="search-result-count" id="searchResultCount"></div>
 
       <!-- Guide Content (rendered by JS) -->
       <div id="guideContent"></div>
@@ -919,6 +1138,11 @@
       <div id="detailContent"></div>
     </div>
   </div>
+
+  <!-- Scroll to Top -->
+  <button class="scroll-top" id="scrollTop" aria-label="Scroll to top">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/></svg>
+  </button>
 
   <!-- Footer -->
   <footer>
@@ -1520,6 +1744,14 @@
         premium_note_label: 'Premium:',
         related_topics: '\u0130lgili Konular',
         footer: '\u00a9 2025-2026 BudgieBreedingTracker. T\u00fcm haklar\u0131 sakl\u0131d\u0131r.',
+        stat_topics: 'Konu',
+        stat_categories: 'Kategori',
+        stat_steps: 'Ad\u0131m',
+        search_results: '<strong>{}</strong> sonu\u00e7 bulundu',
+        all_categories: 'T\u00fcm\u00fc',
+        last_updated: 'Son g\u00fcncelleme: Mart 2026',
+        prev_topic: '\u00d6nceki',
+        next_topic: 'Sonraki',
       },
       en: {
         back: '\u2190 Home',
@@ -1536,6 +1768,14 @@
         premium_note_label: 'Premium:',
         related_topics: 'Related Topics',
         footer: '\u00a9 2025-2026 BudgieBreedingTracker. All rights reserved.',
+        stat_topics: 'Topics',
+        stat_categories: 'Categories',
+        stat_steps: 'Steps',
+        search_results: '<strong>{}</strong> results found',
+        all_categories: 'All',
+        last_updated: 'Last updated: March 2026',
+        prev_topic: 'Previous',
+        next_topic: 'Next',
       },
       de: {
         back: '\u2190 Startseite',
@@ -1552,10 +1792,19 @@
         premium_note_label: 'Premium:',
         related_topics: 'Verwandte Themen',
         footer: '\u00a9 2025-2026 BudgieBreedingTracker. Alle Rechte vorbehalten.',
+        stat_topics: 'Themen',
+        stat_categories: 'Kategorien',
+        stat_steps: 'Schritte',
+        search_results: '<strong>{}</strong> Ergebnisse gefunden',
+        all_categories: 'Alle',
+        last_updated: 'Letzte Aktualisierung: M\u00e4rz 2026',
+        prev_topic: 'Zur\u00fcck',
+        next_topic: 'Weiter',
       },
     };
 
     let currentLang = 'tr';
+    let activeCategory = null; // null = all
 
     // ─── HELPERS ───
     const turkishFold = { '\u015f': 's', '\u00e7': 'c', '\u011f': 'g', '\u00fc': 'u', '\u00f6': 'o', '\u0131': 'i', '\u0130': 'i', '\u015e': 's', '\u00c7': 'c', '\u011e': 'g', '\u00dc': 'u', '\u00d6': 'o', '\u00e4': 'a', '\u00f1': 'n', '\u00df': 'ss' };
@@ -1572,19 +1821,63 @@
       return count;
     }
 
+    function getTotalSteps() {
+      let total = 0;
+      topics.forEach(t => { total += getStepCount(t); });
+      return total;
+    }
+
+    function renderStats() {
+      const t = uiTranslations[currentLang];
+      document.getElementById('guideStats').innerHTML = `
+        <div class="guide-stat"><div class="guide-stat-value">${topics.length}</div><div class="guide-stat-label">${t.stat_topics}</div></div>
+        <div class="guide-stat"><div class="guide-stat-value">${categories.length}</div><div class="guide-stat-label">${t.stat_categories}</div></div>
+        <div class="guide-stat"><div class="guide-stat-value">${getTotalSteps()}</div><div class="guide-stat-label">${t.stat_steps}</div></div>
+      `;
+    }
+
+    function renderCategoryChips() {
+      const t = uiTranslations[currentLang];
+      let html = `<button class="category-chip ${activeCategory === null ? 'active' : ''}" onclick="filterCategory(null)"><span>${t.all_categories}</span><span class="category-chip-count">${topics.length}</span></button>`;
+      categories.forEach(cat => {
+        const count = topics.filter(t => t.category === cat.id).length;
+        html += `<button class="category-chip ${activeCategory === cat.id ? 'active' : ''}" onclick="filterCategory('${cat.id}')"><span class="category-chip-icon">${cat.icon}</span><span>${cat[currentLang]}</span><span class="category-chip-count">${count}</span></button>`;
+      });
+      document.getElementById('categoryChips').innerHTML = html;
+    }
+
+    function filterCategory(catId) {
+      activeCategory = catId;
+      renderCategoryChips();
+      renderGuide(document.getElementById('searchInput').value);
+    }
+
+    function highlightText(text, query) {
+      if (!query) return text;
+      const nText = normalize(text);
+      const nQuery = normalize(query);
+      const idx = nText.indexOf(nQuery);
+      if (idx === -1) return text;
+      return text.slice(0, idx) + '<span class="search-highlight">' + text.slice(idx, idx + query.length) + '</span>' + text.slice(idx + query.length);
+    }
+
     // ─── RENDER ───
     function renderGuide(query) {
       const container = document.getElementById('guideContent');
       const noResults = document.getElementById('noResults');
+      const resultCountEl = document.getElementById('searchResultCount');
       const t = uiTranslations[currentLang];
       const q = normalize(query || '');
 
       let html = '';
       let totalVisible = 0;
 
+      // Filter by category
+      let filteredTopics = activeCategory ? topics.filter(t => t.category === activeCategory) : topics;
+
       if (q) {
         // Flat search mode
-        const matching = topics.filter(topic => {
+        const matching = filteredTopics.filter(topic => {
           const data = topic[currentLang];
           const haystack = normalize(data.title + ' ' + data.subtitle + ' ' + data.blocks.map(b => b.text || (b.steps || []).join(' ')).join(' '));
           return haystack.includes(q);
@@ -1595,29 +1888,44 @@
         if (matching.length > 0) {
           html += '<div class="topics-grid">';
           matching.forEach((topic, i) => {
-            html += renderTopicCard(topic, topics.indexOf(topic), i);
+            html += renderTopicCard(topic, topics.indexOf(topic), i, query);
           });
           html += '</div>';
         }
+
+        resultCountEl.innerHTML = t.search_results.replace('{}', totalVisible);
+        resultCountEl.classList.add('visible');
       } else {
-        // Grouped mode
-        for (const cat of categories) {
-          const catTopics = topics.filter(t => t.category === cat.id);
-          if (catTopics.length === 0) continue;
+        resultCountEl.classList.remove('visible');
 
-          totalVisible += catTopics.length;
-
-          html += `<div class="category-section fade-up">`;
-          html += `<div class="category-header">`;
-          html += `<span class="category-icon">${cat.icon}</span>`;
-          html += `<span class="category-title">${cat[currentLang]}</span>`;
-          html += `<span class="category-count">${catTopics.length}</span>`;
-          html += `</div>`;
-          html += `<div class="topics-grid">`;
-          catTopics.forEach((topic, i) => {
+        if (activeCategory) {
+          // Single category filtered mode
+          totalVisible = filteredTopics.length;
+          html += '<div class="topics-grid">';
+          filteredTopics.forEach((topic, i) => {
             html += renderTopicCard(topic, topics.indexOf(topic), i);
           });
-          html += `</div></div>`;
+          html += '</div>';
+        } else {
+          // Grouped mode
+          for (const cat of categories) {
+            const catTopics = topics.filter(t => t.category === cat.id);
+            if (catTopics.length === 0) continue;
+
+            totalVisible += catTopics.length;
+
+            html += `<div class="category-section fade-up" id="cat-${cat.id}">`;
+            html += `<div class="category-header">`;
+            html += `<span class="category-icon">${cat.icon}</span>`;
+            html += `<span class="category-title">${cat[currentLang]}</span>`;
+            html += `<span class="category-count">${catTopics.length}</span>`;
+            html += `</div>`;
+            html += `<div class="topics-grid">`;
+            catTopics.forEach((topic, i) => {
+              html += renderTopicCard(topic, topics.indexOf(topic), i);
+            });
+            html += `</div></div>`;
+          }
         }
       }
 
@@ -1635,12 +1943,20 @@
       });
     }
 
-    function renderTopicCard(topic, index, delay) {
+    function renderTopicCard(topic, index, delay, query) {
       const data = topic[currentLang];
       const t = uiTranslations[currentLang];
       const stepCount = getStepCount(topic);
+      const cat = categories.find(c => c.id === topic.category);
+      const isSearching = !!query;
+
+      const title = isSearching ? highlightText(data.title, query) : data.title;
+      const subtitle = isSearching ? highlightText(data.subtitle, query) : data.subtitle;
 
       let meta = '';
+      if (isSearching && cat) {
+        meta += `<span class="topic-category-badge">${cat.icon} ${cat[currentLang]}</span>`;
+      }
       if (stepCount > 0) {
         meta += `<span class="step-badge">${t.step_count.replace('{}', stepCount)}</span>`;
       }
@@ -1653,8 +1969,8 @@
           <div class="topic-card-header">
             <div class="topic-icon-wrap">${topic.icon}</div>
             <div>
-              <div class="topic-title">${data.title}</div>
-              <div class="topic-subtitle">${data.subtitle}</div>
+              <div class="topic-title">${title}</div>
+              <div class="topic-subtitle">${subtitle}</div>
             </div>
           </div>
           ${meta ? `<div class="topic-meta">${meta}</div>` : ''}
@@ -1721,14 +2037,44 @@
         relatedHtml += `</div></div>`;
       }
 
+      // Breadcrumb
+      const breadcrumbHtml = `
+        <div class="detail-breadcrumb">
+          <span class="detail-breadcrumb-cat" onclick="closeDetail(); filterCategory('${topic.category}')">${cat ? cat.icon + ' ' + cat[currentLang] : ''}</span>
+          <span class="detail-breadcrumb-sep">›</span>
+          <span class="detail-breadcrumb-current">${data.title}</span>
+        </div>`;
+
+      // Prev/Next navigation
+      const prevIdx = index > 0 ? index - 1 : null;
+      const nextIdx = index < topics.length - 1 ? index + 1 : null;
+      const prevLabel = prevIdx !== null ? topics[prevIdx][currentLang].title : '';
+      const nextLabel = nextIdx !== null ? topics[nextIdx][currentLang].title : '';
+
+      const navHtml = `
+        <div class="detail-footer">
+          <span class="detail-updated">${t.last_updated}</span>
+          <div class="detail-nav">
+            <button class="detail-nav-btn" ${prevIdx === null ? 'disabled' : `onclick="openDetail(${prevIdx})"`} title="${prevLabel}">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+              ${t.prev_topic}
+            </button>
+            <button class="detail-nav-btn" ${nextIdx === null ? 'disabled' : `onclick="openDetail(${nextIdx})"`} title="${nextLabel}">
+              ${t.next_topic}
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </button>
+          </div>
+        </div>`;
+
       document.getElementById('detailContent').innerHTML = `
         <div class="detail-header">
           <div class="detail-icon">${topic.icon}</div>
           <h2 class="detail-title" id="detailTitleId">${data.title}</h2>
         </div>
-        <div class="detail-category">${cat ? cat.icon + ' ' + cat[currentLang] : ''}</div>
+        ${breadcrumbHtml}
         <div class="detail-body">${blocksHtml}</div>
         ${relatedHtml}
+        ${navHtml}
       `;
 
       const overlay = document.getElementById('detailOverlay');
@@ -1779,6 +2125,8 @@
         btn.classList.toggle('active', btn.textContent.trim().toLowerCase() === lang);
       });
 
+      renderStats();
+      renderCategoryChips();
       renderGuide(document.getElementById('searchInput').value);
     }
 
@@ -1820,6 +2168,15 @@
           if (document.activeElement === last) { e.preventDefault(); first.focus(); }
         }
       }
+    });
+
+    // ─── SCROLL TO TOP ───
+    const scrollTopBtn = document.getElementById('scrollTop');
+    window.addEventListener('scroll', () => {
+      scrollTopBtn.classList.toggle('visible', window.scrollY > 400);
+    }, { passive: true });
+    scrollTopBtn.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     });
 
     // ─── INIT ───
