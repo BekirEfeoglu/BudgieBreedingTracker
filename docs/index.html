@@ -570,8 +570,8 @@
     .faq-item { border-bottom: 1px solid var(--glass-border); }
     .faq-question { cursor: pointer; user-select: none; background: none; border: none; width: 100%; text-align: left; color: var(--sage-light); }
     .faq-answer { max-height: 0; overflow: hidden; transition: max-height 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
-    .faq-answer.open { max-height: 200px; }
-    .faq-icon { transition: transform 0.3s ease; color: var(--sage); }
+    .faq-answer.open { max-height: 300px; }
+    .faq-icon { transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1); color: var(--sage); }
     .faq-item.open .faq-icon { transform: rotate(180deg); }
 
     /* How it works connector line */
@@ -606,7 +606,7 @@
     }
     @media (max-width: 640px) {
       .hero-title { font-size: 2rem !important; }
-      .screenshot-item { width: 160px; border-radius: 18px; }
+      .screenshot-item { width: 170px; border-radius: 18px; }
     }
 
     /* ─── DECORATIVE ORBS ─── */
@@ -1323,8 +1323,8 @@
       position: relative;
       display: inline-flex;
       align-items: center;
-      gap: 0.75rem;
-      padding: 1rem 1.75rem;
+      gap: 0.875rem;
+      padding: 1.125rem 2rem;
       border-radius: 1rem;
       background: rgba(20, 50, 100, 0.5);
       border: 1px solid var(--glass-border);
@@ -1431,6 +1431,73 @@
       .faq-item-enhanced.open { padding-left: 0; }
       .faq-item-enhanced::before { display: none !important; }
       .ss-label-pill:hover { transform: none; }
+    }
+
+    /* ─── NAV LINK HOVER UNDERLINE ─── */
+    .nav-link {
+      position: relative;
+      display: inline-block;
+    }
+    .nav-link::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(90deg, var(--gold), var(--leaf-light));
+      transform: scaleX(0);
+      transform-origin: right;
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .nav-link:hover::after {
+      transform: scaleX(1);
+      transform-origin: left;
+    }
+
+    /* ─── TESTIMONIAL QUOTE MARK ─── */
+    .testimonial-quote {
+      font-family: 'Outfit', serif;
+      font-size: 3rem;
+      line-height: 1;
+      background: linear-gradient(135deg, var(--gold), var(--gold-glow));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      opacity: 0.5;
+    }
+
+    /* ─── PRICING CARD POPULAR GLOW ─── */
+    .pricing-popular {
+      position: relative;
+    }
+    .pricing-popular::before {
+      content: '';
+      position: absolute;
+      inset: -1px;
+      border-radius: inherit;
+      padding: 1px;
+      background: linear-gradient(135deg, var(--gold), var(--leaf-light), var(--gold-glow));
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      opacity: 0.6;
+    }
+
+    /* ─── EMAIL INPUT FOCUS GLOW ─── */
+    .email-input-glow:focus {
+      outline: none;
+      border-color: var(--gold) !important;
+      box-shadow: 0 0 0 3px rgba(245, 200, 66, 0.15), 0 0 20px rgba(245, 200, 66, 0.08);
+    }
+
+    /* ─── FOOTER SOCIAL ICONS ─── */
+    .social-icon {
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .social-icon:hover {
+      transform: translateY(-3px) scale(1.15);
+      color: var(--gold-light) !important;
     }
 
     /* ─── BACK TO TOP — JS-toggled state classes ─── */
@@ -1705,10 +1772,11 @@
 
         <!-- Nav Links (desktop) -->
         <div class="hidden md:flex items-center gap-6">
-          <a href="#features" class="text-sm font-medium transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="nav_features">Ozellikler</a>
-          <a href="#how-it-works" class="text-sm font-medium transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="nav_how">Nasil Calisir?</a>
-          <a href="#screenshots" class="text-sm font-medium transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="nav_screenshots">Ekran Goruntuleri</a>
-          <a href="#faq" class="text-sm font-medium transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="faq_badge">SSS</a>
+          <a href="#features" class="nav-link text-sm font-medium transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="nav_features">Ozellikler</a>
+          <a href="#how-it-works" class="nav-link text-sm font-medium transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="nav_how">Nasil Calisir?</a>
+          <a href="/user-guide/" class="nav-link text-sm font-medium transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="nav_user_guide">Kullanım Kılavuzu</a>
+          <a href="#screenshots" class="nav-link text-sm font-medium transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="nav_screenshots">Ekran Goruntuleri</a>
+          <a href="#faq" class="nav-link text-sm font-medium transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="faq_badge">SSS</a>
           <a href="#cta" class="text-sm font-semibold px-4 py-2 rounded-lg transition-all duration-200" style="background: linear-gradient(135deg, var(--leaf-mid), var(--leaf-dark)); color: var(--gold-light); border: 1px solid rgba(245,200,66,0.3);" data-i18n="nav_download">Indir</a>
         </div>
 
@@ -1738,10 +1806,11 @@
     <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="closeMobileMenu()"></div>
     <div id="mobile-panel" class="absolute top-16 left-0 right-0 shadow-xl" style="background: rgba(15,27,77,0.95); backdrop-filter: blur(20px); border-bottom: 1px solid var(--glass-border); transform: translateY(-110%);">
       <div class="px-4 py-4 space-y-1">
-        <a href="#features" onclick="closeMobileMenu()" class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors" style="color: var(--sage-light);" data-i18n="nav_features">Özellikler</a>
-        <a href="#how-it-works" onclick="closeMobileMenu()" class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors" style="color: var(--sage-light);" data-i18n="nav_how">Nasıl Çalışır?</a>
-        <a href="#screenshots" onclick="closeMobileMenu()" class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors" style="color: var(--sage-light);" data-i18n="nav_screenshots">Ekran Görüntüleri</a>
-        <a href="#faq" onclick="closeMobileMenu()" class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors" style="color: var(--sage-light);" data-i18n="faq_badge">SSS</a>
+        <a href="#features" onclick="closeMobileMenu()" class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors" style="color: var(--sage-light);" data-i18n="nav_features">Özellikler</a>
+        <a href="#how-it-works" onclick="closeMobileMenu()" class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors" style="color: var(--sage-light);" data-i18n="nav_how">Nasıl Çalışır?</a>
+        <a href="/user-guide/" onclick="closeMobileMenu()" class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors" style="color: var(--sage-light);" data-i18n="nav_user_guide">Kullanım Kılavuzu</a>
+        <a href="#screenshots" onclick="closeMobileMenu()" class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors" style="color: var(--sage-light);" data-i18n="nav_screenshots">Ekran Görüntüleri</a>
+        <a href="#faq" onclick="closeMobileMenu()" class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors" style="color: var(--sage-light);" data-i18n="faq_badge">SSS</a>
         <div class="px-4 pt-2 pb-3">
           <a href="#cta" onclick="closeMobileMenu()" class="flex items-center justify-center w-full py-3 font-semibold rounded-xl transition-all" style="background: linear-gradient(135deg, var(--leaf-mid), var(--leaf-dark)); color: var(--gold-light); border: 1px solid rgba(245,200,66,0.3);" data-i18n="nav_download">İndir</a>
         </div>
@@ -1917,64 +1986,6 @@
     </div>
   </section>
 
-  <!-- How It Works Section -->
-  <section id="how-it-works" class="py-14 sm:py-20 relative z-10" style="background: linear-gradient(to bottom, rgba(15,27,77,0) 0%, rgba(18,30,65,0.6) 50%, rgba(15,27,77,0) 100%);">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-      <!-- Section Header -->
-      <div class="text-center mb-16 reveal">
-        <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full mb-4" style="background: rgba(30,70,140,0.2); border: 1px solid var(--glass-border);">
-          <span class="text-xs font-semibold uppercase tracking-wider" style="color: var(--gold);" data-i18n="how_badge">Nasıl Çalışır?</span>
-        </div>
-        <h2 class="text-3xl sm:text-4xl lg:text-5xl font-black mb-4 tracking-tight heading-reveal" style="color: var(--sage-light);" data-i18n="how_title">3 Adımda Başlayın</h2>
-      </div>
-
-      <!-- Steps -->
-      <div class="flex flex-col md:flex-row items-center justify-center reveal" style="transition-delay: 0.1s;">
-        <!-- Step 1 -->
-        <div class="flex flex-col items-center text-center flex-1 px-6 max-w-xs">
-          <div class="w-20 h-20 rounded-2xl flex items-center justify-center text-4xl mb-4 shadow-sm step-icon-wiggle" style="background: rgba(30,70,140,0.25); border: 1px solid var(--glass-border);">📥</div>
-          <div class="w-9 h-9 rounded-full flex items-center justify-center font-black text-base mb-4 shadow-lg" style="background: var(--leaf-mid); color: var(--forest-deep);">1</div>
-          <h3 class="text-xl font-bold mb-2" style="color: var(--sage-light);" data-i18n="how_step1_title">İndir</h3>
-          <p class="text-sm leading-relaxed" style="color: var(--sage);" data-i18n="how_step1_desc">Uygulamayı iOS veya Android cihazınıza ücretsiz indirin ve hesabınızı oluşturun.</p>
-        </div>
-
-        <!-- Connector -->
-        <div class="hidden md:flex items-center gap-1 py-4">
-          <div class="how-connector"></div>
-          <svg class="w-4 h-4 flex-shrink-0" style="color: var(--gold);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
-        </div>
-        <div class="md:hidden flex items-center gap-1 py-4">
-          <svg class="w-5 h-5 rotate-90" style="color: var(--sage);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-        </div>
-
-        <!-- Step 2 -->
-        <div class="flex flex-col items-center text-center flex-1 px-6 max-w-xs">
-          <div class="w-20 h-20 rounded-2xl flex items-center justify-center text-4xl mb-4 shadow-sm step-icon-wiggle" style="background: rgba(30,70,140,0.25); border: 1px solid var(--glass-border);">🐦</div>
-          <div class="w-9 h-9 rounded-full flex items-center justify-center font-black text-base mb-4 shadow-lg" style="background: var(--leaf-light); color: var(--forest-deep);">2</div>
-          <h3 class="text-xl font-bold mb-2" style="color: var(--sage-light);" data-i18n="how_step2_title">Kuşlarını Ekle</h3>
-          <p class="text-sm leading-relaxed" style="color: var(--sage);" data-i18n="how_step2_desc">Kuşlarınızı, çiftleştirme kayıtlarınızı ve yumurtalarınızı kolayca profile edin.</p>
-        </div>
-
-        <!-- Connector -->
-        <div class="hidden md:flex items-center gap-1 py-4">
-          <div class="how-connector"></div>
-          <svg class="w-4 h-4 flex-shrink-0" style="color: var(--gold);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
-        </div>
-        <div class="md:hidden flex items-center gap-1 py-4">
-          <svg class="w-5 h-5 rotate-90" style="color: var(--sage);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-        </div>
-
-        <!-- Step 3 -->
-        <div class="flex flex-col items-center text-center flex-1 px-6 max-w-xs">
-          <div class="w-20 h-20 rounded-2xl flex items-center justify-center text-4xl mb-4 shadow-sm step-icon-wiggle" style="background: rgba(245,200,66,0.15); border: 1px solid rgba(245,200,66,0.2);">📊</div>
-          <div class="w-9 h-9 rounded-full flex items-center justify-center font-black text-base mb-4 shadow-lg" style="background: var(--gold); color: var(--forest-deep);">3</div>
-          <h3 class="text-xl font-bold mb-2" style="color: var(--sage-light);" data-i18n="how_step3_title">Takip Et & Analiz Et</h3>
-          <p class="text-sm leading-relaxed" style="color: var(--sage);" data-i18n="how_step3_desc">Genetik hesaplamalar, istatistikler ve soy ağacı ile yetiştiriciliğinizi optimize edin.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
   <!-- Features Section -->
   <section id="features" class="py-14 sm:py-20 relative z-10">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -2089,65 +2100,65 @@
           <div class="screenshot-track">
             <!-- First set (10 screenshots) -->
             <div class="screenshot-item-3d">
-              <img src="screenshots/1.png" alt="Ana Sayfa" loading="lazy">
+              <img src="screenshots/1.png" alt="Ana Sayfa" loading="lazy" decoding="async">
             </div>
             <div class="screenshot-item-3d">
-              <img src="screenshots/2.png" alt="Kuş Listesi" loading="lazy">
+              <img src="screenshots/2.png" alt="Kuş Listesi" loading="lazy" decoding="async">
             </div>
             <div class="screenshot-item-3d">
-              <img src="screenshots/6.png" alt="Sağlık Kayıtları" loading="lazy">
+              <img src="screenshots/6.png" alt="Sağlık Kayıtları" loading="lazy" decoding="async">
             </div>
             <div class="screenshot-item-3d">
-              <img src="screenshots/3.png" alt="Üreme Takibi" loading="lazy">
+              <img src="screenshots/3.png" alt="Üreme Takibi" loading="lazy" decoding="async">
             </div>
             <div class="screenshot-item-3d">
-              <img src="screenshots/10.png" alt="Ayarlar" loading="lazy">
+              <img src="screenshots/10.png" alt="Ayarlar" loading="lazy" decoding="async">
             </div>
             <div class="screenshot-item-3d">
-              <img src="screenshots/9.png" alt="Genetik Hesaplayıcı" loading="lazy">
+              <img src="screenshots/9.png" alt="Genetik Hesaplayıcı" loading="lazy" decoding="async">
             </div>
             <div class="screenshot-item-3d">
-              <img src="screenshots/4.png" alt="Yavrular" loading="lazy">
+              <img src="screenshots/4.png" alt="Yavrular" loading="lazy" decoding="async">
             </div>
             <div class="screenshot-item-3d">
-              <img src="screenshots/5.png" alt="Takvim" loading="lazy">
+              <img src="screenshots/5.png" alt="Takvim" loading="lazy" decoding="async">
             </div>
             <div class="screenshot-item-3d">
-              <img src="screenshots/7.png" alt="İstatistikler" loading="lazy">
+              <img src="screenshots/7.png" alt="İstatistikler" loading="lazy" decoding="async">
             </div>
             <div class="screenshot-item-3d">
-              <img src="screenshots/8.png" alt="Soy Ağacı" loading="lazy">
+              <img src="screenshots/8.png" alt="Soy Ağacı" loading="lazy" decoding="async">
             </div>
             <!-- Duplicate for infinite scroll -->
             <div class="screenshot-item-3d">
-              <img src="screenshots/1.png" alt="Ana Sayfa" loading="lazy">
+              <img src="screenshots/1.png" alt="Ana Sayfa" loading="lazy" decoding="async">
             </div>
             <div class="screenshot-item-3d">
-              <img src="screenshots/2.png" alt="Kuş Listesi" loading="lazy">
+              <img src="screenshots/2.png" alt="Kuş Listesi" loading="lazy" decoding="async">
             </div>
             <div class="screenshot-item-3d">
-              <img src="screenshots/6.png" alt="Sağlık Kayıtları" loading="lazy">
+              <img src="screenshots/6.png" alt="Sağlık Kayıtları" loading="lazy" decoding="async">
             </div>
             <div class="screenshot-item-3d">
-              <img src="screenshots/3.png" alt="Üreme Takibi" loading="lazy">
+              <img src="screenshots/3.png" alt="Üreme Takibi" loading="lazy" decoding="async">
             </div>
             <div class="screenshot-item-3d">
-              <img src="screenshots/10.png" alt="Ayarlar" loading="lazy">
+              <img src="screenshots/10.png" alt="Ayarlar" loading="lazy" decoding="async">
             </div>
             <div class="screenshot-item-3d">
-              <img src="screenshots/9.png" alt="Genetik Hesaplayıcı" loading="lazy">
+              <img src="screenshots/9.png" alt="Genetik Hesaplayıcı" loading="lazy" decoding="async">
             </div>
             <div class="screenshot-item-3d">
-              <img src="screenshots/4.png" alt="Yavrular" loading="lazy">
+              <img src="screenshots/4.png" alt="Yavrular" loading="lazy" decoding="async">
             </div>
             <div class="screenshot-item-3d">
-              <img src="screenshots/5.png" alt="Takvim" loading="lazy">
+              <img src="screenshots/5.png" alt="Takvim" loading="lazy" decoding="async">
             </div>
             <div class="screenshot-item-3d">
-              <img src="screenshots/7.png" alt="İstatistikler" loading="lazy">
+              <img src="screenshots/7.png" alt="İstatistikler" loading="lazy" decoding="async">
             </div>
             <div class="screenshot-item-3d">
-              <img src="screenshots/8.png" alt="Soy Ağacı" loading="lazy">
+              <img src="screenshots/8.png" alt="Soy Ağacı" loading="lazy" decoding="async">
             </div>
           </div>
         </div>
@@ -2165,6 +2176,60 @@
         <span class="ss-label-pill premium" data-i18n="ss_label_genealogy">Soy Agaci</span>
         <span class="ss-label-pill premium" data-i18n="ss_label_genetics">Genetik</span>
         <span class="ss-label-pill" data-i18n="ss_label_settings">Ayarlar</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works Section -->
+  <section id="how-it-works" class="py-14 sm:py-20 relative z-10" style="background: linear-gradient(to bottom, rgba(15,27,77,0) 0%, rgba(18,30,65,0.6) 50%, rgba(15,27,77,0) 100%);">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-16 reveal">
+        <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full mb-4" style="background: rgba(30,70,140,0.2); border: 1px solid var(--glass-border);">
+          <span class="text-xs font-semibold uppercase tracking-wider" style="color: var(--gold); letter-spacing: 0.1em;" data-i18n="how_badge">Nasıl Çalışır?</span>
+        </div>
+        <h2 class="text-3xl sm:text-4xl lg:text-5xl font-black mb-4 tracking-tight heading-reveal" style="color: var(--sage-light);" data-i18n="how_title">3 Adımda Başlayın</h2>
+      </div>
+
+      <div class="flex flex-col md:flex-row items-center justify-center reveal" style="transition-delay: 0.1s;">
+        <!-- Step 1 -->
+        <div class="flex flex-col items-center text-center flex-1 px-6 max-w-xs">
+          <div class="w-20 h-20 rounded-2xl flex items-center justify-center text-4xl mb-4 shadow-sm step-icon-wiggle" style="background: rgba(30,70,140,0.25); border: 1px solid var(--glass-border);">📥</div>
+          <div class="w-9 h-9 rounded-full flex items-center justify-center font-black text-base mb-4 shadow-lg" style="background: var(--leaf-mid); color: var(--forest-deep);">1</div>
+          <h3 class="text-xl font-bold mb-2" style="color: var(--sage-light);" data-i18n="how_step1_title">İndir</h3>
+          <p class="text-sm leading-relaxed" style="color: var(--sage);" data-i18n="how_step1_desc">Uygulamayı iOS veya Android cihazınıza ücretsiz indirin ve hesabınızı oluşturun.</p>
+        </div>
+
+        <div class="hidden md:flex items-center gap-1 py-4">
+          <div class="how-connector"></div>
+          <svg class="w-4 h-4 flex-shrink-0" style="color: var(--gold);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+        </div>
+        <div class="md:hidden flex items-center gap-1 py-4">
+          <svg class="w-5 h-5 rotate-90" style="color: var(--sage);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="flex flex-col items-center text-center flex-1 px-6 max-w-xs">
+          <div class="w-20 h-20 rounded-2xl flex items-center justify-center text-4xl mb-4 shadow-sm step-icon-wiggle" style="background: rgba(30,70,140,0.25); border: 1px solid var(--glass-border);">🐦</div>
+          <div class="w-9 h-9 rounded-full flex items-center justify-center font-black text-base mb-4 shadow-lg" style="background: var(--leaf-light); color: var(--forest-deep);">2</div>
+          <h3 class="text-xl font-bold mb-2" style="color: var(--sage-light);" data-i18n="how_step2_title">Kuşlarını Ekle</h3>
+          <p class="text-sm leading-relaxed" style="color: var(--sage);" data-i18n="how_step2_desc">Kuşlarınızı, çiftleştirme kayıtlarınızı ve yumurtalarınızı kolayca profile edin.</p>
+        </div>
+
+        <div class="hidden md:flex items-center gap-1 py-4">
+          <div class="how-connector"></div>
+          <svg class="w-4 h-4 flex-shrink-0" style="color: var(--gold);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+        </div>
+        <div class="md:hidden flex items-center gap-1 py-4">
+          <svg class="w-5 h-5 rotate-90" style="color: var(--sage);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="flex flex-col items-center text-center flex-1 px-6 max-w-xs">
+          <div class="w-20 h-20 rounded-2xl flex items-center justify-center text-4xl mb-4 shadow-sm step-icon-wiggle" style="background: rgba(245,200,66,0.15); border: 1px solid rgba(245,200,66,0.2);">📊</div>
+          <div class="w-9 h-9 rounded-full flex items-center justify-center font-black text-base mb-4 shadow-lg" style="background: var(--gold); color: var(--forest-deep);">3</div>
+          <h3 class="text-xl font-bold mb-2" style="color: var(--sage-light);" data-i18n="how_step3_title">Takip Et & Analiz Et</h3>
+          <p class="text-sm leading-relaxed" style="color: var(--sage);" data-i18n="how_step3_desc">Genetik hesaplamalar, istatistikler ve soy ağacı ile yetiştiriciliğinizi optimize edin.</p>
+        </div>
       </div>
     </div>
   </section>
@@ -2253,34 +2318,26 @@
           </div>
         </div>
       </div>
-    </div>
-  </section>
 
-  <!-- Stats Section -->
-  <section class="py-16 sm:py-20 stats-forest relative overflow-hidden">
-    <!-- Background decoration -->
-    <div class="absolute inset-0 opacity-10">
-      <div class="absolute top-0 left-1/4 w-64 h-64 bg-emerald-400 rounded-full blur-3xl"></div>
-      <div class="absolute bottom-0 right-1/4 w-48 h-48 bg-yellow-400 rounded-full blur-3xl opacity-60"></div>
-    </div>
-
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-8 sm:gap-12 text-center">
-        <div class="stat-item stat-item-enhanced reveal">
-          <div class="text-3xl sm:text-5xl font-black text-white mb-2 stat-number" data-stat="19">19+</div>
-          <div class="text-primary-200 text-sm font-medium" data-i18n="stat_1">Veri Kategorisi</div>
-        </div>
-        <div class="stat-item stat-item-enhanced reveal" style="transition-delay: 0.1s;">
-          <div class="text-3xl sm:text-5xl font-black text-white mb-2 stat-number" data-stat="3">3</div>
-          <div class="text-primary-200 text-sm font-medium" data-i18n="stat_2">Dil Destegi</div>
-        </div>
-        <div class="stat-item stat-item-enhanced reveal" style="transition-delay: 0.2s;">
-          <div class="text-3xl sm:text-5xl font-black text-white mb-2 stat-number">100%</div>
-          <div class="text-primary-200 text-sm font-medium" data-i18n="stat_3">Offline Calisma</div>
-        </div>
-        <div class="stat-item stat-item-enhanced reveal" style="transition-delay: 0.3s;">
-          <div class="text-3xl sm:text-5xl font-black text-white mb-2 stat-number">256-bit</div>
-          <div class="text-primary-200 text-sm font-medium" data-i18n="stat_4">AES Sifreleme</div>
+      <!-- Integrated Stats Grid -->
+      <div class="mt-16 pt-12 reveal" style="border-top: 1px solid var(--glass-border);">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-8 sm:gap-12 text-center">
+          <div class="stat-item stat-item-enhanced">
+            <div class="text-3xl sm:text-5xl font-black text-white mb-2 stat-number" data-stat="19">19+</div>
+            <div class="text-sm font-medium" style="color: var(--gold); opacity: 0.75;" data-i18n="stat_1">Veri Kategorisi</div>
+          </div>
+          <div class="stat-item stat-item-enhanced">
+            <div class="text-3xl sm:text-5xl font-black text-white mb-2 stat-number" data-stat="3">3</div>
+            <div class="text-sm font-medium" style="color: var(--gold); opacity: 0.75;" data-i18n="stat_2">Dil Destegi</div>
+          </div>
+          <div class="stat-item stat-item-enhanced">
+            <div class="text-3xl sm:text-5xl font-black text-white mb-2 stat-number">100%</div>
+            <div class="text-sm font-medium" style="color: var(--gold); opacity: 0.75;" data-i18n="stat_3">Offline Calisma</div>
+          </div>
+          <div class="stat-item stat-item-enhanced">
+            <div class="text-3xl sm:text-5xl font-black text-white mb-2 stat-number">256-bit</div>
+            <div class="text-sm font-medium" style="color: var(--gold); opacity: 0.75;" data-i18n="stat_4">AES Sifreleme</div>
+          </div>
         </div>
       </div>
     </div>
@@ -2289,18 +2346,14 @@
   <!-- FAQ Section -->
   <section id="faq" class="py-14 sm:py-20 relative z-10">
     <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-      <!-- Section Header -->
       <div class="text-center mb-12 reveal">
         <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full mb-4" style="background: rgba(30,70,140,0.2); border: 1px solid var(--glass-border);">
-          <span class="text-xs font-semibold uppercase tracking-wider" style="color: var(--gold);" data-i18n="faq_badge">SSS</span>
+          <span class="text-xs font-semibold uppercase tracking-wider" style="color: var(--gold); letter-spacing: 0.1em;" data-i18n="faq_badge">SSS</span>
         </div>
         <h2 class="text-3xl sm:text-4xl font-black mb-4 tracking-tight heading-reveal" style="color: var(--sage-light);" data-i18n="faq_title">Sık Sorulan Sorular</h2>
       </div>
 
-      <!-- FAQ Items -->
       <div class="reveal" style="transition-delay: 0.1s; border-top: 1px solid var(--glass-border);">
-
-        <!-- Q1 -->
         <div class="faq-item faq-item-enhanced py-5">
           <button class="faq-question flex items-center justify-between w-full text-left gap-4 py-1" onclick="toggleFaq(this)">
             <span class="font-semibold" style="color: var(--sage-light);" data-i18n="faq_q1">Uygulama ücretsiz mi?</span>
@@ -2311,72 +2364,65 @@
           </div>
         </div>
 
-        <!-- Q2 -->
         <div class="faq-item faq-item-enhanced py-5">
           <button class="faq-question flex items-center justify-between w-full text-left gap-4 py-1" onclick="toggleFaq(this)">
             <span class="font-semibold" style="color: var(--sage-light);" data-i18n="faq_q2">Verilerim güvende mi?</span>
             <svg class="faq-icon w-5 h-5 flex-shrink-0" style="color: var(--sage);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
           </button>
           <div class="faq-answer">
-            <p class="pt-3 pb-1 text-sm leading-relaxed" style="color: var(--sage);" data-i18n="faq_a2">Evet. Verileriniz AES-256 şifreleme ile korunur ve yalnızca sizin hesabınızla erişilebilir. Yedeklemeler de şifreli olarak saklanır.</p>
+            <p class="pt-3 pb-1 text-sm leading-relaxed" style="color: var(--sage);" data-i18n="faq_a2">Evet. Verileriniz AES-256 şifreleme ile korunur ve yalnızca sizin hesabınızla erişilebilir.</p>
           </div>
         </div>
 
-        <!-- Q3 -->
         <div class="faq-item faq-item-enhanced py-5">
           <button class="faq-question flex items-center justify-between w-full text-left gap-4 py-1" onclick="toggleFaq(this)">
             <span class="font-semibold" style="color: var(--sage-light);" data-i18n="faq_q3">Offline çalışıyor mu?</span>
             <svg class="faq-icon w-5 h-5 flex-shrink-0" style="color: var(--sage);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
           </button>
           <div class="faq-answer">
-            <p class="pt-3 pb-1 text-sm leading-relaxed" style="color: var(--sage);" data-i18n="faq_a3">Evet! Uygulama offline-first mimarisine sahiptir. İnternet olmadan tüm özelliklerden yararlanabilir, bağlantı geldiğinde verileriniz otomatik senkronize edilir.</p>
+            <p class="pt-3 pb-1 text-sm leading-relaxed" style="color: var(--sage);" data-i18n="faq_a3">Evet! Uygulama offline-first mimarisine sahiptir. İnternet olmadan tüm özelliklerden yararlanabilirsiniz.</p>
           </div>
         </div>
 
-        <!-- Q4 -->
         <div class="faq-item faq-item-enhanced py-5">
           <button class="faq-question flex items-center justify-between w-full text-left gap-4 py-1" onclick="toggleFaq(this)">
             <span class="font-semibold" style="color: var(--sage-light);" data-i18n="faq_q4">Kaç kuş kaydedebilirim?</span>
             <svg class="faq-icon w-5 h-5 flex-shrink-0" style="color: var(--sage);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
           </button>
           <div class="faq-answer">
-            <p class="pt-3 pb-1 text-sm leading-relaxed" style="color: var(--sage);" data-i18n="faq_a4">Ücretsiz planda 15 kuş ve 5 çiftleştirme çifti ekleyebilirsiniz. Premium'a geçerek bu limitleri kaldırabilir, sınırsız kayıt yapabilirsiniz. Her kuş için 10 adede kadar fotoğraf yüklenebilir.</p>
+            <p class="pt-3 pb-1 text-sm leading-relaxed" style="color: var(--sage);" data-i18n="faq_a4">Ücretsiz planda 15 kuş ve 5 çiftleştirme çifti ekleyebilirsiniz. Premium ile sınırsız kayıt yapabilirsiniz.</p>
           </div>
         </div>
 
-        <!-- Q5 -->
         <div class="faq-item faq-item-enhanced py-5">
           <button class="faq-question flex items-center justify-between w-full text-left gap-4 py-1" onclick="toggleFaq(this)">
             <span class="font-semibold" style="color: var(--sage-light);" data-i18n="faq_q5">Hangi platformlarda çalışıyor?</span>
             <svg class="faq-icon w-5 h-5 flex-shrink-0" style="color: var(--sage);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
           </button>
           <div class="faq-answer">
-            <p class="pt-3 pb-1 text-sm leading-relaxed" style="color: var(--sage);" data-i18n="faq_a5">BudgieBreedingTracker hem iOS (iPhone/iPad) hem de Android cihazlarda çalışır. Yakında App Store ve Google Play'de yayınlanacaktır.</p>
+            <p class="pt-3 pb-1 text-sm leading-relaxed" style="color: var(--sage);" data-i18n="faq_a5">BudgieBreedingTracker hem iOS hem de Android cihazlarda çalışır.</p>
           </div>
         </div>
 
-        <!-- Q6 -->
         <div class="faq-item faq-item-enhanced py-5">
           <button class="faq-question flex items-center justify-between w-full text-left gap-4 py-1" onclick="toggleFaq(this)">
-            <span class="font-semibold" style="color: var(--sage-light);" data-i18n="faq_q6">Genetik hesaplayici nasil calisiyor?</span>
+            <span class="font-semibold" style="color: var(--sage-light);" data-i18n="faq_q6">Genetik hesaplayıcı nasıl çalışıyor?</span>
             <svg class="faq-icon w-5 h-5 flex-shrink-0" style="color: var(--sage);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
           </button>
           <div class="faq-answer">
-            <p class="pt-3 pb-1 text-sm leading-relaxed" style="color: var(--sage);" data-i18n="faq_a6">Anne ve baba kusun mutasyonlarini secin, uygulama Punnett karesi ile olasi yavru renk ve genotiplerini hesaplasin. Sonuclari kaydedebilir ve gecmis hesaplamalari goruntuleyebilirsiniz.</p>
+            <p class="pt-3 pb-1 text-sm leading-relaxed" style="color: var(--sage);" data-i18n="faq_a6">Anne ve baba kuşun mutasyonlarını seçin, uygulama Punnett karesi ile olası yavru renk ve genotiplerini hesaplasın.</p>
           </div>
         </div>
 
-        <!-- Q7 -->
         <div class="faq-item py-5" style="border-bottom: none;">
           <button class="faq-question flex items-center justify-between w-full text-left gap-4 py-1" onclick="toggleFaq(this)">
-            <span class="font-semibold" style="color: var(--sage-light);" data-i18n="faq_q7">Verilerimi baska cihaza aktarabilir miyim?</span>
+            <span class="font-semibold" style="color: var(--sage-light);" data-i18n="faq_q7">Verilerimi başka cihaza aktarabilir miyim?</span>
             <svg class="faq-icon w-5 h-5 flex-shrink-0" style="color: var(--sage);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
           </button>
           <div class="faq-answer">
-            <p class="pt-3 pb-1 text-sm leading-relaxed" style="color: var(--sage);" data-i18n="faq_a7">Evet! Ayni hesapla giris yaptiginizda verileriniz otomatik senkronize edilir. Ayrica sifreli yedekleme dosyasi olusturup baska cihazda geri yukleyebilirsiniz. PDF ve Excel olarak da disa aktarim yapabilirsiniz.</p>
+            <p class="pt-3 pb-1 text-sm leading-relaxed" style="color: var(--sage);" data-i18n="faq_a7">Evet! Aynı hesapla giriş yaptığınızda verileriniz otomatik senkronize edilir. Şifreli yedekleme de oluşturabilirsiniz.</p>
           </div>
         </div>
-
       </div>
     </div>
   </section>
@@ -2427,7 +2473,7 @@
         </a>
       </div>
 
-      <p class="text-sm mt-6 reveal" style="color: var(--sage); opacity: 0.7; transition-delay: 0.3s;" data-i18n="cta_note">Yakinda tum platformlarda</p>
+      <p class="text-sm mt-6 reveal animate-pulse-soft" style="color: var(--gold); opacity: 0.7; transition-delay: 0.3s;" data-i18n="cta_note">Yakinda tum platformlarda</p>
 
       <!-- Email Signup -->
       <div class="mt-10 reveal" style="transition-delay: 0.45s;">
@@ -2438,8 +2484,8 @@
             type="email"
             id="email-input"
             name="email"
-            class="flex-1 px-4 py-3 rounded-xl transition-all text-sm focus:outline-none"
-            style="background: rgba(20,50,100,0.4); border: 1px solid var(--glass-border); color: var(--sage-light);"
+            class="flex-1 px-4 py-3 rounded-xl transition-all text-sm email-input-glow"
+            style="background: rgba(20,50,100,0.4); border: 1px solid var(--glass-border); color: var(--sage-light); outline: none;"
             data-i18n-placeholder="cta_email_placeholder"
             placeholder="e-posta@adresiniz.com"
             required
@@ -2485,13 +2531,13 @@
               </a>
             </div>
             <div class="flex items-center gap-3 justify-center md:justify-end">
-              <a href="https://github.com/BekirEfeoglu/BudgieBreedingTracker" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" title="GitHub" aria-label="GitHub">
+              <a href="https://github.com/BekirEfeoglu/BudgieBreedingTracker" target="_blank" rel="noopener noreferrer" class="social-icon inline-flex items-center gap-1.5" style="color: var(--sage);" title="GitHub" aria-label="GitHub">
                 <svg class="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
               </a>
-              <a href="https://www.facebook.com/BudgieBreedingTracker/" target="_blank" rel="noopener noreferrer" class="inline-flex items-center transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" title="Facebook" aria-label="Facebook">
+              <a href="https://www.facebook.com/BudgieBreedingTracker/" target="_blank" rel="noopener noreferrer" class="social-icon inline-flex items-center" style="color: var(--sage);" title="Facebook" aria-label="Facebook">
                 <svg class="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
               </a>
-              <a href="https://www.instagram.com/budgiebreedingtrackerr/" target="_blank" rel="noopener noreferrer" class="inline-flex items-center transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" title="Instagram" aria-label="Instagram">
+              <a href="https://www.instagram.com/budgiebreedingtrackerr/" target="_blank" rel="noopener noreferrer" class="social-icon inline-flex items-center" style="color: var(--sage);" title="Instagram" aria-label="Instagram">
                 <svg class="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
               </a>
             </div>
@@ -2594,6 +2640,7 @@
         footer_made: 'Yetiştiriciler tarafından, yetiştiriciler için yapıldı ❤️',
         footer_contact_title: 'İletişim',
         nav_how: 'Nasıl Çalışır?',
+        nav_user_guide: 'Kullanım Kılavuzu',
         how_badge: 'Nasıl Çalışır?',
         how_title: '3 Adımda Başlayın',
         how_step1_title: 'İndir',
@@ -2742,6 +2789,7 @@
         footer_made: 'Made by breeders, for breeders ❤️',
         footer_contact_title: 'Contact',
         nav_how: 'How It Works',
+        nav_user_guide: 'User Guide',
         how_badge: 'How It Works',
         how_title: 'Get Started in 3 Steps',
         how_step1_title: 'Download',
@@ -2890,6 +2938,7 @@
         footer_made: 'Von Züchtern für Züchter gemacht ❤️',
         footer_contact_title: 'Kontakt',
         nav_how: 'Wie es funktioniert',
+        nav_user_guide: 'Benutzerhandbuch',
         how_badge: 'Wie es funktioniert',
         how_title: 'In 3 Schritten starten',
         how_step1_title: 'Herunterladen',
