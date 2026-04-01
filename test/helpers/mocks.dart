@@ -3,7 +3,9 @@ import 'package:mocktail/mocktail.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:budgie_breeding_tracker/data/local/database/app_database.dart';
+import 'package:budgie_breeding_tracker/data/local/database/daos/birds_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/clutches_dao.dart';
+import 'package:budgie_breeding_tracker/data/local/database/daos/conflict_history_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/eggs_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/genetics_history_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/incubations_dao.dart';
@@ -24,10 +26,12 @@ import 'package:budgie_breeding_tracker/data/repositories/notification_repositor
 import 'package:budgie_breeding_tracker/data/repositories/notification_schedule_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/photo_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/profile_repository.dart';
+import 'package:budgie_breeding_tracker/data/repositories/community_post_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/sync_metadata_repository.dart';
 import 'package:budgie_breeding_tracker/domain/services/ads/ad_service.dart';
 import 'package:budgie_breeding_tracker/domain/services/auth/two_factor_service.dart';
 import 'package:budgie_breeding_tracker/domain/services/backup/backup_service.dart';
+import 'package:budgie_breeding_tracker/domain/services/encryption/encryption_service.dart';
 import 'package:budgie_breeding_tracker/domain/services/calendar/calendar_event_generator.dart';
 import 'package:budgie_breeding_tracker/domain/services/export/excel_export_service.dart';
 import 'package:budgie_breeding_tracker/domain/services/export/pdf_export_service.dart';
@@ -78,6 +82,9 @@ class MockEventReminderRepository extends Mock
 class MockGrowthMeasurementRepository extends Mock
     implements GrowthMeasurementRepository {}
 
+class MockCommunityPostRepository extends Mock
+    implements CommunityPostRepository {}
+
 class MockSyncMetadataRepository extends Mock
     implements SyncMetadataRepository {}
 
@@ -92,6 +99,10 @@ class MockEggsDao extends Mock implements EggsDao {}
 class MockClutchesDao extends Mock implements ClutchesDao {}
 
 class MockIncubationsDao extends Mock implements IncubationsDao {}
+
+class MockBirdsDao extends Mock implements BirdsDao {}
+
+class MockConflictHistoryDao extends Mock implements ConflictHistoryDao {}
 
 // ── Services ──
 
@@ -121,6 +132,8 @@ class MockExcelExportService extends Mock implements ExcelExportService {}
 class MockMendelianCalculator extends Mock implements MendelianCalculator {}
 
 class MockBackupService extends Mock implements BackupService {}
+
+class MockEncryptionService extends Mock implements EncryptionService {}
 
 class MockCalendarEventGenerator extends Mock
     implements CalendarEventGenerator {}

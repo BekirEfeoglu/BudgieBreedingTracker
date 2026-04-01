@@ -101,19 +101,19 @@ def main():
     track(check("Mapper sayisi", extract_first_number(stats.get("Drift tables / DAOs / Mappers", "0")), actual["mappers"]))
 
     print(section("Remote Sources & Repositories"))
-    track(check("Entity repository sayisi", extract_first_number(stats.get("Repositories", "0")), actual["repos"], tolerance=tol(1)))
-    track(check("Entity remote source sayisi", extract_first_number(stats.get("Remote sources", "0")), actual["remotes"], tolerance=tol(1)))
+    track(check("Entity repository sayisi", extract_first_number(stats.get("Repositories", "0")), actual["repos"]))
+    track(check("Entity remote source sayisi", extract_first_number(stats.get("Remote sources", "0")), actual["remotes"]))
 
     print(section("Feature Modules & Domain Services"))
     track(check("Feature modul sayisi", extract_first_number(stats.get("Feature modules", "0")), actual["features"]))
     track(check("Domain service dizin sayisi", extract_first_number(stats.get("Domain services", "0")), actual["services"]))
 
     print(section("SVG Icons"))
-    track(check("AppIcons sabit sayisi", extract_first_number(stats.get("Custom SVG icons", "0")), actual["icons"], tolerance=tol(3)))
-    track(check("SVG dosya sayisi", extract_first_number(stats.get("Custom SVG icons", "0")), actual["svg_files"], tolerance=tol(3)))
+    track(check("AppIcons sabit sayisi", extract_first_number(stats.get("Custom SVG icons", "0")), actual["icons"], tolerance=tol(1)))
+    track(check("SVG dosya sayisi", extract_first_number(stats.get("Custom SVG icons", "0")), actual["svg_files"], tolerance=tol(1)))
 
     print(section("Router"))
-    track(check("Route sabiti sayisi", extract_first_number(stats.get("Routes", "0")), actual["routes"], tolerance=tol(2)))
+    track(check("Route sabiti sayisi", extract_first_number(stats.get("Routes", "0")), actual["routes"]))
 
     print(section("Database"))
     track(check("Schema version", extract_first_number(stats.get("DB schema version", "0")), actual["schema"]))
@@ -122,31 +122,32 @@ def main():
     expected_keys = extract_first_number(stats.get("L10n keys", "0"))
     en_keys = count_json_leaf_keys(ASSETS / "translations" / "en.json")
     de_keys = count_json_leaf_keys(ASSETS / "translations" / "de.json")
-    track(check("TR ceviri anahtar sayisi", expected_keys, actual["tr_keys"], tolerance=tol(50)))
-    track(check("EN ceviri anahtar sayisi", expected_keys, en_keys, tolerance=tol(50)))
-    track(check("DE ceviri anahtar sayisi", expected_keys, de_keys, tolerance=tol(50)))
-    track(check("TR-EN anahtar farki (0 olmali)", 0, abs(actual["tr_keys"] - en_keys), tolerance=tol(5)))
-    track(check("TR-DE anahtar farki (0 olmali)", 0, abs(actual["tr_keys"] - de_keys), tolerance=tol(5)))
+    track(check("TR ceviri anahtar sayisi", expected_keys, actual["tr_keys"], tolerance=tol(20)))
+    track(check("EN ceviri anahtar sayisi", expected_keys, en_keys, tolerance=tol(20)))
+    track(check("DE ceviri anahtar sayisi", expected_keys, de_keys, tolerance=tol(20)))
+    track(check("TR-EN anahtar farki (0 olmali)", 0, abs(actual["tr_keys"] - en_keys)))
+    track(check("TR-DE anahtar farki (0 olmali)", 0, abs(actual["tr_keys"] - de_keys)))
 
     print(section("Supabase Constants"))
-    track(check("Supabase sabit sayisi", extract_first_number(stats.get("Supabase constants", "0")), actual["supa"], tolerance=tol(3)))
+    track(check("Supabase sabit sayisi", extract_first_number(stats.get("Supabase constants", "0")), actual["supa"], tolerance=tol(1)))
 
     print(section("Shared Widgets"))
-    track(check("Toplam widget sayisi", extract_first_number(stats.get("Shared widgets", "0")), actual["widgets_total"], tolerance=tol(2)))
+    track(check("Toplam widget sayisi", extract_first_number(stats.get("Shared widgets", "0")), actual["widgets_total"]))
 
     print(section("Test Suite"))
-    track(check("Test dosya sayisi", extract_first_number(stats.get("Test files (test/)", "0")), actual["test_files"], tolerance=tol(20)))
+    track(check("Test dosya sayisi", extract_first_number(stats.get("Test files (test/)", "0")), actual["test_files"], tolerance=tol(10)))
     test_stat = stats.get("Test files (test/)", "0")
     individual_match = re.search(r"([\d,]+)\+?\s*individual", test_stat)
     expected_individual = int(individual_match.group(1).replace(",", "")) if individual_match else 0
-    track(check("Bireysel test sayisi", expected_individual, actual["individual_tests"], tolerance=tol(200)))
-    track(check("Kaynak dosya sayisi (lib/)", extract_first_number(stats.get("Source files (lib/)", "0")), actual["source_files"], tolerance=tol(20)))
+    track(check("Bireysel test sayisi", expected_individual, actual["individual_tests"], tolerance=tol(100)))
+    track(check("Kaynak dosya sayisi (lib/)", extract_first_number(stats.get("Source files (lib/)", "0")), actual["source_files"], tolerance=tol(10)))
 
     print(section("Inline Drift"))
     inline_targets = [CLAUDE_MD]
-    rules_claude = ROOT / ".claude" / "rules" / "CLAUDE.md"
-    if rules_claude.exists():
-        inline_targets.append(rules_claude)
+    rules_dir = ROOT / ".claude" / "rules"
+    if rules_dir.exists():
+        for rule_file in sorted(rules_dir.glob("*.md")):
+            inline_targets.append(rule_file)
 
     from _rules_fixers import _file_label
     inline_drift = 0

@@ -203,7 +203,9 @@ void main() {
       verifyNever(() => mockAuth.signOutAllSessions());
     });
 
-    testWidgets('shows error snackbar when signOut fails', (tester) async {
+    testWidgets('continues to login when signOut fails (best-effort)', (
+      tester,
+    ) async {
       stubAllSuccess();
       when(() => mockAuth.signOutAllSessions())
           .thenThrow(Exception('signout error'));
@@ -212,7 +214,13 @@ void main() {
       await tester.tap(find.text('trigger-delete'));
       await tester.pumpAndSettle();
 
-      expect(find.text('settings.delete_account_error'), findsOneWidget);
+      // signOut is best-effort (auth user may already be deleted server-side)
+      // so the flow still navigates to login with success snackbar
+      expect(find.text('login-screen'), findsOneWidget);
+      expect(
+        find.text('settings.delete_account_requested'),
+        findsOneWidget,
+      );
     });
 
     testWidgets('all best-effort steps fail but local cleanup still works', (

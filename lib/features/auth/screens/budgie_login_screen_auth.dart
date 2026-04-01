@@ -74,43 +74,39 @@ abstract class _BudgieLoginAuthBase extends ConsumerState<BudgieLoginScreen>
       Future.delayed(const Duration(milliseconds: 1200), () async {
         if (!mounted) return;
 
-        // Check if user has 2FA enrolled and needs verification
-        try {
-          final twoFactorService = ref.read(twoFactorServiceProvider);
-          final needs2FA = await twoFactorService.needsVerification();
-          if (!mounted) return;
-
-          if (needs2FA) {
-            final factors = await twoFactorService.getFactors();
-            if (factors.isNotEmpty && mounted) {
-              ref.read(pendingMfaFactorIdProvider.notifier).state =
-                  factors.first.id;
-              context.go(
-                '${AppRoutes.twoFactorVerify}?factorId=${factors.first.id}',
-              );
-              return;
-            }
-          }
-        } catch (e, st) {
-          AppLogger.error(
-            '[Login] 2FA check failed, signing out for security',
-            e,
-            st,
-          );
-          Sentry.captureException(e, stackTrace: st);
-          if (!mounted) return;
-          try {
-            await ref.read(authActionsProvider).signOut();
-          } catch (signOutError) {
-            AppLogger.debug('[Login] Sign-out after 2FA failure also failed: $signOutError');
-          }
-          if (!mounted) return;
-          _showError('auth.error_2fa_check_failed'.tr());
-          return;
-        }
-
+        final checker = PostLoginMfaChecker(
+          twoFactorService: ref.read(twoFactorServiceProvider),
+          authActions: ref.read(authActionsProvider),
+        );
+        final result = await checker.check();
         if (!mounted) return;
-        context.go(AppRoutes.home);
+
+        switch (result) {
+          case MfaVerificationNeeded(:final factorId):
+            ref.read(pendingMfaFactorIdProvider.notifier).state = factorId;
+            context.go(
+              '${AppRoutes.twoFactorVerify}?factorId=$factorId',
+            );
+            return;
+          case MfaCheckFailed(:final didSignOut):
+            setState(() {
+              _loginState = LoginState.idle;
+              _isPeeking = false;
+            });
+            if (!didSignOut) {
+              // Sign-out failed during MFA check — retry to avoid
+              // leaving the user in a half-authenticated state.
+              try {
+                await ref.read(authActionsProvider).signOut();
+              } catch (e) {
+                AppLogger.debug('[Login] Retry sign-out also failed: $e');
+              }
+            }
+            if (!mounted) return;
+            _showError('auth.error_2fa_check_failed'.tr());
+          case MfaNotRequired():
+            context.go(AppRoutes.home);
+        }
       });
     } on AuthException catch (e) {
       AppLogger.error(

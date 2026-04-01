@@ -52,9 +52,13 @@ jobs:
         run: dart run build_runner build --delete-conflicting-outputs
 
       - name: Run tests
+        # --no-test-assets: Skips copying assets/ to the test runner. Safe because
+        # tests use TestAssetLoader (keys-as-strings) not real translation files.
+        # If a test needs real assets, tag it and exclude here.
         run: |
           flutter test \
             --exclude-tags "golden || e2e" \
+            --no-test-assets \
             --coverage \
             --dart-define=SUPABASE_URL=https://placeholder.supabase.co \
             --dart-define=SUPABASE_ANON_KEY=placeholder_key

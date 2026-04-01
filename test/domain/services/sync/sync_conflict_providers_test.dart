@@ -4,8 +4,12 @@ import 'package:mocktail/mocktail.dart';
 
 import 'package:budgie_breeding_tracker/data/local/database/dao_providers.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/conflict_history_dao.dart';
+import 'package:budgie_breeding_tracker/data/models/conflict_history_model.dart';
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/sync/sync_conflict_providers.dart';
+import 'package:budgie_breeding_tracker/core/enums/sync_enums.dart';
+
+import '../../../helpers/test_helpers.dart';
 
 class MockConflictHistoryDao extends Mock implements ConflictHistoryDao {}
 
@@ -37,47 +41,34 @@ void main() {
   group('persistedConflictCountProvider', () {
     test('returns 0 for anonymous user', () async {
       final container = ProviderContainer(
-        overrides: [
-          conflictHistoryDaoProvider.overrideWithValue(mockDao),
-        ],
+        overrides: [conflictHistoryDaoProvider.overrideWithValue(mockDao)],
       );
       addTearDown(container.dispose);
 
       container.listen(persistedConflictCountProvider('anonymous'), (_, __) {});
-      final value = await container
-          .read(persistedConflictCountProvider('anonymous').future);
+      final value = await container.read(
+        persistedConflictCountProvider('anonymous').future,
+      );
 
       expect(value, 0);
       // DAO should never be called for anonymous
-      verifyNever(
-        () => mockDao.watchRecentCount(
-          any(),
-          any(),
-        ),
-      );
+      verifyNever(() => mockDao.watchRecentCount(any(), any()));
     });
 
     test('delegates to DAO for real user', () async {
       when(
-        () => mockDao.watchRecentCount(
-          any(),
-          any(),
-        ),
+        () => mockDao.watchRecentCount(any(), any()),
       ).thenAnswer((_) => Stream.value(5));
 
       final container = ProviderContainer(
-        overrides: [
-          conflictHistoryDaoProvider.overrideWithValue(mockDao),
-        ],
+        overrides: [conflictHistoryDaoProvider.overrideWithValue(mockDao)],
       );
       addTearDown(container.dispose);
 
-      container.listen(
-        persistedConflictCountProvider('user-1'),
-        (_, __) {},
+      container.listen(persistedConflictCountProvider('user-1'), (_, __) {});
+      final value = await container.read(
+        persistedConflictCountProvider('user-1').future,
       );
-      final value = await container
-          .read(persistedConflictCountProvider('user-1').future);
 
       expect(value, 5);
       verify(
@@ -99,6 +90,95 @@ void main() {
       final state = container.read(conflictHistoryProvider);
 
       expect(state, isEmpty);
+    });
+
+    test(
+      'restores persisted conflicts from DAO for authenticated user',
+      () async {
+        when(() => mockDao.watchAll('user-1')).thenAnswer(
+          (_) => Stream.value([
+            ConflictHistory(
+              id: 'c1',
+              userId: 'user-1',
+              tableName: 'birds',
+              recordId: 'b1',
+              description: 'server wins',
+              conflictType: ConflictType.serverWins,
+              createdAt: DateTime(2025, 1, 2),
+            ),
+            ConflictHistory(
+              id: 'c2',
+              userId: 'user-1',
+              tableName: 'eggs',
+              recordId: 'e1',
+              description: 'client wins',
+              conflictType: ConflictType.localOverwritten,
+              createdAt: DateTime(2025, 1, 3),
+            ),
+          ]),
+        );
+
+        final container = ProviderContainer(
+          overrides: [
+            currentUserIdProvider.overrideWithValue('user-1'),
+            conflictHistoryDaoProvider.overrideWithValue(mockDao),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        expect(container.read(conflictHistoryProvider), isEmpty);
+
+        await waitUntil(
+          () => container.read(conflictHistoryProvider).length == 2,
+          maxAttempts: 120,
+          interval: const Duration(milliseconds: 5),
+        );
+
+        final state = container.read(conflictHistoryProvider);
+        expect(state, hasLength(2));
+        expect(state[0].table, 'birds');
+        expect(state[0].recordId, 'b1');
+        expect(state[0].description, 'server wins');
+        expect(state[0].detectedAt, DateTime(2025, 1, 2));
+        expect(state[1].table, 'eggs');
+        expect(state[1].recordId, 'e1');
+        verify(() => mockDao.watchAll('user-1')).called(1);
+      },
+    );
+
+    test('does not restore from DAO for anonymous user', () async {
+      final container = ProviderContainer(
+        overrides: [
+          currentUserIdProvider.overrideWithValue('anonymous'),
+          conflictHistoryDaoProvider.overrideWithValue(mockDao),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      expect(container.read(conflictHistoryProvider), isEmpty);
+      await Future<void>.delayed(Duration.zero);
+
+      verifyNever(() => mockDao.watchAll(any()));
+    });
+
+    test('swallows DAO restore errors and keeps empty state', () async {
+      when(() => mockDao.watchAll('user-1')).thenAnswer(
+        (_) => Stream<List<ConflictHistory>>.error(StateError('db failed')),
+      );
+
+      final container = ProviderContainer(
+        overrides: [
+          currentUserIdProvider.overrideWithValue('user-1'),
+          conflictHistoryDaoProvider.overrideWithValue(mockDao),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      expect(container.read(conflictHistoryProvider), isEmpty);
+      await Future<void>.delayed(const Duration(milliseconds: 10));
+
+      expect(container.read(conflictHistoryProvider), isEmpty);
+      verify(() => mockDao.watchAll('user-1')).called(1);
     });
 
     test('addConflict adds to front of list', () {

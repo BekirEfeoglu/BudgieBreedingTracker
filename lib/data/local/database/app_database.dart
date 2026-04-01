@@ -65,6 +65,7 @@ import 'package:budgie_breeding_tracker/data/local/database/daos/conflict_histor
 
 // Converters
 import 'package:budgie_breeding_tracker/data/local/database/converters/enum_converters.dart';
+import 'package:budgie_breeding_tracker/data/local/database/migration_utils.dart';
 
 part 'app_database.g.dart';
 part 'app_database_migrations.dart';

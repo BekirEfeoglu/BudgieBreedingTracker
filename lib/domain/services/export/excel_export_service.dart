@@ -300,7 +300,7 @@ class ExcelExportService {
       return value;
     }
     if (first == '=' || first == '+' || first == '-' || first == '@' ||
-        first == '|' || first == '\t' || first == '\r') {
+        first == '|' || first == '\t' || first == '\r' || first == '\n') {
       return "'$value";
     }
     return value;

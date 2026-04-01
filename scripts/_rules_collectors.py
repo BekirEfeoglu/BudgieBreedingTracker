@@ -130,6 +130,27 @@ def collect_widgets(lib: Path) -> dict:
     }
 
 
+def _count_indexes(db_dir: Path) -> int:
+    """app_database_indexes.dart dosyasindaki CREATE INDEX satirlarini say.
+
+    Only counts uncommented lines to avoid false positives from documentation
+    or commented-out SQL statements.
+    """
+    idx_file = db_dir / "app_database_indexes.dart"
+    if not idx_file.exists():
+        return 0
+    content = idx_file.read_text(encoding="utf-8")
+    count = 0
+    for line in content.splitlines():
+        stripped = line.strip()
+        # Skip Dart single-line comments and documentation
+        if stripped.startswith("//") or stripped.startswith("///"):
+            continue
+        if re.search(r"CREATE INDEX", stripped, re.IGNORECASE):
+            count += 1
+    return count
+
+
 def collect_test_counts(root: Path) -> dict:
     """Test dosyasi sayisini ve bireysel test (test/testWidgets) sayisini topla."""
     test_dir = root / "test"
@@ -163,6 +184,7 @@ def collect_actual_values() -> dict:
     result["svg_files"] = count_files_recursive(ASSETS / "icons", "*.svg")
     result["routes"] = count_route_consts(LIB / "router" / "route_names.dart")
     result["schema"] = get_schema_version(LIB / "data" / "local" / "database" / "app_database.dart")
+    result["indexes"] = _count_indexes(LIB / "data" / "local" / "database")
     result["tr_keys"] = count_json_leaf_keys(ASSETS / "translations" / "tr.json")
     result["categories"] = count_json_top_keys(ASSETS / "translations" / "tr.json")
     result["supa"] = count_string_consts(LIB / "core" / "constants" / "supabase_constants.dart")

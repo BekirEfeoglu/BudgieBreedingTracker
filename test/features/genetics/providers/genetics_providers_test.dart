@@ -368,6 +368,32 @@ void main() {
       expect(parseHistoryResults('not-json'), isEmpty);
     });
 
+    test(
+      'parseHistoryResults skips non-map items and normalizes list fields',
+      () {
+        final jsonList = jsonEncode([
+          'invalid-entry',
+          {
+            'phenotype': 'Normal',
+            'probability': 0.75,
+            'sex': 'unexpected',
+            'visualMutations': ['blue', 123],
+            'carriedMutations': ['opaline', false],
+            'doubleFactorIds': ['violet', 42],
+          },
+        ]);
+
+        final parsed = parseHistoryResults(jsonList);
+
+        expect(parsed, hasLength(1));
+        expect(parsed.first.sex, OffspringSex.both);
+        expect(parsed.first.visualMutations, ['blue']);
+        expect(parsed.first.carriedMutations, ['opaline']);
+        expect(parsed.first.doubleFactorIds, {'violet'});
+        expect(parsed.first.isCarrier, isFalse);
+      },
+    );
+
     test('parseStoredGenotype maps allele states correctly', () {
       final genotype = parseStoredGenotype(const {
         'blue': 'visual',
@@ -379,6 +405,18 @@ void main() {
       expect(genotype.getState('opaline'), AlleleState.carrier);
       expect(genotype.getState('fallback'), AlleleState.visual);
       expect(genotype.gender, BirdGender.male);
+    });
+
+    test('parseStoredGenotype resolves legacy ids and split allele state', () {
+      final genotype = parseStoredGenotype(const {
+        'lutino': 'split',
+        'blue': 'carrier',
+      }, BirdGender.female);
+
+      expect(genotype.getState('ino'), AlleleState.split);
+      expect(genotype.getState('lutino'), isNull);
+      expect(genotype.getState('blue'), AlleleState.carrier);
+      expect(genotype.gender, BirdGender.female);
     });
   });
 

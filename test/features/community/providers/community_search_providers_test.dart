@@ -1,9 +1,14 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 
 import 'package:budgie_breeding_tracker/data/models/community_post_model.dart';
+import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
+import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
 import 'package:budgie_breeding_tracker/features/community/providers/community_feed_providers.dart';
 import 'package:budgie_breeding_tracker/features/community/providers/community_search_providers.dart';
+
+import '../../../helpers/mocks.dart';
 
 void main() {
   group('CommunitySearchState', () {
@@ -76,6 +81,127 @@ void main() {
       container.read(communitySearchProvider.notifier).clear();
       final state = container.read(communitySearchProvider);
       expect(state.query, '');
+    });
+  });
+
+  group('communitySearchResultsProvider', () {
+    late MockCommunityPostRepository repository;
+
+    setUp(() {
+      repository = MockCommunityPostRepository();
+    });
+
+    test(
+      'returns empty list and skips repository when query is blank',
+      () async {
+        final container = ProviderContainer(
+          overrides: [
+            communityPostRepositoryProvider.overrideWithValue(repository),
+            currentUserIdProvider.overrideWithValue('user-1'),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        final result = await container.read(
+          communitySearchResultsProvider('   ').future,
+        );
+
+        expect(result, isEmpty);
+        verifyNever(
+          () => repository.search(
+            query: any(named: 'query'),
+            currentUserId: any(named: 'currentUserId'),
+          ),
+        );
+      },
+    );
+
+    test('delegates to repository with current user id', () async {
+      const posts = [
+        CommunityPost(
+          id: 'p1',
+          userId: 'u1',
+          username: 'Ali',
+          content: 'Budgie genetics',
+        ),
+      ];
+      when(
+        () => repository.search(query: 'budgie', currentUserId: 'user-42'),
+      ).thenAnswer((_) async => posts);
+
+      final container = ProviderContainer(
+        overrides: [
+          communityPostRepositoryProvider.overrideWithValue(repository),
+          currentUserIdProvider.overrideWithValue('user-42'),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final result = await container.read(
+        communitySearchResultsProvider('budgie').future,
+      );
+
+      expect(result, posts);
+      verify(
+        () => repository.search(query: 'budgie', currentUserId: 'user-42'),
+      ).called(1);
+    });
+
+    test('returns empty list when repository search throws', () async {
+      when(
+        () => repository.search(query: 'budgie', currentUserId: 'user-1'),
+      ).thenThrow(Exception('search failed'));
+
+      final container = ProviderContainer(
+        overrides: [
+          communityPostRepositoryProvider.overrideWithValue(repository),
+          currentUserIdProvider.overrideWithValue('user-1'),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final result = await container.read(
+        communitySearchResultsProvider('budgie').future,
+      );
+
+      expect(result, isEmpty);
+    });
+  });
+
+  group('communitySearchPostsProvider', () {
+    test('returns empty list when search query is empty', () {
+      final container = ProviderContainer(
+        overrides: [
+          communityFeedProvider.overrideWith(() => _FakeFeedNotifier()),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      expect(container.read(communitySearchPostsProvider), isEmpty);
+    });
+
+    test('exposes resolved server-side results for active query', () {
+      const results = [
+        CommunityPost(
+          id: 'p1',
+          userId: 'u1',
+          username: 'Ali',
+          content: 'Match',
+        ),
+      ];
+      final container = ProviderContainer(
+        overrides: [
+          communityFeedProvider.overrideWith(() => _FakeFeedNotifier()),
+          communitySearchResultsProvider(
+            'budgie',
+          ).overrideWithValue(const AsyncData(results)),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      container.read(communitySearchProvider.notifier).setQuery('budgie');
+
+      expect(container.read(communitySearchPostsProvider), results);
     });
   });
 

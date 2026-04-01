@@ -12,11 +12,14 @@ Uygulama login gerektirdigi icin "All or some functionality is restricted" secil
 ### Test Hesabi Bilgileri
 
 ```
-Email: test@budgiebreedingtracker.com
-Password: TestReviewer2026!
+Email: <see password manager / 1Password>
+Password: <see password manager / 1Password>
 Premium: Active (RevenueCat test entitlement)
 2FA: Disabled (test hesabinda)
 ```
+
+> **IMPORTANT:** Test credentials must NEVER be committed to the repository.
+> Store them in a password manager and share via secure channels only.
 
 ### Test Hesabi Olusturma Adimlari
 1. Supabase Dashboard > Authentication > Users > "Create user" ile olustur
@@ -28,8 +31,8 @@ Premium: Active (RevenueCat test entitlement)
 
 ```
 Test credentials:
-- Email: test@budgiebreedingtracker.com
-- Password: TestReviewer2026!
+- Email: <see password manager>
+- Password: <see password manager>
 - Premium: Active (test entitlement enabled)
 - 2FA: Disabled on test account
 

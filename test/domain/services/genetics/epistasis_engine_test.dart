@@ -1071,7 +1071,10 @@ void main() {
     test('interaction entries contain valid mutationIds', () {
       final interactions = engine.getInteractions({'ino', 'blue'});
 
-      final albino = interactions.firstWhere((i) => i.resultName == 'Albino');
+      final albino = interactions.firstWhere(
+        (i) => i.resultName == 'Albino',
+        orElse: () => throw StateError('Expected Albino interaction for {ino, blue}'),
+      );
       expect(albino.mutationIds, containsAll(['ino', 'blue']));
       expect(albino.description, isNotEmpty);
     });
@@ -1088,6 +1091,197 @@ void main() {
       );
       expect(creamino.mutationIds, contains('goldenface'));
       expect(creamino.mutationIds, contains('ino'));
+    });
+  });
+
+  group('getInteractions - compound epistatic interactions', () {
+    test('Recessive Pied + Clearflight Pied yields Dark-Eyed Clear', () {
+      final interactions = engine.getInteractions({
+        'recessive_pied',
+        'clearflight_pied',
+      });
+
+      final dec = interactions.firstWhere(
+        (i) => i.resultName == 'Dark-Eyed Clear',
+      );
+      expect(dec.mutationIds, contains('recessive_pied'));
+      expect(dec.mutationIds, contains('clearflight_pied'));
+      expect(dec.description, contains('Dark-Eyed Clear'));
+    });
+
+    test('Dark-Eyed Clear interaction has correct description details', () {
+      final interactions = engine.getInteractions({
+        'recessive_pied',
+        'clearflight_pied',
+      });
+
+      final dec = interactions.firstWhere(
+        (i) => i.resultName == 'Dark-Eyed Clear',
+      );
+      expect(dec.description, contains('dark eyes'));
+    });
+
+    test('Blackface + Spangle yields Melanistic Spangle', () {
+      final interactions = engine.getInteractions({
+        'blackface',
+        'spangle',
+      });
+
+      final ms = interactions.firstWhere(
+        (i) => i.resultName == 'Melanistic Spangle',
+      );
+      expect(ms.mutationIds, contains('blackface'));
+      expect(ms.mutationIds, contains('spangle'));
+      expect(ms.description, contains('melanin'));
+    });
+
+    test('Blackface without Spangle does not yield Melanistic Spangle', () {
+      final interactions = engine.getInteractions({'blackface'});
+
+      expect(
+        interactions.any((i) => i.resultName == 'Melanistic Spangle'),
+        isFalse,
+      );
+    });
+
+    test('Spangle without Blackface does not yield Melanistic Spangle', () {
+      final interactions = engine.getInteractions({'spangle'});
+
+      expect(
+        interactions.any((i) => i.resultName == 'Melanistic Spangle'),
+        isFalse,
+      );
+    });
+
+    test('two crested alleles at same locus yield Crested Compound', () {
+      final interactions = engine.getInteractions({
+        'crested_tufted',
+        'crested_half_circular',
+      });
+
+      final cc = interactions.firstWhere(
+        (i) => i.resultName == 'Crested Compound',
+      );
+      expect(cc.mutationIds, contains('crested_tufted'));
+      expect(cc.mutationIds, contains('crested_half_circular'));
+      expect(cc.description, contains('crested alleles'));
+    });
+
+    test('three crested alleles yield Crested Compound with all IDs', () {
+      final interactions = engine.getInteractions({
+        'crested_tufted',
+        'crested_half_circular',
+        'crested_full_circular',
+      });
+
+      final cc = interactions.firstWhere(
+        (i) => i.resultName == 'Crested Compound',
+      );
+      expect(cc.mutationIds, hasLength(3));
+      expect(cc.mutationIds, contains('crested_tufted'));
+      expect(cc.mutationIds, contains('crested_half_circular'));
+      expect(cc.mutationIds, contains('crested_full_circular'));
+    });
+
+    test('single crested allele does not yield Crested Compound', () {
+      final interactions = engine.getInteractions({'crested_tufted'});
+
+      expect(
+        interactions.any((i) => i.resultName == 'Crested Compound'),
+        isFalse,
+      );
+    });
+
+    test('Aqua + Ino yields Aqua Ino interaction', () {
+      final interactions = engine.getInteractions({'ino', 'aqua'});
+
+      final ai = interactions.firstWhere(
+        (i) => i.resultName == 'Aqua Ino',
+      );
+      expect(ai.mutationIds, contains('aqua'));
+      expect(ai.mutationIds, contains('ino'));
+      expect(ai.description, contains('Aqua'));
+      expect(ai.description, contains('parblue'));
+    });
+
+    test('Turquoise + Ino yields Turquoise Ino interaction', () {
+      final interactions = engine.getInteractions({'ino', 'turquoise'});
+
+      final ti = interactions.firstWhere(
+        (i) => i.resultName == 'Turquoise Ino',
+      );
+      expect(ti.mutationIds, contains('turquoise'));
+      expect(ti.mutationIds, contains('ino'));
+      expect(ti.description, contains('Turquoise'));
+    });
+
+    test('Parblue + Ino + Cinnamon does not yield parblue-ino interaction', () {
+      final interactions = engine.getInteractions({
+        'ino',
+        'aqua',
+        'cinnamon',
+      });
+
+      expect(
+        interactions.any((i) => i.resultName == 'Aqua Ino'),
+        isFalse,
+      );
+    });
+
+    test('Pearly + Opaline yields Opaline Pearly interaction', () {
+      final interactions = engine.getInteractions({'pearly', 'opaline'});
+
+      final op = interactions.firstWhere(
+        (i) => i.resultName == 'Opaline Pearly',
+      );
+      expect(op.mutationIds, contains('pearly'));
+      expect(op.mutationIds, contains('opaline'));
+      expect(op.description, contains('sex-linked'));
+      expect(op.description, contains('wing pattern'));
+    });
+
+    test('Pearly without Opaline does not yield Opaline Pearly', () {
+      final interactions = engine.getInteractions({'pearly'});
+
+      expect(
+        interactions.any((i) => i.resultName == 'Opaline Pearly'),
+        isFalse,
+      );
+    });
+
+    test('Pearly + Cinnamon yields Cinnamon Pearly interaction', () {
+      final interactions = engine.getInteractions({'pearly', 'cinnamon'});
+
+      final cp = interactions.firstWhere(
+        (i) => i.resultName == 'Cinnamon Pearly',
+      );
+      expect(cp.mutationIds, contains('pearly'));
+      expect(cp.mutationIds, contains('cinnamon'));
+      expect(cp.description, contains('brown'));
+    });
+
+    test('compound interactions coexist with other interactions', () {
+      final interactions = engine.getInteractions({
+        'blackface',
+        'spangle',
+        'recessive_pied',
+        'clearflight_pied',
+        'pearly',
+        'opaline',
+      });
+
+      expect(
+        interactions.any((i) => i.resultName == 'Melanistic Spangle'),
+        isTrue,
+      );
+      expect(
+        interactions.any((i) => i.resultName == 'Dark-Eyed Clear'),
+        isTrue,
+      );
+      expect(
+        interactions.any((i) => i.resultName == 'Opaline Pearly'),
+        isTrue,
+      );
     });
   });
 

@@ -199,6 +199,59 @@ SELECT * FROM get_poll_results('00000000-0000-0000-0000-000000000000'::uuid);
 
 
 -- =====================================================================
+-- H. request_account_deletion RPC — cascade verification
+-- =====================================================================
+-- Run as service_role to create test data, then as authenticated test
+-- user to invoke the RPC. Verifies all related rows (including
+-- community_blocks.blocked_user_id) are cleaned up.
+--
+-- Replace '<test_user_id>' with a dedicated disposable test user UUID.
+
+-- H1. Setup: create test user and related data (run as service_role)
+-- INSERT INTO auth.users (id, email, encrypted_password, aud, role)
+-- VALUES ('<test_user_id>', 'deletion-test@example.com', crypt('Test1234!', gen_salt('bf')), 'authenticated', 'authenticated');
+-- INSERT INTO profiles (id, role, is_deleted, is_active)
+-- VALUES ('<test_user_id>', 'user', false, true);
+
+-- H2. Create a block where test user IS the blocked party
+-- INSERT INTO community_blocks (user_id, blocked_user_id)
+-- VALUES ('<other_user_id>', '<test_user_id>');
+
+-- H3. Create a block where test user IS the blocker
+-- INSERT INTO community_blocks (user_id, blocked_user_id)
+-- VALUES ('<test_user_id>', '<other_user_id>');
+
+-- H4. Invoke the RPC as the test user
+-- SET LOCAL role TO authenticated;
+-- SET LOCAL request.jwt.claims TO '{"sub": "<test_user_id>", "role": "authenticated"}';
+-- SELECT request_account_deletion('<test_user_id>'::uuid);
+-- RESET role;
+
+-- H5. Verify all data is deleted
+-- SELECT count(*) AS remaining_blocks FROM community_blocks
+-- WHERE user_id = '<test_user_id>' OR blocked_user_id = '<test_user_id>';
+-- Expected: 0
+
+-- SELECT count(*) AS remaining_profile FROM profiles
+-- WHERE id = '<test_user_id>';
+-- Expected: 0
+
+-- SELECT count(*) AS remaining_auth FROM auth.users
+-- WHERE id = '<test_user_id>';
+-- Expected: 0
+
+-- H6. Verify other user's unrelated data is untouched
+-- SELECT count(*) AS other_blocks FROM community_blocks
+-- WHERE user_id = '<other_user_id>' AND blocked_user_id != '<test_user_id>';
+-- Expected: unchanged from before H4
+
+-- H7. Cleanup (if test user was not fully deleted)
+-- DELETE FROM community_blocks WHERE user_id = '<test_user_id>' OR blocked_user_id = '<test_user_id>';
+-- DELETE FROM profiles WHERE id = '<test_user_id>';
+-- DELETE FROM auth.users WHERE id = '<test_user_id>';
+
+
+-- =====================================================================
 -- Summary
 -- =====================================================================
 -- Section A: 0 rows = all tables have FORCE RLS
@@ -208,3 +261,4 @@ SELECT * FROM get_poll_results('00000000-0000-0000-0000-000000000000'::uuid);
 -- Section E: returns poll options correctly, errors on bad input
 -- Section F: bidirectional sync works
 -- Section G: increment/decrement counts correct
+-- Section H: account deletion cascades correctly (incl. blocked_user_id)

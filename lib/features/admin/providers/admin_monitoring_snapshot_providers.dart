@@ -142,7 +142,7 @@ final monitoringSnapshotsProvider =
     );
   } catch (e, st) {
     AppLogger.error('monitoringSnapshotsProvider', e, st);
-    return const MonitoringTrend();
+    rethrow;
   }
 });
 

@@ -25,10 +25,9 @@ CREATE TABLE IF NOT EXISTS public.db_monitoring_snapshots (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 
--- Partial index: only recent snapshots are queried
+-- Index for time-based queries (cleanup, dashboard, trend analysis)
 CREATE INDEX IF NOT EXISTS idx_monitoring_created
-  ON public.db_monitoring_snapshots (created_at DESC)
-  WHERE created_at > now() - INTERVAL '7 days';
+  ON public.db_monitoring_snapshots (created_at DESC);
 
 -- RLS: admin-only access
 ALTER TABLE public.db_monitoring_snapshots ENABLE ROW LEVEL SECURITY;
@@ -39,9 +38,19 @@ CREATE POLICY "Admin read monitoring"
   FOR SELECT
   USING ((SELECT public.is_admin()));
 
+-- INSERT restricted to postgres/service_role only (cron jobs run as postgres
+-- via SECURITY DEFINER functions). Revoking INSERT from authenticated/anon
+-- prevents any user from flooding the monitoring table.
+REVOKE INSERT ON public.db_monitoring_snapshots FROM authenticated, anon;
+GRANT INSERT ON public.db_monitoring_snapshots TO postgres, service_role;
+
+-- RLS INSERT policy for cron jobs: FORCE ROW LEVEL SECURITY applies RLS even
+-- to the table owner, so SECURITY DEFINER functions (running as postgres) need
+-- an explicit INSERT policy — otherwise their INSERTs would be silently blocked.
 CREATE POLICY "System insert monitoring"
   ON public.db_monitoring_snapshots
   FOR INSERT
+  TO postgres, service_role
   WITH CHECK (true);
 
 -- =============================================
@@ -67,7 +76,7 @@ BEGIN
       'mean_time_ms', ROUND(mean_exec_time::numeric, 2),
       'query', LEFT(query, 200)
     ) AS q
-    FROM pg_stat_statements
+    FROM extensions.pg_stat_statements
     WHERE mean_exec_time > 50
       AND calls > 3
       AND query NOT LIKE '%pg_stat%'
@@ -159,8 +168,34 @@ END;
 $$;
 
 -- =============================================
+-- Restrict EXECUTE to postgres/service_role only (prevents any
+-- authenticated user from invoking monitoring functions via RPC).
+-- =============================================
+REVOKE EXECUTE ON FUNCTION public.capture_slow_queries() FROM PUBLIC, authenticated, anon;
+REVOKE EXECUTE ON FUNCTION public.capture_table_health() FROM PUBLIC, authenticated, anon;
+REVOKE EXECUTE ON FUNCTION public.capture_connection_stats() FROM PUBLIC, authenticated, anon;
+REVOKE EXECUTE ON FUNCTION public.cleanup_monitoring_data() FROM PUBLIC, authenticated, anon;
+
+-- Explicitly grant to postgres and service_role (REVOKE FROM PUBLIC removes
+-- the default grant; without this, service_role loses access).
+GRANT EXECUTE ON FUNCTION public.capture_slow_queries() TO postgres, service_role;
+GRANT EXECUTE ON FUNCTION public.capture_table_health() TO postgres, service_role;
+GRANT EXECUTE ON FUNCTION public.capture_connection_stats() TO postgres, service_role;
+GRANT EXECUTE ON FUNCTION public.cleanup_monitoring_data() TO postgres, service_role;
+
+-- =============================================
 -- Schedule cron jobs
 -- =============================================
+
+-- Unschedule existing jobs first (idempotency: prevents duplicates on re-run)
+SELECT cron.unschedule(jobname)
+  FROM cron.job
+  WHERE jobname IN (
+    'capture-slow-queries',
+    'capture-table-health',
+    'capture-connection-stats',
+    'cleanup-monitoring-data'
+  );
 
 -- Slow queries: every hour at minute 5
 SELECT cron.schedule(

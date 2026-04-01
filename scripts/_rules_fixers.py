@@ -73,6 +73,39 @@ def _apply_inline_fixes(content: str, actual: dict) -> tuple[str, list[str]]:
         updated = fixed
         messages.append("Inline schemaVersion updated")
 
+    # SVG icon count: "NN custom SVG icons in"
+    fixed = re.sub(
+        r"\d+ custom SVG icons in",
+        f"{actual['icons']} custom SVG icons in",
+        updated,
+    )
+    if fixed != updated:
+        updated = fixed
+        messages.append("Inline SVG icon count updated")
+
+    # Composite indexes: "NN+ composite indexes" or "NN composite indexes"
+    idx_count = actual.get("indexes")
+    if idx_count is None:
+        raise KeyError("'indexes' key missing from actual values — _count_indexes may have failed")
+    fixed = re.sub(
+        r"\d+\+? (?:composite |performance )indexes",
+        f"{idx_count} composite indexes",
+        updated,
+    )
+    if fixed != updated:
+        updated = fixed
+        messages.append("Inline composite index count updated")
+
+    # SupabaseConstants count: "— NN constants"
+    fixed = re.sub(
+        r"\u2014 \d+ constants",
+        f"\u2014 {actual['supa']} constants",
+        updated,
+    )
+    if fixed != updated:
+        updated = fixed
+        messages.append("Inline SupabaseConstants count updated")
+
     return updated, messages
 
 
@@ -91,27 +124,40 @@ def _file_label(filepath: Path) -> str:
     return filepath.name
 
 
-def _fix_file(filepath: Path, updates: dict, actual: dict) -> bool:
-    """Verilen dosyada tablo satirlarini ve inline referanslari guncelle."""
+def _fix_file(
+    filepath: Path,
+    updates: dict,
+    actual: dict,
+    *,
+    apply_table_fixes: bool = True,
+) -> bool:
+    """Verilen dosyada tablo satirlarini ve inline referanslari guncelle.
+
+    Args:
+        apply_table_fixes: If False, only inline references are updated.
+            Table row fixes (Codebase Stats) are restricted to CLAUDE.md (root)
+            to prevent accidental rewrites of rule-file tables.
+    """
     label = _file_label(filepath)
     content = filepath.read_text(encoding="utf-8")
     lines = content.splitlines()
     changed = False
 
-    for i, line in enumerate(lines):
-        if not line.startswith("|") or "---" in line or "Metric" in line:
-            continue
-        parts = [p.strip() for p in line.split("|")[1:-1]]
-        if len(parts) != 2:
-            continue
-        metric = parts[0]
-        if metric in updates:
-            old_value = parts[1]
-            new_value = updates[metric]
-            if old_value != new_value:
-                lines[i] = f"| {metric} | {new_value} |"
-                changed = True
-                print(f"  {Colors.YELLOW}FIX{Colors.RESET}  [{label}] {metric}: {old_value} -> {new_value}")
+    if apply_table_fixes:
+        for i, line in enumerate(lines):
+            if not line.startswith("|") or "---" in line or "Metric" in line:
+                continue
+            parts = [p.strip() for p in line.split("|")[1:-1]]
+            if len(parts) != 2:
+                continue
+            metric = parts[0]
+            if metric in updates:
+                old_value = parts[1]
+                new_value = updates[metric]
+                if old_value != new_value:
+                    lines[i] = f"| {metric} | {new_value} |"
+                    changed = True
+                    print(f"  {Colors.YELLOW}FIX{Colors.RESET}  [{label}] {metric}: {old_value} -> {new_value}")
 
     new_content = "\n".join(lines)
     updated, messages = _apply_inline_fixes(new_content, actual)
@@ -130,14 +176,20 @@ def _fix_file(filepath: Path, updates: dict, actual: dict) -> bool:
 
 
 def fix_claude_md(updates: dict, actual: dict):
-    """CLAUDE.md ve .claude/rules/CLAUDE.md'deki tablo + inline referanslari guncelle."""
+    """CLAUDE.md ve .claude/rules/*.md'deki tablo + inline referanslari guncelle."""
+    rules_dir = ROOT / ".claude" / "rules"
     targets = [CLAUDE_MD]
-    if RULES_CLAUDE_MD.exists():
-        targets.append(RULES_CLAUDE_MD)
+    if rules_dir.exists():
+        for rule_file in sorted(rules_dir.glob("*.md")):
+            targets.append(rule_file)
 
     any_changed = False
     for fp in targets:
-        if _fix_file(fp, updates, actual):
+        # Table row fixes (Codebase Stats) only apply to root CLAUDE.md.
+        # Rule files only get inline reference updates to avoid rewriting
+        # unrelated tables (e.g., schema version in data-layer.md).
+        is_root = fp == CLAUDE_MD
+        if _fix_file(fp, updates, actual, apply_table_fixes=is_root):
             any_changed = True
 
     if any_changed:

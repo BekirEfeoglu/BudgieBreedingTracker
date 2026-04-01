@@ -1,5 +1,5 @@
 /// Custom SVG icon asset paths for the budgie breeding tracker app.
-/// 82 icons organized by category, matching assets/icons/ directory structure.
+/// 84 icons organized by category, matching assets/icons/ directory structure.
 abstract final class AppIcons {
   // ── Navigation ──
   static const home = 'assets/icons/navigation/home.svg';
@@ -103,4 +103,5 @@ abstract final class AppIcons {
   static const haptic = 'assets/icons/general/haptic.svg';
   static const twoFactor = 'assets/icons/general/two_factor.svg';
   static const conflict = 'assets/icons/general/conflict.svg';
+  static const googleLogo = 'assets/icons/general/google_logo.svg';
 }

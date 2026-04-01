@@ -126,6 +126,25 @@ void main() {
       expect(postsSelect.orCalls.first, contains('content.ilike.%budgie%'));
       expect(postsSelect.orCalls.first, contains('title.ilike.%budgie%'));
     });
+
+    test('strips backticks and double quotes from query', () async {
+      postsSelect.result = [];
+
+      await source.search('test`"; DROP TABLE--');
+
+      expect(postsSelect.orCalls, hasLength(1));
+      final filter = postsSelect.orCalls.first;
+      // Backtick, double quote, and single quote should be removed
+      expect(filter, isNot(contains('`')));
+      expect(filter, isNot(contains('"')));
+      expect(filter, isNot(contains("'")));
+    });
+
+    test('returns empty list for query that sanitizes to empty', () async {
+      final result = await source.search("'`\"");
+
+      expect(result, isEmpty);
+    });
   });
 
   group('insert', () {

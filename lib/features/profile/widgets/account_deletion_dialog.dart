@@ -105,8 +105,13 @@ Future<void> performAccountDeletion(
 
     if (!context.mounted) return;
 
-    // 6. Sign out globally (invalidate all sessions across devices)
-    await ref.read(authActionsProvider).signOutAllSessions();
+    // 6. Sign out globally (best-effort — auth user may already be deleted
+    // server-side, which invalidates all sessions automatically).
+    try {
+      await ref.read(authActionsProvider).signOutAllSessions();
+    } catch (e) {
+      AppLogger.debug('[AccountDeletion] Sign-out after deletion failed (expected if auth user already deleted): $e');
+    }
 
     // 7. Dismiss loading dialog and navigate to login
     if (context.mounted) {

@@ -23,9 +23,7 @@ void main() {
     test('skips when userId is anonymous', () {
       fakeAsync((async) {
         final container = ProviderContainer(
-          overrides: [
-            currentUserIdProvider.overrideWithValue('anonymous'),
-          ],
+          overrides: [currentUserIdProvider.overrideWithValue('anonymous')],
         );
 
         // Should not throw — provider returns early for anonymous
@@ -65,8 +63,7 @@ void main() {
     test('disposes timer on container dispose without errors', () {
       fakeAsync((async) {
         final mock = MockSyncOrchestrator();
-        when(() => mock.fullSync())
-            .thenAnswer((_) async => SyncResult.success);
+        when(() => mock.fullSync()).thenAnswer((_) async => SyncResult.success);
 
         final container = ProviderContainer(
           overrides: [
@@ -143,6 +140,73 @@ void main() {
 
       verify(() => mock.forceFullSync()).called(1);
     });
+
+    test('clears syncError after successful offline-to-online sync', () async {
+      final mock = MockSyncOrchestrator();
+      when(
+        () => mock.forceFullSync(),
+      ).thenAnswer((_) async => SyncResult.success);
+
+      final controller = StreamController<bool>();
+      addTearDown(controller.close);
+
+      final container = ProviderContainer(
+        overrides: [
+          currentUserIdProvider.overrideWithValue('user-1'),
+          syncOrchestratorProvider.overrideWithValue(mock),
+          autoSyncProvider.overrideWith(() => _AutoSyncTrue()),
+          wifiOnlySyncProvider.overrideWith(() => _WifiOnlyFalse()),
+          networkStatusProvider.overrideWith((_) => controller.stream),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      container.read(syncErrorProvider.notifier).state = true;
+      container.listen(networkStatusProvider, (_, __) {});
+      container.read(networkAwareSyncProvider);
+
+      controller.add(false);
+      await Future<void>.delayed(Duration.zero);
+      controller.add(true);
+      await Future<void>.delayed(Duration.zero);
+
+      expect(container.read(syncErrorProvider), isFalse);
+    });
+
+    test(
+      'keeps syncError when offline-to-online sync is not successful',
+      () async {
+        final mock = MockSyncOrchestrator();
+        when(
+          () => mock.forceFullSync(),
+        ).thenAnswer((_) async => SyncResult.error);
+
+        final controller = StreamController<bool>();
+        addTearDown(controller.close);
+
+        final container = ProviderContainer(
+          overrides: [
+            currentUserIdProvider.overrideWithValue('user-1'),
+            syncOrchestratorProvider.overrideWithValue(mock),
+            autoSyncProvider.overrideWith(() => _AutoSyncTrue()),
+            wifiOnlySyncProvider.overrideWith(() => _WifiOnlyFalse()),
+            networkStatusProvider.overrideWith((_) => controller.stream),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        container.read(syncErrorProvider.notifier).state = true;
+        container.listen(networkStatusProvider, (_, __) {});
+        container.read(networkAwareSyncProvider);
+
+        controller.add(false);
+        await Future<void>.delayed(Duration.zero);
+        controller.add(true);
+        await Future<void>.delayed(Duration.zero);
+
+        expect(container.read(syncErrorProvider), isTrue);
+      },
+    );
 
     test('skips sync when already syncing', () async {
       final mock = MockSyncOrchestrator();
@@ -309,6 +373,35 @@ void main() {
       expect(result, SyncResult.error);
       verify(() => mock.forceFullSync()).called(1);
     });
+
+    test(
+      'keeps sync error set when manual sync result is not success',
+      () async {
+        final mock = MockSyncOrchestrator();
+        when(() => mock.retryFailedRecords('user-1')).thenAnswer((_) async {});
+        when(
+          () => mock.forceFullSync(),
+        ).thenAnswer((_) async => SyncResult.error);
+
+        final container = ProviderContainer(
+          overrides: [
+            currentUserIdProvider.overrideWithValue('user-1'),
+            syncOrchestratorProvider.overrideWithValue(mock),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        container.read(syncErrorProvider.notifier).state = true;
+
+        final provider = FutureProvider<SyncResult>(
+          (ref) => triggerManualSync(ref),
+        );
+        final result = await container.read(provider.future);
+
+        expect(result, SyncResult.error);
+        expect(container.read(syncErrorProvider), isTrue);
+      },
+    );
   });
 }
 

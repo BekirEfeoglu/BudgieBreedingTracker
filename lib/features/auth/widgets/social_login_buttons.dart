@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+import '../../../core/constants/app_icons.dart';
 import '../../../core/theme/app_spacing.dart';
 
 /// Google and Apple sign-in buttons for the auth screens.
@@ -59,7 +60,7 @@ class _SocialLoginButtonsState extends State<SocialLoginButtons> {
           child: OutlinedButton.icon(
             onPressed: widget.isLoading ? null : widget.onGoogleTap,
             icon: SvgPicture.asset(
-              'assets/icons/general/google_logo.svg',
+              AppIcons.googleLogo,
               width: 18,
               height: 18,
             ),

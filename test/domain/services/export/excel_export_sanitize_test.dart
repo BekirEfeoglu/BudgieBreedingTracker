@@ -35,6 +35,10 @@ void main() {
         expect(service.sanitize('\rdata'), "'\rdata");
       });
 
+      test('prefixes newline with single quote', () {
+        expect(service.sanitize('\ndata'), "'\ndata");
+      });
+
       test('prefixes - followed by letter with single quote', () {
         expect(service.sanitize('-CMD'), "'-CMD");
       });

@@ -9,6 +9,17 @@ import '../../../helpers/test_helpers.dart';
 
 void main() {
   group('autoSyncProvider', () {
+    test('defaults to true when preference is missing', () async {
+      SharedPreferences.setMockInitialValues({});
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      expect(container.read(autoSyncProvider), isTrue);
+      await Future<void>.delayed(const Duration(milliseconds: 10));
+
+      expect(container.read(autoSyncProvider), isTrue);
+    });
+
     test('loads persisted value from SharedPreferences', () async {
       SharedPreferences.setMockInitialValues({
         AppPreferences.keyAutoSync: false,
@@ -51,9 +62,34 @@ void main() {
       final prefs = await SharedPreferences.getInstance();
       expect(prefs.getBool(AppPreferences.keyAutoSync), isTrue);
     });
+
+    test('toggle persists false when starting from default true', () async {
+      SharedPreferences.setMockInitialValues({});
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      expect(container.read(autoSyncProvider), isTrue);
+
+      await container.read(autoSyncProvider.notifier).toggle();
+      expect(container.read(autoSyncProvider), isFalse);
+
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getBool(AppPreferences.keyAutoSync), isFalse);
+    });
   });
 
   group('wifiOnlySyncProvider', () {
+    test('defaults to false when preference is missing', () async {
+      SharedPreferences.setMockInitialValues({});
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      expect(container.read(wifiOnlySyncProvider), isFalse);
+      await Future<void>.delayed(const Duration(milliseconds: 10));
+
+      expect(container.read(wifiOnlySyncProvider), isFalse);
+    });
+
     test('loads persisted value from SharedPreferences', () async {
       SharedPreferences.setMockInitialValues({
         AppPreferences.keyWifiOnlySync: true,
@@ -95,6 +131,20 @@ void main() {
 
       final prefs = await SharedPreferences.getInstance();
       expect(prefs.getBool(AppPreferences.keyWifiOnlySync), isFalse);
+    });
+
+    test('toggle persists true when starting from default false', () async {
+      SharedPreferences.setMockInitialValues({});
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      expect(container.read(wifiOnlySyncProvider), isFalse);
+
+      await container.read(wifiOnlySyncProvider.notifier).toggle();
+      expect(container.read(wifiOnlySyncProvider), isTrue);
+
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getBool(AppPreferences.keyWifiOnlySync), isTrue);
     });
   });
 }

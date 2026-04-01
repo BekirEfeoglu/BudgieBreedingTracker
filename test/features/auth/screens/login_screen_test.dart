@@ -295,6 +295,79 @@ void main() {
       await tester.pump(const Duration(milliseconds: 500));
     });
 
+    testWidgets('MFA check failure resets login state and shows error',
+        (tester) async {
+      // 2FA check throws → PostLoginMfaChecker signs out and returns
+      // MfaCheckFailed. The screen should reset to idle and show error.
+      when(() => mockTwoFactor.needsVerification())
+          .thenThrow(Exception('MFA service unavailable'));
+      when(() => mockAuth.signOut()).thenAnswer((_) async {});
+
+      await tester.pumpWidget(buildSubject());
+      await tester.pump(const Duration(milliseconds: 500));
+
+      // Fill credentials and submit
+      final textFields = find.byType(TextFormField);
+      await tester.enterText(textFields.first, 'test@example.com');
+      await tester.enterText(textFields.last, 'password123');
+      await tester.pump(const Duration(milliseconds: 100));
+      await tester.tap(find.byType(FilledButton));
+      await tester.pump(const Duration(milliseconds: 500));
+
+      // Advance past success animation delay (1200ms) + MFA check
+      await tester.pump(const Duration(seconds: 2));
+      await tester.pump();
+      await tester.pump();
+
+      // Error snackbar should appear with 2FA error message
+      expect(find.byType(SnackBar), findsOneWidget);
+
+      // Login button should be visible again (idle state)
+      expect(find.text(l10n('auth.login')), findsOneWidget);
+
+      // signOut should have been called by MfaChecker
+      verify(() => mockAuth.signOut()).called(1);
+
+      // Drain remaining timers
+      await tester.pump(const Duration(seconds: 5));
+      await tester.pump(const Duration(milliseconds: 500));
+    });
+
+    testWidgets('MFA failure with slow signOut does not crash after dispose',
+        (tester) async {
+      // signOut takes a long time — widget may dispose before it completes.
+      // The mounted check added after signOut should prevent setState on a
+      // disposed widget.
+      when(() => mockTwoFactor.needsVerification())
+          .thenThrow(Exception('MFA service unavailable'));
+      when(() => mockAuth.signOut()).thenAnswer(
+        (_) => Future.delayed(const Duration(seconds: 5)),
+      );
+
+      await tester.pumpWidget(buildSubject());
+      await tester.pump(const Duration(milliseconds: 500));
+
+      // Fill credentials and submit
+      final textFields = find.byType(TextFormField);
+      await tester.enterText(textFields.first, 'test@example.com');
+      await tester.enterText(textFields.last, 'password123');
+      await tester.pump(const Duration(milliseconds: 100));
+      await tester.tap(find.byType(FilledButton));
+      await tester.pump(const Duration(milliseconds: 500));
+
+      // Advance past success animation (1200ms) to trigger MFA check
+      await tester.pump(const Duration(seconds: 2));
+      await tester.pump();
+
+      // Dispose widget while signOut is still in progress — this should
+      // not throw a "setState called after dispose" error.
+      await tester.pumpWidget(const MaterialApp(home: Scaffold()));
+      await tester.pump(const Duration(seconds: 6));
+      await tester.pump(const Duration(milliseconds: 500));
+
+      // If we reach here without an exception, the mounted guard works.
+    });
+
     testWidgets('guest login error shows snackbar', (tester) async {
       when(
         () => mockAuth.signInAnonymously(),

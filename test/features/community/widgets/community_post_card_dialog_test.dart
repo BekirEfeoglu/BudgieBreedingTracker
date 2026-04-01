@@ -8,15 +8,13 @@ import 'package:mocktail/mocktail.dart';
 import 'package:budgie_breeding_tracker/core/enums/community_enums.dart';
 import 'package:budgie_breeding_tracker/data/models/community_post_model.dart';
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
-import 'package:budgie_breeding_tracker/data/repositories/community_post_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/community_social_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/features/community/providers/community_feed_providers.dart';
 import 'package:budgie_breeding_tracker/features/community/widgets/community_post_card.dart';
 import 'package:budgie_breeding_tracker/features/notifications/providers/action_feedback_providers.dart';
 
-class MockCommunityPostRepository extends Mock
-    implements CommunityPostRepository {}
+import '../../../helpers/mocks.dart';
 
 class MockCommunitySocialRepository extends Mock
     implements CommunitySocialRepository {}

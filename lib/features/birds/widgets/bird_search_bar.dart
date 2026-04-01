@@ -32,9 +32,12 @@ class _BirdSearchBarState extends ConsumerState<BirdSearchBar> {
   Widget build(BuildContext context) {
     final query = ref.watch(birdSearchQueryProvider);
 
-    // Sync controller when query is cleared externally
+    // Sync controller when query is cleared externally (deferred to avoid
+    // mutating controller during build which can trigger listener loops).
     if (query.isEmpty && _controller.text.isNotEmpty) {
-      _controller.clear();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _controller.clear();
+      });
     }
 
     return Padding(
@@ -66,6 +69,7 @@ class _BirdSearchBarState extends ConsumerState<BirdSearchBar> {
         onChanged: (value) {
           _debounce?.cancel();
           _debounce = Timer(const Duration(milliseconds: 300), () {
+            if (!mounted) return;
             ref.read(birdSearchQueryProvider.notifier).state = value;
           });
         },

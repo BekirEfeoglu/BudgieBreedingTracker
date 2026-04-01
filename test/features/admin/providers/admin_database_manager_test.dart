@@ -1,61 +1,318 @@
-import 'package:flutter_test/flutter_test.dart';
+// ignore_for_file: unused_element_parameter
+import 'dart:async';
 
 import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
+import 'package:budgie_breeding_tracker/features/admin/providers/admin_database_manager.dart';
+import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+class _FakeMaybeSingleBuilder extends Fake
+    implements PostgrestTransformBuilder<PostgrestMap?> {
+  _FakeMaybeSingleBuilder({this.result, this.error});
+
+  final PostgrestMap? result;
+  final Object? error;
+
+  @override
+  Future<S> then<S>(
+    FutureOr<S> Function(PostgrestMap? value) onValue, {
+    Function? onError,
+  }) {
+    final source = error == null
+        ? Future<PostgrestMap?>.value(result)
+        : Future<PostgrestMap?>.error(error!);
+    return source.then(onValue, onError: onError);
+  }
+}
+
+class _FakeAdminFilterBuilder extends Fake
+    implements PostgrestFilterBuilder<PostgrestList> {
+  _FakeAdminFilterBuilder(this.maybeSingleBuilder);
+
+  final _FakeMaybeSingleBuilder maybeSingleBuilder;
+  final eqCalls = <MapEntry<String, Object>>[];
+
+  @override
+  PostgrestFilterBuilder<PostgrestList> eq(String column, Object value) {
+    eqCalls.add(MapEntry(column, value));
+    return this;
+  }
+
+  @override
+  PostgrestTransformBuilder<PostgrestMap?> maybeSingle() {
+    return maybeSingleBuilder;
+  }
+}
+
+class _FakeQueryBuilder extends Fake implements SupabaseQueryBuilder {
+  _FakeQueryBuilder(this.filterBuilder);
+
+  final _FakeAdminFilterBuilder filterBuilder;
+  final selectedColumns = <String>[];
+
+  @override
+  PostgrestFilterBuilder<PostgrestList> select([String columns = '*']) {
+    selectedColumns.add(columns);
+    return filterBuilder;
+  }
+}
+
+class _FakeRpcBuilder<T> extends Fake implements PostgrestFilterBuilder<T> {
+  _FakeRpcBuilder({this.result, this.error});
+
+  final T? result;
+  final Object? error;
+
+  @override
+  Future<S> then<S>(
+    FutureOr<S> Function(T value) onValue, {
+    Function? onError,
+  }) {
+    final source = error == null
+        ? Future<T>.value(result as T)
+        : Future<T>.error(error!);
+    return source.then(onValue, onError: onError);
+  }
+}
+
+class _FakeAdminDatabaseClient extends Fake implements SupabaseClient {
+  _FakeAdminDatabaseClient({
+    required this.adminBuilder,
+    this.rpcResults = const {},
+    this.rpcErrors = const {},
+  });
+
+  final _FakeQueryBuilder adminBuilder;
+  final Map<String, dynamic> rpcResults;
+  final Map<String, Object> rpcErrors;
+  final requestedTables = <String>[];
+  final rpcCalls = <({String fn, Map<String, dynamic>? params})>[];
+
+  @override
+  SupabaseQueryBuilder from(String table) {
+    requestedTables.add(table);
+    if (table == SupabaseConstants.adminUsersTable) {
+      return adminBuilder;
+    }
+    throw StateError('Unexpected table: $table');
+  }
+
+  @override
+  PostgrestFilterBuilder<T> rpc<T>(
+    String fn, {
+    Map<String, dynamic>? params,
+    get = false,
+  }) {
+    rpcCalls.add((fn: fn, params: params));
+    return _FakeRpcBuilder<T>(
+      result: rpcResults[fn] as T?,
+      error: rpcErrors[fn],
+    );
+  }
+}
+
+class _StateUpdate {
+  const _StateUpdate({
+    this.isLoading,
+    this.error,
+    this.isSuccess,
+    this.successMessage,
+  });
+
+  final bool? isLoading;
+  final String? error;
+  final bool? isSuccess;
+  final String? successMessage;
+}
+
+ProviderContainer _makeContainer({
+  required String userId,
+  required _FakeAdminDatabaseClient client,
+}) {
+  return ProviderContainer(
+    overrides: [
+      currentUserIdProvider.overrideWithValue(userId),
+      supabaseClientProvider.overrideWithValue(client),
+    ],
+    retry: (_, __) => null,
+  );
+}
+
+AdminDatabaseManager _makeManager(
+  ProviderContainer container,
+  List<_StateUpdate> updates,
+) {
+  final provider = Provider<AdminDatabaseManager>(
+    (ref) => AdminDatabaseManager(ref, ({
+      bool? isLoading,
+      String? error,
+      bool? isSuccess,
+      String? successMessage,
+    }) {
+      updates.add(
+        _StateUpdate(
+          isLoading: isLoading,
+          error: error,
+          isSuccess: isSuccess,
+          successMessage: successMessage,
+        ),
+      );
+    }),
+  );
+  return container.read(provider);
+}
 
 void main() {
-  group('AdminDatabaseManager — allowedTables whitelist', () {
-    // We test the static whitelist behavior via the public API (rejected table
-    // names).  Direct instantiation requires a Ref, so we only test the
-    // constants and static structures here.
+  group('AdminDatabaseManager public API', () {
+    test(
+      'exportTable rejects non-whitelisted tables before Supabase calls',
+      () async {
+        final client = _FakeAdminDatabaseClient(
+          adminBuilder: _FakeQueryBuilder(
+            _FakeAdminFilterBuilder(
+              _FakeMaybeSingleBuilder(result: {'id': 'admin-1'}),
+            ),
+          ),
+        );
+        final updates = <_StateUpdate>[];
+        final container = _makeContainer(userId: 'user-1', client: client);
+        addTearDown(container.dispose);
 
-    test('birdsTable is allowed', () {
-      const allowed = {
-        SupabaseConstants.birdsTable,
-        SupabaseConstants.eggsTable,
-        SupabaseConstants.chicksTable,
-        SupabaseConstants.incubationsTable,
-        SupabaseConstants.clutchesTable,
-        SupabaseConstants.breedingPairsTable,
-        SupabaseConstants.nestsTable,
-        SupabaseConstants.healthRecordsTable,
-        SupabaseConstants.growthMeasurementsTable,
-        SupabaseConstants.eventsTable,
-        SupabaseConstants.notificationsTable,
-        SupabaseConstants.notificationSettingsTable,
-        SupabaseConstants.eventRemindersTable,
-        SupabaseConstants.notificationSchedulesTable,
-        SupabaseConstants.profilesTable,
-        SupabaseConstants.userPreferencesTable,
-        SupabaseConstants.photosTable,
-        SupabaseConstants.feedbackTable,
-      };
+        final result = await _makeManager(
+          container,
+          updates,
+        ).exportTable(SupabaseConstants.adminLogsTable);
 
-      expect(allowed.contains(SupabaseConstants.birdsTable), isTrue);
-    });
+        expect(result, isNull);
+        expect(client.requestedTables, isEmpty);
+        expect(client.rpcCalls, isEmpty);
+        expect(updates, hasLength(1));
+        expect(updates.single.isLoading, isFalse);
+        expect(updates.single.error, contains('admin.invalid_table_name'));
+      },
+    );
 
-    test('admin_logs is NOT in allowed tables (protected)', () {
-      const allowed = {
-        SupabaseConstants.birdsTable,
-        SupabaseConstants.eggsTable,
-        SupabaseConstants.chicksTable,
-      };
+    test(
+      'resetTable rejects non-whitelisted tables before Supabase calls',
+      () async {
+        final client = _FakeAdminDatabaseClient(
+          adminBuilder: _FakeQueryBuilder(
+            _FakeAdminFilterBuilder(
+              _FakeMaybeSingleBuilder(result: {'id': 'admin-1'}),
+            ),
+          ),
+        );
+        final updates = <_StateUpdate>[];
+        final container = _makeContainer(userId: 'user-1', client: client);
+        addTearDown(container.dispose);
 
-      // admin_logs is not in the allowed export/reset set
-      expect(allowed.contains(SupabaseConstants.adminLogsTable), isFalse);
-    });
+        final result = await _makeManager(
+          container,
+          updates,
+        ).resetTable(SupabaseConstants.systemSettingsTable);
 
-    test('system_settings is NOT in allowed tables (protected)', () {
-      const allowed = {
-        SupabaseConstants.birdsTable,
-        SupabaseConstants.eggsTable,
-      };
+        expect(result, isFalse);
+        expect(client.requestedTables, isEmpty);
+        expect(client.rpcCalls, isEmpty);
+        expect(updates, hasLength(1));
+        expect(updates.single.isLoading, isFalse);
+        expect(updates.single.error, contains('admin.invalid_table_name'));
+      },
+    );
 
-      expect(allowed.contains(SupabaseConstants.systemSettingsTable), isFalse);
+    test(
+      'exportTable authorizes admin and returns pretty JSON from RPC',
+      () async {
+        final adminFilter = _FakeAdminFilterBuilder(
+          _FakeMaybeSingleBuilder(result: {'id': 'admin-1'}),
+        );
+        final client = _FakeAdminDatabaseClient(
+          adminBuilder: _FakeQueryBuilder(adminFilter),
+          rpcResults: {
+            'admin_export_table': [
+              {'id': 1, 'name': 'Kiwi'},
+            ],
+          },
+        );
+        final updates = <_StateUpdate>[];
+        final container = _makeContainer(userId: 'user-42', client: client);
+        addTearDown(container.dispose);
+
+        final result = await _makeManager(
+          container,
+          updates,
+        ).exportTable(SupabaseConstants.birdsTable);
+
+        expect(result, isNotNull);
+        expect(result, contains('"id": 1'));
+        expect(result, contains('"name": "Kiwi"'));
+        expect(client.requestedTables, [SupabaseConstants.adminUsersTable]);
+        expect(client.adminBuilder.selectedColumns, ['id']);
+        expect(adminFilter.eqCalls, hasLength(1));
+        expect(adminFilter.eqCalls.single.key, 'user_id');
+        expect(adminFilter.eqCalls.single.value, 'user-42');
+        expect(client.rpcCalls, hasLength(1));
+        expect(client.rpcCalls.single.fn, 'admin_export_table');
+        expect(client.rpcCalls.single.params, {
+          'p_table_name': SupabaseConstants.birdsTable,
+        });
+        expect(updates, hasLength(2));
+        expect(updates.first.isLoading, isTrue);
+        expect(updates.first.error, isNull);
+        expect(updates.first.isSuccess, isFalse);
+        expect(updates.last.isLoading, isFalse);
+        expect(updates.last.isSuccess, isTrue);
+        expect(
+          updates.last.successMessage,
+          contains('admin.export_table_success'),
+        );
+      },
+    );
+
+    test('resetTable delegates to RPC after admin check', () async {
+      final adminFilter = _FakeAdminFilterBuilder(
+        _FakeMaybeSingleBuilder(result: {'id': 'admin-9'}),
+      );
+      final client = _FakeAdminDatabaseClient(
+        adminBuilder: _FakeQueryBuilder(adminFilter),
+        rpcResults: {
+          'admin_reset_table': {'rows_deleted': 4},
+        },
+      );
+      final updates = <_StateUpdate>[];
+      final container = _makeContainer(userId: 'user-9', client: client);
+      addTearDown(container.dispose);
+
+      final result = await _makeManager(
+        container,
+        updates,
+      ).resetTable(SupabaseConstants.feedbackTable);
+
+      expect(result, isTrue);
+      expect(client.requestedTables, [SupabaseConstants.adminUsersTable]);
+      expect(client.adminBuilder.selectedColumns, ['id']);
+      expect(adminFilter.eqCalls, hasLength(1));
+      expect(adminFilter.eqCalls.single.key, 'user_id');
+      expect(adminFilter.eqCalls.single.value, 'user-9');
+      expect(client.rpcCalls, hasLength(1));
+      expect(client.rpcCalls.single.fn, 'admin_reset_table');
+      expect(client.rpcCalls.single.params, {
+        'p_table_name': SupabaseConstants.feedbackTable,
+      });
+      expect(updates, hasLength(2));
+      expect(updates.first.isLoading, isTrue);
+      expect(updates.last.isLoading, isFalse);
+      expect(updates.last.isSuccess, isTrue);
+      expect(
+        updates.last.successMessage,
+        contains('admin.reset_table_success'),
+      );
     });
   });
 
-  group('AdminDatabaseManager — FK-safe deletion order', () {
-    // The FK-safe deletion order ensures children are deleted before parents.
+  group('AdminDatabaseManager deletion-order invariants', () {
     const deletionOrder = [
       SupabaseConstants.eventRemindersTable,
       SupabaseConstants.notificationSchedulesTable,
@@ -76,77 +333,15 @@ void main() {
       SupabaseConstants.feedbackTable,
     ];
 
-    test('eventReminders deleted before birds', () {
-      final remindersIdx = deletionOrder.indexOf(
-        SupabaseConstants.eventRemindersTable,
+    test('eventReminders deletes before birds', () {
+      expect(
+        deletionOrder.indexOf(SupabaseConstants.eventRemindersTable),
+        lessThan(deletionOrder.indexOf(SupabaseConstants.birdsTable)),
       );
-      final birdsIdx = deletionOrder.indexOf(SupabaseConstants.birdsTable);
-      expect(remindersIdx, lessThan(birdsIdx));
     });
 
-    test('eggs deleted before birds', () {
-      final eggsIdx = deletionOrder.indexOf(SupabaseConstants.eggsTable);
-      final birdsIdx = deletionOrder.indexOf(SupabaseConstants.birdsTable);
-      expect(eggsIdx, lessThan(birdsIdx));
-    });
-
-    test('chicks deleted before birds', () {
-      final chicksIdx = deletionOrder.indexOf(SupabaseConstants.chicksTable);
-      final birdsIdx = deletionOrder.indexOf(SupabaseConstants.birdsTable);
-      expect(chicksIdx, lessThan(birdsIdx));
-    });
-
-    test('deletion order has 17 entries', () {
-      expect(deletionOrder.length, 17);
-    });
-
-    test('all entries are unique', () {
+    test('all deletion order entries are unique', () {
       expect(deletionOrder.toSet().length, deletionOrder.length);
-    });
-  });
-
-  group('AdminDatabaseManager — formatBytes (private logic)', () {
-    // Tests the private formatting logic via expected output patterns.
-    // The method is private but we can verify formatting via integration.
-
-    test('bytes under 1024 format as B', () {
-      // Simulate what _formatBytes does:
-      const int bytes = 500;
-      String result;
-      if (bytes < 1024) {
-        result = '$bytes B';
-      } else if (bytes < 1024 * 1024) {
-        result = '${(bytes / 1024).toStringAsFixed(1)} KB';
-      } else {
-        result = '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
-      }
-      expect(result, '500 B');
-    });
-
-    test('bytes in KB range format as KB', () {
-      const int bytes = 2048;
-      String result;
-      if (bytes < 1024) {
-        result = '$bytes B';
-      } else if (bytes < 1024 * 1024) {
-        result = '${(bytes / 1024).toStringAsFixed(1)} KB';
-      } else {
-        result = '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
-      }
-      expect(result, '2.0 KB');
-    });
-
-    test('bytes in MB range format as MB', () {
-      const int bytes = 1024 * 1024 * 3;
-      String result;
-      if (bytes < 1024) {
-        result = '$bytes B';
-      } else if (bytes < 1024 * 1024) {
-        result = '${(bytes / 1024).toStringAsFixed(1)} KB';
-      } else {
-        result = '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
-      }
-      expect(result, '3.0 MB');
     });
   });
 }

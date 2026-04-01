@@ -52,6 +52,73 @@ Future<BuildContext> _pumpLocaleHarness(
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
+  group('AppDateFormat', () {
+    test('exposes expected labels and intl patterns', () {
+      expect(AppDateFormat.dmy.label, 'GG.AA.YYYY');
+      expect(AppDateFormat.dmy.intlPattern, 'dd.MM.yyyy');
+
+      expect(AppDateFormat.mdy.label, 'AA/GG/YYYY');
+      expect(AppDateFormat.mdy.intlPattern, 'MM/dd/yyyy');
+
+      expect(AppDateFormat.ymd.label, 'YYYY-AA-GG');
+      expect(AppDateFormat.ymd.intlPattern, 'yyyy-MM-dd');
+    });
+
+    test('formatter uses optional time suffix correctly', () {
+      final date = DateTime(2026, 4, 1, 16, 30);
+
+      expect(AppDateFormat.dmy.formatter().format(date), '01.04.2026');
+      expect(
+        AppDateFormat.ymd.formatter(withTime: true).format(date),
+        '2026-04-01 16:30',
+      );
+    });
+  });
+
+  group('dateFormatProvider', () {
+    test('loads persisted format and updates it', () async {
+      SharedPreferences.setMockInitialValues({
+        AppPreferences.keyDateFormat: AppDateFormat.mdy.name,
+      });
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      await waitUntil(
+        () => container.read(dateFormatProvider) == AppDateFormat.mdy,
+        maxAttempts: 100,
+        interval: const Duration(milliseconds: 5),
+      );
+      expect(container.read(dateFormatProvider), AppDateFormat.mdy);
+
+      await container
+          .read(dateFormatProvider.notifier)
+          .setFormat(AppDateFormat.ymd);
+
+      expect(container.read(dateFormatProvider), AppDateFormat.ymd);
+      final prefs = await SharedPreferences.getInstance();
+      expect(
+        prefs.getString(AppPreferences.keyDateFormat),
+        AppDateFormat.ymd.name,
+      );
+    });
+
+    test('falls back to dmy for invalid persisted value', () async {
+      SharedPreferences.setMockInitialValues({
+        AppPreferences.keyDateFormat: 'invalid-format',
+      });
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      await waitUntil(
+        () => container.read(dateFormatProvider) == AppDateFormat.dmy,
+        maxAttempts: 100,
+        interval: const Duration(milliseconds: 5),
+      );
+
+      expect(container.read(dateFormatProvider), AppDateFormat.dmy);
+    });
+  });
+
   group('themeModeProvider', () {
     test('loads persisted theme mode and updates it', () async {
       SharedPreferences.setMockInitialValues({

@@ -21,7 +21,32 @@ class MonitoringSnapshotSection extends ConsumerWidget {
 
     return trendAsync.when(
       loading: () => const SizedBox.shrink(),
-      error: (_, __) => const SizedBox.shrink(),
+      error: (error, _) => Card(
+        child: Padding(
+          padding: AppSpacing.cardPadding,
+          child: Row(
+            children: [
+              Icon(LucideIcons.alertTriangle,
+                  size: 20, color: theme.colorScheme.error),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Text(
+                  'common.data_load_error'.tr(),
+                  style: theme.textTheme.bodyMedium,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              IconButton(
+                icon: const Icon(LucideIcons.refreshCw, size: 18),
+                tooltip: 'common.retry'.tr(),
+                onPressed: () =>
+                    ref.invalidate(monitoringSnapshotsProvider),
+              ),
+            ],
+          ),
+        ),
+      ),
       data: (trend) {
         if (trend.slowQueries.isEmpty && trend.connectionStates.isEmpty) {
           return Card(

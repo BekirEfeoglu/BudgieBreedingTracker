@@ -13,6 +13,61 @@ void main() {
     });
   });
 
+  group('exploreSortProvider', () {
+    test('defaults to newest and can be updated', () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      expect(container.read(exploreSortProvider), CommunityExploreSort.newest);
+
+      container.read(exploreSortProvider.notifier).state =
+          CommunityExploreSort.trending;
+
+      expect(
+        container.read(exploreSortProvider),
+        CommunityExploreSort.trending,
+      );
+    });
+  });
+
+  group('formatCommunityDate', () {
+    test('returns empty string for null date', () {
+      expect(formatCommunityDate(null), isEmpty);
+    });
+
+    test('formats just now for sub-minute dates', () {
+      final value = formatCommunityDate(
+        DateTime.now().subtract(const Duration(seconds: 20)),
+      );
+
+      expect(value, 'community.just_now');
+    });
+
+    test('formats minutes ago for recent dates', () {
+      final value = formatCommunityDate(
+        DateTime.now().subtract(const Duration(minutes: 12)),
+      );
+
+      expect(value, 'community.minutes_ago');
+    });
+
+    test('formats hours ago for same-day dates', () {
+      final value = formatCommunityDate(
+        DateTime.now().subtract(const Duration(hours: 5)),
+      );
+
+      expect(value, 'community.hours_ago');
+    });
+
+    test('formats days ago for older dates', () {
+      final value = formatCommunityDate(
+        DateTime.now().subtract(const Duration(days: 3, hours: 1)),
+      );
+
+      expect(value, 'community.days_ago');
+    });
+  });
+
   group('CommunityPost', () {
     test('creates instance with required fields', () {
       final post = CommunityPost(

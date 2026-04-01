@@ -34,7 +34,7 @@ BEGIN
             'rows_returned', rows,
             'query', LEFT(query, 300)
           ) AS q
-          FROM pg_stat_statements
+          FROM extensions.pg_stat_statements
           WHERE query NOT LIKE '%pg_stat%'
           ORDER BY total_exec_time DESC
           LIMIT 20
@@ -49,7 +49,7 @@ BEGIN
             'max_time_ms', ROUND(max_exec_time::numeric, 2),
             'query', LEFT(query, 300)
           ) AS q
-          FROM pg_stat_statements
+          FROM extensions.pg_stat_statements
           WHERE mean_exec_time > 50
             AND calls > 5
             AND query NOT LIKE '%pg_stat%'
@@ -60,9 +60,19 @@ BEGIN
     );
 
   -- 2. Reset statistics for a fresh week
-  PERFORM pg_stat_statements_reset();
+  PERFORM extensions.pg_stat_statements_reset();
 END;
 $$;
+
+-- Restrict EXECUTE to postgres/service_role only (prevents any
+-- authenticated user from resetting pg_stat_statements via RPC).
+REVOKE EXECUTE ON FUNCTION public.weekly_stats_reset() FROM PUBLIC, authenticated, anon;
+GRANT EXECUTE ON FUNCTION public.weekly_stats_reset() TO postgres, service_role;
+
+-- Unschedule existing job first (idempotency: prevents duplicates on re-run)
+SELECT cron.unschedule(jobname)
+  FROM cron.job
+  WHERE jobname = 'weekly-stats-reset';
 
 -- Schedule: Monday 02:00 UTC
 SELECT cron.schedule(

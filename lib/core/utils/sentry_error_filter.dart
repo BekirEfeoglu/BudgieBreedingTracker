@@ -7,6 +7,12 @@ import 'package:budgie_breeding_tracker/core/errors/app_exception.dart';
 mixin SentryErrorFilter {
   void reportIfUnexpected(Object error, StackTrace stackTrace) {
     if (error is FreeTierLimitException || error is ValidationException) return;
+    sendToSentry(error, stackTrace);
+  }
+
+  /// Separated for test override — tests can intercept the Sentry call
+  /// while still exercising the real filter logic in [reportIfUnexpected].
+  void sendToSentry(Object error, StackTrace stackTrace) {
     Sentry.captureException(error, stackTrace: stackTrace);
   }
 }

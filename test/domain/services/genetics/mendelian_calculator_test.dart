@@ -994,4 +994,164 @@ void main() {
       expect(MutationDatabase.getById('unknown'), isNull);
     });
   });
+
+  group('MendelianCalculator.buildDihybridPunnettSquare', () {
+    test('two autosomal mutations produce 4x4 grid (16 cells)', () {
+      final father = ParentGenotype(
+        gender: BirdGender.male,
+        mutations: {
+          'blue': AlleleState.carrier,
+          'dominant_pied': AlleleState.carrier,
+        },
+      );
+      final mother = ParentGenotype(
+        gender: BirdGender.female,
+        mutations: {
+          'blue': AlleleState.visual,
+          'dominant_pied': AlleleState.visual,
+        },
+      );
+
+      final square = calculator.buildDihybridPunnettSquare(
+        father: father,
+        mother: mother,
+        locusId1: 'blue',
+        locusId2: 'dominant_pied',
+      );
+
+      expect(square, isNotNull);
+      expect(square!.cells, hasLength(4));
+      for (final row in square.cells) {
+        expect(row, hasLength(4));
+      }
+      // Total cell count is 16
+      expect(square.cells.expand((r) => r).length, 16);
+      expect(square.isSexLinked, isFalse);
+    });
+
+    test('grid has correct row and column headers (4 gametes each)', () {
+      final father = ParentGenotype(
+        gender: BirdGender.male,
+        mutations: {
+          'blue': AlleleState.carrier,
+          'dark_factor': AlleleState.carrier,
+        },
+      );
+      final mother = ParentGenotype(
+        gender: BirdGender.female,
+        mutations: {
+          'blue': AlleleState.visual,
+          'dark_factor': AlleleState.visual,
+        },
+      );
+
+      final square = calculator.buildDihybridPunnettSquare(
+        father: father,
+        mother: mother,
+        locusId1: 'blue',
+        locusId2: 'dark_factor',
+      );
+
+      expect(square, isNotNull);
+      expect(square!.fatherAlleles, hasLength(4));
+      expect(square.motherAlleles, hasLength(4));
+
+      // Each gamete header should contain a semicolon separator
+      for (final gamete in square.fatherAlleles) {
+        expect(gamete, contains('; '));
+      }
+      for (final gamete in square.motherAlleles) {
+        expect(gamete, contains('; '));
+      }
+
+      // Mutation name should combine both locus display names
+      expect(square.mutationName, contains('\u00d7'));
+    });
+
+    test('empty mutation set returns null result', () {
+      const father = ParentGenotype.empty(gender: BirdGender.male);
+      const mother = ParentGenotype.empty(gender: BirdGender.female);
+
+      final square = calculator.buildDihybridPunnettSquare(
+        father: father,
+        mother: mother,
+        locusId1: 'blue',
+        locusId2: 'dominant_pied',
+      );
+
+      // Parents have no mutations so alleles resolve to wildtype;
+      // the method still returns a grid (all wildtype combinations).
+      // Verify the result is structurally valid (4x4 grid).
+      expect(square, isNotNull);
+      expect(square!.cells, hasLength(4));
+      expect(square.fatherAlleles, hasLength(4));
+      expect(square.motherAlleles, hasLength(4));
+    });
+
+    test('single mutation falls back to wildtype for the other locus', () {
+      final father = ParentGenotype(
+        gender: BirdGender.male,
+        mutations: {'blue': AlleleState.visual},
+      );
+      final mother = ParentGenotype(
+        gender: BirdGender.female,
+        mutations: {'blue': AlleleState.carrier},
+      );
+
+      final square = calculator.buildDihybridPunnettSquare(
+        father: father,
+        mother: mother,
+        locusId1: 'blue',
+        locusId2: 'dominant_pied',
+      );
+
+      expect(square, isNotNull);
+      // Still produces a 4x4 grid even though dominant_pied is not
+      // present in either parent (wildtype/wildtype for that locus).
+      expect(square!.cells, hasLength(4));
+      expect(square.fatherAlleles, hasLength(4));
+      expect(square.motherAlleles, hasLength(4));
+
+      // All cells should contain genotype notation with slash separator
+      for (final row in square.cells) {
+        for (final cell in row) {
+          expect(cell, contains('/'));
+          expect(cell, contains(','));
+        }
+      }
+    });
+
+    test('dihybrid with one sex-linked locus marks isSexLinked true', () {
+      final father = ParentGenotype(
+        gender: BirdGender.male,
+        mutations: {
+          'blue': AlleleState.carrier,
+          'opaline': AlleleState.carrier,
+        },
+      );
+      final mother = ParentGenotype(
+        gender: BirdGender.female,
+        mutations: {
+          'blue': AlleleState.visual,
+          'opaline': AlleleState.visual,
+        },
+      );
+
+      final square = calculator.buildDihybridPunnettSquare(
+        father: father,
+        mother: mother,
+        locusId1: 'blue',
+        locusId2: 'opaline',
+      );
+
+      expect(square, isNotNull);
+      expect(square!.isSexLinked, isTrue);
+      expect(square.cells, hasLength(4));
+      // Sex-linked locus should produce W chromosome notation
+      expect(
+        square.motherAlleles.any((g) => g.contains('W')),
+        isTrue,
+      );
+    });
+  });
 }

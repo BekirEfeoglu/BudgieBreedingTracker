@@ -10,6 +10,7 @@ import 'package:budgie_breeding_tracker/data/models/sync_metadata_model.dart'
     as sync_model;
 import 'package:budgie_breeding_tracker/data/repositories/base_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/encryption/encryption_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_processor.dart';
 import 'package:budgie_breeding_tracker/domain/services/sync/sync_orchestrator.dart';
 import 'package:budgie_breeding_tracker/domain/services/sync/sync_providers.dart';
@@ -891,5 +892,337 @@ void main() {
       verify(() => mockChickRepository.pushAll(_userId)).called(1);
       verify(() => mockBreedingPairRepository.pushAll(_userId)).called(1);
     });
+  });
+
+  group('SyncTimeHelpers — notification processing', () {
+    test('fullSync calls processNotifications on success', () async {
+      final container = createContainer();
+      addTearDown(container.dispose);
+      final orchestrator = container.read(syncOrchestratorProvider);
+
+      final result = await orchestrator.fullSync();
+
+      expect(result, SyncResult.success);
+      verify(() => mockNotificationProcessor.processAll()).called(1);
+    });
+
+    test('fullSync calls processNotifications even when pull fails', () async {
+      when(
+        () => mockBirdRepository.pull(
+          _userId,
+          lastSyncedAt: any(named: 'lastSyncedAt'),
+        ),
+      ).thenThrow(Exception('pull failure'));
+
+      final container = createContainer();
+      addTearDown(container.dispose);
+      final orchestrator = container.read(syncOrchestratorProvider);
+
+      final result = await orchestrator.fullSync();
+
+      expect(result, SyncResult.error);
+      verify(() => mockNotificationProcessor.processAll()).called(1);
+    });
+
+    test('forceFullSync calls processNotifications', () async {
+      final container = createContainer();
+      addTearDown(container.dispose);
+      final orchestrator = container.read(syncOrchestratorProvider);
+
+      final result = await orchestrator.forceFullSync();
+
+      expect(result, SyncResult.success);
+      verify(() => mockNotificationProcessor.processAll()).called(1);
+    });
+  });
+
+  group('SyncTimeHelpers — timestamp persistence', () {
+    test('fullSync persists sync time after successful sync', () async {
+      final container = createContainer();
+      addTearDown(container.dispose);
+      final orchestrator = container.read(syncOrchestratorProvider);
+
+      final beforeSync = DateTime.now();
+      final result = await orchestrator.fullSync();
+
+      expect(result, SyncResult.success);
+
+      final prefs = await SharedPreferences.getInstance();
+      final persistedValue = prefs.getString('pref_last_synced_at');
+      expect(persistedValue, isNotNull);
+      final persistedTime = DateTime.parse(persistedValue!);
+      expect(persistedTime.isAfter(beforeSync) || persistedTime.isAtSameMomentAs(beforeSync), isTrue);
+      expect(container.read(lastSyncTimeProvider), isNotNull);
+    });
+
+    test('fullSync does not persist sync time when pull fails', () async {
+      when(
+        () => mockBirdRepository.pull(
+          _userId,
+          lastSyncedAt: any(named: 'lastSyncedAt'),
+        ),
+      ).thenThrow(Exception('pull failure'));
+
+      final container = createContainer();
+      addTearDown(container.dispose);
+      final orchestrator = container.read(syncOrchestratorProvider);
+
+      final result = await orchestrator.fullSync();
+
+      expect(result, SyncResult.error);
+
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getString('pref_last_synced_at'), isNull);
+    });
+
+    test('forceFullSync persists both sync and reconcile timestamps', () async {
+      final container = createContainer();
+      addTearDown(container.dispose);
+      final orchestrator = container.read(syncOrchestratorProvider);
+
+      final beforeSync = DateTime.now();
+      final result = await orchestrator.forceFullSync();
+
+      expect(result, SyncResult.success);
+
+      final prefs = await SharedPreferences.getInstance();
+      final syncTime = prefs.getString('pref_last_synced_at');
+      final reconcileTime = prefs.getString('pref_last_reconciled_at');
+      expect(syncTime, isNotNull);
+      expect(reconcileTime, isNotNull);
+      expect(DateTime.parse(syncTime!).isAfter(beforeSync) || DateTime.parse(syncTime).isAtSameMomentAs(beforeSync), isTrue);
+      expect(DateTime.parse(reconcileTime!).isAfter(beforeSync) || DateTime.parse(reconcileTime).isAtSameMomentAs(beforeSync), isTrue);
+    });
+  });
+
+  group('SyncTimeHelpers — reconciliation timing', () {
+    test(
+      'fullSync triggers reconciliation when last reconcile is older than 6 hours',
+      () async {
+        final oldReconcile = DateTime.now().subtract(const Duration(hours: 7));
+        final lastSync = DateTime.now().subtract(const Duration(hours: 1));
+        SharedPreferences.setMockInitialValues({
+          'pref_last_synced_at': lastSync.toIso8601String(),
+          'pref_last_reconciled_at': oldReconcile.toIso8601String(),
+        });
+
+        final container = createContainer();
+        addTearDown(container.dispose);
+        final orchestrator = container.read(syncOrchestratorProvider);
+
+        final result = await orchestrator.fullSync();
+
+        expect(result, SyncResult.success);
+        // Full reconciliation pulls with null since (no incremental)
+        verify(
+          () => mockBirdRepository.pull(_userId, lastSyncedAt: null),
+        ).called(1);
+
+        // Reconcile time should be updated
+        final prefs = await SharedPreferences.getInstance();
+        final newReconcile = prefs.getString('pref_last_reconciled_at');
+        expect(newReconcile, isNotNull);
+        expect(DateTime.parse(newReconcile!).isAfter(oldReconcile), isTrue);
+      },
+    );
+
+    test(
+      'fullSync skips reconciliation when last reconcile is within 6 hours',
+      () async {
+        final recentReconcile =
+            DateTime.now().subtract(const Duration(hours: 3));
+        final lastSync = DateTime.now().subtract(const Duration(hours: 1));
+        SharedPreferences.setMockInitialValues({
+          'pref_last_synced_at': lastSync.toIso8601String(),
+          'pref_last_reconciled_at': recentReconcile.toIso8601String(),
+        });
+
+        final container = createContainer();
+        addTearDown(container.dispose);
+        final orchestrator = container.read(syncOrchestratorProvider);
+
+        final result = await orchestrator.fullSync();
+
+        expect(result, SyncResult.success);
+        // Incremental pull uses lastSync timestamp
+        verify(
+          () => mockBirdRepository.pull(_userId, lastSyncedAt: lastSync),
+        ).called(1);
+
+        // Reconcile time should NOT be updated
+        final prefs = await SharedPreferences.getInstance();
+        expect(
+          prefs.getString('pref_last_reconciled_at'),
+          recentReconcile.toIso8601String(),
+        );
+      },
+    );
+
+    test(
+      'fullSync triggers reconciliation on first sync (no stored timestamps)',
+      () async {
+        SharedPreferences.setMockInitialValues({});
+
+        final container = createContainer();
+        addTearDown(container.dispose);
+        final orchestrator = container.read(syncOrchestratorProvider);
+
+        final result = await orchestrator.fullSync();
+
+        expect(result, SyncResult.success);
+        // First sync: no lastSync → full pull with null
+        verify(
+          () => mockBirdRepository.pull(_userId, lastSyncedAt: null),
+        ).called(1);
+
+        // Both timestamps should now be persisted
+        final prefs = await SharedPreferences.getInstance();
+        expect(prefs.getString('pref_last_synced_at'), isNotNull);
+        expect(prefs.getString('pref_last_reconciled_at'), isNotNull);
+      },
+    );
+  });
+
+  group('SyncTimeHelpers — forceFullSync throttling', () {
+    test('second forceFullSync within cooldown returns throttled', () async {
+      final container = createContainer();
+      addTearDown(container.dispose);
+      final orchestrator = container.read(syncOrchestratorProvider);
+
+      final first = await orchestrator.forceFullSync();
+      expect(first, SyncResult.success);
+
+      final second = await orchestrator.forceFullSync();
+      expect(second, SyncResult.throttled);
+    });
+  });
+
+  group('SyncTimeHelpers — encryption migration', () {
+    late MockBirdsDao mockBirdsDao;
+    late MockConflictHistoryDao mockConflictHistoryDao;
+    late MockEncryptionService mockEncryptionService;
+
+    setUp(() {
+      mockBirdsDao = MockBirdsDao();
+      mockConflictHistoryDao = MockConflictHistoryDao();
+      mockEncryptionService = MockEncryptionService();
+
+      when(() => mockBirdsDao.getWithRingNumber(any()))
+          .thenAnswer((_) async => []);
+      when(() => mockConflictHistoryDao.deleteOlderThan(any()))
+          .thenAnswer((_) async => 0);
+    });
+
+    ProviderContainer createContainerWithEncryption({
+      String userId = _userId,
+    }) {
+      final base = createContainer(userId: userId);
+      // Layer encryption-specific overrides on top of the base container.
+      // We dispose the base and create a new one with all overrides merged.
+      base.dispose();
+      return ProviderContainer(
+        overrides: [
+          currentUserIdProvider.overrideWithValue(userId),
+          birdRepositoryProvider.overrideWithValue(mockBirdRepository),
+          eggRepositoryProvider.overrideWithValue(mockEggRepository),
+          chickRepositoryProvider.overrideWithValue(mockChickRepository),
+          breedingPairRepositoryProvider.overrideWithValue(
+            mockBreedingPairRepository,
+          ),
+          incubationRepositoryProvider.overrideWithValue(
+            mockIncubationRepository,
+          ),
+          healthRecordRepositoryProvider.overrideWithValue(
+            mockHealthRecordRepository,
+          ),
+          growthMeasurementRepositoryProvider.overrideWithValue(
+            mockGrowthMeasurementRepository,
+          ),
+          eventRepositoryProvider.overrideWithValue(mockEventRepository),
+          notificationRepositoryProvider.overrideWithValue(
+            mockNotificationRepository,
+          ),
+          clutchRepositoryProvider.overrideWithValue(mockClutchRepository),
+          nestRepositoryProvider.overrideWithValue(mockNestRepository),
+          profileRepositoryProvider.overrideWithValue(mockProfileRepository),
+          photoRepositoryProvider.overrideWithValue(mockPhotoRepository),
+          eventReminderRepositoryProvider.overrideWithValue(
+            mockEventReminderRepository,
+          ),
+          notificationScheduleRepositoryProvider.overrideWithValue(
+            mockNotificationScheduleRepository,
+          ),
+          syncMetadataRepositoryProvider.overrideWithValue(
+            mockSyncMetadataRepository,
+          ),
+          syncMetadataDaoProvider.overrideWithValue(mockSyncMetadataDao),
+          notificationProcessorProvider.overrideWithValue(
+            mockNotificationProcessor,
+          ),
+          // Encryption-specific overrides
+          birdsDaoProvider.overrideWithValue(mockBirdsDao),
+          conflictHistoryDaoProvider.overrideWithValue(
+            mockConflictHistoryDao,
+          ),
+          encryptionServiceProvider.overrideWithValue(mockEncryptionService),
+        ],
+      );
+    }
+
+    test(
+      'fullSync runs encryption migration on first sync (no previous sync time)',
+      () async {
+        SharedPreferences.setMockInitialValues({});
+
+        final container = createContainerWithEncryption();
+        addTearDown(container.dispose);
+        final orchestrator = container.read(syncOrchestratorProvider);
+
+        final result = await orchestrator.fullSync();
+
+        expect(result, SyncResult.success);
+        // Migration should query birds with ring numbers
+        verify(() => mockBirdsDao.getWithRingNumber(_userId)).called(1);
+      },
+    );
+
+    test(
+      'fullSync skips encryption migration during incremental sync',
+      () async {
+        final recentReconcile =
+            DateTime.now().subtract(const Duration(hours: 2));
+        final lastSync = DateTime.now().subtract(const Duration(hours: 1));
+        SharedPreferences.setMockInitialValues({
+          'pref_last_synced_at': lastSync.toIso8601String(),
+          'pref_last_reconciled_at': recentReconcile.toIso8601String(),
+        });
+
+        final container = createContainerWithEncryption();
+        addTearDown(container.dispose);
+        final orchestrator = container.read(syncOrchestratorProvider);
+
+        final result = await orchestrator.fullSync();
+
+        expect(result, SyncResult.success);
+        // No migration during incremental sync
+        verifyNever(() => mockBirdsDao.getWithRingNumber(any()));
+      },
+    );
+
+    test(
+      'forceFullSync always runs encryption migration',
+      () async {
+        SharedPreferences.setMockInitialValues({});
+
+        final container = createContainerWithEncryption();
+        addTearDown(container.dispose);
+        final orchestrator = container.read(syncOrchestratorProvider);
+
+        final result = await orchestrator.forceFullSync();
+
+        expect(result, SyncResult.success);
+        verify(() => mockBirdsDao.getWithRingNumber(_userId)).called(1);
+      },
+    );
   });
 }
