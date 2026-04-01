@@ -23,6 +23,8 @@
     "no": "No",
     "clear": "Clear",
     "close": "Close",
+    "copy": "Copy",
+    "copied": "Copied to clipboard",
     "done": "Done",
     "all": "All",
     "no_data": "No data found",
@@ -142,6 +144,7 @@
     "error_registration_failed": "Registration failed. Please try again.",
     "error_weak_password": "Password is not strong enough",
     "error_unknown": "An error occurred. Please try again.",
+    "error_2fa_check_failed": "Two-factor authentication check failed. You have been signed out for security.",
     "error_network": "Check your internet connection and try again.",
     "error_service_unavailable": "Service is currently unavailable. Please try again later.",
     "error_anonymous_disabled": "Guest sign-in is currently unavailable. Please try again later.",
@@ -595,6 +598,7 @@
     "delete_account_local_only": "Local data cleared. Server deletion will complete later",
     "delete_account_error": "Account deletion failed",
     "delete_account_loading": "Deleting account, please wait...",
+    "delete_account_contact_support": "Support",
     "whats_new": "What's New",
     "whats_new_desc": "See the latest updates and changes",
     "rate_app": "Rate App",
@@ -670,6 +674,7 @@
     "section_premium": "PREMIUM FEATURES",
     "section_subscription": "SUBSCRIPTION",
     "section_support": "HELP & SUPPORT",
+    "community": "Community",
     "section_settings": "SETTINGS"
   },
   "profile": {
@@ -682,6 +687,7 @@
     "delete_account_warning": "This action cannot be undone. All your data will be permanently deleted.",
     "delete_account_confirm_hint": "Type '{}' to confirm",
     "delete_account_password_hint": "Enter your password for security verification",
+    "delete_account_timeline": "Your account and all associated data (birds, eggs, chicks, photos, backups) will be permanently deleted from our servers within 30 days. Local data is cleared immediately.",
     "founder_panel": "Founder Panel",
     "premium_badge": "Premium",
     "founder_badge": "Founder",
@@ -1529,7 +1535,21 @@
     "just_now": "Just now",
     "minutes_ago": "{} minutes ago",
     "hours_ago": "{} hours ago",
-    "days_ago": "{} days ago"
+    "days_ago": "{} days ago",
+    "monitoring_trends": "Monitoring Trends",
+    "monitoring_no_data": "No monitoring data yet. Data will appear after the first pg_cron job execution.",
+    "slow_queries": "Slow Queries",
+    "queries_found": "queries found",
+    "cron_status_title": "Cron Job Status",
+    "cron_check_button": "Check Cron Status",
+    "cron_recheck_button": "Recheck",
+    "cron_scheduled_jobs": "Scheduled jobs",
+    "cron_total_snapshots": "Total snapshots",
+    "cron_latest_snapshot": "Latest snapshot",
+    "query_detail": "Query Detail",
+    "query_mean_time": "Mean Time",
+    "query_total_time": "Total Time",
+    "query_call_count": "Call Count"
   },
   "user_guide": {
     "title": "User Guide",
@@ -1914,7 +1934,8 @@
     "row_name_empty": "Row {}: Name field is empty",
     "row_error": "Row {}: {}",
     "row_date_required": "Row {}: Date field is required",
-    "row_title_required": "Row {}: Title field is required"
+    "row_title_required": "Row {}: Title field is required",
+    "file_too_large": "File is too large. Maximum 20 MB is supported."
   },
   "ads": {
     "free_access_title": "Free Access",

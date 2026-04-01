@@ -36,7 +36,7 @@ class FeedbackRepository {
     String? appVersion,
     String? deviceInfo,
   }) async {
-    final feedbackId = const Uuid().v4();
+    final feedbackId = const Uuid().v7();
 
     await _remoteSource.insert({
       SupabaseConstants.feedbackColId: feedbackId,
@@ -72,7 +72,7 @@ class FeedbackRepository {
 
       for (final founderId in founderIds) {
         notifications.add({
-          SupabaseConstants.notificationColId: const Uuid().v4(),
+          SupabaseConstants.notificationColId: const Uuid().v7(),
           SupabaseConstants.notificationColUserId: founderId,
           SupabaseConstants.notificationColTitle: notificationTitle,
           SupabaseConstants.notificationColBody: subject,

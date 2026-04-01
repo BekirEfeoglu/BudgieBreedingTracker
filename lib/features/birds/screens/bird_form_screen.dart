@@ -55,7 +55,19 @@ class _BirdFormScreenState extends ConsumerState<BirdFormScreen> {
 
   bool get _isDirty {
     if (_savedSuccessfully) return false;
-    if (_isEdit) return true;
+    if (_isEdit) {
+      final existing = _existingBird;
+      if (existing == null) return true;
+      return _nameController.text != existing.name ||
+          _gender != existing.gender ||
+          _species != existing.species ||
+          _colorMutation != (existing.colorMutation == BirdColor.unknown ? null : existing.colorMutation) ||
+          _ringController.text != (existing.ringNumber ?? '') ||
+          _birthDate != existing.birthDate ||
+          _fatherId != existing.fatherId ||
+          _motherId != existing.motherId ||
+          _cageController.text != (existing.cageNumber ?? '');
+    }
     return _nameController.text.isNotEmpty ||
         _ringController.text.isNotEmpty ||
         _cageController.text.isNotEmpty ||
@@ -293,7 +305,7 @@ class _BirdFormScreenState extends ConsumerState<BirdFormScreen> {
   }
 
   void _submit() {
-    if (!_formKey.currentState!.validate()) return;
+    if (!(_formKey.currentState?.validate() ?? false)) return;
     AppHaptics.lightImpact();
     submitBirdForm(
       notifier: ref.read(birdFormStateProvider.notifier),

@@ -85,7 +85,7 @@ class ActionFeedbackService {
     if (_controller.isClosed) return;
     _controller.add(
       ActionFeedback(
-        id: _uuid.v4(),
+        id: _uuid.v7(),
         message: message,
         type: type,
         createdAt: DateTime.now(),

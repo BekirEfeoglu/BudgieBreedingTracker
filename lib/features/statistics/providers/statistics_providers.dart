@@ -66,36 +66,34 @@ final statsPeriodProvider = NotifierProvider<StatsPeriodNotifier, StatsPeriod>(
 
 /// Optional species filter for statistics views. `null` means all species.
 /// Persists the selection to SharedPreferences.
-class StatsSpeciesFilterNotifier extends Notifier<Species?> {
-  bool _loaded = false;
-
-  bool get isLoaded => _loaded;
-
+/// Uses a record to track loading state alongside the selected species.
+class StatsSpeciesFilterNotifier extends Notifier<({Species? species, bool loaded})> {
   @override
-  Species? build() {
-    _loaded = false;
+  ({Species? species, bool loaded}) build() {
     _loadFromPrefs();
-    return null;
+    return (species: null, loaded: false);
   }
+
+  bool get isLoaded => state.loaded;
 
   Future<void> _loadFromPrefs() async {
     final prefs = await SharedPreferences.getInstance();
     final saved = prefs.getString(AppPreferences.keyStatsSpeciesFilter);
     if (!ref.mounted) return;
-    _loaded = true;
+    // If user already made a selection while prefs were loading, don't override.
+    if (state.loaded) return;
     if (saved != null) {
       final match = Species.values.where((s) => s.name == saved);
       if (match.isNotEmpty) {
-        state = match.first;
+        state = (species: match.first, loaded: true);
         return;
       }
     }
-    // Trigger rebuild so isLoaded becomes true even when value stays null.
-    ref.notifyListeners();
+    state = (species: null, loaded: true);
   }
 
   Future<void> setSpecies(Species? species) async {
-    state = species;
+    state = (species: species, loaded: true);
     final prefs = await SharedPreferences.getInstance();
     if (species != null) {
       await prefs.setString(
@@ -109,7 +107,7 @@ class StatsSpeciesFilterNotifier extends Notifier<Species?> {
 }
 
 final statsSpeciesFilterProvider =
-    NotifierProvider<StatsSpeciesFilterNotifier, Species?>(
+    NotifierProvider<StatsSpeciesFilterNotifier, ({Species? species, bool loaded})>(
       StatsSpeciesFilterNotifier.new,
     );
 
@@ -166,11 +164,16 @@ StatsDateRange buildStatsDateRange(StatsPeriod period, {DateTime? now}) {
 
 /// Builds an empty month map for the selected period.
 /// Accepts a [reference] date to stay consistent with [buildStatsDateRange].
-Map<String, int> _buildEmptyMonthMap(int monthCount, {DateTime? reference}) {
-  final now = reference ?? DateTime.now();
+/// [reference] is treated as an exclusive upper bound (first day of next month),
+/// so the last included month is `reference.month - 1`.
+Map<String, int> buildEmptyMonthMap(int monthCount, {DateTime? reference}) {
+  final ref = reference ?? DateTime.now();
+  // When reference is an exclusive end boundary (first day of next month),
+  // subtract 1 month to get the last included month.
+  final lastIncludedMonth = DateTime(ref.year, ref.month - 1);
   final months = <String, int>{};
   for (var i = monthCount - 1; i >= 0; i--) {
-    final month = DateTime(now.year, now.month - i);
+    final month = DateTime(lastIncludedMonth.year, lastIncludedMonth.month - i);
     final key = '${month.year}-${month.month.toString().padLeft(2, '0')}';
     months[key] = 0;
   }
@@ -232,7 +235,7 @@ final monthlyEggProductionProvider =
       final eggsAsync = ref.watch(eggsStreamProvider(userId));
       final incubationsAsync = ref.watch(incubationsStreamProvider(userId));
       final period = ref.watch(statsPeriodProvider);
-      final speciesFilter = ref.watch(statsSpeciesFilterProvider);
+      final speciesFilter = ref.watch(statsSpeciesFilterProvider).species;
 
       for (final async in [eggsAsync, incubationsAsync]) {
         if (async.hasError) {
@@ -263,7 +266,7 @@ final monthlyEggProductionProvider =
 
       return AsyncData(() {
         final range = buildStatsDateRange(period);
-        final months = _buildEmptyMonthMap(
+        final months = buildEmptyMonthMap(
           period.monthCount,
           reference: range.currentEnd,
         );
@@ -288,7 +291,7 @@ final monthlyHatchedChicksProvider =
 
       return chicksAsync.whenData((chicks) {
         final range = buildStatsDateRange(period);
-        final months = _buildEmptyMonthMap(
+        final months = buildEmptyMonthMap(
           period.monthCount,
           reference: range.currentEnd,
         );
@@ -312,7 +315,7 @@ final monthlyBreedingOutcomesProvider =
       final pairsAsync = ref.watch(breedingPairsStreamProvider(userId));
       final incubationsAsync = ref.watch(incubationsStreamProvider(userId));
       final period = ref.watch(statsPeriodProvider);
-      final speciesFilter = ref.watch(statsSpeciesFilterProvider);
+      final speciesFilter = ref.watch(statsSpeciesFilterProvider).species;
 
       for (final async in [pairsAsync, incubationsAsync]) {
         if (async.hasError) {
@@ -338,11 +341,11 @@ final monthlyBreedingOutcomesProvider =
 
       return AsyncData(() {
         final range = buildStatsDateRange(period);
-        final completedMap = _buildEmptyMonthMap(
+        final completedMap = buildEmptyMonthMap(
           period.monthCount,
           reference: range.currentEnd,
         );
-        final cancelledMap = _buildEmptyMonthMap(
+        final cancelledMap = buildEmptyMonthMap(
           period.monthCount,
           reference: range.currentEnd,
         );

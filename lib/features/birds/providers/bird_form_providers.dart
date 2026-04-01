@@ -1,6 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_constants.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
@@ -8,6 +7,7 @@ import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/premium/free_tier_limit_providers.dart';
 import 'package:budgie_breeding_tracker/core/errors/app_exception.dart';
+import 'package:budgie_breeding_tracker/core/utils/sentry_error_filter.dart';
 import 'package:budgie_breeding_tracker/features/premium/providers/premium_providers.dart';
 import 'package:uuid/uuid.dart';
 
@@ -50,7 +50,7 @@ class BirdFormState {
 }
 
 /// Notifier for bird form operations.
-class BirdFormNotifier extends Notifier<BirdFormState> {
+class BirdFormNotifier extends Notifier<BirdFormState> with SentryErrorFilter {
   @override
   BirdFormState build() => const BirdFormState();
 
@@ -189,7 +189,7 @@ class BirdFormNotifier extends Notifier<BirdFormState> {
       }
 
       final bird = Bird(
-        id: const Uuid().v4(),
+        id: const Uuid().v7(),
         userId: userId,
         name: name,
         gender: gender,
@@ -221,9 +221,9 @@ class BirdFormNotifier extends Notifier<BirdFormState> {
         isSuccess: true,
         remainingBirds: remaining,
       );
-    } catch (e) {
-      AppLogger.error('BirdFormNotifier', e, StackTrace.current);
-      Sentry.captureException(e, stackTrace: StackTrace.current);
+    } catch (e, st) {
+      AppLogger.error('BirdFormNotifier', e, st);
+      reportIfUnexpected(e, st);
       state = state.copyWith(
         isLoading: false,
         error: _mapIntegrityError(e) ?? 'errors.unknown'.tr(),
@@ -269,9 +269,9 @@ class BirdFormNotifier extends Notifier<BirdFormState> {
         ),
       );
       state = state.copyWith(isLoading: false, isSuccess: true);
-    } catch (e) {
-      AppLogger.error('BirdFormNotifier', e, StackTrace.current);
-      Sentry.captureException(e, stackTrace: StackTrace.current);
+    } catch (e, st) {
+      AppLogger.error('BirdFormNotifier', e, st);
+      reportIfUnexpected(e, st);
       state = state.copyWith(
         isLoading: false,
         error: _mapIntegrityError(e) ?? 'errors.unknown'.tr(),
@@ -286,9 +286,9 @@ class BirdFormNotifier extends Notifier<BirdFormState> {
       final repo = ref.read(birdRepositoryProvider);
       await repo.remove(id);
       state = state.copyWith(isLoading: false, isSuccess: true);
-    } catch (e) {
-      AppLogger.error('BirdFormNotifier', e, StackTrace.current);
-      Sentry.captureException(e, stackTrace: StackTrace.current);
+    } catch (e, st) {
+      AppLogger.error('BirdFormNotifier', e, st);
+      reportIfUnexpected(e, st);
       state = state.copyWith(isLoading: false, error: 'errors.unknown'.tr());
     }
   }
@@ -307,11 +307,17 @@ class BirdFormNotifier extends Notifier<BirdFormState> {
             updatedAt: DateTime.now(),
           ),
         );
+      } else {
+        state = state.copyWith(
+          isLoading: false,
+          error: 'birds.not_found'.tr(),
+        );
+        return;
       }
       state = state.copyWith(isLoading: false, isSuccess: true);
-    } catch (e) {
-      AppLogger.error('BirdFormNotifier', e, StackTrace.current);
-      Sentry.captureException(e, stackTrace: StackTrace.current);
+    } catch (e, st) {
+      AppLogger.error('BirdFormNotifier', e, st);
+      reportIfUnexpected(e, st);
       state = state.copyWith(isLoading: false, error: 'errors.unknown'.tr());
     }
   }
@@ -330,11 +336,17 @@ class BirdFormNotifier extends Notifier<BirdFormState> {
             updatedAt: DateTime.now(),
           ),
         );
+      } else {
+        state = state.copyWith(
+          isLoading: false,
+          error: 'birds.not_found'.tr(),
+        );
+        return;
       }
       state = state.copyWith(isLoading: false, isSuccess: true);
-    } catch (e) {
-      AppLogger.error('BirdFormNotifier', e, StackTrace.current);
-      Sentry.captureException(e, stackTrace: StackTrace.current);
+    } catch (e, st) {
+      AppLogger.error('BirdFormNotifier', e, st);
+      reportIfUnexpected(e, st);
       state = state.copyWith(isLoading: false, error: 'errors.unknown'.tr());
     }
   }

@@ -13,6 +13,7 @@ import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.d
 import 'package:budgie_breeding_tracker/features/chicks/providers/chick_providers.dart';
 import 'package:budgie_breeding_tracker/features/home/providers/home_providers.dart';
 import 'package:budgie_breeding_tracker/features/home/screens/home_screen.dart';
+import 'package:budgie_breeding_tracker/core/widgets/skeleton_loader.dart';
 import 'package:budgie_breeding_tracker/features/home/widgets/dashboard_stats_grid.dart';
 import 'package:budgie_breeding_tracker/features/notifications/providers/notification_list_providers.dart';
 import 'package:budgie_breeding_tracker/features/premium/providers/premium_providers.dart';
@@ -88,7 +89,8 @@ void main() {
       await tester.pumpWidget(createSubject(statsAsync: const AsyncLoading()));
       await tester.pump();
 
-      expect(find.byType(CircularProgressIndicator), findsWidgets);
+      // Dashboard stats section uses skeleton loaders instead of spinners
+      expect(find.byType(SkeletonLoader), findsWidgets);
     });
 
     testWidgets('shows dashboard stats when data is available', (tester) async {

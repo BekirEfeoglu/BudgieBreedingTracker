@@ -54,6 +54,11 @@ class MoreScreen extends ConsumerWidget {
             title: 'health_records.title'.tr(),
             onTap: () => context.push(AppRoutes.healthRecords),
           ),
+          _MoreTile(
+            icon: const AppIcon(AppIcons.community),
+            title: 'more.community'.tr(),
+            onTap: () => context.push(AppRoutes.community),
+          ),
           // Premium features section
           _SectionHeader(title: 'more.section_premium'.tr()),
           _MoreTile(
@@ -200,39 +205,47 @@ class MoreScreen extends ConsumerWidget {
                 ],
               ),
               const SizedBox(height: AppSpacing.sm),
-              GestureDetector(
+              InkWell(
                 onTap: () => launchUrl(Uri.parse('mailto:support@budgiebreedingtracker.online')),
-                child: Row(
-                  children: [
-                    Icon(LucideIcons.mail, size: 16, color: colorScheme.primary),
-                    const SizedBox(width: AppSpacing.sm),
-                    Text(
-                      'support@budgiebreedingtracker.online',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: colorScheme.primary,
-                        decoration: TextDecoration.underline,
-                        decorationColor: colorScheme.primary,
+                borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: AppSpacing.xxs),
+                  child: Row(
+                    children: [
+                      Icon(LucideIcons.mail, size: 16, color: colorScheme.primary),
+                      const SizedBox(width: AppSpacing.sm),
+                      Text(
+                        'support@budgiebreedingtracker.online',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: colorScheme.primary,
+                          decoration: TextDecoration.underline,
+                          decorationColor: colorScheme.primary,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
               const SizedBox(height: AppSpacing.sm),
-              GestureDetector(
+              InkWell(
                 onTap: () => launchUrl(Uri.parse('https://budgiebreedingtracker.online/')),
-                child: Row(
-                  children: [
-                    Icon(LucideIcons.globe, size: 16, color: colorScheme.primary),
-                    const SizedBox(width: AppSpacing.sm),
-                    Text(
-                      'budgiebreedingtracker.online',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: colorScheme.primary,
-                        decoration: TextDecoration.underline,
-                        decorationColor: colorScheme.primary,
+                borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: AppSpacing.xxs),
+                  child: Row(
+                    children: [
+                      Icon(LucideIcons.globe, size: 16, color: colorScheme.primary),
+                      const SizedBox(width: AppSpacing.sm),
+                      Text(
+                        'budgiebreedingtracker.online',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: colorScheme.primary,
+                          decoration: TextDecoration.underline,
+                          decorationColor: colorScheme.primary,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
               const SizedBox(height: AppSpacing.sm),
@@ -313,7 +326,7 @@ class _MoreTile extends StatelessWidget {
       onTap: onTap,
       contentPadding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.lg,
-        vertical: AppSpacing.xs,
+        vertical: AppSpacing.sm,
       ),
     );
   }
@@ -332,7 +345,7 @@ class _PremiumBadge extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(
             horizontal: AppSpacing.sm,
-            vertical: 2,
+            vertical: AppSpacing.xxs,
           ),
           decoration: BoxDecoration(
             color: AppColors.warning.withValues(alpha: 0.15),

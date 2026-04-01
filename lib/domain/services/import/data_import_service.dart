@@ -40,7 +40,7 @@ class DataImportService {
   Future<void> _validateBirdParents(Bird bird) async {
     if (bird.fatherId != null) {
       final father = await _birdRepo.getById(bird.fatherId!);
-      if (father == null) {
+      if (father == null || father.userId != bird.userId) {
         throw const _ImportValidationException('birds.not_found');
       }
       if (father.gender != BirdGender.male) {
@@ -53,7 +53,7 @@ class DataImportService {
 
     if (bird.motherId != null) {
       final mother = await _birdRepo.getById(bird.motherId!);
-      if (mother == null) {
+      if (mother == null || mother.userId != bird.userId) {
         throw const _ImportValidationException('birds.not_found');
       }
       if (mother.gender != BirdGender.female) {
@@ -70,7 +70,8 @@ class DataImportService {
 
     final maleBird = await _birdRepo.getById(pair.maleId!);
     final femaleBird = await _birdRepo.getById(pair.femaleId!);
-    if (maleBird == null || femaleBird == null) {
+    if (maleBird == null || femaleBird == null ||
+        maleBird.userId != pair.userId || femaleBird.userId != pair.userId) {
       throw const _ImportValidationException('birds.not_found');
     }
     if (maleBird.gender != BirdGender.male ||

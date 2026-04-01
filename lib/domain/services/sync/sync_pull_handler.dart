@@ -230,7 +230,7 @@ class SyncPullHandler {
 
       // Persist to DB
       dao.insert(ConflictHistory(
-        id: uuid.v4(),
+        id: uuid.v7(),
         userId: userId,
         tableName: tableName,
         recordId: c.recordId,

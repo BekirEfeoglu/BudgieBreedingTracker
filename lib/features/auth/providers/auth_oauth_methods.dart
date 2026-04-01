@@ -102,7 +102,7 @@ mixin _AuthOAuthMixin {
         throw const AuthException('Canceled');
       }
       AppLogger.error('[AuthActions] Google sign-in failed: $e');
-      throw AuthException('Google sign-in failed: $e', statusCode: '400');
+      throw const AuthException('Google sign-in failed', statusCode: '400');
     }
   }
 
@@ -137,7 +137,7 @@ mixin _AuthOAuthMixin {
         throw const AuthException('Canceled');
       }
       AppLogger.error('[AuthActions] Apple sign-in failed: $e');
-      throw AuthException('Apple sign-in failed: $e', statusCode: '400');
+      throw const AuthException('Apple sign-in failed', statusCode: '400');
     }
   }
 

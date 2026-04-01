@@ -50,7 +50,7 @@ class CalendarEventGenerator {
 
         events.add(
           Event(
-            id: _uuid.v4(),
+            id: _uuid.v7(),
             title: '${entry.value} - $pairLabel',
             eventDate: eventDate,
             type: EventType.breeding,
@@ -88,7 +88,7 @@ class CalendarEventGenerator {
     try {
       // 1. Egg laying date event
       final layEvent = Event(
-        id: _uuid.v4(),
+        id: _uuid.v7(),
         title: 'calendar.egg_laid_title'.tr(args: ['$eggNumber']),
         eventDate: layDate,
         type: EventType.eggLaying,
@@ -105,7 +105,7 @@ class CalendarEventGenerator {
       );
       if (!hatchDate.isBefore(DateTime.now())) {
         final hatchEvent = Event(
-          id: _uuid.v4(),
+          id: _uuid.v7(),
           title: 'calendar.egg_expected_hatch_title'.tr(args: ['$eggNumber']),
           eventDate: hatchDate,
           type: EventType.hatching,
@@ -159,7 +159,7 @@ class CalendarEventGenerator {
 
         events.add(
           Event(
-            id: _uuid.v4(),
+            id: _uuid.v7(),
             title: '$label - $chickLabel',
             eventDate: eventDate,
             type: type,

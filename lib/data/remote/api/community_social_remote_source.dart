@@ -47,7 +47,7 @@ class CommunitySocialRemoteSource {
   Future<void> likePost(String userId, String postId) async {
     try {
       await _client.from(SupabaseConstants.communityLikesTable).insert({
-        'id': const Uuid().v4(),
+        'id': const Uuid().v7(),
         'user_id': userId,
         'post_id': postId,
       });
@@ -114,7 +114,7 @@ class CommunitySocialRemoteSource {
   Future<void> likeComment(String userId, String commentId) async {
     try {
       await _client.from(SupabaseConstants.communityCommentLikesTable).insert({
-        'id': const Uuid().v4(),
+        'id': const Uuid().v7(),
         'user_id': userId,
         'comment_id': commentId,
       });

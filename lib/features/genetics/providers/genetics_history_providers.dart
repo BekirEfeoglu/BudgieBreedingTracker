@@ -46,7 +46,7 @@ class GeneticsHistorySaveNotifier extends Notifier<AsyncValue<void>> {
       }
 
       final history = GeneticsHistory(
-        id: const Uuid().v4(),
+        id: const Uuid().v7(),
         userId: userId,
         fatherGenotype: _genotypeToMap(father),
         motherGenotype: _genotypeToMap(mother),

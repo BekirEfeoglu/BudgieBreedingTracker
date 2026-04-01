@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
+import 'package:budgie_breeding_tracker/core/widgets/skeleton_loader.dart';
 import 'package:budgie_breeding_tracker/data/models/statistics_models.dart';
 import 'package:budgie_breeding_tracker/features/chicks/providers/chick_providers.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_providers.dart';
@@ -133,10 +134,7 @@ class _StatsSection extends ConsumerWidget {
     final statsAsync = ref.watch(dashboardStatsProvider(userId));
 
     return statsAsync.when(
-      loading: () => const Padding(
-        padding: EdgeInsets.all(AppSpacing.xxxl),
-        child: Center(child: CircularProgressIndicator()),
-      ),
+      loading: () => const _DashboardStatsSkeleton(),
       error: (error, st) {
         AppLogger.error('[HomeScreen] Stats error', error, st);
         return const DashboardStatsGrid(
@@ -164,10 +162,7 @@ class _ActiveBreedingsSection extends ConsumerWidget {
     final pairsAsync = ref.watch(activeBreedingsForDashboardProvider(userId));
 
     return pairsAsync.when(
-      loading: () => const Padding(
-        padding: EdgeInsets.all(AppSpacing.lg),
-        child: Center(child: CircularProgressIndicator()),
-      ),
+      loading: () => const _SectionSkeleton(),
       error: (error, st) {
         AppLogger.error('[HomeScreen] ActiveBreedings error', error, st);
         return const ActiveBreedingsSection(pairs: []);
@@ -187,10 +182,7 @@ class _RecentChicksSection extends ConsumerWidget {
     final chicksAsync = ref.watch(recentChicksProvider(userId));
 
     return chicksAsync.when(
-      loading: () => const Padding(
-        padding: EdgeInsets.all(AppSpacing.lg),
-        child: Center(child: CircularProgressIndicator()),
-      ),
+      loading: () => const _SectionSkeleton(),
       error: (error, st) {
         AppLogger.error('[HomeScreen] RecentChicks error', error, st);
         return RecentChicksSection(chicks: const [], userId: userId);
@@ -216,6 +208,61 @@ class _IncubationSummarySection extends ConsumerWidget {
         return const IncubationSummarySection(eggs: []);
       },
       data: (eggs) => IncubationSummarySection(eggs: eggs),
+    );
+  }
+}
+
+/// Skeleton placeholder for the 2x2 + 1 dashboard stats grid.
+class _DashboardStatsSkeleton extends StatelessWidget {
+  const _DashboardStatsSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Padding(
+      padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Expanded(child: SkeletonLoader(height: 90)),
+              SizedBox(width: AppSpacing.md),
+              Expanded(child: SkeletonLoader(height: 90)),
+            ],
+          ),
+          SizedBox(height: AppSpacing.md),
+          Row(
+            children: [
+              Expanded(child: SkeletonLoader(height: 90)),
+              SizedBox(width: AppSpacing.md),
+              Expanded(child: SkeletonLoader(height: 90)),
+            ],
+          ),
+          SizedBox(height: AppSpacing.md),
+          SkeletonLoader(height: 86),
+        ],
+      ),
+    );
+  }
+}
+
+/// Skeleton placeholder for list sections (active breedings, recent chicks).
+class _SectionSkeleton extends StatelessWidget {
+  const _SectionSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Padding(
+      padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SkeletonLoader(width: 140, height: 18),
+          SizedBox(height: AppSpacing.md),
+          SkeletonLoader(height: 72),
+          SizedBox(height: AppSpacing.sm),
+          SkeletonLoader(height: 72),
+        ],
+      ),
     );
   }
 }

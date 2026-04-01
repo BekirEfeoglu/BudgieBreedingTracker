@@ -17,6 +17,7 @@ import 'package:budgie_breeding_tracker/core/enums/photo_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/reminder_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/sync_enums.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:budgie_breeding_tracker/data/models/health_record_model.dart';
 import 'package:budgie_breeding_tracker/data/models/sync_metadata_model.dart';
 
@@ -183,6 +184,12 @@ class AppDatabase extends _$AppDatabase {
         final status = result.first.data.values.first as String?;
         if (status != null && status != 'ok') {
           AppLogger.error('[DB] Integrity check failed: $status');
+          try {
+            Sentry.captureMessage(
+              'Database integrity check failed: $status',
+              level: SentryLevel.error,
+            );
+          } catch (_) {}
         }
       }
     },

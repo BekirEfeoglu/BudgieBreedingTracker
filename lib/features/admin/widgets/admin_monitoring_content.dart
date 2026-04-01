@@ -9,6 +9,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_icon.dart';
 import '../providers/admin_providers.dart';
+import 'admin_monitoring_snapshot_section.dart';
 import 'admin_monitoring_table_widgets.dart';
 
 part 'admin_monitoring_content_cards.dart';
@@ -32,6 +33,8 @@ class MonitoringContent extends StatelessWidget {
           MonitoringCapacityGrid(capacity: capacity),
           const SizedBox(height: AppSpacing.xxl),
           MonitoringIndexUsageCard(indexHitRatio: capacity.indexHitRatio),
+          const SizedBox(height: AppSpacing.xxl),
+          const MonitoringSnapshotSection(),
           const SizedBox(height: AppSpacing.xxl),
           MonitoringTableDetailsSection(tables: capacity.tables),
           const SizedBox(height: AppSpacing.xxxl),

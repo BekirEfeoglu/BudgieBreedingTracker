@@ -80,7 +80,7 @@ mixin SyncableRepository<T> on BaseRepository<T> {
     } else {
       await syncDao.insertItem(
         SyncMetadata(
-          id: _uuid.v4(),
+          id: _uuid.v7(),
           table: syncTableName,
           userId: userId,
           status: SyncStatus.pending,
@@ -107,7 +107,7 @@ mixin SyncableRepository<T> on BaseRepository<T> {
     } else {
       await syncDao.insertItem(
         SyncMetadata(
-          id: _uuid.v4(),
+          id: _uuid.v7(),
           table: syncTableName,
           userId: userId,
           status: SyncStatus.error,

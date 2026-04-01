@@ -15,6 +15,13 @@ class CommunityPostRemoteSource {
 
   CommunityPostRemoteSource(this._client, this._profileCache);
 
+  /// Selective columns for feed/list queries.
+  /// Excludes admin-only columns (needs_review, is_reported, report_count)
+  /// to reduce payload size.
+  static const _feedColumns = 'id, user_id, content, title, post_type, '
+      'image_urls, tags, like_count, comment_count, view_count, '
+      'is_pinned, visibility, created_at, updated_at, is_deleted';
+
   Future<List<Map<String, dynamic>>> fetchFeed({
     int limit = 20,
     DateTime? before,
@@ -22,7 +29,7 @@ class CommunityPostRemoteSource {
     try {
       var query = _client
           .from(SupabaseConstants.communityPostsTable)
-          .select()
+          .select(_feedColumns)
           .eq('is_deleted', false);
 
       if (before != null) {
@@ -45,7 +52,7 @@ class CommunityPostRemoteSource {
     try {
       final row = await _client
           .from(SupabaseConstants.communityPostsTable)
-          .select()
+          .select(_feedColumns)
           .eq('id', postId)
           .eq('is_deleted', false)
           .maybeSingle();
@@ -66,7 +73,7 @@ class CommunityPostRemoteSource {
     try {
       final result = await _client
           .from(SupabaseConstants.communityPostsTable)
-          .select()
+          .select(_feedColumns)
           .eq('user_id', userId)
           .eq('is_deleted', false)
           .order('created_at', ascending: false)
@@ -124,7 +131,7 @@ class CommunityPostRemoteSource {
       // Double-encoding would break search (e.g. spaces → %2520).
       final result = await _client
           .from(SupabaseConstants.communityPostsTable)
-          .select()
+          .select(_feedColumns)
           .eq('is_deleted', false)
           .or('content.ilike.%$sanitized%,title.ilike.%$sanitized%')
           .order('created_at', ascending: false)
@@ -186,7 +193,7 @@ class CommunityPostRemoteSource {
     try {
       final result = await _client
           .from(SupabaseConstants.communityPostsTable)
-          .select()
+          .select(_feedColumns)
           .inFilter('id', postIds)
           .eq('is_deleted', false);
 

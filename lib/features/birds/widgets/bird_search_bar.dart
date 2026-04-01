@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -17,9 +19,11 @@ class BirdSearchBar extends ConsumerStatefulWidget {
 
 class _BirdSearchBarState extends ConsumerState<BirdSearchBar> {
   final _controller = TextEditingController();
+  Timer? _debounce;
 
   @override
   void dispose() {
+    _debounce?.cancel();
     _controller.dispose();
     super.dispose();
   }
@@ -50,6 +54,7 @@ class _BirdSearchBarState extends ConsumerState<BirdSearchBar> {
               ? IconButton(
                   icon: const Icon(LucideIcons.x),
                   onPressed: () {
+                    _debounce?.cancel();
                     _controller.clear();
                     ref.read(birdSearchQueryProvider.notifier).state = '';
                   },
@@ -59,7 +64,10 @@ class _BirdSearchBarState extends ConsumerState<BirdSearchBar> {
           contentPadding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
         ),
         onChanged: (value) {
-          ref.read(birdSearchQueryProvider.notifier).state = value;
+          _debounce?.cancel();
+          _debounce = Timer(const Duration(milliseconds: 300), () {
+            ref.read(birdSearchQueryProvider.notifier).state = value;
+          });
         },
       ),
     );

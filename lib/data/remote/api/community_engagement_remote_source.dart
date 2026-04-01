@@ -41,7 +41,7 @@ class CommunityEngagementRemoteSource {
   Future<void> bookmarkPost(String userId, String postId) async {
     try {
       await _client.from(SupabaseConstants.communityBookmarksTable).insert({
-        'id': const Uuid().v4(),
+        'id': const Uuid().v7(),
         'user_id': userId,
         'post_id': postId,
       });
@@ -137,7 +137,7 @@ class CommunityEngagementRemoteSource {
   Future<void> followUser(String userId, String targetUserId) async {
     try {
       await _client.from(SupabaseConstants.communityFollowsTable).insert({
-        'id': const Uuid().v4(),
+        'id': const Uuid().v7(),
         'follower_id': userId,
         'following_id': targetUserId,
       });
@@ -187,7 +187,7 @@ class CommunityEngagementRemoteSource {
   Future<void> blockUser(String userId, String blockedUserId) async {
     try {
       await _client.from(SupabaseConstants.communityBlocksTable).insert({
-        'id': const Uuid().v4(),
+        'id': const Uuid().v7(),
         'user_id': userId,
         'blocked_user_id': blockedUserId,
       });
@@ -224,7 +224,7 @@ class CommunityEngagementRemoteSource {
   }) async {
     try {
       await _client.from(SupabaseConstants.communityReportsTable).insert({
-        'id': const Uuid().v4(),
+        'id': const Uuid().v7(),
         'user_id': userId,
         'target_id': targetId,
         'target_type': targetType,

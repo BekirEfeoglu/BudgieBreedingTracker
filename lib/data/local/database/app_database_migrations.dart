@@ -196,11 +196,13 @@ Future<bool> _tableHasColumn(
   String tableName,
   String columnName,
 ) async {
-  assert(
-    RegExp(r'^[a-z_]+$').hasMatch(tableName) &&
-        RegExp(r'^[a-z_]+$').hasMatch(columnName),
-    '_tableHasColumn must only be called with hardcoded identifiers',
-  );
+  final identifierRegex = RegExp(r'^[a-z_]+$');
+  if (!identifierRegex.hasMatch(tableName) ||
+      !identifierRegex.hasMatch(columnName)) {
+    throw ArgumentError(
+      '_tableHasColumn must only be called with hardcoded identifiers',
+    );
+  }
   final result = await db.customSelect("PRAGMA table_info('$tableName')").get();
   return result.any((row) => row.data['name'] == columnName);
 }

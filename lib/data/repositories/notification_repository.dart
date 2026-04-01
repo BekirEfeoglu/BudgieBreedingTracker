@@ -66,7 +66,7 @@ class NotificationRepository extends BaseRepository<AppNotification>
       final syncEntries = items
           .map(
             (item) => SyncMetadata(
-              id: _uuid.v4(),
+              id: _uuid.v7(),
               table: _table,
               userId: item.userId,
               status: SyncStatus.pending,
@@ -86,7 +86,7 @@ class NotificationRepository extends BaseRepository<AppNotification>
     if (item != null) {
       await _syncDao.insertItem(
         SyncMetadata(
-          id: _uuid.v4(),
+          id: _uuid.v7(),
           table: _table,
           userId: item.userId,
           status: SyncStatus.pendingDelete,
@@ -200,7 +200,7 @@ class NotificationRepository extends BaseRepository<AppNotification>
       final syncEntries = readItems
           .map(
             (item) => SyncMetadata(
-              id: _uuid.v4(),
+              id: _uuid.v7(),
               table: _table,
               userId: userId,
               status: SyncStatus.pending,
@@ -226,7 +226,7 @@ class NotificationRepository extends BaseRepository<AppNotification>
     if (existing == null) {
       await _syncDao.insertItem(
         SyncMetadata(
-          id: _uuid.v4(),
+          id: _uuid.v7(),
           table: _settingsTable,
           userId: settings.userId,
           status: SyncStatus.pending,

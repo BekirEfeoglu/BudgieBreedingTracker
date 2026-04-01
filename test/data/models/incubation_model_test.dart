@@ -172,9 +172,10 @@ void main() {
         species: Species.canary,
       );
 
+      // Canary incubation period is 13 days per SpeciesRegistry
       expect(
         incubation.computedExpectedHatchDate,
-        startDate.add(const Duration(days: 14)),
+        startDate.add(const Duration(days: 13)),
       );
     });
 

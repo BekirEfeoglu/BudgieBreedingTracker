@@ -31,16 +31,27 @@ abstract class BaseRemoteSource<T> {
   /// Reference to the Supabase table.
   SupabaseQueryBuilder get table => client.from(tableName);
 
+  /// Threshold in milliseconds above which a query is near the server
+  /// statement_timeout (120s) and should be treated as critical.
+  static const _nearTimeoutThresholdMs = 60000;
+
   /// Executes [query] and logs a warning when it exceeds [_slowQueryThresholdMs].
+  /// Logs a critical error when approaching the server statement_timeout (120s).
   Future<R> _timed<R>(String operation, Future<R> Function() query) async {
     final sw = Stopwatch()..start();
     try {
       return await query();
     } finally {
       sw.stop();
-      if (sw.elapsedMilliseconds > _slowQueryThresholdMs) {
+      final elapsed = sw.elapsedMilliseconds;
+      if (elapsed > _nearTimeoutThresholdMs) {
+        AppLogger.error(
+          '[$tableName] Near-timeout query: $operation took ${elapsed}ms '
+          '(server limit: 120s)',
+        );
+      } else if (elapsed > _slowQueryThresholdMs) {
         AppLogger.warning(
-          '[$tableName] Slow query: $operation took ${sw.elapsedMilliseconds}ms',
+          '[$tableName] Slow query: $operation took ${elapsed}ms',
         );
       }
     }

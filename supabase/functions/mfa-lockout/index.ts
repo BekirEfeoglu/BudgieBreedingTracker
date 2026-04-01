@@ -28,7 +28,7 @@ function createSupabaseAdmin() {
 async function getOrCreateLockout(supabase: any, userId: string) {
   const { data } = await supabase
     .from("mfa_lockouts")
-    .select("*")
+    .select("user_id, failed_attempts, locked_until, last_attempt_at")
     .eq("user_id", userId)
     .single();
 

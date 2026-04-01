@@ -23,6 +23,8 @@
     "no": "Hayır",
     "clear": "Temizle",
     "close": "Kapat",
+    "copy": "Kopyala",
+    "copied": "Panoya kopyalandı",
     "done": "Bitti",
     "all": "Tümü",
     "no_data": "Veri bulunamadı",
@@ -142,6 +144,7 @@
     "error_registration_failed": "Kayıt işlemi başarısız oldu. Lütfen tekrar deneyin.",
     "error_weak_password": "Şifre yeterince güçlü değil",
     "error_unknown": "Bir hata oluştu. Lütfen tekrar deneyin.",
+    "error_2fa_check_failed": "İki faktörlü doğrulama kontrolü başarısız oldu. Güvenlik için oturumunuz kapatıldı.",
     "error_network": "İnternet bağlantınızı kontrol edin ve tekrar deneyin.",
     "error_service_unavailable": "Servis şu anda kullanılamıyor. Lütfen daha sonra tekrar deneyin.",
     "error_anonymous_disabled": "Misafir girişi şu anda kullanılamıyor. Lütfen daha sonra tekrar deneyin.",
@@ -595,6 +598,7 @@
     "delete_account_local_only": "Yerel veriler temizlendi. Sunucu silme işlemi daha sonra tamamlanacak",
     "delete_account_error": "Hesap silme işlemi başarısız oldu",
     "delete_account_loading": "Hesap siliniyor, lütfen bekleyin...",
+    "delete_account_contact_support": "Destek",
     "whats_new": "Yenilikler",
     "whats_new_desc": "Son güncellemeleri ve değişiklikleri görün",
     "rate_app": "Uygulamayı Puanla",
@@ -670,6 +674,7 @@
     "section_premium": "PREMİUM ÖZELLİKLER",
     "section_subscription": "ABONELİK",
     "section_support": "YARDIM VE DESTEK",
+    "community": "Topluluk",
     "section_settings": "AYARLAR"
   },
   "profile": {
@@ -682,6 +687,7 @@
     "delete_account_warning": "Bu işlem geri alınamaz. Tüm verileriniz kalıcı olarak silinecektir.",
     "delete_account_confirm_hint": "Onaylamak için '{}' yazın",
     "delete_account_password_hint": "Güvenlik doğrulaması için şifrenizi girin",
+    "delete_account_timeline": "Hesabınız ve tüm verileriniz (kuşlar, yumurtalar, yavrular, fotoğraflar, yedekler) en geç 30 gün içinde sunucularımızdan kalıcı olarak silinecektir. Yerel veriler hemen temizlenir.",
     "founder_panel": "Kurucu Paneli",
     "premium_badge": "Premium",
     "founder_badge": "Kurucu",
@@ -1529,7 +1535,21 @@
     "just_now": "Az önce",
     "minutes_ago": "{} dakika önce",
     "hours_ago": "{} saat önce",
-    "days_ago": "{} gün önce"
+    "days_ago": "{} gün önce",
+    "monitoring_trends": "Monitoring Trendleri",
+    "monitoring_no_data": "Henüz monitoring verisi yok. pg_cron job'ları ilk çalıştırmadan sonra burada görünecek.",
+    "slow_queries": "Yavaş Sorgular",
+    "queries_found": "sorgu bulundu",
+    "cron_status_title": "Cron Job Durumu",
+    "cron_check_button": "Cron Durumunu Kontrol Et",
+    "cron_recheck_button": "Tekrar Kontrol Et",
+    "cron_scheduled_jobs": "Zamanlanmış görevler",
+    "cron_total_snapshots": "Toplam snapshot",
+    "cron_latest_snapshot": "Son snapshot",
+    "query_detail": "Sorgu Detayı",
+    "query_mean_time": "Ort. Süre",
+    "query_total_time": "Toplam Süre",
+    "query_call_count": "Çağrı Sayısı"
   },
   "user_guide": {
     "title": "Kullanım Kılavuzu",
@@ -1914,7 +1934,8 @@
     "row_name_empty": "Satır {}: Ad alanı boş",
     "row_error": "Satır {}: {}",
     "row_date_required": "Satır {}: Tarih alanı zorunlu",
-    "row_title_required": "Satır {}: Başlık alanı zorunlu"
+    "row_title_required": "Satır {}: Başlık alanı zorunlu",
+    "file_too_large": "Dosya çok büyük. Maksimum 20 MB desteklenmektedir."
   },
   "ads": {
     "free_access_title": "Ücretsiz Erişim",

@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:excel/excel.dart';
+import 'package:flutter/foundation.dart' show visibleForTesting;
 
 import '../../../data/models/bird_model.dart';
 import '../../../data/models/breeding_pair_model.dart';
@@ -95,7 +96,7 @@ class ExcelExportService {
               CellIndex.indexByColumnRow(columnIndex: col, rowIndex: row + 1),
             )
             .value = TextCellValue(
-          values[col],
+          sanitize(values[col]),
         );
       }
     }
@@ -141,7 +142,7 @@ class ExcelExportService {
               CellIndex.indexByColumnRow(columnIndex: col, rowIndex: row + 1),
             )
             .value = TextCellValue(
-          values[col],
+          sanitize(values[col]),
         );
       }
     }
@@ -187,7 +188,7 @@ class ExcelExportService {
               CellIndex.indexByColumnRow(columnIndex: col, rowIndex: row + 1),
             )
             .value = TextCellValue(
-          values[col],
+          sanitize(values[col]),
         );
       }
     }
@@ -237,7 +238,7 @@ class ExcelExportService {
               CellIndex.indexByColumnRow(columnIndex: col, rowIndex: row + 1),
             )
             .value = TextCellValue(
-          values[col],
+          sanitize(values[col]),
         );
       }
     }
@@ -283,11 +284,30 @@ class ExcelExportService {
               CellIndex.indexByColumnRow(columnIndex: col, rowIndex: row + 1),
             )
             .value = TextCellValue(
-          values[col],
+          sanitize(values[col]),
         );
       }
     }
   }
+
+  /// Prevents formula injection by prefixing dangerous characters.
+  /// Allows negative numbers (e.g. "-5.2") to pass through unmodified.
+  @visibleForTesting
+  String sanitize(String value) {
+    if (value.isEmpty) return value;
+    final first = value[0];
+    if (first == '-' && value.length > 1 && _isDigitOrDot(value.codeUnitAt(1))) {
+      return value;
+    }
+    if (first == '=' || first == '+' || first == '-' || first == '@' ||
+        first == '|' || first == '\t' || first == '\r') {
+      return "'$value";
+    }
+    return value;
+  }
+
+  static bool _isDigitOrDot(int codeUnit) =>
+      (codeUnit >= 0x30 && codeUnit <= 0x39) || codeUnit == 0x2E;
 
   String _genderLabel(String name) => switch (name) {
     'male' => 'export.gender_male'.tr(),

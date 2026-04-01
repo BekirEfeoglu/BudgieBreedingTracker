@@ -1,9 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/utils/logger.dart';
+import '../../../core/utils/sentry_error_filter.dart';
 import '../../../data/remote/storage/storage_providers.dart';
 import '../../../data/repositories/repository_providers.dart';
 import '../../auth/providers/auth_providers.dart';
@@ -34,7 +34,8 @@ class AvatarUploadState {
   );
 }
 
-class AvatarUploadNotifier extends Notifier<AvatarUploadState> {
+class AvatarUploadNotifier extends Notifier<AvatarUploadState>
+    with SentryErrorFilter {
   @override
   AvatarUploadState build() => const AvatarUploadState();
 
@@ -59,9 +60,9 @@ class AvatarUploadNotifier extends Notifier<AvatarUploadState> {
       }
 
       state = state.copyWith(isUploading: false, isSuccess: true);
-    } catch (e) {
-      AppLogger.error('[AvatarUpload] Failed to upload avatar', e, StackTrace.current);
-      Sentry.captureException(e, stackTrace: StackTrace.current);
+    } catch (e, st) {
+      AppLogger.error('[AvatarUpload] Failed to upload avatar', e, st);
+      reportIfUnexpected(e, st);
       state = state.copyWith(isUploading: false, error: e.toString());
     }
   }
@@ -84,9 +85,9 @@ class AvatarUploadNotifier extends Notifier<AvatarUploadState> {
       }
 
       state = state.copyWith(isUploading: false, isSuccess: true);
-    } catch (e) {
-      AppLogger.error('[AvatarUpload] Failed to remove avatar', e, StackTrace.current);
-      Sentry.captureException(e, stackTrace: StackTrace.current);
+    } catch (e, st) {
+      AppLogger.error('[AvatarUpload] Failed to remove avatar', e, st);
+      reportIfUnexpected(e, st);
       state = state.copyWith(isUploading: false, error: e.toString());
     }
   }
@@ -125,7 +126,8 @@ class PasswordChangeState {
   );
 }
 
-class PasswordChangeNotifier extends Notifier<PasswordChangeState> {
+class PasswordChangeNotifier extends Notifier<PasswordChangeState>
+    with SentryErrorFilter {
   @override
   PasswordChangeState build() => const PasswordChangeState();
 
@@ -149,9 +151,9 @@ class PasswordChangeNotifier extends Notifier<PasswordChangeState> {
           ? 'profile.password_incorrect'
           : 'profile.password_change_error';
       state = state.copyWith(isLoading: false, error: errorKey);
-    } catch (e) {
-      AppLogger.error('[PasswordChange] Failed to change password', e, StackTrace.current);
-      Sentry.captureException(e, stackTrace: StackTrace.current);
+    } catch (e, st) {
+      AppLogger.error('[PasswordChange] Failed to change password', e, st);
+      reportIfUnexpected(e, st);
       state = state.copyWith(isLoading: false, error: 'profile.password_change_error');
     }
   }

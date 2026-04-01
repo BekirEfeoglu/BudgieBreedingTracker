@@ -48,7 +48,15 @@ class _BreedingFormScreenState extends ConsumerState<BreedingFormScreen> {
 
   bool get _isDirty {
     if (_savedSuccessfully) return false;
-    if (_isEdit) return true;
+    if (_isEdit) {
+      final existing = _existingPair;
+      if (existing == null) return true;
+      return _maleId != existing.maleId ||
+          _femaleId != existing.femaleId ||
+          _pairingDate != existing.pairingDate ||
+          _cageController.text != (existing.cageNumber ?? '') ||
+          _notesController.text != (existing.notes ?? '');
+    }
     return _maleId != null ||
         _femaleId != null ||
         _cageController.text.isNotEmpty ||
@@ -117,12 +125,13 @@ class _BreedingFormScreenState extends ConsumerState<BreedingFormScreen> {
         context.pop();
       }
       if (state.isBreedingLimitReached || state.isIncubationLimitReached) {
+        final errorMessage = state.error ?? '';
         ref.read(breedingFormStateProvider.notifier).reset();
         showDialog(
           context: context,
           builder: (ctx) => AlertDialog(
             title: Text('premium.title'.tr()),
-            content: Text(state.error ?? ''),
+            content: Text(errorMessage),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(ctx).pop(),
@@ -317,7 +326,7 @@ class _BreedingFormScreenState extends ConsumerState<BreedingFormScreen> {
   }
 
   void _submit() {
-    if (!_formKey.currentState!.validate()) return;
+    if (!(_formKey.currentState?.validate() ?? false)) return;
     AppHaptics.lightImpact();
 
     final userId = ref.read(currentUserIdProvider);

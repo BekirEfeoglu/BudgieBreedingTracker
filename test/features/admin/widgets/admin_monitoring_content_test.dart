@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/features/admin/providers/admin_models.dart';
+import 'package:budgie_breeding_tracker/features/admin/providers/admin_monitoring_snapshot_providers.dart';
 import 'package:budgie_breeding_tracker/features/admin/widgets/admin_monitoring_content.dart';
 
 import '../../../helpers/test_localization.dart';
@@ -39,6 +41,15 @@ const _criticalCapacity = ServerCapacity(
 );
 
 Widget _wrap(Widget child) => MaterialApp(home: Scaffold(body: child));
+
+/// Wraps with ProviderScope + monitoringSnapshotsProvider override
+/// (needed for MonitoringContent which contains MonitoringSnapshotSection).
+Widget _wrapWithProvider(Widget child) => ProviderScope(
+  overrides: [
+    monitoringSnapshotsProvider.overrideWith((_) async => const MonitoringTrend()),
+  ],
+  child: _wrap(child),
+);
 
 void main() {
   group('MonitoringStatusBanner', () {
@@ -207,7 +218,7 @@ void main() {
       tester,
     ) async {
       await pumpLocalizedApp(tester,
-        _wrap(const MonitoringContent(capacity: _healthyCapacity)),
+        _wrapWithProvider(const MonitoringContent(capacity: _healthyCapacity)),
       );
 
       expect(find.byType(MonitoringContent), findsOneWidget);
@@ -215,14 +226,14 @@ void main() {
 
     testWidgets('shows MonitoringStatusBanner', (tester) async {
       await pumpLocalizedApp(tester,
-        _wrap(const MonitoringContent(capacity: _healthyCapacity)),
+        _wrapWithProvider(const MonitoringContent(capacity: _healthyCapacity)),
       );
       expect(find.byType(MonitoringStatusBanner), findsOneWidget);
     });
 
     testWidgets('shows MonitoringIndexUsageCard', (tester) async {
       await pumpLocalizedApp(tester,
-        _wrap(const MonitoringContent(capacity: _healthyCapacity)),
+        _wrapWithProvider(const MonitoringContent(capacity: _healthyCapacity)),
       );
       expect(find.byType(MonitoringIndexUsageCard), findsOneWidget);
     });
@@ -231,14 +242,14 @@ void main() {
       tester,
     ) async {
       await pumpLocalizedApp(tester,
-        _wrap(const MonitoringContent(capacity: _criticalCapacity)),
+        _wrapWithProvider(const MonitoringContent(capacity: _criticalCapacity)),
       );
       expect(find.byType(MonitoringContent), findsOneWidget);
     });
 
     testWidgets('renders with empty default capacity', (tester) async {
       await pumpLocalizedApp(tester,
-        _wrap(const MonitoringContent(capacity: ServerCapacity())),
+        _wrapWithProvider(const MonitoringContent(capacity: ServerCapacity())),
       );
       expect(find.byType(MonitoringContent), findsOneWidget);
     });

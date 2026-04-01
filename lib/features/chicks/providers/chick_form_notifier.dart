@@ -1,7 +1,7 @@
 part of 'chick_form_providers.dart';
 
 /// Notifier for chick form operations.
-class ChickFormNotifier extends Notifier<ChickFormState> {
+class ChickFormNotifier extends Notifier<ChickFormState> with SentryErrorFilter {
   @override
   ChickFormState build() => const ChickFormState();
 
@@ -29,7 +29,7 @@ class ChickFormNotifier extends Notifier<ChickFormState> {
       final repo = ref.read(chickRepositoryProvider);
       final sideEffectErrors = <String>[];
       final chick = Chick(
-        id: const Uuid().v4(),
+        id: const Uuid().v7(),
         userId: userId,
         name: name,
         gender: gender,
@@ -107,9 +107,9 @@ class ChickFormNotifier extends Notifier<ChickFormState> {
             : null,
         isSuccess: true,
       );
-    } catch (e) {
-      AppLogger.error('ChickFormNotifier', e, StackTrace.current);
-      Sentry.captureException(e, stackTrace: StackTrace.current);
+    } catch (e, st) {
+      AppLogger.error('ChickFormNotifier', e, st);
+      reportIfUnexpected(e, st);
       state = state.copyWith(isLoading: false, error: 'errors.unknown'.tr());
     }
   }
@@ -153,9 +153,9 @@ class ChickFormNotifier extends Notifier<ChickFormState> {
         warning: sideEffectError ? 'errors.background_tasks_partial'.tr() : null,
         isSuccess: true,
       );
-    } catch (e) {
-      AppLogger.error('ChickFormNotifier', e, StackTrace.current);
-      Sentry.captureException(e, stackTrace: StackTrace.current);
+    } catch (e, st) {
+      AppLogger.error('ChickFormNotifier', e, st);
+      reportIfUnexpected(e, st);
       state = state.copyWith(isLoading: false, error: 'errors.unknown'.tr());
     }
   }
@@ -179,9 +179,9 @@ class ChickFormNotifier extends Notifier<ChickFormState> {
         warning: sideEffectError ? 'errors.background_tasks_partial'.tr() : null,
         isSuccess: true,
       );
-    } catch (e) {
-      AppLogger.error('ChickFormNotifier', e, StackTrace.current);
-      Sentry.captureException(e, stackTrace: StackTrace.current);
+    } catch (e, st) {
+      AppLogger.error('ChickFormNotifier', e, st);
+      reportIfUnexpected(e, st);
       state = state.copyWith(isLoading: false, error: 'errors.unknown'.tr());
     }
   }

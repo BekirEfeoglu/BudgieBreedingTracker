@@ -4,7 +4,30 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
 
+import '../../../helpers/fake_supabase.dart';
 import '../../../helpers/mocks.dart';
+
+/// Fake SupabaseClient that records RPC calls.
+/// Avoids mocktail issues with Future-implementing return types.
+class _RpcTrackingClient extends Fake implements SupabaseClient {
+  _RpcTrackingClient(this._auth);
+  final GoTrueClient _auth;
+
+  final rpcCalls = <({String fn, Map<String, dynamic>? params})>[];
+
+  @override
+  GoTrueClient get auth => _auth;
+
+  @override
+  PostgrestFilterBuilder<T> rpc<T>(
+    String fn, {
+    Map<String, dynamic>? params,
+    get = false,
+  }) {
+    rpcCalls.add((fn: fn, params: params));
+    return FakeFilterBuilder<T>();
+  }
+}
 
 void main() {
   late MockSupabaseClient mockClient;
@@ -181,9 +204,11 @@ void main() {
       );
     });
 
-    test('requires authenticated user to proceed', () {
-      // Already tested above: currentUser null throws AuthException
-      when(() => mockAuth.currentUser).thenReturn(null);
+    test('throws AuthException when user has no email', () {
+      final user = MockUser();
+      when(() => user.email).thenReturn(null);
+      when(() => user.id).thenReturn('user-id-123');
+      when(() => mockAuth.currentUser).thenReturn(user);
 
       expect(
         () => actions.requestAccountDeletion(currentPassword: 'pass'),
@@ -195,6 +220,58 @@ void main() {
           ),
         ),
       );
+    });
+
+    test('re-authenticates and calls RPC with user ID', () async {
+      // Use _RpcTrackingClient to avoid mocktail Future-type issues with rpc()
+      final rpcClient = _RpcTrackingClient(mockAuth);
+      final rpcActions = AuthActions(rpcClient);
+
+      final user = MockUser();
+      when(() => user.email).thenReturn('user@test.com');
+      when(() => user.id).thenReturn('user-id-123');
+      when(() => mockAuth.currentUser).thenReturn(user);
+      when(
+        () => mockAuth.signInWithPassword(
+          email: any(named: 'email'),
+          password: any(named: 'password'),
+        ),
+      ).thenAnswer((_) async => AuthResponse());
+
+      await rpcActions.requestAccountDeletion(currentPassword: 'myPass');
+
+      verify(
+        () => mockAuth.signInWithPassword(
+          email: 'user@test.com',
+          password: 'myPass',
+        ),
+      ).called(1);
+      expect(rpcClient.rpcCalls, hasLength(1));
+      expect(rpcClient.rpcCalls.first.fn, 'request_account_deletion');
+      expect(rpcClient.rpcCalls.first.params, {'p_user_id': 'user-id-123'});
+    });
+
+    test('propagates error when re-authentication fails', () async {
+      final rpcClient = _RpcTrackingClient(mockAuth);
+      final rpcActions = AuthActions(rpcClient);
+
+      final user = MockUser();
+      when(() => user.email).thenReturn('user@test.com');
+      when(() => user.id).thenReturn('user-id-123');
+      when(() => mockAuth.currentUser).thenReturn(user);
+      when(
+        () => mockAuth.signInWithPassword(
+          email: any(named: 'email'),
+          password: any(named: 'password'),
+        ),
+      ).thenThrow(const AuthException('Invalid login credentials'));
+
+      expect(
+        () => rpcActions.requestAccountDeletion(currentPassword: 'wrong'),
+        throwsA(isA<AuthException>()),
+      );
+      // RPC should never be called when re-auth fails
+      expect(rpcClient.rpcCalls, isEmpty);
     });
   });
 }

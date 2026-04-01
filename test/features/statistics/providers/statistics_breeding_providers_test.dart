@@ -14,6 +14,15 @@ import 'package:budgie_breeding_tracker/features/statistics/providers/statistics
 
 import '../../../helpers/mocks.dart';
 
+class _FixedSpeciesNotifier extends StatsSpeciesFilterNotifier {
+  final Species? _species;
+  _FixedSpeciesNotifier(this._species);
+
+  @override
+  ({Species? species, bool loaded}) build() =>
+      (species: _species, loaded: true);
+}
+
 void main() {
   late MockIncubationRepository repo;
 
@@ -94,7 +103,7 @@ void main() {
         expect(result[0].expectedDays, 19);
         expect(result[1].id, 'i1');
         expect(result[1].actualDays, 13);
-        expect(result[1].expectedDays, 14);
+        expect(result[1].expectedDays, 13);
       },
     );
   });
@@ -138,15 +147,15 @@ void main() {
         overrides: [
           incubationRepositoryProvider.overrideWithValue(repo),
           eggsStreamProvider('u1').overrideWith((_) => Stream.value(eggs)),
+          statsSpeciesFilterProvider.overrideWith(
+            () => _FixedSpeciesNotifier(Species.canary),
+          ),
         ],
       );
       addTearDown(container.dispose);
 
       container.read(statsPeriodProvider.notifier).state =
           StatsPeriod.threeMonths;
-      container
-          .read(statsSpeciesFilterProvider.notifier)
-          .setSpecies(Species.canary);
       container.listen(incubationsStreamProvider('u1'), (_, __) {});
       await container.read(incubationsStreamProvider('u1').future);
       container.listen(eggsStreamProvider('u1'), (_, __) {});

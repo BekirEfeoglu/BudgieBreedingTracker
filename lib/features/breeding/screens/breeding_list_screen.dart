@@ -18,31 +18,18 @@ import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_pro
 import 'package:budgie_breeding_tracker/features/eggs/providers/egg_providers.dart';
 import 'package:budgie_breeding_tracker/features/breeding/widgets/breeding_card.dart';
 import 'package:budgie_breeding_tracker/features/breeding/widgets/breeding_filter_bar.dart';
+import 'package:budgie_breeding_tracker/features/breeding/widgets/breeding_search_bar.dart';
 import 'package:budgie_breeding_tracker/features/notifications/widgets/notification_bell_button.dart';
 import 'package:budgie_breeding_tracker/features/profile/widgets/profile_menu_button.dart';
 
 /// Main screen listing all breeding pairs with filter and search support.
-class BreedingListScreen extends ConsumerStatefulWidget {
+class BreedingListScreen extends ConsumerWidget {
   const BreedingListScreen({super.key});
 
   @override
-  ConsumerState<BreedingListScreen> createState() => _BreedingListScreenState();
-}
-
-class _BreedingListScreenState extends ConsumerState<BreedingListScreen> {
-  final _searchController = TextEditingController();
-
-  @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final userId = ref.watch(currentUserIdProvider);
     final pairsAsync = ref.watch(breedingPairsStreamProvider(userId));
-    final searchQuery = ref.watch(breedingSearchQueryProvider);
 
     void navigateWithAd(String route) {
       final isPremium = ref.read(isPremiumProvider);
@@ -69,41 +56,7 @@ class _BreedingListScreenState extends ConsumerState<BreedingListScreen> {
       ),
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.lg,
-              vertical: AppSpacing.sm,
-            ),
-            child: TextField(
-              controller: _searchController,
-              decoration: InputDecoration(
-                hintText: 'breeding.search_hint'.tr(),
-                prefixIcon: const Padding(
-                  padding: EdgeInsets.all(AppSpacing.md),
-                  child: AppIcon(AppIcons.search, size: 20),
-                ),
-                suffixIcon: searchQuery.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(LucideIcons.x, size: 20),
-                        onPressed: () {
-                          _searchController.clear();
-                          ref.read(breedingSearchQueryProvider.notifier).state =
-                              '';
-                        },
-                      )
-                    : null,
-                isDense: true,
-                border: const OutlineInputBorder(),
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.md,
-                  vertical: AppSpacing.sm,
-                ),
-              ),
-              onChanged: (value) {
-                ref.read(breedingSearchQueryProvider.notifier).state = value;
-              },
-            ),
-          ),
+          const BreedingSearchBar(),
           const Divider(
             height: 1,
             indent: AppSpacing.lg,

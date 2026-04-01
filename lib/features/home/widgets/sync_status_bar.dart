@@ -59,22 +59,22 @@ class _SyncStatusBarState extends ConsumerState<SyncStatusBar>
 
     final (Widget icon, Color color, String label) = switch (status) {
       SyncDisplayStatus.synced => (
-        Icon(LucideIcons.cloud, size: 13, color: colorScheme.primary),
+        Icon(LucideIcons.cloud, size: 14, color: colorScheme.primary),
         colorScheme.primary,
         'sync.synced'.tr(),
       ),
       SyncDisplayStatus.syncing => (
-        AppIcon(AppIcons.sync, size: 13, color: colorScheme.tertiary),
+        AppIcon(AppIcons.sync, size: 14, color: colorScheme.tertiary),
         colorScheme.tertiary,
         'sync.syncing'.tr(),
       ),
       SyncDisplayStatus.offline => (
-        AppIcon(AppIcons.offline, size: 13, color: colorScheme.error),
+        AppIcon(AppIcons.offline, size: 14, color: colorScheme.error),
         colorScheme.error,
         'sync.offline'.tr(),
       ),
       SyncDisplayStatus.error => (
-        AppIcon(AppIcons.offline, size: 13, color: colorScheme.error),
+        AppIcon(AppIcons.offline, size: 14, color: colorScheme.error),
         colorScheme.error,
         _errorLabel(),
       ),
@@ -96,7 +96,7 @@ class _SyncStatusBarState extends ConsumerState<SyncStatusBar>
         },
         child: Container(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+          padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
           color: color.withValues(alpha: 0.12),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -108,7 +108,7 @@ class _SyncStatusBarState extends ConsumerState<SyncStatusBar>
                       child: icon,
                     )
                   : icon,
-              const SizedBox(width: 6),
+              const SizedBox(width: AppSpacing.sm),
               Text(
                 label,
                 style: theme.textTheme.labelSmall?.copyWith(

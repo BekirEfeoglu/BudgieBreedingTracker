@@ -21,6 +21,15 @@ void main() {
       );
     }
 
+    testWidgets('shows data deletion timeline info', (tester) async {
+      await pumpDialog(tester);
+
+      expect(
+        find.text(l10n('profile.delete_account_timeline')),
+        findsOneWidget,
+      );
+    });
+
     testWidgets('delete button is disabled initially', (tester) async {
       await pumpDialog(tester);
       final button = findDeleteButton(tester);

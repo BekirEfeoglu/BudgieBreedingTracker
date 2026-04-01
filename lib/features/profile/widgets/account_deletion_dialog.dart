@@ -2,7 +2,10 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lucide_icons/lucide_icons.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
@@ -108,14 +111,31 @@ Future<void> performAccountDeletion(
     // 7. Dismiss loading dialog and navigate to login
     if (context.mounted) {
       Navigator.of(context).pop(); // close loading dialog
-      final message = serverDeletionOk
-          ? 'settings.delete_account_requested'.tr()
-          : 'settings.delete_account_local_only'.tr();
-      messenger.showSnackBar(SnackBar(content: Text(message)));
+      if (serverDeletionOk) {
+        messenger.showSnackBar(
+          SnackBar(content: Text('settings.delete_account_requested'.tr())),
+        );
+      } else {
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text('settings.delete_account_local_only'.tr()),
+            action: SnackBarAction(
+              label: 'settings.delete_account_contact_support'.tr(),
+              onPressed: () => launchUrl(
+                Uri.parse('mailto:support@budgiebreedingtracker.online'
+                    '?subject=Account%20Deletion%20Request'
+                    '&body=User%20ID:%20$userId'),
+              ),
+            ),
+            duration: const Duration(seconds: 8),
+          ),
+        );
+      }
       context.go(AppRoutes.login);
     }
-  } catch (e) {
-    AppLogger.error('[AccountDeletion] Account deletion failed', e, StackTrace.current);
+  } catch (e, st) {
+    AppLogger.error('[AccountDeletion] Account deletion failed', e, st);
+    Sentry.captureException(e, stackTrace: st);
     if (context.mounted) {
       Navigator.of(context).pop(); // close loading dialog
     }
@@ -202,6 +222,33 @@ class _AccountDeletionDialogState extends State<AccountDeletionDialog> {
           Text(
             'profile.delete_account_warning'.tr(),
             style: theme.textTheme.bodyMedium,
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Container(
+            padding: const EdgeInsets.all(AppSpacing.md),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.errorContainer.withValues(alpha: 0.3),
+              borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(
+                  LucideIcons.info,
+                  size: 16,
+                  color: theme.colorScheme.error,
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                Expanded(
+                  child: Text(
+                    'profile.delete_account_timeline'.tr(),
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onErrorContainer,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
           const SizedBox(height: AppSpacing.lg),
           Text(

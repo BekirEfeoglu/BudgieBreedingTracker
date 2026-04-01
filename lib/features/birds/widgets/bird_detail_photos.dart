@@ -193,7 +193,7 @@ class _BirdDetailPhotosState extends ConsumerState<BirdDetailPhotos> {
       final photoRepo = ref.read(photoRepositoryProvider);
       await photoRepo.save(
         Photo(
-          id: const Uuid().v4(),
+          id: const Uuid().v7(),
           userId: userId,
           entityType: PhotoEntityType.bird,
           entityId: widget.bird.id,

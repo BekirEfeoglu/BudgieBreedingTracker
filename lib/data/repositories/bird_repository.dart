@@ -71,7 +71,7 @@ class BirdRepository extends BaseRepository<Bird>
       final syncEntries = items
           .map(
             (item) => SyncMetadata(
-              id: _uuid.v4(),
+              id: _uuid.v7(),
               table: _table,
               userId: item.userId,
               status: SyncStatus.pending,

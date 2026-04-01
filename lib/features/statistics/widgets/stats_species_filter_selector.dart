@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/species/species_registry.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
@@ -12,9 +13,10 @@ class StatsSpeciesFilterSelector extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final selected = ref.watch(statsSpeciesFilterProvider);
+    final filterState = ref.watch(statsSpeciesFilterProvider);
+    final selected = filterState.species;
+    final isLoaded = filterState.loaded;
     final notifier = ref.read(statsSpeciesFilterProvider.notifier);
-    final isLoaded = notifier.isLoaded;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -25,7 +27,7 @@ class StatsSpeciesFilterSelector extends ConsumerWidget {
           decoration: InputDecoration(
             labelText: 'statistics.filter_species'.tr(),
             border: const OutlineInputBorder(),
-            prefixIcon: const Icon(Icons.filter_alt_outlined),
+            prefixIcon: const Icon(LucideIcons.filter),
           ),
           items: [
             DropdownMenuItem<Species?>(
@@ -81,7 +83,7 @@ class _ActiveFilterChip extends StatelessWidget {
         child: Chip(
           avatar: speciesIconWidget(species, size: 16),
           label: Text(label, style: theme.textTheme.labelMedium),
-          deleteIcon: const Icon(Icons.close, size: 16),
+          deleteIcon: const Icon(LucideIcons.x, size: 16),
           onDeleted: onClear,
           deleteButtonTooltipMessage: 'statistics.clear_filter'.tr(),
           materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,

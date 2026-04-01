@@ -1,8 +1,8 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:budgie_breeding_tracker/core/enums/event_enums.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
+import 'package:budgie_breeding_tracker/core/utils/sentry_error_filter.dart';
 import 'package:budgie_breeding_tracker/data/models/event_model.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import 'package:uuid/uuid.dart';
@@ -29,7 +29,7 @@ class EventFormState {
 }
 
 /// Notifier for event form operations.
-class EventFormNotifier extends Notifier<EventFormState> {
+class EventFormNotifier extends Notifier<EventFormState> with SentryErrorFilter {
   @override
   EventFormState build() => const EventFormState();
 
@@ -48,7 +48,7 @@ class EventFormNotifier extends Notifier<EventFormState> {
     try {
       final repo = ref.read(eventRepositoryProvider);
       final event = Event(
-        id: const Uuid().v4(),
+        id: const Uuid().v7(),
         title: title,
         eventDate: eventDate,
         type: type,
@@ -62,9 +62,9 @@ class EventFormNotifier extends Notifier<EventFormState> {
       );
       await repo.save(event);
       state = state.copyWith(isLoading: false, isSuccess: true);
-    } catch (e) {
-      AppLogger.error('EventFormNotifier', e, StackTrace.current);
-      Sentry.captureException(e, stackTrace: StackTrace.current);
+    } catch (e, st) {
+      AppLogger.error('EventFormNotifier', e, st);
+      reportIfUnexpected(e, st);
       state = state.copyWith(isLoading: false, error: 'errors.save_failed'.tr());
     }
   }
@@ -76,9 +76,9 @@ class EventFormNotifier extends Notifier<EventFormState> {
       final repo = ref.read(eventRepositoryProvider);
       await repo.save(event.copyWith(updatedAt: DateTime.now()));
       state = state.copyWith(isLoading: false, isSuccess: true);
-    } catch (e) {
-      AppLogger.error('EventFormNotifier', e, StackTrace.current);
-      Sentry.captureException(e, stackTrace: StackTrace.current);
+    } catch (e, st) {
+      AppLogger.error('EventFormNotifier', e, st);
+      reportIfUnexpected(e, st);
       state = state.copyWith(isLoading: false, error: 'errors.update_failed'.tr());
     }
   }
@@ -90,9 +90,9 @@ class EventFormNotifier extends Notifier<EventFormState> {
       final repo = ref.read(eventRepositoryProvider);
       await repo.remove(id);
       state = state.copyWith(isLoading: false, isSuccess: true);
-    } catch (e) {
-      AppLogger.error('EventFormNotifier', e, StackTrace.current);
-      Sentry.captureException(e, stackTrace: StackTrace.current);
+    } catch (e, st) {
+      AppLogger.error('EventFormNotifier', e, st);
+      reportIfUnexpected(e, st);
       state = state.copyWith(isLoading: false, error: 'errors.delete_failed'.tr());
     }
   }
@@ -109,9 +109,9 @@ class EventFormNotifier extends Notifier<EventFormState> {
         );
       }
       state = state.copyWith(isLoading: false, isSuccess: true);
-    } catch (e) {
-      AppLogger.error('EventFormNotifier', e, StackTrace.current);
-      Sentry.captureException(e, stackTrace: StackTrace.current);
+    } catch (e, st) {
+      AppLogger.error('EventFormNotifier', e, st);
+      reportIfUnexpected(e, st);
       state = state.copyWith(isLoading: false, error: 'errors.update_failed'.tr());
     }
   }

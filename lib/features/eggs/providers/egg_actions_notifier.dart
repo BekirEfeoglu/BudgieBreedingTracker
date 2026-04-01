@@ -55,7 +55,7 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
       final sideEffectErrors = <String>[];
 
       final egg = Egg(
-        id: const Uuid().v4(),
+        id: const Uuid().v7(),
         userId: userId,
         incubationId: incubationId,
         layDate: layDate,
@@ -185,7 +185,7 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
       final hatchDate = egg.hatchDate ?? DateTime.now();
 
       final chick = Chick(
-        id: const Uuid().v4(),
+        id: const Uuid().v7(),
         userId: egg.userId,
         eggId: egg.id,
         clutchId: egg.clutchId,

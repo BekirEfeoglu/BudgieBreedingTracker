@@ -21,7 +21,7 @@ final monthlyFertilityRateProvider =
       final eggsAsync = ref.watch(eggsStreamProvider(userId));
       final incubationsAsync = ref.watch(incubationsStreamProvider(userId));
       final period = ref.watch(statsPeriodProvider);
-      final speciesFilter = ref.watch(statsSpeciesFilterProvider);
+      final speciesFilter = ref.watch(statsSpeciesFilterProvider).species;
 
       for (final async in [eggsAsync, incubationsAsync]) {
         if (async.hasError) {
@@ -52,15 +52,15 @@ final monthlyFertilityRateProvider =
 
       return AsyncData(() {
         final range = buildStatsDateRange(period);
-        final now = range.currentEnd;
-        final monthCount = period.monthCount;
+        final monthKeys = buildEmptyMonthMap(
+          period.monthCount,
+          reference: range.currentEnd,
+        );
         final fertileMap = <String, int>{};
         final totalMap = <String, int>{};
         final result = <String, double>{};
 
-        for (var i = monthCount - 1; i >= 0; i--) {
-          final month = DateTime(now.year, now.month - i);
-          final key = '${month.year}-${month.month.toString().padLeft(2, '0')}';
+        for (final key in monthKeys.keys) {
           fertileMap[key] = 0;
           totalMap[key] = 0;
           result[key] = 0.0;
@@ -98,7 +98,7 @@ final incubationDurationProvider =
       userId,
     ) {
       final incubationsAsync = ref.watch(incubationsStreamProvider(userId));
-      final speciesFilter = ref.watch(statsSpeciesFilterProvider);
+      final speciesFilter = ref.watch(statsSpeciesFilterProvider).species;
 
       return incubationsAsync.whenData((incubations) {
         final source = speciesFilter == null

@@ -47,7 +47,8 @@ void main() {
       await tester.pump();
 
       await tester.enterText(find.byType(TextField), 'test query');
-      await tester.pump();
+      // Wait for debounce timer (300ms) to update the provider state
+      await tester.pump(const Duration(milliseconds: 350));
 
       expect(find.byType(IconButton), findsOneWidget);
     });
@@ -57,7 +58,8 @@ void main() {
       await tester.pump();
 
       await tester.enterText(find.byType(TextField), 'some text');
-      await tester.pump();
+      // Wait for debounce timer (300ms) to update the provider state
+      await tester.pump(const Duration(milliseconds: 350));
 
       await tester.tap(find.byType(IconButton));
       await tester.pump();

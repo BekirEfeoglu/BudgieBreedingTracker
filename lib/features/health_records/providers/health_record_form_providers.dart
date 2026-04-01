@@ -1,7 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
+import 'package:budgie_breeding_tracker/core/utils/sentry_error_filter.dart';
 import 'package:budgie_breeding_tracker/data/models/health_record_model.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_providers.dart';
@@ -32,7 +32,8 @@ class HealthRecordFormState {
 }
 
 /// Notifier for health record form actions.
-class HealthRecordFormNotifier extends Notifier<HealthRecordFormState> {
+class HealthRecordFormNotifier extends Notifier<HealthRecordFormState>
+    with SentryErrorFilter {
   @override
   HealthRecordFormState build() => const HealthRecordFormState();
 
@@ -54,7 +55,7 @@ class HealthRecordFormNotifier extends Notifier<HealthRecordFormState> {
     try {
       final repo = ref.read(healthRecordRepositoryProvider);
       final record = HealthRecord(
-        id: const Uuid().v4(),
+        id: const Uuid().v7(),
         userId: userId,
         title: title,
         type: type,
@@ -81,9 +82,9 @@ class HealthRecordFormNotifier extends Notifier<HealthRecordFormState> {
       }
 
       state = state.copyWith(isLoading: false, isSuccess: true);
-    } catch (e) {
-      AppLogger.error('HealthRecordFormNotifier', e, StackTrace.current);
-      Sentry.captureException(e, stackTrace: StackTrace.current);
+    } catch (e, st) {
+      AppLogger.error('HealthRecordFormNotifier', e, st);
+      reportIfUnexpected(e, st);
       state = state.copyWith(isLoading: false, error: 'errors.unknown'.tr());
     }
   }
@@ -123,9 +124,9 @@ class HealthRecordFormNotifier extends Notifier<HealthRecordFormState> {
       final repo = ref.read(healthRecordRepositoryProvider);
       await repo.save(record.copyWith(updatedAt: DateTime.now()));
       state = state.copyWith(isLoading: false, isSuccess: true);
-    } catch (e) {
-      AppLogger.error('HealthRecordFormNotifier', e, StackTrace.current);
-      Sentry.captureException(e, stackTrace: StackTrace.current);
+    } catch (e, st) {
+      AppLogger.error('HealthRecordFormNotifier', e, st);
+      reportIfUnexpected(e, st);
       state = state.copyWith(isLoading: false, error: 'errors.unknown'.tr());
     }
   }
@@ -136,9 +137,9 @@ class HealthRecordFormNotifier extends Notifier<HealthRecordFormState> {
       final repo = ref.read(healthRecordRepositoryProvider);
       await repo.remove(id);
       state = state.copyWith(isLoading: false, isSuccess: true);
-    } catch (e) {
-      AppLogger.error('HealthRecordFormNotifier', e, StackTrace.current);
-      Sentry.captureException(e, stackTrace: StackTrace.current);
+    } catch (e, st) {
+      AppLogger.error('HealthRecordFormNotifier', e, st);
+      reportIfUnexpected(e, st);
       state = state.copyWith(isLoading: false, error: 'errors.unknown'.tr());
     }
   }

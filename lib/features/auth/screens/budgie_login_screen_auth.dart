@@ -93,13 +93,19 @@ abstract class _BudgieLoginAuthBase extends ConsumerState<BudgieLoginScreen>
           }
         } catch (e, st) {
           AppLogger.error(
-            '[Login] 2FA check failed, proceeding to home',
+            '[Login] 2FA check failed, signing out for security',
             e,
             st,
           );
           Sentry.captureException(e, stackTrace: st);
           if (!mounted) return;
-          context.go(AppRoutes.home);
+          try {
+            await ref.read(authActionsProvider).signOut();
+          } catch (signOutError) {
+            AppLogger.debug('[Login] Sign-out after 2FA failure also failed: $signOutError');
+          }
+          if (!mounted) return;
+          _showError('auth.error_2fa_check_failed'.tr());
           return;
         }
 

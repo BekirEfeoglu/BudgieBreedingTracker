@@ -17,9 +17,9 @@ extension ChickFormStatusActions on ChickFormNotifier {
         );
       }
       state = state.copyWith(isLoading: false, isSuccess: true);
-    } catch (e) {
-      AppLogger.error('ChickFormNotifier', e, StackTrace.current);
-      Sentry.captureException(e, stackTrace: StackTrace.current);
+    } catch (e, st) {
+      AppLogger.error('ChickFormNotifier', e, st);
+      reportIfUnexpected(e, st);
       state = state.copyWith(isLoading: false, error: 'errors.unknown'.tr());
     }
   }
@@ -54,9 +54,9 @@ extension ChickFormStatusActions on ChickFormNotifier {
             : null,
         isSuccess: true,
       );
-    } catch (e) {
-      AppLogger.error('ChickFormNotifier', e, StackTrace.current);
-      Sentry.captureException(e, stackTrace: StackTrace.current);
+    } catch (e, st) {
+      AppLogger.error('ChickFormNotifier', e, st);
+      reportIfUnexpected(e, st);
       state = state.copyWith(isLoading: false, error: 'errors.unknown'.tr());
     }
   }
@@ -89,7 +89,7 @@ extension ChickFormStatusActions on ChickFormNotifier {
           ? Species.unknown
           : await resolveEggSpecies(ref, sourceEgg);
 
-      final birdId = const Uuid().v4();
+      final birdId = const Uuid().v7();
       final bird = Bird(
         id: birdId,
         userId: chick.userId,
@@ -117,9 +117,9 @@ extension ChickFormStatusActions on ChickFormNotifier {
       );
 
       state = state.copyWith(isLoading: false, isSuccess: true);
-    } catch (e) {
-      AppLogger.error('ChickFormNotifier', e, StackTrace.current);
-      Sentry.captureException(e, stackTrace: StackTrace.current);
+    } catch (e, st) {
+      AppLogger.error('ChickFormNotifier', e, st);
+      reportIfUnexpected(e, st);
       state = state.copyWith(isLoading: false, error: 'errors.unknown'.tr());
     }
   }

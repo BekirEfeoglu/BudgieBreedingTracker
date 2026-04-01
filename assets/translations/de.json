@@ -23,6 +23,8 @@
     "no": "Nein",
     "clear": "Löschen",
     "close": "Schließen",
+    "copy": "Kopieren",
+    "copied": "In die Zwischenablage kopiert",
     "done": "Fertig",
     "all": "Alle",
     "no_data": "Keine Daten gefunden",
@@ -142,6 +144,7 @@
     "error_registration_failed": "Registrierung fehlgeschlagen. Bitte versuchen Sie es erneut.",
     "error_weak_password": "Passwort ist nicht stark genug",
     "error_unknown": "Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.",
+    "error_2fa_check_failed": "Zwei-Faktor-Authentifizierungsprüfung fehlgeschlagen. Sie wurden aus Sicherheitsgründen abgemeldet.",
     "error_network": "Überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.",
     "error_service_unavailable": "Dienst ist derzeit nicht verfügbar. Bitte versuchen Sie es später erneut.",
     "error_anonymous_disabled": "Gastanmeldung ist derzeit nicht verfügbar. Bitte versuchen Sie es später erneut.",
@@ -595,6 +598,7 @@
     "delete_account_local_only": "Lokale Daten gelöscht. Serverlöschung wird später abgeschlossen",
     "delete_account_error": "Kontolöschung fehlgeschlagen",
     "delete_account_loading": "Konto wird gelöscht, bitte warten...",
+    "delete_account_contact_support": "Support",
     "whats_new": "Neuigkeiten",
     "whats_new_desc": "Die neuesten Updates und Änderungen anzeigen",
     "rate_app": "App bewerten",
@@ -670,6 +674,7 @@
     "section_premium": "PREMIUM-FUNKTIONEN",
     "section_subscription": "ABONNEMENT",
     "section_support": "HILFE & SUPPORT",
+    "community": "Community",
     "section_settings": "EINSTELLUNGEN"
   },
   "profile": {
@@ -682,6 +687,7 @@
     "delete_account_warning": "Diese Aktion kann nicht rückgängig gemacht werden. Alle Ihre Daten werden dauerhaft gelöscht.",
     "delete_account_confirm_hint": "Geben Sie '{}' zur Bestätigung ein",
     "delete_account_password_hint": "Geben Sie Ihr Passwort zur Sicherheitsüberprüfung ein",
+    "delete_account_timeline": "Ihr Konto und alle zugehörigen Daten (Vögel, Eier, Küken, Fotos, Backups) werden innerhalb von 30 Tagen dauerhaft von unseren Servern gelöscht. Lokale Daten werden sofort gelöscht.",
     "founder_panel": "Gründer-Panel",
     "premium_badge": "Premium",
     "founder_badge": "Gründer",
@@ -1529,7 +1535,21 @@
     "just_now": "Gerade eben",
     "minutes_ago": "Vor {} Minuten",
     "hours_ago": "Vor {} Stunden",
-    "days_ago": "Vor {} Tagen"
+    "days_ago": "Vor {} Tagen",
+    "monitoring_trends": "Monitoring-Trends",
+    "monitoring_no_data": "Noch keine Monitoring-Daten. Daten erscheinen nach der ersten pg_cron-Ausführung.",
+    "slow_queries": "Langsame Abfragen",
+    "queries_found": "Abfragen gefunden",
+    "cron_status_title": "Cron-Job-Status",
+    "cron_check_button": "Cron-Status prüfen",
+    "cron_recheck_button": "Erneut prüfen",
+    "cron_scheduled_jobs": "Geplante Jobs",
+    "cron_total_snapshots": "Gesamte Snapshots",
+    "cron_latest_snapshot": "Letzter Snapshot",
+    "query_detail": "Abfragedetails",
+    "query_mean_time": "Mittl. Zeit",
+    "query_total_time": "Gesamtzeit",
+    "query_call_count": "Aufrufanzahl"
   },
   "user_guide": {
     "title": "Benutzerhandbuch",
@@ -1914,7 +1934,8 @@
     "row_name_empty": "Zeile {}: Namensfeld ist leer",
     "row_error": "Zeile {}: {}",
     "row_date_required": "Zeile {}: Datumsfeld ist erforderlich",
-    "row_title_required": "Zeile {}: Titelfeld ist erforderlich"
+    "row_title_required": "Zeile {}: Titelfeld ist erforderlich",
+    "file_too_large": "Datei ist zu groß. Maximal 20 MB werden unterstützt."
   },
   "ads": {
     "free_access_title": "Kostenloser Zugang",

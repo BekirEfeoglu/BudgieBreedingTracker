@@ -229,6 +229,13 @@ tmp/
 /*.webp
 
 # --------------------------------------------------
+# Supabase Edge Functions - Node artifacts
+# --------------------------------------------------
+supabase/functions/node_modules/
+supabase/functions/**/node_modules/
+supabase/functions/**/*.js.map
+
+# --------------------------------------------------
 # Misc
 # --------------------------------------------------
 *.log

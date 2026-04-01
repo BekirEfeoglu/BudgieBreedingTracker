@@ -95,7 +95,8 @@ extension _SyncTimeHelpers on SyncOrchestrator {
     try {
       final prefs = await _getPrefs();
       return prefs.getBool(_keyPendingEncryptionMigration) ?? false;
-    } catch (_) {
+    } catch (e) {
+      AppLogger.debug('[SyncOrchestrator] Failed to check pending migration: $e');
       return false;
     }
   }
@@ -104,14 +105,18 @@ extension _SyncTimeHelpers on SyncOrchestrator {
     try {
       final prefs = await _getPrefs();
       await prefs.setBool(_keyPendingEncryptionMigration, true);
-    } catch (_) {}
+    } catch (e) {
+      AppLogger.debug('[SyncOrchestrator] Failed to set pending migration: $e');
+    }
   }
 
   Future<void> _clearPendingMigration() async {
     try {
       final prefs = await _getPrefs();
       await prefs.remove(_keyPendingEncryptionMigration);
-    } catch (_) {}
+    } catch (e) {
+      AppLogger.debug('[SyncOrchestrator] Failed to clear pending migration: $e');
+    }
   }
 
   /// Processes pending event reminders and notification schedules.

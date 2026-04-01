@@ -83,7 +83,7 @@ class CreatePostNotifier extends Notifier<CreatePostState> {
       }
       final textNeedsReview = modResult.needsReview;
 
-      final postId = const Uuid().v4();
+      final postId = const Uuid().v7();
       final imageUrls = <String>[];
       var imageNeedsReview = false;
 

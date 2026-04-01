@@ -24,6 +24,17 @@ Future<ImportResult> _importSheet<T>({
   String Function(Object error, int rowIndex)? onError,
   String? sheetNotFoundError,
 }) async {
+  // Reject files larger than 20 MB to prevent memory exhaustion
+  const maxImportFileSize = 20 * 1024 * 1024; // 20 MB
+  if (bytes.length > maxImportFileSize) {
+    return ImportResult(
+      totalRows: 0,
+      importedCount: 0,
+      skippedCount: 0,
+      errors: ['import.file_too_large'.tr()],
+    );
+  }
+
   final excel = Excel.decodeBytes(bytes);
   final sheet = findSheet(excel, sheetNames);
 

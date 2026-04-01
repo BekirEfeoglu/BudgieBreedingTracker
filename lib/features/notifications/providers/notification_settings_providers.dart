@@ -73,7 +73,7 @@ class NotificationToggleSettingsNotifier
       final existing = await dao.getByUser(userId);
       final model =
           (existing ??
-                  NotificationSettings(id: const Uuid().v4(), userId: userId))
+                  NotificationSettings(id: const Uuid().v7(), userId: userId))
               .copyWith(
                 soundEnabled: state.soundEnabled,
                 vibrationEnabled: state.vibrationEnabled,

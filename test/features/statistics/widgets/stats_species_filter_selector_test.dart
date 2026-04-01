@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
@@ -123,10 +124,10 @@ void main() {
       expect(find.byType(Chip), findsOneWidget);
 
       // Tap the delete icon on the chip
-      await tester.tap(find.byIcon(Icons.close));
+      await tester.tap(find.byIcon(LucideIcons.x));
       await tester.pumpAndSettle();
 
-      expect(container.read(statsSpeciesFilterProvider), isNull);
+      expect(container.read(statsSpeciesFilterProvider).species, isNull);
       expect(find.byType(Chip), findsNothing);
     });
 
@@ -194,12 +195,12 @@ void main() {
       addTearDown(container.dispose);
 
       // Default is null
-      expect(container.read(statsSpeciesFilterProvider), isNull);
+      expect(container.read(statsSpeciesFilterProvider).species, isNull);
 
       // Wait for _loadFromPrefs to complete
       await Future<void>.delayed(Duration.zero);
 
-      expect(container.read(statsSpeciesFilterProvider), Species.finch);
+      expect(container.read(statsSpeciesFilterProvider).species, Species.finch);
     });
 
     test('build stays null for invalid saved value', () async {
@@ -211,7 +212,7 @@ void main() {
 
       await Future<void>.delayed(Duration.zero);
 
-      expect(container.read(statsSpeciesFilterProvider), isNull);
+      expect(container.read(statsSpeciesFilterProvider).species, isNull);
     });
 
     test('build stays null when no saved value', () async {
@@ -221,7 +222,7 @@ void main() {
 
       await Future<void>.delayed(Duration.zero);
 
-      expect(container.read(statsSpeciesFilterProvider), isNull);
+      expect(container.read(statsSpeciesFilterProvider).species, isNull);
     });
 
     test('isLoaded becomes true after prefs load', () async {
@@ -242,6 +243,37 @@ void main() {
 
       expect(
         container.read(statsSpeciesFilterProvider.notifier).isLoaded,
+        isTrue,
+      );
+    });
+
+    test('setSpecies before prefs load preserves user selection', () async {
+      // Simulate slow SharedPreferences by setting a saved value that would
+      // override the user's selection if the race condition exists.
+      SharedPreferences.setMockInitialValues({
+        AppPreferences.keyStatsSpeciesFilter: 'canary',
+      });
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      // Trigger build (starts async _loadFromPrefs)
+      container.read(statsSpeciesFilterProvider);
+
+      // User makes a selection BEFORE prefs finish loading
+      await container
+          .read(statsSpeciesFilterProvider.notifier)
+          .setSpecies(Species.budgie);
+
+      // Now let _loadFromPrefs complete
+      await Future<void>.delayed(Duration.zero);
+
+      // User's selection (budgie) must be preserved, NOT overwritten by prefs (canary)
+      expect(
+        container.read(statsSpeciesFilterProvider).species,
+        Species.budgie,
+      );
+      expect(
+        container.read(statsSpeciesFilterProvider).loaded,
         isTrue,
       );
     });

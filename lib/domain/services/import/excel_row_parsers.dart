@@ -46,7 +46,7 @@ abstract final class ExcelRowParsers {
     final birthDate = parseDate(birthDateStr);
 
     return Bird(
-      id: _uuid.v4(),
+      id: _uuid.v7(),
       userId: userId,
       name: name,
       ringNumber: ringNumber,
@@ -85,7 +85,7 @@ abstract final class ExcelRowParsers {
     final separationDate = parseDate(separationDateStr);
 
     return BreedingPair(
-      id: _uuid.v4(),
+      id: _uuid.v7(),
       userId: userId,
       maleId: maleId,
       femaleId: femaleId,
@@ -127,7 +127,7 @@ abstract final class ExcelRowParsers {
     final hatchDate = parseDate(hatchDateStr);
 
     return Egg(
-      id: _uuid.v4(),
+      id: _uuid.v7(),
       userId: userId,
       eggNumber: eggNumber,
       layDate: layDate,
@@ -166,7 +166,7 @@ abstract final class ExcelRowParsers {
     final hatchWeight = double.tryParse(hatchWeightStr ?? '');
 
     return Chick(
-      id: _uuid.v4(),
+      id: _uuid.v7(),
       userId: userId,
       name: name,
       ringNumber: ringNumber,
@@ -209,7 +209,7 @@ abstract final class ExcelRowParsers {
     final type = parseHealthRecordType(typeStr);
 
     return HealthRecord(
-      id: _uuid.v4(),
+      id: _uuid.v7(),
       userId: userId,
       title: title,
       type: type,

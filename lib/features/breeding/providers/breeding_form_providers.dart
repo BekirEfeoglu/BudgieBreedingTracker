@@ -1,6 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_constants.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/breeding_enums.dart';
@@ -14,19 +13,24 @@ import 'package:budgie_breeding_tracker/features/birds/providers/bird_providers.
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_notification_helpers.dart';
 import 'package:budgie_breeding_tracker/domain/services/premium/free_tier_limit_providers.dart';
 import 'package:budgie_breeding_tracker/core/errors/app_exception.dart';
+import 'package:budgie_breeding_tracker/core/utils/sentry_error_filter.dart';
 import 'package:budgie_breeding_tracker/features/premium/providers/premium_providers.dart';
 import 'package:uuid/uuid.dart';
 
 /// Male birds available for pairing (derived from birdsStreamProvider).
 final maleBirdsProvider = Provider.family<List<Bird>, String>((ref, userId) {
   final birds = ref.watch(birdsStreamProvider(userId)).value ?? <Bird>[];
-  return birds.where((b) => b.gender == BirdGender.male).toList();
+  return birds
+      .where((b) => b.gender == BirdGender.male && b.status == BirdStatus.alive)
+      .toList();
 });
 
 /// Female birds available for pairing (derived from birdsStreamProvider).
 final femaleBirdsProvider = Provider.family<List<Bird>, String>((ref, userId) {
   final birds = ref.watch(birdsStreamProvider(userId)).value ?? <Bird>[];
-  return birds.where((b) => b.gender == BirdGender.female).toList();
+  return birds
+      .where((b) => b.gender == BirdGender.female && b.status == BirdStatus.alive)
+      .toList();
 });
 
 /// Form state and actions for creating/editing breeding pairs.
@@ -67,7 +71,8 @@ class BreedingFormState {
   }
 }
 
-class BreedingFormNotifier extends Notifier<BreedingFormState> {
+class BreedingFormNotifier extends Notifier<BreedingFormState>
+    with SentryErrorFilter {
   late final BreedingNotificationHelper _helper;
 
   @override
@@ -181,8 +186,8 @@ class BreedingFormNotifier extends Notifier<BreedingFormState> {
 
       final speciesProfile = SpeciesRegistry.of(maleBird.species);
 
-      final pairId = const Uuid().v4();
-      final incubationId = const Uuid().v4();
+      final pairId = const Uuid().v7();
+      final incubationId = const Uuid().v7();
 
       final pair = BreedingPair(
         id: pairId,
@@ -234,9 +239,9 @@ class BreedingFormNotifier extends Notifier<BreedingFormState> {
       );
 
       state = state.copyWith(isLoading: false, isSuccess: true);
-    } catch (e) {
-      AppLogger.error('BreedingFormNotifier', e, StackTrace.current);
-      Sentry.captureException(e, stackTrace: StackTrace.current);
+    } catch (e, st) {
+      AppLogger.error('BreedingFormNotifier', e, st);
+      reportIfUnexpected(e, st);
       state = state.copyWith(
         isLoading: false,
         error: _mapIntegrityError(e) ?? 'errors.unknown'.tr(),
@@ -258,9 +263,9 @@ class BreedingFormNotifier extends Notifier<BreedingFormState> {
       }
       await repo.save(pair.copyWith(updatedAt: DateTime.now()));
       state = state.copyWith(isLoading: false, isSuccess: true);
-    } catch (e) {
-      AppLogger.error('BreedingFormNotifier', e, StackTrace.current);
-      Sentry.captureException(e, stackTrace: StackTrace.current);
+    } catch (e, st) {
+      AppLogger.error('BreedingFormNotifier', e, st);
+      reportIfUnexpected(e, st);
       state = state.copyWith(
         isLoading: false,
         error: _mapIntegrityError(e) ?? 'errors.unknown'.tr(),
@@ -290,11 +295,17 @@ class BreedingFormNotifier extends Notifier<BreedingFormState> {
           closedAt: now,
         );
         await _helper.cancelBreedingNotifications(id, incubations: incubations);
+      } else {
+        state = state.copyWith(
+          isLoading: false,
+          error: 'breeding.not_found'.tr(),
+        );
+        return;
       }
       state = state.copyWith(isLoading: false, isSuccess: true);
-    } catch (e) {
-      AppLogger.error('BreedingFormNotifier', e, StackTrace.current);
-      Sentry.captureException(e, stackTrace: StackTrace.current);
+    } catch (e, st) {
+      AppLogger.error('BreedingFormNotifier', e, st);
+      reportIfUnexpected(e, st);
       state = state.copyWith(isLoading: false, error: 'errors.unknown'.tr());
     }
   }
@@ -321,11 +332,17 @@ class BreedingFormNotifier extends Notifier<BreedingFormState> {
           closedAt: now,
         );
         await _helper.cancelBreedingNotifications(id, incubations: incubations);
+      } else {
+        state = state.copyWith(
+          isLoading: false,
+          error: 'breeding.not_found'.tr(),
+        );
+        return;
       }
       state = state.copyWith(isLoading: false, isSuccess: true);
-    } catch (e) {
-      AppLogger.error('BreedingFormNotifier', e, StackTrace.current);
-      Sentry.captureException(e, stackTrace: StackTrace.current);
+    } catch (e, st) {
+      AppLogger.error('BreedingFormNotifier', e, st);
+      reportIfUnexpected(e, st);
       state = state.copyWith(isLoading: false, error: 'errors.unknown'.tr());
     }
   }
@@ -362,7 +379,7 @@ class BreedingFormNotifier extends Notifier<BreedingFormState> {
       state = state.copyWith(isLoading: false, isSuccess: true);
     } catch (e, st) {
       AppLogger.error('BreedingFormNotifier', e, st);
-      Sentry.captureException(e, stackTrace: st);
+      reportIfUnexpected(e, st);
       state = state.copyWith(isLoading: false, error: 'errors.unknown'.tr());
     }
   }

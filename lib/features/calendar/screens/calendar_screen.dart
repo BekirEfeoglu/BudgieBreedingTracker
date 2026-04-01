@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:budgie_breeding_tracker/core/utils/app_haptics.dart';
 import 'package:budgie_breeding_tracker/core/widgets/ad_banner_widget.dart';
 import 'package:budgie_breeding_tracker/domain/services/ads/ad_service.dart';
 import 'package:budgie_breeding_tracker/features/premium/providers/premium_providers.dart';
@@ -66,9 +67,9 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
           const ProfileMenuButton(),
         ],
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(48),
+          preferredSize: const Size.fromHeight(AppSpacing.xxxl + AppSpacing.lg),
           child: Padding(
-            padding: const EdgeInsets.only(bottom: 8),
+            padding: const EdgeInsets.only(bottom: AppSpacing.sm),
             child: SegmentedButton<CalendarViewMode>(
               segments: [
                 ButtonSegment(
@@ -88,8 +89,10 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                 ),
               ],
               selected: {viewMode},
-              onSelectionChanged: (s) =>
-                  ref.read(calendarViewProvider.notifier).setViewMode(s.first),
+              onSelectionChanged: (s) {
+                AppHaptics.selectionClick();
+                ref.read(calendarViewProvider.notifier).setViewMode(s.first);
+              },
               style: const ButtonStyle(visualDensity: VisualDensity.compact),
             ),
           ),
@@ -186,6 +189,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     if (velocity.abs() < 200) return; // Ignore slow swipes
 
     final delta = velocity < 0 ? 1 : -1; // Left swipe → next, right → prev
+    AppHaptics.lightImpact();
 
     if (viewMode == CalendarViewMode.month) {
       _changeMonth(delta);
