@@ -138,6 +138,23 @@ class _CommunityFab extends StatelessWidget {
                 context.push('${AppRoutes.messages}/group/form');
               },
             ),
+            const Divider(),
+            ListTile(
+              leading: const Icon(LucideIcons.award),
+              title: Text('badges.title'.tr()),
+              onTap: () {
+                Navigator.pop(context);
+                context.push(AppRoutes.badges);
+              },
+            ),
+            ListTile(
+              leading: const Icon(LucideIcons.trophy),
+              title: Text('leaderboard.title'.tr()),
+              onTap: () {
+                Navigator.pop(context);
+                context.push(AppRoutes.leaderboard);
+              },
+            ),
             const SizedBox(height: AppSpacing.sm),
           ],
         ),

@@ -30,24 +30,27 @@ class CommunityAppBar extends ConsumerWidget implements PreferredSizeWidget {
       titleSpacing: AppSpacing.sm,
       title: Row(
         children: [
-          Container(
-            width: 32,
-            height: 32,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: LinearGradient(
-                colors: [
-                  theme.colorScheme.primary,
-                  theme.colorScheme.tertiary,
-                ],
+          GestureDetector(
+            onTap: () => context.push(AppRoutes.badges),
+            child: Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: LinearGradient(
+                  colors: [
+                    theme.colorScheme.primary,
+                    theme.colorScheme.tertiary,
+                  ],
+                ),
               ),
-            ),
-            child: Center(
-              child: Text(
-                initials,
-                style: theme.textTheme.labelMedium?.copyWith(
-                  color: theme.colorScheme.onPrimary,
-                  fontWeight: FontWeight.w700,
+              child: Center(
+                child: Text(
+                  initials,
+                  style: theme.textTheme.labelMedium?.copyWith(
+                    color: theme.colorScheme.onPrimary,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
             ),

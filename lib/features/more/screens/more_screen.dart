@@ -61,26 +61,7 @@ class MoreScreen extends ConsumerWidget {
             title: 'more.community'.tr(),
             onTap: () => context.push(AppRoutes.community),
           ),
-          _MoreTile(
-            icon: const Icon(LucideIcons.store),
-            title: 'marketplace.title'.tr(),
-            onTap: () => context.push(AppRoutes.marketplace),
-          ),
-          _MoreTile(
-            icon: const Icon(LucideIcons.messageCircle),
-            title: 'messaging.title'.tr(),
-            onTap: () => context.push(AppRoutes.messages),
-          ),
-          _MoreTile(
-            icon: const Icon(LucideIcons.award),
-            title: 'badges.title'.tr(),
-            onTap: () => context.push(AppRoutes.badges),
-          ),
-          _MoreTile(
-            icon: const Icon(LucideIcons.trophy),
-            title: 'leaderboard.title'.tr(),
-            onTap: () => context.push(AppRoutes.leaderboard),
-          ),
+          // Marketplace, Messaging, Badges, Leaderboard → accessed via Community tab
           // Premium features section
           _SectionHeader(title: 'more.section_premium'.tr()),
           _MoreTile(
