@@ -9,5 +9,11 @@
 -- Without this index the second DELETE requires a full table scan.
 -- =============================================================================
 
-CREATE INDEX IF NOT EXISTS idx_community_blocks_blocked_user
-  ON public.community_blocks (blocked_user_id);
+-- Skip if community_blocks table doesn't exist yet
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'community_blocks') THEN
+    CREATE INDEX IF NOT EXISTS idx_community_blocks_blocked_user
+      ON public.community_blocks (blocked_user_id);
+  END IF;
+END $$;
