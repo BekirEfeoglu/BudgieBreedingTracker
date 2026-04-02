@@ -17,7 +17,7 @@ class CommunityPillTabs extends ConsumerWidget {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final columns = constraints.maxWidth < 360 ? 2 : 4;
+        final columns = constraints.maxWidth < 280 ? 2 : 4;
         final totalSpacing = AppSpacing.sm * (columns - 1);
         final itemWidth = (constraints.maxWidth - totalSpacing) / columns;
 

@@ -74,6 +74,8 @@ class CommunityQuickComposer extends ConsumerWidget {
             Expanded(
               child: Text(
                 'community.quick_hint'.tr(),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
