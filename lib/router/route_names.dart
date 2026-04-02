@@ -43,6 +43,11 @@ abstract class AppRoutes {
   static const messageDetail = '/messages/:id';
   static const messageGroupForm = '/messages/group/form';
 
+  // Gamification
+  static const badges = '/badges';
+  static const badgeDetail = '/badges/:id';
+  static const leaderboard = '/leaderboard';
+
   // Health Records
   static const healthRecords = '/health-records';
   static const healthRecordDetail = '/health-records/:id';
