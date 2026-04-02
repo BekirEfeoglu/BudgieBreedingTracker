@@ -9,6 +9,7 @@ import '../../../core/widgets/dialogs/confirm_dialog.dart';
 import '../../../core/widgets/error_state.dart' as app;
 import '../../../features/breeding/providers/breeding_providers.dart';
 import '../../../router/route_names.dart';
+import '../../../features/messaging/providers/messaging_form_providers.dart';
 import '../providers/marketplace_form_providers.dart';
 import '../providers/marketplace_providers.dart';
 
@@ -114,8 +115,21 @@ class MarketplaceDetailScreen extends ConsumerWidget {
                         SizedBox(
                           width: double.infinity,
                           child: FilledButton.icon(
-                            onPressed: () {
-                              // Messaging integration (future feature)
+                            onPressed: () async {
+                              final notifier = ref.read(
+                                messagingFormStateProvider.notifier,
+                              );
+                              final conversationId =
+                                  await notifier.startDirectConversation(
+                                userId1: userId,
+                                userId2: listing.userId,
+                              );
+                              if (context.mounted &&
+                                  conversationId != null) {
+                                context.push(
+                                  '${AppRoutes.messages}/$conversationId',
+                                );
+                              }
                             },
                             icon: const Icon(LucideIcons.messageCircle),
                             label: Text('marketplace.message_seller'.tr()),
