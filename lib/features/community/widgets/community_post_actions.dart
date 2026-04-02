@@ -24,24 +24,35 @@ class CommunityPostActions extends ConsumerWidget {
     final likedColor = theme.colorScheme.primary;
     final defaultColor = theme.colorScheme.onSurfaceVariant;
 
+    final likedBg = post.isLikedByMe
+        ? const Color(0xFFFEF2F2)
+        : theme.colorScheme.surfaceContainerHighest;
+    final commentBg = theme.colorScheme.surfaceContainerHighest;
+
     return Row(
       children: [
-        _ActionButton(
+        _PillActionButton(
           semanticLabel: 'community.like'.tr(),
           icon: AppIcon(
             AppIcons.like,
-            size: 22,
+            size: 20,
             color: post.isLikedByMe ? likedColor : defaultColor,
           ),
+          label: post.likeCount > 0 ? '${post.likeCount}' : null,
+          labelColor: post.isLikedByMe ? likedColor : defaultColor,
+          backgroundColor: likedBg,
           onTap: () {
             AppHaptics.lightImpact();
             ref.read(likeToggleProvider.notifier).toggleLike(post.id);
           },
         ),
         const SizedBox(width: AppSpacing.sm),
-        _ActionButton(
+        _PillActionButton(
           semanticLabel: 'community.comment'.tr(),
-          icon: AppIcon(AppIcons.comment, size: 22, color: defaultColor),
+          icon: AppIcon(AppIcons.comment, size: 20, color: defaultColor),
+          label: post.commentCount > 0 ? '${post.commentCount}' : null,
+          labelColor: const Color(0xFF2563EB),
+          backgroundColor: commentBg,
           onTap: () => context.push(
             AppRoutes.communityPostDetail.replaceFirst(':postId', post.id),
           ),
@@ -68,6 +79,60 @@ class CommunityPostActions extends ConsumerWidget {
           },
         ),
       ],
+    );
+  }
+}
+
+class _PillActionButton extends StatelessWidget {
+  final Widget icon;
+  final VoidCallback onTap;
+  final String? label;
+  final Color? labelColor;
+  final Color backgroundColor;
+  final String? semanticLabel;
+
+  const _PillActionButton({
+    required this.icon,
+    required this.onTap,
+    required this.backgroundColor,
+    this.label,
+    this.labelColor,
+    this.semanticLabel,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Semantics(
+      button: true,
+      label: semanticLabel,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+          decoration: BoxDecoration(
+            color: backgroundColor,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              icon,
+              if (label != null) ...[
+                const SizedBox(width: AppSpacing.xs),
+                Text(
+                  label!,
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: labelColor,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
