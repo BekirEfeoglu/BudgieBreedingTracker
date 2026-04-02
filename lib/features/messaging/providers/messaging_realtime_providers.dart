@@ -52,15 +52,23 @@ final messagingRealtimeProvider =
 
 /// Typing indicator state
 class TypingIndicatorNotifier extends Notifier<Set<String>> {
+  bool _disposed = false;
+
   @override
-  Set<String> build() => {};
+  Set<String> build() {
+    _disposed = false;
+    ref.onDispose(() {
+      _disposed = true;
+    });
+    return {};
+  }
 
   void userStartedTyping(String userId) {
     state = {...state, userId};
 
     // Auto-stop after 5 seconds
     Future.delayed(const Duration(seconds: 5), () {
-      if (state.contains(userId)) {
+      if (!_disposed && state.contains(userId)) {
         userStoppedTyping(userId);
       }
     });

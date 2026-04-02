@@ -105,7 +105,7 @@ class _MessageDetailScreenState extends ConsumerState<MessageDetailScreen> {
                     messagesProvider(widget.conversationId)),
               ),
               data: (fetchedMessages) {
-                final allMessages = <String, dynamic>{};
+                final allMessages = <String, Message>{};
                 for (final msg in realtimeMessages) {
                   allMessages[msg.id] = msg;
                 }

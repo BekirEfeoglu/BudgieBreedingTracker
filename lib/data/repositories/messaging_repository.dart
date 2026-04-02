@@ -39,27 +39,35 @@ class MessagingRepository {
         await _conversationSource.findDirectConversation(userId1, userId2);
     if (existing != null) return existing['id'] as String;
 
-    // Create new
-    final conversationId = const Uuid().v4();
-    await _conversationSource.create({
-      'id': conversationId,
-      'type': 'direct',
-      'creator_id': userId1,
-    });
+    // Create new — if race condition, retry find
+    try {
+      final conversationId = const Uuid().v4();
+      await _conversationSource.create({
+        'id': conversationId,
+        'type': 'direct',
+        'creator_id': userId1,
+      });
 
-    // Add both participants
-    await _conversationSource.addParticipant({
-      'conversation_id': conversationId,
-      'user_id': userId1,
-      'role': 'owner',
-    });
-    await _conversationSource.addParticipant({
-      'conversation_id': conversationId,
-      'user_id': userId2,
-      'role': 'member',
-    });
+      // Add both participants
+      await _conversationSource.addParticipant({
+        'conversation_id': conversationId,
+        'user_id': userId1,
+        'role': 'owner',
+      });
+      await _conversationSource.addParticipant({
+        'conversation_id': conversationId,
+        'user_id': userId2,
+        'role': 'member',
+      });
 
-    return conversationId;
+      return conversationId;
+    } catch (e) {
+      // Race condition: another request may have created it — retry find
+      final retryFind =
+          await _conversationSource.findDirectConversation(userId1, userId2);
+      if (retryFind != null) return retryFind['id'] as String;
+      rethrow;
+    }
   }
 
   /// Create a new group conversation

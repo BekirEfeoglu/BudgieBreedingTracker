@@ -158,7 +158,7 @@ class MarketplaceDetailScreen extends ConsumerWidget {
                                 isDestructive: true,
                               );
                               if (confirmed == true) {
-                                ref
+                                await ref
                                     .read(
                                       marketplaceFormStateProvider.notifier,
                                     )
