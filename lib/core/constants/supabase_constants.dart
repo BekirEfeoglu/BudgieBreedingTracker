@@ -47,6 +47,11 @@ abstract class SupabaseConstants {
   static const String communityPollVotesTable = 'community_poll_votes';
   static const String communityStoriesTable = 'community_stories';
   static const String communityStoryViewsTable = 'community_story_views';
+
+  // Marketplace
+  static const String marketplaceListingsTable = 'marketplace_listings';
+  static const String marketplaceFavoritesTable = 'marketplace_favorites';
+
   static const String calendarTable = 'calendar';
   static const String deletedEggsTable = 'deleted_eggs';
   static const String eggArchivesTable = 'egg_archives';
@@ -107,4 +112,5 @@ abstract class SupabaseConstants {
   // Requires manual creation in Supabase Dashboard:
   // RLS: authenticated users can INSERT, public can SELECT
   static const String communityPhotosBucket = 'community-photos';
+  static const String marketplacePhotosBucket = 'marketplace-photos';
 }
