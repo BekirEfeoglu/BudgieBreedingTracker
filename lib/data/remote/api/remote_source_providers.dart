@@ -22,6 +22,8 @@ import 'package:budgie_breeding_tracker/data/remote/api/community_social_remote_
 import 'package:budgie_breeding_tracker/data/remote/api/feedback_remote_source.dart';
 import 'marketplace_listing_remote_source.dart';
 import 'marketplace_favorite_remote_source.dart';
+import 'conversation_remote_source.dart';
+import 'message_remote_source.dart';
 
 /// Riverpod providers for all Supabase remote data sources.
 
@@ -139,4 +141,13 @@ final marketplaceFavoriteRemoteSourceProvider =
   return MarketplaceFavoriteRemoteSource(
     ref.watch(supabaseClientProvider),
   );
+});
+
+final conversationRemoteSourceProvider =
+    Provider<ConversationRemoteSource>((ref) {
+  return ConversationRemoteSource(ref.watch(supabaseClientProvider));
+});
+
+final messageRemoteSourceProvider = Provider<MessageRemoteSource>((ref) {
+  return MessageRemoteSource(ref.watch(supabaseClientProvider));
 });
