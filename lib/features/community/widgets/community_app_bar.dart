@@ -31,8 +31,8 @@ class CommunityAppBar extends ConsumerWidget implements PreferredSizeWidget {
       title: Row(
         children: [
           Container(
-            width: 36,
-            height: 36,
+            width: 32,
+            height: 32,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               gradient: LinearGradient(
@@ -52,32 +52,36 @@ class CommunityAppBar extends ConsumerWidget implements PreferredSizeWidget {
               ),
             ),
           ),
-          const SizedBox(width: AppSpacing.md),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'community.title'.tr(),
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
+          const SizedBox(width: AppSpacing.sm),
+          Flexible(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'community.title'.tr(),
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
-              ),
-              userLevelAsync.when(
-                loading: () => const SizedBox.shrink(),
-                error: (_, __) => const SizedBox.shrink(),
-                data: (level) {
-                  if (level == null) return const SizedBox.shrink();
-                  return Text(
-                    'Lv.${level.level} · ${level.title.isNotEmpty ? level.title.tr() : ''}',
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.primary,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  );
-                },
-              ),
-            ],
+                userLevelAsync.when(
+                  loading: () => const SizedBox.shrink(),
+                  error: (_, __) => const SizedBox.shrink(),
+                  data: (level) {
+                    if (level == null) return const SizedBox.shrink();
+                    return Text(
+                      'Lv.${level.level} · ${level.title.isNotEmpty ? level.title.tr() : ''}',
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: theme.colorScheme.primary,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    );
+                  },
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -124,19 +128,19 @@ class _ActionIcon extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 2),
+      padding: const EdgeInsets.symmetric(horizontal: 1),
       child: DecoratedBox(
         decoration: BoxDecoration(
           color: theme.colorScheme.surfaceContainerHighest,
           shape: BoxShape.circle,
         ),
         child: IconButton(
-          icon: Icon(icon, size: 20),
+          icon: Icon(icon, size: 18),
           tooltip: tooltip,
           onPressed: onPressed,
           constraints: const BoxConstraints(
-            minWidth: 34,
-            minHeight: 34,
+            minWidth: 32,
+            minHeight: 32,
           ),
           padding: const EdgeInsets.all(7),
         ),
