@@ -4,7 +4,7 @@ import 'package:budgie_breeding_tracker/data/models/user_level_model.dart';
 void main() {
   group('UserLevel', () {
     test('toJson/fromJson round-trip', () {
-      final level = UserLevel(
+      const level = UserLevel(
         id: 'l1',
         userId: 'u1',
         totalXp: 350,
@@ -27,7 +27,7 @@ void main() {
     });
 
     test('levelProgress returns correct ratio', () {
-      final level = UserLevel(
+      const level = UserLevel(
         id: 'l1',
         userId: 'u1',
         currentLevelXp: 50,
@@ -37,7 +37,7 @@ void main() {
     });
 
     test('levelProgress clamps to 1.0', () {
-      final level = UserLevel(
+      const level = UserLevel(
         id: 'l1',
         userId: 'u1',
         currentLevelXp: 300,
@@ -47,7 +47,7 @@ void main() {
     });
 
     test('levelProgress returns 0 when nextLevelXp is 0', () {
-      final level = UserLevel(
+      const level = UserLevel(
         id: 'l1',
         userId: 'u1',
         nextLevelXp: 0,
@@ -56,7 +56,7 @@ void main() {
     });
 
     test('default values are correct', () {
-      final level = UserLevel(id: 'l1', userId: 'u1');
+      const level = UserLevel(id: 'l1', userId: 'u1');
       expect(level.totalXp, 0);
       expect(level.level, 1);
       expect(level.currentLevelXp, 0);

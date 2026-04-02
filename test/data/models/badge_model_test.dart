@@ -5,7 +5,7 @@ import 'package:budgie_breeding_tracker/core/enums/gamification_enums.dart';
 void main() {
   group('Badge', () {
     test('toJson/fromJson round-trip', () {
-      final badge = Badge(
+      const badge = Badge(
         id: 'b1',
         key: 'first_bird',
         category: BadgeCategory.milestone,
@@ -53,7 +53,7 @@ void main() {
     });
 
     test('default values are correct', () {
-      final badge = Badge(id: 'b1', key: 'test');
+      const badge = Badge(id: 'b1', key: 'test');
       expect(badge.category, BadgeCategory.milestone);
       expect(badge.tier, BadgeTier.bronze);
       expect(badge.nameKey, '');

@@ -140,7 +140,7 @@ void main() {
   group('MarketplaceListingX extension', () {
     group('priceDisplay', () {
       test('formats correctly with price 1500 and currency TRY', () {
-        final listing = MarketplaceListing(
+        const listing = MarketplaceListing(
           id: 'l-1',
           userId: 'u-1',
           price: 1500,
@@ -151,7 +151,7 @@ void main() {
       });
 
       test('returns empty string when price is null', () {
-        final listing = MarketplaceListing(
+        const listing = MarketplaceListing(
           id: 'l-1',
           userId: 'u-1',
           price: null,
@@ -161,7 +161,7 @@ void main() {
       });
 
       test('formats with different currency', () {
-        final listing = MarketplaceListing(
+        const listing = MarketplaceListing(
           id: 'l-1',
           userId: 'u-1',
           price: 250.0,
@@ -174,7 +174,7 @@ void main() {
 
     group('hasBirdLinked', () {
       test('returns true when birdId is set', () {
-        final listing = MarketplaceListing(
+        const listing = MarketplaceListing(
           id: 'l-1',
           userId: 'u-1',
           birdId: 'bird-42',
@@ -184,7 +184,7 @@ void main() {
       });
 
       test('returns false when birdId is null', () {
-        final listing = MarketplaceListing(
+        const listing = MarketplaceListing(
           id: 'l-1',
           userId: 'u-1',
           birdId: null,
@@ -194,7 +194,7 @@ void main() {
       });
 
       test('returns false when birdId is empty string', () {
-        final listing = MarketplaceListing(
+        const listing = MarketplaceListing(
           id: 'l-1',
           userId: 'u-1',
           birdId: '',
@@ -206,7 +206,7 @@ void main() {
 
     group('primaryImageUrl', () {
       test('returns first image when imageUrls is not empty', () {
-        final listing = MarketplaceListing(
+        const listing = MarketplaceListing(
           id: 'l-1',
           userId: 'u-1',
           imageUrls: [
@@ -219,10 +219,10 @@ void main() {
       });
 
       test('returns null when imageUrls is empty', () {
-        final listing = MarketplaceListing(
+        const listing = MarketplaceListing(
           id: 'l-1',
           userId: 'u-1',
-          imageUrls: const [],
+          imageUrls: [],
         );
 
         expect(listing.primaryImageUrl, isNull);
