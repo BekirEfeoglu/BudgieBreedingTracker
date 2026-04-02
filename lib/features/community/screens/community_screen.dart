@@ -10,11 +10,10 @@ import '../../../core/widgets/app_icon.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../../router/route_names.dart';
 import '../../marketplace/widgets/marketplace_tab_content.dart';
-import '../../messaging/widgets/messaging_tab_content.dart';
 import '../providers/community_providers.dart';
 import '../widgets/community_feed_list.dart';
 
-/// Community screen - social feed with posts, likes, comments, bookmarks.
+/// Community screen - social hub with feed, marketplace, messaging access.
 class CommunityScreen extends ConsumerWidget {
   const CommunityScreen({super.key});
 
@@ -24,7 +23,7 @@ class CommunityScreen extends ConsumerWidget {
     final theme = Theme.of(context);
 
     return DefaultTabController(
-      length: 6,
+      length: 4,
       child: Scaffold(
         appBar: AppBar(
           centerTitle: false,
@@ -43,42 +42,42 @@ class CommunityScreen extends ConsumerWidget {
               ),
             ),
           ),
-          title: Column(
+          title: Row(
             mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  AppIcon(
-                    AppIcons.community,
-                    size: 24,
-                    color: theme.colorScheme.primary,
-                  ),
-                  const SizedBox(width: AppSpacing.sm),
-                  Text(
-                    'community.title'.tr(),
-                    style: theme.textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ],
+              AppIcon(
+                AppIcons.community,
+                size: 24,
+                color: theme.colorScheme.primary,
               ),
+              const SizedBox(width: AppSpacing.sm),
               Text(
-                'community.content_label'.tr(),
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
+                'community.title'.tr(),
+                style: theme.textTheme.headlineMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
                 ),
               ),
             ],
           ),
           actions: [
             _HeaderActionButton(
+              icon: LucideIcons.store,
+              tooltip: 'marketplace.title'.tr(),
+              onPressed: () => context.push(AppRoutes.marketplace),
+            ),
+            const SizedBox(width: AppSpacing.xs),
+            _HeaderActionButton(
+              icon: LucideIcons.messageCircle,
+              tooltip: 'messaging.title'.tr(),
+              onPressed: () => context.push(AppRoutes.messages),
+            ),
+            const SizedBox(width: AppSpacing.xs),
+            _HeaderActionButton(
               icon: LucideIcons.search,
               tooltip: 'community.search'.tr(),
               onPressed: () => context.push(AppRoutes.communitySearch),
             ),
-            const SizedBox(width: AppSpacing.sm),
+            const SizedBox(width: AppSpacing.xs),
             Padding(
               padding: const EdgeInsets.only(right: AppSpacing.lg),
               child: _HeaderActionButton(
@@ -109,20 +108,12 @@ class CommunityScreen extends ConsumerWidget {
                           text: 'community.tab_following'.tr(),
                         ),
                         Tab(
-                          icon: const AppIcon(AppIcons.guide, size: 16),
-                          text: 'community.tab_guides'.tr(),
-                        ),
-                        Tab(
-                          icon: const AppIcon(AppIcons.comment, size: 16),
-                          text: 'community.tab_questions'.tr(),
-                        ),
-                        Tab(
                           icon: const Icon(LucideIcons.store, size: 16),
                           text: 'marketplace.title'.tr(),
                         ),
                         Tab(
-                          icon: const Icon(LucideIcons.messageCircle, size: 16),
-                          text: 'messaging.title'.tr(),
+                          icon: const AppIcon(AppIcons.guide, size: 16),
+                          text: 'community.tab_guides'.tr(),
                         ),
                       ],
                     ),
@@ -135,21 +126,80 @@ class CommunityScreen extends ConsumerWidget {
                 children: [
                   CommunityFeedList(tab: CommunityFeedTab.explore),
                   CommunityFeedList(tab: CommunityFeedTab.following),
-                  CommunityFeedList(tab: CommunityFeedTab.guides),
-                  CommunityFeedList(tab: CommunityFeedTab.questions),
                   MarketplaceTabContent(),
-                  MessagingTabContent(),
+                  CommunityFeedList(tab: CommunityFeedTab.guides),
                 ],
               )
             : const _ComingSoonBody(),
         floatingActionButton: isEnabled
-            ? FloatingActionButton.extended(
-                onPressed: () => context.push(AppRoutes.communityCreatePost),
-                tooltip: 'community.create_post'.tr(),
-                icon: const AppIcon(AppIcons.post, size: 18),
-                label: Text('community.create_post'.tr()),
-              )
+            ? _CommunityFab(theme: theme)
             : null,
+      ),
+    );
+  }
+}
+
+/// FAB with bottom sheet for multiple creation options.
+class _CommunityFab extends StatelessWidget {
+  final ThemeData theme;
+
+  const _CommunityFab({required this.theme});
+
+  @override
+  Widget build(BuildContext context) {
+    return FloatingActionButton(
+      onPressed: () => _showCreateOptions(context),
+      tooltip: 'community.create_post'.tr(),
+      child: const Icon(LucideIcons.plus),
+    );
+  }
+
+  void _showCreateOptions(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(AppSpacing.lg),
+              child: Text(
+                'community.create_post'.tr(),
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            ListTile(
+              leading: const Icon(LucideIcons.pencil),
+              title: Text('community.create_post'.tr()),
+              subtitle: Text('community.content_label'.tr()),
+              onTap: () {
+                Navigator.pop(context);
+                context.push(AppRoutes.communityCreatePost);
+              },
+            ),
+            ListTile(
+              leading: const Icon(LucideIcons.store),
+              title: Text('marketplace.add_listing'.tr()),
+              subtitle: Text('marketplace.no_listings_hint'.tr()),
+              onTap: () {
+                Navigator.pop(context);
+                context.push('${AppRoutes.marketplace}/form');
+              },
+            ),
+            ListTile(
+              leading: const Icon(LucideIcons.messageCircle),
+              title: Text('messaging.new_message'.tr()),
+              subtitle: Text('messaging.no_conversations_hint'.tr()),
+              onTap: () {
+                Navigator.pop(context);
+                context.push('${AppRoutes.messages}/group/form');
+              },
+            ),
+            const SizedBox(height: AppSpacing.sm),
+          ],
+        ),
       ),
     );
   }
