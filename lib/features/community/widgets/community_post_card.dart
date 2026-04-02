@@ -45,11 +45,9 @@ class CommunityPostCard extends ConsumerWidget {
     final allImages = post.allImageUrls;
 
     return Card(
-      margin: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.lg,
-        vertical: AppSpacing.sm,
-      ),
+      margin: const EdgeInsets.only(bottom: 6),
       elevation: 0,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: () => context.push(
@@ -89,6 +87,7 @@ class CommunityPostCard extends ConsumerWidget {
                         : () => ref
                               .read(followToggleProvider.notifier)
                               .toggleFollow(post.userId),
+                    postType: post.postType,
                   ),
                   if (post.postType != CommunityPostType.general ||
                       post.title != null) ...[

@@ -21,6 +21,7 @@ class CommunityUserHeader extends StatelessWidget {
   final VoidCallback? onReport;
   final VoidCallback? onBlock;
   final VoidCallback? onFollowToggle;
+  final CommunityPostType? postType;
 
   const CommunityUserHeader({
     super.key,
@@ -34,6 +35,7 @@ class CommunityUserHeader extends StatelessWidget {
     this.onReport,
     this.onBlock,
     this.onFollowToggle,
+    this.postType,
   });
 
   @override
@@ -124,6 +126,21 @@ class CommunityUserHeader extends StatelessWidget {
             ),
           ),
         ),
+        if (postType != null && postType != CommunityPostType.general && postType != CommunityPostType.unknown)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: 2),
+            decoration: BoxDecoration(
+              color: _postTypeColor(postType!, theme),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text(
+              _postTypeLabel(postType!),
+              style: theme.textTheme.labelSmall?.copyWith(
+                color: _postTypeTextColor(postType!, theme),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
         if (!isOwnPost && onFollowToggle != null)
           Padding(
             padding: const EdgeInsets.only(right: AppSpacing.xs),
@@ -186,4 +203,31 @@ class CommunityUserHeader extends StatelessWidget {
       ],
     );
   }
+
+  static Color _postTypeColor(CommunityPostType type, ThemeData theme) => switch (type) {
+    CommunityPostType.photo => const Color(0xFFF0FDF4),
+    CommunityPostType.guide => const Color(0xFFEFF6FF),
+    CommunityPostType.question => const Color(0xFFFFF7ED),
+    CommunityPostType.tip => const Color(0xFFFAF5FF),
+    CommunityPostType.showcase => const Color(0xFFFFFBEB),
+    _ => theme.colorScheme.surfaceContainerHighest,
+  };
+
+  static Color _postTypeTextColor(CommunityPostType type, ThemeData theme) => switch (type) {
+    CommunityPostType.photo => const Color(0xFF16A34A),
+    CommunityPostType.guide => const Color(0xFF2563EB),
+    CommunityPostType.question => const Color(0xFFEA580C),
+    CommunityPostType.tip => const Color(0xFF9333EA),
+    CommunityPostType.showcase => const Color(0xFFCA8A04),
+    _ => theme.colorScheme.onSurface,
+  };
+
+  static String _postTypeLabel(CommunityPostType type) => switch (type) {
+    CommunityPostType.photo => '📷 ${'community.post_type_photo'.tr()}',
+    CommunityPostType.guide => '📚 ${'community.post_type_guide'.tr()}',
+    CommunityPostType.question => '❓ ${'community.post_type_question'.tr()}',
+    CommunityPostType.tip => '💡 ${'community.post_type_tip'.tr()}',
+    CommunityPostType.showcase => '🏆 ${'community.post_type_showcase'.tr()}',
+    _ => '',
+  };
 }
