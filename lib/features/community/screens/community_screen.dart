@@ -9,6 +9,8 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_icon.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../../router/route_names.dart';
+import '../../marketplace/widgets/marketplace_tab_content.dart';
+import '../../messaging/widgets/messaging_tab_content.dart';
 import '../providers/community_providers.dart';
 import '../widgets/community_feed_list.dart';
 
@@ -22,7 +24,7 @@ class CommunityScreen extends ConsumerWidget {
     final theme = Theme.of(context);
 
     return DefaultTabController(
-      length: 4,
+      length: 6,
       child: Scaffold(
         appBar: AppBar(
           centerTitle: false,
@@ -114,6 +116,14 @@ class CommunityScreen extends ConsumerWidget {
                           icon: const AppIcon(AppIcons.comment, size: 16),
                           text: 'community.tab_questions'.tr(),
                         ),
+                        Tab(
+                          icon: const Icon(LucideIcons.store, size: 16),
+                          text: 'marketplace.title'.tr(),
+                        ),
+                        Tab(
+                          icon: const Icon(LucideIcons.messageCircle, size: 16),
+                          text: 'messaging.title'.tr(),
+                        ),
                       ],
                     ),
                   ),
@@ -127,6 +137,8 @@ class CommunityScreen extends ConsumerWidget {
                   CommunityFeedList(tab: CommunityFeedTab.following),
                   CommunityFeedList(tab: CommunityFeedTab.guides),
                   CommunityFeedList(tab: CommunityFeedTab.questions),
+                  MarketplaceTabContent(),
+                  MessagingTabContent(),
                 ],
               )
             : const _ComingSoonBody(),
