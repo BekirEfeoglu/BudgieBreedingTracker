@@ -2022,7 +2022,7 @@
     "search_users": "Kullanıcılar",
     "sort_newest": "En Yeni",
     "sort_trending": "Popüler",
-    "filter_results": "Sonuçları Filtrele",
+    "filter_results": "{} sonuç",
     "show_all": "Tümünü Göster",
     "suggested_users": "Önerilen Kullanıcılar",
     "top_creators": "En İyi İçerik Oluşturucular",

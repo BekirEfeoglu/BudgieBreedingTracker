@@ -2022,7 +2022,7 @@
     "search_users": "Users",
     "sort_newest": "Newest",
     "sort_trending": "Trending",
-    "filter_results": "Filter Results",
+    "filter_results": "{} results",
     "show_all": "Show All",
     "suggested_users": "Suggested Users",
     "top_creators": "Top Creators",
