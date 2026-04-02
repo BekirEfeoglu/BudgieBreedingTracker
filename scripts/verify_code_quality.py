@@ -550,22 +550,34 @@ def check_json_key_unknown_enum(lines, filepath, cat):
     known_enums = _KNOWN_ENUMS_CACHE
     if not known_enums:
         return
+    # Only check enum fields inside const factory ... = _ClassName; blocks
+    in_factory = False
+    paren_depth = 0
     for i, line in enumerate(lines, 1):
         if is_comment_line(line):
             continue
-        for enum_name in known_enums:
-            pattern = rf'(?:required\s+)?{re.escape(enum_name)}\??\s+\w+'
-            match = re.search(pattern, line)
-            # Skip getter declarations (e.g. `DevelopmentStage get foo`) — not a Freezed field
-            if match and not re.search(rf'{re.escape(enum_name)}\??\s+get\b', line):
-                context_start = max(0, i - 3)
-                context_lines = "".join(lines[context_start:i])
-                if "unknownEnumValue" not in context_lines and "unknownEnumValue" not in line:
-                    cat.findings.append(Finding(
-                        file=relative_path(filepath), line_num=i,
-                        line_text=line.rstrip(),
-                        suggestion=f"@JsonKey(unknownEnumValue: {enum_name}.unknown) ekle",
-                    ))
+        # Detect factory block start
+        if re.search(r'const\s+factory\b', line):
+            in_factory = True
+            paren_depth = 0
+        if in_factory:
+            paren_depth += line.count('(') - line.count(')')
+            if paren_depth <= 0 and ')' in line:
+                in_factory = False
+                continue
+            for enum_name in known_enums:
+                pattern = rf'(?:required\s+)?{re.escape(enum_name)}\??\s+\w+'
+                match = re.search(pattern, line)
+                # Skip getter declarations (e.g. `DevelopmentStage get foo`) — not a Freezed field
+                if match and not re.search(rf'{re.escape(enum_name)}\??\s+get\b', line):
+                    context_start = max(0, i - 3)
+                    context_lines = "".join(lines[context_start:i])
+                    if "unknownEnumValue" not in context_lines and "unknownEnumValue" not in line:
+                        cat.findings.append(Finding(
+                            file=relative_path(filepath), line_num=i,
+                            line_text=line.rstrip(),
+                            suggestion=f"@JsonKey(unknownEnumValue: {enum_name}.unknown) ekle",
+                        ))
 
 
 def check_dao_import_app_database(lines, filepath, cat):

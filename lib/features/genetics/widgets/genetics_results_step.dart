@@ -16,6 +16,7 @@ import 'package:budgie_breeding_tracker/features/genetics/widgets/results_summar
 import 'package:budgie_breeding_tracker/features/genetics/widgets/sex_specific_results.dart';
 
 part 'genetics_results_step_helpers.dart';
+part 'genetics_results_step_slivers.dart';
 
 /// Step 2: Results with offspring predictions, charts, and Punnett square.
 class GeneticsResultsStep extends ConsumerWidget {

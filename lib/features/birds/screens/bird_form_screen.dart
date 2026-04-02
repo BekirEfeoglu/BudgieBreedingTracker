@@ -18,6 +18,8 @@ import 'package:budgie_breeding_tracker/core/widgets/unsaved_changes_scope.dart'
 import 'package:budgie_breeding_tracker/features/birds/widgets/bird_form_body.dart';
 import 'package:budgie_breeding_tracker/features/birds/widgets/bird_form_helpers.dart';
 
+part 'bird_form_screen_helpers.dart';
+
 /// Form screen for creating or editing a bird.
 class BirdFormScreen extends ConsumerStatefulWidget {
   final String? editBirdId;
@@ -82,114 +84,10 @@ class _BirdFormScreenState extends ConsumerState<BirdFormScreen> {
     if (widget.editBirdId != null) {
       _isEdit = true;
       _isEditLoading = true;
-      _loadExistingBird();
+      loadExistingBird();
     } else {
-      _setDefaultBirdName();
+      setDefaultBirdName();
     }
-  }
-
-  Future<void> _setDefaultBirdName() async {
-    final userId = ref.read(currentUserIdProvider);
-    final prefix = 'birds.default_name_prefix'.tr();
-    if (userId.isEmpty || userId == 'anonymous') {
-      if (_nameController.text.trim().isEmpty) {
-        _nameController.text = '${prefix}1';
-      }
-      return;
-    }
-    try {
-      final birds = await ref.read(birdRepositoryProvider).getAll(userId);
-      if (!mounted || _nameController.text.trim().isNotEmpty) return;
-      _nameController.text = nextDefaultBirdName(
-        prefix,
-        birds.map((b) => b.name).toList(),
-      );
-    } catch (e) {
-      AppLogger.error('[BirdFormScreen]', e, StackTrace.current);
-      if (mounted && _nameController.text.trim().isEmpty) {
-        _nameController.text = '${prefix}1';
-      }
-    }
-  }
-
-  void _loadExistingBird() {
-    final editBirdId = widget.editBirdId;
-    if (editBirdId == null) return;
-
-    _editBirdSubscription?.close();
-    setState(() {
-      _isEditLoading = true;
-      _isEditNotFound = false;
-      _editLoadError = null;
-    });
-    _editBirdSubscription = ref.listenManual<AsyncValue<Bird?>>(
-      birdByIdProvider(editBirdId),
-      (_, next) {
-        if (!mounted) return;
-        next.when(
-          loading: () {
-            if (!_isEditLoading) {
-              setState(() {
-                _isEditLoading = true;
-                _isEditNotFound = false;
-                _editLoadError = null;
-              });
-            }
-          },
-          error: (error, _) => setState(() {
-            _existingBird = null;
-            _isEditLoading = false;
-            _isEditNotFound = false;
-            _editLoadError = error;
-          }),
-          data: (bird) {
-            if (bird == null) {
-              setState(() {
-                _existingBird = null;
-                _isEditLoading = false;
-                _isEditNotFound = true;
-                _editLoadError = null;
-              });
-              return;
-            }
-            if (_existingBird != null && !_isEditLoading) return;
-            _hydrateFromBird(bird);
-          },
-        );
-      },
-      fireImmediately: true,
-    );
-  }
-
-  void _hydrateFromBird(Bird bird) {
-    final isOtherColor = bird.colorMutation == BirdColor.other;
-    setState(() {
-      _existingBird = bird;
-      _nameController.text = bird.name;
-      _gender = bird.gender;
-      _species = bird.species;
-      _colorMutation = bird.colorMutation == BirdColor.unknown
-          ? null
-          : bird.colorMutation;
-      _genotype = normalizeGenotypeForGender(
-        genotype: BirdGenotypeMapper.birdToGenotype(bird),
-        gender: bird.gender,
-      );
-      _ringController.text = bird.ringNumber ?? '';
-      _birthDate = bird.birthDate;
-      _fatherId = bird.fatherId;
-      _motherId = bird.motherId;
-      _cageController.text = bird.cageNumber ?? '';
-      _colorNoteController.text = isOtherColor
-          ? (extractColorNote(bird.notes) ?? '')
-          : '';
-      _notesController.text = isOtherColor
-          ? (notesBody(bird.notes) ?? '')
-          : (bird.notes ?? '');
-      _isEditLoading = false;
-      _isEditNotFound = false;
-      _editLoadError = null;
-    });
   }
 
   @override
@@ -239,7 +137,7 @@ class _BirdFormScreenState extends ConsumerState<BirdFormScreen> {
         body: ErrorState(
           message: errorMessage,
           onRetry: () {
-            _loadExistingBird();
+            loadExistingBird();
           },
         ),
       );

@@ -348,8 +348,8 @@ void main() {
         BudgiePaths.tail(w, h), BudgiePaths.belly(w, h),
         BudgiePaths.back(w, h), BudgiePaths.wing(w, h),
         BudgiePaths.head(w, h), BudgiePaths.mask(w, h),
-        BudgiePaths.beak(w, h), BudgiePaths.cheekPatch(w, h),
-        BudgiePaths.piedPatch(w, h),
+        BudgiePaths.beak(w, h), BudgiePathsExtra.cheekPatch(w, h),
+        BudgiePathsExtra.piedPatch(w, h),
       ];
       expect(paths.length, equals(pathMethods.length));
       for (var i = 0; i < paths.length; i++) {
@@ -368,7 +368,7 @@ void main() {
 
     test('cheekPatch uses correct radii (0.08w, 0.055h)', () {
       const w = 100.0, h = 100.0;
-      final bounds = BudgiePaths.cheekPatch(w, h).getBounds();
+      final bounds = BudgiePathsExtra.cheekPatch(w, h).getBounds();
       // rx = w*0.08 → diameter = 0.16w = 16, ry = h*0.055 → diameter = 0.11h = 11
       expect(bounds.width, closeTo(16.0, 0.5));
       expect(bounds.height, closeTo(11.0, 0.5));

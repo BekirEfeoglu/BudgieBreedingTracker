@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 part 'budgie_color_resolver_core.dart';
 part 'budgie_color_resolver_helpers.dart';
+part 'budgie_color_resolver_mutations.dart';
 part 'budgie_color_resolver_pied.dart';
 part 'budgie_color_resolver_utils.dart';
 

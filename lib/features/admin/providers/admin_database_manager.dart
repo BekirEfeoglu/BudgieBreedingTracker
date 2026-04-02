@@ -10,6 +10,8 @@ import '../../auth/providers/auth_providers.dart';
 import '../constants/admin_constants.dart';
 import 'admin_auth_utils.dart';
 
+part 'admin_database_manager_reset.dart';
+
 /// Manages admin database operations (export, reset).
 ///
 /// Delegates state updates to the parent [AdminActionsNotifier] via callbacks.
@@ -47,27 +49,6 @@ class AdminDatabaseManager {
     SupabaseConstants.feedbackTable,
   };
 
-  /// FK-safe deletion order: children before parents.
-  static const _deletionOrder = [
-    SupabaseConstants.eventRemindersTable,
-    SupabaseConstants.notificationSchedulesTable,
-    SupabaseConstants.notificationsTable,
-    SupabaseConstants.notificationSettingsTable,
-    SupabaseConstants.photosTable,
-    SupabaseConstants.growthMeasurementsTable,
-    SupabaseConstants.healthRecordsTable,
-    SupabaseConstants.eventsTable,
-    SupabaseConstants.chicksTable,
-    SupabaseConstants.eggsTable,
-    SupabaseConstants.incubationsTable,
-    SupabaseConstants.clutchesTable,
-    SupabaseConstants.breedingPairsTable,
-    SupabaseConstants.nestsTable,
-    SupabaseConstants.birdsTable,
-    SupabaseConstants.userPreferencesTable,
-    SupabaseConstants.feedbackTable,
-  ];
-
   /// Export a single table's data as JSON string.
   /// Tries RPC first, falls back to client-side SELECT if RPC is unavailable.
   Future<String?> exportTable(String tableName) async {
@@ -96,7 +77,7 @@ class AdminDatabaseManager {
           rpcError,
           StackTrace.current,
         );
-        result = await _exportTableChunked(tableName);
+        result = await _exportTableChunked(_ref, tableName);
       }
 
       final jsonStr = const JsonEncoder.withIndent('  ').convert(result);
@@ -137,7 +118,7 @@ class AdminDatabaseManager {
         final allData = <String, dynamic>{};
         for (final table in _allowedTables) {
           try {
-            allData[table] = await _exportTableChunked(table);
+            allData[table] = await _exportTableChunked(_ref, table);
           } catch (tableError) {
             AppLogger.error(
               'AdminDatabaseManager.exportAllTables fallback: $table',
@@ -192,7 +173,6 @@ class AdminDatabaseManager {
           rowsDeleted = (result['rows_deleted'] as num?)?.toInt() ?? 0;
         }
       } catch (rpcError) {
-        // RPC not available — fall back to client-side DELETE
         AppLogger.error(
           'AdminDatabaseManager.resetTable RPC unavailable, using fallback',
           rpcError,
@@ -237,7 +217,6 @@ class AdminDatabaseManager {
           totalDeleted = (result['total_rows_deleted'] as num?)?.toInt() ?? 0;
         }
       } catch (rpcError) {
-        // RPC not available — fall back to client-side DELETE in FK-safe order
         AppLogger.error(
           'AdminDatabaseManager.resetAllUserData RPC unavailable, using fallback',
           rpcError,
@@ -281,42 +260,5 @@ class AdminDatabaseManager {
       _updateState(isLoading: false, error: '${'admin.action_error'.tr()}: $e');
       return false;
     }
-  }
-
-  /// Fetches all rows for [tableName] in chunks to avoid query size limits.
-  Future<List<Map<String, dynamic>>> _exportTableChunked(
-    String tableName,
-  ) async {
-    final client = _ref.read(supabaseClientProvider);
-    final allRows = <Map<String, dynamic>>[];
-    var offset = 0;
-
-    while (true) {
-      final chunk = await client
-          .from(tableName)
-          .select()
-          .range(offset, offset + AdminConstants.exportChunkSize - 1);
-
-      final rows = List<Map<String, dynamic>>.from(chunk);
-      allRows.addAll(rows);
-
-      if (rows.length < AdminConstants.exportChunkSize) break;
-      offset += AdminConstants.exportChunkSize;
-
-      if (allRows.length >= AdminConstants.maxExportRows) {
-        AppLogger.warning(
-          'admin: Export truncated at ${AdminConstants.maxExportRows} rows for $tableName',
-        );
-        break;
-      }
-    }
-
-    return allRows;
-  }
-
-  String _formatBytes(int bytes) {
-    if (bytes < 1024) return '$bytes B';
-    if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)} KB';
-    return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
   }
 }
