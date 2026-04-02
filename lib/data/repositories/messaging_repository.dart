@@ -1,6 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../core/constants/supabase_constants.dart';
 import '../../core/utils/logger.dart';
 import '../models/conversation_model.dart';
 import '../models/conversation_participant_model.dart';
@@ -11,12 +12,34 @@ import '../remote/api/message_remote_source.dart';
 class MessagingRepository {
   final ConversationRemoteSource _conversationSource;
   final MessageRemoteSource _messageSource;
+  final SupabaseClient _client;
 
   const MessagingRepository({
     required ConversationRemoteSource conversationSource,
     required MessageRemoteSource messageSource,
+    required SupabaseClient client,
   })  : _conversationSource = conversationSource,
-        _messageSource = messageSource;
+        _messageSource = messageSource,
+        _client = client;
+
+  /// Search profiles by display_name or full_name for DM user picker.
+  Future<List<Map<String, dynamic>>> searchProfiles(
+    String query, {
+    required String excludeUserId,
+    int limit = 20,
+  }) async {
+    final trimmed = query.trim();
+    if (trimmed.isEmpty) return [];
+
+    final result = await _client
+        .from(SupabaseConstants.profilesTable)
+        .select('id, display_name, full_name, email, avatar_url')
+        .or('display_name.ilike.%$trimmed%,full_name.ilike.%$trimmed%,email.ilike.%$trimmed%')
+        .neq('id', excludeUserId)
+        .limit(limit);
+
+    return List<Map<String, dynamic>>.from(result);
+  }
 
   Future<List<Conversation>> getConversations(String userId) async {
     final rows = await _conversationSource.fetchConversations(userId);

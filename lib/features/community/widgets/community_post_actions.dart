@@ -13,13 +13,53 @@ import '../../../router/route_names.dart';
 import '../providers/community_post_providers.dart';
 
 /// Action bar with like, comment, bookmark, and share buttons.
-class CommunityPostActions extends ConsumerWidget {
+class CommunityPostActions extends ConsumerStatefulWidget {
   final CommunityPost post;
 
   const CommunityPostActions({super.key, required this.post});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<CommunityPostActions> createState() =>
+      _CommunityPostActionsState();
+}
+
+class _CommunityPostActionsState extends ConsumerState<CommunityPostActions> {
+  CommunityPost get post => widget.post;
+
+  void _onLike() {
+    AppHaptics.lightImpact();
+    ref.read(likeToggleProvider.notifier).toggleLike(post.id);
+  }
+
+  void _onComment() {
+    context.push(
+      AppRoutes.communityPostDetail.replaceFirst(':postId', post.id),
+    );
+  }
+
+  void _onShare() {
+    final shareText = StringBuffer();
+    if (post.title != null) {
+      shareText.writeln(post.title);
+    }
+    if (post.content.isNotEmpty) {
+      shareText.write(post.content);
+    }
+    if (shareText.isEmpty) {
+      shareText.write('community.share_post'.tr());
+    }
+    SharePlus.instance.share(
+      ShareParams(text: shareText.toString()),
+    );
+  }
+
+  void _onBookmark() {
+    AppHaptics.lightImpact();
+    ref.read(bookmarkToggleProvider.notifier).toggleBookmark(post.id);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final likedColor = theme.colorScheme.primary;
     final defaultColor = theme.colorScheme.onSurfaceVariant;
@@ -41,10 +81,7 @@ class CommunityPostActions extends ConsumerWidget {
           label: post.likeCount > 0 ? '${post.likeCount}' : null,
           labelColor: post.isLikedByMe ? likedColor : defaultColor,
           backgroundColor: likedBg,
-          onTap: () {
-            AppHaptics.lightImpact();
-            ref.read(likeToggleProvider.notifier).toggleLike(post.id);
-          },
+          onTap: _onLike,
         ),
         const SizedBox(width: AppSpacing.sm),
         _PillActionButton(
@@ -53,17 +90,13 @@ class CommunityPostActions extends ConsumerWidget {
           label: post.commentCount > 0 ? '${post.commentCount}' : null,
           labelColor: theme.colorScheme.secondary,
           backgroundColor: commentBg,
-          onTap: () => context.push(
-            AppRoutes.communityPostDetail.replaceFirst(':postId', post.id),
-          ),
+          onTap: _onComment,
         ),
         const SizedBox(width: AppSpacing.sm),
         _ActionButton(
           semanticLabel: 'community.share_post'.tr(),
           icon: AppIcon(AppIcons.share, size: 22, color: defaultColor),
-          onTap: () => SharePlus.instance.share(
-            ShareParams(text: 'community.share_post'.tr()),
-          ),
+          onTap: _onShare,
         ),
         const Spacer(),
         _ActionButton(
@@ -73,10 +106,7 @@ class CommunityPostActions extends ConsumerWidget {
             size: 22,
             color: post.isBookmarkedByMe ? likedColor : defaultColor,
           ),
-          onTap: () {
-            AppHaptics.lightImpact();
-            ref.read(bookmarkToggleProvider.notifier).toggleBookmark(post.id);
-          },
+          onTap: _onBookmark,
         ),
       ],
     );
@@ -109,27 +139,32 @@ class _PillActionButton extends StatelessWidget {
       child: InkWell(
         borderRadius: BorderRadius.circular(20),
         onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-          decoration: BoxDecoration(
-            color: backgroundColor,
-            borderRadius: BorderRadius.circular(20),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(
+            minHeight: AppSpacing.touchTargetMin,
           ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              icon,
-              if (label != null) ...[
-                const SizedBox(width: AppSpacing.xs),
-                Text(
-                  label!,
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    color: labelColor,
-                    fontWeight: FontWeight.w600,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+            decoration: BoxDecoration(
+              color: backgroundColor,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                icon,
+                if (label != null) ...[
+                  const SizedBox(width: AppSpacing.xs),
+                  Text(
+                    label!,
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: labelColor,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
-                ),
+                ],
               ],
-            ],
+            ),
           ),
         ),
       ),

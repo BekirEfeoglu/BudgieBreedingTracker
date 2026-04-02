@@ -85,6 +85,35 @@ void main() {
       expect(doubleTapped, isTrue);
     });
 
+    testWidgets('shows heart animation on double-tap', (tester) async {
+      await tester.pumpWidget(
+        wrap(
+          CommunityMediaGallery(
+            imageUrls: const ['https://example.com/1.jpg'],
+            onDoubleTap: () {},
+            onOpenImage: (_) {},
+          ),
+        ),
+      );
+      await tester.pump();
+
+      // No heart icon initially
+      expect(find.byIcon(Icons.favorite_rounded), findsNothing);
+
+      // Double-tap to trigger heart animation
+      await tester.tap(find.byType(GestureDetector).first);
+      await tester.pump(kDoubleTapMinTime);
+      await tester.tap(find.byType(GestureDetector).first);
+      await tester.pump();
+
+      // Heart icon should appear during animation
+      expect(find.byIcon(Icons.favorite_rounded), findsOneWidget);
+
+      // After animation completes, heart should disappear
+      await tester.pumpAndSettle();
+      expect(find.byIcon(Icons.favorite_rounded), findsNothing);
+    });
+
     testWidgets('calls onOpenImage on single tap after timeout', (
       tester,
     ) async {

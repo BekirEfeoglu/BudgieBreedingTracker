@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/utils/logger.dart';
 import '../../../core/utils/sentry_error_filter.dart';
+import '../../../data/remote/api/remote_source_providers.dart';
 import '../../../data/remote/storage/storage_providers.dart';
 import '../../../data/repositories/repository_providers.dart';
 import '../../auth/providers/auth_providers.dart';
@@ -59,6 +60,9 @@ class AvatarUploadNotifier extends Notifier<AvatarUploadState>
         await profileRepo.save(profile.copyWith(avatarUrl: avatarUrl));
       }
 
+      // Invalidate community profile cache so updated avatar shows immediately
+      ref.read(communityProfileCacheProvider).invalidate(userId);
+
       state = state.copyWith(isUploading: false, isSuccess: true);
     } catch (e, st) {
       AppLogger.error('[AvatarUpload] Failed to upload avatar', e, st);
@@ -83,6 +87,9 @@ class AvatarUploadNotifier extends Notifier<AvatarUploadState>
       if (profile != null) {
         await profileRepo.save(profile.copyWith(avatarUrl: null));
       }
+
+      // Invalidate community profile cache so removed avatar reflects immediately
+      ref.read(communityProfileCacheProvider).invalidate(userId);
 
       state = state.copyWith(isUploading: false, isSuccess: true);
     } catch (e, st) {

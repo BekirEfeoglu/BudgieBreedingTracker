@@ -169,7 +169,7 @@ void main() {
       },
     );
 
-    test('keeps optimistic local state when server block call fails', () async {
+    test('rolls back optimistic state when server block call fails', () async {
       when(
         () =>
             repository.blockUser(userId: 'user-1', blockedUserId: 'blocked-1'),
@@ -183,10 +183,11 @@ void main() {
       await container.read(blockedUsersProvider.notifier).block('blocked-1');
 
       final prefs = await SharedPreferences.getInstance();
-      expect(container.read(blockedUsersProvider), ['blocked-1']);
-      expect(prefs.getStringList(AppPreferences.keyBlockedUserIds), [
-        'blocked-1',
-      ]);
+      expect(container.read(blockedUsersProvider), isEmpty);
+      expect(
+        prefs.getStringList(AppPreferences.keyBlockedUserIds),
+        isEmpty,
+      );
     });
   });
 }

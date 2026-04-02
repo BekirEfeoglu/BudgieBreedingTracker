@@ -139,12 +139,17 @@ class _CompactAction extends StatelessWidget {
           child: InkWell(
             borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
             onTap: onTap,
-            child: Padding(
-              padding: const EdgeInsets.all(AppSpacing.sm),
-              child: Icon(
-                icon,
-                size: 18,
-                color: theme.colorScheme.onSurfaceVariant,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                minWidth: AppSpacing.touchTargetMin,
+                minHeight: AppSpacing.touchTargetMin,
+              ),
+              child: Center(
+                child: Icon(
+                  icon,
+                  size: 18,
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
               ),
             ),
           ),

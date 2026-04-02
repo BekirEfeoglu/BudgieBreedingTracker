@@ -15,7 +15,7 @@ class CommunityProfileCache {
   final Duration _ttl;
   final DateTime Function() _now;
 
-  static const _defaultTtl = Duration(seconds: 30);
+  static const _defaultTtl = Duration(minutes: 5);
   static const _chunkSize = 40;
 
   CommunityProfileCache(this._client) : _ttl = _defaultTtl, _now = _defaultNow;
@@ -25,6 +25,17 @@ class CommunityProfileCache {
     : _ttl = ttl ?? _defaultTtl;
 
   static DateTime _defaultNow() => DateTime.now();
+
+  /// Removes the cached entry for [userId] so the next lookup re-fetches
+  /// from Supabase. Call this after the user updates their profile.
+  void invalidate(String userId) {
+    _cache.remove(userId);
+  }
+
+  /// Clears the entire cache, forcing a full re-fetch on next access.
+  void clear() {
+    _cache.clear();
+  }
 
   /// Returns a map of userId -> profile data for the given [userIds].
   ///
@@ -78,7 +89,10 @@ class CommunityProfileCache {
       if (profile != null) {
         return {
           ...row,
-          'username': profile['display_name'] ?? '',
+          'username': profile['display_name'] ??
+              profile['full_name'] ??
+              _emailPrefix(profile['email']) ??
+              '',
           'avatar_url': profile['avatar_url'],
         };
       }
@@ -101,7 +115,7 @@ class CommunityProfileCache {
       chunks.map(
         (chunk) => _client
             .from(SupabaseConstants.profilesTable)
-            .select('id, display_name, avatar_url')
+            .select('id, display_name, full_name, email, avatar_url')
             .inFilter('id', chunk),
       ),
     );
@@ -115,6 +129,14 @@ class CommunityProfileCache {
         }
       }
     }
+  }
+
+  static String? _emailPrefix(dynamic email) {
+    if (email == null) return null;
+    final str = email.toString().trim();
+    if (str.isEmpty) return null;
+    final atIndex = str.indexOf('@');
+    return atIndex > 0 ? str.substring(0, atIndex) : null;
   }
 }
 

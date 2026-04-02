@@ -227,6 +227,67 @@ void main() {
       expect(result[1]['content'], 'Missing');
     });
 
+    test('falls back to full_name when display_name is null', () async {
+      selectBuilder.result = [
+        {
+          'id': 'u1',
+          'display_name': null,
+          'full_name': 'Bekir',
+          'avatar_url': null,
+        },
+      ];
+
+      final rows = [
+        {'id': 'p1', 'user_id': 'u1', 'content': 'Hello'},
+      ];
+
+      final result = await cache.mergeIntoRows(rows);
+
+      expect(result, hasLength(1));
+      expect(result[0]['username'], 'Bekir');
+    });
+
+    test('prefers display_name over full_name', () async {
+      selectBuilder.result = [
+        {
+          'id': 'u1',
+          'display_name': 'Alice',
+          'full_name': 'Alice Smith',
+          'avatar_url': null,
+        },
+      ];
+
+      final rows = [
+        {'id': 'p1', 'user_id': 'u1', 'content': 'Hello'},
+      ];
+
+      final result = await cache.mergeIntoRows(rows);
+
+      expect(result, hasLength(1));
+      expect(result[0]['username'], 'Alice');
+    });
+
+    test('falls back to email prefix when both names are null', () async {
+      selectBuilder.result = [
+        {
+          'id': 'u1',
+          'display_name': null,
+          'full_name': null,
+          'email': 'bekir@example.com',
+          'avatar_url': null,
+        },
+      ];
+
+      final rows = [
+        {'id': 'p1', 'user_id': 'u1', 'content': 'Hello'},
+      ];
+
+      final result = await cache.mergeIntoRows(rows);
+
+      expect(result, hasLength(1));
+      expect(result[0]['username'], 'bekir');
+    });
+
     test('handles rows with null user_id', () async {
       selectBuilder.result = [];
 
@@ -238,6 +299,48 @@ void main() {
 
       expect(result, hasLength(1));
       expect(result[0].containsKey('username'), isFalse);
+    });
+  });
+
+  group('invalidation', () {
+    test('invalidate removes specific user from cache', () async {
+      selectBuilder.result = [
+        {'id': 'u1', 'display_name': 'Alice', 'avatar_url': null},
+      ];
+      await cache.getProfiles({'u1'});
+      expect(selectBuilder.inFilterCalls, hasLength(1));
+
+      cache.invalidate('u1');
+
+      // Next call should re-fetch from Supabase
+      selectBuilder.result = [
+        {'id': 'u1', 'display_name': 'Alice Updated', 'avatar_url': null},
+      ];
+      final result = await cache.getProfiles({'u1'});
+
+      expect(selectBuilder.inFilterCalls, hasLength(2));
+      expect(result['u1']!['display_name'], 'Alice Updated');
+    });
+
+    test('clear removes all entries from cache', () async {
+      selectBuilder.result = [
+        {'id': 'u1', 'display_name': 'Alice', 'avatar_url': null},
+        {'id': 'u2', 'display_name': 'Bob', 'avatar_url': null},
+      ];
+      await cache.getProfiles({'u1', 'u2'});
+      expect(selectBuilder.inFilterCalls, hasLength(1));
+
+      cache.clear();
+
+      // Next call should re-fetch both from Supabase
+      selectBuilder.result = [
+        {'id': 'u1', 'display_name': 'Alice', 'avatar_url': null},
+        {'id': 'u2', 'display_name': 'Bob', 'avatar_url': null},
+      ];
+      final result = await cache.getProfiles({'u1', 'u2'});
+
+      expect(selectBuilder.inFilterCalls, hasLength(2));
+      expect(result, hasLength(2));
     });
   });
 }

@@ -14,6 +14,7 @@ import '../../../data/models/community_post_model.dart';
 import '../../../data/providers/auth_state_providers.dart';
 import '../../../data/repositories/repository_providers.dart';
 import '../../../router/route_names.dart';
+import '../../messaging/providers/messaging_form_providers.dart';
 import '../providers/community_feed_providers.dart';
 import '../providers/community_post_providers.dart';
 import 'community_image_viewer.dart';
@@ -24,7 +25,7 @@ import 'community_report_dialog.dart';
 import 'community_user_header.dart';
 
 /// Card widget displaying a single community post with full interaction.
-class CommunityPostCard extends ConsumerWidget {
+class CommunityPostCard extends ConsumerStatefulWidget {
   final CommunityPost post;
   final bool showFullContent;
 
@@ -37,7 +38,14 @@ class CommunityPostCard extends ConsumerWidget {
   static const _maxContentLines = 3;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<CommunityPostCard> createState() => _CommunityPostCardState();
+}
+
+class _CommunityPostCardState extends ConsumerState<CommunityPostCard> {
+  CommunityPost get post => widget.post;
+
+  @override
+  Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final currentUserId = ref.watch(currentUserIdProvider);
     final isOwnPost = post.userId == currentUserId;
@@ -80,15 +88,12 @@ class CommunityPostCard extends ConsumerWidget {
                     createdAt: post.createdAt ?? DateTime.now(),
                     isOwnPost: isOwnPost,
                     isFollowing: post.isFollowingAuthor,
-                    onDelete: isOwnPost
-                        ? () => _handleDelete(context, ref)
+                    onDelete: isOwnPost ? _handleDelete : null,
+                    onReport: isOwnPost ? null : _handleReport,
+                    onBlock: isOwnPost ? null : _handleBlock,
+                    onSendMessage: (!isOwnPost && currentUserId != 'anonymous')
+                        ? _handleSendMessage
                         : null,
-                    onReport: isOwnPost
-                        ? null
-                        : () => _handleReport(context, ref),
-                    onBlock: isOwnPost
-                        ? null
-                        : () => _handleBlock(context, ref),
                     onFollowToggle: isOwnPost
                         ? null
                         : () => ref
@@ -121,8 +126,8 @@ class CommunityPostCard extends ConsumerWidget {
                     const SizedBox(height: AppSpacing.md),
                     ContentText(
                       content: post.content,
-                      showFull: showFullContent,
-                      maxLines: _maxContentLines,
+                      showFull: widget.showFullContent,
+                      maxLines: CommunityPostCard._maxContentLines,
                     ),
                   ],
                   if (post.birdId != null) ...[
@@ -143,7 +148,7 @@ class CommunityPostCard extends ConsumerWidget {
                   AppHaptics.mediumImpact();
                   ref.read(likeToggleProvider.notifier).toggleLike(post.id);
                 },
-                onOpenImage: (imageUrl) => _openImageViewer(context, imageUrl),
+                onOpenImage: _openImageViewer,
               ),
             Padding(
               padding: const EdgeInsets.fromLTRB(
@@ -169,7 +174,7 @@ class CommunityPostCard extends ConsumerWidget {
     );
   }
 
-  Future<void> _handleDelete(BuildContext context, WidgetRef ref) async {
+  Future<void> _handleDelete() async {
     final confirmed = await showConfirmDialog(
       context,
       title: 'community.delete_post'.tr(),
@@ -177,16 +182,16 @@ class CommunityPostCard extends ConsumerWidget {
       confirmLabel: 'common.delete'.tr(),
       isDestructive: true,
     );
-    if (confirmed != true || !context.mounted) return;
+    if (confirmed != true || !mounted) return;
     ref.read(postDeleteProvider.notifier).deletePost(post.id);
   }
 
-  Future<void> _handleReport(BuildContext context, WidgetRef ref) async {
+  Future<void> _handleReport() async {
     final reason = await showCommunityReportDialog(
       context,
       title: 'community.report_post'.tr(),
     );
-    if (reason == null || !context.mounted) return;
+    if (reason == null || !mounted) return;
     try {
       final userId = ref.read(currentUserIdProvider);
       final repo = ref.read(communitySocialRepositoryProvider);
@@ -197,13 +202,13 @@ class CommunityPostCard extends ConsumerWidget {
         reason: reason,
       );
       ref.read(communityFeedProvider.notifier).removePost(post.id);
-      if (context.mounted) {
+      if (mounted) {
         ActionFeedbackService.show('community.report_submitted'.tr());
       }
     } catch (e, st) {
       AppLogger.error('CommunityPostCard._handleReport', e, st);
       Sentry.captureException(e, stackTrace: st);
-      if (context.mounted) {
+      if (mounted) {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text('community.report_error'.tr())));
@@ -211,7 +216,7 @@ class CommunityPostCard extends ConsumerWidget {
     }
   }
 
-  Future<void> _handleBlock(BuildContext context, WidgetRef ref) async {
+  Future<void> _handleBlock() async {
     final confirmed = await showConfirmDialog(
       context,
       title: 'community.block_user_confirm'.tr(),
@@ -219,14 +224,24 @@ class CommunityPostCard extends ConsumerWidget {
       confirmLabel: 'community.block_user'.tr(),
       isDestructive: true,
     );
-    if (confirmed != true || !context.mounted) return;
+    if (confirmed != true || !mounted) return;
     await ref.read(blockedUsersProvider.notifier).block(post.userId);
-    if (context.mounted) {
+    if (mounted) {
       ActionFeedbackService.show('community.user_blocked'.tr());
     }
   }
 
-  void _openImageViewer(BuildContext context, String imageUrl) {
+  Future<void> _handleSendMessage() async {
+    final userId = ref.read(currentUserIdProvider);
+    final conversationId = await ref
+        .read(messagingFormStateProvider.notifier)
+        .startDirectConversation(userId1: userId, userId2: post.userId);
+    if (!mounted || conversationId == null) return;
+    ref.read(messagingFormStateProvider.notifier).reset();
+    context.push('${AppRoutes.messages}/$conversationId');
+  }
+
+  void _openImageViewer(String imageUrl) {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (_) => CommunityImageViewer(imageUrl: imageUrl),

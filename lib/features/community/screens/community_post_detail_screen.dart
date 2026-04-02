@@ -29,9 +29,13 @@ class CommunityPostDetailScreen extends ConsumerWidget {
         );
       }
       if (state.error != null) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('community.comment_error'.tr())));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              state.error ?? 'community.comment_error'.tr(),
+            ),
+          ),
+        );
       }
     });
 
@@ -45,13 +49,12 @@ class CommunityPostDetailScreen extends ConsumerWidget {
                 ref.invalidate(communityPostByIdProvider(postId));
                 ref.invalidate(commentsForPostProvider(postId));
               },
-              child: SingleChildScrollView(
+              child: CustomScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Post
-                    postAsync.when(
+                slivers: [
+                  // Post
+                  SliverToBoxAdapter(
+                    child: postAsync.when(
                       loading: () => const Padding(
                         padding: EdgeInsets.all(AppSpacing.xl),
                         child: Center(child: CircularProgressIndicator()),
@@ -80,38 +83,49 @@ class CommunityPostDetailScreen extends ConsumerWidget {
                         );
                       },
                     ),
+                  ),
 
-                    // Divider
-                    const Divider(height: 1),
-
-                    // Comments header
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.lg,
-                        vertical: AppSpacing.sm,
-                      ),
-                      child: Text(
-                        'community.comments'.tr(),
-                        style: Theme.of(context).textTheme.titleSmall,
-                      ),
+                  // Divider + Comments header
+                  SliverToBoxAdapter(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Divider(height: 1),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.lg,
+                            vertical: AppSpacing.sm,
+                          ),
+                          child: Text(
+                            'community.comments'.tr(),
+                            style: Theme.of(context).textTheme.titleSmall,
+                          ),
+                        ),
+                      ],
                     ),
+                  ),
 
-                    // Comments list
-                    commentsAsync.when(
-                      loading: () => const Padding(
+                  // Comments list
+                  commentsAsync.when(
+                    loading: () => const SliverToBoxAdapter(
+                      child: Padding(
                         padding: EdgeInsets.all(AppSpacing.lg),
                         child: Center(child: CircularProgressIndicator()),
                       ),
-                      error: (e, _) => Padding(
+                    ),
+                    error: (e, _) => SliverToBoxAdapter(
+                      child: Padding(
                         padding: const EdgeInsets.all(AppSpacing.lg),
                         child: Text(
                           'community.comment_error'.tr(),
                           style: Theme.of(context).textTheme.bodySmall,
                         ),
                       ),
-                      data: (comments) {
-                        if (comments.isEmpty) {
-                          return Padding(
+                    ),
+                    data: (comments) {
+                      if (comments.isEmpty) {
+                        return SliverToBoxAdapter(
+                          child: Padding(
                             padding: const EdgeInsets.all(AppSpacing.lg),
                             child: Center(
                               child: Text(
@@ -124,24 +138,26 @@ class CommunityPostDetailScreen extends ConsumerWidget {
                                     ),
                               ),
                             ),
-                          );
-                        }
+                          ),
+                        );
+                      }
 
-                        return ListView.builder(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: comments.length,
-                          itemBuilder: (context, index) => CommunityCommentTile(
+                      return SliverList(
+                        delegate: SliverChildBuilderDelegate(
+                          (context, index) => CommunityCommentTile(
                             key: ValueKey(comments[index].id),
                             comment: comments[index],
                           ),
-                        );
-                      },
-                    ),
+                          childCount: comments.length,
+                        ),
+                      );
+                    },
+                  ),
 
-                    const SizedBox(height: AppSpacing.xxxl),
-                  ],
-                ),
+                  const SliverPadding(
+                    padding: EdgeInsets.only(bottom: AppSpacing.xxxl),
+                  ),
+                ],
               ),
             ),
           ),

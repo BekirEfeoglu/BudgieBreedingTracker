@@ -40,39 +40,47 @@ class BlockedUsersNotifier extends Notifier<List<String>> {
   Future<void> block(String blockedUserId) async {
     if (state.contains(blockedUserId)) return;
 
+    final previous = state;
+
     // Optimistic local update
     final updated = [...state, blockedUserId];
     state = updated;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setStringList(AppPreferences.keyBlockedUserIds, updated);
 
-    // Push to server (best-effort)
+    // Push to server — rollback on failure
     try {
       final userId = ref.read(currentUserIdProvider);
       if (userId == 'anonymous') return;
       final repo = ref.read(communitySocialRepositoryProvider);
       await repo.blockUser(userId: userId, blockedUserId: blockedUserId);
     } catch (e) {
-      AppLogger.warning('Failed to push block to server: $e');
+      AppLogger.warning('Failed to push block to server, rolling back: $e');
+      state = previous;
+      await prefs.setStringList(AppPreferences.keyBlockedUserIds, previous);
     }
   }
 
   /// Unblock a user — persists locally and pushes to server.
   Future<void> unblock(String blockedUserId) async {
+    final previous = state;
+
     // Optimistic local update
     final updated = state.where((id) => id != blockedUserId).toList();
     state = updated;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setStringList(AppPreferences.keyBlockedUserIds, updated);
 
-    // Push to server (best-effort)
+    // Push to server — rollback on failure
     try {
       final userId = ref.read(currentUserIdProvider);
       if (userId == 'anonymous') return;
       final repo = ref.read(communitySocialRepositoryProvider);
       await repo.unblockUser(userId: userId, blockedUserId: blockedUserId);
     } catch (e) {
-      AppLogger.warning('Failed to push unblock to server: $e');
+      AppLogger.warning('Failed to push unblock to server, rolling back: $e');
+      state = previous;
+      await prefs.setStringList(AppPreferences.keyBlockedUserIds, previous);
     }
   }
 }

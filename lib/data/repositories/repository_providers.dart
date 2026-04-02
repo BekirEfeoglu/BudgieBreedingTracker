@@ -23,6 +23,7 @@ import 'package:budgie_breeding_tracker/data/repositories/community_comment_repo
 import 'package:budgie_breeding_tracker/data/repositories/community_social_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/feedback_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/marketplace_repository.dart';
+import 'package:budgie_breeding_tracker/data/remote/supabase/supabase_client.dart';
 import 'messaging_repository.dart';
 import 'gamification_repository.dart';
 
@@ -212,6 +213,7 @@ final messagingRepositoryProvider = Provider<MessagingRepository>((ref) {
   return MessagingRepository(
     conversationSource: ref.watch(conversationRemoteSourceProvider),
     messageSource: ref.watch(messageRemoteSourceProvider),
+    client: ref.watch(supabaseClientProvider),
   );
 });
 

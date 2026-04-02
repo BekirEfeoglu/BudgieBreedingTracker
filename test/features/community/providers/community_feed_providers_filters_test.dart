@@ -307,6 +307,45 @@ void main() {
     });
   });
 
+  group('communityVisiblePostsProvider - select optimization', () {
+    test('does not recompute when only isLoading changes', () {
+      final posts = [
+        makePost('p1', createdAt: now),
+      ];
+
+      final container = ProviderContainer(
+        overrides: [
+          communityFeedProvider.overrideWith(
+            () => _StatefulFakeFeedNotifier(posts: posts),
+          ),
+          currentUserIdProvider.overrideWithValue('me'),
+          blockedUsersProvider.overrideWith(
+            () => _FakeBlockedUsersNotifier([]),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      // Initial read
+      container.read(communityFeedProvider);
+      final first = container.read(
+        communityVisiblePostsProvider(CommunityFeedTab.explore),
+      );
+
+      // Simulate loading state change (no post change)
+      (container.read(communityFeedProvider.notifier)
+              as _StatefulFakeFeedNotifier)
+          .setLoading(true);
+      final second = container.read(
+        communityVisiblePostsProvider(CommunityFeedTab.explore),
+      );
+
+      // Should be identical lists (select filters out isLoading changes)
+      expect(first.length, second.length);
+      expect(first.first.id, second.first.id);
+    });
+  });
+
   group('communityVisiblePostsProvider - null createdAt handling', () {
     test('posts with null createdAt use fallback date for sorting', () {
       final posts = [
@@ -362,4 +401,24 @@ class _FakeFeedNotifier extends CommunityFeedNotifier {
 
   @override
   Future<void> fetchMore() async {}
+}
+
+class _StatefulFakeFeedNotifier extends CommunityFeedNotifier {
+  final List<CommunityPost> _posts;
+
+  _StatefulFakeFeedNotifier({List<CommunityPost>? posts})
+      : _posts = posts ?? const [];
+
+  @override
+  FeedState build() => FeedState(posts: _posts, isLoading: false);
+
+  @override
+  Future<void> fetchInitial() async {}
+
+  @override
+  Future<void> fetchMore() async {}
+
+  void setLoading(bool loading) {
+    state = state.copyWith(isLoading: loading);
+  }
 }

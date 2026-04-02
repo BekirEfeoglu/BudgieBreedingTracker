@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -6,9 +7,11 @@ import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../data/models/profile_model.dart';
 import '../../../data/providers/auth_state_providers.dart';
 import '../../../router/route_names.dart';
 import '../../gamification/providers/gamification_providers.dart';
+import '../../profile/providers/profile_providers.dart';
 
 /// Profile-centric AppBar for the community screen.
 class CommunityAppBar extends ConsumerWidget implements PreferredSizeWidget {
@@ -21,51 +24,34 @@ class CommunityAppBar extends ConsumerWidget implements PreferredSizeWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final userId = ref.watch(currentUserIdProvider);
     final userLevelAsync = ref.watch(userLevelProvider(userId));
+    final profile = ref.watch(userProfileProvider).value;
     final theme = Theme.of(context);
 
-    final initials = userId.length >= 2
-        ? userId.substring(0, 2).toUpperCase()
-        : userId.toUpperCase();
+    final displayName = profile?.resolvedDisplayName ?? '';
+    final initials = displayName.isNotEmpty
+        ? displayName[0].toUpperCase()
+        : (userId.length >= 2
+            ? userId.substring(0, 2).toUpperCase()
+            : userId.toUpperCase());
 
     return AppBar(
       toolbarHeight: 92,
       backgroundColor: Colors.transparent,
       surfaceTintColor: Colors.transparent,
       elevation: 0,
-      leadingWidth: AppSpacing.touchTargetMin,
-      titleSpacing: 0,
+      automaticallyImplyLeading: false,
+      titleSpacing: AppSpacing.lg,
       title: Row(
         children: [
           Material(
             color: Colors.transparent,
             child: InkWell(
               borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
-              onTap: () => context.push(AppRoutes.badges),
-              child: Ink(
-                width: AppSpacing.touchTargetMin,
-                height: AppSpacing.touchTargetMin,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: LinearGradient(
-                    colors: [theme.colorScheme.primary, AppColors.accent],
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: theme.colorScheme.primary.withValues(alpha: 0.24),
-                      blurRadius: 16,
-                      offset: const Offset(0, 6),
-                    ),
-                  ],
-                ),
-                child: Center(
-                  child: Text(
-                    initials,
-                    style: theme.textTheme.labelLarge?.copyWith(
-                      color: theme.colorScheme.onPrimary,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
+              onTap: () => context.push(AppRoutes.profile),
+              child: _ProfileAvatar(
+                avatarUrl: profile?.avatarUrl,
+                initials: initials,
+                theme: theme,
               ),
             ),
           ),
@@ -158,6 +144,76 @@ class _ActionIcon extends StatelessWidget {
             minHeight: AppSpacing.touchTargetMin,
           ),
           padding: const EdgeInsets.all(AppSpacing.sm),
+        ),
+      ),
+    );
+  }
+}
+
+class _ProfileAvatar extends StatelessWidget {
+  final String? avatarUrl;
+  final String initials;
+  final ThemeData theme;
+
+  const _ProfileAvatar({
+    required this.avatarUrl,
+    required this.initials,
+    required this.theme,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: AppSpacing.touchTargetMin,
+      height: AppSpacing.touchTargetMin,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: avatarUrl == null
+            ? LinearGradient(
+                colors: [theme.colorScheme.primary, AppColors.accent],
+              )
+            : null,
+        boxShadow: [
+          BoxShadow(
+            color: theme.colorScheme.primary.withValues(alpha: 0.24),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: avatarUrl != null
+          ? CachedNetworkImage(
+              imageUrl: avatarUrl!,
+              fit: BoxFit.cover,
+              placeholder: (_, __) => _InitialsCircle(
+                initials: initials,
+                theme: theme,
+              ),
+              errorWidget: (_, __, ___) => _InitialsCircle(
+                initials: initials,
+                theme: theme,
+              ),
+            )
+          : _InitialsCircle(initials: initials, theme: theme),
+    );
+  }
+}
+
+class _InitialsCircle extends StatelessWidget {
+  final String initials;
+  final ThemeData theme;
+
+  const _InitialsCircle({required this.initials, required this.theme});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Text(
+        initials,
+        style: theme.textTheme.labelLarge?.copyWith(
+          color: theme.colorScheme.onPrimary,
+          fontWeight: FontWeight.w700,
         ),
       ),
     );

@@ -22,6 +22,7 @@ class CommunityUserHeader extends StatelessWidget {
   final VoidCallback? onReport;
   final VoidCallback? onBlock;
   final VoidCallback? onFollowToggle;
+  final VoidCallback? onSendMessage;
   final CommunityPostType? postType;
 
   const CommunityUserHeader({
@@ -36,6 +37,7 @@ class CommunityUserHeader extends StatelessWidget {
     this.onReport,
     this.onBlock,
     this.onFollowToggle,
+    this.onSendMessage,
     this.postType,
   });
 
@@ -43,7 +45,8 @@ class CommunityUserHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Row(
+    return RepaintBoundary(
+      child: Row(
       children: [
         Semantics(
           button: true,
@@ -157,7 +160,7 @@ class CommunityUserHeader extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(right: AppSpacing.xs),
             child: SizedBox(
-              height: 32,
+              height: AppSpacing.touchTargetMin,
               child: isFollowing
                   ? OutlinedButton(
                       onPressed: () {
@@ -187,14 +190,20 @@ class CommunityUserHeader extends StatelessWidget {
                     ),
             ),
           ),
-        if (isOwnPost || onReport != null || onBlock != null)
+        if (isOwnPost || onReport != null || onBlock != null || onSendMessage != null)
           PopupMenuButton<String>(
             onSelected: (value) {
               if (value == 'delete') onDelete?.call();
+              if (value == 'message') onSendMessage?.call();
               if (value == 'report') onReport?.call();
               if (value == 'block') onBlock?.call();
             },
             itemBuilder: (context) => [
+              if (!isOwnPost && onSendMessage != null)
+                PopupMenuItem(
+                  value: 'message',
+                  child: Text('messaging.direct_message'.tr()),
+                ),
               if (isOwnPost)
                 PopupMenuItem(
                   value: 'delete',
@@ -213,6 +222,7 @@ class CommunityUserHeader extends StatelessWidget {
             ],
           ),
       ],
+    ),
     );
   }
 

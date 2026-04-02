@@ -52,6 +52,7 @@ class FeedState {
 
 class CommunityFeedNotifier extends Notifier<FeedState> {
   static const _pageSize = 20;
+  static const _maxPosts = 100;
 
   @override
   FeedState build() {
@@ -108,13 +109,18 @@ class CommunityFeedNotifier extends Notifier<FeedState> {
       );
       if (!ref.mounted) return;
 
-      final allPosts = [...state.posts, ...newPosts];
+      var allPosts = [...state.posts, ...newPosts];
+
+      // Cap the in-memory list to prevent unbounded growth
+      if (allPosts.length > _maxPosts) {
+        allPosts = allPosts.sublist(0, _maxPosts);
+      }
 
       state = state.copyWith(
         posts: allPosts,
         isLoading: false,
         hasMore: newPosts.length >= _pageSize,
-        cursor: newPosts.isNotEmpty ? newPosts.last.createdAt : state.cursor,
+        cursor: allPosts.isNotEmpty ? allPosts.last.createdAt : state.cursor,
       );
     } catch (e, st) {
       if (_isSupabaseUnavailableError(e)) {

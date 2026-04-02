@@ -10,6 +10,8 @@ import 'package:budgie_breeding_tracker/data/local/database/daos/eggs_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/genetics_history_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/incubations_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/sync_metadata_dao.dart';
+import 'package:budgie_breeding_tracker/data/remote/api/community_profile_cache.dart';
+import 'package:budgie_breeding_tracker/data/remote/api/community_social_remote_source.dart';
 import 'package:budgie_breeding_tracker/data/remote/storage/storage_service.dart';
 import 'package:budgie_breeding_tracker/data/repositories/bird_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/breeding_pair_repository.dart';
@@ -84,6 +86,11 @@ class MockGrowthMeasurementRepository extends Mock
 
 class MockCommunityPostRepository extends Mock
     implements CommunityPostRepository {}
+
+class MockCommunitySocialRemoteSource extends Mock
+    implements CommunitySocialRemoteSource {}
+
+class MockCommunityProfileCache extends Mock implements CommunityProfileCache {}
 
 class MockSyncMetadataRepository extends Mock
     implements SyncMetadataRepository {}

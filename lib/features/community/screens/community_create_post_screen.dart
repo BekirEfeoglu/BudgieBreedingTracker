@@ -116,9 +116,11 @@ class _CommunityCreatePostScreenState
         ActionFeedbackService.show('community.post_success'.tr());
       }
       if (state.error != null) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('community.post_error'.tr())));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(state.error ?? 'community.post_error'.tr()),
+          ),
+        );
       }
     });
 

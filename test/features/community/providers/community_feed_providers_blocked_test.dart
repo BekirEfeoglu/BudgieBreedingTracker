@@ -201,7 +201,7 @@ void main() {
       );
     });
 
-    test('keeps local state when server push fails', () async {
+    test('rolls back local state when server push fails', () async {
       when(
         () => repository.blockUser(
           userId: 'user-1',
@@ -216,7 +216,10 @@ void main() {
       await container.read(blockedUsersProvider.notifier).load();
       await container.read(blockedUsersProvider.notifier).block('blocked-1');
 
-      expect(container.read(blockedUsersProvider), contains('blocked-1'));
+      expect(
+        container.read(blockedUsersProvider),
+        isNot(contains('blocked-1')),
+      );
     });
   });
 
@@ -269,7 +272,7 @@ void main() {
       ).called(1);
     });
 
-    test('keeps local removal when server push fails', () async {
+    test('rolls back local removal when server push fails', () async {
       when(
         () => repository.unblockUser(
           userId: 'user-1',
@@ -287,10 +290,7 @@ void main() {
           .read(blockedUsersProvider.notifier)
           .unblock('blocked-1');
 
-      expect(
-        container.read(blockedUsersProvider),
-        isNot(contains('blocked-1')),
-      );
+      expect(container.read(blockedUsersProvider), contains('blocked-1'));
     });
   });
 }

@@ -41,6 +41,7 @@ abstract class AppRoutes {
   // Messaging
   static const messages = '/messages';
   static const messageDetail = '/messages/:id';
+  static const messageNewDm = '/messages/new';
   static const messageGroupForm = '/messages/group/form';
 
   // Gamification

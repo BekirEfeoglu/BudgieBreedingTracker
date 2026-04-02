@@ -19,17 +19,19 @@ class MessagesScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final userId = ref.watch(currentUserIdProvider);
+    final isAnonymous = userId == 'anonymous';
     final conversationsAsync = ref.watch(conversationsProvider(userId));
 
     return Scaffold(
       appBar: AppBar(
         title: Text('messaging.title'.tr()),
         actions: [
-          IconButton(
-            icon: const Icon(LucideIcons.users),
-            tooltip: 'messaging.new_group'.tr(),
-            onPressed: () => context.push('${AppRoutes.messages}/group/form'),
-          ),
+          if (!isAnonymous)
+            IconButton(
+              icon: const Icon(LucideIcons.edit),
+              tooltip: 'messaging.new_message'.tr(),
+              onPressed: () => _showNewMessageOptions(context),
+            ),
         ],
       ),
       body: RefreshIndicator(
@@ -75,12 +77,62 @@ class MessagesScreen extends ConsumerWidget {
           },
         ),
       ),
-      floatingActionButton: FabButton(
-        icon: const Icon(LucideIcons.pencil),
-        tooltip: 'messaging.new_message'.tr(),
-        onPressed: () {
-          context.push('${AppRoutes.messages}/group/form');
-        },
+      floatingActionButton: isAnonymous
+          ? null
+          : FabButton(
+              icon: const Icon(LucideIcons.pencil),
+              tooltip: 'messaging.new_message'.tr(),
+              onPressed: () => _showNewMessageOptions(context),
+            ),
+    );
+  }
+
+  void _showNewMessageOptions(BuildContext context) {
+    final theme = Theme.of(context);
+
+    showModalBottomSheet<void>(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: AppSpacing.sm),
+            Container(
+              width: 32,
+              height: 4,
+              decoration: BoxDecoration(
+                color: theme.colorScheme.outlineVariant,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            ListTile(
+              leading: Icon(
+                LucideIcons.messageCircle,
+                color: theme.colorScheme.primary,
+              ),
+              title: Text('messaging.direct_message'.tr()),
+              subtitle: Text('messaging.direct_message_hint'.tr()),
+              onTap: () {
+                Navigator.of(ctx).pop();
+                context.push('${AppRoutes.messages}/new');
+              },
+            ),
+            ListTile(
+              leading: Icon(
+                LucideIcons.users,
+                color: theme.colorScheme.primary,
+              ),
+              title: Text('messaging.new_group'.tr()),
+              subtitle: Text('messaging.new_group_hint'.tr()),
+              onTap: () {
+                Navigator.of(ctx).pop();
+                context.push('${AppRoutes.messages}/group/form');
+              },
+            ),
+            const SizedBox(height: AppSpacing.lg),
+          ],
+        ),
       ),
     );
   }
