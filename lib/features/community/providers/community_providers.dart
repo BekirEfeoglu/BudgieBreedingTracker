@@ -39,6 +39,17 @@ final exploreSortProvider =
       ExploreSortNotifier.new,
     );
 
+/// Active tab state for pill tab bar (replaces DefaultTabController).
+class CommunityActiveTabNotifier extends Notifier<CommunityFeedTab> {
+  @override
+  CommunityFeedTab build() => CommunityFeedTab.explore;
+}
+
+final communityActiveTabProvider =
+    NotifierProvider<CommunityActiveTabNotifier, CommunityFeedTab>(
+  CommunityActiveTabNotifier.new,
+);
+
 /// Shared relative date formatter for community widgets.
 String formatCommunityDate(DateTime? date) {
   if (date == null) return '';
