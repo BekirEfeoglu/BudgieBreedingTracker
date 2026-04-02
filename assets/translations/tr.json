@@ -1826,7 +1826,8 @@
   "error": {
     "page_not_found": "Sayfa Bulunamadı",
     "page_not_found_hint": "Aradığınız sayfa mevcut değil veya kaldırılmış olabilir",
-    "go_home": "Ana Sayfaya Dön"
+    "go_home": "Ana Sayfaya Dön",
+    "not_found": "İlan bulunamadı"
   },
   "feedback": {
     "admin_response": "Ekip Yanıtı",
@@ -1933,7 +1934,6 @@
     "pedigree_stats_section": "İstatistikler",
     "pedigree_gen_details": "Jenerasyon Detayları",
     "header_color": "Renk Mutasyonu",
-    "title": "Dışa Aktar",
     "error_excel_create": "Excel dosyası oluşturulamadı"
   },
   "import": {

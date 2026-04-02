@@ -1826,7 +1826,8 @@
   "error": {
     "page_not_found": "Seite nicht gefunden",
     "page_not_found_hint": "Die gesuchte Seite existiert nicht oder wurde entfernt",
-    "go_home": "Zur Startseite"
+    "go_home": "Zur Startseite",
+    "not_found": "Anzeige nicht gefunden"
   },
   "feedback": {
     "admin_response": "Team-Antwort",
@@ -1933,7 +1934,6 @@
     "pedigree_stats_section": "Statistiken",
     "pedigree_gen_details": "Generationsdetails",
     "header_color": "Farbmutation",
-    "title": "Exportieren",
     "error_excel_create": "Excel-Datei konnte nicht erstellt werden"
   },
   "import": {

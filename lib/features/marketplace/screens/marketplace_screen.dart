@@ -68,7 +68,7 @@ class MarketplaceScreen extends ConsumerWidget {
 
                   if (listings.isEmpty) {
                     return EmptyState(
-                      icon: const Icon(Icons.search_off),
+                      icon: const Icon(LucideIcons.searchX),
                       title: 'common.no_results'.tr(),
                       subtitle: 'marketplace.no_results'.tr(),
                     );
@@ -90,7 +90,7 @@ class MarketplaceScreen extends ConsumerWidget {
         ],
       ),
       floatingActionButton: FabButton(
-        icon: const Icon(Icons.add),
+        icon: const Icon(LucideIcons.plus),
         tooltip: 'marketplace.add_listing'.tr(),
         onPressed: () => context.push('${AppRoutes.marketplace}/form'),
       ),

@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/empty_state.dart';
@@ -35,7 +36,7 @@ class MarketplaceMyListingsScreen extends ConsumerWidget {
           data: (listings) {
             if (listings.isEmpty) {
               return EmptyState(
-                icon: const Icon(Icons.storefront),
+                icon: const Icon(LucideIcons.store),
                 title: 'marketplace.no_listings'.tr(),
                 subtitle: 'marketplace.no_listings_hint'.tr(),
               );
