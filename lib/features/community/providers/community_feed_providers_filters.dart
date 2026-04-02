@@ -24,11 +24,7 @@ final communityVisiblePostsProvider =
               .toList(),
         CommunityFeedTab.guides =>
           unblocked
-              .where(
-                (p) =>
-                    p.postType == CommunityPostType.guide ||
-                    p.postType == CommunityPostType.question,
-              )
+              .where((p) => p.postType == CommunityPostType.guide)
               .toList(),
         CommunityFeedTab.questions =>
           unblocked

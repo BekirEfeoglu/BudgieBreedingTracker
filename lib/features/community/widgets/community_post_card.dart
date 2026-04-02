@@ -45,14 +45,21 @@ class CommunityPostCard extends ConsumerWidget {
     final allImages = post.allImageUrls;
 
     return Card(
-      margin: const EdgeInsets.only(bottom: 6),
+      margin: const EdgeInsets.only(bottom: AppSpacing.md),
       elevation: 0,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+      color: theme.colorScheme.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
+        side: BorderSide(
+          color: theme.colorScheme.outlineVariant.withValues(alpha: 0.22),
+        ),
+      ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: () => context.push(
           AppRoutes.communityPostDetail.replaceFirst(':postId', post.id),
         ),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

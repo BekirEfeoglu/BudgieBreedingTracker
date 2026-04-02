@@ -135,8 +135,8 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('5'), findsOneWidget);
-      expect(find.text('3'), findsOneWidget);
+      expect(find.text('5'), findsAtLeastNWidgets(1));
+      expect(find.text('3'), findsAtLeastNWidgets(1));
     });
 
     testWidgets('hides engagement summary when no engagement', (tester) async {

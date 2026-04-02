@@ -2,10 +2,9 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:lucide_icons/lucide_icons.dart';
 
-import '../../../core/constants/app_icons.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../core/constants/app_icons.dart';
 import '../../../core/widgets/app_icon.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../../router/route_names.dart';
@@ -26,138 +25,121 @@ class CommunityScreen extends ConsumerWidget {
     final theme = Theme.of(context);
 
     return Scaffold(
+      backgroundColor: theme.colorScheme.surface,
       appBar: const CommunityAppBar(),
-      body: isEnabled
-          ? _buildBody(activeTab)
-          : const _ComingSoonBody(),
-      floatingActionButton: isEnabled
-          ? _CommunityFab(theme: theme)
+      floatingActionButton: isEnabled && activeTab != CommunityFeedTab.questions
+          ? FloatingActionButton.extended(
+              onPressed: () => context.push(_buildCreatePostRoute(activeTab)),
+              icon: Icon(
+                activeTab == CommunityFeedTab.guides
+                    ? Icons.menu_book_rounded
+                    : Icons.edit_rounded,
+              ),
+              label: Text('community.create_post'.tr()),
+            )
           : null,
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              theme.colorScheme.primaryContainer.withValues(alpha: 0.38),
+              theme.colorScheme.surface,
+              theme.colorScheme.surface,
+            ],
+            stops: const [0, 0.24, 1],
+          ),
+        ),
+        child: SafeArea(
+          top: false,
+          child: isEnabled
+              ? _buildBody(context, activeTab)
+              : const _ComingSoonBody(),
+        ),
+      ),
     );
   }
 
-  Widget _buildBody(CommunityFeedTab activeTab) {
+  String _buildCreatePostRoute(CommunityFeedTab activeTab) {
+    final initialType = switch (activeTab) {
+      CommunityFeedTab.guides => CommunityPostType.guide,
+      _ => CommunityPostType.general,
+    };
+
+    return initialType == CommunityPostType.general
+        ? AppRoutes.communityCreatePost
+        : '${AppRoutes.communityCreatePost}?type=${initialType.toJson()}';
+  }
+
+  Widget _buildBody(BuildContext context, CommunityFeedTab activeTab) {
+    final theme = Theme.of(context);
+
     // questions tab is repurposed as marketplace tab in UI
     if (activeTab == CommunityFeedTab.questions) {
-      return const Column(
+      return Column(
         children: [
-          CommunityPillTabs(),
-          Expanded(child: MarketplaceTabContent()),
+          const _CommunityTabRail(),
+          Expanded(
+            child: Container(
+              decoration: BoxDecoration(
+                color: theme.colorScheme.surface,
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(AppSpacing.radiusXl),
+                ),
+                border: Border.all(
+                  color: theme.colorScheme.outlineVariant.withValues(
+                    alpha: 0.18,
+                  ),
+                ),
+              ),
+              child: const MarketplaceTabContent(),
+            ),
+          ),
         ],
       );
     }
 
     return Column(
       children: [
-        const CommunityPillTabs(),
-        Expanded(
-          child: CommunityFeedList(tab: activeTab),
-        ),
+        const _CommunityTabRail(),
+        Expanded(child: CommunityFeedList(tab: activeTab)),
       ],
     );
   }
 }
 
-/// FAB with bottom sheet for multiple creation options.
-class _CommunityFab extends StatelessWidget {
-  final ThemeData theme;
-
-  const _CommunityFab({required this.theme});
+class _CommunityTabRail extends StatelessWidget {
+  const _CommunityTabRail();
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 52,
-      height: 52,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        gradient: LinearGradient(
-          colors: [
-            theme.colorScheme.primary,
-            theme.colorScheme.tertiary,
-          ],
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: theme.colorScheme.primary.withValues(alpha: 0.4),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: FloatingActionButton(
-        onPressed: () => _showCreateOptions(context),
-        tooltip: 'community.create_post'.tr(),
-        elevation: 0,
-        backgroundColor: Colors.transparent,
-        child: const Icon(LucideIcons.plus, color: Colors.white),
-      ),
-    );
-  }
+    final theme = Theme.of(context);
 
-  void _showCreateOptions(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      builder: (context) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(AppSpacing.lg),
-              child: Text(
-                'community.create_post'.tr(),
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.lg,
+        AppSpacing.md,
+        AppSpacing.lg,
+        AppSpacing.md,
+      ),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surface.withValues(alpha: 0.86),
+          borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
+          border: Border.all(
+            color: theme.colorScheme.outlineVariant.withValues(alpha: 0.28),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: theme.shadowColor.withValues(alpha: 0.06),
+              blurRadius: 18,
+              offset: const Offset(0, 8),
             ),
-            ListTile(
-              leading: const Icon(LucideIcons.pencil),
-              title: Text('community.create_post'.tr()),
-              subtitle: Text('community.content_label'.tr()),
-              onTap: () {
-                Navigator.pop(context);
-                context.push(AppRoutes.communityCreatePost);
-              },
-            ),
-            ListTile(
-              leading: const Icon(LucideIcons.store),
-              title: Text('marketplace.add_listing'.tr()),
-              subtitle: Text('marketplace.no_listings_hint'.tr()),
-              onTap: () {
-                Navigator.pop(context);
-                context.push('${AppRoutes.marketplace}/form');
-              },
-            ),
-            ListTile(
-              leading: const Icon(LucideIcons.messageCircle),
-              title: Text('messaging.new_message'.tr()),
-              subtitle: Text('messaging.no_conversations_hint'.tr()),
-              onTap: () {
-                Navigator.pop(context);
-                context.push('${AppRoutes.messages}/group/form');
-              },
-            ),
-            const Divider(),
-            ListTile(
-              leading: const Icon(LucideIcons.award),
-              title: Text('badges.title'.tr()),
-              onTap: () {
-                Navigator.pop(context);
-                context.push(AppRoutes.badges);
-              },
-            ),
-            ListTile(
-              leading: const Icon(LucideIcons.trophy),
-              title: Text('leaderboard.title'.tr()),
-              onTap: () {
-                Navigator.pop(context);
-                context.push(AppRoutes.leaderboard);
-              },
-            ),
-            const SizedBox(height: AppSpacing.sm),
           ],
         ),
+        child: const CommunityPillTabs(),
       ),
     );
   }

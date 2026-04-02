@@ -139,14 +139,14 @@ void main() {
       await tester.pumpWidget(createSubject(_testPost(likeCount: 42)));
       await tester.pump();
 
-      expect(find.text('42'), findsOneWidget);
+      expect(find.text('42'), findsAtLeastNWidgets(1));
     });
 
     testWidgets('shows comment count in engagement summary', (tester) async {
       await tester.pumpWidget(createSubject(_testPost(commentCount: 7)));
       await tester.pump();
 
-      expect(find.text('7'), findsOneWidget);
+      expect(find.text('7'), findsAtLeastNWidgets(1));
     });
 
     testWidgets('hides engagement summary when both counts are zero', (

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
+import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../data/providers/auth_state_providers.dart';
 import '../../../router/route_names.dart';
@@ -14,7 +15,7 @@ class CommunityAppBar extends ConsumerWidget implements PreferredSizeWidget {
   const CommunityAppBar({super.key});
 
   @override
-  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+  Size get preferredSize => const Size.fromHeight(92);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -27,29 +28,41 @@ class CommunityAppBar extends ConsumerWidget implements PreferredSizeWidget {
         : userId.toUpperCase();
 
     return AppBar(
+      toolbarHeight: 92,
+      backgroundColor: Colors.transparent,
+      surfaceTintColor: Colors.transparent,
+      elevation: 0,
       titleSpacing: AppSpacing.sm,
       title: Row(
         children: [
-          GestureDetector(
-            onTap: () => context.push(AppRoutes.badges),
-            child: Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: LinearGradient(
-                  colors: [
-                    theme.colorScheme.primary,
-                    theme.colorScheme.tertiary,
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+              onTap: () => context.push(AppRoutes.badges),
+              child: Ink(
+                width: AppSpacing.touchTargetMin,
+                height: AppSpacing.touchTargetMin,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    colors: [theme.colorScheme.primary, AppColors.accent],
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: theme.colorScheme.primary.withValues(alpha: 0.24),
+                      blurRadius: 16,
+                      offset: const Offset(0, 6),
+                    ),
                   ],
                 ),
-              ),
-              child: Center(
-                child: Text(
-                  initials,
-                  style: theme.textTheme.labelMedium?.copyWith(
-                    color: theme.colorScheme.onPrimary,
-                    fontWeight: FontWeight.w700,
+                child: Center(
+                  child: Text(
+                    initials,
+                    style: theme.textTheme.labelLarge?.copyWith(
+                      color: theme.colorScheme.onPrimary,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
               ),
@@ -63,8 +76,8 @@ class CommunityAppBar extends ConsumerWidget implements PreferredSizeWidget {
               children: [
                 Text(
                   'community.title'.tr(),
-                  style: theme.textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w700,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w800,
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -75,9 +88,9 @@ class CommunityAppBar extends ConsumerWidget implements PreferredSizeWidget {
                     if (level == null) return const SizedBox.shrink();
                     return Text(
                       'Lv.${level.level} · ${level.title.isNotEmpty ? level.title.tr() : ''}',
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        color: theme.colorScheme.primary,
-                        fontWeight: FontWeight.w500,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                        fontWeight: FontWeight.w600,
                       ),
                       overflow: TextOverflow.ellipsis,
                     );
@@ -89,11 +102,6 @@ class CommunityAppBar extends ConsumerWidget implements PreferredSizeWidget {
         ],
       ),
       actions: [
-        _ActionIcon(
-          icon: LucideIcons.store,
-          tooltip: 'marketplace.title'.tr(),
-          onPressed: () => context.push(AppRoutes.marketplace),
-        ),
         _ActionIcon(
           icon: LucideIcons.messageCircle,
           tooltip: 'messaging.title'.tr(),
@@ -131,21 +139,24 @@ class _ActionIcon extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 1),
+      padding: const EdgeInsets.symmetric(horizontal: 2),
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: theme.colorScheme.surfaceContainerHighest,
+          color: theme.colorScheme.surface.withValues(alpha: 0.84),
           shape: BoxShape.circle,
+          border: Border.all(
+            color: theme.colorScheme.outlineVariant.withValues(alpha: 0.28),
+          ),
         ),
         child: IconButton(
           icon: Icon(icon, size: 18),
           tooltip: tooltip,
           onPressed: onPressed,
           constraints: const BoxConstraints(
-            minWidth: 32,
-            minHeight: 32,
+            minWidth: AppSpacing.touchTargetMin,
+            minHeight: AppSpacing.touchTargetMin,
           ),
-          padding: const EdgeInsets.all(7),
+          padding: const EdgeInsets.all(AppSpacing.sm),
         ),
       ),
     );

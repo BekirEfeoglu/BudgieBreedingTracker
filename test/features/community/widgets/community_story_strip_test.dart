@@ -47,6 +47,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
+      expect(find.text(l10n('community.stories_title')), findsOneWidget);
       expect(find.byIcon(LucideIcons.plus), findsOneWidget);
       expect(find.text(l10n('community.create_post')), findsOneWidget);
       expect(find.text('Ali'), findsOneWidget);

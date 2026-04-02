@@ -172,7 +172,7 @@ class _MarketplaceFormScreenState
                     .map(
                       (g) => DropdownMenuItem(
                         value: g,
-                        child: Text(g.name),
+                        child: Text(_genderLabel(g)),
                       ),
                     )
                     .toList(),
@@ -261,6 +261,12 @@ class _MarketplaceFormScreenState
       );
     }
   }
+
+  String _genderLabel(BirdGender gender) => switch (gender) {
+        BirdGender.male => 'birds.male'.tr(),
+        BirdGender.female => 'birds.female'.tr(),
+        _ => 'marketplace.gender_unknown'.tr(),
+      };
 
   String _typeLabel(MarketplaceListingType type) => switch (type) {
         MarketplaceListingType.sale => 'marketplace.type_sale'.tr(),

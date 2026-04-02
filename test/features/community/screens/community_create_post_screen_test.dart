@@ -64,6 +64,24 @@ void main() {
       expect(find.text(l10n('community.content_label')), findsOneWidget);
     });
 
+    testWidgets('preselects initial post type when provided', (tester) async {
+      await tester.pumpWidget(
+        buildScope(
+          const CommunityCreatePostScreen(
+            initialPostType: CommunityPostType.guide,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final choiceChip = tester.widget<ChoiceChip>(
+        find.widgetWithText(ChoiceChip, l10n('community.post_type_guide')),
+      );
+
+      expect(choiceChip.selected, isTrue);
+      expect(find.text(l10n('community.quick_hint')), findsOneWidget);
+    });
+
     testWidgets('renders tag input and add photo button', (tester) async {
       await tester.pumpWidget(buildScope(const CommunityCreatePostScreen()));
       await tester.pumpAndSettle();

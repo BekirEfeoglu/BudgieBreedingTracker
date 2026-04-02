@@ -75,7 +75,7 @@ void main() {
 
       await tester.pump();
 
-      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      expect(find.byKey(const Key('community_feed_skeleton')), findsOneWidget);
     });
   });
 }

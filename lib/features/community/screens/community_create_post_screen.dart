@@ -16,7 +16,12 @@ part 'community_create_post_widgets.dart';
 
 /// Screen for creating a new community post.
 class CommunityCreatePostScreen extends ConsumerStatefulWidget {
-  const CommunityCreatePostScreen({super.key});
+  final CommunityPostType initialPostType;
+
+  const CommunityCreatePostScreen({
+    super.key,
+    this.initialPostType = CommunityPostType.general,
+  });
 
   @override
   ConsumerState<CommunityCreatePostScreen> createState() =>
@@ -30,7 +35,15 @@ class _CommunityCreatePostScreenState
   final _tagController = TextEditingController();
   final _selectedImages = <XFile>[];
   final _tags = <String>[];
-  CommunityPostType _postType = CommunityPostType.general;
+  late CommunityPostType _postType;
+
+  @override
+  void initState() {
+    super.initState();
+    _postType = widget.initialPostType == CommunityPostType.unknown
+        ? CommunityPostType.general
+        : widget.initialPostType;
+  }
 
   @override
   void dispose() {
@@ -157,7 +170,7 @@ class _CommunityCreatePostScreenState
               maxLength: 1000,
               enabled: !formState.isLoading,
               decoration: InputDecoration(
-                hintText: 'community.content_label'.tr(),
+                hintText: _contentHint,
                 border: InputBorder.none,
               ),
               style: theme.textTheme.bodyLarge,
@@ -235,4 +248,11 @@ class _CommunityCreatePostScreenState
       ),
     );
   }
+
+  String get _contentHint => switch (_postType) {
+    CommunityPostType.photo => 'community.quick_hint'.tr(),
+    CommunityPostType.question => 'community.quick_hint'.tr(),
+    CommunityPostType.guide => 'community.quick_hint'.tr(),
+    _ => 'community.content_label'.tr(),
+  };
 }

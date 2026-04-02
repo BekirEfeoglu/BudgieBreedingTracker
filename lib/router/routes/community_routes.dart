@@ -1,6 +1,7 @@
 import 'package:go_router/go_router.dart';
 
 import '../../core/widgets/not_found_screen.dart';
+import '../../core/enums/community_enums.dart';
 import '../../features/community/screens/community_bookmarks_screen.dart';
 import '../../features/community/screens/community_create_post_screen.dart';
 import '../../features/community/screens/community_post_detail_screen.dart';
@@ -19,7 +20,18 @@ List<RouteBase> buildCommunityRoutes() => [
       // Specific paths BEFORE parameterized paths
       GoRoute(
         path: 'create',
-        builder: (context, state) => const CommunityCreatePostScreen(),
+        builder: (context, state) {
+          final rawType = state.uri.queryParameters['type'];
+          final parsedType = rawType == null
+              ? CommunityPostType.general
+              : CommunityPostType.fromJson(rawType);
+
+          return CommunityCreatePostScreen(
+            initialPostType: parsedType == CommunityPostType.unknown
+                ? CommunityPostType.general
+                : parsedType,
+          );
+        },
       ),
       GoRoute(
         path: 'bookmarks',

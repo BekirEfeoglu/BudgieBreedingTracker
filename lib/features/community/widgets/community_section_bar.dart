@@ -30,46 +30,89 @@ class CommunitySectionBar extends StatelessWidget {
       CommunityFeedTab.questions => 'community.tab_questions',
     };
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          titleKey.tr(),
-          style: theme.textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.w700,
-          ),
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface.withValues(alpha: 0.86),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
+        border: Border.all(
+          color: theme.colorScheme.outlineVariant.withValues(alpha: 0.24),
         ),
-        const SizedBox(height: AppSpacing.md),
-        if (tab == CommunityFeedTab.explore)
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _FilterChip(
-                label: 'community.sort_newest'.tr(),
-                icon: LucideIcons.clock3,
-                isSelected: exploreSort == CommunityExploreSort.newest,
-                onTap: () => onExploreSortChanged(CommunityExploreSort.newest),
+              Expanded(
+                child: Text(
+                  titleKey.tr(),
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
               ),
-              const SizedBox(width: AppSpacing.sm),
-              _FilterChip(
-                label: 'community.sort_trending'.tr(),
-                icon: LucideIcons.flame,
-                isSelected: exploreSort == CommunityExploreSort.trending,
-                onTap: () =>
-                    onExploreSortChanged(CommunityExploreSort.trending),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.sm,
+                  vertical: AppSpacing.xs,
+                ),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.primaryContainer,
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+                ),
+                child: Text(
+                  'community.filter_results'.tr(args: ['$visibleCount']),
+                  style: theme.textTheme.labelMedium?.copyWith(
+                    color: theme.colorScheme.onPrimaryContainer,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
               ),
             ],
           ),
-        if (tab == CommunityFeedTab.explore)
-          const SizedBox(height: AppSpacing.md),
-        Text(
-          'community.filter_results'.tr(args: ['$visibleCount']),
-          style: theme.textTheme.bodySmall?.copyWith(
-            color: theme.colorScheme.onSurfaceVariant,
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            _subtitleKey.tr(),
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
           ),
-        ),
-      ],
+          if (tab == CommunityFeedTab.explore) ...[
+            const SizedBox(height: AppSpacing.md),
+            Wrap(
+              spacing: AppSpacing.sm,
+              runSpacing: AppSpacing.sm,
+              children: [
+                _FilterChip(
+                  label: 'community.sort_newest'.tr(),
+                  icon: LucideIcons.clock3,
+                  isSelected: exploreSort == CommunityExploreSort.newest,
+                  onTap: () =>
+                      onExploreSortChanged(CommunityExploreSort.newest),
+                ),
+                _FilterChip(
+                  label: 'community.sort_trending'.tr(),
+                  icon: LucideIcons.flame,
+                  isSelected: exploreSort == CommunityExploreSort.trending,
+                  onTap: () =>
+                      onExploreSortChanged(CommunityExploreSort.trending),
+                ),
+              ],
+            ),
+          ],
+        ],
+      ),
     );
   }
+
+  String get _subtitleKey => switch (tab) {
+    CommunityFeedTab.explore => 'community.section_explore_hint',
+    CommunityFeedTab.following => 'community.section_following_hint',
+    CommunityFeedTab.guides => 'community.section_guides_hint',
+    CommunityFeedTab.questions => 'community.section_market_hint',
+  };
 }
 
 class _FilterChip extends StatelessWidget {

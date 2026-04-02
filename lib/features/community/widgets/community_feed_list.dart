@@ -242,23 +242,23 @@ class _CommunityFeedSkeleton extends StatelessWidget {
         // Post card skeletons (x3)
         ...List.generate(
           3,
-          (_) => Padding(
-            padding: const EdgeInsets.only(bottom: AppSpacing.lg),
+          (_) => const Padding(
+            padding: EdgeInsets.only(bottom: AppSpacing.lg),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Avatar row
                 Row(
                   children: [
-                    const SkeletonLoader(
+                    SkeletonLoader(
                       width: 36,
                       height: 36,
                       borderRadius: AppSpacing.radiusFull,
                     ),
-                    const SizedBox(width: AppSpacing.md),
+                    SizedBox(width: AppSpacing.md),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
+                      children: [
                         SkeletonLoader(width: 120, height: 14),
                         SizedBox(height: AppSpacing.xs),
                         SkeletonLoader(width: 80, height: 10),
@@ -266,14 +266,14 @@ class _CommunityFeedSkeleton extends StatelessWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: AppSpacing.md),
+                SizedBox(height: AppSpacing.md),
                 // Content lines
-                const SkeletonLoader(height: 14),
-                const SizedBox(height: AppSpacing.sm),
-                const SkeletonLoader(width: 240, height: 14),
-                const SizedBox(height: AppSpacing.md),
+                SkeletonLoader(height: 14),
+                SizedBox(height: AppSpacing.sm),
+                SkeletonLoader(width: 240, height: 14),
+                SizedBox(height: AppSpacing.md),
                 // Image placeholder
-                const SkeletonLoader(
+                SkeletonLoader(
                   height: 160,
                   borderRadius: AppSpacing.radiusLg,
                 ),
