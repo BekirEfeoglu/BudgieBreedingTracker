@@ -24,6 +24,7 @@ import 'package:budgie_breeding_tracker/data/repositories/community_social_repos
 import 'package:budgie_breeding_tracker/data/repositories/feedback_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/marketplace_repository.dart';
 import 'messaging_repository.dart';
+import 'gamification_repository.dart';
 
 /// Riverpod providers for all repositories.
 ///
@@ -211,5 +212,11 @@ final messagingRepositoryProvider = Provider<MessagingRepository>((ref) {
   return MessagingRepository(
     conversationSource: ref.watch(conversationRemoteSourceProvider),
     messageSource: ref.watch(messageRemoteSourceProvider),
+  );
+});
+
+final gamificationRepositoryProvider = Provider<GamificationRepository>((ref) {
+  return GamificationRepository(
+    remoteSource: ref.watch(gamificationRemoteSourceProvider),
   );
 });
