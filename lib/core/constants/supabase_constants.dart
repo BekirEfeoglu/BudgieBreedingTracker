@@ -57,6 +57,12 @@ abstract class SupabaseConstants {
   static const String conversationParticipantsTable = 'conversation_participants';
   static const String messagesTable = 'messages';
 
+  // Gamification
+  static const String badgesTable = 'badges';
+  static const String userBadgesTable = 'user_badges';
+  static const String userLevelsTable = 'user_levels';
+  static const String xpTransactionsTable = 'xp_transactions';
+
   static const String calendarTable = 'calendar';
   static const String deletedEggsTable = 'deleted_eggs';
   static const String eggArchivesTable = 'egg_archives';
