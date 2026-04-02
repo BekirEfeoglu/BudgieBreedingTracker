@@ -82,14 +82,17 @@ class CommunityQuickComposer extends ConsumerWidget {
             const SizedBox(width: AppSpacing.sm),
             _CompactAction(
               icon: LucideIcons.image,
+              tooltip: 'community.add_photo'.tr(),
               onTap: () => onCreateTypedPost(CommunityPostType.photo),
             ),
             _CompactAction(
               icon: LucideIcons.helpCircle,
+              tooltip: 'community.post_type_question'.tr(),
               onTap: () => onCreateTypedPost(CommunityPostType.question),
             ),
             _CompactAction(
               icon: LucideIcons.bookOpen,
+              tooltip: 'community.post_type_guide'.tr(),
               onTap: () => onCreateTypedPost(CommunityPostType.guide),
             ),
           ],
@@ -111,25 +114,37 @@ class CommunityQuickComposer extends ConsumerWidget {
 
 class _CompactAction extends StatelessWidget {
   final IconData icon;
+  final String tooltip;
   final VoidCallback onTap;
 
-  const _CompactAction({required this.icon, required this.onTap});
+  const _CompactAction({
+    required this.icon,
+    required this.tooltip,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.sm),
-          child: Icon(
-            icon,
-            size: 18,
-            color: theme.colorScheme.onSurfaceVariant,
+    return Semantics(
+      button: true,
+      label: tooltip,
+      child: Tooltip(
+        message: tooltip,
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+            onTap: onTap,
+            child: Padding(
+              padding: const EdgeInsets.all(AppSpacing.sm),
+              child: Icon(
+                icon,
+                size: 18,
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
           ),
         ),
       ),

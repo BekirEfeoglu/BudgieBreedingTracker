@@ -237,14 +237,17 @@ class _CommunityFeedSkeleton extends StatelessWidget {
       ),
       children: [
         // Compact composer skeleton
-        const SkeletonLoader(height: 48, borderRadius: AppSpacing.radiusXl),
+        const RepaintBoundary(
+          child: SkeletonLoader(height: 48, borderRadius: AppSpacing.radiusXl),
+        ),
         const SizedBox(height: AppSpacing.lg),
         // Post card skeletons (x3)
         ...List.generate(
           3,
-          (_) => const Padding(
-            padding: EdgeInsets.only(bottom: AppSpacing.lg),
-            child: Column(
+          (_) => const RepaintBoundary(
+            child: Padding(
+              padding: EdgeInsets.only(bottom: AppSpacing.lg),
+              child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Avatar row
@@ -279,6 +282,7 @@ class _CommunityFeedSkeleton extends StatelessWidget {
                 ),
               ],
             ),
+          ),
           ),
         ),
       ],
