@@ -120,6 +120,6 @@ CREATE INDEX IF NOT EXISTS idx_event_templates_is_system
   ON event_templates(is_system)
   WHERE is_system = true;
 
--- incubations (user_id, is_deleted) — all other core tables have this composite
-CREATE INDEX IF NOT EXISTS idx_incubations_user_deleted
-  ON incubations(user_id, is_deleted);
+-- incubations (user_id) — incubations uses BaseRemoteSourceNoSoftDelete (no is_deleted column)
+CREATE INDEX IF NOT EXISTS idx_incubations_user_id_v2
+  ON incubations(user_id);
