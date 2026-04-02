@@ -56,8 +56,8 @@ scripts/verify_rls_staging.sql           # Verify Row-Level Security policies on
 
 | Metric | Value |
 | --- | --- |
-| Source files (lib/) | 810 Dart files |
-| Test files (test/) | 749 test files, 8,933+ individual tests |
+| Source files (lib/) | 808 Dart files |
+| Test files (test/) | 747 test files, 8,930+ individual tests |
 | Feature modules | 23 |
 | Drift tables / DAOs / Mappers | 20 each |
 | Repositories | 23 entity + base + sync_metadata |
@@ -69,7 +69,7 @@ scripts/verify_rls_staging.sql           # Verify Row-Level Security policies on
 | Shared widgets | 20 (15 root + 2 buttons + 2 cards + 1 dialog) |
 | Enum files | 15 |
 | Supabase constants | 106 (tables + buckets + columns) |
-| L10n keys | ~2,218 per language, 39 categories |
+| L10n keys | ~2,243 per language, 39 categories |
 | DB schema version | 19 |
 
 ## CI/CD Pipeline
