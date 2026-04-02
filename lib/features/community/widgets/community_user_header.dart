@@ -3,6 +3,7 @@ import 'package:budgie_breeding_tracker/core/utils/app_haptics.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
@@ -133,12 +134,23 @@ class CommunityUserHeader extends StatelessWidget {
               color: _postTypeColor(postType!, theme),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Text(
-              _postTypeLabel(postType!),
-              style: theme.textTheme.labelSmall?.copyWith(
-                color: _postTypeTextColor(postType!, theme),
-                fontWeight: FontWeight.w600,
-              ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  _postTypeIcon(postType!),
+                  size: 12,
+                  color: _postTypeTextColor(postType!, theme),
+                ),
+                const SizedBox(width: AppSpacing.xs),
+                Text(
+                  _postTypeLabel(postType!),
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: _postTypeTextColor(postType!, theme),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
             ),
           ),
         if (!isOwnPost && onFollowToggle != null)
@@ -205,29 +217,38 @@ class CommunityUserHeader extends StatelessWidget {
   }
 
   static Color _postTypeColor(CommunityPostType type, ThemeData theme) => switch (type) {
-    CommunityPostType.photo => const Color(0xFFF0FDF4),
-    CommunityPostType.guide => const Color(0xFFEFF6FF),
-    CommunityPostType.question => const Color(0xFFFFF7ED),
-    CommunityPostType.tip => const Color(0xFFFAF5FF),
-    CommunityPostType.showcase => const Color(0xFFFFFBEB),
+    CommunityPostType.photo => theme.colorScheme.primaryContainer,
+    CommunityPostType.guide => theme.colorScheme.secondaryContainer,
+    CommunityPostType.question => theme.colorScheme.tertiaryContainer,
+    CommunityPostType.tip => theme.colorScheme.surfaceContainerHighest,
+    CommunityPostType.showcase => theme.colorScheme.tertiaryContainer,
     _ => theme.colorScheme.surfaceContainerHighest,
   };
 
   static Color _postTypeTextColor(CommunityPostType type, ThemeData theme) => switch (type) {
-    CommunityPostType.photo => const Color(0xFF16A34A),
-    CommunityPostType.guide => const Color(0xFF2563EB),
-    CommunityPostType.question => const Color(0xFFEA580C),
-    CommunityPostType.tip => const Color(0xFF9333EA),
-    CommunityPostType.showcase => const Color(0xFFCA8A04),
+    CommunityPostType.photo => theme.colorScheme.onPrimaryContainer,
+    CommunityPostType.guide => theme.colorScheme.onSecondaryContainer,
+    CommunityPostType.question => theme.colorScheme.onTertiaryContainer,
+    CommunityPostType.tip => theme.colorScheme.onSurface,
+    CommunityPostType.showcase => theme.colorScheme.onTertiaryContainer,
     _ => theme.colorScheme.onSurface,
   };
 
+  static IconData _postTypeIcon(CommunityPostType type) => switch (type) {
+    CommunityPostType.photo => LucideIcons.camera,
+    CommunityPostType.guide => LucideIcons.bookOpen,
+    CommunityPostType.question => LucideIcons.helpCircle,
+    CommunityPostType.tip => LucideIcons.lightbulb,
+    CommunityPostType.showcase => LucideIcons.trophy,
+    _ => LucideIcons.messageSquare,
+  };
+
   static String _postTypeLabel(CommunityPostType type) => switch (type) {
-    CommunityPostType.photo => '📷 ${'community.post_type_photo'.tr()}',
-    CommunityPostType.guide => '📚 ${'community.post_type_guide'.tr()}',
-    CommunityPostType.question => '❓ ${'community.post_type_question'.tr()}',
-    CommunityPostType.tip => '💡 ${'community.post_type_tip'.tr()}',
-    CommunityPostType.showcase => '🏆 ${'community.post_type_showcase'.tr()}',
+    CommunityPostType.photo => 'community.post_type_photo'.tr(),
+    CommunityPostType.guide => 'community.post_type_guide'.tr(),
+    CommunityPostType.question => 'community.post_type_question'.tr(),
+    CommunityPostType.tip => 'community.post_type_tip'.tr(),
+    CommunityPostType.showcase => 'community.post_type_showcase'.tr(),
     _ => '',
   };
 }
