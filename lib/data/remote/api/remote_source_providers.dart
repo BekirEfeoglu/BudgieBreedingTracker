@@ -24,6 +24,7 @@ import 'marketplace_listing_remote_source.dart';
 import 'marketplace_favorite_remote_source.dart';
 import 'conversation_remote_source.dart';
 import 'message_remote_source.dart';
+import 'gamification_remote_source.dart';
 
 /// Riverpod providers for all Supabase remote data sources.
 
@@ -150,4 +151,9 @@ final conversationRemoteSourceProvider =
 
 final messageRemoteSourceProvider = Provider<MessageRemoteSource>((ref) {
   return MessageRemoteSource(ref.watch(supabaseClientProvider));
+});
+
+final gamificationRemoteSourceProvider =
+    Provider<GamificationRemoteSource>((ref) {
+  return GamificationRemoteSource(ref.watch(supabaseClientProvider));
 });
