@@ -65,6 +65,7 @@ class MessagingFormNotifier extends Notifier<MessagingFormState> {
       });
     } catch (e, st) {
       AppLogger.error('messaging', e, st);
+      state = state.copyWith(error: e.toString());
     }
   }
 

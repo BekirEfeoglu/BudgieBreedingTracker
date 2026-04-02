@@ -50,6 +50,7 @@ class MarketplaceFormNotifier extends Notifier<MarketplaceFormState> {
     state = state.copyWith(isLoading: true, error: null, isSuccess: false);
     try {
       final repo = ref.read(marketplaceRepositoryProvider);
+      // Free tier limit enforced server-side via validate-free-tier-limit Edge Function
       await repo.create({
         'id': const Uuid().v4(),
         'user_id': userId,

@@ -142,6 +142,9 @@ CREATE POLICY "messages_insert" ON messages
 CREATE POLICY "messages_update" ON messages
   FOR UPDATE USING (sender_id = auth.uid());
 
+CREATE POLICY "messages_delete" ON messages
+  FOR DELETE USING (sender_id = auth.uid());
+
 -- Enable Realtime for messages table
 ALTER PUBLICATION supabase_realtime ADD TABLE messages;
 

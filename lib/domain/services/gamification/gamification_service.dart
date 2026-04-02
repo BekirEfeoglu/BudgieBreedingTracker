@@ -98,6 +98,7 @@ class GamificationService {
 
       // Map XpAction to related badge keys
       final relatedBadgeKeys = _getRelatedBadgeKeys(action);
+      if (relatedBadgeKeys.isEmpty) return;
 
       for (final badge in badges) {
         final badgeKey = badge['key'] as String;
@@ -136,7 +137,28 @@ class GamificationService {
               'amount': xpReward,
               'reference_id': badge['id'] as String,
             });
-            await _updateUserLevel(userId, xpReward);
+            // Update level directly without triggering badge progress again
+            final existingLevel = await _remoteSource.fetchUserLevel(userId);
+            final updatedTotalXp = (existingLevel?['total_xp'] as int? ?? 0) + xpReward;
+            final bonusLevelResult = LevelCalculator.calculateLevel(updatedTotalXp);
+            final bonusTitle = LevelCalculator.titleForLevel(bonusLevelResult.level);
+
+            final bonusLevelData = <String, dynamic>{
+              'user_id': userId,
+              'total_xp': updatedTotalXp,
+              'level': bonusLevelResult.level,
+              'current_level_xp': bonusLevelResult.currentLevelXp,
+              'next_level_xp': bonusLevelResult.nextLevelXp,
+              'title': bonusTitle,
+            };
+
+            if (existingLevel != null) {
+              bonusLevelData['id'] = existingLevel['id'] as String;
+            } else {
+              bonusLevelData['id'] = const Uuid().v4();
+            }
+
+            await _remoteSource.upsertUserLevel(bonusLevelData);
           }
         }
 

@@ -170,7 +170,7 @@ class MarketplaceListingRemoteSource {
     int limit = 20,
   }) async {
     try {
-      final sanitized = query.replaceAll(RegExp(r'[^\w\s]'), '').trim();
+      final sanitized = query.replaceAll(RegExp(r'[^\p{L}\p{N}\s]', unicode: true), '').trim();
       if (sanitized.isEmpty) return [];
 
       final response = await _client

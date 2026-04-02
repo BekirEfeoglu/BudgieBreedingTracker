@@ -116,8 +116,8 @@ class GamificationRemoteSource {
   /// Count today's XP transactions for a specific action (for daily limit check)
   Future<int> fetchDailyActionCount(String userId, String action) async {
     try {
-      final today = DateTime.now();
-      final startOfDay = DateTime(today.year, today.month, today.day);
+      final today = DateTime.now().toUtc();
+      final startOfDay = DateTime.utc(today.year, today.month, today.day);
 
       final response = await _client
           .from(SupabaseConstants.xpTransactionsTable)
