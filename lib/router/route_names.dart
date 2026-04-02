@@ -38,6 +38,11 @@ abstract class AppRoutes {
   static const marketplaceForm = '/marketplace/form';
   static const marketplaceMyListings = '/marketplace/my-listings';
 
+  // Messaging
+  static const messages = '/messages';
+  static const messageDetail = '/messages/:id';
+  static const messageGroupForm = '/messages/group/form';
+
   // Health Records
   static const healthRecords = '/health-records';
   static const healthRecordDetail = '/health-records/:id';

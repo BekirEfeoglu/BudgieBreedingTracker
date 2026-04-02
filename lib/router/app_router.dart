@@ -35,6 +35,7 @@ import 'routes/admin_routes.dart';
 import 'routes/auth_routes.dart';
 import 'routes/community_routes.dart';
 import 'routes/marketplace_routes.dart';
+import 'routes/messaging_routes.dart';
 import 'routes/user_routes.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -268,6 +269,9 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       // Marketplace routes
       ...buildMarketplaceRoutes(),
+
+      // Messaging routes
+      ...buildMessagingRoutes(),
 
       // Premium, user, 2FA, and health record routes
       ...buildUserRoutes(),
