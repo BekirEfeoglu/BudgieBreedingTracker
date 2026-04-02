@@ -72,10 +72,9 @@ class GamificationService {
 
       await _remoteSource.upsertUserLevel(levelData);
 
-      // Sync to profile
-      await _remoteSource.updateProfileVerification(
+      // Sync to profile (level/title only — does not reset is_verified_breeder)
+      await _remoteSource.updateProfileLevelInfo(
         userId,
-        isVerified: false,
         level: levelResult.level,
         title: title,
       );

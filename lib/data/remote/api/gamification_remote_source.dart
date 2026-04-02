@@ -141,9 +141,29 @@ class GamificationRemoteSource {
   }) async {
     try {
       await _client
-          .from('profiles')
+          .from(SupabaseConstants.profilesTable)
           .update({
             'is_verified_breeder': isVerified,
+            'level': level,
+            'xp_title': title,
+          })
+          .eq('user_id', userId);
+    } catch (e, st) {
+      AppLogger.error('gamification', e, st);
+      rethrow;
+    }
+  }
+
+  /// Update only level and xp_title in the profile — does NOT touch is_verified_breeder
+  Future<void> updateProfileLevelInfo(
+    String userId, {
+    required int level,
+    required String title,
+  }) async {
+    try {
+      await _client
+          .from(SupabaseConstants.profilesTable)
+          .update({
             'level': level,
             'xp_title': title,
           })

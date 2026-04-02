@@ -147,9 +147,19 @@ class MarketplaceListingRemoteSource {
 
   Future<void> incrementViewCount(String id) async {
     try {
-      await _client.rpc('increment_marketplace_view_count', params: {
-        'listing_id': id,
-      });
+      // Use a simple select+update pattern (no RPC function required)
+      final current = await _client
+          .from(SupabaseConstants.marketplaceListingsTable)
+          .select('view_count')
+          .eq('id', id)
+          .maybeSingle();
+      if (current != null) {
+        final newCount = (current['view_count'] as int? ?? 0) + 1;
+        await _client
+            .from(SupabaseConstants.marketplaceListingsTable)
+            .update({'view_count': newCount})
+            .eq('id', id);
+      }
     } catch (e) {
       AppLogger.warning('View count increment failed: $e');
     }
