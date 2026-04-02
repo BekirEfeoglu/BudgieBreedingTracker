@@ -25,7 +25,7 @@ class CommunityPostActions extends ConsumerWidget {
     final defaultColor = theme.colorScheme.onSurfaceVariant;
 
     final likedBg = post.isLikedByMe
-        ? const Color(0xFFFEF2F2)
+        ? theme.colorScheme.errorContainer
         : theme.colorScheme.surfaceContainerHighest;
     final commentBg = theme.colorScheme.surfaceContainerHighest;
 
@@ -51,7 +51,7 @@ class CommunityPostActions extends ConsumerWidget {
           semanticLabel: 'community.comment'.tr(),
           icon: AppIcon(AppIcons.comment, size: 20, color: defaultColor),
           label: post.commentCount > 0 ? '${post.commentCount}' : null,
-          labelColor: const Color(0xFF2563EB),
+          labelColor: theme.colorScheme.secondary,
           backgroundColor: commentBg,
           onTap: () => context.push(
             AppRoutes.communityPostDetail.replaceFirst(':postId', post.id),
