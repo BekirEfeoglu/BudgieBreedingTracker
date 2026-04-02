@@ -11,130 +11,49 @@ import '../../../core/widgets/empty_state.dart';
 import '../../../router/route_names.dart';
 import '../../marketplace/widgets/marketplace_tab_content.dart';
 import '../providers/community_providers.dart';
+import '../widgets/community_app_bar.dart';
 import '../widgets/community_feed_list.dart';
+import '../widgets/community_pill_tabs.dart';
 
-/// Community screen - social hub with feed, marketplace, messaging access.
+/// Community screen — social hub with feed, marketplace, messaging access.
 class CommunityScreen extends ConsumerWidget {
   const CommunityScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isEnabled = ref.watch(isCommunityEnabledProvider);
+    final activeTab = ref.watch(communityActiveTabProvider);
     final theme = Theme.of(context);
 
-    return DefaultTabController(
-      length: 4,
-      child: Scaffold(
-        appBar: AppBar(
-          centerTitle: false,
-          toolbarHeight: 76,
-          titleSpacing: AppSpacing.lg,
-          flexibleSpace: DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  theme.colorScheme.surface,
-                  theme.colorScheme.primary.withValues(alpha: 0.08),
-                  theme.colorScheme.tertiary.withValues(alpha: 0.08),
-                ],
-              ),
-            ),
-          ),
-          title: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              AppIcon(
-                AppIcons.community,
-                size: 24,
-                color: theme.colorScheme.primary,
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              Text(
-                'community.title'.tr(),
-                style: theme.textTheme.headlineMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            _HeaderActionButton(
-              icon: LucideIcons.store,
-              tooltip: 'marketplace.title'.tr(),
-              onPressed: () => context.push(AppRoutes.marketplace),
-            ),
-            const SizedBox(width: AppSpacing.xs),
-            _HeaderActionButton(
-              icon: LucideIcons.messageCircle,
-              tooltip: 'messaging.title'.tr(),
-              onPressed: () => context.push(AppRoutes.messages),
-            ),
-            const SizedBox(width: AppSpacing.xs),
-            _HeaderActionButton(
-              icon: LucideIcons.search,
-              tooltip: 'community.search'.tr(),
-              onPressed: () => context.push(AppRoutes.communitySearch),
-            ),
-            const SizedBox(width: AppSpacing.xs),
-            Padding(
-              padding: const EdgeInsets.only(right: AppSpacing.lg),
-              child: _HeaderActionButton(
-                iconAsset: AppIcons.bookmark,
-                tooltip: 'community.bookmarks'.tr(),
-                onPressed: () => context.push(AppRoutes.communityBookmarks),
-              ),
-            ),
-          ],
-          bottom: isEnabled
-              ? PreferredSize(
-                  preferredSize: const Size.fromHeight(52),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: TabBar(
-                      isScrollable: true,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.md,
-                      ),
-                      tabAlignment: TabAlignment.start,
-                      tabs: [
-                        Tab(
-                          icon: const AppIcon(AppIcons.community, size: 16),
-                          text: 'community.tab_explore'.tr(),
-                        ),
-                        Tab(
-                          icon: const AppIcon(AppIcons.like, size: 16),
-                          text: 'community.tab_following'.tr(),
-                        ),
-                        Tab(
-                          icon: const Icon(LucideIcons.store, size: 16),
-                          text: 'marketplace.title'.tr(),
-                        ),
-                        Tab(
-                          icon: const AppIcon(AppIcons.guide, size: 16),
-                          text: 'community.tab_guides'.tr(),
-                        ),
-                      ],
-                    ),
-                  ),
-                )
-              : null,
+    return Scaffold(
+      appBar: const CommunityAppBar(),
+      body: isEnabled
+          ? _buildBody(activeTab)
+          : const _ComingSoonBody(),
+      floatingActionButton: isEnabled
+          ? _CommunityFab(theme: theme)
+          : null,
+    );
+  }
+
+  Widget _buildBody(CommunityFeedTab activeTab) {
+    // questions tab is repurposed as marketplace tab in UI
+    if (activeTab == CommunityFeedTab.questions) {
+      return const Column(
+        children: [
+          CommunityPillTabs(),
+          Expanded(child: MarketplaceTabContent()),
+        ],
+      );
+    }
+
+    return Column(
+      children: [
+        const CommunityPillTabs(),
+        Expanded(
+          child: CommunityFeedList(tab: activeTab),
         ),
-        body: isEnabled
-            ? const TabBarView(
-                children: [
-                  CommunityFeedList(tab: CommunityFeedTab.explore),
-                  CommunityFeedList(tab: CommunityFeedTab.following),
-                  MarketplaceTabContent(),
-                  CommunityFeedList(tab: CommunityFeedTab.guides),
-                ],
-              )
-            : const _ComingSoonBody(),
-        floatingActionButton: isEnabled
-            ? _CommunityFab(theme: theme)
-            : null,
-      ),
+      ],
     );
   }
 }
@@ -147,10 +66,32 @@ class _CommunityFab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FloatingActionButton(
-      onPressed: () => _showCreateOptions(context),
-      tooltip: 'community.create_post'.tr(),
-      child: const Icon(LucideIcons.plus),
+    return Container(
+      width: 52,
+      height: 52,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: LinearGradient(
+          colors: [
+            theme.colorScheme.primary,
+            theme.colorScheme.tertiary,
+          ],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: theme.colorScheme.primary.withValues(alpha: 0.4),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: FloatingActionButton(
+        onPressed: () => _showCreateOptions(context),
+        tooltip: 'community.create_post'.tr(),
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+        child: const Icon(LucideIcons.plus, color: Colors.white),
+      ),
     );
   }
 
@@ -200,40 +141,6 @@ class _CommunityFab extends StatelessWidget {
             const SizedBox(height: AppSpacing.sm),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _HeaderActionButton extends StatelessWidget {
-  final IconData? icon;
-  final String? iconAsset;
-  final String tooltip;
-  final VoidCallback onPressed;
-
-  const _HeaderActionButton({
-    this.icon,
-    this.iconAsset,
-    required this.tooltip,
-    required this.onPressed,
-  }) : assert(icon != null || iconAsset != null);
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface.withValues(alpha: 0.92),
-        borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
-        border: Border.all(
-          color: theme.colorScheme.outlineVariant.withValues(alpha: 0.45),
-        ),
-      ),
-      child: IconButton(
-        icon: iconAsset != null ? AppIcon(iconAsset!) : Icon(icon),
-        tooltip: tooltip,
-        onPressed: onPressed,
       ),
     );
   }
