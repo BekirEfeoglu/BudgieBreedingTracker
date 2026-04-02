@@ -9,12 +9,11 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_icon.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/error_state.dart' as app;
+import '../../../core/widgets/skeleton_loader.dart';
 import '../../../data/providers/auth_state_providers.dart';
 import '../../../router/route_names.dart';
 import '../providers/community_feed_providers.dart';
 import '../providers/community_providers.dart';
-import 'community_creator_strip.dart';
-import 'community_hero_card.dart';
 import 'community_post_card.dart';
 import 'community_quick_composer.dart';
 import 'community_section_bar.dart';
@@ -64,6 +63,9 @@ class _CommunityFeedListState extends ConsumerState<CommunityFeedList> {
     final isExplore = widget.tab == CommunityFeedTab.explore;
     final showExploreExtras = isExplore && visiblePosts.isNotEmpty;
     final exploreSort = ref.watch(exploreSortProvider);
+    final defaultCreateType = widget.tab == CommunityFeedTab.guides
+        ? CommunityPostType.guide
+        : CommunityPostType.general;
 
     if (feedState.error != null && posts.isEmpty) {
       return Center(
@@ -75,7 +77,7 @@ class _CommunityFeedListState extends ConsumerState<CommunityFeedList> {
     }
 
     if (feedState.isLoading && posts.isEmpty) {
-      return const Center(child: CircularProgressIndicator());
+      return const _CommunityFeedSkeleton();
     }
 
     return RefreshIndicator(
@@ -84,51 +86,40 @@ class _CommunityFeedListState extends ConsumerState<CommunityFeedList> {
         controller: _scrollController,
         physics: const AlwaysScrollableScrollPhysics(),
         slivers: [
-          if (isExplore) ...[
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.lg,
-                  AppSpacing.md,
-                  AppSpacing.lg,
-                  0,
-                ),
-                child: CommunityHeroCard(posts: posts),
+          // 1. Quick Composer
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.lg,
+                AppSpacing.xs,
+                AppSpacing.lg,
+                AppSpacing.md,
+              ),
+              child: CommunityQuickComposer(
+                currentUserId: currentUserId,
+                onCreatePost: () =>
+                    context.push(_buildCreatePostRoute(defaultCreateType)),
+                onCreateTypedPost: (type) =>
+                    context.push(_buildCreatePostRoute(type)),
               ),
             ),
-            if (showExploreExtras)
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.only(top: AppSpacing.lg),
-                  child: CommunityStoryStrip(
-                    stories: CommunityStoryStrip.fromPosts(visiblePosts),
-                    onCreatePost: () =>
-                        context.push(AppRoutes.communityCreatePost),
-                  ),
-                ),
-              ),
+          ),
+          // 2. Story Strip (explore only)
+          if (isExplore && showExploreExtras)
             SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.lg,
-                  AppSpacing.lg,
-                  AppSpacing.lg,
-                  AppSpacing.sm,
-                ),
-                child: CommunityQuickComposer(
-                  currentUserId: currentUserId,
-                  onCreatePost: () =>
-                      context.push(AppRoutes.communityCreatePost),
-                ),
+              child: CommunityStoryStrip(
+                stories: CommunityStoryStrip.fromPosts(visiblePosts),
+                onCreatePost: () =>
+                    context.push(_buildCreatePostRoute(defaultCreateType)),
               ),
             ),
-          ],
+          // 3. Section Bar
           if (visiblePosts.isNotEmpty)
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(
                   AppSpacing.lg,
-                  AppSpacing.md,
+                  AppSpacing.xs,
                   AppSpacing.lg,
                   AppSpacing.md,
                 ),
@@ -140,18 +131,7 @@ class _CommunityFeedListState extends ConsumerState<CommunityFeedList> {
                 ),
               ),
             ),
-          if (showExploreExtras) ...[
-            () {
-              final creators = CommunityCreatorStrip.fromPosts(visiblePosts);
-              if (creators.isEmpty) return const SliverToBoxAdapter();
-              return SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.only(bottom: AppSpacing.md),
-                  child: CommunityCreatorStrip(creators: creators),
-                ),
-              );
-            }(),
-          ],
+          // 4. Empty states or post list
           if (!feedState.isLoading && posts.isEmpty)
             SliverToBoxAdapter(
               child: Padding(
@@ -165,6 +145,8 @@ class _CommunityFeedListState extends ConsumerState<CommunityFeedList> {
                   icon: const AppIcon(AppIcons.community),
                   title: 'community.no_posts'.tr(),
                   subtitle: 'community.no_posts_hint'.tr(),
+                  actionLabel: 'community.create_post'.tr(),
+                  onAction: () => context.push(AppRoutes.communityCreatePost),
                 ),
               ),
             )
@@ -187,7 +169,12 @@ class _CommunityFeedListState extends ConsumerState<CommunityFeedList> {
             )
           else
             SliverPadding(
-              padding: const EdgeInsets.only(bottom: AppSpacing.xxxl * 2),
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.lg,
+                0,
+                AppSpacing.lg,
+                AppSpacing.xxxl * 2,
+              ),
               sliver: SliverList(
                 delegate: SliverChildBuilderDelegate(
                   (context, index) {
@@ -225,6 +212,77 @@ class _CommunityFeedListState extends ConsumerState<CommunityFeedList> {
         curve: Curves.easeOutCubic,
       );
     }
+  }
+
+  String _buildCreatePostRoute(CommunityPostType type) {
+    return type == CommunityPostType.general
+        ? AppRoutes.communityCreatePost
+        : '${AppRoutes.communityCreatePost}?type=${type.toJson()}';
+  }
+}
+
+class _CommunityFeedSkeleton extends StatelessWidget {
+  const _CommunityFeedSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      key: const Key('community_feed_skeleton'),
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.lg,
+        AppSpacing.md,
+        AppSpacing.lg,
+        AppSpacing.xxxl,
+      ),
+      children: [
+        // Compact composer skeleton
+        const SkeletonLoader(height: 48, borderRadius: AppSpacing.radiusXl),
+        const SizedBox(height: AppSpacing.lg),
+        // Post card skeletons (x3)
+        ...List.generate(
+          3,
+          (_) => Padding(
+            padding: const EdgeInsets.only(bottom: AppSpacing.lg),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Avatar row
+                Row(
+                  children: [
+                    const SkeletonLoader(
+                      width: 36,
+                      height: 36,
+                      borderRadius: AppSpacing.radiusFull,
+                    ),
+                    const SizedBox(width: AppSpacing.md),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: const [
+                        SkeletonLoader(width: 120, height: 14),
+                        SizedBox(height: AppSpacing.xs),
+                        SkeletonLoader(width: 80, height: 10),
+                      ],
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AppSpacing.md),
+                // Content lines
+                const SkeletonLoader(height: 14),
+                const SizedBox(height: AppSpacing.sm),
+                const SkeletonLoader(width: 240, height: 14),
+                const SizedBox(height: AppSpacing.md),
+                // Image placeholder
+                const SkeletonLoader(
+                  height: 160,
+                  borderRadius: AppSpacing.radiusLg,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
   }
 }
 

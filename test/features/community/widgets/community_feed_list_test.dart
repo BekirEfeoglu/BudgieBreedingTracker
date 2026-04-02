@@ -7,6 +7,7 @@ import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart
 import 'package:budgie_breeding_tracker/features/community/providers/community_feed_providers.dart';
 import 'package:budgie_breeding_tracker/features/community/providers/community_providers.dart';
 import 'package:budgie_breeding_tracker/features/community/widgets/community_feed_list.dart';
+import 'package:budgie_breeding_tracker/features/profile/providers/profile_providers.dart';
 
 void main() {
   Widget createSubject({
@@ -14,10 +15,27 @@ void main() {
     String currentUserId = 'me',
     CommunityFeedTab tab = CommunityFeedTab.explore,
   }) {
+    final allPosts = feedState.posts;
+    // Simulate the tab filtering that communityVisiblePostsProvider does.
+    final visiblePosts = switch (tab) {
+      CommunityFeedTab.explore => allPosts,
+      CommunityFeedTab.following =>
+        allPosts.where((p) => p.isFollowingAuthor).toList(),
+      CommunityFeedTab.guides =>
+        allPosts
+            .where((p) => p.postType == CommunityPostType.guide)
+            .toList(),
+      CommunityFeedTab.questions =>
+        allPosts
+            .where((p) => p.postType == CommunityPostType.question)
+            .toList(),
+    };
     return ProviderScope(
       overrides: [
         currentUserIdProvider.overrideWithValue(currentUserId),
         communityFeedProvider.overrideWith(() => _FakeFeedNotifier(feedState)),
+        communityVisiblePostsProvider(tab).overrideWithValue(visiblePosts),
+        userProfileProvider.overrideWith((ref) => Stream.value(null)),
       ],
       child: MaterialApp(
         home: Scaffold(body: CommunityFeedList(tab: tab)),
@@ -26,7 +44,7 @@ void main() {
   }
 
   group('CommunityFeedList', () {
-    testWidgets('shows explore sort controls and featured creators', (
+    testWidgets('shows explore sort controls and story strip', (
       tester,
     ) async {
       final posts = [
@@ -58,12 +76,18 @@ void main() {
       );
       await tester.pumpAndSettle();
 
+      // Quick composer hint visible
+      expect(find.text(l10n('community.quick_hint')), findsOneWidget);
+      // Story strip title visible
+      expect(find.text(l10n('community.stories_title')), findsOneWidget);
+      // Sort controls visible (no scroll needed — hero removed)
+      expect(find.text(l10n('community.sort_newest')), findsOneWidget);
+      expect(find.text(l10n('community.sort_trending')), findsOneWidget);
+
       await tester.drag(find.byType(CustomScrollView), const Offset(0, -500));
       await tester.pumpAndSettle();
 
-      expect(find.text(l10n('community.sort_newest')), findsOneWidget);
-      expect(find.text(l10n('community.sort_trending')), findsOneWidget);
-      expect(find.text(l10n('community.top_creators')), findsOneWidget);
+      // Post content visible after scroll
       expect(find.text('Alpha Loft'), findsWidgets);
     });
 
@@ -101,8 +125,11 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('Detailed guide'), findsOneWidget);
-      expect(find.text('Need help'), findsNothing);
+      await tester.drag(find.byType(CustomScrollView), const Offset(0, -700));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Guide title'), findsOneWidget);
+      expect(find.text('Question title'), findsNothing);
     });
   });
 }
