@@ -149,6 +149,53 @@ final eggsByIncubationMapProvider =
       return map;
     });
 
+/// Notifier for breeding list sort selection.
+class BreedingSortNotifier extends Notifier<BreedingSort> {
+  @override
+  BreedingSort build() => BreedingSort.newest;
+}
+
+/// Current sort selection for the breeding list.
+final breedingSortProvider = NotifierProvider<BreedingSortNotifier, BreedingSort>(
+  BreedingSortNotifier.new,
+);
+
+/// Sorted, searched and filtered breeding pairs (final display list).
+final sortedAndFilteredBreedingPairsProvider =
+    Provider.family<List<BreedingPair>, List<BreedingPair>>((ref, pairs) {
+      final searched = ref.watch(searchedAndFilteredBreedingPairsProvider(pairs));
+      final sort = ref.watch(breedingSortProvider);
+
+      final sorted = List<BreedingPair>.of(searched);
+      switch (sort) {
+        case BreedingSort.newest:
+          sorted.sort(
+            (a, b) => (b.createdAt ?? DateTime(1900)).compareTo(
+              a.createdAt ?? DateTime(1900),
+            ),
+          );
+        case BreedingSort.oldest:
+          sorted.sort(
+            (a, b) => (a.createdAt ?? DateTime(1900)).compareTo(
+              b.createdAt ?? DateTime(1900),
+            ),
+          );
+        case BreedingSort.statusAsc:
+          sorted.sort((a, b) => a.status.name.compareTo(b.status.name));
+        case BreedingSort.statusDesc:
+          sorted.sort((a, b) => b.status.name.compareTo(a.status.name));
+        case BreedingSort.cageAsc:
+          sorted.sort(
+            (a, b) => (a.cageNumber ?? '').compareTo(b.cageNumber ?? ''),
+          );
+        case BreedingSort.cageDesc:
+          sorted.sort(
+            (a, b) => (b.cageNumber ?? '').compareTo(a.cageNumber ?? ''),
+          );
+      }
+      return sorted;
+    });
+
 /// Filter options for the breeding list.
 enum BreedingFilter {
   all,
@@ -163,5 +210,24 @@ enum BreedingFilter {
     BreedingFilter.ongoing => 'breeding.status_ongoing'.tr(),
     BreedingFilter.completed => 'breeding.status_completed'.tr(),
     BreedingFilter.cancelled => 'breeding.status_cancelled'.tr(),
+  };
+}
+
+/// Sort options for the breeding list.
+enum BreedingSort {
+  newest,
+  oldest,
+  statusAsc,
+  statusDesc,
+  cageAsc,
+  cageDesc;
+
+  String get label => switch (this) {
+    BreedingSort.newest => 'breeding.sort_newest'.tr(),
+    BreedingSort.oldest => 'breeding.sort_oldest'.tr(),
+    BreedingSort.statusAsc => 'breeding.sort_status_asc'.tr(),
+    BreedingSort.statusDesc => 'breeding.sort_status_desc'.tr(),
+    BreedingSort.cageAsc => 'breeding.sort_cage_asc'.tr(),
+    BreedingSort.cageDesc => 'breeding.sort_cage_desc'.tr(),
   };
 }

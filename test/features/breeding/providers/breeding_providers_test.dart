@@ -21,6 +21,7 @@ BreedingPair _pair({
   String? maleId,
   String? femaleId,
   String? cage,
+  DateTime? createdAt,
 }) {
   return BreedingPair(
     id: id,
@@ -29,7 +30,7 @@ BreedingPair _pair({
     maleId: maleId,
     femaleId: femaleId,
     cageNumber: cage,
-    createdAt: DateTime(2024, 1, 1),
+    createdAt: createdAt ?? DateTime(2024, 1, 1),
     updatedAt: DateTime(2024, 1, 1),
   );
 }
@@ -306,6 +307,148 @@ void main() {
       expect(map.keys, containsAll(['inc-1', 'inc-2']));
       expect(map['inc-1']!.map((e) => e.id), ['e1', 'e2']);
       expect(map['inc-2']!.map((e) => e.id), ['e3']);
+    });
+  });
+
+  group('sortedAndFilteredBreedingPairsProvider', () {
+    late List<BreedingPair> sortPairs;
+
+    setUp(() {
+      sortPairs = [
+        _pair(
+          id: 'sp1',
+          status: BreedingStatus.active,
+          cage: 'B-02',
+          createdAt: DateTime(2024, 3, 1),
+        ),
+        _pair(
+          id: 'sp2',
+          status: BreedingStatus.completed,
+          cage: 'A-01',
+          createdAt: DateTime(2024, 1, 1),
+        ),
+        _pair(
+          id: 'sp3',
+          status: BreedingStatus.ongoing,
+          cage: null,
+          createdAt: DateTime(2024, 5, 1),
+        ),
+        _pair(
+          id: 'sp4',
+          status: BreedingStatus.cancelled,
+          cage: 'C-03',
+          createdAt: DateTime(2023, 6, 1),
+        ),
+      ];
+    });
+
+    ProviderContainer makeSortContainer() {
+      return ProviderContainer(
+        overrides: [
+          breedingPairRepositoryProvider.overrideWithValue(pairRepo),
+          birdRepositoryProvider.overrideWithValue(birdRepo),
+          eggRepositoryProvider.overrideWithValue(eggRepo),
+          incubationRepositoryProvider.overrideWithValue(incubationRepo),
+          currentUserIdProvider.overrideWithValue(userId),
+        ],
+      );
+    }
+
+    test('sorts by newest (default)', () {
+      final container = makeSortContainer();
+      addTearDown(container.dispose);
+
+      final result = container.read(
+        sortedAndFilteredBreedingPairsProvider(sortPairs),
+      );
+
+      // sp3 (2024-05) > sp1 (2024-03) > sp2 (2024-01) > sp4 (2023-06)
+      expect(result.map((e) => e.id), ['sp3', 'sp1', 'sp2', 'sp4']);
+    });
+
+    test('sorts by oldest', () {
+      final container = makeSortContainer();
+      addTearDown(container.dispose);
+
+      container.read(breedingSortProvider.notifier).state =
+          BreedingSort.oldest;
+
+      final result = container.read(
+        sortedAndFilteredBreedingPairsProvider(sortPairs),
+      );
+
+      // sp4 (2023-06) < sp2 (2024-01) < sp1 (2024-03) < sp3 (2024-05)
+      expect(result.map((e) => e.id), ['sp4', 'sp2', 'sp1', 'sp3']);
+    });
+
+    test('sorts by status ascending (alphabetical by name)', () {
+      final container = makeSortContainer();
+      addTearDown(container.dispose);
+
+      container.read(breedingSortProvider.notifier).state =
+          BreedingSort.statusAsc;
+
+      final result = container.read(
+        sortedAndFilteredBreedingPairsProvider(sortPairs),
+      );
+
+      // active < cancelled < completed < ongoing (alphabetical)
+      expect(result.map((e) => e.id), ['sp1', 'sp4', 'sp2', 'sp3']);
+    });
+
+    test('sorts by status descending', () {
+      final container = makeSortContainer();
+      addTearDown(container.dispose);
+
+      container.read(breedingSortProvider.notifier).state =
+          BreedingSort.statusDesc;
+
+      final result = container.read(
+        sortedAndFilteredBreedingPairsProvider(sortPairs),
+      );
+
+      // ongoing > completed > cancelled > active (reverse alphabetical)
+      expect(result.map((e) => e.id), ['sp3', 'sp2', 'sp4', 'sp1']);
+    });
+
+    test('sorts by cage number ascending with null fallback', () {
+      final container = makeSortContainer();
+      addTearDown(container.dispose);
+
+      container.read(breedingSortProvider.notifier).state =
+          BreedingSort.cageAsc;
+
+      final result = container.read(
+        sortedAndFilteredBreedingPairsProvider(sortPairs),
+      );
+
+      // sp3 (null→'') < sp2 (A-01) < sp1 (B-02) < sp4 (C-03)
+      expect(result.map((e) => e.id), ['sp3', 'sp2', 'sp1', 'sp4']);
+    });
+
+    test('sorts by cage number descending', () {
+      final container = makeSortContainer();
+      addTearDown(container.dispose);
+
+      container.read(breedingSortProvider.notifier).state =
+          BreedingSort.cageDesc;
+
+      final result = container.read(
+        sortedAndFilteredBreedingPairsProvider(sortPairs),
+      );
+
+      // sp4 (C-03) > sp1 (B-02) > sp2 (A-01) > sp3 (null → '')
+      expect(result.map((e) => e.id), ['sp4', 'sp1', 'sp2', 'sp3']);
+    });
+
+    test('does not mutate input list', () {
+      final container = makeSortContainer();
+      addTearDown(container.dispose);
+
+      final ids = sortPairs.map((e) => e.id).toList();
+      container.read(sortedAndFilteredBreedingPairsProvider(sortPairs));
+
+      expect(sortPairs.map((e) => e.id), ids);
     });
   });
 }

@@ -32,13 +32,12 @@ final isSyncingProvider = NotifierProvider<IsSyncingNotifier, bool>(
 
 /// Notifier for last successful sync timestamp (initialized from SharedPreferences).
 class LastSyncTimeNotifier extends Notifier<DateTime?> {
+  bool _disposed = false;
+
   @override
   DateTime? build() {
-    // NOTE: _loadFromPrefs() is async but build() returns synchronously.
-    // There is a brief race window where state is null before the persisted
-    // value loads. The SyncOrchestrator handles this gracefully by using
-    // _loadLastSyncTime() directly from SharedPreferences, so the null
-    // state here only affects the UI momentarily.
+    _disposed = false;
+    ref.onDispose(() => _disposed = true);
     _loadFromPrefs();
     return null;
   }
@@ -46,9 +45,9 @@ class LastSyncTimeNotifier extends Notifier<DateTime?> {
   Future<void> _loadFromPrefs() async {
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getString(AppPreferences.keyLastSyncedAt);
-    if (raw == null) return;
+    if (raw == null || _disposed) return;
     final parsed = DateTime.tryParse(raw);
-    if (parsed != null) {
+    if (parsed != null && !_disposed) {
       state = parsed;
     }
   }

@@ -223,7 +223,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git checkout -b "$BRANCH"
-          git add CLAUDE.md .claude/rules/CLAUDE.md
+          git add CLAUDE.md
           git commit -m "chore: auto-fix CLAUDE.md stats to match codebase"
           git push origin "$BRANCH"
           gh pr create \

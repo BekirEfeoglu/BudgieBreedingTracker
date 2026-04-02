@@ -317,7 +317,11 @@
     "invalid_female": "Der ausgewählte weibliche Vogel ist nicht weiblich",
     "all_eggs_hatched": "Alle Eier sind erfolgreich geschlüpft",
     "sort_newest": "Neueste zuerst",
-    "sort_oldest": "Älteste zuerst"
+    "sort_oldest": "Älteste zuerst",
+    "sort_status_asc": "Status (A-Z)",
+    "sort_status_desc": "Status (Z-A)",
+    "sort_cage_asc": "Käfig-Nr. (A-Z)",
+    "sort_cage_desc": "Käfig-Nr. (Z-A)"
   },
   "eggs": {
     "add_egg": "Ei hinzufügen",
@@ -467,6 +471,7 @@
     "edit_event": "Ereignis bearbeiten",
     "delete_event": "Ereignis löschen",
     "delete_event_confirm": "Sind Sie sicher, dass Sie dieses Ereignis löschen möchten?",
+    "view_all_events": "Alle Ereignisse anzeigen",
     "no_events": "Keine Ereignisse für diesen Tag",
     "load_error": "Ereignisse konnten nicht geladen werden",
     "month_view": "Monat",
@@ -649,6 +654,8 @@
     "export_birds_pdf_desc": "Laden Sie nur Ihre Vogelliste als PDF herunter",
     "export_success": "Datei erfolgreich erstellt",
     "export_error": "Fehler beim Export",
+    "error_invalid_format": "Sicherungsdatei ist beschädigt oder in einem unbekannten Format",
+    "error_unsupported_version": "Diese Sicherung wurde mit einer neueren App-Version erstellt (Sicherung: v{}, unterstützt max: v{}). Bitte aktualisieren Sie die App.",
     "last_export": "Letzter Export",
     "never": "Noch kein Export durchgeführt",
     "import_data": "Datenimport",
@@ -1926,7 +1933,8 @@
     "pedigree_stats_section": "Statistiken",
     "pedigree_gen_details": "Generationsdetails",
     "header_color": "Farbmutation",
-    "title": "Exportieren"
+    "title": "Exportieren",
+    "error_excel_create": "Excel-Datei konnte nicht erstellt werden"
   },
   "import": {
     "sheet_not_found": "Tabelle nicht in Excel-Datei gefunden",

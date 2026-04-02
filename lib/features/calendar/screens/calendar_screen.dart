@@ -12,6 +12,7 @@ import 'package:budgie_breeding_tracker/core/enums/event_enums.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_screen_title.dart';
+import 'package:budgie_breeding_tracker/core/widgets/buttons/fab_button.dart';
 import 'package:budgie_breeding_tracker/core/widgets/dialogs/confirm_dialog.dart';
 import 'package:budgie_breeding_tracker/core/widgets/error_state.dart';
 import 'package:budgie_breeding_tracker/features/calendar/widgets/calendar_event_list_sliver.dart';
@@ -162,10 +163,10 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => showEventFormSheet(context, initialDate: selectedDate),
+      floatingActionButton: FabButton(
+        icon: const AppIcon(AppIcons.add),
         tooltip: 'calendar.add_event'.tr(),
-        child: const AppIcon(AppIcons.add),
+        onPressed: () => showEventFormSheet(context, initialDate: selectedDate),
       ),
     );
   }

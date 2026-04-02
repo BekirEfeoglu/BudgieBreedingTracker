@@ -13,6 +13,7 @@ import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.d
 import 'package:budgie_breeding_tracker/features/chicks/providers/chick_providers.dart';
 import 'package:budgie_breeding_tracker/features/home/providers/home_providers.dart';
 import 'package:budgie_breeding_tracker/features/home/screens/home_screen.dart';
+import 'package:budgie_breeding_tracker/core/widgets/error_state.dart';
 import 'package:budgie_breeding_tracker/core/widgets/skeleton_loader.dart';
 import 'package:budgie_breeding_tracker/features/home/widgets/dashboard_stats_grid.dart';
 import 'package:budgie_breeding_tracker/features/notifications/providers/notification_list_providers.dart';
@@ -136,8 +137,8 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // _StatsSection shows fallback DashboardStatsGrid with zeroed stats on error
-      expect(find.byType(DashboardStatsGrid), findsOneWidget);
+      // _StatsSection shows ErrorState with retry on error
+      expect(find.byType(ErrorState), findsOneWidget);
     });
 
     testWidgets('has RefreshIndicator for pull-to-refresh', (tester) async {

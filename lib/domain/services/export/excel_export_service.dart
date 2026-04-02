@@ -38,7 +38,10 @@ class ExcelExportService {
     excel.delete('Sheet1');
 
     final bytes = excel.save();
-    return Uint8List.fromList(bytes!);
+    if (bytes == null || bytes.isEmpty) {
+      throw Exception('export.error_excel_create'.tr());
+    }
+    return Uint8List.fromList(bytes);
   }
 
   /// Exports birds only.
@@ -47,7 +50,10 @@ class ExcelExportService {
     _addBirdsSheet(excel, birds);
     excel.delete('Sheet1');
     final bytes = excel.save();
-    return Uint8List.fromList(bytes!);
+    if (bytes == null || bytes.isEmpty) {
+      throw Exception('export.error_excel_create'.tr());
+    }
+    return Uint8List.fromList(bytes);
   }
 
   void _addBirdsSheet(Excel excel, List<Bird> birds) {

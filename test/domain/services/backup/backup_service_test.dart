@@ -198,7 +198,7 @@ void main() {
       final result = await service.restoreBackup('user-1', file.path);
 
       expect(result.success, isFalse);
-      expect(result.error, contains('Unsupported backup version: 99'));
+      expect(result.error, contains('backup.error_unsupported_version'));
     });
 
     test('restores valid birds and skips malformed bird rows', () async {

@@ -9,6 +9,7 @@ import 'package:budgie_breeding_tracker/core/widgets/app_screen_title.dart';
 import 'package:budgie_breeding_tracker/core/widgets/empty_state.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:budgie_breeding_tracker/core/widgets/error_state.dart';
+import 'package:budgie_breeding_tracker/core/widgets/sort_bottom_sheet.dart';
 import 'package:budgie_breeding_tracker/core/widgets/buttons/fab_button.dart';
 import 'package:budgie_breeding_tracker/core/widgets/ad_banner_widget.dart';
 import 'package:budgie_breeding_tracker/domain/services/ads/ad_service.dart';
@@ -17,38 +18,19 @@ import 'package:budgie_breeding_tracker/features/chicks/providers/chick_provider
 import 'package:budgie_breeding_tracker/features/premium/providers/premium_providers.dart';
 import 'package:budgie_breeding_tracker/features/chicks/widgets/chick_card.dart';
 import 'package:budgie_breeding_tracker/features/chicks/widgets/chick_filter_bar.dart';
+import 'package:budgie_breeding_tracker/features/chicks/widgets/chick_search_bar.dart';
 import 'package:budgie_breeding_tracker/features/notifications/widgets/notification_bell_button.dart';
 import 'package:budgie_breeding_tracker/features/profile/widgets/profile_menu_button.dart';
 
 /// Main screen listing all chicks with search and filter support.
-class ChickListScreen extends ConsumerStatefulWidget {
+class ChickListScreen extends ConsumerWidget {
   const ChickListScreen({super.key});
 
   @override
-  ConsumerState<ChickListScreen> createState() => _ChickListScreenState();
-}
-
-class _ChickListScreenState extends ConsumerState<ChickListScreen> {
-  final _searchController = TextEditingController();
-
-  @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final userId = ref.watch(currentUserIdProvider);
     final chicksAsync = ref.watch(chicksStreamProvider(userId));
     final parentsByEggAsync = ref.watch(chickParentsByEggProvider(userId));
-    final query = ref.watch(chickSearchQueryProvider);
-
-    // Sync controller when query is cleared externally
-    if (query.isEmpty && _searchController.text.isNotEmpty) {
-      _searchController.clear();
-    }
-
     void navigateWithAd(String route) {
       final isPremium = ref.read(isPremiumProvider);
       if (isPremium) {
@@ -71,29 +53,19 @@ class _ChickListScreenState extends ConsumerState<ChickListScreen> {
           iconAsset: AppIcons.chick,
         ),
         actions: [
-          PopupMenuButton<ChickSort>(
+          IconButton(
             icon: const Icon(LucideIcons.arrowUpDown),
             tooltip: 'common.sort'.tr(),
-            onSelected: (sort) {
-              ref.read(chickSortProvider.notifier).setSort(sort);
-            },
-            itemBuilder: (context) {
+            onPressed: () {
               final currentSort = ref.read(chickSortProvider);
-              return ChickSort.values.map((sort) {
-                return PopupMenuItem(
-                  value: sort,
-                  child: Row(
-                    children: [
-                      if (sort == currentSort)
-                        const Icon(LucideIcons.check, size: AppSpacing.xl)
-                      else
-                        const SizedBox(width: AppSpacing.xl),
-                      const SizedBox(width: AppSpacing.sm),
-                      Text(sort.label),
-                    ],
-                  ),
-                );
-              }).toList();
+              showSortBottomSheet<ChickSort>(
+                context: context,
+                values: ChickSort.values,
+                current: currentSort,
+                labelOf: (s) => s.label,
+                onSelected: (s) =>
+                    ref.read(chickSortProvider.notifier).setSort(s),
+              );
             },
           ),
           const NotificationBellButton(),
@@ -102,40 +74,7 @@ class _ChickListScreenState extends ConsumerState<ChickListScreen> {
       ),
       body: Column(
         children: [
-          // Inline search bar
-          Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.lg,
-              vertical: AppSpacing.sm,
-            ),
-            child: TextField(
-              controller: _searchController,
-              decoration: InputDecoration(
-                hintText: 'chicks.search_hint'.tr(),
-                prefixIcon: const Padding(
-                  padding: EdgeInsets.all(AppSpacing.md),
-                  child: AppIcon(AppIcons.search, size: 20),
-                ),
-                suffixIcon: query.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(LucideIcons.x),
-                        onPressed: () {
-                          _searchController.clear();
-                          ref.read(chickSearchQueryProvider.notifier).state =
-                              '';
-                        },
-                      )
-                    : null,
-                border: const OutlineInputBorder(),
-                contentPadding: const EdgeInsets.symmetric(
-                  vertical: AppSpacing.md,
-                ),
-              ),
-              onChanged: (value) {
-                ref.read(chickSearchQueryProvider.notifier).state = value;
-              },
-            ),
-          ),
+          const ChickSearchBar(),
           const Divider(
             height: 1,
             indent: AppSpacing.lg,
@@ -153,12 +92,18 @@ class _ChickListScreenState extends ConsumerState<ChickListScreen> {
           Expanded(
             child: chicksAsync.when(
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (error, _) => ErrorState(
-                message: 'common.data_load_error'.tr(),
-                onRetry: () {
-                  ref.invalidate(chicksStreamProvider(userId));
-                  ref.invalidate(chickParentsByEggProvider(userId));
-                },
+              error: (error, _) => SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: SizedBox(
+                  height: MediaQuery.of(context).size.height * 0.5,
+                  child: ErrorState(
+                    message: 'common.data_load_error'.tr(),
+                    onRetry: () {
+                      ref.invalidate(chicksStreamProvider(userId));
+                      ref.invalidate(chickParentsByEggProvider(userId));
+                    },
+                  ),
+                ),
               ),
               data: (allChicks) {
                 final chicks = ref.watch(

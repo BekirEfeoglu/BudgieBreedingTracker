@@ -317,7 +317,11 @@
     "invalid_female": "Seçilen dişi kuş dişi değil",
     "all_eggs_hatched": "Tüm yumurtalar başarıyla çıktı",
     "sort_newest": "En Yeni",
-    "sort_oldest": "En Eski"
+    "sort_oldest": "En Eski",
+    "sort_status_asc": "Durum (A-Z)",
+    "sort_status_desc": "Durum (Z-A)",
+    "sort_cage_asc": "Kafes No (A-Z)",
+    "sort_cage_desc": "Kafes No (Z-A)"
   },
   "eggs": {
     "add_egg": "Yumurta Ekle",
@@ -467,6 +471,7 @@
     "edit_event": "Etkinliği Düzenle",
     "delete_event": "Etkinliği Sil",
     "delete_event_confirm": "Bu etkinliği silmek istediğinize emin misiniz?",
+    "view_all_events": "Tüm etkinlikleri görüntüle",
     "no_events": "Bu gün için etkinlik yok",
     "load_error": "Etkinlikler yüklenemedi",
     "month_view": "Ay",
@@ -649,6 +654,8 @@
     "export_birds_pdf_desc": "Sadece kuş listenizi PDF olarak indirin",
     "export_success": "Dosya başarıyla oluşturuldu",
     "export_error": "Aktarım sırasında hata oluştu",
+    "error_invalid_format": "Yedek dosyası bozuk veya bilinmeyen format",
+    "error_unsupported_version": "Bu yedek daha yeni bir uygulama sürümüyle oluşturulmuş (yedek: v{}, desteklenen max: v{}). Uygulamayı güncelleyin.",
     "last_export": "Son Aktarım",
     "never": "Henüz aktarım yapılmadı",
     "import_data": "Veri İçeri Aktarımı",
@@ -1926,7 +1933,8 @@
     "pedigree_stats_section": "İstatistikler",
     "pedigree_gen_details": "Jenerasyon Detayları",
     "header_color": "Renk Mutasyonu",
-    "title": "Dışa Aktar"
+    "title": "Dışa Aktar",
+    "error_excel_create": "Excel dosyası oluşturulamadı"
   },
   "import": {
     "sheet_not_found": "Excel dosyasında sayfa bulunamadı",

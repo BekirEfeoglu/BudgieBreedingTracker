@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -155,14 +156,14 @@ void main() {
       expect(find.byType(TextField), findsAtLeastNWidgets(1));
     });
 
-    testWidgets('shows popup menu button for sort', (tester) async {
+    testWidgets('shows sort icon button', (tester) async {
       await tester.pumpWidget(createSubject(chicksStream: Stream.value([])));
 
       await tester.pumpAndSettle();
 
       expect(
-        find.byWidgetPredicate((w) => w is PopupMenuButton),
-        findsAtLeastNWidgets(1),
+        find.byIcon(LucideIcons.arrowUpDown),
+        findsOneWidget,
       );
     });
 

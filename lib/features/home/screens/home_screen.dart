@@ -4,8 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
+import 'package:budgie_breeding_tracker/core/widgets/error_state.dart';
 import 'package:budgie_breeding_tracker/core/widgets/skeleton_loader.dart';
-import 'package:budgie_breeding_tracker/data/models/statistics_models.dart';
 import 'package:budgie_breeding_tracker/features/chicks/providers/chick_providers.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_providers.dart';
 import 'package:budgie_breeding_tracker/features/home/providers/home_providers.dart';
@@ -137,13 +137,11 @@ class _StatsSection extends ConsumerWidget {
       loading: () => const _DashboardStatsSkeleton(),
       error: (error, st) {
         AppLogger.error('[HomeScreen] Stats error', error, st);
-        return const DashboardStatsGrid(
-          stats: DashboardStats(
-            totalBirds: 0,
-            totalEggs: 0,
-            totalChicks: 0,
-            activeBreedings: 0,
-            incubatingEggs: 0,
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+          child: ErrorState(
+            message: 'common.data_load_error'.tr(),
+            onRetry: () => ref.invalidate(dashboardStatsProvider(userId)),
           ),
         );
       },

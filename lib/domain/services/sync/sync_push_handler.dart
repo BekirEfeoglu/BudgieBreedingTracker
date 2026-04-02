@@ -188,7 +188,7 @@ class SyncPushHandler {
         () => _ref.read(photoRepositoryProvider).pushAll(userId),
     ], 'L6 (leaf entities)');
     ctx.addResults(results);
-    if (results.isEmpty) {
+    if (results.isEmpty && _anyPending(pending, leafTables)) {
       ctx.layerErrors++;
       ctx.l6Failed = true;
     }

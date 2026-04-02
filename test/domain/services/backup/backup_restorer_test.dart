@@ -202,7 +202,7 @@ void main() {
         final result = await restorer.restoreBackup('user-1', file.path);
 
         expect(result.success, isFalse);
-        expect(result.error, contains('Unsupported backup version: 99'));
+        expect(result.error, contains('backup.error_unsupported_version'));
       });
 
       test('returns failure when backup belongs to another user', () async {
@@ -226,7 +226,7 @@ void main() {
         final result = await restorer.restoreBackup('user-1', file.path);
 
         expect(result.success, isFalse);
-        expect(result.error, contains('Unsupported backup version: null'));
+        expect(result.error, contains('backup.error_invalid_format'));
       });
 
       test('restores incubation species from backup payload', () async {

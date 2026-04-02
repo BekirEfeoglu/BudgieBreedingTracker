@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:easy_localization/easy_localization.dart';
+
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
@@ -64,10 +66,17 @@ class BackupRestorer {
       final backupData = json.decode(content) as Map<String, dynamic>;
 
       final version = backupData['version'] as int?;
-      if (version == null || version > BackupDataCollector.backupVersion) {
+      if (version == null) {
         return BackupResult.failure(
-          'Unsupported backup version: $version '
-          '(max: ${BackupDataCollector.backupVersion})',
+          'backup.error_invalid_format'.tr(),
+        );
+      }
+      if (version > BackupDataCollector.backupVersion) {
+        return BackupResult.failure(
+          'backup.error_unsupported_version'.tr(args: [
+            version.toString(),
+            BackupDataCollector.backupVersion.toString(),
+          ]),
         );
       }
 
@@ -80,7 +89,13 @@ class BackupRestorer {
         );
       }
 
-      final data = backupData['data'] as Map<String, dynamic>;
+      final rawData = backupData['data'];
+      if (rawData is! Map<String, dynamic>) {
+        return BackupResult.failure(
+          'backup.error_invalid_format'.tr(),
+        );
+      }
+      final data = rawData;
       final result = await _restoreAllEntities(data, userId);
 
       AppLogger.info(

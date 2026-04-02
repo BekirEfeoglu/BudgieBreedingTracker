@@ -9,6 +9,7 @@ import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_screen_title.dart';
 import 'package:budgie_breeding_tracker/core/widgets/empty_state.dart';
 import 'package:budgie_breeding_tracker/core/widgets/error_state.dart';
+import 'package:budgie_breeding_tracker/core/widgets/sort_bottom_sheet.dart';
 import 'package:budgie_breeding_tracker/core/widgets/buttons/fab_button.dart';
 import 'package:budgie_breeding_tracker/core/widgets/ad_banner_widget.dart';
 import 'package:budgie_breeding_tracker/domain/services/ads/ad_service.dart';
@@ -52,7 +53,25 @@ class BreedingListScreen extends ConsumerWidget {
           title: 'breeding.title'.tr(),
           iconAsset: AppIcons.breeding,
         ),
-        actions: const [NotificationBellButton(), ProfileMenuButton()],
+        actions: [
+          IconButton(
+            icon: const Icon(LucideIcons.arrowUpDown),
+            tooltip: 'common.sort'.tr(),
+            onPressed: () {
+              final currentSort = ref.read(breedingSortProvider);
+              showSortBottomSheet<BreedingSort>(
+                context: context,
+                values: BreedingSort.values,
+                current: currentSort,
+                labelOf: (s) => s.label,
+                onSelected: (s) =>
+                    ref.read(breedingSortProvider.notifier).state = s,
+              );
+            },
+          ),
+          const NotificationBellButton(),
+          const ProfileMenuButton(),
+        ],
       ),
       body: Column(
         children: [
@@ -74,14 +93,20 @@ class BreedingListScreen extends ConsumerWidget {
           Expanded(
             child: pairsAsync.when(
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (error, _) => ErrorState(
-                message: 'common.data_load_error'.tr(),
-                onRetry: () =>
-                    ref.invalidate(breedingPairsStreamProvider(userId)),
+              error: (error, _) => SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: SizedBox(
+                  height: MediaQuery.of(context).size.height * 0.5,
+                  child: ErrorState(
+                    message: 'common.data_load_error'.tr(),
+                    onRetry: () =>
+                        ref.invalidate(breedingPairsStreamProvider(userId)),
+                  ),
+                ),
               ),
               data: (allPairs) {
                 final pairs = ref.watch(
-                  searchedAndFilteredBreedingPairsProvider(allPairs),
+                  sortedAndFilteredBreedingPairsProvider(allPairs),
                 );
 
                 if (allPairs.isEmpty) {

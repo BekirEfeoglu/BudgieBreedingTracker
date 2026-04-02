@@ -76,7 +76,7 @@ void _showMoreAboutDialog(BuildContext context, WidgetRef ref) {
               onTap: () => launchUrl(Uri.parse('mailto:support@budgiebreedingtracker.online')),
               borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
               child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: AppSpacing.xxs),
+                padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
                 child: Row(
                   children: [
                     Icon(LucideIcons.mail, size: 16, color: colorScheme.primary),
@@ -93,12 +93,11 @@ void _showMoreAboutDialog(BuildContext context, WidgetRef ref) {
                 ),
               ),
             ),
-            const SizedBox(height: AppSpacing.sm),
             InkWell(
               onTap: () => launchUrl(Uri.parse('https://budgiebreedingtracker.online/')),
               borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
               child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: AppSpacing.xxs),
+                padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
                 child: Row(
                   children: [
                     Icon(LucideIcons.globe, size: 16, color: colorScheme.primary),

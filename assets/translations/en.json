@@ -317,7 +317,11 @@
     "invalid_female": "Selected female bird is not a female",
     "all_eggs_hatched": "All eggs have hatched successfully",
     "sort_newest": "Newest First",
-    "sort_oldest": "Oldest First"
+    "sort_oldest": "Oldest First",
+    "sort_status_asc": "Status (A-Z)",
+    "sort_status_desc": "Status (Z-A)",
+    "sort_cage_asc": "Cage No (A-Z)",
+    "sort_cage_desc": "Cage No (Z-A)"
   },
   "eggs": {
     "add_egg": "Add Egg",
@@ -467,6 +471,7 @@
     "edit_event": "Edit Event",
     "delete_event": "Delete Event",
     "delete_event_confirm": "Are you sure you want to delete this event?",
+    "view_all_events": "View all events",
     "no_events": "No events for this day",
     "load_error": "Failed to load events",
     "month_view": "Month",
@@ -649,6 +654,8 @@
     "export_birds_pdf_desc": "Download only your bird list as PDF",
     "export_success": "File created successfully",
     "export_error": "An error occurred during export",
+    "error_invalid_format": "Backup file is corrupt or in an unknown format",
+    "error_unsupported_version": "This backup was created with a newer app version (backup: v{}, supported max: v{}). Please update the app.",
     "last_export": "Last Export",
     "never": "No export yet",
     "import_data": "Import Data",
@@ -1926,7 +1933,8 @@
     "pedigree_stats_section": "Statistics",
     "pedigree_gen_details": "Generation Details",
     "header_color": "Color Mutation",
-    "title": "Export"
+    "title": "Export",
+    "error_excel_create": "Failed to create Excel file"
   },
   "import": {
     "sheet_not_found": "Sheet not found in Excel file",
