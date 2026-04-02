@@ -1,3 +1,7 @@
+-- =============================================
+-- 1. Create all tables FIRST (no RLS yet)
+-- =============================================
+
 -- Conversations table
 CREATE TABLE IF NOT EXISTS conversations (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -17,9 +21,52 @@ CREATE TABLE IF NOT EXISTS conversations (
 
 CREATE INDEX IF NOT EXISTS idx_conversations_created_at ON conversations(created_at DESC);
 
--- RLS: Only participants can see conversations
-ALTER TABLE conversations ENABLE ROW LEVEL SECURITY;
+-- Conversation Participants table
+CREATE TABLE IF NOT EXISTS conversation_participants (
+  conversation_id UUID NOT NULL REFERENCES conversations(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  role TEXT NOT NULL DEFAULT 'member'
+    CHECK (role IN ('owner', 'admin', 'member')),
+  joined_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  last_read_at TIMESTAMPTZ,
+  is_muted BOOLEAN NOT NULL DEFAULT false,
+  is_left BOOLEAN NOT NULL DEFAULT false,
+  PRIMARY KEY (conversation_id, user_id)
+);
 
+CREATE INDEX IF NOT EXISTS idx_conversation_participants_user_id ON conversation_participants(user_id);
+CREATE INDEX IF NOT EXISTS idx_conversation_participants_conversation_id ON conversation_participants(conversation_id);
+
+-- Messages table
+CREATE TABLE IF NOT EXISTS messages (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  conversation_id UUID NOT NULL REFERENCES conversations(id) ON DELETE CASCADE,
+  sender_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  sender_name TEXT NOT NULL DEFAULT '',
+  sender_avatar_url TEXT,
+  content TEXT,
+  message_type TEXT NOT NULL DEFAULT 'text'
+    CHECK (message_type IN ('text', 'image', 'birdCard', 'listingCard')),
+  image_url TEXT,
+  reference_id UUID,
+  reference_data JSONB NOT NULL DEFAULT '{}'::jsonb,
+  read_by JSONB NOT NULL DEFAULT '[]'::jsonb,
+  is_deleted BOOLEAN NOT NULL DEFAULT false,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_messages_conversation_created ON messages(conversation_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_messages_sender_id ON messages(sender_id);
+
+-- =============================================
+-- 2. Enable RLS on all tables (after all exist)
+-- =============================================
+
+ALTER TABLE conversations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE conversation_participants ENABLE ROW LEVEL SECURITY;
+ALTER TABLE messages ENABLE ROW LEVEL SECURITY;
+
+-- Conversations RLS
 CREATE POLICY "conversations_participant_read" ON conversations
   FOR SELECT USING (
     EXISTS (
@@ -43,24 +90,7 @@ CREATE POLICY "conversations_update" ON conversations
     )
   );
 
--- Conversation Participants table
-CREATE TABLE IF NOT EXISTS conversation_participants (
-  conversation_id UUID NOT NULL REFERENCES conversations(id) ON DELETE CASCADE,
-  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  role TEXT NOT NULL DEFAULT 'member'
-    CHECK (role IN ('owner', 'admin', 'member')),
-  joined_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  last_read_at TIMESTAMPTZ,
-  is_muted BOOLEAN NOT NULL DEFAULT false,
-  is_left BOOLEAN NOT NULL DEFAULT false,
-  PRIMARY KEY (conversation_id, user_id)
-);
-
-CREATE INDEX IF NOT EXISTS idx_conversation_participants_user_id ON conversation_participants(user_id);
-CREATE INDEX IF NOT EXISTS idx_conversation_participants_conversation_id ON conversation_participants(conversation_id);
-
-ALTER TABLE conversation_participants ENABLE ROW LEVEL SECURITY;
-
+-- Conversation Participants RLS
 CREATE POLICY "participants_own_read" ON conversation_participants
   FOR SELECT USING (user_id = auth.uid());
 
@@ -96,29 +126,7 @@ CREATE POLICY "participants_update" ON conversation_participants
     )
   );
 
--- Messages table
-CREATE TABLE IF NOT EXISTS messages (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  conversation_id UUID NOT NULL REFERENCES conversations(id) ON DELETE CASCADE,
-  sender_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  sender_name TEXT NOT NULL DEFAULT '',
-  sender_avatar_url TEXT,
-  content TEXT,
-  message_type TEXT NOT NULL DEFAULT 'text'
-    CHECK (message_type IN ('text', 'image', 'birdCard', 'listingCard')),
-  image_url TEXT,
-  reference_id UUID,
-  reference_data JSONB NOT NULL DEFAULT '{}'::jsonb,
-  read_by JSONB NOT NULL DEFAULT '[]'::jsonb,
-  is_deleted BOOLEAN NOT NULL DEFAULT false,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-
-CREATE INDEX IF NOT EXISTS idx_messages_conversation_created ON messages(conversation_id, created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_messages_sender_id ON messages(sender_id);
-
-ALTER TABLE messages ENABLE ROW LEVEL SECURITY;
-
+-- Messages RLS
 CREATE POLICY "messages_participant_read" ON messages
   FOR SELECT USING (
     EXISTS (
@@ -144,6 +152,10 @@ CREATE POLICY "messages_update" ON messages
 
 CREATE POLICY "messages_delete" ON messages
   FOR DELETE USING (sender_id = auth.uid());
+
+-- =============================================
+-- 3. Realtime + Triggers
+-- =============================================
 
 -- Enable Realtime for messages table
 ALTER PUBLICATION supabase_realtime ADD TABLE messages;
