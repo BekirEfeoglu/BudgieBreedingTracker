@@ -32,6 +32,12 @@ abstract class AppRoutes {
   static const communityBookmarks = '/community/bookmarks';
   static const communitySearch = '/community/search';
 
+  // Marketplace
+  static const marketplace = '/marketplace';
+  static const marketplaceDetail = '/marketplace/:id';
+  static const marketplaceForm = '/marketplace/form';
+  static const marketplaceMyListings = '/marketplace/my-listings';
+
   // Health Records
   static const healthRecords = '/health-records';
   static const healthRecordDetail = '/health-records/:id';
