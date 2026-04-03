@@ -33,10 +33,10 @@ import 'route_utils.dart';
 import 'router_notifier.dart';
 import 'routes/admin_routes.dart';
 import 'routes/auth_routes.dart';
-import 'routes/community_routes.dart';
-import 'routes/gamification_routes.dart';
-import 'routes/marketplace_routes.dart';
-import 'routes/messaging_routes.dart';
+// import 'routes/community_routes.dart'; // TODO: temporarily disabled
+// import 'routes/gamification_routes.dart'; // TODO: temporarily disabled
+// import 'routes/marketplace_routes.dart'; // TODO: temporarily disabled
+// import 'routes/messaging_routes.dart'; // TODO: temporarily disabled
 import 'routes/user_routes.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -265,17 +265,13 @@ final routerProvider = Provider<GoRouter>((ref) {
         ],
       ),
 
-      // Community routes (UGC moderated via ContentModerationService)
-      ...buildCommunityRoutes(),
+      // TODO: Community feature temporarily disabled
+      // ...buildCommunityRoutes(),
 
-      // Marketplace routes
-      ...buildMarketplaceRoutes(),
-
-      // Messaging routes
-      ...buildMessagingRoutes(),
-
-      // Gamification routes (badges, leaderboard)
-      ...buildGamificationRoutes(),
+      // TODO: Marketplace, Messaging, Gamification temporarily disabled
+      // ...buildMarketplaceRoutes(),
+      // ...buildMessagingRoutes(),
+      // ...buildGamificationRoutes(),
 
       // Premium, user, 2FA, and health record routes
       ...buildUserRoutes(),

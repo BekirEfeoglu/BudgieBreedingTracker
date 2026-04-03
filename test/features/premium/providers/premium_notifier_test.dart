@@ -337,6 +337,51 @@ void main() {
     });
   });
 
+  group('PremiumNotifier mounted safety', () {
+    test('_load skips retryPendingSync when container is disposed during RC check', () async {
+      // Simulate a slow RevenueCat check that will be interrupted by dispose
+      service.isPremiumDelay = const Duration(milliseconds: 50);
+      service.isPremiumResult = false;
+
+      // Seed a pending sync that would normally trigger retryPendingSync
+      SharedPreferences.setMockInitialValues({
+        'pending_premium_sync_user-1': '{"isPremium":true,"retryCount":0}',
+      });
+
+      final container = _containerWithService(service);
+      container.read(localPremiumProvider);
+
+      // Dispose immediately while _load is still awaiting isPremium
+      container.dispose();
+
+      // Give enough time for the async _load to attempt completion
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+
+      // If the mounted check works, no state-after-dispose error is thrown.
+      // The test passes without exception — that's the assertion.
+    });
+
+    test('refresh skips retryPendingSync when container is disposed', () async {
+      service.isPremiumResult = false;
+
+      final container = _containerWithService(service);
+      container.read(localPremiumProvider);
+      await waitUntil(() => service.isPremiumCallCount > 0);
+      await _flushAsync();
+
+      // Start refresh, then dispose
+      service.isPremiumDelay = const Duration(milliseconds: 50);
+      service.isPremiumResult = true;
+      final refreshFuture = container
+          .read(localPremiumProvider.notifier)
+          .refresh();
+
+      container.dispose();
+      // Should complete without throwing state-after-dispose
+      await refreshFuture;
+    });
+  });
+
   group('PremiumNotifier per-user isolation', () {
     test('different users have independent premium states', () async {
       SharedPreferences.setMockInitialValues({

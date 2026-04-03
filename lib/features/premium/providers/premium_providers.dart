@@ -8,7 +8,6 @@ import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:budgie_breeding_tracker/bootstrap.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_constants.dart';
-import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
 import 'package:budgie_breeding_tracker/core/enums/subscription_enums.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/domain/services/payment/purchase_service.dart';

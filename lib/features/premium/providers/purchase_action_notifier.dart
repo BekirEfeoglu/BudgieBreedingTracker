@@ -48,8 +48,16 @@ class PurchaseActionNotifier extends Notifier<PurchaseActionState> {
         return;
       }
 
-      final offerings = await ref.read(premiumOfferingsProvider.future);
+      var offerings = await ref.read(premiumOfferingsProvider.future);
       if (!ref.mounted) return;
+
+      // Retry once with fresh data if cached offerings are empty —
+      // covers cases where offerings were fetched before StoreKit was ready.
+      if (offerings.isEmpty) {
+        ref.invalidate(premiumOfferingsProvider);
+        offerings = await ref.read(premiumOfferingsProvider.future);
+        if (!ref.mounted) return;
+      }
 
       if (offerings.isEmpty) {
         AppLogger.warning('No RevenueCat offerings available');

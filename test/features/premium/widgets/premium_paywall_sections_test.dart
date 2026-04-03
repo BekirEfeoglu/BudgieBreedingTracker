@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 
@@ -65,6 +66,12 @@ Map<String, dynamic> _packageJson({
 }
 
 void main() {
+  setUpAll(() async {
+    await initializeDateFormatting('en');
+    await initializeDateFormatting('tr');
+    await initializeDateFormatting('de');
+  });
+
   group('PremiumHeaderSection', () {
     testWidgets('renders without crashing', (tester) async {
       await tester.pumpWidget(_wrap(const PremiumHeaderSection()));
@@ -478,7 +485,7 @@ void main() {
 
       expect(find.text(l10n('premium.active_badge')), findsOneWidget);
       expect(find.text(l10n('premium.plan_semi_annual')), findsOneWidget);
-      expect(find.text('31.12.2026'), findsOneWidget);
+      expect(find.text('Dec 31, 2026'), findsOneWidget);
       expect(find.text(l10n('common.yes')), findsOneWidget);
     });
 

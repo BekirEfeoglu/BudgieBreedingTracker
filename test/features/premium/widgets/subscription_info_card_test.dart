@@ -1,11 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/domain/services/payment/purchase_service.dart';
 import 'package:budgie_breeding_tracker/features/premium/widgets/subscription_info_card.dart';
 
 void main() {
+  setUpAll(() async {
+    await initializeDateFormatting('en');
+    await initializeDateFormatting('tr');
+    await initializeDateFormatting('de');
+  });
+
   group('SubscriptionInfoCard', () {
     final baseInfo = SubscriptionInfo(
       isActive: true,
@@ -103,8 +110,9 @@ void main() {
       await tester.pumpWidget(createSubject());
       await tester.pump();
 
-      // Date format: DD.MM.YYYY
-      expect(find.text('31.12.2027'), findsOneWidget);
+      // Date format: locale-aware via DateFormat.yMMMd
+      // Default locale 'en' produces 'Dec 31, 2027'
+      expect(find.text('Dec 31, 2027'), findsOneWidget);
     });
 
     testWidgets('shows remaining_days when not expired', (tester) async {

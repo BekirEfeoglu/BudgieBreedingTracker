@@ -252,6 +252,213 @@ SELECT * FROM get_poll_results('00000000-0000-0000-0000-000000000000'::uuid);
 
 
 -- =====================================================================
+-- I. is_conversation_member search_path verification
+-- =====================================================================
+-- After Phase 3 migration, verify that is_conversation_member has
+-- SET search_path TO '' (not 'public') for SECURITY DEFINER safety.
+
+SELECT
+  proname AS function_name,
+  proconfig AS config,
+  CASE
+    WHEN proconfig::text ILIKE '%search_path=%' AND proconfig::text NOT ILIKE '%search_path=public%'
+    THEN 'PASS: search_path hardened'
+    WHEN proconfig::text ILIKE '%search_path=public%'
+    THEN 'FAIL: still using search_path=public'
+    ELSE 'FAIL: no search_path set'
+  END AS status
+FROM pg_proc
+WHERE proname = 'is_conversation_member'
+  AND pronamespace = 'public'::regnamespace;
+
+-- Expected: status = 'PASS: search_path hardened'
+
+
+-- =====================================================================
+-- J. pg_trgm extension schema verification
+-- =====================================================================
+-- Verify pg_trgm is in extensions schema and operator class works.
+
+SELECT
+  extname,
+  nspname AS schema,
+  CASE
+    WHEN nspname = 'extensions' THEN 'PASS: in extensions schema'
+    WHEN nspname = 'public' THEN 'WARN: still in public schema'
+    ELSE 'INFO: in ' || nspname
+  END AS status
+FROM pg_extension e
+JOIN pg_namespace n ON n.oid = e.extnamespace
+WHERE extname = 'pg_trgm';
+
+-- Expected: status = 'PASS: in extensions schema'
+
+-- Verify gin_trgm_ops indexes still work
+SELECT
+  indexname,
+  tablename,
+  pg_size_pretty(pg_relation_size(indexname::regclass)) AS index_size
+FROM pg_indexes
+WHERE indexdef ILIKE '%gin_trgm_ops%'
+  AND schemaname = 'public'
+ORDER BY tablename;
+
+-- Expected: 4 indexes (community_posts x2, marketplace_listings x2)
+
+
+-- =====================================================================
+-- K. SECURITY DEFINER functions search_path audit
+-- =====================================================================
+-- All SECURITY DEFINER functions should have explicit search_path.
+-- Functions without search_path are a SQL injection vector.
+
+SELECT
+  proname AS function_name,
+  CASE
+    WHEN proconfig IS NULL THEN 'FAIL: no config (no search_path)'
+    WHEN NOT (proconfig::text ILIKE '%search_path%') THEN 'FAIL: no search_path'
+    ELSE 'PASS: search_path set'
+  END AS status,
+  proconfig AS config
+FROM pg_proc
+WHERE prosecdef = true
+  AND pronamespace = 'public'::regnamespace
+ORDER BY proname;
+
+-- Expected: all rows show 'PASS: search_path set'
+
+
+-- =====================================================================
+-- L. Free tier limit RLS policies verification
+-- =====================================================================
+-- Verifies the three free tier INSERT policies exist and that
+-- is_premium_or_privileged() is deployed with correct search_path.
+
+-- L1. Verify is_premium_or_privileged function exists and is hardened
+SELECT
+  proname AS function_name,
+  prosecdef AS security_definer,
+  CASE
+    WHEN proconfig::text ILIKE '%search_path=%' AND proconfig::text NOT ILIKE '%search_path=public%'
+    THEN 'PASS: search_path hardened'
+    WHEN proconfig::text ILIKE '%search_path=public%'
+    THEN 'FAIL: still using search_path=public'
+    ELSE 'FAIL: no search_path set'
+  END AS status
+FROM pg_proc
+WHERE proname = 'is_premium_or_privileged'
+  AND pronamespace = 'public'::regnamespace;
+
+-- Expected: 1 row, security_definer = true, status = 'PASS: search_path hardened'
+
+-- L2. Verify all three free tier limit policies exist
+SELECT
+  tablename,
+  policyname,
+  cmd AS command,
+  CASE WHEN with_check ILIKE '%is_premium_or_privileged%'
+    THEN 'PASS: uses premium bypass'
+    ELSE 'FAIL: missing premium bypass'
+  END AS premium_check
+FROM pg_policies
+WHERE schemaname = 'public'
+  AND policyname IN (
+    'free_tier_bird_limit',
+    'free_tier_breeding_pair_limit',
+    'free_tier_incubation_limit'
+  )
+ORDER BY tablename;
+
+-- Expected: 3 rows, all with premium_check = 'PASS'
+-- Missing rows indicate the policy was not applied to that table.
+
+-- L3. Functional test — count-based limit check
+-- Run as authenticated non-premium user with < 15 birds.
+-- This should succeed:
+-- INSERT INTO birds (id, user_id, name, gender, is_deleted)
+-- VALUES (gen_random_uuid(), auth.uid(), 'RLS Test Bird', 'male', false);
+-- Then clean up:
+-- DELETE FROM birds WHERE name = 'RLS Test Bird' AND user_id = auth.uid();
+
+-- L4. Functional test — limit exceeded (requires 15+ birds seeded)
+-- Expects: new_row_violates_row_level_security error
+-- INSERT INTO birds (id, user_id, name, gender, is_deleted)
+-- VALUES (gen_random_uuid(), auth.uid(), 'Over Limit Bird', 'male', false);
+
+-- L5. Premium bypass test — run as premium user
+-- Premium user should always succeed regardless of count.
+-- Verify with: SELECT is_premium_or_privileged(auth.uid());
+-- Expected: true
+
+
+-- =====================================================================
+-- M. sync_premium_status RPC verification
+-- =====================================================================
+-- Verifies the sync_premium_status RPC is deployed, has correct
+-- security settings, and functions correctly.
+
+-- M1. Verify function exists with correct security settings
+SELECT
+  proname AS function_name,
+  prosecdef AS security_definer,
+  pronargs AS param_count,
+  CASE
+    WHEN proconfig::text ILIKE '%search_path=%' AND proconfig::text NOT ILIKE '%search_path=public%'
+    THEN 'PASS: search_path hardened'
+    WHEN proconfig::text ILIKE '%search_path=public%'
+    THEN 'FAIL: still using search_path=public'
+    ELSE 'FAIL: no search_path set'
+  END AS search_path_status
+FROM pg_proc
+WHERE proname = 'sync_premium_status'
+  AND pronamespace = 'public'::regnamespace;
+
+-- Expected: 1 row, security_definer = true, param_count = 5,
+--           search_path_status = 'PASS: search_path hardened'
+
+-- M2. Verify authenticated role has execute permission
+SELECT
+  grantee,
+  privilege_type
+FROM information_schema.routine_privileges
+WHERE routine_name = 'sync_premium_status'
+  AND routine_schema = 'public'
+  AND grantee = 'authenticated';
+
+-- Expected: 1 row with privilege_type = 'EXECUTE'
+
+-- M3. Functional test — activate premium (run as authenticated user)
+-- SELECT sync_premium_status(
+--   true,                         -- p_is_premium
+--   'premium',                    -- p_subscription_status
+--   now() + interval '6 months',  -- p_premium_expires_at
+--   'premium',                    -- p_plan
+--   now() + interval '6 months'   -- p_current_period_end
+-- );
+-- Expected: {"success": true, "user_id": "<uuid>", "is_premium": true}
+-- Verify: SELECT is_premium, subscription_status, premium_expires_at
+--         FROM profiles WHERE id = auth.uid();
+
+-- M4. Functional test — deactivate premium (run as same user)
+-- SELECT sync_premium_status(
+--   false,                        -- p_is_premium
+--   'free',                       -- p_subscription_status
+--   NULL,                         -- p_premium_expires_at
+--   'premium',                    -- p_plan
+--   NULL                          -- p_current_period_end
+-- );
+-- Expected: {"success": true, "user_id": "<uuid>", "is_premium": false}
+-- Verify: SELECT status FROM user_subscriptions WHERE user_id = auth.uid();
+-- Expected: status = 'cancelled'
+
+-- M5. Verify unauthenticated call fails
+-- SET role TO anon;
+-- SELECT sync_premium_status(true, 'premium');
+-- Expected: ERROR 'Authentication required'
+-- RESET role;
+
+
+-- =====================================================================
 -- Summary
 -- =====================================================================
 -- Section A: 0 rows = all tables have FORCE RLS
@@ -262,3 +469,8 @@ SELECT * FROM get_poll_results('00000000-0000-0000-0000-000000000000'::uuid);
 -- Section F: bidirectional sync works
 -- Section G: increment/decrement counts correct
 -- Section H: account deletion cascades correctly (incl. blocked_user_id)
+-- Section I: is_conversation_member has hardened search_path
+-- Section J: pg_trgm in extensions schema, gin indexes work
+-- Section K: all SECURITY DEFINER functions have search_path
+-- Section L: free tier limit RLS policies deployed with premium bypass
+-- Section M: sync_premium_status RPC deployed with correct security

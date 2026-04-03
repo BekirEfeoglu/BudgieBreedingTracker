@@ -12,6 +12,7 @@ class FakePurchaseService extends PurchaseService {
   Object? initializeError;
   bool isPremiumResult = false;
   Object? isPremiumError;
+  Duration? isPremiumDelay;
   List<Package> offeringsResult = const [];
   Object? offeringsError;
   bool purchaseResult = false;
@@ -47,6 +48,7 @@ class FakePurchaseService extends PurchaseService {
   @override
   Future<bool> isPremium() async {
     isPremiumCallCount++;
+    if (isPremiumDelay != null) await Future<void>.delayed(isPremiumDelay!);
     if (isPremiumError != null) throw isPremiumError!;
     return isPremiumResult;
   }

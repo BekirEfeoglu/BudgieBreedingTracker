@@ -110,7 +110,7 @@ void main() {
       expect(find.text(l10n('nav.chicks')), findsOneWidget);
 
       expect(find.text('health_records.title'), findsOneWidget);
-      expect(find.text(l10n('more.community')), findsOneWidget);
+      // Community temporarily disabled
       expect(find.text(l10n('more.statistics')), findsOneWidget);
       expect(find.text(l10n('more.genealogy')), findsOneWidget);
       expect(find.text(l10n('more.genetics')), findsOneWidget);
@@ -199,26 +199,9 @@ void main() {
       expect(find.text(l10n('premium.pro_badge')), findsAtLeastNWidgets(3));
     });
 
-    testWidgets('shows community menu item in features section', (
-      tester,
-    ) async {
-      await tester.pumpWidget(createSubject());
-      await tester.pumpAndSettle();
-
-      expect(find.text(l10n('more.community')), findsOneWidget);
-    });
-
-    testWidgets('tapping community navigates to community screen', (
-      tester,
-    ) async {
-      await tester.pumpWidget(createSubject());
-      await tester.pumpAndSettle();
-
-      await tester.tap(find.text(l10n('more.community')));
-      await tester.pumpAndSettle();
-
-      expect(find.text('Community'), findsOneWidget);
-    });
+    // TODO: Community tests temporarily disabled
+    // testWidgets('shows community menu item in features section', ...);
+    // testWidgets('tapping community navigates to community screen', ...);
 
     testWidgets('tapping health records navigates to health screen', (
       tester,

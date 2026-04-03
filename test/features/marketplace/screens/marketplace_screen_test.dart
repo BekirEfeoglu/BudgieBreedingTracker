@@ -1,3 +1,6 @@
+@Tags(['community'])
+library;
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';

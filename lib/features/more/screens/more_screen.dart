@@ -56,11 +56,12 @@ class MoreScreen extends ConsumerWidget {
             title: 'health_records.title'.tr(),
             onTap: () => context.push(AppRoutes.healthRecords),
           ),
-          _MoreTile(
-            icon: const AppIcon(AppIcons.community),
-            title: 'more.community'.tr(),
-            onTap: () => context.push(AppRoutes.community),
-          ),
+          // TODO: Community feature temporarily disabled
+          // _MoreTile(
+          //   icon: const AppIcon(AppIcons.community),
+          //   title: 'more.community'.tr(),
+          //   onTap: () => context.push(AppRoutes.community),
+          // ),
           // Marketplace, Messaging, Badges, Leaderboard → accessed via Community tab
           // Premium features section
           _SectionHeader(title: 'more.section_premium'.tr()),

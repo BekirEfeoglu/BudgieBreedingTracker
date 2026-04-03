@@ -57,7 +57,7 @@ jobs:
         # If a test needs real assets, tag it and exclude here.
         run: |
           flutter test \
-            --exclude-tags "golden || e2e" \
+            --exclude-tags "golden || e2e || community" \
             --no-test-assets \
             --coverage \
             --dart-define=SUPABASE_URL=https://placeholder.supabase.co \

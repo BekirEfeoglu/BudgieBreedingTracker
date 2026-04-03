@@ -194,3 +194,31 @@ SELECT
 FROM pg_policies
 WHERE schemaname = 'public'
 ORDER BY tablename, policyname;
+
+
+-- =============================================================================
+-- K. SECURITY DEFINER Function Performance (is_conversation_member, is_admin)
+-- =============================================================================
+-- These functions are called on every row during RLS evaluation.
+-- Monitor their execution stats to detect performance degradation.
+-- High mean_exec_time (> 1ms) indicates missing index or table bloat.
+SELECT
+  calls,
+  ROUND(mean_exec_time::NUMERIC, 4) AS mean_time_ms,
+  ROUND(total_exec_time::NUMERIC, 2) AS total_time_ms,
+  ROUND(min_exec_time::NUMERIC, 4) AS min_time_ms,
+  ROUND(max_exec_time::NUMERIC, 4) AS max_time_ms,
+  ROUND(stddev_exec_time::NUMERIC, 4) AS stddev_ms,
+  LEFT(query, 150) AS query_preview
+FROM pg_stat_statements
+WHERE query ILIKE '%is_conversation_member%'
+   OR query ILIKE '%is_admin%'
+   OR query ILIKE '%is_premium_or_privileged%'
+ORDER BY total_exec_time DESC;
+
+-- Target: mean_exec_time < 1ms for all functions
+-- is_conversation_member: check conversation_participants index on (conversation_id, user_id, is_left)
+-- is_premium_or_privileged: uses profiles PK lookup (id) — should be < 0.1ms
+--   Called on every INSERT to birds, breeding_pairs, incubations for free tier RLS.
+--   If mean > 1ms: investigate profiles table bloat or missing PK index.
+-- If max >> mean: investigate lock contention or table bloat

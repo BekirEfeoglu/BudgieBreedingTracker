@@ -165,10 +165,10 @@ class _CommunityMediaGalleryState extends State<CommunityMediaGallery>
                 Icons.favorite_rounded,
                 size: 80,
                 color: Colors.white.withValues(alpha: 0.9),
-                shadows: const [
+                shadows: [
                   Shadow(
                     blurRadius: 24,
-                    color: Colors.black38,
+                    color: theme.shadowColor.withValues(alpha: 0.38),
                   ),
                 ],
               ),

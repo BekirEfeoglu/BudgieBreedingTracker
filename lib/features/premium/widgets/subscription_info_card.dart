@@ -97,7 +97,7 @@ class SubscriptionInfoCard extends StatelessWidget {
                   _InfoRow(
                     icon: const Icon(LucideIcons.calendar),
                     label: 'premium.expires_at'.tr(),
-                    value: _formatDate(subscriptionInfo.expirationDate!),
+                    value: _formatDate(context, subscriptionInfo.expirationDate!),
                   ),
                 ],
                 const SizedBox(height: AppSpacing.md),
@@ -135,8 +135,9 @@ class SubscriptionInfoCard extends StatelessWidget {
     };
   }
 
-  String _formatDate(DateTime date) {
-    return '${date.day.toString().padLeft(2, '0')}.${date.month.toString().padLeft(2, '0')}.${date.year}';
+  String _formatDate(BuildContext context, DateTime date) {
+    final locale = Localizations.localeOf(context).languageCode;
+    return DateFormat.yMMMd(locale).format(date);
   }
 
   String _remainingDays(DateTime expirationDate) {

@@ -24,8 +24,8 @@ class PremiumNotifier extends Notifier<bool> {
       state = false;
       try {
         await ref.read(purchaseServiceProvider).logout();
-      } catch (_) {
-        // Best-effort cleanup only.
+      } catch (e) {
+        AppLogger.warning('[PremiumNotifier] RevenueCat logout failed: $e');
       }
       await prefs.remove('is_premium');
       return;
@@ -51,12 +51,13 @@ class PremiumNotifier extends Notifier<bool> {
           state = isPremium;
           await prefs.setBool(cacheKey, isPremium);
         }
-      } catch (_) {
-        // RevenueCat query failed, use cached value
+      } catch (e) {
+        AppLogger.warning('[PremiumNotifier] RevenueCat query failed, using cached value: $e');
       }
     }
 
     // Retry any pending Supabase sync from a previous failed attempt
+    if (!_isLatestLoad(loadToken)) return;
     await retryPendingSync(userId);
   }
 
@@ -67,6 +68,7 @@ class PremiumNotifier extends Notifier<bool> {
     if (!ref.mounted) return;
     state = value;
     final prefs = await SharedPreferences.getInstance();
+    if (!ref.mounted) return;
     final userId = ref.read(currentUserIdProvider);
     if (userId == 'anonymous') {
       await prefs.remove('is_premium');
@@ -91,15 +93,15 @@ class PremiumNotifier extends Notifier<bool> {
           '[PremiumNotifier] Status changed on resume: $isPremium',
         );
         await setPremium(isPremium);
-        if (!isPremium) {
-          await syncPremiumToSupabase(isPremium: false);
-        }
+        // Sync new status to Supabase — covers both expiration and renewal.
+        await syncPremiumToSupabase(isPremium: isPremium);
       }
     } catch (e) {
       AppLogger.warning('[PremiumNotifier] Refresh failed: $e');
     }
 
     // Retry any pending Supabase sync
+    if (!ref.mounted) return;
     final userId = ref.read(currentUserIdProvider);
     await retryPendingSync(userId);
   }
