@@ -55,15 +55,15 @@ The repository includes the main mobile app, localized content in Turkish, Engli
 
 | Metric | Value |
 | --- | --- |
-| Source files | 603 Dart files |
-| Test suite | 5,300+ tests (unit, widget, golden, e2e) |
-| Feature modules | 20 |
-| Drift tables | 19 |
-| Routes | 59 |
-| Custom SVG icons | 83 |
-| Localization keys | ~2,000 per language (TR, EN, DE) |
-| Domain services | 13 |
-| DB schema version | 14 |
+| Source files | 808 Dart files |
+| Test suite | 8,930+ tests (unit, widget, golden, e2e) |
+| Feature modules | 23 |
+| Drift tables | 20 |
+| Routes | 70 |
+| Custom SVG icons | 84 |
+| Localization keys | ~2,243 per language (TR, EN, DE) |
+| Domain services | 15 |
+| DB schema version | 19 |
 
 ## Feature Set
 
@@ -86,12 +86,24 @@ The repository includes the main mobile app, localized content in Turkish, Engli
 - Statistics dashboards with breeding success, fertility trends, and egg production charts
 - Calendar-driven planning for breeding and care events
 
-### Community
+### Community and Social
 
 - Social feed with posts, photos, and multi-media galleries
 - Comment system with nested replies
 - Bookmarks, search, and user profile pages
+- Following system and user discovery
+- Direct messaging and group conversations
 - Content moderation with automated image safety checks
+
+### Marketplace
+
+- Bird listing and browsing for buying/selling
+- Detailed listing pages with photos and pricing
+
+### Gamification
+
+- Achievement badges and milestone tracking
+- Leaderboard system for community engagement
 
 ### Operations and platform
 
@@ -137,7 +149,7 @@ The repository includes the main mobile app, localized content in Turkish, Engli
 | Local storage | Drift 2.31+, SQLite |
 | Backend | Supabase (PostgreSQL, Auth, Storage, Edge Functions) |
 | Localization | easy_localization (TR, EN, DE) |
-| Icons | 83 custom SVGs (flutter_svg) + Lucide Icons |
+| Icons | 84 custom SVGs (flutter_svg) + Lucide Icons |
 | Charts | fl_chart |
 | Notifications | flutter_local_notifications, timezone |
 | Reporting | pdf, excel, share_plus |
@@ -165,8 +177,8 @@ All writes go to local SQLite first. A background sync orchestrator pushes pendi
 core/       → Shared constants, theme, utilities, widgets (no feature imports)
 data/       → Models, Drift tables/DAOs/mappers, Supabase sources, repositories
 domain/     → Business services (genetics, sync, backup, export, notifications)
-features/   → 20 self-contained modules (providers + screens + widgets)
-router/     → GoRouter config (59 routes), auth/admin/premium guards
+features/   → 23 self-contained modules (providers + screens + widgets)
+router/     → GoRouter config (70 routes), auth/admin/premium guards
 ```
 
 Import rules are enforced: `core/` never imports from `data/` or `features/`, `data/` never imports from `features/`.
@@ -247,7 +259,7 @@ The app can still boot without Supabase credentials, but authentication, sync, a
 | `flutter test --exclude-tags golden` | Run all tests (excl. golden) |
 | `flutter test test/golden --tags golden` | Golden snapshot tests |
 | `python scripts/check_l10n_sync.py` | Verify translation key parity |
-| `python scripts/verify_code_quality.py` | Anti-pattern scan (17 categories) |
+| `python scripts/verify_code_quality.py` | Anti-pattern scan (21 categories) |
 | `python scripts/verify_rules.py` | Validate rule claims against codebase |
 | `git config core.hooksPath .githooks` | Enable local pre-commit hook (runs script tests + coverage check before each commit) |
 
@@ -256,22 +268,22 @@ The app can still boot without Supabase credentials, but authentication, sync, a
 ```text
 BudgieBreedingTracker/
 ├── assets/
-│   ├── icons/              # 83 custom SVG icons (10 categories)
+│   ├── icons/              # 84 custom SVG icons (10 categories)
 │   ├── images/             # App icons and static images
-│   └── translations/       # tr.json, en.json, de.json (~2,000 keys each)
+│   └── translations/       # tr.json, en.json, de.json (~2,243 keys each)
 ├── docs/                   # Website, legal pages, screenshots
 ├── lib/
 │   ├── core/               # Constants, enums, theme, utilities, shared widgets
 │   ├── data/
-│   │   ├── models/         # 22 Freezed model files
-│   │   ├── local/          # Drift DB: 19 tables, 19 DAOs, 19 mappers
-│   │   ├── remote/         # Supabase: 19 remote sources, storage, edge functions
-│   │   └── repositories/   # 18 entity repositories + base + sync metadata
-│   ├── domain/services/    # 13 service modules (sync, genetics, export, ...)
-│   ├── features/           # 20 feature modules (admin, auth, birds, ...)
-│   └── router/             # 59 routes, auth/admin/premium guards
+│   │   ├── models/         # 29 Freezed model files
+│   │   ├── local/          # Drift DB: 20 tables, 20 DAOs, 20 mappers
+│   │   ├── remote/         # Supabase: 25 remote sources, storage, edge functions
+│   │   └── repositories/   # 23 entity repositories + base + sync metadata
+│   ├── domain/services/    # 15 service modules (sync, genetics, export, ...)
+│   ├── features/           # 23 feature modules (admin, auth, birds, ...)
+│   └── router/             # 70 routes, auth/admin/premium guards
 ├── scripts/                # L10n sync, code quality, and rule validation
-├── test/                   # 545 test files (unit, widget, golden, e2e)
+├── test/                   # 747 test files (unit, widget, golden, e2e)
 └── remotion-promo/         # Remotion-based promo video project
 ```
 
@@ -282,10 +294,12 @@ GitHub Actions CI pipeline runs on every PR:
 | Check | Description |
 | --- | --- |
 | Flutter Analyze | Static analysis with `--no-fatal-infos` |
-| Flutter Test | 5,300+ tests with coverage upload to Codecov |
+| Flutter Test | 8,930+ tests with coverage upload to Codecov |
 | Golden Tests | Pixel-level widget regression checks |
+| Scripts Test | Python script tests (>=98% coverage) |
 | L10n Sync | Verifies TR/EN/DE translation key parity |
-| Code Quality | Anti-pattern scan across 17 categories |
+| Code Quality | Anti-pattern scan across 21 categories |
+| Rules Sync | CLAUDE.md stats verification against codebase |
 | Android Build | Debug APK build verification |
 | iOS Build | No-codesign build verification |
 

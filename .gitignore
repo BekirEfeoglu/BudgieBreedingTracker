@@ -210,6 +210,8 @@ skills-lock.json
 output/
 build_log.txt
 failing_tests.log
+flutter_*.log
+scr_test.log
 *.coverage
 .coverage
 coverage_report.html
