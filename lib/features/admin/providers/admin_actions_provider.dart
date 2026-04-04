@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/constants/supabase_constants.dart';
 import '../../../core/utils/logger.dart';
+import '../constants/admin_constants.dart';
 import '../../auth/providers/auth_providers.dart';
 import 'admin_auth_utils.dart';
 import 'admin_dashboard_providers.dart';
@@ -176,6 +177,86 @@ class AdminActionsNotifier extends Notifier<AdminActionState> {
       state = state.copyWith(isLoading: false, isSuccess: true);
     } catch (e, st) {
       AppLogger.error('AdminActions.clearAuditLogs', e, st);
+      state = state.copyWith(
+        isLoading: false,
+        error: 'admin.action_error'.tr(),
+      );
+    }
+  }
+
+  // ── Maintenance Operations ───────────────────────────
+
+  /// Clean soft-deleted records older than [days] days from all soft-deletable tables.
+  Future<void> cleanSoftDeletedRecords(int days) async {
+    state = state.copyWith(isLoading: true, error: null, isSuccess: false);
+    try {
+      await requireAdmin(ref);
+      final client = ref.read(supabaseClientProvider);
+      final cutoff = DateTime.now().subtract(Duration(days: days));
+
+      var totalCleaned = 0;
+      for (final table in AdminConstants.softDeletableTables) {
+        try {
+          final result = await client
+              .from(table)
+              .delete()
+              .eq('is_deleted', true)
+              .lt('updated_at', cutoff.toUtc().toIso8601String())
+              .select('id');
+          totalCleaned += (result as List).length;
+        } catch (e) {
+          AppLogger.warning('cleanSoftDeleted: Failed for $table: $e');
+        }
+      }
+
+      await logAdminAction(
+        client,
+        ref.read(currentUserIdProvider),
+        'soft_delete_cleanup',
+        details: {'days': days, 'cleaned': totalCleaned},
+      );
+
+      state = state.copyWith(
+        isLoading: false,
+        isSuccess: true,
+        successMessage: 'admin.soft_deleted_cleaned'.tr(),
+      );
+    } catch (e, st) {
+      AppLogger.error('AdminActions.cleanSoftDeletedRecords', e, st);
+      state = state.copyWith(
+        isLoading: false,
+        error: 'admin.action_error'.tr(),
+      );
+    }
+  }
+
+  /// Reset stuck sync metadata records (error status older than 24h).
+  Future<void> resetStuckSyncRecords() async {
+    state = state.copyWith(isLoading: true, error: null, isSuccess: false);
+    try {
+      await requireAdmin(ref);
+      final client = ref.read(supabaseClientProvider);
+      final cutoff = DateTime.now().subtract(const Duration(hours: 24));
+
+      await client
+          .from(SupabaseConstants.syncMetadataTable)
+          .delete()
+          .eq('status', 'error')
+          .lt('created_at', cutoff.toUtc().toIso8601String());
+
+      await logAdminAction(
+        client,
+        ref.read(currentUserIdProvider),
+        'sync_stuck_reset',
+      );
+
+      state = state.copyWith(
+        isLoading: false,
+        isSuccess: true,
+        successMessage: 'admin.stuck_reset'.tr(),
+      );
+    } catch (e, st) {
+      AppLogger.error('AdminActions.resetStuckSyncRecords', e, st);
       state = state.copyWith(
         isLoading: false,
         error: 'admin.action_error'.tr(),
