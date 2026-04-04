@@ -107,12 +107,31 @@ final adminStatsProvider = FutureProvider<AdminStats>((ref) async {
     final breedingCount = await client
         .from(SupabaseConstants.breedingPairsTable)
         .count();
+    final premiumResult = await client
+        .from(SupabaseConstants.profilesTable)
+        .select('id')
+        .eq('is_premium', true);
+    final premiumCount = (premiumResult as List).length;
+
+    final pendingSync = await client
+        .from(SupabaseConstants.syncMetadataTable)
+        .select('id')
+        .eq('status', 'pending');
+    final errorSync = await client
+        .from(SupabaseConstants.syncMetadataTable)
+        .select('id')
+        .eq('status', 'error');
+
     return AdminStats(
       totalUsers: usersCount,
       activeToday: 0,
       newUsersToday: 0,
       totalBirds: birdsCount,
       activeBreedings: breedingCount,
+      premiumCount: premiumCount,
+      freeCount: usersCount - premiumCount,
+      pendingSyncCount: (pendingSync as List).length,
+      errorSyncCount: (errorSync as List).length,
     );
   }
 });
@@ -169,7 +188,7 @@ final adminUserDetailProvider = FutureProvider.family<AdminUserDetail, String>((
   await requireAdmin(ref);
   final client = ref.watch(supabaseClientProvider);
 
-  // Run all 4 independent queries in parallel
+  // Run all 9 independent queries in parallel
   final profileFuture = client
       .from(SupabaseConstants.profilesTable)
       .select()
@@ -185,6 +204,26 @@ final adminUserDetailProvider = FutureProvider.family<AdminUserDetail, String>((
       .from(SupabaseConstants.birdsTable)
       .count()
       .eq('user_id', userId);
+  final pairsCountFuture = client
+      .from(SupabaseConstants.breedingPairsTable)
+      .count()
+      .eq('user_id', userId);
+  final eggsCountFuture = client
+      .from(SupabaseConstants.eggsTable)
+      .count()
+      .eq('user_id', userId);
+  final chicksCountFuture = client
+      .from(SupabaseConstants.chicksTable)
+      .count()
+      .eq('user_id', userId);
+  final healthRecordsCountFuture = client
+      .from(SupabaseConstants.healthRecordsTable)
+      .count()
+      .eq('user_id', userId);
+  final eventsCountFuture = client
+      .from(SupabaseConstants.eventsTable)
+      .count()
+      .eq('user_id', userId);
   final logsFuture = client
       .from(SupabaseConstants.adminLogsTable)
       .select()
@@ -192,10 +231,25 @@ final adminUserDetailProvider = FutureProvider.family<AdminUserDetail, String>((
       .order('created_at', ascending: false)
       .limit(AdminConstants.userActivityLogsLimit);
 
-  final (profile, subscriptionRows, birdsCount, logsResult) = await (
+  final (
+    profile,
+    subscriptionRows,
+    birdsCount,
+    pairsCount,
+    eggsCount,
+    chicksCount,
+    healthRecordsCount,
+    eventsCount,
+    logsResult,
+  ) = await (
     profileFuture,
     subscriptionFuture,
     birdsCountFuture,
+    pairsCountFuture,
+    eggsCountFuture,
+    chicksCountFuture,
+    healthRecordsCountFuture,
+    eventsCountFuture,
     logsFuture,
   ).wait;
   final subscription = (subscriptionRows as List).isNotEmpty
@@ -231,6 +285,11 @@ final adminUserDetailProvider = FutureProvider.family<AdminUserDetail, String>((
     subscriptionStatus: subStatus,
     subscriptionUpdatedAt: subUpdatedAt,
     birdsCount: birdsCount,
+    pairsCount: pairsCount,
+    eggsCount: eggsCount,
+    chicksCount: chicksCount,
+    healthRecordsCount: healthRecordsCount,
+    eventsCount: eventsCount,
     activityLogs: (logsResult as List)
         .map((l) => AdminLog.fromJson(l as Map<String, dynamic>))
         .toList(),

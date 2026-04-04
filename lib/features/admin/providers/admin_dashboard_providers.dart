@@ -84,3 +84,70 @@ final adminSystemSettingsProvider =
       }
       return settings;
     });
+
+/// User growth data for the last 30 days (new registrations per day).
+final userGrowthDataProvider = FutureProvider<List<DailyDataPoint>>((ref) async {
+  await requireAdmin(ref);
+  final client = ref.watch(supabaseClientProvider);
+  final since = DateTime.now().subtract(const Duration(days: AdminConstants.chartPeriodDays));
+
+  final result = await client
+      .from(SupabaseConstants.profilesTable)
+      .select('created_at')
+      .gte('created_at', since.toUtc().toIso8601String())
+      .order('created_at');
+
+  final Map<String, int> grouped = {};
+  for (final row in (result as List)) {
+    final date = DateTime.parse(row['created_at'] as String);
+    final key = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+    grouped[key] = (grouped[key] ?? 0) + 1;
+  }
+
+  final points = <DailyDataPoint>[];
+  for (var i = AdminConstants.chartPeriodDays - 1; i >= 0; i--) {
+    final date = DateTime.now().subtract(Duration(days: i));
+    final key = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+    points.add(DailyDataPoint(date: date, count: grouped[key] ?? 0));
+  }
+  return points;
+});
+
+/// Top users by entity count.
+final topUsersProvider = FutureProvider<List<TopUser>>((ref) async {
+  await requireAdmin(ref);
+  final client = ref.watch(supabaseClientProvider);
+
+  final profiles = await client
+      .from(SupabaseConstants.profilesTable)
+      .select('id, full_name')
+      .eq('is_active', true)
+      .limit(200);
+
+  final List<TopUser> users = [];
+  for (final p in (profiles as List)) {
+    final userId = p['id'] as String;
+    final birdsCount = await client
+        .from(SupabaseConstants.birdsTable)
+        .count()
+        .eq('user_id', userId)
+        .eq('is_deleted', false);
+    final pairsCount = await client
+        .from(SupabaseConstants.breedingPairsTable)
+        .count()
+        .eq('user_id', userId)
+        .eq('is_deleted', false);
+    if (birdsCount > 0 || pairsCount > 0) {
+      users.add(TopUser(
+        userId: userId,
+        fullName: p['full_name'] as String? ?? '',
+        birdsCount: birdsCount,
+        pairsCount: pairsCount,
+        totalEntities: birdsCount + pairsCount,
+      ));
+    }
+  }
+
+  users.sort((a, b) => b.totalEntities.compareTo(a.totalEntities));
+  return users.take(AdminConstants.topUsersLimit).toList();
+});
