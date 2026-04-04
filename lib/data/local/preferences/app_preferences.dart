@@ -46,6 +46,7 @@ class AppPreferences {
   static const keyBlockedUserIds = 'pref_blocked_user_ids';
   static const keyStatsPeriod = 'pref_stats_period';
   static const keyStatsSpeciesFilter = 'pref_stats_species_filter';
+  static const keyBatteryWarningDismissed = 'pref_battery_warning_dismissed';
 
   // ── Theme ──
 
@@ -73,6 +74,14 @@ class AppPreferences {
   /// Set notifications enabled state.
   Future<bool> setNotificationsEnabled(bool enabled) =>
       _prefs.setBool(keyNotificationsEnabled, enabled);
+
+  /// Whether the battery optimization warning banner has been dismissed.
+  bool get batteryWarningDismissed =>
+      _prefs.getBool(keyBatteryWarningDismissed) ?? false;
+
+  /// Set battery optimization warning dismissed state.
+  Future<bool> setBatteryWarningDismissed(bool dismissed) =>
+      _prefs.setBool(keyBatteryWarningDismissed, dismissed);
 
   // ── View Preferences ──
 

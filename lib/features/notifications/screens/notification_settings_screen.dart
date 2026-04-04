@@ -1,16 +1,30 @@
+import 'dart:io' show Platform;
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_screen_title.dart';
+import 'package:budgie_breeding_tracker/data/local/preferences/app_preferences.dart';
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_providers.dart';
 import 'package:budgie_breeding_tracker/features/notifications/providers/notification_settings_providers.dart';
 
 part 'notification_settings_dnd.dart';
+
+class _BatteryWarningDismissedNotifier extends Notifier<bool> {
+  @override
+  bool build() => false;
+}
+
+final _batteryWarningDismissedProvider =
+    NotifierProvider<_BatteryWarningDismissedNotifier, bool>(
+      _BatteryWarningDismissedNotifier.new,
+    );
 
 /// Screen for managing notification preferences.
 ///
@@ -24,6 +38,19 @@ class NotificationSettingsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final settings = ref.watch(notificationToggleSettingsProvider);
     final notifier = ref.read(notificationToggleSettingsProvider.notifier);
+    final batteryWarningDismissed = ref.watch(_batteryWarningDismissedProvider);
+
+    // Load persisted dismissed state once on first build.
+    ref.listen<bool>(_batteryWarningDismissedProvider, (_, __) {});
+    if (!batteryWarningDismissed) {
+      SharedPreferences.getInstance().then((prefs) {
+        final dismissed =
+            prefs.getBool(AppPreferences.keyBatteryWarningDismissed) ?? false;
+        if (dismissed && !ref.read(_batteryWarningDismissedProvider)) {
+          ref.read(_batteryWarningDismissedProvider.notifier).state = true;
+        }
+      });
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -35,6 +62,17 @@ class NotificationSettingsScreen extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
         children: [
+          _BatteryOptimizationBanner(
+            isDismissed: batteryWarningDismissed,
+            onDismiss: () async {
+              ref.read(_batteryWarningDismissedProvider.notifier).state = true;
+              final prefs = await SharedPreferences.getInstance();
+              await prefs.setBool(
+                AppPreferences.keyBatteryWarningDismissed,
+                true,
+              );
+            },
+          ),
           const _NotificationHeader(),
           const Divider(),
           _NotificationToggle(
@@ -272,6 +310,72 @@ class _CleanupSection extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// Warning banner for Android battery optimization.
+///
+/// Shown at the top of notification settings to advise disabling
+/// battery optimization for reliable notification delivery.
+class _BatteryOptimizationBanner extends StatelessWidget {
+  const _BatteryOptimizationBanner({
+    required this.isDismissed,
+    this.onDismiss,
+  });
+
+  final bool isDismissed;
+  final VoidCallback? onDismiss;
+
+  @override
+  Widget build(BuildContext context) {
+    if (isDismissed || !Platform.isAndroid) return const SizedBox.shrink();
+
+    final theme = Theme.of(context);
+
+    return Container(
+      margin: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.lg,
+        vertical: AppSpacing.sm,
+      ),
+      padding: AppSpacing.cardPadding,
+      decoration: BoxDecoration(
+        color: theme.colorScheme.errorContainer,
+        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                LucideIcons.batteryWarning,
+                color: theme.colorScheme.onErrorContainer,
+                size: AppSpacing.xxl,
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Text(
+                  'notifications.battery_optimization_warning'.tr(),
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.colorScheme.onErrorContainer,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton(
+              onPressed: onDismiss,
+              child: Text(
+                'notifications.battery_optimization_dismiss'.tr(),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
