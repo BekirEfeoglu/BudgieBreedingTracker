@@ -10,6 +10,7 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_icon.dart';
 import '../../../router/route_names.dart';
 import '../providers/admin_providers.dart';
+import 'admin_dashboard_analytics.dart';
 import 'admin_dashboard_sections.dart';
 
 part 'admin_dashboard_content_cards.dart';
@@ -58,6 +59,19 @@ class DashboardContent extends StatelessWidget {
               ),
             ],
           ),
+          const SizedBox(height: AppSpacing.xxl),
+          DashboardPremiumConversionCard(stats: stats),
+          const SizedBox(height: AppSpacing.lg),
+          Text(
+            'admin.analytics_title'.tr(),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          const DashboardUserGrowthChart(),
+          const SizedBox(height: AppSpacing.lg),
+          const DashboardTopUsersTable(),
           const SizedBox(height: AppSpacing.xxl),
           const DashboardAlertsSection(),
           const SizedBox(height: AppSpacing.xxl),
@@ -205,6 +219,18 @@ class DashboardStatsGrid extends StatelessWidget {
               label: 'admin.active_breedings'.tr(),
               value: '${stats.activeBreedings}',
               color: AppColors.budgieYellow,
+            ),
+            DashboardStatCard(
+              icon: Semantics(label: 'admin.pending_sync'.tr(), child: const Icon(LucideIcons.refreshCw)),
+              label: 'admin.pending_sync'.tr(),
+              value: '${stats.pendingSyncCount}',
+              color: stats.pendingSyncCount > 0 ? AppColors.warning : AppColors.success,
+            ),
+            DashboardStatCard(
+              icon: Semantics(label: 'admin.error_sync'.tr(), child: const Icon(LucideIcons.alertTriangle)),
+              label: 'admin.error_sync'.tr(),
+              value: '${stats.errorSyncCount}',
+              color: stats.errorSyncCount > 0 ? AppColors.error : AppColors.success,
             ),
           ],
         );
