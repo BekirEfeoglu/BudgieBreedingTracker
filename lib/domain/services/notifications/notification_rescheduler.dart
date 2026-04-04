@@ -3,7 +3,6 @@ import 'package:budgie_breeding_tracker/data/local/database/daos/chicks_dao.dart
 import 'package:budgie_breeding_tracker/data/local/database/daos/eggs_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/incubations_dao.dart';
 import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
-import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
 import 'package:budgie_breeding_tracker/data/models/incubation_model.dart';
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_scheduler.dart';
 
@@ -35,9 +34,11 @@ class NotificationRescheduler {
   Future<void> rescheduleAll(String userId) async {
     AppLogger.info('[NotificationRescheduler] Starting rescheduleAll for $userId');
 
-    await _rescheduleIncubations(userId);
-    await _rescheduleEggs(userId);
-    await _rescheduleChicks(userId);
+    await Future.wait([
+      _rescheduleIncubations(userId),
+      _rescheduleEggs(userId),
+      _rescheduleChicks(userId),
+    ]);
 
     AppLogger.info('[NotificationRescheduler] Completed rescheduleAll for $userId');
   }

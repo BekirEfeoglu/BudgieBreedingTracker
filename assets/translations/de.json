@@ -979,6 +979,7 @@
     "time_days_ago": "Vor {} Tagen",
     "battery_optimization_warning": "Damit Benachrichtigungen rechtzeitig ankommen, deaktivieren Sie die Akkuoptimierung fuer diese App in den Geraeteeinstellungen.",
     "battery_optimization_dismiss": "Nicht mehr anzeigen",
+    "battery_optimization_steps": "Einstellungen > Apps > BudgieTrack > Akku > Uneingeschraenkt",
     "egg_label": "Ei {}"
   },
   "premium": {

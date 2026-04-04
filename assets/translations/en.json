@@ -979,6 +979,7 @@
     "time_days_ago": "{} days ago",
     "battery_optimization_warning": "To receive notifications on time, disable battery optimization for this app in your device settings.",
     "battery_optimization_dismiss": "Don't show again",
+    "battery_optimization_steps": "Settings > Apps > BudgieTrack > Battery > Unrestricted",
     "egg_label": "Egg {}"
   },
   "premium": {

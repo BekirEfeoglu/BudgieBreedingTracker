@@ -364,6 +364,13 @@ class _BatteryOptimizationBanner extends StatelessWidget {
               ),
             ],
           ),
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            'notifications.battery_optimization_steps'.tr(),
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onErrorContainer.withValues(alpha: 0.8),
+            ),
+          ),
           const SizedBox(height: AppSpacing.sm),
           Align(
             alignment: Alignment.centerRight,

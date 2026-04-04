@@ -979,6 +979,7 @@
     "time_days_ago": "{} gün önce",
     "battery_optimization_warning": "Bildirimlerin zamaninda gelmesi icin cihaz ayarlarindan bu uygulama icin pil optimizasyonunu kapatin.",
     "battery_optimization_dismiss": "Bir daha gosterme",
+    "battery_optimization_steps": "Ayarlar > Uygulamalar > BudgieTrack > Pil > Kisitlanmamis",
     "egg_label": "Yumurta {}"
   },
   "premium": {
