@@ -114,40 +114,55 @@ final userGrowthDataProvider = FutureProvider<List<DailyDataPoint>>((ref) async 
 });
 
 /// Top users by entity count.
+/// Uses RPC for efficiency; falls back to client-side if RPC unavailable.
 final topUsersProvider = FutureProvider<List<TopUser>>((ref) async {
   await requireAdmin(ref);
   final client = ref.watch(supabaseClientProvider);
 
-  final profiles = await client
-      .from(SupabaseConstants.profilesTable)
-      .select('id, full_name')
-      .eq('is_active', true)
-      .limit(200);
+  try {
+    // Try RPC first (single query, server-side aggregation)
+    final result = await client.rpc('admin_top_users', params: {
+      'p_limit': AdminConstants.topUsersLimit,
+    });
+    return (result as List).map((row) => TopUser(
+      userId: row['user_id'] as String,
+      fullName: row['full_name'] as String? ?? '',
+      birdsCount: (row['birds_count'] as num?)?.toInt() ?? 0,
+      pairsCount: (row['pairs_count'] as num?)?.toInt() ?? 0,
+      totalEntities: (row['total_entities'] as num?)?.toInt() ?? 0,
+    )).toList();
+  } catch (_) {
+    // Fallback: fetch counts per user (N+1 but works without RPC)
+    final profiles = await client
+        .from(SupabaseConstants.profilesTable)
+        .select('id, full_name')
+        .eq('is_active', true)
+        .limit(100);
 
-  final List<TopUser> users = [];
-  for (final p in (profiles as List)) {
-    final userId = p['id'] as String;
-    final birdsCount = await client
-        .from(SupabaseConstants.birdsTable)
-        .count()
-        .eq('user_id', userId)
-        .eq('is_deleted', false);
-    final pairsCount = await client
-        .from(SupabaseConstants.breedingPairsTable)
-        .count()
-        .eq('user_id', userId)
-        .eq('is_deleted', false);
-    if (birdsCount > 0 || pairsCount > 0) {
-      users.add(TopUser(
-        userId: userId,
-        fullName: p['full_name'] as String? ?? '',
-        birdsCount: birdsCount,
-        pairsCount: pairsCount,
-        totalEntities: birdsCount + pairsCount,
-      ));
+    final List<TopUser> users = [];
+    for (final p in (profiles as List)) {
+      final userId = p['id'] as String;
+      final birdsCount = await client
+          .from(SupabaseConstants.birdsTable)
+          .count()
+          .eq('user_id', userId)
+          .eq('is_deleted', false);
+      final pairsCount = await client
+          .from(SupabaseConstants.breedingPairsTable)
+          .count()
+          .eq('user_id', userId)
+          .eq('is_deleted', false);
+      if (birdsCount > 0 || pairsCount > 0) {
+        users.add(TopUser(
+          userId: userId,
+          fullName: p['full_name'] as String? ?? '',
+          birdsCount: birdsCount,
+          pairsCount: pairsCount,
+          totalEntities: birdsCount + pairsCount,
+        ));
+      }
     }
+    users.sort((a, b) => b.totalEntities.compareTo(a.totalEntities));
+    return users.take(AdminConstants.topUsersLimit).toList();
   }
-
-  users.sort((a, b) => b.totalEntities.compareTo(a.totalEntities));
-  return users.take(AdminConstants.topUsersLimit).toList();
 });
