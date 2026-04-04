@@ -13,6 +13,7 @@ import '../../../domain/services/sync/sync_providers.dart';
 import '../providers/admin_actions_provider.dart';
 import '../../notifications/providers/action_feedback_providers.dart';
 import '../providers/admin_providers.dart';
+import 'admin_database_maintenance.dart';
 import 'admin_database_table_widgets.dart';
 
 part 'admin_database_action_button.dart';
@@ -55,6 +56,19 @@ class DatabaseContent extends ConsumerWidget {
           DatabaseSummaryCard(tableCount: tables.length, totalRows: totalRows),
           const SizedBox(height: AppSpacing.lg),
           const DatabaseGlobalActionsBar(),
+          const SizedBox(height: AppSpacing.xxl),
+          Text(
+            'admin.maintenance_tools'.tr(),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          const DatabaseSyncStatusSection(),
+          const SizedBox(height: AppSpacing.md),
+          const DatabaseSoftDeleteSection(),
+          const SizedBox(height: AppSpacing.md),
+          const DatabaseStorageSection(),
           const SizedBox(height: AppSpacing.lg),
           Text(
             'admin.tables'.tr(),
