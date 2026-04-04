@@ -38,4 +38,36 @@ abstract final class AdminConstants {
   // UI
   static const double gridAspectRatioWide = 1.4;
   static const double gridAspectRatioNarrow = 1.15;
+
+  // Analytics
+  static const int chartPeriodDays = 30;
+  static const int topUsersLimit = 5;
+
+  // Maintenance
+  static const int defaultCleanupDays = 30;
+  static const List<int> cleanupDayOptions = [7, 14, 30, 60, 90];
+
+  // Soft-deletable tables (user data tables with is_deleted column)
+  static const List<String> softDeletableTables = [
+    'birds',
+    'breeding_pairs',
+    'nests',
+    'clutches',
+    'eggs',
+    'chicks',
+    'events',
+    'event_reminders',
+    'health_records',
+    'notifications',
+    'photos',
+  ];
+
+  // Storage buckets
+  static const List<String> storageBuckets = [
+    'bird-photos',
+    'egg-photos',
+    'chick-photos',
+    'avatars',
+    'backups',
+  ];
 }
