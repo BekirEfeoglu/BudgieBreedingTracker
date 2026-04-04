@@ -383,3 +383,36 @@ abstract class TopUser with _$TopUser {
   factory TopUser.fromJson(Map<String, dynamic> json) =>
       _$TopUserFromJson(json);
 }
+
+/// User activity entry for dashboard feed.
+@freezed
+abstract class UserActivity with _$UserActivity {
+  const UserActivity._();
+  const factory UserActivity({
+    required String userId,
+    @Default('') String fullName,
+    String? avatarUrl,
+    required String entityType,
+    @Default(0) int count,
+    required DateTime latestAt,
+  }) = _UserActivity;
+
+  factory UserActivity.fromJson(Map<String, dynamic> json) =>
+      _$UserActivityFromJson(json);
+}
+
+/// Error summary for dashboard card.
+@freezed
+abstract class ErrorSummary with _$ErrorSummary {
+  const ErrorSummary._();
+  const factory ErrorSummary({
+    @Default(0) int totalErrors,
+    @Default(0) int highSeverity,
+    @Default(0) int mediumSeverity,
+    @Default(0) int lowSeverity,
+    @Default([]) List<SecurityEvent> recentEvents,
+  }) = _ErrorSummary;
+
+  factory ErrorSummary.fromJson(Map<String, dynamic> json) =>
+      _$ErrorSummaryFromJson(json);
+}

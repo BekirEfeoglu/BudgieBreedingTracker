@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:uuid/uuid.dart';
 
 import '../../../core/constants/supabase_constants.dart';
 import '../../../core/utils/logger.dart';
@@ -257,6 +258,87 @@ class AdminActionsNotifier extends Notifier<AdminActionState> {
       );
     } catch (e, st) {
       AppLogger.error('AdminActions.resetStuckSyncRecords', e, st);
+      state = state.copyWith(
+        isLoading: false,
+        error: 'admin.action_error'.tr(),
+      );
+    }
+  }
+
+  // ── Notification Operations ──────────────────────────
+
+  /// Send an in-app notification to a single user.
+  Future<void> sendNotification(String targetUserId, String title, String body) async {
+    state = state.copyWith(isLoading: true, error: null, isSuccess: false);
+    try {
+      await requireAdmin(ref);
+      final client = ref.read(supabaseClientProvider);
+
+      await client.from(SupabaseConstants.notificationsTable).insert({
+        'id': const Uuid().v4(),
+        'user_id': targetUserId,
+        'title': title,
+        'body': body,
+        'type': 'custom',
+        'priority': 'normal',
+        'read': false,
+      });
+
+      await logAdminAction(
+        client,
+        ref.read(currentUserIdProvider),
+        'notification_sent',
+        targetUserId: targetUserId,
+        details: {'title': title},
+      );
+
+      state = state.copyWith(
+        isLoading: false,
+        isSuccess: true,
+        successMessage: 'admin.notification_sent'.tr(),
+      );
+    } catch (e, st) {
+      AppLogger.error('AdminActions.sendNotification', e, st);
+      state = state.copyWith(
+        isLoading: false,
+        error: 'admin.action_error'.tr(),
+      );
+    }
+  }
+
+  /// Send an in-app notification to multiple users.
+  Future<void> sendBulkNotification(List<String> userIds, String title, String body) async {
+    state = state.copyWith(isLoading: true, error: null, isSuccess: false);
+    try {
+      await requireAdmin(ref);
+      final client = ref.read(supabaseClientProvider);
+
+      final rows = userIds.map((uid) => {
+        'id': const Uuid().v4(),
+        'user_id': uid,
+        'title': title,
+        'body': body,
+        'type': 'custom',
+        'priority': 'normal',
+        'read': false,
+      }).toList();
+
+      await client.from(SupabaseConstants.notificationsTable).insert(rows);
+
+      await logAdminAction(
+        client,
+        ref.read(currentUserIdProvider),
+        'bulk_notification_sent',
+        details: {'title': title, 'count': userIds.length},
+      );
+
+      state = state.copyWith(
+        isLoading: false,
+        isSuccess: true,
+        successMessage: 'admin.notification_sent_bulk'.tr(args: ['${userIds.length}']),
+      );
+    } catch (e, st) {
+      AppLogger.error('AdminActions.sendBulkNotification', e, st);
       state = state.copyWith(
         isLoading: false,
         error: 'admin.action_error'.tr(),

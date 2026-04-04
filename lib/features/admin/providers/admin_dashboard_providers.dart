@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/constants/supabase_constants.dart';
+import '../../../core/enums/admin_enums.dart';
 import '../../auth/providers/auth_providers.dart';
 import '../constants/admin_constants.dart';
 import 'admin_auth_utils.dart';
@@ -165,4 +166,117 @@ final topUsersProvider = FutureProvider<List<TopUser>>((ref) async {
     users.sort((a, b) => b.totalEntities.compareTo(a.totalEntities));
     return users.take(AdminConstants.topUsersLimit).toList();
   }
+});
+
+/// Recent user activity in last 24 hours (entity creation grouped by user).
+final recentUserActivityProvider = FutureProvider<List<UserActivity>>((ref) async {
+  await requireAdmin(ref);
+  final client = ref.watch(supabaseClientProvider);
+  final since = DateTime.now().subtract(const Duration(hours: 24)).toUtc().toIso8601String();
+
+  Future<List<Map<String, dynamic>>> fetchRecent(String table) async {
+    final result = await client
+        .from(table)
+        .select('user_id, created_at')
+        .gte('created_at', since)
+        .eq('is_deleted', false);
+    return (result as List).cast<Map<String, dynamic>>();
+  }
+
+  final (birds, pairs, eggs, chicks) = await (
+    fetchRecent(SupabaseConstants.birdsTable),
+    fetchRecent(SupabaseConstants.breedingPairsTable),
+    fetchRecent(SupabaseConstants.eggsTable),
+    fetchRecent(SupabaseConstants.chicksTable),
+  ).wait;
+
+  // Group by user + entity type
+  final Map<String, UserActivity> grouped = {};
+  void process(List<Map<String, dynamic>> rows, String entityType) {
+    for (final row in rows) {
+      final userId = row['user_id'] as String;
+      final createdAt = DateTime.parse(row['created_at'] as String);
+      final key = '$userId:$entityType';
+      final existing = grouped[key];
+      if (existing != null) {
+        grouped[key] = existing.copyWith(
+          count: existing.count + 1,
+          latestAt: createdAt.isAfter(existing.latestAt) ? createdAt : existing.latestAt,
+        );
+      } else {
+        grouped[key] = UserActivity(
+          userId: userId,
+          entityType: entityType,
+          count: 1,
+          latestAt: createdAt,
+        );
+      }
+    }
+  }
+
+  process(birds, 'bird');
+  process(pairs, 'breeding_pair');
+  process(eggs, 'egg');
+  process(chicks, 'chick');
+
+  // Enrich with user names
+  final userIds = grouped.values.map((a) => a.userId).toSet();
+  final profileRows = await client
+      .from(SupabaseConstants.profilesTable)
+      .select('id, full_name, avatar_url')
+      .inFilter('id', userIds.toList());
+  final profiles = <String, Map<String, dynamic>>{};
+  for (final p in (profileRows as List)) {
+    profiles[p['id'] as String] = p as Map<String, dynamic>;
+  }
+
+  final activities = grouped.values.map((a) {
+    final profile = profiles[a.userId];
+    return a.copyWith(
+      fullName: profile?['full_name'] as String? ?? '',
+      avatarUrl: profile?['avatar_url'] as String?,
+    );
+  }).toList();
+
+  activities.sort((a, b) => b.latestAt.compareTo(a.latestAt));
+  return activities.take(20).toList();
+});
+
+/// Error summary for last 24 hours.
+final recentErrorsSummaryProvider = FutureProvider<ErrorSummary>((ref) async {
+  await requireAdmin(ref);
+  final client = ref.watch(supabaseClientProvider);
+  final since = DateTime.now().subtract(const Duration(hours: 24)).toUtc().toIso8601String();
+
+  final eventsResult = await client
+      .from(SupabaseConstants.securityEventsTable)
+      .select()
+      .gte('created_at', since)
+      .order('created_at', ascending: false);
+
+  final events = (eventsResult as List)
+      .map((row) => SecurityEvent.fromJson(row as Map<String, dynamic>))
+      .toList();
+
+  int high = 0, medium = 0, low = 0;
+  for (final e in events) {
+    switch (e.severity) {
+      case SecuritySeverityLevel.high:
+        high++;
+      case SecuritySeverityLevel.medium:
+        medium++;
+      case SecuritySeverityLevel.low:
+        low++;
+      case SecuritySeverityLevel.unknown:
+        low++;
+    }
+  }
+
+  return ErrorSummary(
+    totalErrors: events.length,
+    highSeverity: high,
+    mediumSeverity: medium,
+    lowSeverity: low,
+    recentEvents: events.take(3).toList(),
+  );
 });
