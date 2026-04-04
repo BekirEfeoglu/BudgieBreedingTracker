@@ -7,6 +7,7 @@ import '../../../core/widgets/error_state.dart';
 import '../../../core/widgets/loading_state.dart';
 import '../providers/admin_actions_provider.dart';
 import '../providers/admin_providers.dart';
+import '../widgets/admin_notification_sheet.dart';
 import '../widgets/admin_user_detail_widgets.dart';
 
 /// Detail screen for a specific user in admin panel.
@@ -56,6 +57,10 @@ class _AdminUserDetailScreenState extends ConsumerState<AdminUserDetailScreen> {
                         : 'admin.activate_user'.tr(),
                   ),
                 ),
+                PopupMenuItem(
+                  value: 'send_notification',
+                  child: Text('admin.send_notification'.tr()),
+                ),
               ];
             },
           ),
@@ -101,6 +106,14 @@ class _AdminUserDetailScreenState extends ConsumerState<AdminUserDetailScreen> {
             .read(adminActionsProvider.notifier)
             .toggleUserActive(widget.userId, !currentlyActive);
       }
+    }
+    if (action == 'send_notification') {
+      if (!mounted) return;
+      await showAdminNotificationSheet(
+        context,
+        ref: ref,
+        targetUserId: widget.userId,
+      );
     }
   }
 

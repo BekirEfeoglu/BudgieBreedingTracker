@@ -112,6 +112,17 @@ class _BulkActionBarState extends ConsumerState<_BulkActionBar> {
     );
   }
 
+  Future<void> _onSendNotification() async {
+    final result = await showAdminNotificationSheet(
+      context,
+      ref: ref,
+      targetUserIds: widget.selectedIds.toList(),
+    );
+    if (result == true && mounted) {
+      widget.onClearSelection();
+    }
+  }
+
   Future<void> _onExport() async {
     final confirmed = await showConfirmDialog(
       context,
@@ -213,6 +224,12 @@ class _BulkActionBarState extends ConsumerState<_BulkActionBar> {
                       avatar: const Icon(LucideIcons.starOff, size: 16),
                       label: Text('admin.bulk_revoke_premium'.tr()),
                       onPressed: _onRevokePremium,
+                    ),
+                    const SizedBox(width: AppSpacing.sm),
+                    ActionChip(
+                      avatar: const Icon(LucideIcons.bell, size: 16),
+                      label: Text('admin.bulk_send_notification'.tr()),
+                      onPressed: _onSendNotification,
                     ),
                     const SizedBox(width: AppSpacing.sm),
                     ActionChip(
