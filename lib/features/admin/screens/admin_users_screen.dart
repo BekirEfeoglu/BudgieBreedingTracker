@@ -117,6 +117,46 @@ class _AdminUsersScreenState extends ConsumerState<AdminUsersScreen> {
     ref.read(adminUserSelectionProvider.notifier).clear();
   }
 
+  Future<void> _handleQuickAction(String action, String userId) async {
+    switch (action) {
+      case 'activate':
+        final confirmed = await showConfirmDialog(
+          context,
+          title: 'admin.confirm_activate'.tr(),
+          message: 'admin.confirm_activate_desc'.tr(),
+        );
+        if (confirmed != true) return;
+        await ref.read(adminActionsProvider.notifier).toggleUserActive(userId, true);
+      case 'deactivate':
+        final confirmed = await showConfirmDialog(
+          context,
+          title: 'admin.confirm_deactivate'.tr(),
+          message: 'admin.confirm_deactivate_desc'.tr(),
+          isDestructive: true,
+        );
+        if (confirmed != true) return;
+        await ref.read(adminActionsProvider.notifier).toggleUserActive(userId, false);
+      case 'grant_premium':
+        final confirmed = await showConfirmDialog(
+          context,
+          title: 'admin.confirm_grant_premium'.tr(),
+          message: 'admin.confirm_grant_premium_desc'.tr(),
+        );
+        if (confirmed != true) return;
+        await ref.read(adminActionsProvider.notifier).grantPremium(userId);
+      case 'revoke_premium':
+        final confirmed = await showConfirmDialog(
+          context,
+          title: 'admin.confirm_revoke_premium'.tr(),
+          message: 'admin.confirm_revoke_premium_desc'.tr(),
+          isDestructive: true,
+        );
+        if (confirmed != true) return;
+        await ref.read(adminActionsProvider.notifier).revokePremium(userId);
+    }
+    if (mounted) _refreshUsers();
+  }
+
   List<AdminUser> _applyFiltersAndSort(List<AdminUser> users) {
     final filtered = switch (_statusFilter) {
       _UserStatusFilter.active => users.where((user) => user.isActive).toList(),
@@ -163,6 +203,17 @@ class _AdminUsersScreenState extends ConsumerState<AdminUsersScreen> {
         AdminUsersQuery(searchTerm: _query, limit: limit),
       ),
     );
+
+    ref.listen<AdminActionState>(adminActionsProvider, (_, state) {
+      if (state.isSuccess) {
+        ref.read(adminActionsProvider.notifier).reset();
+      }
+      if (state.error != null && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(state.error!)),
+        );
+      }
+    });
 
     final selectedIds = ref.watch(adminUserSelectionProvider);
     final isSelectionMode = selectedIds.isNotEmpty;
@@ -247,6 +298,7 @@ class _AdminUsersScreenState extends ConsumerState<AdminUsersScreen> {
                         onToggleSelection: _toggleSelection,
                         selectedIds: selectedIds,
                         isSelectionMode: isSelectionMode,
+                        onQuickAction: _handleQuickAction,
                         onLoadMore: () {
                           ref.read(adminUsersLimitProvider.notifier).state +=
                               AdminConstants.usersPageSize;

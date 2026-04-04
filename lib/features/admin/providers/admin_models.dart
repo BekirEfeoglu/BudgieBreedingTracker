@@ -53,6 +53,8 @@ abstract class AdminUser with _$AdminUser {
     String? avatarUrl,
     required DateTime createdAt,
     @Default(true) bool isActive,
+    @Default(false) bool isPremium,
+    String? role,
   }) = _AdminUser;
 
   factory AdminUser.fromJson(Map<String, dynamic> json) =>

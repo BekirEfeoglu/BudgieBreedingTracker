@@ -147,7 +147,7 @@ final adminUsersProvider =
 
   var request = client
       .from(SupabaseConstants.profilesTable)
-      .select('id, email, full_name, avatar_url, created_at, is_active');
+      .select('id, email, full_name, avatar_url, created_at, is_active, is_premium, role');
 
   if (query.searchTerm.isNotEmpty) {
     // Sanitize PostgREST special characters to prevent filter injection.

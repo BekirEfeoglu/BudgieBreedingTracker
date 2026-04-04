@@ -61,6 +61,7 @@ class _UsersList extends StatelessWidget {
   final Set<String> selectedIds;
   final bool isSelectionMode;
   final void Function(String userId) onToggleSelection;
+  final void Function(String action, String userId)? onQuickAction;
 
   const _UsersList({
     required this.users,
@@ -72,6 +73,7 @@ class _UsersList extends StatelessWidget {
     this.onLoadMore,
     this.selectedIds = const {},
     this.isSelectionMode = false,
+    this.onQuickAction,
   });
 
   @override
@@ -130,6 +132,7 @@ class _UsersList extends StatelessWidget {
             isSelected: selectedIds.contains(users[index].id),
             isSelectionMode: isSelectionMode,
             onSelectionToggle: () => onToggleSelection(users[index].id),
+            onQuickAction: onQuickAction,
           );
         },
       ),
