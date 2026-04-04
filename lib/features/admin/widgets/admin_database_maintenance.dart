@@ -116,7 +116,7 @@ class _SyncStatusBody extends ConsumerWidget {
   Future<void> _resetStuck(BuildContext context, WidgetRef ref) async {
     final confirmed = await showConfirmDialog(
       context,
-      title: 'admin.reset_stuck_title'.tr(),
+      title: 'admin.reset_stuck'.tr(),
       message: 'admin.reset_stuck_confirm'.tr(),
       isDestructive: true,
     );
@@ -201,7 +201,7 @@ class _DatabaseSoftDeleteSectionState
               children: [
                 Expanded(
                   child: Text(
-                    'admin.soft_deleted'.tr(),
+                    'admin.soft_delete_cleanup'.tr(),
                     style: theme.textTheme.titleSmall?.copyWith(
                       fontWeight: FontWeight.w600,
                     ),
@@ -216,7 +216,7 @@ class _DatabaseSoftDeleteSectionState
                         (d) => DropdownMenuItem(
                           value: d,
                           child: Text(
-                            '$d ${'admin.days'.tr()}',
+                            '$d ${'admin.days_label'.tr()}',
                             style: theme.textTheme.bodySmall,
                           ),
                         ),
@@ -263,7 +263,7 @@ class _SoftDeleteBody extends ConsumerWidget {
 
     if (totalOld == 0) {
       return Text(
-        'admin.no_deleted_records'.tr(),
+        'admin.no_soft_deleted'.tr(),
         style: theme.textTheme.bodyMedium?.copyWith(
           color: AppColors.success,
         ),
@@ -311,7 +311,7 @@ class _SoftDeleteBody extends ConsumerWidget {
               backgroundColor: AppColors.error,
             ),
             icon: const Icon(LucideIcons.trash2, size: 16),
-            label: Text('admin.clean_old_records'.tr()),
+            label: Text('admin.clean_soft_deleted'.tr()),
           ),
         ),
       ],
@@ -321,8 +321,8 @@ class _SoftDeleteBody extends ConsumerWidget {
   Future<void> _cleanOldRecords(BuildContext context, WidgetRef ref) async {
     final confirmed = await showConfirmDialog(
       context,
-      title: 'admin.clean_old_records_title'.tr(),
-      message: 'admin.clean_old_records_confirm'.tr(),
+      title: 'admin.clean_soft_deleted'.tr(),
+      message: 'admin.clean_soft_deleted_confirm'.tr(),
       isDestructive: true,
     );
     if (confirmed != true) return;
@@ -393,7 +393,7 @@ class _BucketRow extends StatelessWidget {
             child: Text(usage.bucketName, style: theme.textTheme.bodyMedium),
           ),
           Text(
-            '${usage.fileCount} ${'admin.files'.tr()}',
+            '${usage.fileCount} ${'admin.file_count'.tr()}',
             style: theme.textTheme.bodySmall?.copyWith(
               color: theme.colorScheme.onSurfaceVariant,
             ),
