@@ -193,6 +193,10 @@ class NotificationService with NotificationPermissionHandler {
       androidScheduleMode: scheduleMode,
       payload: payload,
     );
+
+    AppLogger.info(
+      '[NotificationService] Scheduled: id=$id, at=$scheduledDate, channel=$channelId',
+    );
   }
 
   /// Builds platform-specific notification details with localized channel names.
@@ -220,6 +224,7 @@ class NotificationService with NotificationPermissionHandler {
   /// Cancels a specific notification by [id].
   Future<void> cancel(int id) async {
     await _plugin.cancel(id: id);
+    AppLogger.debug('[NotificationService] Cancelled notification id=$id');
   }
 
   /// Cancels all scheduled and displayed notifications.
