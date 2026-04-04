@@ -1,7 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
+import 'package:budgie_breeding_tracker/data/local/database/dao_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_rate_limiter.dart';
+import 'package:budgie_breeding_tracker/domain/services/notifications/notification_rescheduler.dart';
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_scheduler.dart';
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_service.dart';
 import 'package:budgie_breeding_tracker/router/app_router.dart';
@@ -140,4 +142,19 @@ final notificationSchedulerProvider = Provider<NotificationScheduler>((ref) {
   final service = ref.watch(notificationServiceProvider);
   final rateLimiter = ref.watch(notificationRateLimiterProvider);
   return NotificationScheduler(service, rateLimiter);
+});
+
+/// Provides the [NotificationRescheduler] for app-start re-scheduling.
+///
+/// Queries active entities from local DAOs and re-schedules their
+/// notifications to survive device reboots and battery optimization.
+final notificationReschedulerProvider = Provider<NotificationRescheduler>((
+  ref,
+) {
+  return NotificationRescheduler(
+    incubationsDao: ref.watch(incubationsDaoProvider),
+    eggsDao: ref.watch(eggsDaoProvider),
+    chicksDao: ref.watch(chicksDaoProvider),
+    scheduler: ref.watch(notificationSchedulerProvider),
+  );
 });

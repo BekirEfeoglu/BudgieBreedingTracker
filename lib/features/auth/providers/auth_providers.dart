@@ -115,6 +115,10 @@ final appInitializationProvider = FutureProvider<void>((ref) async {
   // Process any notification payloads that arrived before router was ready
   processPendingPayloads(ref);
 
+  // Re-schedule active notifications (survives reboot + battery kill)
+  // Deferred to avoid blocking splash — runs in background
+  Future.microtask(() => _rescheduleNotifications(ref, userId));
+
   // Step 3: Defer full data sync to background — don't block splash
   // This runs AFTER the splash resolves and home screen renders.
   Future.microtask(() => _initDataSync(ref, userId));
@@ -225,6 +229,21 @@ Future<void> _initNotifications(Ref ref) async {
     await ref.read(rateLimiterReadyProvider.future);
   } catch (e) {
     AppLogger.warning('[AppInit] Rate limiter prefs load failed: $e');
+  }
+}
+
+/// Re-schedules all active notifications on app startup.
+///
+/// Runs in background (via Future.microtask) to avoid blocking splash.
+/// Queries active incubations, incubating eggs, and unweaned chicks
+/// from local DAOs and re-registers their alarms with the OS.
+Future<void> _rescheduleNotifications(Ref ref, String userId) async {
+  try {
+    final rescheduler = ref.read(notificationReschedulerProvider);
+    await rescheduler.rescheduleAll(userId);
+  } catch (e, st) {
+    AppLogger.warning('[AppInit] Notification reschedule failed: $e');
+    Sentry.captureException(e, stackTrace: st);
   }
 }
 
