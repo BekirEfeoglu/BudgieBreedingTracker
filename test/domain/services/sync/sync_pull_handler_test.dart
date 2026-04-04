@@ -75,6 +75,7 @@ void main() {
         lastSyncedAt: any(named: 'lastSyncedAt'),
       ),
     ).thenAnswer((_) async {});
+    when(() => mockIncubationRepository.lastPullConflicts).thenReturn([]);
 
     when(
       () => mockEggRepository.pull(

@@ -173,14 +173,12 @@ void main() {
         });
 
         final result = await client.generateReport(
-          userId: 'u1',
           reportType: 'summary',
           options: {'range': 'month'},
         );
 
         expect(result.success, isTrue);
         expect(capturedBody, {
-          'user_id': 'u1',
           'report_type': 'summary',
           'options': {'range': 'month'},
         });

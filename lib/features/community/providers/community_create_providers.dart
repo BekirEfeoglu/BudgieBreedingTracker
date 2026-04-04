@@ -43,6 +43,10 @@ class CreatePostState {
 // ---------------------------------------------------------------------------
 
 class CreatePostNotifier extends Notifier<CreatePostState> {
+  /// Minimum interval between post creations to prevent spam.
+  static const _postCooldown = Duration(seconds: 30);
+  DateTime? _lastPostAt;
+
   @override
   CreatePostState build() => const CreatePostState();
 
@@ -61,6 +65,35 @@ class CreatePostNotifier extends Notifier<CreatePostState> {
         state = state.copyWith(
           isLoading: false,
           error: 'community.not_authenticated'.tr(),
+        );
+        return;
+      }
+
+      // Client-side throttle — prevent rapid post creation
+      final now = DateTime.now();
+      if (_lastPostAt != null &&
+          now.difference(_lastPostAt!) < _postCooldown) {
+        state = state.copyWith(
+          isLoading: false,
+          error: 'community.post_cooldown'.tr(),
+        );
+        return;
+      }
+
+      // Content length validation (server-consistent limits)
+      const maxTitleLength = 200;
+      const maxContentLength = 5000;
+      if (title != null && title.trim().length > maxTitleLength) {
+        state = state.copyWith(
+          isLoading: false,
+          error: 'community.content_too_long'.tr(),
+        );
+        return;
+      }
+      if (content.trim().length > maxContentLength) {
+        state = state.copyWith(
+          isLoading: false,
+          error: 'community.content_too_long'.tr(),
         );
         return;
       }
@@ -138,6 +171,7 @@ class CreatePostNotifier extends Notifier<CreatePostState> {
       await repo.create(data);
 
       ref.read(communityFeedProvider.notifier).refresh();
+      _lastPostAt = DateTime.now();
 
       state = state.copyWith(isLoading: false, isSuccess: true);
     } catch (e, st) {

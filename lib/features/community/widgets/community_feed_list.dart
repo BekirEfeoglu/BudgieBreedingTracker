@@ -160,6 +160,7 @@ class _CommunityFeedListState extends ConsumerState<CommunityFeedList> {
       RefreshIndicator(
       onRefresh: () async {
         await ref.read(communityFeedProvider.notifier).refresh();
+        if (!mounted) return;
         setState(() {
           _newPostCount = 0;
           _lastSeenCount = ref.read(communityFeedProvider).posts.length;

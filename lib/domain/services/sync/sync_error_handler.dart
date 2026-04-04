@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/data/local/database/dao_providers.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
@@ -44,9 +45,36 @@ class SyncErrorHandler {
 
   /// Removes sync metadata records that have exceeded max retries and
   /// are older than 24 hours. These records are considered unrecoverable.
+  ///
+  /// Reports discarded records to Sentry before deletion so that data loss
+  /// events are visible in production monitoring.
   /// Returns the number of cleaned up records.
   Future<int> cleanupUnrecoverableErrors(String userId) async {
     final syncDao = _ref.read(syncMetadataDaoProvider);
+
+    // Fetch details before deleting so we can report to Sentry
+    final staleRecords = await syncDao.getStaleErrors(
+      userId,
+      const Duration(hours: 24),
+      RetryScheduler.maxRetries,
+    );
+
+    if (staleRecords.isNotEmpty) {
+      // Group by table for a compact Sentry message
+      final grouped = <String, List<String>>{};
+      for (final record in staleRecords) {
+        (grouped[record.table] ??= []).add(record.recordId ?? 'unknown');
+      }
+
+      Sentry.captureException(
+        Exception(
+          'Discarding ${staleRecords.length} unrecoverable sync records: '
+          '${grouped.entries.map((e) => '${e.key}(${e.value.length})').join(', ')}',
+        ),
+        stackTrace: StackTrace.current,
+      );
+    }
+
     final count = await syncDao.deleteStaleErrors(
       userId,
       const Duration(hours: 24),

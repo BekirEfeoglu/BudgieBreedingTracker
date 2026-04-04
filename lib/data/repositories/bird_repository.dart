@@ -112,9 +112,11 @@ class BirdRepository extends BaseRepository<Bird>
         final pendingIds = await _syncDao.getPendingRecordIds(userId);
         final localMap = {for (final item in localItems) item.id: item};
 
-        // Detect conflicts before overwriting local data
+        // Detect real conflicts: a conflict is when a local record has
+        // PENDING sync metadata AND the remote record overwrites it.
+        // Normal server updates (no pending local changes) are not conflicts.
         for (final remoteBird in remote) {
-          if (pendingIds.contains(remoteBird.id)) continue;
+          if (!pendingIds.contains(remoteBird.id)) continue;
           final localBird = localMap[remoteBird.id];
           if (localBird == null) continue;
           if (localBird.updatedAt != null &&

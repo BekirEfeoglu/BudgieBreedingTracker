@@ -5,7 +5,6 @@ import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:budgie_breeding_tracker/data/models/profile_model.dart';
 import 'package:budgie_breeding_tracker/features/profile/providers/profile_providers.dart';
 import 'package:budgie_breeding_tracker/features/profile/widgets/profile_header.dart';
-import 'package:budgie_breeding_tracker/features/profile/widgets/profile_completion_indicator.dart';
 import 'package:budgie_breeding_tracker/features/profile/widgets/avatar_widget.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
@@ -39,9 +38,6 @@ ProfileStats _fakeStats({
   totalChicks: totalChicks,
 );
 
-ProfileCompletion _fakeCompletion({double percentage = 0.5}) =>
-    ProfileCompletion(percentage: percentage, items: const []);
-
 Widget _buildSubject({
   Profile? profile,
   String displayName = 'Test User',
@@ -50,7 +46,6 @@ Widget _buildSubject({
   VoidCallback? onEditAvatar,
   bool isAvatarUploading = false,
   ProfileStats? stats,
-  ProfileCompletion? completion,
 }) {
   return MaterialApp(
     home: Scaffold(
@@ -63,7 +58,6 @@ Widget _buildSubject({
           onEditAvatar: onEditAvatar ?? () {},
           isAvatarUploading: isAvatarUploading,
           stats: stats,
-          completion: completion,
         ),
       ),
     ),
@@ -79,7 +73,6 @@ Future<void> _pumpHeader(
   VoidCallback? onEditAvatar,
   bool isAvatarUploading = false,
   ProfileStats? stats,
-  ProfileCompletion? completion,
   Duration? animationDuration,
 }) async {
   await pumpLocalizedApp(
@@ -92,7 +85,6 @@ Future<void> _pumpHeader(
       onEditAvatar: onEditAvatar,
       isAvatarUploading: isAvatarUploading,
       stats: stats,
-      completion: completion,
     ),
     settle: false,
   );
@@ -121,11 +113,6 @@ void main() {
     testWidgets('shows AvatarWidget', (tester) async {
       await _pumpHeader(tester);
       expect(find.byType(AvatarWidget), findsOneWidget);
-    });
-
-    testWidgets('shows ProfileCompletionIndicator', (tester) async {
-      await _pumpHeader(tester, completion: _fakeCompletion(percentage: 0.75));
-      expect(find.byType(ProfileCompletionIndicator), findsOneWidget);
     });
 
     testWidgets('edit profile button is present and tappable', (tester) async {
@@ -239,16 +226,6 @@ void main() {
     testWidgets('renders inside a Card widget', (tester) async {
       await _pumpHeader(tester);
       expect(find.byType(Card), findsOneWidget);
-    });
-
-    testWidgets('completion 0 renders without error', (tester) async {
-      await _pumpHeader(tester, completion: _fakeCompletion(percentage: 0.0));
-      expect(find.byType(ProfileHeader), findsOneWidget);
-    });
-
-    testWidgets('completion 1.0 renders without error', (tester) async {
-      await _pumpHeader(tester, completion: _fakeCompletion(percentage: 1.0));
-      expect(find.byType(ProfileHeader), findsOneWidget);
     });
 
     testWidgets('zero stats show 0 after animation', (tester) async {

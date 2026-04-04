@@ -60,12 +60,13 @@ class MessageRemoteSource {
     }
   }
 
-  Future<void> softDelete(String id) async {
+  Future<void> softDelete(String id, {required String userId}) async {
     try {
       await _client
           .from(SupabaseConstants.messagesTable)
           .update({'is_deleted': true})
-          .eq('id', id);
+          .eq('id', id)
+          .eq('sender_id', userId);
     } catch (e, st) {
       AppLogger.error('messaging', e, st);
       rethrow;

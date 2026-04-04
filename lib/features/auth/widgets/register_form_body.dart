@@ -112,6 +112,9 @@ class RegisterFormBody extends StatelessWidget {
             if (v == null || v.isEmpty) return 'common.required_field'.tr();
             final validation = PasswordPolicy.validate(v);
             if (!validation.hasMinLength) return 'common.password_short'.tr();
+            if (!validation.isWithinMaxLength) {
+              return 'auth.password_too_long'.tr();
+            }
             if (!validation.hasUppercase) return 'auth.rule_uppercase'.tr();
             if (!validation.hasLowercase) return 'auth.rule_lowercase'.tr();
             if (!validation.hasDigit) return 'auth.rule_digit'.tr();

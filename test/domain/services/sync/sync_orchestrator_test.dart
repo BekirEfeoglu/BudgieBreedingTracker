@@ -199,6 +199,8 @@ void main() {
         any(),
         lastSyncedAt: any(named: 'lastSyncedAt'),
       ),
+      lastPullConflicts: () =>
+          mockIncubationRepository.lastPullConflicts,
     );
     stubPushAndPull(
       pushAll: () => mockGrowthMeasurementRepository.pushAll(any()),
@@ -231,6 +233,9 @@ void main() {
     when(
       () => mockSyncMetadataDao.getPendingTableNames(any()),
     ).thenAnswer((_) async => _allTables);
+    when(
+      () => mockSyncMetadataDao.getStaleErrors(any(), any(), any()),
+    ).thenAnswer((_) async => []);
     when(
       () => mockSyncMetadataDao.deleteStaleErrors(any(), any(), any()),
     ).thenAnswer((_) async => 0);

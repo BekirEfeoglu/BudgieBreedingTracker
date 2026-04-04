@@ -128,7 +128,8 @@ class CommunityPostRemoteSource {
           .replaceAll(')', '')
           .replaceAll("'", '')
           .replaceAll('"', '')
-          .replaceAll('`', '');
+          .replaceAll('`', '')
+          .replaceAll(';', '');
       if (sanitized.isEmpty) return [];
       // Do NOT Uri.encodeComponent — PostgREST client handles encoding.
       // Double-encoding would break search (e.g. spaces → %2520).

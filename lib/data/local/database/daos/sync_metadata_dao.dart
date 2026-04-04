@@ -241,6 +241,25 @@ class SyncMetadataDao extends DatabaseAccessor<AppDatabase>
     return row.read(count) ?? 0;
   }
 
+  /// Returns stale error records that will be deleted by [deleteStaleErrors].
+  Future<List<SyncMetadata>> getStaleErrors(
+    String userId,
+    Duration maxAge,
+    int minRetries,
+  ) async {
+    final cutoff = DateTime.now().subtract(maxAge);
+    final rows = await (select(syncMetadataTable)
+          ..where(
+            (t) =>
+                t.userId.equals(userId) &
+                t.status.equalsValue(SyncStatus.error) &
+                t.createdAt.isSmallerOrEqualValue(cutoff) &
+                t.retryCount.isBiggerOrEqualValue(minRetries),
+          ))
+        .get();
+    return rows.map((r) => r.toModel()).toList();
+  }
+
   Future<int> deleteStaleErrors(String userId, Duration maxAge, int minRetries) async {
     final cutoff = DateTime.now().subtract(maxAge);
     return (delete(syncMetadataTable)..where((t) =>

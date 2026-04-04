@@ -125,6 +125,7 @@
     "rule_lowercase": "At least one lowercase letter",
     "rule_digit": "At least one digit",
     "rule_special_char": "At least one special character",
+    "password_too_long": "Password must be at most 128 characters",
     "password_strength": "Password strength",
     "password_weak": "Weak",
     "password_fair": "Fair",
@@ -1768,7 +1769,8 @@
   "validation": {
     "field_required": "{} is required",
     "weight_positive": "Weight must be greater than zero",
-    "required": "This field is required"
+    "required": "This field is required",
+    "invalid_price": "Invalid price value"
   },
   "incubation": {
     "stage_overdue": "Overdue",
@@ -2064,6 +2066,8 @@
     "moderation_caps": "Please avoid typing in all caps.",
     "moderation_spam": "Your content was detected as spam. Please edit and try again.",
     "image_rejected": "The uploaded image does not meet our community guidelines. Please choose a different image.",
+    "content_too_long": "Content is too long. Please shorten and try again.",
+    "post_cooldown": "You are creating posts too quickly. Please wait a moment.",
     "feed_load_error": "Failed to load feed",
     "just_now": "Just now",
     "minutes_ago": "{}m ago",
@@ -2183,6 +2187,7 @@
     "create_group": "Create Group",
     "type_message": "Type a message...",
     "send": "Send",
+    "send_cooldown": "You are sending messages too quickly. Please wait a moment.",
     "typing": "typing...",
     "online": "Online",
     "offline": "Offline",

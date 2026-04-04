@@ -30,6 +30,11 @@ class IncubationRepository extends BaseRepository<Incubation>
 
   static const _table = SupabaseConstants.incubationsTable;
 
+  /// Conflicts detected during the last [pull] operation.
+  final List<({String recordId, String detail})> _lastPullConflicts = [];
+  List<({String recordId, String detail})> get lastPullConflicts =>
+      List.unmodifiable(_lastPullConflicts);
+
   // ── SyncableRepository overrides ─────────────────────────────────────
   @override
   SyncMetadataDao get syncDao => _syncDao;
@@ -112,16 +117,34 @@ class IncubationRepository extends BaseRepository<Incubation>
 
   @override
   Future<void> pull(String userId, {DateTime? lastSyncedAt}) async {
+    _lastPullConflicts.clear();
     try {
       final remote = lastSyncedAt != null
           ? await _remoteSource.fetchUpdatedSince(userId, lastSyncedAt)
           : await _remoteSource.fetchAll(userId);
       // Fetch local state BEFORE overwriting with remote data, so we have
-      // accurate local/pending snapshots for reconciliation.
-      final localItems = lastSyncedAt == null ? await _localDao.getAll(userId) : <Incubation>[];
-      final pendingIds = lastSyncedAt == null ? await _syncDao.getPendingRecordIds(userId) : <String>{};
+      // accurate local/pending snapshots for reconciliation and conflict detection.
+      final localItems = await _localDao.getAll(userId);
+      final pendingIds = await _syncDao.getPendingRecordIds(userId);
 
       if (remote.isNotEmpty) {
+        // Detect real conflicts: a conflict is when a local record has
+        // PENDING sync metadata AND the remote record overwrites it.
+        final localMap = {for (final item in localItems) item.id: item};
+        for (final remoteItem in remote) {
+          if (!pendingIds.contains(remoteItem.id)) continue;
+          final localItem = localMap[remoteItem.id];
+          if (localItem == null) continue;
+          if (localItem.updatedAt != null &&
+              remoteItem.updatedAt != null &&
+              remoteItem.updatedAt!.isAfter(localItem.updatedAt!)) {
+            _lastPullConflicts.add((
+              recordId: remoteItem.id,
+              detail: remoteItem.id,
+            ));
+          }
+        }
+
         await _localDao.insertAll(remote);
       }
       // Full sync reconciliation: remove local orphans not on server

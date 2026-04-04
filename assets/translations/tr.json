@@ -125,6 +125,7 @@
     "rule_lowercase": "En az bir küçük harf",
     "rule_digit": "En az bir rakam",
     "rule_special_char": "En az bir özel karakter",
+    "password_too_long": "Şifre en fazla 128 karakter olabilir",
     "password_strength": "Şifre güçlülüğü",
     "password_weak": "Zayıf",
     "password_fair": "Orta",
@@ -1768,7 +1769,8 @@
   "validation": {
     "field_required": "{} zorunludur",
     "weight_positive": "Ağırlık sıfırdan büyük olmalıdır",
-    "required": "Bu alan zorunludur"
+    "required": "Bu alan zorunludur",
+    "invalid_price": "Geçersiz fiyat değeri"
   },
   "incubation": {
     "stage_overdue": "Gecikmiş",
@@ -2064,6 +2066,8 @@
     "moderation_caps": "Lütfen tamamen büyük harf yazmaktan kaçının.",
     "moderation_spam": "İçeriğiniz spam olarak algılandı. Lütfen düzenleyip tekrar deneyin.",
     "image_rejected": "Yüklenen görsel topluluk kurallarına uygun değil. Lütfen farklı bir görsel seçin.",
+    "content_too_long": "İçerik çok uzun. Lütfen kısaltıp tekrar deneyin.",
+    "post_cooldown": "Çok hızlı gönderi oluşturuyorsunuz. Lütfen biraz bekleyin.",
     "feed_load_error": "Akış yüklenemedi",
     "just_now": "Az önce",
     "minutes_ago": "{}dk önce",
@@ -2183,6 +2187,7 @@
     "create_group": "Grup Oluştur",
     "type_message": "Mesaj yazın...",
     "send": "Gönder",
+    "send_cooldown": "Çok hızlı mesaj gönderiyorsunuz. Lütfen biraz bekleyin.",
     "typing": "yazıyor...",
     "online": "Çevrimiçi",
     "offline": "Çevrimdışı",

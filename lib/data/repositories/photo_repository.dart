@@ -182,6 +182,19 @@ class PhotoRepository {
           retryCount: (existing.retryCount ?? 0) + 1,
         ),
       );
+    } else {
+      await _syncDao.insertItem(
+        SyncMetadata(
+          id: _uuid.v7(),
+          table: _table,
+          userId: userId,
+          status: SyncStatus.error,
+          recordId: recordId,
+          errorMessage: message,
+          retryCount: 1,
+          createdAt: DateTime.now(),
+        ),
+      );
     }
   }
 }

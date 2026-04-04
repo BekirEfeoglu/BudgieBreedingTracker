@@ -151,8 +151,8 @@ class MessagingRepository {
     await _messageSource.markAsRead(messageId, userId);
   }
 
-  Future<void> deleteMessage(String messageId) async {
-    await _messageSource.softDelete(messageId);
+  Future<void> deleteMessage(String messageId, {required String userId}) async {
+    await _messageSource.softDelete(messageId, userId: userId);
   }
 
   Future<List<ConversationParticipant>> getParticipants(

@@ -25,6 +25,7 @@ enum PasswordStrength {
 /// Result of a password validation check.
 class PasswordValidationResult {
   final bool hasMinLength;
+  final bool isWithinMaxLength;
   final bool hasUppercase;
   final bool hasLowercase;
   final bool hasDigit;
@@ -32,6 +33,7 @@ class PasswordValidationResult {
 
   const PasswordValidationResult({
     required this.hasMinLength,
+    this.isWithinMaxLength = true,
     required this.hasUppercase,
     required this.hasLowercase,
     required this.hasDigit,
@@ -41,12 +43,13 @@ class PasswordValidationResult {
   /// Whether all rules pass.
   bool get isValid =>
       hasMinLength &&
+      isWithinMaxLength &&
       hasUppercase &&
       hasLowercase &&
       hasDigit &&
       hasSpecialChar;
 
-  /// Number of passing rules (0-5).
+  /// Number of passing rules (0-5, excludes maxLength which is a guard).
   int get passedCount => [
     hasMinLength,
     hasUppercase,
@@ -62,10 +65,14 @@ class PasswordValidationResult {
 abstract class PasswordPolicy {
   static const int minLength = 8;
 
+  /// Maximum password length to prevent bcrypt DoS (very long strings).
+  static const int maxLength = 128;
+
   /// Validate a password against all rules.
   static PasswordValidationResult validate(String password) {
     return PasswordValidationResult(
       hasMinLength: password.length >= minLength,
+      isWithinMaxLength: password.length <= maxLength,
       hasUppercase: password.contains(RegExp(r'[A-Z]')),
       hasLowercase: password.contains(RegExp(r'[a-z]')),
       hasDigit: password.contains(RegExp(r'[0-9]')),

@@ -9,7 +9,6 @@ import '../../../core/widgets/app_icon.dart';
 import '../../../data/models/profile_model.dart';
 import '../providers/profile_providers.dart';
 import 'avatar_widget.dart';
-import 'profile_completion_indicator.dart';
 
 part 'profile_header_stats.dart';
 
@@ -24,7 +23,6 @@ class ProfileHeader extends StatelessWidget {
     required this.onEditAvatar,
     this.isAvatarUploading = false,
     this.stats,
-    this.completion,
   });
 
   final Profile? profile;
@@ -34,7 +32,6 @@ class ProfileHeader extends StatelessWidget {
   final VoidCallback onEditAvatar;
   final bool isAvatarUploading;
   final ProfileStats? stats;
-  final ProfileCompletion? completion;
 
   @override
   Widget build(BuildContext context) {
@@ -55,16 +52,13 @@ class ProfileHeader extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Avatar with completion ring and edit overlay
+            // Avatar with edit overlay
             Stack(
               children: [
-                ProfileCompletionIndicator(
-                  completionFraction: completion?.percentage ?? 0,
-                  child: AvatarWidget(
-                    imageUrl: profile?.avatarUrl,
-                    radius: 48,
-                    isUploading: isAvatarUploading,
-                  ),
+                AvatarWidget(
+                  imageUrl: profile?.avatarUrl,
+                  radius: 48,
+                  isUploading: isAvatarUploading,
                 ),
                 Positioned(
                   bottom: 0,

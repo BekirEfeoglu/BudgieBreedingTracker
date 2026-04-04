@@ -96,9 +96,14 @@ class SyncPullHandler {
             SupabaseConstants.clutchesTable,
           );
         },
-        () => _ref
-            .read(incubationRepositoryProvider)
-            .pull(userId, lastSyncedAt: since),
+        () async {
+          final incRepo = _ref.read(incubationRepositoryProvider);
+          await incRepo.pull(userId, lastSyncedAt: since);
+          _reportPullConflicts(
+            incRepo.lastPullConflicts,
+            SupabaseConstants.incubationsTable,
+          );
+        },
       ], 'L3 (clutches/incubations)');
       layerErrors += errors;
     }

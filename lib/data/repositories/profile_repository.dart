@@ -140,6 +140,19 @@ class ProfileRepository {
           retryCount: (existing.retryCount ?? 0) + 1,
         ),
       );
+    } else {
+      await _syncDao.insertItem(
+        SyncMetadata(
+          id: const Uuid().v7(),
+          table: _table,
+          userId: recordId, // profile.id == userId
+          status: SyncStatus.error,
+          recordId: recordId,
+          errorMessage: message,
+          retryCount: 1,
+          createdAt: DateTime.now(),
+        ),
+      );
     }
   }
 }

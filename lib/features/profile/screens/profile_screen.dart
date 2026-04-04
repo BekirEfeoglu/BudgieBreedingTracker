@@ -1,9 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
-import 'package:lucide_icons/lucide_icons.dart';
-
 import '../../../core/constants/app_icons.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
@@ -11,7 +8,6 @@ import '../../../core/utils/app_haptics.dart';
 import '../../../core/widgets/app_screen_title.dart';
 import '../../../core/widgets/error_state.dart';
 import '../../../data/models/profile_model.dart';
-import '../../../router/route_names.dart';
 import '../../auth/providers/auth_providers.dart';
 import '../providers/profile_providers.dart';
 import '../widgets/account_info_card.dart';
@@ -21,7 +17,6 @@ import '../widgets/avatar_picker_sheet.dart';
 import '../widgets/danger_zone_section.dart';
 import '../widgets/edit_profile_sheet.dart';
 import '../widgets/password_change_sheet.dart';
-import '../widgets/profile_completion_checklist.dart';
 import '../widgets/profile_header.dart';
 import '../widgets/profile_menu_tile.dart';
 import '../widgets/profile_skeleton.dart';
@@ -67,7 +62,6 @@ class ProfileScreen extends ConsumerWidget {
               '';
           final email = user?.email ?? profile?.email ?? '';
           final statsAsync = ref.watch(profileStatsProvider(userId));
-          final completion = ref.watch(profileCompletionProvider(userId));
 
           return RefreshIndicator(
             onRefresh: () async {
@@ -100,7 +94,6 @@ class ProfileScreen extends ConsumerWidget {
                       email: email,
                       isAvatarUploading: avatarState.isUploading,
                       stats: statsAsync.value,
-                      completion: completion,
                       onEditProfile: () => openEditProfileSheet(
                         context,
                         ref: ref,
@@ -121,46 +114,6 @@ class ProfileScreen extends ConsumerWidget {
                   padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
                   sliver: SliverList.list(
                     children: [
-                      // Set name banner
-                      if (profile?.fullName == null ||
-                          profile!.fullName!.isEmpty)
-                        SetNameBanner(
-                          message: 'profile.set_name_hint'.tr(),
-                          onTap: () => openEditProfileSheet(
-                            context,
-                            ref: ref,
-                            profile: profile,
-                            email: email,
-                          ),
-                        ),
-
-                      // Set avatar banner
-                      if (profile?.avatarUrl == null &&
-                          profile?.fullName != null &&
-                          profile!.fullName!.isNotEmpty)
-                        SetNameBanner(
-                          message: 'profile.set_avatar_hint'.tr(),
-                          icon: LucideIcons.camera,
-                          onTap: () => showAvatarPickerSheet(
-                            context,
-                            ref: ref,
-                            hasAvatar: false,
-                          ),
-                        ),
-
-                      // Completion checklist
-                      if (completion.percentage < 1.0)
-                        CompletionChecklist(
-                          completion: completion,
-                          onItemTap: (item) => _handleCompletionTap(
-                            context,
-                            ref,
-                            item,
-                            profile: profile,
-                            email: email,
-                          ),
-                        ),
-
                       // Account Info
                       AnimatedSection(
                         index: 0,
@@ -235,26 +188,4 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 
-  void _handleCompletionTap(
-    BuildContext context,
-    WidgetRef ref,
-    CompletionItem item, {
-    Profile? profile,
-    required String email,
-  }) {
-    switch (item.labelKey) {
-      case 'profile.completion_name':
-        openEditProfileSheet(context, ref: ref, profile: profile, email: email);
-      case 'profile.completion_avatar':
-        showAvatarPickerSheet(context, ref: ref, hasAvatar: false);
-      case 'profile.completion_first_bird':
-        context.push('${AppRoutes.birds}/form');
-      case 'profile.completion_first_pair':
-        context.push('${AppRoutes.breeding}/form');
-      case 'profile.completion_first_chick':
-        context.push('${AppRoutes.chicks}/form');
-      case 'profile.completion_premium':
-        context.push(AppRoutes.premium);
-    }
-  }
 }

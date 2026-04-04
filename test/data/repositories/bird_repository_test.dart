@@ -341,5 +341,126 @@ void main() {
       expect(result, birds);
       verify(() => localDao.getDeleted(userId)).called(1);
     });
+
+    group('conflict detection', () {
+      test(
+        'pull detects conflict when pending local record is overwritten by newer remote',
+        () async {
+          final localBird = createTestBird(
+            id: 'bird-1',
+            name: 'Local Edit',
+            userId: userId,
+            updatedAt: DateTime(2024, 6, 1),
+          );
+          final remoteBird = createTestBird(
+            id: 'bird-1',
+            name: 'Remote Edit',
+            userId: userId,
+            updatedAt: DateTime(2024, 6, 2), // newer
+          );
+
+          when(() => remoteSource.fetchUpdatedSince(userId, any()))
+              .thenAnswer((_) async => [remoteBird]);
+          when(() => localDao.getAll(userId))
+              .thenAnswer((_) async => [localBird]);
+          when(() => syncDao.getPendingRecordIds(userId))
+              .thenAnswer((_) async => {'bird-1'}); // pending!
+
+          await repository.pull(userId, lastSyncedAt: DateTime(2024, 5, 1));
+
+          expect(repository.lastPullConflicts, hasLength(1));
+          expect(repository.lastPullConflicts.first.recordId, 'bird-1');
+        },
+      );
+
+      test(
+        'pull does NOT report conflict for non-pending records',
+        () async {
+          final localBird = createTestBird(
+            id: 'bird-1',
+            name: 'Old Local',
+            userId: userId,
+            updatedAt: DateTime(2024, 6, 1),
+          );
+          final remoteBird = createTestBird(
+            id: 'bird-1',
+            name: 'Remote Update',
+            userId: userId,
+            updatedAt: DateTime(2024, 6, 2),
+          );
+
+          when(() => remoteSource.fetchUpdatedSince(userId, any()))
+              .thenAnswer((_) async => [remoteBird]);
+          when(() => localDao.getAll(userId))
+              .thenAnswer((_) async => [localBird]);
+          when(() => syncDao.getPendingRecordIds(userId))
+              .thenAnswer((_) async => {}); // NOT pending
+
+          await repository.pull(userId, lastSyncedAt: DateTime(2024, 5, 1));
+
+          expect(repository.lastPullConflicts, isEmpty);
+        },
+      );
+
+      test(
+        'pull does NOT report conflict when remote is older than local',
+        () async {
+          final localBird = createTestBird(
+            id: 'bird-1',
+            name: 'Newer Local',
+            userId: userId,
+            updatedAt: DateTime(2024, 6, 2), // newer
+          );
+          final remoteBird = createTestBird(
+            id: 'bird-1',
+            name: 'Older Remote',
+            userId: userId,
+            updatedAt: DateTime(2024, 6, 1),
+          );
+
+          when(() => remoteSource.fetchUpdatedSince(userId, any()))
+              .thenAnswer((_) async => [remoteBird]);
+          when(() => localDao.getAll(userId))
+              .thenAnswer((_) async => [localBird]);
+          when(() => syncDao.getPendingRecordIds(userId))
+              .thenAnswer((_) async => {'bird-1'});
+
+          await repository.pull(userId, lastSyncedAt: DateTime(2024, 5, 1));
+
+          expect(repository.lastPullConflicts, isEmpty);
+        },
+      );
+
+      test('pull clears previous conflicts before new pull', () async {
+        // First pull with conflict
+        final localBird = createTestBird(
+          id: 'bird-1',
+          userId: userId,
+          updatedAt: DateTime(2024, 6, 1),
+        );
+        final remoteBird = createTestBird(
+          id: 'bird-1',
+          userId: userId,
+          updatedAt: DateTime(2024, 6, 2),
+        );
+
+        when(() => remoteSource.fetchUpdatedSince(userId, any()))
+            .thenAnswer((_) async => [remoteBird]);
+        when(() => localDao.getAll(userId))
+            .thenAnswer((_) async => [localBird]);
+        when(() => syncDao.getPendingRecordIds(userId))
+            .thenAnswer((_) async => {'bird-1'});
+
+        await repository.pull(userId, lastSyncedAt: DateTime(2024, 5, 1));
+        expect(repository.lastPullConflicts, hasLength(1));
+
+        // Second pull with no conflicts
+        when(() => remoteSource.fetchUpdatedSince(userId, any()))
+            .thenAnswer((_) async => []);
+
+        await repository.pull(userId, lastSyncedAt: DateTime(2024, 5, 1));
+        expect(repository.lastPullConflicts, isEmpty);
+      });
+    });
   });
 }

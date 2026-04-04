@@ -7,6 +7,7 @@ import '../../../core/utils/logger.dart';
 import '../../../core/widgets/dialogs/confirm_dialog.dart';
 import '../../auth/providers/auth_providers.dart';
 import '../../notifications/providers/action_feedback_providers.dart';
+import '../providers/admin_auth_utils.dart';
 import '../providers/admin_providers.dart';
 
 /// Default values for admin system settings.
@@ -77,6 +78,7 @@ class AdminSettingsActionNotifier extends Notifier<AdminSettingsActionState> {
   }) async {
     state = state.copyWith(isLoading: true, error: null, isSuccess: false);
     try {
+      await requireAdmin(ref);
       final client = ref.read(supabaseClientProvider);
       await client.from(SupabaseConstants.systemSettingsTable).upsert({
         'key': key,
@@ -100,6 +102,7 @@ class AdminSettingsActionNotifier extends Notifier<AdminSettingsActionState> {
   Future<bool> resetToDefaults() async {
     state = state.copyWith(isLoading: true, error: null, isSuccess: false);
     try {
+      await requireAdmin(ref);
       final client = ref.read(supabaseClientProvider);
       final now = DateTime.now().toUtc().toIso8601String();
       final userId = client.auth.currentUser?.id;

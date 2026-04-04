@@ -5,11 +5,20 @@
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-};
+const ALLOWED_ORIGINS = (Deno.env.get("ALLOWED_ORIGINS") ?? "")
+  .split(",")
+  .map((o) => o.trim())
+  .filter((o) => o.length > 0);
+
+function getCorsHeaders(req: Request) {
+  const origin = req.headers.get("Origin") ?? "";
+  const allowedOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : "";
+  return {
+    "Access-Control-Allow-Origin": allowedOrigin,
+    "Access-Control-Allow-Headers":
+      "authorization, x-client-info, apikey, content-type",
+  };
+}
 
 // ---------------------------------------------------------------------------
 // Prohibited patterns (multilingual: TR, EN, DE)
@@ -96,10 +105,15 @@ function moderateText(text: string): ModerationResult {
 // Handler
 // ---------------------------------------------------------------------------
 
+// Maximum text length to prevent abuse of the moderation endpoint.
+const MAX_TEXT_LENGTH = 10000;
+
 serve(async (req: Request) => {
+  const cors = getCorsHeaders(req);
+
   // CORS preflight
   if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
+    return new Response("ok", { headers: cors });
   }
 
   try {
@@ -108,7 +122,7 @@ serve(async (req: Request) => {
     if (!authHeader) {
       return new Response(
         JSON.stringify({ allowed: false, reason: "unauthorized" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 401, headers: { ...cors, "Content-Type": "application/json" } }
       );
     }
 
@@ -123,7 +137,7 @@ serve(async (req: Request) => {
     if (authError || !user) {
       return new Response(
         JSON.stringify({ allowed: false, reason: "unauthorized" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 401, headers: { ...cors, "Content-Type": "application/json" } }
       );
     }
 
@@ -133,7 +147,15 @@ serve(async (req: Request) => {
     if (!text || typeof text !== "string") {
       return new Response(
         JSON.stringify({ allowed: true }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { headers: { ...cors, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Enforce text length limit to prevent abuse
+    if (text.length > MAX_TEXT_LENGTH) {
+      return new Response(
+        JSON.stringify({ allowed: false, reason: "content_too_long" }),
+        { status: 400, headers: { ...cors, "Content-Type": "application/json" } }
       );
     }
 
@@ -148,14 +170,15 @@ serve(async (req: Request) => {
     }
 
     return new Response(JSON.stringify(result), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...cors, "Content-Type": "application/json" },
     });
   } catch (error) {
     console.error("[moderate-content] Error:", error);
-    // Fail-open: allow content on error, manual review catches issues
+    const cors = getCorsHeaders(req);
+    // Fail-open: allow but flag for manual review
     return new Response(
-      JSON.stringify({ allowed: true, reason: "error_fallback" }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      JSON.stringify({ allowed: true, reason: "error_fallback", needs_review: true }),
+      { headers: { ...cors, "Content-Type": "application/json" } }
     );
   }
 });

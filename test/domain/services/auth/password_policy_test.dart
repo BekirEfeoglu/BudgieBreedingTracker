@@ -20,12 +20,33 @@ void main() {
       final result = PasswordPolicy.validate('Abcdef1!');
 
       expect(result.hasMinLength, isTrue);
+      expect(result.isWithinMaxLength, isTrue);
       expect(result.hasUppercase, isTrue);
       expect(result.hasLowercase, isTrue);
       expect(result.hasDigit, isTrue);
       expect(result.hasSpecialChar, isTrue);
       expect(result.isValid, isTrue);
       expect(result.passedCount, 5);
+    });
+
+    test('rejects password exceeding max length', () {
+      final longPassword = 'Aa1!' + 'x' * 125; // 129 chars
+      final result = PasswordPolicy.validate(longPassword);
+
+      expect(result.hasMinLength, isTrue);
+      expect(result.isWithinMaxLength, isFalse);
+      expect(result.isValid, isFalse);
+      // passedCount still counts the 5 character-type rules
+      expect(result.passedCount, 5);
+    });
+
+    test('accepts password at exactly max length', () {
+      final maxPassword = 'Aa1!' + 'x' * 124; // 128 chars
+      final result = PasswordPolicy.validate(maxPassword);
+
+      expect(result.hasMinLength, isTrue);
+      expect(result.isWithinMaxLength, isTrue);
+      expect(result.isValid, isTrue);
     });
   });
 

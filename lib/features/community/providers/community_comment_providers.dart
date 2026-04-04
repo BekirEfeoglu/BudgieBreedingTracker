@@ -71,6 +71,16 @@ class CommentFormNotifier extends Notifier<CommentFormState> {
         return;
       }
 
+      // Content length validation
+      const maxCommentLength = 1000;
+      if (content.trim().length > maxCommentLength) {
+        state = state.copyWith(
+          isLoading: false,
+          error: 'community.content_too_long'.tr(),
+        );
+        return;
+      }
+
       // Content moderation check (Apple Guideline 1.2)
       final moderationService = ref.read(contentModerationServiceProvider);
       final modResult = await moderationService.checkText(content);

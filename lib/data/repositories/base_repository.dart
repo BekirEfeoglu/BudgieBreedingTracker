@@ -1,3 +1,4 @@
+import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/sync_metadata_dao.dart';
 import 'package:budgie_breeding_tracker/data/models/sync_metadata_model.dart';
@@ -211,16 +212,30 @@ mixin ValidatedSyncMixin<T> on BaseRepository<T>, SyncableRepository<T> {
   }
 
   /// Clears error sync records that have exceeded max retries.
+  ///
+  /// Reports discarded records to Sentry before deletion so that data loss
+  /// events are visible in production monitoring.
   Future<void> clearStaleErrors(String userId) async {
     final tableErrors = await syncDao.getErrorsByTable(userId, syncTableName);
+    final staleIds = <String>[];
     for (final meta in tableErrors) {
       if ((meta.retryCount ?? 0) >= maxSyncRetries) {
+        staleIds.add(meta.recordId ?? 'unknown');
         AppLogger.warning(
           '[$syncLogTag] Cleared stale error after $maxSyncRetries retries: '
           '${meta.recordId}',
         );
         await syncDao.hardDelete(meta.id);
       }
+    }
+    if (staleIds.isNotEmpty) {
+      Sentry.captureException(
+        Exception(
+          '[$syncLogTag] Discarding ${staleIds.length} unrecoverable sync '
+          'records: ${staleIds.join(', ')}',
+        ),
+        stackTrace: StackTrace.current,
+      );
     }
   }
 

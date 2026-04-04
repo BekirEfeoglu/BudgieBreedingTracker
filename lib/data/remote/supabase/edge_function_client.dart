@@ -137,15 +137,16 @@ class EdgeFunctionClient {
   }
 
   /// Invoke the report generation Edge Function.
+  ///
+  /// The Edge Function extracts the user ID from the JWT token
+  /// (server-side) to prevent IDOR attacks. Do NOT send userId in body.
   Future<EdgeFunctionResult> generateReport({
-    required String userId,
     required String reportType,
     Map<String, dynamic>? options,
   }) {
     return invoke(
       'generate-report',
       body: {
-        'user_id': userId,
         'report_type': reportType,
         if (options != null) 'options': options,
       },

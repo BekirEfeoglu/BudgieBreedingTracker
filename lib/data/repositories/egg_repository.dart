@@ -165,9 +165,11 @@ class EggRepository extends BaseRepository<Egg>
         final pendingIds = await _syncDao.getPendingRecordIds(userId);
         final localMap = {for (final item in localItems) item.id: item};
 
-        // Detect conflicts before overwriting local data
+        // Detect real conflicts: a conflict is when a local record has
+        // PENDING sync metadata AND the remote record overwrites it.
+        // Normal server updates (no pending local changes) are not conflicts.
         for (final remoteItem in remote) {
-          if (pendingIds.contains(remoteItem.id)) continue;
+          if (!pendingIds.contains(remoteItem.id)) continue;
           final localItem = localMap[remoteItem.id];
           if (localItem == null) continue;
           if (localItem.updatedAt != null &&

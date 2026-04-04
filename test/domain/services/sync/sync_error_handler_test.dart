@@ -78,10 +78,17 @@ void main() {
   }
 
   group('SyncErrorHandler.cleanupUnrecoverableErrors', () {
-    test('calls deleteStaleErrors with correct parameters', () async {
+    void stubStaleErrors({List<sync_model.SyncMetadata>? records}) {
+      when(
+        () => mockSyncMetadataDao.getStaleErrors(any(), any(), any()),
+      ).thenAnswer((_) async => records ?? []);
       when(
         () => mockSyncMetadataDao.deleteStaleErrors(any(), any(), any()),
-      ).thenAnswer((_) async => 0);
+      ).thenAnswer((_) async => records?.length ?? 0);
+    }
+
+    test('calls deleteStaleErrors with correct parameters', () async {
+      stubStaleErrors();
 
       handler = buildHandler();
       final count = await handler.cleanupUnrecoverableErrors(_userId);
@@ -97,9 +104,15 @@ void main() {
     });
 
     test('returns number of cleaned up records', () async {
-      when(
-        () => mockSyncMetadataDao.deleteStaleErrors(any(), any(), any()),
-      ).thenAnswer((_) async => 5);
+      final stale = List.generate(
+        5,
+        (i) => _buildErrorRecord(
+          id: 'stale-$i',
+          table: 'birds',
+          retryCount: RetryScheduler.maxRetries,
+        ),
+      );
+      stubStaleErrors(records: stale);
 
       handler = buildHandler();
       final count = await handler.cleanupUnrecoverableErrors(_userId);
@@ -108,9 +121,7 @@ void main() {
     });
 
     test('returns 0 when no records to cleanup', () async {
-      when(
-        () => mockSyncMetadataDao.deleteStaleErrors(any(), any(), any()),
-      ).thenAnswer((_) async => 0);
+      stubStaleErrors();
 
       handler = buildHandler();
       final count = await handler.cleanupUnrecoverableErrors(_userId);
