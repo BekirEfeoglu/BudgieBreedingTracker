@@ -10,6 +10,7 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_icon.dart';
 import '../../../router/route_names.dart';
 import '../providers/admin_providers.dart';
+import 'admin_dashboard_activity.dart';
 import 'admin_dashboard_analytics.dart';
 import 'admin_dashboard_sections.dart';
 
@@ -30,6 +31,8 @@ class DashboardContent extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           DashboardSystemHealthBanner(stats: stats),
+          const SizedBox(height: AppSpacing.md),
+          const DashboardErrorSummaryCard(),
           const SizedBox(height: AppSpacing.lg),
           DashboardStatsGrid(stats: stats),
           const SizedBox(height: AppSpacing.xxl),
@@ -72,6 +75,8 @@ class DashboardContent extends StatelessWidget {
           const DashboardUserGrowthChart(),
           const SizedBox(height: AppSpacing.lg),
           const DashboardTopUsersTable(),
+          const SizedBox(height: AppSpacing.lg),
+          const DashboardActivityFeedSection(),
           const SizedBox(height: AppSpacing.xxl),
           const DashboardAlertsSection(),
           const SizedBox(height: AppSpacing.xxl),
