@@ -976,7 +976,10 @@
     "time_just_now": "Az önce",
     "time_minutes_ago": "{} dakika önce",
     "time_hours_ago": "{} saat önce",
-    "time_days_ago": "{} gün önce"
+    "time_days_ago": "{} gün önce",
+    "battery_optimization_warning": "Bildirimlerin zamaninda gelmesi icin cihaz ayarlarindan bu uygulama icin pil optimizasyonunu kapatin.",
+    "battery_optimization_dismiss": "Bir daha gosterme",
+    "egg_label": "Yumurta {}"
   },
   "premium": {
     "title": "Premium",

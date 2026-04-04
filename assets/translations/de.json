@@ -976,7 +976,10 @@
     "time_just_now": "Gerade eben",
     "time_minutes_ago": "Vor {} Minuten",
     "time_hours_ago": "Vor {} Stunden",
-    "time_days_ago": "Vor {} Tagen"
+    "time_days_ago": "Vor {} Tagen",
+    "battery_optimization_warning": "Damit Benachrichtigungen rechtzeitig ankommen, deaktivieren Sie die Akkuoptimierung fuer diese App in den Geraeteeinstellungen.",
+    "battery_optimization_dismiss": "Nicht mehr anzeigen",
+    "egg_label": "Ei {}"
   },
   "premium": {
     "title": "Premium",
