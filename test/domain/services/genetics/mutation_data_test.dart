@@ -69,6 +69,13 @@ void main() {
 
       // Other
       expect(ids, contains('anthracite'));
+
+      // Fallow variants
+      expect(ids, contains('fallow_scottish'));
+
+      // Newer mutations
+      expect(ids, contains('faded'));
+      expect(ids, contains('mottled'));
     });
   });
 

@@ -16,7 +16,7 @@ void main() {
   group('MutationDataSexLinked - record count and presence', () {
     test('contains expected number of mutations', () {
       expect(mutations, isNotEmpty);
-      expect(mutations.length, 14);
+      expect(mutations.length, 18);
     });
 
     test('all expected mutation IDs are present', () {

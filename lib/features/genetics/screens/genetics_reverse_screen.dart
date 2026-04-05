@@ -197,17 +197,6 @@ class _GeneticsReverseScreenState extends ConsumerState<GeneticsReverseScreen> {
                       },
                     ),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.all(AppSpacing.md),
-                    child: PrimaryButton(
-                      label: 'genetics.find_parents'.tr(),
-                      icon: const Icon(LucideIcons.search),
-                      onPressed: _selectedModifiers.isNotEmpty
-                          ? _calculateParents
-                          : null,
-                      isLoading: _isLoading,
-                    ),
-                  ),
                 ],
               ),
             ),
@@ -224,6 +213,22 @@ class _GeneticsReverseScreenState extends ConsumerState<GeneticsReverseScreen> {
             ),
           ),
         ],
+      ),
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.lg,
+            vertical: AppSpacing.sm,
+          ),
+          child: PrimaryButton(
+            label: 'genetics.find_parents'.tr(),
+            icon: const Icon(LucideIcons.search),
+            onPressed: _selectedModifiers.isNotEmpty
+                ? _calculateParents
+                : null,
+            isLoading: _isLoading,
+          ),
+        ),
       ),
     );
   }

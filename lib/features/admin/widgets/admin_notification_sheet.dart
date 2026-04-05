@@ -71,7 +71,21 @@ class _NotificationSheetContentState extends State<_NotificationSheetContent> {
     }
 
     if (!mounted) return;
-    Navigator.of(context).pop(true);
+
+    final state = widget.ref.read(adminActionsProvider);
+    if (state.isSuccess) {
+      final message =
+          state.successMessage ?? 'admin.notification_sent'.tr();
+      Navigator.of(context).pop(true);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message)),
+      );
+    } else if (state.error != null) {
+      setState(() => _isLoading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(state.error!)),
+      );
+    }
   }
 
   @override

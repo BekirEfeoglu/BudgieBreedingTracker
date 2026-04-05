@@ -182,6 +182,41 @@ void main() {
           'isPremium': true,
           'retryCount': 1,
           'timestamp': DateTime.now().toUtc().toIso8601String(),
+          'lastAttemptAt': DateTime.now().toUtc().toIso8601String(),
+        }),
+      });
+      service.isPremiumError = Exception('skip');
+      final mockClient = createMockClient(rpcSuccess: false);
+
+      final container = createContainer(mockClient);
+      addTearDown(container.dispose);
+
+      container.read(localPremiumProvider);
+      await waitUntil(() => service.isPremiumCallCount > 0);
+      // Extra time for exponential backoff (2s for retryCount=1)
+      await Future<void>.delayed(const Duration(seconds: 3));
+      await _flushAsync();
+
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getString('pending_premium_sync_user-1');
+      expect(raw, isNotNull);
+
+      final map = jsonDecode(raw!) as Map<String, dynamic>;
+      expect(map['retryCount'], 2);
+      expect(map['lastAttemptAt'], isNotNull);
+    });
+
+    test('resets retryCount when lastAttemptAt is older than 1 hour', () async {
+      final oldTimestamp = DateTime.now()
+          .toUtc()
+          .subtract(const Duration(hours: 2))
+          .toIso8601String();
+      SharedPreferences.setMockInitialValues({
+        'pending_premium_sync_user-1': jsonEncode({
+          'isPremium': true,
+          'retryCount': 2,
+          'timestamp': oldTimestamp,
+          'lastAttemptAt': oldTimestamp,
         }),
       });
       service.isPremiumError = Exception('skip');
@@ -201,7 +236,38 @@ void main() {
       expect(raw, isNotNull);
 
       final map = jsonDecode(raw!) as Map<String, dynamic>;
-      expect(map['retryCount'], 2);
+      // retryCount should be reset to 0, then incremented to 1 after failure
+      expect(map['retryCount'], 1);
+    });
+
+    test('preserves pending sync at max retries for future session retry', () async {
+      SharedPreferences.setMockInitialValues({
+        'pending_premium_sync_user-1': jsonEncode({
+          'isPremium': true,
+          'retryCount': 3,
+          'timestamp': DateTime.now().toUtc().toIso8601String(),
+          'lastAttemptAt': DateTime.now().toUtc().toIso8601String(),
+        }),
+      });
+      service.isPremiumError = Exception('skip');
+      final mockClient = createMockClient(rpcSuccess: false);
+
+      final container = createContainer(mockClient);
+      addTearDown(container.dispose);
+
+      container.read(localPremiumProvider);
+      await waitUntil(() => service.isPremiumCallCount > 0);
+      await _flushAsync();
+      await _flushAsync();
+
+      // Pending sync should be preserved (not cleared) so it can retry
+      // after _retryResetDuration elapses
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getString('pending_premium_sync_user-1');
+      expect(raw, isNotNull);
+
+      final map = jsonDecode(raw!) as Map<String, dynamic>;
+      expect(map['retryCount'], 3);
     });
 
     test('clears pending sync when retry RPC succeeds', () async {
@@ -210,6 +276,7 @@ void main() {
           'isPremium': true,
           'retryCount': 1,
           'timestamp': DateTime.now().toUtc().toIso8601String(),
+          'lastAttemptAt': DateTime.now().toUtc().toIso8601String(),
         }),
       });
       service.isPremiumError = Exception('skip');
@@ -220,7 +287,8 @@ void main() {
 
       container.read(localPremiumProvider);
       await waitUntil(() => service.isPremiumCallCount > 0);
-      // Extra time for retryPendingSync → syncPremiumToSupabase async chain
+      // Wait for exponential backoff (2s for retryCount=1) + async chain
+      await Future<void>.delayed(const Duration(seconds: 3));
       for (var i = 0; i < 5; i++) {
         await _flushAsync();
       }

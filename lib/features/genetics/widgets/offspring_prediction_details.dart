@@ -7,6 +7,7 @@ import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/mendelian_calculator.dart';
+import 'package:budgie_breeding_tracker/features/genetics/utils/phenotype_localizer.dart';
 import 'package:budgie_breeding_tracker/features/genetics/widgets/z_linked_badge.dart';
 import 'package:budgie_breeding_tracker/features/notifications/providers/action_feedback_providers.dart';
 
@@ -25,17 +26,23 @@ class PhenotypeBadges extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
+    final shortName = PhenotypeLocalizer.shortenPhenotype(displayName);
+    final isShortened = shortName != displayName;
+
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Flexible(
-          child: Text(
-            displayName,
-            style: theme.textTheme.titleSmall?.copyWith(
-              fontWeight: FontWeight.bold,
+          child: Tooltip(
+            message: isShortened ? displayName : '',
+            child: Text(
+              shortName,
+              style: theme.textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+              overflow: TextOverflow.ellipsis,
+              maxLines: 2,
             ),
-            overflow: TextOverflow.ellipsis,
-            maxLines: 3,
           ),
         ),
         if (result.isCarrier) ...[
@@ -52,7 +59,7 @@ class PhenotypeBadges extends StatelessWidget {
             child: Text(
               'genetics.carrier'.tr(),
               style: const TextStyle(
-                fontSize: 9,
+                fontSize: 10,
                 fontWeight: FontWeight.bold,
                 color: AppColors.warning,
               ),
@@ -86,7 +93,7 @@ class PhenotypeBadges extends StatelessWidget {
                 Text(
                   'genetics.lethal_badge'.tr(),
                   style: const TextStyle(
-                    fontSize: 9,
+                    fontSize: 10,
                     fontWeight: FontWeight.bold,
                     color: AppColors.error,
                   ),

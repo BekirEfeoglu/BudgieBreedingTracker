@@ -65,7 +65,8 @@
     "selected": "Ausgewählt",
     "just_now": "Gerade eben",
     "minutes_ago": "vor {} Minuten",
-    "hours_ago": "vor {} Stunden"
+    "hours_ago": "vor {} Stunden",
+    "more": "Mehr"
   },
   "auth": {
     "login": "Anmelden",
@@ -966,6 +967,9 @@
     "cleanup_description": "Anzahl der Tage, nach denen gelesene Benachrichtigungen automatisch gelöscht werden",
     "cleanup_days": "{} Tage",
     "permission_denied_hint": "Benachrichtigungsberechtigung verweigert. Sie können sie in den Geräteeinstellungen erteilen.",
+    "open_settings": "Einstellungen",
+    "permission_denied_banner": "Benachrichtigungsberechtigung erforderlich",
+    "permission_denied_banner_desc": "Die Benachrichtigungsberechtigung wurde nicht erteilt. Aktivieren Sie Benachrichtigungen, um Erinnerungen zum Eierdrehen, zur Inkubation und zur Kükenversorgung zu erhalten.",
     "banding_pre_title": "Morgen Beringungstag",
     "banding_pre_body": "Morgen ist Beringungstag für {}",
     "banding_main_title": "Beringungstag!",
@@ -980,6 +984,12 @@
     "battery_optimization_warning": "Damit Benachrichtigungen rechtzeitig ankommen, deaktivieren Sie die Akkuoptimierung fuer diese App in den Geraeteeinstellungen.",
     "battery_optimization_dismiss": "Nicht mehr anzeigen",
     "battery_optimization_steps": "Einstellungen > Apps > BudgieTrack > Akku > Uneingeschraenkt",
+    "battery_open_settings": "Einstellungen oeffnen",
+    "battery_steps_samsung": "Samsung: Einstellungen > Akku > Hintergrundnutzungslimits > BudgieTrack aus der Liste entfernen",
+    "battery_steps_xiaomi": "Xiaomi/Redmi: Einstellungen > Apps > Apps verwalten > BudgieTrack > Autostart aktivieren und Akkusparmodus auf 'Keine Einschraenkungen' setzen",
+    "battery_steps_huawei": "Huawei: Einstellungen > Akku > App-Start > Automatische Verwaltung fuer BudgieTrack deaktivieren",
+    "battery_steps_oppo": "OPPO/Realme/OnePlus: Einstellungen > Akku > Weitere Akkueinstellungen > Benachrichtigungen im Ruhemodus zulassen",
+    "battery_steps_vivo": "Vivo: Einstellungen > Akku > Hoher Hintergrund-Stromverbrauch > BudgieTrack hinzufuegen",
     "egg_label": "Ei {}"
   },
   "premium": {
@@ -1462,8 +1472,12 @@
     "alert_info": "Info",
     "deactivate_user": "Benutzer deaktivieren",
     "activate_user": "Benutzer aktivieren",
+    "user_activated_success": "Benutzer erfolgreich aktiviert",
+    "user_deactivated_success": "Benutzer erfolgreich deaktiviert",
     "grant_premium": "Premium gewähren",
     "revoke_premium": "Premium widerrufen",
+    "premium_granted_success": "Premium-Abonnement erfolgreich gewährt",
+    "premium_revoked_success": "Premium-Abonnement erfolgreich widerrufen",
     "confirm_grant_premium": "Premium aktivieren",
     "confirm_grant_premium_desc": "Diesem Benutzer wird ein Premium-Abonnement gewährt. Fortfahren?",
     "confirm_revoke_premium": "Premium widerrufen",
@@ -1659,6 +1673,7 @@
     "activity_pairs": "hat {} Zuchtpaare erstellt",
     "activity_eggs": "hat {} Eier erfasst",
     "activity_chicks": "hat {} Kueken erfasst",
+    "recent_activities": "Letzte Aktivitäten",
     "last_24_hours": "Letzte 24 Stunden",
     "error_summary": "Fehlerzusammenfassung",
     "errors_24h": "Fehler (24h)",

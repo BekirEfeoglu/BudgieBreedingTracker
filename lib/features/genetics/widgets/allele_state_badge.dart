@@ -45,7 +45,14 @@ class AlleleStateBadge extends StatelessWidget {
       };
     }
 
-    return Semantics(
+    final tooltipMessage = isDosageBased
+        ? 'genetics.allele_dosage_tooltip'.tr()
+        : 'genetics.allele_state_tooltip'.tr();
+
+    return Tooltip(
+      message: tooltipMessage,
+      preferBelow: false,
+      child: Semantics(
       button: canToggle,
       label: 'genetics.toggle_allele_state'.tr(),
       child: Material(
@@ -82,6 +89,7 @@ class AlleleStateBadge extends StatelessWidget {
             ),
           ),
         ),
+      ),
       ),
     );
   }

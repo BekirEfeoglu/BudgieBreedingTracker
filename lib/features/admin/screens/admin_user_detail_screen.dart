@@ -27,6 +27,11 @@ class _AdminUserDetailScreenState extends ConsumerState<AdminUserDetailScreen> {
 
     ref.listen<AdminActionState>(adminActionsProvider, (_, state) {
       if (state.isSuccess) {
+        if (state.successMessage != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(state.successMessage!)),
+          );
+        }
         ref.read(adminActionsProvider.notifier).reset();
         ref.invalidate(adminUserDetailProvider(widget.userId));
       }

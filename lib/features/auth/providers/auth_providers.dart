@@ -9,6 +9,7 @@ import '../../../bootstrap.dart';
 import '../../../core/utils/logger.dart';
 import '../../../data/models/profile_model.dart';
 import '../../../data/repositories/repository_providers.dart';
+import '../../../domain/services/notifications/notification_processor.dart';
 import '../../../domain/services/notifications/notification_providers.dart';
 import '../../../domain/services/sync/sync_orchestrator.dart';
 import '../../../domain/services/sync/sync_providers.dart';
@@ -66,9 +67,14 @@ final initSkippedProvider = NotifierProvider<InitSkippedNotifier, bool>(
 /// anonymous (sign-out or expired session).
 final authSessionSideEffectsProvider = Provider<void>((ref) {
   ref.listen<String>(currentUserIdProvider, (previous, next) {
-    if (next != 'anonymous') return;
-    unawaited(ref.read(purchaseServiceProvider).logout());
-    unawaited(ref.read(localPremiumProvider.notifier).setPremium(false));
+    if (next == 'anonymous') {
+      unawaited(ref.read(purchaseServiceProvider).logout());
+      unawaited(ref.read(localPremiumProvider.notifier).setPremium(false));
+      unawaited(ref.read(pushNotificationServiceProvider).deactivateCurrentToken());
+      return;
+    }
+
+    unawaited(ref.read(pushNotificationServiceProvider).syncToken(next));
   });
 });
 
@@ -108,7 +114,7 @@ final appInitializationProvider = FutureProvider<void>((ref) async {
 
   // Step 3: Notification init (relatively fast, needed for scheduled reminders)
   ref.read(initStepProvider.notifier).state = InitStep.services;
-  await _initNotifications(ref);
+  await _initNotifications(ref, userId);
 
   ref.read(initStepProvider.notifier).state = InitStep.ready;
 
@@ -118,6 +124,7 @@ final appInitializationProvider = FutureProvider<void>((ref) async {
   // Re-schedule active notifications (survives reboot + battery kill)
   // Deferred to avoid blocking splash — runs in background
   Future.microtask(() => _rescheduleNotifications(ref, userId));
+  Future.microtask(() => _recoverPendingNotifications(ref));
 
   // Step 3: Defer full data sync to background — don't block splash
   // This runs AFTER the splash resolves and home screen renders.
@@ -209,17 +216,22 @@ Future<void> _syncAuthMetadataToProfile(Ref ref, String userId) async {
 
 /// Initializes local notification services and rate limiter.
 ///
-/// Does NOT request notification permissions here — that is deferred to
+/// Requests exact alarm permission on Android 12+ (opens Settings page if
+/// not yet granted). The main POST_NOTIFICATIONS permission is deferred to
 /// [deferredNotificationPermissionProvider] on the home screen so the
 /// permission dialog appears after the user sees the app (App Store
 /// guideline compliance).
-Future<void> _initNotifications(Ref ref) async {
+Future<void> _initNotifications(Ref ref, String userId) async {
   try {
     final notifService = ref.read(notificationServiceProvider);
     await notifService.init();
-    // Verify exact alarm permission (Android 12+) — warns if not granted
-    // (this is a silent check, no user-facing dialog)
-    await notifService.checkExactAlarmPermission();
+    // Request exact alarm permission (Android 12+) — opens Settings page
+    // if not granted. Critical for reliable closed-app notifications.
+    await notifService.requestExactAlarmPermissionIfNeeded();
+    // Request battery optimization exemption so scheduled notifications
+    // survive Doze mode and aggressive OEM battery savers.
+    await notifService.requestBatteryOptimizationExemptionIfNeeded();
+    await ref.read(pushNotificationServiceProvider).init(userId: userId);
   } catch (e, st) {
     AppLogger.warning('[AppInit] Local notification init failed: $e');
     Sentry.captureException(e, stackTrace: st);
@@ -243,6 +255,20 @@ Future<void> _rescheduleNotifications(Ref ref, String userId) async {
     await rescheduler.rescheduleAll(userId);
   } catch (e, st) {
     AppLogger.warning('[AppInit] Notification reschedule failed: $e');
+    Sentry.captureException(e, stackTrace: st);
+  }
+}
+
+/// Processes locally pending reminders/schedules after startup.
+///
+/// This covers reminders created while the app was terminated and ensures
+/// recent items are surfaced before the next sync cycle runs.
+Future<void> _recoverPendingNotifications(Ref ref) async {
+  try {
+    final processor = ref.read(notificationProcessorProvider);
+    await processor.processAll();
+  } catch (e, st) {
+    AppLogger.warning('[AppInit] Pending notification recovery failed: $e');
     Sentry.captureException(e, stackTrace: st);
   }
 }

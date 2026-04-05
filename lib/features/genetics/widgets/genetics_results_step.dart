@@ -36,6 +36,7 @@ class GeneticsResultsStep extends ConsumerWidget {
     final activeFilter = ref.watch(offspringFilterProvider);
 
     if (rawResults == null || rawResults.isEmpty || results == null) {
+      final hasParentSelections = rawResults != null;
       return Center(
         child: Padding(
           padding: AppSpacing.screenPadding,
@@ -51,6 +52,16 @@ class GeneticsResultsStep extends ConsumerWidget {
               Text(
                 'genetics.no_results'.tr(),
                 style: Theme.of(context).textTheme.bodyLarge,
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              Text(
+                hasParentSelections
+                    ? 'genetics.no_results_hint_filtered'.tr()
+                    : 'genetics.no_results_hint'.tr(),
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+                textAlign: TextAlign.center,
               ),
             ],
           ),

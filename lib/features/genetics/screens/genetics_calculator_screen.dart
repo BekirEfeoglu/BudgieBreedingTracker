@@ -42,22 +42,50 @@ class GeneticsCalculatorScreen extends ConsumerWidget {
           iconAsset: AppIcons.calculator,
         ),
         actions: [
-          IconButton(
-            icon: const Icon(LucideIcons.arrowLeftRight),
-            tooltip: 'genetics.reverse_calculator'.tr(),
-            onPressed: () => context.push(AppRoutes.geneticsReverse),
+          PopupMenuButton<String>(
+            icon: const Icon(LucideIcons.moreVertical),
+            tooltip: 'common.more'.tr(),
+            onSelected: (value) {
+              switch (value) {
+                case 'reverse':
+                  context.push(AppRoutes.geneticsReverse);
+                case 'history':
+                  context.push(AppRoutes.geneticsHistory);
+                case 'reset':
+                  _confirmReset(context, ref);
+              }
+            },
+            itemBuilder: (_) => [
+              PopupMenuItem(
+                value: 'reverse',
+                child: ListTile(
+                  leading: const Icon(LucideIcons.arrowLeftRight),
+                  title: Text('genetics.reverse_calculator'.tr()),
+                  dense: true,
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ),
+              PopupMenuItem(
+                value: 'history',
+                child: ListTile(
+                  leading: const Icon(LucideIcons.history),
+                  title: Text('genetics.history'.tr()),
+                  dense: true,
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ),
+              if (hasSelections)
+                PopupMenuItem(
+                  value: 'reset',
+                  child: ListTile(
+                    leading: const AppIcon(AppIcons.sync),
+                    title: Text('genetics.reset'.tr()),
+                    dense: true,
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ),
+            ],
           ),
-          IconButton(
-            icon: const Icon(LucideIcons.history),
-            tooltip: 'genetics.history'.tr(),
-            onPressed: () => context.push(AppRoutes.geneticsHistory),
-          ),
-          if (hasSelections)
-            IconButton(
-              icon: const AppIcon(AppIcons.sync),
-              tooltip: 'genetics.reset'.tr(),
-              onPressed: () => _confirmReset(context, ref),
-            ),
         ],
       ),
       body: Column(

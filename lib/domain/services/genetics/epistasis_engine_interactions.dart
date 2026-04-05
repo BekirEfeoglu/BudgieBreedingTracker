@@ -196,9 +196,9 @@ void _addGreyInteractions(
     interactions.add(
       const EpistaticInteraction(
         mutationIds: [GeneticsConstants.mutGrey],
-        resultName: 'Grey-Green',
+        resultName: 'Light Grey-Green',
         description:
-            'Grey factor on green series produces Grey-Green, '
+            'Grey factor on green series produces Light Grey-Green, '
             'a distinct olive-grey coloration.',
       ),
     );

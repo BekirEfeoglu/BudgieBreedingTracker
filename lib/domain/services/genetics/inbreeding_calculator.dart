@@ -61,15 +61,40 @@ class InbreedingCalculator {
     }
 
     // Wright's path coefficient: F = sum over all common ancestors A,
-    // for each pair of paths (n1, n2): (1/2)^(n1+n2+1)
+    // for each pair of paths (n1, n2): (1/2)^(n1+n2+1) * (1 + F_A)
+    // where F_A is the inbreeding coefficient of common ancestor A.
     double coefficient = 0.0;
     for (final ancestorId in commonAncestors) {
       final fatherPaths = fatherAncestors[ancestorId]!;
       final motherPaths = motherAncestors[ancestorId]!;
 
+      // Calculate F_A: the inbreeding coefficient of this common ancestor.
+      // This accounts for cases where the common ancestor is itself inbred.
+      final ancestor = ancestors[ancestorId];
+      double ancestorF = 0.0;
+      if (ancestor != null &&
+          ancestor.fatherId != null &&
+          ancestor.motherId != null) {
+        final ancFatherAnc = <String, List<int>>{};
+        final ancMotherAnc = <String, List<int>>{};
+        _collectAncestors(ancestor.fatherId!, ancestors, ancFatherAnc, 0);
+        _collectAncestors(ancestor.motherId!, ancestors, ancMotherAnc, 0);
+        final ancCommon = ancFatherAnc.keys
+            .where(ancMotherAnc.containsKey)
+            .toSet();
+        for (final aId in ancCommon) {
+          for (final an1 in ancFatherAnc[aId]!) {
+            for (final an2 in ancMotherAnc[aId]!) {
+              ancestorF += math.pow(0.5, an1 + an2 + 1);
+            }
+          }
+        }
+        ancestorF = ancestorF.clamp(0.0, 0.5);
+      }
+
       for (final n1 in fatherPaths) {
         for (final n2 in motherPaths) {
-          coefficient += math.pow(0.5, n1 + n2 + 1);
+          coefficient += math.pow(0.5, n1 + n2 + 1) * (1 + ancestorF);
         }
       }
     }

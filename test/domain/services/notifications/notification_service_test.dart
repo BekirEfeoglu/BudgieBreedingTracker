@@ -170,6 +170,9 @@ void main() {
           ),
         ),
       ).thenAnswer((_) async => true);
+      when(
+        () => mockPlugin.getNotificationAppLaunchDetails(),
+      ).thenAnswer((_) async => null);
     });
 
     tearDown(() {
@@ -258,6 +261,9 @@ void main() {
           ),
         ),
       ).thenAnswer((_) async => true);
+      when(
+        () => mockPlugin.getNotificationAppLaunchDetails(),
+      ).thenAnswer((_) async => null);
 
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(_timezoneChannel, (call) async {
@@ -491,6 +497,29 @@ void main() {
       await service.init();
 
       expect(receivedPayload, 'chick:test-id');
+    });
+
+    test('restores launch payload when app opens from notification tap', () async {
+      String? receivedPayload;
+      service.onNotificationTap = (payload) => receivedPayload = payload;
+
+      when(
+        () => mockPlugin.getNotificationAppLaunchDetails(),
+      ).thenAnswer(
+        (_) async => const NotificationAppLaunchDetails(
+          true,
+          notificationResponse: NotificationResponse(
+            notificationResponseType:
+                NotificationResponseType.selectedNotification,
+            payload: 'bird:launch-id',
+          ),
+        ),
+      );
+
+      await service.init();
+
+      expect(receivedPayload, 'bird:launch-id');
+      verify(() => mockPlugin.getNotificationAppLaunchDetails()).called(1);
     });
   });
 

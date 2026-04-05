@@ -163,8 +163,8 @@ class _DetailRow extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(
-            width: 120,
+          ConstrainedBox(
+            constraints: const BoxConstraints(minWidth: 100, maxWidth: 130),
             child: Text(
               label,
               style: theme.textTheme.labelMedium?.copyWith(
@@ -172,6 +172,7 @@ class _DetailRow extends StatelessWidget {
               ),
             ),
           ),
+          const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Text(
               value,

@@ -89,6 +89,7 @@ extension _PremiumSyncHelpers on PremiumNotifier {
       'isPremium': isPremium,
       'retryCount': retryCount,
       'timestamp': DateTime.now().toUtc().toIso8601String(),
+      'lastAttemptAt': DateTime.now().toUtc().toIso8601String(),
     });
     await prefs.setString(PremiumNotifier._pendingSyncKey(userId), data);
     AppLogger.info(
@@ -102,6 +103,14 @@ extension _PremiumSyncHelpers on PremiumNotifier {
     await prefs.remove(PremiumNotifier._pendingSyncKey(userId));
   }
 
+  /// Duration after which retry count resets, allowing a fresh retry cycle
+  /// in a new session. Covers transient issues like missing RPC or
+  /// temporary Supabase downtime.
+  static const _retryResetDuration = Duration(hours: 1);
+
+  /// Maximum backoff delay between retries within a session.
+  static const _maxBackoffDelay = Duration(minutes: 10);
+
   Future<void> retryPendingSync(String userId) async {
     if (userId == 'anonymous') return;
     final prefs = await SharedPreferences.getInstance();
@@ -110,14 +119,29 @@ extension _PremiumSyncHelpers on PremiumNotifier {
 
     int retryCount = 0;
     bool isPremium = true;
+    DateTime? lastAttemptAt;
     try {
       final map = jsonDecode(raw) as Map<String, dynamic>;
       retryCount = (map['retryCount'] as num?)?.toInt() ?? 0;
       isPremium = map['isPremium'] as bool? ?? true;
+      final lastAttemptStr = map['lastAttemptAt'] as String?;
+      if (lastAttemptStr != null) {
+        lastAttemptAt = DateTime.tryParse(lastAttemptStr);
+      }
     } catch (e) {
       AppLogger.warning('[PremiumNotifier] Corrupt pending sync data: $e');
       await clearPendingSync(userId);
       return;
+    }
+
+    // Reset retry count if last attempt was long enough ago (new session).
+    // This allows transient issues (missing RPC, downtime) to self-heal.
+    if (lastAttemptAt != null &&
+        DateTime.now().toUtc().difference(lastAttemptAt) >= _retryResetDuration) {
+      AppLogger.info(
+        '[PremiumNotifier] Resetting retry count (last attempt: $lastAttemptAt)',
+      );
+      retryCount = 0;
     }
 
     if (retryCount >= PremiumNotifier._maxSyncRetries) {
@@ -130,8 +154,23 @@ extension _PremiumSyncHelpers on PremiumNotifier {
         ),
         stackTrace: StackTrace.current,
       );
-      await clearPendingSync(userId);
+      // Keep pending sync data so it can be retried after _retryResetDuration
+      await savePendingSync(userId, isPremium, retryCount: retryCount);
       return;
+    }
+
+    // Exponential backoff: 2^retryCount seconds, capped at _maxBackoffDelay
+    if (retryCount > 0) {
+      final backoffSeconds = 1 << retryCount; // 2, 4, 8, 16, ...
+      final delay = Duration(seconds: backoffSeconds) > _maxBackoffDelay
+          ? _maxBackoffDelay
+          : Duration(seconds: backoffSeconds);
+      AppLogger.info(
+        '[PremiumNotifier] Backoff ${delay.inSeconds}s before retry '
+        '${retryCount + 1}/${PremiumNotifier._maxSyncRetries}',
+      );
+      await Future<void>.delayed(delay);
+      if (!ref.mounted) return;
     }
 
     AppLogger.info(

@@ -82,25 +82,28 @@ class OffspringProbabilityBarChart extends StatelessWidget {
                     if (index < 0 || index >= data.length) {
                       return const SizedBox.shrink();
                     }
-                    final label = _truncateLabel(data[index].label);
+                    final label = _truncateLabel(
+                      data[index].label,
+                      maxLen: data.length > 6 ? 8 : 12,
+                    );
                     return SideTitleWidget(
                       meta: meta,
-                      angle: -0.5, // ~29° tilt for readability
+                      angle: -0.8, // ~46° tilt to prevent overlap
                       child: SizedBox(
-                        width: 60,
+                        width: 56,
                         child: Text(
                           label,
                           style: theme.textTheme.labelSmall?.copyWith(
-                            fontSize: 9,
+                            fontSize: 10,
                           ),
-                          maxLines: 2,
+                          maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           textAlign: TextAlign.right,
                         ),
                       ),
                     );
                   },
-                  reservedSize: 48,
+                  reservedSize: 56,
                 ),
               ),
               leftTitles: AxisTitles(
@@ -205,10 +208,10 @@ class OffspringProbabilityBarChart extends StatelessWidget {
     );
   }
 
-  String _truncateLabel(String label) {
-    if (label.length <= 12) return label;
+  String _truncateLabel(String label, {int maxLen = 12}) {
+    if (label.length <= maxLen) return label;
     final parenIndex = label.indexOf('(');
-    if (parenIndex > 0 && parenIndex <= 10) {
+    if (parenIndex > 0 && parenIndex <= maxLen - 2) {
       final base = label.substring(0, parenIndex).trim();
       final paren = label.substring(parenIndex);
       if (paren.length > 6) {
@@ -216,6 +219,6 @@ class OffspringProbabilityBarChart extends StatelessWidget {
       }
       return label;
     }
-    return '${label.substring(0, 10)}…';
+    return '${label.substring(0, maxLen - 2)}…';
   }
 }

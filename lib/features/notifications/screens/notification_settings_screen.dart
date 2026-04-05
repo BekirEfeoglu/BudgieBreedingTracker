@@ -8,9 +8,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
+import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_screen_title.dart';
 import 'package:budgie_breeding_tracker/data/local/preferences/app_preferences.dart';
+import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/notifications/notification_permission_handler.dart';
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_providers.dart';
 import 'package:budgie_breeding_tracker/features/notifications/providers/notification_settings_providers.dart';
 
@@ -62,6 +65,7 @@ class NotificationSettingsScreen extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
         children: [
+          const _NotificationPermissionBanner(),
           _BatteryOptimizationBanner(
             isDismissed: batteryWarningDismissed,
             onDismiss: () async {
@@ -318,7 +322,7 @@ class _CleanupSection extends StatelessWidget {
 ///
 /// Shown at the top of notification settings to advise disabling
 /// battery optimization for reliable notification delivery.
-class _BatteryOptimizationBanner extends StatelessWidget {
+class _BatteryOptimizationBanner extends ConsumerStatefulWidget {
   const _BatteryOptimizationBanner({
     required this.isDismissed,
     this.onDismiss,
@@ -328,8 +332,48 @@ class _BatteryOptimizationBanner extends StatelessWidget {
   final VoidCallback? onDismiss;
 
   @override
+  ConsumerState<_BatteryOptimizationBanner> createState() =>
+      _BatteryOptimizationBannerState();
+}
+
+class _BatteryOptimizationBannerState
+    extends ConsumerState<_BatteryOptimizationBanner> {
+  String _oemSteps = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadOemSteps();
+  }
+
+  Future<void> _loadOemSteps() async {
+    final manufacturer =
+        await NotificationPermissionHandler.getDeviceManufacturer();
+    if (!mounted) return;
+    final steps = _oemBatterySteps(manufacturer);
+    if (steps.isNotEmpty) {
+      setState(() => _oemSteps = steps);
+    }
+  }
+
+  String _oemBatterySteps(String manufacturer) {
+    return switch (manufacturer) {
+      'samsung' => 'notifications.battery_steps_samsung'.tr(),
+      'xiaomi' || 'redmi' || 'poco' => 'notifications.battery_steps_xiaomi'
+          .tr(),
+      'huawei' || 'honor' => 'notifications.battery_steps_huawei'.tr(),
+      'oppo' || 'realme' || 'oneplus' => 'notifications.battery_steps_oppo'
+          .tr(),
+      'vivo' || 'iqoo' => 'notifications.battery_steps_vivo'.tr(),
+      _ => '',
+    };
+  }
+
+  @override
   Widget build(BuildContext context) {
-    if (isDismissed || !Platform.isAndroid) return const SizedBox.shrink();
+    if (widget.isDismissed || !Platform.isAndroid) {
+      return const SizedBox.shrink();
+    }
 
     final theme = Theme.of(context);
 
@@ -371,14 +415,165 @@ class _BatteryOptimizationBanner extends StatelessWidget {
               color: theme.colorScheme.onErrorContainer.withValues(alpha: 0.8),
             ),
           ),
+          if (_oemSteps.isNotEmpty) ...[
+            const SizedBox(height: AppSpacing.xs),
+            Text(
+              _oemSteps,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color:
+                    theme.colorScheme.onErrorContainer.withValues(alpha: 0.8),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+          const SizedBox(height: AppSpacing.sm),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              TextButton(
+                onPressed: widget.onDismiss,
+                child: Text(
+                  'notifications.battery_optimization_dismiss'.tr(),
+                ),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              FilledButton.tonalIcon(
+                onPressed: () {
+                  ref
+                      .read(notificationServiceProvider)
+                      .requestBatteryOptimizationExemptionIfNeeded();
+                },
+                icon: const Icon(LucideIcons.settings, size: 16),
+                label: Text('notifications.battery_open_settings'.tr()),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Warning banner shown when notification permission is denied.
+///
+/// Guides the user to open system notification settings to grant permission.
+/// Only visible on Android when [notificationPermissionGrantedProvider] is false.
+/// Automatically re-checks permission status when the user returns from
+/// system settings (via [WidgetsBindingObserver.didChangeAppLifecycleState]).
+class _NotificationPermissionBanner extends ConsumerStatefulWidget {
+  const _NotificationPermissionBanner();
+
+  @override
+  ConsumerState<_NotificationPermissionBanner> createState() =>
+      _NotificationPermissionBannerState();
+}
+
+class _NotificationPermissionBannerState
+    extends ConsumerState<_NotificationPermissionBanner>
+    with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && Platform.isAndroid) {
+      _recheckPermission();
+    }
+  }
+
+  Future<void> _recheckPermission() async {
+    final notifService = ref.read(notificationServiceProvider);
+    if (!notifService.isInitialized) return;
+
+    final enabled = await notifService.areNotificationsEnabled();
+    if (!mounted) return;
+
+    final wasDisabled =
+        ref.read(notificationPermissionGrantedProvider) == false;
+    ref.read(notificationPermissionGrantedProvider.notifier).state = enabled;
+
+    // Permission was just granted from settings — reschedule notifications.
+    if (enabled && wasDisabled) {
+      final userId = ref.read(currentUserIdProvider);
+      if (userId != 'anonymous') {
+        try {
+          await ref.read(notificationReschedulerProvider).rescheduleAll(userId);
+        } catch (e) {
+          AppLogger.warning(
+            '[NotificationSettings] Reschedule after permission grant '
+            'failed: $e',
+          );
+        }
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!Platform.isAndroid) return const SizedBox.shrink();
+
+    final granted = ref.watch(notificationPermissionGrantedProvider);
+    if (granted) return const SizedBox.shrink();
+
+    final theme = Theme.of(context);
+
+    return Container(
+      margin: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.lg,
+        vertical: AppSpacing.sm,
+      ),
+      padding: AppSpacing.cardPadding,
+      decoration: BoxDecoration(
+        color: theme.colorScheme.errorContainer,
+        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                LucideIcons.bellOff,
+                color: theme.colorScheme.onErrorContainer,
+                size: AppSpacing.xxl,
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Text(
+                  'notifications.permission_denied_banner'.tr(),
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.colorScheme.onErrorContainer,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            'notifications.permission_denied_banner_desc'.tr(),
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onErrorContainer.withValues(alpha: 0.8),
+            ),
+          ),
           const SizedBox(height: AppSpacing.sm),
           Align(
             alignment: Alignment.centerRight,
-            child: TextButton(
-              onPressed: onDismiss,
-              child: Text(
-                'notifications.battery_optimization_dismiss'.tr(),
-              ),
+            child: FilledButton.tonalIcon(
+              onPressed: () {
+                NotificationPermissionHandler.openNotificationSettings();
+              },
+              icon: const Icon(LucideIcons.settings, size: 16),
+              label: Text('notifications.open_settings'.tr()),
             ),
           ),
         ],

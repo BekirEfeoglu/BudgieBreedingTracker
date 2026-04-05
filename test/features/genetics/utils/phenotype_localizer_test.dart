@@ -166,4 +166,58 @@ void main() {
           reason: 'Missing mutation l10n keys in de.json: $missing');
     });
   });
+
+  group('shortenPhenotype', () {
+    test('returns original when shorter than maxLength', () {
+      expect(
+        PhenotypeLocalizer.shortenPhenotype('Skyblue'),
+        'Skyblue',
+      );
+    });
+
+    test('abbreviates Texas Clearbody', () {
+      const long = 'Light Green Texas Clearbody Dominant Clearbody';
+      final short = PhenotypeLocalizer.shortenPhenotype(long);
+
+      expect(short, contains('TCB'));
+      expect(short, contains('Dom.CB'));
+      expect(short.length, lessThan(long.length));
+    });
+
+    test('abbreviates Turkish phenotype names', () {
+      const long = 'Açık Yeşil Texas Açık Gövde Dominant Açık Gövde';
+      final short = PhenotypeLocalizer.shortenPhenotype(long);
+
+      expect(short, contains('TCB'));
+      expect(short, contains('Dom.AG'));
+      expect(short.length, lessThan(long.length));
+    });
+
+    test('abbreviates Yellowface types', () {
+      const long = 'Cobalt Yellowface Type II Opaline Cinnamon';
+      final short = PhenotypeLocalizer.shortenPhenotype(long);
+
+      expect(short, contains('YF-II'));
+      expect(short.length, lessThan(long.length));
+    });
+
+    test('stops abbreviating once under maxLength', () {
+      const input = 'Light Green Texas Clearbody';
+      final short = PhenotypeLocalizer.shortenPhenotype(input, maxLength: 25);
+
+      expect(short.length, lessThanOrEqualTo(25));
+    });
+
+    test('respects custom maxLength', () {
+      const input = 'Dark Green Spangle Opaline';
+      // Already 25 chars, under default 28
+      expect(
+        PhenotypeLocalizer.shortenPhenotype(input),
+        input,
+      );
+      // But not under 20
+      final shortened = PhenotypeLocalizer.shortenPhenotype(input, maxLength: 20);
+      expect(shortened.length, lessThan(input.length));
+    });
+  });
 }

@@ -8,6 +8,7 @@ import 'package:budgie_breeding_tracker/data/remote/api/breeding_pair_remote_sou
 import 'package:budgie_breeding_tracker/data/remote/api/health_record_remote_source.dart';
 import 'package:budgie_breeding_tracker/data/remote/api/growth_measurement_remote_source.dart';
 import 'package:budgie_breeding_tracker/data/remote/api/event_remote_source.dart';
+import 'package:budgie_breeding_tracker/data/remote/api/fcm_token_remote_source.dart';
 import 'package:budgie_breeding_tracker/data/remote/api/notification_remote_source.dart';
 import 'package:budgie_breeding_tracker/data/remote/api/profile_remote_source.dart';
 import 'package:budgie_breeding_tracker/data/remote/api/clutch_remote_source.dart';
@@ -69,6 +70,10 @@ final notificationRemoteSourceProvider = Provider<NotificationRemoteSource>((
   ref,
 ) {
   return NotificationRemoteSource(ref.watch(supabaseClientProvider));
+});
+
+final fcmTokenRemoteSourceProvider = Provider<FcmTokenRemoteSource>((ref) {
+  return FcmTokenRemoteSource(ref.watch(supabaseClientProvider));
 });
 
 final profileRemoteSourceProvider = Provider<ProfileRemoteSource>((ref) {

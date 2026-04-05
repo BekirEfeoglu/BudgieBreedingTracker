@@ -281,58 +281,58 @@ void main() {
     });
   });
 
-  group('Grey-Green interaction', () {
-    test('detects Grey-Green for grey on green series', () {
+  group('Light Grey-Green interaction', () {
+    test('detects Light Grey-Green for grey on green series', () {
       final interactions = engine.getInteractions({'grey'});
 
       final greyGreen = interactions.where(
-        (i) => i.resultName == 'Grey-Green',
+        (i) => i.resultName == 'Light Grey-Green',
       );
       expect(greyGreen, hasLength(1));
       expect(greyGreen.first.mutationIds, contains('grey'));
     });
 
-    test('no Grey-Green when blue series is present', () {
+    test('no Light Grey-Green when blue series is present', () {
       final interactions = engine.getInteractions({'grey', 'blue'});
 
       expect(
-        interactions.any((i) => i.resultName == 'Grey-Green'),
+        interactions.any((i) => i.resultName == 'Light Grey-Green'),
         isFalse,
       );
     });
 
-    test('no Grey-Green when aqua is present (counts as blue)', () {
+    test('no Light Grey-Green when aqua is present (counts as blue)', () {
       final interactions = engine.getInteractions({'grey', 'aqua'});
 
       expect(
-        interactions.any((i) => i.resultName == 'Grey-Green'),
+        interactions.any((i) => i.resultName == 'Light Grey-Green'),
         isFalse,
       );
     });
 
-    test('no Grey-Green when turquoise is present (counts as blue)', () {
+    test('no Light Grey-Green when turquoise is present (counts as blue)', () {
       final interactions = engine.getInteractions({'grey', 'turquoise'});
 
       expect(
-        interactions.any((i) => i.resultName == 'Grey-Green'),
+        interactions.any((i) => i.resultName == 'Light Grey-Green'),
         isFalse,
       );
     });
 
-    test('no Grey-Green when bluefactor_1 is present', () {
+    test('no Light Grey-Green when bluefactor_1 is present', () {
       final interactions = engine.getInteractions({'grey', 'bluefactor_1'});
 
       expect(
-        interactions.any((i) => i.resultName == 'Grey-Green'),
+        interactions.any((i) => i.resultName == 'Light Grey-Green'),
         isFalse,
       );
     });
 
-    test('no Grey-Green when bluefactor_2 is present', () {
+    test('no Light Grey-Green when bluefactor_2 is present', () {
       final interactions = engine.getInteractions({'grey', 'bluefactor_2'});
 
       expect(
-        interactions.any((i) => i.resultName == 'Grey-Green'),
+        interactions.any((i) => i.resultName == 'Light Grey-Green'),
         isFalse,
       );
     });

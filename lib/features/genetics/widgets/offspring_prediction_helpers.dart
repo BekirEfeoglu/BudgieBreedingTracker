@@ -51,7 +51,7 @@ class _ProbabilityIndicator extends StatelessWidget {
             '%$percentage',
             style: theme.textTheme.labelSmall?.copyWith(
               fontWeight: FontWeight.bold,
-              fontSize: 10,
+              fontSize: 11,
             ),
           ),
         ],
@@ -100,7 +100,7 @@ class _CarrierMutationsSummary extends StatelessWidget {
               style: theme.textTheme.bodySmall?.copyWith(
                 color: warningColor,
                 fontWeight: FontWeight.w600,
-                fontSize: 10,
+                fontSize: 11,
               ),
             ),
           ),
@@ -141,7 +141,7 @@ class _MutationChip extends StatelessWidget {
         style: theme.textTheme.bodySmall?.copyWith(
           color: color,
           fontStyle: FontStyle.italic,
-          fontSize: 9,
+          fontSize: 10,
         ),
       ),
     );

@@ -47,7 +47,13 @@ class AdminUserManager {
         details: {'message': isActive ? 'User activated' : 'User deactivated'},
       );
 
-      _updateState(isLoading: false, isSuccess: true);
+      _updateState(
+        isLoading: false,
+        isSuccess: true,
+        successMessage: isActive
+            ? 'admin.user_activated_success'.tr()
+            : 'admin.user_deactivated_success'.tr(),
+      );
     } catch (e, st) {
       AppLogger.error('AdminUserManager.toggleUserActive', e, st);
       _updateState(isLoading: false, error: 'admin.action_error'.tr());
@@ -84,7 +90,11 @@ class AdminUserManager {
         details: {'message': 'Premium subscription granted'},
       );
 
-      _updateState(isLoading: false, isSuccess: true);
+      _updateState(
+        isLoading: false,
+        isSuccess: true,
+        successMessage: 'admin.premium_granted_success'.tr(),
+      );
     } on _ProtectedRoleError catch (e) {
       AppLogger.info(
         'AdminUserManager.grantPremium blocked for role: ${e.role}',
@@ -140,7 +150,11 @@ class AdminUserManager {
         details: {'message': 'Premium subscription revoked'},
       );
 
-      _updateState(isLoading: false, isSuccess: true);
+      _updateState(
+        isLoading: false,
+        isSuccess: true,
+        successMessage: 'admin.premium_revoked_success'.tr(),
+      );
     } on _ProtectedRoleError catch (e) {
       AppLogger.info(
         'AdminUserManager.revokePremium blocked for role: ${e.role}',

@@ -65,7 +65,8 @@
     "selected": "Seçili",
     "just_now": "Az önce",
     "minutes_ago": "{} dakika önce",
-    "hours_ago": "{} saat önce"
+    "hours_ago": "{} saat önce",
+    "more": "Daha Fazla"
   },
   "auth": {
     "login": "Giriş Yap",
@@ -966,6 +967,9 @@
     "cleanup_description": "Okunmuş bildirimlerin otomatik silineceği gün sayısı",
     "cleanup_days": "{} gün",
     "permission_denied_hint": "Bildirim izni verilmedi. Cihaz ayarlarından izin verebilirsiniz.",
+    "open_settings": "Ayarlar",
+    "permission_denied_banner": "Bildirim İzni Gerekli",
+    "permission_denied_banner_desc": "Bildirimlerin gösterilmesi için izin verilmedi. Yumurta çevirme, kuluçka ve yavru bakım hatırlatmalarını alabilmek için bildirim iznini etkinleştirin.",
     "banding_pre_title": "Yarın Halka Takma Günü",
     "banding_pre_body": "{} için yarın halka takma günü",
     "banding_main_title": "Halka Takma Günü!",
@@ -980,6 +984,12 @@
     "battery_optimization_warning": "Bildirimlerin zamaninda gelmesi icin cihaz ayarlarindan bu uygulama icin pil optimizasyonunu kapatin.",
     "battery_optimization_dismiss": "Bir daha gosterme",
     "battery_optimization_steps": "Ayarlar > Uygulamalar > BudgieTrack > Pil > Kisitlanmamis",
+    "battery_open_settings": "Ayarlari Ac",
+    "battery_steps_samsung": "Samsung: Ayarlar > Pil > Arka plan kullanim sinirlari > BudgieTrack'i listeden kaldirin",
+    "battery_steps_xiaomi": "Xiaomi/Redmi: Ayarlar > Uygulamalar > Uygulamalari yonet > BudgieTrack > Otomatik baslatma'yi acin ve Pil tasarrufunda 'Kisitlama yok' secin",
+    "battery_steps_huawei": "Huawei: Ayarlar > Pil > Uygulama baslatma > BudgieTrack icin otomatik yonetimi kapatin",
+    "battery_steps_oppo": "OPPO/Realme/OnePlus: Ayarlar > Pil > Daha fazla pil ayari > Uyku modundayken bildirimlere izin verin",
+    "battery_steps_vivo": "Vivo: Ayarlar > Pil > Yuksek arka plan guc tuketimi > BudgieTrack'i ekleyin",
     "egg_label": "Yumurta {}"
   },
   "premium": {
@@ -1462,8 +1472,12 @@
     "alert_info": "Bilgi",
     "deactivate_user": "Kullanıcıyı Deaktif Et",
     "activate_user": "Kullanıcıyı Aktif Et",
+    "user_activated_success": "Kullanici basariyla aktif edildi",
+    "user_deactivated_success": "Kullanici basariyla deaktif edildi",
     "grant_premium": "Premium Ver",
     "revoke_premium": "Premium İptal",
+    "premium_granted_success": "Premium abonelik basariyla verildi",
+    "premium_revoked_success": "Premium abonelik basariyla iptal edildi",
     "confirm_grant_premium": "Premium Aktif Et",
     "confirm_grant_premium_desc": "Bu kullanıcıya premium abonelik verilecek. Devam etmek istiyor musunuz?",
     "confirm_revoke_premium": "Premium İptal Et",
@@ -1659,6 +1673,7 @@
     "activity_pairs": "{} ureme cifti olusturdu",
     "activity_eggs": "{} yumurta kaydetti",
     "activity_chicks": "{} yavru kaydetti",
+    "recent_activities": "Son Aktiviteler",
     "last_24_hours": "Son 24 Saat",
     "error_summary": "Hata Ozeti",
     "errors_24h": "Hatalar (24s)",

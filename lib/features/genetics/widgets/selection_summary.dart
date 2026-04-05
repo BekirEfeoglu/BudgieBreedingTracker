@@ -240,7 +240,7 @@ class _MutationChip extends StatelessWidget {
                 child: Text(
                   stateLabel,
                   style: TextStyle(
-                    fontSize: 9,
+                    fontSize: 10,
                     fontWeight: FontWeight.bold,
                     color: stateColor,
                   ),
@@ -251,8 +251,8 @@ class _MutationChip extends StatelessWidget {
         ],
       ),
       onDeleted: onRemove,
-      deleteIcon: const Icon(LucideIcons.x, size: 16),
-      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      deleteIcon: const Icon(LucideIcons.x, size: 18),
+      materialTapTargetSize: MaterialTapTargetSize.padded,
     );
   }
 }

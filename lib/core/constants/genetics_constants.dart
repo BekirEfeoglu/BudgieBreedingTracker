@@ -91,6 +91,18 @@ abstract final class GeneticsConstants {
   static const String mutBlueFactor1 = 'bluefactor_1';
   static const String mutBlueFactor2 = 'bluefactor_2';
 
+  // ── Dilution / Fallow / Pattern mutation IDs ──
+  static const String mutDilute = 'dilute';
+  static const String mutAnthracite = 'anthracite';
+  static const String mutFallowEnglish = 'fallow_english';
+  static const String mutFallowGerman = 'fallow_german';
+  static const String mutFallowScottish = 'fallow_scottish';
+  static const String mutSaddleback = 'saddleback';
+  static const String mutDominantClearbody = 'dominant_clearbody';
+  static const String mutFaded = 'faded';
+  static const String mutMottled = 'mottled';
+  static const String mutFeatherDuster = 'feather_duster';
+
   // ── Pied mutation IDs ──
   static const String mutRecessivePied = 'recessive_pied';
   static const String mutClearflightPied = 'clearflight_pied';

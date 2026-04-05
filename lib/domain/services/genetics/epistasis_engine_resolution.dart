@@ -20,16 +20,16 @@ CompoundPhenotypeResult _resolveCompoundPhenotypeDetailed(
       visualMutations.contains(GeneticsConstants.mutBlue) ||
       visualMutations.contains(GeneticsConstants.mutAqua) ||
       visualMutations.contains(GeneticsConstants.mutTurquoise) ||
-      visualMutations.contains('bluefactor_1') ||
-      visualMutations.contains('bluefactor_2');
+      visualMutations.contains(GeneticsConstants.mutBlueFactor1) ||
+      visualMutations.contains(GeneticsConstants.mutBlueFactor2);
   final baseColor = isBlue ? _BaseColor.blue : _BaseColor.green;
 
   // 2. Yellowface detection
-  final hasYf1 = visualMutations.contains('yellowface_type1');
-  final hasYf2 = visualMutations.contains('yellowface_type2');
-  final hasGoldenface = visualMutations.contains('goldenface');
-  final hasBlueFactor1 = visualMutations.contains('bluefactor_1');
-  final hasBlueFactor2 = visualMutations.contains('bluefactor_2');
+  final hasYf1 = visualMutations.contains(GeneticsConstants.mutYellowfaceType1);
+  final hasYf2 = visualMutations.contains(GeneticsConstants.mutYellowfaceType2);
+  final hasGoldenface = visualMutations.contains(GeneticsConstants.mutGoldenface);
+  final hasBlueFactor1 = visualMutations.contains(GeneticsConstants.mutBlueFactor1);
+  final hasBlueFactor2 = visualMutations.contains(GeneticsConstants.mutBlueFactor2);
   final hasYellowface =
       hasYf1 || hasYf2 || hasGoldenface || hasBlueFactor1 || hasBlueFactor2;
 
@@ -37,7 +37,7 @@ CompoundPhenotypeResult _resolveCompoundPhenotypeDetailed(
   final hasIno = visualMutations.contains(GeneticsConstants.mutIno);
   final hasCinnamon = visualMutations.contains(GeneticsConstants.mutCinnamon);
   final hasPallid = visualMutations.contains(GeneticsConstants.mutPallid);
-  final hasBlackface = visualMutations.contains('blackface');
+  final hasBlackface = visualMutations.contains(GeneticsConstants.mutBlackface);
 
   // 3a. Ino naming: Albino/Lutino/Lacewing/Creamino/PallidIno
   _addInoNaming(
@@ -64,18 +64,18 @@ CompoundPhenotypeResult _resolveCompoundPhenotypeDetailed(
   }
 
   // 4. Dark factor dosage (single locus: SF=1 copy, DF=2 copies)
-  final hasDarkFactor = visualMutations.contains('dark_factor');
+  final hasDarkFactor = visualMutations.contains(GeneticsConstants.mutDarkFactor);
   final darkFactorCount = !hasDarkFactor
       ? 0
-      : doubleFactorIds.contains('dark_factor')
+      : doubleFactorIds.contains(GeneticsConstants.mutDarkFactor)
       ? 2
       : 1;
 
   // 5. Violet factor
-  final hasViolet = visualMutations.contains('violet');
+  final hasViolet = visualMutations.contains(GeneticsConstants.mutViolet);
 
   // 6. Grey factor
-  final hasGrey = visualMutations.contains('grey');
+  final hasGrey = visualMutations.contains(GeneticsConstants.mutGrey);
 
   // 7. Yellowface naming (only when not already Creamino)
   _addYellowfaceNaming(

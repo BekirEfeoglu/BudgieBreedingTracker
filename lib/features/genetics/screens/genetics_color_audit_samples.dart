@@ -42,9 +42,9 @@ const primaryAuditSamples = <AuditSample>[
     visualMutations: ['dark_factor'],
   ),
   AuditSample(
-    title: 'Grey-Green',
+    title: 'Light Grey-Green',
     note: 'Grey modifier',
-    phenotype: 'Grey-Green',
+    phenotype: 'Light Grey-Green',
     visualMutations: ['grey'],
   ),
 

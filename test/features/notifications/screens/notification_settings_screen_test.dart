@@ -15,6 +15,12 @@ class _FakeToggleNotifier extends NotificationToggleSettingsNotifier {
   NotificationToggleSettings build() => const NotificationToggleSettings();
 }
 
+/// Notifier that starts with permission denied state.
+class _DeniedPermissionNotifier extends NotificationPermissionNotifier {
+  @override
+  bool build() => false;
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -22,7 +28,7 @@ void main() {
     SharedPreferences.setMockInitialValues({});
   });
 
-  Widget createSubject() {
+  Widget createSubject({bool notificationPermissionGranted = true}) {
     return ProviderScope(
       overrides: [
         notificationToggleSettingsProvider.overrideWith(
@@ -31,6 +37,10 @@ void main() {
         notificationRateLimiterProvider.overrideWith(
           (ref) => NotificationRateLimiter(),
         ),
+        if (!notificationPermissionGranted)
+          notificationPermissionGrantedProvider.overrideWith(
+            () => _DeniedPermissionNotifier(),
+          ),
       ],
       child: const MaterialApp(home: NotificationSettingsScreen()),
     );

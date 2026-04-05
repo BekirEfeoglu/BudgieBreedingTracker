@@ -57,31 +57,42 @@ class ZLinkedBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return GestureDetector(
-      onTap: () => _showLinkagePopup(context),
-      child: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.xs + 2,
-          vertical: 1,
-        ),
-        decoration: BoxDecoration(
-          color: theme.colorScheme.tertiary.withValues(alpha: 0.15),
-          borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(LucideIcons.link, size: 8, color: theme.colorScheme.tertiary),
-            const SizedBox(width: 2),
-            Text(
-              'genetics.z_linked'.tr(),
-              style: TextStyle(
-                fontSize: 9,
-                fontWeight: FontWeight.bold,
-                color: theme.colorScheme.tertiary,
-              ),
+    return Semantics(
+      button: true,
+      label: 'genetics.z_linkage'.tr(),
+      child: GestureDetector(
+        onTap: () => _showLinkagePopup(context),
+        behavior: HitTestBehavior.opaque,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.xs,
+            vertical: AppSpacing.xs,
+          ),
+          child: Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.sm,
+              vertical: 2,
             ),
-          ],
+            decoration: BoxDecoration(
+              color: theme.colorScheme.tertiary.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(LucideIcons.link, size: 10, color: theme.colorScheme.tertiary),
+                const SizedBox(width: 3),
+                Text(
+                  'genetics.z_linked'.tr(),
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    color: theme.colorScheme.tertiary,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );

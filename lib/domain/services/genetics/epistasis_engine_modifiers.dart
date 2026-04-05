@@ -42,24 +42,24 @@ void _collectMaskedMutations(
 ) {
   // Ino masks all melanin-based mutations visually
   if (visualMutations.contains(GeneticsConstants.mutOpaline)) masked.add('Opaline');
-  if (visualMutations.contains('dark_factor')) {
-    final dfLabel = doubleFactorIds.contains('dark_factor')
+  if (visualMutations.contains(GeneticsConstants.mutDarkFactor)) {
+    final dfLabel = doubleFactorIds.contains(GeneticsConstants.mutDarkFactor)
         ? 'Dark Factor (Double)'
         : 'Dark Factor (Single)';
     masked.add(dfLabel);
   }
-  if (visualMutations.contains('grey')) masked.add('Grey');
-  if (visualMutations.contains('violet')) masked.add('Violet');
-  if (visualMutations.contains('spangle')) {
-    final spLabel = doubleFactorIds.contains('spangle')
+  if (visualMutations.contains(GeneticsConstants.mutGrey)) masked.add('Grey');
+  if (visualMutations.contains(GeneticsConstants.mutViolet)) masked.add('Violet');
+  if (visualMutations.contains(GeneticsConstants.mutSpangle)) {
+    final spLabel = doubleFactorIds.contains(GeneticsConstants.mutSpangle)
         ? 'Double Factor Spangle'
         : 'Spangle';
     masked.add(spLabel);
   }
-  if (visualMutations.contains('dilute')) masked.add('Dilute');
+  if (visualMutations.contains(GeneticsConstants.mutDilute)) masked.add('Dilute');
   if (visualMutations.contains(GeneticsConstants.mutSlate)) masked.add('Slate');
-  if (visualMutations.contains('clearwing')) masked.add('Clearwing');
-  if (visualMutations.contains('greywing')) masked.add('Greywing');
+  if (visualMutations.contains(GeneticsConstants.mutClearwing)) masked.add('Clearwing');
+  if (visualMutations.contains(GeneticsConstants.mutGreywing)) masked.add('Greywing');
   if (visualMutations.contains(GeneticsConstants.mutPearly)) masked.add('Pearly');
   if (visualMutations.contains(GeneticsConstants.mutPallid)) masked.add('Pallid');
   // Cinnamon is masked by Ino unless it's already part of the Lacewing name
@@ -85,7 +85,7 @@ void _addYellowfaceNaming(
     if (hasYf1) {
       if (isBlue) {
         // Yellowface Type 1 DF paradox: double factor = white-faced
-        if (doubleFactorIds.contains('yellowface_type1')) {
+        if (doubleFactorIds.contains(GeneticsConstants.mutYellowfaceType1)) {
           parts.add('Whitefaced');
         } else {
           parts.add('Yellowface Type I');
@@ -95,7 +95,7 @@ void _addYellowfaceNaming(
     }
     if (hasYf2) {
       if (isBlue) {
-        if (doubleFactorIds.contains('yellowface_type2')) {
+        if (doubleFactorIds.contains(GeneticsConstants.mutYellowfaceType2)) {
           parts.add('Yellowface Type II DF');
         } else {
           parts.add('Yellowface Type II');
@@ -114,7 +114,7 @@ void _addYellowfaceNaming(
   } else if (hasYellowface && hasIno && !(hasYf2 && isBlue)) {
     // Yellowface + Ino but not Creamino -> just note Yellowface
     if (hasYf1 && isBlue) {
-      if (doubleFactorIds.contains('yellowface_type1')) {
+      if (doubleFactorIds.contains(GeneticsConstants.mutYellowfaceType1)) {
         // Whitefaced paradox: suppress for Ino+Blue (already Albino)
       } else {
         parts.add('Yellowface Type I');
@@ -142,8 +142,8 @@ void _addBaseColorNaming(
     // Green: Light Grey-Green (0DF), Dark Grey-Green (1DF), Olive Grey-Green (2DF)
     // Blue: Grey (0DF), Dark Grey (1DF), Mauve Grey (2DF)
     final greyPrefix = switch (darkFactorCount) {
-      0 => '',
-      1 => isBlue ? 'Dark ' : 'Dark ',
+      0 => isBlue ? '' : 'Light ',
+      1 => 'Dark ',
       >= 2 => isBlue ? 'Mauve ' : 'Olive ',
       _ => '',
     };
@@ -155,7 +155,7 @@ void _addBaseColorNaming(
   }
 
   // Visual Violet: best on Cobalt (Blue+1DF+V) or Double Violet on Skyblue
-  final isDoubleViolet = hasViolet && doubleFactorIds.contains('violet');
+  final isDoubleViolet = hasViolet && doubleFactorIds.contains(GeneticsConstants.mutViolet);
   if (hasViolet && isBlue && (darkFactorCount == 1 || isDoubleViolet)) {
     parts.add('Visual Violet');
   } else if (hasViolet) {
@@ -184,12 +184,12 @@ void _addPatternAndModifierNaming(
   // 9. Pattern mutations (order: Spangle > Opaline > Clearwing/Greywing)
   if (!hasIno) {
     // Ino masks all pattern mutations; Lacewing only reveals cinnamon markings
-    final hasSpangle = visualMutations.contains('spangle');
-    final isDoubleSpangle = hasSpangle && doubleFactorIds.contains('spangle');
+    final hasSpangle = visualMutations.contains(GeneticsConstants.mutSpangle);
+    final isDoubleSpangle = hasSpangle && doubleFactorIds.contains(GeneticsConstants.mutSpangle);
     final hasOpaline = visualMutations.contains(GeneticsConstants.mutOpaline);
     final hasPearly = visualMutations.contains(GeneticsConstants.mutPearly);
-    final hasClearwing = visualMutations.contains('clearwing');
-    final hasGreywing = visualMutations.contains('greywing');
+    final hasClearwing = visualMutations.contains(GeneticsConstants.mutClearwing);
+    final hasGreywing = visualMutations.contains(GeneticsConstants.mutGreywing);
     // Full-Body Greywing: compound heterozygote of greywing + clearwing
     final hasFullBodyGreywing = hasGreywing && hasClearwing;
 
@@ -222,10 +222,10 @@ void _addPatternAndModifierNaming(
   // 10. Melanin modifiers (if not already covered by Ino/Lacewing)
   if (!hasIno) {
     if (hasCinnamon) parts.add('Cinnamon');
-    if (visualMutations.contains('dilute')) parts.add('Dilute');
+    if (visualMutations.contains(GeneticsConstants.mutDilute)) parts.add('Dilute');
     if (visualMutations.contains(GeneticsConstants.mutSlate)) parts.add('Slate');
-    if (visualMutations.contains('anthracite')) {
-      if (doubleFactorIds.contains('anthracite')) {
+    if (visualMutations.contains(GeneticsConstants.mutAnthracite)) {
+      if (doubleFactorIds.contains(GeneticsConstants.mutAnthracite)) {
         parts.add('Double Factor Anthracite');
       } else {
         parts.add('Single Factor Anthracite');
@@ -238,11 +238,14 @@ void _addPatternAndModifierNaming(
   _addPiedNaming(parts, visualMutations);
 
   // 12. Fallow
-  if (visualMutations.contains('fallow_english')) {
+  if (visualMutations.contains(GeneticsConstants.mutFallowEnglish)) {
     parts.add('English Fallow');
   }
-  if (visualMutations.contains('fallow_german')) {
+  if (visualMutations.contains(GeneticsConstants.mutFallowGerman)) {
     parts.add('German Fallow');
+  }
+  if (visualMutations.contains(GeneticsConstants.mutFallowScottish)) {
+    parts.add('Scottish Fallow');
   }
 
   // 13. Feather structure (crested compound heterozygote detection)
@@ -252,15 +255,21 @@ void _addPatternAndModifierNaming(
   if (visualMutations.contains(GeneticsConstants.mutTexasClearbody)) {
     parts.add('Texas Clearbody');
   }
-  if (visualMutations.contains('dominant_clearbody')) {
+  if (visualMutations.contains(GeneticsConstants.mutDominantClearbody)) {
     parts.add('Dominant Clearbody');
   }
 
-  // 15. Saddleback
-  if (visualMutations.contains('saddleback')) {
+  // 15. Saddleback and other patterns
+  if (visualMutations.contains(GeneticsConstants.mutSaddleback)) {
     parts.add('Saddleback');
   }
-  if (hasBlackface && !visualMutations.contains('spangle')) {
+  if (visualMutations.contains(GeneticsConstants.mutFaded)) {
+    parts.add('Faded');
+  }
+  if (visualMutations.contains(GeneticsConstants.mutMottled)) {
+    parts.add('Mottled');
+  }
+  if (hasBlackface && !visualMutations.contains(GeneticsConstants.mutSpangle)) {
     parts.add('Blackface');
   }
 }

@@ -15,6 +15,8 @@ import 'core/utils/logger.dart';
 import 'domain/services/encryption/encryption_providers.dart';
 import 'domain/services/sync/sync_providers.dart';
 import 'domain/services/genetics/parent_genotype.dart';
+import 'domain/services/notifications/notification_processor.dart';
+import 'domain/services/notifications/notification_providers.dart';
 import 'features/auth/providers/auth_providers.dart';
 import 'features/genetics/providers/genetics_providers.dart';
 import 'features/premium/providers/premium_providers.dart';
@@ -93,6 +95,10 @@ class _BudgieBreedingAppState extends ConsumerState<BudgieBreedingApp> {
     // Restart inactivity guard when app comes back to foreground
     _inactivityGuard.start();
     ref.read(localPremiumProvider.notifier).refresh();
+    unawaited(_recoverPendingNotifications());
+    // Re-check exact alarm permission — user may have granted it via Settings
+    // while the app was backgrounded.
+    unawaited(_refreshExactAlarmPermission());
 
     // Push pending local changes on app resume.
     // Uses lightweight pushChanges instead of fullSync — periodic and
@@ -104,6 +110,27 @@ class _BudgieBreedingAppState extends ConsumerState<BudgieBreedingApp> {
         AppLogger.warning('[AppResume] Push failed: $e');
         return false;
       });
+    }
+  }
+
+  Future<void> _refreshExactAlarmPermission() async {
+    try {
+      final notifService = ref.read(notificationServiceProvider);
+      if (!notifService.isInitialized) return;
+      // Re-check exact alarm permission — user may have granted it via Settings
+      await notifService.resolveExactAlarmPermission(forceRefresh: true);
+      // Re-check battery optimization — user may have disabled it via Settings
+      await notifService.requestBatteryOptimizationExemptionIfNeeded();
+    } catch (e) {
+      AppLogger.warning('[AppResume] Permission refresh failed: $e');
+    }
+  }
+
+  Future<void> _recoverPendingNotifications() async {
+    try {
+      await ref.read(notificationProcessorProvider).processAll();
+    } catch (e) {
+      AppLogger.warning('[AppResume] Pending notification recovery failed: $e');
     }
   }
 
@@ -191,6 +218,8 @@ class _BudgieBreedingAppState extends ConsumerState<BudgieBreedingApp> {
           : revenueCatApiKeyAndroid;
       if (apiKey.isEmpty) return;
       if (shouldDeferRevenueCatOnDebugIosSimulator) return;
+
+      unawaited(ref.read(pushNotificationServiceProvider).syncToken(next));
 
       unawaited(
         purchaseService

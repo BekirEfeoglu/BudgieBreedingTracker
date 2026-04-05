@@ -30,7 +30,7 @@ void main() {
     });
 
     test('rejects password exceeding max length', () {
-      final longPassword = 'Aa1!' + 'x' * 125; // 129 chars
+      final longPassword = 'Aa1!${'x' * 125}'; // 129 chars
       final result = PasswordPolicy.validate(longPassword);
 
       expect(result.hasMinLength, isTrue);
@@ -41,7 +41,7 @@ void main() {
     });
 
     test('accepts password at exactly max length', () {
-      final maxPassword = 'Aa1!' + 'x' * 124; // 128 chars
+      final maxPassword = 'Aa1!${'x' * 124}'; // 128 chars
       final result = PasswordPolicy.validate(maxPassword);
 
       expect(result.hasMinLength, isTrue);

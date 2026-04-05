@@ -122,7 +122,7 @@ abstract class LethalCombinationDatabase {
       descriptionKey: 'genetics.lethal_df_spangle_desc',
       severity: LethalSeverity.subVital,
       affectedRate: 1.0,
-      requiredMutationIds: {'spangle'},
+      requiredMutationIds: {GeneticsConstants.mutSpangle},
       requiresHomozygous: true,
     ),
 
@@ -135,23 +135,37 @@ abstract class LethalCombinationDatabase {
       descriptionKey: 'genetics.lethal_df_dominant_pied_desc',
       severity: LethalSeverity.semiLethal,
       affectedRate: 1.0,
-      requiredMutationIds: {'dominant_pied'},
+      requiredMutationIds: {GeneticsConstants.mutDominantPied},
       requiresHomozygous: true,
     ),
 
-    // ── Visual Ino x Visual Ino (Semi-Lethal) ──
+    // ── Visual Ino x Visual Ino (Sub-Vital) ──
     // Both parents visual Ino → all offspring visual Ino.
     // Documented health issues: feather cysts, reduced immune function,
     // smaller size, higher chick mortality, eye problems.
-    // The genetics guide explicitly warns against this combination.
+    // Classified as sub-vital rather than semi-lethal: offspring are viable
+    // but with reduced fitness. The genetics guide warns against this combination.
     LethalCombination(
       id: 'ino_x_ino',
       nameKey: 'genetics.lethal_ino_x_ino_name',
       descriptionKey: 'genetics.lethal_ino_x_ino_desc',
-      severity: LethalSeverity.semiLethal,
+      severity: LethalSeverity.subVital,
       affectedRate: 1.0,
       requiredMutationIds: {GeneticsConstants.mutIno},
       requiresHomozygous: false,
+    ),
+    // ── Feather Duster (Lethal) ──
+    // Homozygous feather duster (fdu/fdu) is invariably lethal.
+    // Affected chicks have continuously growing, curly feathers and rarely
+    // survive beyond a few months. Both parents must carry the gene.
+    LethalCombination(
+      id: 'df_feather_duster',
+      nameKey: 'genetics.lethal_feather_duster_name',
+      descriptionKey: 'genetics.lethal_feather_duster_desc',
+      severity: LethalSeverity.lethal,
+      affectedRate: 1.0,
+      requiredMutationIds: {GeneticsConstants.mutFeatherDuster},
+      requiresHomozygous: true,
     ),
   ];
 

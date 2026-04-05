@@ -93,7 +93,7 @@ void main() {
           analysis.warnings.every((w) => w.combination.id == 'ino_x_ino'),
           isTrue,
         );
-        expect(analysis.highestSeverity, LethalSeverity.semiLethal);
+        expect(analysis.highestSeverity, LethalSeverity.subVital);
         expect(analysis.totalAffectedProbability, closeTo(1.0, 0.0001));
       },
     );
@@ -166,13 +166,13 @@ void main() {
           analysis.warnings.where((w) => w.combination.id == 'df_spangle'),
           hasLength(1),
         );
-        expect(analysis.highestSeverity, LethalSeverity.semiLethal);
+        expect(analysis.highestSeverity, LethalSeverity.subVital);
         expect(analysis.totalAffectedProbability, 1.0);
       },
     );
 
     test(
-      'reports lethal as highest severity when lethal and semi-lethal coexist',
+      'reports lethal as highest severity when lethal and sub-vital coexist',
       () {
         final analysis = analyzer.analyze(
           fatherMutations: const {'crested_tufted', 'ino'},

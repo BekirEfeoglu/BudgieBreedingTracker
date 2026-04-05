@@ -230,7 +230,7 @@ void main() {
         phenotypeColorFromMutations(['grey', 'blue']),
         AppColors.phenotypeGrey,
       );
-      // Grey alone = Grey-Green
+      // Grey alone = Light Grey-Green
       expect(phenotypeColorFromMutations(['grey']), AppColors.phenotypeGrey);
     });
 

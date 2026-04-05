@@ -127,15 +127,7 @@ void main() {
         )),
       );
 
-      // Genotype is shown as a hint label in collapsed view
-      expect(
-        find.text(l10n('genetics.genotype_detail_label')),
-        findsAtLeastNWidgets(1),
-      );
-
-      // Tap to expand and verify full genotype is visible
-      await tester.tap(find.byType(OffspringPrediction));
-      await tester.pumpAndSettle();
+      // Genotype is shown inline in collapsed view
       expect(find.textContaining('+/+ bl/bl'), findsAtLeastNWidgets(1));
     });
 

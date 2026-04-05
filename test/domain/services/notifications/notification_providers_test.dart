@@ -149,6 +149,56 @@ void main() {
     });
   });
 
+  group('notificationPermissionGrantedProvider', () {
+    test('initial state is true (optimistic default)', () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      expect(container.read(notificationPermissionGrantedProvider), isTrue);
+    });
+
+    test('state can be set to false when permission is denied', () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      container.read(notificationPermissionGrantedProvider.notifier).state =
+          false;
+
+      expect(container.read(notificationPermissionGrantedProvider), isFalse);
+    });
+
+    test('state can transition from false to true', () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      container.read(notificationPermissionGrantedProvider.notifier).state =
+          false;
+      expect(container.read(notificationPermissionGrantedProvider), isFalse);
+
+      container.read(notificationPermissionGrantedProvider.notifier).state =
+          true;
+      expect(container.read(notificationPermissionGrantedProvider), isTrue);
+    });
+
+    test('listeners are notified on state change', () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      final states = <bool>[];
+      container.listen<bool>(
+        notificationPermissionGrantedProvider,
+        (_, next) => states.add(next),
+      );
+
+      container.read(notificationPermissionGrantedProvider.notifier).state =
+          false;
+      container.read(notificationPermissionGrantedProvider.notifier).state =
+          true;
+
+      expect(states, [false, true]);
+    });
+  });
+
   group('provider wiring', () {
     test('notificationSchedulerProvider composes service + limiter', () {
       final container = ProviderContainer();

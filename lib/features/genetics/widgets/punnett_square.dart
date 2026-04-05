@@ -74,10 +74,18 @@ class PunnettSquareWidget extends StatelessWidget {
           ],
         ),
         const SizedBox(height: AppSpacing.md),
-        SingleChildScrollView(
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final columnCount = data.cells.isNotEmpty
+                ? data.cells.first.length + 1
+                : 3;
+            final columnWidth = (constraints.maxWidth / columnCount)
+                .clamp(70.0, 110.0);
+
+            return SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           child: Table(
-            defaultColumnWidth: const FixedColumnWidth(90),
+            defaultColumnWidth: FixedColumnWidth(columnWidth),
             border: TableBorder.all(color: tableBorderColor, width: 1),
             children: [
               _buildHeaderRow(theme),
@@ -86,6 +94,8 @@ class PunnettSquareWidget extends StatelessWidget {
               ),
             ],
           ),
+        );
+          },
         ),
       ],
     );
@@ -97,13 +107,9 @@ class PunnettSquareWidget extends StatelessWidget {
         color: theme.colorScheme.primaryContainer.withValues(alpha: 0.3),
       ),
       children: [
-        _buildCell(
-          theme,
-          data.isSexLinked ? '♂ \\ ♀' : '♂ \\ ♀',
-          isHeader: true,
-        ),
+        _buildIconHeaderCell(theme, null, '\\'),
         ...data.motherAlleles.map(
-          (a) => _buildCell(theme, '♀ $a', isHeader: true),
+          (a) => _buildIconHeaderCell(theme, AppIcons.female, a),
         ),
       ],
     );
@@ -116,27 +122,39 @@ class PunnettSquareWidget extends StatelessWidget {
 
     return TableRow(
       children: [
-        _buildCell(theme, '♂ $fatherAllele', isHeader: true),
+        _buildIconHeaderCell(theme, AppIcons.male, fatherAllele),
         ...rowData.map((cell) => _buildDataCell(theme, cell)),
       ],
     );
   }
 
-  Widget _buildCell(ThemeData theme, String text, {bool isHeader = false}) {
+  Widget _buildIconHeaderCell(ThemeData theme, String? iconAsset, String text) {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.sm),
-      color: isHeader
-          ? theme.colorScheme.primaryContainer.withValues(alpha: 0.2)
-          : null,
+      color: theme.colorScheme.primaryContainer.withValues(alpha: 0.2),
       child: Center(
-        child: Text(
-          text,
-          style: isHeader
-              ? theme.textTheme.labelMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                )
-              : theme.textTheme.labelSmall,
-          textAlign: TextAlign.center,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (iconAsset != null) ...[
+              AppIcon(
+                iconAsset,
+                size: 14,
+                color: iconAsset == AppIcons.male
+                    ? AppColors.genderMale
+                    : AppColors.genderFemale,
+              ),
+              const SizedBox(width: 3),
+            ],
+            Text(
+              text,
+              style: theme.textTheme.labelMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
         ),
       ),
     );

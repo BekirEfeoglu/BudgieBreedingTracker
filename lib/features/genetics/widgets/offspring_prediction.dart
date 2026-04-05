@@ -1,5 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'dart:ui' as ui;
+import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
@@ -12,10 +14,10 @@ import 'package:budgie_breeding_tracker/features/genetics/widgets/offspring_pred
 part 'offspring_prediction_helpers.dart';
 
 // ── Layout constants ──
-const double _kBirdHeightExpanded = 96;
-const double _kBirdHeightGenotype = 80;
-const double _kBirdHeightDefault = 64;
-const double _kProgressSize = AppSpacing.touchTargetLg;
+const double _kBirdHeightExpanded = 80;
+const double _kBirdHeightGenotype = 56;
+const double _kBirdHeightDefault = 48;
+const double _kProgressSize = AppSpacing.touchTargetMin;
 const int _kMaxVisibleMutations = 3;
 const double _kLowProbabilityThreshold = 0.01;
 
@@ -92,6 +94,7 @@ class _OffspringPredictionState extends State<OffspringPrediction>
     return RepaintBoundary(
       child: Semantics(
         label: semanticLabel,
+        expanded: _hasExpandableContent ? _expanded : null,
         child: Card(
           clipBehavior: Clip.antiAlias,
           color: cardColor,
@@ -100,6 +103,13 @@ class _OffspringPredictionState extends State<OffspringPrediction>
                 ? () {
                     HapticFeedback.lightImpact();
                     setState(() => _expanded = !_expanded);
+                    // ignore: deprecated_member_use
+                    SemanticsService.announce(
+                      _expanded
+                          ? 'genetics.details_expanded'.tr()
+                          : 'genetics.details_collapsed'.tr(),
+                      ui.TextDirection.ltr,
+                    );
                   }
                 : null,
           child: AnimatedSize(
@@ -123,7 +133,10 @@ class _OffspringPredictionState extends State<OffspringPrediction>
                 ),
                 Expanded(
                   child: Padding(
-                    padding: AppSpacing.cardPadding,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.md,
+                      vertical: AppSpacing.sm,
+                    ),
                     child: Column(
                       children: [
                         _buildCollapsedRow(theme, result, displayName,
@@ -193,36 +206,19 @@ class _OffspringPredictionState extends State<OffspringPrediction>
                   theme: theme,
                 ),
               ],
-              if (result.maskedMutations.isNotEmpty && !_expanded) ...[
-                const SizedBox(height: 1),
-                Text(
-                  'genetics.masked_mutations'.tr(
-                    args: [
-                      PhenotypeLocalizer.localizeMutationList(
-                        result.maskedMutations,
-                      ).join(', '),
-                    ],
-                  ),
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
-                    fontStyle: FontStyle.italic,
-                    fontSize: 10,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 1,
-                ),
-              ],
               if (!_expanded &&
                   widget.showGenotype &&
                   result.genotype != null) ...[
                 const SizedBox(height: 2),
                 Text(
-                  'genetics.genotype_detail_label'.tr(),
+                  result.genotype!,
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: theme.colorScheme.primary,
                     fontSize: 10,
-                    fontWeight: FontWeight.w500,
+                    fontFamily: 'monospace',
                   ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
                 ),
               ],
             ],

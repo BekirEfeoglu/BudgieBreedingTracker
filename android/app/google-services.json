@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "720334450619",
+    "project_id": "budgiebreedingtracker-12072",
+    "storage_bucket": "budgiebreedingtracker-12072.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:720334450619:android:9a503008e0bb4011431e9e",
+        "android_client_info": {
+          "package_name": "com.budgiebreeding.budgie_breeding_tracker"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCV-6KciGv03kyp8OO_5R3lrNv4gXmsabk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

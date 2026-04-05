@@ -266,10 +266,10 @@ void main() {
   });
 
   group('resolveCompoundPhenotype - Grey interactions', () {
-    test('Grey + Green resolves to Grey-Green', () {
+    test('Grey + Green resolves to Light Grey-Green', () {
       final result = engine.resolveCompoundPhenotype({'grey'});
 
-      expect(result, contains('Grey-Green'));
+      expect(result, contains('Light Grey-Green'));
     });
 
     test('Grey + Blue resolves to Grey (not Grey-Green)', () {
@@ -956,16 +956,16 @@ void main() {
       expect(interactions.any((i) => i.resultName == 'Visual Violet'), isTrue);
     });
 
-    test('detects Grey-Green interaction on green series', () {
+    test('detects Light Grey-Green interaction on green series', () {
       final interactions = engine.getInteractions({'grey'});
 
-      expect(interactions.any((i) => i.resultName == 'Grey-Green'), isTrue);
+      expect(interactions.any((i) => i.resultName == 'Light Grey-Green'), isTrue);
     });
 
-    test('no Grey-Green interaction on blue series', () {
+    test('no Light Grey-Green interaction on blue series', () {
       final interactions = engine.getInteractions({'grey', 'blue'});
 
-      expect(interactions.any((i) => i.resultName == 'Grey-Green'), isFalse);
+      expect(interactions.any((i) => i.resultName == 'Light Grey-Green'), isFalse);
     });
 
     test('detects Dark-Eyed Clear interaction', () {

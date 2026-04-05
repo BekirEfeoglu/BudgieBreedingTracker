@@ -23,6 +23,8 @@ class _TestPermissionHandler with NotificationPermissionHandler {
 }
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   group('NotificationPermissionHandler.requestPermission', () {
     late _MockPlugin mockPlugin;
     late _TestPermissionHandler handler;
@@ -207,6 +209,81 @@ void main() {
     });
   });
 
+  group('NotificationPermissionHandler.areNotificationsEnabled', () {
+    late _MockPlugin mockPlugin;
+    late _TestPermissionHandler handler;
+
+    setUp(() {
+      mockPlugin = _MockPlugin();
+      handler = _TestPermissionHandler(mockPlugin);
+    });
+
+    test('returns true when no Android implementation (non-Android platform)',
+        () async {
+      when(
+        () => mockPlugin
+            .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin
+            >(),
+      ).thenReturn(null);
+
+      final result = await handler.areNotificationsEnabled();
+
+      expect(result, isTrue);
+    });
+
+    test('returns true when notifications are enabled', () async {
+      final mockAndroid = _MockAndroidPlugin();
+      when(
+        () => mockPlugin
+            .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin
+            >(),
+      ).thenReturn(mockAndroid);
+      when(
+        () => mockAndroid.areNotificationsEnabled(),
+      ).thenAnswer((_) async => true);
+
+      final result = await handler.areNotificationsEnabled();
+
+      expect(result, isTrue);
+    });
+
+    test('returns false when notifications are disabled', () async {
+      final mockAndroid = _MockAndroidPlugin();
+      when(
+        () => mockPlugin
+            .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin
+            >(),
+      ).thenReturn(mockAndroid);
+      when(
+        () => mockAndroid.areNotificationsEnabled(),
+      ).thenAnswer((_) async => false);
+
+      final result = await handler.areNotificationsEnabled();
+
+      expect(result, isFalse);
+    });
+
+    test('returns true when areNotificationsEnabled returns null', () async {
+      final mockAndroid = _MockAndroidPlugin();
+      when(
+        () => mockPlugin
+            .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin
+            >(),
+      ).thenReturn(mockAndroid);
+      when(
+        () => mockAndroid.areNotificationsEnabled(),
+      ).thenAnswer((_) async => null);
+
+      final result = await handler.areNotificationsEnabled();
+
+      expect(result, isTrue);
+    });
+  });
+
   group('NotificationPermissionHandler.checkExactAlarmPermission', () {
     late _MockPlugin mockPlugin;
     late _TestPermissionHandler handler;
@@ -280,6 +357,75 @@ void main() {
       final result = await handler.checkExactAlarmPermission();
 
       expect(result, isTrue);
+    });
+  });
+
+  group('NotificationPermissionHandler.requestExactAlarmPermissionIfNeeded', () {
+    late _MockPlugin mockPlugin;
+    late _TestPermissionHandler handler;
+
+    setUp(() {
+      mockPlugin = _MockPlugin();
+      handler = _TestPermissionHandler(mockPlugin);
+    });
+
+    test('returns true when exact alarms are already allowed', () async {
+      final mockAndroid = _MockAndroidPlugin();
+      when(
+        () => mockPlugin
+            .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin
+            >(),
+      ).thenReturn(mockAndroid);
+      when(
+        () => mockAndroid.canScheduleExactNotifications(),
+      ).thenAnswer((_) async => true);
+
+      final result = await handler.requestExactAlarmPermissionIfNeeded();
+
+      expect(result, isTrue);
+      verifyNever(() => mockAndroid.requestExactAlarmsPermission());
+    });
+
+    test('requests permission when exact alarms are not yet allowed', () async {
+      final mockAndroid = _MockAndroidPlugin();
+      when(
+        () => mockPlugin
+            .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin
+            >(),
+      ).thenReturn(mockAndroid);
+      when(
+        () => mockAndroid.canScheduleExactNotifications(),
+      ).thenAnswer((_) async => false);
+      when(
+        () => mockAndroid.requestExactAlarmsPermission(),
+      ).thenAnswer((_) async => true);
+
+      final result = await handler.requestExactAlarmPermissionIfNeeded();
+
+      expect(result, isTrue);
+      verify(() => mockAndroid.requestExactAlarmsPermission()).called(1);
+    });
+
+    test('returns false when request is denied', () async {
+      final mockAndroid = _MockAndroidPlugin();
+      when(
+        () => mockPlugin
+            .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin
+            >(),
+      ).thenReturn(mockAndroid);
+      when(
+        () => mockAndroid.canScheduleExactNotifications(),
+      ).thenAnswer((_) async => false);
+      when(
+        () => mockAndroid.requestExactAlarmsPermission(),
+      ).thenAnswer((_) async => false);
+
+      final result = await handler.requestExactAlarmPermissionIfNeeded();
+
+      expect(result, isFalse);
     });
   });
 
@@ -380,6 +526,52 @@ void main() {
       expect(result2, isFalse);
 
       verify(() => mockAndroid.canScheduleExactNotifications()).called(1);
+    });
+  });
+
+  // Battery optimization methods use Platform.isAndroid guards.
+  // On non-Android test hosts they return safe defaults without calling
+  // the MethodChannel.
+  group('Battery optimization methods (non-Android defaults)', () {
+    late _MockPlugin mockPlugin;
+    late _TestPermissionHandler handler;
+
+    setUp(() {
+      mockPlugin = _MockPlugin();
+      handler = _TestPermissionHandler(mockPlugin);
+    });
+
+    test('isIgnoringBatteryOptimizations returns true on non-Android',
+        () async {
+      final result = await handler.isIgnoringBatteryOptimizations();
+      expect(result, isTrue);
+    });
+
+    test('requestIgnoreBatteryOptimizations returns true on non-Android',
+        () async {
+      final result = await handler.requestIgnoreBatteryOptimizations();
+      expect(result, isTrue);
+    });
+
+    test(
+      'requestBatteryOptimizationExemptionIfNeeded returns true on non-Android',
+      () async {
+        final result =
+            await handler.requestBatteryOptimizationExemptionIfNeeded();
+        expect(result, isTrue);
+      },
+    );
+
+    test('getDeviceManufacturer returns empty string on non-Android', () async {
+      final result =
+          await NotificationPermissionHandler.getDeviceManufacturer();
+      expect(result, isEmpty);
+    });
+
+    test('openNotificationSettings returns false on non-Android', () async {
+      final result =
+          await NotificationPermissionHandler.openNotificationSettings();
+      expect(result, isFalse);
     });
   });
 }

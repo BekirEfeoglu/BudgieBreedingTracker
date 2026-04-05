@@ -53,8 +53,12 @@ abstract final class PhenotypeLocalizer {
       ('Pallid Texas Clearbody', 'genetics.phenotype_pallid_texas_clearbody'),
       ('English Fallow', 'genetics.mutation_fallow_english'),
       ('German Fallow', 'genetics.mutation_fallow_german'),
+      ('Scottish Fallow', 'genetics.mutation_fallow_scottish'),
+      ('Faded', 'genetics.mutation_faded'),
+      ('Mottled', 'genetics.mutation_mottled'),
       ('Light Green', 'genetics.phenotype_light_green'),
       ('Dark Green', 'genetics.phenotype_dark_green'),
+      ('Light Grey-Green', 'genetics.phenotype_light_grey_green'),
       ('Grey-Green', 'genetics.phenotype_grey_green'),
       ('Skyblue', 'genetics.phenotype_skyblue'),
       ('Cobalt', 'genetics.phenotype_cobalt'),
@@ -83,6 +87,72 @@ abstract final class PhenotypeLocalizer {
   /// All l10n keys referenced by known phenotype phrases (for validation).
   static List<String> get allReferencedKeys =>
       _phraseKeys.map((e) => e.$2).toList();
+
+  /// Abbreviation map: long localized terms → short forms.
+  /// Applied when phenotype display name exceeds [maxLength].
+  static const _abbreviations = <String, String>{
+    // English
+    'Texas Clearbody': 'TCB',
+    'Dominant Clearbody': 'Dom.CB',
+    'Double Factor Spangle': 'DF Spangle',
+    'Single Factor Anthracite': 'SF Anthr.',
+    'Double Factor Anthracite': 'DF Anthr.',
+    'Yellowface Type I': 'YF-I',
+    'Yellowface Type II': 'YF-II',
+    'Yellowface Type II DF': 'YF-II DF',
+    'Light Green': 'Lt.Green',
+    'Dark Green': 'Dk.Green',
+    'Recessive Pied': 'Rec.Pied',
+    'Clearflight Pied': 'CF Pied',
+    'Dominant Pied': 'Dom.Pied',
+    'Full-Body Greywing': 'FB Greywing',
+    'Dark-Eyed Clear': 'DEC',
+    'Visual Violet': 'Vis.Violet',
+    'Light Grey-Green': 'Lt.Grey-Grn',
+    'Half-Circular Crest': 'HC Crest',
+    'Full-Circular Crest': 'FC Crest',
+    // Turkish
+    'Texas Açık Gövde': 'TCB',
+    'Dominant Açık Gövde': 'Dom.AG',
+    'Çift Faktör Spangle': 'ÇF Spangle',
+    'Tek Faktör Antrasit': 'TF Antrasit',
+    'Çift Faktör Antrasit': 'ÇF Antrasit',
+    'Sarı Yüz Tip I': 'SY-I',
+    'Sarı Yüz Tip II': 'SY-II',
+    'Açık Yeşil': 'A.Yeşil',
+    'Koyu Yeşil': 'K.Yeşil',
+    'Resesif Parçalı': 'Res.Parç.',
+    'Baskın Parçalı': 'Bsk.Parç.',
+    'Açık Gri-Yeşil': 'A.Gri-Yeşil',
+    'Görsel Menekşe': 'Gör.Menekşe',
+    'Yarım Daire Tepeli': 'YD Tepeli',
+    'Tam Daire Tepeli': 'TD Tepeli',
+    // German
+    'Texas Hellkörper': 'TCB',
+    'Dominanter Hellkörper': 'Dom.HK',
+    'Helles Graugrün': 'H.Graugrün',
+  };
+
+  /// Shorten a localized phenotype name when it exceeds [maxLength].
+  ///
+  /// Applies abbreviation substitutions from longest match first.
+  /// Returns the original if already short enough or no abbreviation helps.
+  static String shortenPhenotype(String localized, {int maxLength = 28}) {
+    if (localized.length <= maxLength) return localized;
+
+    var shortened = localized;
+    // Sort abbreviations by key length descending (longest match first)
+    final sorted = _abbreviations.entries.toList()
+      ..sort((a, b) => b.key.length.compareTo(a.key.length));
+
+    for (final entry in sorted) {
+      if (shortened.contains(entry.key)) {
+        shortened = shortened.replaceAll(entry.key, entry.value);
+        if (shortened.length <= maxLength) return shortened;
+      }
+    }
+    return shortened;
+  }
 
   /// Localize a phenotype label (compound or simple) to current locale.
   static String localizePhenotype(

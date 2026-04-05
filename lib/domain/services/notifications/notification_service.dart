@@ -92,6 +92,8 @@ class NotificationService with NotificationPermissionHandler {
           _onBackgroundNotificationTapped,
     );
 
+    await _restoreLaunchNotificationPayload();
+
     _isInitialized = true;
     AppLogger.info('[NotificationService] Initialized');
   }
@@ -248,6 +250,23 @@ class NotificationService with NotificationPermissionHandler {
   void _onNotificationTapped(NotificationResponse response) {
     AppLogger.info('[NotificationService] Tapped: ${response.payload}');
     onNotificationTap?.call(response.payload);
+  }
+
+  Future<void> _restoreLaunchNotificationPayload() async {
+    try {
+      final details = await _plugin.getNotificationAppLaunchDetails();
+      if (details?.didNotificationLaunchApp != true) return;
+
+      final payload = details?.notificationResponse?.payload;
+      AppLogger.info(
+        '[NotificationService] Restored launch payload: $payload',
+      );
+      onNotificationTap?.call(payload);
+    } catch (e) {
+      AppLogger.warning(
+        '[NotificationService] Failed to restore launch payload: $e',
+      );
+    }
   }
 
   void _ensureInitialized() {

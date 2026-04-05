@@ -61,7 +61,7 @@ List<Widget> _buildGroupedSlivers(
         sliver: SliverList.builder(
           itemCount: entry.value.length,
           itemBuilder: (context, index) => Padding(
-            padding: const EdgeInsets.only(bottom: AppSpacing.xs),
+            padding: const EdgeInsets.only(bottom: 2),
             child: OffspringPrediction(
               result: entry.value[index],
               showGenotype: showGenotype,

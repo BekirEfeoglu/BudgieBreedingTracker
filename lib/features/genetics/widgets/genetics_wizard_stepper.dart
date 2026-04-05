@@ -93,13 +93,21 @@ class _StepDot extends StatelessWidget {
         ? theme.colorScheme.primary
         : theme.colorScheme.outlineVariant;
 
-    return GestureDetector(
+    return Semantics(
+      button: true,
+      enabled: onTap != null,
+      label: '$label, ${step + 1}',
+      child: GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
       child: ConstrainedBox(
-        constraints: const BoxConstraints(minWidth: AppSpacing.touchTargetMin),
+        constraints: const BoxConstraints(
+          minWidth: AppSpacing.touchTargetMin,
+          minHeight: AppSpacing.touchTargetMin,
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
               width: 28,
@@ -143,6 +151,7 @@ class _StepDot extends StatelessWidget {
             ),
           ],
         ),
+      ),
       ),
     );
   }

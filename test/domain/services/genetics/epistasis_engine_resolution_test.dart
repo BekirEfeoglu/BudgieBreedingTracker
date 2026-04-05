@@ -408,10 +408,10 @@ void main() {
   });
 
   group('Grey interactions', () {
-    test('Grey on green = Grey-Green', () {
+    test('Grey on green = Light Grey-Green', () {
       final result = engine.resolveCompoundPhenotype({'grey'});
 
-      expect(result, contains('Grey-Green'));
+      expect(result, contains('Light Grey-Green'));
     });
 
     test('Grey on blue = Grey (not Grey-Green)', () {

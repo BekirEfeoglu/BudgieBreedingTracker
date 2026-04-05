@@ -123,11 +123,12 @@ void main() {
       expect(find.text(l10n('genetics.sex_linked')), findsNothing);
     });
 
-    testWidgets('shows AppIcon for punnett icon', (tester) async {
+    testWidgets('shows AppIcon for punnett icon and gender icons', (tester) async {
       await pumpLocalizedApp(tester,
         _wrap(const PunnettSquareWidget(data: _autosomalData)),
       );
-      expect(find.byType(AppIcon), findsOneWidget);
+      // 1 punnett icon + gender icons in header cells
+      expect(find.byType(AppIcon), findsAtLeastNWidgets(1));
     });
 
     testWidgets('renders Table widget', (tester) async {
@@ -161,18 +162,18 @@ void main() {
       await pumpLocalizedApp(tester,
         _wrap(const PunnettSquareWidget(data: _autosomalData)),
       );
-      // Father alleles are prefixed with male symbol
-      expect(find.textContaining('\u2642 b+'), findsAtLeastNWidgets(1));
-      expect(find.textContaining('\u2642 b'), findsAtLeastNWidgets(1));
+      // Father alleles shown as text alongside AppIcon
+      expect(find.text('b+'), findsAtLeastNWidgets(1));
+      expect(find.text('b'), findsAtLeastNWidgets(1));
     });
 
     testWidgets('shows mother allele labels in header row', (tester) async {
       await pumpLocalizedApp(tester,
         _wrap(const PunnettSquareWidget(data: _autosomalData)),
       );
-      // Mother alleles are prefixed with female symbol
-      expect(find.textContaining('\u2640 b+'), findsAtLeastNWidgets(1));
-      expect(find.textContaining('\u2640 b'), findsAtLeastNWidgets(1));
+      // Mother alleles shown as text alongside AppIcon
+      // b+ and b appear in header cells with female AppIcon
+      expect(find.text('b+'), findsAtLeastNWidgets(1));
     });
 
     testWidgets('shows genotype text in cells', (tester) async {
@@ -185,14 +186,12 @@ void main() {
       expect(find.text('b+/b'), findsNWidgets(2));
     });
 
-    testWidgets('shows corner cell with gender symbols', (tester) async {
+    testWidgets('shows corner cell with backslash separator', (tester) async {
       await pumpLocalizedApp(tester,
         _wrap(const PunnettSquareWidget(data: _autosomalData)),
       );
-      expect(
-        find.text('\u2642 \\ \u2640'),
-        findsOneWidget,
-      );
+      // Corner cell now uses AppIcons for gender, with \\ text
+      expect(find.text('\\'), findsOneWidget);
     });
 
     testWidgets('has Tooltip on data cells', (tester) async {

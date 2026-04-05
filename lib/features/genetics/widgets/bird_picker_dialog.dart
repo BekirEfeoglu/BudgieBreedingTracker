@@ -157,7 +157,9 @@ class _BirdTile extends StatelessWidget {
         bird.colorMutation != null && bird.colorMutation != BirdColor.other;
     final hasGeneticData = hasMutations || hasColor;
 
-    return ListTile(
+    return Semantics(
+      label: '${bird.name}${bird.ringNumber != null ? ', ${bird.ringNumber}' : ''}, ${bird.gender.name}',
+      child: ListTile(
       dense: true,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
@@ -196,6 +198,7 @@ class _BirdTile extends StatelessWidget {
           ? AppIcon(AppIcons.dna, size: 18, color: theme.colorScheme.primary)
           : null,
       onTap: onTap,
+    ),
     );
   }
 }

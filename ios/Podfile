@@ -1,7 +1,8 @@
 # google_mobile_ads 7.x requires iOS 14.0+
 # supabase_flutter, flutter_secure_storage, app_links: iOS 13.0+
-# Using 14.0 to satisfy the highest minimum requirement across all pods.
-platform :ios, '14.0'
+# firebase_core 12.9.0 requires iOS 15.0+
+# Using 15.0 to satisfy the highest minimum requirement across all pods.
+platform :ios, '15.0'
 
 # CocoaPods analytics sends network stats synchronously affecting flutter build latency.
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
@@ -49,7 +50,7 @@ post_install do |installer|
     # Ensure all pods respect the minimum iOS deployment target.
     # Required when pods declare a lower minimum than the platform setting.
     target.build_configurations.each do |config|
-      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '14.0'
+      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'
       config.build_settings['GCC_WARN_INHIBIT_ALL_WARNINGS'] = 'YES'
       config.build_settings['SWIFT_SUPPRESS_WARNINGS'] = 'YES'
       # Strip simulator architectures from release builds to pass App Store validation.

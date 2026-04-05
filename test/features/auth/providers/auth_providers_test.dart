@@ -5,9 +5,21 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/notifications/notification_processor.dart';
+import 'package:budgie_breeding_tracker/domain/services/notifications/notification_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/notifications/push_notification_service.dart';
+import 'package:budgie_breeding_tracker/domain/services/notifications/notification_rescheduler.dart';
 import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
+import 'package:budgie_breeding_tracker/features/auth/providers/two_factor_providers.dart';
 
 import '../../../helpers/mocks.dart';
+
+class _MockNotificationRescheduler extends Mock
+    implements NotificationRescheduler {}
+
+class _MockPushNotificationService extends Mock
+    implements PushNotificationService {}
 
 void main() {
   late MockSupabaseClient mockClient;
@@ -282,5 +294,89 @@ void main() {
       final result = mapAuthError(error);
       expect(result, isNotEmpty);
     });
+  });
+
+  group('appInitializationProvider', () {
+    late MockProfileRepository mockProfileRepository;
+    late MockNotificationService mockNotificationService;
+    late MockNotificationProcessor mockNotificationProcessor;
+    late _MockNotificationRescheduler mockNotificationRescheduler;
+    late _MockPushNotificationService mockPushNotificationService;
+    late MockTwoFactorService mockTwoFactorService;
+
+    setUp(() {
+      mockProfileRepository = MockProfileRepository();
+      mockNotificationService = MockNotificationService();
+      mockNotificationProcessor = MockNotificationProcessor();
+      mockNotificationRescheduler = _MockNotificationRescheduler();
+      mockPushNotificationService = _MockPushNotificationService();
+      mockTwoFactorService = MockTwoFactorService();
+
+      when(() => mockProfileRepository.pull(any())).thenAnswer((_) async {});
+      when(() => mockProfileRepository.getById(any())).thenAnswer((_) async => null);
+      when(() => mockNotificationService.init()).thenAnswer((_) async {});
+      when(
+        () => mockNotificationService.requestExactAlarmPermissionIfNeeded(),
+      ).thenAnswer((_) async => true);
+      when(
+        () => mockNotificationService
+            .requestBatteryOptimizationExemptionIfNeeded(),
+      ).thenAnswer((_) async => true);
+      when(() => mockNotificationProcessor.processAll()).thenAnswer((_) async {});
+      when(
+        () => mockNotificationRescheduler.rescheduleAll(any()),
+      ).thenAnswer((_) async {});
+      when(
+        () => mockPushNotificationService.init(userId: any(named: 'userId')),
+      ).thenAnswer((_) async {});
+      when(
+        () => mockTwoFactorService.needsVerification(),
+      ).thenAnswer((_) async => false);
+    });
+
+    test(
+      'initializes notifications then recovers pending and reschedules active notifications',
+      () async {
+        when(() => mockAuth.currentUser).thenReturn(null);
+
+        final container = ProviderContainer(
+          overrides: [
+            currentUserIdProvider.overrideWithValue('user-1'),
+            profileRepositoryProvider.overrideWithValue(mockProfileRepository),
+            notificationServiceProvider.overrideWithValue(
+              mockNotificationService,
+            ),
+            notificationProcessorProvider.overrideWithValue(
+              mockNotificationProcessor,
+            ),
+            notificationReschedulerProvider.overrideWithValue(
+              mockNotificationRescheduler,
+            ),
+            pushNotificationServiceProvider.overrideWithValue(
+              mockPushNotificationService,
+            ),
+            rateLimiterReadyProvider.overrideWith((_) async {}),
+            supabaseClientProvider.overrideWithValue(mockClient),
+            supabaseInitializedProvider.overrideWithValue(true),
+            twoFactorServiceProvider.overrideWithValue(mockTwoFactorService),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        await container.read(appInitializationProvider.future);
+        await Future<void>.delayed(Duration.zero);
+
+        verifyInOrder([
+          () => mockNotificationService.init(),
+          () => mockNotificationService.requestExactAlarmPermissionIfNeeded(),
+          () => mockNotificationService
+              .requestBatteryOptimizationExemptionIfNeeded(),
+          () => mockPushNotificationService.init(userId: 'user-1'),
+        ]);
+        verify(() => mockNotificationProcessor.processAll()).called(1);
+        verify(() => mockNotificationRescheduler.rescheduleAll('user-1'))
+            .called(1);
+      },
+    );
   });
 }

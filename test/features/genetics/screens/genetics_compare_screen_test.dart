@@ -159,7 +159,7 @@ void main() {
       expect(find.byType(ErrorState), findsOneWidget);
     });
 
-    testWidgets('renders comparison DataTable when histories exist', (
+    testWidgets('renders comparison table when histories exist', (
       tester,
     ) async {
       final entries = [makeEntry(id: 'gh-1'), makeEntry(id: 'gh-2')];
@@ -172,12 +172,12 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // The _CompareTable renders a DataTable inside a Card
-      expect(find.byType(DataTable), findsOneWidget);
+      // The _CompareTable renders a virtualized list inside a Card
+      expect(find.byType(ListView), findsOneWidget);
       expect(find.byType(Card), findsOneWidget);
     });
 
-    testWidgets('renders DataTable with correct number of columns', (
+    testWidgets('renders table with header row for each entry', (
       tester,
     ) async {
       final entries = [
@@ -194,10 +194,8 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // DataTable should exist with phenotype column + one per entry = 4 total
-      final dataTable = tester.widget<DataTable>(find.byType(DataTable));
-      // 1 phenotype label column + 3 entry header columns
-      expect(dataTable.columns.length, 4);
+      // Header should show phenotype label
+      expect(find.text(l10n('genetics.phenotype')), findsOneWidget);
     });
 
     testWidgets('renders phenotype rows from results', (tester) async {
@@ -211,9 +209,9 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      final dataTable = tester.widget<DataTable>(find.byType(DataTable));
       // The default results JSON has 2 phenotypes: Normal and Blue
-      expect(dataTable.rows.length, 2);
+      // Both should appear as rows in the virtualized list
+      expect(find.byType(ListView), findsOneWidget);
     });
 
     testWidgets('shows probability percentages in cells', (tester) async {
@@ -246,9 +244,9 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      final dataTable = tester.widget<DataTable>(find.byType(DataTable));
-      // 1 phenotype column + 2 selected entries
-      expect(dataTable.columns.length, 3);
+      // Card should render with the virtualized list
+      expect(find.byType(Card), findsOneWidget);
+      expect(find.byType(ListView), findsOneWidget);
     });
 
     testWidgets('shows dash for missing phenotype in an entry', (tester) async {

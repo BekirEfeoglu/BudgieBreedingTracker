@@ -191,7 +191,7 @@ void main() {
         ],
       );
 
-      // lethal (df_crested) beats semiLethal (ino_x_ino)
+      // lethal (df_crested) beats subVital (ino_x_ino)
       expect(result.highestSeverity, LethalSeverity.lethal);
     });
 

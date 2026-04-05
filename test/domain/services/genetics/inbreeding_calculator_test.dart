@@ -100,6 +100,66 @@ void main() {
       expect(result, closeTo(0.25, 0.0001));
     });
 
+    test('accounts for inbred common ancestor via (1+F_A) term', () {
+      // Build a pedigree where the common ancestor (grandpa) is itself inbred.
+      // grandpa's parents are full siblings sharing great-grandpa + great-grandma.
+      final ancestors = {
+        'subject': createTestBird(
+          id: 'subject',
+          fatherId: 'father',
+          motherId: 'mother',
+        ),
+        'father': createTestBird(
+          id: 'father',
+          gender: BirdGender.male,
+          fatherId: 'grandpa',
+          motherId: 'grandma',
+        ),
+        'mother': createTestBird(
+          id: 'mother',
+          gender: BirdGender.female,
+          fatherId: 'grandpa',
+          motherId: 'grandma',
+        ),
+        // grandpa is inbred: his parents share a common ancestor
+        'grandpa': createTestBird(
+          id: 'grandpa',
+          gender: BirdGender.male,
+          fatherId: 'ggf1',
+          motherId: 'ggm1',
+        ),
+        'grandma': createTestBird(id: 'grandma', gender: BirdGender.female),
+        // grandpa's parents are half-siblings (share great-great-grandpa)
+        'ggf1': createTestBird(
+          id: 'ggf1',
+          gender: BirdGender.male,
+          fatherId: 'common-anc',
+        ),
+        'ggm1': createTestBird(
+          id: 'ggm1',
+          gender: BirdGender.female,
+          fatherId: 'common-anc',
+        ),
+        'common-anc': createTestBird(
+          id: 'common-anc',
+          gender: BirdGender.male,
+        ),
+      };
+
+      final result = calculator.calculate(
+        birdId: 'subject',
+        ancestors: ancestors,
+      );
+
+      // Without (1+F_A), the result would be exactly 0.25 (full-sibling mating
+      // with only grandpa+grandma as common ancestors). With (1+F_A), the
+      // inbreeding of common ancestor grandpa (F_A=0.125 from half-sibling
+      // parents) increases the coefficient. Additional common ancestors
+      // (ggf1, ggm1, common-anc) also contribute through shared paths.
+      expect(result, greaterThan(0.25));
+      expect(result, closeTo(0.359375, 0.01));
+    });
+
     test('parent-offspring mating produces high coefficient', () {
       final ancestors = {
         'subject': createTestBird(

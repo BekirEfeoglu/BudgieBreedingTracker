@@ -131,6 +131,64 @@ abstract class MutationDataSexLinked {
       category: 'Pattern',
       visualEffect: 'Clear V-shaped area on back with normal wing markings',
     ),
+    // Scottish Fallow (Bronze Fallow) — third recognized fallow type.
+    // Distinct locus from English and German Fallow.
+    BudgieMutationRecord(
+      id: 'fallow_scottish',
+      name: 'Fallow (Scottish)',
+      localizationKey: 'genetics.mutation_fallow_scottish',
+      description:
+          'Third fallow type, also known as Bronze Fallow. Distinct gene locus from English and German',
+      inheritanceType: InheritanceType.autosomalRecessive,
+      dominance: Dominance.recessive,
+      alleleSymbol: 'fs',
+      alleles: ['fs+', 'fs'],
+      category: 'Fallow',
+      visualEffect: 'Bronze-toned markings, solid red eyes, warm body color',
+    ),
+    // Faded — reduces melanin intensity differently from Dilute.
+    BudgieMutationRecord(
+      id: 'faded',
+      name: 'Faded',
+      localizationKey: 'genetics.mutation_faded',
+      description: 'Progressive melanin reduction producing a washed-out appearance',
+      inheritanceType: InheritanceType.autosomalRecessive,
+      dominance: Dominance.recessive,
+      alleleSymbol: 'fd',
+      alleles: ['fd+', 'fd'],
+      category: 'Melanin Modifier',
+      visualEffect: 'Washed-out body color with faded wing markings',
+    ),
+    // Mottled — progressive loss of melanin patches with each moult.
+    BudgieMutationRecord(
+      id: 'mottled',
+      name: 'Mottled',
+      localizationKey: 'genetics.mutation_mottled',
+      description:
+          'Progressive mutation where melanin patches disappear with each moult cycle',
+      inheritanceType: InheritanceType.autosomalRecessive,
+      dominance: Dominance.recessive,
+      alleleSymbol: 'mo',
+      alleles: ['mo+', 'mo'],
+      category: 'Pattern',
+      visualEffect: 'Increasing clear patches with each moult, variable expression',
+    ),
+    // Feather Duster — always lethal condition with continuously growing feathers.
+    // Homozygous recessive. Affected chicks rarely survive beyond a few months.
+    BudgieMutationRecord(
+      id: 'feather_duster',
+      name: 'Feather Duster',
+      localizationKey: 'genetics.mutation_feather_duster',
+      description:
+          'Lethal autosomal recessive causing continuously growing, curly feathers. '
+          'Homozygous birds (fd/fd) rarely survive beyond a few months',
+      inheritanceType: InheritanceType.autosomalRecessive,
+      dominance: Dominance.recessive,
+      alleleSymbol: 'fdu',
+      alleles: ['fdu+', 'fdu'],
+      category: 'Feather Structure',
+      visualEffect: 'Long, curly, continuously growing feathers; inability to fly',
+    ),
 
     // ── Crested Allelic Locus ──
     BudgieMutationRecord(

@@ -25,7 +25,9 @@ import 'package:budgie_breeding_tracker/core/widgets/app_brand_title.dart';
 import 'package:budgie_breeding_tracker/features/notifications/widgets/notification_bell_button.dart';
 import 'package:budgie_breeding_tracker/features/profile/widgets/profile_menu_button.dart';
 import 'package:budgie_breeding_tracker/core/widgets/ad_banner_widget.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:budgie_breeding_tracker/domain/services/ads/ad_service.dart';
+import 'package:budgie_breeding_tracker/domain/services/notifications/notification_permission_handler.dart';
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_providers.dart';
 
 /// Main home dashboard screen.
@@ -40,15 +42,11 @@ class HomeScreen extends ConsumerWidget {
     // Deferred by 3 seconds so the dialog doesn't appear immediately.
     ref.watch(deferredNotificationPermissionProvider);
 
-    // Show a one-time SnackBar when notification permission is denied
+    // Show a SnackBar with settings action when notification permission is denied.
+    // Throttled to once per day to avoid nagging on every app launch.
     ref.listen<bool>(notificationPermissionGrantedProvider, (prev, granted) {
       if (prev != false && !granted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('notifications.permission_denied_hint'.tr()),
-            duration: const Duration(seconds: 5),
-          ),
-        );
+        _showPermissionDeniedSnackBarIfNeeded(context);
       }
     });
 
@@ -105,6 +103,38 @@ class HomeScreen extends ConsumerWidget {
       ),
     );
   }
+}
+
+const _permissionSnackBarLastShownKey =
+    'pref_notification_snackbar_last_shown';
+
+/// Shows the permission-denied SnackBar at most once per day.
+Future<void> _showPermissionDeniedSnackBarIfNeeded(
+  BuildContext context,
+) async {
+  final prefs = await SharedPreferences.getInstance();
+  final lastShown = prefs.getInt(_permissionSnackBarLastShownKey) ?? 0;
+  final now = DateTime.now().millisecondsSinceEpoch;
+  const oneDayMs = 24 * 60 * 60 * 1000;
+
+  if (now - lastShown < oneDayMs) return;
+
+  await prefs.setInt(_permissionSnackBarLastShownKey, now);
+
+  if (!context.mounted) return;
+
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text('notifications.permission_denied_hint'.tr()),
+      duration: const Duration(seconds: 8),
+      action: SnackBarAction(
+        label: 'notifications.open_settings'.tr(),
+        onPressed: () {
+          NotificationPermissionHandler.openNotificationSettings();
+        },
+      ),
+    ),
+  );
 }
 
 class _UnweanedSection extends ConsumerWidget {

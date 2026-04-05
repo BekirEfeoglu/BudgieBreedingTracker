@@ -56,12 +56,12 @@ scripts/verify_rls_staging.sql           # Verify Row-Level Security policies on
 
 | Metric | Value |
 | --- | --- |
-| Source files (lib/) | 811 Dart files |
-| Test files (test/) | 741 test files, 8,920+ individual tests |
+| Source files (lib/) | 816 Dart files |
+| Test files (test/) | 742 test files, 8,953+ individual tests |
 | Feature modules | 23 |
 | Drift tables / DAOs / Mappers | 20 each |
 | Repositories | 23 entity + base + sync_metadata |
-| Remote sources | 25 entity + base + 2 caches + providers |
+| Remote sources | 26 entity + base + 2 caches + providers |
 | Freezed models | 29 model files + statistics_models + supabase_extensions |
 | Domain services | 15 directories |
 | Routes | 71 |
@@ -69,7 +69,7 @@ scripts/verify_rls_staging.sql           # Verify Row-Level Security policies on
 | Shared widgets | 20 (15 root + 2 buttons + 2 cards + 1 dialog) |
 | Enum files | 15 |
 | Supabase constants | 106 (tables + buckets + columns) |
-| L10n keys | ~2,334 per language, 39 categories |
+| L10n keys | ~2,396 per language, 39 categories |
 | DB schema version | 19 |
 
 ## CI/CD Pipeline
@@ -113,11 +113,13 @@ Config methods: `.env` + `--dart-define-from-file` (local) · GitHub Secrets (CI
 
 ## Supabase
 
-### Edge Functions (3)
+### Edge Functions (5)
 | Function | Purpose |
 | --- | --- |
 | `mfa-lockout` | MFA brute-force lockout handling |
 | `moderate-content` | Community content moderation |
+| `send-push` | FCM push notification delivery |
+| `system-health` | Admin dashboard system health check |
 | `validate-free-tier-limit` | Free tier entity limit enforcement |
 
 ### Migrations

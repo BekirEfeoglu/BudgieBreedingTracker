@@ -147,15 +147,7 @@ void main() {
       await pumpLocalizedApp(tester,
         _wrap(const OffspringPrediction(result: result, showGenotype: true)),
       );
-      // Collapsed view shows hint label
-      expect(
-        find.text(l10n('genetics.genotype_detail_label')),
-        findsAtLeastNWidgets(1),
-      );
-
-      // Tap to expand - full genotype visible
-      await tester.tap(find.byType(OffspringPrediction));
-      await tester.pumpAndSettle();
+      // Collapsed view shows inline genotype string
       expect(find.textContaining('+/+ bl/bl'), findsAtLeastNWidgets(1));
     });
 
@@ -187,15 +179,23 @@ void main() {
       );
     });
 
-    testWidgets('shows masked mutations text when present', (tester) async {
+    testWidgets('shows masked mutations in expanded view', (tester) async {
       const result = OffspringResult(
         phenotype: 'Lutino',
         probability: 0.25,
         maskedMutations: ['Opaline'],
+        genotype: 'ino/ino',
       );
 
       await pumpLocalizedApp(tester,_wrap(const OffspringPrediction(result: result)));
-      expect(find.text(l10n('genetics.masked_mutations')), findsAtLeastNWidgets(1));
+      // Collapsed view does not show masked mutations (compact design)
+      // Tap to expand
+      await tester.tap(find.byType(OffspringPrediction));
+      await tester.pumpAndSettle();
+      expect(
+        find.textContaining(l10nContains('genetics.masked_mutations')),
+        findsAtLeastNWidgets(1),
+      );
     });
 
     testWidgets('has Semantics wrapper for accessibility', (tester) async {

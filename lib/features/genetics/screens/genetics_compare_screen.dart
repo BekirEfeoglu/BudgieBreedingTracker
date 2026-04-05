@@ -121,90 +121,134 @@ class _CompareTableState extends State<_CompareTable> {
 
     return Card(
       clipBehavior: Clip.antiAlias,
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: DataTable(
-          headingRowColor: WidgetStateProperty.resolveWith(
-            (states) => theme.colorScheme.surfaceContainerHigh,
-          ),
-          columns: [
-            DataColumn(
-              label: Text(
-                'genetics.phenotype'.tr(),
-                style: theme.textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Sticky header row
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Container(
+              color: theme.colorScheme.surfaceContainerHigh,
+              padding: const EdgeInsets.symmetric(
+                vertical: AppSpacing.sm,
+                horizontal: AppSpacing.md,
+              ),
+              child: Row(
+                children: [
+                  SizedBox(
+                    width: 160,
+                    child: Text(
+                      'genetics.phenotype'.tr(),
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  ...widget.entries.map(
+                    (e) => SizedBox(
+                      width: 120,
+                      child: _EntryHeader(entry: e),
+                    ),
+                  ),
+                ],
               ),
             ),
-            ...widget.entries.map((e) {
-              return DataColumn(label: _EntryHeader(entry: e));
-            }),
-          ],
-          rows: sortedPhenotypes.map((phenotype) {
-            final localizedPhenotype = PhenotypeLocalizer.localizePhenotype(
-              phenotype,
-            );
-            return DataRow(
-              cells: [
-                DataCell(
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(right: AppSpacing.sm),
-                        child: BirdColorSimulation(
-                          visualMutations: const [],
-                          phenotype: phenotype,
-                          height: 48,
+          ),
+          const Divider(height: 1),
+          // Virtualized rows
+          Flexible(
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: sortedPhenotypes.length,
+              itemBuilder: (context, index) {
+                final phenotype = sortedPhenotypes[index];
+                final localizedPhenotype =
+                    PhenotypeLocalizer.localizePhenotype(phenotype);
+
+                return SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: index.isOdd
+                          ? theme.colorScheme.surfaceContainerLow
+                          : null,
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: AppSpacing.sm,
+                      horizontal: AppSpacing.md,
+                    ),
+                    child: Row(
+                      children: [
+                        SizedBox(
+                          width: 160,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(
+                                  right: AppSpacing.sm,
+                                ),
+                                child: BirdColorSimulation(
+                                  visualMutations: const [],
+                                  phenotype: phenotype,
+                                  height: 48,
+                                ),
+                              ),
+                              Flexible(
+                                child: Text(
+                                  localizedPhenotype,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                      Text(localizedPhenotype),
-                    ],
+                        ...widget.entries.map((e) {
+                          final results = _parsedResults[e.id]!;
+                          final match = results.firstWhere(
+                            (r) {
+                              final p = r.compoundPhenotype ??
+                                  (r.isCarrier
+                                      ? r.phenotype
+                                          .replaceAll(' (carrier)', '')
+                                      : r.phenotype);
+                              return p == phenotype;
+                            },
+                            orElse: () => const OffspringResult(
+                              phenotype: '',
+                              visualMutations: [],
+                              probability: 0.0,
+                            ),
+                          );
+
+                          final prob = match.probability;
+                          return SizedBox(
+                            width: 120,
+                            child: prob == 0.0
+                                ? Text(
+                                    '-',
+                                    style: TextStyle(
+                                      color:
+                                          theme.colorScheme.onSurfaceVariant,
+                                    ),
+                                  )
+                                : Text(
+                                    '${(prob * 100).toStringAsFixed(1)}%',
+                                    style:
+                                        theme.textTheme.bodyMedium?.copyWith(
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                          );
+                        }),
+                      ],
+                    ),
                   ),
-                ),
-                ...widget.entries.map((e) {
-                  final results = _parsedResults[e.id]!;
-                  final match = results.firstWhere(
-                    (r) {
-                      final p =
-                          r.compoundPhenotype ??
-                          (r.isCarrier
-                              ? r.phenotype.replaceAll(' (carrier)', '')
-                              : r.phenotype);
-                      return p == phenotype;
-                    },
-                    orElse: () => const OffspringResult(
-                      phenotype: '',
-                      visualMutations: [],
-                      probability: 0.0,
-                    ),
-                  );
-
-                  final prob = match.probability;
-                  if (prob == 0.0) {
-                    return DataCell(
-                      Text(
-                        '-',
-                        style: TextStyle(
-                          color: theme.colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                    );
-                  }
-
-                  return DataCell(
-                    Text(
-                      '${(prob * 100).toStringAsFixed(1)}%',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  );
-                }),
-              ],
-            );
-          }).toList(),
-        ),
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
