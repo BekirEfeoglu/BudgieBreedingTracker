@@ -88,7 +88,7 @@ class PushNotificationService {
       final token = await _messagingInstance.getToken();
       if (token == null || token.isEmpty) {
         AppLogger.info(
-          '[PushNotificationService] No FCM token available yet for $userId',
+          '[PushNotificationService] No FCM token available yet for ${userId.substring(0, 8)}...',
         );
         return;
       }
@@ -149,7 +149,7 @@ class PushNotificationService {
       token: token,
       platform: Platform.isIOS ? 'ios' : 'android',
     );
-    AppLogger.info('[PushNotificationService] Synced FCM token for $userId');
+    AppLogger.info('[PushNotificationService] Synced FCM token for ${userId.substring(0, 8)}...');
   }
 
   Future<void> _handleForegroundMessage(RemoteMessage message) async {

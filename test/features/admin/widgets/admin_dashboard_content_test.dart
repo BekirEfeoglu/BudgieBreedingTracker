@@ -120,9 +120,7 @@ void main() {
       expect(find.text(l10n('admin.system_degraded')), findsOneWidget);
     });
 
-    testWidgets('shows health_unavailable text on unavailable status', (
-      tester,
-    ) async {
+    testWidgets('hides banner on unavailable status', (tester) async {
       await tester.pumpWidget(
         _wrapWithProviders(
           const DashboardSystemHealthBanner(stats: _defaultStats),
@@ -130,7 +128,9 @@ void main() {
         ),
       );
       await tester.pump();
-      expect(find.text(l10n('admin.health_unavailable')), findsOneWidget);
+      // Banner should be hidden (SizedBox.shrink)
+      expect(find.text(l10n('admin.system_healthy')), findsNothing);
+      expect(find.text(l10n('admin.system_degraded')), findsNothing);
     });
 
     testWidgets('shows error message from data on error status', (
@@ -160,6 +160,164 @@ void main() {
       );
       await tester.pump();
       expect(find.text(l10n('admin.all_services_running')), findsOneWidget);
+    });
+
+    testWidgets('shows chevron icon when checks data is available', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrapWithProviders(
+          const DashboardSystemHealthBanner(stats: _defaultStats),
+          healthData: const AsyncData({
+            'status': 'ok',
+            'checks': {'database': 'ok', 'auth': 'ok', 'storage': 'ok'},
+            'latency': {
+              'database_ms': 12,
+              'auth_ms': 25,
+              'storage_ms': 8,
+              'total_ms': 45,
+            },
+          }),
+        ),
+      );
+      await tester.pump();
+      expect(find.byType(Icon), findsOneWidget); // chevron icon
+    });
+
+    testWidgets('expands to show service details on tap', (tester) async {
+      await tester.pumpWidget(
+        _wrapWithProviders(
+          const DashboardSystemHealthBanner(stats: _defaultStats),
+          healthData: const AsyncData({
+            'status': 'ok',
+            'checks': {'database': 'ok', 'auth': 'ok', 'storage': 'ok'},
+            'latency': {
+              'database_ms': 12,
+              'auth_ms': 25,
+              'storage_ms': 8,
+              'total_ms': 45,
+            },
+          }),
+        ),
+      );
+      await tester.pump();
+
+      // Service details should not be visible initially
+      expect(find.text(l10n('admin.service_database')), findsNothing);
+
+      // Tap to expand
+      await tester.tap(find.byType(GestureDetector));
+      await tester.pumpAndSettle();
+
+      // Service details should now be visible
+      expect(find.text(l10n('admin.service_database')), findsOneWidget);
+      expect(find.text(l10n('admin.service_auth')), findsOneWidget);
+      expect(find.text(l10n('admin.service_storage')), findsOneWidget);
+      expect(find.text('12ms'), findsOneWidget);
+      expect(find.text('25ms'), findsOneWidget);
+      expect(find.text('8ms'), findsOneWidget);
+    });
+
+    testWidgets('shows total latency when expanded', (tester) async {
+      await tester.pumpWidget(
+        _wrapWithProviders(
+          const DashboardSystemHealthBanner(stats: _defaultStats),
+          healthData: const AsyncData({
+            'status': 'ok',
+            'checks': {'database': 'ok', 'auth': 'ok', 'storage': 'ok'},
+            'latency': {
+              'database_ms': 10,
+              'auth_ms': 20,
+              'storage_ms': 15,
+              'total_ms': 45,
+            },
+          }),
+        ),
+      );
+      await tester.pump();
+
+      await tester.tap(find.byType(GestureDetector));
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('45ms'), findsOneWidget);
+    });
+
+    testWidgets('shows refresh button when expanded', (tester) async {
+      await tester.pumpWidget(
+        _wrapWithProviders(
+          const DashboardSystemHealthBanner(stats: _defaultStats),
+          healthData: const AsyncData({
+            'status': 'ok',
+            'checks': {'database': 'ok', 'auth': 'ok', 'storage': 'ok'},
+            'latency': {'total_ms': 50},
+          }),
+        ),
+      );
+      await tester.pump();
+
+      await tester.tap(find.byType(GestureDetector));
+      await tester.pumpAndSettle();
+
+      expect(find.text(l10n('admin.refresh_health')), findsOneWidget);
+      expect(find.byType(TextButton), findsOneWidget);
+    });
+
+    testWidgets('shows degraded status for individual services', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrapWithProviders(
+          const DashboardSystemHealthBanner(stats: _defaultStats),
+          healthData: const AsyncData({
+            'status': 'degraded',
+            'checks': {
+              'database': 'ok',
+              'auth': 'degraded',
+              'storage': 'ok',
+            },
+            'latency': {
+              'database_ms': 10,
+              'auth_ms': 500,
+              'storage_ms': 15,
+              'total_ms': 525,
+            },
+          }),
+        ),
+      );
+      await tester.pump();
+
+      await tester.tap(find.byType(GestureDetector));
+      await tester.pumpAndSettle();
+
+      // Should show degraded status for auth service
+      expect(find.text(l10n('admin.status_degraded')), findsWidgets);
+      expect(find.text(l10n('admin.status_ok')), findsWidgets);
+    });
+
+    testWidgets('collapses on second tap', (tester) async {
+      await tester.pumpWidget(
+        _wrapWithProviders(
+          const DashboardSystemHealthBanner(stats: _defaultStats),
+          healthData: const AsyncData({
+            'status': 'ok',
+            'checks': {'database': 'ok', 'auth': 'ok', 'storage': 'ok'},
+            'latency': {'total_ms': 50},
+          }),
+        ),
+      );
+      await tester.pump();
+
+      final bannerFinder = find.byType(DashboardSystemHealthBanner);
+
+      // Tap to expand
+      await tester.tap(bannerFinder);
+      await tester.pumpAndSettle();
+      expect(find.text(l10n('admin.service_database')), findsOneWidget);
+
+      // Tap again to collapse
+      await tester.tap(bannerFinder);
+      await tester.pumpAndSettle();
+      expect(find.text(l10n('admin.service_database')), findsNothing);
     });
   });
 

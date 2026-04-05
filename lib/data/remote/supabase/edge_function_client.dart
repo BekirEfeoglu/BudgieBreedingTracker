@@ -42,6 +42,11 @@ class EdgeFunctionResult {
 ///
 /// Includes per-function rate limiting to prevent abuse of expensive
 /// server-side operations (genetics calculation, report generation, etc.).
+///
+/// **Sentry contract**: All non-404 [FunctionException] and unexpected errors
+/// are reported to Sentry inside [invoke]. Callers do NOT need to report
+/// errors themselves — doing so would cause double-reporting. 404 errors are
+/// treated as "function not deployed" and are logged but not sent to Sentry.
 class EdgeFunctionClient {
   final SupabaseClient _client;
   static const _tag = '[EdgeFunctionClient]';
@@ -50,7 +55,7 @@ class EdgeFunctionClient {
   static const _defaultCooldown = Duration(seconds: 10);
 
   /// Edge Functions exempt from rate limiting (need rapid sequential calls).
-  static const _rateLimitExempt = {'mfa-lockout', 'send-push'};
+  static const _rateLimitExempt = {'mfa-lockout'};
 
   /// Per-function last invocation timestamps for rate limiting.
   final Map<String, DateTime> _lastInvocationAt = {};
@@ -77,6 +82,10 @@ class EdgeFunctionClient {
           'Rate limited: please wait before retrying',
         );
       }
+
+      // Record invocation time BEFORE the call so failed calls also count
+      // against the rate limit — prevents rapid retry abuse.
+      _lastInvocationAt[functionName] = DateTime.now();
 
       AppLogger.info('$_tag Invoking: $functionName');
 
@@ -117,8 +126,6 @@ class EdgeFunctionClient {
 
       final result = EdgeFunctionResult.fromResponse(response);
 
-      _lastInvocationAt[functionName] = DateTime.now();
-
       if (result.success) {
         AppLogger.info('$_tag $functionName completed successfully');
       } else {
@@ -127,19 +134,19 @@ class EdgeFunctionClient {
 
       return result;
     } on FunctionException catch (e, st) {
-      if (e.status == 404 && functionName == 'system-health') {
+      if (e.status == 404) {
         AppLogger.warning(
           '$_tag $functionName not deployed (404), treating as unavailable',
         );
-      } else {
-        AppLogger.error('$_tag Error invoking $functionName', e, st);
-        Sentry.captureException(e, stackTrace: st);
+        return EdgeFunctionResult.failure('404 NOT_FOUND: $functionName not deployed');
       }
-      return EdgeFunctionResult.failure(e.toString());
+      AppLogger.error('$_tag Error invoking $functionName', e, st);
+      Sentry.captureException(e, stackTrace: st);
+      return EdgeFunctionResult.failure('Edge function error: ${e.status}');
     } catch (e, st) {
       AppLogger.error('$_tag Error invoking $functionName', e, st);
       Sentry.captureException(e, stackTrace: st);
-      return EdgeFunctionResult.failure(e.toString());
+      return EdgeFunctionResult.failure('Edge function error');
     }
   }
 

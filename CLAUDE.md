@@ -113,11 +113,12 @@ Config methods: `.env` + `--dart-define-from-file` (local) · GitHub Secrets (CI
 
 ## Supabase
 
-### Edge Functions (5)
+### Edge Functions (6)
 | Function | Purpose |
 | --- | --- |
 | `mfa-lockout` | MFA brute-force lockout handling |
 | `moderate-content` | Community content moderation |
+| `revoke-oauth-token` | Google/Apple OAuth token revocation |
 | `send-push` | FCM push notification delivery |
 | `system-health` | Admin dashboard system health check |
 | `validate-free-tier-limit` | Free tier entity limit enforcement |

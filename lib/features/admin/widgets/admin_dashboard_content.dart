@@ -89,13 +89,23 @@ class DashboardContent extends StatelessWidget {
 }
 
 /// System health banner showing real Edge Function health status.
-class DashboardSystemHealthBanner extends ConsumerWidget {
+/// Expandable to show individual service checks and latency details.
+class DashboardSystemHealthBanner extends ConsumerStatefulWidget {
   final AdminStats stats;
 
   const DashboardSystemHealthBanner({super.key, required this.stats});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<DashboardSystemHealthBanner> createState() =>
+      _DashboardSystemHealthBannerState();
+}
+
+class _DashboardSystemHealthBannerState
+    extends ConsumerState<DashboardSystemHealthBanner> {
+  bool _expanded = false;
+
+  @override
+  Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final healthAsync = ref.watch(systemHealthProvider);
 
@@ -105,7 +115,6 @@ class DashboardSystemHealthBanner extends ConsumerWidget {
     );
     final isUnavailable = status == 'unavailable';
 
-    // Edge Function not deployed — hide banner entirely instead of showing noise
     if (isUnavailable) return const SizedBox.shrink();
 
     final isHealthy = healthAsync.maybeWhen(
@@ -122,47 +131,177 @@ class DashboardSystemHealthBanner extends ConsumerWidget {
     final color = isLoading
         ? AppColors.info
         : isHealthy
-        ? AppColors.success
-        : AppColors.warning;
+            ? AppColors.success
+            : AppColors.warning;
     final title = isLoading
         ? 'admin.checking_health'.tr()
         : isHealthy
-        ? 'admin.system_healthy'.tr()
-        : 'admin.system_degraded'.tr();
+            ? 'admin.system_healthy'.tr()
+            : 'admin.system_degraded'.tr();
     final subtitle = errorMsg ?? 'admin.all_services_running'.tr();
 
-    return Container(
-      width: double.infinity,
-      padding: AppSpacing.cardPadding,
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
-      ),
-      child: Row(
-        children: [
-          if (isLoading)
-            SizedBox(
-              width: 24,
-              height: 24,
-              child: CircularProgressIndicator(strokeWidth: 2, color: color),
-            )
-          else
-            AppIcon(AppIcons.health, color: color, semanticsLabel: title),
-          const SizedBox(width: AppSpacing.md),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+    // Extract service check details for expanded view
+    final checks = healthAsync.whenOrNull(
+      data: (data) => data['checks'] as Map<String, dynamic>?,
+    );
+    final latency = healthAsync.whenOrNull(
+      data: (data) => data['latency'] as Map<String, dynamic>?,
+    );
+
+    return GestureDetector(
+      onTap: checks != null ? () => setState(() => _expanded = !_expanded) : null,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        width: double.infinity,
+        padding: AppSpacing.cardPadding,
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+          border: Border.all(color: color.withValues(alpha: 0.3)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
               children: [
-                Text(
-                  title,
-                  style: theme.textTheme.titleSmall?.copyWith(
-                    color: color,
-                    fontWeight: FontWeight.w600,
+                if (isLoading)
+                  SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: color,
+                    ),
+                  )
+                else
+                  AppIcon(AppIcons.health, color: color, semanticsLabel: title),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          color: color,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      Text(subtitle, style: theme.textTheme.bodySmall),
+                    ],
                   ),
                 ),
-                Text(subtitle, style: theme.textTheme.bodySmall),
+                if (checks != null)
+                  Icon(
+                    _expanded ? LucideIcons.chevronUp : LucideIcons.chevronDown,
+                    size: 18,
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
               ],
+            ),
+            if (_expanded && checks != null) ...[
+              const SizedBox(height: AppSpacing.md),
+              const Divider(height: 1),
+              const SizedBox(height: AppSpacing.sm),
+              _ServiceCheckRow(
+                label: 'admin.service_database'.tr(),
+                status: checks['database'] as String? ?? 'unknown',
+                latencyMs: latency?['database_ms'] as int?,
+              ),
+              _ServiceCheckRow(
+                label: 'admin.service_auth'.tr(),
+                status: checks['auth'] as String? ?? 'unknown',
+                latencyMs: latency?['auth_ms'] as int?,
+              ),
+              _ServiceCheckRow(
+                label: 'admin.service_storage'.tr(),
+                status: checks['storage'] as String? ?? 'unknown',
+                latencyMs: latency?['storage_ms'] as int?,
+              ),
+              Padding(
+                padding: const EdgeInsets.only(top: AppSpacing.xs),
+                child: Row(
+                  children: [
+                    if (latency?['total_ms'] != null)
+                      Expanded(
+                        child: Text(
+                          '${'admin.total_latency'.tr()}: ${latency!['total_ms']}ms',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      )
+                    else
+                      const Spacer(),
+                    SizedBox(
+                      height: AppSpacing.touchTargetMin,
+                      child: TextButton.icon(
+                        onPressed: () => ref.invalidate(systemHealthProvider),
+                        icon: const Icon(LucideIcons.refreshCw, size: 14),
+                        label: Text('admin.refresh_health'.tr()),
+                        style: TextButton.styleFrom(
+                          textStyle: theme.textTheme.bodySmall,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.sm,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// A single row showing a service's health check status and latency.
+class _ServiceCheckRow extends StatelessWidget {
+  final String label;
+  final String status;
+  final int? latencyMs;
+
+  const _ServiceCheckRow({
+    required this.label,
+    required this.status,
+    this.latencyMs,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isOk = status == 'ok';
+    final statusColor = isOk ? AppColors.success : AppColors.warning;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+      child: Row(
+        children: [
+          Icon(
+            isOk ? LucideIcons.checkCircle : LucideIcons.alertCircle,
+            size: 16,
+            color: statusColor,
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Text(label, style: theme.textTheme.bodySmall),
+          ),
+          if (latencyMs != null)
+            Text(
+              '${latencyMs}ms',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+          const SizedBox(width: AppSpacing.sm),
+          Text(
+            isOk ? 'admin.status_ok'.tr() : 'admin.status_degraded'.tr(),
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: statusColor,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ],

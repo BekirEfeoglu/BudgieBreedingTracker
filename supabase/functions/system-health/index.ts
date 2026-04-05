@@ -1,32 +1,10 @@
-// Required env vars:
-//   SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
-//   ALLOWED_ORIGINS — comma-separated list of allowed CORS origins
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { getCorsHeaders, corsPreflightResponse } from "../_shared/cors.ts";
+import { getAuthenticatedUserId, createSupabaseAdmin } from "../_shared/auth.ts";
 
-function getCorsHeaders(req: Request) {
-  const origin = req.headers.get("Origin") ?? "";
-  const raw = Deno.env.get("ALLOWED_ORIGINS") ?? "";
-  const allowedOrigins = raw
-    .split(",")
-    .map((s) => s.trim())
-    .filter(Boolean);
-  const resolvedOrigin = allowedOrigins.includes(origin) ? origin : "";
-  return {
-    "Access-Control-Allow-Origin": resolvedOrigin,
-    "Access-Control-Allow-Methods": "POST, OPTIONS",
-    "Access-Control-Allow-Headers":
-      "authorization, x-client-info, apikey, content-type",
-    "Content-Type": "application/json",
-  };
-}
+Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") return corsPreflightResponse(req);
 
-serve(async (req) => {
   const headers = getCorsHeaders(req);
-
-  if (req.method === "OPTIONS") {
-    return new Response("ok", { headers });
-  }
 
   if (req.method !== "POST") {
     return new Response(
@@ -36,41 +14,21 @@ serve(async (req) => {
   }
 
   // Verify admin role via JWT
-  const authHeader = req.headers.get("Authorization");
-  if (!authHeader) {
-    return new Response(
-      JSON.stringify({ error: "Missing authorization header" }),
-      { status: 401, headers },
-    );
-  }
-
-  const supabaseAuth = createClient(
-    Deno.env.get("SUPABASE_URL") ?? "",
-    Deno.env.get("SUPABASE_ANON_KEY") ?? "",
-    { global: { headers: { Authorization: authHeader } } },
-  );
-
-  const {
-    data: { user },
-    error: authError,
-  } = await supabaseAuth.auth.getUser();
-  if (authError || !user) {
+  const userId = await getAuthenticatedUserId(req);
+  if (!userId) {
     return new Response(
       JSON.stringify({ error: "Unauthorized" }),
       { status: 401, headers },
     );
   }
 
-  const supabase = createClient(
-    Deno.env.get("SUPABASE_URL") ?? "",
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
-  );
+  const supabase = createSupabaseAdmin();
 
   // Verify caller is admin/founder
   const { data: profile } = await supabase
     .from("profiles")
     .select("role")
-    .eq("id", user.id)
+    .eq("id", userId)
     .single();
 
   if (!profile || !["admin", "founder"].includes(profile.role)) {
@@ -108,14 +66,11 @@ serve(async (req) => {
     const storageLatency = Date.now() - storageStart;
 
     const totalLatency = Date.now() - startTime;
-
-    // Overall status: ok if all checks pass, degraded if any fail
     const allOk = Object.values(checks).every((v) => v === "ok");
-    const status = allOk ? "ok" : "degraded";
 
     return new Response(
       JSON.stringify({
-        status,
+        status: allOk ? "ok" : "degraded",
         checks,
         latency: {
           database_ms: dbLatency,

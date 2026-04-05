@@ -144,8 +144,7 @@ void _addBaseColorNaming(
     final greyPrefix = switch (darkFactorCount) {
       0 => isBlue ? '' : 'Light ',
       1 => 'Dark ',
-      >= 2 => isBlue ? 'Mauve ' : 'Olive ',
-      _ => '',
+      _ => isBlue ? 'Mauve ' : 'Olive ',
     };
     if (isBlue) {
       parts.add('${greyPrefix}Grey');

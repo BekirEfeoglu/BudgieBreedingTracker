@@ -156,9 +156,8 @@ class _CompareTableState extends State<_CompareTable> {
           ),
           const Divider(height: 1),
           // Virtualized rows
-          Flexible(
+          Expanded(
             child: ListView.builder(
-              shrinkWrap: true,
               itemCount: sortedPhenotypes.length,
               itemBuilder: (context, index) {
                 final phenotype = sortedPhenotypes[index];

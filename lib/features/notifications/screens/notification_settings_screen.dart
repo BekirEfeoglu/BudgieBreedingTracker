@@ -21,7 +21,20 @@ part 'notification_settings_dnd.dart';
 
 class _BatteryWarningDismissedNotifier extends Notifier<bool> {
   @override
-  bool build() => false;
+  bool build() {
+    // Load persisted dismissed state asynchronously on first build.
+    _loadPersistedState();
+    return false;
+  }
+
+  Future<void> _loadPersistedState() async {
+    final prefs = await SharedPreferences.getInstance();
+    final dismissed =
+        prefs.getBool(AppPreferences.keyBatteryWarningDismissed) ?? false;
+    if (dismissed && !state) {
+      state = true;
+    }
+  }
 }
 
 final _batteryWarningDismissedProvider =
@@ -42,18 +55,6 @@ class NotificationSettingsScreen extends ConsumerWidget {
     final settings = ref.watch(notificationToggleSettingsProvider);
     final notifier = ref.read(notificationToggleSettingsProvider.notifier);
     final batteryWarningDismissed = ref.watch(_batteryWarningDismissedProvider);
-
-    // Load persisted dismissed state once on first build.
-    ref.listen<bool>(_batteryWarningDismissedProvider, (_, __) {});
-    if (!batteryWarningDismissed) {
-      SharedPreferences.getInstance().then((prefs) {
-        final dismissed =
-            prefs.getBool(AppPreferences.keyBatteryWarningDismissed) ?? false;
-        if (dismissed && !ref.read(_batteryWarningDismissedProvider)) {
-          ref.read(_batteryWarningDismissedProvider.notifier).state = true;
-        }
-      });
-    }
 
     return Scaffold(
       appBar: AppBar(

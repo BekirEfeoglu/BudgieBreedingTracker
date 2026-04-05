@@ -13,7 +13,12 @@ Widget _createSubject({
   AsyncValue<AdminStats> statsAsync = const AsyncLoading(),
 }) {
   return ProviderScope(
-    overrides: [adminStatsProvider.overrideWithValue(statsAsync)],
+    overrides: [
+      adminStatsProvider.overrideWithValue(statsAsync),
+      systemHealthProvider.overrideWithValue(
+        const AsyncData({'status': 'ok'}),
+      ),
+    ],
     child: const MaterialApp(home: AdminDashboardScreen()),
   );
 }

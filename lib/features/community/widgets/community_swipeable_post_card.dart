@@ -21,30 +21,14 @@ class SwipeablePostCard extends ConsumerStatefulWidget {
 }
 
 class _SwipeablePostCardState extends ConsumerState<SwipeablePostCard>
-    with AutomaticKeepAliveClientMixin, SingleTickerProviderStateMixin {
+    with AutomaticKeepAliveClientMixin {
   static const _swipeThreshold = 80.0;
 
-  late final AnimationController _slideController;
   double _dragExtent = 0;
   bool _actionTriggered = false;
 
   @override
   bool get wantKeepAlive => true;
-
-  @override
-  void initState() {
-    super.initState();
-    _slideController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 250),
-    );
-  }
-
-  @override
-  void dispose() {
-    _slideController.dispose();
-    super.dispose();
-  }
 
   void _onHorizontalDragUpdate(DragUpdateDetails details) {
     setState(() {

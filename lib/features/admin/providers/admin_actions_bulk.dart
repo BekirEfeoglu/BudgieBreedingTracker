@@ -95,6 +95,7 @@ extension AdminBulkActions on AdminActionsNotifier {
   }) async {
     state = state.copyWith(isLoading: true, error: null, isSuccess: false);
     try {
+      await requireAdmin(ref);
       final client = ref.read(supabaseClientProvider);
       final rows = await client
           .from(SupabaseConstants.profilesTable)
@@ -117,17 +118,54 @@ extension AdminBulkActions on AdminActionsNotifier {
     state = state.copyWith(isLoading: true, error: null, isSuccess: false);
 
     try {
-      AppLogger.error(
-        'admin',
-        'bulkDeleteUserData called for ${userIds.length} users',
-        StackTrace.current,
+      await requireAdmin(ref);
+      final client = ref.read(supabaseClientProvider);
+
+      AppLogger.info(
+        '[admin] bulkDeleteUserData called for ${userIds.length} users',
       );
-      final ok = await _databaseManager.resetAllUserData();
-      if (ok) {
-        succeeded = userIds.length;
-      } else {
-        skipped = userIds.length;
+
+      // Delete data for each user individually using soft-deletable tables.
+      // FK-safe order: children first, parents last.
+      const deletionOrder = [
+        'event_reminders',
+        'growth_measurements',
+        'health_records',
+        'photos',
+        'events',
+        'incubations',
+        'chicks',
+        'eggs',
+        'clutches',
+        'breeding_pairs',
+        'nests',
+        'notifications',
+        'notification_settings',
+        'notification_schedules',
+        'birds',
+      ];
+
+      for (final userId in userIds) {
+        try {
+          for (final table in deletionOrder) {
+            try {
+              await client
+                  .from(table)
+                  .delete()
+                  .eq('user_id', userId);
+            } catch (_) {
+              // Some tables may not have user_id column — skip silently.
+            }
+          }
+          succeeded++;
+        } catch (e) {
+          AppLogger.warning(
+            'admin: bulkDeleteUserData failed for $userId: $e',
+          );
+          skipped++;
+        }
       }
+
       state = state.copyWith(isLoading: false, isSuccess: true);
       ref.invalidate(adminUsersProvider);
       return (succeeded: succeeded, skipped: skipped);

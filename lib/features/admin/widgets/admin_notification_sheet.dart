@@ -17,30 +17,27 @@ Future<bool?> showAdminNotificationSheet(
     context: context,
     isScrollControlled: true,
     builder: (_) => _NotificationSheetContent(
-      ref: ref,
       targetUserId: targetUserId,
       targetUserIds: targetUserIds,
     ),
   );
 }
 
-class _NotificationSheetContent extends StatefulWidget {
-  final WidgetRef ref;
+class _NotificationSheetContent extends ConsumerStatefulWidget {
   final String? targetUserId;
   final List<String>? targetUserIds;
 
   const _NotificationSheetContent({
-    required this.ref,
     this.targetUserId,
     this.targetUserIds,
   });
 
   @override
-  State<_NotificationSheetContent> createState() =>
+  ConsumerState<_NotificationSheetContent> createState() =>
       _NotificationSheetContentState();
 }
 
-class _NotificationSheetContentState extends State<_NotificationSheetContent> {
+class _NotificationSheetContentState extends ConsumerState<_NotificationSheetContent> {
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final _messageController = TextEditingController();
@@ -61,7 +58,7 @@ class _NotificationSheetContentState extends State<_NotificationSheetContent> {
     setState(() => _isLoading = true);
 
     try {
-      final notifier = widget.ref.read(adminActionsProvider.notifier);
+      final notifier = ref.read(adminActionsProvider.notifier);
       final title = _titleController.text.trim();
       final body = _messageController.text.trim();
 
@@ -74,7 +71,7 @@ class _NotificationSheetContentState extends State<_NotificationSheetContent> {
 
       if (!mounted) return;
 
-      final state = widget.ref.read(adminActionsProvider);
+      final state = ref.read(adminActionsProvider);
       if (state.isSuccess) {
         Navigator.of(context).pop(true);
       } else if (state.error != null) {

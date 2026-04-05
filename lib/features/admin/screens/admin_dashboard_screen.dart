@@ -15,9 +15,15 @@ class AdminDashboardScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final statsAsync = ref.watch(adminStatsProvider);
 
+    // Activate system health degradation alerts (push to admins)
+    ref.watch(systemHealthAlertProvider);
+
     return Scaffold(
       body: RefreshIndicator(
-        onRefresh: () async => ref.invalidate(adminStatsProvider),
+        onRefresh: () async {
+          ref.invalidate(adminStatsProvider);
+          ref.invalidate(systemHealthProvider);
+        },
         child: statsAsync.when(
           loading: () => const LoadingState(),
           error: (error, _) => ErrorState(

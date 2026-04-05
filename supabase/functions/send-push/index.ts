@@ -1,5 +1,9 @@
-import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { getCorsHeaders, corsPreflightResponse } from "../_shared/cors.ts";
+import {
+  getAuthenticatedUserId,
+  requireAdminRole,
+  createSupabaseAdmin,
+} from "../_shared/auth.ts";
 import { SignJWT, importPKCS8 } from "npm:jose@5.9.6";
 
 type PushRequest = {
@@ -12,58 +16,6 @@ type PushRequest = {
   data?: Record<string, string | number | boolean>;
   dryRun?: boolean;
 };
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": Deno.env.get("ALLOWED_ORIGINS") ?? "",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-  "Content-Type": "application/json",
-};
-
-function createSupabaseAuth(req: Request) {
-  return createClient(
-    Deno.env.get("SUPABASE_URL") ?? "",
-    Deno.env.get("SUPABASE_ANON_KEY") ?? "",
-    {
-      global: {
-        headers: {
-          Authorization: req.headers.get("Authorization") ?? "",
-        },
-      },
-    },
-  );
-}
-
-function createSupabaseAdmin() {
-  return createClient(
-    Deno.env.get("SUPABASE_URL") ?? "",
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
-  );
-}
-
-function isServiceRoleToken(token: string): boolean {
-  try {
-    const payload = JSON.parse(atob(token.split(".")[1]));
-    return payload.role === "service_role";
-  } catch {
-    return false;
-  }
-}
-
-async function getAuthenticatedUserId(req: Request): Promise<string | null> {
-  const authHeader = req.headers.get("Authorization");
-  if (!authHeader?.startsWith("Bearer ")) return null;
-
-  const token = authHeader.replace("Bearer ", "");
-  if (isServiceRoleToken(token)) {
-    return "service_role";
-  }
-
-  const supabase = createSupabaseAuth(req);
-  const { data: { user }, error } = await supabase.auth.getUser();
-  if (error || !user) return null;
-  return user.id;
-}
 
 async function createAccessToken(): Promise<string> {
   const rawServiceAccount = Deno.env.get("GOOGLE_SERVICE_ACCOUNT_JSON") ?? "";
@@ -112,13 +64,20 @@ function normalizeData(request: PushRequest): Record<string, string> {
   return normalized;
 }
 
+const MAX_USER_IDS = 100;
+const MAX_TOKENS = 500;
+
 async function resolveTokens(request: PushRequest): Promise<string[]> {
   if (request.tokens && request.tokens.length > 0) {
-    return [...new Set(request.tokens)];
+    const unique = [...new Set(request.tokens)];
+    return unique.slice(0, MAX_TOKENS);
   }
 
   const ids = request.userIds ?? (request.userId ? [request.userId] : []);
-  if (ids.length == 0) return [];
+  if (ids.length === 0) return [];
+  if (ids.length > MAX_USER_IDS) {
+    throw new Error(`Too many userIds: ${ids.length} exceeds limit of ${MAX_USER_IDS}`);
+  }
 
   const supabase = createSupabaseAdmin();
   const { data, error } = await supabase
@@ -131,7 +90,8 @@ async function resolveTokens(request: PushRequest): Promise<string[]> {
     throw new Error(`Failed to resolve FCM tokens: ${error.message}`);
   }
 
-  return [...new Set((data ?? []).map((row: { token: string }) => row.token))];
+  const unique = [...new Set((data ?? []).map((row: { token: string }) => row.token))];
+  return unique.slice(0, MAX_TOKENS);
 }
 
 async function sendToFcm(
@@ -152,23 +112,12 @@ async function sendToFcm(
         validate_only: request.dryRun === true,
         message: {
           token,
-          notification: {
-            title: request.title,
-            body: request.body,
-          },
+          notification: { title: request.title, body: request.body },
           data: normalizeData(request),
-          android: {
-            priority: "high",
-          },
+          android: { priority: "high" },
           apns: {
-            headers: {
-              "apns-priority": "10",
-            },
-            payload: {
-              aps: {
-                sound: "default",
-              },
-            },
+            headers: { "apns-priority": "10" },
+            payload: { aps: { sound: "default" } },
           },
         },
       }),
@@ -176,31 +125,57 @@ async function sendToFcm(
   );
 
   if (!response.ok) {
-    return {
-      ok: false,
-      token,
-      error: await response.text(),
-    };
+    const errorText = await response.text();
+    console.error(`[send-push] FCM delivery failed: ${errorText}`);
+    return { ok: false };
   }
 
-  return {
-    ok: true,
-    token,
-    response: await response.json(),
-  };
+  await response.json();
+  return { ok: true };
 }
 
-serve(async (req: Request) => {
-  if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
-  }
+// Simple in-memory rate limiter: max 10 calls per minute per user.
+const rateLimitMap = new Map<string, number[]>();
+const RATE_LIMIT_WINDOW_MS = 60_000;
+const RATE_LIMIT_MAX_CALLS = 10;
+
+function checkRateLimit(userId: string): boolean {
+  const now = Date.now();
+  const timestamps = (rateLimitMap.get(userId) ?? []).filter(
+    (t) => now - t < RATE_LIMIT_WINDOW_MS,
+  );
+  if (timestamps.length >= RATE_LIMIT_MAX_CALLS) return false;
+  timestamps.push(now);
+  rateLimitMap.set(userId, timestamps);
+  return true;
+}
+
+Deno.serve(async (req: Request) => {
+  if (req.method === "OPTIONS") return corsPreflightResponse(req);
+
+  const headers = getCorsHeaders(req);
 
   try {
     const callerId = await getAuthenticatedUserId(req);
     if (!callerId) {
       return new Response(
         JSON.stringify({ error: "Unauthorized" }),
-        { status: 401, headers: corsHeaders },
+        { status: 401, headers },
+      );
+    }
+
+    const isAdmin = await requireAdminRole(callerId);
+    if (!isAdmin) {
+      return new Response(
+        JSON.stringify({ error: "Forbidden: admin role required" }),
+        { status: 403, headers },
+      );
+    }
+
+    if (!checkRateLimit(callerId)) {
+      return new Response(
+        JSON.stringify({ error: "Rate limited: too many requests" }),
+        { status: 429, headers },
       );
     }
 
@@ -208,45 +183,52 @@ serve(async (req: Request) => {
     if (!request.title?.trim() || !request.body?.trim()) {
       return new Response(
         JSON.stringify({ error: "title and body are required" }),
-        { status: 400, headers: corsHeaders },
+        { status: 400, headers },
       );
     }
+
+    request.title = request.title.trim().slice(0, 200);
+    request.body = request.body.trim().slice(0, 1000);
 
     const projectId = Deno.env.get("FIREBASE_PROJECT_ID") ?? "";
     if (!projectId) {
       return new Response(
         JSON.stringify({ error: "Missing FIREBASE_PROJECT_ID secret" }),
-        { status: 500, headers: corsHeaders },
+        { status: 500, headers },
       );
     }
 
     const tokens = await resolveTokens(request);
     if (tokens.length === 0) {
       return new Response(
-        JSON.stringify({ success: 0, failure: 0, results: [] }),
-        { status: 200, headers: corsHeaders },
+        JSON.stringify({ success: 0, failure: 0 }),
+        { status: 200, headers },
       );
     }
 
     const accessToken = await createAccessToken();
-    const results = await Promise.all(
-      tokens.map((token) => sendToFcm(accessToken, projectId, token, request)),
-    );
+
+    const BATCH_SIZE = 50;
+    let successCount = 0;
+    let failureCount = 0;
+    for (let i = 0; i < tokens.length; i += BATCH_SIZE) {
+      const batch = tokens.slice(i, i + BATCH_SIZE);
+      const results = await Promise.all(
+        batch.map((token) => sendToFcm(accessToken, projectId, token, request)),
+      );
+      successCount += results.filter((item) => item.ok).length;
+      failureCount += results.filter((item) => !item.ok).length;
+    }
 
     return new Response(
-      JSON.stringify({
-        callerId,
-        success: results.filter((item) => item.ok).length,
-        failure: results.filter((item) => !item.ok).length,
-        results,
-      }),
-      { status: 200, headers: corsHeaders },
+      JSON.stringify({ success: successCount, failure: failureCount }),
+      { status: 200, headers },
     );
   } catch (error) {
     console.error("[send-push] Error:", error);
     return new Response(
       JSON.stringify({ error: "Internal server error" }),
-      { status: 500, headers: corsHeaders },
+      { status: 500, headers },
     );
   }
 });

@@ -274,11 +274,19 @@ class AdminActionsNotifier extends Notifier<AdminActionState> {
       await requireAdmin(ref);
       final client = ref.read(supabaseClientProvider);
 
+      // Sanitize inputs (defense in depth — UI also validates)
+      final sanitizedTitle = title.trim().length > 200
+          ? title.trim().substring(0, 200)
+          : title.trim();
+      final sanitizedBody = body.trim().length > 1000
+          ? body.trim().substring(0, 1000)
+          : body.trim();
+
       await client.from(SupabaseConstants.notificationsTable).insert({
         'id': const Uuid().v4(),
         'user_id': targetUserId,
-        'title': title,
-        'body': body,
+        'title': sanitizedTitle,
+        'body': sanitizedBody,
         'type': 'custom',
         'priority': 'normal',
         'read': false,
@@ -288,8 +296,8 @@ class AdminActionsNotifier extends Notifier<AdminActionState> {
       final edgeClient = ref.read(edgeFunctionClientProvider);
       final pushResult = await edgeClient.sendPush(
         userIds: [targetUserId],
-        title: title,
-        body: body,
+        title: sanitizedTitle,
+        body: sanitizedBody,
       );
 
       // Check both HTTP success and actual FCM delivery count
@@ -318,7 +326,7 @@ class AdminActionsNotifier extends Notifier<AdminActionState> {
         ref.read(currentUserIdProvider),
         'notification_sent',
         targetUserId: targetUserId,
-        details: {'title': title, 'push_delivered': !pushFailed},
+        details: {'title': sanitizedTitle, 'push_delivered': !pushFailed},
       );
 
       state = state.copyWith(
@@ -344,11 +352,19 @@ class AdminActionsNotifier extends Notifier<AdminActionState> {
       await requireAdmin(ref);
       final client = ref.read(supabaseClientProvider);
 
+      // Sanitize inputs (defense in depth — UI also validates)
+      final sanitizedTitle = title.trim().length > 200
+          ? title.trim().substring(0, 200)
+          : title.trim();
+      final sanitizedBody = body.trim().length > 1000
+          ? body.trim().substring(0, 1000)
+          : body.trim();
+
       final rows = userIds.map((uid) => {
         'id': const Uuid().v4(),
         'user_id': uid,
-        'title': title,
-        'body': body,
+        'title': sanitizedTitle,
+        'body': sanitizedBody,
         'type': 'custom',
         'priority': 'normal',
         'read': false,
@@ -360,8 +376,8 @@ class AdminActionsNotifier extends Notifier<AdminActionState> {
       final edgeClient = ref.read(edgeFunctionClientProvider);
       final pushResult = await edgeClient.sendPush(
         userIds: userIds,
-        title: title,
-        body: body,
+        title: sanitizedTitle,
+        body: sanitizedBody,
       );
 
       // Check both HTTP success and actual FCM delivery count
@@ -390,7 +406,7 @@ class AdminActionsNotifier extends Notifier<AdminActionState> {
         ref.read(currentUserIdProvider),
         'bulk_notification_sent',
         details: {
-          'title': title,
+          'title': sanitizedTitle,
           'count': userIds.length,
           'push_delivered': !pushFailed,
         },

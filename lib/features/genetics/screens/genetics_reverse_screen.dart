@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
+import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/buttons/primary_button.dart';
@@ -114,6 +115,13 @@ class _GeneticsReverseScreenState extends ConsumerState<GeneticsReverseScreen> {
         setState(() {
           _results = results;
         });
+      }
+    } catch (e, st) {
+      AppLogger.error('GeneticsReverseScreen._calculateParents', e, st);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('errors.unknown'.tr())),
+        );
       }
     } finally {
       if (mounted) {
