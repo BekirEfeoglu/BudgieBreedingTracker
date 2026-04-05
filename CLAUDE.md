@@ -56,21 +56,21 @@ scripts/verify_rls_staging.sql           # Verify Row-Level Security policies on
 
 | Metric | Value |
 | --- | --- |
-| Source files (lib/) | 816 Dart files |
-| Test files (test/) | 742 test files, 8,953+ individual tests |
-| Feature modules | 23 |
+| Source files (lib/) | 717 Dart files |
+| Test files (test/) | 680 test files, 7,974+ individual tests |
+| Feature modules | 20 |
 | Drift tables / DAOs / Mappers | 20 each |
-| Repositories | 23 entity + base + sync_metadata |
-| Remote sources | 26 entity + base + 2 caches + providers |
-| Freezed models | 29 model files + statistics_models + supabase_extensions |
-| Domain services | 15 directories |
-| Routes | 71 |
-| Custom SVG icons | 84 constants, 84 files on disk |
-| Shared widgets | 20 (15 root + 2 buttons + 2 cards + 1 dialog) |
-| Enum files | 15 |
-| Supabase constants | 106 (tables + buckets + columns) |
-| L10n keys | ~2,396 per language, 39 categories |
-| DB schema version | 19 |
+| Repositories | 20 entity + base + sync_metadata |
+| Remote sources | 20 entity + base + 2 caches + providers |
+| Freezed models | 21 model files + statistics_models + supabase_extensions |
+| Domain services | 14 directories |
+| Routes | 60 |
+| Custom SVG icons | 82 constants, 82 files on disk |
+| Shared widgets | 19 (14 root + 2 buttons + 2 cards + 1 dialog) |
+| Enum files | 12 |
+| Supabase constants | 94 (tables + buckets + columns) |
+| L10n keys | ~3 per language, 35 categories |
+| DB schema version | 17 |
 
 ## CI/CD Pipeline
 
@@ -248,7 +248,7 @@ Security:      lib/core/security/
 Preferences:   lib/data/local/preferences/
 EdgeFunctions: lib/data/remote/supabase/
 Edge Fn (SB):  supabase/functions/
-Migrations:    supabase/migrations/ (97 files)
+Migrations:    supabase/migrations/ (104 files)
 Scripts:       scripts/
 CI:            .github/workflows/ + codemagic.yaml
 ```

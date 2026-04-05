@@ -106,6 +106,28 @@ def _apply_inline_fixes(content: str, actual: dict) -> tuple[str, list[str]]:
         updated = fixed
         messages.append("Inline SupabaseConstants count updated")
 
+    # Migration file count: "NNN SQL migration files in"
+    migrations = actual.get("migrations")
+    if migrations is not None:
+        fixed = re.sub(
+            r"\d+ SQL migration files? in",
+            f"{migrations} SQL migration files in",
+            updated,
+        )
+        if fixed != updated:
+            updated = fixed
+            messages.append("Inline migration file count updated")
+
+        # Key File Locations: "supabase/migrations/ (NNN files)"
+        fixed = re.sub(
+            r"supabase/migrations/ \(\d+ files\)",
+            f"supabase/migrations/ ({migrations} files)",
+            updated,
+        )
+        if fixed != updated:
+            updated = fixed
+            messages.append("Inline migrations key location updated")
+
     return updated, messages
 
 

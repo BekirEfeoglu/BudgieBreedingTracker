@@ -67,6 +67,8 @@ def _make_sample_actual(overrides=None) -> dict:
         "test_files": 680,
         "individual_tests": 7974,
         "source_files": 717,
+        "indexes": 34,
+        "migrations": 104,
     }
     if overrides:
         base.update(overrides)
@@ -81,6 +83,7 @@ def _make_claude_md_content(
     widgets_root=14,
     tr_keys=1954,
     schema=17,
+    migrations=104,
 ) -> str:
     return f"""\
 # CLAUDE.md
@@ -105,11 +108,15 @@ def _make_claude_md_content(
 | L10n keys | ~{tr_keys:,} per language, 35 categories |
 | DB schema version | {schema} |
 
+### Migrations
+{migrations} SQL migration files in `supabase/migrations/`.
+
 ## Key File Locations
 
 ```
 Shared UI:    lib/core/widgets/               ({widgets_total} widgets: {widgets_root} root + 2 buttons + 2 cards + 1 dialog)
 Translations: assets/translations/            (~{tr_keys:,} leaf keys per language, 35 categories)
+Migrations:   supabase/migrations/ ({migrations} files)
 Database:     schemaVersion {schema} (switch-based migration, 30+ perf indexes)
 ```
 """

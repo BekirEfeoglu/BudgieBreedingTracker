@@ -118,6 +118,13 @@ def main():
     print(section("Database"))
     track(check("Schema version", extract_first_number(stats.get("DB schema version", "0")), actual["schema"]))
 
+    print(section("Supabase Migrations"))
+    # Migration count: CLAUDE.md prose'dan parse et (tablo disinda, inline metin)
+    claude_content = CLAUDE_MD.read_text(encoding="utf-8")
+    migration_match = re.search(r"(\d+) SQL migration files? in", claude_content)
+    expected_migrations = int(migration_match.group(1)) if migration_match else 0
+    track(check("SQL migration dosya sayisi", expected_migrations, actual["migrations"], tolerance=tol(2)))
+
     print(section("Translations"))
     expected_keys = extract_first_number(stats.get("L10n keys", "0"))
     en_keys = count_json_leaf_keys(ASSETS / "translations" / "en.json")

@@ -173,6 +173,14 @@ def collect_source_file_count(lib: Path) -> int:
     ])
 
 
+def count_migrations(root: Path) -> int:
+    """Supabase migration SQL dosyalarini say."""
+    migrations_dir = root / "supabase" / "migrations"
+    if not migrations_dir.exists():
+        return 0
+    return len(list(migrations_dir.glob("*.sql")))
+
+
 def collect_actual_values() -> dict:
     """Codebase'den gercek degerleri topla."""
     result: dict = {}
@@ -191,4 +199,5 @@ def collect_actual_values() -> dict:
     result.update(collect_widgets(LIB))
     result.update(collect_test_counts(ROOT))
     result["source_files"] = collect_source_file_count(LIB)
+    result["migrations"] = count_migrations(ROOT)
     return result
