@@ -6,6 +6,25 @@ import 'package:budgie_breeding_tracker/data/remote/supabase/edge_function_clien
 
 import '../../../helpers/mocks.dart';
 
+const _testAccessToken = 'test-access-token';
+
+Session _createTestSession() {
+  return Session(
+    accessToken: _testAccessToken,
+    tokenType: 'bearer',
+    user: const User(
+      id: 'test-user',
+      appMetadata: {},
+      userMetadata: {},
+      aud: 'authenticated',
+      createdAt: '2024-01-01T00:00:00Z',
+    ),
+  );
+}
+
+/// Auth header that EdgeFunctionClient injects into every request.
+const _authHeader = {'Authorization': 'Bearer $_testAccessToken'};
+
 void main() {
   late MockSupabaseClient mockClient;
   late MockFunctionsClient mockFunctions;
@@ -23,7 +42,7 @@ void main() {
     mockAuth = MockGoTrueClient();
     when(() => mockClient.functions).thenReturn(mockFunctions);
     when(() => mockClient.auth).thenReturn(mockAuth);
-    when(() => mockAuth.currentSession).thenReturn(null);
+    when(() => mockAuth.currentSession).thenReturn(_createTestSession());
     client = EdgeFunctionClient(mockClient);
   });
 
@@ -78,10 +97,14 @@ void main() {
   group('EdgeFunctionClient', () {
     test('invoke forwards body+headers and returns parsed result', () async {
       final body = <String, dynamic>{'x': 1};
-      final headers = <String, String>{'x-trace': 'abc'};
+      final customHeaders = <String, String>{'x-trace': 'abc'};
+      final expectedHeaders = <String, String>{..._authHeader, ...customHeaders};
       when(
-        () =>
-            mockFunctions.invoke('test-function', body: body, headers: headers),
+        () => mockFunctions.invoke(
+          'test-function',
+          body: body,
+          headers: expectedHeaders,
+        ),
       ).thenAnswer(
         (_) async => FunctionResponse(status: 200, data: {'ok': true}),
       );
@@ -89,14 +112,17 @@ void main() {
       final result = await client.invoke(
         'test-function',
         body: body,
-        headers: headers,
+        headers: customHeaders,
       );
 
       expect(result.success, isTrue);
       expect(result.data, {'ok': true});
       verify(
-        () =>
-            mockFunctions.invoke('test-function', body: body, headers: headers),
+        () => mockFunctions.invoke(
+          'test-function',
+          body: body,
+          headers: expectedHeaders,
+        ),
       ).called(1);
     });
 
@@ -104,8 +130,11 @@ void main() {
       'invoke returns failure when function responds with error status',
       () async {
         when(
-          () =>
-              mockFunctions.invoke('test-function', body: null, headers: null),
+          () => mockFunctions.invoke(
+            'test-function',
+            body: null,
+            headers: _authHeader,
+          ),
         ).thenAnswer(
           (_) async => FunctionResponse(status: 400, data: 'bad request'),
         );
@@ -119,7 +148,11 @@ void main() {
 
     test('invoke returns failure when underlying client throws', () async {
       when(
-        () => mockFunctions.invoke('explode', body: null, headers: null),
+        () => mockFunctions.invoke(
+          'explode',
+          body: null,
+          headers: _authHeader,
+        ),
       ).thenThrow(Exception('network down'));
 
       final result = await client.invoke('explode');
@@ -128,13 +161,25 @@ void main() {
       expect(result.error, contains('network down'));
     });
 
+    test('invoke returns failure when no session exists', () async {
+      when(() => mockAuth.currentSession).thenReturn(null);
+
+      final result = await client.invoke('test-function');
+
+      expect(result.success, isFalse);
+      expect(result.error, contains('No authenticated session'));
+      verifyNever(
+        () => mockFunctions.invoke(any(), body: any(named: 'body'), headers: any(named: 'headers')),
+      );
+    });
+
     test('calculateGenetics sends expected payload', () async {
       Map<String, dynamic>? capturedBody;
       when(
         () => mockFunctions.invoke(
           'calculate-genetics',
           body: any(named: 'body'),
-          headers: null,
+          headers: _authHeader,
         ),
       ).thenAnswer((invocation) async {
         capturedBody = Map<String, dynamic>.from(
@@ -163,7 +208,7 @@ void main() {
           () => mockFunctions.invoke(
             'generate-report',
             body: any(named: 'body'),
-            headers: null,
+            headers: _authHeader,
           ),
         ).thenAnswer((invocation) async {
           capturedBody = Map<String, dynamic>.from(
@@ -187,7 +232,11 @@ void main() {
 
     test('checkSystemHealth invokes the system-health function', () async {
       when(
-        () => mockFunctions.invoke('system-health', body: null, headers: null),
+        () => mockFunctions.invoke(
+          'system-health',
+          body: null,
+          headers: _authHeader,
+        ),
       ).thenAnswer(
         (_) async => FunctionResponse(status: 200, data: {'healthy': true}),
       );
@@ -197,7 +246,11 @@ void main() {
       expect(result.success, isTrue);
       expect(result.data?['healthy'], isTrue);
       verify(
-        () => mockFunctions.invoke('system-health', body: null, headers: null),
+        () => mockFunctions.invoke(
+          'system-health',
+          body: null,
+          headers: _authHeader,
+        ),
       ).called(1);
     });
 
@@ -205,8 +258,11 @@ void main() {
       'checkSystemHealth returns failure when function is not deployed (404)',
       () async {
         when(
-          () =>
-              mockFunctions.invoke('system-health', body: null, headers: null),
+          () => mockFunctions.invoke(
+            'system-health',
+            body: null,
+            headers: _authHeader,
+          ),
         ).thenThrow(
           const FunctionException(
             status: 404,

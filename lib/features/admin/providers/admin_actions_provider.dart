@@ -267,7 +267,7 @@ class AdminActionsNotifier extends Notifier<AdminActionState> {
 
   // ── Notification Operations ──────────────────────────
 
-  /// Send an in-app notification to a single user.
+  /// Send an in-app notification and push notification to a single user.
   Future<void> sendNotification(String targetUserId, String title, String body) async {
     state = state.copyWith(isLoading: true, error: null, isSuccess: false);
     try {
@@ -284,18 +284,49 @@ class AdminActionsNotifier extends Notifier<AdminActionState> {
         'read': false,
       });
 
+      // Send push notification via FCM edge function
+      final edgeClient = ref.read(edgeFunctionClientProvider);
+      final pushResult = await edgeClient.sendPush(
+        userIds: [targetUserId],
+        title: title,
+        body: body,
+      );
+
+      // Check both HTTP success and actual FCM delivery count
+      bool pushFailed;
+      if (!pushResult.success) {
+        pushFailed = true;
+        AppLogger.warning(
+          'AdminActions.sendNotification: push request failed: ${pushResult.error}',
+        );
+      } else {
+        final deliveredRaw = pushResult.data?['success'];
+        final delivered = (deliveredRaw is num) ? deliveredRaw.toInt() : 0;
+        pushFailed = delivered == 0;
+        if (pushFailed) {
+          final failureRaw = pushResult.data?['failure'];
+          final failure = (failureRaw is num) ? failureRaw.toInt() : 0;
+          AppLogger.warning(
+            'AdminActions.sendNotification: push delivered to 0 devices '
+            '(failures: $failure, data: ${pushResult.data})',
+          );
+        }
+      }
+
       await logAdminAction(
         client,
         ref.read(currentUserIdProvider),
         'notification_sent',
         targetUserId: targetUserId,
-        details: {'title': title},
+        details: {'title': title, 'push_delivered': !pushFailed},
       );
 
       state = state.copyWith(
         isLoading: false,
         isSuccess: true,
-        successMessage: 'admin.notification_sent'.tr(),
+        successMessage: pushFailed
+            ? 'admin.notification_sent_no_push'.tr()
+            : 'admin.notification_sent'.tr(),
       );
     } catch (e, st) {
       AppLogger.error('AdminActions.sendNotification', e, st);
@@ -306,7 +337,7 @@ class AdminActionsNotifier extends Notifier<AdminActionState> {
     }
   }
 
-  /// Send an in-app notification to multiple users.
+  /// Send an in-app notification and push notification to multiple users.
   Future<void> sendBulkNotification(List<String> userIds, String title, String body) async {
     state = state.copyWith(isLoading: true, error: null, isSuccess: false);
     try {
@@ -325,17 +356,53 @@ class AdminActionsNotifier extends Notifier<AdminActionState> {
 
       await client.from(SupabaseConstants.notificationsTable).insert(rows);
 
+      // Send push notifications via FCM edge function
+      final edgeClient = ref.read(edgeFunctionClientProvider);
+      final pushResult = await edgeClient.sendPush(
+        userIds: userIds,
+        title: title,
+        body: body,
+      );
+
+      // Check both HTTP success and actual FCM delivery count
+      bool pushFailed;
+      if (!pushResult.success) {
+        pushFailed = true;
+        AppLogger.warning(
+          'AdminActions.sendBulkNotification: push request failed: ${pushResult.error}',
+        );
+      } else {
+        final deliveredRaw = pushResult.data?['success'];
+        final delivered = (deliveredRaw is num) ? deliveredRaw.toInt() : 0;
+        pushFailed = delivered == 0;
+        if (pushFailed) {
+          final failureRaw = pushResult.data?['failure'];
+          final failure = (failureRaw is num) ? failureRaw.toInt() : 0;
+          AppLogger.warning(
+            'AdminActions.sendBulkNotification: push delivered to 0 devices '
+            '(failures: $failure, data: ${pushResult.data})',
+          );
+        }
+      }
+
       await logAdminAction(
         client,
         ref.read(currentUserIdProvider),
         'bulk_notification_sent',
-        details: {'title': title, 'count': userIds.length},
+        details: {
+          'title': title,
+          'count': userIds.length,
+          'push_delivered': !pushFailed,
+        },
       );
 
+      final countStr = '${userIds.length}';
       state = state.copyWith(
         isLoading: false,
         isSuccess: true,
-        successMessage: 'admin.notification_sent_bulk'.tr(args: ['${userIds.length}']),
+        successMessage: pushFailed
+            ? 'admin.notification_sent_bulk_no_push'.tr(args: [countStr])
+            : 'admin.notification_sent_bulk'.tr(args: [countStr]),
       );
     } catch (e, st) {
       AppLogger.error('AdminActions.sendBulkNotification', e, st);

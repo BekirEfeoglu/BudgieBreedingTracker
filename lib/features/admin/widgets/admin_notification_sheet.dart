@@ -60,30 +60,39 @@ class _NotificationSheetContentState extends State<_NotificationSheetContent> {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isLoading = true);
 
-    final notifier = widget.ref.read(adminActionsProvider.notifier);
-    final title = _titleController.text.trim();
-    final body = _messageController.text.trim();
+    try {
+      final notifier = widget.ref.read(adminActionsProvider.notifier);
+      final title = _titleController.text.trim();
+      final body = _messageController.text.trim();
 
-    if (_isBulk) {
-      await notifier.sendBulkNotification(widget.targetUserIds!, title, body);
-    } else if (widget.targetUserId != null) {
-      await notifier.sendNotification(widget.targetUserId!, title, body);
-    }
+      if (_isBulk) {
+        await notifier.sendBulkNotification(
+            widget.targetUserIds!, title, body);
+      } else if (widget.targetUserId != null) {
+        await notifier.sendNotification(widget.targetUserId!, title, body);
+      }
 
-    if (!mounted) return;
+      if (!mounted) return;
 
-    final state = widget.ref.read(adminActionsProvider);
-    if (state.isSuccess) {
-      final message =
-          state.successMessage ?? 'admin.notification_sent'.tr();
-      Navigator.of(context).pop(true);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(message)),
-      );
-    } else if (state.error != null) {
+      final state = widget.ref.read(adminActionsProvider);
+      if (state.isSuccess) {
+        Navigator.of(context).pop(true);
+      } else if (state.error != null) {
+        setState(() => _isLoading = false);
+        Navigator.of(context).pop(false);
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(state.error!)),
+          );
+        }
+      } else {
+        setState(() => _isLoading = false);
+      }
+    } catch (e) {
+      if (!mounted) return;
       setState(() => _isLoading = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(state.error!)),
+        SnackBar(content: Text('admin.action_error'.tr())),
       );
     }
   }

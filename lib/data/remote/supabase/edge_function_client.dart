@@ -50,7 +50,7 @@ class EdgeFunctionClient {
   static const _defaultCooldown = Duration(seconds: 10);
 
   /// Edge Functions exempt from rate limiting (need rapid sequential calls).
-  static const _rateLimitExempt = {'mfa-lockout'};
+  static const _rateLimitExempt = {'mfa-lockout', 'send-push'};
 
   /// Per-function last invocation timestamps for rate limiting.
   final Map<String, DateTime> _lastInvocationAt = {};
@@ -80,18 +80,39 @@ class EdgeFunctionClient {
 
       AppLogger.info('$_tag Invoking: $functionName');
 
-      // Auto-include JWT for authenticated Edge Function calls
-      final mergedHeaders = <String, String>{};
-      final accessToken = _client.auth.currentSession?.accessToken;
-      if (accessToken != null) {
-        mergedHeaders['Authorization'] = 'Bearer $accessToken';
+      // Proactively refresh session if token is expired or about to expire.
+      // BUG in supabase-dart: _handleTokenChanged updates realtime.setAuth()
+      // but does NOT call functions.setAuth(), so the FunctionsClient keeps
+      // the stale token in its _headers after a token refresh.
+      // Workaround: always pass a fresh Authorization header explicitly.
+      final session = _client.auth.currentSession;
+      if (session?.expiresAt != null) {
+        final expiresAt = DateTime.fromMillisecondsSinceEpoch(
+          session!.expiresAt! * 1000,
+        );
+        if (expiresAt.isBefore(DateTime.now().add(const Duration(seconds: 30)))) {
+          AppLogger.info('$_tag Refreshing expired session before $functionName');
+          await _client.auth.refreshSession();
+        }
       }
-      if (headers != null) mergedHeaders.addAll(headers);
+
+      // Get the LATEST access token (after potential refresh) and pass it
+      // explicitly — custom headers override FunctionsClient._headers.
+      final accessToken = _client.auth.currentSession?.accessToken;
+      if (accessToken == null) {
+        AppLogger.warning('$_tag No authenticated session for $functionName');
+        return EdgeFunctionResult.failure('No authenticated session');
+      }
+
+      final authHeaders = <String, String>{
+        'Authorization': 'Bearer $accessToken',
+        ...?headers,
+      };
 
       final response = await _client.functions.invoke(
         functionName,
         body: body,
-        headers: mergedHeaders.isNotEmpty ? mergedHeaders : null,
+        headers: authHeaders,
       );
 
       final result = EdgeFunctionResult.fromResponse(response);
@@ -170,6 +191,28 @@ class EdgeFunctionClient {
     return invoke(
       'scan-image-safety',
       body: {'image_base64': imageBase64, 'mime_type': mimeType},
+    );
+  }
+
+  /// Send a push notification via FCM to one or more users.
+  ///
+  /// Resolves FCM tokens server-side from [userIds] and delivers
+  /// push notifications through Firebase Cloud Messaging.
+  /// Returns `{ success: N, failure: N, results: [...] }`.
+  Future<EdgeFunctionResult> sendPush({
+    List<String>? userIds,
+    required String title,
+    required String body,
+    Map<String, dynamic>? data,
+  }) {
+    return invoke(
+      'send-push',
+      body: {
+        if (userIds != null) 'userIds': userIds,
+        'title': title,
+        'body': body,
+        if (data != null) 'data': data,
+      },
     );
   }
 

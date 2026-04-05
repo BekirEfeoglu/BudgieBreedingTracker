@@ -104,6 +104,10 @@ class DashboardSystemHealthBanner extends ConsumerWidget {
       data: (data) => data['status'] as String?,
     );
     final isUnavailable = status == 'unavailable';
+
+    // Edge Function not deployed — hide banner entirely instead of showing noise
+    if (isUnavailable) return const SizedBox.shrink();
+
     final isHealthy = healthAsync.maybeWhen(
       data: (data) =>
           data['status'] != 'error' && data['status'] != 'unavailable',
@@ -117,21 +121,15 @@ class DashboardSystemHealthBanner extends ConsumerWidget {
 
     final color = isLoading
         ? AppColors.info
-        : isUnavailable
-        ? AppColors.neutral400
         : isHealthy
         ? AppColors.success
         : AppColors.warning;
     final title = isLoading
         ? 'admin.checking_health'.tr()
-        : isUnavailable
-        ? 'admin.health_unavailable'.tr()
         : isHealthy
         ? 'admin.system_healthy'.tr()
         : 'admin.system_degraded'.tr();
-    final subtitle = isUnavailable
-        ? 'admin.health_unavailable_desc'.tr()
-        : errorMsg ?? 'admin.all_services_running'.tr();
+    final subtitle = errorMsg ?? 'admin.all_services_running'.tr();
 
     return Container(
       width: double.infinity,

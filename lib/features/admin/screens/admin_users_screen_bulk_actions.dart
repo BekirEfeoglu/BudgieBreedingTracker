@@ -119,6 +119,12 @@ class _BulkActionBarState extends ConsumerState<_BulkActionBar> {
       targetUserIds: widget.selectedIds.toList(),
     );
     if (result == true && mounted) {
+      final state = ref.read(adminActionsProvider);
+      final message =
+          state.successMessage ?? 'admin.notification_sent'.tr();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message)),
+      );
       widget.onClearSelection();
     }
   }

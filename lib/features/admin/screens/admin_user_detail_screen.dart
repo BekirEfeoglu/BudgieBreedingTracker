@@ -114,11 +114,19 @@ class _AdminUserDetailScreenState extends ConsumerState<AdminUserDetailScreen> {
     }
     if (action == 'send_notification') {
       if (!mounted) return;
-      await showAdminNotificationSheet(
+      final sent = await showAdminNotificationSheet(
         context,
         ref: ref,
         targetUserId: widget.userId,
       );
+      if (sent == true && mounted) {
+        final state = ref.read(adminActionsProvider);
+        final message =
+            state.successMessage ?? 'admin.notification_sent'.tr();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(message)),
+        );
+      }
     }
   }
 
