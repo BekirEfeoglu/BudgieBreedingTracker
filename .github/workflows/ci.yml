@@ -55,13 +55,16 @@ jobs:
         # --no-test-assets: Skips copying assets/ to the test runner. Safe because
         # tests use TestAssetLoader (keys-as-strings) not real translation files.
         # If a test needs real assets, tag it and exclude here.
+        # --concurrency=4: Run tests in parallel for faster execution
         run: |
           flutter test \
             --exclude-tags "golden || e2e || community" \
             --no-test-assets \
             --coverage \
+            --concurrency=4 \
             --dart-define=SUPABASE_URL=https://placeholder.supabase.co \
             --dart-define=SUPABASE_ANON_KEY=placeholder_key
+        timeout-minutes: 15
 
       - name: Upload coverage to Codecov
         if: always()
@@ -235,6 +238,7 @@ jobs:
   android-build:
     name: Android Build (Debug)
     runs-on: ubuntu-24.04
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
@@ -265,6 +269,7 @@ jobs:
   android-release:
     name: Android Release (AAB)
     runs-on: ubuntu-24.04
+    timeout-minutes: 25
     # Sadece main branch push'larinda release build yap
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: [analyze, test]
@@ -324,6 +329,7 @@ jobs:
   ios-build:
     name: iOS Build
     runs-on: macos-latest
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
