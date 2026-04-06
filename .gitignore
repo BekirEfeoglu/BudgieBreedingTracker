@@ -196,6 +196,7 @@ skills-lock.json
 # --------------------------------------------------
 .codex/
 .superpowers/
+docs/superpowers/
 .playwright-mcp/
 
 # --------------------------------------------------
