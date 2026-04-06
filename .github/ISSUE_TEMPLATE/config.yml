@@ -3,3 +3,6 @@ contact_links:
   - name: Soru & Tartisma
     url: https://github.com/BekirEfeoglu/BudgieBreedingTracker/discussions
     about: Hata bildirimi veya ozellik istegi degilse, tartisma aciniz.
+  - name: Guvenlik Acigi Bildirimi (Ozel)
+    url: https://github.com/BekirEfeoglu/BudgieBreedingTracker/security/advisories/new
+    about: Kritik guvenlik aciklari icin ozel bildirim yapin.

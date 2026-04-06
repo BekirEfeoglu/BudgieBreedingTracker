@@ -1,0 +1,90 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*' # v1.0.0, v1.2.3 gibi semantic version tagleri
+
+permissions:
+  contents: write
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get previous tag
+        id: prev_tag
+        run: |
+          PREV=$(git tag --sort=-version:refname | head -2 | tail -1)
+          echo "tag=${PREV:-$(git rev-list --max-parents=0 HEAD)}" >> "$GITHUB_OUTPUT"
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          TAG="${{ github.ref_name }}"
+          PREV="${{ steps.prev_tag.outputs.tag }}"
+
+          echo "## Degisiklikler" > changelog.md
+          echo "" >> changelog.md
+
+          # Commit'leri kategorize et
+          declare -A categories
+          categories[feat]="Yeni Ozellikler"
+          categories[fix]="Hata Duzeltmeleri"
+          categories[perf]="Performans"
+          categories[refactor]="Refactoring"
+          categories[test]="Testler"
+          categories[docs]="Dokumantasyon"
+          categories[chore]="Bakim"
+          categories[ci]="CI/CD"
+
+          for type in feat fix perf refactor test docs chore ci; do
+            commits=$(git log "$PREV".."$TAG" --pretty=format:"- %s (%h)" --grep="^${type}" 2>/dev/null || true)
+            if [ -n "$commits" ]; then
+              echo "### ${categories[$type]}" >> changelog.md
+              echo "$commits" >> changelog.md
+              echo "" >> changelog.md
+            fi
+          done
+
+          # Kategorize edilemeyen commit'ler
+          uncategorized=$(git log "$PREV".."$TAG" --pretty=format:"- %s (%h)" --invert-grep \
+            --grep="^feat" --grep="^fix" --grep="^perf" --grep="^refactor" \
+            --grep="^test" --grep="^docs" --grep="^chore" --grep="^ci" 2>/dev/null || true)
+          if [ -n "$uncategorized" ]; then
+            echo "### Diger" >> changelog.md
+            echo "$uncategorized" >> changelog.md
+            echo "" >> changelog.md
+          fi
+
+          # Istatistikler
+          echo "---" >> changelog.md
+          echo "" >> changelog.md
+          COMMIT_COUNT=$(git rev-list --count "$PREV".."$TAG" 2>/dev/null || echo "?")
+          FILE_COUNT=$(git diff --stat "$PREV".."$TAG" --shortstat 2>/dev/null | tail -1 || echo "?")
+          echo "**$COMMIT_COUNT commit** | $FILE_COUNT" >> changelog.md
+
+      - name: Determine pre-release
+        id: prerelease
+        run: |
+          TAG="${{ github.ref_name }}"
+          if [[ "$TAG" == *"-alpha"* ]] || [[ "$TAG" == *"-beta"* ]] || [[ "$TAG" == *"-rc"* ]]; then
+            echo "is_prerelease=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "is_prerelease=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          body_path: changelog.md
+          draft: false
+          prerelease: ${{ steps.prerelease.outputs.is_prerelease }}
+          generate_release_notes: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

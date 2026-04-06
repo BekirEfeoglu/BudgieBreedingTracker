@@ -34,9 +34,42 @@ We take security seriously. If you discover a security vulnerability in BudgieBr
 - Allow reasonable time for us to address the issue before public disclosure
 - We will credit reporters in the fix announcement (unless anonymity is preferred)
 
+### Scope
+
+The following are in scope:
+
+- Authentication and authorization bypasses
+- Data exposure (user data, breeding records)
+- SQL injection in Supabase queries
+- RLS policy bypasses
+- API key or secret exposure
+- Encryption weaknesses (AES-256-CBC implementation)
+- Certificate pinning bypasses
+
+### Out of Scope
+
+- Denial of service attacks
+- Social engineering
+- Physical security
+- Third-party service infrastructure (Supabase, RevenueCat, Firebase)
+
+## Security Measures
+
+This application implements:
+
+- **TLS Certificate Pinning** for Supabase connections
+- **AES-256-CBC Encryption** with HMAC-SHA256 authentication for backups
+- **Row-Level Security (RLS)** on all Supabase tables
+- **Inactivity Guard** with automatic session timeout (30 min)
+- **MFA Support** with brute-force lockout (Edge Function)
+- **Input Validation** on all user inputs
+- **Sentry Error Tracking** (no PII in reports)
+- **File Magic Byte Validation** before storage uploads
+
 ## Security Best Practices for Users
 
 - Keep the app updated to the latest version
 - Use strong, unique passwords for your Supabase account
 - Enable two-factor authentication (2FA) when available
 - Do not share your `.env` file or API keys publicly
+- Review app permissions periodically

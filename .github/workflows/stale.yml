@@ -1,0 +1,50 @@
+name: Stale Issues & PRs
+
+on:
+  schedule:
+    - cron: '30 2 * * *' # Her gun 02:30 UTC
+  workflow_dispatch:
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  stale:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/stale@v9
+        with:
+          # Issue ayarlari
+          days-before-stale: 30
+          days-before-close: 7
+          stale-issue-label: 'status: stale'
+          stale-issue-message: |
+            Bu issue 30 gundur aktivite gormuyor ve **stale** olarak isaretlendi.
+            7 gun icinde bir guncelleme yapilmazsa otomatik kapatilacaktir.
+
+            Hala gecerliyse yorum yazarak issue'yu aktif tutabilirsiniz.
+          close-issue-message: |
+            Bu issue inaktivite nedeniyle kapatildi.
+            Hala gecerliyse yeniden acabilirsiniz.
+
+          # PR ayarlari
+          days-before-pr-stale: 14
+          days-before-pr-close: 7
+          stale-pr-label: 'status: stale'
+          stale-pr-message: |
+            Bu PR 14 gundur aktivite gormuyor ve **stale** olarak isaretlendi.
+            7 gun icinde bir guncelleme yapilmazsa otomatik kapatilacaktir.
+          close-pr-message: |
+            Bu PR inaktivite nedeniyle kapatildi.
+
+          # Muaf etiketler - bunlar stale olmaz
+          exempt-issue-labels: 'priority: critical,priority: high,status: blocked,status: in-progress'
+          exempt-pr-labels: 'priority: critical,priority: high,status: blocked,status: in-progress'
+
+          # Sadece belirli etiketli issue'lari isle
+          exempt-all-assignees: false
+          remove-stale-when-updated: true
+          ascending: true
+          operations-per-run: 30

@@ -1,0 +1,69 @@
+name: Auto Label
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+  issues:
+    types: [opened]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  # PR'lara dosya yoluna gore otomatik etiket atar
+  label-pr:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/labeler@v5
+        with:
+          repo-token: "${{ secrets.GITHUB_TOKEN }}"
+          configuration-path: .github/labeler.yml
+          sync-labels: false
+
+  # Yeni issue'lara otomatik triage etiketi atar
+  triage-issue:
+    if: github.event_name == 'issues'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const labels = context.payload.issue.labels.map(l => l.name);
+            const hasStatus = labels.some(l => l.startsWith('status:'));
+            const hasPriority = labels.some(l => l.startsWith('priority:'));
+
+            const toAdd = [];
+            if (!hasStatus) toAdd.push('status: triage');
+            if (!hasPriority) toAdd.push('priority: medium');
+
+            if (toAdd.length > 0) {
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                labels: toAdd,
+              });
+            }
+
+  # Issue ve PR'lari repo sahibine otomatik ata
+  auto-assign:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const number = context.issue?.number || context.payload.pull_request?.number;
+            if (!number) return;
+
+            await github.rest.issues.addAssignees({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: number,
+              assignees: ['BekirEfeoglu'],
+            });

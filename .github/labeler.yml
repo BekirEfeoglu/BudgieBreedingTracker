@@ -1,0 +1,133 @@
+# PR Auto-Labeler configuration
+# Dosya yoluna gore PR'lara otomatik etiket atar
+
+# Area labels
+"area: birds":
+  - changed-files:
+      - any-glob-to-any-file:
+          - "lib/features/birds/**"
+          - "test/features/birds/**"
+
+"area: breeding":
+  - changed-files:
+      - any-glob-to-any-file:
+          - "lib/features/breeding/**"
+          - "lib/features/eggs/**"
+          - "lib/features/chicks/**"
+          - "test/features/breeding/**"
+          - "test/features/eggs/**"
+          - "test/features/chicks/**"
+
+"area: genetics":
+  - changed-files:
+      - any-glob-to-any-file:
+          - "lib/features/genetics/**"
+          - "lib/features/genealogy/**"
+          - "test/features/genetics/**"
+
+"area: sync":
+  - changed-files:
+      - any-glob-to-any-file:
+          - "lib/domain/services/sync/**"
+          - "lib/data/repositories/**"
+          - "lib/data/remote/**"
+          - "test/domain/services/sync/**"
+
+"area: auth":
+  - changed-files:
+      - any-glob-to-any-file:
+          - "lib/features/auth/**"
+          - "lib/core/security/**"
+          - "test/features/auth/**"
+
+"area: ui":
+  - changed-files:
+      - any-glob-to-any-file:
+          - "lib/core/widgets/**"
+          - "lib/core/theme/**"
+          - "assets/icons/**"
+
+"area: database":
+  - changed-files:
+      - any-glob-to-any-file:
+          - "lib/data/local/database/**"
+          - "supabase/migrations/**"
+          - "test/data/local/**"
+
+"area: community":
+  - changed-files:
+      - any-glob-to-any-file:
+          - "lib/features/community/**"
+          - "test/features/community/**"
+
+"area: marketplace":
+  - changed-files:
+      - any-glob-to-any-file:
+          - "lib/features/marketplace/**"
+          - "test/features/marketplace/**"
+
+"area: messaging":
+  - changed-files:
+      - any-glob-to-any-file:
+          - "lib/features/messaging/**"
+          - "test/features/messaging/**"
+
+"area: notifications":
+  - changed-files:
+      - any-glob-to-any-file:
+          - "lib/features/notifications/**"
+          - "lib/domain/services/notifications/**"
+          - "supabase/functions/send-push/**"
+
+"area: premium":
+  - changed-files:
+      - any-glob-to-any-file:
+          - "lib/features/premium/**"
+          - "lib/domain/services/payment/**"
+
+"area: admin":
+  - changed-files:
+      - any-glob-to-any-file:
+          - "lib/features/admin/**"
+          - "test/features/admin/**"
+
+# Type labels
+"type: ci":
+  - changed-files:
+      - any-glob-to-any-file:
+          - ".github/**"
+          - "codemagic.yaml"
+          - "scripts/**"
+
+"type: docs":
+  - changed-files:
+      - any-glob-to-any-file:
+          - "docs/**"
+          - "*.md"
+
+"type: test":
+  - changed-files:
+      - any-glob-to-any-file:
+          - "test/**"
+    all:
+      - changed-files:
+          - all-globs-to-all-files:
+              - "!lib/**"
+
+# Platform labels
+"platform: android":
+  - changed-files:
+      - any-glob-to-any-file:
+          - "android/**"
+
+"platform: ios":
+  - changed-files:
+      - any-glob-to-any-file:
+          - "ios/**"
+
+# Dependency labels
+"dependencies":
+  - changed-files:
+      - any-glob-to-any-file:
+          - "pubspec.yaml"
+          - "pubspec.lock"

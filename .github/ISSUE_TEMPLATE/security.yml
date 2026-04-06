@@ -1,0 +1,40 @@
+name: "Guvenlik Sorunu (Public)"
+description: "Dusuk oncelikli guvenlik iyilestirme onerisi (KRITIK ZAFIYETLER ICIN SECURITY.md'yi okuyun)"
+labels: ["type: security", "status: triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        > **UYARI**: Kritik guvenlik aciklari icin bu formu KULLANMAYIN.
+        > Bunun yerine [Security Advisories](https://github.com/BekirEfeoglu/BudgieBreedingTracker/security/advisories/new) ile ozel bildirim yapin.
+        >
+        > Bu form sadece dusuk oncelikli guvenlik iyilestirme onerileri icindir.
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Kategori
+      options:
+        - Girdi dogrulama iyilestirmesi
+        - Yetkilendirme kontrolu
+        - Veri sizma riski
+        - Sifreleme iyilestirmesi
+        - Bagimllik guvenlik guncellemesi
+        - UI guvenlik iyilestirmesi
+        - Diger
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Aciklama
+      placeholder: Guvenlik iyilestirme onerinizi detayli aciklayin
+    validations:
+      required: true
+
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: Onerilen Cozum
+      placeholder: Nasil iyilestirilebilir?

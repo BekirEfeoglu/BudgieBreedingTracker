@@ -1,0 +1,58 @@
+name: "Performance Sorunu"
+description: "Yavas yukleme, donma veya yuksek kaynak tuketimi bildirin"
+labels: ["type: perf", "status: triage"]
+body:
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      options:
+        - Android
+        - iOS
+        - Birden fazla platform
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Etkilenen Alan
+      options:
+        - Uygulama acilisi / Splash
+        - Dashboard / Ana sayfa
+        - Kus listesi
+        - Eslestirme listesi
+        - Genetik hesaplama
+        - Istatistikler / Grafikler
+        - Senkronizasyon
+        - Veritabani sorgusu
+        - Gorsel yukleme
+        - Diger
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Performans Sorunu
+      placeholder: |
+        Ne yavas? Tahmini bekleme suresi ne kadar?
+        Ornek: "Kus listesi 500+ kayitla 3 saniyede aciliyor"
+    validations:
+      required: true
+
+  - type: textarea
+    id: device
+    attributes:
+      label: Cihaz Bilgisi
+      placeholder: |
+        Cihaz: Samsung Galaxy S21 / iPhone 13
+        OS: Android 14 / iOS 17
+        Uygulama versiyonu: 1.0.1
+        Kayit sayisi: ~200 kus
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Ekran Goruntuleri / Videolar
+      placeholder: Performans sorununu gosteren ekran goruntuleri veya videolar
