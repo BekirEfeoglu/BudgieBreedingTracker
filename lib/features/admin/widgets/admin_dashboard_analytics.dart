@@ -133,7 +133,7 @@ class DashboardUserGrowthChart extends ConsumerWidget {
               child: dataAsync.when(
                 loading: () => const ChartLoading(isLineChart: true),
                 error: (e, _) => ChartError(
-                  message: e.toString(),
+                  message: 'common.data_load_error'.tr(),
                   onRetry: () => ref.invalidate(userGrowthDataProvider),
                 ),
                 data: (data) {

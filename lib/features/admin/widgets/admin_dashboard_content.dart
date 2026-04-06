@@ -115,8 +115,6 @@ class _DashboardSystemHealthBannerState
     );
     final isUnavailable = status == 'unavailable';
 
-    if (isUnavailable) return const SizedBox.shrink();
-
     final isHealthy = healthAsync.maybeWhen(
       data: (data) =>
           data['status'] != 'error' && data['status'] != 'unavailable',
@@ -128,17 +126,27 @@ class _DashboardSystemHealthBannerState
       error: (e, _) => e.toString(),
     );
 
-    final color = isLoading
-        ? AppColors.info
-        : isHealthy
-            ? AppColors.success
-            : AppColors.warning;
-    final title = isLoading
-        ? 'admin.checking_health'.tr()
-        : isHealthy
-            ? 'admin.system_healthy'.tr()
-            : 'admin.system_degraded'.tr();
-    final subtitle = errorMsg ?? 'admin.all_services_running'.tr();
+    final Color color;
+    final String title;
+    final String subtitle;
+
+    if (isLoading) {
+      color = AppColors.info;
+      title = 'admin.checking_health'.tr();
+      subtitle = 'admin.all_services_running'.tr();
+    } else if (isUnavailable) {
+      color = theme.colorScheme.outlineVariant;
+      title = 'admin.health_unavailable'.tr();
+      subtitle = 'admin.health_unavailable_desc'.tr();
+    } else if (isHealthy) {
+      color = AppColors.success;
+      title = 'admin.system_healthy'.tr();
+      subtitle = errorMsg ?? 'admin.all_services_running'.tr();
+    } else {
+      color = AppColors.warning;
+      title = 'admin.system_degraded'.tr();
+      subtitle = errorMsg ?? 'admin.all_services_running'.tr();
+    }
 
     // Extract service check details for expanded view
     final checks = healthAsync.whenOrNull(

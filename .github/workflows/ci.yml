@@ -235,6 +235,31 @@ jobs:
             --base main \
             --head "$BRANCH"
 
+  deploy-edge-functions:
+    name: Deploy Edge Functions
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    # Only deploy on main branch pushes, after tests pass
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [analyze, test]
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - uses: supabase/setup-cli@1.6.1
+        with:
+          version: latest
+
+      - name: Deploy all Edge Functions
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: |
+          supabase functions deploy mfa-lockout --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
+          supabase functions deploy moderate-content --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
+          supabase functions deploy revoke-oauth-token --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
+          supabase functions deploy send-push --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
+          supabase functions deploy system-health --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
+          supabase functions deploy validate-free-tier-limit --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
+
   android-build:
     name: Android Build (Debug)
     runs-on: ubuntu-24.04

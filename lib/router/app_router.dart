@@ -33,10 +33,11 @@ import 'route_utils.dart';
 import 'router_notifier.dart';
 import 'routes/admin_routes.dart';
 import 'routes/auth_routes.dart';
-// import 'routes/community_routes.dart'; // TODO: temporarily disabled
-// import 'routes/gamification_routes.dart'; // TODO: temporarily disabled
-// import 'routes/marketplace_routes.dart'; // TODO: temporarily disabled
-// import 'routes/messaging_routes.dart'; // TODO: temporarily disabled
+import '../core/constants/feature_flags.dart';
+import 'routes/community_routes.dart';
+import 'routes/gamification_routes.dart';
+import 'routes/marketplace_routes.dart';
+import 'routes/messaging_routes.dart';
 import 'routes/user_routes.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -265,13 +266,10 @@ final routerProvider = Provider<GoRouter>((ref) {
         ],
       ),
 
-      // TODO: Community feature temporarily disabled
-      // ...buildCommunityRoutes(),
-
-      // TODO: Marketplace, Messaging, Gamification temporarily disabled
-      // ...buildMarketplaceRoutes(),
-      // ...buildMessagingRoutes(),
-      // ...buildGamificationRoutes(),
+      if (FeatureFlags.communityEnabled) ...buildCommunityRoutes(),
+      if (FeatureFlags.marketplaceEnabled) ...buildMarketplaceRoutes(),
+      if (FeatureFlags.messagingEnabled) ...buildMessagingRoutes(),
+      if (FeatureFlags.gamificationEnabled) ...buildGamificationRoutes(),
 
       // Premium, user, 2FA, and health record routes
       ...buildUserRoutes(),

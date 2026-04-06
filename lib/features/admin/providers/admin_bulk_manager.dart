@@ -1,13 +1,52 @@
-part of 'admin_actions_provider.dart';
+import 'dart:convert';
 
-extension AdminBulkActions on AdminActionsNotifier {
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../../core/constants/supabase_constants.dart';
+import '../../../core/utils/logger.dart';
+import '../../auth/providers/auth_providers.dart';
+import 'admin_auth_utils.dart';
+import 'admin_data_providers.dart';
+import 'admin_user_manager.dart';
+
+/// Export format for bulk user export.
+enum ExportFormat { json, csv }
+
+// ignore: unused_element
+String _toCsv(List<Map<String, dynamic>> rows) {
+  if (rows.isEmpty) return '';
+  final headers = rows.first.keys.join(',');
+  final lines = rows.map(
+    (r) => r.values
+        .map((v) => '"${(v ?? '').toString().replaceAll('"', '""')}"')
+        .join(','),
+  );
+  return [headers, ...lines].join('\n');
+}
+
+/// Manages admin bulk operations (toggle, premium, export, delete).
+///
+/// Delegates state updates to the parent [AdminActionsNotifier] via callbacks.
+class AdminBulkManager {
+  final Ref _ref;
+  final AdminUserManager _userManager;
+  final void Function({
+    bool? isLoading,
+    String? error,
+    bool? isSuccess,
+    String? successMessage,
+  })
+  _updateState;
+
+  AdminBulkManager(this._ref, this._userManager, this._updateState);
+
   Future<({int succeeded, int skipped})> bulkToggleActive(
     Set<String> userIds, {
     required bool activate,
   }) async {
     var succeeded = 0;
     var skipped = 0;
-    state = state.copyWith(isLoading: true, error: null, isSuccess: false);
+    _updateState(isLoading: true, error: null, isSuccess: false);
 
     try {
       for (final userId in userIds) {
@@ -22,11 +61,11 @@ extension AdminBulkActions on AdminActionsNotifier {
           }
         }
       }
-      state = state.copyWith(isLoading: false, isSuccess: true);
-      ref.invalidate(adminUsersProvider);
+      _updateState(isLoading: false, isSuccess: true);
+      _ref.invalidate(adminUsersProvider);
       return (succeeded: succeeded, skipped: skipped);
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      _updateState(isLoading: false, error: e.toString());
       return (succeeded: succeeded, skipped: skipped);
     }
   }
@@ -36,7 +75,7 @@ extension AdminBulkActions on AdminActionsNotifier {
   ) async {
     var succeeded = 0;
     var skipped = 0;
-    state = state.copyWith(isLoading: true, error: null, isSuccess: false);
+    _updateState(isLoading: true, error: null, isSuccess: false);
 
     try {
       for (final userId in userIds) {
@@ -51,11 +90,11 @@ extension AdminBulkActions on AdminActionsNotifier {
           }
         }
       }
-      state = state.copyWith(isLoading: false, isSuccess: true);
-      ref.invalidate(adminUsersProvider);
+      _updateState(isLoading: false, isSuccess: true);
+      _ref.invalidate(adminUsersProvider);
       return (succeeded: succeeded, skipped: skipped);
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      _updateState(isLoading: false, error: e.toString());
       return (succeeded: succeeded, skipped: skipped);
     }
   }
@@ -65,7 +104,7 @@ extension AdminBulkActions on AdminActionsNotifier {
   ) async {
     var succeeded = 0;
     var skipped = 0;
-    state = state.copyWith(isLoading: true, error: null, isSuccess: false);
+    _updateState(isLoading: true, error: null, isSuccess: false);
 
     try {
       for (final userId in userIds) {
@@ -80,11 +119,11 @@ extension AdminBulkActions on AdminActionsNotifier {
           }
         }
       }
-      state = state.copyWith(isLoading: false, isSuccess: true);
-      ref.invalidate(adminUsersProvider);
+      _updateState(isLoading: false, isSuccess: true);
+      _ref.invalidate(adminUsersProvider);
       return (succeeded: succeeded, skipped: skipped);
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      _updateState(isLoading: false, error: e.toString());
       return (succeeded: succeeded, skipped: skipped);
     }
   }
@@ -93,19 +132,19 @@ extension AdminBulkActions on AdminActionsNotifier {
     Set<String> userIds, {
     ExportFormat format = ExportFormat.json,
   }) async {
-    state = state.copyWith(isLoading: true, error: null, isSuccess: false);
+    _updateState(isLoading: true, error: null, isSuccess: false);
     try {
-      await requireAdmin(ref);
-      final client = ref.read(supabaseClientProvider);
+      await requireAdmin(_ref);
+      final client = _ref.read(supabaseClientProvider);
       final rows = await client
           .from(SupabaseConstants.profilesTable)
           .select('id, email, full_name, avatar_url, created_at, is_active')
           .inFilter('id', userIds.toList());
-      state = state.copyWith(isLoading: false, isSuccess: true);
+      _updateState(isLoading: false, isSuccess: true);
       final data = List<Map<String, dynamic>>.from(rows);
       return format == ExportFormat.csv ? _toCsv(data) : jsonEncode(data);
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      _updateState(isLoading: false, error: e.toString());
       return '';
     }
   }
@@ -115,18 +154,16 @@ extension AdminBulkActions on AdminActionsNotifier {
   ) async {
     var succeeded = 0;
     var skipped = 0;
-    state = state.copyWith(isLoading: true, error: null, isSuccess: false);
+    _updateState(isLoading: true, error: null, isSuccess: false);
 
     try {
-      await requireAdmin(ref);
-      final client = ref.read(supabaseClientProvider);
+      await requireAdmin(_ref);
+      final client = _ref.read(supabaseClientProvider);
 
       AppLogger.info(
         '[admin] bulkDeleteUserData called for ${userIds.length} users',
       );
 
-      // Delete data for each user individually using soft-deletable tables.
-      // FK-safe order: children first, parents last.
       const deletionOrder = [
         'event_reminders',
         'growth_measurements',
@@ -166,11 +203,11 @@ extension AdminBulkActions on AdminActionsNotifier {
         }
       }
 
-      state = state.copyWith(isLoading: false, isSuccess: true);
-      ref.invalidate(adminUsersProvider);
+      _updateState(isLoading: false, isSuccess: true);
+      _ref.invalidate(adminUsersProvider);
       return (succeeded: succeeded, skipped: skipped);
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      _updateState(isLoading: false, error: e.toString());
       return (succeeded: succeeded, skipped: skipped);
     }
   }

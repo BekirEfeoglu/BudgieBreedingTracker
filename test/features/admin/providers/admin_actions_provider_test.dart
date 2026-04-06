@@ -315,6 +315,7 @@ void main() {
 
     test('bulkExport returns JSON and tracks selected ids', () async {
       final client = _makeClient(
+        adminUserResult: const {'id': 'admin-1'},
         profilesResult: const [
           {
             'id': 'u1',
@@ -354,6 +355,7 @@ void main() {
 
     test('bulkExport returns CSV when requested', () async {
       final client = _makeClient(
+        adminUserResult: const {'id': 'admin-1'},
         profilesResult: const [
           {
             'id': 'u1',
@@ -384,6 +386,7 @@ void main() {
       'bulkExport returns empty string and exposes error on failure',
       () async {
         final client = _makeClient(
+          adminUserResult: const {'id': 'admin-1'},
           profilesError: StateError('profiles failed'),
         );
         final container = _makeContainer(userId: 'user-1', client: client);

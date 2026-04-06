@@ -1425,7 +1425,7 @@
     "system_healthy": "System Healthy",
     "system_degraded": "System Degraded",
     "health_unavailable": "System Status Unknown",
-    "health_unavailable_desc": "System health check is not configured",
+    "health_unavailable_desc": "Health check is currently unavailable",
     "checking_health": "Checking system health...",
     "all_services_running": "All services are running",
     "service_database": "Database",

@@ -215,16 +215,11 @@ void main() {
       expect(find.text(l10n('admin.birds')), findsOneWidget);
     });
 
-    testWidgets('shows activity log count', (tester) async {
-      final logs = [
-        AdminLog(id: 'l1', action: 'login', createdAt: DateTime(2024, 1, 1)),
-        AdminLog(id: 'l2', action: 'update', createdAt: DateTime(2024, 1, 2)),
-      ];
-
+    testWidgets('shows events count label', (tester) async {
       await pumpLocalizedApp(tester,
-        _wrap(UserDetailStatsRow(detail: _makeDetail(activityLogs: logs))),
+        _wrap(UserDetailStatsRow(detail: _makeDetail())),
       );
-      expect(find.text('2'), findsAtLeastNWidgets(1));
+      expect(find.text(l10n('admin.events_count')), findsOneWidget);
     });
   });
 

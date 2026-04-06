@@ -403,13 +403,12 @@ void main() {
       expect(find.text('10'), findsOneWidget);
     });
 
-    testWidgets('shows activity logs count', (tester) async {
+    testWidgets('shows pairs count', (tester) async {
       await tester.pumpWidget(
         _wrap(UserDetailStatsRow(detail: _premiumUserDetail)),
       );
       await tester.pump();
-      // premiumUserDetail has 1 activity log
-      expect(find.text('1'), findsAtLeastNWidgets(1));
+      expect(find.text(l10n('admin.pairs_count')), findsOneWidget);
     });
 
     testWidgets('shows birds label', (tester) async {
@@ -420,20 +419,20 @@ void main() {
       expect(find.text(l10n('admin.birds')), findsOneWidget);
     });
 
-    testWidgets('shows log_entries label', (tester) async {
+    testWidgets('shows events_count label', (tester) async {
       await tester.pumpWidget(
         _wrap(UserDetailStatsRow(detail: _freeUserDetail)),
       );
       await tester.pump();
-      expect(find.text(l10n('admin.log_entries')), findsOneWidget);
+      expect(find.text(l10n('admin.events_count')), findsOneWidget);
     });
 
-    testWidgets('renders two Card widgets for stats', (tester) async {
+    testWidgets('renders six Card widgets for stats', (tester) async {
       await tester.pumpWidget(
         _wrap(UserDetailStatsRow(detail: _freeUserDetail)),
       );
       await tester.pump();
-      expect(find.byType(Card), findsNWidgets(2));
+      expect(find.byType(Card), findsNWidgets(6));
     });
 
     testWidgets('shows zero for user with no birds', (tester) async {

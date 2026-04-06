@@ -1425,7 +1425,7 @@
     "system_healthy": "Sistem Sağlıklı",
     "system_degraded": "Sistem Sorunlu",
     "health_unavailable": "Sistem Durumu Bilinmiyor",
-    "health_unavailable_desc": "Sistem sağlık kontrolü yapılandırılmamış",
+    "health_unavailable_desc": "Sağlık kontrolü şu anda kullanılamıyor",
     "checking_health": "Sistem kontrol ediliyor...",
     "all_services_running": "Tüm servisler çalışır durumda",
     "service_database": "Veritabanı",

@@ -18,6 +18,7 @@ class FakeFilterBuilder<T> extends Fake implements PostgrestFilterBuilder<T> {
   final inFilterCalls = <MapEntry<String, List<dynamic>>>[];
   final orderCalls = <String>[];
   final ltCalls = <MapEntry<String, Object>>[];
+  final lteCalls = <MapEntry<String, Object>>[];
   final orCalls = <String>[];
   int? limitValue;
 
@@ -42,6 +43,12 @@ class FakeFilterBuilder<T> extends Fake implements PostgrestFilterBuilder<T> {
   @override
   PostgrestFilterBuilder<T> lt(String column, Object value) {
     ltCalls.add(MapEntry(column, value));
+    return this;
+  }
+
+  @override
+  PostgrestFilterBuilder<T> lte(String column, Object value) {
+    lteCalls.add(MapEntry(column, value));
     return this;
   }
 

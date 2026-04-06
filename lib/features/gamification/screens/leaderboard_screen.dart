@@ -46,6 +46,7 @@ class LeaderboardScreen extends ConsumerWidget {
               ),
               itemCount: entries.length,
               itemBuilder: (context, index) => LeaderboardTile(
+                key: ValueKey(entries[index].userId),
                 rank: index + 1,
                 userLevel: entries[index],
               ),

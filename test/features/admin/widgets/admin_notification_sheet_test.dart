@@ -282,7 +282,7 @@ void main() {
       expect(find.text(l10n('admin.notification_title_label')), findsNothing);
     });
 
-    testWidgets('stays open and shows error snackbar on failure', (
+    testWidgets('closes sheet and shows error snackbar on failure', (
       tester,
     ) async {
       final notifier = _StubAdminActionsNotifier()..shouldSucceed = false;
@@ -303,10 +303,10 @@ void main() {
       await tester.tap(find.text(l10n('admin.send')));
       await tester.pumpAndSettle();
 
-      // Sheet should still be visible
+      // Sheet should be dismissed (widget pops on error)
       expect(
         find.text(l10n('admin.notification_title_label')),
-        findsOneWidget,
+        findsNothing,
       );
       // Error snackbar shown
       expect(find.text('Send failed'), findsOneWidget);

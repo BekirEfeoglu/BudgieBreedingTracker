@@ -1425,7 +1425,7 @@
     "system_healthy": "System gesund",
     "system_degraded": "Systemprobleme",
     "health_unavailable": "Systemstatus unbekannt",
-    "health_unavailable_desc": "Systemzustandsprüfung ist nicht konfiguriert",
+    "health_unavailable_desc": "Zustandsprüfung ist derzeit nicht verfügbar",
     "checking_health": "Systemzustand wird geprüft...",
     "all_services_running": "Alle Dienste sind in Betrieb",
     "service_database": "Datenbank",

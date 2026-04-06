@@ -115,7 +115,7 @@ class _EggManagementContent extends ConsumerWidget {
       body: eggsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => ErrorState(
-          message: e.toString(),
+          message: 'common.data_load_error'.tr(),
           onRetry: () =>
               ref.invalidate(eggsForIncubationProvider(incubationId)),
         ),

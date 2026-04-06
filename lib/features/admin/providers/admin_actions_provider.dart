@@ -1,35 +1,12 @@
-import 'dart:convert';
-
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:uuid/uuid.dart';
 
-import '../../../core/constants/supabase_constants.dart';
-import '../../../core/utils/logger.dart';
-import '../constants/admin_constants.dart';
-import '../../auth/providers/auth_providers.dart';
-import 'admin_auth_utils.dart';
-import 'admin_dashboard_providers.dart';
-import 'admin_data_providers.dart';
+import 'admin_bulk_manager.dart';
 import 'admin_database_manager.dart';
-import 'admin_filter_providers.dart';
+import 'admin_maintenance_manager.dart';
+import 'admin_notification_manager.dart';
 import 'admin_user_manager.dart';
 
-part 'admin_actions_bulk.dart';
-
-enum ExportFormat { json, csv }
-
-// ignore: unused_element
-String _toCsv(List<Map<String, dynamic>> rows) {
-  if (rows.isEmpty) return '';
-  final headers = rows.first.keys.join(',');
-  final lines = rows.map(
-    (r) => r.values
-        .map((v) => '"${(v ?? '').toString().replaceAll('"', '""')}"')
-        .join(','),
-  );
-  return [headers, ...lines].join('\n');
-}
+export 'admin_bulk_manager.dart' show ExportFormat;
 
 /// State for admin actions (loading, error, success).
 class AdminActionState {
@@ -58,19 +35,28 @@ class AdminActionState {
   );
 }
 
-/// Notifier for admin actions (user management, event dismissal, log clearing,
-/// database export/reset).
+/// Notifier for admin actions.
 ///
-/// Delegates user management to [AdminUserManager] and database operations
-/// to [AdminDatabaseManager].
+/// Delegates to specialized managers:
+/// - [AdminUserManager] — user activate/deactivate, premium
+/// - [AdminDatabaseManager] — export, reset tables
+/// - [AdminNotificationManager] — send single/bulk notifications + push
+/// - [AdminBulkManager] — bulk user operations (toggle, premium, export, delete)
+/// - [AdminMaintenanceManager] — security events, audit logs, soft-delete cleanup, sync reset
 class AdminActionsNotifier extends Notifier<AdminActionState> {
   late final AdminUserManager _userManager;
   late final AdminDatabaseManager _databaseManager;
+  late final AdminNotificationManager _notificationManager;
+  late final AdminBulkManager _bulkManager;
+  late final AdminMaintenanceManager _maintenanceManager;
 
   @override
   AdminActionState build() {
     _userManager = AdminUserManager(ref, _updateState);
     _databaseManager = AdminDatabaseManager(ref, _updateState);
+    _notificationManager = AdminNotificationManager(ref, _updateState);
+    _bulkManager = AdminBulkManager(ref, _userManager, _updateState);
+    _maintenanceManager = AdminMaintenanceManager(ref, _updateState);
     return const AdminActionState();
   }
 
@@ -90,344 +76,71 @@ class AdminActionsNotifier extends Notifier<AdminActionState> {
 
   // ── User Management (delegated) ──────────────────────
 
-  /// Toggle user active/inactive status.
   Future<void> toggleUserActive(String targetUserId, bool isActive) =>
       _userManager.toggleUserActive(targetUserId, isActive);
 
-  /// Grant premium subscription to a user.
   Future<void> grantPremium(String targetUserId) =>
       _userManager.grantPremium(targetUserId);
 
-  /// Revoke premium subscription from a user.
   Future<void> revokePremium(String targetUserId) =>
       _userManager.revokePremium(targetUserId);
 
   // ── Database Operations (delegated) ──────────────────
 
-  /// Export a single table's data as JSON string.
   Future<String?> exportTable(String tableName) =>
       _databaseManager.exportTable(tableName);
 
-  /// Export all tables' data as a single JSON string.
   Future<String?> exportAllTables() => _databaseManager.exportAllTables();
 
-  /// Reset (truncate) a single table.
   Future<bool> resetTable(String tableName) =>
       _databaseManager.resetTable(tableName);
 
-  /// Reset all user data tables (protected system tables are preserved).
   Future<bool> resetAllUserData() => _databaseManager.resetAllUserData();
 
-  // ── Security & Audit (local) ─────────────────────────
+  // ── Notification Operations (delegated) ──────────────
 
-  /// Dismiss (resolve) a security event.
-  Future<void> dismissSecurityEvent(String eventId) async {
-    state = state.copyWith(isLoading: true, error: null, isSuccess: false);
-    try {
-      await requireAdmin(ref);
-      final client = ref.read(supabaseClientProvider);
+  Future<void> sendNotification(String targetUserId, String title, String body) =>
+      _notificationManager.sendNotification(targetUserId, title, body);
 
-      await client
-          .from(SupabaseConstants.securityEventsTable)
-          .update({
-            'is_resolved': true,
-            'resolved_at': DateTime.now().toUtc().toIso8601String(),
-          })
-          .eq('id', eventId);
+  Future<void> sendBulkNotification(List<String> userIds, String title, String body) =>
+      _notificationManager.sendBulkNotification(userIds, title, body);
 
-      await logAdminAction(
-        client,
-        ref.read(currentUserIdProvider),
-        'security_event_dismissed',
-        details: {'message': 'Event $eventId resolved'},
-      );
+  // ── Bulk Operations (delegated) ──────────────────────
 
-      state = state.copyWith(isLoading: false, isSuccess: true);
-      ref.invalidate(adminSecurityEventsProvider);
-      ref.invalidate(adminSystemAlertsProvider);
-    } catch (e, st) {
-      AppLogger.error('AdminActions.dismissSecurityEvent', e, st);
-      state = state.copyWith(
-        isLoading: false,
-        error: 'admin.action_error'.tr(),
-      );
-    }
-  }
+  Future<({int succeeded, int skipped})> bulkToggleActive(
+    Set<String> userIds, {
+    required bool activate,
+  }) => _bulkManager.bulkToggleActive(userIds, activate: activate);
 
-  /// Clear old audit logs before a given date.
-  Future<void> clearAuditLogs({DateTime? before}) async {
-    state = state.copyWith(isLoading: true, error: null, isSuccess: false);
-    try {
-      await requireAdmin(ref);
-      final client = ref.read(supabaseClientProvider);
-      final cutoff =
-          before ?? DateTime.now().subtract(const Duration(days: 90));
+  Future<({int succeeded, int skipped})> bulkGrantPremium(Set<String> userIds) =>
+      _bulkManager.bulkGrantPremium(userIds);
 
-      await client
-          .from(SupabaseConstants.adminLogsTable)
-          .delete()
-          .lt('created_at', cutoff.toUtc().toIso8601String());
+  Future<({int succeeded, int skipped})> bulkRevokePremium(Set<String> userIds) =>
+      _bulkManager.bulkRevokePremium(userIds);
 
-      await logAdminAction(
-        client,
-        ref.read(currentUserIdProvider),
-        'audit_logs_cleared',
-        details: {'message': 'Logs before ${cutoff.toIso8601String()} cleared'},
-      );
+  Future<String> bulkExport(
+    Set<String> userIds, {
+    ExportFormat format = ExportFormat.json,
+  }) => _bulkManager.bulkExport(userIds, format: format);
 
-      state = state.copyWith(isLoading: false, isSuccess: true);
-    } catch (e, st) {
-      AppLogger.error('AdminActions.clearAuditLogs', e, st);
-      state = state.copyWith(
-        isLoading: false,
-        error: 'admin.action_error'.tr(),
-      );
-    }
-  }
+  Future<({int succeeded, int skipped})> bulkDeleteUserData(Set<String> userIds) =>
+      _bulkManager.bulkDeleteUserData(userIds);
 
-  // ── Maintenance Operations ───────────────────────────
+  // ── Security & Audit (delegated) ─────────────────────
 
-  /// Clean soft-deleted records older than [days] days from all soft-deletable tables.
-  Future<void> cleanSoftDeletedRecords(int days) async {
-    state = state.copyWith(isLoading: true, error: null, isSuccess: false);
-    try {
-      await requireAdmin(ref);
-      final client = ref.read(supabaseClientProvider);
-      final cutoff = DateTime.now().subtract(Duration(days: days));
+  Future<void> dismissSecurityEvent(String eventId) =>
+      _maintenanceManager.dismissSecurityEvent(eventId);
 
-      var totalCleaned = 0;
-      for (final table in AdminConstants.softDeletableTables) {
-        try {
-          final result = await client
-              .from(table)
-              .delete()
-              .eq('is_deleted', true)
-              .lt('updated_at', cutoff.toUtc().toIso8601String())
-              .select('id');
-          totalCleaned += (result as List).length;
-        } catch (e) {
-          AppLogger.warning('cleanSoftDeleted: Failed for $table: $e');
-        }
-      }
+  Future<void> clearAuditLogs({DateTime? before}) =>
+      _maintenanceManager.clearAuditLogs(before: before);
 
-      await logAdminAction(
-        client,
-        ref.read(currentUserIdProvider),
-        'soft_delete_cleanup',
-        details: {'days': days, 'cleaned': totalCleaned},
-      );
+  // ── Maintenance Operations (delegated) ──────────────
 
-      state = state.copyWith(
-        isLoading: false,
-        isSuccess: true,
-        successMessage: 'admin.soft_deleted_cleaned'.tr(),
-      );
-    } catch (e, st) {
-      AppLogger.error('AdminActions.cleanSoftDeletedRecords', e, st);
-      state = state.copyWith(
-        isLoading: false,
-        error: 'admin.action_error'.tr(),
-      );
-    }
-  }
+  Future<void> cleanSoftDeletedRecords(int days) =>
+      _maintenanceManager.cleanSoftDeletedRecords(days);
 
-  /// Reset stuck sync metadata records (error status older than 24h).
-  Future<void> resetStuckSyncRecords() async {
-    state = state.copyWith(isLoading: true, error: null, isSuccess: false);
-    try {
-      await requireAdmin(ref);
-      final client = ref.read(supabaseClientProvider);
-      final cutoff = DateTime.now().subtract(const Duration(hours: 24));
-
-      await client
-          .from(SupabaseConstants.syncMetadataTable)
-          .delete()
-          .eq('status', 'error')
-          .lt('created_at', cutoff.toUtc().toIso8601String());
-
-      await logAdminAction(
-        client,
-        ref.read(currentUserIdProvider),
-        'sync_stuck_reset',
-      );
-
-      state = state.copyWith(
-        isLoading: false,
-        isSuccess: true,
-        successMessage: 'admin.stuck_reset'.tr(),
-      );
-    } catch (e, st) {
-      AppLogger.error('AdminActions.resetStuckSyncRecords', e, st);
-      state = state.copyWith(
-        isLoading: false,
-        error: 'admin.action_error'.tr(),
-      );
-    }
-  }
-
-  // ── Notification Operations ──────────────────────────
-
-  /// Send an in-app notification and push notification to a single user.
-  Future<void> sendNotification(String targetUserId, String title, String body) async {
-    state = state.copyWith(isLoading: true, error: null, isSuccess: false);
-    try {
-      await requireAdmin(ref);
-      final client = ref.read(supabaseClientProvider);
-
-      // Sanitize inputs (defense in depth — UI also validates)
-      final sanitizedTitle = title.trim().length > 200
-          ? title.trim().substring(0, 200)
-          : title.trim();
-      final sanitizedBody = body.trim().length > 1000
-          ? body.trim().substring(0, 1000)
-          : body.trim();
-
-      await client.from(SupabaseConstants.notificationsTable).insert({
-        'id': const Uuid().v4(),
-        'user_id': targetUserId,
-        'title': sanitizedTitle,
-        'body': sanitizedBody,
-        'type': 'custom',
-        'priority': 'normal',
-        'read': false,
-      });
-
-      // Send push notification via FCM edge function
-      final edgeClient = ref.read(edgeFunctionClientProvider);
-      final pushResult = await edgeClient.sendPush(
-        userIds: [targetUserId],
-        title: sanitizedTitle,
-        body: sanitizedBody,
-      );
-
-      // Check both HTTP success and actual FCM delivery count
-      bool pushFailed;
-      if (!pushResult.success) {
-        pushFailed = true;
-        AppLogger.warning(
-          'AdminActions.sendNotification: push request failed: ${pushResult.error}',
-        );
-      } else {
-        final deliveredRaw = pushResult.data?['success'];
-        final delivered = (deliveredRaw is num) ? deliveredRaw.toInt() : 0;
-        pushFailed = delivered == 0;
-        if (pushFailed) {
-          final failureRaw = pushResult.data?['failure'];
-          final failure = (failureRaw is num) ? failureRaw.toInt() : 0;
-          AppLogger.warning(
-            'AdminActions.sendNotification: push delivered to 0 devices '
-            '(failures: $failure, data: ${pushResult.data})',
-          );
-        }
-      }
-
-      await logAdminAction(
-        client,
-        ref.read(currentUserIdProvider),
-        'notification_sent',
-        targetUserId: targetUserId,
-        details: {'title': sanitizedTitle, 'push_delivered': !pushFailed},
-      );
-
-      state = state.copyWith(
-        isLoading: false,
-        isSuccess: true,
-        successMessage: pushFailed
-            ? 'admin.notification_sent_no_push'.tr()
-            : 'admin.notification_sent'.tr(),
-      );
-    } catch (e, st) {
-      AppLogger.error('AdminActions.sendNotification', e, st);
-      state = state.copyWith(
-        isLoading: false,
-        error: 'admin.action_error'.tr(),
-      );
-    }
-  }
-
-  /// Send an in-app notification and push notification to multiple users.
-  Future<void> sendBulkNotification(List<String> userIds, String title, String body) async {
-    state = state.copyWith(isLoading: true, error: null, isSuccess: false);
-    try {
-      await requireAdmin(ref);
-      final client = ref.read(supabaseClientProvider);
-
-      // Sanitize inputs (defense in depth — UI also validates)
-      final sanitizedTitle = title.trim().length > 200
-          ? title.trim().substring(0, 200)
-          : title.trim();
-      final sanitizedBody = body.trim().length > 1000
-          ? body.trim().substring(0, 1000)
-          : body.trim();
-
-      final rows = userIds.map((uid) => {
-        'id': const Uuid().v4(),
-        'user_id': uid,
-        'title': sanitizedTitle,
-        'body': sanitizedBody,
-        'type': 'custom',
-        'priority': 'normal',
-        'read': false,
-      }).toList();
-
-      await client.from(SupabaseConstants.notificationsTable).insert(rows);
-
-      // Send push notifications via FCM edge function
-      final edgeClient = ref.read(edgeFunctionClientProvider);
-      final pushResult = await edgeClient.sendPush(
-        userIds: userIds,
-        title: sanitizedTitle,
-        body: sanitizedBody,
-      );
-
-      // Check both HTTP success and actual FCM delivery count
-      bool pushFailed;
-      if (!pushResult.success) {
-        pushFailed = true;
-        AppLogger.warning(
-          'AdminActions.sendBulkNotification: push request failed: ${pushResult.error}',
-        );
-      } else {
-        final deliveredRaw = pushResult.data?['success'];
-        final delivered = (deliveredRaw is num) ? deliveredRaw.toInt() : 0;
-        pushFailed = delivered == 0;
-        if (pushFailed) {
-          final failureRaw = pushResult.data?['failure'];
-          final failure = (failureRaw is num) ? failureRaw.toInt() : 0;
-          AppLogger.warning(
-            'AdminActions.sendBulkNotification: push delivered to 0 devices '
-            '(failures: $failure, data: ${pushResult.data})',
-          );
-        }
-      }
-
-      await logAdminAction(
-        client,
-        ref.read(currentUserIdProvider),
-        'bulk_notification_sent',
-        details: {
-          'title': sanitizedTitle,
-          'count': userIds.length,
-          'push_delivered': !pushFailed,
-        },
-      );
-
-      final countStr = '${userIds.length}';
-      state = state.copyWith(
-        isLoading: false,
-        isSuccess: true,
-        successMessage: pushFailed
-            ? 'admin.notification_sent_bulk_no_push'.tr(args: [countStr])
-            : 'admin.notification_sent_bulk'.tr(args: [countStr]),
-      );
-    } catch (e, st) {
-      AppLogger.error('AdminActions.sendBulkNotification', e, st);
-      state = state.copyWith(
-        isLoading: false,
-        error: 'admin.action_error'.tr(),
-      );
-    }
-  }
+  Future<void> resetStuckSyncRecords() =>
+      _maintenanceManager.resetStuckSyncRecords();
 
   void reset() => state = const AdminActionState();
 }

@@ -104,6 +104,7 @@ class DayEventsSheet extends ConsumerWidget {
                       itemBuilder: (context, index) {
                         final event = events[index];
                         return EventCard(
+                          key: ValueKey(event.id),
                           event: event,
                           onEdit: () {
                             Navigator.of(context).pop();

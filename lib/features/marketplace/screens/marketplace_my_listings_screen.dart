@@ -49,7 +49,10 @@ class MarketplaceMyListingsScreen extends ConsumerWidget {
               ),
               itemCount: listings.length,
               itemBuilder: (context, index) =>
-                  MarketplaceListingCard(listing: listings[index]),
+                  MarketplaceListingCard(
+                    key: ValueKey(listings[index].id),
+                    listing: listings[index],
+                  ),
             );
           },
         ),

@@ -1,10 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:budgie_breeding_tracker/core/enums/admin_enums.dart';
-import 'package:budgie_breeding_tracker/data/remote/supabase/edge_function_client.dart';
 import 'package:budgie_breeding_tracker/data/remote/supabase/supabase_client.dart';
 import 'package:budgie_breeding_tracker/features/admin/constants/admin_constants.dart';
 import 'package:budgie_breeding_tracker/features/admin/providers/admin_data_providers.dart';
@@ -204,7 +202,7 @@ void main() {
       mockSupabaseClient = MockSupabaseClient();
     });
 
-    ProviderContainer _createContainer({
+    ProviderContainer createContainer({
       required AsyncValue<Map<String, dynamic>> healthValue,
     }) {
       return ProviderContainer(
@@ -217,7 +215,7 @@ void main() {
     }
 
     test('does not send alert when status is ok', () {
-      final container = _createContainer(
+      final container = createContainer(
         healthValue: const AsyncData({'status': 'ok'}),
       );
       addTearDown(container.dispose);
@@ -236,7 +234,7 @@ void main() {
     });
 
     test('does not send alert when status is unavailable', () {
-      final container = _createContainer(
+      final container = createContainer(
         healthValue: const AsyncData({'status': 'unavailable'}),
       );
       addTearDown(container.dispose);
@@ -254,7 +252,7 @@ void main() {
     });
 
     test('does not send alert during loading', () {
-      final container = _createContainer(
+      final container = createContainer(
         healthValue: const AsyncLoading(),
       );
       addTearDown(container.dispose);
@@ -279,7 +277,7 @@ void main() {
         Exception('expected: verifying alert triggers supabase query'),
       );
 
-      final container = _createContainer(
+      final container = createContainer(
         healthValue: const AsyncData({
           'status': 'degraded',
           'checks': {'database': 'degraded', 'auth': 'ok', 'storage': 'ok'},
@@ -298,7 +296,7 @@ void main() {
 
     test('does not trigger alert when status is ok (no supabase query)',
         () async {
-      final container = _createContainer(
+      final container = createContainer(
         healthValue: const AsyncData({'status': 'ok'}),
       );
       addTearDown(container.dispose);
@@ -315,7 +313,7 @@ void main() {
         Exception('expected: verify body content via alert trigger'),
       );
 
-      final container = _createContainer(
+      final container = createContainer(
         healthValue: const AsyncData({
           'status': 'degraded',
           'checks': {
@@ -339,7 +337,7 @@ void main() {
         Exception('expected: verify error status triggers alert'),
       );
 
-      final container = _createContainer(
+      final container = createContainer(
         healthValue: const AsyncData({
           'status': 'error',
           'message': 'Health check failed',

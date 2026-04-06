@@ -1,0 +1,43 @@
+name: Stale Branch Cleanup
+
+on:
+  schedule:
+    - cron: '17 3 * * 1' # Every Monday at 03:17 UTC
+  workflow_dispatch: # Manual trigger
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Delete merged remote branches
+        run: |
+          echo "=== Merged branches to delete ==="
+          git branch -r --merged origin/main \
+            | grep -v 'main' \
+            | grep -v 'HEAD' \
+            | sed 's|origin/||' \
+            | while read branch; do
+                echo "Deleting merged branch: $branch"
+                git push origin --delete "$branch" || true
+              done
+
+      - name: Report stale unmerged branches
+        run: |
+          echo "=== Unmerged branches older than 14 days ==="
+          cutoff=$(date -d '14 days ago' +%s 2>/dev/null || date -v-14d +%s)
+          git for-each-ref --sort=-committerdate --format='%(refname:short) %(committerdate:unix) %(committerdate:relative)' refs/remotes/origin \
+            | grep -v 'origin/main' \
+            | grep -v 'origin/HEAD' \
+            | while read branch epoch relative; do
+                if [ "$epoch" -lt "$cutoff" ]; then
+                  echo "STALE: $branch (last commit: $relative)"
+                fi
+              done

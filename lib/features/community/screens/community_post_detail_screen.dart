@@ -62,7 +62,7 @@ class CommunityPostDetailScreen extends ConsumerWidget {
                       error: (e, _) => Padding(
                         padding: const EdgeInsets.all(AppSpacing.lg),
                         child: app.ErrorState(
-                          message: e.toString(),
+                          message: 'common.data_load_error'.tr(),
                           onRetry: () => ref.invalidate(
                             communityPostByIdProvider(postId),
                           ),

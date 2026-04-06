@@ -1,4 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -56,9 +57,15 @@ class MarketplaceDetailScreen extends ConsumerWidget {
                     aspectRatio: 16 / 9,
                     child: PageView.builder(
                       itemCount: listing.imageUrls.length,
-                      itemBuilder: (context, index) => Image.network(
-                        listing.imageUrls[index],
+                      itemBuilder: (context, index) => CachedNetworkImage(
+                        imageUrl: listing.imageUrls[index],
                         fit: BoxFit.cover,
+                        memCacheWidth: 960,
+                        placeholder: (context, url) => const Center(
+                          child: CircularProgressIndicator(),
+                        ),
+                        errorWidget: (context, url, error) =>
+                            const Icon(LucideIcons.imageOff),
                       ),
                     ),
                   ),

@@ -6,6 +6,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
+import 'package:budgie_breeding_tracker/core/constants/feature_flags.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
@@ -56,12 +57,12 @@ class MoreScreen extends ConsumerWidget {
             title: 'health_records.title'.tr(),
             onTap: () => context.push(AppRoutes.healthRecords),
           ),
-          // TODO: Community feature temporarily disabled
-          // _MoreTile(
-          //   icon: const AppIcon(AppIcons.community),
-          //   title: 'more.community'.tr(),
-          //   onTap: () => context.push(AppRoutes.community),
-          // ),
+          if (FeatureFlags.communityEnabled)
+            _MoreTile(
+              icon: const AppIcon(AppIcons.community),
+              title: 'more.community'.tr(),
+              onTap: () => context.push(AppRoutes.community),
+            ),
           // Marketplace, Messaging, Badges, Leaderboard → accessed via Community tab
           // Premium features section
           _SectionHeader(title: 'more.section_premium'.tr()),
