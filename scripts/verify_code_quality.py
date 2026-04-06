@@ -59,7 +59,7 @@ def parse_anti_patterns_from_claude_md() -> List[str]:
         if "## Critical Anti-Patterns" in line:
             in_section = True
             continue
-        if in_section and line.startswith("##"):
+        if in_section and line.startswith("## ") and "Anti-Patterns" not in line:
             break
         if in_section and re.match(r'\d+\.', line.strip()):
             patterns.append(line.strip())

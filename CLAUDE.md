@@ -56,8 +56,8 @@ scripts/verify_rls_staging.sql           # Verify Row-Level Security policies on
 
 | Metric | Value |
 | --- | --- |
-| Source files (lib/) | 819 Dart files |
-| Test files (test/) | 754 test files, 9,278+ individual tests |
+| Source files (lib/) | 827 Dart files |
+| Test files (test/) | 795 test files, 9,565+ individual tests |
 | Feature modules | 23 |
 | Drift tables / DAOs / Mappers | 20 each |
 | Repositories | 23 entity + base + sync_metadata |

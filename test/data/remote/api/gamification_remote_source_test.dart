@@ -13,9 +13,6 @@ void main() {
   late FakeFilterBuilder<PostgrestList> userBadgesSelect;
   late FakeFilterBuilder<PostgrestList> userLevelsSelect;
   late FakeFilterBuilder<PostgrestList> xpSelect;
-  late FakeFilterBuilder<PostgrestList> profilesSelect;
-
-  late FakeQueryBuilder badgesQuery;
   late FakeQueryBuilder userBadgesQuery;
   late FakeQueryBuilder userLevelsQuery;
   late FakeQueryBuilder xpQuery;
@@ -26,7 +23,6 @@ void main() {
 
     final badges = client.addTable(SupabaseConstants.badgesTable);
     badgesSelect = badges.selectBuilder;
-    badgesQuery = badges.queryBuilder;
 
     final userBadges = client.addTable(SupabaseConstants.userBadgesTable);
     userBadgesSelect = userBadges.selectBuilder;
@@ -41,7 +37,6 @@ void main() {
     xpQuery = xp.queryBuilder;
 
     final profiles = client.addTable(SupabaseConstants.profilesTable);
-    profilesSelect = profiles.selectBuilder;
     profilesQuery = profiles.queryBuilder;
 
     source = GamificationRemoteSource(client);
