@@ -6,7 +6,6 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:budgie_breeding_tracker/core/widgets/empty_state.dart';
 import 'package:budgie_breeding_tracker/core/widgets/error_state.dart' as app;
-import 'package:budgie_breeding_tracker/data/models/user_level_model.dart';
 import 'package:budgie_breeding_tracker/features/gamification/providers/gamification_providers.dart';
 import 'package:budgie_breeding_tracker/features/gamification/screens/leaderboard_screen.dart';
 import 'package:budgie_breeding_tracker/features/gamification/widgets/leaderboard_tile.dart';

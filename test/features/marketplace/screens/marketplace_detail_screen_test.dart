@@ -8,9 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
-import 'package:budgie_breeding_tracker/core/enums/marketplace_enums.dart';
 import 'package:budgie_breeding_tracker/core/widgets/error_state.dart' as app;
-import 'package:budgie_breeding_tracker/data/models/marketplace_listing_model.dart';
 import 'package:budgie_breeding_tracker/data/repositories/marketplace_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_providers.dart';
@@ -25,7 +23,7 @@ class MockMarketplaceRepository extends Mock implements MarketplaceRepository {}
 
 const _testUserId = 'test-user';
 const _testListingId = 'listing-1';
-final _testParams = (id: _testListingId, userId: _testUserId);
+const _testParams = (id: _testListingId, userId: _testUserId);
 
 const _sampleListing = MarketplaceListing(
   id: _testListingId,

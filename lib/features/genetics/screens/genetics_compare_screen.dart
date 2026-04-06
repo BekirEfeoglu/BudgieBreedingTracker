@@ -155,9 +155,10 @@ class _CompareTableState extends State<_CompareTable> {
             ),
           ),
           const Divider(height: 1),
-          // Virtualized rows
-          Expanded(
-            child: ListView.builder(
+          // Phenotype rows — shrinkWrap since parent is scrollable
+          ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
               itemCount: sortedPhenotypes.length,
               itemBuilder: (context, index) {
                 final phenotype = sortedPhenotypes[index];
@@ -246,7 +247,6 @@ class _CompareTableState extends State<_CompareTable> {
                 );
               },
             ),
-          ),
         ],
       ),
     );

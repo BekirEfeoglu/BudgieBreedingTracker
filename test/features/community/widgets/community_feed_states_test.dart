@@ -54,7 +54,7 @@ void main() {
     testWidgets('renders explore tab empty state', (tester) async {
       await tester.pumpWidget(
         wrap(
-          FilteredFeedEmptyState(
+          const FilteredFeedEmptyState(
             tab: CommunityFeedTab.explore,
             onReset: null,
           ),
@@ -76,7 +76,7 @@ void main() {
     testWidgets('renders following tab empty state', (tester) async {
       await tester.pumpWidget(
         wrap(
-          FilteredFeedEmptyState(
+          const FilteredFeedEmptyState(
             tab: CommunityFeedTab.following,
             onReset: null,
           ),
@@ -97,7 +97,7 @@ void main() {
     testWidgets('renders guides tab empty state', (tester) async {
       await tester.pumpWidget(
         wrap(
-          FilteredFeedEmptyState(
+          const FilteredFeedEmptyState(
             tab: CommunityFeedTab.guides,
             onReset: null,
           ),
@@ -118,7 +118,7 @@ void main() {
     testWidgets('renders questions tab empty state', (tester) async {
       await tester.pumpWidget(
         wrap(
-          FilteredFeedEmptyState(
+          const FilteredFeedEmptyState(
             tab: CommunityFeedTab.questions,
             onReset: null,
           ),
@@ -139,7 +139,7 @@ void main() {
     testWidgets('shows searchX icon', (tester) async {
       await tester.pumpWidget(
         wrap(
-          FilteredFeedEmptyState(
+          const FilteredFeedEmptyState(
             tab: CommunityFeedTab.explore,
             onReset: null,
           ),
@@ -177,7 +177,7 @@ void main() {
     testWidgets('hides reset button when onReset is null', (tester) async {
       await tester.pumpWidget(
         wrap(
-          FilteredFeedEmptyState(
+          const FilteredFeedEmptyState(
             tab: CommunityFeedTab.explore,
             onReset: null,
           ),

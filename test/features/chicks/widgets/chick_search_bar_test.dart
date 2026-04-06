@@ -12,9 +12,9 @@ void main() {
     testWidgets('renders text field', (tester) async {
       await pumpLocalizedApp(
         tester,
-        ProviderScope(
+        const ProviderScope(
           child: MaterialApp(
-            home: Scaffold(body: const ChickSearchBar()),
+            home: Scaffold(body: ChickSearchBar()),
           ),
         ),
       );
@@ -34,7 +34,7 @@ void main() {
                 home: Consumer(
                   builder: (context, ref, _) {
                     container = ProviderScope.containerOf(context);
-                    return Scaffold(body: const ChickSearchBar());
+                    return const Scaffold(body: ChickSearchBar());
                   },
                 ),
               );
@@ -60,8 +60,8 @@ void main() {
               return notifier;
             }),
           ],
-          child: MaterialApp(
-            home: Scaffold(body: const ChickSearchBar()),
+          child: const MaterialApp(
+            home: Scaffold(body: ChickSearchBar()),
           ),
         ),
       );

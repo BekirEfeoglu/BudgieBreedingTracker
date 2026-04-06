@@ -20,10 +20,10 @@ void main() {
         userProfileProvider.overrideWith((ref) => Stream.value(null)),
         userLevelProvider(userId).overrideWith((ref) => Future.value(null)),
       ],
-      child: MaterialApp(
+      child: const MaterialApp(
         home: Scaffold(
-          appBar: const CommunityAppBar(),
-          body: const SizedBox.shrink(),
+          appBar: CommunityAppBar(),
+          body: SizedBox.shrink(),
         ),
       ),
     );

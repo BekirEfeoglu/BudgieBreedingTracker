@@ -20,7 +20,7 @@ void main() {
         name: 'My Budgies Chat',
       );
 
-      await pumpLocalizedWidget(tester, ConversationTile(conversation: conversation));
+      await pumpLocalizedWidget(tester, const ConversationTile(conversation: conversation));
 
       expect(find.text('My Budgies Chat'), findsOneWidget);
     });
@@ -34,7 +34,7 @@ void main() {
         type: ConversationType.direct,
       );
 
-      await pumpLocalizedWidget(tester, ConversationTile(conversation: conversation));
+      await pumpLocalizedWidget(tester, const ConversationTile(conversation: conversation));
 
       expect(
         find.text(l10n('messaging.direct_message')),
@@ -50,7 +50,7 @@ void main() {
         lastMessageContent: 'Hello world!',
       );
 
-      await pumpLocalizedWidget(tester, ConversationTile(conversation: conversation));
+      await pumpLocalizedWidget(tester, const ConversationTile(conversation: conversation));
 
       expect(find.text('Hello world!'), findsOneWidget);
     });
@@ -64,7 +64,7 @@ void main() {
         unreadCount: 3,
       );
 
-      await pumpLocalizedWidget(tester, ConversationTile(conversation: conversation));
+      await pumpLocalizedWidget(tester, const ConversationTile(conversation: conversation));
 
       expect(find.text('3'), findsOneWidget);
     });
@@ -78,7 +78,7 @@ void main() {
         unreadCount: 0,
       );
 
-      await pumpLocalizedWidget(tester, ConversationTile(conversation: conversation));
+      await pumpLocalizedWidget(tester, const ConversationTile(conversation: conversation));
 
       // No unread count badge
       expect(find.text('0'), findsNothing);
@@ -92,7 +92,7 @@ void main() {
         type: ConversationType.group,
       );
 
-      await pumpLocalizedWidget(tester, ConversationTile(conversation: conversation));
+      await pumpLocalizedWidget(tester, const ConversationTile(conversation: conversation));
 
       expect(find.byIcon(LucideIcons.users), findsOneWidget);
     });
@@ -105,7 +105,7 @@ void main() {
         type: ConversationType.direct,
       );
 
-      await pumpLocalizedWidget(tester, ConversationTile(conversation: conversation));
+      await pumpLocalizedWidget(tester, const ConversationTile(conversation: conversation));
 
       expect(find.byIcon(LucideIcons.user), findsOneWidget);
     });
@@ -117,7 +117,7 @@ void main() {
         name: 'Chat',
       );
 
-      await pumpLocalizedWidget(tester, ConversationTile(conversation: conversation));
+      await pumpLocalizedWidget(tester, const ConversationTile(conversation: conversation));
 
       expect(find.byType(ListTile), findsOneWidget);
     });
@@ -129,7 +129,7 @@ void main() {
         name: 'Chat',
       );
 
-      await pumpLocalizedWidget(tester, ConversationTile(conversation: conversation));
+      await pumpLocalizedWidget(tester, const ConversationTile(conversation: conversation));
 
       expect(find.byType(CircleAvatar), findsOneWidget);
     });

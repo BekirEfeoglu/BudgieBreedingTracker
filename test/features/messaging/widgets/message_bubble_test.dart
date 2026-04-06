@@ -303,7 +303,7 @@ void main() {
 
       await pumpLocalizedWidget(
         tester,
-        MessageBubble(message: message, isMe: true),
+        const MessageBubble(message: message, isMe: true),
       );
 
       expect(find.text('No time'), findsOneWidget);

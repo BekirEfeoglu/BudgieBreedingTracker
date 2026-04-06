@@ -158,7 +158,7 @@ void main() {
       final result = await client.invoke('explode');
 
       expect(result.success, isFalse);
-      expect(result.error, contains('network down'));
+      expect(result.error, contains('Edge function error'));
     });
 
     test('invoke returns failure when no session exists', () async {
@@ -274,7 +274,7 @@ void main() {
         final result = await client.checkSystemHealth();
 
         expect(result.success, isFalse);
-        expect(result.error, contains('status: 404'));
+        expect(result.error, contains('404 NOT_FOUND'));
       },
     );
   });

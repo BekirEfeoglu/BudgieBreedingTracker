@@ -4,11 +4,7 @@ import 'package:flutter/material.dart' hide Badge;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:budgie_breeding_tracker/core/enums/gamification_enums.dart';
 import 'package:budgie_breeding_tracker/core/widgets/empty_state.dart';
-import 'package:budgie_breeding_tracker/data/models/badge_model.dart';
-import 'package:budgie_breeding_tracker/data/models/user_badge_model.dart';
-import 'package:budgie_breeding_tracker/data/models/user_level_model.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_providers.dart';
 import 'package:budgie_breeding_tracker/features/gamification/providers/gamification_providers.dart';
 import 'package:budgie_breeding_tracker/features/gamification/screens/badges_screen.dart';

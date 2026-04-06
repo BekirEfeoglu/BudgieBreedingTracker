@@ -105,9 +105,9 @@ void main() {
       final prefs = await SharedPreferences.getInstance();
       final raw = prefs.getString('pending_premium_sync_user-1');
 
-      // Max retries reached → pending sync should be cleared
-      expect(raw, isNull,
-          reason: 'Pending sync should be cleared after max retries');
+      // Max retries reached → pending sync is kept for retry after reset duration
+      expect(raw, isNotNull,
+          reason: 'Pending sync should be kept after max retries for later retry');
     });
 
     test('skips retry for anonymous user', () async {

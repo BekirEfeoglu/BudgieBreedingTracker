@@ -2,9 +2,6 @@ import 'package:flutter/material.dart' hide Badge;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
-import 'package:budgie_breeding_tracker/core/enums/gamification_enums.dart';
-import 'package:budgie_breeding_tracker/data/models/badge_model.dart';
-import 'package:budgie_breeding_tracker/data/models/user_badge_model.dart';
 import 'package:budgie_breeding_tracker/features/gamification/providers/gamification_providers.dart';
 import 'package:budgie_breeding_tracker/features/gamification/widgets/badge_card.dart';
 
@@ -22,9 +19,9 @@ void main() {
 
   group('BadgeCard', () {
     testWidgets('renders locked state with progress bar', (tester) async {
-      final enriched = EnrichedBadge(
+      const enriched = EnrichedBadge(
         badge: badge,
-        userBadge: const UserBadge(
+        userBadge: UserBadge(
           id: 'ub1',
           userId: 'user-1',
           badgeId: 'b1',
@@ -32,7 +29,7 @@ void main() {
         ),
       );
 
-      await pumpLocalizedWidget(tester, BadgeCard(enrichedBadge: enriched));
+      await pumpLocalizedWidget(tester, const BadgeCard(enrichedBadge: enriched));
 
       expect(find.byType(LinearProgressIndicator), findsOneWidget);
       expect(find.text('3/10'), findsOneWidget);
@@ -40,9 +37,9 @@ void main() {
     });
 
     testWidgets('renders unlocked state with check icon', (tester) async {
-      final enriched = EnrichedBadge(
+      const enriched = EnrichedBadge(
         badge: badge,
-        userBadge: const UserBadge(
+        userBadge: UserBadge(
           id: 'ub1',
           userId: 'user-1',
           badgeId: 'b1',
@@ -51,7 +48,7 @@ void main() {
         ),
       );
 
-      await pumpLocalizedWidget(tester, BadgeCard(enrichedBadge: enriched));
+      await pumpLocalizedWidget(tester, const BadgeCard(enrichedBadge: enriched));
 
       expect(find.byIcon(LucideIcons.checkCircle), findsOneWidget);
       expect(find.byIcon(LucideIcons.award), findsOneWidget);

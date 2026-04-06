@@ -83,11 +83,11 @@ void main() {
               () => _FakeActiveTabNotifier(CommunityFeedTab.explore),
             ),
           ],
-          child: MaterialApp(
+          child: const MaterialApp(
             home: Scaffold(
               body: SizedBox(
                 width: 250,
-                child: const CommunityPillTabs(),
+                child: CommunityPillTabs(),
               ),
             ),
           ),

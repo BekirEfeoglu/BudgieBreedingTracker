@@ -61,7 +61,7 @@ void main() {
     testWidgets('renders listing title', (tester) async {
       await pumpLocalizedWidget(
         tester,
-        MarketplaceListingCard(listing: _saleListing),
+        const MarketplaceListingCard(listing: _saleListing),
       );
 
       expect(find.text('Beautiful Blue Budgie'), findsOneWidget);
@@ -70,7 +70,7 @@ void main() {
     testWidgets('renders price for sale listing', (tester) async {
       await pumpLocalizedWidget(
         tester,
-        MarketplaceListingCard(listing: _saleListing),
+        const MarketplaceListingCard(listing: _saleListing),
       );
 
       expect(find.text('750 TRY'), findsOneWidget);
@@ -79,7 +79,7 @@ void main() {
     testWidgets('does not show price for adoption listing', (tester) async {
       await pumpLocalizedWidget(
         tester,
-        MarketplaceListingCard(listing: _adoptionListing),
+        const MarketplaceListingCard(listing: _adoptionListing),
       );
 
       expect(find.text('750 TRY'), findsNothing);
@@ -88,7 +88,7 @@ void main() {
     testWidgets('renders city', (tester) async {
       await pumpLocalizedWidget(
         tester,
-        MarketplaceListingCard(listing: _saleListing),
+        const MarketplaceListingCard(listing: _saleListing),
       );
 
       expect(find.text('Istanbul'), findsOneWidget);
@@ -97,7 +97,7 @@ void main() {
     testWidgets('renders species and gender', (tester) async {
       await pumpLocalizedWidget(
         tester,
-        MarketplaceListingCard(listing: _saleListing),
+        const MarketplaceListingCard(listing: _saleListing),
       );
 
       expect(find.text('Budgerigar \u00b7 male'), findsOneWidget);
@@ -106,7 +106,7 @@ void main() {
     testWidgets('renders StatusBadge with listing type', (tester) async {
       await pumpLocalizedWidget(
         tester,
-        MarketplaceListingCard(listing: _saleListing),
+        const MarketplaceListingCard(listing: _saleListing),
       );
 
       expect(find.byType(StatusBadge), findsOneWidget);
@@ -115,7 +115,7 @@ void main() {
     testWidgets('shows verified badge for verified breeder', (tester) async {
       await pumpLocalizedWidget(
         tester,
-        MarketplaceListingCard(listing: _verifiedListing),
+        const MarketplaceListingCard(listing: _verifiedListing),
       );
 
       // Verified breeder icon should be visible
@@ -126,7 +126,7 @@ void main() {
     testWidgets('renders Card with InkWell', (tester) async {
       await pumpLocalizedWidget(
         tester,
-        MarketplaceListingCard(listing: _saleListing),
+        const MarketplaceListingCard(listing: _saleListing),
       );
 
       expect(find.byType(Card), findsOneWidget);
@@ -136,7 +136,7 @@ void main() {
     testWidgets('renders image when imageUrls is not empty', (tester) async {
       await pumpLocalizedWidget(
         tester,
-        MarketplaceListingCard(listing: _listingWithImage),
+        const MarketplaceListingCard(listing: _listingWithImage),
       );
 
       expect(find.byType(AspectRatio), findsOneWidget);
@@ -146,7 +146,7 @@ void main() {
         (tester) async {
       await pumpLocalizedWidget(
         tester,
-        MarketplaceListingCard(listing: _saleListing),
+        const MarketplaceListingCard(listing: _saleListing),
       );
 
       // No AspectRatio when there's no image

@@ -147,6 +147,7 @@ Comprehensive rules in `.claude/rules/` (auto-loaded):
 | `ui-patterns.md` | Widget types, AsyncValue, forms, GoRouter routes (60), guards |
 | `localization.md` | easy_localization, key structure, 34 categories, sync workflow |
 | `testing.md` | Test patterns, mocking, golden tests, coverage |
+| `test-stability.md` | Test stability rules, pump strategy, 18 anti-patterns, resource cleanup |
 | `error-handling.md` | Error hierarchy, Sentry, retry/backoff, localized errors |
 | `new-feature-checklist.md` | Step-by-step guide for adding new features |
 | `git-rules.md` | Conventional commits, branch naming, PR workflow |
