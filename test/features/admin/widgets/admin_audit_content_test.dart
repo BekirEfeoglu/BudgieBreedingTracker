@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 import 'package:budgie_breeding_tracker/features/admin/providers/admin_models.dart';
+import 'package:budgie_breeding_tracker/features/admin/providers/admin_data_providers.dart';
 import 'package:budgie_breeding_tracker/features/admin/widgets/admin_audit_content.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/core/widgets/empty_state.dart';
@@ -27,7 +29,24 @@ final _deleteLog = AdminLog(
   createdAt: DateTime(2024, 1, 15, 11, 0),
 );
 
-Widget _wrap(Widget child) => MaterialApp(home: Scaffold(body: child));
+/// Fake notifier that returns a truncated userId fallback without hitting Supabase.
+class _FakeUserNameCacheNotifier extends AdminUserNameCacheNotifier {
+  @override
+  Map<String, String> build() => {};
+
+  @override
+  Future<String> resolve(String userId) async {
+    if (userId.length <= 8) return userId;
+    return '${userId.substring(0, 8)}...';
+  }
+}
+
+Widget _wrap(Widget child) => ProviderScope(
+      overrides: [
+        adminUserNameCacheProvider.overrideWith(_FakeUserNameCacheNotifier.new),
+      ],
+      child: MaterialApp(home: Scaffold(body: child)),
+    );
 
 void main() {
   setUpAll(() async {
@@ -255,6 +274,25 @@ void main() {
       await tester.pumpWidget(_wrap(AuditLogItem(log: toggleLog)));
       await tester.pump();
       expect(find.byIcon(LucideIcons.toggleLeft), findsOneWidget);
+    });
+
+    testWidgets('does not overflow with long user names', (tester) async {
+      final longNameLog = AdminLog(
+        id: 'log-overflow',
+        action: 'premium_granted',
+        adminUserId: 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee',
+        targetUserId: 'ffffffff-gggg-hhhh-iiii-jjjjjjjjjjjj',
+        details: 'Premium subscription granted to a user with a very long name',
+        createdAt: DateTime(2024, 6, 15, 17, 25),
+      );
+      // Use a narrow width to force text overflow
+      await tester.pumpWidget(
+        _wrap(SizedBox(width: 320, child: AuditLogItem(log: longNameLog))),
+      );
+      await tester.pump();
+      // Should render without overflow error — Flexible wrapping prevents it
+      expect(tester.takeException(), isNull);
+      expect(find.byType(AuditLogItem), findsOneWidget);
     });
   });
 }

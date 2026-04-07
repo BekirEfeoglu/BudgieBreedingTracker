@@ -26,7 +26,7 @@ part 'admin_users_screen_list.dart';
 part 'admin_users_screen_card.dart';
 part 'admin_users_screen_bulk_actions.dart';
 
-enum _UserStatusFilter { all, active, inactive }
+enum _UserStatusFilter { all, active, inactive, premium, free }
 
 enum _UserSortOption { newest, oldest, nameAsc, emailAsc }
 
@@ -163,6 +163,10 @@ class _AdminUsersScreenState extends ConsumerState<AdminUsersScreen> {
       _UserStatusFilter.active => users.where((user) => user.isActive).toList(),
       _UserStatusFilter.inactive =>
         users.where((user) => !user.isActive).toList(),
+      _UserStatusFilter.premium =>
+        users.where((u) => u.isPremium).toList(),
+      _UserStatusFilter.free =>
+        users.where((u) => !u.isPremium).toList(),
       _UserStatusFilter.all => List<AdminUser>.from(users),
     };
 

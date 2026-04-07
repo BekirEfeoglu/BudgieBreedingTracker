@@ -6,6 +6,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/constants/supabase_constants.dart';
 import '../../../core/utils/logger.dart';
 import '../../auth/providers/auth_providers.dart';
+import '../constants/admin_constants.dart';
 
 /// Verifies the current user is an admin. Throws if not.
 ///
@@ -24,6 +25,25 @@ Future<void> requireAdmin(Ref ref) async {
       .maybeSingle();
   if (result == null) {
     throw Exception('admin.permission_denied'.tr());
+  }
+}
+
+/// Verifies the current user is a founder. Throws if not.
+///
+/// Used for destructive operations (e.g., clearing audit logs)
+/// that should be restricted to the founder role only.
+Future<void> requireFounder(Ref ref) async {
+  await requireAdmin(ref); // first check admin access
+  final client = ref.read(supabaseClientProvider);
+  final userId = ref.read(currentUserIdProvider);
+  final result = await client
+      .from(SupabaseConstants.adminUsersTable)
+      .select('id')
+      .eq('user_id', userId)
+      .eq('role', AdminConstants.roleFounder)
+      .maybeSingle();
+  if (result == null) {
+    throw Exception('admin.founder_required'.tr());
   }
 }
 

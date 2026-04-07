@@ -7,6 +7,7 @@ import 'package:budgie_breeding_tracker/data/remote/supabase/supabase_client.dar
 import 'package:budgie_breeding_tracker/features/admin/constants/admin_constants.dart';
 import 'package:budgie_breeding_tracker/features/admin/providers/admin_data_providers.dart';
 import 'package:budgie_breeding_tracker/features/admin/providers/admin_models.dart';
+import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
 
 import '../../../helpers/mocks.dart';
 
@@ -190,6 +191,108 @@ void main() {
       expect(cap.deadTupleRatio, 0.0);
       expect(cap.lastVacuum, isNull);
       expect(cap.lastAnalyze, isNull);
+    });
+  });
+
+  group('isAdminProvider', () {
+    test('returns false when user is anonymous', () async {
+      final mockClient = MockSupabaseClient();
+      final container = ProviderContainer(
+        overrides: [
+          supabaseInitializedProvider.overrideWithValue(true),
+          supabaseClientProvider.overrideWithValue(mockClient),
+          currentUserIdProvider.overrideWithValue('anonymous'),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final result = await container.read(isAdminProvider.future);
+      expect(result, isFalse);
+    });
+
+    test('returns false when supabase is not initialized', () async {
+      final mockClient = MockSupabaseClient();
+      final container = ProviderContainer(
+        overrides: [
+          supabaseInitializedProvider.overrideWithValue(false),
+          supabaseClientProvider.overrideWithValue(mockClient),
+          currentUserIdProvider.overrideWithValue('user-1'),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final result = await container.read(isAdminProvider.future);
+      expect(result, isFalse);
+    });
+
+    test('returns false when DB query throws', () async {
+      final mockClient = MockSupabaseClient();
+      when(() => mockClient.from(any())).thenThrow(
+        Exception('connection failed'),
+      );
+
+      final container = ProviderContainer(
+        overrides: [
+          supabaseInitializedProvider.overrideWithValue(true),
+          supabaseClientProvider.overrideWithValue(mockClient),
+          currentUserIdProvider.overrideWithValue('user-1'),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final result = await container.read(isAdminProvider.future);
+      expect(result, isFalse);
+    });
+  });
+
+  group('isFounderProvider', () {
+    test('returns false when user is anonymous', () async {
+      final mockClient = MockSupabaseClient();
+      final container = ProviderContainer(
+        overrides: [
+          supabaseInitializedProvider.overrideWithValue(true),
+          supabaseClientProvider.overrideWithValue(mockClient),
+          currentUserIdProvider.overrideWithValue('anonymous'),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final result = await container.read(isFounderProvider.future);
+      expect(result, isFalse);
+    });
+
+    test('returns false when supabase is not initialized', () async {
+      final mockClient = MockSupabaseClient();
+      final container = ProviderContainer(
+        overrides: [
+          supabaseInitializedProvider.overrideWithValue(false),
+          supabaseClientProvider.overrideWithValue(mockClient),
+          currentUserIdProvider.overrideWithValue('user-1'),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final result = await container.read(isFounderProvider.future);
+      expect(result, isFalse);
+    });
+
+    test('returns false when DB query throws', () async {
+      final mockClient = MockSupabaseClient();
+      when(() => mockClient.from(any())).thenThrow(
+        Exception('connection failed'),
+      );
+
+      final container = ProviderContainer(
+        overrides: [
+          supabaseInitializedProvider.overrideWithValue(true),
+          supabaseClientProvider.overrideWithValue(mockClient),
+          currentUserIdProvider.overrideWithValue('user-1'),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final result = await container.read(isFounderProvider.future);
+      expect(result, isFalse);
     });
   });
 

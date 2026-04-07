@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../core/constants/app_icons.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_icon.dart';
-import '../../../router/route_names.dart';
 import '../providers/admin_providers.dart';
 import 'admin_dashboard_activity.dart';
 import 'admin_dashboard_analytics.dart';
+import 'admin_dashboard_quick_actions.dart';
 import 'admin_dashboard_sections.dart';
 
 part 'admin_dashboard_content_cards.dart';
@@ -36,33 +35,10 @@ class DashboardContent extends StatelessWidget {
           const SizedBox(height: AppSpacing.lg),
           DashboardStatsGrid(stats: stats),
           const SizedBox(height: AppSpacing.xxl),
-          Text(
-            'admin.quick_actions'.tr(),
-            style: Theme.of(
-              context,
-            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
-          ),
-          const SizedBox(height: AppSpacing.md),
-          Row(
-            children: [
-              Expanded(
-                child: DashboardQuickActionButton(
-                  icon: AppIcon(AppIcons.settings, semanticsLabel: 'admin.go_to_settings'.tr()),
-                  label: 'admin.go_to_settings'.tr(),
-                  onTap: () => context.go(AppRoutes.adminSettings),
-                ),
-              ),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: DashboardQuickActionButton(
-                  icon: AppIcon(AppIcons.users, semanticsLabel: 'admin.go_to_users'.tr()),
-                  label: 'admin.go_to_users'.tr(),
-                  onTap: () => context.go(AppRoutes.adminUsers),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.xxl),
+          const DashboardQuickActionsSection(),
+          const SizedBox(height: AppSpacing.lg),
+          const DashboardContentReviewSection(),
+          const SizedBox(height: AppSpacing.lg),
           DashboardPremiumConversionCard(stats: stats),
           const SizedBox(height: AppSpacing.lg),
           Text(
