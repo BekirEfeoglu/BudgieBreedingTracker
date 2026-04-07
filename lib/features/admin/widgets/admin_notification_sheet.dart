@@ -75,7 +75,7 @@ class _NotificationSheetContentState extends ConsumerState<_NotificationSheetCon
       if (state.isSuccess) {
         Navigator.of(context).pop(true);
       } else if (state.error != null) {
-        setState(() => _isLoading = false);
+        if (mounted) setState(() => _isLoading = false);
         Navigator.of(context).pop(false);
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -83,7 +83,7 @@ class _NotificationSheetContentState extends ConsumerState<_NotificationSheetCon
           );
         }
       } else {
-        setState(() => _isLoading = false);
+        if (mounted) setState(() => _isLoading = false);
       }
     } catch (e) {
       if (!mounted) return;
