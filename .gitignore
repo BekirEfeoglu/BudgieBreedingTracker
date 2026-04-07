@@ -17,6 +17,7 @@
 Icon?
 !web/icons/
 !assets/icons/
+!test/features/icons/
 
 # --------------------------------------------------
 # Windows
