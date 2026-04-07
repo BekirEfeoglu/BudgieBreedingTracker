@@ -328,9 +328,8 @@ void main() {
       // signOut should have been called by MfaChecker
       verify(() => mockAuth.signOut()).called(1);
 
-      // Drain remaining timers
-      await tester.pump(const Duration(seconds: 5));
-      await tester.pump(const Duration(milliseconds: 500));
+      // Dispose the widget to cancel blink timer
+      await tester.pumpWidget(const SizedBox());
     });
 
     testWidgets('MFA failure with slow signOut does not crash after dispose',
