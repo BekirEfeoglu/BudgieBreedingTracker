@@ -62,5 +62,49 @@ void main() {
 
       expect(find.text(l10n('premium.trial_badge')), findsNothing);
     });
+
+    testWidgets('shows trial banner when package has introductory offer', (
+      tester,
+    ) async {
+      // Package WITH introductory offer (7-day free trial)
+      final pkg = Package.fromJson({
+        'identifier': r'$rc_six_month',
+        'packageType': 'SIX_MONTH',
+        'product': {
+          'identifier': 'budgie_premium_semi_annual',
+          'description': 'Semi-annual plan',
+          'title': '6 Month Premium',
+          'price': 15.0,
+          'priceString': '\$15.00',
+          'currencyCode': 'USD',
+          'productCategory': 'SUBSCRIPTION',
+          'introPrice': {
+            'price': 0,
+            'priceString': 'Free',
+            'period': 'P1W',
+            'cycles': 1,
+            'periodUnit': 'WEEK',
+            'periodNumberOfUnits': 1,
+          },
+          'presentedOfferingContext': {
+            'offeringIdentifier': 'default',
+            'placementIdentifier': null,
+            'targetingContext': null,
+          },
+        },
+        'presentedOfferingContext': {
+          'offeringIdentifier': 'default',
+          'placementIdentifier': null,
+          'targetingContext': null,
+        },
+      });
+
+      await tester.pumpWidget(
+        _wrap(const PremiumTrialBannerSection(), offerings: [pkg]),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text(l10n('premium.trial_badge')), findsOneWidget);
+    });
   });
 }

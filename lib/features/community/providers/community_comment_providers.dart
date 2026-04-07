@@ -99,7 +99,6 @@ class CommentFormNotifier extends Notifier<CommentFormState> {
         postId: postId,
         userId: userId,
         content: content,
-        needsReview: modResult.needsReview,
       );
 
       ref.read(communityFeedProvider.notifier).incrementCommentCount(postId);

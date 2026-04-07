@@ -32,11 +32,18 @@ class _FakeEdgeFunctionClient extends EdgeFunctionClient {
 
 void main() {
   group('ContentModerationService — client-side filtering', () {
+    // Client-side tests use a service WITH edge function client so that
+    // server-side does not reject content as 'moderation_unavailable'.
     late ContentModerationService service;
 
     setUp(() {
-      // No edge function client → pure client-side
-      service = const ContentModerationService();
+      final edgeClient = _FakeEdgeFunctionClient(
+        fixedResult: const EdgeFunctionResult(
+          success: true,
+          data: {'allowed': true},
+        ),
+      );
+      service = ContentModerationService(edgeFunctionClient: edgeClient);
     });
 
     test('allows normal budgie breeding content', () async {
@@ -164,7 +171,7 @@ void main() {
       expect(result.rejectionReason, 'inappropriate_language');
     });
 
-    test('flags content for review when edge function is unavailable', () async {
+    test('rejects content when edge function is unavailable (fail-closed)', () async {
       final edgeClient = _FakeEdgeFunctionClient(
         fixedResult: const EdgeFunctionResult(
           success: false,
@@ -174,17 +181,25 @@ void main() {
       final service = ContentModerationService(edgeFunctionClient: edgeClient);
 
       final result = await service.checkText('Some content');
-      expect(result.isAllowed, isTrue);
-      expect(result.needsReview, isTrue);
+      expect(result.isAllowed, isFalse);
+      expect(result.rejectionReason, 'moderation_unavailable');
     });
 
-    test('flags content for review when edge function throws', () async {
+    test('rejects content when edge function throws (fail-closed)', () async {
       final edgeClient = _FakeEdgeFunctionClient(shouldThrow: true);
       final service = ContentModerationService(edgeFunctionClient: edgeClient);
 
       final result = await service.checkText('Some content');
-      expect(result.isAllowed, isTrue);
-      expect(result.needsReview, isTrue);
+      expect(result.isAllowed, isFalse);
+      expect(result.rejectionReason, 'moderation_unavailable');
+    });
+
+    test('rejects content when no edge function client (fail-closed)', () async {
+      const service = ContentModerationService();
+
+      final result = await service.checkText('Normal budgie content');
+      expect(result.isAllowed, isFalse);
+      expect(result.rejectionReason, 'moderation_unavailable');
     });
 
     test('client-side filter runs before server-side', () async {
@@ -231,21 +246,12 @@ void main() {
       const result = ModerationResult.allowed();
       expect(result.isAllowed, isTrue);
       expect(result.rejectionReason, isNull);
-      expect(result.needsReview, isFalse);
     });
 
     test('rejected factory creates rejected result with reason', () {
       const result = ModerationResult.rejected('spam');
       expect(result.isAllowed, isFalse);
       expect(result.rejectionReason, 'spam');
-      expect(result.needsReview, isFalse);
-    });
-
-    test('pendingReview factory creates review-flagged result', () {
-      const result = ModerationResult.pendingReview();
-      expect(result.isAllowed, isTrue);
-      expect(result.rejectionReason, isNull);
-      expect(result.needsReview, isTrue);
     });
   });
 }

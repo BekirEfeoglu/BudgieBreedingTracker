@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' show PostgrestException;
 
 import 'package:budgie_breeding_tracker/core/errors/app_exception.dart';
 import 'package:budgie_breeding_tracker/data/remote/api/base_remote_source.dart';
@@ -178,6 +179,88 @@ void main() {
         const original = DatabaseException('db fail');
         final result = source.handleError(original, StackTrace.current);
         expect(result, same(original));
+      });
+
+      test('sanitizes PostgrestException with SQL syntax error', () {
+        final result = source.handleError(
+          const PostgrestException(
+            message: 'syntax error at or near "DROP TABLE"',
+            code: '42601',
+          ),
+          StackTrace.current,
+        );
+        expect(result, isA<NetworkException>());
+        expect(result.message, 'Database operation failed');
+      });
+
+      test('sanitizes PostgrestException with RLS policy violation', () {
+        final result = source.handleError(
+          const PostgrestException(
+            message: 'new row violates row-level security policy for table "birds"',
+            code: '42501',
+          ),
+          StackTrace.current,
+        );
+        expect(result, isA<NetworkException>());
+        expect(result.message, 'Database operation failed');
+      });
+
+      test('sanitizes PostgrestException with constraint error', () {
+        final result = source.handleError(
+          const PostgrestException(
+            message: 'violates foreign key constraint "fk_birds_user_id"',
+            code: '23503',
+          ),
+          StackTrace.current,
+        );
+        expect(result, isA<NetworkException>());
+        expect(result.message, 'Database operation failed');
+      });
+
+      test('sanitizes PostgrestException with permission denied', () {
+        final result = source.handleError(
+          const PostgrestException(
+            message: 'permission denied for table birds',
+            code: '42501',
+          ),
+          StackTrace.current,
+        );
+        expect(result, isA<NetworkException>());
+        expect(result.message, 'Database operation failed');
+      });
+
+      test('preserves non-sensitive PostgrestException message', () {
+        final result = source.handleError(
+          const PostgrestException(
+            message: 'Request timeout',
+            code: '57014',
+          ),
+          StackTrace.current,
+        );
+        expect(result, isA<NetworkException>());
+        expect(result.message, 'Request timeout');
+      });
+
+      test('sanitizes generic error with sensitive content', () {
+        final result = source.handleError(
+          Exception('relation "secret_table" does not exist'),
+          StackTrace.current,
+        );
+        expect(result, isA<NetworkException>());
+        expect(result.message, 'Database operation failed');
+      });
+
+      test('preserves non-sensitive message containing generic words', () {
+        // "column" and "policy" alone should NOT trigger sanitization
+        final result = source.handleError(
+          const PostgrestException(
+            message: 'Missing column value in request body',
+            code: '400',
+          ),
+          StackTrace.current,
+        );
+        expect(result, isA<NetworkException>());
+        expect(result.message, 'Missing column value in request body');
       });
     });
   });

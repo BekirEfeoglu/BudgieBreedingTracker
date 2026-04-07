@@ -106,7 +106,6 @@ class MarketplaceFormNotifier extends Notifier<MarketplaceFormState> {
         if (age != null) 'age': age,
         'image_urls': imageUrls,
         'city': city,
-        if (modResult.needsReview) 'needs_review': true,
       });
       state = state.copyWith(isLoading: false, isSuccess: true);
     } catch (e, st) {
@@ -177,7 +176,6 @@ class MarketplaceFormNotifier extends Notifier<MarketplaceFormState> {
         'age': age,
         'image_urls': imageUrls,
         'city': city,
-        if (modResult.needsReview) 'needs_review': true,
       });
       state = state.copyWith(isLoading: false, isSuccess: true);
     } catch (e, st) {

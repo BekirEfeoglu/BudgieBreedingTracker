@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart'
     show SupabaseClient, SupabaseQueryBuilder, PostgrestException;
 import 'package:budgie_breeding_tracker/core/errors/app_exception.dart';
@@ -186,13 +187,58 @@ abstract class BaseRemoteSource<T> {
     }
   }
 
+  /// Sanitizes database error messages to prevent leaking internal details
+  /// (SQL syntax, RLS policy names, table structure) to the UI layer.
+  ///
+  /// Pure function — no side effects. Callers are responsible for adding
+  /// Sentry breadcrumbs when sanitization occurs.
+  static String _sanitizeErrorMessage(String message) {
+    // PostgreSQL-specific patterns that reveal internal schema details.
+    // Use precise patterns (e.g. trailing quote in 'relation "') to avoid
+    // false positives on generic words like "column" or "relation".
+    // 'PGRES' targets libpq internal error codes (e.g. PGRES_FATAL_ERROR).
+    const sensitivePatterns = [
+      'syntax error',
+      'violates row-level security',
+      'violates check constraint',
+      'violates foreign key constraint',
+      'violates unique constraint',
+      'violates not-null constraint',
+      'relation "',
+      'column "',
+      'permission denied for',
+      'PGRES', // libpq internal error codes (e.g. PGRES_FATAL_ERROR)
+      'pg_catalog',
+    ];
+    final lower = message.toLowerCase();
+    for (final pattern in sensitivePatterns) {
+      if (lower.contains(pattern.toLowerCase())) {
+        return 'Database operation failed';
+      }
+    }
+    return message;
+  }
+
   /// Converts Supabase/network errors into [AppException] subtypes.
+  ///
+  /// Error messages are sanitized before being wrapped in [AppException]
+  /// to prevent database internals from leaking to the UI layer.
+  /// The original error is preserved in [AppException.originalError] for
+  /// logging and Sentry reporting.
   AppException handleError(dynamic error, StackTrace stackTrace) {
     AppLogger.error('[$tableName] Remote error', error, stackTrace);
 
     if (error is PostgrestException) {
+      final sanitized = _sanitizeErrorMessage(error.message);
+      if (sanitized != error.message) {
+        Sentry.addBreadcrumb(Breadcrumb(
+          message: 'Sanitized DB error',
+          category: 'security',
+          level: SentryLevel.warning,
+        ));
+      }
       return NetworkException(
-        error.message,
+        sanitized,
         code: error.code,
         originalError: error,
       );
@@ -204,7 +250,19 @@ abstract class BaseRemoteSource<T> {
 
     if (error is AppException) return error;
 
-    return NetworkException(error.toString(), originalError: error);
+    final errorStr = error.toString();
+    final sanitized = _sanitizeErrorMessage(errorStr);
+    if (sanitized != errorStr) {
+      Sentry.addBreadcrumb(Breadcrumb(
+        message: 'Sanitized DB error',
+        category: 'security',
+        level: SentryLevel.warning,
+      ));
+    }
+    return NetworkException(
+      sanitized,
+      originalError: error,
+    );
   }
 }
 

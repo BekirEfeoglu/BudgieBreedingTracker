@@ -113,7 +113,7 @@ void main() {
 
     test('handles missing optional fields gracefully', () {
       final json = jsonEncode([
-        {'phenotype': 'Normal'},
+        {'phenotype': 'Normal', 'probability': 0.0},
       ]);
 
       final results = parseHistoryResults(json);
@@ -122,6 +122,38 @@ void main() {
       expect(results.first.genotype, isNull);
       expect(results.first.visualMutations, isEmpty);
       expect(results.first.carriedMutations, isEmpty);
+    });
+
+    test('skips entries missing phenotype field', () {
+      final json = jsonEncode([
+        {'probability': 0.5},
+        {'phenotype': 'Blue', 'probability': 0.5},
+      ]);
+
+      final results = parseHistoryResults(json);
+      expect(results, hasLength(1));
+      expect(results.first.phenotype, 'Blue');
+    });
+
+    test('skips entries missing probability field', () {
+      final json = jsonEncode([
+        {'phenotype': 'Normal'},
+        {'phenotype': 'Blue', 'probability': 0.25},
+      ]);
+
+      final results = parseHistoryResults(json);
+      expect(results, hasLength(1));
+      expect(results.first.phenotype, 'Blue');
+    });
+
+    test('skips entries missing both required fields', () {
+      final json = jsonEncode([
+        {'genotype': 'bl/bl'},
+        {'sex': 'male'},
+      ]);
+
+      final results = parseHistoryResults(json);
+      expect(results, isEmpty);
     });
   });
 

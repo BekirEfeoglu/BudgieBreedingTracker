@@ -1,7 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_constants.dart';
 import 'package:budgie_breeding_tracker/core/errors/app_exception.dart';
+import 'package:budgie_breeding_tracker/data/remote/supabase/edge_function_client.dart';
 import 'package:budgie_breeding_tracker/data/repositories/bird_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/breeding_pair_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/incubation_repository.dart';
@@ -13,6 +15,30 @@ class MockBreedingPairRepository extends Mock
     implements BreedingPairRepository {}
 
 class MockIncubationRepository extends Mock implements IncubationRepository {}
+
+class _MockSupabaseClient extends Mock implements SupabaseClient {}
+
+class _FakeEdgeFunctionClient extends EdgeFunctionClient {
+  final EdgeFunctionResult? _fixedResult;
+  final bool shouldThrow;
+
+  _FakeEdgeFunctionClient({
+    EdgeFunctionResult? fixedResult,
+    this.shouldThrow = false,
+  })  : _fixedResult = fixedResult,
+        super(_MockSupabaseClient());
+
+  @override
+  Future<EdgeFunctionResult> invoke(
+    String functionName, {
+    Map<String, dynamic>? body,
+    Map<String, String>? headers,
+  }) async {
+    if (shouldThrow) throw Exception('Network error');
+    return _fixedResult ??
+        const EdgeFunctionResult(success: true, data: {'allowed': true});
+  }
+}
 
 void main() {
   late FreeTierLimitService service;
@@ -158,6 +184,92 @@ void main() {
         service.guardIncubationLimit('u1'),
         throwsA(isA<FreeTierLimitException>()),
       );
+    });
+  });
+
+  group('server-side validation', () {
+    late FreeTierLimitService serviceWithServer;
+    late MockBirdRepository mockBirdRepo;
+    late MockBreedingPairRepository mockBreedingRepo;
+    late MockIncubationRepository mockIncubationRepo;
+
+    setUp(() {
+      mockBirdRepo = MockBirdRepository();
+      mockBreedingRepo = MockBreedingPairRepository();
+      mockIncubationRepo = MockIncubationRepository();
+    });
+
+    test('passes when server allows', () async {
+      final edgeClient = _FakeEdgeFunctionClient(
+        fixedResult: const EdgeFunctionResult(
+          success: true,
+          data: {'allowed': true},
+        ),
+      );
+      serviceWithServer = FreeTierLimitService(
+        birdRepo: mockBirdRepo,
+        breedingPairRepo: mockBreedingRepo,
+        incubationRepo: mockIncubationRepo,
+        edgeFunctionClient: edgeClient,
+      );
+      when(() => mockBirdRepo.getCount('u1')).thenAnswer((_) async => 0);
+
+      // Should not throw
+      await serviceWithServer.guardBirdLimit('u1');
+    });
+
+    test('throws FreeTierLimitException when server rejects', () async {
+      final edgeClient = _FakeEdgeFunctionClient(
+        fixedResult: const EdgeFunctionResult(
+          success: true,
+          data: {'allowed': false, 'limit': 10},
+        ),
+      );
+      serviceWithServer = FreeTierLimitService(
+        birdRepo: mockBirdRepo,
+        breedingPairRepo: mockBreedingRepo,
+        incubationRepo: mockIncubationRepo,
+        edgeFunctionClient: edgeClient,
+      );
+      when(() => mockBirdRepo.getCount('u1')).thenAnswer((_) async => 0);
+
+      await expectLater(
+        serviceWithServer.guardBirdLimit('u1'),
+        throwsA(isA<FreeTierLimitException>()),
+      );
+    });
+
+    test('silently passes when server is unavailable', () async {
+      final edgeClient = _FakeEdgeFunctionClient(
+        fixedResult: const EdgeFunctionResult(
+          success: false,
+          error: 'Function not deployed',
+        ),
+      );
+      serviceWithServer = FreeTierLimitService(
+        birdRepo: mockBirdRepo,
+        breedingPairRepo: mockBreedingRepo,
+        incubationRepo: mockIncubationRepo,
+        edgeFunctionClient: edgeClient,
+      );
+      when(() => mockBirdRepo.getCount('u1')).thenAnswer((_) async => 0);
+
+      // Should not throw — client-side guard already passed
+      await serviceWithServer.guardBirdLimit('u1');
+    });
+
+    test('silently passes when server throws network error', () async {
+      final edgeClient = _FakeEdgeFunctionClient(shouldThrow: true);
+      serviceWithServer = FreeTierLimitService(
+        birdRepo: mockBirdRepo,
+        breedingPairRepo: mockBreedingRepo,
+        incubationRepo: mockIncubationRepo,
+        edgeFunctionClient: edgeClient,
+      );
+      when(() => mockBirdRepo.getCount('u1')).thenAnswer((_) async => 0);
+
+      // Should not throw — network errors are non-blocking
+      await serviceWithServer.guardBirdLimit('u1');
     });
   });
 }

@@ -37,6 +37,7 @@ Map<String, dynamic> _packageJson({
   required String packageType,
   required String productIdentifier,
   required String priceString,
+  double price = 9.99,
 }) {
   return {
     'identifier': identifier,
@@ -45,7 +46,7 @@ Map<String, dynamic> _packageJson({
       'identifier': productIdentifier,
       'description': 'Premium plan',
       'title': 'Premium',
-      'price': 9.99,
+      'price': price,
       'priceString': priceString,
       'currencyCode': 'USD',
       'productCategory': 'SUBSCRIPTION',
@@ -285,6 +286,55 @@ void main() {
       expect(find.text(l10n('settings.privacy_policy')), findsOneWidget);
     });
 
+    testWidgets('renders savings text with store packages available', (
+      tester,
+    ) async {
+      // Regional prices: €10/6mo, €16/yr → 20% savings computed dynamically
+      final offerings = [
+        Package.fromJson(
+          _packageJson(
+            identifier: r'$rc_six_month',
+            packageType: 'SIX_MONTH',
+            productIdentifier: 'budgie_premium_semi_annual',
+            priceString: '€10,00',
+            price: 10.0,
+          ),
+        ),
+        Package.fromJson(
+          _packageJson(
+            identifier: r'$rc_annual',
+            packageType: 'ANNUAL',
+            productIdentifier: 'budgie_premium_yearly',
+            priceString: '€16,00',
+            price: 16.0,
+          ),
+        ),
+      ];
+
+      await tester.pumpWidget(
+        _wrapWithProviders(
+          const PremiumPricingSection(),
+          offerings: offerings,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Savings text should still render (via l10n key) regardless of value
+      expect(find.text(l10n('premium.save_percent')), findsOneWidget);
+    });
+
+    testWidgets('renders savings text with fallback when no packages', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrapWithProviders(const PremiumPricingSection()),
+      );
+      await tester.pumpAndSettle();
+
+      // No packages → falls back to 17%
+      expect(find.text(l10n('premium.save_percent')), findsOneWidget);
+    });
+
     testWidgets('shows period labels in RichText for all plans', (
       tester,
     ) async {
@@ -301,6 +351,61 @@ void main() {
       expect(
         find.textContaining('premium.period_yearly', findRichText: true),
         findsOneWidget,
+      );
+    });
+  });
+
+  group('calculateSavingsPercent', () {
+    test('computes 20% for €10/6mo and €16/yr', () {
+      // 10*2=20, (20-16)/20*100 = 20%
+      expect(
+        calculateSavingsPercent(semiAnnualPrice: 10.0, yearlyPrice: 16.0),
+        '20',
+      );
+    });
+
+    test('computes 17% for \$15/6mo and \$25/yr', () {
+      // 15*2=30, (30-25)/30*100 = 16.67 → rounds to 17%
+      expect(
+        calculateSavingsPercent(semiAnnualPrice: 15.0, yearlyPrice: 25.0),
+        '17',
+      );
+    });
+
+    test('returns fallback when semi-annual price is null', () {
+      expect(
+        calculateSavingsPercent(semiAnnualPrice: null, yearlyPrice: 25.0),
+        '17',
+      );
+    });
+
+    test('returns fallback when yearly price is null', () {
+      expect(
+        calculateSavingsPercent(semiAnnualPrice: 15.0, yearlyPrice: null),
+        '17',
+      );
+    });
+
+    test('returns fallback when prices are zero', () {
+      expect(
+        calculateSavingsPercent(semiAnnualPrice: 0, yearlyPrice: 0),
+        '17',
+      );
+    });
+
+    test('returns fallback when yearly >= annualized semi-annual', () {
+      // No savings: yearly costs more than 2× semi-annual
+      expect(
+        calculateSavingsPercent(semiAnnualPrice: 10.0, yearlyPrice: 20.0),
+        '17',
+      );
+    });
+
+    test('computes large savings correctly', () {
+      // 10*2=20, (20-5)/20*100 = 75%
+      expect(
+        calculateSavingsPercent(semiAnnualPrice: 10.0, yearlyPrice: 5.0),
+        '75',
       );
     });
   });

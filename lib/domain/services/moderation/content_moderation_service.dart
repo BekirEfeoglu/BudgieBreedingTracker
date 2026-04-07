@@ -7,31 +7,17 @@ class ModerationResult {
   final bool isAllowed;
   final String? rejectionReason;
 
-  /// When `true`, the content was allowed but server-side moderation was
-  /// unavailable. The content should be flagged for manual review.
-  final bool needsReview;
-
   const ModerationResult({
     required this.isAllowed,
     this.rejectionReason,
-    this.needsReview = false,
   });
 
   const ModerationResult.allowed()
     : isAllowed = true,
-      rejectionReason = null,
-      needsReview = false;
+      rejectionReason = null;
   const ModerationResult.rejected(String reason)
     : isAllowed = false,
-      rejectionReason = reason,
-      needsReview = false;
-
-  /// Content is allowed but should be queued for manual review because
-  /// the server-side moderation check could not be performed.
-  const ModerationResult.pendingReview()
-    : isAllowed = true,
-      rejectionReason = null,
-      needsReview = true;
+      rejectionReason = reason;
 }
 
 /// Service that checks user-generated content before publishing.
@@ -102,7 +88,14 @@ class ContentModerationService {
 
   Future<ModerationResult> _checkServerSide(String text) async {
     if (_edgeFunctionClient == null) {
-      return const ModerationResult.allowed();
+      // Fail-closed: reject when server-side moderation is unavailable
+      // to prevent potentially harmful content from being published.
+      // Client-side filter already passed at this point, but server-side
+      // check is required for App Store compliance (Guideline 1.2).
+      AppLogger.warning(
+        '$_tag Edge function client unavailable, rejecting content',
+      );
+      return const ModerationResult.rejected('moderation_unavailable');
     }
 
     try {
@@ -112,11 +105,13 @@ class ContentModerationService {
       );
 
       if (!result.success) {
-        // Edge function unavailable — allow content but flag for manual review.
+        // Edge function returned non-2xx (e.g. 503 moderation_unavailable).
+        // Reject content with a user-friendly retry message instead of
+        // silently allowing potentially harmful content.
         AppLogger.warning(
-          '$_tag Edge function unavailable, flagging for review',
+          '$_tag Edge function unavailable, rejecting content: ${result.error}',
         );
-        return const ModerationResult.pendingReview();
+        return const ModerationResult.rejected('moderation_unavailable');
       }
 
       final isAllowed = result.data?['allowed'] as bool? ?? true;
@@ -128,9 +123,9 @@ class ContentModerationService {
 
       return const ModerationResult.allowed();
     } catch (e, st) {
-      // On error, allow content but flag for manual review.
+      // On error, reject content with retry message (fail-closed).
       AppLogger.error('$_tag Server-side check failed', e, st);
-      return const ModerationResult.pendingReview();
+      return const ModerationResult.rejected('moderation_unavailable');
     }
   }
 
@@ -145,6 +140,8 @@ class ContentModerationService {
   static String localizedError(String? reason) => switch (reason) {
     'excessive_caps' => 'community.moderation_caps'.tr(),
     'spam_detected' => 'community.moderation_spam'.tr(),
+    'moderation_unavailable' => 'community.moderation_unavailable'.tr(),
+    'invalid_request' => 'community.moderation_invalid_request'.tr(),
     _ => 'community.moderation_violation'.tr(),
   };
 

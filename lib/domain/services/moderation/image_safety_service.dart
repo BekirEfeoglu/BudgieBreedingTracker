@@ -9,31 +9,17 @@ class ImageSafetyResult {
   final bool isSafe;
   final String? rejectionReason;
 
-  /// When `true`, the image was allowed but server-side scanning was
-  /// unavailable. The image should be flagged for manual review.
-  final bool needsReview;
-
   const ImageSafetyResult({
     required this.isSafe,
     this.rejectionReason,
-    this.needsReview = false,
   });
 
   const ImageSafetyResult.safe()
     : isSafe = true,
-      rejectionReason = null,
-      needsReview = false;
+      rejectionReason = null;
   const ImageSafetyResult.unsafe(String reason)
     : isSafe = false,
-      rejectionReason = reason,
-      needsReview = false;
-
-  /// Image is allowed but should be queued for manual review because
-  /// the server-side safety scan could not be performed.
-  const ImageSafetyResult.pendingReview()
-    : isSafe = true,
-      rejectionReason = null,
-      needsReview = true;
+      rejectionReason = reason;
 }
 
 /// Service that checks images for objectionable content before upload.
@@ -41,13 +27,13 @@ class ImageSafetyResult {
 /// Uses a server-side Edge Function (`scan-image-safety`) that delegates
 /// to a vision API (e.g. Google Cloud Vision SafeSearch, AWS Rekognition).
 ///
-/// Fail-open: if the edge function is unavailable, uploads are allowed.
+/// Fail-closed: if the edge function is unavailable, uploads are rejected.
 /// Apple App Store Guideline 1.2 requires UGC content filtering.
 class ImageSafetyService {
   final EdgeFunctionClient? _edgeFunctionClient;
   static const _tag = '[ImageSafety]';
 
-  /// Maximum image size to scan (2 MB base64). Larger images skip scanning.
+  /// Maximum image size to scan (2 MB base64). Larger images are rejected.
   static const _maxScanSizeBytes = 2 * 1024 * 1024;
 
   const ImageSafetyService({EdgeFunctionClient? edgeFunctionClient})
@@ -55,27 +41,30 @@ class ImageSafetyService {
 
   /// Scans image bytes for objectionable content.
   ///
-  /// Returns [ImageSafetyResult.safe] if the image passes or scanning
-  /// is unavailable (fail-open). Returns [ImageSafetyResult.unsafe] with
-  /// a reason if the image is flagged.
+  /// Returns [ImageSafetyResult.safe] if the image passes scanning.
+  /// Returns [ImageSafetyResult.unsafe] with a reason if the image is
+  /// flagged or scanning is unavailable (fail-closed for App Store compliance).
   Future<ImageSafetyResult> scanImage({
     required Uint8List bytes,
     required String mimeType,
   }) async {
     if (_edgeFunctionClient == null) {
-      // No edge function client — flag for manual review instead of
-      // silently allowing.
-      return const ImageSafetyResult.pendingReview();
+      // Fail-closed: reject when image safety scanning is unavailable
+      // to prevent potentially objectionable content from being uploaded.
+      AppLogger.warning(
+        '$_tag Edge function client unavailable, rejecting image upload',
+      );
+      return const ImageSafetyResult.unsafe('safety_scan_unavailable');
     }
 
     // Large images cannot be sent to the edge function due to payload limits.
-    // Flag for manual review instead of silently allowing.
+    // Reject to prevent bypassing safety checks with oversized images.
     if (bytes.length > _maxScanSizeBytes) {
-      AppLogger.info(
+      AppLogger.warning(
         '$_tag Image too large for scanning (${bytes.length} bytes), '
-        'flagging for review',
+        'rejecting upload',
       );
-      return const ImageSafetyResult.pendingReview();
+      return const ImageSafetyResult.unsafe('image_too_large');
     }
 
     try {
@@ -87,11 +76,11 @@ class ImageSafetyService {
       );
 
       if (!result.success) {
-        // Edge function unavailable — flag for manual review.
+        // Edge function unavailable — fail-closed.
         AppLogger.warning(
-          '$_tag Edge function unavailable, flagging for review',
+          '$_tag Edge function unavailable, rejecting image upload',
         );
-        return const ImageSafetyResult.pendingReview();
+        return const ImageSafetyResult.unsafe('safety_scan_unavailable');
       }
 
       final isSafe = result.data?['safe'] as bool? ?? true;
@@ -103,9 +92,9 @@ class ImageSafetyService {
 
       return const ImageSafetyResult.safe();
     } catch (e, st) {
-      // On error, allow upload but flag for manual review.
+      // On error, reject upload (fail-closed).
       AppLogger.error('$_tag Image safety scan failed', e, st);
-      return const ImageSafetyResult.pendingReview();
+      return const ImageSafetyResult.unsafe('safety_scan_unavailable');
     }
   }
 }

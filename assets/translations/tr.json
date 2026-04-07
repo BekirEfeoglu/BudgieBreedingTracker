@@ -1866,7 +1866,7 @@
         "features_list": "Premium özellikler: Sınırsız kuş kaydı, detaylı istatistikler ve grafikler, soy ağacı görüntüleme, genetik hesaplama (Punnett karesi), öncelikli destek.",
         "subscribe_steps_title": "Premium'a geçiş adımları",
         "subscribe_step1": "Daha Fazla > Premium Üyelik bölümüne gidin.",
-        "subscribe_step2": "Aylık veya yıllık planı seçin.",
+        "subscribe_step2": "6 aylık veya yıllık planı seçin.",
         "subscribe_step3": "Ödeme işlemini tamamlayın, özellikler anında aktif olur.",
         "premium_note": "Premium üyelik istediğiniz zaman iptal edilebilir. İptal sonrası dönem sonuna kadar özellikler aktif kalır."
       }
@@ -2211,6 +2211,8 @@
     "moderation_violation": "İçeriğiniz topluluk kurallarına uygun değil. Lütfen düzenleyip tekrar deneyin.",
     "moderation_caps": "Lütfen tamamen büyük harf yazmaktan kaçının.",
     "moderation_spam": "İçeriğiniz spam olarak algılandı. Lütfen düzenleyip tekrar deneyin.",
+    "moderation_unavailable": "İçerik denetimi geçici olarak kullanılamıyor. Lütfen birkaç dakika sonra tekrar deneyin.",
+    "moderation_invalid_request": "İçerik gönderilemedi. Lütfen içeriğinizi kontrol edip tekrar deneyin.",
     "image_rejected": "Yüklenen görsel topluluk kurallarına uygun değil. Lütfen farklı bir görsel seçin.",
     "content_too_long": "İçerik çok uzun. Lütfen kısaltıp tekrar deneyin.",
     "post_cooldown": "Çok hızlı gönderi oluşturuyorsunuz. Lütfen biraz bekleyin.",

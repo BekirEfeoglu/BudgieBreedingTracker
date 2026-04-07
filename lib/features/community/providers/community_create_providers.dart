@@ -114,11 +114,8 @@ class CreatePostNotifier extends Notifier<CreatePostState> {
         );
         return;
       }
-      final textNeedsReview = modResult.needsReview;
-
       final postId = const Uuid().v7();
       final imageUrls = <String>[];
-      var imageNeedsReview = false;
 
       // Upload images (with safety scan)
       if (images.isNotEmpty) {
@@ -141,8 +138,6 @@ class CreatePostNotifier extends Notifier<CreatePostState> {
             );
             return;
           }
-          if (safetyResult.needsReview) imageNeedsReview = true;
-
           final url = await storageService.uploadCommunityPhoto(
             userId: userId,
             postId: postId,
@@ -151,8 +146,6 @@ class CreatePostNotifier extends Notifier<CreatePostState> {
           imageUrls.add(url);
         }
       }
-
-      final needsReview = textNeedsReview || imageNeedsReview;
 
       final data = <String, dynamic>{
         'id': postId,
@@ -164,7 +157,6 @@ class CreatePostNotifier extends Notifier<CreatePostState> {
         if (tags.isNotEmpty) 'tags': tags,
         if (imageUrls.isNotEmpty) 'image_url': imageUrls.first,
         if (imageUrls.length > 1) 'images': imageUrls,
-        if (needsReview) 'needs_review': true,
       };
 
       final repo = ref.read(communityPostRepositoryProvider);

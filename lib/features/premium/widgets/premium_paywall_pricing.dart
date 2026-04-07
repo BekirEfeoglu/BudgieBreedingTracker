@@ -27,6 +27,11 @@ class PremiumPricingSection extends ConsumerWidget {
     // as reference instead of showing "price unavailable" for all plans.
     // Purchase buttons are already disabled via canPurchase flag.
 
+    final savingsPercent = calculateSavingsPercent(
+      semiAnnualPrice: semiAnnualPackage?.storeProduct.price,
+      yearlyPrice: yearlyPackage?.storeProduct.price,
+    );
+
     return Padding(
       padding: AppSpacing.screenPadding,
       child: Column(
@@ -73,7 +78,7 @@ class PremiumPricingSection extends ConsumerWidget {
             period: 'premium.period_yearly'.tr(),
             isHighlighted: true,
             badge: 'premium.best_value'.tr(),
-            savingsText: 'premium.save_percent'.tr(args: ['17']),
+            savingsText: 'premium.save_percent'.tr(args: [savingsPercent]),
             isEnabled: canPurchase,
             isLoading:
                 actionState.isLoading &&
@@ -198,6 +203,29 @@ String _purchaseIssueBodyKey(PremiumPurchaseIssue issue) {
     PremiumPurchaseIssue.offeringsUnavailable =>
       'premium.offerings_unavailable_body',
   };
+}
+
+/// Calculates the savings percentage of yearly vs semi-annual plan.
+///
+/// Returns a string like '20' (percent). Falls back to '17' when prices
+/// are unavailable (based on $15×2=$30 vs $25 default pricing).
+@visibleForTesting
+String calculateSavingsPercent({
+  double? semiAnnualPrice,
+  double? yearlyPrice,
+}) {
+  if (semiAnnualPrice == null ||
+      yearlyPrice == null ||
+      semiAnnualPrice <= 0 ||
+      yearlyPrice <= 0) {
+    return '17';
+  }
+  final annualized = semiAnnualPrice * 2;
+  final savings = ((annualized - yearlyPrice) / annualized * 100).round();
+  if (savings > 0 && savings < 100) {
+    return savings.toString();
+  }
+  return '17';
 }
 
 Future<void> _openLegalUrl(

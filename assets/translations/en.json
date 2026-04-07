@@ -1866,7 +1866,7 @@
         "features_list": "Premium features: Unlimited bird records, detailed statistics and charts, genealogy tree view, genetic calculation (Punnett square), priority support.",
         "subscribe_steps_title": "Steps to go Premium",
         "subscribe_step1": "Go to More > Premium Membership section.",
-        "subscribe_step2": "Choose a monthly or yearly plan.",
+        "subscribe_step2": "Choose a 6-month or yearly plan.",
         "subscribe_step3": "Complete the payment, features are activated instantly.",
         "premium_note": "Premium membership can be cancelled at any time. After cancellation, features remain active until the end of the period."
       }
@@ -2211,6 +2211,8 @@
     "moderation_violation": "Your content does not meet our community guidelines. Please edit and try again.",
     "moderation_caps": "Please avoid typing in all caps.",
     "moderation_spam": "Your content was detected as spam. Please edit and try again.",
+    "moderation_unavailable": "Content moderation is temporarily unavailable. Please try again in a few minutes.",
+    "moderation_invalid_request": "Content could not be submitted. Please check your content and try again.",
     "image_rejected": "The uploaded image does not meet our community guidelines. Please choose a different image.",
     "content_too_long": "Content is too long. Please shorten and try again.",
     "post_cooldown": "You are creating posts too quickly. Please wait a moment.",

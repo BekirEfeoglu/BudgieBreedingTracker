@@ -57,7 +57,7 @@ void main() {
   const testMimeType = 'image/png';
 
   group('ImageSafetyService - null client', () {
-    test('flags for review when EdgeFunctionClient is null', () async {
+    test('rejects when EdgeFunctionClient is null (fail-closed)', () async {
       const service = ImageSafetyService();
 
       final result = await service.scanImage(
@@ -65,15 +65,14 @@ void main() {
         mimeType: testMimeType,
       );
 
-      expect(result.isSafe, isTrue);
-      expect(result.needsReview, isTrue);
-      expect(result.rejectionReason, isNull);
+      expect(result.isSafe, isFalse);
+      expect(result.rejectionReason, 'safety_scan_unavailable');
     });
   });
 
-  group('ImageSafetyService - large image bypass', () {
+  group('ImageSafetyService - large image', () {
     test(
-        'flags for review for images exceeding 2MB without calling edge function',
+        'rejects images exceeding 2MB without calling edge function',
         () async {
       final fakeClient = _FakeEdgeFunctionClient(
         fixedResult: const EdgeFunctionResult(
@@ -88,9 +87,8 @@ void main() {
         mimeType: testMimeType,
       );
 
-      expect(result.isSafe, isTrue);
-      expect(result.needsReview, isTrue);
-      expect(result.rejectionReason, isNull);
+      expect(result.isSafe, isFalse);
+      expect(result.rejectionReason, 'image_too_large');
       // Edge function should not have been called.
       expect(fakeClient.lastImageBase64, isNull);
     });
@@ -137,7 +135,7 @@ void main() {
   });
 
   group('ImageSafetyService - edge function unavailable', () {
-    test('flags for review when edge function success is false', () async {
+    test('rejects when edge function success is false (fail-closed)', () async {
       final fakeClient = _FakeEdgeFunctionClient(
         fixedResult: const EdgeFunctionResult(
           success: false,
@@ -151,14 +149,13 @@ void main() {
         mimeType: testMimeType,
       );
 
-      expect(result.isSafe, isTrue);
-      expect(result.needsReview, isTrue);
-      expect(result.rejectionReason, isNull);
+      expect(result.isSafe, isFalse);
+      expect(result.rejectionReason, 'safety_scan_unavailable');
     });
   });
 
   group('ImageSafetyService - exception handling', () {
-    test('flags for review when edge function throws exception', () async {
+    test('rejects when edge function throws exception (fail-closed)', () async {
       final fakeClient = _FakeEdgeFunctionClient(shouldThrow: true);
       final service = ImageSafetyService(edgeFunctionClient: fakeClient);
 
@@ -167,9 +164,8 @@ void main() {
         mimeType: testMimeType,
       );
 
-      expect(result.isSafe, isTrue);
-      expect(result.needsReview, isTrue);
-      expect(result.rejectionReason, isNull);
+      expect(result.isSafe, isFalse);
+      expect(result.rejectionReason, 'safety_scan_unavailable');
     });
   });
 
@@ -264,21 +260,12 @@ void main() {
       const result = ImageSafetyResult.safe();
       expect(result.isSafe, isTrue);
       expect(result.rejectionReason, isNull);
-      expect(result.needsReview, isFalse);
     });
 
     test('unsafe factory creates unsafe result with reason', () {
       const result = ImageSafetyResult.unsafe('violence_detected');
       expect(result.isSafe, isFalse);
       expect(result.rejectionReason, 'violence_detected');
-      expect(result.needsReview, isFalse);
-    });
-
-    test('pendingReview factory creates review-flagged result', () {
-      const result = ImageSafetyResult.pendingReview();
-      expect(result.isSafe, isTrue);
-      expect(result.rejectionReason, isNull);
-      expect(result.needsReview, isTrue);
     });
   });
 }

@@ -22,6 +22,13 @@ List<OffspringResult> parseHistoryResults(String resultsJson) {
           json[key] = entry.value;
         }
       }
+      // Require critical fields for schema validation
+      if (!json.containsKey('phenotype') || !json.containsKey('probability')) {
+        AppLogger.warning(
+          '[GeneticsHistory] Skipping entry with missing required fields',
+        );
+        continue;
+      }
       final phenotype = json['phenotype'] as String? ?? '';
       parsed.add(
         OffspringResult(

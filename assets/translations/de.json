@@ -1866,7 +1866,7 @@
         "features_list": "Premium-Funktionen: Unbegrenzte Vogeldatensätze, detaillierte Statistiken und Diagramme, Stammbaumansicht, genetische Berechnung (Punnett-Quadrat), prioritärer Support.",
         "subscribe_steps_title": "Schritte zum Premium-Upgrade",
         "subscribe_step1": "Gehen Sie zu Mehr > Premium-Mitgliedschaft.",
-        "subscribe_step2": "Wählen Sie einen monatlichen oder jährlichen Plan.",
+        "subscribe_step2": "Wählen Sie einen 6-Monats- oder Jahresplan.",
         "subscribe_step3": "Schließen Sie die Zahlung ab, Funktionen werden sofort aktiviert.",
         "premium_note": "Die Premium-Mitgliedschaft kann jederzeit gekündigt werden. Nach der Kündigung bleiben die Funktionen bis zum Ende des Zeitraums aktiv."
       }
@@ -2211,6 +2211,8 @@
     "moderation_violation": "Ihr Inhalt entspricht nicht unseren Community-Richtlinien. Bitte bearbeiten und erneut versuchen.",
     "moderation_caps": "Bitte vermeiden Sie das Schreiben in Großbuchstaben.",
     "moderation_spam": "Ihr Inhalt wurde als Spam erkannt. Bitte bearbeiten und erneut versuchen.",
+    "moderation_unavailable": "Die Inhaltsmoderation ist vorübergehend nicht verfügbar. Bitte versuchen Sie es in einigen Minuten erneut.",
+    "moderation_invalid_request": "Der Inhalt konnte nicht gesendet werden. Bitte überprüfen Sie Ihren Inhalt und versuchen Sie es erneut.",
     "image_rejected": "Das hochgeladene Bild entspricht nicht unseren Community-Richtlinien. Bitte wählen Sie ein anderes Bild.",
     "content_too_long": "Der Inhalt ist zu lang. Bitte kürzen und erneut versuchen.",
     "post_cooldown": "Sie erstellen Beiträge zu schnell. Bitte warten Sie einen Moment.",

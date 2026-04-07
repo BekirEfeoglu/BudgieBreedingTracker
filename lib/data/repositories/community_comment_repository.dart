@@ -51,14 +51,12 @@ class CommunityCommentRepository {
     required String postId,
     required String userId,
     required String content,
-    bool needsReview = false,
   }) async {
     await _commentSource.insert({
       'id': const Uuid().v7(),
       'post_id': postId,
       'user_id': userId,
       'content': content.trim(),
-      if (needsReview) 'needs_review': true,
     });
   }
 
