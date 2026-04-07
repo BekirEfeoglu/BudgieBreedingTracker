@@ -207,39 +207,3 @@ final adminSecurityEventsProvider =
       .map((row) => SecurityEvent.fromJson(row as Map<String, dynamic>))
       .toList();
 });
-
-/// Security event trend provider — daily counts for the last 7 days.
-final securityEventTrendProvider =
-    FutureProvider<List<DailyDataPoint>>((ref) async {
-  await requireAdmin(ref);
-  final client = ref.watch(supabaseClientProvider);
-  final sevenDaysAgo = DateTime.now().subtract(const Duration(days: 7));
-
-  final result = await client
-      .from(SupabaseConstants.securityEventsTable)
-      .select('created_at')
-      .gte('created_at', sevenDaysAgo.toIso8601String())
-      .order('created_at');
-
-  final rows = result as List;
-  // Use YYYY-MM-DD key to handle year boundary correctly
-  final grouped = <String, int>{};
-  for (final row in rows) {
-    final date = DateTime.parse(row['created_at'] as String);
-    final key = '${date.year}-'
-        '${date.month.toString().padLeft(2, '0')}-'
-        '${date.day.toString().padLeft(2, '0')}';
-    grouped[key] = (grouped[key] ?? 0) + 1;
-  }
-
-  final sortedEntries = grouped.entries.toList()
-    ..sort((a, b) => a.key.compareTo(b.key));
-
-  return sortedEntries.map((e) {
-    final parts = e.key.split('-');
-    return DailyDataPoint(
-      date: DateTime(int.parse(parts[0]), int.parse(parts[1]), int.parse(parts[2])),
-      count: e.value,
-    );
-  }).toList();
-});

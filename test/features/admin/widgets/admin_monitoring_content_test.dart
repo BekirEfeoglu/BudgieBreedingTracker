@@ -3,20 +3,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
-import 'package:budgie_breeding_tracker/features/admin/constants/admin_constants.dart';
-import 'package:budgie_breeding_tracker/features/admin/providers/admin_capacity_providers.dart';
 import 'package:budgie_breeding_tracker/features/admin/providers/admin_models.dart';
 import 'package:budgie_breeding_tracker/features/admin/providers/admin_monitoring_snapshot_providers.dart';
 import 'package:budgie_breeding_tracker/features/admin/widgets/admin_monitoring_content.dart';
 
 import '../../../helpers/test_localization.dart';
 
-/// Test DB limit — use Pro plan default (8 GB).
-const _testDbLimit = AdminConstants.dbSizeLimitDefault;
-
 /// Healthy server: small DB, low connections, high cache.
 const _healthyCapacity = ServerCapacity(
-  databaseSizeBytes: 50000000, // ~50 MB (<10% of 8 GB)
+  databaseSizeBytes: 50000000, // 50 MB (~10% of 500 MB)
   activeConnections: 5,
   totalConnections: 5,
   maxConnections: 100,
@@ -27,7 +22,7 @@ const _healthyCapacity = ServerCapacity(
 
 /// Warning server: moderate load (~75%).
 const _warningCapacity = ServerCapacity(
-  databaseSizeBytes: 6000000000, // ~6 GB (75% of 8 GB)
+  databaseSizeBytes: 375000000, // 375 MB (75% of 500 MB)
   activeConnections: 75,
   totalConnections: 75,
   maxConnections: 100,
@@ -37,7 +32,7 @@ const _warningCapacity = ServerCapacity(
 
 /// Critical server: near capacity (>90%).
 const _criticalCapacity = ServerCapacity(
-  databaseSizeBytes: 7500000000, // ~7.5 GB (>90% of 8 GB)
+  databaseSizeBytes: 475000000, // 475 MB (95% of 500 MB)
   activeConnections: 95,
   totalConnections: 95,
   maxConnections: 100,
@@ -47,12 +42,11 @@ const _criticalCapacity = ServerCapacity(
 
 Widget _wrap(Widget child) => MaterialApp(home: Scaffold(body: child));
 
-/// Wraps with ProviderScope + monitoringSnapshotsProvider + dbSizeLimitProvider overrides
+/// Wraps with ProviderScope + monitoringSnapshotsProvider override
 /// (needed for MonitoringContent which contains MonitoringSnapshotSection).
 Widget _wrapWithProvider(Widget child) => ProviderScope(
   overrides: [
     monitoringSnapshotsProvider.overrideWith((_) async => const MonitoringTrend()),
-    dbSizeLimitProvider.overrideWith((_) async => _testDbLimit),
   ],
   child: _wrap(child),
 );
@@ -61,28 +55,28 @@ void main() {
   group('MonitoringStatusBanner', () {
     testWidgets('renders without crashing', (tester) async {
       await pumpLocalizedApp(tester,
-        _wrap(const MonitoringStatusBanner(capacity: _healthyCapacity, dbSizeLimit: _testDbLimit)),
+        _wrap(const MonitoringStatusBanner(capacity: _healthyCapacity)),
       );
       expect(find.byType(MonitoringStatusBanner), findsOneWidget);
     });
 
     testWidgets('shows system_status label', (tester) async {
       await pumpLocalizedApp(tester,
-        _wrap(const MonitoringStatusBanner(capacity: _healthyCapacity, dbSizeLimit: _testDbLimit)),
+        _wrap(const MonitoringStatusBanner(capacity: _healthyCapacity)),
       );
       expect(find.text(l10n('admin.system_status')), findsOneWidget);
     });
 
     testWidgets('shows db_status_healthy for healthy capacity', (tester) async {
       await pumpLocalizedApp(tester,
-        _wrap(const MonitoringStatusBanner(capacity: _healthyCapacity, dbSizeLimit: _testDbLimit)),
+        _wrap(const MonitoringStatusBanner(capacity: _healthyCapacity)),
       );
       expect(find.text(l10n('admin.db_status_healthy')), findsOneWidget);
     });
 
     testWidgets('shows db_status_warning for warning capacity', (tester) async {
       await pumpLocalizedApp(tester,
-        _wrap(const MonitoringStatusBanner(capacity: _warningCapacity, dbSizeLimit: _testDbLimit)),
+        _wrap(const MonitoringStatusBanner(capacity: _warningCapacity)),
       );
       expect(find.text(l10n('admin.db_status_warning')), findsOneWidget);
     });
@@ -91,7 +85,7 @@ void main() {
       tester,
     ) async {
       await pumpLocalizedApp(tester,
-        _wrap(const MonitoringStatusBanner(capacity: _criticalCapacity, dbSizeLimit: _testDbLimit)),
+        _wrap(const MonitoringStatusBanner(capacity: _criticalCapacity)),
       );
       expect(find.text(l10n('admin.db_status_critical')), findsOneWidget);
     });

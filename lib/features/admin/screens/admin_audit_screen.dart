@@ -75,18 +75,15 @@ class _AdminAuditScreenState extends ConsumerState<AdminAuditScreen> {
                   message: 'common.data_load_error'.tr(),
                   onRetry: () => ref.invalidate(adminAuditLogsProvider),
                 ),
-                data: (logs) {
-                  final isFounder = ref.watch(isFounderProvider).value ?? false;
-                  return AuditContent(
-                    logs: logs,
-                    hasMore: logs.length >= ref.watch(adminAuditLimitProvider),
-                    onLoadMore: () {
-                      ref.read(adminAuditLimitProvider.notifier).state +=
-                          AdminConstants.auditLogsPageSize;
-                    },
-                    onClearLogs: isFounder ? _onClearLogs : null,
-                  );
-                },
+                data: (logs) => AuditContent(
+                  logs: logs,
+                  hasMore: logs.length >= ref.watch(adminAuditLimitProvider),
+                  onLoadMore: () {
+                    ref.read(adminAuditLimitProvider.notifier).state +=
+                        AdminConstants.auditLogsPageSize;
+                  },
+                  onClearLogs: _onClearLogs,
+                ),
               ),
             ),
           ),

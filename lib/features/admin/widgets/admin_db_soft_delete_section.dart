@@ -9,7 +9,7 @@ import '../../../core/widgets/dialogs/confirm_dialog.dart';
 import '../constants/admin_constants.dart';
 import '../providers/admin_actions_provider.dart';
 import '../providers/admin_database_providers.dart';
-import '../providers/admin_maintenance_models.dart';
+import '../providers/admin_models.dart';
 
 /// Shows soft-deleted records per table and a cleanup button with day selector.
 class DatabaseSoftDeleteSection extends ConsumerStatefulWidget {

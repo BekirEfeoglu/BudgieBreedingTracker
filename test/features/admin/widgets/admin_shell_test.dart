@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:budgie_breeding_tracker/features/admin/widgets/admin_shell.dart';
-import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 
 import '../../../helpers/test_localization.dart';
 
@@ -55,16 +53,7 @@ Widget _wrapWithRouter({
       ),
     ],
   );
-  return ProviderScope(
-    overrides: [
-      // AdminSidebar is a ConsumerWidget that watches badge count providers.
-      // Badge providers call requireAdmin which checks userId; returning
-      // 'anonymous' causes requireAdmin to throw, which is caught gracefully
-      // by the badge providers (they return 0 on any error).
-      currentUserIdProvider.overrideWithValue('anonymous'),
-    ],
-    child: MaterialApp.router(routerConfig: router),
-  );
+  return MaterialApp.router(routerConfig: router);
 }
 
 const _childWidget = Text('Page Content');

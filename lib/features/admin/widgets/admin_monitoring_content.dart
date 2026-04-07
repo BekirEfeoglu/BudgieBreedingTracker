@@ -1,7 +1,6 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
@@ -9,49 +8,35 @@ import '../../../core/constants/app_icons.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_icon.dart';
-import '../providers/admin_monitoring_snapshot_providers.dart';
 import '../providers/admin_providers.dart';
 import 'admin_monitoring_snapshot_section.dart';
 import 'admin_monitoring_table_widgets.dart';
-import 'admin_monitoring_trend_charts.dart';
 
 part 'admin_monitoring_content_cards.dart';
 
 /// Main content body for the monitoring screen.
-class MonitoringContent extends ConsumerWidget {
+class MonitoringContent extends StatelessWidget {
   final ServerCapacity capacity;
 
   const MonitoringContent({super.key, required this.capacity});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final dbSizeLimit = ref.watch(dbSizeLimitProvider).value ??
-        AdminConstants.dbSizeLimitDefault;
-    final snapshotsAsync = ref.watch(monitoringSnapshotsProvider);
+  Widget build(BuildContext context) {
     return SingleChildScrollView(
       physics: const AlwaysScrollableScrollPhysics(),
       padding: AppSpacing.screenPadding,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          MonitoringStatusBanner(capacity: capacity, dbSizeLimit: dbSizeLimit),
+          MonitoringStatusBanner(capacity: capacity),
           const SizedBox(height: AppSpacing.lg),
-          MonitoringCapacityGrid(capacity: capacity, dbSizeLimit: dbSizeLimit),
+          MonitoringCapacityGrid(capacity: capacity),
           const SizedBox(height: AppSpacing.xxl),
           MonitoringIndexUsageCard(indexHitRatio: capacity.indexHitRatio),
           const SizedBox(height: AppSpacing.xxl),
           const MonitoringSnapshotSection(),
           const SizedBox(height: AppSpacing.xxl),
           MonitoringTableDetailsSection(tables: capacity.tables),
-          const SizedBox(height: AppSpacing.lg),
-          snapshotsAsync.when(
-            loading: () => const SizedBox.shrink(),
-            error: (_, __) => const SizedBox.shrink(),
-            data: (trends) => trends.totalConnections > 0 ||
-                    trends.connectionStates.isNotEmpty
-                ? MonitoringTrendCharts(trends: trends)
-                : const SizedBox.shrink(),
-          ),
           const SizedBox(height: AppSpacing.xxxl),
         ],
       ),
@@ -62,18 +47,13 @@ class MonitoringContent extends ConsumerWidget {
 /// Status banner showing overall system health.
 class MonitoringStatusBanner extends StatelessWidget {
   final ServerCapacity capacity;
-  final int dbSizeLimit;
 
-  const MonitoringStatusBanner({
-    super.key,
-    required this.capacity,
-    required this.dbSizeLimit,
-  });
+  const MonitoringStatusBanner({super.key, required this.capacity});
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final dbRatio = capacity.databaseSizeBytes / dbSizeLimit;
+    final dbRatio = capacity.databaseSizeBytes / AdminConstants.dbSizeLimitBytes;
     final connRatio = capacity.connectionUsageRatio;
     final worstRatio = math.max(dbRatio, connRatio);
 
@@ -141,13 +121,8 @@ class MonitoringStatusBanner extends StatelessWidget {
 /// Grid of capacity metric cards.
 class MonitoringCapacityGrid extends StatelessWidget {
   final ServerCapacity capacity;
-  final int dbSizeLimit;
 
-  const MonitoringCapacityGrid({
-    super.key,
-    required this.capacity,
-    required this.dbSizeLimit,
-  });
+  const MonitoringCapacityGrid({super.key, required this.capacity});
 
   @override
   Widget build(BuildContext context) {
@@ -166,8 +141,8 @@ class MonitoringCapacityGrid extends StatelessWidget {
               icon: AppIcon(AppIcons.database, semanticsLabel: 'admin.database_size'.tr()),
               label: 'admin.database_size'.tr(),
               value: formatBytes(capacity.databaseSizeBytes),
-              ratio: capacity.databaseSizeBytes / dbSizeLimit,
-              subtitle: 'admin.database_limit_suffix'.tr(args: [formatBytes(dbSizeLimit)]),
+              ratio: capacity.databaseSizeBytes / AdminConstants.dbSizeLimitBytes,
+              subtitle: 'admin.database_limit_suffix'.tr(),
             ),
             MonitoringCapacityCard(
               icon: Semantics(label: 'admin.connection_pool'.tr(), child: const Icon(LucideIcons.plug)),

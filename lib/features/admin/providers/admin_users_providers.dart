@@ -129,14 +129,14 @@ final adminUserDetailProvider = FutureProvider.family<AdminUserDetail, String>((
   // Role-based access parity with app-level premium logic:
   // founder/admin accounts should be treated as premium in admin UI too.
   final role = (profile['role'] as String?)?.toLowerCase();
-  final isRolePremium = role == AdminConstants.roleFounder || role == AdminConstants.roleAdmin;
+  final isRolePremium = role == 'founder' || role == 'admin';
   final isPremium = profile['is_premium'] as bool? ?? false;
   final hasPremiumAccess = isPremium || isRolePremium;
-  final subPlan = hasPremiumAccess ? AdminConstants.planPremium : AdminConstants.planFree;
+  final subPlan = hasPremiumAccess ? 'premium' : 'free';
   final subStatus = isRolePremium
       ? role!
       : (subscription?['status'] as String? ??
-            (hasPremiumAccess ? AdminConstants.statusActive : AdminConstants.statusFree));
+            (hasPremiumAccess ? 'active' : 'free'));
 
   // Subscription updated_at for admin display
   final subUpdatedAtRaw = subscription?['updated_at'] as String?;

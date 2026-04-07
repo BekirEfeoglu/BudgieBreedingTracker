@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:budgie_breeding_tracker/features/admin/widgets/admin_sidebar.dart';
-import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 
 import '../../../helpers/test_localization.dart';
 
@@ -73,18 +71,7 @@ Future<void> _pumpSidebar(
   String initialLocation = '/admin/dashboard',
 }) async {
   final router = _buildRouter(initialLocation: initialLocation);
-  await pumpLocalizedApp(
-    tester,
-    ProviderScope(
-      overrides: [
-        // Badge providers call requireAdmin which checks userId.
-        // Returning 'anonymous' causes requireAdmin to throw, which is caught
-        // gracefully by the badge providers (they return 0 on any error).
-        currentUserIdProvider.overrideWithValue('anonymous'),
-      ],
-      child: MaterialApp.router(routerConfig: router),
-    ),
-  );
+  await pumpLocalizedApp(tester, MaterialApp.router(routerConfig: router));
 }
 
 void main() {

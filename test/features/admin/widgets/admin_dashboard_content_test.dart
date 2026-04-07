@@ -374,7 +374,57 @@ void main() {
     });
   });
 
-  // DashboardQuickActionButton removed — replaced by DashboardQuickActionsSection
+  group('DashboardQuickActionButton', () {
+    testWidgets('renders without crashing', (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: DashboardQuickActionButton(
+              icon: const Icon(Icons.settings),
+              label: 'Go to Settings',
+              onTap: () {},
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+      expect(find.byType(DashboardQuickActionButton), findsOneWidget);
+    });
+
+    testWidgets('shows label text', (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: DashboardQuickActionButton(
+              icon: const Icon(Icons.settings),
+              label: 'Settings Label',
+              onTap: () {},
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+      expect(find.text('Settings Label'), findsOneWidget);
+    });
+
+    testWidgets('triggers onTap callback', (tester) async {
+      var tapped = false;
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: DashboardQuickActionButton(
+              icon: const Icon(Icons.settings),
+              label: 'Settings',
+              onTap: () => tapped = true,
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+      await tester.tap(find.byType(InkWell));
+      expect(tapped, isTrue);
+    });
+  });
 
   group('DashboardContent', () {
     testWidgets('renders without crashing', (tester) async {

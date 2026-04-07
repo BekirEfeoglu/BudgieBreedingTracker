@@ -1,71 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../core/constants/app_icons.dart';
-import '../../../core/constants/supabase_constants.dart';
-import '../../../core/enums/admin_enums.dart';
 import '../../../core/theme/app_spacing.dart';
-import '../../../core/utils/logger.dart';
 import '../../../core/widgets/app_icon.dart';
 import '../../../router/route_names.dart';
-import '../../auth/providers/auth_providers.dart';
-import '../providers/admin_auth_utils.dart';
-import '../providers/admin_models.dart';
-
-// ─── Badge Count Providers ──────────────────────────────────────
-
-/// Unresolved (high-severity) security events in the last 7 days.
-final _securityBadgeCountProvider = FutureProvider.autoDispose<int>((ref) async {
-  await requireAdmin(ref);
-  final client = ref.watch(supabaseClientProvider);
-  final since = DateTime.now().subtract(const Duration(days: 7)).toUtc().toIso8601String();
-
-  try {
-    final result = await client
-        .from(SupabaseConstants.securityEventsTable)
-        .select('id, event_type, created_at')
-        .gte('created_at', since)
-        .order('created_at', ascending: false)
-        .limit(100);
-
-    final events = (result as List)
-        .map((row) => SecurityEvent.fromJson(row as Map<String, dynamic>))
-        .toList();
-
-    return events
-        .where((e) => e.severity == SecuritySeverityLevel.high)
-        .length;
-  } catch (e) {
-    AppLogger.warning('_securityBadgeCountProvider: Badge count failed: $e');
-    return 0;
-  }
-});
-
-/// Open/pending feedback ticket count.
-final _feedbackBadgeCountProvider = FutureProvider.autoDispose<int>((ref) async {
-  await requireAdmin(ref);
-  final client = ref.watch(supabaseClientProvider);
-
-  try {
-    final count = await client
-        .from(SupabaseConstants.feedbackTable)
-        .count()
-        .or('status.eq.${FeedbackStatus.open.toJson()},status.eq.${FeedbackStatus.pending.toJson()}');
-
-    return count;
-  } catch (e) {
-    AppLogger.warning('_feedbackBadgeCountProvider: Badge count failed: $e');
-    return 0;
-  }
-});
-
-// ─── Sidebar ────────────────────────────────────────────────────
 
 /// Admin sidebar navigation with menu items and route highlighting.
-class AdminSidebar extends ConsumerWidget {
+class AdminSidebar extends StatelessWidget {
   const AdminSidebar({super.key});
 
   static final _menuItems = [
@@ -98,7 +42,6 @@ class AdminSidebar extends ConsumerWidget {
       icon: AppIcon(AppIcons.security),
       labelKey: 'admin.security',
       route: AppRoutes.adminSecurity,
-      badgeProviderKey: 'security',
     ),
     const _AdminMenuItem(
       icon: AppIcon(AppIcons.settings),
@@ -109,12 +52,11 @@ class AdminSidebar extends ConsumerWidget {
       icon: AppIcon(AppIcons.comment),
       labelKey: 'admin.feedback_admin',
       route: AppRoutes.adminFeedback,
-      badgeProviderKey: 'feedback',
     ),
   ];
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final currentRoute = GoRouterState.of(context).matchedLocation;
     final theme = Theme.of(context);
 
@@ -135,7 +77,7 @@ class AdminSidebar extends ConsumerWidget {
               itemBuilder: (context, index) {
                 final item = _menuItems[index];
                 final isSelected = currentRoute == item.route;
-                return _buildMenuItem(context, ref, item, isSelected);
+                return _buildMenuItem(context, item, isSelected);
               },
             ),
           ),
@@ -175,7 +117,6 @@ class AdminSidebar extends ConsumerWidget {
 
   Widget _buildMenuItem(
     BuildContext context,
-    WidgetRef ref,
     _AdminMenuItem item,
     bool isSelected,
   ) {
@@ -224,34 +165,6 @@ class AdminSidebar extends ConsumerWidget {
                     ),
                   ),
                 ),
-                if (item.badgeProviderKey != null) ...[
-                  Builder(
-                    builder: (_) {
-                      final count = _getBadgeCount(ref, item.badgeProviderKey!);
-                      if (count <= 0) return const SizedBox.shrink();
-                      return Container(
-                        margin: const EdgeInsets.only(left: AppSpacing.xs),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 6,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.error,
-                          borderRadius: BorderRadius.circular(
-                            AppSpacing.radiusFull,
-                          ),
-                        ),
-                        child: Text(
-                          count > 99 ? '99+' : '$count',
-                          style: theme.textTheme.labelSmall?.copyWith(
-                            color: theme.colorScheme.onError,
-                            fontSize: 10,
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ],
                 if (isSelected)
                   Container(
                     width: 4,
@@ -269,23 +182,6 @@ class AdminSidebar extends ConsumerWidget {
         ),
       ),
     );
-  }
-
-  int _getBadgeCount(WidgetRef ref, String key) {
-    switch (key) {
-      case 'security':
-        return ref.watch(_securityBadgeCountProvider).maybeWhen(
-          data: (count) => count,
-          orElse: () => 0,
-        );
-      case 'feedback':
-        return ref.watch(_feedbackBadgeCountProvider).maybeWhen(
-          data: (count) => count,
-          orElse: () => 0,
-        );
-      default:
-        return 0;
-    }
   }
 
   Widget _buildBackToApp(BuildContext context) {
@@ -347,11 +243,9 @@ class _AdminMenuItem {
     required this.icon,
     required this.labelKey,
     required this.route,
-    this.badgeProviderKey,
   });
 
   final Widget icon;
   final String labelKey;
   final String route;
-  final String? badgeProviderKey;
 }

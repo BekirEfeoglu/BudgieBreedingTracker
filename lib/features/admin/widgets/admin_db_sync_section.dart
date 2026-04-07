@@ -8,7 +8,7 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/dialogs/confirm_dialog.dart';
 import '../providers/admin_actions_provider.dart';
 import '../providers/admin_database_providers.dart';
-import '../providers/admin_maintenance_models.dart';
+import '../providers/admin_models.dart';
 
 /// Shows pending/error sync counts and a reset stuck button.
 class DatabaseSyncStatusSection extends ConsumerWidget {

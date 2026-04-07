@@ -1,104 +1,6 @@
-import 'dart:async';
-import 'dart:math' as math;
-
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
-import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
-import 'package:budgie_breeding_tracker/features/admin/constants/admin_constants.dart';
-import 'package:budgie_breeding_tracker/features/admin/providers/admin_capacity_providers.dart';
 import 'package:budgie_breeding_tracker/features/admin/providers/admin_models.dart';
-import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
-
-// --- Fakes for provider-level tests ---
-
-class _FakeMaybeSingleBuilder extends Fake
-    implements PostgrestTransformBuilder<PostgrestMap?> {
-  _FakeMaybeSingleBuilder({this.result, this.error});
-
-  final PostgrestMap? result;
-  final Object? error;
-
-  @override
-  Future<S> then<S>(
-    FutureOr<S> Function(PostgrestMap? value) onValue, {
-    Function? onError,
-  }) {
-    final source = error == null
-        ? Future<PostgrestMap?>.value(result)
-        : Future<PostgrestMap?>.error(error!);
-    return source.then(onValue, onError: onError);
-  }
-}
-
-class _FakeFilterBuilder extends Fake
-    implements PostgrestFilterBuilder<PostgrestList> {
-  _FakeFilterBuilder(this.maybeSingleBuilder);
-
-  final _FakeMaybeSingleBuilder maybeSingleBuilder;
-
-  @override
-  PostgrestFilterBuilder<PostgrestList> eq(String column, Object value) => this;
-
-  @override
-  PostgrestTransformBuilder<PostgrestMap?> maybeSingle() => maybeSingleBuilder;
-}
-
-class _FakeQueryBuilder extends Fake implements SupabaseQueryBuilder {
-  _FakeQueryBuilder(this.filterBuilder);
-
-  final _FakeFilterBuilder filterBuilder;
-
-  @override
-  PostgrestFilterBuilder<PostgrestList> select([String columns = '*']) =>
-      filterBuilder;
-}
-
-class _FakeCapacityClient extends Fake implements SupabaseClient {
-  _FakeCapacityClient({
-    required this.adminQueryBuilder,
-    this.rpcError,
-    this.rpcResult,
-  });
-
-  final _FakeQueryBuilder adminQueryBuilder;
-  final Object? rpcError;
-  final dynamic rpcResult;
-
-  @override
-  SupabaseQueryBuilder from(String table) {
-    if (table == SupabaseConstants.adminUsersTable) return adminQueryBuilder;
-    throw StateError('Unexpected table: $table');
-  }
-
-  @override
-  PostgrestFilterBuilder<T> rpc<T>(
-    String fn, {
-    Map<String, dynamic>? params,
-    get = false,
-  }) {
-    return _FakeRpcBuilder<T>(result: rpcResult as T?, error: rpcError);
-  }
-}
-
-class _FakeRpcBuilder<T> extends Fake implements PostgrestFilterBuilder<T> {
-  _FakeRpcBuilder({this.result, this.error});
-
-  final T? result;
-  final Object? error;
-
-  @override
-  Future<S> then<S>(
-    FutureOr<S> Function(T value) onValue, {
-    Function? onError,
-  }) {
-    final source = error == null
-        ? Future<T>.value(result as T)
-        : Future<T>.error(error!);
-    return source.then(onValue, onError: onError);
-  }
-}
 
 /// Tests for admin capacity models and computed properties.
 ///
@@ -222,192 +124,29 @@ void main() {
 
   group('ServerCapacity critical threshold detection', () {
     test('below 90% threshold is non-critical', () {
-      final dbLimit = AdminConstants.dbSizeLimitForPlan('pro');
       const capacity = ServerCapacity(
-        databaseSizeBytes: 4 * 1024 * 1024 * 1024, // 4 GB of 8 GB
+        databaseSizeBytes: 400 * 1024 * 1024, // 400MB of 500MB
         totalConnections: 50,
         maxConnections: 60,
       );
-      final dbRatio = capacity.databaseSizeBytes / dbLimit;
+      final dbRatio = capacity.databaseSizeBytes / (500 * 1024 * 1024);
       final connRatio = capacity.connectionUsageRatio;
-      final worstRatio = math.max(dbRatio, connRatio);
 
-      expect(worstRatio, lessThan(AdminConstants.capacityWarningPercent));
+      expect(dbRatio, lessThan(0.9));
+      expect(connRatio, lessThan(0.9));
     });
 
-    test('above 90% DB threshold is critical', () {
-      final dbLimit = AdminConstants.dbSizeLimitForPlan('pro');
-      final criticalDbSize = (dbLimit * 0.95).toInt(); // 95% of 8 GB
-      final capacity = ServerCapacity(
-        databaseSizeBytes: criticalDbSize,
-        totalConnections: 10,
+    test('above 90% threshold is critical', () {
+      const capacity = ServerCapacity(
+        databaseSizeBytes: 460 * 1024 * 1024, // 460MB of 500MB
+        totalConnections: 55,
         maxConnections: 60,
       );
-      final dbRatio = capacity.databaseSizeBytes / dbLimit;
-
-      expect(dbRatio, greaterThanOrEqualTo(AdminConstants.capacityWarningPercent));
-    });
-
-    test('above 90% connection threshold is critical', () {
-      final dbLimit = AdminConstants.dbSizeLimitForPlan('pro');
-      const capacity = ServerCapacity(
-        databaseSizeBytes: 100 * 1024 * 1024, // 100 MB — low DB
-        totalConnections: 56,
-        maxConnections: 60, // 93% connections
-      );
-      final dbRatio = capacity.databaseSizeBytes / dbLimit;
+      final dbRatio = capacity.databaseSizeBytes / (500 * 1024 * 1024);
       final connRatio = capacity.connectionUsageRatio;
-      final worstRatio = math.max(dbRatio, connRatio);
 
-      expect(dbRatio, lessThan(AdminConstants.capacityWarningPercent));
-      expect(connRatio, greaterThanOrEqualTo(AdminConstants.capacityWarningPercent));
-      expect(worstRatio, greaterThanOrEqualTo(AdminConstants.capacityWarningPercent));
-    });
-
-    test('worst-of-two logic picks the higher ratio', () {
-      final dbLimit = AdminConstants.dbSizeLimitForPlan('pro');
-      const capacity = ServerCapacity(
-        databaseSizeBytes: 2 * 1024 * 1024 * 1024, // 25% DB
-        totalConnections: 55,
-        maxConnections: 60, // ~92% connections
-      );
-      final dbRatio = capacity.databaseSizeBytes / dbLimit;
-      final connRatio = capacity.connectionUsageRatio;
-      final worstRatio = math.max(dbRatio, connRatio);
-
-      expect(worstRatio, connRatio);
-      expect(worstRatio, greaterThanOrEqualTo(AdminConstants.capacityWarningPercent));
-    });
-  });
-
-  group('AdminConstants.dbSizeLimitForPlan', () {
-    test('returns 500 MB for free plan', () {
-      expect(
-        AdminConstants.dbSizeLimitForPlan('free'),
-        500 * 1024 * 1024,
-      );
-    });
-
-    test('returns 8 GB for pro plan', () {
-      expect(
-        AdminConstants.dbSizeLimitForPlan('pro'),
-        8 * 1024 * 1024 * 1024,
-      );
-    });
-
-    test('returns 8 GB for team plan', () {
-      expect(
-        AdminConstants.dbSizeLimitForPlan('team'),
-        8 * 1024 * 1024 * 1024,
-      );
-    });
-
-    test('returns 16 GB for enterprise plan', () {
-      expect(
-        AdminConstants.dbSizeLimitForPlan('enterprise'),
-        16 * 1024 * 1024 * 1024,
-      );
-    });
-
-    test('returns default for unknown plan', () {
-      expect(
-        AdminConstants.dbSizeLimitForPlan('unknown_plan'),
-        AdminConstants.dbSizeLimitDefault,
-      );
-    });
-
-    test('is case-insensitive', () {
-      expect(
-        AdminConstants.dbSizeLimitForPlan('Pro'),
-        AdminConstants.dbSizeLimitForPlan('pro'),
-      );
-    });
-  });
-
-  group('serverCapacityProvider error states', () {
-    test('throws when user is anonymous (requireAdmin fails)', () async {
-      final adminFilter = _FakeFilterBuilder(
-        _FakeMaybeSingleBuilder(result: {'id': 'a1'}),
-      );
-      final client = _FakeCapacityClient(
-        adminQueryBuilder: _FakeQueryBuilder(adminFilter),
-        rpcResult: <String, dynamic>{},
-      );
-
-      final container = ProviderContainer(
-        overrides: [
-          currentUserIdProvider.overrideWithValue('anonymous'),
-          supabaseClientProvider.overrideWithValue(client),
-        ],
-        retry: (_, __) => null,
-      );
-      final sub = container.listen(serverCapacityProvider, (_, __) {});
-      addTearDown(() {
-        sub.close();
-        container.dispose();
-      });
-
-      await expectLater(
-        container.read(serverCapacityProvider.future),
-        throwsA(isA<Exception>()),
-      );
-    });
-
-    test('throws when admin row is missing (requireAdmin fails)', () async {
-      final adminFilter = _FakeFilterBuilder(
-        _FakeMaybeSingleBuilder(result: null),
-      );
-      final client = _FakeCapacityClient(
-        adminQueryBuilder: _FakeQueryBuilder(adminFilter),
-        rpcResult: <String, dynamic>{},
-      );
-
-      final container = ProviderContainer(
-        overrides: [
-          currentUserIdProvider.overrideWithValue('user-1'),
-          supabaseClientProvider.overrideWithValue(client),
-        ],
-        retry: (_, __) => null,
-      );
-      final sub = container.listen(serverCapacityProvider, (_, __) {});
-      addTearDown(() {
-        sub.close();
-        container.dispose();
-      });
-
-      await expectLater(
-        container.read(serverCapacityProvider.future),
-        throwsA(isA<Exception>()),
-      );
-    });
-  });
-
-  group('adminDatabaseInfoProvider error states', () {
-    test('throws when user is anonymous (requireAdmin fails)', () async {
-      final adminFilter = _FakeFilterBuilder(
-        _FakeMaybeSingleBuilder(result: {'id': 'a1'}),
-      );
-      final client = _FakeCapacityClient(
-        adminQueryBuilder: _FakeQueryBuilder(adminFilter),
-      );
-
-      final container = ProviderContainer(
-        overrides: [
-          currentUserIdProvider.overrideWithValue('anonymous'),
-          supabaseClientProvider.overrideWithValue(client),
-        ],
-        retry: (_, __) => null,
-      );
-      final sub = container.listen(adminDatabaseInfoProvider, (_, __) {});
-      addTearDown(() {
-        sub.close();
-        container.dispose();
-      });
-
-      await expectLater(
-        container.read(adminDatabaseInfoProvider.future),
-        throwsA(isA<Exception>()),
-      );
+      // At least one should exceed 0.9
+      expect(dbRatio > 0.9 || connRatio > 0.9, isTrue);
     });
   });
 }

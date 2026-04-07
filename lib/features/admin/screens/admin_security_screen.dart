@@ -2,13 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:easy_localization/easy_localization.dart';
 
-import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/error_state.dart';
 import '../../../core/widgets/loading_state.dart';
 import '../../notifications/providers/action_feedback_providers.dart';
 import '../providers/admin_actions_provider.dart';
 import '../providers/admin_providers.dart';
-import '../widgets/admin_security_timeline_chart.dart';
 import '../widgets/admin_security_widgets.dart';
 
 /// Security events viewer screen.
@@ -50,15 +48,6 @@ class _AdminSecurityScreenState extends ConsumerState<AdminSecurityScreen> {
     return Scaffold(
       body: Column(
         children: [
-          const Padding(
-            padding: EdgeInsets.fromLTRB(
-              AppSpacing.lg,
-              AppSpacing.lg,
-              AppSpacing.lg,
-              AppSpacing.sm,
-            ),
-            child: AdminSecurityTimelineChart(),
-          ),
           SecurityFilterBar(
             controller: _searchController,
             filter: filter,

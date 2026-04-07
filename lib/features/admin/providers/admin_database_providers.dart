@@ -6,7 +6,7 @@ import '../../../core/utils/logger.dart';
 import '../../auth/providers/auth_providers.dart';
 import '../constants/admin_constants.dart';
 import 'admin_auth_utils.dart';
-import 'admin_maintenance_models.dart';
+import 'admin_models.dart';
 
 /// Sync metadata summary (pending + error counts).
 final syncStatusSummaryProvider = FutureProvider<SyncStatusSummary>((ref) async {

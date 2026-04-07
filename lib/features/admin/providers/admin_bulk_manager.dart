@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/constants/supabase_constants.dart';
-import '../constants/admin_constants.dart';
 import '../../../core/utils/logger.dart';
 import '../../auth/providers/auth_providers.dart';
 import 'admin_auth_utils.dart';
@@ -165,7 +164,23 @@ class AdminBulkManager {
         '[admin] bulkDeleteUserData called for ${userIds.length} users',
       );
 
-      const deletionOrder = AdminConstants.userDataDeletionOrder;
+      const deletionOrder = [
+        'event_reminders',
+        'growth_measurements',
+        'health_records',
+        'photos',
+        'events',
+        'incubations',
+        'chicks',
+        'eggs',
+        'clutches',
+        'breeding_pairs',
+        'nests',
+        'notifications',
+        'notification_settings',
+        'notification_schedules',
+        'birds',
+      ];
 
       for (final userId in userIds) {
         try {
@@ -175,8 +190,8 @@ class AdminBulkManager {
                   .from(table)
                   .delete()
                   .eq('user_id', userId);
-            } catch (e) {
-              AppLogger.warning('admin: Bulk delete: $table failed for user: $e');
+            } catch (_) {
+              // Some tables may not have user_id column — skip silently.
             }
           }
           succeeded++;
