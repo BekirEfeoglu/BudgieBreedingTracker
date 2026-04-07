@@ -100,7 +100,7 @@ class _SlowQueryRow extends StatelessWidget {
               ],
             ),
             Padding(
-              padding: const EdgeInsets.only(left: 20, top: 2),
+              padding: const EdgeInsets.only(left: AppSpacing.xl, top: 2),
               child: Text(
                 query.query.length > 80
                     ? '${query.query.substring(0, 80)}...'

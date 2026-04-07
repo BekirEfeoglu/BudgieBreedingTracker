@@ -56,10 +56,13 @@ class AdminMaintenanceManager {
   }
 
   /// Clear audit logs older than [before] (defaults to 90 days ago).
+  ///
+  /// Restricted to founder role only to prevent admins from
+  /// covering their tracks by clearing audit trails.
   Future<void> clearAuditLogs({DateTime? before}) async {
     _updateState(isLoading: true, error: null, isSuccess: false);
     try {
-      await requireAdmin(_ref);
+      await requireFounder(_ref);
       final client = _ref.read(supabaseClientProvider);
       final cutoff = before ?? DateTime.now().subtract(const Duration(days: 90));
 

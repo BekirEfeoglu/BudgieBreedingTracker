@@ -1,25 +1,8 @@
 part of 'admin_database_manager.dart';
 
 /// FK-safe deletion order: children before parents.
-const _deletionOrder = [
-  SupabaseConstants.eventRemindersTable,
-  SupabaseConstants.notificationSchedulesTable,
-  SupabaseConstants.notificationsTable,
-  SupabaseConstants.notificationSettingsTable,
-  SupabaseConstants.photosTable,
-  SupabaseConstants.growthMeasurementsTable,
-  SupabaseConstants.healthRecordsTable,
-  SupabaseConstants.eventsTable,
-  SupabaseConstants.chicksTable,
-  SupabaseConstants.eggsTable,
-  SupabaseConstants.incubationsTable,
-  SupabaseConstants.clutchesTable,
-  SupabaseConstants.breedingPairsTable,
-  SupabaseConstants.nestsTable,
-  SupabaseConstants.birdsTable,
-  SupabaseConstants.userPreferencesTable,
-  SupabaseConstants.feedbackTable,
-];
+/// Uses [AdminConstants.userDataDeletionOrder] as single source of truth.
+const _deletionOrder = AdminConstants.userDataDeletionOrder;
 
 /// Fetches all rows for [tableName] in chunks to avoid query size limits.
 Future<List<Map<String, dynamic>>> _exportTableChunked(

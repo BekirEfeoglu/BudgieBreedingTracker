@@ -33,10 +33,12 @@ class _FakeFilterBuilder extends Fake
   _FakeFilterBuilder({
     required this.maybeSingleBuilder,
     this.listResult = const [],
+    this.listError,
   });
 
   final _FakeMaybeSingleBuilder maybeSingleBuilder;
   final List<Map<String, dynamic>> listResult;
+  final Object? listError;
   final eqCalls = <MapEntry<String, Object>>[];
   final gteCalls = <MapEntry<String, Object>>[];
   final orderCalls = <({String column, bool ascending})>[];
@@ -84,6 +86,10 @@ class _FakeFilterBuilder extends Fake
     FutureOr<S> Function(PostgrestList value) onValue, {
     Function? onError,
   }) {
+    if (listError != null) {
+      return Future<PostgrestList>.error(listError!).then(onValue,
+          onError: onError);
+    }
     return Future<S>.value(onValue(listResult));
   }
 }
@@ -304,6 +310,32 @@ void main() {
         expect(trend.capturedAt, DateTime.parse('2026-03-31T10:00:00Z'));
       },
     );
+
+    test('rethrows when snapshot query fails', () async {
+      final adminFilter = _FakeFilterBuilder(
+        maybeSingleBuilder: _FakeMaybeSingleBuilder(result: {'id': 'admin-1'}),
+      );
+      final snapshotFilter = _FakeFilterBuilder(
+        maybeSingleBuilder: _FakeMaybeSingleBuilder(),
+        listError: StateError('snapshot query failed'),
+      );
+      final client = _FakeAdminMonitoringClient(
+        adminBuilder: _FakeQueryBuilder(adminFilter),
+        snapshotBuilder: _FakeQueryBuilder(snapshotFilter),
+      );
+
+      final container = _makeContainer(userId: 'user-1', client: client);
+      final sub = container.listen(monitoringSnapshotsProvider, (_, __) {});
+      addTearDown(() {
+        sub.close();
+        container.dispose();
+      });
+
+      await expectLater(
+        container.read(monitoringSnapshotsProvider.future),
+        throwsA(isA<StateError>()),
+      );
+    });
   });
 
   group('cronJobStatusProvider', () {
@@ -331,6 +363,32 @@ void main() {
 
       expect(result, {'status': 'ok', 'jobs': 2});
       expect(client.rpcCalls, ['verify_monitoring_cron_jobs']);
+    });
+
+    test('throws for anonymous user', () async {
+      final client = _FakeAdminMonitoringClient(
+        adminBuilder: _FakeQueryBuilder(
+          _FakeFilterBuilder(
+            maybeSingleBuilder: _FakeMaybeSingleBuilder(result: {'id': 'a1'}),
+          ),
+        ),
+        snapshotBuilder: _FakeQueryBuilder(
+          _FakeFilterBuilder(maybeSingleBuilder: _FakeMaybeSingleBuilder()),
+        ),
+        rpcResult: {'status': 'ok'},
+      );
+
+      final container = _makeContainer(userId: 'anonymous', client: client);
+      final sub = container.listen(cronJobStatusProvider, (_, __) {});
+      addTearDown(() {
+        sub.close();
+        container.dispose();
+      });
+
+      await expectLater(
+        container.read(cronJobStatusProvider.future),
+        throwsA(isA<Exception>()),
+      );
     });
 
     test('returns error payload when rpc throws', () async {

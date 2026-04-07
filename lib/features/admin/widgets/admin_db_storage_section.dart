@@ -5,7 +5,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../core/theme/app_spacing.dart';
 import '../providers/admin_database_providers.dart';
-import '../providers/admin_models.dart';
+import '../providers/admin_maintenance_models.dart';
 
 /// Shows storage bucket usage information.
 class DatabaseStorageSection extends ConsumerWidget {

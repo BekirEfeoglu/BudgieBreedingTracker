@@ -62,7 +62,7 @@ final isFounderProvider = FutureProvider<bool>((ref) async {
         .from(SupabaseConstants.adminUsersTable)
         .select('id')
         .eq('user_id', userId)
-        .eq('role', 'founder')
+        .eq('role', AdminConstants.roleFounder)
         .maybeSingle();
     return result != null;
   } catch (e, st) {
@@ -70,6 +70,39 @@ final isFounderProvider = FutureProvider<bool>((ref) async {
     return false;
   }
 });
+
+/// Cache of user ID → display name for admin UIs.
+final adminUserNameCacheProvider =
+    NotifierProvider<AdminUserNameCacheNotifier, Map<String, String>>(
+  AdminUserNameCacheNotifier.new,
+);
+
+class AdminUserNameCacheNotifier extends Notifier<Map<String, String>> {
+  @override
+  Map<String, String> build() => {};
+
+  Future<String> resolve(String userId) async {
+    if (state.containsKey(userId)) return state[userId]!;
+
+    try {
+      final client = ref.read(supabaseClientProvider);
+      final result = await client
+          .from(SupabaseConstants.profilesTable)
+          .select('full_name')
+          .eq('id', userId)
+          .maybeSingle();
+      final name =
+          (result?['full_name'] as String?) ?? '${userId.substring(0, 8)}...';
+      state = Map<String, String>.from(state)..[userId] = name;
+      return name;
+    } catch (e) {
+      AppLogger.warning('admin: Failed to resolve user name for $userId: $e');
+      final fallback = '${userId.substring(0, 8)}...';
+      state = Map<String, String>.from(state)..[userId] = fallback;
+      return fallback;
+    }
+  }
+}
 
 /// Admin dashboard statistics.
 /// Uses server-side RPC to bypass RLS and get accurate counts.

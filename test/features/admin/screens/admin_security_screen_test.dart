@@ -33,6 +33,10 @@ Widget _createSubject({
       adminActionsProvider.overrideWith(_FakeAdminActionsNotifier.new),
       securityEventFilterProvider
           .overrideWith(_FakeSecurityEventFilterNotifier.new),
+      // AdminSecurityTimelineChart watches securityEventTrendProvider.
+      // Override with empty data so the chart renders without hitting Supabase.
+      securityEventTrendProvider
+          .overrideWith((_) => Future.value(<DailyDataPoint>[])),
     ],
     child: const MaterialApp(home: AdminSecurityScreen()),
   );
@@ -58,6 +62,11 @@ void main() {
     });
 
     testWidgets('shows error state when provider fails', (tester) async {
+      // The screen layout includes AdminSecurityTimelineChart (180px fixed height).
+      // Use a taller viewport so ErrorState fits without overflow.
+      tester.view.physicalSize = const Size(800, 1200);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
       await pumpLocalizedApp(
         tester,
         _createSubject(

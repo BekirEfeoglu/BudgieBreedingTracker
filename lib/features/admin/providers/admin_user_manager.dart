@@ -5,6 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/constants/supabase_constants.dart';
 import '../../../core/utils/logger.dart';
 import '../../auth/providers/auth_providers.dart';
+import '../constants/admin_constants.dart';
 import 'admin_auth_utils.dart';
 
 class _ProtectedRoleError implements Exception {
@@ -72,13 +73,13 @@ class AdminUserManager {
 
       await client
           .from(SupabaseConstants.profilesTable)
-          .update({'is_premium': true, 'subscription_status': 'premium'})
+          .update({'is_premium': true, 'subscription_status': AdminConstants.planPremium})
           .eq('id', targetUserId);
 
       // Supplementary record: check existing then insert or update
       await _upsertSubscription(client, targetUserId, {
-        'plan': 'premium',
-        'status': 'active',
+        'plan': AdminConstants.planPremium,
+        'status': AdminConstants.statusActive,
         'updated_at': now,
       });
 
@@ -130,14 +131,14 @@ class AdminUserManager {
 
       await client
           .from(SupabaseConstants.profilesTable)
-          .update({'is_premium': false, 'subscription_status': 'free'})
+          .update({'is_premium': false, 'subscription_status': AdminConstants.planFree})
           .eq('id', targetUserId);
 
       // Soft-revoke subscription record to preserve audit trail
       await client
           .from(SupabaseConstants.userSubscriptionsTable)
           .update({
-            'status': 'revoked',
+            'status': AdminConstants.statusRevoked,
             'updated_at': DateTime.now().toUtc().toIso8601String(),
           })
           .eq('user_id', targetUserId);
@@ -184,7 +185,7 @@ class AdminUserManager {
   bool _isProtectedRole(String? role) {
     if (role == null) return false;
     final normalized = role.toLowerCase().trim();
-    return normalized == 'founder' || normalized == 'admin';
+    return normalized == AdminConstants.roleFounder || normalized == AdminConstants.roleAdmin;
   }
 
   bool _isProtectedRoleMutationError(PostgrestException e) {

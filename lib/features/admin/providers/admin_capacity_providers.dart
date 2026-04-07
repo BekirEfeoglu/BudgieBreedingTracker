@@ -8,7 +8,22 @@ import '../../../core/utils/logger.dart';
 import '../../auth/providers/auth_providers.dart';
 import '../constants/admin_constants.dart';
 import 'admin_auth_utils.dart';
+import 'admin_dashboard_providers.dart';
 import 'admin_models.dart';
+
+/// Supabase plan-based DB size limit provider.
+/// Reads 'supabase_plan' from system_settings, falls back to 'pro'.
+final dbSizeLimitProvider = FutureProvider<int>((ref) async {
+  try {
+    final settings = await ref.watch(adminSystemSettingsProvider.future);
+    final planEntry = settings['supabase_plan'];
+    final plan = (planEntry?['value'] as String?) ?? 'pro';
+    return AdminConstants.dbSizeLimitForPlan(plan);
+  } catch (e) {
+    AppLogger.warning('admin: DB size limit fetch failed, using default: $e');
+    return AdminConstants.dbSizeLimitDefault;
+  }
+});
 
 /// Database table info provider.
 /// Uses server-side RPC to bypass RLS and get accurate row counts.
@@ -90,7 +105,8 @@ final serverCapacityProvider = FutureProvider<ServerCapacity>((ref) async {
     final capacity = ServerCapacity.fromJson(data);
 
     // Sentry alert when capacity exceeds critical threshold
-    final dbRatio = capacity.databaseSizeBytes / (500 * 1024 * 1024);
+    final dbLimit = await ref.watch(dbSizeLimitProvider.future);
+    final dbRatio = capacity.databaseSizeBytes / dbLimit;
     final connRatio = capacity.connectionUsageRatio;
     final worstRatio = math.max(dbRatio, connRatio);
 
@@ -132,7 +148,8 @@ final serverCapacityProvider = FutureProvider<ServerCapacity>((ref) async {
             deadTupleRatio: 0,
           ),
         );
-      } catch (_) {
+      } catch (e2) {
+        AppLogger.warning('admin: Capacity fallback: $table count failed: $e2');
         tableCapacities.add(
           TableCapacity(
             name: table,

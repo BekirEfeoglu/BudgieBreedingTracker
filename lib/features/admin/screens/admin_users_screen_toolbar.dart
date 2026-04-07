@@ -82,6 +82,20 @@ class _UsersToolbar extends StatelessWidget {
                         onTap: () =>
                             onStatusFilterChanged(_UserStatusFilter.inactive),
                       ),
+                      const SizedBox(width: AppSpacing.sm),
+                      _StatusChip(
+                        label: 'admin.premium_users'.tr(),
+                        selected: statusFilter == _UserStatusFilter.premium,
+                        onTap: () =>
+                            onStatusFilterChanged(_UserStatusFilter.premium),
+                      ),
+                      const SizedBox(width: AppSpacing.sm),
+                      _StatusChip(
+                        label: 'admin.free_users'.tr(),
+                        selected: statusFilter == _UserStatusFilter.free,
+                        onTap: () =>
+                            onStatusFilterChanged(_UserStatusFilter.free),
+                      ),
                     ],
                   ),
                 ),

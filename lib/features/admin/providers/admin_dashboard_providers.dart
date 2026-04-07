@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/constants/supabase_constants.dart';
+import '../../../core/utils/logger.dart';
 import '../../../core/enums/admin_enums.dart';
 import '../../auth/providers/auth_providers.dart';
 import '../constants/admin_constants.dart';
@@ -132,8 +133,9 @@ final topUsersProvider = FutureProvider<List<TopUser>>((ref) async {
       pairsCount: (row['pairs_count'] as num?)?.toInt() ?? 0,
       totalEntities: (row['total_entities'] as num?)?.toInt() ?? 0,
     )).toList();
-  } catch (_) {
-    // Fallback: fetch counts per user (N+1 but works without RPC)
+  } catch (e) {
+    AppLogger.warning('admin: Top users RPC failed, using fallback: $e');
+    // Fallback: fetch counts per user with parallel queries
     final profiles = await client
         .from(SupabaseConstants.profilesTable)
         .select('id, full_name')
@@ -141,21 +143,32 @@ final topUsersProvider = FutureProvider<List<TopUser>>((ref) async {
         .limit(100);
 
     final List<TopUser> users = [];
-    for (final p in (profiles as List)) {
+    // Use Future.wait for parallel count queries instead of sequential N+1
+    final profileList = profiles as List;
+    final countFutures = profileList.map((p) {
       final userId = p['id'] as String;
-      final birdsCount = await client
-          .from(SupabaseConstants.birdsTable)
-          .count()
-          .eq('user_id', userId)
-          .eq('is_deleted', false);
-      final pairsCount = await client
-          .from(SupabaseConstants.breedingPairsTable)
-          .count()
-          .eq('user_id', userId)
-          .eq('is_deleted', false);
+      return Future.wait([
+        client
+            .from(SupabaseConstants.birdsTable)
+            .count()
+            .eq('user_id', userId)
+            .eq('is_deleted', false),
+        client
+            .from(SupabaseConstants.breedingPairsTable)
+            .count()
+            .eq('user_id', userId)
+            .eq('is_deleted', false),
+      ]);
+    }).toList();
+
+    final allCounts = await Future.wait(countFutures);
+    for (var i = 0; i < profileList.length; i++) {
+      final p = profileList[i];
+      final birdsCount = allCounts[i][0];
+      final pairsCount = allCounts[i][1];
       if (birdsCount > 0 || pairsCount > 0) {
         users.add(TopUser(
-          userId: userId,
+          userId: p['id'] as String,
           fullName: p['full_name'] as String? ?? '',
           birdsCount: birdsCount,
           pairsCount: pairsCount,
