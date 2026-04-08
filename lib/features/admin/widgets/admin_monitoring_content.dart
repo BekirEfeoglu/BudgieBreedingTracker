@@ -142,7 +142,7 @@ class MonitoringCapacityGrid extends StatelessWidget {
               label: 'admin.database_size'.tr(),
               value: formatBytes(capacity.databaseSizeBytes),
               ratio: capacity.databaseSizeBytes / AdminConstants.dbSizeLimitBytes,
-              subtitle: 'admin.database_limit_suffix'.tr(),
+              subtitle: '/ ${formatBytes(AdminConstants.dbSizeLimitBytes)}',
             ),
             MonitoringCapacityCard(
               icon: Semantics(label: 'admin.connection_pool'.tr(), child: const Icon(LucideIcons.plug)),
