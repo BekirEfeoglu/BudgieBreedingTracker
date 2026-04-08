@@ -1,7 +1,7 @@
 # CLAUDE.md
 
 Comprehensive Flutter breeding tracker app for budgie breeders.
-Flutter 3.16+ / Dart >=3.8.0 <4.0.0 / Riverpod 3 / GoRouter 17+ / Supabase / Drift 2.31+ / Freezed 3
+Flutter 3.41+ / Dart >=3.8.0 <4.0.0 / Riverpod 3 / GoRouter 17+ / Supabase / Drift 2.31+ / Freezed 3
 
 Key deps: `supabase_flutter ^2.5.0` · `sentry_flutter ^9.0.0` · `fl_chart ^1.2.0` · `purchases_flutter ^9.14.0`
 
@@ -48,8 +48,26 @@ python3 scripts/verify_rules.py --fix    # Auto-fix CLAUDE.md stats table with a
 ### Other Scripts
 ```bash
 scripts/generate_ios_env.sh              # Generate iOS environment config from dart-defines
+scripts/setup_push_env.sh               # Setup FCM push notification environment
 scripts/monitor_pg_performance.sql       # PostgreSQL performance monitoring queries
 scripts/verify_rls_staging.sql           # Verify Row-Level Security policies on staging
+scripts/verify_push_setup.sql           # Verify FCM push notification DB setup
+```
+
+### Internal Modules (used by quality scripts)
+```bash
+scripts/_rules_collectors.py             # Data collectors for verify_rules.py
+scripts/_rules_fixers.py                 # Auto-fix logic for verify_rules.py --fix
+scripts/_rules_utils.py                  # Shared utilities for rules scripts
+```
+
+### Script Tests (CI: scripts-test job, >=98% coverage)
+```bash
+scripts/test_l10n_sync.py               # Tests for check_l10n_sync.py
+scripts/test_l10n_sync_main.py          # Main entry tests for l10n sync
+scripts/test_code_quality.py            # Tests for verify_code_quality.py
+scripts/test_code_quality_main.py       # Main entry tests for code quality
+scripts/test_verify_rules.py            # Tests for verify_rules.py
 ```
 
 ## Codebase Stats
@@ -78,7 +96,7 @@ scripts/verify_rls_staging.sql           # Verify Row-Level Security policies on
 | Job | Purpose |
 | --- | --- |
 | `analyze` | `flutter analyze --no-fatal-infos` |
-| `test` | Unit + widget tests, Codecov upload (excludes golden, e2e) |
+| `test` | Unit + widget tests, Codecov upload (excludes golden, e2e), timeout 25m |
 | `golden-test` | Visual regression on Linux baseline |
 | `scripts-test` | Python script tests (>=98% coverage) |
 | `l10n-sync` | Translation key parity (--strict-keys) |
