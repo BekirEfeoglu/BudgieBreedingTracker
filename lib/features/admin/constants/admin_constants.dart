@@ -58,7 +58,6 @@ abstract final class AdminConstants {
     'events',
     'event_reminders',
     'health_records',
-    'notifications',
     'photos',
   ];
 
