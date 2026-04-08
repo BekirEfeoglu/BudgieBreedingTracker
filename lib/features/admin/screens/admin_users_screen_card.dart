@@ -229,10 +229,10 @@ class _PremiumBadge extends StatelessWidget {
     final isAdmin = r == 'admin';
 
     final label = isFounder
-        ? 'Founder'
+        ? 'admin.role_founder'.tr()
         : isAdmin
-            ? 'Admin'
-            : 'Premium';
+            ? 'admin.role_admin'.tr()
+            : 'admin.role_premium'.tr();
     final color = isFounder
         ? AppColors.accent
         : isAdmin

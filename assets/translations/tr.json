@@ -1704,7 +1704,17 @@
     "send": "Gonder",
     "bulk_send_notification": "Toplu Bildirim",
     "notification_title_hint": "Bildirim basligi girin",
-    "notification_message_hint": "Bildirim mesaji girin"
+    "notification_message_hint": "Bildirim mesaji girin",
+    "role_founder": "Kurucu",
+    "role_admin": "Yönetici",
+    "role_premium": "Premium",
+    "time_minutes_ago": "{} dk önce",
+    "time_hours_ago": "{} sa önce",
+    "time_days_ago": "{} gün önce",
+    "protected_user_error": "Kurucu/Admin kullanıcılar üzerinde bu işlem yapılamaz.",
+    "user_not_found": "Kullanıcı bulunamadı",
+    "degraded_services": "Sorunlu servisler",
+    "system_status_alert": "Sistem durumu"
   },
   "user_guide": {
     "title": "Kullanım Kılavuzu",

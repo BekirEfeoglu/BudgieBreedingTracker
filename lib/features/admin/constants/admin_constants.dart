@@ -16,7 +16,7 @@ abstract final class AdminConstants {
 
   // Capacity thresholds
   static const double capacityWarningPercent = 0.9;
-  static const int dbSizeLimitBytes = 500 * 1024 * 1024; // 500 MB
+  static const int dbSizeLimitBytes = 8 * 1024 * 1024 * 1024; // 8 GB (Pro Plan)
   static const double healthyThreshold = 0.7;
   static const double warningThreshold = 0.9;
 

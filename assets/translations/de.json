@@ -1704,7 +1704,17 @@
     "send": "Senden",
     "bulk_send_notification": "Massenbenachrichtigung",
     "notification_title_hint": "Benachrichtigungstitel eingeben",
-    "notification_message_hint": "Benachrichtigungsnachricht eingeben"
+    "notification_message_hint": "Benachrichtigungsnachricht eingeben",
+    "role_founder": "Gründer",
+    "role_admin": "Admin",
+    "role_premium": "Premium",
+    "time_minutes_ago": "vor {} Min.",
+    "time_hours_ago": "vor {} Std.",
+    "time_days_ago": "vor {} Tagen",
+    "protected_user_error": "Diese Aktion kann nicht für Gründer-/Admin-Benutzer ausgeführt werden.",
+    "user_not_found": "Benutzer nicht gefunden",
+    "degraded_services": "Beeinträchtigte Dienste",
+    "system_status_alert": "Systemstatus"
   },
   "user_guide": {
     "title": "Benutzerhandbuch",

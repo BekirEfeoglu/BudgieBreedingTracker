@@ -115,9 +115,13 @@ class MonitoringSnapshotSection extends ConsumerWidget {
 
   String _formatTimestamp(DateTime dt) {
     final diff = DateTime.now().difference(dt);
-    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
-    if (diff.inHours < 24) return '${diff.inHours}h ago';
-    return '${diff.inDays}d ago';
+    if (diff.inMinutes < 60) {
+      return 'admin.time_minutes_ago'.tr(args: [diff.inMinutes.toString()]);
+    }
+    if (diff.inHours < 24) {
+      return 'admin.time_hours_ago'.tr(args: [diff.inHours.toString()]);
+    }
+    return 'admin.time_days_ago'.tr(args: [diff.inDays.toString()]);
   }
 }
 

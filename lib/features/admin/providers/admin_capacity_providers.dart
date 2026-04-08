@@ -90,7 +90,7 @@ final serverCapacityProvider = FutureProvider<ServerCapacity>((ref) async {
     final capacity = ServerCapacity.fromJson(data);
 
     // Sentry alert when capacity exceeds critical threshold
-    final dbRatio = capacity.databaseSizeBytes / (500 * 1024 * 1024);
+    final dbRatio = capacity.databaseSizeBytes / AdminConstants.dbSizeLimitBytes;
     final connRatio = capacity.connectionUsageRatio;
     final worstRatio = math.max(dbRatio, connRatio);
 

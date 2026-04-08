@@ -53,12 +53,8 @@ class AdminBulkManager {
         try {
           await _userManager.toggleUserActive(userId, activate);
           succeeded++;
-        } catch (e) {
-          if (e.toString().contains('protected') || e.toString().contains('Protected')) {
-            skipped++;
-          } else {
-            rethrow;
-          }
+        } on ProtectedRoleError {
+          skipped++;
         }
       }
       _updateState(isLoading: false, isSuccess: true);
@@ -82,12 +78,8 @@ class AdminBulkManager {
         try {
           await _userManager.grantPremium(userId);
           succeeded++;
-        } catch (e) {
-          if (e.toString().contains('protected') || e.toString().contains('Protected')) {
-            skipped++;
-          } else {
-            rethrow;
-          }
+        } on ProtectedRoleError {
+          skipped++;
         }
       }
       _updateState(isLoading: false, isSuccess: true);
@@ -111,12 +103,8 @@ class AdminBulkManager {
         try {
           await _userManager.revokePremium(userId);
           succeeded++;
-        } catch (e) {
-          if (e.toString().contains('protected') || e.toString().contains('Protected')) {
-            skipped++;
-          } else {
-            rethrow;
-          }
+        } on ProtectedRoleError {
+          skipped++;
         }
       }
       _updateState(isLoading: false, isSuccess: true);
@@ -165,21 +153,21 @@ class AdminBulkManager {
       );
 
       const deletionOrder = [
-        'event_reminders',
-        'growth_measurements',
-        'health_records',
-        'photos',
-        'events',
-        'incubations',
-        'chicks',
-        'eggs',
-        'clutches',
-        'breeding_pairs',
-        'nests',
-        'notifications',
-        'notification_settings',
-        'notification_schedules',
-        'birds',
+        SupabaseConstants.eventRemindersTable,
+        SupabaseConstants.growthMeasurementsTable,
+        SupabaseConstants.healthRecordsTable,
+        SupabaseConstants.photosTable,
+        SupabaseConstants.eventsTable,
+        SupabaseConstants.incubationsTable,
+        SupabaseConstants.chicksTable,
+        SupabaseConstants.eggsTable,
+        SupabaseConstants.clutchesTable,
+        SupabaseConstants.breedingPairsTable,
+        SupabaseConstants.nestsTable,
+        SupabaseConstants.notificationsTable,
+        SupabaseConstants.notificationSettingsTable,
+        SupabaseConstants.notificationSchedulesTable,
+        SupabaseConstants.birdsTable,
       ];
 
       for (final userId in userIds) {

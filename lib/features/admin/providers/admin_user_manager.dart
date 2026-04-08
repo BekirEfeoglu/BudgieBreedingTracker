@@ -7,9 +7,12 @@ import '../../../core/utils/logger.dart';
 import '../../auth/providers/auth_providers.dart';
 import 'admin_auth_utils.dart';
 
-class _ProtectedRoleError implements Exception {
+class ProtectedRoleError implements Exception {
   final String role;
-  const _ProtectedRoleError(this.role);
+  const ProtectedRoleError(this.role);
+
+  @override
+  String toString() => 'ProtectedRoleError: $role';
 }
 
 /// Manages admin user operations (activate/deactivate, premium grant/revoke).
@@ -33,6 +36,8 @@ class AdminUserManager {
     try {
       await requireAdmin(_ref);
       final client = _ref.read(supabaseClientProvider);
+      final role = await _fetchTargetUserRole(client, targetUserId);
+      if (_isProtectedRole(role)) throw ProtectedRoleError(role!);
 
       await client
           .from(SupabaseConstants.profilesTable)
@@ -54,6 +59,12 @@ class AdminUserManager {
             ? 'admin.user_activated_success'.tr()
             : 'admin.user_deactivated_success'.tr(),
       );
+    } on ProtectedRoleError {
+      _updateState(
+        isLoading: false,
+        error: 'admin.protected_user_error'.tr(),
+      );
+      rethrow;
     } catch (e, st) {
       AppLogger.error('AdminUserManager.toggleUserActive', e, st);
       _updateState(isLoading: false, error: 'admin.action_error'.tr());
@@ -68,7 +79,7 @@ class AdminUserManager {
       final client = _ref.read(supabaseClientProvider);
       final now = DateTime.now().toUtc().toIso8601String();
       final role = await _fetchTargetUserRole(client, targetUserId);
-      if (_isProtectedRole(role)) throw _ProtectedRoleError(role!);
+      if (_isProtectedRole(role)) throw ProtectedRoleError(role!);
 
       await client
           .from(SupabaseConstants.profilesTable)
@@ -95,7 +106,7 @@ class AdminUserManager {
         isSuccess: true,
         successMessage: 'admin.premium_granted_success'.tr(),
       );
-    } on _ProtectedRoleError catch (e) {
+    } on ProtectedRoleError catch (e) {
       AppLogger.info(
         'AdminUserManager.grantPremium blocked for role: ${e.role}',
       );
@@ -103,6 +114,7 @@ class AdminUserManager {
         isLoading: false,
         error: 'admin.protected_user_premium_error'.tr(),
       );
+      rethrow;
     } on PostgrestException catch (e, st) {
       AppLogger.error('AdminUserManager.grantPremium Postgrest', e, st);
       if (_isProtectedRoleMutationError(e)) {
@@ -126,7 +138,7 @@ class AdminUserManager {
       await requireAdmin(_ref);
       final client = _ref.read(supabaseClientProvider);
       final role = await _fetchTargetUserRole(client, targetUserId);
-      if (_isProtectedRole(role)) throw _ProtectedRoleError(role!);
+      if (_isProtectedRole(role)) throw ProtectedRoleError(role!);
 
       await client
           .from(SupabaseConstants.profilesTable)
@@ -155,7 +167,7 @@ class AdminUserManager {
         isSuccess: true,
         successMessage: 'admin.premium_revoked_success'.tr(),
       );
-    } on _ProtectedRoleError catch (e) {
+    } on ProtectedRoleError catch (e) {
       AppLogger.info(
         'AdminUserManager.revokePremium blocked for role: ${e.role}',
       );
@@ -163,6 +175,7 @@ class AdminUserManager {
         isLoading: false,
         error: 'admin.protected_user_premium_error'.tr(),
       );
+      rethrow;
     } on PostgrestException catch (e, st) {
       AppLogger.error('AdminUserManager.revokePremium Postgrest', e, st);
       if (_isProtectedRoleMutationError(e)) {
@@ -202,36 +215,27 @@ class AdminUserManager {
         .select('role')
         .eq('id', targetUserId)
         .maybeSingle();
-    if (row == null) return null;
+    if (row == null) {
+      throw Exception('admin.user_not_found'.tr());
+    }
     return row['role'] as String?;
   }
 
-  /// Safe insert-or-update for user_subscriptions (no unique constraint on user_id).
+  /// Atomic upsert for user_subscriptions using PostgREST's onConflict.
+  /// Eliminates the read-then-write race condition of the previous
+  /// select-then-insert/update pattern.
   Future<void> _upsertSubscription(
     SupabaseClient client,
     String targetUserId,
     Map<String, dynamic> data,
   ) async {
-    final existingRows =
-        (await client
-                .from(SupabaseConstants.userSubscriptionsTable)
-                .select('id')
-                .eq('user_id', targetUserId)
-                .order('updated_at', ascending: false)
-                .limit(1))
-            as List;
-
-    if (existingRows.isNotEmpty) {
-      await client
-          .from(SupabaseConstants.userSubscriptionsTable)
-          .update(data)
-          .eq('user_id', targetUserId);
-    } else {
-      await client.from(SupabaseConstants.userSubscriptionsTable).insert({
+    await client.from(SupabaseConstants.userSubscriptionsTable).upsert(
+      {
         ...data,
         'user_id': targetUserId,
-      });
-    }
+      },
+      onConflict: 'user_id',
+    );
   }
 
 }

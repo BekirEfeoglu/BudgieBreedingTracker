@@ -1704,7 +1704,17 @@
     "send": "Send",
     "bulk_send_notification": "Bulk Notification",
     "notification_title_hint": "Enter notification title",
-    "notification_message_hint": "Enter notification message"
+    "notification_message_hint": "Enter notification message",
+    "role_founder": "Founder",
+    "role_admin": "Admin",
+    "role_premium": "Premium",
+    "time_minutes_ago": "{}m ago",
+    "time_hours_ago": "{}h ago",
+    "time_days_ago": "{}d ago",
+    "protected_user_error": "This action cannot be performed on Founder/Admin users.",
+    "user_not_found": "User not found",
+    "degraded_services": "Degraded services",
+    "system_status_alert": "System status"
   },
   "user_guide": {
     "title": "User Guide",

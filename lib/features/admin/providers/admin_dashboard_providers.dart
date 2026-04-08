@@ -133,35 +133,54 @@ final topUsersProvider = FutureProvider<List<TopUser>>((ref) async {
       totalEntities: (row['total_entities'] as num?)?.toInt() ?? 0,
     )).toList();
   } catch (_) {
-    // Fallback: fetch counts per user (N+1 but works without RPC)
-    final profiles = await client
-        .from(SupabaseConstants.profilesTable)
-        .select('id, full_name')
-        .eq('is_active', true)
-        .limit(100);
-
-    final List<TopUser> users = [];
-    for (final p in (profiles as List)) {
-      final userId = p['id'] as String;
-      final birdsCount = await client
+    // Fallback: fetch all birds and pairs, group by user_id client-side
+    // Avoids N+1 by fetching two flat lists instead of per-user queries
+    final (birdsResult, pairsResult, profilesResult) = await (
+      client
           .from(SupabaseConstants.birdsTable)
-          .count()
-          .eq('user_id', userId)
-          .eq('is_deleted', false);
-      final pairsCount = await client
+          .select('user_id')
+          .eq('is_deleted', false),
+      client
           .from(SupabaseConstants.breedingPairsTable)
-          .count()
-          .eq('user_id', userId)
-          .eq('is_deleted', false);
-      if (birdsCount > 0 || pairsCount > 0) {
-        users.add(TopUser(
-          userId: userId,
-          fullName: p['full_name'] as String? ?? '',
-          birdsCount: birdsCount,
-          pairsCount: pairsCount,
-          totalEntities: birdsCount + pairsCount,
-        ));
-      }
+          .select('user_id')
+          .eq('is_deleted', false),
+      client
+          .from(SupabaseConstants.profilesTable)
+          .select('id, full_name')
+          .eq('is_active', true),
+    ).wait;
+
+    // Count entities per user
+    final birdCounts = <String, int>{};
+    for (final row in (birdsResult as List)) {
+      final uid = row['user_id'] as String;
+      birdCounts[uid] = (birdCounts[uid] ?? 0) + 1;
+    }
+    final pairCounts = <String, int>{};
+    for (final row in (pairsResult as List)) {
+      final uid = row['user_id'] as String;
+      pairCounts[uid] = (pairCounts[uid] ?? 0) + 1;
+    }
+
+    // Build profile lookup
+    final profileMap = <String, String>{};
+    for (final p in (profilesResult as List)) {
+      profileMap[p['id'] as String] = p['full_name'] as String? ?? '';
+    }
+
+    // Merge user IDs from both tables
+    final allUserIds = {...birdCounts.keys, ...pairCounts.keys};
+    final List<TopUser> users = [];
+    for (final userId in allUserIds) {
+      final bc = birdCounts[userId] ?? 0;
+      final pc = pairCounts[userId] ?? 0;
+      users.add(TopUser(
+        userId: userId,
+        fullName: profileMap[userId] ?? '',
+        birdsCount: bc,
+        pairsCount: pc,
+        totalEntities: bc + pc,
+      ));
     }
     users.sort((a, b) => b.totalEntities.compareTo(a.totalEntities));
     return users.take(AdminConstants.topUsersLimit).toList();

@@ -79,8 +79,8 @@ final systemHealthAlertProvider = Provider<void>((ref) {
         }
 
         final alertBody = degradedServices.isNotEmpty
-            ? 'Sorunlu servisler: ${degradedServices.join(', ')}'
-            : data['message'] as String? ?? 'Sistem durumu: $status';
+            ? 'admin.degraded_services: ${degradedServices.join(', ')}'
+            : data['message'] as String? ?? 'admin.system_status_alert: $status';
 
         _sendHealthAlertToAdmins(
           ref,

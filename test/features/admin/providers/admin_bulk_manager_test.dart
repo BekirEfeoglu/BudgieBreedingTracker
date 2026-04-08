@@ -180,7 +180,7 @@ class _StubUserManager extends AdminUserManager {
   @override
   Future<void> toggleUserActive(String id, bool active) async {
     if (protectedUserIds.contains(id)) {
-      throw Exception('Protected user cannot be modified');
+      throw const ProtectedRoleError('admin');
     }
     toggleCalls++;
   }
@@ -188,7 +188,7 @@ class _StubUserManager extends AdminUserManager {
   @override
   Future<void> grantPremium(String id) async {
     if (protectedUserIds.contains(id)) {
-      throw Exception('Protected user cannot be modified');
+      throw const ProtectedRoleError('admin');
     }
     grantCalls++;
   }
@@ -196,7 +196,7 @@ class _StubUserManager extends AdminUserManager {
   @override
   Future<void> revokePremium(String id) async {
     if (protectedUserIds.contains(id)) {
-      throw Exception('Protected user cannot be modified');
+      throw const ProtectedRoleError('admin');
     }
     revokeCalls++;
   }
