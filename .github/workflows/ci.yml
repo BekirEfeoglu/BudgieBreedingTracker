@@ -60,7 +60,7 @@ jobs:
             --concurrency=4 \
             --dart-define=SUPABASE_URL=https://placeholder.supabase.co \
             --dart-define=SUPABASE_ANON_KEY=placeholder_key
-        timeout-minutes: 15
+        timeout-minutes: 25
 
       - name: Upload coverage to Codecov
         if: always()
