@@ -4,6 +4,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../core/constants/app_icons.dart';
+import '../../../core/utils/logger.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_icon.dart';
@@ -32,6 +33,9 @@ class _AdminSettingsContentState extends ConsumerState<AdminSettingsContent> {
     if (stored is bool) return stored;
     if (stored is String) return stored.toLowerCase() == 'true';
     if (stored is num) return stored != 0;
+    AppLogger.warning(
+      'AdminSettings: unexpected type ${stored.runtimeType} for key "$key"',
+    );
     return settingDefaults[key] ?? true;
   }
 

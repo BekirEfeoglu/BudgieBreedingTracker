@@ -27,12 +27,16 @@ extension _PremiumSyncHelpers on PremiumNotifier {
 
       // Admin/founder users have server-side premium enforced by DB trigger.
       // Attempting to sync would hit protected_role_premium_mutation (P0001).
-      // Null-safe: if profile hasn't loaded, we fall through to RPC call
-      // which will hit the DB trigger and be caught by the error handler.
       final profile = ref.read(userProfileProvider).value;
       if (profile != null && (profile.isAdmin || profile.isFounder)) {
         await clearPendingSync(userId);
         return;
+      }
+      if (profile == null) {
+        AppLogger.debug(
+          '[PremiumNotifier] Profile not yet loaded — skipping admin/founder guard, '
+          'falling through to RPC sync',
+        );
       }
 
       // Determine expiry from RevenueCat subscription info

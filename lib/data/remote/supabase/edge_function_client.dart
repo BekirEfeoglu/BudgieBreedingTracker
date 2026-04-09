@@ -176,9 +176,15 @@ class EdgeFunctionClient {
         } catch (retryError, retrySt) {
           AppLogger.error('$_tag $functionName retry also failed', retryError, retrySt);
         }
-        // 401 after retry is a transient relay issue, not a real crash —
-        // log as warning, skip Sentry to avoid noise.
+        // 401 after retry — log warning and add Sentry breadcrumb for
+        // observability without creating noise from transient relay issues.
         AppLogger.warning('$_tag $functionName 401 after retry exhausted');
+        Sentry.addBreadcrumb(Breadcrumb(
+          message: '$functionName 401 after session refresh retry',
+          category: 'edge_function',
+          level: SentryLevel.warning,
+          data: {'function': functionName, 'status': 401},
+        ));
         return EdgeFunctionResult.failure('Edge function error: ${e.status}');
       }
 
