@@ -189,6 +189,92 @@ void main() {
               'carrier (single-factor) parents',
         );
       });
+
+      test('dominant allelic series target (crested) finds parent combos', () {
+        final results = calculator.calculateParents({'crested_tufted'});
+        expect(results, isNotEmpty);
+
+        // At least one parent must carry crested_tufted in every result
+        for (final result in results) {
+          final fatherHas =
+              result.father.mutations.containsKey('crested_tufted');
+          final motherHas =
+              result.mother.mutations.containsKey('crested_tufted');
+          expect(
+            fatherHas || motherHas,
+            isTrue,
+            reason: 'At least one parent must carry crested allele',
+          );
+        }
+      });
+
+      test('linked sex-linked mutations (cinnamon+ino) produce results', () {
+        // Lacewing requires both cinnamon and ino → independent loci on Z
+        final results = calculator.calculateParents({'cinnamon', 'ino'});
+        expect(results, isNotEmpty);
+
+        // Top result should have non-trivial probability
+        expect(
+          results.first.maxProbability,
+          greaterThan(0.0),
+          reason: 'Lacewing parent combos must have positive probability',
+        );
+      });
+
+      test('allelic series compound target (greywing) finds results', () {
+        // Greywing is in the dilution allelic series (autosomal recessive)
+        final results = calculator.calculateParents({'greywing'});
+        expect(results, isNotEmpty);
+
+        // Both parents must carry a dilution-locus allele
+        for (final result in results) {
+          final fatherHasDilution =
+              result.father.mutations.keys.any(
+                (id) => const {'greywing', 'clearwing', 'dilute'}.contains(id),
+              );
+          final motherHasDilution =
+              result.mother.mutations.keys.any(
+                (id) => const {'greywing', 'clearwing', 'dilute'}.contains(id),
+              );
+          expect(
+            fatherHasDilution && motherHasDilution,
+            isTrue,
+            reason: 'Both parents must carry dilution-locus allele for greywing',
+          );
+        }
+      });
+
+      test('probabilities never exceed 1.0', () {
+        final targets = [
+          {'blue'},
+          {'ino'},
+          {'blue', 'ino'},
+          {'dark_factor'},
+          {'spangle'},
+          {'crested_tufted'},
+        ];
+
+        for (final target in targets) {
+          final results = calculator.calculateParents(target);
+          for (final result in results) {
+            expect(
+              result.probabilityMale,
+              lessThanOrEqualTo(1.0),
+              reason: 'Male probability > 1.0 for target $target',
+            );
+            expect(
+              result.probabilityFemale,
+              lessThanOrEqualTo(1.0),
+              reason: 'Female probability > 1.0 for target $target',
+            );
+            expect(
+              result.probabilityAny,
+              lessThanOrEqualTo(1.0),
+              reason: 'Any probability > 1.0 for target $target',
+            );
+          }
+        }
+      });
     });
   });
 }

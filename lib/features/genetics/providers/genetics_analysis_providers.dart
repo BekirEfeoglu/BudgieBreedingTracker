@@ -6,12 +6,13 @@ final offspringChartDataProvider = Provider<List<GeneticChartItem>>((ref) {
   if (results == null || results.isEmpty) return [];
 
   return results.map((r) {
+    final label = r.compoundPhenotype ?? r.phenotype;
     return GeneticChartItem(
-      label: r.phenotype,
+      label: label,
       value: r.probability * 100,
       color: r.visualMutations.isNotEmpty
           ? phenotypeColorFromMutations(r.visualMutations)
-          : phenotypeColor(r.phenotype),
+          : phenotypeColor(label),
     );
   }).toList();
 });

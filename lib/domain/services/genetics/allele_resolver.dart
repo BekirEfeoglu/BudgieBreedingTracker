@@ -95,11 +95,26 @@ _AllelicPhenotypeResult _resolveAllelicPhenotype(
     );
   }
 
-  // One wild-type, one mutant: wild-type is dominant over all mutants
+  // One wild-type, one mutant
   if (allele1 == _kWildtype || allele2 == _kWildtype) {
     final mutant = allele1 == _kWildtype ? allele2 : allele1;
     final record = MutationDatabase.getById(mutant);
     final sym = record?.alleleSymbol ?? mutant;
+
+    // Dominant / incomplete dominant: heterozygote is visually expressed
+    if (record != null &&
+        (record.inheritanceType == InheritanceType.autosomalDominant ||
+         record.inheritanceType == InheritanceType.autosomalIncompleteDominant)) {
+      final name = record.name;
+      return _AllelicPhenotypeResult(
+        phenotype: name,
+        genotype: '$sym/+',
+        expressedIds: [mutant],
+        carriedIds: const [],
+      );
+    }
+
+    // Recessive: wild-type is dominant, mutant is carried
     return _AllelicPhenotypeResult(
       phenotype: 'Normal',
       isCarrier: true,

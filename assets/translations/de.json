@@ -1302,6 +1302,7 @@
     "dosage_double_factor": "DF",
     "dosage_single_factor": "SF",
     "delete_history_confirm": "Möchten Sie diesen Berechnungsdatensatz wirklich löschen?",
+    "stale_calculation": "Diese Berechnung basiert auf veralteten Konstanten — Ergebnisse können ungenau sein",
     "compare": "Vergleichen",
     "compare_title": "{} Datensätze vergleichen",
     "compare_selected": "Ausgewählte vergleichen",

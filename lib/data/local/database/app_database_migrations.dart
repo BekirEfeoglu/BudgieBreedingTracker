@@ -187,6 +187,24 @@ Future<void> _migrateV18ToV19(AppDatabase db, Migrator m) async {
   );
 }
 
+/// Migration v19 -> v20: Add calculation_version column to genetics_history.
+///
+/// Tracks the calculation engine version at the time of save, enabling
+/// stale-entry detection when recombination constants or allele resolver
+/// logic changes. Null means "saved before versioning was introduced".
+Future<void> _migrateV19ToV20(AppDatabase db, Migrator m) async {
+  final hasColumn = await _tableHasColumn(
+    db,
+    'genetics_history',
+    'calculation_version',
+  );
+  if (!hasColumn) {
+    await db.customStatement(
+      'ALTER TABLE genetics_history ADD COLUMN calculation_version INTEGER',
+    );
+  }
+}
+
 /// Checks whether [tableName] has a column named [columnName] via PRAGMA.
 ///
 /// Internal migration helper only — [tableName] and [columnName] must be

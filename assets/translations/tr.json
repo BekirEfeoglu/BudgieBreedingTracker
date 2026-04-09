@@ -1302,6 +1302,7 @@
     "dosage_double_factor": "DF",
     "dosage_single_factor": "SF",
     "delete_history_confirm": "Bu hesaplama kaydını silmek istediğinizden emin misiniz?",
+    "stale_calculation": "Bu hesaplama eski sabitlere dayanıyor — sonuçlar güncel olmayabilir",
     "compare": "Karşılaştır",
     "compare_title": "{} Kaydı Karşılaştır",
     "compare_selected": "Seçilenleri Karşılaştır",

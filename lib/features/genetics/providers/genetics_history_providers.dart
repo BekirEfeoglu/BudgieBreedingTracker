@@ -6,6 +6,7 @@ import 'package:budgie_breeding_tracker/data/local/database/dao_providers.dart';
 import 'package:budgie_breeding_tracker/data/models/genetics_history_model.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/mendelian_calculator.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/parent_genotype.dart';
+import 'package:budgie_breeding_tracker/core/constants/genetics_constants.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_providers.dart';
 import 'package:budgie_breeding_tracker/features/genetics/providers/genetics_providers.dart';
@@ -51,6 +52,7 @@ class GeneticsHistorySaveNotifier extends Notifier<AsyncValue<void>> {
         fatherGenotype: _genotypeToMap(father),
         motherGenotype: _genotypeToMap(mother),
         resultsJson: jsonEncode(_resultsToJson(results)),
+        calculationVersion: GeneticsConstants.calculationVersion,
         notes: notes,
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),

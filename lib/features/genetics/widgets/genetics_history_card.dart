@@ -110,11 +110,28 @@ class GeneticsHistoryCard extends ConsumerWidget {
         ),
         const SizedBox(width: AppSpacing.xs),
         Expanded(
-          child: Text(
-            _formatDate(entry.createdAt),
-            style: theme.textTheme.labelSmall?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
+          child: Row(
+            children: [
+              Flexible(
+                child: Text(
+                  _formatDate(entry.createdAt),
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ),
+              if (entry.isStale) ...[
+                const SizedBox(width: AppSpacing.xs),
+                Tooltip(
+                  message: 'genetics.stale_calculation'.tr(),
+                  child: Icon(
+                    LucideIcons.alertTriangle,
+                    size: 14,
+                    color: theme.colorScheme.error,
+                  ),
+                ),
+              ],
+            ],
           ),
         ),
         if (!isSelectionMode)

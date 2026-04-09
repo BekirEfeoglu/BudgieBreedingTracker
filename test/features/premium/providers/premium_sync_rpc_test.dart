@@ -8,9 +8,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:budgie_breeding_tracker/bootstrap.dart';
+import 'package:budgie_breeding_tracker/data/models/profile_model.dart';
 import 'package:budgie_breeding_tracker/domain/services/payment/purchase_service.dart';
 import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
 import 'package:budgie_breeding_tracker/features/premium/providers/premium_providers.dart';
+import 'package:budgie_breeding_tracker/features/profile/providers/profile_providers.dart';
 
 import '../../../helpers/fake_purchase_service.dart';
 import '../../../helpers/mocks.dart';
@@ -58,12 +60,15 @@ void main() {
   ProviderContainer createContainer(
     MockSupabaseClient mockClient, {
     String userId = 'user-1',
+    Profile? profile,
   }) {
     return ProviderContainer(
       overrides: [
         currentUserIdProvider.overrideWithValue(userId),
         purchaseServiceProvider.overrideWithValue(service),
         supabaseClientProvider.overrideWithValue(mockClient),
+        if (profile != null)
+          userProfileProvider.overrideWith((_) => Stream.value(profile)),
       ],
       retry: (_, __) => null,
     );
@@ -336,6 +341,103 @@ void main() {
 
       verify(() => mockClient.rpc('sync_premium_status', params: any(named: 'params')))
           .called(greaterThanOrEqualTo(1));
+    });
+
+    test('skips RPC call for admin user', () async {
+      service.isPremiumError = Exception('skip');
+      final mockClient = createMockClient();
+      const adminProfile = Profile(
+        id: 'user-1',
+        email: 'admin@test.com',
+        role: 'admin',
+      );
+
+      final container = createContainer(
+        mockClient,
+        profile: adminProfile,
+      );
+      addTearDown(container.dispose);
+
+      // Ensure profile stream emits before notifier loads
+      container.read(userProfileProvider);
+      await _flushAsync();
+
+      container.read(localPremiumProvider);
+      await _flushAsync();
+      await _flushAsync();
+
+      // Force a sync attempt — should be skipped for admin
+      await container.read(localPremiumProvider.notifier).refresh();
+      await _flushAsync();
+
+      verifyNever(
+        () => mockClient.rpc('sync_premium_status', params: any(named: 'params')),
+      );
+    });
+
+    test('skips RPC call for founder user', () async {
+      service.isPremiumError = Exception('skip');
+      final mockClient = createMockClient();
+      const founderProfile = Profile(
+        id: 'user-1',
+        email: 'founder@test.com',
+        role: 'founder',
+      );
+
+      final container = createContainer(
+        mockClient,
+        profile: founderProfile,
+      );
+      addTearDown(container.dispose);
+
+      container.read(userProfileProvider);
+      await _flushAsync();
+
+      container.read(localPremiumProvider);
+      await _flushAsync();
+      await _flushAsync();
+
+      await container.read(localPremiumProvider.notifier).refresh();
+      await _flushAsync();
+
+      verifyNever(
+        () => mockClient.rpc('sync_premium_status', params: any(named: 'params')),
+      );
+    });
+
+    test('admin refresh does not trigger RPC sync', () async {
+      service.isPremiumResult = false;
+      final mockClient = createMockClient();
+      const adminProfile = Profile(
+        id: 'user-1',
+        email: 'admin@test.com',
+        role: 'admin',
+      );
+
+      final container = createContainer(
+        mockClient,
+        profile: adminProfile,
+      );
+      addTearDown(container.dispose);
+
+      container.read(userProfileProvider);
+      await _flushAsync();
+
+      container.read(localPremiumProvider);
+      await waitUntil(() => service.isPremiumCallCount > 0);
+      await _flushAsync();
+      await _flushAsync();
+
+      // Reset mock verification state before refresh
+      clearInteractions(mockClient);
+
+      await container.read(localPremiumProvider.notifier).refresh();
+      await _flushAsync();
+
+      // Admin refresh returns early — no RPC sync should happen
+      verifyNever(
+        () => mockClient.rpc('sync_premium_status', params: any(named: 'params')),
+      );
     });
   });
 }

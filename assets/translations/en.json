@@ -1302,6 +1302,7 @@
     "dosage_double_factor": "DF",
     "dosage_single_factor": "SF",
     "delete_history_confirm": "Are you sure you want to delete this calculation record?",
+    "stale_calculation": "This calculation is based on outdated constants — results may not be accurate",
     "compare": "Compare",
     "compare_title": "Compare {} Records",
     "compare_selected": "Compare Selected",

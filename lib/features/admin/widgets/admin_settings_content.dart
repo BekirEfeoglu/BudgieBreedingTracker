@@ -28,7 +28,10 @@ class _AdminSettingsContentState extends ConsumerState<AdminSettingsContent> {
 
   bool _val(String key) {
     final stored = widget.settings[key]?['value'];
-    if (stored != null) return stored == true;
+    if (stored == null) return settingDefaults[key] ?? true;
+    if (stored is bool) return stored;
+    if (stored is String) return stored.toLowerCase() == 'true';
+    if (stored is num) return stored != 0;
     return settingDefaults[key] ?? true;
   }
 

@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/constants/supabase_constants.dart';
@@ -64,7 +65,6 @@ class AdminUserManager {
         isLoading: false,
         error: 'admin.protected_user_error'.tr(),
       );
-      rethrow;
     } catch (e, st) {
       AppLogger.error('AdminUserManager.toggleUserActive', e, st);
       _updateState(isLoading: false, error: 'admin.action_error'.tr());
@@ -86,12 +86,24 @@ class AdminUserManager {
           .update({'is_premium': true, 'subscription_status': 'premium'})
           .eq('id', targetUserId);
 
-      // Supplementary record: check existing then insert or update
-      await _upsertSubscription(client, targetUserId, {
-        'plan': 'premium',
-        'status': 'active',
-        'updated_at': now,
-      });
+      // Supplementary record — non-fatal: profile is the source of truth
+      try {
+        await _upsertSubscription(client, targetUserId, {
+          'plan': 'premium',
+          'status': 'active',
+          'updated_at': now,
+        });
+      } catch (e, st) {
+        AppLogger.warning(
+          'AdminUserManager.grantPremium: subscription record failed (non-fatal): $e\n$st',
+        );
+        Sentry.addBreadcrumb(Breadcrumb(
+          message: 'subscription upsert failed for $targetUserId',
+          category: 'admin.premium',
+          level: SentryLevel.warning,
+          data: {'error': e.toString()},
+        ));
+      }
 
       await logAdminAction(
         client,
@@ -114,7 +126,6 @@ class AdminUserManager {
         isLoading: false,
         error: 'admin.protected_user_premium_error'.tr(),
       );
-      rethrow;
     } on PostgrestException catch (e, st) {
       AppLogger.error('AdminUserManager.grantPremium Postgrest', e, st);
       if (_isProtectedRoleMutationError(e)) {
@@ -145,14 +156,27 @@ class AdminUserManager {
           .update({'is_premium': false, 'subscription_status': 'free'})
           .eq('id', targetUserId);
 
-      // Soft-revoke subscription record to preserve audit trail
-      await client
-          .from(SupabaseConstants.userSubscriptionsTable)
-          .update({
-            'status': 'revoked',
-            'updated_at': DateTime.now().toUtc().toIso8601String(),
-          })
-          .eq('user_id', targetUserId);
+      // Soft-revoke subscription record — non-fatal: profile is the source of truth.
+      // Uses 'canceled' (valid CHECK constraint value).
+      try {
+        await client
+            .from(SupabaseConstants.userSubscriptionsTable)
+            .update({
+              'status': 'canceled',
+              'updated_at': DateTime.now().toUtc().toIso8601String(),
+            })
+            .eq('user_id', targetUserId);
+      } catch (e, st) {
+        AppLogger.warning(
+          'AdminUserManager.revokePremium: subscription record failed (non-fatal): $e\n$st',
+        );
+        Sentry.addBreadcrumb(Breadcrumb(
+          message: 'subscription update failed for $targetUserId',
+          category: 'admin.premium',
+          level: SentryLevel.warning,
+          data: {'error': e.toString()},
+        ));
+      }
 
       await logAdminAction(
         client,
@@ -175,7 +199,6 @@ class AdminUserManager {
         isLoading: false,
         error: 'admin.protected_user_premium_error'.tr(),
       );
-      rethrow;
     } on PostgrestException catch (e, st) {
       AppLogger.error('AdminUserManager.revokePremium Postgrest', e, st);
       if (_isProtectedRoleMutationError(e)) {
@@ -222,8 +245,8 @@ class AdminUserManager {
   }
 
   /// Atomic upsert for user_subscriptions using PostgREST's onConflict.
-  /// Eliminates the read-then-write race condition of the previous
-  /// select-then-insert/update pattern.
+  /// Requires the UNIQUE constraint on user_id added in migration
+  /// 20260409100000_add_unique_constraint_user_subscriptions_user_id.
   Future<void> _upsertSubscription(
     SupabaseClient client,
     String targetUserId,

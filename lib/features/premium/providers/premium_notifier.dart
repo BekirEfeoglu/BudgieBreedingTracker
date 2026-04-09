@@ -83,7 +83,16 @@ class PremiumNotifier extends Notifier<bool> {
   ///
   /// Detects subscription renewals, expirations, or cancellations that
   /// happened while the app was in the background. No-op if not initialized.
+  /// Admin/founder users skip RevenueCat check and Supabase sync entirely —
+  /// their premium is enforced server-side.
   Future<void> refresh() async {
+    // Admin/founder: premium is DB-enforced, no RevenueCat or sync needed.
+    // Guard is null-safe: if profile hasn't loaded yet, we fall through to
+    // RevenueCat check (harmless for admin — just a redundant network call).
+    final profileAsync = ref.read(userProfileProvider);
+    final profile = profileAsync.value;
+    if (profile != null && (profile.isAdmin || profile.isFounder)) return;
+
     final service = ref.read(purchaseServiceProvider);
     try {
       final isPremium = await service.isPremium();

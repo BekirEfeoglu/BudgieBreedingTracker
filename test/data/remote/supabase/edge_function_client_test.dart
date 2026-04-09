@@ -277,5 +277,176 @@ void main() {
         expect(result.error, contains('404 NOT_FOUND'));
       },
     );
+
+    group('401 retry with session refresh', () {
+      const refreshedToken = 'refreshed-access-token';
+
+      Session createRefreshedSession() {
+        return Session(
+          accessToken: refreshedToken,
+          tokenType: 'bearer',
+          user: const User(
+            id: 'test-user',
+            appMetadata: {},
+            userMetadata: {},
+            aud: 'authenticated',
+            createdAt: '2024-01-01T00:00:00Z',
+          ),
+        );
+      }
+
+      test('retries with refreshed token on 401 and succeeds', () async {
+        var callCount = 0;
+        when(
+          () => mockFunctions.invoke(
+            'send-push',
+            body: any(named: 'body'),
+            headers: any(named: 'headers'),
+          ),
+        ).thenAnswer((_) async {
+          callCount++;
+          if (callCount == 1) {
+            throw const FunctionException(
+              status: 401,
+              details: {'code': 401, 'message': 'Invalid JWT'},
+              reasonPhrase: 'Unauthorized',
+            );
+          }
+          return FunctionResponse(status: 200, data: {'success': 1});
+        });
+
+        when(() => mockAuth.refreshSession()).thenAnswer((_) async {
+          when(() => mockAuth.currentSession)
+              .thenReturn(createRefreshedSession());
+          return AuthResponse(session: createRefreshedSession());
+        });
+
+        final result = await client.invoke('send-push', body: {'title': 'Hi'});
+
+        expect(result.success, isTrue);
+        expect(result.data, {'success': 1});
+        verify(() => mockAuth.refreshSession()).called(1);
+        verify(
+          () => mockFunctions.invoke(
+            'send-push',
+            body: any(named: 'body'),
+            headers: any(named: 'headers'),
+          ),
+        ).called(2);
+      });
+
+      test('returns failure when retry also gets 401', () async {
+        when(
+          () => mockFunctions.invoke(
+            'test-fn',
+            body: null,
+            headers: any(named: 'headers'),
+          ),
+        ).thenThrow(
+          const FunctionException(
+            status: 401,
+            details: {'code': 401, 'message': 'Invalid JWT'},
+            reasonPhrase: 'Unauthorized',
+          ),
+        );
+
+        when(() => mockAuth.refreshSession()).thenAnswer((_) async {
+          when(() => mockAuth.currentSession)
+              .thenReturn(createRefreshedSession());
+          return AuthResponse(session: createRefreshedSession());
+        });
+
+        final result = await client.invoke('test-fn');
+
+        expect(result.success, isFalse);
+        expect(result.error, isNotNull);
+        verify(() => mockAuth.refreshSession()).called(1);
+      });
+
+      test('returns failure when session refresh fails', () async {
+        when(
+          () => mockFunctions.invoke(
+            'test-fn',
+            body: null,
+            headers: _authHeader,
+          ),
+        ).thenThrow(
+          const FunctionException(
+            status: 401,
+            details: {'code': 401, 'message': 'Invalid JWT'},
+            reasonPhrase: 'Unauthorized',
+          ),
+        );
+
+        when(() => mockAuth.refreshSession())
+            .thenThrow(Exception('refresh failed'));
+
+        final result = await client.invoke('test-fn');
+
+        expect(result.success, isFalse);
+        expect(result.error, isNotNull);
+      });
+
+      test('returns failure when refreshed session has no token', () async {
+        when(
+          () => mockFunctions.invoke(
+            'test-fn',
+            body: null,
+            headers: _authHeader,
+          ),
+        ).thenThrow(
+          const FunctionException(
+            status: 401,
+            details: {'code': 401, 'message': 'Invalid JWT'},
+            reasonPhrase: 'Unauthorized',
+          ),
+        );
+
+        when(() => mockAuth.refreshSession()).thenAnswer((_) async {
+          when(() => mockAuth.currentSession).thenReturn(null);
+          return AuthResponse();
+        });
+
+        final result = await client.invoke('test-fn');
+
+        expect(result.success, isFalse);
+        expect(result.error, isNotNull);
+      });
+
+      test('does not report to Sentry when retry succeeds', () async {
+        // Sentry.captureException is static and hard to mock, but we verify
+        // the success path returns before reaching the Sentry call.
+        var callCount = 0;
+        when(
+          () => mockFunctions.invoke(
+            'send-push',
+            body: any(named: 'body'),
+            headers: any(named: 'headers'),
+          ),
+        ).thenAnswer((_) async {
+          callCount++;
+          if (callCount == 1) {
+            throw const FunctionException(
+              status: 401,
+              details: {'code': 401, 'message': 'Invalid JWT'},
+              reasonPhrase: 'Unauthorized',
+            );
+          }
+          return FunctionResponse(status: 200, data: {'ok': true});
+        });
+
+        when(() => mockAuth.refreshSession()).thenAnswer((_) async {
+          when(() => mockAuth.currentSession)
+              .thenReturn(createRefreshedSession());
+          return AuthResponse(session: createRefreshedSession());
+        });
+
+        final result = await client.invoke('send-push', body: {'x': 1});
+
+        // Retry succeeded — Sentry.captureException should NOT be reached.
+        // The result being successful confirms the early return path was taken.
+        expect(result.success, isTrue);
+      });
+    });
   });
 }

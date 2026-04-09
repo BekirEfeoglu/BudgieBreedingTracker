@@ -140,6 +140,48 @@ class EdgeFunctionClient {
         );
         return EdgeFunctionResult.failure('404 NOT_FOUND: $functionName not deployed');
       }
+
+      // Retry once on 401 instead of forcing re-auth (signOut):
+      // Supabase Edge Function relay may reject a JWT that REST API still
+      // accepts (FunctionsClient stale header, clock skew, relay cache).
+      // A session refresh is enough — full re-auth would disrupt the user
+      // for a transient relay mismatch, not a real auth failure.
+      if (e.status == 401) {
+        AppLogger.warning('$_tag 401 on $functionName — refreshing session and retrying');
+        try {
+          await _client.auth.refreshSession();
+          final freshToken = _client.auth.currentSession?.accessToken;
+          if (freshToken != null) {
+            final retryHeaders = <String, String>{
+              'Authorization': 'Bearer $freshToken',
+              ...?headers,
+            };
+            final retryResponse = await _client.functions.invoke(
+              functionName,
+              body: body,
+              headers: retryHeaders,
+            );
+            final retryResult = EdgeFunctionResult.fromResponse(retryResponse);
+            if (retryResult.success) {
+              AppLogger.info('$_tag $functionName succeeded on retry');
+            } else {
+              AppLogger.warning('$_tag $functionName retry failed: ${retryResult.error}');
+            }
+            return retryResult;
+          } else {
+            AppLogger.warning(
+              '$_tag $functionName retry skipped: refreshed session has no access token',
+            );
+          }
+        } catch (retryError, retrySt) {
+          AppLogger.error('$_tag $functionName retry also failed', retryError, retrySt);
+        }
+        // 401 after retry is a transient relay issue, not a real crash —
+        // log as warning, skip Sentry to avoid noise.
+        AppLogger.warning('$_tag $functionName 401 after retry exhausted');
+        return EdgeFunctionResult.failure('Edge function error: ${e.status}');
+      }
+
       AppLogger.error('$_tag Error invoking $functionName', e, st);
       Sentry.captureException(e, stackTrace: st);
       return EdgeFunctionResult.failure('Edge function error: ${e.status}');

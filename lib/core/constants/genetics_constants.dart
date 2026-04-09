@@ -18,15 +18,18 @@ abstract final class GeneticsConstants {
 
   /// Recombination rate between Opaline and Cinnamon loci on the Z chromosome.
   ///
-  /// ~34 cM apart, approximately 34% of gametes will be recombinant.
+  /// ~32 cM apart, approximately 32% of gametes will be recombinant.
   /// Gene order on Z: Opaline — Cinnamon — Ino.
-  /// Reference: MUTAVI/WBO Z chromosome gene map.
-  static const double opalineCinnamonRecombination = 0.34;
+  /// Reference: MUTAVI, Crossing-over in the Sex-chromosome of the Male
+  /// Budgerigar (sexchrom article).
+  static const double opalineCinnamonRecombination = 0.32;
 
   /// Recombination rate between Opaline and Ino loci on the Z chromosome.
   ///
   /// ~30 cM apart, approximately 30% of gametes will be recombinant.
-  /// Reference: MUTAVI/WBO Z chromosome gene map.
+  /// Estimated from: Op–Cin (~32 cM) − Cin–Ino (~3 cM) ≈ 29–30 cM.
+  /// Not directly measured in MUTAVI sexchrom article; derived from flanking
+  /// distances.
   static const double opalineInoRecombination = 0.30;
 
   /// Recombination rate between Cinnamon and Slate loci on the Z chromosome.
@@ -38,10 +41,10 @@ abstract final class GeneticsConstants {
 
   /// Recombination rate between Opaline and Slate loci on the Z chromosome.
   ///
-  /// ~40 cM apart, approximately 40% of gametes will be recombinant.
-  /// Derived from gene order: O–C (34 cM) + C–S (5 cM) ≈ 39–40 cM.
-  /// Reference: MUTAVI Z chromosome gene map.
-  static const double opalineSlateRecombination = 0.40;
+  /// ~40.5 cM apart, approximately 40.5% of gametes will be recombinant.
+  /// Reference: MUTAVI, Crossing-over in the Sex-chromosome of the Male
+  /// Budgerigar (sexchrom article).
+  static const double opalineSlateRecombination = 0.405;
 
   /// Recombination rate between Ino and Slate loci on the Z chromosome.
   ///
@@ -119,6 +122,12 @@ abstract final class GeneticsConstants {
     mutCrestedHalfCircular,
     mutCrestedFullCircular,
   };
+
+  // ── Calculation version ──
+  /// Increment whenever recombination constants or allele resolver logic
+  /// changes in a way that would alter offspring results.
+  /// Used to detect stale GeneticsHistory entries.
+  static const int calculationVersion = 2;
 
   // ── ReverseCalculator limits ──
   /// Maximum parent genotype options evaluated per locus in reverse calculation.

@@ -250,12 +250,12 @@ jobs:
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
         run: |
-          supabase functions deploy mfa-lockout --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
-          supabase functions deploy moderate-content --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
-          supabase functions deploy revoke-oauth-token --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
-          supabase functions deploy send-push --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
-          supabase functions deploy system-health --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
-          supabase functions deploy validate-free-tier-limit --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
+          supabase functions deploy mfa-lockout --no-verify-jwt --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
+          supabase functions deploy moderate-content --no-verify-jwt --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
+          supabase functions deploy revoke-oauth-token --no-verify-jwt --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
+          supabase functions deploy send-push --no-verify-jwt --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
+          supabase functions deploy system-health --no-verify-jwt --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
+          supabase functions deploy validate-free-tier-limit --no-verify-jwt --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
 
   android-build:
     name: Android Build (Debug)

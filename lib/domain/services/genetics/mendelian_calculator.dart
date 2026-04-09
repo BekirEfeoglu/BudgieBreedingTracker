@@ -37,8 +37,8 @@ class MendelianCalculator {
   /// are grouped and calculated together (e.g., greywing/clearwing/dilute).
   ///
   /// Sex-linked linkage on Z chromosome (gene order: O — C — I — Slate):
-  /// Ino-Slate (~2 cM), Cin-Ino (~3 cM), Cin-Slate (~5 cM),
-  /// Op-Ino (~30 cM), Op-Cin (~34 cM), Op-Slate (~40 cM).
+  /// Ino-Slate (~2 cM est.), Cin-Ino (~3 cM), Cin-Slate (~5 cM),
+  /// Op-Ino (~30 cM est.), Op-Cin (~32 cM), Op-Slate (~40.5 cM).
   /// When the father carries two linked mutations as heterozygous, they
   /// are calculated as a linked pair (tightest linkage prioritised).
   /// Both linkage phases are supported: coupling (carrier) and

@@ -20,6 +20,10 @@ class GeneticsHistoryTable extends Table {
   /// JSON-encoded offspring results.
   TextColumn get resultsJson => text()();
 
+  /// Calculation engine version at the time of save.
+  /// Null for entries saved before versioning was introduced.
+  IntColumn get calculationVersion => integer().nullable()();
+
   /// User notes.
   TextColumn get notes => text().nullable()();
 
