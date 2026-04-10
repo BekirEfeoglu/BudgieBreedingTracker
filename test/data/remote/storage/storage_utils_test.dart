@@ -8,12 +8,12 @@ void main() {
       expect(StorageUtils.safeExtension('photo.JPEG'), 'jpeg');
     });
 
-    test('falls back to jpg when filename has no dot', () {
-      expect(StorageUtils.safeExtension('photo'), 'jpg');
+    test('returns null when filename has no dot', () {
+      expect(StorageUtils.safeExtension('photo'), isNull);
     });
 
-    test('falls back to jpg when filename ends with a dot', () {
-      expect(StorageUtils.safeExtension('photo.'), 'jpg');
+    test('returns null when filename ends with a dot', () {
+      expect(StorageUtils.safeExtension('photo.'), isNull);
     });
   });
 
@@ -134,8 +134,8 @@ void main() {
       expect(StorageUtils.getMimeType('bird.bmp'), 'application/octet-stream');
     });
 
-    test('uses jpg fallback when extension is missing', () {
-      expect(StorageUtils.getMimeType('bird'), 'image/jpeg');
+    test('returns octet-stream when extension is missing', () {
+      expect(StorageUtils.getMimeType('bird'), 'application/octet-stream');
     });
   });
 }

@@ -13,11 +13,26 @@ import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
 import 'package:budgie_breeding_tracker/data/models/incubation_model.dart';
 import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_detail_providers.dart';
+import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_form_providers.dart';
 import 'package:budgie_breeding_tracker/features/breeding/screens/breeding_detail_screen.dart';
 import 'package:budgie_breeding_tracker/features/breeding/widgets/breeding_pair_info_section.dart';
 import 'package:budgie_breeding_tracker/features/eggs/providers/egg_providers.dart';
 import 'package:budgie_breeding_tracker/features/notifications/providers/notification_list_providers.dart';
 import 'package:budgie_breeding_tracker/features/profile/providers/profile_providers.dart';
+
+/// A test notifier that allows manually setting form state.
+class _TestBreedingFormNotifier extends BreedingFormNotifier {
+  @override
+  BreedingFormState build() => const BreedingFormState();
+
+  void emitSuccess() {
+    state = state.copyWith(isLoading: false, isSuccess: true);
+  }
+
+  void emitError(String message) {
+    state = state.copyWith(isLoading: false, error: message);
+  }
+}
 
 void main() {
   final testPair = BreedingPair(
@@ -79,7 +94,7 @@ void main() {
         breedingPairByIdProvider('pair-1').overrideWith((_) => pairStream),
         incubationsByPairProvider(
           'pair-1',
-        ).overrideWith((_) async => incubations),
+        ).overrideWith((_) => Stream.value(incubations)),
         eggsByIncubationProvider('inc-1').overrideWith((_) => Stream.value([])),
         eggActionsProvider.overrideWith(() => EggActionsNotifier()),
         // Override bird providers for male/female (null birds)
@@ -158,6 +173,82 @@ void main() {
       expect(find.textContaining('/ 18'), findsOneWidget);
 
       FlutterError.onError = originalOnError;
+    });
+
+    testWidgets('pops screen when form state becomes success', (
+      tester,
+    ) async {
+      final formNotifier = _TestBreedingFormNotifier();
+      var didNavigateAway = false;
+
+      final navRouter = GoRouter(
+        initialLocation: '/breeding/pair-1',
+        routes: [
+          GoRoute(
+            path: '/breeding',
+            builder: (_, __) {
+              didNavigateAway = true;
+              return const Scaffold(body: Text('List'));
+            },
+            routes: [
+              GoRoute(
+                path: ':id',
+                builder: (_, state) => BreedingDetailScreen(
+                  pairId: state.pathParameters['id']!,
+                ),
+                routes: [
+                  GoRoute(
+                    path: 'eggs',
+                    builder: (_, __) => const Scaffold(body: Text('Eggs')),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          GoRoute(
+            path: '/breeding/form',
+            builder: (_, __) => const Scaffold(body: Text('Form')),
+          ),
+        ],
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            currentUserIdProvider.overrideWithValue('test-user'),
+            currentUserProvider.overrideWith((_) => null),
+            userProfileProvider.overrideWith((_) => Stream.value(null)),
+            unreadNotificationsProvider(
+              'test-user',
+            ).overrideWith((_) => Stream.value([])),
+            breedingPairByIdProvider(
+              'pair-1',
+            ).overrideWith((_) => Stream.value(testPair)),
+            incubationsByPairProvider(
+              'pair-1',
+            ).overrideWith((_) => Stream.value(<Incubation>[])),
+            eggsByIncubationProvider(
+              'inc-1',
+            ).overrideWith((_) => Stream.value([])),
+            eggActionsProvider.overrideWith(() => EggActionsNotifier()),
+            birdByIdProvider('').overrideWith((_) => Stream.value(null)),
+            breedingFormStateProvider.overrideWith(() => formNotifier),
+          ],
+          child: MaterialApp.router(routerConfig: navRouter),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // Detail screen should be visible
+      expect(find.byType(BreedingDetailScreen), findsOneWidget);
+
+      // Simulate form success (e.g., after complete/cancel)
+      formNotifier.emitSuccess();
+      await tester.pumpAndSettle();
+
+      // Should have navigated away from detail screen
+      expect(didNavigateAway, isTrue);
     });
   });
 }

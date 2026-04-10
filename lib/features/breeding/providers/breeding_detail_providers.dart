@@ -14,11 +14,11 @@ final breedingPairByIdProvider = StreamProvider.family<BreedingPair?, String>((
   return repo.watchById(id);
 });
 
-/// Fetches incubations for a breeding pair.
+/// Watches incubations for a breeding pair (live stream).
 final incubationsByPairProvider =
-    FutureProvider.family<List<Incubation>, String>((ref, pairId) {
+    StreamProvider.family<List<Incubation>, String>((ref, pairId) {
       final repo = ref.watch(incubationRepositoryProvider);
-      return repo.getByBreedingPair(pairId);
+      return repo.watchByBreedingPair(pairId);
     });
 
 /// Watches eggs for a specific incubation (live stream).

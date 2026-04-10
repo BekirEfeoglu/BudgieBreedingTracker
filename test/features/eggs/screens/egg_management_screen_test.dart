@@ -87,7 +87,7 @@ void main() {
         if (incubationsOverride != null)
           incubationsByPairProvider(
             'pair-1',
-          ).overrideWith((_) async => incubationsOverride.value!),
+          ).overrideWith((_) => Stream.value(incubationsOverride.value!)),
         if (eggsStream != null)
           eggsForIncubationProvider('inc-1').overrideWith((_) => eggsStream),
       ],
@@ -104,7 +104,7 @@ void main() {
             currentUserIdProvider.overrideWithValue('test-user'),
             incubationsByPairProvider(
               'pair-1',
-            ).overrideWith((_) => Completer<List<Incubation>>().future),
+            ).overrideWith((_) => const Stream<List<Incubation>>.empty()),
           ],
           child: MaterialApp.router(routerConfig: router),
         ),
@@ -119,7 +119,7 @@ void main() {
           overrides: [
             currentUserIdProvider.overrideWithValue('test-user'),
             incubationsByPairProvider('pair-1').overrideWith(
-              (_) => Future<List<Incubation>>.error('Network error'),
+              (_) => Stream<List<Incubation>>.error('Network error'),
             ),
           ],
           child: MaterialApp.router(routerConfig: router),
@@ -149,7 +149,7 @@ void main() {
             currentUserIdProvider.overrideWithValue('test-user'),
             incubationsByPairProvider(
               'pair-1',
-            ).overrideWith((_) async => [testIncubation]),
+            ).overrideWith((_) => Stream.value([testIncubation])),
             eggsForIncubationProvider(
               'inc-1',
             ).overrideWith((_) => Stream.value(<Egg>[])),
@@ -180,7 +180,7 @@ void main() {
             currentUserIdProvider.overrideWithValue('test-user'),
             incubationsByPairProvider(
               'pair-1',
-            ).overrideWith((_) async => [testIncubation]),
+            ).overrideWith((_) => Stream.value([testIncubation])),
             eggsForIncubationProvider(
               'inc-1',
             ).overrideWith((_) => Stream.value(testEggs)),
@@ -222,7 +222,7 @@ void main() {
             currentUserIdProvider.overrideWithValue('test-user'),
             incubationsByPairProvider(
               'pair-1',
-            ).overrideWith((_) async => [testIncubation]),
+            ).overrideWith((_) => Stream.value([testIncubation])),
             eggsForIncubationProvider(
               'inc-1',
             ).overrideWith((_) => Stream.value(hatchedEggs)),
@@ -244,7 +244,7 @@ void main() {
             currentUserIdProvider.overrideWithValue('test-user'),
             incubationsByPairProvider(
               'pair-1',
-            ).overrideWith((_) async => [testIncubation]),
+            ).overrideWith((_) => Stream.value([testIncubation])),
             eggsForIncubationProvider(
               'inc-1',
             ).overrideWith((_) => Stream.value(testEggs)),

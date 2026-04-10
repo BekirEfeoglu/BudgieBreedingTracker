@@ -57,6 +57,7 @@ class _GroupFormScreenState extends ConsumerState<GroupFormScreen> {
             children: [
               TextFormField(
                 controller: _nameController,
+                maxLength: 100,
                 decoration: InputDecoration(
                   labelText: 'messaging.group_name'.tr(),
                 ),

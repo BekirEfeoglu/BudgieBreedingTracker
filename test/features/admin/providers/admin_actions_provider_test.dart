@@ -181,14 +181,16 @@ class _FakeActionsClient extends Fake implements SupabaseClient {
   final _FakeMutationQueryBuilder securityEventsQueryBuilder;
   final _FakeMutationQueryBuilder adminLogsQueryBuilder;
   final requestedTables = <String>[];
+  int _profilesCallCount = 0;
 
   @override
   SupabaseQueryBuilder from(String table) {
     requestedTables.add(table);
     switch (table) {
-      case SupabaseConstants.adminUsersTable:
-        return adminQueryBuilder;
       case SupabaseConstants.profilesTable:
+        // First call is requireAdmin check, subsequent calls are profile queries
+        _profilesCallCount++;
+        if (_profilesCallCount == 1) return adminQueryBuilder;
         return profilesQueryBuilder;
       case SupabaseConstants.securityEventsTable:
         return securityEventsQueryBuilder;
@@ -315,7 +317,7 @@ void main() {
 
     test('bulkExport returns JSON and tracks selected ids', () async {
       final client = _makeClient(
-        adminUserResult: const {'id': 'admin-1'},
+        adminUserResult: const {'role': 'admin'},
         profilesResult: const [
           {
             'id': 'u1',
@@ -355,7 +357,7 @@ void main() {
 
     test('bulkExport returns CSV when requested', () async {
       final client = _makeClient(
-        adminUserResult: const {'id': 'admin-1'},
+        adminUserResult: const {'role': 'admin'},
         profilesResult: const [
           {
             'id': 'u1',
@@ -386,7 +388,7 @@ void main() {
       'bulkExport returns empty string and exposes error on failure',
       () async {
         final client = _makeClient(
-          adminUserResult: const {'id': 'admin-1'},
+          adminUserResult: const {'role': 'admin'},
           profilesError: StateError('profiles failed'),
         );
         final container = _makeContainer(userId: 'user-1', client: client);
@@ -407,7 +409,7 @@ void main() {
     test(
       'dismissSecurityEvent marks event resolved and logs admin action',
       () async {
-        final client = _makeClient(adminUserResult: const {'id': 'admin-1'});
+        final client = _makeClient(adminUserResult: const {'role': 'admin'});
         final container = _makeContainer(userId: 'admin-user', client: client);
         addTearDown(container.dispose);
 

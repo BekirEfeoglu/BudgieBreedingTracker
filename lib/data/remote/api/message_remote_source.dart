@@ -34,7 +34,16 @@ class MessageRemoteSource {
     }
   }
 
+  /// Maximum message content length (client-side validation).
+  static const maxMessageLength = 5000;
+
   Future<Map<String, dynamic>> insert(Map<String, dynamic> data) async {
+    // Client-side message length validation
+    final content = data['content'] as String?;
+    if (content != null && content.length > maxMessageLength) {
+      throw Exception('Message exceeds maximum length of $maxMessageLength characters');
+    }
+
     try {
       final response = await _client
           .from(SupabaseConstants.messagesTable)
@@ -73,7 +82,30 @@ class MessageRemoteSource {
     }
   }
 
-  /// Subscribe to new messages in a conversation via Supabase Realtime
+  /// Verifies the current user is a participant in the given conversation.
+  /// Returns false if verification fails (not a member or network error).
+  Future<bool> isConversationParticipant(
+    String conversationId,
+    String userId,
+  ) async {
+    try {
+      final result = await _client
+          .from(SupabaseConstants.conversationParticipantsTable)
+          .select('id')
+          .eq('conversation_id', conversationId)
+          .eq('user_id', userId)
+          .maybeSingle();
+      return result != null;
+    } catch (e) {
+      AppLogger.warning('Participant check failed: $e');
+      return false;
+    }
+  }
+
+  /// Subscribe to new messages in a conversation via Supabase Realtime.
+  ///
+  /// Callers MUST verify conversation membership via
+  /// [isConversationParticipant] before subscribing.
   RealtimeChannel subscribeToMessages(
     String conversationId,
     void Function(Map<String, dynamic> payload) onMessage,

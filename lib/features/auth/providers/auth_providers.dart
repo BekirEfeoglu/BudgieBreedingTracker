@@ -157,8 +157,15 @@ Future<void> _checkPendingMfa(Ref ref) async {
     } catch (_) {
       // If we can't even get factors, sign the user out for safety.
       // They can re-authenticate when network is available.
-      final client = ref.read(supabaseClientProvider);
-      await client.auth.signOut();
+      try {
+        final client = ref.read(supabaseClientProvider);
+        await client.auth.signOut();
+      } catch (_) {
+        // Sign-out also failed (e.g., no network). Set a sentinel MFA
+        // factor ID so the router still redirects to the 2FA verify screen
+        // instead of granting access without MFA completion.
+        ref.read(pendingMfaFactorIdProvider.notifier).state = 'mfa-required';
+      }
     }
   }
 }

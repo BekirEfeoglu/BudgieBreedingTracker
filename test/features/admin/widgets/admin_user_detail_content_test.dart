@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -84,7 +85,9 @@ final _trialUserDetail = AdminUserDetail(
 );
 
 Widget _wrap(Widget child) {
-  return MaterialApp(home: Scaffold(body: child));
+  return ProviderScope(
+    child: MaterialApp(home: Scaffold(body: child)),
+  );
 }
 
 void main() {
@@ -131,6 +134,34 @@ void main() {
       );
       await tester.pump();
       expect(find.byType(UserDetailActivityLogSection), findsOneWidget);
+    });
+
+    testWidgets('shows UserDetailRecordsSection when content is provided', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          UserDetailContent(
+            detail: _freeUserDetail,
+            contentAsync: const AsyncData(
+              AdminUserContent(
+                birds: [
+                  AdminBirdRecord(
+                    id: 'bird-1',
+                    name: 'Maviş',
+                    gender: 'male',
+                    status: 'alive',
+                    species: 'budgie',
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+      expect(find.byType(UserDetailRecordsSection), findsOneWidget);
+      expect(find.byType(ExpansionTile), findsWidgets);
     });
 
     testWidgets('renders SingleChildScrollView', (tester) async {
@@ -241,9 +272,7 @@ void main() {
       expect(find.text(l10n('common.active')), findsOneWidget);
     });
 
-    testWidgets('shows revoke_premium button for premium user', (
-      tester,
-    ) async {
+    testWidgets('shows revoke_premium button for premium user', (tester) async {
       await tester.pumpWidget(
         _wrap(
           UserDetailSubscriptionSection(
@@ -367,14 +396,15 @@ void main() {
       );
     });
 
-    testWidgets('hides subscription_updated when date is null', (
-      tester,
-    ) async {
+    testWidgets('hides subscription_updated when date is null', (tester) async {
       await tester.pumpWidget(
         _wrap(UserDetailSubscriptionSection(detail: _freeUserDetail)),
       );
       await tester.pump();
-      expect(find.textContaining(l10nContains('admin.subscription_updated')), findsNothing);
+      expect(
+        find.textContaining(l10nContains('admin.subscription_updated')),
+        findsNothing,
+      );
     });
 
     testWidgets('renders Card widget', (tester) async {

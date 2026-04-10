@@ -219,7 +219,7 @@ class _FakeRealtimeNotifier extends MessagingRealtimeNotifier {
   List<Message> build() => _initialMessages;
 
   @override
-  void subscribe(String conversationId) {}
+  Future<void> subscribe(String conversationId) async {}
 
   @override
   void clear() {}

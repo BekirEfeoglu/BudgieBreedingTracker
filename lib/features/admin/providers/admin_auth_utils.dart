@@ -17,12 +17,15 @@ Future<void> requireAdmin(Ref ref) async {
   if (userId == 'anonymous') {
     throw Exception('admin.auth_required'.tr());
   }
+  // Use profiles.role as the source of truth for admin status,
+  // consistent with the is_admin() Postgres function and RLS policies.
   final result = await client
-      .from(SupabaseConstants.adminUsersTable)
-      .select('id')
-      .eq('user_id', userId)
+      .from(SupabaseConstants.profilesTable)
+      .select('role')
+      .eq('id', userId)
       .maybeSingle();
-  if (result == null) {
+  final role = result?['role'] as String?;
+  if (role != 'admin' && role != 'founder') {
     throw Exception('admin.permission_denied'.tr());
   }
 }

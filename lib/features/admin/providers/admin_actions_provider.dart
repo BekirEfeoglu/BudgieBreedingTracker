@@ -76,14 +76,17 @@ class AdminActionsNotifier extends Notifier<AdminActionState> {
 
   // ── User Management (delegated) ──────────────────────
 
-  Future<void> toggleUserActive(String targetUserId, bool isActive) =>
-      _userManager.toggleUserActive(targetUserId, isActive);
+  Future<void> toggleUserActive(String targetUserId, bool isActive) async {
+    await _userManager.toggleUserActive(targetUserId, isActive);
+  }
 
-  Future<void> grantPremium(String targetUserId) =>
-      _userManager.grantPremium(targetUserId);
+  Future<void> grantPremium(String targetUserId) async {
+    await _userManager.grantPremium(targetUserId);
+  }
 
-  Future<void> revokePremium(String targetUserId) =>
-      _userManager.revokePremium(targetUserId);
+  Future<void> revokePremium(String targetUserId) async {
+    await _userManager.revokePremium(targetUserId);
+  }
 
   // ── Database Operations (delegated) ──────────────────
 

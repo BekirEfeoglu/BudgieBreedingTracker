@@ -1,10 +1,11 @@
 /// Pure utility functions for file validation and MIME type detection
 /// used by [StorageService].
 abstract final class StorageUtils {
-  /// Extracts file extension safely, falling back to 'jpg' if no dot is found.
-  static String safeExtension(String filename) {
+  /// Extracts file extension safely, returning null if no valid extension is found.
+  /// Callers should handle null (e.g., reject the file or require explicit type).
+  static String? safeExtension(String filename) {
     final dotIndex = filename.lastIndexOf('.');
-    if (dotIndex < 0 || dotIndex == filename.length - 1) return 'jpg';
+    if (dotIndex < 0 || dotIndex == filename.length - 1) return null;
     return filename.substring(dotIndex + 1).toLowerCase();
   }
 
@@ -52,9 +53,10 @@ abstract final class StorageUtils {
   }
 
   /// Returns the MIME type for a given filename based on its extension.
-  /// Uses [safeExtension] for consistent extension extraction (falls back to 'jpg').
+  /// Returns 'application/octet-stream' if no valid extension is found.
   static String getMimeType(String filename) {
     final ext = safeExtension(filename);
+    if (ext == null) return 'application/octet-stream';
     return switch (ext) {
       'jpg' || 'jpeg' => 'image/jpeg',
       'png' => 'image/png',

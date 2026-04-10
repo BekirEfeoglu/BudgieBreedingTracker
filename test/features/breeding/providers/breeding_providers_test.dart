@@ -279,7 +279,7 @@ void main() {
 
   group('derived map providers', () {
     test(
-      'incubationByPairMapProvider maps first incubation by pair id',
+      'incubationByPairMapProvider selects primary incubation per pair',
       () async {
         final container = makeContainer();
         addTearDown(container.dispose);
@@ -290,8 +290,48 @@ void main() {
         final map = container.read(incubationByPairMapProvider(userId));
 
         expect(map.keys, containsAll(['p1', 'p2']));
-        expect(map['p1']!.id, 'inc-1');
+        // p1 has inc-1 and inc-3 (same createdAt), selectPrimaryIncubation
+        // picks the most recent by ID tiebreaker → inc-3.
+        expect(map['p1']!.id, 'inc-3');
         expect(map['p2']!.id, 'inc-2');
+      },
+    );
+
+    test(
+      'incubationByPairMapProvider prefers active incubation over completed',
+      () async {
+        // Override with incubations where p1 has an older active and a newer
+        // completed — should prefer the active one.
+        when(() => incubationRepo.watchAll(any())).thenAnswer(
+          (_) => Stream.value([
+            Incubation(
+              id: 'inc-old-active',
+              userId: userId,
+              breedingPairId: 'p1',
+              status: IncubationStatus.active,
+              startDate: DateTime(2024, 1, 1),
+              createdAt: DateTime(2024, 1, 1),
+            ),
+            Incubation(
+              id: 'inc-new-completed',
+              userId: userId,
+              breedingPairId: 'p1',
+              status: IncubationStatus.completed,
+              startDate: DateTime(2024, 3, 1),
+              createdAt: DateTime(2024, 3, 1),
+            ),
+          ]),
+        );
+
+        final container = makeContainer();
+        addTearDown(container.dispose);
+        container.listen(allIncubationsStreamProvider(userId), (_, __) {});
+        await container.read(allIncubationsStreamProvider(userId).future);
+
+        final map = container.read(incubationByPairMapProvider(userId));
+
+        expect(map['p1']!.id, 'inc-old-active');
+        expect(map['p1']!.status, IncubationStatus.active);
       },
     );
 
@@ -379,36 +419,6 @@ void main() {
 
       // sp4 (2023-06) < sp2 (2024-01) < sp1 (2024-03) < sp3 (2024-05)
       expect(result.map((e) => e.id), ['sp4', 'sp2', 'sp1', 'sp3']);
-    });
-
-    test('sorts by status ascending (alphabetical by name)', () {
-      final container = makeSortContainer();
-      addTearDown(container.dispose);
-
-      container.read(breedingSortProvider.notifier).state =
-          BreedingSort.statusAsc;
-
-      final result = container.read(
-        sortedAndFilteredBreedingPairsProvider(sortPairs),
-      );
-
-      // active < cancelled < completed < ongoing (alphabetical)
-      expect(result.map((e) => e.id), ['sp1', 'sp4', 'sp2', 'sp3']);
-    });
-
-    test('sorts by status descending', () {
-      final container = makeSortContainer();
-      addTearDown(container.dispose);
-
-      container.read(breedingSortProvider.notifier).state =
-          BreedingSort.statusDesc;
-
-      final result = container.read(
-        sortedAndFilteredBreedingPairsProvider(sortPairs),
-      );
-
-      // ongoing > completed > cancelled > active (reverse alphabetical)
-      expect(result.map((e) => e.id), ['sp3', 'sp2', 'sp4', 'sp1']);
     });
 
     test('sorts by cage number ascending with null fallback', () {

@@ -130,15 +130,17 @@ void main() {
 
       expect(caught, isA<Exception>());
       expect(caught.toString(), contains(l10n('admin.permission_denied')));
-      expect(client.requestedTables, [SupabaseConstants.adminUsersTable]);
-      expect(queryBuilder.selectedColumns, ['id']);
+      expect(client.requestedTables, [SupabaseConstants.profilesTable]);
+      expect(queryBuilder.selectedColumns, ['role']);
       expect(filterBuilder.eqCalls, hasLength(1));
-      expect(filterBuilder.eqCalls.first.key, 'user_id');
-      expect(filterBuilder.eqCalls.first.value, 'user-1');
+      expect(filterBuilder.eqCalls[0].key, 'id');
+      expect(filterBuilder.eqCalls[0].value, 'user-1');
     });
 
     test('completes when user has an admin record', () async {
-      final maybeSingleBuilder = _FakeMaybeSingleBuilder(result: {'id': '42'});
+      final maybeSingleBuilder = _FakeMaybeSingleBuilder(
+        result: {'role': 'admin'},
+      );
       final filterBuilder = _FakeFilterBuilder(maybeSingleBuilder);
       final queryBuilder = _FakeQueryBuilder(filterBuilder);
       final client = _FakeSupabaseClient(queryBuilder);
@@ -153,11 +155,11 @@ void main() {
       final runCheck = container.read(_requireAdminRunnerProvider);
 
       await runCheck();
-      expect(client.requestedTables, [SupabaseConstants.adminUsersTable]);
-      expect(queryBuilder.selectedColumns, ['id']);
+      expect(client.requestedTables, [SupabaseConstants.profilesTable]);
+      expect(queryBuilder.selectedColumns, ['role']);
       expect(filterBuilder.eqCalls, hasLength(1));
-      expect(filterBuilder.eqCalls.first.key, 'user_id');
-      expect(filterBuilder.eqCalls.first.value, 'user-42');
+      expect(filterBuilder.eqCalls[0].key, 'id');
+      expect(filterBuilder.eqCalls[0].value, 'user-42');
     });
 
     test('bubbles query errors from supabase', () async {
@@ -186,7 +188,7 @@ void main() {
 
       expect(caught, isA<StateError>());
       expect((caught as StateError).message, 'query failed');
-      expect(client.requestedTables, [SupabaseConstants.adminUsersTable]);
+      expect(client.requestedTables, [SupabaseConstants.profilesTable]);
     });
   });
 }

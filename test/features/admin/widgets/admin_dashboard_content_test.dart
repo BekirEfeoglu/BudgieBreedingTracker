@@ -270,11 +270,7 @@ void main() {
           const DashboardSystemHealthBanner(stats: _defaultStats),
           healthData: const AsyncData({
             'status': 'degraded',
-            'checks': {
-              'database': 'ok',
-              'auth': 'degraded',
-              'storage': 'ok',
-            },
+            'checks': {'database': 'ok', 'auth': 'degraded', 'storage': 'ok'},
             'latency': {
               'database_ms': 10,
               'auth_ms': 500,
@@ -318,6 +314,22 @@ void main() {
       await tester.tap(bannerFinder);
       await tester.pumpAndSettle();
       expect(find.text(l10n('admin.service_database')), findsNothing);
+    });
+  });
+
+  group('DashboardContent', () {
+    testWidgets('shows warning banner when statsLoadFailed is true', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrapWithProviders(
+          const DashboardContent(stats: _defaultStats, statsLoadFailed: true),
+        ),
+      );
+      await tester.pump();
+
+      expect(find.text(l10n('common.data_load_error')), findsOneWidget);
+      expect(find.text(l10n('common.retry')), findsNothing);
     });
   });
 

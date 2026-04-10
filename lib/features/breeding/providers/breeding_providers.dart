@@ -8,6 +8,7 @@ import 'package:budgie_breeding_tracker/data/models/incubation_model.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
 import 'package:budgie_breeding_tracker/features/birds/providers/bird_providers.dart';
+import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_detail_providers.dart';
 import 'package:budgie_breeding_tracker/features/eggs/providers/egg_providers.dart';
 
 // Re-export currentUserIdProvider from auth so existing imports keep working.
@@ -69,6 +70,14 @@ final breedingSearchQueryProvider =
       BreedingSearchQueryNotifier.new,
     );
 
+/// Bird ID → lowercased name lookup (derived from birdsStreamProvider).
+/// Separated to avoid rebuilding the map on every search/filter change.
+final _birdNameMapProvider =
+    Provider.family<Map<String, String>, String>((ref, userId) {
+      final birds = ref.watch(birdsStreamProvider(userId)).value ?? <Bird>[];
+      return {for (final bird in birds) bird.id: bird.name.toLowerCase()};
+    });
+
 /// Searched and filtered breeding pairs (filter first, then search by cage number + bird names).
 final searchedAndFilteredBreedingPairsProvider =
     Provider.family<List<BreedingPair>, List<BreedingPair>>((ref, pairs) {
@@ -86,12 +95,8 @@ final searchedAndFilteredBreedingPairsProvider =
         }).toList();
       }
 
-      // Build bird ID → name lookup from current user's birds
       final userId = ref.watch(currentUserIdProvider);
-      final birds = ref.watch(birdsStreamProvider(userId)).value ?? <Bird>[];
-      final birdNameMap = <String, String>{
-        for (final bird in birds) bird.id: bird.name.toLowerCase(),
-      };
+      final birdNameMap = ref.watch(_birdNameMapProvider(userId));
 
       return filtered.where((pair) {
         // Match cage number
@@ -120,20 +125,26 @@ final allIncubationsStreamProvider =
       return repo.watchAll(userId);
     });
 
-/// Map of breedingPairId → first Incubation (derived from allIncubationsStreamProvider).
+/// Map of breedingPairId → primary Incubation (derived from allIncubationsStreamProvider).
+/// Uses selectPrimaryIncubation logic: prefers active incubation, then most recent.
 final incubationByPairMapProvider =
     Provider.family<Map<String, Incubation>, String>((ref, userId) {
       final incubations =
           ref.watch(allIncubationsStreamProvider(userId)).value ??
           <Incubation>[];
-      final map = <String, Incubation>{};
+      // Group incubations by breedingPairId
+      final grouped = <String, List<Incubation>>{};
       for (final inc in incubations) {
-        if (inc.breedingPairId != null &&
-            !map.containsKey(inc.breedingPairId)) {
-          map[inc.breedingPairId!] = inc;
+        if (inc.breedingPairId != null) {
+          grouped.putIfAbsent(inc.breedingPairId!, () => []).add(inc);
         }
       }
-      return map;
+      // Select primary incubation per pair (active first, then most recent)
+      return {
+        for (final entry in grouped.entries)
+          if (selectPrimaryIncubation(entry.value) case final primary?)
+            entry.key: primary,
+      };
     });
 
 /// Map of incubationId → List<Egg> (derived from eggsStreamProvider).
@@ -180,21 +191,26 @@ final sortedAndFilteredBreedingPairsProvider =
               b.createdAt ?? DateTime(1900),
             ),
           );
-        case BreedingSort.statusAsc:
-          sorted.sort((a, b) => a.status.name.compareTo(b.status.name));
-        case BreedingSort.statusDesc:
-          sorted.sort((a, b) => b.status.name.compareTo(a.status.name));
         case BreedingSort.cageAsc:
-          sorted.sort(
-            (a, b) => (a.cageNumber ?? '').compareTo(b.cageNumber ?? ''),
-          );
+          sorted.sort((a, b) => _compareCageNumbers(a.cageNumber, b.cageNumber));
         case BreedingSort.cageDesc:
-          sorted.sort(
-            (a, b) => (b.cageNumber ?? '').compareTo(a.cageNumber ?? ''),
-          );
+          sorted.sort((a, b) => _compareCageNumbers(b.cageNumber, a.cageNumber));
       }
       return sorted;
     });
+
+/// Compares cage numbers numerically (e.g. "2" < "10").
+/// Falls back to lexicographic comparison for non-numeric values.
+int _compareCageNumbers(String? a, String? b) {
+  final aVal = a ?? '';
+  final bVal = b ?? '';
+  final aNum = int.tryParse(aVal);
+  final bNum = int.tryParse(bVal);
+  if (aNum != null && bNum != null) return aNum.compareTo(bNum);
+  if (aNum != null) return -1;
+  if (bNum != null) return 1;
+  return aVal.compareTo(bVal);
+}
 
 /// Filter options for the breeding list.
 enum BreedingFilter {
@@ -217,16 +233,12 @@ enum BreedingFilter {
 enum BreedingSort {
   newest,
   oldest,
-  statusAsc,
-  statusDesc,
   cageAsc,
   cageDesc;
 
   String get label => switch (this) {
     BreedingSort.newest => 'breeding.sort_newest'.tr(),
     BreedingSort.oldest => 'breeding.sort_oldest'.tr(),
-    BreedingSort.statusAsc => 'breeding.sort_status_asc'.tr(),
-    BreedingSort.statusDesc => 'breeding.sort_status_desc'.tr(),
     BreedingSort.cageAsc => 'breeding.sort_cage_asc'.tr(),
     BreedingSort.cageDesc => 'breeding.sort_cage_desc'.tr(),
   };

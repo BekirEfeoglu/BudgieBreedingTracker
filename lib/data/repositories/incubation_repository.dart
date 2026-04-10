@@ -212,6 +212,10 @@ class IncubationRepository extends BaseRepository<Incubation>
   Future<List<Incubation>> getByBreedingPair(String pairId) =>
       _localDao.getByBreedingPair(pairId);
 
+  /// Incubations by breeding pair (live stream).
+  Stream<List<Incubation>> watchByBreedingPair(String pairId) =>
+      _localDao.watchByBreedingPair(pairId);
+
   /// Incubations by multiple breeding pair IDs (batch query).
   Future<List<Incubation>> getByBreedingPairIds(List<String> pairIds) =>
       _localDao.getByBreedingPairIds(pairIds);

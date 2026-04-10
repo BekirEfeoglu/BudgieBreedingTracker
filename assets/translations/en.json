@@ -321,10 +321,8 @@
     "all_eggs_hatched": "All eggs have hatched successfully",
     "sort_newest": "Newest First",
     "sort_oldest": "Oldest First",
-    "sort_status_asc": "Status (A-Z)",
-    "sort_status_desc": "Status (Z-A)",
-    "sort_cage_asc": "Cage No (A-Z)",
-    "sort_cage_desc": "Cage No (Z-A)"
+    "sort_cage_asc": "Cage No (Ascending)",
+    "sort_cage_desc": "Cage No (Descending)"
   },
   "eggs": {
     "add_egg": "Add Egg",
@@ -1413,6 +1411,7 @@
     "no_name": "No Name",
     "joined": "Joined",
     "subscription": "Subscription",
+    "user_content": "User Content",
     "birds": "Birds",
     "log_entries": "Log Entries",
     "activity_log": "Activity Log",
@@ -1493,6 +1492,12 @@
     "confirm_grant_premium_desc": "This user will be granted a premium subscription. Continue?",
     "confirm_revoke_premium": "Revoke Premium",
     "confirm_revoke_premium_desc": "This user's premium subscription will be revoked. Continue?",
+    "export_user_data": "Export User Data",
+    "export_ready": "User data copied to clipboard",
+    "entity_type": "Entity Type",
+    "primary_photo": "Primary Photo",
+    "created_at": "Created At",
+    "linked_bird": "Linked Bird",
     "subscription_updated": "Last updated:",
     "role_based_premium": "Premium access is granted by the user's role.",
     "load_more": "Load More",

@@ -67,10 +67,11 @@ class _DetailContent extends ConsumerWidget {
     final incubationsAsync = ref.watch(incubationsByPairProvider(pair.id));
 
     // Side effects: success after complete/cancel/delete → pop + snackbar
-    ref.listen<BreedingFormState>(breedingFormStateProvider, (_, state) {
-      if (state.isSuccess) {
+    ref.listen<BreedingFormState>(breedingFormStateProvider, (prev, state) {
+      if (state.isSuccess && !(prev?.isSuccess ?? false)) {
         ref.read(breedingFormStateProvider.notifier).reset();
         ActionFeedbackService.show('common.saved_successfully'.tr());
+        if (context.mounted) context.pop();
       }
       if (state.error != null) {
         ScaffoldMessenger.of(
@@ -212,9 +213,6 @@ class _DetailContent extends ConsumerWidget {
         );
         if (confirmed == true) {
           await formNotifier.deleteBreeding(pair.id);
-          if (context.mounted) {
-            context.pop();
-          }
         }
     }
   }

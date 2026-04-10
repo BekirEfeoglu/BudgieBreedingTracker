@@ -93,7 +93,7 @@ class _FakeAdminDatabaseClient extends Fake implements SupabaseClient {
   @override
   SupabaseQueryBuilder from(String table) {
     requestedTables.add(table);
-    if (table == SupabaseConstants.adminUsersTable) {
+    if (table == SupabaseConstants.profilesTable) {
       return adminBuilder;
     }
     throw StateError('Unexpected table: $table');
@@ -172,7 +172,7 @@ void main() {
         final client = _FakeAdminDatabaseClient(
           adminBuilder: _FakeQueryBuilder(
             _FakeAdminFilterBuilder(
-              _FakeMaybeSingleBuilder(result: {'id': 'admin-1'}),
+              _FakeMaybeSingleBuilder(result: {'role': 'admin'}),
             ),
           ),
         );
@@ -200,7 +200,7 @@ void main() {
         final client = _FakeAdminDatabaseClient(
           adminBuilder: _FakeQueryBuilder(
             _FakeAdminFilterBuilder(
-              _FakeMaybeSingleBuilder(result: {'id': 'admin-1'}),
+              _FakeMaybeSingleBuilder(result: {'role': 'admin'}),
             ),
           ),
         );
@@ -226,7 +226,7 @@ void main() {
       'exportTable authorizes admin and returns pretty JSON from RPC',
       () async {
         final adminFilter = _FakeAdminFilterBuilder(
-          _FakeMaybeSingleBuilder(result: {'id': 'admin-1'}),
+          _FakeMaybeSingleBuilder(result: {'role': 'admin'}),
         );
         final client = _FakeAdminDatabaseClient(
           adminBuilder: _FakeQueryBuilder(adminFilter),
@@ -248,11 +248,11 @@ void main() {
         expect(result, isNotNull);
         expect(result, contains('"id": 1'));
         expect(result, contains('"name": "Kiwi"'));
-        expect(client.requestedTables, [SupabaseConstants.adminUsersTable]);
-        expect(client.adminBuilder.selectedColumns, ['id']);
+        expect(client.requestedTables, [SupabaseConstants.profilesTable]);
+        expect(client.adminBuilder.selectedColumns, ['role']);
         expect(adminFilter.eqCalls, hasLength(1));
-        expect(adminFilter.eqCalls.single.key, 'user_id');
-        expect(adminFilter.eqCalls.single.value, 'user-42');
+        expect(adminFilter.eqCalls[0].key, 'id');
+        expect(adminFilter.eqCalls[0].value, 'user-42');
         expect(client.rpcCalls, hasLength(1));
         expect(client.rpcCalls.single.fn, 'admin_export_table');
         expect(client.rpcCalls.single.params, {
@@ -273,7 +273,7 @@ void main() {
 
     test('resetTable delegates to RPC after admin check', () async {
       final adminFilter = _FakeAdminFilterBuilder(
-        _FakeMaybeSingleBuilder(result: {'id': 'admin-9'}),
+        _FakeMaybeSingleBuilder(result: {'role': 'admin'}),
       );
       final client = _FakeAdminDatabaseClient(
         adminBuilder: _FakeQueryBuilder(adminFilter),
@@ -291,11 +291,11 @@ void main() {
       ).resetTable(SupabaseConstants.feedbackTable);
 
       expect(result, isTrue);
-      expect(client.requestedTables, [SupabaseConstants.adminUsersTable]);
-      expect(client.adminBuilder.selectedColumns, ['id']);
+      expect(client.requestedTables, [SupabaseConstants.profilesTable]);
+      expect(client.adminBuilder.selectedColumns, ['role']);
       expect(adminFilter.eqCalls, hasLength(1));
-      expect(adminFilter.eqCalls.single.key, 'user_id');
-      expect(adminFilter.eqCalls.single.value, 'user-9');
+      expect(adminFilter.eqCalls[0].key, 'id');
+      expect(adminFilter.eqCalls[0].value, 'user-9');
       expect(client.rpcCalls, hasLength(1));
       expect(client.rpcCalls.single.fn, 'admin_reset_table');
       expect(client.rpcCalls.single.params, {
@@ -309,6 +309,33 @@ void main() {
         updates.last.successMessage,
         contains('admin.reset_table_success'),
       );
+    });
+
+    test('resetTable fails closed when RPC errors', () async {
+      final adminFilter = _FakeAdminFilterBuilder(
+        _FakeMaybeSingleBuilder(result: {'role': 'admin'}),
+      );
+      final client = _FakeAdminDatabaseClient(
+        adminBuilder: _FakeQueryBuilder(adminFilter),
+        rpcErrors: {
+          'admin_reset_table': StateError('rpc unavailable'),
+        },
+      );
+      final updates = <_StateUpdate>[];
+      final container = _makeContainer(userId: 'user-9', client: client);
+      addTearDown(container.dispose);
+
+      final result = await _makeManager(
+        container,
+        updates,
+      ).resetTable(SupabaseConstants.feedbackTable);
+
+      expect(result, isFalse);
+      expect(client.requestedTables, [SupabaseConstants.profilesTable]);
+      expect(client.rpcCalls, hasLength(1));
+      expect(client.rpcCalls.single.fn, 'admin_reset_table');
+      expect(updates.last.isLoading, isFalse);
+      expect(updates.last.error, contains('rpc unavailable'));
     });
   });
 

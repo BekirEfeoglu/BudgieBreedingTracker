@@ -108,6 +108,17 @@ class IncubationsDao extends DatabaseAccessor<AppDatabase>
     return rows.map((r) => r.toModel()).toList();
   }
 
+  Stream<List<Incubation>> watchByBreedingPair(String pairId) {
+    return (select(incubationsTable)
+          ..where((t) => t.breedingPairId.equals(pairId))
+          ..orderBy([
+            (t) => OrderingTerm.desc(t.startDate),
+            (t) => OrderingTerm.desc(t.createdAt),
+          ]))
+        .watch()
+        .map((rows) => rows.map((r) => r.toModel()).toList());
+  }
+
   Future<List<Incubation>> getByBreedingPairIds(List<String> pairIds) async {
     if (pairIds.isEmpty) return [];
     final rows =

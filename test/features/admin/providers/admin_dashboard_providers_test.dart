@@ -106,7 +106,7 @@ class _FakeSupabaseClient extends Fake implements SupabaseClient {
   @override
   SupabaseQueryBuilder from(String table) {
     requestedTables.add(table);
-    if (table == SupabaseConstants.adminUsersTable) {
+    if (table == SupabaseConstants.profilesTable) {
       return buildersByTable.putIfAbsent(
         table,
         () => _FakeQueryBuilder(
@@ -150,7 +150,7 @@ void main() {
   // -------------------------------------------------------------------------
   group('adminSystemAlertsProvider', () {
     test('throws for anonymous user', () async {
-      final client = _FakeSupabaseClient(adminUserResult: {'id': 'admin-1'});
+      final client = _FakeSupabaseClient(adminUserResult: {'role': 'admin'});
       final container = _makeContainer(userId: 'anonymous', client: client);
       final sub = container.listen(adminSystemAlertsProvider, (_, __) {});
       addTearDown(() {
@@ -165,7 +165,7 @@ void main() {
     });
 
     test('returns empty list when no alerts exist', () async {
-      final client = _FakeSupabaseClient(adminUserResult: {'id': 'admin-1'});
+      final client = _FakeSupabaseClient(adminUserResult: {'role': 'admin'});
       final container = _makeContainer(userId: 'user-1', client: client);
       final sub = container.listen(adminSystemAlertsProvider, (_, __) {});
       addTearDown(() {
@@ -179,7 +179,7 @@ void main() {
 
     test('returns parsed SystemAlert list for authenticated admin', () async {
       final client = _FakeSupabaseClient(
-        adminUserResult: {'id': 'admin-1'},
+        adminUserResult: {'role': 'admin'},
         tableResults: {
           SupabaseConstants.systemAlertsTable: [
             {
@@ -222,7 +222,7 @@ void main() {
     });
 
     test('queries admin users table and system alerts table', () async {
-      final client = _FakeSupabaseClient(adminUserResult: {'id': 'admin-1'});
+      final client = _FakeSupabaseClient(adminUserResult: {'role': 'admin'});
       final container = _makeContainer(userId: 'user-1', client: client);
       final sub = container.listen(adminSystemAlertsProvider, (_, __) {});
       addTearDown(() {
@@ -234,7 +234,7 @@ void main() {
       expect(
         client.requestedTables,
         containsAll([
-          SupabaseConstants.adminUsersTable,
+          SupabaseConstants.profilesTable,
           SupabaseConstants.systemAlertsTable,
         ]),
       );
@@ -263,7 +263,7 @@ void main() {
   // -------------------------------------------------------------------------
   group('adminPendingReviewCountProvider', () {
     test('throws for anonymous user', () async {
-      final client = _FakeSupabaseClient(adminUserResult: {'id': 'admin-1'});
+      final client = _FakeSupabaseClient(adminUserResult: {'role': 'admin'});
       final container = _makeContainer(userId: 'anonymous', client: client);
       final sub = container.listen(adminPendingReviewCountProvider, (_, __) {});
       addTearDown(() {
@@ -278,7 +278,7 @@ void main() {
     });
 
     test('returns 0 when no content needs review', () async {
-      final client = _FakeSupabaseClient(adminUserResult: {'id': 'admin-1'});
+      final client = _FakeSupabaseClient(adminUserResult: {'role': 'admin'});
       final container = _makeContainer(userId: 'user-1', client: client);
       final sub = container.listen(adminPendingReviewCountProvider, (_, __) {});
       addTearDown(() {
@@ -294,7 +294,7 @@ void main() {
 
     test('returns sum of posts and comments needing review', () async {
       final client = _FakeSupabaseClient(
-        adminUserResult: {'id': 'admin-1'},
+        adminUserResult: {'role': 'admin'},
         tableResults: {
           SupabaseConstants.communityPostsTable: [
             {'id': 'post-1'},
@@ -320,7 +320,7 @@ void main() {
 
     test('queries posts and comments tables', () async {
       final client = _FakeSupabaseClient(
-        adminUserResult: {'id': 'admin-1'},
+        adminUserResult: {'role': 'admin'},
         tableResults: {
           SupabaseConstants.communityPostsTable: [
             {'id': 'p1'},
@@ -341,7 +341,7 @@ void main() {
       expect(
         client.requestedTables,
         containsAll([
-          SupabaseConstants.adminUsersTable,
+          SupabaseConstants.profilesTable,
           SupabaseConstants.communityPostsTable,
           SupabaseConstants.communityCommentsTable,
         ]),
@@ -370,7 +370,7 @@ void main() {
   // -------------------------------------------------------------------------
   group('recentAdminActionsProvider', () {
     test('throws for anonymous user', () async {
-      final client = _FakeSupabaseClient(adminUserResult: {'id': 'admin-1'});
+      final client = _FakeSupabaseClient(adminUserResult: {'role': 'admin'});
       final container = _makeContainer(userId: 'anonymous', client: client);
       final sub = container.listen(recentAdminActionsProvider, (_, __) {});
       addTearDown(() {
@@ -385,7 +385,7 @@ void main() {
     });
 
     test('returns empty list when no recent actions', () async {
-      final client = _FakeSupabaseClient(adminUserResult: {'id': 'admin-1'});
+      final client = _FakeSupabaseClient(adminUserResult: {'role': 'admin'});
       final container = _makeContainer(userId: 'user-1', client: client);
       final sub = container.listen(recentAdminActionsProvider, (_, __) {});
       addTearDown(() {
@@ -399,7 +399,7 @@ void main() {
 
     test('returns parsed AdminLog list for authenticated admin', () async {
       final client = _FakeSupabaseClient(
-        adminUserResult: {'id': 'admin-1'},
+        adminUserResult: {'role': 'admin'},
         tableResults: {
           SupabaseConstants.adminLogsTable: [
             {
@@ -437,7 +437,7 @@ void main() {
     });
 
     test('queries admin logs table', () async {
-      final client = _FakeSupabaseClient(adminUserResult: {'id': 'admin-1'});
+      final client = _FakeSupabaseClient(adminUserResult: {'role': 'admin'});
       final container = _makeContainer(userId: 'user-1', client: client);
       final sub = container.listen(recentAdminActionsProvider, (_, __) {});
       addTearDown(() {
@@ -449,7 +449,7 @@ void main() {
       expect(
         client.requestedTables,
         containsAll([
-          SupabaseConstants.adminUsersTable,
+          SupabaseConstants.profilesTable,
           SupabaseConstants.adminLogsTable,
         ]),
       );
@@ -470,7 +470,7 @@ void main() {
   // -------------------------------------------------------------------------
   group('adminSystemSettingsProvider', () {
     test('throws for anonymous user', () async {
-      final client = _FakeSupabaseClient(adminUserResult: {'id': 'admin-1'});
+      final client = _FakeSupabaseClient(adminUserResult: {'role': 'admin'});
       final container = _makeContainer(userId: 'anonymous', client: client);
       final sub = container.listen(adminSystemSettingsProvider, (_, __) {});
       addTearDown(() {
@@ -485,7 +485,7 @@ void main() {
     });
 
     test('returns empty map when no settings exist', () async {
-      final client = _FakeSupabaseClient(adminUserResult: {'id': 'admin-1'});
+      final client = _FakeSupabaseClient(adminUserResult: {'role': 'admin'});
       final container = _makeContainer(userId: 'user-1', client: client);
       final sub = container.listen(adminSystemSettingsProvider, (_, __) {});
       addTearDown(() {
@@ -499,7 +499,7 @@ void main() {
 
     test('returns settings map with correct structure', () async {
       final client = _FakeSupabaseClient(
-        adminUserResult: {'id': 'admin-1'},
+        adminUserResult: {'role': 'admin'},
         tableResults: {
           SupabaseConstants.systemSettingsTable: [
             {
@@ -538,7 +538,7 @@ void main() {
 
     test('last duplicate system setting row wins for same key', () async {
       final client = _FakeSupabaseClient(
-        adminUserResult: {'id': 'admin-1'},
+        adminUserResult: {'role': 'admin'},
         tableResults: {
           SupabaseConstants.systemSettingsTable: [
             {

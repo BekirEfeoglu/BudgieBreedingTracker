@@ -104,14 +104,22 @@ final orphanDataProvider = FutureProvider<OrphanDataSummary>((ref) async {
 final storageUsageProvider = FutureProvider<List<BucketUsage>>((ref) async {
   await requireAdmin(ref);
   final client = ref.watch(supabaseClientProvider);
+  const pageSize = 1000;
 
   final usages = <BucketUsage>[];
   for (final bucket in AdminConstants.storageBuckets) {
     try {
-      final files = await client.storage.from(bucket).list(
-            path: '',
-            searchOptions: const SearchOptions(limit: 1000),
-          );
+      final files = <dynamic>[];
+      var offset = 0;
+      while (true) {
+        final page = await client.storage.from(bucket).list(
+              path: '',
+              searchOptions: SearchOptions(limit: pageSize, offset: offset),
+            );
+        files.addAll(page);
+        if (page.length < pageSize) break;
+        offset += pageSize;
+      }
       var totalSize = 0;
       for (final file in files) {
         totalSize += file.metadata?['size'] as int? ?? 0;

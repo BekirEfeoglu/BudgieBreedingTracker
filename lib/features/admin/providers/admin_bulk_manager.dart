@@ -50,11 +50,14 @@ class AdminBulkManager {
 
     try {
       for (final userId in userIds) {
-        try {
-          await _userManager.toggleUserActive(userId, activate);
+        final result = await _userManager.toggleUserActive(userId, activate);
+        switch (result) {
+          case AdminUserOperationResult.success:
           succeeded++;
-        } on ProtectedRoleError {
+          case AdminUserOperationResult.protected:
           skipped++;
+          case AdminUserOperationResult.failed:
+            throw StateError('bulk toggle failed for user $userId');
         }
       }
       _updateState(isLoading: false, isSuccess: true);
@@ -75,11 +78,14 @@ class AdminBulkManager {
 
     try {
       for (final userId in userIds) {
-        try {
-          await _userManager.grantPremium(userId);
+        final result = await _userManager.grantPremium(userId);
+        switch (result) {
+          case AdminUserOperationResult.success:
           succeeded++;
-        } on ProtectedRoleError {
+          case AdminUserOperationResult.protected:
           skipped++;
+          case AdminUserOperationResult.failed:
+            throw StateError('bulk premium grant failed for user $userId');
         }
       }
       _updateState(isLoading: false, isSuccess: true);
@@ -100,11 +106,14 @@ class AdminBulkManager {
 
     try {
       for (final userId in userIds) {
-        try {
-          await _userManager.revokePremium(userId);
+        final result = await _userManager.revokePremium(userId);
+        switch (result) {
+          case AdminUserOperationResult.success:
           succeeded++;
-        } on ProtectedRoleError {
+          case AdminUserOperationResult.protected:
           skipped++;
+          case AdminUserOperationResult.failed:
+            throw StateError('bulk premium revoke failed for user $userId');
         }
       }
       _updateState(isLoading: false, isSuccess: true);

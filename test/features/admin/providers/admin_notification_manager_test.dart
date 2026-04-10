@@ -132,7 +132,7 @@ class _FakeNotificationClient extends Fake implements SupabaseClient {
   SupabaseQueryBuilder from(String table) {
     requestedTables.add(table);
     switch (table) {
-      case SupabaseConstants.adminUsersTable:
+      case SupabaseConstants.profilesTable:
         return adminQueryBuilder;
       case SupabaseConstants.notificationsTable:
         return notificationsQueryBuilder;
@@ -256,7 +256,7 @@ void main() {
       test('success path - admin check passes, insert and push succeed',
           () async {
         final client = _makeClient(
-          adminUserResult: const {'id': 'admin-1'},
+          adminUserResult: const {'role': 'admin'},
         );
         final edgeClient = _FakeEdgeFunctionClient(
           pushResult: const EdgeFunctionResult(
@@ -315,7 +315,7 @@ void main() {
       test('push fails but in-app notification succeeds (pushFailed = true)',
           () async {
         final client = _makeClient(
-          adminUserResult: const {'id': 'admin-1'},
+          adminUserResult: const {'role': 'admin'},
         );
         final edgeClient = _FakeEdgeFunctionClient(
           pushResult: const EdgeFunctionResult(
@@ -376,7 +376,7 @@ void main() {
 
       test('sanitizes long title and body', () async {
         final client = _makeClient(
-          adminUserResult: const {'id': 'admin-1'},
+          adminUserResult: const {'role': 'admin'},
         );
         final edgeClient = _FakeEdgeFunctionClient(
           pushResult: const EdgeFunctionResult(
@@ -420,7 +420,7 @@ void main() {
       test('push succeeds but delivered count is 0 (pushFailed = true)',
           () async {
         final client = _makeClient(
-          adminUserResult: const {'id': 'admin-1'},
+          adminUserResult: const {'role': 'admin'},
         );
         final edgeClient = _FakeEdgeFunctionClient(
           pushResult: const EdgeFunctionResult(
@@ -448,7 +448,7 @@ void main() {
     group('sendBulkNotification', () {
       test('success path - multiple users', () async {
         final client = _makeClient(
-          adminUserResult: const {'id': 'admin-1'},
+          adminUserResult: const {'role': 'admin'},
         );
         final edgeClient = _FakeEdgeFunctionClient(
           pushResult: const EdgeFunctionResult(
@@ -498,7 +498,7 @@ void main() {
 
       test('inserts correct number of notification rows', () async {
         final client = _makeClient(
-          adminUserResult: const {'id': 'admin-1'},
+          adminUserResult: const {'role': 'admin'},
         );
         final edgeClient = _FakeEdgeFunctionClient(
           pushResult: const EdgeFunctionResult(
@@ -547,7 +547,7 @@ void main() {
 
       test('bulk push fails but in-app notifications succeed', () async {
         final client = _makeClient(
-          adminUserResult: const {'id': 'admin-1'},
+          adminUserResult: const {'role': 'admin'},
         );
         final edgeClient = _FakeEdgeFunctionClient(
           pushResult: const EdgeFunctionResult(

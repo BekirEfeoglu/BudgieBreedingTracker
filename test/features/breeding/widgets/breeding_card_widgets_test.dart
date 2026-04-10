@@ -17,7 +17,6 @@ import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
 import 'package:budgie_breeding_tracker/data/models/incubation_model.dart';
 import 'package:budgie_breeding_tracker/domain/services/incubation/incubation_calculator.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_detail_providers.dart';
-import 'package:budgie_breeding_tracker/features/breeding/widgets/breeding_card_eggs.dart';
 import 'package:budgie_breeding_tracker/features/breeding/widgets/breeding_card_footer.dart';
 import 'package:budgie_breeding_tracker/features/breeding/widgets/breeding_card_header.dart';
 import 'package:budgie_breeding_tracker/features/breeding/widgets/breeding_card_progress.dart';
@@ -219,14 +218,14 @@ void main() {
     });
   });
 
-  group('BreedingCardEggs', () {
-    testWidgets('delegates eggs list to EggSummaryRow', (tester) async {
+  group('EggSummaryRow (in breeding card context)', () {
+    testWidgets('renders eggs with icons', (tester) async {
       final eggs = [
         _buildEgg(id: 'egg-1', status: EggStatus.laid),
         _buildEgg(id: 'egg-2', status: EggStatus.hatched),
       ];
 
-      await _pumpBreedingWidget(tester, BreedingCardEggs(eggs: eggs));
+      await _pumpBreedingWidget(tester, EggSummaryRow(eggs: eggs));
 
       final summaryRow = tester.widget<EggSummaryRow>(
         find.byType(EggSummaryRow),

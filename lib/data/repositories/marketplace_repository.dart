@@ -60,18 +60,23 @@ class MarketplaceRepository {
 
   Future<MarketplaceListing> updateListing(
     String id,
-    Map<String, dynamic> data,
-  ) async {
-    final row = await _listingSource.update(id, data);
+    Map<String, dynamic> data, {
+    required String userId,
+  }) async {
+    final row = await _listingSource.update(id, data, userId: userId);
     return MarketplaceListing.fromJson(row);
   }
 
-  Future<void> delete(String id) async {
-    await _listingSource.softDelete(id);
+  Future<void> delete(String id, {required String userId}) async {
+    await _listingSource.softDelete(id, userId: userId);
   }
 
-  Future<void> updateStatus(String id, String status) async {
-    await _listingSource.updateStatus(id, status);
+  Future<void> updateStatus(
+    String id,
+    String status, {
+    required String userId,
+  }) async {
+    await _listingSource.updateStatus(id, status, userId: userId);
   }
 
   Future<void> incrementViewCount(String id) async {

@@ -10,6 +10,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/logger.dart';
 import '../../../router/route_names.dart';
+import '../../../router/route_utils.dart';
 import '../../notifications/providers/action_feedback_providers.dart';
 import '../providers/auth_providers.dart';
 
@@ -81,7 +82,7 @@ class _EmailVerificationScreenState
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final hasEmail = widget.email != null && widget.email!.isNotEmpty;
+    final hasEmail = widget.email != null && isValidRouteEmail(widget.email);
     final canResend = hasEmail && _cooldownSeconds <= 0 && !_resending;
 
     return Scaffold(

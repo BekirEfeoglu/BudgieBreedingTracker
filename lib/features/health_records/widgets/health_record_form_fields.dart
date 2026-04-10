@@ -65,6 +65,7 @@ class HealthRecordFormFields extends StatelessWidget {
         // Title
         TextFormField(
           controller: titleController,
+          maxLength: 200,
           decoration: InputDecoration(
             labelText: 'health_records.record_title'.tr(),
             border: const OutlineInputBorder(),

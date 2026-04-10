@@ -19,8 +19,15 @@ part 'admin_dashboard_content_cards.dart';
 /// Main content body for the dashboard screen.
 class DashboardContent extends StatelessWidget {
   final AdminStats stats;
+  final bool statsLoadFailed;
+  final VoidCallback? onRetryStats;
 
-  const DashboardContent({super.key, required this.stats});
+  const DashboardContent({
+    super.key,
+    required this.stats,
+    this.statsLoadFailed = false,
+    this.onRetryStats,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -30,6 +37,10 @@ class DashboardContent extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          if (statsLoadFailed) ...[
+            _DashboardStatsWarningBanner(onRetry: onRetryStats),
+            const SizedBox(height: AppSpacing.md),
+          ],
           DashboardSystemHealthBanner(stats: stats),
           const SizedBox(height: AppSpacing.md),
           const DashboardErrorSummaryCard(),
@@ -47,7 +58,10 @@ class DashboardContent extends StatelessWidget {
             children: [
               Expanded(
                 child: DashboardQuickActionButton(
-                  icon: AppIcon(AppIcons.settings, semanticsLabel: 'admin.go_to_settings'.tr()),
+                  icon: AppIcon(
+                    AppIcons.settings,
+                    semanticsLabel: 'admin.go_to_settings'.tr(),
+                  ),
                   label: 'admin.go_to_settings'.tr(),
                   onTap: () => context.go(AppRoutes.adminSettings),
                 ),
@@ -55,7 +69,10 @@ class DashboardContent extends StatelessWidget {
               const SizedBox(width: AppSpacing.md),
               Expanded(
                 child: DashboardQuickActionButton(
-                  icon: AppIcon(AppIcons.users, semanticsLabel: 'admin.go_to_users'.tr()),
+                  icon: AppIcon(
+                    AppIcons.users,
+                    semanticsLabel: 'admin.go_to_users'.tr(),
+                  ),
                   label: 'admin.go_to_users'.tr(),
                   onTap: () => context.go(AppRoutes.adminUsers),
                 ),
@@ -82,6 +99,47 @@ class DashboardContent extends StatelessWidget {
           const SizedBox(height: AppSpacing.xxl),
           const DashboardRecentActionsSection(),
           const SizedBox(height: AppSpacing.xxxl),
+        ],
+      ),
+    );
+  }
+}
+
+class _DashboardStatsWarningBanner extends StatelessWidget {
+  const _DashboardStatsWarningBanner({this.onRetry});
+
+  final VoidCallback? onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      width: double.infinity,
+      padding: AppSpacing.cardPadding,
+      decoration: BoxDecoration(
+        color: theme.colorScheme.errorContainer.withValues(alpha: 0.35),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+        border: Border.all(
+          color: theme.colorScheme.error.withValues(alpha: 0.35),
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(
+            LucideIcons.alertTriangle,
+            color: theme.colorScheme.error,
+            size: 18,
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Text(
+              'common.data_load_error'.tr(),
+              style: theme.textTheme.bodyMedium,
+            ),
+          ),
+          if (onRetry != null)
+            TextButton(onPressed: onRetry, child: Text('common.retry'.tr())),
         ],
       ),
     );
@@ -157,7 +215,9 @@ class _DashboardSystemHealthBannerState
     );
 
     return GestureDetector(
-      onTap: checks != null ? () => setState(() => _expanded = !_expanded) : null,
+      onTap: checks != null
+          ? () => setState(() => _expanded = !_expanded)
+          : null,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         width: double.infinity,
@@ -294,9 +354,7 @@ class _ServiceCheckRow extends StatelessWidget {
             color: statusColor,
           ),
           const SizedBox(width: AppSpacing.sm),
-          Expanded(
-            child: Text(label, style: theme.textTheme.bodySmall),
-          ),
+          Expanded(child: Text(label, style: theme.textTheme.bodySmall)),
           if (latencyMs != null)
             Text(
               '${latencyMs}ms',
@@ -328,7 +386,8 @@ class DashboardStatsGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final crossAxisCount = constraints.maxWidth > AdminConstants.gridColumnBreakpoint ? 4 : 2;
+        final crossAxisCount =
+            constraints.maxWidth > AdminConstants.gridColumnBreakpoint ? 4 : 2;
         return GridView.count(
           crossAxisCount: crossAxisCount,
           shrinkWrap: true,
@@ -336,51 +395,77 @@ class DashboardStatsGrid extends StatelessWidget {
           mainAxisSpacing: AppSpacing.md,
           crossAxisSpacing: AppSpacing.md,
           // On narrow viewports, taller cards prevent text/value overflow.
-          childAspectRatio: constraints.maxWidth > AdminConstants.gridColumnBreakpoint
+          childAspectRatio:
+              constraints.maxWidth > AdminConstants.gridColumnBreakpoint
               ? AdminConstants.gridAspectRatioWide
               : AdminConstants.gridAspectRatioNarrow,
           children: [
             DashboardStatCard(
-              icon: AppIcon(AppIcons.users, semanticsLabel: 'admin.total_users'.tr()),
+              icon: AppIcon(
+                AppIcons.users,
+                semanticsLabel: 'admin.total_users'.tr(),
+              ),
               label: 'admin.total_users'.tr(),
               value: '${stats.totalUsers}',
               color: AppColors.primary,
             ),
             DashboardStatCard(
-              icon: Semantics(label: 'admin.active_today'.tr(), child: const Icon(LucideIcons.userCheck)),
+              icon: Semantics(
+                label: 'admin.active_today'.tr(),
+                child: const Icon(LucideIcons.userCheck),
+              ),
               label: 'admin.active_today'.tr(),
               value: '${stats.activeToday}',
               color: AppColors.success,
             ),
             DashboardStatCard(
-              icon: Semantics(label: 'admin.new_today'.tr(), child: const Icon(LucideIcons.userPlus)),
+              icon: Semantics(
+                label: 'admin.new_today'.tr(),
+                child: const Icon(LucideIcons.userPlus),
+              ),
               label: 'admin.new_today'.tr(),
               value: '${stats.newUsersToday}',
               color: AppColors.info,
             ),
             DashboardStatCard(
-              icon: AppIcon(AppIcons.bird, semanticsLabel: 'admin.total_birds'.tr()),
+              icon: AppIcon(
+                AppIcons.bird,
+                semanticsLabel: 'admin.total_birds'.tr(),
+              ),
               label: 'admin.total_birds'.tr(),
               value: '${stats.totalBirds}',
               color: AppColors.budgieGreen,
             ),
             DashboardStatCard(
-              icon: AppIcon(AppIcons.breedingActive, semanticsLabel: 'admin.active_breedings'.tr()),
+              icon: AppIcon(
+                AppIcons.breedingActive,
+                semanticsLabel: 'admin.active_breedings'.tr(),
+              ),
               label: 'admin.active_breedings'.tr(),
               value: '${stats.activeBreedings}',
               color: AppColors.budgieYellow,
             ),
             DashboardStatCard(
-              icon: Semantics(label: 'admin.pending_sync'.tr(), child: const Icon(LucideIcons.refreshCw)),
+              icon: Semantics(
+                label: 'admin.pending_sync'.tr(),
+                child: const Icon(LucideIcons.refreshCw),
+              ),
               label: 'admin.pending_sync'.tr(),
               value: '${stats.pendingSyncCount}',
-              color: stats.pendingSyncCount > 0 ? AppColors.warning : AppColors.success,
+              color: stats.pendingSyncCount > 0
+                  ? AppColors.warning
+                  : AppColors.success,
             ),
             DashboardStatCard(
-              icon: Semantics(label: 'admin.error_sync'.tr(), child: const Icon(LucideIcons.alertTriangle)),
+              icon: Semantics(
+                label: 'admin.error_sync'.tr(),
+                child: const Icon(LucideIcons.alertTriangle),
+              ),
               label: 'admin.error_sync'.tr(),
               value: '${stats.errorSyncCount}',
-              color: stats.errorSyncCount > 0 ? AppColors.error : AppColors.success,
+              color: stats.errorSyncCount > 0
+                  ? AppColors.error
+                  : AppColors.success,
             ),
           ],
         );
@@ -388,4 +473,3 @@ class DashboardStatsGrid extends StatelessWidget {
     );
   }
 }
-

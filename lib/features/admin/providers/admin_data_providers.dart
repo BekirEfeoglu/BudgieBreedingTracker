@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 
 import '../../../core/constants/supabase_constants.dart';
 import '../../../core/utils/logger.dart';
@@ -38,11 +39,12 @@ final isAdminProvider = FutureProvider<bool>((ref) async {
 
   try {
     final result = await client
-        .from(SupabaseConstants.adminUsersTable)
-        .select('id')
-        .eq('user_id', userId)
+        .from(SupabaseConstants.profilesTable)
+        .select('role')
+        .eq('id', userId)
         .maybeSingle();
-    return result != null;
+    final role = (result?['role'] as String?)?.toLowerCase();
+    return role == 'admin' || role == 'founder';
   } catch (e, st) {
     AppLogger.error('isAdminProvider', e, st);
     return false;
@@ -59,12 +61,11 @@ final isFounderProvider = FutureProvider<bool>((ref) async {
 
   try {
     final result = await client
-        .from(SupabaseConstants.adminUsersTable)
-        .select('id')
-        .eq('user_id', userId)
-        .eq('role', 'founder')
+        .from(SupabaseConstants.profilesTable)
+        .select('role')
+        .eq('id', userId)
         .maybeSingle();
-    return result != null;
+    return (result?['role'] as String?)?.toLowerCase() == 'founder';
   } catch (e, st) {
     AppLogger.error('isFounderProvider', e, st);
     return false;
@@ -85,30 +86,108 @@ final adminStatsProvider = FutureProvider<AdminStats>((ref) async {
     return AdminStats.fromJson(data);
   } catch (e, st) {
     AppLogger.error('adminStatsProvider RPC fallback', e, st);
-    // Fallback to client-side queries — safe because:
-    // 1. requireAdmin() already verified admin status above (outside try-catch)
-    // 2. Supabase RLS policies enforce server-side access control on these tables
-    final usersCount = await client
-        .from(SupabaseConstants.profilesTable)
-        .count();
-    final birdsCount = await client.from(SupabaseConstants.birdsTable).count();
-    final breedingCount = await client
-        .from(SupabaseConstants.breedingPairsTable)
-        .count();
-    final premiumResult = await client
-        .from(SupabaseConstants.profilesTable)
-        .select('id')
-        .eq('is_premium', true);
-    final premiumCount = (premiumResult as List).length;
+    Sentry.captureException(
+      e,
+      stackTrace: st,
+      withScope: (scope) {
+        scope.setTag('feature', 'admin_dashboard');
+        scope.setTag('provider', 'adminStatsProvider');
+        scope.setContexts('admin_stats', {
+          'stage': 'rpc',
+          'rpc_name': 'admin_get_stats',
+        });
+      },
+    );
+    Future<int> safeCount(String table, {bool excludeDeleted = false}) async {
+      try {
+        var query = client.from(table).count();
+        if (excludeDeleted) {
+          query = query.eq('is_deleted', false);
+        }
+        return await query;
+      } catch (inner, innerSt) {
+        AppLogger.warning(
+          '[adminStatsProvider] count fallback failed for $table: $inner',
+        );
+        AppLogger.debug(innerSt.toString());
+        Sentry.captureException(
+          inner,
+          stackTrace: innerSt,
+          withScope: (scope) {
+            scope.setTag('feature', 'admin_dashboard');
+            scope.setTag('provider', 'adminStatsProvider');
+            scope.setContexts('admin_stats', {
+              'stage': 'fallback_count',
+              'table': table,
+              'exclude_deleted': excludeDeleted,
+            });
+          },
+        );
+        return 0;
+      }
+    }
 
-    final pendingSync = await client
-        .from(SupabaseConstants.syncMetadataTable)
-        .select('id')
-        .eq('status', 'pending');
-    final errorSync = await client
-        .from(SupabaseConstants.syncMetadataTable)
-        .select('id')
-        .eq('status', 'error');
+    Future<int> safeSelectLength(
+      String table, {
+      required String column,
+      required Object value,
+      bool excludeDeleted = false,
+    }) async {
+      try {
+        var query = client.from(table).select('id').eq(column, value);
+        if (excludeDeleted) {
+          query = query.eq('is_deleted', false);
+        }
+        final result = await query;
+        return (result as List).length;
+      } catch (inner, innerSt) {
+        AppLogger.warning(
+          '[adminStatsProvider] select fallback failed for $table.$column=$value: $inner',
+        );
+        AppLogger.debug(innerSt.toString());
+        Sentry.captureException(
+          inner,
+          stackTrace: innerSt,
+          withScope: (scope) {
+            scope.setTag('feature', 'admin_dashboard');
+            scope.setTag('provider', 'adminStatsProvider');
+            scope.setContexts('admin_stats', {
+              'stage': 'fallback_select',
+              'table': table,
+              'column': column,
+              'value': value.toString(),
+              'exclude_deleted': excludeDeleted,
+            });
+          },
+        );
+        return 0;
+      }
+    }
+
+    final usersCount = await safeCount(SupabaseConstants.profilesTable);
+    final birdsCount = await safeCount(
+      SupabaseConstants.birdsTable,
+      excludeDeleted: true,
+    );
+    final breedingCount = await safeCount(
+      SupabaseConstants.breedingPairsTable,
+      excludeDeleted: true,
+    );
+    final premiumCount = await safeSelectLength(
+      SupabaseConstants.profilesTable,
+      column: 'is_premium',
+      value: true,
+    );
+    final pendingSyncCount = await safeSelectLength(
+      SupabaseConstants.syncMetadataTable,
+      column: 'status',
+      value: 'pending',
+    );
+    final errorSyncCount = await safeSelectLength(
+      SupabaseConstants.syncMetadataTable,
+      column: 'status',
+      value: 'error',
+    );
 
     return AdminStats(
       totalUsers: usersCount,
@@ -118,8 +197,8 @@ final adminStatsProvider = FutureProvider<AdminStats>((ref) async {
       activeBreedings: breedingCount,
       premiumCount: premiumCount,
       freeCount: usersCount - premiumCount,
-      pendingSyncCount: (pendingSync as List).length,
-      errorSyncCount: (errorSync as List).length,
+      pendingSyncCount: pendingSyncCount,
+      errorSyncCount: errorSyncCount,
     );
   }
 });

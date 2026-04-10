@@ -105,13 +105,15 @@ class MarketplaceListingRemoteSource {
 
   Future<Map<String, dynamic>> update(
     String id,
-    Map<String, dynamic> data,
-  ) async {
+    Map<String, dynamic> data, {
+    required String userId,
+  }) async {
     try {
       final response = await _client
           .from(SupabaseConstants.marketplaceListingsTable)
           .update(data)
           .eq('id', id)
+          .eq('user_id', userId)
           .select(_selectColumns)
           .single();
       return response;
@@ -121,24 +123,30 @@ class MarketplaceListingRemoteSource {
     }
   }
 
-  Future<void> softDelete(String id) async {
+  Future<void> softDelete(String id, {required String userId}) async {
     try {
       await _client
           .from(SupabaseConstants.marketplaceListingsTable)
           .update({'is_deleted': true})
-          .eq('id', id);
+          .eq('id', id)
+          .eq('user_id', userId);
     } catch (e, st) {
       AppLogger.error('marketplace', e, st);
       rethrow;
     }
   }
 
-  Future<void> updateStatus(String id, String status) async {
+  Future<void> updateStatus(
+    String id,
+    String status, {
+    required String userId,
+  }) async {
     try {
       await _client
           .from(SupabaseConstants.marketplaceListingsTable)
           .update({'status': status})
-          .eq('id', id);
+          .eq('id', id)
+          .eq('user_id', userId);
     } catch (e, st) {
       AppLogger.error('marketplace', e, st);
       rethrow;
@@ -170,7 +178,20 @@ class MarketplaceListingRemoteSource {
     int limit = 20,
   }) async {
     try {
-      final sanitized = query.replaceAll(RegExp(r'[^\p{L}\p{N}\s]', unicode: true), '').trim();
+      final sanitized = query
+          .replaceAll(RegExp(r'[\x00-\x1f]'), '')
+          .replaceAll('\\', '\\\\')
+          .replaceAll('%', r'\%')
+          .replaceAll('_', r'\_')
+          .replaceAll(',', '')
+          .replaceAll('.', '')
+          .replaceAll('(', '')
+          .replaceAll(')', '')
+          .replaceAll("'", '')
+          .replaceAll('"', '')
+          .replaceAll('`', '')
+          .replaceAll(';', '')
+          .trim();
       if (sanitized.isEmpty) return [];
 
       final response = await _client

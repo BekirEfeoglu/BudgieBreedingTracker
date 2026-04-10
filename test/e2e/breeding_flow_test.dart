@@ -205,8 +205,8 @@ void main() {
           () => mockPairRepository.watchById('pair-1'),
         ).thenAnswer((_) => Stream.value(pair));
         when(
-          () => mockIncubationRepository.getByBreedingPair('pair-1'),
-        ).thenAnswer((_) async => [incubation]);
+          () => mockIncubationRepository.watchByBreedingPair('pair-1'),
+        ).thenAnswer((_) => Stream.value([incubation]));
 
         final container = createTestContainer(
           overrides: [

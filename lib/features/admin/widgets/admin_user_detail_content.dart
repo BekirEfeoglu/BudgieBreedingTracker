@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../core/constants/app_icons.dart';
@@ -15,12 +16,14 @@ part 'admin_user_detail_content_stats.dart';
 /// Main content body for the user detail screen.
 class UserDetailContent extends StatelessWidget {
   final AdminUserDetail detail;
+  final AsyncValue<AdminUserContent>? contentAsync;
   final VoidCallback? onGrantPremium;
   final VoidCallback? onRevokePremium;
 
   const UserDetailContent({
     super.key,
     required this.detail,
+    this.contentAsync,
     this.onGrantPremium,
     this.onRevokePremium,
   });
@@ -42,6 +45,10 @@ class UserDetailContent extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.lg),
           UserDetailStatsRow(detail: detail),
+          if (contentAsync != null) ...[
+            const SizedBox(height: AppSpacing.lg),
+            UserDetailRecordsSection(contentAsync: contentAsync!),
+          ],
           const SizedBox(height: AppSpacing.xxl),
           UserDetailActivityLogSection(logs: detail.activityLogs),
           const SizedBox(height: AppSpacing.xxxl),
@@ -232,7 +239,11 @@ class UserDetailSubscriptionSection extends StatelessWidget {
                       )
                     : FilledButton.icon(
                         onPressed: onGrantPremium,
-                        icon: AppIcon(AppIcons.premium, size: 18, semanticsLabel: 'admin.grant_premium'.tr()),
+                        icon: AppIcon(
+                          AppIcons.premium,
+                          size: 18,
+                          semanticsLabel: 'admin.grant_premium'.tr(),
+                        ),
                         label: Text('admin.grant_premium'.tr()),
                         style: FilledButton.styleFrom(
                           backgroundColor: AppColors.success,
@@ -265,4 +276,3 @@ class UserDetailSubscriptionSection extends StatelessWidget {
     };
   }
 }
-

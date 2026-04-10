@@ -163,7 +163,7 @@ class _FakeMaintenanceClient extends Fake implements SupabaseClient {
   SupabaseQueryBuilder from(String table) {
     requestedTables.add(table);
     switch (table) {
-      case SupabaseConstants.adminUsersTable:
+      case SupabaseConstants.profilesTable:
         return adminQueryBuilder;
       case SupabaseConstants.adminLogsTable:
         return adminLogsQueryBuilder;
@@ -254,7 +254,7 @@ void main() {
       test('success - updates event, logs action, sets isSuccess', () async {
         final securityBuilder = _FakeMutationQueryBuilder();
         final client = _makeClient(
-          adminUserResult: const {'id': 'admin-1'},
+          adminUserResult: const {'role': 'admin'},
           securityEventsQueryBuilder: securityBuilder,
         );
         final recorder = _StateRecorder();
@@ -319,7 +319,7 @@ void main() {
     group('clearAuditLogs', () {
       test('success - deletes old logs, logs action, sets isSuccess', () async {
         final client = _makeClient(
-          adminUserResult: const {'id': 'admin-1'},
+          adminUserResult: const {'role': 'admin'},
         );
         final recorder = _StateRecorder();
         final setup = _makeContainerAndManager(
@@ -389,7 +389,7 @@ void main() {
           ),
         );
         final client = _makeClient(
-          adminUserResult: const {'id': 'admin-1'},
+          adminUserResult: const {'role': 'admin'},
           genericTableBuilder: genericBuilder,
         );
         final recorder = _StateRecorder();
@@ -455,7 +455,7 @@ void main() {
           () async {
         final syncBuilder = _FakeMutationQueryBuilder();
         final client = _makeClient(
-          adminUserResult: const {'id': 'admin-1'},
+          adminUserResult: const {'role': 'admin'},
           syncMetadataQueryBuilder: syncBuilder,
         );
         final recorder = _StateRecorder();

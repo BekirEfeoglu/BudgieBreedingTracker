@@ -6,9 +6,9 @@ import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
 import 'package:budgie_breeding_tracker/data/models/incubation_model.dart';
 import 'package:budgie_breeding_tracker/domain/services/incubation/incubation_calculator.dart';
 
+import 'package:budgie_breeding_tracker/features/eggs/widgets/egg_summary_row.dart';
 import 'breeding_card_header.dart';
 import 'breeding_card_progress.dart';
-import 'breeding_card_eggs.dart';
 import 'breeding_card_footer.dart';
 
 /// Composite breeding card with stage-colored left border.
@@ -59,7 +59,7 @@ class BreedingCard extends StatelessWidget {
                 ],
                 if (eggs.isNotEmpty) ...[
                   const SizedBox(height: AppSpacing.md),
-                  BreedingCardEggs(eggs: eggs),
+                  EggSummaryRow(eggs: eggs),
                 ],
                 const SizedBox(height: AppSpacing.md),
                 BreedingCardFooter(pair: pair, incubation: incubation),

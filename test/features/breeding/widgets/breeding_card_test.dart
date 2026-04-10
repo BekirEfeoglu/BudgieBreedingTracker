@@ -9,8 +9,8 @@ import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
 import 'package:budgie_breeding_tracker/data/models/incubation_model.dart';
 import 'package:budgie_breeding_tracker/domain/services/incubation/incubation_calculator.dart';
 import 'package:budgie_breeding_tracker/features/breeding/widgets/breeding_card.dart';
-import 'package:budgie_breeding_tracker/features/breeding/widgets/breeding_card_eggs.dart';
 import 'package:budgie_breeding_tracker/features/breeding/widgets/breeding_card_footer.dart';
+import 'package:budgie_breeding_tracker/features/eggs/widgets/egg_summary_row.dart';
 import 'package:budgie_breeding_tracker/features/breeding/widgets/breeding_card_header.dart';
 import 'package:budgie_breeding_tracker/features/breeding/widgets/breeding_card_progress.dart';
 
@@ -120,7 +120,7 @@ void main() {
       expect(find.byType(BreedingCardProgress), findsNothing);
     });
 
-    testWidgets('shows BreedingCardEggs when eggs are present', (tester) async {
+    testWidgets('shows EggSummaryRow when eggs are present', (tester) async {
       final pair = _buildPair();
       final eggs = [
         _buildEgg(id: 'egg-1', status: EggStatus.laid),
@@ -129,15 +129,15 @@ void main() {
 
       await _pump(tester, BreedingCard(pair: pair, eggs: eggs));
 
-      expect(find.byType(BreedingCardEggs), findsOneWidget);
+      expect(find.byType(EggSummaryRow), findsOneWidget);
     });
 
-    testWidgets('does not show BreedingCardEggs when no eggs', (tester) async {
+    testWidgets('does not show EggSummaryRow when no eggs', (tester) async {
       final pair = _buildPair();
 
       await _pump(tester, BreedingCard(pair: pair));
 
-      expect(find.byType(BreedingCardEggs), findsNothing);
+      expect(find.byType(EggSummaryRow), findsNothing);
     });
 
     testWidgets('shows all sections when incubation and eggs present', (
@@ -154,7 +154,7 @@ void main() {
 
       expect(find.byType(BreedingCardHeader), findsOneWidget);
       expect(find.byType(BreedingCardProgress), findsOneWidget);
-      expect(find.byType(BreedingCardEggs), findsOneWidget);
+      expect(find.byType(EggSummaryRow), findsOneWidget);
       expect(find.byType(BreedingCardFooter), findsOneWidget);
     });
 

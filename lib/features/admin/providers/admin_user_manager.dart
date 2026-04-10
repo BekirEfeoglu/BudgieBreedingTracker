@@ -16,6 +16,8 @@ class ProtectedRoleError implements Exception {
   String toString() => 'ProtectedRoleError: $role';
 }
 
+enum AdminUserOperationResult { success, protected, failed }
+
 /// Manages admin user operations (activate/deactivate, premium grant/revoke).
 ///
 /// Delegates state updates to the parent [AdminActionsNotifier] via callbacks.
@@ -32,7 +34,10 @@ class AdminUserManager {
   AdminUserManager(this._ref, this._updateState);
 
   /// Toggle user active/inactive status.
-  Future<void> toggleUserActive(String targetUserId, bool isActive) async {
+  Future<AdminUserOperationResult> toggleUserActive(
+    String targetUserId,
+    bool isActive,
+  ) async {
     _updateState(isLoading: true, error: null, isSuccess: false);
     try {
       await requireAdmin(_ref);
@@ -60,19 +65,22 @@ class AdminUserManager {
             ? 'admin.user_activated_success'.tr()
             : 'admin.user_deactivated_success'.tr(),
       );
+      return AdminUserOperationResult.success;
     } on ProtectedRoleError {
       _updateState(
         isLoading: false,
         error: 'admin.protected_user_error'.tr(),
       );
+      return AdminUserOperationResult.protected;
     } catch (e, st) {
       AppLogger.error('AdminUserManager.toggleUserActive', e, st);
       _updateState(isLoading: false, error: 'admin.action_error'.tr());
+      return AdminUserOperationResult.failed;
     }
   }
 
   /// Grant premium subscription to a user.
-  Future<void> grantPremium(String targetUserId) async {
+  Future<AdminUserOperationResult> grantPremium(String targetUserId) async {
     _updateState(isLoading: true, error: null, isSuccess: false);
     try {
       await requireAdmin(_ref);
@@ -118,6 +126,7 @@ class AdminUserManager {
         isSuccess: true,
         successMessage: 'admin.premium_granted_success'.tr(),
       );
+      return AdminUserOperationResult.success;
     } on ProtectedRoleError catch (e) {
       AppLogger.info(
         'AdminUserManager.grantPremium blocked for role: ${e.role}',
@@ -126,6 +135,7 @@ class AdminUserManager {
         isLoading: false,
         error: 'admin.protected_user_premium_error'.tr(),
       );
+      return AdminUserOperationResult.protected;
     } on PostgrestException catch (e, st) {
       AppLogger.error('AdminUserManager.grantPremium Postgrest', e, st);
       if (_isProtectedRoleMutationError(e)) {
@@ -136,14 +146,16 @@ class AdminUserManager {
       } else {
         _updateState(isLoading: false, error: 'admin.action_error'.tr());
       }
+      return AdminUserOperationResult.failed;
     } catch (e, st) {
       AppLogger.error('AdminUserManager.grantPremium', e, st);
       _updateState(isLoading: false, error: 'admin.action_error'.tr());
+      return AdminUserOperationResult.failed;
     }
   }
 
   /// Revoke premium subscription from a user.
-  Future<void> revokePremium(String targetUserId) async {
+  Future<AdminUserOperationResult> revokePremium(String targetUserId) async {
     _updateState(isLoading: true, error: null, isSuccess: false);
     try {
       await requireAdmin(_ref);
@@ -191,6 +203,7 @@ class AdminUserManager {
         isSuccess: true,
         successMessage: 'admin.premium_revoked_success'.tr(),
       );
+      return AdminUserOperationResult.success;
     } on ProtectedRoleError catch (e) {
       AppLogger.info(
         'AdminUserManager.revokePremium blocked for role: ${e.role}',
@@ -199,6 +212,7 @@ class AdminUserManager {
         isLoading: false,
         error: 'admin.protected_user_premium_error'.tr(),
       );
+      return AdminUserOperationResult.protected;
     } on PostgrestException catch (e, st) {
       AppLogger.error('AdminUserManager.revokePremium Postgrest', e, st);
       if (_isProtectedRoleMutationError(e)) {
@@ -209,9 +223,11 @@ class AdminUserManager {
       } else {
         _updateState(isLoading: false, error: 'admin.action_error'.tr());
       }
+      return AdminUserOperationResult.failed;
     } catch (e, st) {
       AppLogger.error('AdminUserManager.revokePremium', e, st);
       _updateState(isLoading: false, error: 'admin.action_error'.tr());
+      return AdminUserOperationResult.failed;
     }
   }
 

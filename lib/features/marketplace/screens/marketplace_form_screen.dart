@@ -100,6 +100,7 @@ class _MarketplaceFormScreenState
               const SizedBox(height: AppSpacing.lg),
               TextFormField(
                 controller: _titleController,
+                maxLength: 200,
                 decoration: InputDecoration(
                   labelText: 'marketplace.title_label'.tr(),
                 ),
@@ -117,6 +118,7 @@ class _MarketplaceFormScreenState
                   labelText: 'marketplace.description_label'.tr(),
                 ),
                 maxLines: 4,
+                maxLength: 2000,
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
                     return 'marketplace.description_required'.tr();
@@ -133,10 +135,17 @@ class _MarketplaceFormScreenState
                     suffixText: 'TRY',
                   ),
                   keyboardType: TextInputType.number,
+                  maxLength: 10,
                   validator: (value) {
                     if (_listingType == MarketplaceListingType.sale &&
                         (value == null || value.trim().isEmpty)) {
                       return 'marketplace.price_required'.tr();
+                    }
+                    if (value != null && value.trim().isNotEmpty) {
+                      final price = double.tryParse(value.trim());
+                      if (price == null || price <= 0 || price > 999999) {
+                        return 'validation.invalid_price'.tr();
+                      }
                     }
                     return null;
                   },
@@ -158,6 +167,7 @@ class _MarketplaceFormScreenState
               const SizedBox(height: AppSpacing.lg),
               TextFormField(
                 controller: _mutationController,
+                maxLength: 100,
                 decoration: InputDecoration(
                   labelText: 'marketplace.mutation_label'.tr(),
                 ),
@@ -183,6 +193,7 @@ class _MarketplaceFormScreenState
               const SizedBox(height: AppSpacing.lg),
               TextFormField(
                 controller: _ageController,
+                maxLength: 50,
                 decoration: InputDecoration(
                   labelText: 'marketplace.age_label'.tr(),
                 ),

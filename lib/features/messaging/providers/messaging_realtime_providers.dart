@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../data/models/message_model.dart';
 import '../../../data/repositories/repository_providers.dart';
+import '../../breeding/providers/breeding_providers.dart';
 
 /// Manages realtime message subscription for active chat
 class MessagingRealtimeNotifier extends Notifier<List<Message>> {
@@ -16,11 +17,13 @@ class MessagingRealtimeNotifier extends Notifier<List<Message>> {
     return [];
   }
 
-  void subscribe(String conversationId) {
+  Future<void> subscribe(String conversationId) async {
     _unsubscribe();
     final repo = ref.read(messagingRepositoryProvider);
-    _channel = repo.subscribeToMessages(
+    final userId = ref.read(currentUserIdProvider);
+    _channel = await repo.subscribeToMessages(
       conversationId,
+      userId,
       (message) {
         state = [message, ...state];
       },

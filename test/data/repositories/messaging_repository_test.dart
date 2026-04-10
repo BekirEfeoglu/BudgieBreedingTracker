@@ -599,6 +599,9 @@ void main() {
       final mockChannel = MockRealtimeChannel();
 
       when(
+        () => messageSource.isConversationParticipant('conv-1', 'u1'),
+      ).thenAnswer((_) async => true);
+      when(
         () => messageSource.subscribeToMessages('conv-1', any()),
       ).thenAnswer((inv) {
         capturedCallback =
@@ -607,7 +610,7 @@ void main() {
       });
 
       Message? receivedMessage;
-      final channel = repository.subscribeToMessages('conv-1', (msg) {
+      final channel = await repository.subscribeToMessages('conv-1', 'u1', (msg) {
         receivedMessage = msg;
       });
 
@@ -626,6 +629,9 @@ void main() {
       final mockChannel = MockRealtimeChannel();
 
       when(
+        () => messageSource.isConversationParticipant('conv-1', 'u1'),
+      ).thenAnswer((_) async => true);
+      when(
         () => messageSource.subscribeToMessages('conv-1', any()),
       ).thenAnswer((inv) {
         capturedCallback =
@@ -634,7 +640,7 @@ void main() {
       });
 
       Message? receivedMessage;
-      repository.subscribeToMessages('conv-1', (msg) {
+      await repository.subscribeToMessages('conv-1', 'u1', (msg) {
         receivedMessage = msg;
       });
 

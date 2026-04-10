@@ -149,7 +149,7 @@ class AdminDatabaseManager {
   }
 
   /// Reset (truncate) a single table.
-  /// Tries RPC first, falls back to client-side DELETE if RPC is unavailable.
+  /// Fails closed if the server-side RPC is unavailable.
   Future<bool> resetTable(String tableName) async {
     if (!_allowedTables.contains(tableName)) {
       _updateState(
@@ -163,29 +163,13 @@ class AdminDatabaseManager {
       await requireAdmin(_ref);
       final client = _ref.read(supabaseClientProvider);
 
-      int rowsDeleted = 0;
-      try {
-        final result = await client.rpc(
-          'admin_reset_table',
-          params: {'p_table_name': tableName},
-        );
-        if (result is Map<String, dynamic>) {
-          rowsDeleted = (result['rows_deleted'] as num?)?.toInt() ?? 0;
-        }
-      } catch (rpcError) {
-        AppLogger.error(
-          'AdminDatabaseManager.resetTable RPC unavailable, using fallback',
-          rpcError,
-          StackTrace.current,
-        );
-        Sentry.captureMessage(
-          'Admin resetTable fallback: $tableName',
-          level: SentryLevel.warning,
-        );
-        final countBefore = await client.from(tableName).count();
-        await client.from(tableName).delete().not('id', 'is', null);
-        rowsDeleted = countBefore;
-      }
+      final result = await client.rpc(
+        'admin_reset_table',
+        params: {'p_table_name': tableName},
+      );
+      final rowsDeleted = result is Map<String, dynamic>
+          ? (result['rows_deleted'] as num?)?.toInt() ?? 0
+          : 0;
 
       _updateState(
         isLoading: false,
@@ -197,55 +181,27 @@ class AdminDatabaseManager {
       return true;
     } catch (e, st) {
       AppLogger.error('AdminDatabaseManager.resetTable', e, st);
+      Sentry.captureMessage(
+        'Admin resetTable aborted because RPC failed: $tableName',
+        level: SentryLevel.warning,
+      );
       _updateState(isLoading: false, error: '${'admin.action_error'.tr()}: $e');
       return false;
     }
   }
 
   /// Reset all user data tables (protected system tables are preserved).
-  /// Tries RPC first, falls back to client-side DELETE in FK-safe order.
+  /// Fails closed if the server-side RPC is unavailable.
   Future<bool> resetAllUserData() async {
     _updateState(isLoading: true, error: null, isSuccess: false);
     try {
       await requireAdmin(_ref);
       final client = _ref.read(supabaseClientProvider);
 
-      int totalDeleted = 0;
-      try {
-        final result = await client.rpc('admin_reset_all_user_data');
-        if (result is Map<String, dynamic>) {
-          totalDeleted = (result['total_rows_deleted'] as num?)?.toInt() ?? 0;
-        }
-      } catch (rpcError) {
-        AppLogger.error(
-          'AdminDatabaseManager.resetAllUserData RPC unavailable, using fallback',
-          rpcError,
-          StackTrace.current,
-        );
-        Sentry.captureMessage(
-          'Admin resetAllUserData fallback triggered',
-          level: SentryLevel.warning,
-        );
-        AppLogger.warning(
-          'admin: resetAllUserData fallback path — no transaction guarantee, '
-          'partial deletes are possible if interrupted',
-        );
-        for (final table in _deletionOrder) {
-          try {
-            final count = await client.from(table).count();
-            if (count > 0) {
-              await client.from(table).delete().not('id', 'is', null);
-              totalDeleted += count;
-            }
-          } catch (tableError) {
-            AppLogger.error(
-              'AdminDatabaseManager.resetAllUserData fallback: $table',
-              tableError,
-              StackTrace.current,
-            );
-          }
-        }
-      }
+      final result = await client.rpc('admin_reset_all_user_data');
+      final totalDeleted = result is Map<String, dynamic>
+          ? (result['total_rows_deleted'] as num?)?.toInt() ?? 0
+          : 0;
 
       _updateState(
         isLoading: false,
@@ -257,6 +213,10 @@ class AdminDatabaseManager {
       return true;
     } catch (e, st) {
       AppLogger.error('AdminDatabaseManager.resetAllUserData', e, st);
+      Sentry.captureMessage(
+        'Admin resetAllUserData aborted because RPC failed',
+        level: SentryLevel.warning,
+      );
       _updateState(isLoading: false, error: '${'admin.action_error'.tr()}: $e');
       return false;
     }

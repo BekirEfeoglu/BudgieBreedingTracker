@@ -109,6 +109,21 @@ class AuthActions with _AuthOAuthMixin, _AuthAccountMixin {
     return response;
   }
 
+  /// Sign out with best-effort OAuth token revocation.
+  ///
+  /// Attempts to revoke the provider token (Google/Apple) before
+  /// signing out so it doesn't remain valid after session ends.
+  @override
+  Future<void> signOut() async {
+    // Best-effort: revoke OAuth provider token before session is destroyed
+    try {
+      await revokeOAuthToken();
+    } catch (_) {
+      // Non-blocking: provider token will expire naturally
+    }
+    await _client.auth.signOut();
+  }
+
   void _enforceRateLimit(DateTime? lastCall, String message) {
     if (lastCall != null &&
         DateTime.now().difference(lastCall) < _authCooldown) {

@@ -63,10 +63,10 @@ void main() {
 
       test('expected specific values', () {
         expect(GeneticsConstants.cinnamonInoRecombination, 0.03);
-        expect(GeneticsConstants.opalineCinnamonRecombination, 0.34);
+        expect(GeneticsConstants.opalineCinnamonRecombination, 0.32);
         expect(GeneticsConstants.opalineInoRecombination, 0.30);
         expect(GeneticsConstants.cinnamonSlateRecombination, 0.05);
-        expect(GeneticsConstants.opalineSlateRecombination, 0.40);
+        expect(GeneticsConstants.opalineSlateRecombination, 0.405);
         expect(GeneticsConstants.inoSlateRecombination, 0.02);
       });
 

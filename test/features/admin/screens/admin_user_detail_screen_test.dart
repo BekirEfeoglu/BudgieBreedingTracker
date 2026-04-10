@@ -27,10 +27,12 @@ class _FakeAdminActionsNotifier extends AdminActionsNotifier {
 
 Widget _createSubject({
   AsyncValue<AdminUserDetail> detailAsync = const AsyncLoading(),
+  AsyncValue<AdminUserContent> contentAsync = const AsyncLoading(),
 }) {
   return ProviderScope(
     overrides: [
       adminUserDetailProvider(_testUserId).overrideWithValue(detailAsync),
+      adminUserContentProvider(_testUserId).overrideWithValue(contentAsync),
       adminActionsProvider.overrideWith(_FakeAdminActionsNotifier.new),
     ],
     child: const MaterialApp(home: AdminUserDetailScreen(userId: _testUserId)),
@@ -91,7 +93,10 @@ void main() {
 
       await pumpLocalizedApp(
         tester,
-        _createSubject(detailAsync: AsyncData(detail)),
+        _createSubject(
+          detailAsync: AsyncData(detail),
+          contentAsync: const AsyncData(AdminUserContent()),
+        ),
         settle: false,
       );
       await tester.pump();
@@ -118,7 +123,10 @@ void main() {
 
       await pumpLocalizedApp(
         tester,
-        _createSubject(detailAsync: AsyncData(detail)),
+        _createSubject(
+          detailAsync: AsyncData(detail),
+          contentAsync: const AsyncData(AdminUserContent()),
+        ),
         settle: false,
       );
       await tester.pump();

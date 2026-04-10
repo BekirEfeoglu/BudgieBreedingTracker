@@ -63,6 +63,9 @@ class StorageService {
     _sanitizePath(userId);
     _sanitizePath(birdId);
     final ext = StorageUtils.safeExtension(file.name);
+    if (ext == null) {
+      throw const StorageException('File has no valid extension');
+    }
     final timestamp = DateTime.now().millisecondsSinceEpoch;
     final path = '$userId/$birdId/$timestamp.$ext';
 
@@ -79,6 +82,9 @@ class StorageService {
   }) async {
     _sanitizePath(userId);
     final ext = StorageUtils.safeExtension(file.name);
+    if (ext == null) {
+      throw const StorageException('File has no valid extension');
+    }
     final path = '$userId/avatar.$ext';
 
     return _uploadFile(
@@ -128,6 +134,9 @@ class StorageService {
     _sanitizePath(userId);
     _sanitizePath(postId);
     final ext = StorageUtils.safeExtension(file.name);
+    if (ext == null) {
+      throw const StorageException('File has no valid extension');
+    }
     final timestamp = DateTime.now().millisecondsSinceEpoch;
     final path = '$userId/$postId/$timestamp.$ext';
 
@@ -206,9 +215,9 @@ class StorageService {
   }) async {
     try {
       final ext = StorageUtils.safeExtension(file.name);
-      if (!_allowedExtensions.contains(ext)) {
+      if (ext == null || !_allowedExtensions.contains(ext)) {
         throw StorageException(
-          'File type .$ext is not allowed. '
+          'File type ${ext != null ? '.$ext' : '(unknown)'} is not allowed. '
           'Allowed: ${_allowedExtensions.join(', ')}',
         );
       }

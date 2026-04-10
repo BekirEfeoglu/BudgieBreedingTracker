@@ -5,7 +5,7 @@ import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:budgie_breeding_tracker/core/enums/egg_enums.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
-import 'package:budgie_breeding_tracker/features/breeding/widgets/breeding_card_eggs.dart';
+import 'package:budgie_breeding_tracker/features/eggs/widgets/egg_summary_row.dart';
 import 'package:budgie_breeding_tracker/features/eggs/widgets/egg_summary_row.dart';
 
 Widget _wrap(Widget child) {
@@ -25,20 +25,20 @@ Egg _buildEgg({
 }
 
 void main() {
-  group('BreedingCardEggs', () {
+  group('EggSummaryRow', () {
     testWidgets('renders without crashing', (tester) async {
       final eggs = [_buildEgg()];
 
-      await tester.pumpWidget(_wrap(BreedingCardEggs(eggs: eggs)));
+      await tester.pumpWidget(_wrap(EggSummaryRow(eggs: eggs)));
       await tester.pump();
 
-      expect(find.byType(BreedingCardEggs), findsOneWidget);
+      expect(find.byType(EggSummaryRow), findsOneWidget);
     });
 
     testWidgets('delegates to EggSummaryRow', (tester) async {
       final eggs = [_buildEgg()];
 
-      await tester.pumpWidget(_wrap(BreedingCardEggs(eggs: eggs)));
+      await tester.pumpWidget(_wrap(EggSummaryRow(eggs: eggs)));
       await tester.pump();
 
       expect(find.byType(EggSummaryRow), findsOneWidget);
@@ -50,7 +50,7 @@ void main() {
         _buildEgg(id: 'egg-2', status: EggStatus.hatched),
       ];
 
-      await tester.pumpWidget(_wrap(BreedingCardEggs(eggs: eggs)));
+      await tester.pumpWidget(_wrap(EggSummaryRow(eggs: eggs)));
       await tester.pump();
 
       final summaryRow = tester.widget<EggSummaryRow>(
@@ -66,7 +66,7 @@ void main() {
         _buildEgg(id: 'egg-3', status: EggStatus.hatched),
       ];
 
-      await tester.pumpWidget(_wrap(BreedingCardEggs(eggs: eggs)));
+      await tester.pumpWidget(_wrap(EggSummaryRow(eggs: eggs)));
       await tester.pump();
 
       expect(find.byType(AppIcon), findsNWidgets(3));
@@ -76,7 +76,7 @@ void main() {
       tester,
     ) async {
       await tester.pumpWidget(
-        _wrap(const BreedingCardEggs(eggs: [])),
+        _wrap(const EggSummaryRow(eggs: [])),
       );
       await tester.pump();
 
@@ -86,7 +86,7 @@ void main() {
     testWidgets('shows single egg with laid status', (tester) async {
       final eggs = [_buildEgg(id: 'egg-1', status: EggStatus.laid)];
 
-      await tester.pumpWidget(_wrap(BreedingCardEggs(eggs: eggs)));
+      await tester.pumpWidget(_wrap(EggSummaryRow(eggs: eggs)));
       await tester.pump();
 
       expect(find.byType(AppIcon), findsOneWidget);
@@ -104,7 +104,7 @@ void main() {
           home: Scaffold(
             body: SizedBox(
               width: 600,
-              child: BreedingCardEggs(eggs: eggs),
+              child: EggSummaryRow(eggs: eggs),
             ),
           ),
         ),

@@ -1,14 +1,76 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:budgie_breeding_tracker/core/enums/admin_enums.dart';
 import 'package:budgie_breeding_tracker/data/remote/supabase/supabase_client.dart';
 import 'package:budgie_breeding_tracker/features/admin/constants/admin_constants.dart';
 import 'package:budgie_breeding_tracker/features/admin/providers/admin_data_providers.dart';
 import 'package:budgie_breeding_tracker/features/admin/providers/admin_models.dart';
+import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
 
 import '../../../helpers/mocks.dart';
+
+class _FakeMaybeSingleBuilder extends Fake
+    implements PostgrestTransformBuilder<PostgrestMap?> {
+  _FakeMaybeSingleBuilder({this.result, this.error});
+
+  final PostgrestMap? result;
+  final Object? error;
+
+  @override
+  Future<S> then<S>(
+    FutureOr<S> Function(PostgrestMap? value) onValue, {
+    Function? onError,
+  }) {
+    final source = error == null
+        ? Future<PostgrestMap?>.value(result)
+        : Future<PostgrestMap?>.error(error!);
+    return source.then(onValue, onError: onError);
+  }
+}
+
+class _FakeFilterBuilder extends Fake
+    implements PostgrestFilterBuilder<PostgrestList> {
+  _FakeFilterBuilder(this.maybeSingleBuilder);
+
+  final _FakeMaybeSingleBuilder maybeSingleBuilder;
+
+  @override
+  PostgrestFilterBuilder<PostgrestList> eq(String column, Object value) {
+    return this;
+  }
+
+  @override
+  PostgrestTransformBuilder<PostgrestMap?> maybeSingle() {
+    return maybeSingleBuilder;
+  }
+}
+
+class _FakeQueryBuilder extends Fake implements SupabaseQueryBuilder {
+  _FakeQueryBuilder(this.filterBuilder);
+
+  final _FakeFilterBuilder filterBuilder;
+
+  @override
+  PostgrestFilterBuilder<PostgrestList> select([String columns = '*']) {
+    return filterBuilder;
+  }
+}
+
+class _FakeSupabaseClient extends Fake implements SupabaseClient {
+  _FakeSupabaseClient(this.queryBuilder);
+
+  final _FakeQueryBuilder queryBuilder;
+
+  @override
+  SupabaseQueryBuilder from(String table) {
+    return queryBuilder;
+  }
+}
 
 void main() {
   group('AdminUsersLimitNotifier', () {
@@ -44,6 +106,49 @@ void main() {
   group('AdminConstants.usersPageSize', () {
     test('is 50', () {
       expect(AdminConstants.usersPageSize, 50);
+    });
+  });
+
+  group('isAdminProvider', () {
+    ProviderContainer makeContainer({
+      required String userId,
+      required PostgrestMap? result,
+    }) {
+      final client = _FakeSupabaseClient(
+        _FakeQueryBuilder(
+          _FakeFilterBuilder(
+            _FakeMaybeSingleBuilder(result: result),
+          ),
+        ),
+      );
+      return ProviderContainer(
+        overrides: [
+          currentUserIdProvider.overrideWithValue(userId),
+          supabaseClientProvider.overrideWithValue(client),
+          supabaseInitializedProvider.overrideWithValue(true),
+        ],
+        retry: (_, __) => null,
+      );
+    }
+
+    test('returns true for founder role from profiles', () async {
+      final container = makeContainer(
+        userId: 'user-1',
+        result: {'role': 'founder'},
+      );
+      addTearDown(container.dispose);
+
+      expect(await container.read(isAdminProvider.future), isTrue);
+    });
+
+    test('returns false for standard user role from profiles', () async {
+      final container = makeContainer(
+        userId: 'user-1',
+        result: {'role': 'user'},
+      );
+      addTearDown(container.dispose);
+
+      expect(await container.read(isAdminProvider.future), isFalse);
     });
   });
 

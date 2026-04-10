@@ -82,7 +82,7 @@ void main() {
   });
 
   group('incubationsByPairProvider', () {
-    test('delegates to repository.getByBreedingPair', () async {
+    test('delegates to repository.watchByBreedingPair', () async {
       final incubations = [
         Incubation(
           id: 'i1',
@@ -93,12 +93,13 @@ void main() {
         ),
       ];
       when(
-        () => incubationRepo.getByBreedingPair('bp1'),
-      ).thenAnswer((_) async => incubations);
+        () => incubationRepo.watchByBreedingPair('bp1'),
+      ).thenAnswer((_) => Stream.value(incubations));
 
       final container = makeContainer();
       addTearDown(container.dispose);
 
+      container.listen(incubationsByPairProvider('bp1'), (_, __) {});
       final result = await container.read(
         incubationsByPairProvider('bp1').future,
       );

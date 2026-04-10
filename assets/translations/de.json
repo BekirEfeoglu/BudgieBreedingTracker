@@ -321,10 +321,8 @@
     "all_eggs_hatched": "Alle Eier sind erfolgreich geschlüpft",
     "sort_newest": "Neueste zuerst",
     "sort_oldest": "Älteste zuerst",
-    "sort_status_asc": "Status (A-Z)",
-    "sort_status_desc": "Status (Z-A)",
-    "sort_cage_asc": "Käfig-Nr. (A-Z)",
-    "sort_cage_desc": "Käfig-Nr. (Z-A)"
+    "sort_cage_asc": "Käfig-Nr. (Aufsteigend)",
+    "sort_cage_desc": "Käfig-Nr. (Absteigend)"
   },
   "eggs": {
     "add_egg": "Ei hinzufügen",
@@ -1413,6 +1411,7 @@
     "no_name": "Ohne Name",
     "joined": "Beigetreten",
     "subscription": "Abonnement",
+    "user_content": "Benutzerinhalte",
     "birds": "Vögel",
     "log_entries": "Protokolleinträge",
     "activity_log": "Aktivitätsprotokoll",
@@ -1493,6 +1492,12 @@
     "confirm_grant_premium_desc": "Diesem Benutzer wird ein Premium-Abonnement gewährt. Fortfahren?",
     "confirm_revoke_premium": "Premium widerrufen",
     "confirm_revoke_premium_desc": "Das Premium-Abonnement dieses Benutzers wird widerrufen. Fortfahren?",
+    "export_user_data": "Benutzerdaten exportieren",
+    "export_ready": "Benutzerdaten in die Zwischenablage kopiert",
+    "entity_type": "Eintragstyp",
+    "primary_photo": "Primäres Foto",
+    "created_at": "Erstellt am",
+    "linked_bird": "Verknüpfter Vogel",
     "subscription_updated": "Zuletzt aktualisiert:",
     "role_based_premium": "Der Premium-Zugriff wird über die Benutzerrolle gewährt.",
     "load_more": "Mehr laden",

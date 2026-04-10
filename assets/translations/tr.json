@@ -321,10 +321,8 @@
     "all_eggs_hatched": "Tüm yumurtalar başarıyla çıktı",
     "sort_newest": "En Yeni",
     "sort_oldest": "En Eski",
-    "sort_status_asc": "Durum (A-Z)",
-    "sort_status_desc": "Durum (Z-A)",
-    "sort_cage_asc": "Kafes No (A-Z)",
-    "sort_cage_desc": "Kafes No (Z-A)"
+    "sort_cage_asc": "Kafes No (Artan)",
+    "sort_cage_desc": "Kafes No (Azalan)"
   },
   "eggs": {
     "add_egg": "Yumurta Ekle",
@@ -1413,6 +1411,7 @@
     "no_name": "İsimsiz",
     "joined": "Katılım",
     "subscription": "Abonelik",
+    "user_content": "Kullanıcı İçeriği",
     "birds": "Kuşlar",
     "log_entries": "Log Kayıtları",
     "activity_log": "Aktivite Logu",
@@ -1493,6 +1492,12 @@
     "confirm_grant_premium_desc": "Bu kullanıcıya premium abonelik verilecek. Devam etmek istiyor musunuz?",
     "confirm_revoke_premium": "Premium İptal Et",
     "confirm_revoke_premium_desc": "Bu kullanıcının premium aboneliği iptal edilecek. Devam etmek istiyor musunuz?",
+    "export_user_data": "Kullanıcı Verisini Dışa Aktar",
+    "export_ready": "Kullanıcı verisi panoya kopyalandı",
+    "entity_type": "Kayıt Türü",
+    "primary_photo": "Birincil Fotoğraf",
+    "created_at": "Oluşturulma",
+    "linked_bird": "Bağlı Kuş",
     "subscription_updated": "Son güncelleme:",
     "role_based_premium": "Premium erişimi kullanıcı rolü üzerinden sağlanıyor.",
     "load_more": "Daha Fazla Yükle",

@@ -7,7 +7,6 @@ import 'package:budgie_breeding_tracker/features/admin/providers/admin_data_prov
 import 'package:budgie_breeding_tracker/features/admin/providers/admin_models.dart';
 import 'package:budgie_breeding_tracker/features/admin/screens/admin_dashboard_screen.dart';
 import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
-import 'package:budgie_breeding_tracker/core/widgets/error_state.dart';
 
 Widget _createSubject({
   AsyncValue<AdminStats> statsAsync = const AsyncLoading(),
@@ -15,9 +14,7 @@ Widget _createSubject({
   return ProviderScope(
     overrides: [
       adminStatsProvider.overrideWithValue(statsAsync),
-      systemHealthProvider.overrideWithValue(
-        const AsyncData({'status': 'ok'}),
-      ),
+      systemHealthProvider.overrideWithValue(const AsyncData({'status': 'ok'})),
     ],
     child: const MaterialApp(home: AdminDashboardScreen()),
   );
@@ -39,7 +36,9 @@ void main() {
       expect(find.byType(LoadingState), findsOneWidget);
     });
 
-    testWidgets('shows error state when provider fails', (tester) async {
+    testWidgets('shows dashboard content with warning when provider fails', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         _createSubject(
           statsAsync: const AsyncError('test error', StackTrace.empty),
@@ -47,7 +46,8 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.byType(ErrorState), findsOneWidget);
+      expect(find.text(l10n('common.data_load_error')), findsOneWidget);
+      expect(find.text(l10n('admin.quick_actions')), findsOneWidget);
     });
 
     testWidgets('shows data when stats loaded', (tester) async {
@@ -82,8 +82,7 @@ void main() {
       );
       await tester.pump();
 
-      // ErrorState renders a retry button
-      expect(find.text(l10n('common.data_load_error')), findsOneWidget);
+      expect(find.text(l10n('common.retry')), findsOneWidget);
     });
   });
 }

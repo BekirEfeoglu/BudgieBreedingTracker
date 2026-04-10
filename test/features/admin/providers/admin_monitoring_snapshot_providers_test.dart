@@ -119,7 +119,7 @@ class _FakeAdminMonitoringClient extends Fake implements SupabaseClient {
   @override
   SupabaseQueryBuilder from(String table) {
     requestedTables.add(table);
-    if (table == SupabaseConstants.adminUsersTable) {
+    if (table == SupabaseConstants.profilesTable) {
       return adminBuilder;
     }
     if (table == SupabaseConstants.dbMonitoringSnapshotsTable) {
@@ -176,7 +176,7 @@ void main() {
       final client = _FakeAdminMonitoringClient(
         adminBuilder: _FakeQueryBuilder(
           _FakeFilterBuilder(
-            maybeSingleBuilder: _FakeMaybeSingleBuilder(result: {'id': 'a1'}),
+            maybeSingleBuilder: _FakeMaybeSingleBuilder(result: {'role': 'admin'}),
           ),
         ),
         snapshotBuilder: _FakeQueryBuilder(
@@ -199,7 +199,7 @@ void main() {
 
     test('returns empty trend when no snapshot rows exist', () async {
       final adminFilter = _FakeFilterBuilder(
-        maybeSingleBuilder: _FakeMaybeSingleBuilder(result: {'id': 'admin-1'}),
+        maybeSingleBuilder: _FakeMaybeSingleBuilder(result: {'role': 'admin'}),
       );
       final snapshotFilter = _FakeFilterBuilder(
         maybeSingleBuilder: _FakeMaybeSingleBuilder(),
@@ -230,7 +230,7 @@ void main() {
       () async {
         final adminFilter = _FakeFilterBuilder(
           maybeSingleBuilder: _FakeMaybeSingleBuilder(
-            result: {'id': 'admin-1'},
+            result: {'role': 'admin'},
           ),
         );
         final snapshotFilter = _FakeFilterBuilder(
@@ -280,7 +280,7 @@ void main() {
         final trend = await container.read(monitoringSnapshotsProvider.future);
 
         expect(client.requestedTables, [
-          SupabaseConstants.adminUsersTable,
+          SupabaseConstants.profilesTable,
           SupabaseConstants.dbMonitoringSnapshotsTable,
         ]);
         expect(snapshotQuery.selectedColumns, [
@@ -311,7 +311,7 @@ void main() {
       final client = _FakeAdminMonitoringClient(
         adminBuilder: _FakeQueryBuilder(
           _FakeFilterBuilder(
-            maybeSingleBuilder: _FakeMaybeSingleBuilder(result: {'id': 'a1'}),
+            maybeSingleBuilder: _FakeMaybeSingleBuilder(result: {'role': 'admin'}),
           ),
         ),
         snapshotBuilder: _FakeQueryBuilder(
@@ -337,7 +337,7 @@ void main() {
       final client = _FakeAdminMonitoringClient(
         adminBuilder: _FakeQueryBuilder(
           _FakeFilterBuilder(
-            maybeSingleBuilder: _FakeMaybeSingleBuilder(result: {'id': 'a1'}),
+            maybeSingleBuilder: _FakeMaybeSingleBuilder(result: {'role': 'admin'}),
           ),
         ),
         snapshotBuilder: _FakeQueryBuilder(

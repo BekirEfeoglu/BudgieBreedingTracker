@@ -319,24 +319,24 @@ void main() {
         () async {
       final data = {'title': 'Updated Title'};
 
-      when(() => listingSource.update('l1', data)).thenAnswer(
+      when(() => listingSource.update('l1', data, userId: 'u1')).thenAnswer(
         (_) async => _makeListingRow(id: 'l1', title: 'Updated Title'),
       );
 
-      final listing = await repository.updateListing('l1', data);
+      final listing = await repository.updateListing('l1', data, userId: 'u1');
 
       expect(listing.id, 'l1');
       expect(listing.title, 'Updated Title');
-      verify(() => listingSource.update('l1', data)).called(1);
+      verify(() => listingSource.update('l1', data, userId: 'u1')).called(1);
     });
 
     test('rethrows on update failure', () async {
-      when(() => listingSource.update(any(), any())).thenThrow(
+      when(() => listingSource.update(any(), any(), userId: any(named: 'userId'))).thenThrow(
         Exception('Update failed'),
       );
 
       expect(
-        () => repository.updateListing('l1', {'title': 'Fail'}),
+        () => repository.updateListing('l1', {'title': 'Fail'}, userId: 'u1'),
         throwsA(isA<Exception>()),
       );
     });
@@ -344,20 +344,20 @@ void main() {
 
   group('delete', () {
     test('delegates to listingSource.softDelete', () async {
-      when(() => listingSource.softDelete('l1')).thenAnswer((_) async {});
+      when(() => listingSource.softDelete('l1', userId: 'u1')).thenAnswer((_) async {});
 
-      await repository.delete('l1');
+      await repository.delete('l1', userId: 'u1');
 
-      verify(() => listingSource.softDelete('l1')).called(1);
+      verify(() => listingSource.softDelete('l1', userId: 'u1')).called(1);
     });
 
     test('rethrows on delete failure', () async {
-      when(() => listingSource.softDelete(any())).thenThrow(
+      when(() => listingSource.softDelete(any(), userId: any(named: 'userId'))).thenThrow(
         Exception('Delete failed'),
       );
 
       expect(
-        () => repository.delete('l1'),
+        () => repository.delete('l1', userId: 'u1'),
         throwsA(isA<Exception>()),
       );
     });
@@ -366,12 +366,12 @@ void main() {
   group('updateStatus', () {
     test('delegates to listingSource.updateStatus', () async {
       when(
-        () => listingSource.updateStatus('l1', 'sold'),
+        () => listingSource.updateStatus('l1', 'sold', userId: 'u1'),
       ).thenAnswer((_) async {});
 
-      await repository.updateStatus('l1', 'sold');
+      await repository.updateStatus('l1', 'sold', userId: 'u1');
 
-      verify(() => listingSource.updateStatus('l1', 'sold')).called(1);
+      verify(() => listingSource.updateStatus('l1', 'sold', userId: 'u1')).called(1);
     });
   });
 

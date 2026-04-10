@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:easy_localization/easy_localization.dart';
 
-import '../../../core/widgets/error_state.dart';
 import '../../../core/widgets/loading_state.dart';
 import '../providers/admin_providers.dart';
 import '../widgets/admin_dashboard_widgets.dart';
@@ -26,9 +24,10 @@ class AdminDashboardScreen extends ConsumerWidget {
         },
         child: statsAsync.when(
           loading: () => const LoadingState(),
-          error: (error, _) => ErrorState(
-            message: 'common.data_load_error'.tr(),
-            onRetry: () => ref.invalidate(adminStatsProvider),
+          error: (_, __) => DashboardContent(
+            stats: const AdminStats(),
+            statsLoadFailed: true,
+            onRetryStats: () => ref.invalidate(adminStatsProvider),
           ),
           data: (stats) => DashboardContent(stats: stats),
         ),

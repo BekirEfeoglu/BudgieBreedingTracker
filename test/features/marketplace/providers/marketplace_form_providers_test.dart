@@ -10,6 +10,7 @@ import 'package:budgie_breeding_tracker/data/models/marketplace_listing_model.da
 import 'package:budgie_breeding_tracker/data/repositories/marketplace_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/moderation/content_moderation_service.dart';
+import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_providers.dart';
 import 'package:budgie_breeding_tracker/features/community/providers/community_moderation_providers.dart';
 import 'package:budgie_breeding_tracker/features/marketplace/providers/marketplace_form_providers.dart';
 
@@ -29,6 +30,7 @@ void main() {
     container = ProviderContainer(overrides: [
       marketplaceRepositoryProvider.overrideWithValue(mockRepo),
       contentModerationServiceProvider.overrideWithValue(mockModeration),
+      currentUserIdProvider.overrideWithValue('u1'),
     ]);
   });
 
@@ -187,7 +189,7 @@ void main() {
     setUp(() {
       when(() => mockModeration.checkText(any()))
           .thenAnswer((_) async => const ModerationResult.allowed());
-      when(() => mockRepo.updateListing(any(), any())).thenAnswer(
+      when(() => mockRepo.updateListing(any(), any(), userId: any(named: 'userId'))).thenAnswer(
         (_) async => const MarketplaceListing(id: 'listing-1', userId: 'u1'),
       );
     });
@@ -207,7 +209,7 @@ void main() {
           );
 
       verify(() => mockModeration.checkText('Updated New desc')).called(1);
-      verify(() => mockRepo.updateListing('listing-1', any())).called(1);
+      verify(() => mockRepo.updateListing('listing-1', any(), userId: 'u1')).called(1);
       final state = container.read(marketplaceFormStateProvider);
       expect(state.isSuccess, isTrue);
     });
@@ -227,14 +229,14 @@ void main() {
             city: 'Istanbul',
           );
 
-      verifyNever(() => mockRepo.updateListing(any(), any()));
+      verifyNever(() => mockRepo.updateListing(any(), any(), userId: any(named: 'userId')));
       final state = container.read(marketplaceFormStateProvider);
       expect(state.error, isNotNull);
     });
   });
 
   test('deleteListing sets isSuccess on success', () async {
-    when(() => mockRepo.delete(any())).thenAnswer((_) async {});
+    when(() => mockRepo.delete(any(), userId: any(named: 'userId'))).thenAnswer((_) async {});
 
     await container
         .read(marketplaceFormStateProvider.notifier)
@@ -273,7 +275,7 @@ void main() {
   });
 
   test('updateStatus sets isSuccess on success', () async {
-    when(() => mockRepo.updateStatus(any(), any())).thenAnswer((_) async {});
+    when(() => mockRepo.updateStatus(any(), any(), userId: any(named: 'userId'))).thenAnswer((_) async {});
 
     await container
         .read(marketplaceFormStateProvider.notifier)

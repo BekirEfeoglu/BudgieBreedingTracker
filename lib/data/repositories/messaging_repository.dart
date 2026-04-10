@@ -210,11 +210,26 @@ class MessagingRepository {
     );
   }
 
-  /// Subscribe to new messages — returns channel for cleanup
-  RealtimeChannel subscribeToMessages(
+  /// Subscribe to new messages — returns channel for cleanup.
+  ///
+  /// Verifies the user is a conversation participant before subscribing.
+  /// Returns null if the user is not a member (prevents unauthorized subscriptions).
+  Future<RealtimeChannel?> subscribeToMessages(
     String conversationId,
+    String userId,
     void Function(Message message) onMessage,
-  ) {
+  ) async {
+    // Verify membership before subscribing to prevent unauthorized channel access
+    final isMember = await _messageSource.isConversationParticipant(
+      conversationId,
+      userId,
+    );
+    if (!isMember) {
+      AppLogger.warning(
+        'messaging: User $userId is not a participant of $conversationId',
+      );
+      return null;
+    }
     return _messageSource.subscribeToMessages(
       conversationId,
       (payload) {

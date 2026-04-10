@@ -69,9 +69,13 @@ class _CommunityCreatePostScreenState
     setState(() => _selectedImages.removeAt(index));
   }
 
+  static const _maxTagLength = 50;
+  static const _maxTagCount = 10;
+
   void _addTag() {
-    final tag = _tagController.text.trim();
-    if (tag.isEmpty || _tags.contains(tag)) return;
+    final tag = _tagController.text.trim().toLowerCase();
+    if (tag.isEmpty || tag.length > _maxTagLength) return;
+    if (_tags.length >= _maxTagCount || _tags.contains(tag)) return;
     setState(() {
       _tags.add(tag);
       _tagController.clear();

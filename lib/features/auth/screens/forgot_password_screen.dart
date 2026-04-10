@@ -43,11 +43,10 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
       if (mounted) setState(() => _sent = true);
     } on AuthException catch (e) {
       AppLogger.warning('[ForgotPassword] Reset failed: ${e.message}');
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(mapAuthError(e))));
-      }
+      // Always show success to prevent user enumeration.
+      // Attacker should not learn whether an email is registered.
+      if (mounted) setState(() { _sent = true; _loading = false; });
+      return;
     } finally {
       if (mounted) setState(() => _loading = false);
     }

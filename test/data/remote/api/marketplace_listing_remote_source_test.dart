@@ -96,7 +96,7 @@ void main() {
     });
 
     test('softDelete sets is_deleted to true', () async {
-      await source.softDelete('l1');
+      await source.softDelete('l1', userId: 'user-1');
 
       expect(queryBuilder.updatePayload, {'is_deleted': true});
       final eqKeys = queryBuilder.updateBuilder.eqCalls
@@ -106,7 +106,7 @@ void main() {
     });
 
     test('updateStatus sends correct payload', () async {
-      await source.updateStatus('l1', 'sold');
+      await source.updateStatus('l1', 'sold', userId: 'user-1');
 
       expect(queryBuilder.updatePayload, {'status': 'sold'});
     });
@@ -125,7 +125,7 @@ void main() {
     });
 
     test('search returns empty list for empty sanitized query', () async {
-      final result = await source.search('!!!');
+      final result = await source.search('.,;()\'"`');
 
       expect(result, isEmpty);
     });

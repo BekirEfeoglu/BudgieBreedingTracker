@@ -6,6 +6,7 @@ import '../../../core/enums/bird_enums.dart';
 import '../../../core/enums/marketplace_enums.dart';
 import '../../../core/utils/logger.dart';
 import '../../../data/repositories/repository_providers.dart';
+import '../../breeding/providers/breeding_providers.dart';
 import '../../community/providers/community_moderation_providers.dart';
 import '../../../domain/services/moderation/content_moderation_service.dart';
 
@@ -164,6 +165,7 @@ class MarketplaceFormNotifier extends Notifier<MarketplaceFormState> {
       }
 
       final repo = ref.read(marketplaceRepositoryProvider);
+      final userId = ref.read(currentUserIdProvider);
       await repo.updateListing(listingId, {
         'listing_type': listingType.toJson(),
         'title': trimmedTitle,
@@ -176,7 +178,7 @@ class MarketplaceFormNotifier extends Notifier<MarketplaceFormState> {
         'age': age,
         'image_urls': imageUrls,
         'city': city,
-      });
+      }, userId: userId);
       state = state.copyWith(isLoading: false, isSuccess: true);
     } catch (e, st) {
       AppLogger.error('marketplace', e, st);
@@ -188,7 +190,8 @@ class MarketplaceFormNotifier extends Notifier<MarketplaceFormState> {
     state = state.copyWith(isLoading: true, error: null, isSuccess: false);
     try {
       final repo = ref.read(marketplaceRepositoryProvider);
-      await repo.delete(listingId);
+      final userId = ref.read(currentUserIdProvider);
+      await repo.delete(listingId, userId: userId);
       state = state.copyWith(isLoading: false, isSuccess: true);
     } catch (e, st) {
       AppLogger.error('marketplace', e, st);
@@ -203,7 +206,8 @@ class MarketplaceFormNotifier extends Notifier<MarketplaceFormState> {
     state = state.copyWith(isLoading: true, error: null, isSuccess: false);
     try {
       final repo = ref.read(marketplaceRepositoryProvider);
-      await repo.updateStatus(listingId, status.toJson());
+      final userId = ref.read(currentUserIdProvider);
+      await repo.updateStatus(listingId, status.toJson(), userId: userId);
       state = state.copyWith(isLoading: false, isSuccess: true);
     } catch (e, st) {
       AppLogger.error('marketplace', e, st);
