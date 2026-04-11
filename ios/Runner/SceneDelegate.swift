@@ -107,6 +107,12 @@ class SceneDelegate: FlutterSceneDelegate {
       }
       let info = Bundle.main.infoDictionary ?? [:]
       result([
+        "SUPABASE_URL": info["SUPABASE_URL"] as? String ?? "",
+        "SUPABASE_ANON_KEY": info["SUPABASE_ANON_KEY"] as? String ?? "",
+        "SENTRY_DSN": info["SENTRY_DSN"] as? String ?? "",
+        "SENTRY_ENVIRONMENT": info["SENTRY_ENVIRONMENT"] as? String ?? "",
+        "REVENUECAT_API_KEY_IOS": info["REVENUECAT_API_KEY_IOS"] as? String ?? "",
+        "REVENUECAT_API_KEY_ANDROID": info["REVENUECAT_API_KEY_ANDROID"] as? String ?? "",
         "GOOGLE_WEB_CLIENT_ID": info["GIDServerClientID"] as? String ?? "",
         "GOOGLE_IOS_CLIENT_ID": info["GIDClientID"] as? String ?? "",
       ])

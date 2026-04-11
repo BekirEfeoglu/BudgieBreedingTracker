@@ -21,9 +21,17 @@ class ProfileMenuButton extends ConsumerWidget {
     return profileAsync.when(
       loading: () => Padding(
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
-        child: CircleAvatar(
-          radius: 18,
-          backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(
+            minWidth: AppSpacing.touchTargetMin,
+            minHeight: AppSpacing.touchTargetMin,
+          ),
+          child: Center(
+            child: CircleAvatar(
+              radius: 18,
+              backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+            ),
+          ),
         ),
       ),
       error: (_, __) => _AvatarButton(profile: null, email: user?.email),
@@ -53,27 +61,40 @@ class _AvatarButton extends StatelessWidget {
         child: Semantics(
           button: true,
           label: 'profile.title'.tr(),
-          child: GestureDetector(
-            onTap: () => _showProfileMenu(context),
-            child: CircleAvatar(
-              radius: 18,
-              backgroundColor: theme.colorScheme.primary,
-              backgroundImage: profile?.avatarUrl != null
-                  ? CachedNetworkImageProvider(
-                      profile!.avatarUrl!,
-                      maxWidth: 72,
-                      maxHeight: 72,
-                    )
-                  : null,
-              child: profile?.avatarUrl == null
-                  ? Text(
-                      initials,
-                      style: theme.textTheme.labelMedium?.copyWith(
-                        color: theme.colorScheme.onPrimary,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    )
-                  : null,
+          child: Material(
+            color: Colors.transparent,
+            child: InkResponse(
+              onTap: () => _showProfileMenu(context),
+              radius: AppSpacing.touchTargetMin / 2,
+              containedInkWell: false,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(
+                  minWidth: AppSpacing.touchTargetMin,
+                  minHeight: AppSpacing.touchTargetMin,
+                ),
+                child: Center(
+                  child: CircleAvatar(
+                    radius: 18,
+                    backgroundColor: theme.colorScheme.primary,
+                    backgroundImage: profile?.avatarUrl != null
+                        ? CachedNetworkImageProvider(
+                            profile!.avatarUrl!,
+                            maxWidth: 72,
+                            maxHeight: 72,
+                          )
+                        : null,
+                    child: profile?.avatarUrl == null
+                        ? Text(
+                            initials,
+                            style: theme.textTheme.labelMedium?.copyWith(
+                              color: theme.colorScheme.onPrimary,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          )
+                        : null,
+                  ),
+                ),
+              ),
             ),
           ),
         ),

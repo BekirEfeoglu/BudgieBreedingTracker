@@ -81,6 +81,7 @@ class _BudgieBreedingAppState extends ConsumerState<BudgieBreedingApp> {
   void _onInactivityTimeout() {
     final userId = ref.read(currentUserIdProvider);
     if (userId == 'anonymous') return;
+    ref.read(sessionLockedProvider.notifier).state = true;
     // Sign out and navigate — catch errors so navigation always proceeds
     ref.read(authActionsProvider).signOut().catchError((Object e) {
       AppLogger.warning('[InactivityGuard] Sign-out failed: $e');

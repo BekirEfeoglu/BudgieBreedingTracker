@@ -38,6 +38,8 @@ abstract final class AdminConstants {
   // UI
   static const double gridAspectRatioWide = 1.4;
   static const double gridAspectRatioNarrow = 1.15;
+  static const double gridAspectRatioCompact = 1.38;
+  static const double compactGridBreakpoint = 390.0;
 
   // Analytics
   static const int chartPeriodDays = 30;

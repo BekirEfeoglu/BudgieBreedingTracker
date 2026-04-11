@@ -232,7 +232,8 @@ flutter run \
   --dart-define=SENTRY_DSN=your-sentry-dsn \
   --dart-define=SENTRY_ENVIRONMENT=development \
   --dart-define=REVENUECAT_API_KEY_IOS=your-ios-key \
-  --dart-define=REVENUECAT_API_KEY_ANDROID=your-android-key
+  --dart-define=REVENUECAT_API_KEY_ANDROID=your-android-key \
+  --dart-define=OPENAI_API_KEY=your-openai-key
 ```
 
 ### Environment Variables
@@ -245,6 +246,7 @@ flutter run \
 | `SENTRY_ENVIRONMENT` | No | Sentry environment label |
 | `REVENUECAT_API_KEY_IOS` | No | RevenueCat iOS API key |
 | `REVENUECAT_API_KEY_ANDROID` | No | RevenueCat Android API key |
+| `OPENAI_API_KEY` | Required for `scan-image-safety` Edge Function | OpenAI API key used for image moderation |
 
 The app can still boot without Supabase credentials, but authentication, sync, and other cloud-backed flows will be unavailable.
 

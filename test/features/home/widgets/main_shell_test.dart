@@ -101,5 +101,18 @@ void main() {
 
       expect(find.byType(VerticalDivider), findsOneWidget);
     });
+
+    testWidgets('does not overflow on small phone widths', (tester) async {
+      tester.view.physicalSize = const Size(320, 640);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(_createSubject(size: const Size(320, 640)));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(NavigationBar), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
   });
 }

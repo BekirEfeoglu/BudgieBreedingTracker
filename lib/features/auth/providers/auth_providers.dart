@@ -27,6 +27,16 @@ export 'package:budgie_breeding_tracker/data/remote/supabase/supabase_client.dar
     show supabaseClientProvider;
 export 'auth_actions.dart';
 
+/// Whether the current app session is locally locked and must re-authenticate.
+class SessionLockedNotifier extends Notifier<bool> {
+  @override
+  bool build() => false;
+}
+
+final sessionLockedProvider = NotifierProvider<SessionLockedNotifier, bool>(
+  SessionLockedNotifier.new,
+);
+
 /// Current Supabase [User] or null.
 /// Returns null if Supabase is not initialized.
 final currentUserProvider = Provider<User?>((ref) {
@@ -66,8 +76,19 @@ final initSkippedProvider = NotifierProvider<InitSkippedNotifier, bool>(
 /// Ensures premium-related local/session state is reset when the user becomes
 /// anonymous (sign-out or expired session).
 final authSessionSideEffectsProvider = Provider<void>((ref) {
+  ref.listen<AsyncValue<AuthState>>(authStateProvider, (previous, next) {
+    next.whenData((authState) {
+      if (authState.event == AuthChangeEvent.signedIn ||
+          authState.event == AuthChangeEvent.initialSession ||
+          authState.event == AuthChangeEvent.tokenRefreshed) {
+        ref.read(sessionLockedProvider.notifier).state = false;
+      }
+    });
+  });
+
   ref.listen<String>(currentUserIdProvider, (previous, next) {
     if (next == 'anonymous') {
+      ref.read(sessionLockedProvider.notifier).state = false;
       unawaited(ref.read(purchaseServiceProvider).logout());
       unawaited(ref.read(localPremiumProvider.notifier).setPremium(false));
       unawaited(ref.read(pushNotificationServiceProvider).deactivateCurrentToken());
@@ -90,6 +111,13 @@ final appInitializationProvider = FutureProvider<void>((ref) async {
   // Without this, the code before the first `await` runs synchronously
   // during provider creation and can trigger '!_dirty' assertion.
   await Future<void>.delayed(Duration.zero);
+
+  final canProceed = await _checkPendingMfa(ref);
+  final currentUserId = ref.read(currentUserIdProvider);
+  final pendingFactorId = ref.read(pendingMfaFactorIdProvider);
+  if (!canProceed || currentUserId == 'anonymous' || pendingFactorId != null) {
+    return;
+  }
 
   // Step 1: Profile sync (critical - determines premium, role, etc.)
   ref.read(initStepProvider.notifier).state = InitStep.profile;
@@ -133,7 +161,7 @@ final appInitializationProvider = FutureProvider<void>((ref) async {
 
 /// Checks if the current session needs 2FA verification (AAL1 → AAL2).
 /// Sets [pendingMfaFactorIdProvider] so the router can redirect to verify screen.
-Future<void> _checkPendingMfa(Ref ref) async {
+Future<bool> _checkPendingMfa(Ref ref) async {
   try {
     final service = ref.read(twoFactorServiceProvider);
     final needs2FA = await service.needsVerification();
@@ -141,8 +169,13 @@ Future<void> _checkPendingMfa(Ref ref) async {
       final factors = await service.getFactors();
       if (factors.isNotEmpty) {
         ref.read(pendingMfaFactorIdProvider.notifier).state = factors.first.id;
+        return false;
       }
+      ref.read(pendingMfaFactorIdProvider.notifier).state = 'mfa-required';
+      return false;
     }
+    ref.read(pendingMfaFactorIdProvider.notifier).state = null;
+    return true;
   } catch (e, st) {
     AppLogger.warning('[AppInit] MFA check failed, requiring re-verification: $e');
     Sentry.captureException(e, stackTrace: st);
@@ -153,6 +186,7 @@ Future<void> _checkPendingMfa(Ref ref) async {
       final factors = await service.getFactors();
       if (factors.isNotEmpty) {
         ref.read(pendingMfaFactorIdProvider.notifier).state = factors.first.id;
+        return false;
       }
     } catch (_) {
       // If we can't even get factors, sign the user out for safety.
@@ -160,13 +194,17 @@ Future<void> _checkPendingMfa(Ref ref) async {
       try {
         final client = ref.read(supabaseClientProvider);
         await client.auth.signOut();
+        return false;
       } catch (_) {
         // Sign-out also failed (e.g., no network). Set a sentinel MFA
         // factor ID so the router still redirects to the 2FA verify screen
         // instead of granting access without MFA completion.
         ref.read(pendingMfaFactorIdProvider.notifier).state = 'mfa-required';
+        return false;
       }
     }
+    ref.read(pendingMfaFactorIdProvider.notifier).state = 'mfa-required';
+    return false;
   }
 }
 

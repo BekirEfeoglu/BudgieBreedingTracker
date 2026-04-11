@@ -388,16 +388,19 @@ class DashboardStatsGrid extends StatelessWidget {
       builder: (context, constraints) {
         final crossAxisCount =
             constraints.maxWidth > AdminConstants.gridColumnBreakpoint ? 4 : 2;
+        final isCompact =
+            constraints.maxWidth < AdminConstants.compactGridBreakpoint;
         return GridView.count(
           crossAxisCount: crossAxisCount,
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          mainAxisSpacing: AppSpacing.md,
-          crossAxisSpacing: AppSpacing.md,
-          // On narrow viewports, taller cards prevent text/value overflow.
+          mainAxisSpacing: isCompact ? AppSpacing.sm : AppSpacing.md,
+          crossAxisSpacing: isCompact ? AppSpacing.sm : AppSpacing.md,
           childAspectRatio:
               constraints.maxWidth > AdminConstants.gridColumnBreakpoint
               ? AdminConstants.gridAspectRatioWide
+              : isCompact
+              ? AdminConstants.gridAspectRatioCompact
               : AdminConstants.gridAspectRatioNarrow,
           children: [
             DashboardStatCard(

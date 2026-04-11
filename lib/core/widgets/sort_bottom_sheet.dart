@@ -26,39 +26,53 @@ class SortBottomSheet<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final maxHeight = MediaQuery.sizeOf(context).height * 0.8;
 
     return SafeArea(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.lg,
-              AppSpacing.lg,
-              AppSpacing.lg,
-              AppSpacing.sm,
-            ),
-            child: Text(
-              'common.sort'.tr(),
-              style: theme.textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxHeight: maxHeight),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.lg,
+                AppSpacing.lg,
+                AppSpacing.lg,
+                AppSpacing.sm,
+              ),
+              child: Text(
+                'common.sort'.tr(),
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
-          ),
-          ...values.map((value) => ListTile(
-                leading: value == current
-                    ? Icon(LucideIcons.check, color: theme.colorScheme.primary)
-                    : const SizedBox(width: 24),
-                title: Text(labelOf(value)),
-                selected: value == current,
-                onTap: () {
-                  onSelected(value);
-                  Navigator.of(context).pop();
-                },
-              )),
-          const SizedBox(height: AppSpacing.sm),
-        ],
+            Flexible(
+              child: ListView(
+                shrinkWrap: true,
+                children: [
+                  ...values.map((value) => ListTile(
+                        leading: value == current
+                            ? Icon(
+                                LucideIcons.check,
+                                color: theme.colorScheme.primary,
+                              )
+                            : const SizedBox(width: 24),
+                        title: Text(labelOf(value)),
+                        selected: value == current,
+                        onTap: () {
+                          onSelected(value);
+                          Navigator.of(context).pop();
+                        },
+                      )),
+                  const SizedBox(height: AppSpacing.sm),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -70,31 +70,49 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(AppSpacing.xxxl + AppSpacing.lg),
           child: Padding(
-            padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-            child: SegmentedButton<CalendarViewMode>(
-              segments: [
-                ButtonSegment(
-                  value: CalendarViewMode.month,
-                  label: Text('calendar.month_view'.tr()),
-                  icon: const AppIcon(AppIcons.calendar, size: 18),
-                ),
-                ButtonSegment(
-                  value: CalendarViewMode.week,
-                  label: Text('calendar.week_view'.tr()),
-                  icon: const Icon(LucideIcons.columns, size: 18),
-                ),
-                ButtonSegment(
-                  value: CalendarViewMode.day,
-                  label: Text('calendar.day_view'.tr()),
-                  icon: const Icon(LucideIcons.layoutList, size: 18),
-                ),
-              ],
-              selected: {viewMode},
-              onSelectionChanged: (s) {
-                AppHaptics.selectionClick();
-                ref.read(calendarViewProvider.notifier).setViewMode(s.first);
+            padding: const EdgeInsets.only(
+              left: AppSpacing.lg,
+              right: AppSpacing.lg,
+              bottom: AppSpacing.sm,
+            ),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(minWidth: constraints.maxWidth),
+                    child: SegmentedButton<CalendarViewMode>(
+                      segments: [
+                        ButtonSegment(
+                          value: CalendarViewMode.month,
+                          label: Text('calendar.month_view'.tr()),
+                          icon: const AppIcon(AppIcons.calendar, size: 18),
+                        ),
+                        ButtonSegment(
+                          value: CalendarViewMode.week,
+                          label: Text('calendar.week_view'.tr()),
+                          icon: const Icon(LucideIcons.columns, size: 18),
+                        ),
+                        ButtonSegment(
+                          value: CalendarViewMode.day,
+                          label: Text('calendar.day_view'.tr()),
+                          icon: const Icon(LucideIcons.layoutList, size: 18),
+                        ),
+                      ],
+                      selected: {viewMode},
+                      onSelectionChanged: (s) {
+                        AppHaptics.selectionClick();
+                        ref
+                            .read(calendarViewProvider.notifier)
+                            .setViewMode(s.first);
+                      },
+                      style: const ButtonStyle(
+                        visualDensity: VisualDensity.compact,
+                      ),
+                    ),
+                  ),
+                );
               },
-              style: const ButtonStyle(visualDensity: VisualDensity.compact),
             ),
           ),
         ),

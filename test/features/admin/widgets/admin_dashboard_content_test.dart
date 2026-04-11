@@ -483,5 +483,23 @@ void main() {
 
       expect(find.text(l10n('admin.go_to_settings')), findsOneWidget);
     });
+
+    testWidgets('uses compact stat cards on small screens', (tester) async {
+      await tester.pumpWidget(
+        _wrapWithProviders(
+          const SizedBox(width: 375, child: DashboardStatsGrid(stats: _defaultStats)),
+          healthData: const AsyncData({'status': 'ok'}),
+          alerts: const AsyncData([]),
+          actions: const AsyncData([]),
+        ),
+      );
+      await tester.pump();
+
+      final firstCardSize = tester.getSize(find.byType(DashboardStatCard).first);
+
+      expect(firstCardSize.height, lessThan(140));
+      expect(find.text(l10n('admin.pending_sync')), findsOneWidget);
+      expect(find.byType(GridView), findsOneWidget);
+    });
   });
 }

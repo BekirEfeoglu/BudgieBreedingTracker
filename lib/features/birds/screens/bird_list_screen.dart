@@ -7,6 +7,7 @@ import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_screen_title.dart';
 import 'package:budgie_breeding_tracker/core/widgets/empty_state.dart';
+import 'package:budgie_breeding_tracker/core/widgets/sort_bottom_sheet.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:budgie_breeding_tracker/core/widgets/error_state.dart';
 import 'package:budgie_breeding_tracker/core/widgets/buttons/fab_button.dart';
@@ -61,39 +62,13 @@ class BirdListScreen extends ConsumerWidget {
             icon: const Icon(LucideIcons.arrowUpDown),
             tooltip: 'common.sort'.tr(),
             onPressed: () {
-              showModalBottomSheet(
+              showSortBottomSheet<BirdSort>(
                 context: context,
-                builder: (ctx) => SafeArea(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(
-                          AppSpacing.lg, AppSpacing.lg, AppSpacing.lg, AppSpacing.sm,
-                        ),
-                        child: Text(
-                          'common.sort'.tr(),
-                          style: Theme.of(ctx).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                      ...BirdSort.values.map((sort) => ListTile(
-                        leading: sort == currentSort
-                            ? Icon(LucideIcons.check, color: Theme.of(ctx).colorScheme.primary)
-                            : const SizedBox(width: 24),
-                        title: Text(sort.label),
-                        selected: sort == currentSort,
-                        onTap: () {
-                          ref.read(birdSortProvider.notifier).state = sort;
-                          Navigator.of(ctx).pop();
-                        },
-                      )),
-                      const SizedBox(height: AppSpacing.sm),
-                    ],
-                  ),
-                ),
+                values: BirdSort.values,
+                current: currentSort,
+                labelOf: (sort) => sort.label,
+                onSelected: (sort) =>
+                    ref.read(birdSortProvider.notifier).state = sort,
               );
             },
           ),

@@ -126,5 +126,48 @@ void main() {
       // With TestAssetLoader, .tr() returns raw key 'common.sort'
       expect(find.text('common.sort'), findsOneWidget);
     });
+
+    testWidgets('scrolls instead of overflowing on small screens', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(320, 640);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      final values = List<int>.generate(20, (index) => index);
+
+      await pumpLocalizedWidget(
+        tester,
+        Builder(
+          builder: (context) => ElevatedButton(
+            onPressed: () {
+              showSortBottomSheet<int>(
+                context: context,
+                values: values,
+                current: 0,
+                labelOf: (value) => 'Option $value',
+                onSelected: (_) {},
+              );
+            },
+            child: const Text('Open'),
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('Open'));
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+      expect(find.text('Option 19'), findsNothing);
+
+      await tester.scrollUntilVisible(
+        find.text('Option 19'),
+        300,
+        scrollable: find.byType(Scrollable).last,
+      );
+
+      expect(find.text('Option 19'), findsOneWidget);
+    });
   });
 }

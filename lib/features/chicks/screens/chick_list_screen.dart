@@ -21,6 +21,7 @@ import 'package:budgie_breeding_tracker/features/chicks/widgets/chick_filter_bar
 import 'package:budgie_breeding_tracker/features/chicks/widgets/chick_search_bar.dart';
 import 'package:budgie_breeding_tracker/features/notifications/widgets/notification_bell_button.dart';
 import 'package:budgie_breeding_tracker/features/profile/widgets/profile_menu_button.dart';
+import 'package:budgie_breeding_tracker/router/route_names.dart';
 
 /// Main screen listing all chicks with search and filter support.
 class ChickListScreen extends ConsumerWidget {
@@ -48,6 +49,11 @@ class ChickListScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(LucideIcons.arrowLeft),
+          tooltip: 'common.back'.tr(),
+          onPressed: () => context.go(AppRoutes.more),
+        ),
         title: AppScreenTitle(
           title: 'chicks.title'.tr(),
           iconAsset: AppIcons.chick,

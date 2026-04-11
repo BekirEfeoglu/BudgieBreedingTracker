@@ -63,6 +63,7 @@ final routerProvider = Provider<GoRouter>((ref) {
     debugLogDiagnostics: false,
     redirect: (context, state) {
       final isLoggedIn = ref.read(isAuthenticatedProvider);
+      final isSessionLocked = ref.read(sessionLockedProvider);
       final isAdminAsync = ref.read(isAdminProvider);
       final isPremium = ref.read(effectivePremiumProvider);
       final appInit = ref.read(appInitializationProvider);
@@ -80,6 +81,10 @@ final routerProvider = Provider<GoRouter>((ref) {
           location == AppRoutes.forgotPassword ||
           location == AppRoutes.twoFactorVerify;
       final isSplashRoute = location == AppRoutes.splash;
+
+      if (isSessionLocked && !isAuthRoute) {
+        return AppRoutes.login;
+      }
 
       // Auth guard
       if (!isLoggedIn && !isAuthRoute && !_isAnonymousAllowedRoute(location)) {

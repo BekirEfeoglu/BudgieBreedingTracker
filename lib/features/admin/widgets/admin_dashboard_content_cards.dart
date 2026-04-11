@@ -19,56 +19,69 @@ class DashboardStatCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final numericValue = double.tryParse(value);
-    final valueStyle = theme.textTheme.headlineMedium?.copyWith(
-      color: color,
-      fontWeight: FontWeight.bold,
-    );
 
-    return Card(
-      child: Padding(
-        padding: AppSpacing.cardPadding,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            IconTheme(
-              data: IconThemeData(color: color, size: 24),
-              child: icon,
-            ),
-            const SizedBox(height: AppSpacing.xs),
-            if (numericValue != null)
-              Flexible(
-                fit: FlexFit.loose,
-                child: TweenAnimationBuilder<double>(
-                  tween: Tween(begin: 0, end: numericValue),
-                  duration: const Duration(milliseconds: 700),
-                  curve: Curves.easeOutCubic,
-                  builder: (_, v, __) => FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.centerLeft,
-                    child: Text(v.toInt().toString(), style: valueStyle),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isCompact =
+            constraints.maxWidth < AdminConstants.compactGridBreakpoint / 2;
+        final valueStyle =
+            (isCompact
+                    ? theme.textTheme.headlineSmall
+                    : theme.textTheme.headlineMedium)
+                ?.copyWith(color: color, fontWeight: FontWeight.bold);
+
+        return Card(
+          child: Padding(
+            padding: isCompact
+                ? const EdgeInsets.all(AppSpacing.md)
+                : AppSpacing.cardPadding,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconTheme(
+                  data: IconThemeData(
+                    color: color,
+                    size: isCompact ? 20 : 24,
                   ),
+                  child: icon,
                 ),
-              )
-            else
-              Flexible(
-                fit: FlexFit.loose,
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  alignment: Alignment.centerLeft,
-                  child: Text(value, style: valueStyle),
+                SizedBox(height: isCompact ? AppSpacing.xxs : AppSpacing.xs),
+                if (numericValue != null)
+                  Flexible(
+                    fit: FlexFit.loose,
+                    child: TweenAnimationBuilder<double>(
+                      tween: Tween(begin: 0, end: numericValue),
+                      duration: const Duration(milliseconds: 700),
+                      curve: Curves.easeOutCubic,
+                      builder: (_, v, __) => FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: Text(v.toInt().toString(), style: valueStyle),
+                      ),
+                    ),
+                  )
+                else
+                  Flexible(
+                    fit: FlexFit.loose,
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text(value, style: valueStyle),
+                    ),
+                  ),
+                const SizedBox(height: AppSpacing.xxs),
+                Text(
+                  label,
+                  style: theme.textTheme.bodySmall,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
-              ),
-            const SizedBox(height: AppSpacing.xxs),
-            Text(
-              label,
-              style: theme.textTheme.bodySmall,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }

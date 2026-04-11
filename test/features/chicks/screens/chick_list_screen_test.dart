@@ -58,6 +58,10 @@ void main() {
         initialLocation: '/chicks',
         routes: [
           GoRoute(
+            path: '/more',
+            builder: (_, __) => const Scaffold(body: Text('More')),
+          ),
+          GoRoute(
             path: '/chicks',
             builder: (_, __) => const ChickListScreen(),
             routes: [
@@ -165,6 +169,18 @@ void main() {
         find.byIcon(LucideIcons.arrowUpDown),
         findsOneWidget,
       );
+    });
+
+    testWidgets('shows back button and navigates to more', (tester) async {
+      await tester.pumpWidget(createSubject(chicksStream: Stream.value([])));
+      await tester.pumpAndSettle();
+
+      expect(find.byIcon(LucideIcons.arrowLeft), findsOneWidget);
+
+      await tester.tap(find.byIcon(LucideIcons.arrowLeft));
+      await tester.pumpAndSettle();
+
+      expect(find.text('More'), findsOneWidget);
     });
 
     testWidgets('shows chick filter bar', (tester) async {

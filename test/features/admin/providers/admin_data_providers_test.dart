@@ -6,7 +6,6 @@ import 'package:mocktail/mocktail.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:budgie_breeding_tracker/core/enums/admin_enums.dart';
-import 'package:budgie_breeding_tracker/data/remote/supabase/supabase_client.dart';
 import 'package:budgie_breeding_tracker/features/admin/constants/admin_constants.dart';
 import 'package:budgie_breeding_tracker/features/admin/providers/admin_data_providers.dart';
 import 'package:budgie_breeding_tracker/features/admin/providers/admin_models.dart';
@@ -16,19 +15,16 @@ import '../../../helpers/mocks.dart';
 
 class _FakeMaybeSingleBuilder extends Fake
     implements PostgrestTransformBuilder<PostgrestMap?> {
-  _FakeMaybeSingleBuilder({this.result, this.error});
+  _FakeMaybeSingleBuilder({this.result});
 
   final PostgrestMap? result;
-  final Object? error;
 
   @override
   Future<S> then<S>(
     FutureOr<S> Function(PostgrestMap? value) onValue, {
     Function? onError,
   }) {
-    final source = error == null
-        ? Future<PostgrestMap?>.value(result)
-        : Future<PostgrestMap?>.error(error!);
+    final source = Future<PostgrestMap?>.value(result);
     return source.then(onValue, onError: onError);
   }
 }

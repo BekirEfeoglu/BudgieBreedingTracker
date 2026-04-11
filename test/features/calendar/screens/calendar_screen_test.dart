@@ -159,5 +159,19 @@ void main() {
 
       expect(find.text(l10n('calendar.title')), findsOneWidget);
     });
+
+    testWidgets('does not overflow on small screens', (tester) async {
+      tester.view.physicalSize = const Size(320, 640);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(createSubject(eventsStream: Stream.value([])));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(SegmentedButton<CalendarViewMode>), findsOneWidget);
+      expect(find.byType(SingleChildScrollView), findsWidgets);
+      expect(tester.takeException(), isNull);
+    });
   });
 }

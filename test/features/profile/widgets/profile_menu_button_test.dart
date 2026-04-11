@@ -213,7 +213,7 @@ void main() {
       expect(find.byType(Semantics), findsAtLeastNWidgets(1));
     });
 
-    testWidgets('uses GestureDetector for tap', (tester) async {
+    testWidgets('uses InkResponse for tap', (tester) async {
       await tester.pumpWidget(
         _wrap(
           const ProfileMenuButton(),
@@ -233,7 +233,32 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.byType(GestureDetector), findsAtLeastNWidgets(1));
+      expect(find.byType(InkResponse), findsAtLeastNWidgets(1));
+    });
+
+    testWidgets('meets minimum touch target size', (tester) async {
+      await tester.pumpWidget(
+        _wrap(
+          const ProfileMenuButton(),
+          overrides: [
+            userProfileProvider.overrideWith((_) {
+              return Stream.value(
+                const Profile(
+                  id: 'user-1',
+                  email: 'test@example.com',
+                  fullName: 'Test',
+                ),
+              );
+            }),
+            currentUserProvider.overrideWith((_) => null),
+          ],
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final touchTarget = tester.getSize(find.byType(InkResponse).first);
+      expect(touchTarget.width, greaterThanOrEqualTo(44));
+      expect(touchTarget.height, greaterThanOrEqualTo(44));
     });
   });
 }

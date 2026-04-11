@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:uuid/uuid.dart';
@@ -234,7 +236,7 @@ class SyncPullHandler {
       );
 
       // Persist to DB
-      dao.insert(ConflictHistory(
+      unawaited(dao.insert(ConflictHistory(
         id: uuid.v7(),
         userId: userId,
         tableName: tableName,
@@ -242,7 +244,7 @@ class SyncPullHandler {
         description: c.detail,
         conflictType: ConflictType.serverWins,
         createdAt: DateTime.now(),
-      ));
+      )));
     }
 
     AppLogger.info(

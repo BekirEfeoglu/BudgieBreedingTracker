@@ -378,5 +378,56 @@ void main() {
             .called(1);
       },
     );
+
+    test(
+      'stops initialization before profile pull when MFA verification is pending',
+      () async {
+        final factor = Factor(
+          id: 'factor-1',
+          friendlyName: 'Phone',
+          factorType: FactorType.totp,
+          status: FactorStatus.verified,
+          createdAt: DateTime(2026, 4, 11),
+          updatedAt: DateTime(2026, 4, 11),
+        );
+        when(() => mockTwoFactorService.needsVerification())
+            .thenAnswer((_) async => true);
+        when(() => mockTwoFactorService.getFactors())
+            .thenAnswer((_) async => [factor]);
+
+        final container = ProviderContainer(
+          overrides: [
+            currentUserIdProvider.overrideWithValue('user-1'),
+            profileRepositoryProvider.overrideWithValue(mockProfileRepository),
+            notificationServiceProvider.overrideWithValue(
+              mockNotificationService,
+            ),
+            notificationProcessorProvider.overrideWithValue(
+              mockNotificationProcessor,
+            ),
+            notificationReschedulerProvider.overrideWithValue(
+              mockNotificationRescheduler,
+            ),
+            pushNotificationServiceProvider.overrideWithValue(
+              mockPushNotificationService,
+            ),
+            rateLimiterReadyProvider.overrideWith((_) async {}),
+            supabaseClientProvider.overrideWithValue(mockClient),
+            supabaseInitializedProvider.overrideWithValue(true),
+            twoFactorServiceProvider.overrideWithValue(mockTwoFactorService),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        await container.read(appInitializationProvider.future);
+
+        expect(container.read(pendingMfaFactorIdProvider), 'factor-1');
+        verifyNever(() => mockProfileRepository.pull(any()));
+        verifyNever(() => mockNotificationService.init());
+        verifyNever(
+          () => mockPushNotificationService.init(userId: any(named: 'userId')),
+        );
+      },
+    );
   });
 }

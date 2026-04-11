@@ -47,6 +47,14 @@ class _TestPendingMfaNotifier extends PendingMfaFactorIdNotifier {
   String? build() => _initial;
 }
 
+class _TestSessionLockedNotifier extends SessionLockedNotifier {
+  final bool _initial;
+  _TestSessionLockedNotifier(this._initial);
+
+  @override
+  bool build() => _initial;
+}
+
 class _MockAdService extends Mock implements AdService {
   @override
   Future<void> ensureSdkInitialized() async {}
@@ -59,10 +67,14 @@ ProviderContainer _createContainer({
   FutureOr<void> Function(Ref ref)? appInitBuilder,
   bool initSkipped = false,
   String? pendingMfaFactorId,
+  bool sessionLocked = false,
 }) {
   return ProviderContainer(
     overrides: [
       isAuthenticatedProvider.overrideWithValue(isLoggedIn),
+      sessionLockedProvider.overrideWith(
+        () => _TestSessionLockedNotifier(sessionLocked),
+      ),
       isAdminProvider.overrideWith(isAdminBuilder ?? (_) => false),
       isPremiumProvider.overrideWithValue(isPremium),
       effectivePremiumProvider.overrideWithValue(isPremium),
@@ -202,6 +214,22 @@ GoRouterState _stateForRoutePath(
 
 void main() {
   group('router redirect', () {
+    testWidgets('forces login when session is locally locked', (tester) async {
+      final container = _createContainer(
+        isLoggedIn: true,
+        isPremium: true,
+        initSkipped: true,
+        sessionLocked: true,
+      );
+      final resolved = await _navigateAndResolve(
+        tester,
+        container,
+        AppRoutes.home,
+      );
+
+      expect(resolved, AppRoutes.login);
+    });
+
     testWidgets('redirects unauthenticated user to login', (tester) async {
       final container = _createContainer(
         isLoggedIn: false,
