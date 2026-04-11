@@ -115,6 +115,13 @@ class SceneDelegate: FlutterSceneDelegate {
         "REVENUECAT_API_KEY_ANDROID": info["REVENUECAT_API_KEY_ANDROID"] as? String ?? "",
         "GOOGLE_WEB_CLIENT_ID": info["GIDServerClientID"] as? String ?? "",
         "GOOGLE_IOS_CLIENT_ID": info["GIDClientID"] as? String ?? "",
+        "IS_IOS_SIMULATOR": {
+          #if targetEnvironment(simulator)
+            return true
+          #else
+            return false
+          #endif
+        }(),
       ])
     }
     configChannel = channel

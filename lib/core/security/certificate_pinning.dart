@@ -61,16 +61,14 @@ class CertificatePinning {
   /// Must be called before any HTTP connections are made (before
   /// `Supabase.initialize()` in `bootstrap.dart`).
   /// Whether to allow all certificates (for proxy debugging).
-  /// Controlled via `--dart-define=ALLOW_PROXY=true` instead of relying
-  /// solely on [kDebugMode] to prevent accidental debug builds on public
-  /// networks from bypassing certificate pinning.
+  /// Controlled explicitly via `--dart-define=ALLOW_PROXY=true`.
   static const _allowProxy = bool.fromEnvironment('ALLOW_PROXY');
 
   static void install() {
-    if (_allowProxy || kDebugMode) {
+    if (_allowProxy) {
       AppLogger.info(
         '$_tag Skipping certificate pinning '
-        '(ALLOW_PROXY=$_allowProxy, kDebugMode=$kDebugMode)',
+        '(ALLOW_PROXY=$_allowProxy)',
       );
       return;
     }

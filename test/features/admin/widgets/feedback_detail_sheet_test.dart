@@ -11,7 +11,7 @@ const _testItem = {
   'message': 'Test message content',
   'email': 'user@example.com',
   'platform': 'android',
-  'app_version': '1.0.0',
+  'app_version': '1.0.2',
   'status': 'open',
   'priority': 'normal',
   'admin_response': '',
@@ -110,7 +110,7 @@ void main() {
       addTearDown(tester.view.resetDevicePixelRatio);
 
       await pumpLocalizedApp(tester, _buildSheet());
-      expect(find.text('1.0.0'), findsOneWidget);
+      expect(find.text('1.0.2'), findsOneWidget);
     });
 
     testWidgets('shows priority SegmentedButton', (tester) async {

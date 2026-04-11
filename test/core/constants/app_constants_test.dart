@@ -21,8 +21,8 @@ void main() {
       );
     });
 
-    test('appVersion is 1.0.0', () {
-      expect(AppConstants.appVersion, '1.0.0');
+    test('appVersion is 1.0.2', () {
+      expect(AppConstants.appVersion, '1.0.2');
     });
   });
 

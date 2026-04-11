@@ -28,7 +28,12 @@ final purchaseServiceProvider = Provider<PurchaseService>((ref) {
 bool get shouldDeferRevenueCatOnDebugIosSimulator =>
     !kReleaseMode &&
     Platform.isIOS &&
-    Platform.environment.containsKey('SIMULATOR_DEVICE_NAME');
+    isIosSimulatorRuntime;
+
+bool get shouldDeferAdsOnDebugIosSimulator =>
+    !kReleaseMode &&
+    Platform.isIOS &&
+    isIosSimulatorRuntime;
 
 /// Whether user has premium subscription.
 /// Combines profile database state with RevenueCat/SharedPreferences cache.

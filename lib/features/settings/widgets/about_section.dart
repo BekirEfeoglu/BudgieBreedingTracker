@@ -118,7 +118,7 @@ class AboutSection extends ConsumerWidget {
             children: [
               // Add new version entries at the top
               _ChangelogEntry(
-                version: 'v1.0.0',
+                version: 'v1.0.2',
                 date: 'settings.changelog_latest'.tr(),
                 sections: [
                   _ChangelogSection(

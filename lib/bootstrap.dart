@@ -44,6 +44,7 @@ String _resolvedRevenueCatIos = _compileTimeRevenueCatIos;
 String _resolvedRevenueCatAndroid = _compileTimeRevenueCatAndroid;
 String _resolvedGoogleWebClientId = _compileTimeGoogleWebClientId;
 String _resolvedGoogleIosClientId = _compileTimeGoogleIosClientId;
+bool _resolvedIosSimulator = false;
 
 /// Resolved RevenueCat API keys — accessible from providers after bootstrap.
 String revenueCatApiKeyIos = '';
@@ -52,6 +53,7 @@ String revenueCatApiKeyAndroid = '';
 /// Resolved Google OAuth client IDs — accessible from providers after bootstrap.
 String googleWebClientIdResolved = '';
 String googleIosClientIdResolved = '';
+bool isIosSimulatorRuntime = false;
 
 bool _isSupabaseInitialized() {
   try {
@@ -192,6 +194,7 @@ void _resolveRevenueCatKeys() {
   revenueCatApiKeyAndroid = _resolvedRevenueCatAndroid;
   googleWebClientIdResolved = _resolvedGoogleWebClientId;
   googleIosClientIdResolved = _resolvedGoogleIosClientId;
+  isIosSimulatorRuntime = _resolvedIosSimulator;
 
   // Warn at startup if RevenueCat keys are missing — purchases will be
   // disabled at runtime but the app will still function in free-tier mode.
@@ -256,8 +259,9 @@ Future<void> _resolveNativeBuildConfigFallbacks() async {
       _resolvedGoogleIosClientId,
       config['GOOGLE_IOS_CLIENT_ID'],
     );
+    _resolvedIosSimulator =
+        config['IS_IOS_SIMULATOR'] == true || _resolvedIosSimulator;
   } catch (e) {
     AppLogger.warning('[Bootstrap] Native config fallback unavailable: $e');
   }
 }
-

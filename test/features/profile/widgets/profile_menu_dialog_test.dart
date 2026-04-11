@@ -41,7 +41,7 @@ void main() {
     PackageInfo.setMockInitialValues(
       appName: 'Test',
       packageName: 'com.test',
-      version: '1.0.0',
+      version: '1.0.2',
       buildNumber: '1',
       buildSignature: '',
     );

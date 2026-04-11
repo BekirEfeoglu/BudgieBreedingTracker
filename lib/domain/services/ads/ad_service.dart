@@ -5,7 +5,13 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
+import 'package:budgie_breeding_tracker/bootstrap.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
+
+bool get _shouldDeferAdsOnDebugIosSimulator =>
+    !kReleaseMode &&
+    Platform.isIOS &&
+    isIosSimulatorRuntime;
 
 /// Manages interstitial, banner, and rewarded ads for free-tier users.
 ///
@@ -76,6 +82,10 @@ class AdService {
   /// Lazily initializes the Google Mobile Ads SDK.
   /// Safe to call multiple times — only initializes once.
   Future<void> ensureSdkInitialized() async {
+    if (_shouldDeferAdsOnDebugIosSimulator) {
+      AppLogger.info('$_tag: skipping SDK init on iOS simulator debug build');
+      return;
+    }
     if (_sdkInitialized) return;
     if (_sdkInitializationFuture != null) {
       await _sdkInitializationFuture;
@@ -247,6 +257,12 @@ final adServiceProvider = Provider<AdService>((ref) {
   final service = AdService();
   var disposed = false;
 
+  if (_shouldDeferAdsOnDebugIosSimulator) {
+    AppLogger.info('AdService: skipping preload on iOS simulator debug build');
+    ref.onDispose(service.dispose);
+    return service;
+  }
+
   Future<void> preloadAds() async {
     if (disposed) return;
     await service.loadAd();
@@ -275,6 +291,7 @@ final adServiceProvider = Provider<AdService>((ref) {
 /// and returns the banner ad unit ID. Use with [AdBannerWidget] to
 /// avoid repeating the same closure in every screen.
 Future<String> defaultAdBannerLoader(WidgetRef ref) async {
+  if (_shouldDeferAdsOnDebugIosSimulator) return '';
   final adService = ref.read(adServiceProvider);
   await adService.ensureSdkInitialized();
   return AdService.bannerAdUnitId;

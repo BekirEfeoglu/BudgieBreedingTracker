@@ -54,7 +54,7 @@ void main() {
           subject: 'Test Bug',
           message: 'Description',
           email: 'test@test.com',
-          appVersion: '1.0.0',
+          appVersion: '1.0.2',
           deviceInfo: 'iOS 17',
         );
 
@@ -69,7 +69,7 @@ void main() {
         expect(captured['subject'], 'Test Bug');
         expect(captured['message'], 'Description');
         expect(captured['email'], 'test@test.com');
-        expect(captured['app_version'], '1.0.0');
+        expect(captured['app_version'], '1.0.2');
         expect(captured['status'], 'open');
       });
 
