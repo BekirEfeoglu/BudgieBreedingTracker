@@ -2,8 +2,10 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 
 import 'package:budgie_breeding_tracker/core/utils/app_haptics.dart';
+import 'package:budgie_breeding_tracker/router/route_names.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
@@ -84,6 +86,13 @@ class _DetailContent extends ConsumerWidget {
       appBar: AppBar(
         title: Text(bird.name),
         actions: [
+          IconButton(
+            icon: const Icon(LucideIcons.sparkles, size: 20),
+            tooltip: 'more.ai_predictions'.tr(),
+            onPressed: () => context.push(
+              '${AppRoutes.aiPredictions}?tab=mutation&birdId=${bird.id}',
+            ),
+          ),
           IconButton(
             icon: const AppIcon(AppIcons.edit),
             tooltip: 'common.edit'.tr(),
