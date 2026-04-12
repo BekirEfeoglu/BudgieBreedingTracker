@@ -1,17 +1,17 @@
-name: Dependabot Auto-Merge
+name: Dependabot PR Triage
 
 on:
-  pull_request:
-    types: [opened, synchronize]
+  pull_request_target:
+    types: [opened, synchronize, reopened]
     branches: [main]
 
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
+  pull-requests: read
 
 jobs:
-  auto-merge:
-    if: github.actor == 'dependabot[bot]'
+  dependabot-triage:
+    if: github.event.pull_request.user.login == 'dependabot[bot]'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -19,29 +19,20 @@ jobs:
         id: metadata
         uses: dependabot/fetch-metadata@v2
         with:
-          github-token: "${{ secrets.GITHUB_TOKEN }}"
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      # Sadece patch update'leri otomatik merge et
-      # Minor ve major update'ler manuel inceleme gerektirir
-      - name: Auto-merge patch updates
-        if: steps.metadata.outputs.update-type == 'version-update:semver-patch'
-        run: gh pr merge --auto --squash "$PR_URL"
+      - name: Summarize dependency update
+        run: |
+          {
+            echo "## Dependabot update"
+            echo "- PR: $PR_URL"
+            echo "- Dependency: $DEPENDENCY_NAMES"
+            echo "- Update type: $UPDATE_TYPE"
+            echo
+            echo "Auto-merge is intentionally disabled in Actions."
+            echo "GitHub runs Dependabot-triggered pull request workflows with a read-only token, so merge/label steps fail reliably in public repos."
+          } >> "$GITHUB_STEP_SUMMARY"
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      # Minor update'lere bilgi etiketi ekle
-      - name: Label minor updates
-        if: steps.metadata.outputs.update-type == 'version-update:semver-minor'
-        run: gh pr edit "$PR_URL" --add-label "priority: medium"
-        env:
-          PR_URL: ${{ github.event.pull_request.html_url }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      # Major update'lere uyari etiketi ekle
-      - name: Label major updates
-        if: steps.metadata.outputs.update-type == 'version-update:semver-major'
-        run: gh pr edit "$PR_URL" --add-label "priority: high"
-        env:
-          PR_URL: ${{ github.event.pull_request.html_url }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEPENDENCY_NAMES: ${{ steps.metadata.outputs.dependency-names }}
+          UPDATE_TYPE: ${{ steps.metadata.outputs.update-type }}

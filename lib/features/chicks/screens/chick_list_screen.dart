@@ -27,6 +27,14 @@ import 'package:budgie_breeding_tracker/router/route_names.dart';
 class ChickListScreen extends ConsumerWidget {
   const ChickListScreen({super.key});
 
+  void _handleBack(BuildContext context) {
+    if (Navigator.of(context).canPop()) {
+      context.pop();
+      return;
+    }
+    context.push(AppRoutes.more);
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final userId = ref.watch(currentUserIdProvider);
@@ -51,8 +59,8 @@ class ChickListScreen extends ConsumerWidget {
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(LucideIcons.arrowLeft),
-          tooltip: 'common.back'.tr(),
-          onPressed: () => context.go(AppRoutes.more),
+          tooltip: 'back'.tr(),
+          onPressed: () => _handleBack(context),
         ),
         title: AppScreenTitle(
           title: 'chicks.title'.tr(),
