@@ -235,11 +235,36 @@ class LocalAiMutationInsight {
       eyeColor,
     ].where((item) => item.isNotEmpty).length;
 
+    // Eye color gate: ino mutations (albino/lutino) REQUIRE red/pink eyes.
+    // If the model predicts ino but eye_color doesn't clearly indicate
+    // red/pink, downgrade to the most likely non-ino alternative.
+    var correctedMutation = predictedMutation;
+    if (_isInoMutation(predictedMutation) &&
+        eyeColor.isNotEmpty &&
+        !_hasRedPinkEyes(eyeColor)) {
+      // Model hallucinated ino — correct to spangle DF or dominant pied
+      correctedMutation = _correctInoToNonIno(
+        predictedMutation: predictedMutation,
+        baseSeries: baseSeries,
+        secondary: secondary,
+      );
+      // Override series/pattern to match the corrected mutation
+      final correctedSig = _mutationSignature[correctedMutation];
+      if (correctedSig != null) {
+        if (correctedSig.series.length == 1) {
+          baseSeries = correctedSig.series.first;
+        }
+        if (correctedSig.family.length == 1) {
+          patternFamily = correctedSig.family.first;
+        }
+      }
+    }
+
     return LocalAiMutationInsight(
-      predictedMutation: predictedMutation,
+      predictedMutation: correctedMutation,
       confidence: _normalizeMutationConfidence(
         rawConfidence: rawConfidence,
-        predictedMutation: predictedMutation,
+        predictedMutation: correctedMutation,
         evidenceCount: evidenceCount,
         baseSeries: baseSeries,
         patternFamily: patternFamily,
@@ -261,6 +286,35 @@ class LocalAiMutationInsight {
           .toList(growable: false),
     );
   }
+}
+
+bool _isInoMutation(String mutation) =>
+    mutation == 'lutino' || mutation == 'albino';
+
+/// Returns true if the eye color description indicates red/pink eyes.
+bool _hasRedPinkEyes(String eyeColor) {
+  final lower = eyeColor.toLowerCase();
+  const redPinkTokens = [
+    'red', 'pink', 'kırmızı', 'kirmizi', 'pembe', 'ruby', 'rot', 'rosa',
+  ];
+  return redPinkTokens.any(lower.contains);
+}
+
+/// When the model incorrectly predicts ino but eyes aren't red/pink,
+/// substitute the most likely non-ino mutation.
+String _correctInoToNonIno({
+  required String predictedMutation,
+  required String baseSeries,
+  required List<String> secondary,
+}) {
+  // Prefer a non-ino secondary if available
+  for (final alt in secondary) {
+    if (!_isInoMutation(alt) && alt != 'unknown') return alt;
+  }
+  // Fall back based on series: white body = spangle_blue, yellow = spangle_green
+  if (predictedMutation == 'albino') return 'spangle_blue';
+  if (predictedMutation == 'lutino') return 'spangle_green';
+  return baseSeries == 'blue' ? 'spangle_blue' : 'spangle_green';
 }
 
 LocalAiConfidence _normalizeMutationConfidence({

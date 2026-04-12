@@ -422,5 +422,103 @@ Thanks.
         throwsA(isA<FormatException>()),
       );
     });
+
+    test('eye color gate: corrects albino to spangle_blue when eyes are dark', () {
+      final insight = LocalAiMutationInsight.fromJson({
+        'predicted_mutation': 'albino',
+        'confidence': 'high',
+        'base_series': 'blue',
+        'pattern_family': 'ino',
+        'body_color': 'beyaz',
+        'wing_pattern': 'beyaz',
+        'eye_color': 'koyu/siyah',
+        'rationale': 'test',
+        'secondary_possibilities': <String>[],
+      });
+
+      expect(insight.predictedMutation, 'spangle_blue');
+      expect(insight.patternFamily, 'spangle');
+    });
+
+    test('eye color gate: corrects lutino to spangle_green when eyes are dark', () {
+      final insight = LocalAiMutationInsight.fromJson({
+        'predicted_mutation': 'lutino',
+        'confidence': 'high',
+        'base_series': 'green',
+        'pattern_family': 'ino',
+        'body_color': 'sarı',
+        'wing_pattern': 'sarı',
+        'eye_color': 'siyah',
+        'rationale': 'test',
+        'secondary_possibilities': <String>[],
+      });
+
+      expect(insight.predictedMutation, 'spangle_green');
+      expect(insight.patternFamily, 'spangle');
+    });
+
+    test('eye color gate: keeps albino when eyes are kırmızı', () {
+      final insight = LocalAiMutationInsight.fromJson({
+        'predicted_mutation': 'albino',
+        'confidence': 'high',
+        'base_series': 'albino',
+        'pattern_family': 'ino',
+        'body_color': 'beyaz',
+        'wing_pattern': 'beyaz',
+        'eye_color': 'kırmızı/pembe',
+        'rationale': 'test',
+        'secondary_possibilities': <String>[],
+      });
+
+      expect(insight.predictedMutation, 'albino');
+    });
+
+    test('eye color gate: keeps lutino when eyes are red/pink', () {
+      final insight = LocalAiMutationInsight.fromJson({
+        'predicted_mutation': 'lutino',
+        'confidence': 'medium',
+        'base_series': 'lutino',
+        'pattern_family': 'ino',
+        'body_color': 'sarı',
+        'wing_pattern': 'sarı',
+        'eye_color': 'red/pink',
+        'rationale': 'test',
+        'secondary_possibilities': <String>[],
+      });
+
+      expect(insight.predictedMutation, 'lutino');
+    });
+
+    test('eye color gate: prefers non-ino secondary over fallback', () {
+      final insight = LocalAiMutationInsight.fromJson({
+        'predicted_mutation': 'albino',
+        'confidence': 'high',
+        'base_series': 'blue',
+        'pattern_family': 'ino',
+        'body_color': 'beyaz',
+        'wing_pattern': 'beyaz',
+        'eye_color': 'koyu',
+        'rationale': 'test',
+        'secondary_possibilities': ['dominant_pied_blue', 'dilute_blue'],
+      });
+
+      expect(insight.predictedMutation, 'dominant_pied_blue');
+    });
+
+    test('eye color gate: does not correct when eye_color is empty', () {
+      final insight = LocalAiMutationInsight.fromJson({
+        'predicted_mutation': 'albino',
+        'confidence': 'low',
+        'base_series': 'albino',
+        'pattern_family': 'ino',
+        'body_color': 'beyaz',
+        'wing_pattern': '',
+        'eye_color': '',
+        'rationale': 'test',
+        'secondary_possibilities': <String>[],
+      });
+
+      expect(insight.predictedMutation, 'albino');
+    });
   });
 }
