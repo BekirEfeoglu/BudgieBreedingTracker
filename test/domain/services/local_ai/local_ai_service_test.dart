@@ -1,10 +1,13 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:path/path.dart' as p;
+import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/errors/app_exception.dart';
+import 'package:budgie_breeding_tracker/domain/services/genetics/parent_genotype.dart';
 import 'package:budgie_breeding_tracker/domain/services/local_ai/local_ai_models.dart';
 import 'package:budgie_breeding_tracker/domain/services/local_ai/local_ai_service.dart';
 
@@ -32,7 +35,7 @@ Here is the result:
     });
 
     test(
-      'parses first balanced json object when explanation contains braces',
+      'parses last balanced json object when explanation contains braces',
       () {
         final result = LocalAiService.extractJsonObject('''
 Model note: use {"ignored": true} only as an example.
@@ -202,14 +205,14 @@ Thanks.
       final service = LocalAiService(
         client: MockClient((_) async {
           return http.Response(
-            '{"models":[{"name":"llama3:8b"},{"name":"gemma4:e4b"},{"name":"llama3:8b"}]}',
+            '{"models":[{"name":"llama3:8b"},{"name":"gemma4:latest"},{"name":"llama3:8b"}]}',
             200,
           );
         }),
       );
 
       final models = await service.listModels(config: LocalAiConfig.defaults);
-      expect(models, ['gemma4:e4b', 'llama3:8b']);
+      expect(models, ['gemma4:latest', 'llama3:8b']);
     });
 
     test(
@@ -225,5 +228,199 @@ Thanks.
         );
       },
     );
+  });
+
+  group('LocalAiService generate response parsing', () {
+    test('parses direct Map response from Ollama', () async {
+      final service = LocalAiService(
+        client: MockClient((_) async {
+          return http.Response(
+            jsonEncode({
+              'response': {
+                'summary': 'direct map',
+                'confidence': 'high',
+                'likely_mutations': <String>[],
+                'matched_genetics': <String>[],
+                'sex_linked_note': '',
+                'warnings': <String>[],
+                'next_checks': <String>[],
+              },
+            }),
+            200,
+          );
+        }),
+      );
+
+      final result = await service.analyzeGenetics(
+        config: LocalAiConfig.defaults,
+        father: const ParentGenotype.empty(gender: BirdGender.male),
+        mother: const ParentGenotype.empty(gender: BirdGender.female),
+      );
+
+      expect(result.summary, 'direct map');
+      expect(result.confidence, LocalAiConfidence.high);
+    });
+
+    test('parses string response from Ollama', () async {
+      final service = LocalAiService(
+        client: MockClient((_) async {
+          return http.Response(
+            jsonEncode({
+              'response': jsonEncode({
+                'summary': 'string resp',
+                'confidence': 'medium',
+                'likely_mutations': <String>[],
+                'matched_genetics': <String>[],
+                'sex_linked_note': '',
+                'warnings': <String>[],
+                'next_checks': <String>[],
+              }),
+            }),
+            200,
+          );
+        }),
+      );
+
+      final result = await service.analyzeGenetics(
+        config: LocalAiConfig.defaults,
+        father: const ParentGenotype.empty(gender: BirdGender.male),
+        mother: const ParentGenotype.empty(gender: BirdGender.female),
+      );
+
+      expect(result.summary, 'string resp');
+      expect(result.confidence, LocalAiConfidence.medium);
+    });
+
+    test('throws validation exception on unparseable response', () async {
+      final service = LocalAiService(
+        client: MockClient((_) async {
+          return http.Response(
+            jsonEncode({'response': 'not json at all'}),
+            200,
+          );
+        }),
+      );
+
+      expect(
+        () => service.analyzeGenetics(
+          config: LocalAiConfig.defaults,
+          father: const ParentGenotype.empty(gender: BirdGender.male),
+          mother: const ParentGenotype.empty(gender: BirdGender.female),
+        ),
+        throwsA(isA<ValidationException>()),
+      );
+    });
+  });
+
+  group('LocalAiService.analyzeSex', () {
+    test('returns parsed sex insight', () async {
+      final service = LocalAiService(
+        client: MockClient((_) async {
+          return http.Response(
+            jsonEncode({
+              'response': jsonEncode({
+                'predicted_sex': 'female',
+                'confidence': 'high',
+                'rationale': 'Kahverengi mumsu burun',
+                'indicators': ['Kahverengi burun rengi'],
+                'next_checks': ['Yas dogrulama'],
+              }),
+            }),
+            200,
+          );
+        }),
+      );
+
+      final result = await service.analyzeSex(
+        config: LocalAiConfig.defaults,
+        observations: 'Kahverengi burun, 6 aylik',
+      );
+
+      expect(result.predictedSex, LocalAiSexPrediction.female);
+      expect(result.confidence, LocalAiConfidence.high);
+      expect(result.indicators, ['Kahverengi burun rengi']);
+    });
+  });
+
+  group('LocalAi model edge cases', () {
+    test('handles null JSON fields gracefully', () {
+      final insight = LocalAiGeneticsInsight.fromJson({
+        'summary': null,
+        'confidence': null,
+        'likely_mutations': null,
+        'matched_genetics': null,
+        'sex_linked_note': null,
+        'warnings': null,
+        'next_checks': null,
+      });
+
+      expect(insight.summary, '');
+      expect(insight.confidence, LocalAiConfidence.unknown);
+      expect(insight.likelyMutations, isEmpty);
+      expect(insight.matchedGenetics, isEmpty);
+      expect(insight.sexLinkedNote, '');
+      expect(insight.warnings, isEmpty);
+      expect(insight.nextChecks, isEmpty);
+    });
+
+    test('deduplicates list items', () {
+      final insight = LocalAiGeneticsInsight.fromJson({
+        'summary': 'test',
+        'confidence': 'low',
+        'likely_mutations': ['a', 'a', 'b'],
+        'matched_genetics': <String>[],
+        'sex_linked_note': '',
+        'warnings': <String>[],
+        'next_checks': <String>[],
+      });
+
+      expect(insight.likelyMutations, ['a', 'b']);
+    });
+
+    test('mutation insight downgrades confidence for low evidence', () {
+      final insight = LocalAiMutationInsight.fromJson({
+        'predicted_mutation': 'normal_light_green',
+        'confidence': 'high',
+        'base_series': 'green',
+        'pattern_family': 'normal',
+        'body_color': 'green',
+        'wing_pattern': '',
+        'eye_color': '',
+        'rationale': 'only body color visible',
+        'secondary_possibilities': <String>[],
+      });
+
+      expect(insight.confidence, LocalAiConfidence.low);
+    });
+
+    test('mutation insight downgrades high to medium with 2 evidence items', () {
+      final insight = LocalAiMutationInsight.fromJson({
+        'predicted_mutation': 'normal_light_green',
+        'confidence': 'high',
+        'base_series': 'green',
+        'pattern_family': 'normal',
+        'body_color': 'green',
+        'wing_pattern': 'black barring',
+        'eye_color': '',
+        'rationale': 'two items',
+        'secondary_possibilities': <String>[],
+      });
+
+      expect(insight.confidence, LocalAiConfidence.medium);
+    });
+
+    test('extractJsonObject throws on empty input', () {
+      expect(
+        () => LocalAiService.extractJsonObject(''),
+        throwsA(isA<FormatException>()),
+      );
+    });
+
+    test('extractJsonObject throws on non-json input', () {
+      expect(
+        () => LocalAiService.extractJsonObject('just plain text no braces'),
+        throwsA(isA<FormatException>()),
+      );
+    });
   });
 }

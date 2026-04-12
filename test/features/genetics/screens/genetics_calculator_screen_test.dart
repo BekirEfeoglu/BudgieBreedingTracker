@@ -5,10 +5,12 @@ import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 
+import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/features/genetics/screens/genetics_calculator_screen.dart';
 import 'package:budgie_breeding_tracker/features/genetics/providers/genetics_providers.dart';
 import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
 import 'package:budgie_breeding_tracker/data/local/database/dao_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/genetics/parent_genotype.dart';
 
 import '../../../helpers/mocks.dart';
 
@@ -110,6 +112,49 @@ void main() {
       await tester.pumpWidget(buildSubject());
       await tester.pumpAndSettle();
       expect(find.byType(Scaffold), findsOneWidget);
+    });
+
+    testWidgets('next button stays disabled until both parents have data', (
+      tester,
+    ) async {
+      final container = ProviderContainer(
+        overrides: [
+          currentUserIdProvider.overrideWithValue('test-user'),
+          currentUserProvider.overrideWith((_) => null),
+          geneticsHistoryDaoProvider.overrideWithValue(mockHistoryDao),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: MaterialApp.router(routerConfig: buildRouter()),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final nextFinder = find.widgetWithText(
+        FilledButton,
+        l10n('genetics.next'),
+      );
+      FilledButton nextButton() => tester.widget<FilledButton>(nextFinder);
+
+      expect(nextButton().onPressed, isNull);
+
+      container.read(fatherGenotypeProvider.notifier).state = ParentGenotype(
+        gender: BirdGender.male,
+        mutations: {'blue': AlleleState.visual},
+      );
+      await tester.pumpAndSettle();
+      expect(nextButton().onPressed, isNull);
+
+      container.read(motherGenotypeProvider.notifier).state = ParentGenotype(
+        gender: BirdGender.female,
+        mutations: {'ino': AlleleState.visual},
+      );
+      await tester.pumpAndSettle();
+      expect(nextButton().onPressed, isNotNull);
     });
   });
 

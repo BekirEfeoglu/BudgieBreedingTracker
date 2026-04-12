@@ -13,6 +13,9 @@ import 'package:budgie_breeding_tracker/domain/services/genetics/parent_genotype
 
 import 'local_ai_models.dart';
 
+/// L10n error key prefix used by UI to detect translatable exception messages.
+const _kErrorPrefix = 'genetics.local_ai_error_';
+
 class LocalAiService {
   LocalAiService({http.Client? client}) : _client = client ?? http.Client();
 
@@ -34,16 +37,19 @@ class LocalAiService {
       mother: mother,
       calculatorResults: calculatorResults,
     );
+    final prompt = _buildGeneticsPrompt(
+      father: father,
+      mother: mother,
+      fatherName: fatherName,
+      motherName: motherName,
+      calculatorResults: calculatorResults,
+      allowedGenetics: allowedGenetics,
+    );
     final payload = await _generate(
       config: config,
-      prompt: _buildGeneticsPrompt(
-        father: father,
-        mother: mother,
-        fatherName: fatherName,
-        motherName: motherName,
-        calculatorResults: calculatorResults,
-        allowedGenetics: allowedGenetics,
-      ),
+      system: _systemGenetics,
+      prompt: prompt,
+      numPredict: 400,
     );
     return LocalAiGeneticsInsight.fromJson(
       payload,
@@ -54,10 +60,32 @@ class LocalAiService {
   Future<LocalAiSexInsight> analyzeSex({
     required LocalAiConfig config,
     required String observations,
+    String? imagePath,
   }) async {
+    List<String> images = const [];
+    if (imagePath != null) {
+      final file = File(imagePath);
+      if (!await file.exists()) {
+        throw const ValidationException(
+          '${_kErrorPrefix}image_not_found',
+        );
+      }
+      final fileSize = await file.length();
+      if (fileSize > AppConstants.maxLocalAiImageBytes) {
+        throw const ValidationException(
+          '${_kErrorPrefix}image_too_large',
+        );
+      }
+      images = [base64Encode(await file.readAsBytes())];
+    }
+
+    final system = imagePath != null ? _systemSexWithImage : _systemSex;
     final payload = await _generate(
       config: config,
-      prompt: _buildSexPrompt(observations),
+      system: system,
+      prompt: observations.trim(),
+      images: images,
+      numPredict: 300,
     );
     return LocalAiSexInsight.fromJson(payload);
   }
@@ -69,73 +97,131 @@ class LocalAiService {
     final file = File(imagePath);
     if (!await file.exists()) {
       throw const ValidationException(
-        'Secilen gorsel bulunamadi. Lutfen gorseli yeniden secin.',
+        '${_kErrorPrefix}image_not_found',
       );
     }
 
     final fileSize = await file.length();
     if (fileSize > AppConstants.maxLocalAiImageBytes) {
       throw const ValidationException(
-        'Gorsel boyutu 10 MB sinirini asiyor. Daha kucuk bir gorsel secin.',
+        '${_kErrorPrefix}image_too_large',
       );
     }
 
     final payload = await _generate(
       config: config,
-      prompt: _buildMutationImagePrompt(),
+      system: _systemMutationImage,
+      prompt: 'Analyze this budgerigar photo.',
       images: [base64Encode(await file.readAsBytes())],
+      numPredict: 350,
     );
     return LocalAiMutationInsight.fromJson(payload);
   }
 
   Future<void> testConnection({required LocalAiConfig config}) async {
+    if (config.isOpenRouter) {
+      return _testOpenRouterConnection(config: config);
+    }
+
     final endpoint = _buildUri(config: config, path: '/api/tags');
 
     try {
       final response = await _client.get(endpoint).timeout(_requestTimeout);
       if (response.statusCode < 200 || response.statusCode >= 300) {
         throw NetworkException(
-          'Yerel model baglantisi basarisiz (HTTP ${response.statusCode}).',
+          '${_kErrorPrefix}connection_http\x00${response.statusCode}',
         );
       }
 
       final root = jsonDecode(response.body);
       if (root is! Map<String, dynamic> || root['models'] is! List) {
         throw const ValidationException(
-          'Yerel model servisi beklenen formatta yanit vermedi.',
+          '${_kErrorPrefix}unexpected_response',
         );
       }
     } on TimeoutException catch (e, st) {
       AppLogger.error('[LocalAiService] Connection test timed out', e, st);
       throw const NetworkException(
-        'Yerel model zaman asimina ugradi. Ollama servisini ve model durumunu kontrol edin.',
+        '${_kErrorPrefix}ollama_timeout',
       );
     } on SocketException catch (e, st) {
       AppLogger.error('[LocalAiService] Connection test failed', e, st);
       throw const NetworkException(
-        'Yerel modele baglanilamadi. Ollama servisinin calistigini ve URL bilgisinin dogru oldugunu kontrol edin.',
+        '${_kErrorPrefix}ollama_unreachable',
       );
     } on http.ClientException catch (e, st) {
       AppLogger.error('[LocalAiService] Connection test failed', e, st);
       throw const NetworkException(
-        'Yerel modele baglanilamadi. Ollama servisinin calistigini ve URL bilgisinin dogru oldugunu kontrol edin.',
+        '${_kErrorPrefix}ollama_unreachable',
       );
     } on FormatException catch (e, st) {
       AppLogger.error('[LocalAiService] Connection test parse failed', e, st);
       throw const ValidationException(
-        'Yerel model servisi anlasilamayan bir yanit dondurdu.',
+        '${_kErrorPrefix}unparseable',
+      );
+    }
+  }
+
+  Future<void> _testOpenRouterConnection({
+    required LocalAiConfig config,
+  }) async {
+    if (config.apiKey.trim().isEmpty) {
+      throw const ValidationException(
+        '${_kErrorPrefix}api_key_required',
+      );
+    }
+
+    final endpoint = Uri.parse(
+      '${config.normalizedBaseUrl}/api/v1/models',
+    );
+
+    try {
+      final response = await _client
+          .get(endpoint, headers: {
+            'Authorization': 'Bearer ${config.apiKey}',
+          })
+          .timeout(_requestTimeout);
+
+      if (response.statusCode == 401) {
+        throw const ValidationException(
+          '${_kErrorPrefix}api_key_invalid',
+        );
+      }
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        throw NetworkException(
+          '${_kErrorPrefix}openrouter_http\x00${response.statusCode}',
+        );
+      }
+    } on TimeoutException catch (e, st) {
+      AppLogger.error('[LocalAiService] OpenRouter test timed out', e, st);
+      throw const NetworkException(
+        '${_kErrorPrefix}openrouter_timeout',
+      );
+    } on SocketException catch (e, st) {
+      AppLogger.error('[LocalAiService] OpenRouter test failed', e, st);
+      throw const NetworkException(
+        '${_kErrorPrefix}openrouter_unreachable',
+      );
+    } on http.ClientException catch (e, st) {
+      AppLogger.error('[LocalAiService] OpenRouter test failed', e, st);
+      throw const NetworkException(
+        '${_kErrorPrefix}openrouter_unreachable',
       );
     }
   }
 
   Future<List<String>> listModels({required LocalAiConfig config}) async {
+    if (config.isOpenRouter) {
+      return const [];
+    }
+
     final endpoint = _buildUri(config: config, path: '/api/tags');
 
     try {
       final response = await _client.get(endpoint).timeout(_requestTimeout);
       if (response.statusCode < 200 || response.statusCode >= 300) {
         throw NetworkException(
-          'Yerel model listesi alinamadi (HTTP ${response.statusCode}).',
+          '${_kErrorPrefix}model_list_http\x00${response.statusCode}',
         );
       }
 
@@ -143,7 +229,7 @@ class LocalAiService {
       final rawModels = root['models'];
       if (rawModels is! List) {
         throw const ValidationException(
-          'Yerel model listesi beklenen formatta gelmedi.',
+          '${_kErrorPrefix}model_list_format',
         );
       }
 
@@ -157,28 +243,56 @@ class LocalAiService {
     } on TimeoutException catch (e, st) {
       AppLogger.error('[LocalAiService] Model list timed out', e, st);
       throw const NetworkException(
-        'Yerel model listesi alinirken zaman asimi olustu.',
+        '${_kErrorPrefix}model_list_timeout',
       );
     } on SocketException catch (e, st) {
       AppLogger.error('[LocalAiService] Model list failed', e, st);
       throw const NetworkException(
-        'Yerel modele baglanilamadi. Ollama servisinin calistigini ve URL bilgisinin dogru oldugunu kontrol edin.',
+        '${_kErrorPrefix}ollama_unreachable',
       );
     } on http.ClientException catch (e, st) {
       AppLogger.error('[LocalAiService] Model list failed', e, st);
       throw const NetworkException(
-        'Yerel modele baglanilamadi. Ollama servisinin calistigini ve URL bilgisinin dogru oldugunu kontrol edin.',
+        '${_kErrorPrefix}ollama_unreachable',
       );
     } on FormatException catch (e, st) {
       AppLogger.error('[LocalAiService] Model list parse failed', e, st);
-      throw const ValidationException('Yerel model listesi anlasilamadi.');
+      throw const ValidationException(
+        '${_kErrorPrefix}model_list_unparseable',
+      );
     }
   }
 
   Future<Map<String, dynamic>> _generate({
     required LocalAiConfig config,
     required String prompt,
+    String? system,
     List<String> images = const [],
+    int numPredict = 400,
+  }) async {
+    return config.isOpenRouter
+        ? _generateOpenRouter(
+            config: config,
+            prompt: prompt,
+            system: system,
+            images: images,
+            numPredict: numPredict,
+          )
+        : _generateOllama(
+            config: config,
+            prompt: prompt,
+            system: system,
+            images: images,
+            numPredict: numPredict,
+          );
+  }
+
+  Future<Map<String, dynamic>> _generateOllama({
+    required LocalAiConfig config,
+    required String prompt,
+    String? system,
+    List<String> images = const [],
+    int numPredict = 400,
   }) async {
     final endpoint = _buildUri(config: config, path: '/api/generate');
     http.Response response;
@@ -190,31 +304,36 @@ class LocalAiService {
             body: jsonEncode({
               'model': config.normalizedModel,
               'prompt': prompt,
+              if (system != null) 'system': system,
               'stream': false,
               'format': 'json',
               if (images.isNotEmpty) 'images': images,
-              'options': {'temperature': 0.2, 'top_p': 0.9, 'num_predict': 500},
+              'options': {
+                'temperature': 0.2,
+                'top_p': 0.9,
+                'num_predict': numPredict,
+              },
             }),
           )
           .timeout(_requestTimeout);
     } on TimeoutException catch (e, st) {
-      AppLogger.error('[LocalAiService] Request timed out', e, st);
+      AppLogger.error('[LocalAiService] Ollama timed out', e, st);
       throw const NetworkException(
-        'Yerel model zaman asimina ugradi. Daha kisa girdiyle veya daha hafif bir modelle tekrar deneyin.',
+        '${_kErrorPrefix}generate_ollama_timeout',
       );
     } catch (e, st) {
-      AppLogger.error('[LocalAiService] Connection failed', e, st);
+      AppLogger.error('[LocalAiService] Ollama connection failed', e, st);
       throw const NetworkException(
-        'Yerel modele baglanilamadi. Ollama servisinin calistigini ve URL bilgisinin dogru oldugunu kontrol edin.',
+        '${_kErrorPrefix}ollama_unreachable',
       );
     }
 
     if (response.statusCode < 200 || response.statusCode >= 300) {
       AppLogger.warning(
-        '[LocalAiService] Unexpected status ${response.statusCode}: ${response.body}',
+        '[LocalAiService] Ollama status ${response.statusCode}: ${response.body}',
       );
       throw NetworkException(
-        'Yerel model yanit vermedi (HTTP ${response.statusCode}).',
+        '${_kErrorPrefix}generate_ollama_http\x00${response.statusCode}',
       );
     }
 
@@ -226,9 +345,109 @@ class LocalAiService {
       final modelResponse = root['response'] as String? ?? '';
       return extractJsonObject(modelResponse);
     } catch (e, st) {
-      AppLogger.error('[LocalAiService] Response parse failed', e, st);
+      AppLogger.error('[LocalAiService] Ollama parse failed', e, st);
       throw const ValidationException(
-        'Model yaniti anlasilamadi. Daha kisa bir girdiyle tekrar deneyin.',
+        '${_kErrorPrefix}generate_parse',
+      );
+    }
+  }
+
+  Future<Map<String, dynamic>> _generateOpenRouter({
+    required LocalAiConfig config,
+    required String prompt,
+    String? system,
+    List<String> images = const [],
+    int numPredict = 400,
+  }) async {
+    final endpoint = Uri.parse(
+      '${config.normalizedBaseUrl}/api/v1/chat/completions',
+    );
+
+    final messages = <Map<String, dynamic>>[
+      if (system != null) {'role': 'system', 'content': system},
+    ];
+
+    if (images.isNotEmpty) {
+      messages.add({
+        'role': 'user',
+        'content': [
+          {'type': 'text', 'text': prompt},
+          for (final img in images)
+            {
+              'type': 'image_url',
+              'image_url': {'url': 'data:image/jpeg;base64,$img'},
+            },
+        ],
+      });
+    } else {
+      messages.add({'role': 'user', 'content': prompt});
+    }
+
+    http.Response response;
+    try {
+      response = await _client
+          .post(
+            endpoint,
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer ${config.apiKey}',
+              'HTTP-Referer': 'https://budgiebreeding.com',
+              'X-Title': 'Budgie Breeding Tracker',
+            },
+            body: jsonEncode({
+              'model': config.normalizedModel,
+              'messages': messages,
+              'temperature': 0.2,
+              'top_p': 0.9,
+              'max_tokens': numPredict,
+            }),
+          )
+          .timeout(_requestTimeout);
+    } on TimeoutException catch (e, st) {
+      AppLogger.error('[LocalAiService] OpenRouter timed out', e, st);
+      throw const NetworkException(
+        '${_kErrorPrefix}generate_openrouter_timeout',
+      );
+    } catch (e, st) {
+      AppLogger.error('[LocalAiService] OpenRouter connection failed', e, st);
+      throw const NetworkException(
+        '${_kErrorPrefix}generate_openrouter_unreachable',
+      );
+    }
+
+    if (response.statusCode == 401) {
+      throw const ValidationException(
+        '${_kErrorPrefix}api_key_invalid',
+      );
+    }
+    if (response.statusCode == 429) {
+      throw const NetworkException(
+        '${_kErrorPrefix}rate_limit',
+      );
+    }
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      AppLogger.warning(
+        '[LocalAiService] OpenRouter status ${response.statusCode}: ${response.body}',
+      );
+      throw NetworkException(
+        '${_kErrorPrefix}generate_openrouter_http\x00${response.statusCode}',
+      );
+    }
+
+    try {
+      final root = jsonDecode(response.body) as Map<String, dynamic>;
+      final choices = root['choices'] as List?;
+      if (choices == null || choices.isEmpty) {
+        throw const FormatException('No choices in response');
+      }
+      final message = (choices[0] as Map<String, dynamic>)['message']
+          as Map<String, dynamic>;
+      final content = message['content'] as String? ?? '';
+      return extractJsonObject(content);
+    } catch (e, st) {
+      AppLogger.error('[LocalAiService] OpenRouter parse failed', e, st);
+      throw const ValidationException(
+        '${_kErrorPrefix}generate_parse',
       );
     }
   }
@@ -237,11 +456,24 @@ class LocalAiService {
     final uri = Uri.tryParse(config.normalizedBaseUrl);
     if (uri == null || !uri.hasScheme || uri.host.isEmpty) {
       throw const ValidationException(
-        'Yerel model URL bilgisi gecersiz. Ornek: http://127.0.0.1:11434',
+        '${_kErrorPrefix}invalid_url',
       );
     }
     return uri.replace(path: path);
   }
+
+  static const _systemGenetics = '''
+Budgerigar breeding genetics assistant. JSON only, all values in Turkish.
+
+Output: {"summary":"...","confidence":"low|medium|high","likely_mutations":["phenotype descriptions"],"matched_genetics":["id from allowed list"],"sex_linked_note":"...","warnings":["..."],"next_checks":["..."]}
+
+Rules:
+- Calculator summary is the source of truth; complement it, don't contradict.
+- matched_genetics: only IDs from the allowed list.
+- likely_mutations: phenotype-level outcomes, not raw IDs.
+- warnings: ambiguous genes, sex-linked risks, missing evidence.
+- If a parent genotype is empty, say the pair data is incomplete.
+- Lower confidence instead of inventing facts. Keep items short.''';
 
   static String _buildGeneticsPrompt({
     required ParentGenotype father,
@@ -251,59 +483,31 @@ class LocalAiService {
     String? fatherName,
     String? motherName,
   }) {
-    final calculatorSummary = calculatorResults.isEmpty
-        ? 'No calculator results available.'
+    final fName = fatherName?.trim().isNotEmpty == true
+        ? fatherName!.trim()
+        : 'Unknown';
+    final mName = motherName?.trim().isNotEmpty == true
+        ? motherName!.trim()
+        : 'Unknown';
+    // Top 8 results to keep prompt concise within token budget.
+    final calcLines = calculatorResults.isEmpty
+        ? 'none'
         : calculatorResults
               .take(8)
               .map(
-                (OffspringResult result) =>
-                    '- phenotype=${result.phenotype}; probability=${result.probability.toStringAsFixed(2)}; sex=${result.sex.name}; genotype=${result.genotype ?? 'unknown'}',
+                (r) =>
+                    '${r.phenotype} ${(r.probability * 100).toStringAsFixed(0)}% ${r.sex.name}',
               )
-              .join('\n');
-    final allowedGeneticsSummary = allowedGenetics.isEmpty
-        ? '- none'
-        : allowedGenetics
-              .map((item) => '- ${item.id}: ${item.name}')
-              .join('\n');
+              .join('; ');
+    final allowedIds = allowedGenetics.isEmpty
+        ? 'none'
+        : allowedGenetics.map((a) => '${a.id}(${a.name})').join(', ');
 
     return '''
-You are helping inside a budgerigar breeding application.
-Analyze the pair and respond with JSON only.
-
-Return exactly this JSON shape:
-{
-  "summary": "short plain text summary",
-  "confidence": "low|medium|high",
-  "likely_mutations": ["..."],
-  "matched_genetics": ["mutation_id"],
-  "sex_linked_note": "short note",
-  "warnings": ["..."],
-  "next_checks": ["..."]
-}
-
-Rules:
-- Focus on budgerigar genetics.
-- Use the built-in calculator summary as the main source of truth.
-- Write every value in Turkish.
-- Keep each list item short.
-- If uncertain, lower confidence instead of inventing facts.
-- If a parent genotype is empty, explicitly mention that the pair data is incomplete.
-- Warning items should focus on ambiguous genes, sex-linked risks, or missing evidence.
-- `likely_mutations` should describe phenotype-level outcomes, not raw gene IDs.
-- `matched_genetics` must only contain IDs from the allowed list below.
-- Use `matched_genetics` for the app genetics that best explain your conclusion.
-
-Father name: ${fatherName?.trim().isNotEmpty == true ? fatherName!.trim() : 'Unknown'}
-Father genotype: ${_formatGenotype(father)}
-Mother name: ${motherName?.trim().isNotEmpty == true ? motherName!.trim() : 'Unknown'}
-Mother genotype: ${_formatGenotype(mother)}
-
-Built-in calculator summary:
-$calculatorSummary
-
-Allowed app genetics IDs:
-$allowedGeneticsSummary
-''';
+Father($fName): ${_formatGenotype(father)}
+Mother($mName): ${_formatGenotype(mother)}
+Calculator: $calcLines
+Allowed IDs: $allowedIds''';
   }
 
   static List<BudgieMutationRecord> _collectAllowedGenetics({
@@ -326,99 +530,100 @@ $allowedGeneticsSummary
     return records;
   }
 
-  static String _buildSexPrompt(String observations) {
-    return '''
-You are helping inside a budgerigar breeding application.
-Estimate sex from the observation text and respond with JSON only.
+  static const _systemSex = '''
+Budgerigar sex estimation assistant. JSON only, all values in Turkish.
 
-Return exactly this JSON shape:
-{
-  "predicted_sex": "male|female|uncertain",
-  "confidence": "low|medium|high",
-  "rationale": "short plain text explanation",
-  "indicators": ["..."],
-  "next_checks": ["..."]
-}
+Output: {"predicted_sex":"male|female|uncertain","confidence":"low|medium|high","rationale":"...","indicators":["..."],"next_checks":["..."]}
 
 Rules:
-- Focus on budgerigar sex estimation.
-- Consider cere color, age, juvenile head bars, mutation effects, and typical breeder cues.
-- Write every value in Turkish.
-- If evidence is weak or conflicting, use "uncertain".
-- Keep list items short.
-- Treat lutino, albino, recessive pied, and juvenile birds as lower-confidence cases when appropriate.
-- Mention when age progression or direct cere inspection would improve certainty.
+- Consider cere color, age, juvenile head bars, mutation effects, breeder cues.
+- Lutino, albino, recessive pied, juveniles → lower confidence.
+- Weak/conflicting evidence → "uncertain". Keep items short.
+- Suggest age progression or cere inspection when it would improve certainty.''';
 
-Observation text:
-${observations.trim()}
-''';
-  }
+  static const _systemSexWithImage = '''
+Budgerigar sex estimation assistant with cere photo. JSON only, all values in Turkish.
 
-  static String _buildMutationImagePrompt() {
-    return '''
-You are analyzing a single budgerigar photo for a breeding app.
-Respond with JSON only.
-
-Allowed mutation labels:
-- normal_light_green
-- normal_dark_green
-- normal_olive
-- spangle_green
-- cinnamon_green
-- opaline_green
-- dominant_pied_green
-- recessive_pied_green
-- clearwing_green
-- greywing_green
-- dilute_green
-- clearbody_green
-- lutino
-- yellowface_blue
-- violet_green
-- normal_skyblue
-- normal_cobalt
-- normal_mauve
-- spangle_blue
-- cinnamon_blue
-- opaline_blue
-- dominant_pied_blue
-- recessive_pied_blue
-- clearwing_blue
-- greywing_blue
-- dilute_blue
-- clearbody_blue
-- albino
-- unknown
-
-Return exactly this JSON shape:
-{
-  "predicted_mutation": "one allowed label",
-  "confidence": "low|medium|high",
-  "base_series": "green|blue|lutino|albino|unknown",
-  "pattern_family": "normal|spangle|pied|opaline|cinnamon|clearwing|greywing|dilute|clearbody|yellowface|violet|ino|unknown",
-  "body_color": "short phrase",
-  "wing_pattern": "short phrase",
-  "eye_color": "short phrase",
-  "rationale": "short explanation",
-  "secondary_possibilities": ["allowed label", "allowed label"]
-}
+Output: {"predicted_sex":"male|female|uncertain","confidence":"low|medium|high","rationale":"...","indicators":["..."],"next_checks":["..."]}
 
 Rules:
-- Focus on standard budgerigar mutation naming.
-- Prefer "unknown" over inventing a label.
-- First infer `base_series`, then `pattern_family`, then choose `predicted_mutation`.
-- Use body color, wing pattern, and eye color as primary evidence.
-- Write `body_color`, `wing_pattern`, `eye_color`, and `rationale` in Turkish.
-- Only use `confidence=high` when body color, wing pattern, and eye color are all clearly visible.
-- Do not include `unknown` inside `secondary_possibilities`.
-- If the bird visually looks like a standard green budgie with classic black barring, prefer `normal_light_green`, `normal_dark_green`, or `normal_olive` before patterned mutations.
-- `predicted_mutation` must be consistent with `base_series` and `pattern_family`.
-- Keep secondary_possibilities short and limited to 3 items.
-- If the photo is blurry, shadowed, or heavily cropped, reduce confidence.
-- If the bird has white/blue body with black barring, prefer `normal_skyblue`, `normal_cobalt`, or `normal_mauve`.
-- If the bird is pure white with red eyes, prefer `albino`. If pure yellow with red eyes, prefer `lutino`.
-''';
-  }
+- A cere (nostril area) close-up photo is attached. Analyze cere color and texture first.
+- Male cere: bright blue, purple-blue, or pink (juveniles). Female cere: brown, crusty tan, pale white-blue, or beige.
+- Combine photo cere analysis with the text observations. Photo evidence outweighs text when they conflict.
+- Consider age, juvenile head bars, mutation effects (lutino/albino/recessive pied mask cere color).
+- Lutino, albino, recessive pied, juveniles → lower confidence.
+- Weak/conflicting evidence → "uncertain". Keep items short.
+- If photo is blurry, poorly lit, or does not show cere clearly → reduce confidence.''';
+
+  static const _systemMutationImage = '''
+Budgerigar mutation identification from photo. JSON only. Turkish for body_color, wing_pattern, eye_color, rationale.
+
+Labels: normal_light_green, normal_dark_green, normal_olive, normal_skyblue, normal_cobalt, normal_mauve, spangle_green, spangle_blue, cinnamon_green, cinnamon_blue, opaline_green, opaline_blue, dominant_pied_green, dominant_pied_blue, recessive_pied_green, recessive_pied_blue, clearwing_green, clearwing_blue, greywing_green, greywing_blue, dilute_green, dilute_blue, clearbody_green, clearbody_blue, lutino, albino, yellowface_blue, violet_green, unknown
+
+Output: {"predicted_mutation":"label","confidence":"low|medium|high","base_series":"green|blue|lutino|albino|unknown","pattern_family":"normal|spangle|pied|opaline|cinnamon|clearwing|greywing|dilute|clearbody|yellowface|violet|ino|unknown","body_color":"...","wing_pattern":"...","eye_color":"...","rationale":"...","secondary_possibilities":["label","label"]}
+
+===== STEP-BY-STEP IDENTIFICATION =====
+
+STEP 1 — EYE COLOR (most critical diagnostic):
+- RED/PINK eyes → ino mutation. Yellow body = lutino, white body = albino. ONLY use lutino/albino when eyes are clearly red/pink.
+- DARK/BLACK eyes → NEVER lutino or albino. A white/pale bird with dark eyes = spangle DF, dominant pied, dilute, or clearbody.
+- Eyes not visible or uncertain → do NOT guess ino. Use a non-ino label or "unknown".
+
+STEP 2 — BASE SERIES (body color):
+- Green/yellow body (with natural yellow face) → series "green". ALL green budgies naturally have a yellow face; this is NOT the yellowface mutation.
+- Blue/white/grey body (no green tint) → series "blue".
+- Pure yellow + red eyes → series "lutino".
+- Pure white + red eyes → series "albino".
+
+STEP 3 — DARK FACTOR (within series):
+Green series: bright vibrant green = light_green (0 DF), deeper darker green = dark_green (1 DF), dull brownish-green = olive (2 DF).
+Blue series: bright sky blue = skyblue (0 DF), medium blue = cobalt (1 DF), grey-blue muted = mauve (2 DF).
+
+STEP 4 — PATTERN FAMILY (wing/body markings):
+
+NORMAL: Regular black barring on wings and back of head, full melanin markings. Standard undulated pattern.
+
+SPANGLE: SF = wing markings are REVERSED (thin dark center with light edges, or light feathers with dark thin outline). DF = nearly all-white (blue series) or all-yellow (green series) with DARK eyes — looks like ino but is NOT. Check for faint residual markings.
+
+OPALINE: Reduced barring on back of head/nape. Body color bleeds into mantle area forming a V-shape. Wings have reduced/irregular markings with body color visible between bars.
+
+CINNAMON: ALL black melanin replaced with warm BROWN. Wing markings are brown/cinnamon instead of black. Body has warmer tone. Plumage softer/silkier appearance.
+
+DOMINANT PIED (Australian): A clear band/patch across chest and belly area. Rest of body has normal or near-normal coloring. Irregular clear areas, often asymmetric. Dark eyes with light iris ring.
+
+RECESSIVE PIED (Danish): Random, irregular clear patches across entire body. Completely dark solid eyes (no iris ring visible). Unpredictable distribution of colored and clear areas. Often has clear areas on lower belly and flight feathers.
+
+CLEARWING: Wing markings very LIGHT/PALE but body color stays BRIGHT and saturated. Strong contrast: vivid body + pale wings.
+
+GREYWING: Wing markings are GREY (not black). Body color diluted to about 50%. Less contrast than clearwing — both wings and body are muted.
+
+DILUTE: Overall washed-out, pale appearance. Melanin reduced to ~30%. Both wings AND body uniformly faded. Green dilute = pale yellow-green, Blue dilute = very pale blue/white-ish.
+
+CLEARBODY: Body color bright with reduced melanin. Wing markings remain DARK and strong. Opposite pattern to clearwing — bright body + dark wings.
+
+YELLOWFACE: ONLY on blue-series birds. Blue/white body with a yellow tint specifically on the face/mask. If the body is green, the bird is green series with a natural yellow face — NOT yellowface.
+
+VIOLET: Adds a vivid violet/purple hue. Most visible on single dark factor blue (cobalt + violet = visual violet). Deep purple-blue body. Can also appear on green series as a deeper tone.
+
+===== CONFUSION PAIRS — HOW TO TELL APART =====
+
+Albino vs Spangle DF blue: Albino has RED eyes. Spangle DF has DARK eyes. Both look white. Eye color is the ONLY reliable differentiator.
+Lutino vs Spangle DF green: Lutino has RED eyes. Spangle DF has DARK eyes. Both look yellow.
+Dilute vs Greywing: Dilute = both body and wings equally faded. Greywing = grey wings with moderately diluted body (not as faded as dilute).
+Clearwing vs Greywing: Clearwing = pale wings + bright body (high contrast). Greywing = grey wings + muted body (low contrast).
+Clearwing vs Clearbody: Clearwing = pale wings, bright body. Clearbody = dark wings, bright body. Opposite wing darkness.
+Dominant Pied vs Recessive Pied: Dominant = clear band on chest, iris ring visible. Recessive = random patches, solid dark eyes (no iris ring).
+Opaline vs Normal: Opaline = V-shaped mantle, reduced head barring, body color on wings. Normal = full barring, clean separation.
+Cinnamon vs Normal: Cinnamon = BROWN markings. Normal = BLACK markings. Check wing bar color specifically.
+Normal light green vs Dark green vs Olive: Brightness decreases. Light = vivid, Dark = deeper, Olive = dull brownish.
+Normal skyblue vs Cobalt vs Mauve: Skyblue = bright, Cobalt = medium deeper blue, Mauve = muted grey-blue.
+
+===== RULES =====
+- Prefer "unknown" over guessing. If features are ambiguous, lower confidence.
+- confidence=high ONLY when body, wings, and eyes are all clearly visible. Blurry/cropped/backlit → reduce.
+- secondary_possibilities: max 3, never include "unknown".
+- Grey mutation adds grey overtone: green→grey-green, blue→grey. If a bird looks grey-blue or grey-green, consider grey factor on top.
+- Multiple mutations can combine (e.g., opaline + cinnamon, spangle + opaline). Pick the MOST DOMINANT visible mutation as primary.''';
 
   static String _formatGenotype(ParentGenotype genotype) {
     if (genotype.mutations.isEmpty) return 'none selected';
@@ -491,4 +696,7 @@ Rules:
 
     return lastCandidate;
   }
+
+  /// L10n error key prefix for UI-side translation detection.
+  static const errorKeyPrefix = _kErrorPrefix;
 }
