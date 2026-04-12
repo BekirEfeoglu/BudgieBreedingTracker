@@ -25,6 +25,7 @@ abstract class AppConstants {
   static const int maxPhotosPerBird = 10;
   static const int maxEggsPerClutch = 12;
   static const int maxUploadSizeBytes = 10 * 1024 * 1024; // 10 MB
+  static const int maxLocalAiImageBytes = 10 * 1024 * 1024; // 10 MB
   static const int freeTierMaxBirds = 15;
   static const int freeTierMaxBreedingPairs = 5;
   static const int freeTierMaxActiveIncubations = 3;
