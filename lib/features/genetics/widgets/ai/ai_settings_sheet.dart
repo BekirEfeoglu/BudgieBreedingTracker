@@ -214,6 +214,7 @@ class _AiSettingsSheetState extends ConsumerState<AiSettingsSheet> {
                       onSelectionChanged: (selection) {
                         final provider = selection.first;
                         setState(() => _selectedProvider = provider);
+                        ref.read(localAiModelListProvider.notifier).clear();
                         final providerDefaults =
                             provider == LocalAiProvider.openRouter
                                 ? LocalAiConfig.openRouterDefaults
@@ -221,9 +222,10 @@ class _AiSettingsSheetState extends ConsumerState<AiSettingsSheet> {
                         _modelController.text = providerDefaults.model;
                         _baseUrlController.text = providerDefaults.baseUrl;
                         if (provider == LocalAiProvider.ollama) {
-                          ref
-                              .read(localAiModelListProvider.notifier)
-                              .clear();
+                          _debouncedFetchModels(
+                            baseUrl: providerDefaults.baseUrl,
+                            model: providerDefaults.model,
+                          );
                         }
                       },
                     ),

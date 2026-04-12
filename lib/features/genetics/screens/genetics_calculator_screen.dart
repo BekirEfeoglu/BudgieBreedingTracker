@@ -48,15 +48,30 @@ class GeneticsCalculatorScreen extends ConsumerWidget {
             tooltip: 'common.more'.tr(),
             onSelected: (value) {
               switch (value) {
+                case 'ai':
+                  context.push(AppRoutes.aiPredictions);
+                  break;
                 case 'reverse':
                   context.push(AppRoutes.geneticsReverse);
+                  break;
                 case 'history':
                   context.push(AppRoutes.geneticsHistory);
+                  break;
                 case 'reset':
                   _confirmReset(context, ref);
+                  break;
               }
             },
             itemBuilder: (_) => [
+              PopupMenuItem(
+                value: 'ai',
+                child: ListTile(
+                  leading: const Icon(LucideIcons.sparkles),
+                  title: Text('more.ai_predictions'.tr()),
+                  dense: true,
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ),
               PopupMenuItem(
                 value: 'reverse',
                 child: ListTile(

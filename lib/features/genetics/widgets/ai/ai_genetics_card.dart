@@ -30,7 +30,7 @@ class AiGeneticsCard extends ConsumerWidget {
   final List<OffspringResult>? calculatorResults;
 
   bool get _hasPairSelection =>
-      fatherGenotype.isNotEmpty || motherGenotype.isNotEmpty;
+      fatherGenotype.isNotEmpty && motherGenotype.isNotEmpty;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

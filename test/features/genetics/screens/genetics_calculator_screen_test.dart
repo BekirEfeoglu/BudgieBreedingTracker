@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
@@ -36,7 +37,15 @@ void main() {
               path: 'history',
               builder: (_, __) => const Scaffold(body: Text('History Screen')),
             ),
+            GoRoute(
+              path: 'ai-predictions',
+              builder: (_, __) => const Scaffold(body: Text('AI Screen')),
+            ),
           ],
+        ),
+        GoRoute(
+          path: '/ai-predictions',
+          builder: (_, __) => const Scaffold(body: Text('AI Screen')),
         ),
       ],
     );
@@ -89,6 +98,21 @@ void main() {
 
       // History icon button should be present
       expect(find.byType(IconButton), findsWidgets);
+    });
+
+    testWidgets('opens AI predictions from AppBar menu', (tester) async {
+      await tester.pumpWidget(buildSubject());
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byIcon(LucideIcons.moreVertical));
+      await tester.pumpAndSettle();
+
+      expect(find.text(l10n('more.ai_predictions')), findsOneWidget);
+
+      await tester.tap(find.text(l10n('more.ai_predictions')));
+      await tester.pumpAndSettle();
+
+      expect(find.text('AI Screen'), findsOneWidget);
     });
 
     testWidgets('does not show reset button when nothing is selected', (
