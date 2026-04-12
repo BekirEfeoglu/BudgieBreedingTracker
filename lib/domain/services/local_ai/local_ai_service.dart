@@ -556,74 +556,87 @@ Rules:
 - If photo is blurry, poorly lit, or does not show cere clearly → reduce confidence.''';
 
   static const _systemMutationImage = '''
-Budgerigar mutation identification from photo. JSON only. IMPORTANT: ALL text values (body_color, wing_pattern, eye_color, rationale) MUST be in Turkish (Türkçe). Never write English descriptions. Use Turkish color/pattern names.
+Muhabbet kuşu mutasyon tespiti. JSON formatında yanıt ver. TÜM metin değerleri Türkçe olmalıdır.
 
-Labels: normal_light_green, normal_dark_green, normal_olive, normal_skyblue, normal_cobalt, normal_mauve, spangle_green, spangle_blue, cinnamon_green, cinnamon_blue, opaline_green, opaline_blue, dominant_pied_green, dominant_pied_blue, recessive_pied_green, recessive_pied_blue, clearwing_green, clearwing_blue, greywing_green, greywing_blue, dilute_green, dilute_blue, clearbody_green, clearbody_blue, lutino, albino, yellowface_blue, violet_green, unknown
+Etiketler: normal_light_green, normal_dark_green, normal_olive, normal_skyblue, normal_cobalt, normal_mauve, spangle_green, spangle_blue, cinnamon_green, cinnamon_blue, opaline_green, opaline_blue, dominant_pied_green, dominant_pied_blue, recessive_pied_green, recessive_pied_blue, clearwing_green, clearwing_blue, greywing_green, greywing_blue, dilute_green, dilute_blue, clearbody_green, clearbody_blue, lutino, albino, yellowface_blue, violet_green, unknown
 
-Output: {"predicted_mutation":"label","confidence":"low|medium|high","base_series":"green|blue|lutino|albino|unknown","pattern_family":"normal|spangle|pied|opaline|cinnamon|clearwing|greywing|dilute|clearbody|yellowface|violet|ino|unknown","body_color":"...","wing_pattern":"...","eye_color":"...","rationale":"...","secondary_possibilities":["label","label"]}
+NOT: spangle_blue etiketi hem SF hem DF spangle blue için kullanılır.
 
-===== STEP-BY-STEP IDENTIFICATION =====
+Çıktı: {"predicted_mutation":"etiket","confidence":"low|medium|high","base_series":"green|blue|lutino|albino|unknown","pattern_family":"normal|spangle|pied|opaline|cinnamon|clearwing|greywing|dilute|clearbody|yellowface|violet|ino|unknown","body_color":"...","wing_pattern":"...","eye_color":"...","rationale":"...","secondary_possibilities":["etiket","etiket"]}
 
-STEP 1 — EYE COLOR (most critical diagnostic):
-- RED/PINK eyes → ino mutation. Yellow body = lutino, white body = albino. ONLY use lutino/albino when eyes are clearly red/pink.
-- DARK/BLACK eyes → NEVER lutino or albino. A white/pale bird with dark eyes = spangle DF, dominant pied, dilute, or clearbody.
-- Eyes not visible or uncertain → do NOT guess ino. Use a non-ino label or "unknown".
+===== KRİTİK KURAL: GÖZ RENGİ GEÇİDİ =====
 
-STEP 2 — BASE SERIES (body color):
-- Green/yellow body (with natural yellow face) → series "green". ALL green budgies naturally have a yellow face; this is NOT the yellowface mutation.
-- Blue/white/grey body (no green tint) → series "blue".
-- Pure yellow + red eyes → series "lutino".
-- Pure white + red eyes → series "albino".
+Bu kural TÜM diğer kurallardan önce gelir. Hiçbir koşulda atlanamaz.
 
-STEP 3 — DARK FACTOR (within series):
-Green series: bright vibrant green = light_green (0 DF), deeper darker green = dark_green (1 DF), dull brownish-green = olive (2 DF).
-Blue series: bright sky blue = skyblue (0 DF), medium blue = cobalt (1 DF), grey-blue muted = mauve (2 DF).
+1. Fotoğrafta göz rengini tespit et ve eye_color alanına yaz.
+2. KIRMIZI/PEMBE göz → ino mutasyonu mümkün (lutino veya albino).
+3. KOYU/SİYAH göz → lutino veya albino ASLA seçilemez. Beyaz/soluk bir kuş + koyu göz = spangle DF, dominant pied, dilute veya clearbody.
+4. Göz görünmüyor veya belirsiz → ino tahmin etme. Non-ino etiket veya "unknown" kullan.
 
-STEP 4 — PATTERN FAMILY (wing/body markings):
+BU KURALI İHLAL EDEN HERHANGİ BİR TAHMİN GEÇERSİZDİR.
+Beyaz kuş + koyu göz = spangle_blue (DF spangle), dominant_pied_blue, dilute_blue veya recessive_pied_blue.
+Beyaz kuş + kırmızı göz = albino.
+Sarı kuş + koyu göz = spangle_green (DF spangle), dominant_pied_green veya dilute_green.
+Sarı kuş + kırmızı göz = lutino.
 
-NORMAL: Regular black barring on wings and back of head, full melanin markings. Standard undulated pattern.
+===== ADIM ADIM TESPİT =====
 
-SPANGLE: SF = wing markings are REVERSED (thin dark center with light edges, or light feathers with dark thin outline). DF = nearly all-white (blue series) or all-yellow (green series) with DARK eyes — looks like ino but is NOT. Check for faint residual markings.
+ADIM 1 — GÖZ RENGİ (en kritik tanı):
+- Kırmızı/pembe göz → ino mutasyonu. Sarı vücut = lutino, beyaz vücut = albino.
+- Koyu/siyah göz → ASLA lutino veya albino DEĞİL.
+- Göz görünmüyor → ino tahmin etme.
 
-OPALINE: Reduced barring on back of head/nape. Body color bleeds into mantle area forming a V-shape. Wings have reduced/irregular markings with body color visible between bars.
+ADIM 2 — TEMEL SERİ (vücut rengi):
+- Yeşil/sarı vücut (doğal sarı yüz) → seri "green".
+- Mavi/beyaz/gri vücut → seri "blue".
+- Saf sarı + kırmızı göz → seri "lutino".
+- Saf beyaz + kırmızı göz → seri "albino".
 
-CINNAMON: ALL black melanin replaced with warm BROWN. Wing markings are brown/cinnamon instead of black. Body has warmer tone. Plumage softer/silkier appearance.
+ADIM 3 — KOYU FAKTÖR:
+Yeşil seri: parlak canlı yeşil = light_green (0 DF), koyu yeşil = dark_green (1 DF), donuk kahverengi-yeşil = olive (2 DF).
+Mavi seri: parlak gök mavisi = skyblue (0 DF), orta mavi = cobalt (1 DF), gri-mavi = mauve (2 DF).
 
-DOMINANT PIED (Australian): A clear band/patch across chest and belly area. Rest of body has normal or near-normal coloring. Irregular clear areas, often asymmetric. Dark eyes with light iris ring.
+ADIM 4 — DESEN AİLESİ:
 
-RECESSIVE PIED (Danish): Random, irregular clear patches across entire body. Completely dark solid eyes (no iris ring visible). Unpredictable distribution of colored and clear areas. Often has clear areas on lower belly and flight feathers.
+NORMAL: Kanatlarda ve başın arkasında düzenli siyah çizgiler. Standart dalgalı desen.
 
-CLEARWING: Wing markings very LIGHT/PALE but body color stays BRIGHT and saturated. Strong contrast: vivid body + pale wings.
+SPANGLE: SF = kanat desenleri TERSİNE çevrilmiş (ince koyu merkez, açık kenarlar). DF = neredeyse tamamen beyaz (mavi seri) veya sarı (yeşil seri), KOYU GÖZLERLE — ino'ya benzer ama DEĞİLDİR. Kalıntı desenler arayın.
 
-GREYWING: Wing markings are GREY (not black). Body color diluted to about 50%. Less contrast than clearwing — both wings and body are muted.
+OPALİN: Başın arkasında/ensede azaltılmış çizgiler. Vücut rengi sırt bölgesine V şeklinde yayılır.
 
-DILUTE: Overall washed-out, pale appearance. Melanin reduced to ~30%. Both wings AND body uniformly faded. Green dilute = pale yellow-green, Blue dilute = very pale blue/white-ish.
+TARÇİN: TÜM siyah melanin kahverengi ile değiştirilmiş. Kanat desenleri kahverengi/tarçın rengi.
 
-CLEARBODY: Body color bright with reduced melanin. Wing markings remain DARK and strong. Opposite pattern to clearwing — bright body + dark wings.
+DOMİNANT PİED: Göğüs/karın bölgesinde net bir bant/yama. Koyu gözler + ışık iris halkası.
 
-YELLOWFACE: ONLY on blue-series birds. Blue/white body with a yellow tint specifically on the face/mask. If the body is green, the bird is green series with a natural yellow face — NOT yellowface.
+RESESİF PİED: Tüm vücutta rastgele, düzensiz berrak yamalar. Tamamen koyu gözler (iris halkası YOK).
 
-VIOLET: Adds a vivid violet/purple hue. Most visible on single dark factor blue (cobalt + violet = visual violet). Deep purple-blue body. Can also appear on green series as a deeper tone.
+CLEARWING: Kanat desenleri çok soluk, vücut rengi parlak ve doygun.
 
-===== CONFUSION PAIRS — HOW TO TELL APART =====
+GREYWING: Kanat desenleri gri (siyah değil). Vücut rengi %50 seyreltilmiş.
 
-Albino vs Spangle DF blue: Albino has RED eyes. Spangle DF has DARK eyes. Both look white. Eye color is the ONLY reliable differentiator.
-Lutino vs Spangle DF green: Lutino has RED eyes. Spangle DF has DARK eyes. Both look yellow.
-Dilute vs Greywing: Dilute = both body and wings equally faded. Greywing = grey wings with moderately diluted body (not as faded as dilute).
-Clearwing vs Greywing: Clearwing = pale wings + bright body (high contrast). Greywing = grey wings + muted body (low contrast).
-Clearwing vs Clearbody: Clearwing = pale wings, bright body. Clearbody = dark wings, bright body. Opposite wing darkness.
-Dominant Pied vs Recessive Pied: Dominant = clear band on chest, iris ring visible. Recessive = random patches, solid dark eyes (no iris ring).
-Opaline vs Normal: Opaline = V-shaped mantle, reduced head barring, body color on wings. Normal = full barring, clean separation.
-Cinnamon vs Normal: Cinnamon = BROWN markings. Normal = BLACK markings. Check wing bar color specifically.
-Normal light green vs Dark green vs Olive: Brightness decreases. Light = vivid, Dark = deeper, Olive = dull brownish.
-Normal skyblue vs Cobalt vs Mauve: Skyblue = bright, Cobalt = medium deeper blue, Mauve = muted grey-blue.
+DILUTE: Genel olarak soluk, solgun görünüm. Melanin %30'a düşürülmüş.
 
-===== RULES =====
-- Prefer "unknown" over guessing. If features are ambiguous, lower confidence.
-- confidence=high ONLY when body, wings, and eyes are all clearly visible. Blurry/cropped/backlit → reduce.
-- secondary_possibilities: max 3, never include "unknown".
-- Grey mutation adds grey overtone: green→grey-green, blue→grey. If a bird looks grey-blue or grey-green, consider grey factor on top.
-- Multiple mutations can combine (e.g., opaline + cinnamon, spangle + opaline). Pick the MOST DOMINANT visible mutation as primary.''';
+CLEARBODY: Vücut rengi parlak, melanin azaltılmış. Kanat desenleri koyu kalır.
+
+YELLOWFACE: SADECE mavi seri kuşlarda. Mavi vücut + yüzde sarı tonu.
+
+VİOLET: Canlı mor/menekşe tonu. En belirgin cobalt + violet'te.
+
+===== KARIŞTIRILMA OLASILIĞI YÜKSEK ÇİFTLER =====
+
+Albino ↔ Spangle DF blue: Albino KIRMIZI göz. Spangle DF KOYU göz. İkisi de beyaz. Göz rengi TEK güvenilir ayırt edici.
+Lutino ↔ Spangle DF green: Lutino KIRMIZI göz. Spangle DF KOYU göz. İkisi de sarı.
+Dilute ↔ Greywing: Dilute = vücut ve kanatlar eşit soluk. Greywing = gri kanatlar + orta soluk vücut.
+Clearwing ↔ Greywing: Clearwing = soluk kanat + parlak vücut. Greywing = gri kanat + soluk vücut.
+Dominant Pied ↔ Recessive Pied: Dominant = iris halkası var. Recessive = iris halkası yok.
+
+===== KURALLAR =====
+- Tahmin etmektense "unknown" tercih et. Belirsiz özellikler → güveni düşür.
+- confidence=high SADECE vücut, kanat ve göz net görünüyorsa.
+- secondary_possibilities: maks 3, "unknown" dahil etme.
+- Gri mutasyonu gri ton ekler: yeşil→gri-yeşil, mavi→gri.
+- Birden fazla mutasyon birleşebilir. En baskın görsel mutasyonu birincil seç.
+- rationale alanında hangi adımdan hangi sonuca ulaştığını açıkla.''';
 
   static String _formatGenotype(ParentGenotype genotype) {
     if (genotype.mutations.isEmpty) return 'none selected';
