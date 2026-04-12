@@ -1557,7 +1557,10 @@
     "pattern_fallow": "Fallow",
     "pattern_lacewing": "Lacewing",
     "pattern_slate": "Slate",
-    "series_grey": "Gri seri"
+    "series_grey": "Gri seri",
+    "ai_recommended_models": "Önerilen Modeller",
+    "ai_model_free": "Ücretsiz",
+    "ai_model_paid": "Ücretli"
   },
   "admin": {
     "panel_title": "Admin Paneli",

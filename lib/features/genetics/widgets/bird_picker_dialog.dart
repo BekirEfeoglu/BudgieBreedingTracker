@@ -90,11 +90,12 @@ class _BirdPickerDialogState extends ConsumerState<BirdPickerDialog> {
                 error: (e, _) =>
                     Center(child: Text('common.data_load_error'.tr())),
                 data: (birds) {
-                  // Filter by gender and alive status
+                  // Filter by gender (skip filter if unknown) and alive status
                   var filtered = birds
                       .where(
                         (b) =>
-                            b.gender == widget.genderFilter &&
+                            (widget.genderFilter == BirdGender.unknown ||
+                                b.gender == widget.genderFilter) &&
                             b.species == widget.speciesFilter &&
                             b.status == BirdStatus.alive,
                       )

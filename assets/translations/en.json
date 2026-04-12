@@ -1557,7 +1557,10 @@
     "pattern_fallow": "Fallow",
     "pattern_lacewing": "Lacewing",
     "pattern_slate": "Slate",
-    "series_grey": "Grey series"
+    "series_grey": "Grey series",
+    "ai_recommended_models": "Recommended Models",
+    "ai_model_free": "Free",
+    "ai_model_paid": "Paid"
   },
   "admin": {
     "panel_title": "Admin Panel",

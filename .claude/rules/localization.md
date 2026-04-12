@@ -4,7 +4,7 @@
 - Package: `easy_localization`
 - Languages: Turkish (master), English, German
 - Files: `assets/translations/{tr,en,de}.json`
-- ~2,601 keys per language, 39 categories
+- ~2,604 keys per language, 39 categories
 
 ## Key Naming
 ```
