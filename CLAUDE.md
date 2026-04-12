@@ -74,21 +74,21 @@ scripts/test_verify_rules.py            # Tests for verify_rules.py
 
 | Metric | Value |
 | --- | --- |
-| Source files (lib/) | 717 Dart files |
-| Test files (test/) | 680 test files, 7,974+ individual tests |
-| Feature modules | 20 |
+| Source files (lib/) | 836 Dart files |
+| Test files (test/) | 800 test files, 9,686+ individual tests |
+| Feature modules | 23 |
 | Drift tables / DAOs / Mappers | 20 each |
-| Repositories | 20 entity + base + sync_metadata |
-| Remote sources | 20 entity + base + 2 caches + providers |
-| Freezed models | 21 model files + statistics_models + supabase_extensions |
-| Domain services | 14 directories |
-| Routes | 60 |
-| Custom SVG icons | 82 constants, 82 files on disk |
-| Shared widgets | 19 (14 root + 2 buttons + 2 cards + 1 dialog) |
-| Enum files | 12 |
-| Supabase constants | 94 (tables + buckets + columns) |
-| L10n keys | ~3 per language, 35 categories |
-| DB schema version | 17 |
+| Repositories | 23 entity + base + sync_metadata |
+| Remote sources | 26 entity + base + 2 caches + providers |
+| Freezed models | 29 model files + statistics_models + supabase_extensions |
+| Domain services | 16 directories |
+| Routes | 71 |
+| Custom SVG icons | 84 constants, 84 files on disk |
+| Shared widgets | 20 (15 root + 2 buttons + 2 cards + 1 dialog) |
+| Enum files | 15 |
+| Supabase constants | 106 (tables + buckets + columns) |
+| L10n keys | ~2,548 per language, 39 categories |
+| DB schema version | 20 |
 
 ## CI/CD Pipeline
 
@@ -150,7 +150,7 @@ Config methods: `.env` + `--dart-define-from-file` (local) · GitHub Secrets (CI
 | `validate-free-tier-limit` | Free tier entity limit enforcement |
 
 ### Migrations
-104 SQL migration files in `supabase/migrations/`. Schema managed server-side; never modify RLS policies from client code.
+115 SQL migration files in `supabase/migrations/`. Schema managed server-side; never modify RLS policies from client code.
 
 ## Rules
 
@@ -276,7 +276,7 @@ Security:      lib/core/security/
 Preferences:   lib/data/local/preferences/
 EdgeFunctions: lib/data/remote/supabase/
 Edge Fn (SB):  supabase/functions/
-Migrations:    supabase/migrations/ (104 files)
+Migrations:    supabase/migrations/ (115 files)
 Scripts:       scripts/
 CI:            .github/workflows/ + codemagic.yaml
 ```
