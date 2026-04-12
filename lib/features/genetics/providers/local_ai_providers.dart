@@ -6,6 +6,21 @@ import 'package:budgie_breeding_tracker/domain/services/genetics/parent_genotype
 import 'package:budgie_breeding_tracker/domain/services/local_ai/local_ai_models.dart';
 import 'package:budgie_breeding_tracker/domain/services/local_ai/local_ai_service.dart';
 
+enum AiAnalysisPhase {
+  idle,
+  preparing,
+  analyzing,
+  complete,
+  error;
+
+  bool get isIdle => this == idle;
+  bool get isPreparing => this == preparing;
+  bool get isAnalyzing => this == analyzing;
+  bool get isComplete => this == complete;
+  bool get isError => this == error;
+  bool get isActive => this == preparing || this == analyzing;
+}
+
 final localAiServiceProvider = Provider<LocalAiService>((ref) {
   final service = LocalAiService();
   ref.onDispose(service.dispose);
@@ -137,6 +152,10 @@ class GeneticsAiAnalysisNotifier
   }) async {
     final requestId = ++_requestId;
     state = const AsyncLoading();
+    ref.read(geneticsAiPhaseProvider.notifier).set(AiAnalysisPhase.preparing);
+    await Future<void>.delayed(const Duration(milliseconds: 300));
+    if (requestId != _requestId) return;
+    ref.read(geneticsAiPhaseProvider.notifier).set(AiAnalysisPhase.analyzing);
     final nextState = await AsyncValue.guard(() {
       return ref
           .read(localAiServiceProvider)
@@ -151,12 +170,16 @@ class GeneticsAiAnalysisNotifier
     });
     if (requestId == _requestId) {
       state = nextState;
+      ref.read(geneticsAiPhaseProvider.notifier).set(
+            nextState.hasError ? AiAnalysisPhase.error : AiAnalysisPhase.complete,
+          );
     }
   }
 
   void clear() {
     _requestId++;
     state = const AsyncData(null);
+    ref.read(geneticsAiPhaseProvider.notifier).set(AiAnalysisPhase.idle);
   }
 }
 
@@ -178,6 +201,10 @@ class SexAiAnalysisNotifier extends Notifier<AsyncValue<LocalAiSexInsight?>> {
   }) async {
     final requestId = ++_requestId;
     state = const AsyncLoading();
+    ref.read(sexAiPhaseProvider.notifier).set(AiAnalysisPhase.preparing);
+    await Future<void>.delayed(const Duration(milliseconds: 300));
+    if (requestId != _requestId) return;
+    ref.read(sexAiPhaseProvider.notifier).set(AiAnalysisPhase.analyzing);
     final nextState = await AsyncValue.guard(() {
       return ref.read(localAiServiceProvider).analyzeSex(
             config: config,
@@ -187,12 +214,16 @@ class SexAiAnalysisNotifier extends Notifier<AsyncValue<LocalAiSexInsight?>> {
     });
     if (requestId == _requestId) {
       state = nextState;
+      ref.read(sexAiPhaseProvider.notifier).set(
+            nextState.hasError ? AiAnalysisPhase.error : AiAnalysisPhase.complete,
+          );
     }
   }
 
   void clear() {
     _requestId++;
     state = const AsyncData(null);
+    ref.read(sexAiPhaseProvider.notifier).set(AiAnalysisPhase.idle);
   }
 }
 
@@ -215,6 +246,10 @@ class MutationImageAiAnalysisNotifier
   }) async {
     final requestId = ++_requestId;
     state = const AsyncLoading();
+    ref.read(mutationAiPhaseProvider.notifier).set(AiAnalysisPhase.preparing);
+    await Future<void>.delayed(const Duration(milliseconds: 300));
+    if (requestId != _requestId) return;
+    ref.read(mutationAiPhaseProvider.notifier).set(AiAnalysisPhase.analyzing);
     final nextState = await AsyncValue.guard(() {
       return ref
           .read(localAiServiceProvider)
@@ -222,11 +257,38 @@ class MutationImageAiAnalysisNotifier
     });
     if (requestId == _requestId) {
       state = nextState;
+      ref.read(mutationAiPhaseProvider.notifier).set(
+            nextState.hasError ? AiAnalysisPhase.error : AiAnalysisPhase.complete,
+          );
     }
   }
 
   void clear() {
     _requestId++;
     state = const AsyncData(null);
+    ref.read(mutationAiPhaseProvider.notifier).set(AiAnalysisPhase.idle);
   }
 }
+
+class _AiPhaseNotifier extends Notifier<AiAnalysisPhase> {
+  @override
+  AiAnalysisPhase build() => AiAnalysisPhase.idle;
+
+  // ignore: use_setters_to_change_properties
+  void set(AiAnalysisPhase phase) => state = phase;
+}
+
+final geneticsAiPhaseProvider =
+    NotifierProvider<_AiPhaseNotifier, AiAnalysisPhase>(
+      _AiPhaseNotifier.new,
+    );
+
+final sexAiPhaseProvider =
+    NotifierProvider<_AiPhaseNotifier, AiAnalysisPhase>(
+      _AiPhaseNotifier.new,
+    );
+
+final mutationAiPhaseProvider =
+    NotifierProvider<_AiPhaseNotifier, AiAnalysisPhase>(
+      _AiPhaseNotifier.new,
+    );
