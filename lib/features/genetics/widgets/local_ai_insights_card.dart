@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:budgie_breeding_tracker/core/errors/app_exception.dart';
+import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/mendelian_calculator.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/mutation_database.dart';
@@ -902,29 +903,13 @@ class _InsightSection extends StatelessWidget {
     BuildContext context,
     LocalAiConfidence confidence,
   ) {
-    final theme = Theme.of(context);
-    return switch (confidence) {
-      LocalAiConfidence.low => (
-        background: theme.colorScheme.errorContainer.withValues(alpha: 0.65),
-        foreground: theme.colorScheme.onErrorContainer,
-        border: theme.colorScheme.error.withValues(alpha: 0.45),
-      ),
-      LocalAiConfidence.medium => (
-        background: const Color(0xFFFDE7C7),
-        foreground: const Color(0xFF9A5B00),
-        border: const Color(0xFFF3B454),
-      ),
-      LocalAiConfidence.high => (
-        background: const Color(0xFFDDF6E8),
-        foreground: const Color(0xFF166534),
-        border: const Color(0xFF6CCB8B),
-      ),
-      LocalAiConfidence.unknown => (
-        background: theme.colorScheme.surfaceContainerHighest,
-        foreground: theme.colorScheme.onSurfaceVariant,
-        border: theme.colorScheme.outlineVariant,
-      ),
+    final level = switch (confidence) {
+      LocalAiConfidence.low => 'low',
+      LocalAiConfidence.medium => 'medium',
+      LocalAiConfidence.high => 'high',
+      LocalAiConfidence.unknown => 'unknown',
     };
+    return AppColors.aiConfidenceColorsAdaptive(context, level);
   }
 }
 

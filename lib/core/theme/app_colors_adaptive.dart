@@ -117,6 +117,41 @@ abstract class _AdaptiveColors {
     return Theme.of(context).colorScheme.onSurfaceVariant;
   }
 
+  /// AI confidence badge colors (adaptive for dark mode).
+  static ({Color background, Color foreground, Color border}) aiConfidenceColors(
+    BuildContext context,
+    String level,
+  ) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final theme = Theme.of(context);
+    return switch (level) {
+      'low' => (
+        background: theme.colorScheme.errorContainer.withValues(alpha: 0.65),
+        foreground: theme.colorScheme.onErrorContainer,
+        border: theme.colorScheme.error.withValues(alpha: 0.45),
+      ),
+      'medium' => (
+        background: (isDark ? AppColors.aiConfidenceMediumDark : AppColors.aiConfidenceMedium)
+            .withValues(alpha: 0.25),
+        foreground: isDark ? AppColors.aiConfidenceMediumDark : const Color(0xFF9A5B00),
+        border: (isDark ? AppColors.aiConfidenceMediumDark : AppColors.aiConfidenceMedium)
+            .withValues(alpha: 0.55),
+      ),
+      'high' => (
+        background: (isDark ? AppColors.aiConfidenceHighDark : AppColors.aiConfidenceHigh)
+            .withValues(alpha: 0.2),
+        foreground: isDark ? AppColors.aiConfidenceHighDark : const Color(0xFF166534),
+        border: (isDark ? AppColors.aiConfidenceHighDark : AppColors.aiConfidenceHigh)
+            .withValues(alpha: 0.55),
+      ),
+      _ => (
+        background: theme.colorScheme.surfaceContainerHighest,
+        foreground: theme.colorScheme.onSurfaceVariant,
+        border: theme.colorScheme.outlineVariant,
+      ),
+    };
+  }
+
   /// Status color helper.
   static Color statusColor(BuildContext context, String status) {
     return switch (status) {

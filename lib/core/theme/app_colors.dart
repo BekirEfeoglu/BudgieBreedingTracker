@@ -77,6 +77,12 @@ abstract class AppColors {
   static const premiumGold = Color(0xFFFFD700);
   static const premiumGoldDark = Color(0xFFFFA000);
 
+  // AI Confidence Colors
+  static const aiConfidenceMedium = Color(0xFFF59E0B); // amber (matches warning)
+  static const aiConfidenceMediumDark = Color(0xFFFFB74D);
+  static const aiConfidenceHigh = Color(0xFF22C55E); // green (matches success)
+  static const aiConfidenceHighDark = Color(0xFF4ADE80);
+
   // Premium Gradients (centralized)
   static const premiumGradient = LinearGradient(
     colors: [premiumGold, premiumGoldDark],
@@ -242,4 +248,9 @@ abstract class AppColors {
 
   static Color statusColor(BuildContext context, String status) =>
       _AdaptiveColors.statusColor(context, status);
+
+  static ({Color background, Color foreground, Color border}) aiConfidenceColorsAdaptive(
+    BuildContext context,
+    String level,
+  ) => _AdaptiveColors.aiConfidenceColors(context, level);
 }
