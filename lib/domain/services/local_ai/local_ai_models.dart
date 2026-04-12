@@ -338,8 +338,16 @@ List<String> _buildSecondaryList({
   return filtered.take(3).toList(growable: false);
 }
 
-bool _isInoMutation(String mutation) =>
-    mutation == 'lutino' || mutation == 'albino';
+/// Mutations that require red/pink eyes. Includes ino-based and fallow.
+bool _isInoMutation(String mutation) {
+  const redEyeMutations = {
+    'lutino', 'albino', 'creamino',
+    'fallow_green', 'fallow_blue',
+    'lacewing_green', 'lacewing_blue',
+    'texas_clearbody_green', 'texas_clearbody_blue',
+  };
+  return redEyeMutations.contains(mutation);
+}
 
 /// Returns true if the eye color description indicates red/pink eyes.
 bool _hasRedPinkEyes(String eyeColor) {
@@ -437,6 +445,21 @@ const _mutationSignature = <String, ({Set<String> series, Set<String> family})>{
   'dilute_blue': (series: {'blue'}, family: {'dilute'}),
   'clearbody_blue': (series: {'blue'}, family: {'clearbody'}),
   'albino': (series: {'albino', 'blue'}, family: {'ino'}),
+  'grey_green': (series: {'green'}, family: {'grey'}),
+  'grey_blue': (series: {'blue'}, family: {'grey'}),
+  'fallow_green': (series: {'green'}, family: {'fallow'}),
+  'fallow_blue': (series: {'blue'}, family: {'fallow'}),
+  'lacewing_green': (series: {'green'}, family: {'lacewing'}),
+  'lacewing_blue': (series: {'blue'}, family: {'lacewing'}),
+  'opaline_cinnamon_green': (series: {'green'}, family: {'opaline', 'cinnamon'}),
+  'opaline_cinnamon_blue': (series: {'blue'}, family: {'opaline', 'cinnamon'}),
+  'violet_blue': (series: {'blue'}, family: {'violet', 'normal'}),
+  'slate_blue': (series: {'blue'}, family: {'slate'}),
+  'dark_eyed_clear_green': (series: {'green'}, family: {'spangle', 'pied'}),
+  'dark_eyed_clear_blue': (series: {'blue'}, family: {'spangle', 'pied'}),
+  'texas_clearbody_green': (series: {'green'}, family: {'clearbody'}),
+  'texas_clearbody_blue': (series: {'blue'}, family: {'clearbody'}),
+  'creamino': (series: {'blue'}, family: {'ino'}),
 };
 
 List<String> _stringList(dynamic value) {

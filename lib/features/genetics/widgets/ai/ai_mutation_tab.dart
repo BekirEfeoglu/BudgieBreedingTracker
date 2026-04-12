@@ -174,6 +174,27 @@ class _AiMutationTabState extends ConsumerState<AiMutationTab> {
         'dilute_blue' => 'genetics.mutation_dilute_blue'.tr(),
         'clearbody_blue' => 'genetics.mutation_clearbody_blue'.tr(),
         'albino' => 'genetics.mutation_albino'.tr(),
+        'grey_green' => 'genetics.mutation_grey_green'.tr(),
+        'grey_blue' => 'genetics.mutation_grey_blue'.tr(),
+        'fallow_green' => 'genetics.mutation_fallow_green'.tr(),
+        'fallow_blue' => 'genetics.mutation_fallow_blue'.tr(),
+        'lacewing_green' => 'genetics.mutation_lacewing_green'.tr(),
+        'lacewing_blue' => 'genetics.mutation_lacewing_blue'.tr(),
+        'opaline_cinnamon_green' =>
+          'genetics.mutation_opaline_cinnamon_green'.tr(),
+        'opaline_cinnamon_blue' =>
+          'genetics.mutation_opaline_cinnamon_blue'.tr(),
+        'violet_blue' => 'genetics.mutation_violet_blue'.tr(),
+        'slate_blue' => 'genetics.mutation_slate_blue'.tr(),
+        'dark_eyed_clear_green' =>
+          'genetics.mutation_dark_eyed_clear_green'.tr(),
+        'dark_eyed_clear_blue' =>
+          'genetics.mutation_dark_eyed_clear_blue'.tr(),
+        'texas_clearbody_green' =>
+          'genetics.mutation_texas_clearbody_green'.tr(),
+        'texas_clearbody_blue' =>
+          'genetics.mutation_texas_clearbody_blue'.tr(),
+        'creamino' => 'genetics.mutation_creamino'.tr(),
         _ => 'common.unknown'.tr(),
       };
 
@@ -182,6 +203,7 @@ class _AiMutationTabState extends ConsumerState<AiMutationTab> {
         'blue' => 'genetics.series_blue'.tr(),
         'lutino' => 'genetics.series_lutino'.tr(),
         'albino' => 'genetics.series_albino'.tr(),
+        'grey' => 'genetics.series_grey'.tr(),
         _ => 'genetics.series_unknown'.tr(),
       };
 
@@ -198,6 +220,10 @@ class _AiMutationTabState extends ConsumerState<AiMutationTab> {
         'yellowface' => 'genetics.pattern_yellowface'.tr(),
         'violet' => 'genetics.pattern_violet'.tr(),
         'ino' => 'genetics.pattern_ino'.tr(),
+        'grey' => 'genetics.pattern_grey'.tr(),
+        'fallow' => 'genetics.pattern_fallow'.tr(),
+        'lacewing' => 'genetics.pattern_lacewing'.tr(),
+        'slate' => 'genetics.pattern_slate'.tr(),
         _ => 'genetics.pattern_unknown'.tr(),
       };
 
