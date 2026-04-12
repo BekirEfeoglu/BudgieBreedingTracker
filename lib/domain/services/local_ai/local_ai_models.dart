@@ -188,6 +188,9 @@ class LocalAiMutationInsight {
   final String rationale;
   final List<String> secondaryPossibilities;
 
+  /// Warning shown when ino is predicted — eye color verification needed.
+  final String inoWarning;
+
   const LocalAiMutationInsight({
     required this.predictedMutation,
     required this.confidence,
@@ -198,6 +201,7 @@ class LocalAiMutationInsight {
     required this.eyeColor,
     required this.rationale,
     required this.secondaryPossibilities,
+    this.inoWarning = '',
   });
 
   factory LocalAiMutationInsight.fromJson(Map<String, dynamic> json) {
@@ -260,32 +264,78 @@ class LocalAiMutationInsight {
       }
     }
 
+    // Ino predictions always get low confidence + warning because
+    // small models frequently hallucinate red eye color.
+    final isInoPrediction = _isInoMutation(correctedMutation);
+    final inoWarning = isInoPrediction
+        ? 'Albino/Lutino tahmini göz rengine bağlıdır. '
+            'AI modelleri göz rengini güvenilir şekilde ayırt edemeyebilir. '
+            'Kırmızı/pembe göz yoksa bu kuş muhtemelen DF Spangle veya Dominant Pied\'dir.'
+        : '';
+
     return LocalAiMutationInsight(
       predictedMutation: correctedMutation,
-      confidence: _normalizeMutationConfidence(
-        rawConfidence: rawConfidence,
-        predictedMutation: correctedMutation,
-        evidenceCount: evidenceCount,
-        baseSeries: baseSeries,
-        patternFamily: patternFamily,
-      ),
+      confidence: isInoPrediction
+          ? LocalAiConfidence.low
+          : _normalizeMutationConfidence(
+              rawConfidence: rawConfidence,
+              predictedMutation: correctedMutation,
+              evidenceCount: evidenceCount,
+              baseSeries: baseSeries,
+              patternFamily: patternFamily,
+            ),
       baseSeries: baseSeries,
       patternFamily: patternFamily,
       bodyColor: bodyColor,
       wingPattern: wingPattern,
       eyeColor: eyeColor,
       rationale: rationale,
-      secondaryPossibilities: secondary
-          .where(
-            (item) => _isMutationConsistent(
-              mutation: item,
-              baseSeries: baseSeries,
-              patternFamily: patternFamily,
-            ),
-          )
-          .toList(growable: false),
+      inoWarning: inoWarning,
+      secondaryPossibilities: _buildSecondaryList(
+        secondary: secondary,
+        baseSeries: baseSeries,
+        patternFamily: patternFamily,
+        isInoPrediction: isInoPrediction,
+        correctedMutation: correctedMutation,
+      ),
     );
   }
+}
+
+List<String> _buildSecondaryList({
+  required List<String> secondary,
+  required String baseSeries,
+  required String patternFamily,
+  required bool isInoPrediction,
+  required String correctedMutation,
+}) {
+  final filtered = secondary
+      .where(
+        (item) => _isMutationConsistent(
+          mutation: item,
+          baseSeries: baseSeries,
+          patternFamily: patternFamily,
+        ),
+      )
+      .toList();
+
+  // When ino is predicted, ensure non-ino alternatives are suggested
+  if (isInoPrediction) {
+    final dfSpangle = correctedMutation == 'albino' || baseSeries == 'blue'
+        ? 'spangle_blue'
+        : 'spangle_green';
+    final domPied = correctedMutation == 'albino' || baseSeries == 'blue'
+        ? 'dominant_pied_blue'
+        : 'dominant_pied_green';
+
+    for (final alt in [dfSpangle, domPied]) {
+      if (!filtered.contains(alt) && alt != correctedMutation) {
+        filtered.add(alt);
+      }
+    }
+  }
+
+  return filtered.take(3).toList(growable: false);
 }
 
 bool _isInoMutation(String mutation) =>
