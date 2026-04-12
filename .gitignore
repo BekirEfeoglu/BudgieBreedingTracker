@@ -188,6 +188,10 @@ dist/
 # Claude Code (AI config, rules, hooks, skills - local only)
 # --------------------------------------------------
 .claude/
+!.claude/
+.claude/*
+!.claude/rules/
+!.claude/rules/*.md
 .agent/
 .agents/
 skills-lock.json
