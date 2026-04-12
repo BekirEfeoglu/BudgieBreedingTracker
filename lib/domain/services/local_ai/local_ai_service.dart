@@ -463,7 +463,7 @@ class LocalAiService {
   }
 
   static const _systemGenetics = '''
-Budgerigar breeding genetics assistant. JSON only, all values in Turkish.
+Budgerigar breeding genetics assistant. JSON only. IMPORTANT: ALL text values MUST be in Turkish (Türkçe). Never use English for summary, warnings, next_checks, or any descriptive text.
 
 Output: {"summary":"...","confidence":"low|medium|high","likely_mutations":["phenotype descriptions"],"matched_genetics":["id from allowed list"],"sex_linked_note":"...","warnings":["..."],"next_checks":["..."]}
 
@@ -531,7 +531,7 @@ Allowed IDs: $allowedIds''';
   }
 
   static const _systemSex = '''
-Budgerigar sex estimation assistant. JSON only, all values in Turkish.
+Budgerigar sex estimation assistant. JSON only. IMPORTANT: ALL text values MUST be in Turkish (Türkçe). Never use English for rationale, indicators, or next_checks.
 
 Output: {"predicted_sex":"male|female|uncertain","confidence":"low|medium|high","rationale":"...","indicators":["..."],"next_checks":["..."]}
 
@@ -542,7 +542,7 @@ Rules:
 - Suggest age progression or cere inspection when it would improve certainty.''';
 
   static const _systemSexWithImage = '''
-Budgerigar sex estimation assistant with cere photo. JSON only, all values in Turkish.
+Budgerigar sex estimation assistant with cere photo. JSON only. IMPORTANT: ALL text values MUST be in Turkish (Türkçe). Never use English for rationale, indicators, or next_checks.
 
 Output: {"predicted_sex":"male|female|uncertain","confidence":"low|medium|high","rationale":"...","indicators":["..."],"next_checks":["..."]}
 
@@ -556,7 +556,7 @@ Rules:
 - If photo is blurry, poorly lit, or does not show cere clearly → reduce confidence.''';
 
   static const _systemMutationImage = '''
-Budgerigar mutation identification from photo. JSON only. Turkish for body_color, wing_pattern, eye_color, rationale.
+Budgerigar mutation identification from photo. JSON only. IMPORTANT: ALL text values (body_color, wing_pattern, eye_color, rationale) MUST be in Turkish (Türkçe). Never write English descriptions. Use Turkish color/pattern names.
 
 Labels: normal_light_green, normal_dark_green, normal_olive, normal_skyblue, normal_cobalt, normal_mauve, spangle_green, spangle_blue, cinnamon_green, cinnamon_blue, opaline_green, opaline_blue, dominant_pied_green, dominant_pied_blue, recessive_pied_green, recessive_pied_blue, clearwing_green, clearwing_blue, greywing_green, greywing_blue, dilute_green, dilute_blue, clearbody_green, clearbody_blue, lutino, albino, yellowface_blue, violet_green, unknown
 

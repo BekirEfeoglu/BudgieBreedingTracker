@@ -120,11 +120,11 @@ class _AiMutationTabState extends ConsumerState<AiMutationTab> {
         'genetics.local_ai_pattern_label'
             .tr(args: [_patternLabel(result.patternFamily)]),
         if (result.bodyColor.isNotEmpty)
-          '${'genetics.image_body_color'.tr()}: ${result.bodyColor}',
+          '${'genetics.image_body_color'.tr()}: ${_translateUnknown(result.bodyColor)}',
         if (result.wingPattern.isNotEmpty)
-          '${'genetics.image_wing_pattern'.tr()}: ${result.wingPattern}',
+          '${'genetics.image_wing_pattern'.tr()}: ${_translateUnknown(result.wingPattern)}',
         if (result.eyeColor.isNotEmpty)
-          '${'genetics.image_eye_color'.tr()}: ${result.eyeColor}',
+          '${'genetics.image_eye_color'.tr()}: ${_translateUnknown(result.eyeColor)}',
         if (result.secondaryPossibilities.isNotEmpty)
           'genetics.local_ai_alternatives_label'.tr(
             args: [
@@ -198,4 +198,23 @@ class _AiMutationTabState extends ConsumerState<AiMutationTab> {
         'ino' => 'genetics.pattern_ino'.tr(),
         _ => 'genetics.pattern_unknown'.tr(),
       };
+
+  /// Translates common English tokens that AI models may return
+  /// despite the Turkish-only system prompt.
+  static String _translateUnknown(String value) {
+    final lower = value.trim().toLowerCase();
+    return switch (lower) {
+      'unknown' => 'common.unknown'.tr(),
+      'none' => 'common.none'.tr(),
+      'red/pink' || 'red' || 'pink' => 'Kırmızı/Pembe',
+      'black' || 'dark' => 'Siyah/Koyu',
+      'blue' => 'Mavi',
+      'brown' => 'Kahverengi',
+      'white' => 'Beyaz',
+      'yellow' => 'Sarı',
+      'green' => 'Yeşil',
+      'grey' || 'gray' => 'Gri',
+      _ => value,
+    };
+  }
 }

@@ -2,9 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
-import 'package:budgie_breeding_tracker/core/widgets/app_screen_title.dart';
 import 'package:budgie_breeding_tracker/features/genetics/providers/local_ai_providers.dart';
 import 'package:budgie_breeding_tracker/features/genetics/widgets/ai/ai_genetics_tab.dart';
 import 'package:budgie_breeding_tracker/features/genetics/widgets/ai/ai_mutation_tab.dart';
@@ -73,10 +71,7 @@ class _AiPredictionsScreenState extends ConsumerState<AiPredictionsScreen>
 
     return Scaffold(
       appBar: AppBar(
-        title: AppScreenTitle(
-          title: 'more.ai_predictions'.tr(),
-          iconAsset: AppIcons.dna,
-        ),
+        title: Text('more.ai_predictions'.tr()),
         actions: [
           IconButton(
             onPressed: _openSettings,
