@@ -214,7 +214,6 @@ class AiInsightSkeleton extends StatelessWidget {
             Row(
               children: [
                 const SizedBox(width: AppSpacing.xs),
-                const SizedBox(width: AppSpacing.xs),
                 Container(
                   width: 4,
                   height: 4,

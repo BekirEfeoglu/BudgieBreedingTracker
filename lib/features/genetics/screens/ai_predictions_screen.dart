@@ -33,14 +33,14 @@ class AiPredictionsScreen extends ConsumerWidget {
           vertical: AppSpacing.md,
         ).copyWith(bottom: AppSpacing.xxxl * 2),
         children: [
-          AiGeneticsCard(
+          const AiGeneticsCard(
             fatherGenotype:
-                const ParentGenotype.empty(gender: BirdGender.male),
+                ParentGenotype.empty(gender: BirdGender.male),
             motherGenotype:
-                const ParentGenotype.empty(gender: BirdGender.female),
+                ParentGenotype.empty(gender: BirdGender.female),
             selectedFatherName: null,
             selectedMotherName: null,
-            calculatorResults: const [],
+            calculatorResults: [],
           ),
           const SizedBox(height: AppSpacing.md),
           const AiMutationCard(),
