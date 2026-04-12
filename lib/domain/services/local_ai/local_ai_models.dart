@@ -239,10 +239,22 @@ class LocalAiMutationInsight {
       eyeColor,
     ].where((item) => item.isNotEmpty).length;
 
+    // Unknown fallback: if model says "unknown" but has series/pattern info,
+    // try to infer the most likely mutation from available evidence.
+    var correctedMutation = predictedMutation;
+    if (predictedMutation == 'unknown' && baseSeries != 'unknown') {
+      correctedMutation = _inferFromEvidence(
+        baseSeries: baseSeries,
+        patternFamily: patternFamily,
+        bodyColor: bodyColor,
+        eyeColor: eyeColor,
+        secondary: secondary,
+      );
+    }
+
     // Eye color gate: ino mutations (albino/lutino) REQUIRE red/pink eyes.
     // If the model predicts ino but eye_color doesn't clearly indicate
     // red/pink, downgrade to the most likely non-ino alternative.
-    var correctedMutation = predictedMutation;
     if (_isInoMutation(predictedMutation) &&
         eyeColor.isNotEmpty &&
         !_hasRedPinkEyes(eyeColor)) {
@@ -336,6 +348,50 @@ List<String> _buildSecondaryList({
   }
 
   return filtered.take(3).toList(growable: false);
+}
+
+/// When model returns "unknown" but has series/pattern data,
+/// infer the most likely mutation from available evidence.
+String _inferFromEvidence({
+  required String baseSeries,
+  required String patternFamily,
+  required String bodyColor,
+  required String eyeColor,
+  required List<String> secondary,
+}) {
+  // Prefer non-unknown secondary if available
+  for (final alt in secondary) {
+    if (alt != 'unknown') return alt;
+  }
+
+  // Infer from pattern + series
+  if (patternFamily != 'unknown') {
+    final suffix = baseSeries == 'green' ? '_green' : '_blue';
+    final candidate = '${patternFamily}$suffix';
+    if (_mutationSignature.containsKey(candidate)) return candidate;
+  }
+
+  // Pale/white body + blue series + unknown pattern → likely spangle DF or dilute
+  final lowerBody = bodyColor.toLowerCase();
+  final isPaleBody = lowerBody.contains('beyaz') ||
+      lowerBody.contains('white') ||
+      lowerBody.contains('açık') ||
+      lowerBody.contains('soluk') ||
+      lowerBody.contains('light') ||
+      lowerBody.contains('pale');
+
+  if (isPaleBody && baseSeries == 'blue') {
+    // Check eye color for ino vs non-ino
+    if (_hasRedPinkEyes(eyeColor)) return 'albino';
+    return 'spangle_blue'; // DF Spangle most likely for pale + dark eyes
+  }
+  if (isPaleBody && baseSeries == 'green') {
+    if (_hasRedPinkEyes(eyeColor)) return 'lutino';
+    return 'spangle_green';
+  }
+
+  // Fall back to normal variant based on series
+  return baseSeries == 'blue' ? 'normal_skyblue' : 'normal_light_green';
 }
 
 /// Mutations that require red/pink eyes. Includes ino-based and fallow.

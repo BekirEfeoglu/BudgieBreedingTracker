@@ -234,14 +234,31 @@ class _AiMutationTabState extends ConsumerState<AiMutationTab> {
     return switch (lower) {
       'unknown' => 'common.unknown'.tr(),
       'none' => 'common.none'.tr(),
+      // Eye colors
       'red/pink' || 'red' || 'pink' => 'Kırmızı/Pembe',
-      'black' || 'dark' => 'Siyah/Koyu',
+      'black' || 'dark' || 'dark/black' => 'Siyah/Koyu',
+      'plum' || 'dark red' => 'Erik rengi',
+      // Body/wing colors
       'blue' => 'Mavi',
-      'brown' => 'Kahverengi',
+      'light_blue' || 'light blue' || 'sky blue' => 'Açık mavi',
+      'cobalt' => 'Kobalt mavi',
+      'mauve' => 'Leylak',
+      'brown' || 'cinnamon' => 'Kahverengi',
       'white' => 'Beyaz',
       'yellow' => 'Sarı',
-      'green' => 'Yeşil',
+      'green' || 'bright green' => 'Yeşil',
+      'dark green' => 'Koyu yeşil',
+      'olive' => 'Zeytin yeşili',
       'grey' || 'gray' => 'Gri',
+      'violet' || 'purple' => 'Mor/Violet',
+      // Wing patterns
+      'normal' => 'Normal',
+      'classic black barring' || 'black barring' => 'Siyah çizgili (normal)',
+      'faint' || 'very faint' || 'minimal' => 'Çok silik',
+      'reduced' => 'Azaltılmış',
+      'reversed' => 'Ters desen',
+      'grey barring' => 'Gri çizgili',
+      'brown barring' => 'Kahverengi çizgili',
       _ => value,
     };
   }

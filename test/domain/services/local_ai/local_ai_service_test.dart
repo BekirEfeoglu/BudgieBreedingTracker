@@ -520,5 +520,69 @@ Thanks.
 
       expect(insight.predictedMutation, 'albino');
     });
+
+    test('unknown fallback: infers spangle_blue for pale blue body with dark eyes', () {
+      final insight = LocalAiMutationInsight.fromJson({
+        'predicted_mutation': 'unknown',
+        'confidence': 'low',
+        'base_series': 'blue',
+        'pattern_family': 'unknown',
+        'body_color': 'açık mavi',
+        'wing_pattern': 'normal',
+        'eye_color': 'koyu',
+        'rationale': 'test',
+        'secondary_possibilities': <String>[],
+      });
+
+      expect(insight.predictedMutation, 'spangle_blue');
+    });
+
+    test('unknown fallback: infers from pattern_family when available', () {
+      final insight = LocalAiMutationInsight.fromJson({
+        'predicted_mutation': 'unknown',
+        'confidence': 'low',
+        'base_series': 'blue',
+        'pattern_family': 'opaline',
+        'body_color': 'mavi',
+        'wing_pattern': '',
+        'eye_color': '',
+        'rationale': 'test',
+        'secondary_possibilities': <String>[],
+      });
+
+      expect(insight.predictedMutation, 'opaline_blue');
+    });
+
+    test('unknown fallback: prefers secondary over inference', () {
+      final insight = LocalAiMutationInsight.fromJson({
+        'predicted_mutation': 'unknown',
+        'confidence': 'low',
+        'base_series': 'blue',
+        'pattern_family': 'unknown',
+        'body_color': 'beyaz',
+        'wing_pattern': '',
+        'eye_color': '',
+        'rationale': 'test',
+        'secondary_possibilities': ['dominant_pied_blue'],
+      });
+
+      expect(insight.predictedMutation, 'dominant_pied_blue');
+    });
+
+    test('unknown fallback: stays unknown when no series info', () {
+      final insight = LocalAiMutationInsight.fromJson({
+        'predicted_mutation': 'unknown',
+        'confidence': 'low',
+        'base_series': 'unknown',
+        'pattern_family': 'unknown',
+        'body_color': '',
+        'wing_pattern': '',
+        'eye_color': '',
+        'rationale': 'test',
+        'secondary_possibilities': <String>[],
+      });
+
+      expect(insight.predictedMutation, 'unknown');
+    });
   });
 }
