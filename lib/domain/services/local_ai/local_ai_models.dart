@@ -280,9 +280,9 @@ class LocalAiMutationInsight {
     // small models frequently hallucinate red eye color.
     final isInoPrediction = _isInoMutation(correctedMutation);
     final inoWarning = isInoPrediction
-        ? 'Albino/Lutino tahmini göz rengine bağlıdır. '
+        ? 'Bu tahmin kırmızı/pembe göz rengine bağlıdır. '
             'AI modelleri göz rengini güvenilir şekilde ayırt edemeyebilir. '
-            'Kırmızı/pembe göz yoksa bu kuş muhtemelen DF Spangle veya Dominant Pied\'dir.'
+            'Koyu gözlü benzer kuşlar: DF Spangle, Dominant Pied, Cinnamon, Dilute, Clearbody.'
         : '';
 
     return LocalAiMutationInsight(
@@ -331,16 +331,14 @@ List<String> _buildSecondaryList({
       )
       .toList();
 
-  // When ino is predicted, ensure non-ino alternatives are suggested
+  // When red-eye mutation is predicted, suggest dark-eye alternatives
   if (isInoPrediction) {
-    final dfSpangle = correctedMutation == 'albino' || baseSeries == 'blue'
-        ? 'spangle_blue'
-        : 'spangle_green';
-    final domPied = correctedMutation == 'albino' || baseSeries == 'blue'
-        ? 'dominant_pied_blue'
-        : 'dominant_pied_green';
+    final isBlue = baseSeries == 'blue' || baseSeries == 'albino';
+    final alts = isBlue
+        ? ['spangle_blue', 'dominant_pied_blue']
+        : ['spangle_green', 'dominant_pied_green'];
 
-    for (final alt in [dfSpangle, domPied]) {
+    for (final alt in alts) {
       if (!filtered.contains(alt) && alt != correctedMutation) {
         filtered.add(alt);
       }
@@ -414,21 +412,34 @@ bool _hasRedPinkEyes(String eyeColor) {
   return redPinkTokens.any(lower.contains);
 }
 
-/// When the model incorrectly predicts ino but eyes aren't red/pink,
-/// substitute the most likely non-ino mutation.
+/// When the model incorrectly predicts a red-eye mutation but eyes aren't
+/// red/pink, substitute the most likely dark-eye alternative.
 String _correctInoToNonIno({
   required String predictedMutation,
   required String baseSeries,
   required List<String> secondary,
 }) {
-  // Prefer a non-ino secondary if available
+  // Prefer a non-red-eye secondary if available
   for (final alt in secondary) {
     if (!_isInoMutation(alt) && alt != 'unknown') return alt;
   }
-  // Fall back based on series: white body = spangle_blue, yellow = spangle_green
-  if (predictedMutation == 'albino') return 'spangle_blue';
-  if (predictedMutation == 'lutino') return 'spangle_green';
-  return baseSeries == 'blue' ? 'spangle_blue' : 'spangle_green';
+  // Map each red-eye mutation to its dark-eye equivalent
+  final isBlue = baseSeries == 'blue' ||
+      predictedMutation.contains('blue') ||
+      predictedMutation == 'albino' ||
+      predictedMutation == 'creamino';
+  return switch (predictedMutation) {
+    'albino' => 'spangle_blue',
+    'lutino' => 'spangle_green',
+    'creamino' => 'spangle_blue',
+    'fallow_green' => 'cinnamon_green',
+    'fallow_blue' => 'cinnamon_blue',
+    'lacewing_green' => 'cinnamon_green',
+    'lacewing_blue' => 'cinnamon_blue',
+    'texas_clearbody_green' => 'clearbody_green',
+    'texas_clearbody_blue' => 'clearbody_blue',
+    _ => isBlue ? 'spangle_blue' : 'spangle_green',
+  };
 }
 
 LocalAiConfidence _normalizeMutationConfidence({
