@@ -47,7 +47,19 @@ List<RouteBase> buildUserRoutes() => [
   ),
   GoRoute(
     path: AppRoutes.aiPredictions,
-    builder: (context, state) => const AiPredictionsScreen(),
+    builder: (context, state) {
+      final tabParam = state.uri.queryParameters['tab'];
+      final initialTab = switch (tabParam) {
+        'mutation' => 1,
+        'sex' => 2,
+        _ => 0,
+      };
+      final birdId = state.uri.queryParameters['birdId'];
+      return AiPredictionsScreen(
+        initialTab: initialTab,
+        initialBirdId: birdId,
+      );
+    },
   ),
   GoRoute(
     path: AppRoutes.geneticsHistory,

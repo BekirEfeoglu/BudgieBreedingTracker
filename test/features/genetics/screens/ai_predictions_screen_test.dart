@@ -4,133 +4,112 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/data/local/preferences/app_preferences.dart';
-import 'package:budgie_breeding_tracker/domain/services/genetics/parent_genotype.dart';
-import 'package:budgie_breeding_tracker/features/genetics/providers/genetics_providers.dart';
 import 'package:budgie_breeding_tracker/features/genetics/screens/ai_predictions_screen.dart';
-import 'package:budgie_breeding_tracker/features/genetics/widgets/ai/ai_mutation_card.dart';
-import 'package:budgie_breeding_tracker/features/genetics/widgets/ai/ai_sex_estimation_card.dart';
+import 'package:budgie_breeding_tracker/features/genetics/widgets/ai/ai_genetics_tab.dart';
+import 'package:budgie_breeding_tracker/features/genetics/widgets/ai/ai_mutation_tab.dart';
+import 'package:budgie_breeding_tracker/features/genetics/widgets/ai/ai_sex_estimation_tab.dart';
+import 'package:budgie_breeding_tracker/features/genetics/widgets/ai/ai_welcome_screen.dart';
 import 'package:budgie_breeding_tracker/router/route_names.dart';
 import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 void main() {
-  setUp(() {
-    SharedPreferences.setMockInitialValues({
-      AppPreferences.keyLocalAiProvider: 'openRouter',
-      AppPreferences.keyLocalAiBaseUrl: 'https://openrouter.ai',
-      AppPreferences.keyLocalAiModel: 'google/gemma-4-26b-a4b-it:free',
-      AppPreferences.keyLocalAiApiKey: '',
-    });
-  });
-
-  GoRouter buildRouter() {
-    return GoRouter(
-      initialLocation: AppRoutes.aiPredictions,
-      routes: [
-        GoRoute(
-          path: AppRoutes.aiPredictions,
-          builder: (_, __) => const AiPredictionsScreen(),
-        ),
-        GoRoute(
-          path: AppRoutes.genetics,
-          builder: (_, __) => const Scaffold(body: Text('Genetics Route')),
-        ),
-      ],
-    );
-  }
-
-  Widget buildSubject({ProviderContainer? container}) {
-    final child = MaterialApp.router(routerConfig: buildRouter());
-    if (container != null) {
-      return UncontrolledProviderScope(container: container, child: child);
-    }
-    return ProviderScope(child: child);
-  }
-
   group('AiPredictionsScreen', () {
-    testWidgets('renders overview and all AI cards', (tester) async {
-      await tester.pumpWidget(buildSubject());
-      await tester.pumpAndSettle();
+    GoRouter buildRouter({int initialTab = 0, String? birdId}) {
+      final queryParams = <String, String>{};
+      if (initialTab == 1) queryParams['tab'] = 'mutation';
+      if (initialTab == 2) queryParams['tab'] = 'sex';
+      if (birdId != null) queryParams['birdId'] = birdId;
 
-      expect(find.byType(AiPredictionsScreen), findsOneWidget);
-      expect(find.text(l10n('more.ai_predictions')), findsWidgets);
-      expect(
-        find.text(l10n('genetics.local_ai_genetics_comment')),
-        findsOneWidget,
+      final uri = Uri(
+        path: AppRoutes.aiPredictions,
+        queryParameters: queryParams.isEmpty ? null : queryParams,
       );
-      expect(find.byType(AiMutationCard), findsOneWidget);
 
-      await tester.scrollUntilVisible(
-        find.text(l10n('genetics.run_sex_ai')),
-        300,
-        scrollable: find.byType(Scrollable).first,
+      return GoRouter(
+        initialLocation: uri.toString(),
+        routes: [
+          GoRoute(
+            path: AppRoutes.aiPredictions,
+            builder: (_, state) {
+              final tabParam = state.uri.queryParameters['tab'];
+              final tab = switch (tabParam) {
+                'mutation' => 1,
+                'sex' => 2,
+                _ => 0,
+              };
+              return AiPredictionsScreen(
+                initialTab: tab,
+                initialBirdId: state.uri.queryParameters['birdId'],
+              );
+            },
+          ),
+        ],
       );
-      await tester.pumpAndSettle();
+    }
 
-      expect(find.byType(AiSexEstimationCard), findsOneWidget);
+    Widget buildSubject({int initialTab = 0, String? birdId}) {
+      return ProviderScope(
+        child: MaterialApp.router(
+          routerConfig: buildRouter(initialTab: initialTab, birdId: birdId),
+        ),
+      );
+    }
+
+    group('with configured AI', () {
+      setUp(() {
+        SharedPreferences.setMockInitialValues({
+          AppPreferences.keyLocalAiProvider: 'openRouter',
+          AppPreferences.keyLocalAiBaseUrl: 'https://openrouter.ai',
+          AppPreferences.keyLocalAiModel: 'google/gemma-4-26b-a4b-it:free',
+          AppPreferences.keyLocalAiApiKey: 'test-key',
+        });
+      });
+
+      testWidgets('renders tab bar with 3 tabs', (tester) async {
+        await tester.pumpWidget(buildSubject());
+        await tester.pumpAndSettle();
+
+        expect(find.byType(TabBar), findsOneWidget);
+        expect(find.text(l10n('genetics.ai_tab_genetics')), findsOneWidget);
+        expect(find.text(l10n('genetics.ai_tab_mutation')), findsOneWidget);
+        expect(find.text(l10n('genetics.ai_tab_sex')), findsOneWidget);
+      });
+
+      testWidgets('shows genetics tab by default', (tester) async {
+        await tester.pumpWidget(buildSubject());
+        await tester.pumpAndSettle();
+
+        expect(find.byType(AiGeneticsTab), findsOneWidget);
+      });
+
+      testWidgets('shows mutation tab when initialTab is 1', (tester) async {
+        await tester.pumpWidget(buildSubject(initialTab: 1));
+        await tester.pumpAndSettle();
+
+        expect(find.byType(AiMutationTab), findsOneWidget);
+      });
+
+      testWidgets('shows sex tab when initialTab is 2', (tester) async {
+        await tester.pumpWidget(buildSubject(initialTab: 2));
+        await tester.pumpAndSettle();
+
+        expect(find.byType(AiSexEstimationTab), findsOneWidget);
+      });
     });
 
-    testWidgets('shows genetics shortcut when pair is not ready', (
-      tester,
-    ) async {
-      await tester.pumpWidget(buildSubject());
-      await tester.pumpAndSettle();
+    group('without configured AI', () {
+      setUp(() {
+        SharedPreferences.setMockInitialValues({});
+      });
 
-      expect(find.text(l10n('genetics.local_ai_pair_required')), findsWidgets);
-      expect(
-        find.widgetWithText(OutlinedButton, l10n('genetics.title')),
-        findsOneWidget,
-      );
+      testWidgets('shows welcome screen when no config', (tester) async {
+        await tester.pumpWidget(buildSubject());
+        await tester.pumpAndSettle();
 
-      final runFinder = find.widgetWithText(
-        FilledButton,
-        l10n('genetics.run_genetics_ai'),
-      );
-      expect(tester.widget<FilledButton>(runFinder).onPressed, isNull);
-    });
-
-    testWidgets('navigates to genetics calculator from overview action', (
-      tester,
-    ) async {
-      await tester.pumpWidget(buildSubject());
-      await tester.pumpAndSettle();
-
-      await tester.tap(
-        find.widgetWithText(OutlinedButton, l10n('genetics.title')),
-      );
-      await tester.pumpAndSettle();
-
-      expect(find.text('Genetics Route'), findsOneWidget);
-    });
-
-    testWidgets('uses current genetics selection to enable AI genetics action', (
-      tester,
-    ) async {
-      final container = ProviderContainer();
-      addTearDown(container.dispose);
-
-      container.read(fatherGenotypeProvider.notifier).state = ParentGenotype(
-        gender: BirdGender.male,
-        mutations: const {'blue': AlleleState.visual},
-      );
-      container.read(motherGenotypeProvider.notifier).state = ParentGenotype(
-        gender: BirdGender.female,
-        mutations: const {'ino': AlleleState.visual},
-      );
-      container.read(selectedFatherBirdNameProvider.notifier).state = 'Atlas';
-      container.read(selectedMotherBirdNameProvider.notifier).state = 'Luna';
-
-      await tester.pumpWidget(buildSubject(container: container));
-      await tester.pumpAndSettle();
-
-      expect(find.text('Atlas x Luna'), findsWidgets);
-
-      final runFinder = find.widgetWithText(
-        FilledButton,
-        l10n('genetics.run_genetics_ai'),
-      );
-      expect(tester.widget<FilledButton>(runFinder).onPressed, isNotNull);
+        expect(find.byType(AiWelcomeScreen), findsOneWidget);
+        expect(find.byType(TabBar), findsNothing);
+      });
     });
   });
 }
