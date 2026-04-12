@@ -50,8 +50,7 @@ List<RouteBase> buildUserRoutes() => [
     builder: (context, state) {
       final tabParam = state.uri.queryParameters['tab'];
       final initialTab = switch (tabParam) {
-        'mutation' => 1,
-        'sex' => 2,
+        'sex' => 1,
         _ => 0,
       };
       final birdId = state.uri.queryParameters['birdId'];

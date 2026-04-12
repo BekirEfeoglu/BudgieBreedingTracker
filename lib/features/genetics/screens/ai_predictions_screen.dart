@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/features/genetics/providers/local_ai_providers.dart';
-import 'package:budgie_breeding_tracker/features/genetics/widgets/ai/ai_genetics_tab.dart';
 import 'package:budgie_breeding_tracker/features/genetics/widgets/ai/ai_mutation_tab.dart';
 import 'package:budgie_breeding_tracker/features/genetics/widgets/ai/ai_sex_estimation_tab.dart';
 import 'package:budgie_breeding_tracker/features/genetics/widgets/ai/ai_settings_sheet.dart';
@@ -33,9 +32,9 @@ class _AiPredictionsScreenState extends ConsumerState<AiPredictionsScreen>
   void initState() {
     super.initState();
     _tabController = TabController(
-      length: 3,
+      length: 2,
       vsync: this,
-      initialIndex: widget.initialTab.clamp(0, 2),
+      initialIndex: widget.initialTab.clamp(0, 1),
     );
   }
 
@@ -83,7 +82,6 @@ class _AiPredictionsScreenState extends ConsumerState<AiPredictionsScreen>
             ? TabBar(
                 controller: _tabController,
                 tabs: [
-                  Tab(text: 'genetics.ai_tab_genetics'.tr()),
                   Tab(text: 'genetics.ai_tab_mutation'.tr()),
                   Tab(text: 'genetics.ai_tab_sex'.tr()),
                 ],
@@ -96,7 +94,6 @@ class _AiPredictionsScreenState extends ConsumerState<AiPredictionsScreen>
               ? TabBarView(
                   controller: _tabController,
                   children: [
-                    AiGeneticsTab(initialBirdId: widget.initialBirdId),
                     const AiMutationTab(),
                     const AiSexEstimationTab(),
                   ],

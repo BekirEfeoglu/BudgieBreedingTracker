@@ -6,7 +6,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:budgie_breeding_tracker/data/local/preferences/app_preferences.dart';
 import 'package:budgie_breeding_tracker/features/genetics/screens/ai_predictions_screen.dart';
-import 'package:budgie_breeding_tracker/features/genetics/widgets/ai/ai_genetics_tab.dart';
 import 'package:budgie_breeding_tracker/features/genetics/widgets/ai/ai_mutation_tab.dart';
 import 'package:budgie_breeding_tracker/features/genetics/widgets/ai/ai_sex_estimation_tab.dart';
 import 'package:budgie_breeding_tracker/features/genetics/widgets/ai/ai_welcome_screen.dart';
@@ -17,8 +16,7 @@ void main() {
   group('AiPredictionsScreen', () {
     GoRouter buildRouter({int initialTab = 0, String? birdId}) {
       final queryParams = <String, String>{};
-      if (initialTab == 1) queryParams['tab'] = 'mutation';
-      if (initialTab == 2) queryParams['tab'] = 'sex';
+      if (initialTab == 1) queryParams['tab'] = 'sex';
       if (birdId != null) queryParams['birdId'] = birdId;
 
       final uri = Uri(
@@ -34,8 +32,7 @@ void main() {
             builder: (_, state) {
               final tabParam = state.uri.queryParameters['tab'];
               final tab = switch (tabParam) {
-                'mutation' => 1,
-                'sex' => 2,
+                'sex' => 1,
                 _ => 0,
               };
               return AiPredictionsScreen(
@@ -66,32 +63,24 @@ void main() {
         });
       });
 
-      testWidgets('renders tab bar with 3 tabs', (tester) async {
+      testWidgets('renders tab bar with 2 tabs', (tester) async {
         await tester.pumpWidget(buildSubject());
         await tester.pumpAndSettle();
 
         expect(find.byType(TabBar), findsOneWidget);
-        expect(find.text(l10n('genetics.ai_tab_genetics')), findsOneWidget);
         expect(find.text(l10n('genetics.ai_tab_mutation')), findsOneWidget);
         expect(find.text(l10n('genetics.ai_tab_sex')), findsOneWidget);
       });
 
-      testWidgets('shows genetics tab by default', (tester) async {
+      testWidgets('shows mutation tab by default', (tester) async {
         await tester.pumpWidget(buildSubject());
-        await tester.pumpAndSettle();
-
-        expect(find.byType(AiGeneticsTab), findsOneWidget);
-      });
-
-      testWidgets('shows mutation tab when initialTab is 1', (tester) async {
-        await tester.pumpWidget(buildSubject(initialTab: 1));
         await tester.pumpAndSettle();
 
         expect(find.byType(AiMutationTab), findsOneWidget);
       });
 
-      testWidgets('shows sex tab when initialTab is 2', (tester) async {
-        await tester.pumpWidget(buildSubject(initialTab: 2));
+      testWidgets('shows sex tab when initialTab is 1', (tester) async {
+        await tester.pumpWidget(buildSubject(initialTab: 1));
         await tester.pumpAndSettle();
 
         expect(find.byType(AiSexEstimationTab), findsOneWidget);
