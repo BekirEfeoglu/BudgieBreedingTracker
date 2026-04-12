@@ -47,6 +47,10 @@ class AppPreferences {
   static const keyStatsPeriod = 'pref_stats_period';
   static const keyStatsSpeciesFilter = 'pref_stats_species_filter';
   static const keyBatteryWarningDismissed = 'pref_battery_warning_dismissed';
+  static const keyLocalAiBaseUrl = 'pref_local_ai_base_url';
+  static const keyLocalAiModel = 'pref_local_ai_model';
+  static const keyLocalAiProvider = 'pref_local_ai_provider';
+  static const keyLocalAiApiKey = 'pref_local_ai_api_key';
 
   // ── Theme ──
 

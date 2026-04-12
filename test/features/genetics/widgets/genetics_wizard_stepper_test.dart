@@ -16,7 +16,7 @@ void main() {
         _wrap(
           GeneticsWizardStepper(
             currentStep: 0,
-            hasSelections: false,
+            canAdvance: false,
             onStepTap: (_) {},
           ),
         ),
@@ -31,7 +31,7 @@ void main() {
         _wrap(
           GeneticsWizardStepper(
             currentStep: 0,
-            hasSelections: false,
+            canAdvance: false,
             onStepTap: (_) {},
           ),
         ),
@@ -43,13 +43,14 @@ void main() {
       expect(find.text(l10n('genetics.step_results')), findsOneWidget);
     });
 
-    testWidgets('shows step number 1 for first step when active',
-        (tester) async {
+    testWidgets('shows step number 1 for first step when active', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         _wrap(
           GeneticsWizardStepper(
             currentStep: 0,
-            hasSelections: false,
+            canAdvance: false,
             onStepTap: (_) {},
           ),
         ),
@@ -59,13 +60,12 @@ void main() {
       expect(find.text('1'), findsOneWidget);
     });
 
-    testWidgets('shows step numbers for all 3 steps at step 0',
-        (tester) async {
+    testWidgets('shows step numbers for all 3 steps at step 0', (tester) async {
       await tester.pumpWidget(
         _wrap(
           GeneticsWizardStepper(
             currentStep: 0,
-            hasSelections: false,
+            canAdvance: false,
             onStepTap: (_) {},
           ),
         ),
@@ -77,13 +77,14 @@ void main() {
       expect(find.text('3'), findsOneWidget);
     });
 
-    testWidgets('shows check icon for completed step 0 when at step 1',
-        (tester) async {
+    testWidgets('shows check icon for completed step 0 when at step 1', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         _wrap(
           GeneticsWizardStepper(
             currentStep: 1,
-            hasSelections: true,
+            canAdvance: true,
             onStepTap: (_) {},
           ),
         ),
@@ -96,13 +97,14 @@ void main() {
       expect(find.text('3'), findsOneWidget);
     });
 
-    testWidgets('shows check icons for steps 0 and 1 when at step 2',
-        (tester) async {
+    testWidgets('shows check icons for steps 0 and 1 when at step 2', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         _wrap(
           GeneticsWizardStepper(
             currentStep: 2,
-            hasSelections: true,
+            canAdvance: true,
             onStepTap: (_) {},
           ),
         ),
@@ -119,7 +121,7 @@ void main() {
         _wrap(
           GeneticsWizardStepper(
             currentStep: 0,
-            hasSelections: false,
+            canAdvance: false,
             onStepTap: (_) {},
           ),
         ),
@@ -130,15 +132,14 @@ void main() {
       expect(find.byType(Expanded), findsNWidgets(2));
     });
 
-    testWidgets('onStepTap is called with correct step index',
-        (tester) async {
+    testWidgets('onStepTap is called with correct step index', (tester) async {
       int? tappedStep;
 
       await tester.pumpWidget(
         _wrap(
           GeneticsWizardStepper(
             currentStep: 1,
-            hasSelections: true,
+            canAdvance: true,
             onStepTap: (step) => tappedStep = step,
           ),
         ),
@@ -152,15 +153,14 @@ void main() {
       expect(tappedStep, equals(0));
     });
 
-    testWidgets('step 1 is tappable when hasSelections is true',
-        (tester) async {
+    testWidgets('step 1 is tappable when canAdvance is true', (tester) async {
       int? tappedStep;
 
       await tester.pumpWidget(
         _wrap(
           GeneticsWizardStepper(
             currentStep: 0,
-            hasSelections: true,
+            canAdvance: true,
             onStepTap: (step) => tappedStep = step,
           ),
         ),
@@ -173,15 +173,16 @@ void main() {
       expect(tappedStep, equals(1));
     });
 
-    testWidgets('step 1 is not tappable when hasSelections is false',
-        (tester) async {
+    testWidgets('step 1 is not tappable when canAdvance is false', (
+      tester,
+    ) async {
       int? tappedStep;
 
       await tester.pumpWidget(
         _wrap(
           GeneticsWizardStepper(
             currentStep: 0,
-            hasSelections: false,
+            canAdvance: false,
             onStepTap: (step) => tappedStep = step,
           ),
         ),
@@ -195,15 +196,16 @@ void main() {
       expect(tappedStep, isNull);
     });
 
-    testWidgets('step 2 is not tappable when hasSelections is false',
-        (tester) async {
+    testWidgets('step 2 is not tappable when canAdvance is false', (
+      tester,
+    ) async {
       int? tappedStep;
 
       await tester.pumpWidget(
         _wrap(
           GeneticsWizardStepper(
             currentStep: 0,
-            hasSelections: false,
+            canAdvance: false,
             onStepTap: (step) => tappedStep = step,
           ),
         ),
@@ -216,15 +218,14 @@ void main() {
       expect(tappedStep, isNull);
     });
 
-    testWidgets('step 2 is tappable when hasSelections is true',
-        (tester) async {
+    testWidgets('step 2 is tappable when canAdvance is true', (tester) async {
       int? tappedStep;
 
       await tester.pumpWidget(
         _wrap(
           GeneticsWizardStepper(
             currentStep: 0,
-            hasSelections: true,
+            canAdvance: true,
             onStepTap: (step) => tappedStep = step,
           ),
         ),
@@ -242,7 +243,7 @@ void main() {
         _wrap(
           GeneticsWizardStepper(
             currentStep: 0,
-            hasSelections: false,
+            canAdvance: false,
             onStepTap: (_) {},
           ),
         ),
@@ -259,7 +260,7 @@ void main() {
         _wrap(
           GeneticsWizardStepper(
             currentStep: 2,
-            hasSelections: true,
+            canAdvance: true,
             onStepTap: (step) => tappedStep = step,
           ),
         ),
@@ -277,7 +278,7 @@ void main() {
         _wrap(
           GeneticsWizardStepper(
             currentStep: 0,
-            hasSelections: false,
+            canAdvance: false,
             onStepTap: (_) {},
           ),
         ),

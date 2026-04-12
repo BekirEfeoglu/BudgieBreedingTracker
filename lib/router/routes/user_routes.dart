@@ -6,6 +6,7 @@ import '../route_utils.dart';
 import '../../features/statistics/screens/statistics_screen.dart';
 import '../../features/premium/screens/premium_screen.dart';
 import '../../features/genealogy/screens/genealogy_screen.dart';
+import '../../features/genetics/screens/ai_predictions_screen.dart';
 import '../../features/genetics/screens/genetics_calculator_screen.dart';
 import '../../features/genetics/screens/genetics_history_screen.dart';
 import '../../features/profile/screens/profile_screen.dart';
@@ -43,6 +44,10 @@ List<RouteBase> buildUserRoutes() => [
   GoRoute(
     path: AppRoutes.genetics,
     builder: (context, state) => const GeneticsCalculatorScreen(),
+  ),
+  GoRoute(
+    path: AppRoutes.aiPredictions,
+    builder: (context, state) => const AiPredictionsScreen(),
   ),
   GoRoute(
     path: AppRoutes.geneticsHistory,

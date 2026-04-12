@@ -6,19 +6,28 @@ import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 /// Horizontal step indicator with 3 steps for genetics wizard.
 class GeneticsWizardStepper extends StatelessWidget {
   final int currentStep;
-  final bool hasSelections;
+  final bool canAdvance;
   final ValueChanged<int> onStepTap;
 
   const GeneticsWizardStepper({
     super.key,
     required this.currentStep,
-    required this.hasSelections,
+    required this.canAdvance,
     required this.onStepTap,
   });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+
+    Widget connector(int afterStep) => Expanded(
+      child: Container(
+        height: 2,
+        color: currentStep > afterStep
+            ? theme.colorScheme.primary
+            : theme.colorScheme.outlineVariant,
+      ),
+    );
 
     return Padding(
       padding: const EdgeInsets.symmetric(
@@ -34,35 +43,21 @@ class GeneticsWizardStepper extends StatelessWidget {
             isCompleted: currentStep > 0,
             onTap: () => onStepTap(0),
           ),
-          Expanded(
-            child: Container(
-              height: 2,
-              color: currentStep > 0
-                  ? theme.colorScheme.primary
-                  : theme.colorScheme.outlineVariant,
-            ),
-          ),
+          connector(0),
           _StepDot(
             step: 1,
             label: 'genetics.step_genotype'.tr(),
             isActive: currentStep == 1,
             isCompleted: currentStep > 1,
-            onTap: hasSelections ? () => onStepTap(1) : null,
+            onTap: canAdvance ? () => onStepTap(1) : null,
           ),
-          Expanded(
-            child: Container(
-              height: 2,
-              color: currentStep > 1
-                  ? theme.colorScheme.primary
-                  : theme.colorScheme.outlineVariant,
-            ),
-          ),
+          connector(1),
           _StepDot(
             step: 2,
             label: 'genetics.step_results'.tr(),
             isActive: currentStep == 2,
             isCompleted: false,
-            onTap: hasSelections ? () => onStepTap(2) : null,
+            onTap: canAdvance ? () => onStepTap(2) : null,
           ),
         ],
       ),
@@ -98,60 +93,62 @@ class _StepDot extends StatelessWidget {
       enabled: onTap != null,
       label: '$label, ${step + 1}',
       child: GestureDetector(
-      onTap: onTap,
-      behavior: HitTestBehavior.opaque,
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(
-          minWidth: AppSpacing.touchTargetMin,
-          minHeight: AppSpacing.touchTargetMin,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 28,
-              height: 28,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: isActive
-                    ? theme.colorScheme.primary
-                    : isCompleted
-                    ? theme.colorScheme.primary.withValues(alpha: 0.2)
-                    : theme.colorScheme.surfaceContainerHighest,
-                border: Border.all(color: color, width: 2),
-              ),
-              child: Center(
-                child: isCompleted
-                    ? Icon(
-                        LucideIcons.check,
-                        size: 14,
-                        color: theme.colorScheme.primary,
-                      )
-                    : Text(
-                        '${step + 1}',
-                        style: theme.textTheme.labelSmall?.copyWith(
-                          color: isActive ? theme.colorScheme.onPrimary : color,
-                          fontWeight: FontWeight.bold,
+        onTap: onTap,
+        behavior: HitTestBehavior.opaque,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(
+            minWidth: AppSpacing.touchTargetMin,
+            minHeight: AppSpacing.touchTargetMin,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 28,
+                height: 28,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: isActive
+                      ? theme.colorScheme.primary
+                      : isCompleted
+                      ? theme.colorScheme.primary.withValues(alpha: 0.2)
+                      : theme.colorScheme.surfaceContainerHighest,
+                  border: Border.all(color: color, width: 2),
+                ),
+                child: Center(
+                  child: isCompleted
+                      ? Icon(
+                          LucideIcons.check,
+                          size: 14,
+                          color: theme.colorScheme.primary,
+                        )
+                      : Text(
+                          '${step + 1}',
+                          style: theme.textTheme.labelSmall?.copyWith(
+                            color: isActive
+                                ? theme.colorScheme.onPrimary
+                                : color,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ),
+                ),
               ),
-            ),
-            const SizedBox(height: AppSpacing.xxs),
-            Text(
-              label,
-              style: theme.textTheme.labelSmall?.copyWith(
-                color: isActive || isCompleted
-                    ? theme.colorScheme.primary
-                    : theme.colorScheme.onSurfaceVariant,
+              const SizedBox(height: AppSpacing.xxs),
+              Text(
+                label,
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: isActive || isCompleted
+                      ? theme.colorScheme.primary
+                      : theme.colorScheme.onSurfaceVariant,
+                ),
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
-              textAlign: TextAlign.center,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
       ),
     );
   }

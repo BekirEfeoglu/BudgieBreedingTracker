@@ -84,6 +84,16 @@ class MoreScreen extends ConsumerWidget {
             trailing: _PremiumBadge(theme: theme),
             onTap: () => context.push(AppRoutes.genetics),
           ),
+          _MoreTile(
+            icon: Icon(
+              LucideIcons.sparkles,
+              size: 22,
+              color: theme.colorScheme.primary,
+            ),
+            title: 'more.ai_predictions'.tr(),
+            trailing: _PremiumBadge(theme: theme),
+            onTap: () => context.push(AppRoutes.aiPredictions),
+          ),
           // Subscription section
           _SectionHeader(title: 'more.section_subscription'.tr()),
           _MoreTile(

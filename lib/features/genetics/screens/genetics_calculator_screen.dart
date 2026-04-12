@@ -34,6 +34,7 @@ class GeneticsCalculatorScreen extends ConsumerWidget {
     final motherGenotype = ref.watch(motherGenotypeProvider);
     final hasSelections =
         fatherGenotype.isNotEmpty || motherGenotype.isNotEmpty;
+    final canAdvance = fatherGenotype.isNotEmpty && motherGenotype.isNotEmpty;
 
     return Scaffold(
       appBar: AppBar(
@@ -93,9 +94,9 @@ class GeneticsCalculatorScreen extends ConsumerWidget {
           // Stepper indicator
           GeneticsWizardStepper(
             currentStep: wizardStep,
-            hasSelections: hasSelections,
+            canAdvance: canAdvance,
             onStepTap: (step) {
-              if (step <= wizardStep || hasSelections) {
+              if (step <= wizardStep || canAdvance) {
                 ref.read(wizardStepProvider.notifier).state = step;
               }
             },
@@ -121,6 +122,7 @@ class GeneticsCalculatorScreen extends ConsumerWidget {
       bottomNavigationBar: _WizardNavBar(
         currentStep: wizardStep,
         hasSelections: hasSelections,
+        canAdvance: canAdvance,
       ),
     );
   }
@@ -164,8 +166,13 @@ class GeneticsCalculatorScreen extends ConsumerWidget {
 class _WizardNavBar extends ConsumerWidget {
   final int currentStep;
   final bool hasSelections;
+  final bool canAdvance;
 
-  const _WizardNavBar({required this.currentStep, required this.hasSelections});
+  const _WizardNavBar({
+    required this.currentStep,
+    required this.hasSelections,
+    required this.canAdvance,
+  });
 
   Future<void> _saveCalculation(BuildContext context, WidgetRef ref) async {
     final notes = await _showNoteDialog(context);
@@ -261,21 +268,16 @@ class _WizardNavBar extends ConsumerWidget {
             const Spacer(),
           const Spacer(),
           if (currentStep < 2)
-            FilledButton(
-              onPressed: hasSelections
+            FilledButton.icon(
+              onPressed: canAdvance
                   ? () {
                       ref.read(wizardStepProvider.notifier).state =
                           currentStep + 1;
                     }
                   : null,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text('genetics.next'.tr()),
-                  const SizedBox(width: AppSpacing.xs),
-                  const Icon(LucideIcons.chevronRight, size: 18),
-                ],
-              ),
+              iconAlignment: IconAlignment.end,
+              icon: const Icon(LucideIcons.chevronRight, size: 18),
+              label: Text('genetics.next'.tr()),
             )
           else if (hasSelections)
             FilledButton.icon(
