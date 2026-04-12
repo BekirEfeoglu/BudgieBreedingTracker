@@ -22,6 +22,7 @@
     "yes": "Evet",
     "no": "Hayır",
     "clear": "Temizle",
+    "days": "gün",
     "close": "Kapat",
     "copy": "Kopyala",
     "copied": "Panoya kopyalandı",
@@ -1533,7 +1534,9 @@
     "ai_select_bird_optional": "Kuş Seç (Opsiyonel)",
     "ai_select_bird_hint": "Kayıtlı kuşun bilgileri otomatik eklenir",
     "ai_select_father": "Baba seç...",
-    "ai_select_mother": "Anne seç..."
+    "ai_select_mother": "Anne seç...",
+    "ai_tags_label": "Etiketler",
+    "ai_bird_info_label": "Kuş bilgisi"
   },
   "admin": {
     "panel_title": "Admin Paneli",

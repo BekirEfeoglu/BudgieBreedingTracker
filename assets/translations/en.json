@@ -22,6 +22,7 @@
     "yes": "Yes",
     "no": "No",
     "clear": "Clear",
+    "days": "days",
     "close": "Close",
     "copy": "Copy",
     "copied": "Copied to clipboard",
@@ -1533,7 +1534,9 @@
     "ai_select_bird_optional": "Select Bird (Optional)",
     "ai_select_bird_hint": "Registered bird info will be added automatically",
     "ai_select_father": "Select father...",
-    "ai_select_mother": "Select mother..."
+    "ai_select_mother": "Select mother...",
+    "ai_tags_label": "Tags",
+    "ai_bird_info_label": "Bird info"
   },
   "admin": {
     "panel_title": "Admin Panel",

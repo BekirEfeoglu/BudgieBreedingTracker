@@ -22,6 +22,7 @@
     "yes": "Ja",
     "no": "Nein",
     "clear": "Löschen",
+    "days": "Tage",
     "close": "Schließen",
     "copy": "Kopieren",
     "copied": "In die Zwischenablage kopiert",
@@ -1533,7 +1534,9 @@
     "ai_select_bird_optional": "Vogel auswählen (Optional)",
     "ai_select_bird_hint": "Registrierte Vogelinfos werden automatisch hinzugefügt",
     "ai_select_father": "Vater auswählen...",
-    "ai_select_mother": "Mutter auswählen..."
+    "ai_select_mother": "Mutter auswählen...",
+    "ai_tags_label": "Tags",
+    "ai_bird_info_label": "Vogelinfo"
   },
   "admin": {
     "panel_title": "Admin-Panel",
