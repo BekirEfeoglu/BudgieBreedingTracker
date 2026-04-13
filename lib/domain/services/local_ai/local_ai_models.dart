@@ -367,13 +367,20 @@ String _inferFromEvidence({
   }
 
   // Pale/white body + blue series + unknown pattern → likely spangle DF or dilute
-  final lowerBody = bodyColor.toLowerCase();
+  // Strip diacritics so 'açık'/'acik', 'seyreltilmiş'/'seyreltilmis' etc. match.
+  final lowerBody = _stripDiacritics(bodyColor.toLowerCase());
   final isPaleBody = lowerBody.contains('beyaz') ||
       lowerBody.contains('white') ||
-      lowerBody.contains('açık') ||
+      lowerBody.contains('acik') ||
       lowerBody.contains('soluk') ||
       lowerBody.contains('light') ||
-      lowerBody.contains('pale');
+      lowerBody.contains('pale') ||
+      lowerBody.contains('krem') ||
+      lowerBody.contains('cream') ||
+      lowerBody.contains('dilute') ||
+      lowerBody.contains('seyreltilmis') ||
+      lowerBody.contains('faded') ||
+      lowerBody.contains('washed');
 
   if (isPaleBody && baseSeries == 'blue') {
     // Check eye color for ino vs non-ino
@@ -402,9 +409,10 @@ bool _isInoMutation(String mutation) {
 
 /// Returns true if the eye color description indicates red/pink eyes.
 bool _hasRedPinkEyes(String eyeColor) {
-  final lower = eyeColor.toLowerCase();
+  final lower = _stripDiacritics(eyeColor.toLowerCase());
   const redPinkTokens = [
-    'red', 'pink', 'kırmızı', 'kirmizi', 'pembe', 'ruby', 'rot', 'rosa',
+    'red', 'pink', 'kirmizi', 'pembe', 'ruby', 'rot', 'rosa',
+    'kizil', 'rosy', 'crimson', 'scarlet', 'magenta',
   ];
   return redPinkTokens.any(lower.contains);
 }
@@ -537,12 +545,14 @@ List<String> _stringList(dynamic value) {
 }
 
 String _normalizeToken(String? value) {
-  final normalized = value?.trim().toLowerCase() ?? 'unknown';
+  final raw = value?.trim().toLowerCase() ?? 'unknown';
+  // Strip Turkish diacritics for robust matching.
+  final normalized = _stripDiacritics(raw);
   return switch (normalized) {
-    'dişi' || 'disi' => 'disi',
-    'düşük' || 'dusuk' || 'düsük' => 'dusuk',
-    'yüksek' || 'yuksek' => 'yuksek',
-    'yesil' || 'yeşil' => 'green',
+    'disi' => 'disi',
+    'dusuk' || 'dusuk' => 'dusuk',
+    'yuksek' => 'yuksek',
+    'yesil' => 'green',
     'mavi' => 'blue',
     'normal desen' => 'normal',
     'erkek' => 'erkek',
@@ -550,4 +560,20 @@ String _normalizeToken(String? value) {
     'orta' => 'orta',
     _ => normalized,
   };
+}
+
+/// Strips Turkish diacritics so that 'açık' == 'acik', 'düşük' == 'dusuk', etc.
+String _stripDiacritics(String input) {
+  const map = {
+    'ş': 's', 'ç': 'c', 'ğ': 'g', 'ı': 'i', 'ö': 'o', 'ü': 'u',
+    'İ': 'i', 'Ş': 's', 'Ç': 'c', 'Ğ': 'g', 'Ö': 'o', 'Ü': 'u',
+    // Common model-output characters
+    'é': 'e', 'è': 'e', 'ê': 'e', 'ä': 'a', 'â': 'a',
+  };
+  final buffer = StringBuffer();
+  for (var i = 0; i < input.length; i++) {
+    final c = input[i];
+    buffer.write(map[c] ?? c);
+  }
+  return buffer.toString();
 }

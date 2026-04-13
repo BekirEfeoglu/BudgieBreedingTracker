@@ -734,5 +734,143 @@ Thanks.
         );
       }
     });
+
+    test('diacritics-stripped eye color: kirmizi without accent detects red', () {
+      final insight = LocalAiMutationInsight.fromJson({
+        'predicted_mutation': 'albino',
+        'confidence': 'high',
+        'base_series': 'blue',
+        'pattern_family': 'ino',
+        'body_color': 'beyaz',
+        'wing_pattern': '',
+        'eye_color': 'kirmizi',
+        'rationale': 'test',
+        'secondary_possibilities': <String>[],
+      });
+
+      // kirmizi (without accent) should still match red → albino preserved
+      expect(insight.predictedMutation, 'albino');
+    });
+
+    test('diacritics-stripped eye color: crimson detects red', () {
+      final insight = LocalAiMutationInsight.fromJson({
+        'predicted_mutation': 'lutino',
+        'confidence': 'high',
+        'base_series': 'green',
+        'pattern_family': 'ino',
+        'body_color': 'sarı',
+        'wing_pattern': '',
+        'eye_color': 'crimson',
+        'rationale': 'test',
+        'secondary_possibilities': <String>[],
+      });
+
+      expect(insight.predictedMutation, 'lutino');
+    });
+
+    test('empty eye_color preserves ino prediction', () {
+      final insight = LocalAiMutationInsight.fromJson({
+        'predicted_mutation': 'albino',
+        'confidence': 'high',
+        'base_series': 'blue',
+        'pattern_family': 'ino',
+        'body_color': 'beyaz',
+        'wing_pattern': '',
+        'eye_color': '',
+        'rationale': 'test',
+        'secondary_possibilities': <String>[],
+      });
+
+      // Empty eye_color → no evidence to contradict → ino preserved
+      expect(insight.predictedMutation, 'albino');
+      expect(insight.confidence, LocalAiConfidence.low);
+    });
+
+    test('accent-stripped body color infers pale body correctly', () {
+      final insight = LocalAiMutationInsight.fromJson({
+        'predicted_mutation': 'unknown',
+        'confidence': 'medium',
+        'base_series': 'blue',
+        'pattern_family': 'unknown',
+        'body_color': 'acik mavi',
+        'wing_pattern': '',
+        'eye_color': 'koyu',
+        'rationale': 'test',
+        'secondary_possibilities': <String>[],
+      });
+
+      // 'acik' (without accent) should match pale → infer spangle_blue
+      expect(insight.predictedMutation, 'spangle_blue');
+    });
+
+    test('cream body color infers pale body correctly', () {
+      final insight = LocalAiMutationInsight.fromJson({
+        'predicted_mutation': 'unknown',
+        'confidence': 'medium',
+        'base_series': 'green',
+        'pattern_family': 'unknown',
+        'body_color': 'krem sarı',
+        'wing_pattern': '',
+        'eye_color': 'kırmızı',
+        'rationale': 'test',
+        'secondary_possibilities': <String>[],
+      });
+
+      expect(insight.predictedMutation, 'lutino');
+    });
+
+    test('secondary with series mismatch is filtered', () {
+      final insight = LocalAiMutationInsight.fromJson({
+        'predicted_mutation': 'normal_skyblue',
+        'confidence': 'high',
+        'base_series': 'blue',
+        'pattern_family': 'normal',
+        'body_color': 'mavi',
+        'wing_pattern': 'normal',
+        'eye_color': 'koyu',
+        'rationale': 'test',
+        'secondary_possibilities': ['violet_green', 'normal_cobalt'],
+      });
+
+      // violet_green is green-series → filtered when base_series is blue
+      expect(insight.secondaryPossibilities, isNot(contains('violet_green')));
+      // normal_cobalt is blue-series + normal family → consistent → kept
+      expect(insight.secondaryPossibilities, contains('normal_cobalt'));
+    });
+
+    test('Turkish confidence variants normalize correctly', () {
+      for (final pair in [
+        ('düşük', LocalAiConfidence.low),
+        ('dusuk', LocalAiConfidence.low),
+        ('orta', LocalAiConfidence.medium),
+        ('yüksek', LocalAiConfidence.high),
+        ('yuksek', LocalAiConfidence.high),
+        ('HIGH', LocalAiConfidence.high),
+        ('Medium', LocalAiConfidence.medium),
+      ]) {
+        expect(
+          LocalAiConfidence.fromRaw(pair.$1),
+          pair.$2,
+          reason: '"${pair.$1}" should normalize to ${pair.$2}',
+        );
+      }
+    });
+
+    test('Turkish sex variants normalize correctly', () {
+      for (final pair in [
+        ('dişi', LocalAiSexPrediction.female),
+        ('disi', LocalAiSexPrediction.female),
+        ('erkek', LocalAiSexPrediction.male),
+        ('belirsiz', LocalAiSexPrediction.uncertain),
+        ('FEMALE', LocalAiSexPrediction.female),
+        ('Male', LocalAiSexPrediction.male),
+      ]) {
+        expect(
+          LocalAiSexPrediction.fromRaw(pair.$1),
+          pair.$2,
+          reason: '"${pair.$1}" should normalize to ${pair.$2}',
+        );
+      }
+    });
   });
 }

@@ -522,12 +522,17 @@ Budgerigar breeding genetics assistant. JSON only. IMPORTANT: ALL text values MU
 
 Output: {"summary":"...","confidence":"low|medium|high","likely_mutations":["phenotype descriptions"],"matched_genetics":["id from allowed list"],"sex_linked_note":"...","warnings":["..."],"next_checks":["..."]}
 
+Confidence scale:
+- high: Both parents fully specified, calculator results clear, no ambiguous alleles.
+- medium: One parent has missing alleles, or sex-linked inheritance creates uncertainty.
+- low: Major data missing, conflicting evidence, or unable to verify inheritance pattern.
+
 Rules:
-- Calculator summary is the source of truth; complement it, don't contradict.
+- Calculator summary is the source of truth; add biological context but never contradict calculator probabilities.
 - matched_genetics: only IDs from the allowed list.
 - likely_mutations: phenotype-level outcomes, not raw IDs.
 - warnings: ambiguous genes, sex-linked risks, missing evidence.
-- If a parent genotype is empty, say the pair data is incomplete.
+- If a parent genotype is empty, say the pair data is incomplete and set confidence to low.
 - Lower confidence instead of inventing facts. Keep items short.''';
 
   static String _buildGeneticsPrompt({
@@ -590,6 +595,13 @@ Budgerigar sex estimation assistant. JSON only. IMPORTANT: ALL text values MUST 
 
 Output: {"predicted_sex":"male|female|uncertain","confidence":"low|medium|high","rationale":"...","indicators":["..."],"next_checks":["..."]}
 
+Confidence scale:
+- high: Clear cere color consistent with age, no masking mutation.
+- medium: Cere color suggests one sex but age or mutation adds doubt.
+- low: Juvenile, ino/recessive pied masking, or single weak indicator.
+
+Conflict resolution: When indicators disagree (e.g., cere suggests male but behaviour suggests female), predict "uncertain" and list conflicting evidence in indicators.
+
 Rules:
 - Consider cere color, age, juvenile head bars, mutation effects, breeder cues.
 - Lutino, albino, recessive pied, juveniles → lower confidence.
@@ -601,10 +613,17 @@ Budgerigar sex estimation assistant with cere photo. JSON only. IMPORTANT: ALL t
 
 Output: {"predicted_sex":"male|female|uncertain","confidence":"low|medium|high","rationale":"...","indicators":["..."],"next_checks":["..."]}
 
+Confidence scale:
+- high: Cere clearly visible in photo, color unambiguous, adult bird, no masking mutation.
+- medium: Cere partially visible or mutation may affect color.
+- low: Blurry photo, juvenile, ino/recessive pied masking, or photo+text conflict.
+
+Conflict resolution: Photo evidence outweighs text when they conflict. When photo is unclear and text is ambiguous, predict "uncertain".
+
 Rules:
 - A cere (nostril area) close-up photo is attached. Analyze cere color and texture first.
 - Male cere: bright blue, purple-blue, or pink (juveniles). Female cere: brown, crusty tan, pale white-blue, or beige.
-- Combine photo cere analysis with the text observations. Photo evidence outweighs text when they conflict.
+- Combine photo cere analysis with the text observations.
 - Consider age, juvenile head bars, mutation effects (lutino/albino/recessive pied mask cere color).
 - Lutino, albino, recessive pied, juveniles → lower confidence.
 - Weak/conflicting evidence → "uncertain". Keep items short.
@@ -618,6 +637,13 @@ Etiketler: normal_light_green, normal_dark_green, normal_olive, normal_skyblue, 
 NOT: spangle_blue etiketi hem SF hem DF spangle blue için kullanılır.
 
 Çıktı: {"predicted_mutation":"etiket","confidence":"low|medium|high","base_series":"green|blue|lutino|albino|unknown","pattern_family":"normal|spangle|pied|opaline|cinnamon|clearwing|greywing|dilute|clearbody|yellowface|violet|ino|grey|fallow|lacewing|slate|unknown","body_color":"...","wing_pattern":"...","eye_color":"...","rationale":"...","secondary_possibilities":["etiket","etiket"]}
+
+Güven seviyesi:
+- high: Vücut rengi, kanat deseni ve göz rengi net görünüyor ve tutarlı.
+- medium: 2/3 özellik görünüyor veya hafif belirsizlik var.
+- low: 1 veya daha az özellik net, fotoğraf bulanık, veya çelişkili kanıtlar.
+
+rationale alanı ZORUNLUDUR. Hangi adımda hangi gözlemi yaptığını ve sonuca nasıl ulaştığını açıkla.
 
 ===== KRİTİK KURAL: GÖZ RENGİ GEÇİDİ =====
 
@@ -714,7 +740,8 @@ Dominant Pied ↔ Recessive Pied: Dominant = iris halkası var. Recessive = iris
 - secondary_possibilities: maks 3, "unknown" dahil etme.
 - Gri mutasyonu gri ton ekler: yeşil→gri-yeşil, mavi→gri.
 - Birden fazla mutasyon birleşebilir. En baskın görsel mutasyonu birincil seç.
-- rationale alanında hangi adımdan hangi sonuca ulaştığını açıkla.''';
+- Overlay mutasyonlar (violet, grey, yellowface) temel desenle birleşir. pattern_family'de temel deseni yaz (opaline, spangle vb.), overlay'i secondary_possibilities'e ekle.
+- rationale alanı ZORUNLUDUR. Hangi adımda hangi gözlemi yaptığını açıkla.''';
 
   static String _formatGenotype(ParentGenotype genotype) {
     if (genotype.mutations.isEmpty) return 'none selected';
