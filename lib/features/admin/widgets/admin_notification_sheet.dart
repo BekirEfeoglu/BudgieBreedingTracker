@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_spacing.dart';
+import '../../../core/utils/logger.dart';
 import '../providers/admin_actions_provider.dart';
 
 /// Shows a bottom sheet for sending an admin notification.
@@ -86,6 +87,7 @@ class _NotificationSheetContentState extends ConsumerState<_NotificationSheetCon
         if (mounted) setState(() => _isLoading = false);
       }
     } catch (e) {
+      AppLogger.error('_NotificationSheetContent._send', e, StackTrace.current);
       if (!mounted) return;
       setState(() => _isLoading = false);
       ScaffoldMessenger.of(context).showSnackBar(

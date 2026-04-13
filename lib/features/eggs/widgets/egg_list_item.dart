@@ -8,7 +8,7 @@ import 'package:budgie_breeding_tracker/core/enums/egg_enums.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
-import 'package:budgie_breeding_tracker/features/settings/providers/settings_providers.dart';
+import 'package:budgie_breeding_tracker/data/providers/date_format_providers.dart';
 
 import 'egg_status_chip.dart';
 import 'egg_status_utils.dart';

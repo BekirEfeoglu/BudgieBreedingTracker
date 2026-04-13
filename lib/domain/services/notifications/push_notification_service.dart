@@ -23,9 +23,13 @@ class PushNotificationService {
     required FcmTokenRemoteSource tokenRemoteSource,
     required NotificationService localNotificationService,
     FirebaseMessaging? messaging,
+    @visibleForTesting bool? overridePlatformSupport,
+    @visibleForTesting bool overrideFirebaseReady = false,
   }) : _tokenRemoteSource = tokenRemoteSource,
        _localNotificationService = localNotificationService,
-       _messaging = messaging;
+       _messaging = messaging,
+       _overridePlatformSupport = overridePlatformSupport,
+       _firebaseReady = overrideFirebaseReady;
 
   final FcmTokenRemoteSource _tokenRemoteSource;
   final NotificationService _localNotificationService;
@@ -35,7 +39,8 @@ class PushNotificationService {
   StreamSubscription<RemoteMessage>? _messageOpenSub;
   StreamSubscription<RemoteMessage>? _foregroundMessageSub;
 
-  bool _firebaseReady = false;
+  final bool? _overridePlatformSupport;
+  bool _firebaseReady;
   bool _listenersBound = false;
 
   Future<void> init({required String userId}) async {
@@ -120,7 +125,8 @@ class PushNotificationService {
     _listenersBound = false;
   }
 
-  bool get _supportsPushNotifications => !kIsWeb && (Platform.isAndroid || Platform.isIOS);
+  bool get _supportsPushNotifications =>
+      _overridePlatformSupport ?? (!kIsWeb && (Platform.isAndroid || Platform.isIOS));
 
   FirebaseMessaging get _messagingInstance =>
       _messaging ??= FirebaseMessaging.instance;

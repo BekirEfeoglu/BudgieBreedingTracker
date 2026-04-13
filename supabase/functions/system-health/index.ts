@@ -1,5 +1,8 @@
 import { getCorsHeaders, corsPreflightResponse } from "../_shared/cors.ts";
-import { getAuthenticatedUserId, createSupabaseAdmin } from "../_shared/auth.ts";
+import { getAuthenticatedUserId, requireAdminRole, createSupabaseAdmin } from "../_shared/auth.ts";
+import { createRateLimiter, rateLimitedResponse } from "../_shared/rate-limit.ts";
+
+const rateLimiter = createRateLimiter({ windowMs: 60_000, maxCalls: 10 });
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return corsPreflightResponse(req);
@@ -22,21 +25,18 @@ Deno.serve(async (req) => {
     );
   }
 
-  const supabase = createSupabaseAdmin();
+  if (!rateLimiter.check(userId)) return rateLimitedResponse(headers);
 
-  // Verify caller is admin/founder
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", userId)
-    .single();
-
-  if (!profile || !["admin", "founder"].includes(profile.role)) {
+  // Verify caller is admin/founder using shared auth utility
+  const isAdmin = await requireAdminRole(userId);
+  if (!isAdmin) {
     return new Response(
       JSON.stringify({ error: "Forbidden" }),
       { status: 403, headers },
     );
   }
+
+  const supabase = createSupabaseAdmin();
 
   try {
     const checks: Record<string, string> = {};
@@ -83,6 +83,7 @@ Deno.serve(async (req) => {
       { status: 200, headers },
     );
   } catch (_error) {
+    console.error("[system-health] Error:", _error);
     return new Response(
       JSON.stringify({
         status: "error",

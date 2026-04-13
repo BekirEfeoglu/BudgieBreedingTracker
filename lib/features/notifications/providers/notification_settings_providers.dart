@@ -11,7 +11,7 @@ import 'package:budgie_breeding_tracker/domain/services/notifications/notificati
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_scheduler.dart';
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_service.dart';
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_toggle_settings.dart';
-import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
+import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 
 // Re-export so existing importers still see NotificationToggleSettings.
 export 'package:budgie_breeding_tracker/domain/services/notifications/notification_toggle_settings.dart';

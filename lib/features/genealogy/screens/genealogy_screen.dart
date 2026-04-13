@@ -10,14 +10,14 @@ import 'package:budgie_breeding_tracker/core/widgets/empty_state.dart';
 import 'package:budgie_breeding_tracker/core/widgets/error_state.dart';
 import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
-import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
-import 'package:budgie_breeding_tracker/features/birds/providers/bird_providers.dart';
-import 'package:budgie_breeding_tracker/features/chicks/providers/chick_providers.dart';
+import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
+import 'package:budgie_breeding_tracker/data/providers/bird_stream_providers.dart';
+import 'package:budgie_breeding_tracker/data/providers/chick_stream_providers.dart';
 import 'package:budgie_breeding_tracker/features/genealogy/providers/genealogy_providers.dart';
 import 'package:budgie_breeding_tracker/features/genealogy/widgets/depth_chip.dart';
 import 'package:budgie_breeding_tracker/features/genealogy/widgets/entity_selector.dart';
 import 'package:budgie_breeding_tracker/features/genealogy/widgets/tree_content.dart';
-import 'package:budgie_breeding_tracker/features/notifications/providers/action_feedback_providers.dart';
+import 'package:budgie_breeding_tracker/data/providers/action_feedback_providers.dart';
 
 /// Screen with a bird/chick selector, search, bidirectional family tree,
 /// family stats, and offspring section.

@@ -78,7 +78,7 @@ final monitoringSnapshotsProvider =
         .from(SupabaseConstants.dbMonitoringSnapshotsTable)
         .select('snapshot_type, data, created_at')
         .gte('created_at',
-            DateTime.now().subtract(const Duration(hours: 24)).toIso8601String())
+            DateTime.now().subtract(const Duration(hours: 24)).toUtc().toIso8601String())
         .order('created_at', ascending: false)
         .limit(10);
 

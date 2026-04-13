@@ -1250,8 +1250,6 @@
     "reset": "Sıfırla",
     "sex_linked": "Cinsiyete Bağlı",
     "mutation_normal": "Normal/Yabani Tip",
-    "mutation_lutino": "Lutino",
-    "mutation_albino": "Albino",
     "mutation_blue": "Mavi",
     "mutation_green": "Yeşil",
     "mutation_clearwing": "Açık Kanat",
@@ -1560,7 +1558,8 @@
     "series_grey": "Gri seri",
     "ai_recommended_models": "Önerilen Modeller",
     "ai_model_free": "Ücretsiz",
-    "ai_model_paid": "Ücretli"
+    "ai_model_paid": "Ücretli",
+    "ino_warning": "Bu tahmin kırmızı/pembe göz rengine bağlıdır. AI modelleri göz rengini güvenilir şekilde ayırt edemeyebilir. Koyu gözlü benzer kuşlar: DF Spangle, Dominant Pied, Cinnamon, Dilute, Clearbody."
   },
   "admin": {
     "panel_title": "Admin Paneli",
@@ -1896,7 +1895,9 @@
     "protected_user_error": "Kurucu/Admin kullanıcılar üzerinde bu işlem yapılamaz.",
     "user_not_found": "Kullanıcı bulunamadı",
     "degraded_services": "Sorunlu servisler",
-    "system_status_alert": "Sistem durumu"
+    "system_status_alert": "Sistem durumu",
+    "activity_items": "{} öğe",
+    "dismiss_event_confirm": "Bu güvenlik olayını kapatmak istediğinizden emin misiniz?"
   },
   "user_guide": {
     "title": "Kullanım Kılavuzu",

@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/data/models/profile_model.dart';
-import 'package:budgie_breeding_tracker/features/profile/providers/profile_providers.dart';
+import 'package:budgie_breeding_tracker/data/providers/profile_stream_providers.dart';
 
 /// Gradient welcome header with time-based greeting and user name.
 class WelcomeHeader extends ConsumerStatefulWidget {

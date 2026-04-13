@@ -4,7 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/error_state.dart' as app;
-import '../../../features/breeding/providers/breeding_providers.dart';
+import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
+import 'package:budgie_breeding_tracker/data/providers/breeding_stream_providers.dart';
 import '../providers/messaging_providers.dart';
 import '../providers/messaging_realtime_providers.dart';
 import '../widgets/message_bubble.dart';

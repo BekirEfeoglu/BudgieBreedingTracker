@@ -1,9 +1,12 @@
 import { corsPreflightResponse, getCorsHeaders } from "../_shared/cors.ts";
 import { getAuthenticatedUserId } from "../_shared/auth.ts";
+import { createRateLimiter, rateLimitedResponse } from "../_shared/rate-limit.ts";
 import {
   moderateImageWithOpenAI,
   validateImageInput,
 } from "./moderation.ts";
+
+const rateLimiter = createRateLimiter({ windowMs: 60_000, maxCalls: 10 });
 
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return corsPreflightResponse(req);
@@ -18,6 +21,8 @@ Deno.serve(async (req: Request) => {
         { status: 401, headers },
       );
     }
+
+    if (!rateLimiter.check(userId)) return rateLimitedResponse(headers);
 
     let imageBase64: string | undefined;
     let mimeType: string | undefined;

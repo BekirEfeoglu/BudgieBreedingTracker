@@ -3,10 +3,10 @@ import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/chick_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/egg_enums.dart';
 import 'package:budgie_breeding_tracker/data/models/statistics_models.dart';
-import 'package:budgie_breeding_tracker/features/birds/providers/bird_providers.dart';
-import 'package:budgie_breeding_tracker/features/chicks/providers/chick_providers.dart';
-import 'package:budgie_breeding_tracker/features/eggs/providers/egg_providers.dart';
-import 'package:budgie_breeding_tracker/features/health_records/providers/health_record_providers.dart';
+import 'package:budgie_breeding_tracker/data/providers/bird_stream_providers.dart';
+import 'package:budgie_breeding_tracker/data/providers/chick_stream_providers.dart';
+import 'package:budgie_breeding_tracker/data/providers/egg_stream_providers.dart';
+import 'package:budgie_breeding_tracker/data/providers/health_record_stream_providers.dart';
 import 'package:budgie_breeding_tracker/features/home/providers/home_providers.dart';
 
 /// Summary statistics combining COUNT providers and filtered streams.

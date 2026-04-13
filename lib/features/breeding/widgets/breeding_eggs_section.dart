@@ -16,7 +16,7 @@ import 'package:budgie_breeding_tracker/features/eggs/widgets/egg_status_update_
 import 'package:budgie_breeding_tracker/features/eggs/widgets/egg_summary_row.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_detail_providers.dart';
 import 'package:budgie_breeding_tracker/features/eggs/providers/egg_providers.dart';
-import 'package:budgie_breeding_tracker/features/notifications/providers/action_feedback_providers.dart';
+import 'package:budgie_breeding_tracker/data/providers/action_feedback_providers.dart';
 
 class BreedingEggsSection extends ConsumerWidget {
   final String incubationId;

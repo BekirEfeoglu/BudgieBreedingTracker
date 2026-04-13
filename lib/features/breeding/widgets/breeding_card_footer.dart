@@ -6,7 +6,7 @@ import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
 import 'package:budgie_breeding_tracker/data/models/incubation_model.dart';
-import 'package:budgie_breeding_tracker/features/settings/providers/settings_providers.dart';
+import 'package:budgie_breeding_tracker/data/providers/date_format_providers.dart';
 
 /// Footer section of the breeding card showing dates and remaining days.
 class BreedingCardFooter extends ConsumerWidget {

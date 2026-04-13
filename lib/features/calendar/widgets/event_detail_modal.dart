@@ -12,7 +12,7 @@ import 'package:budgie_breeding_tracker/core/widgets/buttons/primary_button.dart
 import 'package:budgie_breeding_tracker/data/models/event_model.dart';
 import 'package:budgie_breeding_tracker/features/calendar/widgets/event_card.dart';
 import 'package:budgie_breeding_tracker/features/chicks/providers/chick_providers.dart';
-import 'package:budgie_breeding_tracker/features/notifications/providers/action_feedback_providers.dart';
+import 'package:budgie_breeding_tracker/data/providers/action_feedback_providers.dart';
 
 /// Shows an event detail bottom sheet.
 Future<void> showEventDetailModal(

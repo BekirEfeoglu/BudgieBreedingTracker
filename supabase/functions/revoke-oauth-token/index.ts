@@ -1,5 +1,8 @@
 import { getCorsHeaders, corsPreflightResponse } from "../_shared/cors.ts";
 import { getAuthenticatedUserId } from "../_shared/auth.ts";
+import { createRateLimiter, rateLimitedResponse } from "../_shared/rate-limit.ts";
+
+const rateLimiter = createRateLimiter({ windowMs: 60_000, maxCalls: 5 });
 
 const GOOGLE_REVOKE_URL = "https://oauth2.googleapis.com/revoke";
 const APPLE_REVOKE_URL = "https://appleid.apple.com/auth/revoke";
@@ -31,6 +34,8 @@ Deno.serve(async (req: Request) => {
         { status: 401, headers },
       );
     }
+
+    if (!rateLimiter.check(userId)) return rateLimitedResponse(headers);
 
     const body: RevokeRequest = await req.json();
     const { provider, provider_token, provider_refresh_token } = body;
@@ -92,7 +97,7 @@ async function revokeGoogle(
   const errorBody = await res.text();
   console.warn(`[revoke-oauth-token] Google revoke failed (${res.status}): ${errorBody}`);
   return new Response(
-    JSON.stringify({ success: false, provider: "google", status: res.status, error: errorBody }),
+    JSON.stringify({ success: false, provider: "google", error: "revocation_failed" }),
     { status: 200, headers },
   );
 }
@@ -137,7 +142,7 @@ async function revokeApple(
   const errorBody = await res.text();
   console.warn(`[revoke-oauth-token] Apple revoke failed (${res.status}): ${errorBody}`);
   return new Response(
-    JSON.stringify({ success: false, provider: "apple", status: res.status, error: errorBody }),
+    JSON.stringify({ success: false, provider: "apple", error: "revocation_failed" }),
     { status: 200, headers },
   );
 }

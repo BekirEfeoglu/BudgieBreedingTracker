@@ -5,7 +5,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/domain/services/incubation/incubation_milestone.dart';
-import 'package:budgie_breeding_tracker/features/settings/providers/settings_providers.dart';
+import 'package:budgie_breeding_tracker/data/providers/date_format_providers.dart';
 
 /// Vertical timeline displaying incubation milestones.
 class MilestoneTimeline extends ConsumerWidget {

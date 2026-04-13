@@ -1,20 +1,36 @@
 # Chat Rules
 
 ## Response Language
-- Türkçe yanıt ver (kullanıcı tercihi)
-- Kod ve teknik terimler İngilizce kalabilir
+- Turkce yanit ver (kullanici tercihi)
+- Kod ve teknik terimler Ingilizce kalabilir
+- Commit mesajlari, PR basliklari, dokumantasyon Ingilizce
+
+## Response Style
+- Kisa ve oz — gereksiz aciklama yapma
+- Kod degisikliklerinden sonra ozet verme, diff yeterli
+- Soru sormadan once mevcut kodu oku ve anlama cabasi goster
+- Emin degilsen sor, tahminle ilerleme
 
 ## Post-Coding Suggestions
-Bir özellik implement edildikten sonra önerilerde bulun:
-- Test yazma
+Bir ozellik implement edildikten sonra onerilerde bulun:
+- Test yazma veya guncelleme
 - Performans optimizasyonu
-- Anti-pattern kontrolü
-- Quality script'leri çalıştırma
+- Anti-pattern kontrolu
+- Ilgili quality script'leri calistirma
 
-## Quality Gate Reminders
-İş tamamlandı demeden önce doğrula:
-- ✓ `flutter analyze` — 0 error
-- ✓ `flutter test` — tüm testler geçiyor
-- ✓ `check_l10n_sync.py` — 3 dil senkron
-- ✓ `verify_code_quality.py` — 0 ihlal
-- ✓ `verify_rules.py` — CLAUDE.md güncel
+## Task Completion
+Is tamamlandi demeden once kalite kapilarini calistir (bkz. ai-workflow.md § Quality Gates).
+
+## Debugging Approach
+- Hata mesajini tam oku, varsayimla hareket etme
+- Onceki basarili durumu kontrol et (git log, git diff)
+- Generated code sorunuysa once `build_runner build` calistir
+- Data flow'u izle: UI -> Provider -> Repository -> DAO/Remote
+- Tek seferde birden fazla seyi degistirme — izole test et
+
+## Code Review Feedback
+- Degisikligin amacini ve etkisini acikla
+- Anti-pattern tespit edersen spesifik kural numarasini belirt (CLAUDE.md § 24 rules)
+- Alternatif onerirken neden daha iyi oldugunu goster
+
+> **Ilgili**: ai-workflow.md (quality gates, prohibited actions), coding-standards.md (conventions)

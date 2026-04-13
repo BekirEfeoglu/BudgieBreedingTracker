@@ -58,8 +58,8 @@ Future<void> saveBackupFile(
         ),
       );
     }
-  } catch (e) {
-    AppLogger.error('saveBackupFile', e, StackTrace.current);
+  } catch (e, st) {
+    AppLogger.error('saveBackupFile', e, st);
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

@@ -13,15 +13,16 @@ import 'package:budgie_breeding_tracker/core/widgets/sort_bottom_sheet.dart';
 import 'package:budgie_breeding_tracker/core/widgets/buttons/fab_button.dart';
 import 'package:budgie_breeding_tracker/core/widgets/ad_banner_widget.dart';
 import 'package:budgie_breeding_tracker/domain/services/ads/ad_service.dart';
-import 'package:budgie_breeding_tracker/features/premium/providers/premium_providers.dart';
+import 'package:budgie_breeding_tracker/data/providers/premium_shared_providers.dart';
 import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_providers.dart';
-import 'package:budgie_breeding_tracker/features/eggs/providers/egg_providers.dart';
+import 'package:budgie_breeding_tracker/data/providers/egg_stream_providers.dart';
 import 'package:budgie_breeding_tracker/features/breeding/widgets/breeding_card.dart';
 import 'package:budgie_breeding_tracker/features/breeding/widgets/breeding_filter_bar.dart';
 import 'package:budgie_breeding_tracker/features/breeding/widgets/breeding_search_bar.dart';
 import 'package:budgie_breeding_tracker/features/notifications/widgets/notification_bell_button.dart';
 import 'package:budgie_breeding_tracker/features/profile/widgets/profile_menu_button.dart';
+import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 
 /// Main screen listing all breeding pairs with filter and search support.
 class BreedingListScreen extends ConsumerWidget {

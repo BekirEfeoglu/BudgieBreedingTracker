@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/constants/supabase_constants.dart';
 import '../../../core/enums/admin_enums.dart';
+import '../../../core/utils/logger.dart';
 import '../../auth/providers/auth_providers.dart';
 import '../constants/admin_constants.dart';
 import 'admin_auth_utils.dart';
@@ -132,7 +133,8 @@ final topUsersProvider = FutureProvider<List<TopUser>>((ref) async {
       pairsCount: (row['pairs_count'] as num?)?.toInt() ?? 0,
       totalEntities: (row['total_entities'] as num?)?.toInt() ?? 0,
     )).toList();
-  } catch (_) {
+  } catch (e, st) {
+    AppLogger.error('topUsersProvider RPC failed, using fallback', e, st);
     // Fallback: fetch all birds and pairs, group by user_id client-side
     // Avoids N+1 by fetching two flat lists instead of per-user queries
     final (birdsResult, pairsResult, profilesResult) = await (

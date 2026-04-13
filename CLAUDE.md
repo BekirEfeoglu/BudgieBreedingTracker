@@ -74,8 +74,8 @@ scripts/test_verify_rules.py            # Tests for verify_rules.py
 
 | Metric | Value |
 | --- | --- |
-| Source files (lib/) | 842 Dart files |
-| Test files (test/) | 811 test files, 9,857+ individual tests |
+| Source files (lib/) | 855 Dart files |
+| Test files (test/) | 820 test files, 10,093+ individual tests |
 | Feature modules | 23 |
 | Drift tables / DAOs / Mappers | 20 each |
 | Repositories | 23 entity + base + sync_metadata |
@@ -87,7 +87,7 @@ scripts/test_verify_rules.py            # Tests for verify_rules.py
 | Shared widgets | 20 (15 root + 2 buttons + 2 cards + 1 dialog) |
 | Enum files | 15 |
 | Supabase constants | 106 (tables + buckets + columns) |
-| L10n keys | ~2,604 per language, 39 categories |
+| L10n keys | ~2,607 per language, 39 categories |
 | DB schema version | 20 |
 
 ## CI/CD Pipeline
@@ -150,7 +150,7 @@ Config methods: `.env` + `--dart-define-from-file` (local) · GitHub Secrets (CI
 | `validate-free-tier-limit` | Free tier entity limit enforcement |
 
 ### Migrations
-115 SQL migration files in `supabase/migrations/`. Schema managed server-side; never modify RLS policies from client code.
+116 SQL migration files in `supabase/migrations/`. Schema managed server-side; never modify RLS policies from client code.
 
 ## Rules
 
@@ -158,19 +158,24 @@ Comprehensive rules in `.claude/rules/` (auto-loaded):
 
 | File | Scope |
 | --- | --- |
-| `architecture.md` | Tech stack, layers, folder structure, data flow, security, performance |
-| `data-layer.md` | Drift + Supabase + Repository + Sync + Storage + Cache |
-| `coding-standards.md` | Naming, 24 anti-patterns, Freezed/enum, icon API, file organization |
-| `providers.md` | Riverpod provider types, dependency chain, ref usage |
-| `ui-patterns.md` | Widget types, AsyncValue, forms, GoRouter routes (60), guards |
-| `localization.md` | easy_localization, key structure, 34 categories, sync workflow |
-| `testing.md` | Test patterns, mocking, golden tests, coverage |
-| `test-stability.md` | Test stability rules, pump strategy, 18 anti-patterns, resource cleanup |
-| `error-handling.md` | Error hierarchy, Sentry, retry/backoff, localized errors |
-| `new-feature-checklist.md` | Step-by-step guide for adding new features |
-| `git-rules.md` | Conventional commits, branch naming, PR workflow |
-| `ai-workflow.md` | Task approach, quality gates, prohibited actions |
-| `chat.md` | Response language (Turkish), post-coding suggestions |
+| `architecture.md` | Tech stack, layers, folder structure, data flow, offline-first, performance, dependency mgmt |
+| `data-layer.md` | Drift + Supabase + Repository + Sync strategy + Storage + Cache + migration guidelines |
+| `coding-standards.md` | Naming, Freezed/enum, icon API, file organization, extensions, async/await |
+| `providers.md` | Riverpod provider types, ref usage, AsyncNotifier, race conditions, error handling, keepAlive |
+| `ui-patterns.md` | Widget types, AsyncValue, forms, GoRouter, shared widgets, lists, dialogs |
+| `localization.md` | easy_localization, key structure, 39 categories, arg patterns, testing l10n |
+| `testing.md` | Test patterns, mocking, golden tests, coverage, naming conventions |
+| `test-stability.md` | Pump strategy, 18 anti-patterns, async patterns, resource cleanup |
+| `error-handling.md` | Error hierarchy, Sentry, retry/backoff, user-facing messages, logging |
+| `new-feature-checklist.md` | Full-stack entity addition, non-entity features, shared widgets |
+| `git-rules.md` | Conventional commits, branch naming, PR workflow (develop-first) |
+| `branch-workflow.md` | develop/main branch strategy, merge policy, hotfix exception |
+| `ai-workflow.md` | Quality gates (canonical), task approach, prohibited actions, investigation |
+| `chat.md` | Response language (Turkish), debugging approach, code review feedback |
+| `ci-actions.md` | GitHub Actions design, Dependabot, billing failures, deployment safety |
+| `release-ops.md` | Release channels, version bump, environment discipline, Supabase ops |
+| `security.md` | Auth, RLS, route guards, credentials, data protection, OAuth |
+| `performance.md` | Drift optimization, Riverpod rebuilds, widget perf, images, sync, startup |
 
 ## Critical Anti-Patterns (24 rules — must avoid)
 
@@ -276,7 +281,7 @@ Security:      lib/core/security/
 Preferences:   lib/data/local/preferences/
 EdgeFunctions: lib/data/remote/supabase/
 Edge Fn (SB):  supabase/functions/
-Migrations:    supabase/migrations/ (115 files)
+Migrations:    supabase/migrations/ (116 files)
 Scripts:       scripts/
 CI:            .github/workflows/ + codemagic.yaml
 ```

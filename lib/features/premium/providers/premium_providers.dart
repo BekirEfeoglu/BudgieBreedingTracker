@@ -12,8 +12,9 @@ import 'package:budgie_breeding_tracker/core/enums/subscription_enums.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/domain/services/payment/purchase_service.dart';
 import 'package:budgie_breeding_tracker/data/models/profile_model.dart';
-import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
-import 'package:budgie_breeding_tracker/features/profile/providers/profile_providers.dart';
+import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
+import 'package:budgie_breeding_tracker/data/providers/profile_stream_providers.dart';
+import 'package:budgie_breeding_tracker/data/remote/supabase/supabase_client.dart';
 
 part 'premium_notifier.dart';
 part 'premium_plan_utilities.dart';

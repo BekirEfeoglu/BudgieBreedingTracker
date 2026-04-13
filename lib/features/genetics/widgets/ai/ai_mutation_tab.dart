@@ -116,7 +116,7 @@ class _AiMutationTabState extends ConsumerState<AiMutationTab> {
       summary: result.rationale,
       bullets: [
         if (result.inoWarning.isNotEmpty)
-          '\u26A0\uFE0F ${result.inoWarning}',
+          '\u26A0\uFE0F ${result.inoWarning.tr()}',
         'genetics.local_ai_series_label'
             .tr(args: [_seriesLabel(result.baseSeries)]),
         'genetics.local_ai_pattern_label'

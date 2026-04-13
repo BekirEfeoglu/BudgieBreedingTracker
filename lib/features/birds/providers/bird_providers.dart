@@ -2,16 +2,10 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
-import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 
-/// All birds for a user (live stream).
-final birdsStreamProvider = StreamProvider.family<List<Bird>, String>((
-  ref,
-  userId,
-) {
-  final repo = ref.watch(birdRepositoryProvider);
-  return repo.watchAll(userId);
-});
+// Re-export shared stream providers so existing intra-feature imports
+// continue to work without changes.
+export 'package:budgie_breeding_tracker/data/providers/bird_stream_providers.dart';
 
 /// Notifier for bird list filter selection.
 class BirdFilterNotifier extends Notifier<BirdFilter> {
@@ -123,22 +117,6 @@ final sortedAndFilteredBirdsProvider = Provider.family<List<Bird>, List<Bird>>((
       );
   }
   return sorted;
-});
-
-/// Photo URLs for a bird (from local Photo DB, offline-first).
-final birdPhotosProvider = StreamProvider.family<List<String>, String>((
-  ref,
-  birdId,
-) {
-  final repo = ref.watch(photoRepositoryProvider);
-  return repo
-      .watchByEntity(birdId)
-      .map(
-        (photos) => photos
-            .where((p) => p.filePath != null && p.filePath!.isNotEmpty)
-            .map((p) => p.filePath!)
-            .toList(),
-      );
 });
 
 /// Filter options for the bird list.

@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../data/models/message_model.dart';
 import '../../../data/repositories/repository_providers.dart';
 import '../../breeding/providers/breeding_providers.dart';
+import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 
 /// Manages realtime message subscription for active chat
 class MessagingRealtimeNotifier extends Notifier<List<Message>> {

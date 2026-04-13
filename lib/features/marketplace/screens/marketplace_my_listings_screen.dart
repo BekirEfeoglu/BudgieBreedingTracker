@@ -6,7 +6,8 @@ import 'package:lucide_icons/lucide_icons.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/error_state.dart' as app;
-import '../../../features/breeding/providers/breeding_providers.dart';
+import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
+import 'package:budgie_breeding_tracker/data/providers/breeding_stream_providers.dart';
 import '../providers/marketplace_providers.dart';
 import '../widgets/marketplace_listing_card.dart';
 

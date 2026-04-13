@@ -8,7 +8,7 @@ import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/data/models/health_record_model.dart';
-import 'package:budgie_breeding_tracker/features/settings/providers/settings_providers.dart';
+import 'package:budgie_breeding_tracker/data/providers/date_format_providers.dart';
 
 /// Card displaying a health record summary in the list.
 class HealthRecordCard extends ConsumerWidget {

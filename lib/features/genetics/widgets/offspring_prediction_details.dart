@@ -9,7 +9,7 @@ import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/mendelian_calculator.dart';
 import 'package:budgie_breeding_tracker/features/genetics/utils/phenotype_localizer.dart';
 import 'package:budgie_breeding_tracker/features/genetics/widgets/z_linked_badge.dart';
-import 'package:budgie_breeding_tracker/features/notifications/providers/action_feedback_providers.dart';
+import 'package:budgie_breeding_tracker/data/providers/action_feedback_providers.dart';
 
 /// Phenotype name row with carrier/lethal/z-linked badges.
 class PhenotypeBadges extends StatelessWidget {

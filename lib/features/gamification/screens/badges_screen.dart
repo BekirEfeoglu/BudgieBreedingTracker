@@ -12,6 +12,7 @@ import '../../../router/route_names.dart';
 import '../providers/gamification_providers.dart';
 import '../widgets/badge_card.dart';
 import '../widgets/xp_progress_bar.dart';
+import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 
 class BadgesScreen extends ConsumerWidget {
   const BadgesScreen({super.key});

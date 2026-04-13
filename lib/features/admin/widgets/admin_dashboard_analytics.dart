@@ -236,7 +236,7 @@ class DashboardTopUsersTable extends ConsumerWidget {
             const SizedBox(height: AppSpacing.md),
             dataAsync.when(
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, _) => Text(e.toString(), style: theme.textTheme.bodySmall),
+              error: (e, _) => Text('common.data_load_error'.tr(), style: theme.textTheme.bodySmall),
               data: (users) {
                 if (users.isEmpty) {
                   return Text(

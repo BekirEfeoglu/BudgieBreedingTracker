@@ -11,7 +11,7 @@ import 'package:budgie_breeding_tracker/domain/services/calendar/calendar_event_
 import 'package:budgie_breeding_tracker/core/utils/sentry_error_filter.dart';
 import 'package:budgie_breeding_tracker/domain/services/incubation/egg_species_resolver.dart';
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_providers.dart';
-import 'package:budgie_breeding_tracker/features/notifications/providers/notification_settings_providers.dart';
+import 'package:budgie_breeding_tracker/data/providers/notification_settings_shared_providers.dart';
 import 'package:uuid/uuid.dart';
 
 part 'chick_form_notifier.dart';

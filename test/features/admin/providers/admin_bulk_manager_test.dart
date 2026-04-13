@@ -557,6 +557,132 @@ void main() {
         expect(lastCall['error'], isNotNull);
       });
     });
+    group('bulkDeleteUserData — partial table failure', () {
+      test('succeeds per user even if individual tables throw', () async {
+        // deleteError causes every table delete to throw, but the inner
+        // try/catch in bulkDeleteUserData swallows per-table errors and
+        // still counts the user as succeeded.
+        final client = _makeClient(
+          adminUserResult: const {'role': 'admin'},
+          deleteError: StateError('table delete failed'),
+        );
+        final container = _makeContainer(userId: 'admin-1', client: client);
+        addTearDown(container.dispose);
+        final tracker = _StateTracker();
+        final ref = container.read(providerContainerRefProvider);
+
+        final userManager = _StubUserManager(ref, tracker.call);
+        final manager = AdminBulkManager(ref, userManager, tracker.call);
+
+        final result = await manager.bulkDeleteUserData({'user-1'});
+
+        // The user still counts as succeeded because per-table errors
+        // are caught inside the inner loop.
+        expect(result.succeeded, 1);
+        expect(result.skipped, 0);
+        final lastCall = tracker.calls.last;
+        expect(lastCall['isSuccess'], isTrue);
+        expect(lastCall['isLoading'], isFalse);
+      });
+
+      test('handles multiple users with partial table failures', () async {
+        final client = _makeClient(
+          adminUserResult: const {'role': 'admin'},
+          deleteError: StateError('table delete failed'),
+        );
+        final container = _makeContainer(userId: 'admin-1', client: client);
+        addTearDown(container.dispose);
+        final tracker = _StateTracker();
+        final ref = container.read(providerContainerRefProvider);
+
+        final userManager = _StubUserManager(ref, tracker.call);
+        final manager = AdminBulkManager(ref, userManager, tracker.call);
+
+        final result = await manager.bulkDeleteUserData(
+          {'user-1', 'user-2', 'user-3'},
+        );
+
+        expect(result.succeeded, 3);
+        expect(result.skipped, 0);
+      });
+    });
+
+    group('empty userIds set', () {
+      test('bulkToggleActive with empty set returns zero counts', () async {
+        final client = _makeClient(adminUserResult: const {'role': 'admin'});
+        final container = _makeContainer(userId: 'admin-1', client: client);
+        addTearDown(container.dispose);
+        final tracker = _StateTracker();
+        final ref = container.read(providerContainerRefProvider);
+
+        final userManager = _StubUserManager(ref, tracker.call);
+        final manager = AdminBulkManager(ref, userManager, tracker.call);
+
+        final result = await manager.bulkToggleActive(
+          <String>{},
+          activate: true,
+        );
+
+        expect(result.succeeded, 0);
+        expect(result.skipped, 0);
+        expect(userManager.toggleCalls, 0);
+        final lastCall = tracker.calls.last;
+        expect(lastCall['isSuccess'], isTrue);
+        expect(lastCall['isLoading'], isFalse);
+      });
+
+      test('bulkGrantPremium with empty set returns zero counts', () async {
+        final client = _makeClient(adminUserResult: const {'role': 'admin'});
+        final container = _makeContainer(userId: 'admin-1', client: client);
+        addTearDown(container.dispose);
+        final tracker = _StateTracker();
+        final ref = container.read(providerContainerRefProvider);
+
+        final userManager = _StubUserManager(ref, tracker.call);
+        final manager = AdminBulkManager(ref, userManager, tracker.call);
+
+        final result = await manager.bulkGrantPremium(<String>{});
+
+        expect(result.succeeded, 0);
+        expect(result.skipped, 0);
+        expect(userManager.grantCalls, 0);
+      });
+
+      test('bulkRevokePremium with empty set returns zero counts', () async {
+        final client = _makeClient(adminUserResult: const {'role': 'admin'});
+        final container = _makeContainer(userId: 'admin-1', client: client);
+        addTearDown(container.dispose);
+        final tracker = _StateTracker();
+        final ref = container.read(providerContainerRefProvider);
+
+        final userManager = _StubUserManager(ref, tracker.call);
+        final manager = AdminBulkManager(ref, userManager, tracker.call);
+
+        final result = await manager.bulkRevokePremium(<String>{});
+
+        expect(result.succeeded, 0);
+        expect(result.skipped, 0);
+        expect(userManager.revokeCalls, 0);
+      });
+
+      test('bulkDeleteUserData with empty set returns zero counts', () async {
+        final client = _makeClient(adminUserResult: const {'role': 'admin'});
+        final container = _makeContainer(userId: 'admin-1', client: client);
+        addTearDown(container.dispose);
+        final tracker = _StateTracker();
+        final ref = container.read(providerContainerRefProvider);
+
+        final userManager = _StubUserManager(ref, tracker.call);
+        final manager = AdminBulkManager(ref, userManager, tracker.call);
+
+        final result = await manager.bulkDeleteUserData(<String>{});
+
+        expect(result.succeeded, 0);
+        expect(result.skipped, 0);
+        final lastCall = tracker.calls.last;
+        expect(lastCall['isSuccess'], isTrue);
+      });
+    });
   });
 }
 

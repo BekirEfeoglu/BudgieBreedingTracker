@@ -1250,8 +1250,6 @@
     "reset": "Zurücksetzen",
     "sex_linked": "Geschlechtsgebunden",
     "mutation_normal": "Normal/Wildtyp",
-    "mutation_lutino": "Lutino",
-    "mutation_albino": "Albino",
     "mutation_blue": "Blau",
     "mutation_green": "Grün",
     "mutation_clearwing": "Hellflügel (Clearwing)",
@@ -1560,7 +1558,8 @@
     "series_grey": "Grau-Serie",
     "ai_recommended_models": "Empfohlene Modelle",
     "ai_model_free": "Kostenlos",
-    "ai_model_paid": "Kostenpflichtig"
+    "ai_model_paid": "Kostenpflichtig",
+    "ino_warning": "Diese Vorhersage basiert auf roter/rosa Augenfarbe. KI-Modelle können die Augenfarbe möglicherweise nicht zuverlässig unterscheiden. Ähnliche dunkeläugige Vögel: DF Spangle, Dominant Pied, Zimt, Dilute, Clearbody."
   },
   "admin": {
     "panel_title": "Admin-Panel",
@@ -1896,7 +1895,9 @@
     "protected_user_error": "Diese Aktion kann nicht für Gründer-/Admin-Benutzer ausgeführt werden.",
     "user_not_found": "Benutzer nicht gefunden",
     "degraded_services": "Beeinträchtigte Dienste",
-    "system_status_alert": "Systemstatus"
+    "system_status_alert": "Systemstatus",
+    "activity_items": "{} Elemente",
+    "dismiss_event_confirm": "Sind Sie sicher, dass Sie dieses Sicherheitsereignis schließen möchten?"
   },
   "user_guide": {
     "title": "Benutzerhandbuch",

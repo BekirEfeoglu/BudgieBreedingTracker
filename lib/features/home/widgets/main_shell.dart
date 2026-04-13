@@ -8,7 +8,7 @@ import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 
 import 'package:budgie_breeding_tracker/domain/services/sync/sync_providers.dart';
-import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
+import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 import 'package:budgie_breeding_tracker/features/home/providers/home_providers.dart';
 
 /// Breakpoint for switching between bottom nav and side rail.

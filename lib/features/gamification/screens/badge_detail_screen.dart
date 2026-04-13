@@ -8,6 +8,7 @@ import '../../../core/widgets/error_state.dart' as app;
 import '../../../data/models/badge_model.dart' as badge_model;
 import '../../breeding/providers/breeding_providers.dart';
 import '../providers/gamification_providers.dart';
+import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 
 class BadgeDetailScreen extends ConsumerWidget {
   final String badgeId;

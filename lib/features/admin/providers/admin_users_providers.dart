@@ -41,8 +41,14 @@ final adminUsersProvider = FutureProvider.family<List<AdminUser>, AdminUsersQuer
     request = request.eq('is_active', query.isActiveFilter!);
   }
 
+  // Validate sortField against allowed columns to prevent schema probing
+  const allowedSortFields = {'created_at', 'email', 'full_name', 'is_active', 'is_premium', 'role'};
+  final safeSortField = allowedSortFields.contains(query.sortField)
+      ? query.sortField
+      : 'created_at';
+
   final result = await request
-      .order(query.sortField, ascending: query.sortAscending)
+      .order(safeSortField, ascending: query.sortAscending)
       .limit(query.limit);
 
   return (result as List)

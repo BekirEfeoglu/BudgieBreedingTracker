@@ -16,8 +16,14 @@ lib/
 
 ## Data Flow
 ```
-UI (Features) → Providers (Riverpod) → Repositories → Local (Drift DAOs) + Remote (Supabase API)
+UI (Features) -> Providers (Riverpod) -> Repositories -> Local (Drift DAOs) + Remote (Supabase API)
 ```
+
+### Offline-First Architecture
+- Drift (local SQLite) is the source of truth for UI rendering
+- Supabase (remote) is the sync target and backup
+- Repositories orchestrate local <-> remote synchronization
+- UI always reads from local DB via providers — never directly from Supabase
 
 ## Import Rules
 - Features import from: `core/`, `data/`, `domain/`, `router/`
@@ -31,5 +37,23 @@ admin, auth, birds, breeding, calendar, chicks, community, eggs, feedback, gamif
 ## Security
 - RLS policies managed server-side (Supabase)
 - Never modify RLS from client code
-- Auth guards on protected routes (AdminGuard, PremiumGuard)
+- Auth guards on protected routes (`AdminGuard`, `PremiumGuard`)
 - Supabase credentials via dart-define, never hardcoded
+- Sensitive data encrypted at rest (secure storage for tokens)
+- See security.md for detailed security patterns
+
+## Performance Considerations
+- **Drift queries**: Use indexed columns for filters, avoid `SELECT *` on large tables
+- **Widget rebuilds**: Minimize `ref.watch()` scope — watch specific fields, not entire models
+- **Image loading**: Use cached network images with proper sizing, lazy load in lists
+- **List rendering**: Use `ListView.builder` (lazy) over `ListView` (eager) for long lists
+- **Provider caching**: Use `ref.keepAlive()` for expensive computations
+- **Startup**: Lazy-initialize heavy services, defer non-critical work
+
+## Dependency Management
+- Version constraints in `pubspec.yaml` use caret syntax: `^X.Y.Z`
+- Major version bumps require testing all affected features
+- Run `flutter pub upgrade --major-versions` cautiously, one package at a time
+- Lock file (`pubspec.lock`) committed to repo
+
+> **Related**: data-layer.md (Drift/Supabase details), providers.md (Riverpod patterns), security.md (security rules)

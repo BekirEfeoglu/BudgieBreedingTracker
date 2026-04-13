@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 
 import '../../../core/constants/supabase_constants.dart';
 import '../../../core/utils/logger.dart';
@@ -63,7 +64,9 @@ class AdminBulkManager {
       _updateState(isLoading: false, isSuccess: true);
       _ref.invalidate(adminUsersProvider);
       return (succeeded: succeeded, skipped: skipped);
-    } catch (e) {
+    } catch (e, st) {
+      AppLogger.error('AdminBulkManager.bulkToggleActive', e, st);
+      Sentry.captureException(e, stackTrace: st);
       _updateState(isLoading: false, error: e.toString());
       return (succeeded: succeeded, skipped: skipped);
     }
@@ -91,7 +94,9 @@ class AdminBulkManager {
       _updateState(isLoading: false, isSuccess: true);
       _ref.invalidate(adminUsersProvider);
       return (succeeded: succeeded, skipped: skipped);
-    } catch (e) {
+    } catch (e, st) {
+      AppLogger.error('AdminBulkManager.bulkGrantPremium', e, st);
+      Sentry.captureException(e, stackTrace: st);
       _updateState(isLoading: false, error: e.toString());
       return (succeeded: succeeded, skipped: skipped);
     }
@@ -119,7 +124,9 @@ class AdminBulkManager {
       _updateState(isLoading: false, isSuccess: true);
       _ref.invalidate(adminUsersProvider);
       return (succeeded: succeeded, skipped: skipped);
-    } catch (e) {
+    } catch (e, st) {
+      AppLogger.error('AdminBulkManager.bulkRevokePremium', e, st);
+      Sentry.captureException(e, stackTrace: st);
       _updateState(isLoading: false, error: e.toString());
       return (succeeded: succeeded, skipped: skipped);
     }
@@ -140,7 +147,9 @@ class AdminBulkManager {
       _updateState(isLoading: false, isSuccess: true);
       final data = List<Map<String, dynamic>>.from(rows);
       return format == ExportFormat.csv ? _toCsv(data) : jsonEncode(data);
-    } catch (e) {
+    } catch (e, st) {
+      AppLogger.error('AdminBulkManager.bulkExport', e, st);
+      Sentry.captureException(e, stackTrace: st);
       _updateState(isLoading: false, error: e.toString());
       return '';
     }
@@ -187,8 +196,10 @@ class AdminBulkManager {
                   .from(table)
                   .delete()
                   .eq('user_id', userId);
-            } catch (_) {
-              // Some tables may not have user_id column — skip silently.
+            } catch (e) {
+              AppLogger.warning(
+                'bulkDeleteUserData: table $table for $userId: $e',
+              );
             }
           }
           succeeded++;
@@ -203,7 +214,9 @@ class AdminBulkManager {
       _updateState(isLoading: false, isSuccess: true);
       _ref.invalidate(adminUsersProvider);
       return (succeeded: succeeded, skipped: skipped);
-    } catch (e) {
+    } catch (e, st) {
+      AppLogger.error('AdminBulkManager.bulkDeleteUserData', e, st);
+      Sentry.captureException(e, stackTrace: st);
       _updateState(isLoading: false, error: e.toString());
       return (succeeded: succeeded, skipped: skipped);
     }

@@ -7,6 +7,7 @@ import '../../../core/constants/app_icons.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_icon.dart';
+import '../../../core/widgets/dialogs/confirm_dialog.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../providers/admin_actions_provider.dart';
 import '../providers/admin_providers.dart';
@@ -217,7 +218,13 @@ class SecurityEventItem extends ConsumerWidget {
                     child: const Icon(LucideIcons.checkCircle, size: 18),
                   ),
                   tooltip: 'admin.dismiss_event'.tr(),
-                  onPressed: () {
+                  onPressed: () async {
+                    final confirmed = await showConfirmDialog(
+                      context,
+                      title: 'admin.dismiss_event'.tr(),
+                      message: 'admin.dismiss_event_confirm'.tr(),
+                    );
+                    if (confirmed != true) return;
                     ref
                         .read(adminActionsProvider.notifier)
                         .dismissSecurityEvent(event.id);

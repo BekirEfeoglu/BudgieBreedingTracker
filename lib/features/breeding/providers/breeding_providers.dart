@@ -1,33 +1,17 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:budgie_breeding_tracker/core/enums/breeding_enums.dart';
-import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
-import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
-import 'package:budgie_breeding_tracker/data/models/incubation_model.dart';
-import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
-import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
-import 'package:budgie_breeding_tracker/features/birds/providers/bird_providers.dart';
-import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_detail_providers.dart';
-import 'package:budgie_breeding_tracker/features/eggs/providers/egg_providers.dart';
+import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
+import 'package:budgie_breeding_tracker/data/providers/breeding_stream_providers.dart';
 
-// Re-export currentUserIdProvider from auth so existing imports keep working.
-export 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart'
+// Re-export shared stream providers so existing intra-feature imports
+// and cross-feature imports continue to work without changes.
+export 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart'
     show currentUserIdProvider;
-
-/// All breeding pairs for the current user (live stream).
-final breedingPairsStreamProvider =
-    StreamProvider.family<List<BreedingPair>, String>((ref, userId) {
-      final repo = ref.watch(breedingPairRepositoryProvider);
-      return repo.watchAll(userId);
-    });
-
-/// Active breeding pairs only (live stream).
-final activeBreedingPairsProvider =
-    StreamProvider.family<List<BreedingPair>, String>((ref, userId) {
-      final repo = ref.watch(breedingPairRepositoryProvider);
-      return repo.watchActive(userId);
-    });
+export 'package:budgie_breeding_tracker/data/providers/breeding_stream_providers.dart';
+export 'package:budgie_breeding_tracker/data/providers/breeding_detail_stream_providers.dart'
+    show selectPrimaryIncubation;
 
 /// Notifier for breeding list filter.
 class BreedingFilterNotifier extends Notifier<BreedingFilter> {
@@ -70,14 +54,6 @@ final breedingSearchQueryProvider =
       BreedingSearchQueryNotifier.new,
     );
 
-/// Bird ID → lowercased name lookup (derived from birdsStreamProvider).
-/// Separated to avoid rebuilding the map on every search/filter change.
-final _birdNameMapProvider =
-    Provider.family<Map<String, String>, String>((ref, userId) {
-      final birds = ref.watch(birdsStreamProvider(userId)).value ?? <Bird>[];
-      return {for (final bird in birds) bird.id: bird.name.toLowerCase()};
-    });
-
 /// Searched and filtered breeding pairs (filter first, then search by cage number + bird names).
 final searchedAndFilteredBreedingPairsProvider =
     Provider.family<List<BreedingPair>, List<BreedingPair>>((ref, pairs) {
@@ -96,7 +72,7 @@ final searchedAndFilteredBreedingPairsProvider =
       }
 
       final userId = ref.watch(currentUserIdProvider);
-      final birdNameMap = ref.watch(_birdNameMapProvider(userId));
+      final birdNames = ref.watch(birdNameMapProvider(userId));
 
       return filtered.where((pair) {
         // Match cage number
@@ -105,59 +81,16 @@ final searchedAndFilteredBreedingPairsProvider =
         }
         // Match male bird name
         if (pair.maleId != null &&
-            (birdNameMap[pair.maleId!]?.contains(query) ?? false)) {
+            (birdNames[pair.maleId!]?.contains(query) ?? false)) {
           return true;
         }
         // Match female bird name
         if (pair.femaleId != null &&
-            (birdNameMap[pair.femaleId!]?.contains(query) ?? false)) {
+            (birdNames[pair.femaleId!]?.contains(query) ?? false)) {
           return true;
         }
         return false;
       }).toList();
-    });
-
-/// All incubations for the current user, indexed by breedingPairId (live stream).
-/// Used by breeding list to avoid per-card FutureProvider lookups.
-final allIncubationsStreamProvider =
-    StreamProvider.family<List<Incubation>, String>((ref, userId) {
-      final repo = ref.watch(incubationRepositoryProvider);
-      return repo.watchAll(userId);
-    });
-
-/// Map of breedingPairId → primary Incubation (derived from allIncubationsStreamProvider).
-/// Uses selectPrimaryIncubation logic: prefers active incubation, then most recent.
-final incubationByPairMapProvider =
-    Provider.family<Map<String, Incubation>, String>((ref, userId) {
-      final incubations =
-          ref.watch(allIncubationsStreamProvider(userId)).value ??
-          <Incubation>[];
-      // Group incubations by breedingPairId
-      final grouped = <String, List<Incubation>>{};
-      for (final inc in incubations) {
-        if (inc.breedingPairId != null) {
-          grouped.putIfAbsent(inc.breedingPairId!, () => []).add(inc);
-        }
-      }
-      // Select primary incubation per pair (active first, then most recent)
-      return {
-        for (final entry in grouped.entries)
-          if (selectPrimaryIncubation(entry.value) case final primary?)
-            entry.key: primary,
-      };
-    });
-
-/// Map of incubationId → List<Egg> (derived from eggsStreamProvider).
-final eggsByIncubationMapProvider =
-    Provider.family<Map<String, List<Egg>>, String>((ref, userId) {
-      final eggs = ref.watch(eggsStreamProvider(userId)).value ?? <Egg>[];
-      final map = <String, List<Egg>>{};
-      for (final egg in eggs) {
-        if (egg.incubationId != null) {
-          map.putIfAbsent(egg.incubationId!, () => []).add(egg);
-        }
-      }
-      return map;
     });
 
 /// Notifier for breeding list sort selection.

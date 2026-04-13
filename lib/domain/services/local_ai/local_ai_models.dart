@@ -279,11 +279,8 @@ class LocalAiMutationInsight {
     // Ino predictions always get low confidence + warning because
     // small models frequently hallucinate red eye color.
     final isInoPrediction = _isInoMutation(correctedMutation);
-    final inoWarning = isInoPrediction
-        ? 'Bu tahmin kırmızı/pembe göz rengine bağlıdır. '
-            'AI modelleri göz rengini güvenilir şekilde ayırt edemeyebilir. '
-            'Koyu gözlü benzer kuşlar: DF Spangle, Dominant Pied, Cinnamon, Dilute, Clearbody.'
-        : '';
+    // Store L10n key instead of hardcoded Turkish text — UI resolves via .tr()
+    final inoWarning = isInoPrediction ? 'genetics.ino_warning' : '';
 
     return LocalAiMutationInsight(
       predictedMutation: correctedMutation,
@@ -365,7 +362,7 @@ String _inferFromEvidence({
   // Infer from pattern + series
   if (patternFamily != 'unknown') {
     final suffix = baseSeries == 'green' ? '_green' : '_blue';
-    final candidate = '${patternFamily}$suffix';
+    final candidate = '$patternFamily$suffix';
     if (_mutationSignature.containsKey(candidate)) return candidate;
   }
 

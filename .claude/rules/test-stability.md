@@ -1,15 +1,20 @@
 # Test Stability
 
 ## Pump Helpers
-- `pumpWidget(tester, widget, {router?})` — full app wrapper with providers
+- `pumpWidget(tester, widget, {router?})` — full app wrapper with providers + l10n
 - `pumpWidgetSimple(tester, widget)` — minimal wrapper for isolated widgets
 - Located in `test/helpers/pump_helpers.dart`
 
 ## Pump Strategy
-- `pumpAndSettle()` — after animations, navigation, async UI updates
-- `pump()` — single frame advance for synchronous state changes
-- `pump(Duration)` — advance by specific time (timers, debounce)
-- Never use `sleep()` in tests
+| Method | When to Use |
+|--------|-------------|
+| `pumpAndSettle()` | After animations, navigation, async UI updates |
+| `pump()` | Single frame advance for synchronous state changes |
+| `pump(Duration)` | Advance by specific time (timers, debounce) |
+
+- Never use `sleep()` or `Future.delayed()` in tests
+- If `pumpAndSettle()` times out, check for infinite animations (e.g., `CircularProgressIndicator`)
+- Use `pump()` instead of `pumpAndSettle()` when testing loading states
 
 ## Fixture Pattern
 ```dart
@@ -17,8 +22,31 @@ Bird _bird({String? name, BirdGender? gender}) => Bird(
   id: 'test-id',
   name: name ?? 'Test Bird',
   gender: gender ?? BirdGender.male,
-  // ... sensible defaults
+  // ... sensible defaults for all required fields
 );
+```
+- Each test file defines its own fixtures as private top-level functions
+- Use named parameters with defaults for flexibility
+- Shared fixtures in `test/helpers/` for cross-file reuse
+
+## Async Test Patterns
+```dart
+// Testing streams
+test('emits birds when data changes', () async {
+  final controller = StreamController<List<Bird>>();
+  addTearDown(controller.close);
+
+  when(() => mockDao.watchAll()).thenAnswer((_) => controller.stream);
+  // ... assert on stream emissions
+});
+
+// Testing timers/debounce
+testWidgets('debounces search input', (tester) async {
+  await pumpWidget(tester, SearchScreen());
+  await tester.enterText(find.byType(TextField), 'budgie');
+  await tester.pump(const Duration(milliseconds: 300)); // debounce delay
+  // ... assert search was triggered
+});
 ```
 
 ## 18 Anti-Patterns to Avoid
@@ -42,7 +70,22 @@ Bird _bird({String? name, BirdGender? gender}) => Bird(
 18. Not disposing controllers in test tearDown
 
 ## Resource Cleanup
-- Always `addTearDown(container.dispose)` for ProviderContainer
-- Close StreamControllers in tearDown
-- Dispose TextEditingControllers
-- Cancel timers
+```dart
+// ProviderContainer — ALWAYS dispose
+final container = ProviderContainer(overrides: [...]);
+addTearDown(container.dispose);
+
+// StreamController — close in tearDown
+final controller = StreamController<List<Bird>>();
+addTearDown(controller.close);
+
+// TextEditingController — dispose
+final textController = TextEditingController();
+addTearDown(textController.dispose);
+
+// Timer — cancel
+final timer = Timer.periodic(duration, callback);
+addTearDown(timer.cancel);
+```
+
+> **Related**: testing.md (test patterns, mocking), providers.md (provider test setup)

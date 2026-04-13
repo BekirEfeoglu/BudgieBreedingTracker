@@ -227,7 +227,8 @@ class _CronStatusSectionState extends ConsumerState<_CronStatusSection> {
       final data = await ref.refresh(cronJobStatusProvider.future);
       if (!mounted) return;
       setState(() { _result = data; _isLoading = false; });
-    } catch (e) {
+    } catch (e, st) {
+      AppLogger.error('_CronStatusSection._checkStatus', e, st);
       if (!mounted) return;
       setState(() { _error = e.toString(); _isLoading = false; });
     }

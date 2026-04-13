@@ -1,5 +1,8 @@
 import { getCorsHeaders, corsPreflightResponse } from "../_shared/cors.ts";
 import { getAuthenticatedUserId, createSupabaseAdmin } from "../_shared/auth.ts";
+import { createRateLimiter, rateLimitedResponse } from "../_shared/rate-limit.ts";
+
+const rateLimiter = createRateLimiter({ windowMs: 60_000, maxCalls: 30 });
 
 const LIMITS: Record<string, number> = {
   birds: 15,
@@ -41,6 +44,7 @@ Deno.serve(async (req) => {
     }
 
     if (!ALLOWED_TABLES.has(table)) {
+      console.warn(`[validate-free-tier-limit] Unknown table requested: ${table}`);
       return new Response(
         JSON.stringify({ allowed: true }),
         { status: 200, headers },
@@ -54,6 +58,8 @@ Deno.serve(async (req) => {
         { status: 401, headers },
       );
     }
+
+    if (!rateLimiter.check(userId)) return rateLimitedResponse(headers);
 
     const supabase = createSupabaseAdmin();
     const limit = LIMITS[table]!;
@@ -99,6 +105,7 @@ Deno.serve(async (req) => {
       { status: allowed ? 200 : 403, headers },
     );
   } catch (_error) {
+    console.error("[validate-free-tier-limit] Error:", _error);
     return new Response(
       JSON.stringify({ error: "Internal server error" }),
       { status: 500, headers },

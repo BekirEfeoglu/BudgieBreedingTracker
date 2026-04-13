@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/constants/supabase_constants.dart';
@@ -56,8 +57,8 @@ final systemHealthAlertProvider = Provider<void>((ref) {
           if (lastAlertedStatus != null) {
             _sendHealthAlertToAdmins(
               ref,
-              title: 'admin.system_recovered_title',
-              body: 'admin.system_recovered_body',
+              title: 'admin.system_recovered_title'.tr(),
+              body: 'admin.system_recovered_body'.tr(),
             );
           }
           lastAlertedStatus = null;
@@ -79,12 +80,12 @@ final systemHealthAlertProvider = Provider<void>((ref) {
         }
 
         final alertBody = degradedServices.isNotEmpty
-            ? 'admin.degraded_services: ${degradedServices.join(', ')}'
-            : data['message'] as String? ?? 'admin.system_status_alert: $status';
+            ? 'admin.degraded_services'.tr(args: [degradedServices.join(', ')])
+            : data['message'] as String? ?? 'admin.system_status_alert'.tr(args: [status]);
 
         _sendHealthAlertToAdmins(
           ref,
-          title: 'admin.system_alert_title',
+          title: 'admin.system_alert_title'.tr(),
           body: alertBody,
         );
       });

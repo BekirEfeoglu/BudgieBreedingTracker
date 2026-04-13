@@ -1250,8 +1250,6 @@
     "reset": "Reset",
     "sex_linked": "Sex-Linked",
     "mutation_normal": "Normal/Wildtype",
-    "mutation_lutino": "Lutino",
-    "mutation_albino": "Albino",
     "mutation_blue": "Blue",
     "mutation_green": "Green",
     "mutation_clearwing": "Clearwing",
@@ -1560,7 +1558,8 @@
     "series_grey": "Grey series",
     "ai_recommended_models": "Recommended Models",
     "ai_model_free": "Free",
-    "ai_model_paid": "Paid"
+    "ai_model_paid": "Paid",
+    "ino_warning": "This prediction relies on red/pink eye colour. AI models may not reliably distinguish eye colour. Similar dark-eyed birds: DF Spangle, Dominant Pied, Cinnamon, Dilute, Clearbody."
   },
   "admin": {
     "panel_title": "Admin Panel",
@@ -1896,7 +1895,9 @@
     "protected_user_error": "This action cannot be performed on Founder/Admin users.",
     "user_not_found": "User not found",
     "degraded_services": "Degraded services",
-    "system_status_alert": "System status"
+    "system_status_alert": "System status",
+    "activity_items": "{} items",
+    "dismiss_event_confirm": "Are you sure you want to dismiss this security event?"
   },
   "user_guide": {
     "title": "User Guide",

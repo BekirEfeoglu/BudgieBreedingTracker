@@ -8,7 +8,8 @@ import 'package:budgie_breeding_tracker/domain/services/genetics/mendelian_calcu
 import 'package:budgie_breeding_tracker/domain/services/genetics/parent_genotype.dart';
 import 'package:budgie_breeding_tracker/core/constants/genetics_constants.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
-import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_providers.dart';
+import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
+import 'package:budgie_breeding_tracker/data/providers/breeding_stream_providers.dart';
 import 'package:budgie_breeding_tracker/features/genetics/providers/genetics_providers.dart';
 
 export 'package:budgie_breeding_tracker/features/genetics/utils/genetics_history_serializer.dart';

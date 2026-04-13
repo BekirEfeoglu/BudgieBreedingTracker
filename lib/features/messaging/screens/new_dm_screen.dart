@@ -10,7 +10,8 @@ import 'package:lucide_icons/lucide_icons.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/logger.dart';
 import '../../../data/repositories/repository_providers.dart';
-import '../../../features/breeding/providers/breeding_providers.dart';
+import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
+import 'package:budgie_breeding_tracker/data/providers/breeding_stream_providers.dart';
 import '../../../router/route_names.dart';
 import '../providers/messaging_form_providers.dart';
 

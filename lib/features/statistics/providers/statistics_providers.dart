@@ -4,10 +4,10 @@ import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/breeding_enums.dart';
 import 'package:budgie_breeding_tracker/data/local/preferences/app_preferences.dart';
 import 'package:budgie_breeding_tracker/data/models/statistics_models.dart';
-import 'package:budgie_breeding_tracker/features/birds/providers/bird_providers.dart';
-import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_providers.dart';
-import 'package:budgie_breeding_tracker/features/chicks/providers/chick_providers.dart';
-import 'package:budgie_breeding_tracker/features/eggs/providers/egg_providers.dart';
+import 'package:budgie_breeding_tracker/data/providers/bird_stream_providers.dart';
+import 'package:budgie_breeding_tracker/data/providers/breeding_stream_providers.dart';
+import 'package:budgie_breeding_tracker/data/providers/chick_stream_providers.dart';
+import 'package:budgie_breeding_tracker/data/providers/egg_stream_providers.dart';
 import 'package:budgie_breeding_tracker/features/statistics/providers/statistics_breeding_providers.dart';
 
 part 'statistics_chart_providers.dart';

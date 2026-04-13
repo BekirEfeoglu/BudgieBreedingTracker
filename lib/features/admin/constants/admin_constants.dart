@@ -1,3 +1,5 @@
+import '../../../core/constants/supabase_constants.dart';
+
 /// Centralized constants for the admin panel.
 /// Replaces magic numbers scattered across admin files.
 abstract final class AdminConstants {
@@ -51,24 +53,24 @@ abstract final class AdminConstants {
 
   // Soft-deletable tables (user data tables with is_deleted column)
   static const List<String> softDeletableTables = [
-    'birds',
-    'breeding_pairs',
-    'nests',
-    'clutches',
-    'eggs',
-    'chicks',
-    'events',
-    'event_reminders',
-    'health_records',
-    'photos',
+    SupabaseConstants.birdsTable,
+    SupabaseConstants.breedingPairsTable,
+    SupabaseConstants.nestsTable,
+    SupabaseConstants.clutchesTable,
+    SupabaseConstants.eggsTable,
+    SupabaseConstants.chicksTable,
+    SupabaseConstants.eventsTable,
+    SupabaseConstants.eventRemindersTable,
+    SupabaseConstants.healthRecordsTable,
+    SupabaseConstants.photosTable,
   ];
 
   // Storage buckets
   static const List<String> storageBuckets = [
-    'bird-photos',
-    'egg-photos',
-    'chick-photos',
-    'avatars',
-    'backups',
+    SupabaseConstants.birdPhotosBucket,
+    SupabaseConstants.eggPhotosBucket,
+    SupabaseConstants.chickPhotosBucket,
+    SupabaseConstants.avatarsBucket,
+    SupabaseConstants.backupsBucket,
   ];
 }

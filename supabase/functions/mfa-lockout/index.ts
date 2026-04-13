@@ -1,5 +1,8 @@
 import { getCorsHeaders, corsPreflightResponse } from "../_shared/cors.ts";
 import { getAuthenticatedUserId, createSupabaseAdmin } from "../_shared/auth.ts";
+import { createRateLimiter, rateLimitedResponse } from "../_shared/rate-limit.ts";
+
+const rateLimiter = createRateLimiter({ windowMs: 60_000, maxCalls: 30 });
 
 const MAX_ATTEMPTS = 5;
 
@@ -60,6 +63,8 @@ Deno.serve(async (req) => {
         { status: 401, headers },
       );
     }
+
+    if (!rateLimiter.check(userId)) return rateLimitedResponse(headers);
 
     const body = await req.json();
     const action = body.action;
@@ -130,13 +135,22 @@ Deno.serve(async (req) => {
     }
 
     if (action === "reset") {
+      // Only decay lockout_count if 24+ hours have passed since last attempt
+      // This prevents attackers from alternating success/brute-force to keep tier low
+      const lastAttempt = lockout?.last_attempt_at ? new Date(lockout.last_attempt_at) : new Date();
+      const hoursSinceLastAttempt = (Date.now() - lastAttempt.getTime()) / (1000 * 3600);
+      const currentCount = lockout?.lockout_count ?? 0;
+      const newLockoutCount = hoursSinceLastAttempt > 24
+        ? Math.max(0, currentCount - 1)
+        : currentCount;
+
       await supabase
         .from("mfa_lockouts")
         .update({
           failed_attempts: 0,
           locked_until: null,
           last_attempt_at: new Date().toISOString(),
-          lockout_count: Math.max(0, (lockout?.lockout_count ?? 1) - 1),
+          lockout_count: newLockoutCount,
         })
         .eq("user_id", userId);
 
@@ -151,6 +165,7 @@ Deno.serve(async (req) => {
       { status: 400, headers },
     );
   } catch (_error) {
+    console.error("[mfa-lockout] Error:", _error);
     return new Response(
       JSON.stringify({ error: "Internal server error" }),
       { status: 500, headers },

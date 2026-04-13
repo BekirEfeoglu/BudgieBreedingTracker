@@ -4,7 +4,10 @@ import {
   requireAdminRole,
   createSupabaseAdmin,
 } from "../_shared/auth.ts";
+import { createRateLimiter, rateLimitedResponse } from "../_shared/rate-limit.ts";
 import { SignJWT, importPKCS8 } from "npm:jose@5.9.6";
+
+const rateLimiter = createRateLimiter({ windowMs: 60_000, maxCalls: 10 });
 
 type PushRequest = {
   userId?: string;
@@ -134,21 +137,6 @@ async function sendToFcm(
   return { ok: true };
 }
 
-// Simple in-memory rate limiter: max 10 calls per minute per user.
-const rateLimitMap = new Map<string, number[]>();
-const RATE_LIMIT_WINDOW_MS = 60_000;
-const RATE_LIMIT_MAX_CALLS = 10;
-
-function checkRateLimit(userId: string): boolean {
-  const now = Date.now();
-  const timestamps = (rateLimitMap.get(userId) ?? []).filter(
-    (t) => now - t < RATE_LIMIT_WINDOW_MS,
-  );
-  if (timestamps.length >= RATE_LIMIT_MAX_CALLS) return false;
-  timestamps.push(now);
-  rateLimitMap.set(userId, timestamps);
-  return true;
-}
 
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return corsPreflightResponse(req);
@@ -172,12 +160,7 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    if (!checkRateLimit(callerId)) {
-      return new Response(
-        JSON.stringify({ error: "Rate limited: too many requests" }),
-        { status: 429, headers },
-      );
-    }
+    if (!rateLimiter.check(callerId)) return rateLimitedResponse(headers);
 
     const request = await req.json() as PushRequest;
     if (!request.title?.trim() || !request.body?.trim()) {

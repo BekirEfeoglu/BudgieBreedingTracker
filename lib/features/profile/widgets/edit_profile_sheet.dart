@@ -6,7 +6,7 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/app_haptics.dart';
 import '../../../core/utils/logger.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
-import 'package:budgie_breeding_tracker/features/notifications/providers/action_feedback_providers.dart';
+import 'package:budgie_breeding_tracker/data/providers/action_feedback_providers.dart';
 import '../../../data/models/profile_model.dart';
 import '../../../data/remote/api/remote_source_providers.dart';
 import '../../../data/repositories/repository_providers.dart';

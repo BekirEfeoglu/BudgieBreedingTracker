@@ -13,7 +13,7 @@ import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_screen_title.dart';
 import 'package:budgie_breeding_tracker/core/widgets/buttons/primary_button.dart';
 import 'package:budgie_breeding_tracker/features/feedback/providers/feedback_providers.dart';
-import 'package:budgie_breeding_tracker/features/notifications/providers/action_feedback_providers.dart';
+import 'package:budgie_breeding_tracker/data/providers/action_feedback_providers.dart';
 import 'package:budgie_breeding_tracker/features/feedback/widgets/feedback_form_widgets.dart';
 import 'package:budgie_breeding_tracker/features/feedback/widgets/feedback_history_tab.dart';
 import 'package:budgie_breeding_tracker/features/feedback/widgets/feedback_info_banner.dart';

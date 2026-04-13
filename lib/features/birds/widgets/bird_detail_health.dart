@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
-import 'package:budgie_breeding_tracker/features/health_records/providers/health_record_providers.dart';
+import 'package:budgie_breeding_tracker/data/providers/health_record_stream_providers.dart';
 import 'package:budgie_breeding_tracker/features/health_records/widgets/health_record_card.dart';
 
 /// Health history section for bird detail screen showing recent records.

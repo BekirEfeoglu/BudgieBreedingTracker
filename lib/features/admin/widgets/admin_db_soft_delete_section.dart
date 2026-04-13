@@ -70,7 +70,7 @@ class _DatabaseSoftDeleteSectionState
             asyncStats.when(
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (e, _) => Text(
-                '${'common.data_load_error'.tr()}: $e',
+                'common.data_load_error'.tr(),
                 style: theme.textTheme.bodySmall,
               ),
               data: (stats) => _SoftDeleteBody(

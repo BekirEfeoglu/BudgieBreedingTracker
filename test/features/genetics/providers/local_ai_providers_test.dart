@@ -65,7 +65,7 @@ void main() {
       mockService = MockLocalAiService();
     });
 
-    ProviderContainer _makeContainer() {
+    ProviderContainer makeContainer() {
       return ProviderContainer(
         overrides: [
           localAiServiceProvider.overrideWithValue(mockService),
@@ -74,21 +74,21 @@ void main() {
     }
 
     test('geneticsAiPhaseProvider starts as idle', () {
-      final container = _makeContainer();
+      final container = makeContainer();
       addTearDown(container.dispose);
 
       expect(container.read(geneticsAiPhaseProvider), AiAnalysisPhase.idle);
     });
 
     test('sexAiPhaseProvider starts as idle', () {
-      final container = _makeContainer();
+      final container = makeContainer();
       addTearDown(container.dispose);
 
       expect(container.read(sexAiPhaseProvider), AiAnalysisPhase.idle);
     });
 
     test('mutationAiPhaseProvider starts as idle', () {
-      final container = _makeContainer();
+      final container = makeContainer();
       addTearDown(container.dispose);
 
       expect(container.read(mutationAiPhaseProvider), AiAnalysisPhase.idle);
@@ -102,7 +102,7 @@ void main() {
       mockService = MockLocalAiService();
     });
 
-    ProviderContainer _makeContainer() {
+    ProviderContainer makeContainer() {
       return ProviderContainer(
         overrides: [
           localAiServiceProvider.overrideWithValue(mockService),
@@ -111,7 +111,7 @@ void main() {
     }
 
     test('GeneticsAiAnalysisNotifier.clear() resets geneticsAiPhaseProvider to idle', () {
-      final container = _makeContainer();
+      final container = makeContainer();
       addTearDown(container.dispose);
 
       // Manually set phase to a non-idle state
@@ -124,7 +124,7 @@ void main() {
     });
 
     test('SexAiAnalysisNotifier.clear() resets sexAiPhaseProvider to idle', () {
-      final container = _makeContainer();
+      final container = makeContainer();
       addTearDown(container.dispose);
 
       container.read(sexAiPhaseProvider.notifier).set(AiAnalysisPhase.analyzing);
@@ -136,7 +136,7 @@ void main() {
     });
 
     test('MutationImageAiAnalysisNotifier.clear() resets mutationAiPhaseProvider to idle', () {
-      final container = _makeContainer();
+      final container = makeContainer();
       addTearDown(container.dispose);
 
       container.read(mutationAiPhaseProvider.notifier).set(AiAnalysisPhase.error);

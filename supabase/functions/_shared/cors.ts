@@ -4,6 +4,9 @@
  * Reads ALLOWED_ORIGINS env var (comma-separated) and validates the
  * requesting origin against the whitelist. Only reflects matched origins;
  * unknown origins get an empty Access-Control-Allow-Origin header.
+ *
+ * Note: CORS only affects browser-based callers. Mobile and server clients
+ * bypass CORS entirely. Authentication via JWT is the primary access control.
  */
 export function getCorsHeaders(req: Request): Record<string, string> {
   const origin = req.headers.get("Origin") ?? "";

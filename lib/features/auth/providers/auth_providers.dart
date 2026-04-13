@@ -13,7 +13,7 @@ import '../../../domain/services/notifications/notification_processor.dart';
 import '../../../domain/services/notifications/notification_providers.dart';
 import '../../../domain/services/sync/sync_orchestrator.dart';
 import '../../../domain/services/sync/sync_providers.dart';
-import '../../premium/providers/premium_providers.dart';
+import '../../../data/providers/premium_shared_providers.dart';
 import 'two_factor_providers.dart';
 
 // Import for internal use within this file.

@@ -19,7 +19,7 @@ String _activityLabel(UserActivity a) {
     'breeding_pair' => 'admin.activity_pairs'.tr(args: [countStr]),
     'egg' => 'admin.activity_eggs'.tr(args: [countStr]),
     'chick' => 'admin.activity_chicks'.tr(args: [countStr]),
-    _ => '$countStr items',
+    _ => 'admin.activity_items'.tr(args: [countStr]),
   };
 }
 
@@ -52,7 +52,7 @@ class DashboardErrorSummaryCard extends ConsumerWidget {
         padding: AppSpacing.cardPadding,
         child: summaryAsync.when(
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (e, _) => Text('${'common.data_load_error'.tr()}: $e'),
+          error: (e, _) => Text('common.data_load_error'.tr()),
           data: (summary) => Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -167,7 +167,7 @@ class DashboardActivityFeedSection extends ConsumerWidget {
           const SizedBox(height: AppSpacing.md),
           activityAsync.when(
             loading: () => const Center(child: CircularProgressIndicator()),
-            error: (e, _) => Text('${'common.data_load_error'.tr()}: $e'),
+            error: (e, _) => Text('common.data_load_error'.tr()),
             data: (activities) {
               if (activities.isEmpty) {
                 return Padding(
