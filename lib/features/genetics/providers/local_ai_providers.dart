@@ -100,11 +100,15 @@ class LocalAiModelListNotifier extends Notifier<AsyncValue<List<String>>> {
   Future<void> fetch({
     required String baseUrl,
     String? selectedModel,
+    LocalAiProvider provider = LocalAiProvider.ollama,
+    String apiKey = '',
     bool force = false,
   }) async {
     final normalizedConfig = LocalAiConfig(
+      provider: provider,
       baseUrl: baseUrl,
       model: selectedModel ?? LocalAiConfig.defaults.model,
+      apiKey: apiKey,
     );
 
     if (!force &&

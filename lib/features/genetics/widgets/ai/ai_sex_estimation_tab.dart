@@ -23,12 +23,16 @@ class AiSexEstimationTab extends ConsumerStatefulWidget {
       _AiSexEstimationTabState();
 }
 
-class _AiSexEstimationTabState extends ConsumerState<AiSexEstimationTab> {
+class _AiSexEstimationTabState extends ConsumerState<AiSexEstimationTab>
+    with AutomaticKeepAliveClientMixin {
   late final TextEditingController _observationsController;
   String? _selectedSexImagePath;
   bool _showObservationError = false;
   final Set<String> _selectedTags = {};
   Bird? _selectedBird;
+
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   void initState() {
@@ -95,6 +99,7 @@ class _AiSexEstimationTabState extends ConsumerState<AiSexEstimationTab> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final theme = Theme.of(context);
     final configAsync = ref.watch(localAiConfigProvider);
     final sexAsync = ref.watch(sexAiAnalysisProvider);

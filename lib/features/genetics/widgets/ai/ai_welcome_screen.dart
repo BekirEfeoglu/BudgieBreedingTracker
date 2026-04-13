@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
+import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 
@@ -65,12 +66,12 @@ class AiWelcomeScreen extends StatelessWidget {
                 _FeaturePill(
                   icon: LucideIcons.image,
                   label: 'genetics.ai_tab_mutation'.tr(),
-                  color: const Color(0xFF10B981),
+                  color: AppColors.aiFeatureMutation,
                 ),
                 _FeaturePill(
                   icon: LucideIcons.search,
                   label: 'genetics.ai_tab_sex'.tr(),
-                  color: const Color(0xFFF59E0B),
+                  color: AppColors.aiFeatureSex,
                 ),
               ],
             ),

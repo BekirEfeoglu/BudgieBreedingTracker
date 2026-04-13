@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:budgie_breeding_tracker/core/errors/app_exception.dart';
+import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/domain/services/local_ai/local_ai_models.dart';
 import 'package:budgie_breeding_tracker/domain/services/local_ai/local_ai_service.dart';
@@ -50,9 +51,12 @@ class _AiSettingsSheetState extends ConsumerState<AiSettingsSheet> {
     _baseUrlController.text = config.baseUrl;
     _modelController.text = config.model;
     _apiKeyController.text = config.apiKey;
-    if (!config.isOpenRouter) {
-      _debouncedFetchModels(baseUrl: config.baseUrl, model: config.model);
-    }
+    _debouncedFetchModels(
+      baseUrl: config.baseUrl,
+      model: config.model,
+      provider: config.provider,
+      apiKey: config.apiKey,
+    );
   }
 
   Future<LocalAiConfig?> _persistConfig() async {
@@ -69,21 +73,34 @@ class _AiSettingsSheetState extends ConsumerState<AiSettingsSheet> {
   void _debouncedFetchModels({
     required String baseUrl,
     required String model,
+    LocalAiProvider? provider,
+    String? apiKey,
   }) {
     _fetchDebounce?.cancel();
     _fetchDebounce = Timer(const Duration(milliseconds: 500), () {
-      _fetchModels(baseUrl: baseUrl, model: model);
+      _fetchModels(
+        baseUrl: baseUrl,
+        model: model,
+        provider: provider,
+        apiKey: apiKey,
+      );
     });
   }
 
   Future<void> _fetchModels({
     required String baseUrl,
     required String model,
+    LocalAiProvider? provider,
+    String? apiKey,
     bool force = false,
   }) async {
-    await ref
-        .read(localAiModelListProvider.notifier)
-        .fetch(baseUrl: baseUrl, selectedModel: model, force: force);
+    await ref.read(localAiModelListProvider.notifier).fetch(
+          baseUrl: baseUrl,
+          selectedModel: model,
+          provider: provider ?? _selectedProvider,
+          apiKey: apiKey ?? _apiKeyController.text,
+          force: force,
+        );
   }
 
   void _showMessage(String message) {
@@ -221,12 +238,11 @@ class _AiSettingsSheetState extends ConsumerState<AiSettingsSheet> {
                                 : LocalAiConfig.defaults;
                         _modelController.text = providerDefaults.model;
                         _baseUrlController.text = providerDefaults.baseUrl;
-                        if (provider == LocalAiProvider.ollama) {
-                          _debouncedFetchModels(
-                            baseUrl: providerDefaults.baseUrl,
-                            model: providerDefaults.model,
-                          );
-                        }
+                        _debouncedFetchModels(
+                          baseUrl: providerDefaults.baseUrl,
+                          model: providerDefaults.model,
+                          provider: provider,
+                        );
                       },
                     ),
                     const SizedBox(height: AppSpacing.md),
@@ -253,36 +269,35 @@ class _AiSettingsSheetState extends ConsumerState<AiSettingsSheet> {
                       ),
                       const SizedBox(height: AppSpacing.sm),
                     ],
-                    if (_selectedProvider == LocalAiProvider.ollama)
-                      if (modelsAsync.asData?.value case final models?
-                          when models.isNotEmpty) ...[
-                        DropdownButtonFormField<String>(
-                          initialValue:
-                              models.contains(_modelController.text)
-                                  ? _modelController.text
-                                  : null,
-                          decoration: InputDecoration(
-                            labelText:
-                                'genetics.local_ai_model_select'.tr(),
-                          ),
-                          items: models
-                              .map(
-                                (model) => DropdownMenuItem<String>(
-                                  value: model,
-                                  child: Text(
-                                    model,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              )
-                              .toList(growable: false),
-                          onChanged: (value) {
-                            if (value == null) return;
-                            _modelController.text = value;
-                          },
+                    if (modelsAsync.asData?.value case final models?
+                        when models.isNotEmpty) ...[
+                      DropdownButtonFormField<String>(
+                        initialValue:
+                            models.contains(_modelController.text)
+                                ? _modelController.text
+                                : null,
+                        decoration: InputDecoration(
+                          labelText:
+                              'genetics.local_ai_model_select'.tr(),
                         ),
-                        const SizedBox(height: AppSpacing.sm),
-                      ],
+                        items: models
+                            .map(
+                              (model) => DropdownMenuItem<String>(
+                                value: model,
+                                child: Text(
+                                  model,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            )
+                            .toList(growable: false),
+                        onChanged: (value) {
+                          if (value == null) return;
+                          _modelController.text = value;
+                        },
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                    ],
                     TextField(
                       controller: _modelController,
                       decoration: InputDecoration(
@@ -304,28 +319,27 @@ class _AiSettingsSheetState extends ConsumerState<AiSettingsSheet> {
                       const SizedBox(height: AppSpacing.sm),
                       _buildModelRecommendations(theme),
                     ],
-                    if (_selectedProvider == LocalAiProvider.ollama) ...[
-                      if (modelsAsync.isLoading) ...[
-                        const SizedBox(height: AppSpacing.sm),
-                        const LinearProgressIndicator(minHeight: 2),
-                      ] else if (modelsAsync.hasError) ...[
-                        const SizedBox(height: AppSpacing.sm),
-                        Text(
-                          _errorMessage(modelsAsync.error),
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: theme.colorScheme.error,
-                          ),
+                    if (modelsAsync.isLoading) ...[
+                      const SizedBox(height: AppSpacing.sm),
+                      const LinearProgressIndicator(minHeight: 2),
+                    ] else if (modelsAsync.hasError) ...[
+                      const SizedBox(height: AppSpacing.sm),
+                      Text(
+                        _errorMessage(modelsAsync.error),
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.error,
                         ),
-                      ] else if ((modelsAsync.asData?.value ?? const [])
-                          .isEmpty) ...[
-                        const SizedBox(height: AppSpacing.sm),
-                        Text(
-                          'genetics.local_ai_models_empty'.tr(),
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: theme.colorScheme.onSurfaceVariant,
-                          ),
+                      ),
+                    ] else if ((modelsAsync.asData?.value ?? const [])
+                        .isEmpty &&
+                        _selectedProvider == LocalAiProvider.ollama) ...[
+                      const SizedBox(height: AppSpacing.sm),
+                      Text(
+                        'genetics.local_ai_models_empty'.tr(),
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
                         ),
-                      ],
+                      ),
                     ],
                     const SizedBox(height: AppSpacing.lg),
                     SizedBox(
@@ -369,38 +383,35 @@ class _AiSettingsSheetState extends ConsumerState<AiSettingsSheet> {
                         ),
                       ),
                     ),
-                    if (_selectedProvider ==
-                        LocalAiProvider.ollama) ...[
-                      const SizedBox(height: AppSpacing.sm),
-                      SizedBox(
-                        width: double.infinity,
-                        child: OutlinedButton.icon(
-                          onPressed: configAsync.isLoading ||
-                                  modelsAsync.isLoading
-                              ? null
-                              : () async {
-                                  final config = await _persistConfig();
-                                  if (config == null || !mounted) return;
-                                  try {
-                                    await _fetchModels(
-                                      baseUrl: config.baseUrl,
-                                      model: config.model,
-                                      force: true,
-                                    );
-                                  } catch (error) {
-                                    _showMessage(_errorMessage(error));
-                                  }
-                                },
-                          icon: const Icon(
-                            LucideIcons.refreshCw,
-                            size: 18,
-                          ),
-                          label: Text(
-                            'genetics.refresh_local_ai_models'.tr(),
-                          ),
+                    const SizedBox(height: AppSpacing.sm),
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: configAsync.isLoading ||
+                                modelsAsync.isLoading
+                            ? null
+                            : () async {
+                                final config = await _persistConfig();
+                                if (config == null || !mounted) return;
+                                try {
+                                  await _fetchModels(
+                                    baseUrl: config.baseUrl,
+                                    model: config.model,
+                                    force: true,
+                                  );
+                                } catch (error) {
+                                  _showMessage(_errorMessage(error));
+                                }
+                              },
+                        icon: const Icon(
+                          LucideIcons.refreshCw,
+                          size: 18,
+                        ),
+                        label: Text(
+                          'genetics.refresh_local_ai_models'.tr(),
                         ),
                       ),
-                    ],
+                    ),
                     const SizedBox(height: AppSpacing.lg),
                   ],
                 ),
@@ -497,7 +508,7 @@ class _AiSettingsSheetState extends ConsumerState<AiSettingsSheet> {
                         ),
                         decoration: BoxDecoration(
                           color: m.tag.contains('free')
-                              ? const Color(0xFF10B981).withValues(alpha: 0.15)
+                              ? AppColors.aiFeatureMutation.withValues(alpha: 0.15)
                               : theme.colorScheme.primaryContainer.withValues(alpha: 0.3),
                           borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
                         ),
@@ -506,7 +517,7 @@ class _AiSettingsSheetState extends ConsumerState<AiSettingsSheet> {
                           style: theme.textTheme.labelSmall?.copyWith(
                             fontSize: 9,
                             color: m.tag.contains('free')
-                                ? const Color(0xFF10B981)
+                                ? AppColors.aiFeatureMutation
                                 : theme.colorScheme.primary,
                           ),
                         ),

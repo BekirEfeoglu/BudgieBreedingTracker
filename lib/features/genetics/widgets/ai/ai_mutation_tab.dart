@@ -18,8 +18,12 @@ class AiMutationTab extends ConsumerStatefulWidget {
   ConsumerState<AiMutationTab> createState() => _AiMutationTabState();
 }
 
-class _AiMutationTabState extends ConsumerState<AiMutationTab> {
+class _AiMutationTabState extends ConsumerState<AiMutationTab>
+    with AutomaticKeepAliveClientMixin {
   String? _selectedImagePath;
+
+  @override
+  bool get wantKeepAlive => true;
 
   void _onImageSelected(String path) {
     setState(() => _selectedImagePath = path);
@@ -33,6 +37,7 @@ class _AiMutationTabState extends ConsumerState<AiMutationTab> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final configAsync = ref.watch(localAiConfigProvider);
     final mutationState = ref.watch(mutationImageAiAnalysisProvider);
     final phase = ref.watch(mutationAiPhaseProvider);
@@ -139,127 +144,137 @@ class _AiMutationTabState extends ConsumerState<AiMutationTab> {
     );
   }
 
-  static String _mutationLabel(String key) => switch (key) {
-        'normal_light_green' =>
-          'genetics.mutation_normal_light_green'.tr(),
-        'normal_dark_green' =>
-          'genetics.mutation_normal_dark_green'.tr(),
-        'normal_olive' => 'genetics.mutation_normal_olive'.tr(),
-        'spangle_green' => 'genetics.mutation_spangle_green'.tr(),
-        'cinnamon_green' => 'genetics.mutation_cinnamon_green'.tr(),
-        'opaline_green' => 'genetics.mutation_opaline_green'.tr(),
-        'dominant_pied_green' =>
-          'genetics.mutation_dominant_pied_green'.tr(),
-        'recessive_pied_green' =>
-          'genetics.mutation_recessive_pied_green'.tr(),
-        'clearwing_green' => 'genetics.mutation_clearwing_green'.tr(),
-        'greywing_green' => 'genetics.mutation_greywing_green'.tr(),
-        'dilute_green' => 'genetics.mutation_dilute_green'.tr(),
-        'clearbody_green' => 'genetics.mutation_clearbody_green'.tr(),
-        'lutino' => 'genetics.mutation_lutino'.tr(),
-        'yellowface_blue' => 'genetics.mutation_yellowface_blue'.tr(),
-        'violet_green' => 'genetics.mutation_violet_green'.tr(),
-        'normal_skyblue' => 'genetics.mutation_normal_skyblue'.tr(),
-        'normal_cobalt' => 'genetics.mutation_normal_cobalt'.tr(),
-        'normal_mauve' => 'genetics.mutation_normal_mauve'.tr(),
-        'spangle_blue' => 'genetics.mutation_spangle_blue'.tr(),
-        'cinnamon_blue' => 'genetics.mutation_cinnamon_blue'.tr(),
-        'opaline_blue' => 'genetics.mutation_opaline_blue'.tr(),
-        'dominant_pied_blue' =>
-          'genetics.mutation_dominant_pied_blue'.tr(),
-        'recessive_pied_blue' =>
-          'genetics.mutation_recessive_pied_blue'.tr(),
-        'clearwing_blue' => 'genetics.mutation_clearwing_blue'.tr(),
-        'greywing_blue' => 'genetics.mutation_greywing_blue'.tr(),
-        'dilute_blue' => 'genetics.mutation_dilute_blue'.tr(),
-        'clearbody_blue' => 'genetics.mutation_clearbody_blue'.tr(),
-        'albino' => 'genetics.mutation_albino'.tr(),
-        'grey_green' => 'genetics.mutation_grey_green'.tr(),
-        'grey_blue' => 'genetics.mutation_grey_blue'.tr(),
-        'fallow_green' => 'genetics.mutation_fallow_green'.tr(),
-        'fallow_blue' => 'genetics.mutation_fallow_blue'.tr(),
-        'lacewing_green' => 'genetics.mutation_lacewing_green'.tr(),
-        'lacewing_blue' => 'genetics.mutation_lacewing_blue'.tr(),
-        'opaline_cinnamon_green' =>
-          'genetics.mutation_opaline_cinnamon_green'.tr(),
-        'opaline_cinnamon_blue' =>
-          'genetics.mutation_opaline_cinnamon_blue'.tr(),
-        'violet_blue' => 'genetics.mutation_violet_blue'.tr(),
-        'slate_blue' => 'genetics.mutation_slate_blue'.tr(),
-        'dark_eyed_clear_green' =>
-          'genetics.mutation_dark_eyed_clear_green'.tr(),
-        'dark_eyed_clear_blue' =>
-          'genetics.mutation_dark_eyed_clear_blue'.tr(),
-        'texas_clearbody_green' =>
-          'genetics.mutation_texas_clearbody_green'.tr(),
-        'texas_clearbody_blue' =>
-          'genetics.mutation_texas_clearbody_blue'.tr(),
-        'creamino' => 'genetics.mutation_creamino'.tr(),
-        _ => 'common.unknown'.tr(),
-      };
+  static const _mutationL10nKeys = <String, String>{
+    'normal_light_green': 'genetics.mutation_normal_light_green',
+    'normal_dark_green': 'genetics.mutation_normal_dark_green',
+    'normal_olive': 'genetics.mutation_normal_olive',
+    'spangle_green': 'genetics.mutation_spangle_green',
+    'cinnamon_green': 'genetics.mutation_cinnamon_green',
+    'opaline_green': 'genetics.mutation_opaline_green',
+    'dominant_pied_green': 'genetics.mutation_dominant_pied_green',
+    'recessive_pied_green': 'genetics.mutation_recessive_pied_green',
+    'clearwing_green': 'genetics.mutation_clearwing_green',
+    'greywing_green': 'genetics.mutation_greywing_green',
+    'dilute_green': 'genetics.mutation_dilute_green',
+    'clearbody_green': 'genetics.mutation_clearbody_green',
+    'lutino': 'genetics.mutation_lutino',
+    'yellowface_blue': 'genetics.mutation_yellowface_blue',
+    'violet_green': 'genetics.mutation_violet_green',
+    'normal_skyblue': 'genetics.mutation_normal_skyblue',
+    'normal_cobalt': 'genetics.mutation_normal_cobalt',
+    'normal_mauve': 'genetics.mutation_normal_mauve',
+    'spangle_blue': 'genetics.mutation_spangle_blue',
+    'cinnamon_blue': 'genetics.mutation_cinnamon_blue',
+    'opaline_blue': 'genetics.mutation_opaline_blue',
+    'dominant_pied_blue': 'genetics.mutation_dominant_pied_blue',
+    'recessive_pied_blue': 'genetics.mutation_recessive_pied_blue',
+    'clearwing_blue': 'genetics.mutation_clearwing_blue',
+    'greywing_blue': 'genetics.mutation_greywing_blue',
+    'dilute_blue': 'genetics.mutation_dilute_blue',
+    'clearbody_blue': 'genetics.mutation_clearbody_blue',
+    'albino': 'genetics.mutation_albino',
+    'grey_green': 'genetics.mutation_grey_green',
+    'grey_blue': 'genetics.mutation_grey_blue',
+    'fallow_green': 'genetics.mutation_fallow_green',
+    'fallow_blue': 'genetics.mutation_fallow_blue',
+    'lacewing_green': 'genetics.mutation_lacewing_green',
+    'lacewing_blue': 'genetics.mutation_lacewing_blue',
+    'opaline_cinnamon_green': 'genetics.mutation_opaline_cinnamon_green',
+    'opaline_cinnamon_blue': 'genetics.mutation_opaline_cinnamon_blue',
+    'violet_blue': 'genetics.mutation_violet_blue',
+    'slate_blue': 'genetics.mutation_slate_blue',
+    'dark_eyed_clear_green': 'genetics.mutation_dark_eyed_clear_green',
+    'dark_eyed_clear_blue': 'genetics.mutation_dark_eyed_clear_blue',
+    'texas_clearbody_green': 'genetics.mutation_texas_clearbody_green',
+    'texas_clearbody_blue': 'genetics.mutation_texas_clearbody_blue',
+    'creamino': 'genetics.mutation_creamino',
+  };
 
-  static String _seriesLabel(String key) => switch (key) {
-        'green' => 'genetics.series_green'.tr(),
-        'blue' => 'genetics.series_blue'.tr(),
-        'lutino' => 'genetics.series_lutino'.tr(),
-        'albino' => 'genetics.series_albino'.tr(),
-        'grey' => 'genetics.series_grey'.tr(),
-        _ => 'genetics.series_unknown'.tr(),
-      };
+  static String _mutationLabel(String key) =>
+      (_mutationL10nKeys[key] ?? 'common.unknown').tr();
 
-  static String _patternLabel(String key) => switch (key) {
-        'normal' => 'genetics.pattern_normal'.tr(),
-        'spangle' => 'genetics.pattern_spangle'.tr(),
-        'pied' => 'genetics.pattern_pied'.tr(),
-        'opaline' => 'genetics.pattern_opaline'.tr(),
-        'cinnamon' => 'genetics.pattern_cinnamon'.tr(),
-        'clearwing' => 'genetics.pattern_clearwing'.tr(),
-        'greywing' => 'genetics.pattern_greywing'.tr(),
-        'dilute' => 'genetics.pattern_dilute'.tr(),
-        'clearbody' => 'genetics.pattern_clearbody'.tr(),
-        'yellowface' => 'genetics.pattern_yellowface'.tr(),
-        'violet' => 'genetics.pattern_violet'.tr(),
-        'ino' => 'genetics.pattern_ino'.tr(),
-        'grey' => 'genetics.pattern_grey'.tr(),
-        'fallow' => 'genetics.pattern_fallow'.tr(),
-        'lacewing' => 'genetics.pattern_lacewing'.tr(),
-        'slate' => 'genetics.pattern_slate'.tr(),
-        _ => 'genetics.pattern_unknown'.tr(),
-      };
+  static const _seriesL10nKeys = <String, String>{
+    'green': 'genetics.series_green',
+    'blue': 'genetics.series_blue',
+    'lutino': 'genetics.series_lutino',
+    'albino': 'genetics.series_albino',
+    'grey': 'genetics.series_grey',
+  };
+
+  static String _seriesLabel(String key) =>
+      (_seriesL10nKeys[key] ?? 'genetics.series_unknown').tr();
+
+  static const _patternL10nKeys = <String, String>{
+    'normal': 'genetics.pattern_normal',
+    'spangle': 'genetics.pattern_spangle',
+    'pied': 'genetics.pattern_pied',
+    'opaline': 'genetics.pattern_opaline',
+    'cinnamon': 'genetics.pattern_cinnamon',
+    'clearwing': 'genetics.pattern_clearwing',
+    'greywing': 'genetics.pattern_greywing',
+    'dilute': 'genetics.pattern_dilute',
+    'clearbody': 'genetics.pattern_clearbody',
+    'yellowface': 'genetics.pattern_yellowface',
+    'violet': 'genetics.pattern_violet',
+    'ino': 'genetics.pattern_ino',
+    'grey': 'genetics.pattern_grey',
+    'fallow': 'genetics.pattern_fallow',
+    'lacewing': 'genetics.pattern_lacewing',
+    'slate': 'genetics.pattern_slate',
+  };
+
+  static String _patternLabel(String key) =>
+      (_patternL10nKeys[key] ?? 'genetics.pattern_unknown').tr();
+
+  static const _aiTokenL10nKeys = <String, String>{
+    'unknown': 'common.unknown',
+    'none': 'common.none',
+    // Eye colors
+    'red/pink': 'genetics.ai_color_red_pink',
+    'red': 'genetics.ai_color_red_pink',
+    'pink': 'genetics.ai_color_red_pink',
+    'black': 'genetics.ai_color_black_dark',
+    'dark': 'genetics.ai_color_black_dark',
+    'dark/black': 'genetics.ai_color_black_dark',
+    'plum': 'genetics.ai_color_plum',
+    'dark red': 'genetics.ai_color_plum',
+    // Body/wing colors
+    'blue': 'genetics.ai_color_blue',
+    'light_blue': 'genetics.ai_color_light_blue',
+    'light blue': 'genetics.ai_color_light_blue',
+    'sky blue': 'genetics.ai_color_light_blue',
+    'cobalt': 'genetics.ai_color_cobalt',
+    'mauve': 'genetics.ai_color_mauve',
+    'brown': 'genetics.ai_color_brown',
+    'cinnamon': 'genetics.ai_color_brown',
+    'white': 'genetics.ai_color_white',
+    'yellow': 'genetics.ai_color_yellow',
+    'green': 'genetics.ai_color_green',
+    'bright green': 'genetics.ai_color_green',
+    'dark green': 'genetics.ai_color_dark_green',
+    'olive': 'genetics.ai_color_olive',
+    'grey': 'genetics.ai_color_grey',
+    'gray': 'genetics.ai_color_grey',
+    'violet': 'genetics.ai_color_violet',
+    'purple': 'genetics.ai_color_violet',
+    // Wing patterns
+    'normal': 'genetics.ai_pattern_normal',
+    'classic black barring': 'genetics.ai_pattern_black_barring',
+    'black barring': 'genetics.ai_pattern_black_barring',
+    'faint': 'genetics.ai_pattern_very_faint',
+    'very faint': 'genetics.ai_pattern_very_faint',
+    'minimal': 'genetics.ai_pattern_very_faint',
+    'reduced': 'genetics.ai_pattern_reduced',
+    'reversed': 'genetics.ai_pattern_reversed',
+    'grey barring': 'genetics.ai_pattern_grey_barring',
+    'brown barring': 'genetics.ai_pattern_brown_barring',
+  };
 
   /// Translates common English tokens that AI models may return
   /// despite the Turkish-only system prompt.
   static String _translateUnknown(String value) {
     final lower = value.trim().toLowerCase();
-    return switch (lower) {
-      'unknown' => 'common.unknown'.tr(),
-      'none' => 'common.none'.tr(),
-      // Eye colors
-      'red/pink' || 'red' || 'pink' => 'Kırmızı/Pembe',
-      'black' || 'dark' || 'dark/black' => 'Siyah/Koyu',
-      'plum' || 'dark red' => 'Erik rengi',
-      // Body/wing colors
-      'blue' => 'Mavi',
-      'light_blue' || 'light blue' || 'sky blue' => 'Açık mavi',
-      'cobalt' => 'Kobalt mavi',
-      'mauve' => 'Leylak',
-      'brown' || 'cinnamon' => 'Kahverengi',
-      'white' => 'Beyaz',
-      'yellow' => 'Sarı',
-      'green' || 'bright green' => 'Yeşil',
-      'dark green' => 'Koyu yeşil',
-      'olive' => 'Zeytin yeşili',
-      'grey' || 'gray' => 'Gri',
-      'violet' || 'purple' => 'Mor/Violet',
-      // Wing patterns
-      'normal' => 'Normal',
-      'classic black barring' || 'black barring' => 'Siyah çizgili (normal)',
-      'faint' || 'very faint' || 'minimal' => 'Çok silik',
-      'reduced' => 'Azaltılmış',
-      'reversed' => 'Ters desen',
-      'grey barring' => 'Gri çizgili',
-      'brown barring' => 'Kahverengi çizgili',
-      _ => value,
-    };
+    final key = _aiTokenL10nKeys[lower];
+    return key != null ? key.tr() : value;
   }
 }

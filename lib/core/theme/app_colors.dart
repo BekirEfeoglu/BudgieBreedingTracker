@@ -83,6 +83,10 @@ abstract class AppColors {
   static const aiConfidenceHigh = Color(0xFF22C55E); // green (matches success)
   static const aiConfidenceHighDark = Color(0xFF4ADE80);
 
+  // AI Feature Pill Colors (welcome screen, settings)
+  static const aiFeatureMutation = Color(0xFF10B981); // emerald
+  static const aiFeatureSex = Color(0xFFF59E0B); // amber
+
   // Premium Gradients (centralized)
   static const premiumGradient = LinearGradient(
     colors: [premiumGold, premiumGoldDark],

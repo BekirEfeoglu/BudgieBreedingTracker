@@ -4,6 +4,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:budgie_breeding_tracker/core/constants/app_constants.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 
 class AiImagePickerZone extends StatelessWidget {
@@ -22,12 +23,27 @@ class AiImagePickerZone extends StatelessWidget {
   final List<String> tips;
   final double previewHeight;
 
-  Future<void> _pickImage(ImageSource source) async {
+  static const _maxBytes = AppConstants.maxLocalAiImageBytes;
+  static final _maxMb = (_maxBytes / (1024 * 1024)).round();
+
+  Future<void> _pickImage(ImageSource source, BuildContext context) async {
     final picker = ImagePicker();
     final result = await picker.pickImage(source: source, imageQuality: 85);
-    if (result != null) {
-      onImageSelected(result.path);
+    if (result == null) return;
+    final file = File(result.path);
+    final fileSize = await file.length();
+    if (fileSize > _maxBytes) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'genetics.ai_image_too_large_warning'.tr(args: ['$_maxMb']),
+          ),
+        ),
+      );
+      return;
     }
+    onImageSelected(result.path);
   }
 
   @override
@@ -80,13 +96,13 @@ class AiImagePickerZone extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               FilledButton.icon(
-                onPressed: () => _pickImage(ImageSource.camera),
+                onPressed: () => _pickImage(ImageSource.camera, context),
                 icon: const Icon(LucideIcons.camera, size: 18),
                 label: Text('genetics.ai_camera'.tr()),
               ),
               const SizedBox(width: AppSpacing.sm),
               OutlinedButton.icon(
-                onPressed: () => _pickImage(ImageSource.gallery),
+                onPressed: () => _pickImage(ImageSource.gallery, context),
                 icon: const Icon(LucideIcons.image, size: 18),
                 label: Text('genetics.ai_gallery'.tr()),
               ),
@@ -142,7 +158,7 @@ class AiImagePickerZone extends StatelessWidget {
                 ),
                 const SizedBox(width: AppSpacing.sm),
                 ActionChip(
-                  onPressed: () => _pickImage(ImageSource.gallery),
+                  onPressed: () => _pickImage(ImageSource.gallery, context),
                   avatar: const Icon(LucideIcons.refreshCw, size: 14),
                   label: Text('genetics.ai_change_image'.tr()),
                 ),

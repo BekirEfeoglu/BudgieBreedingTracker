@@ -20,6 +20,7 @@ class LocalAiService {
   LocalAiService({http.Client? client}) : _client = client ?? http.Client();
 
   static const Duration _requestTimeout = Duration(seconds: 25);
+  static const Duration _imageRequestTimeout = Duration(seconds: 45);
   final http.Client _client;
 
   void dispose() => _client.close();
@@ -211,10 +212,14 @@ class LocalAiService {
   }
 
   Future<List<String>> listModels({required LocalAiConfig config}) async {
-    if (config.isOpenRouter) {
-      return const [];
-    }
+    return config.isOpenRouter
+        ? _listOpenRouterModels(config: config)
+        : _listOllamaModels(config: config);
+  }
 
+  Future<List<String>> _listOllamaModels({
+    required LocalAiConfig config,
+  }) async {
     final endpoint = _buildUri(config: config, path: '/api/tags');
 
     try {
@@ -263,6 +268,52 @@ class LocalAiService {
     }
   }
 
+  /// Fetches vision-capable models from OpenRouter's public model list.
+  Future<List<String>> _listOpenRouterModels({
+    required LocalAiConfig config,
+  }) async {
+    if (config.apiKey.trim().isEmpty) return const [];
+
+    final endpoint = Uri.parse(
+      '${config.normalizedBaseUrl}/api/v1/models',
+    );
+
+    try {
+      final response = await _client
+          .get(endpoint, headers: {
+            'Authorization': 'Bearer ${config.apiKey}',
+          })
+          .timeout(_requestTimeout);
+
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        return const [];
+      }
+
+      final root = jsonDecode(response.body) as Map<String, dynamic>;
+      final data = root['data'];
+      if (data is! List) return const [];
+
+      // Filter to vision-capable models and extract IDs.
+      return data
+          .whereType<Map<String, dynamic>>()
+          .where((m) {
+            final arch = m['architecture'] as Map<String, dynamic>?;
+            final modality = arch?['modality'] as String? ?? '';
+            return modality.contains('image');
+          })
+          .map((m) => (m['id'] as String?)?.trim() ?? '')
+          .where((id) => id.isNotEmpty)
+          .toList()
+        ..sort();
+    } on TimeoutException catch (e, st) {
+      AppLogger.error('[LocalAiService] OpenRouter model list timed out', e, st);
+      return const [];
+    } catch (e, st) {
+      AppLogger.error('[LocalAiService] OpenRouter model list failed', e, st);
+      return const [];
+    }
+  }
+
   Future<Map<String, dynamic>> _generate({
     required LocalAiConfig config,
     required String prompt,
@@ -295,6 +346,8 @@ class LocalAiService {
     int numPredict = 400,
   }) async {
     final endpoint = _buildUri(config: config, path: '/api/generate');
+    final timeout =
+        images.isNotEmpty ? _imageRequestTimeout : _requestTimeout;
     http.Response response;
     try {
       response = await _client
@@ -315,7 +368,7 @@ class LocalAiService {
               },
             }),
           )
-          .timeout(_requestTimeout);
+          .timeout(timeout);
     } on TimeoutException catch (e, st) {
       AppLogger.error('[LocalAiService] Ollama timed out', e, st);
       throw const NetworkException(
@@ -383,6 +436,8 @@ class LocalAiService {
       messages.add({'role': 'user', 'content': prompt});
     }
 
+    final timeout =
+        images.isNotEmpty ? _imageRequestTimeout : _requestTimeout;
     http.Response response;
     try {
       response = await _client
@@ -402,7 +457,7 @@ class LocalAiService {
               'max_tokens': numPredict,
             }),
           )
-          .timeout(_requestTimeout);
+          .timeout(timeout);
     } on TimeoutException catch (e, st) {
       AppLogger.error('[LocalAiService] OpenRouter timed out', e, st);
       throw const NetworkException(
