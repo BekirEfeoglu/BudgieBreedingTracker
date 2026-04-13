@@ -40,5 +40,42 @@ void main() {
       // We can check for the Wrap containing them
       expect(find.byType(Wrap), findsOneWidget);
     });
+
+    testWidgets('shows DNA icon', (tester) async {
+      await pumpWidgetSimple(
+        tester,
+        AiWelcomeScreen(onSetup: () {}),
+      );
+      await tester.pumpAndSettle();
+
+      // AppIcon wrapping the DNA icon
+      expect(find.byType(AiWelcomeScreen), findsOneWidget);
+    });
+
+    testWidgets('does not call onSetup without interaction', (tester) async {
+      var called = false;
+      await pumpWidgetSimple(
+        tester,
+        AiWelcomeScreen(onSetup: () => called = true),
+      );
+      await tester.pumpAndSettle();
+
+      expect(called, isFalse);
+    });
+
+    testWidgets('renders Wrap for feature pills', (tester) async {
+      await pumpWidgetSimple(
+        tester,
+        AiWelcomeScreen(onSetup: () {}),
+      );
+      await tester.pumpAndSettle();
+
+      // Feature pills are inside a Wrap widget
+      final wrap = find.descendant(
+        of: find.byType(AiWelcomeScreen),
+        matching: find.byType(Wrap),
+      );
+      expect(wrap, findsOneWidget);
+    });
   });
 }

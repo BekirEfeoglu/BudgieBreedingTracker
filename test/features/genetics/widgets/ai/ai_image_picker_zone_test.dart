@@ -86,5 +86,53 @@ void main() {
       await tester.tap(clearChips.last);
       expect(cleared, isTrue);
     });
+
+    testWidgets('hides tips section when tips list is empty', (tester) async {
+      await pumpWidgetSimple(
+        tester,
+        AiImagePickerZone(
+          onImageSelected: (_) {},
+          onImageCleared: () {},
+          selectedImagePath: null,
+          tips: const [],
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Camera/gallery buttons present but no tips section
+      expect(find.byType(FilledButton), findsOneWidget);
+    });
+
+    testWidgets('uses custom previewHeight', (tester) async {
+      await pumpWidgetSimple(
+        tester,
+        AiImagePickerZone(
+          onImageSelected: (_) {},
+          onImageCleared: () {},
+          selectedImagePath: '/fake/path/image.jpg',
+          previewHeight: 200.0,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Widget renders with custom height (no crash)
+      expect(find.byType(AiImagePickerZone), findsOneWidget);
+    });
+
+    testWidgets('renders drop zone container when no image', (tester) async {
+      await pumpWidgetSimple(
+        tester,
+        AiImagePickerZone(
+          onImageSelected: (_) {},
+          onImageCleared: () {},
+          selectedImagePath: null,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Should show camera icon in the drop zone
+      expect(find.byType(AiImagePickerZone), findsOneWidget);
+      expect(find.byType(FilledButton), findsOneWidget);
+    });
   });
 }

@@ -67,5 +67,36 @@ void main() {
       expect(chips[1].selected, isFalse); // brown_cere
       expect(chips[2].selected, isTrue);  // young_bird
     });
+
+    testWidgets('empty selectedTags shows all unselected', (tester) async {
+      await pumpWidgetSimple(
+        tester,
+        AiQuickTags(
+          selectedTags: const {},
+          onTagToggled: (_) {},
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final chips = tester.widgetList<FilterChip>(find.byType(FilterChip));
+      for (final chip in chips) {
+        expect(chip.selected, isFalse);
+      }
+    });
+
+    testWidgets('tapping second tag returns correct key', (tester) async {
+      String? tappedTag;
+      await pumpWidgetSimple(
+        tester,
+        AiQuickTags(
+          selectedTags: const {},
+          onTagToggled: (tag) => tappedTag = tag,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byType(FilterChip).at(1));
+      expect(tappedTag, equals('genetics.ai_tag_brown_cere'));
+    });
   });
 }
