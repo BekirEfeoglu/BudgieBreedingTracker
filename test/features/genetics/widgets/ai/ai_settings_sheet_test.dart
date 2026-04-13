@@ -8,8 +8,6 @@ import 'package:budgie_breeding_tracker/domain/services/local_ai/local_ai_servic
 import 'package:budgie_breeding_tracker/features/genetics/providers/local_ai_providers.dart';
 import 'package:budgie_breeding_tracker/features/genetics/widgets/ai/ai_settings_sheet.dart';
 
-import '../../../../helpers/pump_helpers.dart';
-
 class MockLocalAiService extends Mock implements LocalAiService {}
 
 Widget _buildSheet(MockLocalAiService mockService) {
