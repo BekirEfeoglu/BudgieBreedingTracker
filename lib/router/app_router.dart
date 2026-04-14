@@ -120,9 +120,10 @@ final routerProvider = Provider<GoRouter>((ref) {
         if (premiumRedirect != null) return premiumRedirect;
       }
 
-      // Founder guard: restrict /community/* routes to founder only
-      final isCommunityRoute = location.startsWith('/community');
-      if (isCommunityRoute) {
+      // Founder guard: restrict /community/* and /marketplace/* routes to founder only
+      final isFounderRoute = location.startsWith('/community') ||
+          location.startsWith('/marketplace');
+      if (isFounderRoute) {
         final founderRedirect =
             FounderGuard.redirect(ref.read(isFounderProvider));
         if (founderRedirect != null) return founderRedirect;

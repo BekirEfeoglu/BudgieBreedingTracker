@@ -39,8 +39,11 @@ class CommunityAppBar extends ConsumerWidget implements PreferredSizeWidget {
       backgroundColor: Colors.transparent,
       surfaceTintColor: Colors.transparent,
       elevation: 0,
-      automaticallyImplyLeading: false,
-      titleSpacing: AppSpacing.lg,
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back),
+        onPressed: () => context.pop(),
+      ),
+      titleSpacing: 0,
       title: Row(
         children: [
           Material(
