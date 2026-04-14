@@ -52,7 +52,7 @@ class MarketplaceFormNotifier extends Notifier<MarketplaceFormState> {
     String? mutation,
     required BirdGender gender,
     String? age,
-    required List<String> imageUrls,
+    List<String> localImagePaths = const [],
     required String city,
   }) async {
     if (state.isLoading) return;
@@ -94,9 +94,20 @@ class MarketplaceFormNotifier extends Notifier<MarketplaceFormState> {
       }
 
       final repo = ref.read(marketplaceRepositoryProvider);
+      final listingId = const Uuid().v4();
+
+      List<String> imageUrls = const [];
+      if (localImagePaths.isNotEmpty) {
+        imageUrls = await repo.uploadImages(
+          userId: userId,
+          listingId: listingId,
+          localPaths: localImagePaths,
+        );
+      }
+
       // Free tier limit enforced server-side via validate-free-tier-limit Edge Function
       await repo.create({
-        'id': const Uuid().v4(),
+        'id': listingId,
         'user_id': userId,
         'listing_type': listingType.toJson(),
         'title': trimmedTitle,
@@ -128,7 +139,7 @@ class MarketplaceFormNotifier extends Notifier<MarketplaceFormState> {
     String? mutation,
     required BirdGender gender,
     String? age,
-    required List<String> imageUrls,
+    List<String> localImagePaths = const [],
     required String city,
   }) async {
     if (state.isLoading) return;
@@ -169,6 +180,16 @@ class MarketplaceFormNotifier extends Notifier<MarketplaceFormState> {
 
       final repo = ref.read(marketplaceRepositoryProvider);
       final userId = ref.read(currentUserIdProvider);
+
+      List<String> imageUrls = const [];
+      if (localImagePaths.isNotEmpty) {
+        imageUrls = await repo.uploadImages(
+          userId: userId,
+          listingId: listingId,
+          localPaths: localImagePaths,
+        );
+      }
+
       await repo.updateListing(listingId, {
         'listing_type': listingType.toJson(),
         'title': trimmedTitle,

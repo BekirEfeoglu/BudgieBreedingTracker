@@ -63,7 +63,7 @@ void main() {
             price: 100,
             species: 'Budgerigar',
             gender: BirdGender.male,
-            imageUrls: [],
+
             city: 'Istanbul',
           );
 
@@ -88,7 +88,7 @@ void main() {
             description: 'Bad content',
             species: 'Budgerigar',
             gender: BirdGender.male,
-            imageUrls: [],
+
             city: 'Istanbul',
           );
 
@@ -110,7 +110,7 @@ void main() {
             description: 'Desc',
             species: 'Budgerigar',
             gender: BirdGender.male,
-            imageUrls: [],
+
             city: 'Istanbul',
           );
 
@@ -132,7 +132,7 @@ void main() {
             description: longDesc,
             species: 'Budgerigar',
             gender: BirdGender.male,
-            imageUrls: [],
+
             city: 'Istanbul',
           );
 
@@ -153,7 +153,7 @@ void main() {
             price: -50,
             species: 'Budgerigar',
             gender: BirdGender.male,
-            imageUrls: [],
+
             city: 'Istanbul',
           );
 
@@ -175,7 +175,7 @@ void main() {
             description: 'Desc',
             species: 'Budgerigar',
             gender: BirdGender.male,
-            imageUrls: [],
+
             city: 'Istanbul',
           );
 
@@ -204,7 +204,7 @@ void main() {
             description: 'New desc',
             species: 'Budgerigar',
             gender: BirdGender.female,
-            imageUrls: [],
+
             city: 'Ankara',
           );
 
@@ -225,7 +225,7 @@ void main() {
             price: -10,
             species: 'Budgerigar',
             gender: BirdGender.male,
-            imageUrls: [],
+
             city: 'Istanbul',
           );
 
@@ -262,7 +262,7 @@ void main() {
           description: 'Desc',
           species: 'Budgerigar',
           gender: BirdGender.male,
-          imageUrls: [],
+
           city: 'Istanbul',
         );
 

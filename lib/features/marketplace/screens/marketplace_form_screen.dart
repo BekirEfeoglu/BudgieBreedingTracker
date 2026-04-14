@@ -9,6 +9,7 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/buttons/primary_button.dart';
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 import '../providers/marketplace_form_providers.dart';
+import '../widgets/marketplace_image_picker.dart';
 
 class MarketplaceFormScreen extends ConsumerStatefulWidget {
   final String? editListingId;
@@ -33,6 +34,7 @@ class _MarketplaceFormScreenState
 
   MarketplaceListingType _listingType = MarketplaceListingType.sale;
   BirdGender _gender = BirdGender.unknown;
+  List<String> _imagePaths = [];
 
   bool get _isEdit => widget.editListingId != null;
 
@@ -80,6 +82,11 @@ class _MarketplaceFormScreenState
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              MarketplaceImagePicker(
+                imagePaths: _imagePaths,
+                onChanged: (paths) => setState(() => _imagePaths = paths),
+              ),
+              const SizedBox(height: AppSpacing.lg),
               DropdownButtonFormField<MarketplaceListingType>(
                 initialValue: _listingType,
                 decoration: InputDecoration(
@@ -249,7 +256,7 @@ class _MarketplaceFormScreenState
         age: _ageController.text.trim().isEmpty
             ? null
             : _ageController.text.trim(),
-        imageUrls: const [],
+        localImagePaths: _imagePaths,
         city: _cityController.text.trim(),
       );
     } else {
@@ -269,7 +276,7 @@ class _MarketplaceFormScreenState
         age: _ageController.text.trim().isEmpty
             ? null
             : _ageController.text.trim(),
-        imageUrls: const [],
+        localImagePaths: _imagePaths,
         city: _cityController.text.trim(),
       );
     }
