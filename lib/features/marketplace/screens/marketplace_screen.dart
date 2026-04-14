@@ -61,6 +61,33 @@ class _MarketplaceScreenState extends ConsumerState<MarketplaceScreen> {
       appBar: AppBar(
         title: Text('marketplace.title'.tr()),
         actions: [
+          PopupMenuButton<MarketplaceSort>(
+            icon: const Icon(LucideIcons.arrowUpDown),
+            tooltip: 'marketplace.sort_newest'.tr(),
+            onSelected: (sort) {
+              ref.read(marketplaceSortProvider.notifier).state = sort;
+            },
+            itemBuilder: (context) {
+              final currentSort = ref.read(marketplaceSortProvider);
+              return MarketplaceSort.values.map((sort) {
+                final isSelected = currentSort == sort;
+                return PopupMenuItem(
+                  value: sort,
+                  child: Row(
+                    children: [
+                      Expanded(child: Text(sort.label)),
+                      if (isSelected)
+                        Icon(
+                          LucideIcons.check,
+                          size: 18,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                    ],
+                  ),
+                );
+              }).toList();
+            },
+          ),
           IconButton(
             icon: const Icon(LucideIcons.listChecks),
             tooltip: 'marketplace.my_listings'.tr(),

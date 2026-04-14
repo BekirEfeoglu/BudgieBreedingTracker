@@ -6,6 +6,14 @@ import '../../../core/theme/app_spacing.dart';
 import '../providers/marketplace_providers.dart';
 import 'marketplace_filter_sheet.dart';
 
+IconData _filterIcon(MarketplaceFilter filter) => switch (filter) {
+      MarketplaceFilter.all => LucideIcons.list,
+      MarketplaceFilter.sale => LucideIcons.tag,
+      MarketplaceFilter.adoption => LucideIcons.heart,
+      MarketplaceFilter.trade => LucideIcons.arrowLeftRight,
+      MarketplaceFilter.wanted => LucideIcons.search,
+    };
+
 class MarketplaceFilterBar extends ConsumerWidget {
   const MarketplaceFilterBar({super.key});
 
@@ -28,6 +36,7 @@ class MarketplaceFilterBar extends ConsumerWidget {
             return Padding(
               padding: const EdgeInsets.only(right: AppSpacing.sm),
               child: FilterChip(
+                avatar: isSelected ? Icon(_filterIcon(filter), size: 16) : null,
                 label: Text(filter.label),
                 selected: isSelected,
                 onSelected: (_) {
