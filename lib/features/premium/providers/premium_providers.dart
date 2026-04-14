@@ -160,12 +160,16 @@ final premiumGracePeriodProvider = Provider<GracePeriodStatus>((ref) {
   // Currently premium (active subscription)
   if (profile.hasPremium) return GracePeriodStatus.active;
 
-  // Check grace period via premiumExpiresAt
-  final expiresAt = profile.premiumExpiresAt;
-  if (expiresAt == null) return GracePeriodStatus.free;
+  // Check grace period via server-computed gracePeriodUntil.
+  // Falls back to client-side calculation from premiumExpiresAt for
+  // profiles that haven't been synced since the migration.
+  final gracePeriodEnd = profile.gracePeriodUntil ??
+      profile.premiumExpiresAt?.add(
+        Duration(days: AppConstants.gracePeriodDays),
+      );
+  if (gracePeriodEnd == null) return GracePeriodStatus.free;
 
-  final daysSinceExpiry = DateTime.now().difference(expiresAt).inDays;
-  if (daysSinceExpiry <= AppConstants.gracePeriodDays) {
+  if (DateTime.now().isBefore(gracePeriodEnd)) {
     return GracePeriodStatus.gracePeriod;
   }
 

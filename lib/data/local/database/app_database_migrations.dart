@@ -205,6 +205,15 @@ Future<void> _migrateV19ToV20(AppDatabase db, Migrator m) async {
   }
 }
 
+Future<void> _migrateV20ToV21(AppDatabase db, Migrator m) async {
+  final hasColumn = await _tableHasColumn(db, 'profiles', 'grace_period_until');
+  if (!hasColumn) {
+    await db.customStatement(
+      'ALTER TABLE profiles ADD COLUMN grace_period_until INTEGER',
+    );
+  }
+}
+
 /// Checks whether [tableName] has a column named [columnName] via PRAGMA.
 ///
 /// Internal migration helper only — [tableName] and [columnName] must be

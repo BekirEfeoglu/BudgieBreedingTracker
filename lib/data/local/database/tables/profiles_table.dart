@@ -14,6 +14,7 @@ class ProfilesTable extends Table {
   TextColumn get role => text().nullable()();
   TextColumn get language => text().nullable()();
   DateTimeColumn get premiumExpiresAt => dateTime().nullable()();
+  DateTimeColumn get gracePeriodUntil => dateTime().nullable()();
   DateTimeColumn get createdAt => dateTime().nullable()();
   DateTimeColumn get updatedAt => dateTime().nullable()();
 

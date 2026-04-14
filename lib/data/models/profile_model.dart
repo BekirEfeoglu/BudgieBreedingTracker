@@ -20,6 +20,7 @@ abstract class Profile with _$Profile {
     String? role,
     String? language,
     DateTime? premiumExpiresAt,
+    DateTime? gracePeriodUntil,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) = _Profile;

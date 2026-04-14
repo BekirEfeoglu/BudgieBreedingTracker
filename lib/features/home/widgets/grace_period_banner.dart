@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
+import 'package:budgie_breeding_tracker/core/constants/app_constants.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/data/providers/premium_shared_providers.dart';
@@ -21,9 +22,13 @@ class GracePeriodBanner extends ConsumerWidget {
     }
 
     final profileAsync = ref.watch(userProfileProvider);
-    final expiresAt = profileAsync.value?.premiumExpiresAt;
-    final daysAgo = expiresAt != null
-        ? DateTime.now().difference(expiresAt).inDays
+    final profile = profileAsync.value;
+    final gracePeriodEnd = profile?.gracePeriodUntil ??
+        profile?.premiumExpiresAt?.add(
+          const Duration(days: AppConstants.gracePeriodDays),
+        );
+    final daysRemaining = gracePeriodEnd != null
+        ? gracePeriodEnd.difference(DateTime.now()).inDays
         : 0;
     final theme = Theme.of(context);
     const bannerColor = AppColors.warning;
@@ -56,7 +61,7 @@ class GracePeriodBanner extends ConsumerWidget {
                 ),
                 const SizedBox(height: AppSpacing.xs),
                 Text(
-                  'premium.grace_period_message'.tr(args: ['$daysAgo']),
+                  'premium.grace_period_message'.tr(args: ['$daysRemaining']),
                   style: theme.textTheme.bodySmall,
                 ),
               ],

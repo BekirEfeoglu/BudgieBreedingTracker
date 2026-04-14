@@ -13,6 +13,7 @@ extension ProfileRowMapper on ProfileRow {
     role: role,
     language: language,
     premiumExpiresAt: premiumExpiresAt,
+    gracePeriodUntil: gracePeriodUntil,
     createdAt: createdAt,
     updatedAt: updatedAt,
   );
@@ -29,6 +30,7 @@ extension ProfileModelMapper on Profile {
     role: Value(role),
     language: Value(language),
     premiumExpiresAt: Value(premiumExpiresAt),
+    gracePeriodUntil: Value(gracePeriodUntil),
     createdAt: Value(createdAt),
     updatedAt: Value(updatedAt ?? DateTime.now()),
   );
