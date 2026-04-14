@@ -71,7 +71,7 @@ void main() {
 
   group('communityVisiblePostsProvider', () {
     group('explore tab', () {
-      test('returns all posts', () {
+      test('returns all posts excluding guides', () {
         final container = createContainer();
         addTearDown(container.dispose);
         container.read(communityFeedProvider);
@@ -79,7 +79,9 @@ void main() {
         final visible = container.read(
           communityVisiblePostsProvider(CommunityFeedTab.explore),
         );
-        expect(visible.length, testPosts.length);
+        // guide posts (p2) are excluded from explore tab
+        expect(visible.length, testPosts.length - 1);
+        expect(visible.any((p) => p.postType == CommunityPostType.guide), isFalse);
       });
 
       test('sorts by newest by default', () {
