@@ -10,6 +10,7 @@ const LIMITS: Record<string, number> = {
   birds: 15,
   breeding_pairs: 5,
   incubations: 3,
+  marketplace_listings: 3,
 };
 
 const ALLOWED_TABLES = new Set(Object.keys(LIMITS));
@@ -86,7 +87,7 @@ Deno.serve(async (req) => {
     if (table === "breeding_pairs") {
       query = query.in("status", ["active", "ongoing"]);
     }
-    if (table === "incubations") {
+    if (table === "incubations" || table === "marketplace_listings") {
       query = query.eq("status", "active");
     }
 

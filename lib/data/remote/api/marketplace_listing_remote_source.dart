@@ -14,7 +14,7 @@ class MarketplaceListingRemoteSource {
       'id, user_id, listing_type, title, description, price, currency, '
       'bird_id, species, mutation, gender, age, image_urls, city, status, '
       'view_count, message_count, is_verified_breeder, is_deleted, '
-      'needs_review, created_at, updated_at';
+      'needs_review, username, avatar_url, created_at, updated_at';
 
   Future<List<Map<String, dynamic>>> fetchListings({
     int limit = 20,
@@ -224,12 +224,12 @@ class MarketplaceListingRemoteSource {
       try {
         final storagePath = 'marketplace-images/$userId/$listingId/$i.jpg';
         final file = File(localPaths[i]);
-        await _client.storage.from('photos').upload(
+        await _client.storage.from(SupabaseConstants.marketplacePhotosBucket).upload(
               storagePath,
               file,
               fileOptions: const FileOptions(upsert: true),
             );
-        final url = _client.storage.from('photos').getPublicUrl(storagePath);
+        final url = _client.storage.from(SupabaseConstants.marketplacePhotosBucket).getPublicUrl(storagePath);
         urls.add(url);
       } catch (e, st) {
         AppLogger.error('marketplace', e, st);
@@ -246,10 +246,10 @@ class MarketplaceListingRemoteSource {
   }) async {
     try {
       final prefix = 'marketplace-images/$userId/$listingId/';
-      final files = await _client.storage.from('photos').list(path: prefix);
+      final files = await _client.storage.from(SupabaseConstants.marketplacePhotosBucket).list(path: prefix);
       if (files.isNotEmpty) {
         final paths = files.map((f) => '$prefix${f.name}').toList();
-        await _client.storage.from('photos').remove(paths);
+        await _client.storage.from(SupabaseConstants.marketplacePhotosBucket).remove(paths);
       }
     } catch (e) {
       AppLogger.warning('marketplace: Failed to delete images: $e');
