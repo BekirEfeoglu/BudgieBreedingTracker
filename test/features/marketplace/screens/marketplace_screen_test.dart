@@ -12,6 +12,7 @@ import 'package:budgie_breeding_tracker/data/repositories/repository_providers.d
 import 'package:budgie_breeding_tracker/features/marketplace/providers/marketplace_providers.dart';
 import 'package:budgie_breeding_tracker/features/marketplace/screens/marketplace_screen.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_providers.dart';
+import 'package:budgie_breeding_tracker/features/premium/providers/premium_providers.dart';
 
 import '../../../helpers/test_localization.dart';
 
@@ -31,6 +32,8 @@ void main() {
       overrides: [
         currentUserIdProvider.overrideWithValue('test-user'),
         marketplaceRepositoryProvider.overrideWithValue(mockRepo),
+        effectivePremiumProvider.overrideWithValue(false),
+        canCreateListingProvider('test-user').overrideWithValue(true),
         marketplaceListingsProvider('test-user').overrideWith(
           (_) => switch (listingsAsync) {
             AsyncData(:final value) => Future.value(value),
@@ -55,6 +58,8 @@ void main() {
         overrides: [
           currentUserIdProvider.overrideWithValue('test-user'),
           marketplaceRepositoryProvider.overrideWithValue(mockRepo),
+          effectivePremiumProvider.overrideWithValue(false),
+          canCreateListingProvider('test-user').overrideWithValue(true),
           marketplaceListingsProvider('test-user').overrideWith(
             (_) => completer.future,
           ),
