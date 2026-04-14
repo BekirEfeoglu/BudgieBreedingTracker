@@ -121,7 +121,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       }
 
       // Founder guard: restrict /community/* and /marketplace/* routes to founder only
-      final isFounderRoute = location.startsWith('/community') ||
+      // Community guidelines is a public page and must not be gated.
+      final isFounderRoute =
+          (location.startsWith('/community') &&
+              location != AppRoutes.communityGuidelines) ||
           location.startsWith('/marketplace');
       if (isFounderRoute) {
         final founderRedirect =

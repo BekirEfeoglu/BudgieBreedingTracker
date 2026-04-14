@@ -72,22 +72,22 @@ void main() {
       expect(find.text('marketplace.mutation_label'), findsOneWidget);
       expect(find.text('marketplace.gender_label'), findsOneWidget);
       expect(find.text('marketplace.age_label'), findsOneWidget);
-      expect(find.text('marketplace.city_label'), findsOneWidget);
+      // city_label appears in both the section header and the field label
+      expect(find.text('marketplace.city_label'), findsWidgets);
     });
 
-    testWidgets('shows price field when listing type is sale',
-        (tester) async {
+    testWidgets('shows listing type chips when form loads', (tester) async {
       await pumpLocalizedApp(tester, buildSubject());
 
-      // Default listing type is sale, so price field should be visible
-      expect(find.text('marketplace.price_label'), findsOneWidget);
+      // Listing type chips are visible (sale, adoption, trade, wanted)
+      expect(find.text('marketplace.type_sale'), findsOneWidget);
     });
 
-    testWidgets('renders PrimaryButton with save label', (tester) async {
+    testWidgets('renders PrimaryButton with publish label', (tester) async {
       await pumpLocalizedApp(tester, buildSubject());
 
       expect(find.byType(PrimaryButton), findsOneWidget);
-      expect(find.text('common.save'), findsOneWidget);
+      expect(find.text('marketplace.publish'), findsOneWidget);
     });
 
     testWidgets('renders PrimaryButton with update label in edit mode',
@@ -152,10 +152,6 @@ void main() {
         find.widgetWithText(TextFormField, 'marketplace.description_label'),
         'Test Description',
       );
-      await tester.enterText(
-        find.widgetWithText(TextFormField, 'marketplace.price_label'),
-        '100',
-      );
 
       await tester.tap(find.byType(PrimaryButton));
       await tester.pumpAndSettle();
@@ -178,10 +174,6 @@ void main() {
       await tester.enterText(
         find.widgetWithText(TextFormField, 'marketplace.description_label'),
         'Test Description',
-      );
-      await tester.enterText(
-        find.widgetWithText(TextFormField, 'marketplace.price_label'),
-        '100',
       );
       await tester.enterText(
         find.widgetWithText(TextFormField, 'marketplace.species_label'),
