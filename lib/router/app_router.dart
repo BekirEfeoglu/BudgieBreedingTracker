@@ -8,6 +8,7 @@ import '../features/auth/providers/auth_providers.dart';
 import '../features/admin/providers/admin_providers.dart';
 import '../features/home/widgets/main_shell.dart';
 import 'guards/admin_guard.dart';
+import 'guards/founder_guard.dart';
 import 'guards/premium_guard.dart';
 import 'redirect_guards.dart';
 import '../domain/services/ads/ad_reward_providers.dart';
@@ -117,6 +118,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       } else if (location == AppRoutes.genealogy) {
         final premiumRedirect = PremiumGuard.redirect(isPremium);
         if (premiumRedirect != null) return premiumRedirect;
+      }
+
+      // Founder guard: restrict /community/* routes to founder only
+      final isCommunityRoute = location.startsWith('/community');
+      if (isCommunityRoute) {
+        final founderRedirect =
+            FounderGuard.redirect(ref.read(isFounderProvider));
+        if (founderRedirect != null) return founderRedirect;
       }
 
       // Admin guard: restrict /admin/* routes to admin users

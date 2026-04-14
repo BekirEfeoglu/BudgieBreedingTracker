@@ -58,7 +58,8 @@ class MoreScreen extends ConsumerWidget {
             title: 'health_records.title'.tr(),
             onTap: () => context.push(AppRoutes.healthRecords),
           ),
-          if (FeatureFlags.communityEnabled)
+          if (FeatureFlags.communityEnabled &&
+              ref.watch(isFounderProvider).value == true)
             _MoreTile(
               icon: const AppIcon(AppIcons.community),
               title: 'more.community'.tr(),
