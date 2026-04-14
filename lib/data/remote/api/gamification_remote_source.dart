@@ -154,6 +154,43 @@ class GamificationRemoteSource {
     }
   }
 
+  /// Fetch entity counts for verified breeder criteria check.
+  Future<Map<String, int>> fetchEntityCounts(String userId) async {
+    try {
+      final results = await Future.wait([
+        _client
+            .from(SupabaseConstants.birdsTable)
+            .select('id')
+            .eq('user_id', userId)
+            .then((r) => (r as List).length),
+        _client
+            .from(SupabaseConstants.breedingPairsTable)
+            .select('id')
+            .eq('user_id', userId)
+            .then((r) => (r as List).length),
+        _client
+            .from(SupabaseConstants.chicksTable)
+            .select('id')
+            .eq('user_id', userId)
+            .then((r) => (r as List).length),
+        _client
+            .from(SupabaseConstants.communityPostsTable)
+            .select('id')
+            .eq('user_id', userId)
+            .then((r) => (r as List).length),
+      ]);
+      return {
+        'birds': results[0],
+        'breeding_pairs': results[1],
+        'chicks': results[2],
+        'posts': results[3],
+      };
+    } catch (e, st) {
+      AppLogger.error('gamification fetchEntityCounts', e, st);
+      return {'birds': 0, 'breeding_pairs': 0, 'chicks': 0, 'posts': 0};
+    }
+  }
+
   /// Update only level and xp_title in the profile — does NOT touch is_verified_breeder
   Future<void> updateProfileLevelInfo(
     String userId, {

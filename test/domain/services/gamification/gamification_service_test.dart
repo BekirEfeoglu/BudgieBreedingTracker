@@ -383,15 +383,55 @@ void main() {
       verifyNever(() => mockRemote.fetchUserBadges(userId));
     });
 
-    test('checks badges when level is 5 or above', () async {
+    test('checks entity counts and badges when level is 5 or above', () async {
       when(() => mockRemote.fetchUserLevel(userId))
           .thenAnswer((_) async => {'level': 5});
+      when(() => mockRemote.fetchEntityCounts(userId)).thenAnswer(
+        (_) async => {
+          'birds': 5,
+          'breeding_pairs': 2,
+          'chicks': 3,
+          'posts': 1,
+        },
+      );
       when(() => mockRemote.fetchUserBadges(userId))
           .thenAnswer((_) async => []);
+      when(() => mockRemote.fetchBadges()).thenAnswer(
+        (_) async => [
+          {'id': 'badge-1', 'key': 'verified_breeder', 'xp_reward': 0},
+        ],
+      );
+      when(() => mockRemote.upsertUserBadge(any())).thenAnswer((_) async {});
+      when(() => mockRemote.updateProfileVerification(
+            userId,
+            isVerified: true,
+            level: any(named: 'level'),
+            title: any(named: 'title'),
+          )).thenAnswer((_) async {});
 
       await service.checkVerifiedBreeder(userId);
 
+      verify(() => mockRemote.fetchEntityCounts(userId)).called(1);
       verify(() => mockRemote.fetchUserBadges(userId)).called(1);
+      verify(() => mockRemote.upsertUserBadge(any())).called(1);
+    });
+
+    test('skips verification when entity criteria not met', () async {
+      when(() => mockRemote.fetchUserLevel(userId))
+          .thenAnswer((_) async => {'level': 5});
+      when(() => mockRemote.fetchEntityCounts(userId)).thenAnswer(
+        (_) async => {
+          'birds': 1, // Below minimum of 3
+          'breeding_pairs': 0,
+          'chicks': 0,
+          'posts': 0,
+        },
+      );
+
+      await service.checkVerifiedBreeder(userId);
+
+      verify(() => mockRemote.fetchEntityCounts(userId)).called(1);
+      verifyNever(() => mockRemote.fetchUserBadges(userId));
     });
 
     test('handles null user level gracefully', () async {

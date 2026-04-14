@@ -180,31 +180,82 @@ class GamificationService {
         _ => [],
       };
 
-  /// Check and update verified breeder status
+  /// Minimum entity counts required for verified breeder status.
+  static const _verifiedBreederCriteria = {
+    'birds': 3,
+    'breeding_pairs': 1,
+    'chicks': 1,
+  };
+
+  /// Check and update verified breeder status.
+  ///
+  /// Criteria: level >= 5 AND at least 3 birds, 1 breeding pair, 1 chick.
   Future<void> checkVerifiedBreeder(String userId) async {
     try {
       final userLevel = await _remoteSource.fetchUserLevel(userId);
       final level = userLevel?['level'] as int? ?? 0;
 
-      // Minimum level 5 required
-      final meetsLevelCriteria = level >= 5;
+      if (level < 5) return;
 
-      if (!meetsLevelCriteria) return;
+      final counts = await _remoteSource.fetchEntityCounts(userId);
+      final meetsCriteria = _verifiedBreederCriteria.entries.every(
+        (e) => (counts[e.key] ?? 0) >= e.value,
+      );
 
-      // Check verified_breeder badge
+      if (!meetsCriteria) {
+        AppLogger.info(
+          'Verified breeder check for $userId: level=$level, '
+          'birds=${counts['birds']}, breeding=${counts['breeding_pairs']}, '
+          'chicks=${counts['chicks']} — criteria not met',
+        );
+        return;
+      }
+
+      // Check if already verified
       final userBadges = await _remoteSource.fetchUserBadges(userId);
       final verifiedBadge = userBadges
           .where((ub) => ub['badge_key'] == 'verified_breeder')
           .firstOrNull;
 
-      if (verifiedBadge == null ||
-          !(verifiedBadge['is_unlocked'] as bool? ?? false)) {
-        // TODO: Full criteria check with bird/breeding/chick/post counts
-        // For now, mark as verified if level >= 5
-        AppLogger.info(
-          'Verified breeder check for $userId: level=$level',
-        );
+      if (verifiedBadge != null &&
+          (verifiedBadge['is_unlocked'] as bool? ?? false)) {
+        return; // Already verified
       }
+
+      // Unlock verified_breeder badge
+      final badges = await _remoteSource.fetchBadges();
+      final badge = badges
+          .where((b) => b['key'] == 'verified_breeder')
+          .firstOrNull;
+
+      if (badge == null) return;
+
+      final badgeData = <String, dynamic>{
+        'id': verifiedBadge?['id'] as String? ?? const Uuid().v4(),
+        'user_id': userId,
+        'badge_id': badge['id'] as String,
+        'badge_key': 'verified_breeder',
+        'progress': 1,
+        'is_unlocked': true,
+        'unlocked_at': DateTime.now().toIso8601String(),
+      };
+
+      await _remoteSource.upsertUserBadge(badgeData);
+
+      // Update profile verification
+      final title = LevelCalculator.titleForLevel(level);
+      await _remoteSource.updateProfileVerification(
+        userId,
+        isVerified: true,
+        level: level,
+        title: title,
+      );
+
+      AppLogger.info(
+        'Verified breeder unlocked for $userId: level=$level, '
+        'birds=${counts['birds']}, breeding=${counts['breeding_pairs']}, '
+        'chicks=${counts['chicks']}',
+      );
     } catch (e, st) {
       AppLogger.error('gamification checkVerifiedBreeder error', e, st);
     }
