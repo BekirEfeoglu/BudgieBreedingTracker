@@ -1,4 +1,3 @@
-import 'package:budgie_breeding_tracker/core/utils/app_haptics.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,6 +10,7 @@ import '../../../core/widgets/app_icon.dart';
 import '../../../data/models/community_post_model.dart';
 import '../../../router/route_names.dart';
 import '../providers/community_post_providers.dart';
+import 'animated_toggle_button.dart';
 
 /// Action bar with like, comment, bookmark, and share buttons.
 class CommunityPostActions extends ConsumerStatefulWidget {
@@ -27,7 +27,6 @@ class _CommunityPostActionsState extends ConsumerState<CommunityPostActions> {
   CommunityPost get post => widget.post;
 
   void _onLike() {
-    AppHaptics.lightImpact();
     ref.read(likeToggleProvider.notifier).toggleLike(post.id);
   }
 
@@ -54,7 +53,6 @@ class _CommunityPostActionsState extends ConsumerState<CommunityPostActions> {
   }
 
   void _onBookmark() {
-    AppHaptics.lightImpact();
     ref.read(bookmarkToggleProvider.notifier).toggleBookmark(post.id);
   }
 
@@ -73,15 +71,20 @@ class _CommunityPostActionsState extends ConsumerState<CommunityPostActions> {
       children: [
         _PillActionButton(
           semanticLabel: 'community.like'.tr(),
-          icon: AppIcon(
-            AppIcons.like,
-            size: 20,
-            color: post.isLikedByMe ? likedColor : defaultColor,
-          ),
-          label: post.likeCount > 0 ? '${post.likeCount}' : null,
-          labelColor: post.isLikedByMe ? likedColor : defaultColor,
           backgroundColor: likedBg,
           onTap: _onLike,
+          child: AnimatedToggleButton(
+            isActive: post.isLikedByMe,
+            activeIcon: AppIcon(AppIcons.like, size: 20, color: likedColor),
+            inactiveIcon:
+                AppIcon(AppIcons.like, size: 20, color: defaultColor),
+            onToggle: _onLike,
+            label: post.likeCount > 0 ? '${post.likeCount}' : null,
+            labelStyle: theme.textTheme.labelSmall?.copyWith(
+              color: post.isLikedByMe ? likedColor : defaultColor,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
         ),
         const SizedBox(width: AppSpacing.sm),
         _PillActionButton(
@@ -101,12 +104,15 @@ class _CommunityPostActionsState extends ConsumerState<CommunityPostActions> {
         const Spacer(),
         _ActionButton(
           semanticLabel: 'community.bookmark'.tr(),
-          icon: AppIcon(
-            AppIcons.bookmark,
-            size: 22,
-            color: post.isBookmarkedByMe ? likedColor : defaultColor,
-          ),
           onTap: _onBookmark,
+          child: AnimatedToggleButton(
+            isActive: post.isBookmarkedByMe,
+            activeIcon:
+                AppIcon(AppIcons.bookmark, size: 22, color: likedColor),
+            inactiveIcon:
+                AppIcon(AppIcons.bookmark, size: 22, color: defaultColor),
+            onToggle: _onBookmark,
+          ),
         ),
       ],
     );
@@ -114,7 +120,11 @@ class _CommunityPostActionsState extends ConsumerState<CommunityPostActions> {
 }
 
 class _PillActionButton extends StatelessWidget {
-  final Widget icon;
+  /// When [child] is provided it is used as content; [icon] and [label] are
+  /// ignored. This allows embedding an [AnimatedToggleButton] while keeping
+  /// the pill container.
+  final Widget? child;
+  final Widget? icon;
   final VoidCallback onTap;
   final String? label;
   final Color? labelColor;
@@ -122,9 +132,10 @@ class _PillActionButton extends StatelessWidget {
   final String? semanticLabel;
 
   const _PillActionButton({
-    required this.icon,
     required this.onTap,
     required this.backgroundColor,
+    this.child,
+    this.icon,
     this.label,
     this.labelColor,
     this.semanticLabel,
@@ -133,6 +144,23 @@ class _PillActionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final content = child ??
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            icon!,
+            if (label != null) ...[
+              const SizedBox(width: AppSpacing.xs),
+              Text(
+                label!,
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: labelColor,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ],
+        );
     return Semantics(
       button: true,
       label: semanticLabel,
@@ -149,22 +177,7 @@ class _PillActionButton extends StatelessWidget {
               color: backgroundColor,
               borderRadius: BorderRadius.circular(20),
             ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                icon,
-                if (label != null) ...[
-                  const SizedBox(width: AppSpacing.xs),
-                  Text(
-                    label!,
-                    style: theme.textTheme.labelSmall?.copyWith(
-                      color: labelColor,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ],
-            ),
+            child: content,
           ),
         ),
       ),
@@ -173,13 +186,16 @@ class _PillActionButton extends StatelessWidget {
 }
 
 class _ActionButton extends StatelessWidget {
-  final Widget icon;
+  /// When [child] is provided it is used as content instead of [icon].
+  final Widget? child;
+  final Widget? icon;
   final VoidCallback onTap;
   final String? semanticLabel;
 
   const _ActionButton({
-    required this.icon,
     required this.onTap,
+    this.child,
+    this.icon,
     this.semanticLabel,
   });
 
@@ -201,7 +217,7 @@ class _ActionButton extends StatelessWidget {
               horizontal: AppSpacing.md,
               vertical: AppSpacing.md,
             ),
-            child: icon,
+            child: child ?? icon!,
           ),
         ),
       ),

@@ -1,5 +1,4 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:budgie_breeding_tracker/core/utils/app_haptics.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -10,6 +9,7 @@ import '../../../core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/data/providers/action_feedback_providers.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_icon.dart';
+import 'animated_toggle_button.dart';
 import '../../../core/widgets/dialogs/confirm_dialog.dart';
 import '../../../data/providers/auth_state_providers.dart';
 import '../../../data/repositories/repository_providers.dart';
@@ -86,46 +86,33 @@ class CommunityCommentTile extends ConsumerWidget {
                 ],
               ),
             ),
-            Semantics(
-              button: true,
-              label: 'community.like'.tr(),
-              child: InkWell(
-                borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
-                onTap: () {
-                  AppHaptics.lightImpact();
-                  ref
-                      .read(commentLikeToggleProvider.notifier)
-                      .toggleCommentLike(
-                        commentId: comment.id,
-                        postId: comment.postId,
-                      );
-                },
-                child: Padding(
-                  padding: const EdgeInsets.all(AppSpacing.xs),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      AppIcon(
-                        AppIcons.like,
-                        size: 14,
-                        color: comment.isLikedByMe
-                            ? theme.colorScheme.primary
-                            : theme.colorScheme.onSurfaceVariant,
-                      ),
-                      if (comment.likeCount > 0) ...[
-                        const SizedBox(width: 2),
-                        Text(
-                          '${comment.likeCount}',
-                          style: theme.textTheme.labelSmall?.copyWith(
-                            color: comment.isLikedByMe
-                                ? theme.colorScheme.primary
-                                : theme.colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
+            Padding(
+              padding: const EdgeInsets.all(AppSpacing.xs),
+              child: AnimatedToggleButton(
+                isActive: comment.isLikedByMe,
+                activeIcon: AppIcon(
+                  AppIcons.like,
+                  size: 14,
+                  color: theme.colorScheme.primary,
                 ),
+                inactiveIcon: AppIcon(
+                  AppIcons.like,
+                  size: 14,
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+                onToggle: () => ref
+                    .read(commentLikeToggleProvider.notifier)
+                    .toggleCommentLike(
+                      commentId: comment.id,
+                      postId: comment.postId,
+                    ),
+                label: comment.likeCount > 0 ? '${comment.likeCount}' : null,
+                labelStyle: theme.textTheme.labelSmall?.copyWith(
+                  color: comment.isLikedByMe
+                      ? theme.colorScheme.primary
+                      : theme.colorScheme.onSurfaceVariant,
+                ),
+                semanticLabel: 'community.like'.tr(),
               ),
             ),
           ],

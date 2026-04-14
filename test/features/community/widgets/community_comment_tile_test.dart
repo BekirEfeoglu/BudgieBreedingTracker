@@ -14,6 +14,7 @@ import 'package:budgie_breeding_tracker/data/repositories/community_comment_repo
 import 'package:budgie_breeding_tracker/data/repositories/community_social_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/features/community/providers/community_feed_providers.dart';
+import 'package:budgie_breeding_tracker/features/community/widgets/animated_toggle_button.dart';
 import 'package:budgie_breeding_tracker/features/community/widgets/community_comment_tile.dart';
 import 'package:budgie_breeding_tracker/features/notifications/providers/action_feedback_providers.dart';
 
@@ -100,12 +101,11 @@ void main() {
       expect(find.text('3'), findsOneWidget);
     });
 
-    testWidgets('renders like button', (tester) async {
+    testWidgets('renders like button as AnimatedToggleButton', (tester) async {
       await tester.pumpWidget(createSubject(_testComment(isLikedByMe: false)));
       await tester.pump();
 
-      // Like button is the InkWell in the tile
-      expect(find.byType(InkWell), findsOneWidget);
+      expect(find.byType(AnimatedToggleButton), findsOneWidget);
     });
 
     testWidgets('hides like count when 0', (tester) async {

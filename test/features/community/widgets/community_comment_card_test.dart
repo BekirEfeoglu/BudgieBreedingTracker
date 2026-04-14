@@ -14,6 +14,7 @@ import 'package:budgie_breeding_tracker/data/repositories/community_comment_repo
 import 'package:budgie_breeding_tracker/data/repositories/community_social_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/features/community/providers/community_feed_providers.dart';
+import 'package:budgie_breeding_tracker/features/community/widgets/animated_toggle_button.dart';
 import 'package:budgie_breeding_tracker/features/community/widgets/community_comment_tile.dart';
 import 'package:budgie_breeding_tracker/features/notifications/providers/action_feedback_providers.dart';
 
@@ -158,11 +159,11 @@ void main() {
       expect(find.text('0'), findsNothing);
     });
 
-    testWidgets('renders like button as InkWell', (tester) async {
+    testWidgets('renders like button as AnimatedToggleButton', (tester) async {
       await tester.pumpWidget(createSubject(_testComment()));
       await tester.pump();
 
-      expect(find.byType(InkWell), findsOneWidget);
+      expect(find.byType(AnimatedToggleButton), findsOneWidget);
     });
 
     testWidgets('tap like button calls toggleCommentLike', (tester) async {
@@ -181,7 +182,7 @@ void main() {
       );
       await tester.pump();
 
-      await tester.tap(find.byType(InkWell));
+      await tester.tap(find.byType(AnimatedToggleButton));
       await tester.pumpAndSettle();
 
       verify(
