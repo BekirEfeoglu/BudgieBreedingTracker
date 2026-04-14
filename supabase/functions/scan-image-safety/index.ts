@@ -24,6 +24,18 @@ Deno.serve(async (req: Request) => {
 
     if (!rateLimiter.check(userId)) return rateLimitedResponse(headers);
 
+    // Guard against oversized payloads before parsing body into memory.
+    // MAX_IMAGE_BYTES is 2MB of raw image; base64 encoding inflates ~33%,
+    // plus JSON overhead — cap at 4MB total to prevent OOM.
+    const MAX_BODY_BYTES = 4 * 1024 * 1024;
+    const contentLength = parseInt(req.headers.get("content-length") ?? "0", 10);
+    if (contentLength > MAX_BODY_BYTES) {
+      return new Response(
+        JSON.stringify({ safe: false, reason: "image_too_large" }),
+        { status: 413, headers },
+      );
+    }
+
     let imageBase64: string | undefined;
     let mimeType: string | undefined;
     try {
