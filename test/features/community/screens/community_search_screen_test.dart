@@ -12,6 +12,7 @@ import 'package:budgie_breeding_tracker/data/models/community_post_model.dart';
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 import 'package:budgie_breeding_tracker/features/community/providers/community_feed_providers.dart';
 import 'package:budgie_breeding_tracker/features/community/screens/community_search_screen.dart';
+import 'package:budgie_breeding_tracker/features/community/widgets/community_feed_states.dart';
 
 void main() {
   GoRouter buildRouter(Widget child) {
@@ -64,6 +65,29 @@ void main() {
       await tester.pump();
 
       expect(find.text(l10n('community.search_hint')), findsOneWidget);
+
+      await tester.pumpWidget(const MaterialApp(home: SizedBox()));
+    });
+
+    testWidgets('shows skeleton loader when feed is loading with no posts',
+        (tester) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            currentUserIdProvider.overrideWithValue('me'),
+            communityFeedProvider.overrideWith(
+              () => _FakeLoadingFeedNotifier(),
+            ),
+          ],
+          child: MaterialApp.router(
+            routerConfig: buildRouter(const CommunitySearchScreen()),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      expect(find.byType(CommunityFeedSkeleton), findsOneWidget);
+      expect(find.byType(CircularProgressIndicator), findsNothing);
 
       await tester.pumpWidget(const MaterialApp(home: SizedBox()));
     });
@@ -203,6 +227,17 @@ class _FakeFeedNotifier extends CommunityFeedNotifier {
 
   @override
   FeedState build() => FeedState(posts: _posts, isLoading: false);
+
+  @override
+  Future<void> fetchInitial() async {}
+
+  @override
+  Future<void> fetchMore() async {}
+}
+
+class _FakeLoadingFeedNotifier extends CommunityFeedNotifier {
+  @override
+  FeedState build() => const FeedState(posts: [], isLoading: true);
 
   @override
   Future<void> fetchInitial() async {}

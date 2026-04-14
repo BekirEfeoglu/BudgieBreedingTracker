@@ -10,6 +10,7 @@ import '../../../router/route_names.dart';
 import '../providers/community_feed_providers.dart';
 import '../providers/community_providers.dart';
 import '../providers/community_search_providers.dart';
+import '../widgets/community_feed_states.dart';
 import '../widgets/community_post_card.dart';
 
 part 'community_search_results.dart';
@@ -89,7 +90,7 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen> {
           ),
         ),
         body: feedState.isLoading && feedState.posts.isEmpty
-            ? const Center(child: CircularProgressIndicator())
+            ? const CommunityFeedSkeleton()
             : searchState.hasQuery
             ? _SearchResultsBody(onTagTap: _applyQuery)
             : _SearchSuggestionsBody(onTagTap: _applyQuery),
