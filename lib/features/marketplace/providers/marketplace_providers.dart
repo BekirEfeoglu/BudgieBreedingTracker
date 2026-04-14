@@ -2,8 +2,10 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/enums/bird_enums.dart';
+import '../../../core/enums/marketplace_enums.dart';
 import '../../../data/models/marketplace_listing_model.dart';
 import '../../../data/repositories/repository_providers.dart';
+import '../../premium/providers/premium_providers.dart';
 
 export 'package:budgie_breeding_tracker/data/models/marketplace_listing_model.dart';
 export 'package:budgie_breeding_tracker/core/enums/marketplace_enums.dart';
@@ -164,6 +166,22 @@ final marketplaceFavoritesProvider =
     return repo.getFavorites(currentUserId: userId);
   },
 );
+
+/// Maximum active listings for free tier users.
+const marketplaceFreeTierMaxListings = 3;
+
+/// Whether the user can create a new listing.
+/// Premium users: always true. Free users: limited to 3 active listings.
+final canCreateListingProvider = Provider.family<bool, String>((ref, userId) {
+  final isPremium = ref.watch(effectivePremiumProvider);
+  if (isPremium) return true;
+  final myListings = ref.watch(myMarketplaceListingsProvider(userId));
+  final activeCount = myListings.asData?.value
+          .where((l) => l.status == MarketplaceListingStatus.active)
+          .length ??
+      0;
+  return activeCount < marketplaceFreeTierMaxListings;
+});
 
 /// Filtered and sorted listings (computed)
 final filteredMarketplaceListingsProvider =

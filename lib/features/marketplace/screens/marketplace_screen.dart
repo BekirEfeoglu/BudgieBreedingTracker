@@ -189,10 +189,45 @@ class _MarketplaceScreenState extends ConsumerState<MarketplaceScreen> {
           ),
         ],
       ),
-      floatingActionButton: FabButton(
-        icon: const Icon(LucideIcons.plus),
-        tooltip: 'marketplace.add_listing'.tr(),
-        onPressed: () => context.push('${AppRoutes.marketplace}/form'),
+      floatingActionButton: Builder(
+        builder: (context) {
+          final canCreate =
+              ref.watch(canCreateListingProvider(userId));
+          return FabButton(
+            icon: const Icon(LucideIcons.plus),
+            tooltip: 'marketplace.add_listing'.tr(),
+            onPressed: () {
+              if (canCreate) {
+                context.push('${AppRoutes.marketplace}/form');
+              } else {
+                showDialog<void>(
+                  context: context,
+                  builder: (_) => AlertDialog(
+                    title: Text('premium.upgrade_title'.tr()),
+                    content: Text(
+                      'marketplace.free_tier_limit'.tr(
+                        args: ['$marketplaceFreeTierMaxListings'],
+                      ),
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: Text('common.cancel'.tr()),
+                      ),
+                      FilledButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          context.push(AppRoutes.premium);
+                        },
+                        child: Text('premium.upgrade_button'.tr()),
+                      ),
+                    ],
+                  ),
+                );
+              }
+            },
+          );
+        },
       ),
     );
   }
