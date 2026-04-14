@@ -27,8 +27,8 @@ import 'package:budgie_breeding_tracker/features/calendar/widgets/event_detail_m
 import 'package:budgie_breeding_tracker/features/calendar/widgets/event_form_sheet.dart';
 import 'package:budgie_breeding_tracker/features/calendar/widgets/calendar_week_view.dart';
 import 'package:budgie_breeding_tracker/features/calendar/widgets/calendar_day_view.dart';
-import 'package:budgie_breeding_tracker/features/notifications/widgets/notification_bell_button.dart';
-import 'package:budgie_breeding_tracker/features/profile/widgets/profile_menu_button.dart';
+import 'package:budgie_breeding_tracker/features/notifications/widgets/notification_bell_button.dart'; // Cross-feature import: app-shell AppBar widget shared across all main screens
+import 'package:budgie_breeding_tracker/features/profile/widgets/profile_menu_button.dart'; // Cross-feature import: app-shell AppBar widget shared across all main screens
 
 part 'calendar_screen_bodies.dart';
 

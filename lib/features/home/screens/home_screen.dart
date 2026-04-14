@@ -22,8 +22,8 @@ import 'package:budgie_breeding_tracker/features/home/widgets/welcome_header.dar
 import 'package:budgie_breeding_tracker/data/providers/premium_shared_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/sync/sync_providers.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_brand_title.dart';
-import 'package:budgie_breeding_tracker/features/notifications/widgets/notification_bell_button.dart';
-import 'package:budgie_breeding_tracker/features/profile/widgets/profile_menu_button.dart';
+import 'package:budgie_breeding_tracker/features/notifications/widgets/notification_bell_button.dart'; // Cross-feature import: app-shell AppBar widget shared across all main screens
+import 'package:budgie_breeding_tracker/features/profile/widgets/profile_menu_button.dart'; // Cross-feature import: app-shell AppBar widget shared across all main screens
 import 'package:budgie_breeding_tracker/core/widgets/ad_banner_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:budgie_breeding_tracker/domain/services/ads/ad_service.dart';

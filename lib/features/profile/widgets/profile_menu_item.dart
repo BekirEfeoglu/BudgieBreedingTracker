@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
-import 'package:budgie_breeding_tracker/features/settings/providers/settings_providers.dart'
+import 'package:budgie_breeding_tracker/features/settings/providers/settings_providers.dart' // Cross-feature import: profile menu shows app version from settings
     show appInfoProvider;
 
 /// A single menu item row used in the profile menu dialog.

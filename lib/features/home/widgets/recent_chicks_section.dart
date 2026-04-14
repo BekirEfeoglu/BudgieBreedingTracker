@@ -8,7 +8,7 @@ import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
 import 'package:budgie_breeding_tracker/data/providers/chick_stream_providers.dart';
-import 'package:budgie_breeding_tracker/features/chicks/widgets/development_stage_badge.dart';
+import 'package:budgie_breeding_tracker/features/chicks/widgets/development_stage_badge.dart'; // Cross-feature import: home dashboard shows chick development stages
 import 'package:budgie_breeding_tracker/features/home/widgets/section_header.dart';
 import 'package:budgie_breeding_tracker/router/route_names.dart';
 

@@ -10,7 +10,7 @@ import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/data/remote/supabase/edge_function_client.dart';
-import 'package:budgie_breeding_tracker/features/admin/providers/admin_data_providers.dart';
+import 'package:budgie_breeding_tracker/features/admin/providers/admin_data_providers.dart'; // Cross-feature import: 2FA verification needs admin lockout check
 import 'package:budgie_breeding_tracker/features/auth/providers/two_factor_providers.dart';
 import 'package:budgie_breeding_tracker/features/auth/widgets/otp_input_field.dart';
 import 'package:budgie_breeding_tracker/router/route_names.dart';

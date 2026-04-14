@@ -5,7 +5,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/species/species_registry.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
-import 'package:budgie_breeding_tracker/features/birds/utils/bird_display_utils.dart';
+import 'package:budgie_breeding_tracker/core/utils/bird_display_utils.dart';
 import 'package:budgie_breeding_tracker/features/statistics/providers/statistics_providers.dart';
 
 class StatsSpeciesFilterSelector extends ConsumerWidget {

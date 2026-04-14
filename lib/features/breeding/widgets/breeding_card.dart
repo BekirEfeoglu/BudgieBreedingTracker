@@ -6,7 +6,7 @@ import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
 import 'package:budgie_breeding_tracker/data/models/incubation_model.dart';
 import 'package:budgie_breeding_tracker/domain/services/incubation/incubation_calculator.dart';
 
-import 'package:budgie_breeding_tracker/features/eggs/widgets/egg_summary_row.dart';
+import 'package:budgie_breeding_tracker/features/eggs/widgets/egg_summary_row.dart'; // Cross-feature import: breeding↔eggs tightly coupled domain
 import 'breeding_card_header.dart';
 import 'breeding_card_progress.dart';
 import 'breeding_card_footer.dart';

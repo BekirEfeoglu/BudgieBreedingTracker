@@ -13,11 +13,11 @@ import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_screen_title.dart';
 import '../../../router/route_names.dart';
-import 'package:budgie_breeding_tracker/features/notifications/widgets/notification_bell_button.dart';
-import 'package:budgie_breeding_tracker/features/profile/widgets/profile_menu_button.dart';
-import '../../admin/providers/admin_providers.dart';
-import '../../auth/providers/auth_providers.dart';
-import '../../settings/providers/settings_providers.dart';
+import 'package:budgie_breeding_tracker/features/notifications/widgets/notification_bell_button.dart'; // Cross-feature import: app-shell AppBar widget shared across all main screens
+import 'package:budgie_breeding_tracker/features/profile/widgets/profile_menu_button.dart'; // Cross-feature import: app-shell AppBar widget shared across all main screens
+import '../../admin/providers/admin_providers.dart'; // Cross-feature import: more screen shows admin role check
+import '../../auth/providers/auth_providers.dart'; // Cross-feature import: more screen shows auth state
+import '../../settings/providers/settings_providers.dart'; // Cross-feature import: more screen shows app settings
 
 part 'more_screen_sections.dart';
 

@@ -8,7 +8,7 @@ import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/sync/sync_providers.dart';
-import 'package:budgie_breeding_tracker/features/settings/widgets/sync_detail_sheet.dart';
+import 'package:budgie_breeding_tracker/features/settings/widgets/sync_detail_sheet.dart'; // Cross-feature import: home↔settings sync status display
 
 class SyncStatusBar extends ConsumerStatefulWidget {
   const SyncStatusBar({super.key});

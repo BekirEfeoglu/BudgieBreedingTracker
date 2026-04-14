@@ -19,8 +19,8 @@ import 'package:budgie_breeding_tracker/data/providers/premium_shared_providers.
 import 'package:budgie_breeding_tracker/features/birds/widgets/bird_card.dart';
 import 'package:budgie_breeding_tracker/features/birds/widgets/bird_filter_bar.dart';
 import 'package:budgie_breeding_tracker/features/birds/widgets/bird_search_bar.dart';
-import 'package:budgie_breeding_tracker/features/notifications/widgets/notification_bell_button.dart';
-import 'package:budgie_breeding_tracker/features/profile/widgets/profile_menu_button.dart';
+import 'package:budgie_breeding_tracker/features/notifications/widgets/notification_bell_button.dart'; // Cross-feature import: app-shell AppBar widget shared across all main screens
+import 'package:budgie_breeding_tracker/features/profile/widgets/profile_menu_button.dart'; // Cross-feature import: app-shell AppBar widget shared across all main screens
 
 /// Main screen listing all birds with search, filter, and sort support.
 class BirdListScreen extends ConsumerWidget {

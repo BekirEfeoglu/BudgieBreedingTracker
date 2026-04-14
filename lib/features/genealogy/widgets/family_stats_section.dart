@@ -6,7 +6,7 @@ import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/inbreeding_calculator.dart';
 import 'package:budgie_breeding_tracker/features/genealogy/providers/genealogy_calculation_providers.dart';
-import 'package:budgie_breeding_tracker/features/genetics/widgets/inbreeding_warning.dart';
+import 'package:budgie_breeding_tracker/features/genetics/widgets/inbreeding_warning.dart'; // Cross-feature import: genealogy↔genetics inbreeding analysis
 
 /// Displays family statistics: ancestor count, generation depth,
 /// offspring counts, gender ratio, and inbreeding coefficient.

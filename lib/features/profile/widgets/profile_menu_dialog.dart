@@ -8,11 +8,11 @@ import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/data/models/profile_model.dart';
-import 'package:budgie_breeding_tracker/features/admin/providers/admin_providers.dart'
+import 'package:budgie_breeding_tracker/features/admin/providers/admin_providers.dart' // Cross-feature import: profile menu shows admin/founder badge
     show isFounderProvider;
 import 'package:budgie_breeding_tracker/data/providers/premium_shared_providers.dart'
     show isPremiumProvider;
-import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
+import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart'; // Cross-feature import: profile↔auth logout and user state
 import 'package:budgie_breeding_tracker/features/profile/widgets/account_deletion_dialog.dart';
 import 'package:budgie_breeding_tracker/features/profile/widgets/password_change_sheet.dart';
 import 'package:budgie_breeding_tracker/features/profile/widgets/profile_menu_header.dart';

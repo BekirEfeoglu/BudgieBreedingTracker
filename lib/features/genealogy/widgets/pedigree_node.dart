@@ -9,7 +9,7 @@ import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/core/utils/navigation_throttle.dart';
 import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
-import 'package:budgie_breeding_tracker/features/birds/utils/bird_color_utils.dart';
+import 'package:budgie_breeding_tracker/core/utils/bird_color_utils.dart';
 
 part 'pedigree_node_helpers.dart';
 

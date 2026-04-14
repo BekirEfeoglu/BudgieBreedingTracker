@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
-import 'package:budgie_breeding_tracker/features/birds/utils/bird_display_utils.dart';
+import 'package:budgie_breeding_tracker/core/utils/bird_display_utils.dart';
 
 class SpeciesBreakdownCard extends StatelessWidget {
   const SpeciesBreakdownCard({super.key, required this.data});

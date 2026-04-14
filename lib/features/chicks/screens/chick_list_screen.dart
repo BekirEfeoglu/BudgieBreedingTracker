@@ -19,8 +19,8 @@ import 'package:budgie_breeding_tracker/data/providers/premium_shared_providers.
 import 'package:budgie_breeding_tracker/features/chicks/widgets/chick_card.dart';
 import 'package:budgie_breeding_tracker/features/chicks/widgets/chick_filter_bar.dart';
 import 'package:budgie_breeding_tracker/features/chicks/widgets/chick_search_bar.dart';
-import 'package:budgie_breeding_tracker/features/notifications/widgets/notification_bell_button.dart';
-import 'package:budgie_breeding_tracker/features/profile/widgets/profile_menu_button.dart';
+import 'package:budgie_breeding_tracker/features/notifications/widgets/notification_bell_button.dart'; // Cross-feature import: app-shell AppBar widget shared across all main screens
+import 'package:budgie_breeding_tracker/features/profile/widgets/profile_menu_button.dart'; // Cross-feature import: app-shell AppBar widget shared across all main screens
 import 'package:budgie_breeding_tracker/router/route_names.dart';
 
 /// Main screen listing all chicks with search and filter support.

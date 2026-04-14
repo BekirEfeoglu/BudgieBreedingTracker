@@ -9,7 +9,7 @@ import 'package:budgie_breeding_tracker/core/widgets/cards/info_card.dart';
 import 'package:budgie_breeding_tracker/core/widgets/date_picker_field.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/parent_genotype.dart';
 import 'package:budgie_breeding_tracker/features/birds/utils/bird_display_utils.dart';
-import 'package:budgie_breeding_tracker/features/genetics/widgets/mutation_selector.dart';
+import 'package:budgie_breeding_tracker/features/genetics/widgets/mutation_selector.dart'; // Cross-feature import: birds↔genetics mutation selection UI
 import 'package:budgie_breeding_tracker/features/birds/widgets/bird_parent_selector.dart';
 
 export 'bird_form_basic_info_section.dart';

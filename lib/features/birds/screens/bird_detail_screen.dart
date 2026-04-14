@@ -17,7 +17,7 @@ import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/data/providers/breeding_detail_stream_providers.dart';
 import 'package:budgie_breeding_tracker/data/providers/action_feedback_providers.dart';
 import 'package:budgie_breeding_tracker/features/birds/providers/bird_form_providers.dart';
-import 'package:budgie_breeding_tracker/features/genealogy/providers/genealogy_providers.dart';
+import 'package:budgie_breeding_tracker/features/genealogy/providers/genealogy_providers.dart'; // Cross-feature import: birds↔genealogy parent-child relationship
 import 'package:budgie_breeding_tracker/features/birds/widgets/bird_detail_header.dart';
 import 'package:budgie_breeding_tracker/features/birds/widgets/bird_detail_info.dart';
 import 'package:budgie_breeding_tracker/features/birds/widgets/bird_detail_parents.dart';

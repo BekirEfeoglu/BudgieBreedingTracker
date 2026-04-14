@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:budgie_breeding_tracker/data/models/profile_model.dart';
-import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
+import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart'; // Cross-feature import: profile↔auth user state for avatar
 import 'package:budgie_breeding_tracker/features/profile/providers/profile_providers.dart';
 import 'package:budgie_breeding_tracker/features/profile/widgets/profile_menu_dialog.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
