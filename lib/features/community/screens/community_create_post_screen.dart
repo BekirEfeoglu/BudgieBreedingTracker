@@ -9,7 +9,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../core/enums/community_enums.dart';
 import '../../../core/theme/app_spacing.dart';
-import '../../notifications/providers/action_feedback_providers.dart';
+import '../../../data/providers/action_feedback_providers.dart';
 import '../providers/community_create_providers.dart';
 
 part 'community_create_post_widgets.dart';
@@ -173,7 +173,7 @@ class _CommunityCreatePostScreenState
             TextField(
               controller: _contentController,
               maxLines: 8,
-              maxLength: 1000,
+              maxLength: 5000,
               enabled: !formState.isLoading,
               decoration: InputDecoration(
                 hintText: _contentHint,

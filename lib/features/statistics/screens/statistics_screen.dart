@@ -32,6 +32,8 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
+    // Intentional ref.read: userId is a stable synchronous value needed for
+    // the post-frame invalidation below; ref.watch is not available in initState.
     _userId = ref.read(currentUserIdProvider);
     // Invalidate on mount so stale keepAlive caches are cleared when
     // returning to this screen. Schedule after the first frame so Riverpod's

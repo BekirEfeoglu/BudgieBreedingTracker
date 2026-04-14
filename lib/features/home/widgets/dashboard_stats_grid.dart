@@ -70,7 +70,7 @@ class DashboardStatsGrid extends ConsumerWidget {
                 value: '${stats.totalChicks}',
                 icon: const AppIcon(AppIcons.chick),
                 color: AppColors.budgieGreen,
-                onTap: () => context.go(AppRoutes.chicks),
+                onTap: () => context.push(AppRoutes.chicks),
               ),
               StatCard(
                 label: 'home.total_eggs'.tr(),

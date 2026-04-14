@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart' show immutable;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
@@ -135,6 +136,7 @@ final unweanedChicksCountProvider = StreamProvider.family<int, String>((
 });
 
 /// Summary of incubating eggs with remaining days until expected hatch.
+@immutable
 class IncubatingEggSummary {
   final Egg egg;
   final Species species;
@@ -147,6 +149,19 @@ class IncubatingEggSummary {
     required this.daysRemaining,
     required this.progressPercent,
   });
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is IncubatingEggSummary &&
+          runtimeType == other.runtimeType &&
+          egg == other.egg &&
+          species == other.species &&
+          daysRemaining == other.daysRemaining &&
+          progressPercent == other.progressPercent;
+
+  @override
+  int get hashCode => Object.hash(egg, species, daysRemaining, progressPercent);
 }
 
 final incubatingEggsSummaryProvider =
@@ -194,7 +209,7 @@ final profileSyncProvider = FutureProvider.family<void, String>((
   final repo = ref.watch(profileRepositoryProvider);
   try {
     await repo.pull(userId);
-  } catch (e) {
-    AppLogger.error('[MainShell] Profile sync failed', e, StackTrace.current);
+  } on Exception catch (e, st) {
+    AppLogger.error('[MainShell] Profile sync failed', e, st);
   }
 });

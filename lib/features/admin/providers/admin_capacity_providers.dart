@@ -132,7 +132,7 @@ final serverCapacityProvider = FutureProvider<ServerCapacity>((ref) async {
             deadTupleRatio: 0,
           ),
         );
-      } catch (e2, st2) {
+      } catch (e2) {
         AppLogger.warning('serverCapacityProvider fallback: $table: $e2');
         tableCapacities.add(
           TableCapacity(

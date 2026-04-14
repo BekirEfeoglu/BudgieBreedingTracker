@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import 'package:budgie_breeding_tracker/core/constants/app_constants.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/constants/feature_flags.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
@@ -50,7 +51,7 @@ class MoreScreen extends ConsumerWidget {
           _MoreTile(
             icon: const AppIcon(AppIcons.chick),
             title: 'nav.chicks'.tr(),
-            onTap: () => context.go(AppRoutes.chicks),
+            onTap: () => context.push(AppRoutes.chicks),
           ),
           _MoreTile(
             icon: const AppIcon(AppIcons.health),

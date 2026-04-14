@@ -24,8 +24,8 @@ class PremiumNotifier extends Notifier<bool> {
       state = false;
       try {
         await ref.read(purchaseServiceProvider).logout();
-      } catch (e) {
-        AppLogger.warning('[PremiumNotifier] RevenueCat logout failed: $e');
+      } catch (e, st) {
+        AppLogger.error('[PremiumNotifier] RevenueCat logout failed', e, st);
       }
       await prefs.remove('is_premium');
       return;
@@ -51,8 +51,8 @@ class PremiumNotifier extends Notifier<bool> {
           state = isPremium;
           await prefs.setBool(cacheKey, isPremium);
         }
-      } catch (e) {
-        AppLogger.warning('[PremiumNotifier] RevenueCat query failed, using cached value: $e');
+      } catch (e, st) {
+        AppLogger.error('[PremiumNotifier] RevenueCat query failed, using cached value', e, st);
       }
     }
 
@@ -109,8 +109,8 @@ class PremiumNotifier extends Notifier<bool> {
         // Sync new status to Supabase — covers both expiration and renewal.
         await syncPremiumToSupabase(isPremium: isPremium);
       }
-    } catch (e) {
-      AppLogger.warning('[PremiumNotifier] Refresh failed: $e');
+    } catch (e, st) {
+      AppLogger.error('[PremiumNotifier] Refresh failed', e, st);
     }
 
     // Retry any pending Supabase sync

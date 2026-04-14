@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -111,7 +112,7 @@ class _CommunityUserTile extends StatelessWidget {
         ),
         leading: CircleAvatar(
           foregroundImage:
-              user.avatarUrl != null ? NetworkImage(user.avatarUrl!) : null,
+              user.avatarUrl != null ? CachedNetworkImageProvider(user.avatarUrl!) : null,
           child: user.avatarUrl == null
               ? Text(
                   user.username.isNotEmpty

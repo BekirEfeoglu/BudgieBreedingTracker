@@ -67,8 +67,8 @@ class BreedingFormState {
       isLoading: isLoading ?? this.isLoading,
       error: error,
       isSuccess: isSuccess ?? this.isSuccess,
-      isBreedingLimitReached: isBreedingLimitReached ?? false,
-      isIncubationLimitReached: isIncubationLimitReached ?? false,
+      isBreedingLimitReached: isBreedingLimitReached ?? this.isBreedingLimitReached,
+      isIncubationLimitReached: isIncubationLimitReached ?? this.isIncubationLimitReached,
     );
   }
 }
@@ -223,7 +223,11 @@ class BreedingFormNotifier extends Notifier<BreedingFormState>
         await incubationRepo.save(incubation);
       } catch (e) {
         // Rollback: remove the orphaned pair
-        await pairRepo.remove(pairId);
+        try {
+          await pairRepo.remove(pairId);
+        } catch (rollbackError, rollbackSt) {
+          AppLogger.error('[BreedingFormNotifier] Rollback failed', rollbackError, rollbackSt);
+        }
         rethrow;
       }
 

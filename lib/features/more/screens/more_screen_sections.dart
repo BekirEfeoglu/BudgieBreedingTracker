@@ -73,7 +73,7 @@ void _showMoreAboutDialog(BuildContext context, WidgetRef ref) {
             ),
             const SizedBox(height: AppSpacing.sm),
             InkWell(
-              onTap: () => launchUrl(Uri.parse('mailto:support@budgiebreedingtracker.online')),
+              onTap: () => launchUrl(Uri.parse('mailto:${AppConstants.supportEmail}')),
               borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
@@ -82,7 +82,7 @@ void _showMoreAboutDialog(BuildContext context, WidgetRef ref) {
                     Icon(LucideIcons.mail, size: 16, color: colorScheme.primary),
                     const SizedBox(width: AppSpacing.sm),
                     Text(
-                      'support@budgiebreedingtracker.online',
+                      AppConstants.supportEmail,
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: colorScheme.primary,
                         decoration: TextDecoration.underline,
@@ -94,7 +94,7 @@ void _showMoreAboutDialog(BuildContext context, WidgetRef ref) {
               ),
             ),
             InkWell(
-              onTap: () => launchUrl(Uri.parse('https://budgiebreedingtracker.online/')),
+              onTap: () => launchUrl(Uri.parse(AppConstants.websiteUrl)),
               borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
@@ -103,7 +103,7 @@ void _showMoreAboutDialog(BuildContext context, WidgetRef ref) {
                     Icon(LucideIcons.globe, size: 16, color: colorScheme.primary),
                     const SizedBox(width: AppSpacing.sm),
                     Text(
-                      'budgiebreedingtracker.online',
+                      Uri.parse(AppConstants.websiteUrl).host,
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: colorScheme.primary,
                         decoration: TextDecoration.underline,

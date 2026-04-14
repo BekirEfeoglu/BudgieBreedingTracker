@@ -206,7 +206,7 @@ class _DetailContent extends ConsumerWidget {
     );
   }
 
-  void _onDelete(BuildContext context, WidgetRef ref) async {
+  Future<void> _onDelete(BuildContext context, WidgetRef ref) async {
     final confirmed = await showConfirmDialog(
       context,
       title: 'common.delete'.tr(),

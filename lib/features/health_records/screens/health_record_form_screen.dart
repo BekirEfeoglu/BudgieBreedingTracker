@@ -16,6 +16,7 @@ import 'package:budgie_breeding_tracker/data/providers/chick_stream_providers.da
 import 'package:budgie_breeding_tracker/features/health_records/providers/health_record_providers.dart';
 import 'package:budgie_breeding_tracker/features/health_records/providers/health_record_form_providers.dart';
 import 'package:budgie_breeding_tracker/features/health_records/widgets/health_record_form_fields.dart';
+import 'package:budgie_breeding_tracker/core/widgets/unsaved_changes_scope.dart';
 
 /// Form screen for creating/editing a health record.
 class HealthRecordFormScreen extends ConsumerStatefulWidget {
@@ -51,6 +52,19 @@ class _HealthRecordFormScreenState
   bool _isEdit = false;
   bool _didPopulateFromExisting = false;
   HealthRecord? _existingRecord;
+  bool _savedSuccessfully = false;
+
+  bool get _isDirty {
+    if (_savedSuccessfully) return false;
+    if (_isEdit) return true;
+    return _titleController.text.isNotEmpty ||
+        _descriptionController.text.isNotEmpty ||
+        _treatmentController.text.isNotEmpty ||
+        _vetController.text.isNotEmpty ||
+        _notesController.text.isNotEmpty ||
+        _weightController.text.isNotEmpty ||
+        _costController.text.isNotEmpty;
+  }
 
   @override
   void initState() {
@@ -101,6 +115,7 @@ class _HealthRecordFormScreenState
       state,
     ) {
       if (state.isSuccess) {
+        _savedSuccessfully = true;
         ref.read(healthRecordFormStateProvider.notifier).reset();
         context.pop();
       }
@@ -150,12 +165,14 @@ class _HealthRecordFormScreenState
     return _buildFormScaffold(formState, birdsAsync, chicksAsync);
   }
 
-  Scaffold _buildFormScaffold(
+  Widget _buildFormScaffold(
     HealthRecordFormState formState,
     AsyncValue<dynamic> birdsAsync,
     AsyncValue<dynamic> chicksAsync,
   ) {
-    return Scaffold(
+    return UnsavedChangesScope(
+      isDirty: _isDirty,
+      child: Scaffold(
       appBar: AppBar(
         title: Text(
           _isEdit
@@ -213,6 +230,7 @@ class _HealthRecordFormScreenState
           ),
         ),
       ),
+    ),
     );
   }
 

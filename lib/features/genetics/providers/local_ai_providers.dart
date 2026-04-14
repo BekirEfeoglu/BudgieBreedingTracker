@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:budgie_breeding_tracker/data/local/preferences/app_preferences.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/mendelian_calculator.dart';
@@ -38,6 +39,9 @@ final localAiModelListProvider =
     );
 
 class LocalAiConfigNotifier extends AsyncNotifier<LocalAiConfig> {
+  static const _secureKeyApiKey = 'local_ai_api_key';
+  static const FlutterSecureStorage _secureStorage = FlutterSecureStorage();
+
   @override
   Future<LocalAiConfig> build() async {
     final prefs = await SharedPreferences.getInstance();
@@ -48,6 +52,7 @@ class LocalAiConfigNotifier extends AsyncNotifier<LocalAiConfig> {
     final providerDefaults = provider == LocalAiProvider.openRouter
         ? LocalAiConfig.openRouterDefaults
         : LocalAiConfig.defaults;
+    final apiKey = await _secureStorage.read(key: _secureKeyApiKey) ?? '';
     return LocalAiConfig(
       provider: provider,
       baseUrl:
@@ -56,7 +61,7 @@ class LocalAiConfigNotifier extends AsyncNotifier<LocalAiConfig> {
       model:
           ap.getString(AppPreferences.keyLocalAiModel) ??
           providerDefaults.model,
-      apiKey: ap.getString(AppPreferences.keyLocalAiApiKey) ?? '',
+      apiKey: apiKey,
     );
   }
 
@@ -85,7 +90,9 @@ class LocalAiConfigNotifier extends AsyncNotifier<LocalAiConfig> {
       await ap.setString(AppPreferences.keyLocalAiProvider, next.provider.key);
       await ap.setString(AppPreferences.keyLocalAiBaseUrl, next.baseUrl);
       await ap.setString(AppPreferences.keyLocalAiModel, next.model);
-      await ap.setString(AppPreferences.keyLocalAiApiKey, next.apiKey);
+      await _secureStorage.write(key: _secureKeyApiKey, value: next.apiKey);
+      // Clean up legacy plaintext key from SharedPreferences
+      await ap.remove(AppPreferences.keyLocalAiApiKey);
       return next;
     });
   }

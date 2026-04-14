@@ -45,8 +45,8 @@ class BirdFormState {
       isLoading: isLoading ?? this.isLoading,
       error: error,
       isSuccess: isSuccess ?? this.isSuccess,
-      isBirdLimitReached: isBirdLimitReached ?? false,
-      remainingBirds: remainingBirds,
+      isBirdLimitReached: isBirdLimitReached ?? this.isBirdLimitReached,
+      remainingBirds: remainingBirds ?? this.remainingBirds,
     );
   }
 }

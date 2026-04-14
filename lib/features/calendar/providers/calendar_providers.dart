@@ -32,10 +32,11 @@ class CalendarViewNotifier extends Notifier<CalendarViewMode> {
   }
 
   Future<void> _loadFromPrefs() async {
+    if (_hasLoadedFromPrefs) return;
+    _hasLoadedFromPrefs = true;
     final prefs = await SharedPreferences.getInstance();
     final value = prefs.getString(AppPreferences.keyCalendarViewMode);
-    if (value != null && !_hasLoadedFromPrefs) {
-      _hasLoadedFromPrefs = true;
+    if (value != null && ref.mounted) {
       state = switch (value) {
         'week' => CalendarViewMode.week,
         'day' => CalendarViewMode.day,

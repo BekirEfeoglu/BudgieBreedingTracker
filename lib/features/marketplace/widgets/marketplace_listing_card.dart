@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -41,10 +42,11 @@ class MarketplaceListingCard extends StatelessWidget {
             if (listing.primaryImageUrl != null)
               AspectRatio(
                 aspectRatio: 16 / 9,
-                child: Image.network(
-                  listing.primaryImageUrl!,
+                child: CachedNetworkImage(
+                  imageUrl: listing.primaryImageUrl!,
                   fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => Container(
+                  memCacheWidth: 640,
+                  errorWidget: (_, _, _) => Container(
                     color: theme.colorScheme.surfaceContainerHighest,
                     child: Icon(
                       LucideIcons.image,

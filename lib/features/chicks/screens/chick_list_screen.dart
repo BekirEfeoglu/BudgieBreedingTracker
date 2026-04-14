@@ -60,7 +60,7 @@ class ChickListScreen extends ConsumerWidget {
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(LucideIcons.arrowLeft),
-          tooltip: 'back'.tr(),
+          tooltip: 'common.back'.tr(),
           onPressed: () => _handleBack(context),
         ),
         title: AppScreenTitle(

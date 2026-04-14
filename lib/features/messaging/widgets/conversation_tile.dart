@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -24,7 +25,7 @@ class ConversationTile extends StatelessWidget {
       leading: CircleAvatar(
         radius: 24,
         backgroundImage: conversation.imageUrl != null
-            ? NetworkImage(conversation.imageUrl!)
+            ? CachedNetworkImageProvider(conversation.imageUrl!)
             : null,
         child: conversation.imageUrl == null
             ? Icon(

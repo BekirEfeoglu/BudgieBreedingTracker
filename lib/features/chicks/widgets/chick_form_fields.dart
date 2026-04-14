@@ -203,7 +203,7 @@ class _HealthStatusSelector extends StatelessWidget {
             ),
             ButtonSegment(
               value: ChickHealthStatus.unknown,
-              label: Text('chicks.unknown_gender'.tr()),
+              label: Text('chicks.unknown_status'.tr()),
               icon: const Icon(LucideIcons.helpCircle),
             ),
           ],

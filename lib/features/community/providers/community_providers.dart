@@ -21,7 +21,7 @@ enum CommunityFeedTab {
     CommunityFeedTab.explore => 'community.tab_explore'.tr(),
     CommunityFeedTab.following => 'community.tab_following'.tr(),
     CommunityFeedTab.guides => 'community.tab_guides'.tr(),
-    CommunityFeedTab.questions => 'community.tab_marketplace'.tr(),
+    CommunityFeedTab.questions => 'community.tab_questions'.tr(),
   };
 }
 

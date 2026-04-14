@@ -189,6 +189,7 @@ class _DetailContent extends ConsumerWidget {
           message: 'breeding.complete_confirm'.tr(),
           confirmLabel: 'breeding.complete'.tr(),
         );
+        if (!context.mounted) return;
         if (confirmed == true) {
           await formNotifier.completeBreeding(pair.id);
         }
@@ -200,6 +201,7 @@ class _DetailContent extends ConsumerWidget {
           confirmLabel: 'breeding.cancel_breeding'.tr(),
           isDestructive: true,
         );
+        if (!context.mounted) return;
         if (confirmed == true) {
           await formNotifier.cancelBreeding(pair.id);
         }
@@ -211,6 +213,7 @@ class _DetailContent extends ConsumerWidget {
           confirmLabel: 'common.delete'.tr(),
           isDestructive: true,
         );
+        if (!context.mounted) return;
         if (confirmed == true) {
           await formNotifier.deleteBreeding(pair.id);
         }

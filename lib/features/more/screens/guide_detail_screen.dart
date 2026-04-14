@@ -15,6 +15,13 @@ class GuideDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (topicIndex < 0 || topicIndex >= guideTopics.length) {
+      return Scaffold(
+        appBar: AppBar(),
+        body: Center(child: Text('common.not_found'.tr())),
+      );
+    }
+
     final topic = guideTopics[topicIndex];
 
     return Scaffold(

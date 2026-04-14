@@ -76,6 +76,7 @@ class ChickSortNotifier extends Notifier<ChickSort> {
   Future<void> _loadFromPrefs() async {
     final prefs = await SharedPreferences.getInstance();
     final saved = prefs.getString(AppPreferences.keyChickSort);
+    if (!ref.mounted) return;
     if (saved != null) {
       final match = ChickSort.values.where((s) => s.name == saved);
       if (match.isNotEmpty) {

@@ -48,9 +48,9 @@ extension _PremiumSyncHelpers on PremiumNotifier {
               .read(purchaseServiceProvider)
               .getSubscriptionInfo();
           expiresAt = info.expirationDate;
-        } catch (e) {
-          AppLogger.warning(
-            '[PremiumNotifier] RevenueCat info unavailable, proceeding without expiry: $e',
+        } catch (e, st) {
+          AppLogger.error(
+            '[PremiumNotifier] RevenueCat info unavailable, proceeding without expiry', e, st,
           );
         }
       }
@@ -67,14 +67,14 @@ extension _PremiumSyncHelpers on PremiumNotifier {
 
       // Sync succeeded — clear any pending retry
       await clearPendingSync(userId);
-    } catch (e) {
+    } catch (e, st) {
       if (isSupabaseUnavailableError(e)) {
         AppLogger.info(
           '[PremiumNotifier] Skipping Supabase sync: Supabase is not initialized',
         );
       } else {
-        AppLogger.warning(
-          '[PremiumNotifier] Supabase sync failed (non-fatal): $e',
+        AppLogger.error(
+          '[PremiumNotifier] Supabase sync failed (non-fatal)', e, st,
         );
         // Save for retry on next app resume
         if (!ref.mounted) return;
@@ -142,8 +142,8 @@ extension _PremiumSyncHelpers on PremiumNotifier {
       if (lastAttemptStr != null) {
         lastAttemptAt = DateTime.tryParse(lastAttemptStr);
       }
-    } catch (e) {
-      AppLogger.warning('[PremiumNotifier] Corrupt pending sync data: $e');
+    } catch (e, st) {
+      AppLogger.error('[PremiumNotifier] Corrupt pending sync data', e, st);
       await clearPendingSync(userId);
       return;
     }

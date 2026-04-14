@@ -1,4 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/foundation.dart' show immutable;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:budgie_breeding_tracker/core/enums/event_enums.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
@@ -8,6 +9,7 @@ import 'package:budgie_breeding_tracker/data/repositories/repository_providers.d
 import 'package:uuid/uuid.dart';
 
 /// State for the event form.
+@immutable
 class EventFormState {
   final bool isLoading;
   final String? error;
@@ -26,6 +28,18 @@ class EventFormState {
       isSuccess: isSuccess ?? this.isSuccess,
     );
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is EventFormState &&
+          runtimeType == other.runtimeType &&
+          isLoading == other.isLoading &&
+          error == other.error &&
+          isSuccess == other.isSuccess;
+
+  @override
+  int get hashCode => Object.hash(isLoading, error, isSuccess);
 }
 
 /// Notifier for event form operations.

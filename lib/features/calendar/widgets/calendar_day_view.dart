@@ -54,10 +54,16 @@ class CalendarDayView extends StatelessWidget {
 
         // Events that fall in this hour (including endDate range)
         final hourEvents = sortedEvents.where((e) {
+          final startHr = e.eventDate.hour;
           if (e.endDate != null) {
-            return e.eventDate.hour <= hour && e.endDate!.hour >= hour;
+            if (e.endDate!.day == e.eventDate.day) {
+              // Same-day event
+              return startHr <= hour && e.endDate!.hour >= hour;
+            }
+            // Cross-midnight: show from start hour to end of day
+            return startHr <= hour;
           }
-          return e.eventDate.hour == hour;
+          return startHr == hour;
         }).toList();
 
         return _HourSlot(
@@ -90,7 +96,10 @@ class _HourSlot extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return IntrinsicHeight(
+    // Using ConstrainedBox instead of IntrinsicHeight to avoid O(n^2)
+    // layout cost inside ListView.builder.
+    return ConstrainedBox(
+      constraints: const BoxConstraints(minHeight: 48),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

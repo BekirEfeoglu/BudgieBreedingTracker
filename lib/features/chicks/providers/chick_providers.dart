@@ -112,7 +112,7 @@ class BandingActionNotifier extends Notifier<AsyncValue<void>> {
       // 1. Update chick with bandingDate
       final chick = await chickRepo.getById(chickId);
       if (chick == null) {
-        state = AsyncError('Chick not found', StackTrace.current);
+        state = AsyncError('errors.not_found'.tr(), StackTrace.current);
         return;
       }
       await chickRepo.save(

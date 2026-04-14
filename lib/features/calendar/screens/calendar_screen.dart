@@ -283,6 +283,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
       message: 'calendar.delete_event_confirm'.tr(),
       isDestructive: true,
     );
+    if (!mounted) return;
     if (confirmed == true) {
       ref.read(eventFormStateProvider.notifier).deleteEvent(event.id);
     }

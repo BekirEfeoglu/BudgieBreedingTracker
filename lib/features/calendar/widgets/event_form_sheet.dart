@@ -93,6 +93,7 @@ class _EventFormContentState extends ConsumerState<_EventFormContent> {
     ref.listen<EventFormState>(eventFormStateProvider, (_, state) {
       if (state.isSuccess) {
         ref.read(eventFormStateProvider.notifier).reset();
+        if (!mounted) return;
         Navigator.of(context).pop();
         ActionFeedbackService.show(
           _isEditing
@@ -100,7 +101,7 @@ class _EventFormContentState extends ConsumerState<_EventFormContent> {
               : 'calendar.event_saved'.tr(),
         );
       }
-      if (state.error != null) {
+      if (state.error != null && mounted) {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text('errors.unknown'.tr())));

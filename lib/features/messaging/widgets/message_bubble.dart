@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -118,11 +119,12 @@ class MessageBubble extends StatelessWidget {
         return ClipRRect(
           borderRadius: BorderRadius.circular(8),
           child: message.imageUrl != null
-              ? Image.network(
-                  message.imageUrl!,
+              ? CachedNetworkImage(
+                  imageUrl: message.imageUrl!,
                   fit: BoxFit.cover,
                   width: double.infinity,
-                  errorBuilder: (_, __, ___) => Container(
+                  memCacheWidth: 640,
+                  errorWidget: (_, _, _) => Container(
                     height: 150,
                     color: theme.colorScheme.surfaceContainerHighest,
                     child: const Icon(LucideIcons.imageOff, size: 32),
