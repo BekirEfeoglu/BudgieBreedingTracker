@@ -14,6 +14,7 @@ import '../../../features/messaging/providers/messaging_form_providers.dart';
 import '../../community/widgets/community_image_viewer.dart';
 import '../providers/marketplace_form_providers.dart';
 import '../providers/marketplace_providers.dart';
+import '../widgets/marketplace_seller_card.dart';
 
 class MarketplaceDetailScreen extends ConsumerStatefulWidget {
   final String listingId;
@@ -200,6 +201,14 @@ class _MarketplaceDetailScreenState
                         value: listing.city,
                       ),
                       const SizedBox(height: AppSpacing.xl),
+                      MarketplaceSellerCard(
+                        sellerId: listing.userId,
+                        username: listing.username,
+                        avatarUrl: listing.avatarUrl,
+                        isVerifiedBreeder: listing.isVerifiedBreeder,
+                        memberSince: listing.createdAt,
+                      ),
+                      const SizedBox(height: AppSpacing.lg),
                       if (!isOwner)
                         SizedBox(
                           width: double.infinity,

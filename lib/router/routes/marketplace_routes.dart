@@ -6,6 +6,7 @@ import '../../features/marketplace/screens/marketplace_form_screen.dart';
 import '../../features/marketplace/screens/marketplace_favorites_screen.dart';
 import '../../features/marketplace/screens/marketplace_my_listings_screen.dart';
 import '../../features/marketplace/screens/marketplace_screen.dart';
+import '../../features/marketplace/screens/marketplace_seller_listings_screen.dart';
 import '../route_names.dart';
 import '../route_utils.dart';
 
@@ -29,6 +30,14 @@ List<RouteBase> buildMarketplaceRoutes() => [
           GoRoute(
             path: 'my-listings',
             builder: (context, state) => const MarketplaceMyListingsScreen(),
+          ),
+          GoRoute(
+            path: 'seller/:sellerId',
+            builder: (context, state) {
+              final sellerId = state.pathParameters['sellerId']!;
+              if (!isValidRouteId(sellerId)) return const NotFoundScreen();
+              return MarketplaceSellerListingsScreen(sellerId: sellerId);
+            },
           ),
           // Parameterized paths AFTER specific paths
           GoRoute(
