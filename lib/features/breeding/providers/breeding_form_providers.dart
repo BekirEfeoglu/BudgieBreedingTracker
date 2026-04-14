@@ -67,8 +67,8 @@ class BreedingFormState {
       isLoading: isLoading ?? this.isLoading,
       error: error,
       isSuccess: isSuccess ?? this.isSuccess,
-      isBreedingLimitReached: isBreedingLimitReached ?? this.isBreedingLimitReached,
-      isIncubationLimitReached: isIncubationLimitReached ?? this.isIncubationLimitReached,
+      isBreedingLimitReached: isBreedingLimitReached ?? false,
+      isIncubationLimitReached: isIncubationLimitReached ?? false,
     );
   }
 }

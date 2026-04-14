@@ -1187,20 +1187,21 @@ void main() {
       expect(updated.isSuccess, isFalse);
     });
 
-    test('copyWith resets isBirdLimitReached to false by default', () {
+    test('copyWith preserves isBirdLimitReached when not explicitly passed',
+        () {
       final state = const BirdFormState().copyWith(isBirdLimitReached: true);
       expect(state.isBirdLimitReached, isTrue);
 
-      final cleared = state.copyWith(isLoading: true);
-      expect(cleared.isBirdLimitReached, isFalse);
+      final preserved = state.copyWith(isLoading: true);
+      expect(preserved.isBirdLimitReached, isTrue);
     });
 
-    test('copyWith resets remainingBirds to null by default', () {
+    test('copyWith preserves remainingBirds when not explicitly passed', () {
       final state = const BirdFormState().copyWith(remainingBirds: 5);
       expect(state.remainingBirds, 5);
 
-      final cleared = state.copyWith(isLoading: true);
-      expect(cleared.remainingBirds, isNull);
+      final preserved = state.copyWith(isLoading: true);
+      expect(preserved.remainingBirds, 5);
     });
 
     test('copyWith clears error when passed null', () {

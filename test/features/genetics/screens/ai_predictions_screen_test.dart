@@ -2,15 +2,40 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:budgie_breeding_tracker/data/local/preferences/app_preferences.dart';
+import 'package:budgie_breeding_tracker/domain/services/local_ai/local_ai_models.dart';
+import 'package:budgie_breeding_tracker/features/genetics/providers/local_ai_providers.dart';
 import 'package:budgie_breeding_tracker/features/genetics/screens/ai_predictions_screen.dart';
 import 'package:budgie_breeding_tracker/features/genetics/widgets/ai/ai_mutation_tab.dart';
 import 'package:budgie_breeding_tracker/features/genetics/widgets/ai/ai_sex_estimation_tab.dart';
 import 'package:budgie_breeding_tracker/features/genetics/widgets/ai/ai_welcome_screen.dart';
 import 'package:budgie_breeding_tracker/router/route_names.dart';
 import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
+
+// ── Fake notifier to bypass FlutterSecureStorage ──
+
+class _FakeConfig extends LocalAiConfigNotifier {
+  _FakeConfig(this._initial);
+  final AsyncValue<LocalAiConfig> _initial;
+
+  @override
+  Future<LocalAiConfig> build() async => _initial.requireValue;
+}
+
+// ── Test config values ──
+
+const _configuredConfig = LocalAiConfig(
+  provider: LocalAiProvider.openRouter,
+  baseUrl: 'https://openrouter.ai',
+  model: 'google/gemma-4-26b-a4b-it:free',
+  apiKey: 'test-key',
+);
+
+const _unconfiguredConfig = LocalAiConfig(
+  provider: LocalAiProvider.ollama,
+  baseUrl: 'http://127.0.0.1:11434',
+  model: '',
+);
 
 void main() {
   group('AiPredictionsScreen', () {
@@ -45,24 +70,29 @@ void main() {
       );
     }
 
-    Widget buildSubject({int initialTab = 0, String? birdId}) {
-      return ProviderScope(
+    Widget buildSubject({
+      int initialTab = 0,
+      String? birdId,
+      LocalAiConfig config = _configuredConfig,
+    }) {
+      final container = ProviderContainer(
+        overrides: [
+          localAiConfigProvider.overrideWith(
+            () => _FakeConfig(AsyncData(config)),
+          ),
+        ],
+      );
+
+      return UncontrolledProviderScope(
+        container: container,
         child: MaterialApp.router(
-          routerConfig: buildRouter(initialTab: initialTab, birdId: birdId),
+          routerConfig:
+              buildRouter(initialTab: initialTab, birdId: birdId),
         ),
       );
     }
 
     group('with configured AI', () {
-      setUp(() {
-        SharedPreferences.setMockInitialValues({
-          AppPreferences.keyLocalAiProvider: 'openRouter',
-          AppPreferences.keyLocalAiBaseUrl: 'https://openrouter.ai',
-          AppPreferences.keyLocalAiModel: 'google/gemma-4-26b-a4b-it:free',
-          AppPreferences.keyLocalAiApiKey: 'test-key',
-        });
-      });
-
       testWidgets('renders tab bar with 2 tabs', (tester) async {
         await tester.pumpWidget(buildSubject());
         await tester.pumpAndSettle();
@@ -88,12 +118,10 @@ void main() {
     });
 
     group('without configured AI', () {
-      setUp(() {
-        SharedPreferences.setMockInitialValues({});
-      });
-
       testWidgets('shows welcome screen when no config', (tester) async {
-        await tester.pumpWidget(buildSubject());
+        await tester.pumpWidget(
+          buildSubject(config: _unconfiguredConfig),
+        );
         await tester.pumpAndSettle();
 
         expect(find.byType(AiWelcomeScreen), findsOneWidget);
