@@ -173,7 +173,7 @@ List<Widget> _buildFeedBody({
             tab: tab,
             onReset: tab == CommunityFeedTab.explore
                 ? null
-                : () => context.go(AppRoutes.community),
+                : () => context.pushReplacement(AppRoutes.community),
           ),
         ),
       ),

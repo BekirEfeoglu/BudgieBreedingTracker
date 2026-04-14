@@ -165,7 +165,7 @@ final premiumGracePeriodProvider = Provider<GracePeriodStatus>((ref) {
   // profiles that haven't been synced since the migration.
   final gracePeriodEnd = profile.gracePeriodUntil ??
       profile.premiumExpiresAt?.add(
-        Duration(days: AppConstants.gracePeriodDays),
+        const Duration(days: AppConstants.gracePeriodDays),
       );
   if (gracePeriodEnd == null) return GracePeriodStatus.free;
 
