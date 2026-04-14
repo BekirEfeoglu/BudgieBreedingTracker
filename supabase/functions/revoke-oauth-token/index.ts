@@ -98,7 +98,7 @@ async function revokeGoogle(
   console.warn(`[revoke-oauth-token] Google revoke failed (${res.status}): ${errorBody}`);
   return new Response(
     JSON.stringify({ success: false, provider: "google", error: "revocation_failed" }),
-    { status: 200, headers },
+    { status: 502, headers },
   );
 }
 
@@ -113,8 +113,8 @@ async function revokeApple(
   if (!clientId || !clientSecret) {
     console.warn("[revoke-oauth-token] Apple credentials not configured");
     return new Response(
-      JSON.stringify({ success: false, provider: "apple", error: "Apple credentials not configured on server" }),
-      { status: 200, headers },
+      JSON.stringify({ success: false, provider: "apple", error: "not_configured" }),
+      { status: 500, headers },
     );
   }
 
@@ -143,6 +143,6 @@ async function revokeApple(
   console.warn(`[revoke-oauth-token] Apple revoke failed (${res.status}): ${errorBody}`);
   return new Response(
     JSON.stringify({ success: false, provider: "apple", error: "revocation_failed" }),
-    { status: 200, headers },
+    { status: 502, headers },
   );
 }

@@ -175,8 +175,9 @@ Deno.serve(async (req: Request) => {
 
     const projectId = Deno.env.get("FIREBASE_PROJECT_ID") ?? "";
     if (!projectId) {
+      console.error("[send-push] Missing FIREBASE_PROJECT_ID secret");
       return new Response(
-        JSON.stringify({ error: "Missing FIREBASE_PROJECT_ID secret" }),
+        JSON.stringify({ error: "Internal server error" }),
         { status: 500, headers },
       );
     }
@@ -203,9 +204,10 @@ Deno.serve(async (req: Request) => {
       failureCount += results.filter((item) => !item.ok).length;
     }
 
+    const status = failureCount === 0 ? 200 : successCount === 0 ? 502 : 207;
     return new Response(
       JSON.stringify({ success: successCount, failure: failureCount }),
-      { status: 200, headers },
+      { status, headers },
     );
   } catch (error) {
     console.error("[send-push] Error:", error);
