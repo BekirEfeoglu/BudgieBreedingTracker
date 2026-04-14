@@ -11,7 +11,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_icon.dart';
 import '../../../core/widgets/error_state.dart';
-import '../../notifications/providers/action_feedback_providers.dart';
+import 'package:budgie_breeding_tracker/data/providers/action_feedback_providers.dart';
 import '../constants/admin_constants.dart';
 import '../providers/admin_feedback_providers.dart';
 import '_feedback_detail_sheet.dart';

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'package:budgie_breeding_tracker/features/notifications/providers/action_feedback_providers.dart';
+import 'package:budgie_breeding_tracker/data/providers/action_feedback_providers.dart';
 
 extension ContextExtensions on BuildContext {
   ThemeData get theme => Theme.of(this);

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_spacing.dart';
-import '../../notifications/providers/action_feedback_providers.dart';
+import 'package:budgie_breeding_tracker/data/providers/action_feedback_providers.dart';
 import '../providers/profile_providers.dart';
 import 'password_change_form.dart';
 

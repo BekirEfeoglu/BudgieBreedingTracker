@@ -6,7 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 
 import '../../../core/enums/community_enums.dart';
-import '../../notifications/providers/action_feedback_providers.dart';
+import 'package:budgie_breeding_tracker/data/providers/action_feedback_providers.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/logger.dart';
 import '../../../core/widgets/dialogs/confirm_dialog.dart';

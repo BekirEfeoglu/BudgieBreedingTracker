@@ -11,7 +11,7 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/logger.dart';
 import '../../../router/route_names.dart';
 import '../../../router/route_utils.dart';
-import '../../notifications/providers/action_feedback_providers.dart';
+import 'package:budgie_breeding_tracker/data/providers/action_feedback_providers.dart';
 import '../providers/auth_providers.dart';
 
 /// Shows a "check your email" screen after registration.

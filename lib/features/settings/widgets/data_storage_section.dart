@@ -16,7 +16,7 @@ import '../../../domain/services/sync/sync_orchestrator.dart';
 import '../../../domain/services/sync/sync_providers.dart';
 import '../../../router/route_names.dart';
 import '../providers/settings_providers.dart';
-import '../../notifications/providers/action_feedback_providers.dart';
+import 'package:budgie_breeding_tracker/data/providers/action_feedback_providers.dart';
 import 'data_storage_dialogs.dart';
 import 'settings_action_tile.dart';
 import 'settings_navigation_tile.dart';

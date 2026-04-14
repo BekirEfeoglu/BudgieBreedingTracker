@@ -10,7 +10,7 @@ import '../../../core/utils/logger.dart';
 import '../../../core/widgets/app_icon.dart';
 import '../../../router/route_names.dart';
 import '../../auth/providers/auth_providers.dart';
-import '../../notifications/providers/action_feedback_providers.dart';
+import 'package:budgie_breeding_tracker/data/providers/action_feedback_providers.dart';
 import '../../profile/widgets/account_deletion_dialog.dart';
 import '../../profile/widgets/password_change_form.dart';
 import 'settings_action_tile.dart';

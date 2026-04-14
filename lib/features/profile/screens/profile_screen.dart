@@ -22,7 +22,7 @@ import '../widgets/profile_menu_tile.dart';
 import '../widgets/profile_skeleton.dart';
 import '../widgets/security_section.dart';
 import '../widgets/subscription_card.dart';
-import '../../notifications/providers/action_feedback_providers.dart';
+import 'package:budgie_breeding_tracker/data/providers/action_feedback_providers.dart';
 
 /// Comprehensive user profile screen with collapsing header.
 class ProfileScreen extends ConsumerWidget {

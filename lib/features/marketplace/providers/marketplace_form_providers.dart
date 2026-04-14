@@ -7,7 +7,7 @@ import '../../../core/enums/marketplace_enums.dart';
 import '../../../core/utils/logger.dart';
 import '../../../data/repositories/repository_providers.dart';
 import '../../breeding/providers/breeding_providers.dart';
-import '../../community/providers/community_moderation_providers.dart';
+import '../../../domain/services/moderation/moderation_providers.dart';
 import '../../../domain/services/moderation/content_moderation_service.dart';
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 

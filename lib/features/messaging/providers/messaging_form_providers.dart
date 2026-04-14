@@ -5,7 +5,7 @@ import 'package:uuid/uuid.dart';
 import '../../../core/enums/messaging_enums.dart';
 import '../../../core/utils/logger.dart';
 import '../../../data/repositories/repository_providers.dart';
-import '../../community/providers/community_moderation_providers.dart';
+import '../../../domain/services/moderation/moderation_providers.dart';
 import '../../../domain/services/moderation/content_moderation_service.dart';
 
 class MessagingFormState {

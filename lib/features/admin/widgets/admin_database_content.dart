@@ -11,7 +11,7 @@ import '../../../core/widgets/dialogs/confirm_dialog.dart';
 import '../../../domain/services/sync/sync_orchestrator.dart';
 import '../../../domain/services/sync/sync_providers.dart';
 import '../providers/admin_actions_provider.dart';
-import '../../notifications/providers/action_feedback_providers.dart';
+import 'package:budgie_breeding_tracker/data/providers/action_feedback_providers.dart';
 import '../providers/admin_providers.dart';
 import 'admin_database_maintenance.dart';
 import 'admin_database_table_widgets.dart';

@@ -12,7 +12,7 @@ import '../../../domain/services/sync/sync_orchestrator.dart';
 import '../../../domain/services/sync/sync_providers.dart';
 import '../providers/admin_actions_provider.dart';
 import '../providers/admin_providers.dart';
-import '../../notifications/providers/action_feedback_providers.dart';
+import 'package:budgie_breeding_tracker/data/providers/action_feedback_providers.dart';
 import 'admin_database_backup_utils.dart';
 export 'admin_database_backup_utils.dart';
 
