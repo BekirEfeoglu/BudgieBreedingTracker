@@ -11,15 +11,25 @@ class CommunityCommentRemoteSource {
 
   CommunityCommentRemoteSource(this._client, this._profileCache);
 
-  Future<List<Map<String, dynamic>>> fetchByPost(String postId) async {
+  Future<List<Map<String, dynamic>>> fetchByPost(
+    String postId, {
+    int limit = 20,
+    DateTime? cursor,
+  }) async {
     try {
-      final result = await _client
+      var query = _client
           .from(SupabaseConstants.communityCommentsTable)
           .select()
           .eq('post_id', postId)
-          .eq('is_deleted', false)
-          .order('created_at', ascending: true);
+          .eq('is_deleted', false);
 
+      if (cursor != null) {
+        query = query.gt('created_at', cursor.toIso8601String());
+      }
+
+      final result = await query
+          .order('created_at', ascending: true)
+          .limit(limit);
       final rows = List<Map<String, dynamic>>.from(result);
       return _profileCache.mergeIntoRows(rows);
     } catch (e, st) {

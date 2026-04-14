@@ -24,8 +24,14 @@ class CommunityCommentRepository {
   Future<List<CommunityComment>> getByPost({
     required String postId,
     required String currentUserId,
+    int limit = 20,
+    DateTime? cursor,
   }) async {
-    final rows = await _commentSource.fetchByPost(postId);
+    final rows = await _commentSource.fetchByPost(
+      postId,
+      limit: limit,
+      cursor: cursor,
+    );
 
     final commentIds = <String>[];
     for (final row in rows) {

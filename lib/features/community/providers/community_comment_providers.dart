@@ -28,6 +28,108 @@ final commentsForPostProvider =
     });
 
 // ---------------------------------------------------------------------------
+// Paginated comment list
+// ---------------------------------------------------------------------------
+
+class CommentListState {
+  const CommentListState({
+    this.comments = const [],
+    this.isLoading = false,
+    this.isLoadingMore = false,
+    this.hasMore = true,
+    this.cursor,
+    this.error,
+  });
+
+  final List<CommunityComment> comments;
+  final bool isLoading;
+  final bool isLoadingMore;
+  final bool hasMore;
+  final DateTime? cursor;
+  final Object? error;
+}
+
+final commentListProvider =
+    NotifierProvider.family<CommentListNotifier, CommentListState, String>(
+  CommentListNotifier.new,
+);
+
+class CommentListNotifier extends Notifier<CommentListState> {
+  CommentListNotifier(this._postId);
+
+  final String _postId;
+  static const _pageSize = 20;
+
+  @override
+  CommentListState build() {
+    fetchInitial();
+    return const CommentListState(isLoading: true);
+  }
+
+  Future<void> fetchInitial() async {
+    state = const CommentListState(isLoading: true);
+    try {
+      final userId = ref.read(currentUserIdProvider);
+      final repo = ref.read(communityCommentRepositoryProvider);
+      final comments = await repo.getByPost(
+        postId: _postId,
+        currentUserId: userId,
+        limit: _pageSize,
+      );
+      state = CommentListState(
+        comments: comments,
+        hasMore: comments.length >= _pageSize,
+        cursor: comments.isNotEmpty ? comments.last.createdAt : null,
+      );
+    } catch (e, st) {
+      AppLogger.error('CommentListNotifier.fetchInitial', e, st);
+      state = CommentListState(error: e);
+    }
+  }
+
+  Future<void> fetchMore() async {
+    if (state.isLoadingMore || !state.hasMore) return;
+    state = CommentListState(
+      comments: state.comments,
+      isLoadingMore: true,
+      hasMore: state.hasMore,
+      cursor: state.cursor,
+    );
+    try {
+      final userId = ref.read(currentUserIdProvider);
+      final repo = ref.read(communityCommentRepositoryProvider);
+      final newComments = await repo.getByPost(
+        postId: _postId,
+        currentUserId: userId,
+        limit: _pageSize,
+        cursor: state.cursor,
+      );
+      state = CommentListState(
+        comments: [...state.comments, ...newComments],
+        hasMore: newComments.length >= _pageSize,
+        cursor: newComments.isNotEmpty ? newComments.last.createdAt : null,
+      );
+    } catch (e, st) {
+      AppLogger.error('CommentListNotifier.fetchMore', e, st);
+      state = CommentListState(
+        comments: state.comments,
+        hasMore: state.hasMore,
+        cursor: state.cursor,
+        error: e,
+      );
+    }
+  }
+
+  void addCommentLocally(CommunityComment comment) {
+    state = CommentListState(
+      comments: [...state.comments, comment],
+      hasMore: state.hasMore,
+      cursor: state.cursor,
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Comment form
 // ---------------------------------------------------------------------------
 

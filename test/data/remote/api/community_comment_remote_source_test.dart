@@ -65,6 +65,41 @@ void main() {
       },
     );
 
+    test('applies default limit of 20', () async {
+      commentsSelect.result = [];
+
+      await source.fetchByPost('p1');
+
+      expect(commentsSelect.limitValue, 20);
+    });
+
+    test('applies custom limit', () async {
+      commentsSelect.result = [];
+
+      await source.fetchByPost('p1', limit: 5);
+
+      expect(commentsSelect.limitValue, 5);
+    });
+
+    test('applies cursor filter when cursor is provided', () async {
+      commentsSelect.result = [];
+      final cursor = DateTime(2026, 4, 14, 12, 0);
+
+      await source.fetchByPost('p1', cursor: cursor);
+
+      expect(commentsSelect.gtCalls, hasLength(1));
+      expect(commentsSelect.gtCalls[0].key, 'created_at');
+      expect(commentsSelect.gtCalls[0].value, cursor.toIso8601String());
+    });
+
+    test('does not apply cursor filter when cursor is null', () async {
+      commentsSelect.result = [];
+
+      await source.fetchByPost('p1');
+
+      expect(commentsSelect.gtCalls, isEmpty);
+    });
+
     test('triggers profile lookup', () async {
       commentsSelect.result = [
         {'id': 'c1', 'post_id': 'p1', 'user_id': 'u1', 'content': 'Hi'},

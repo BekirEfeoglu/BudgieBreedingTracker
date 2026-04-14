@@ -14,6 +14,7 @@ class FakeFilterBuilder<T> extends Fake implements PostgrestFilterBuilder<T> {
   T? result;
   Object? error;
   final eqCalls = <MapEntry<String, Object>>[];
+  final gtCalls = <MapEntry<String, Object>>[];
   final gteCalls = <MapEntry<String, Object>>[];
   final inFilterCalls = <MapEntry<String, List<dynamic>>>[];
   final orderCalls = <String>[];
@@ -25,6 +26,12 @@ class FakeFilterBuilder<T> extends Fake implements PostgrestFilterBuilder<T> {
   @override
   PostgrestFilterBuilder<T> eq(String column, Object value) {
     eqCalls.add(MapEntry(column, value));
+    return this;
+  }
+
+  @override
+  PostgrestFilterBuilder<T> gt(String column, Object value) {
+    gtCalls.add(MapEntry(column, value));
     return this;
   }
 

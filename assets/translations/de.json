@@ -2350,6 +2350,7 @@
     "comment_success": "Kommentar hinzugefügt",
     "comment_error": "Kommentar konnte nicht hinzugefügt werden",
     "no_comments": "Noch keine Kommentare",
+    "load_more_comments": "Weitere Kommentare laden",
     "bookmark": "Speichern",
     "bookmarks": "Gespeichert",
     "no_bookmarks": "Noch nichts gespeichert",

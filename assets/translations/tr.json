@@ -2350,6 +2350,7 @@
     "comment_success": "Yorum eklendi",
     "comment_error": "Yorum eklenemedi",
     "no_comments": "Henüz yorum yok",
+    "load_more_comments": "Daha fazla yorum yükle",
     "bookmark": "Kaydet",
     "bookmarks": "Kaydedilenler",
     "no_bookmarks": "Henüz kaydedilen yok",
