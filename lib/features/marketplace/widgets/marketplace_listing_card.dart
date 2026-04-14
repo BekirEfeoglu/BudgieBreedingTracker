@@ -19,10 +19,35 @@ abstract final class _ListingTypeColors {
   static const unknown = Color(0xFF9E9E9E);
 }
 
+// Image overlay UI colors (image overlay context, not theme-dependent)
+abstract final class _ImageOverlayColors {
+  static const overlayBackground = Color(0x8A000000); // black54 equivalent
+  static const overlayIcon = Color(0xFFFFFFFF); // white
+  static const favoriteActive = Color(0xFFE53935); // red for active favorite
+  static const freeLabel = Color(0xFF4CAF50); // green for free/adoption
+}
+
 class MarketplaceListingCard extends StatelessWidget {
   final MarketplaceListing listing;
+  final VoidCallback? onFavoriteToggle;
 
-  const MarketplaceListingCard({super.key, required this.listing});
+  const MarketplaceListingCard({
+    super.key,
+    required this.listing,
+    this.onFavoriteToggle,
+  });
+
+  String _relativeTime(DateTime? dateTime) {
+    if (dateTime == null) return '';
+    final diff = DateTime.now().difference(dateTime);
+    if (diff.inMinutes < 60) {
+      return 'marketplace.time_ago_minutes'.tr(args: ['${diff.inMinutes}']);
+    }
+    if (diff.inHours < 24) {
+      return 'marketplace.time_ago_hours'.tr(args: ['${diff.inHours}']);
+    }
+    return 'marketplace.time_ago_days'.tr(args: ['${diff.inDays}']);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,23 +64,7 @@ class MarketplaceListingCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (listing.primaryImageUrl != null)
-              AspectRatio(
-                aspectRatio: 16 / 9,
-                child: CachedNetworkImage(
-                  imageUrl: listing.primaryImageUrl!,
-                  fit: BoxFit.cover,
-                  memCacheWidth: 640,
-                  errorWidget: (_, _, _) => Container(
-                    color: theme.colorScheme.surfaceContainerHighest,
-                    child: Icon(
-                      LucideIcons.image,
-                      size: 48,
-                      color: theme.colorScheme.outline,
-                    ),
-                  ),
-                ),
-              ),
+            _buildImageArea(theme),
             Padding(
               padding: AppSpacing.cardPadding,
               child: Column(
@@ -95,14 +104,7 @@ class MarketplaceListingCard extends StatelessWidget {
                         ),
                       ),
                       const Spacer(),
-                      if (listing.price != null)
-                        Text(
-                          listing.priceDisplay,
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            color: theme.colorScheme.primary,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                      _buildPriceArea(theme),
                     ],
                   ),
                   const SizedBox(height: AppSpacing.xs),
@@ -120,9 +122,24 @@ class MarketplaceListingCard extends StatelessWidget {
                           color: theme.colorScheme.outline,
                         ),
                       ),
+                      if (listing.viewCount > 0) ...[
+                        const SizedBox(width: AppSpacing.sm),
+                        Icon(
+                          LucideIcons.eye,
+                          size: 14,
+                          color: theme.colorScheme.outline,
+                        ),
+                        const SizedBox(width: AppSpacing.xs),
+                        Text(
+                          '${listing.viewCount}',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.outline,
+                          ),
+                        ),
+                      ],
                       const Spacer(),
                       Text(
-                        '${listing.species} · ${listing.gender.name}',
+                        _relativeTime(listing.createdAt),
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: theme.colorScheme.outline,
                         ),
@@ -136,6 +153,120 @@ class MarketplaceListingCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Widget _buildImageArea(ThemeData theme) {
+    return AspectRatio(
+      aspectRatio: 16 / 9,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          if (listing.primaryImageUrl != null)
+            CachedNetworkImage(
+              imageUrl: listing.primaryImageUrl!,
+              fit: BoxFit.cover,
+              memCacheWidth: 640,
+              errorWidget: (_, _, _) => Container(
+                color: theme.colorScheme.surfaceContainerHighest,
+                child: Icon(
+                  LucideIcons.image,
+                  size: 48,
+                  color: theme.colorScheme.outline,
+                ),
+              ),
+            )
+          else
+            Container(
+              color: theme.colorScheme.surfaceContainerHighest,
+              child: Icon(
+                LucideIcons.bird,
+                size: 48,
+                color: theme.colorScheme.outline,
+              ),
+            ),
+          // Photo count badge (top-left)
+          if (listing.imageUrls.length > 1)
+            Positioned(
+              top: AppSpacing.xs,
+              left: AppSpacing.xs,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.xs,
+                  vertical: 2,
+                ),
+                decoration: BoxDecoration(
+                  color: _ImageOverlayColors.overlayBackground,
+                  borderRadius: BorderRadius.circular(AppSpacing.xs),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      LucideIcons.camera,
+                      size: 12,
+                      color: _ImageOverlayColors.overlayIcon,
+                    ),
+                    const SizedBox(width: 2),
+                    Text(
+                      '${listing.imageUrls.length}',
+                      style: const TextStyle(
+                        color: _ImageOverlayColors.overlayIcon,
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          // Favorite heart icon (top-right)
+          Positioned(
+            top: AppSpacing.xs,
+            right: AppSpacing.xs,
+            child: GestureDetector(
+              onTap: onFavoriteToggle,
+              child: Container(
+                padding: const EdgeInsets.all(AppSpacing.xs),
+                decoration: const BoxDecoration(
+                  color: _ImageOverlayColors.overlayBackground,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  LucideIcons.heart,
+                  size: 20,
+                  color: listing.isFavoritedByMe
+                      ? _ImageOverlayColors.favoriteActive
+                      : _ImageOverlayColors.overlayIcon,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPriceArea(ThemeData theme) {
+    if (listing.listingType == MarketplaceListingType.adoption &&
+        listing.price == null) {
+      return Text(
+        'marketplace.free_label'.tr(),
+        style: theme.textTheme.titleMedium?.copyWith(
+          color: _ImageOverlayColors.freeLabel,
+          fontWeight: FontWeight.bold,
+        ),
+      );
+    }
+    if (listing.price != null) {
+      return Text(
+        listing.priceDisplay,
+        style: theme.textTheme.titleMedium?.copyWith(
+          color: theme.colorScheme.primary,
+          fontWeight: FontWeight.bold,
+        ),
+      );
+    }
+    return const SizedBox.shrink();
   }
 
   String _listingTypeLabel(MarketplaceListingType type) => switch (type) {
