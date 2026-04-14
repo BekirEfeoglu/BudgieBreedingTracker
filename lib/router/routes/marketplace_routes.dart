@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/widgets/not_found_screen.dart';
 import '../../features/marketplace/screens/marketplace_detail_screen.dart';
 import '../../features/marketplace/screens/marketplace_form_screen.dart';
+import '../../features/marketplace/screens/marketplace_favorites_screen.dart';
 import '../../features/marketplace/screens/marketplace_my_listings_screen.dart';
 import '../../features/marketplace/screens/marketplace_screen.dart';
 import '../route_names.dart';
@@ -15,6 +16,10 @@ List<RouteBase> buildMarketplaceRoutes() => [
         builder: (context, state) => const MarketplaceScreen(),
         routes: [
           // Specific paths BEFORE parameterized paths
+          GoRoute(
+            path: 'favorites',
+            builder: (context, state) => const MarketplaceFavoritesScreen(),
+          ),
           GoRoute(
             path: 'form',
             builder: (context, state) => MarketplaceFormScreen(

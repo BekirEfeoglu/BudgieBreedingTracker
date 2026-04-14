@@ -156,6 +156,15 @@ final myMarketplaceListingsProvider =
   },
 );
 
+/// Favorites
+final marketplaceFavoritesProvider =
+    FutureProvider.family<List<MarketplaceListing>, String>(
+  (ref, userId) async {
+    final repo = ref.watch(marketplaceRepositoryProvider);
+    return repo.getFavorites(currentUserId: userId);
+  },
+);
+
 /// Filtered and sorted listings (computed)
 final filteredMarketplaceListingsProvider =
     Provider.family<List<MarketplaceListing>, List<MarketplaceListing>>(

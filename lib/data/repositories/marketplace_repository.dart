@@ -100,6 +100,24 @@ class MarketplaceRepository {
     }
   }
 
+  Future<List<MarketplaceListing>> getFavorites({
+    required String currentUserId,
+  }) async {
+    final favoritedIds =
+        await _favoriteSource.fetchFavoritedListingIds(currentUserId);
+    if (favoritedIds.isEmpty) return [];
+
+    final listings = <MarketplaceListing>[];
+    for (final id in favoritedIds) {
+      final row = await _listingSource.fetchById(id);
+      if (row != null) {
+        final listing = MarketplaceListing.fromJson(row);
+        listings.add(listing.copyWith(isFavoritedByMe: true));
+      }
+    }
+    return listings;
+  }
+
   Future<List<MarketplaceListing>> search({
     required String query,
     required String currentUserId,

@@ -61,6 +61,12 @@ class _MarketplaceScreenState extends ConsumerState<MarketplaceScreen> {
       appBar: AppBar(
         title: Text('marketplace.title'.tr()),
         actions: [
+          IconButton(
+            icon: const Icon(LucideIcons.heart),
+            tooltip: 'marketplace.favorites'.tr(),
+            onPressed: () =>
+                context.push('${AppRoutes.marketplace}/favorites'),
+          ),
           PopupMenuButton<MarketplaceSort>(
             icon: const Icon(LucideIcons.arrowUpDown),
             tooltip: 'marketplace.sort_newest'.tr(),
