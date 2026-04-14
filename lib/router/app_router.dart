@@ -9,6 +9,7 @@ import '../features/admin/providers/admin_providers.dart';
 import '../features/home/widgets/main_shell.dart';
 import 'guards/admin_guard.dart';
 import 'guards/premium_guard.dart';
+import 'redirect_guards.dart';
 import '../domain/services/ads/ad_reward_providers.dart';
 import '../features/premium/providers/premium_providers.dart';
 import '../features/home/screens/home_screen.dart';
@@ -24,7 +25,6 @@ import '../features/chicks/screens/chick_detail_screen.dart';
 import '../features/chicks/screens/chick_form_screen.dart';
 import '../features/calendar/screens/calendar_screen.dart';
 import '../features/more/screens/more_screen.dart';
-import '../features/auth/providers/two_factor_providers.dart';
 import '../features/splash/screens/splash_screen.dart';
 import '../core/widgets/not_found_screen.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
@@ -62,47 +62,25 @@ final routerProvider = Provider<GoRouter>((ref) {
     observers: [SentryNavigatorObserver()],
     debugLogDiagnostics: false,
     redirect: (context, state) {
+      final location = state.matchedLocation;
+
+      // Session lock, auth, and 2FA guards (extracted to redirect_guards.dart)
+      final sessionLock = sessionLockRedirect(ref, location);
+      if (sessionLock != null) return sessionLock;
+
+      final auth = authRedirect(ref, location);
+      if (auth != null) return auth;
+
+      final twoFactor = twoFactorRedirect(ref, location);
+      if (twoFactor != null) return twoFactor;
+
+      // Initialization guard: show splash while profile syncs from Supabase
       final isLoggedIn = ref.read(isAuthenticatedProvider);
-      final isSessionLocked = ref.read(sessionLockedProvider);
-      final isAdminAsync = ref.read(isAdminProvider);
-      final isPremium = ref.read(effectivePremiumProvider);
       final appInit = ref.read(appInitializationProvider);
       final initSkipped = ref.read(initSkippedProvider);
       final isAppReady = appInit.hasValue || initSkipped;
-
-      final location = state.matchedLocation;
-
-      final isAuthRoute =
-          location == AppRoutes.login ||
-          location == AppRoutes.register ||
-          location == AppRoutes.authCallback ||
-          location == AppRoutes.oauthCallback ||
-          location == AppRoutes.emailVerification ||
-          location == AppRoutes.forgotPassword ||
-          location == AppRoutes.twoFactorVerify;
       final isSplashRoute = location == AppRoutes.splash;
 
-      if (isSessionLocked && !isAuthRoute) {
-        return AppRoutes.login;
-      }
-
-      // Auth guard
-      if (!isLoggedIn && !isAuthRoute && !_isAnonymousAllowedRoute(location)) {
-        return AppRoutes.login;
-      }
-      if (isLoggedIn && isAuthRoute && location != AppRoutes.twoFactorVerify) {
-        return AppRoutes.home;
-      }
-
-      // 2FA guard: redirect to verify screen if MFA verification is pending
-      final pendingFactorId = ref.read(pendingMfaFactorIdProvider);
-      if (isLoggedIn &&
-          pendingFactorId != null &&
-          location != AppRoutes.twoFactorVerify) {
-        return '${AppRoutes.twoFactorVerify}?factorId=$pendingFactorId';
-      }
-
-      // Initialization guard: show splash while profile syncs from Supabase
       final isInitError = appInit.hasError && !initSkipped;
       if (isLoggedIn && !isAppReady && !isSplashRoute) return AppRoutes.splash;
       if (isSplashRoute && isAppReady && !isInitError) {
@@ -110,17 +88,18 @@ final routerProvider = Provider<GoRouter>((ref) {
         return AppRoutes.home;
       }
 
+      // Genetics reward route tracking
       final isGeneticsRoute =
           location == AppRoutes.genetics ||
           location == AppRoutes.geneticsHistory ||
           location == AppRoutes.geneticsReverse ||
           location == AppRoutes.geneticsCompare;
       if (!isGeneticsRoute) {
-        // Reset route-level consume guard after leaving genetics routes.
         lastConsumedGeneticsRewardLocation = null;
       }
 
       // Premium guard: restrict premium routes (with reward exemptions)
+      final isPremium = ref.read(effectivePremiumProvider);
       if (location == AppRoutes.statistics) {
         final statsReward = ref.read(isStatisticsRewardActiveProvider);
         if (!isPremium && !statsReward) return AppRoutes.premium;
@@ -130,7 +109,6 @@ final routerProvider = Provider<GoRouter>((ref) {
         if (!isPremium &&
             geneticsReward &&
             lastConsumedGeneticsRewardLocation != location) {
-          // Consume one rewarded-access use per genetics route entry.
           unawaited(
             ref.read(isGeneticsRewardActiveProvider.notifier).consume(),
           );
@@ -144,7 +122,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       // Admin guard: restrict /admin/* routes to admin users
       final isAdminRoute = location.startsWith('/admin');
       if (isAdminRoute) {
-        final adminRedirect = AdminGuard.redirect(isAdminAsync);
+        final adminRedirect = AdminGuard.redirect(ref.read(isAdminProvider));
         if (adminRedirect != null) return adminRedirect;
       }
 
@@ -286,13 +264,3 @@ final routerProvider = Provider<GoRouter>((ref) {
   );
 });
 
-bool _isAnonymousAllowedRoute(String location) {
-  // Only truly public routes are allowed without authentication.
-  // Data routes (birds, breeding, chicks, calendar, health-records)
-  // require login to prevent unauthorized data access.
-  return location == AppRoutes.premium ||
-      location == AppRoutes.userGuide ||
-      location == AppRoutes.privacyPolicy ||
-      location == AppRoutes.termsOfService ||
-      location == AppRoutes.communityGuidelines;
-}
