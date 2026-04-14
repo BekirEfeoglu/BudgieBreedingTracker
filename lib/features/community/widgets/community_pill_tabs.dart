@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../core/theme/app_spacing.dart';
+import '../../../core/utils/app_haptics.dart';
 import '../providers/community_providers.dart';
 
 /// Pill-shaped chip tab bar for community feed filtering.
@@ -32,9 +33,10 @@ class CommunityPillTabs extends ConsumerWidget {
                   child: _PillTab(
                     tab: tab,
                     isActive: activeTab == tab,
-                    onTap: () => ref
-                        .read(communityActiveTabProvider.notifier)
-                        .state = tab,
+                    onTap: () {
+                      AppHaptics.selectionClick();
+                      ref.read(communityActiveTabProvider.notifier).state = tab;
+                    },
                     theme: theme,
                   ),
                 );
@@ -51,9 +53,12 @@ class CommunityPillTabs extends ConsumerWidget {
                   child: _PillTab(
                     tab: CommunityFeedTab.values[i],
                     isActive: activeTab == CommunityFeedTab.values[i],
-                    onTap: () => ref
-                        .read(communityActiveTabProvider.notifier)
-                        .state = CommunityFeedTab.values[i],
+                    onTap: () {
+                      AppHaptics.selectionClick();
+                      ref
+                          .read(communityActiveTabProvider.notifier)
+                          .state = CommunityFeedTab.values[i];
+                    },
                     theme: theme,
                   ),
                 ),

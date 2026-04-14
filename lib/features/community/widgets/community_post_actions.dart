@@ -6,6 +6,7 @@ import 'package:share_plus/share_plus.dart';
 
 import '../../../core/constants/app_icons.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../core/utils/app_haptics.dart';
 import '../../../core/widgets/app_icon.dart';
 import '../../../data/models/community_post_model.dart';
 import '../../../router/route_names.dart';
@@ -37,6 +38,7 @@ class _CommunityPostActionsState extends ConsumerState<CommunityPostActions> {
   }
 
   void _onShare() {
+    AppHaptics.lightImpact();
     final shareText = StringBuffer();
     if (post.title != null) {
       shareText.writeln(post.title);

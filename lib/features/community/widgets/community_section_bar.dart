@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../core/theme/app_spacing.dart';
+import '../../../core/utils/app_haptics.dart';
 import '../providers/community_providers.dart';
 
 /// Section header with title, sort filters, and result count.
@@ -29,6 +30,103 @@ class CommunitySectionBar extends StatelessWidget {
       CommunityFeedTab.guides => 'community.tab_guides',
       CommunityFeedTab.questions => 'community.tab_questions',
     };
+
+    if (tab == CommunityFeedTab.guides) {
+      return Container(
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              theme.colorScheme.primary.withValues(alpha: 0.12),
+              theme.colorScheme.surface,
+            ],
+          ),
+          borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
+          border: Border.all(
+            color: theme.colorScheme.primary.withValues(alpha: 0.14),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: theme.shadowColor.withValues(alpha: 0.04),
+              blurRadius: 18,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'community.hero_guides_title'.tr(),
+                        style: theme.textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.w800,
+                          height: 1.15,
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      Text(
+                        'community.hero_guides_hint'.tr(),
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                          height: 1.45,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.md),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.sm,
+                    vertical: AppSpacing.xs,
+                  ),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.primaryContainer,
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+                  ),
+                  child: Text(
+                    'community.filter_results'.tr(args: ['$visibleCount']),
+                    style: theme.textTheme.labelMedium?.copyWith(
+                      color: theme.colorScheme.onPrimaryContainer,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.md),
+            Row(
+              children: [
+                Icon(
+                  LucideIcons.bookOpen,
+                  size: 16,
+                  color: theme.colorScheme.primary,
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                Expanded(
+                  child: Text(
+                    _subtitleKey.tr(),
+                    style: theme.textTheme.labelLarge?.copyWith(
+                      color: theme.colorScheme.primary,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+    }
 
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
@@ -89,15 +187,19 @@ class CommunitySectionBar extends StatelessWidget {
                   label: 'community.sort_newest'.tr(),
                   icon: LucideIcons.clock3,
                   isSelected: exploreSort == CommunityExploreSort.newest,
-                  onTap: () =>
-                      onExploreSortChanged(CommunityExploreSort.newest),
+                  onTap: () {
+                    AppHaptics.selectionClick();
+                    onExploreSortChanged(CommunityExploreSort.newest);
+                  },
                 ),
                 _FilterChip(
                   label: 'community.sort_trending'.tr(),
                   icon: LucideIcons.flame,
                   isSelected: exploreSort == CommunityExploreSort.trending,
-                  onTap: () =>
-                      onExploreSortChanged(CommunityExploreSort.trending),
+                  onTap: () {
+                    AppHaptics.selectionClick();
+                    onExploreSortChanged(CommunityExploreSort.trending);
+                  },
                 ),
               ],
             ),

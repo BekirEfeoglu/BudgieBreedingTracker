@@ -193,7 +193,10 @@ class CommunityUserHeader extends StatelessWidget {
         if (isOwnPost || onReport != null || onBlock != null || onSendMessage != null)
           PopupMenuButton<String>(
             onSelected: (value) {
-              if (value == 'delete') onDelete?.call();
+              if (value == 'delete') {
+                AppHaptics.heavyImpact();
+                onDelete?.call();
+              }
               if (value == 'message') onSendMessage?.call();
               if (value == 'report') onReport?.call();
               if (value == 'block') onBlock?.call();

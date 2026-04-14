@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:budgie_breeding_tracker/core/utils/app_haptics.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -130,6 +131,7 @@ class CommunityCommentTile extends ConsumerWidget {
       isDestructive: true,
     );
     if (confirmed != true || !context.mounted) return;
+    AppHaptics.heavyImpact();
     final success = await ref
         .read(commentDeleteProvider.notifier)
         .deleteComment(commentId: comment.id, postId: comment.postId);

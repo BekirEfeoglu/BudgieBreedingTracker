@@ -12,6 +12,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/enums/community_enums.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../core/utils/app_haptics.dart';
 import '../../../data/providers/action_feedback_providers.dart';
 import '../providers/community_create_providers.dart';
 
@@ -176,6 +177,7 @@ class _CommunityCreatePostScreenState
   // ── Submit ─────────────────────────────────────────────────────────────────
 
   Future<void> _submit() async {
+    AppHaptics.mediumImpact();
     final content = _contentController.text.trim();
     if (content.isEmpty && _selectedImages.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
