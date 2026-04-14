@@ -6,6 +6,8 @@ import { getCorsHeaders, corsPreflightResponse } from "../_shared/cors.ts";
 import { getAuthenticatedUserId } from "../_shared/auth.ts";
 import { createRateLimiter, rateLimitedResponse } from "../_shared/rate-limit.ts";
 import { moderateText, MAX_TEXT_LENGTH } from "./moderation.ts";
+import { z } from "npm:zod@3.24.4";
+import { parseRequestBody } from "../_shared/validation.ts";
 
 const rateLimiter = createRateLimiter({ windowMs: 60_000, maxCalls: 30 });
 
@@ -25,16 +27,15 @@ Deno.serve(async (req: Request) => {
 
     if (!rateLimiter.check(userId)) return rateLimitedResponse(headers);
 
-    let text: string | undefined;
-    let type: string | undefined;
-    try {
-      ({ text, type } = await req.json());
-    } catch {
-      return new Response(
-        JSON.stringify({ allowed: false, reason: "invalid_request" }),
-        { status: 400, headers },
-      );
-    }
+    const moderateSchema = z.object({
+      text: z.string().optional(),
+      type: z.string().optional(),
+    });
+
+    const parsed = await parseRequestBody(req, moderateSchema, headers);
+    if (!parsed.success) return parsed.response;
+
+    const { text, type } = parsed.data;
 
     // Empty or non-string text: nothing to moderate, allow through.
     // This is intentional — empty content is rejected at the form validation

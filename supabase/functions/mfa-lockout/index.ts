@@ -1,6 +1,8 @@
 import { getCorsHeaders, corsPreflightResponse } from "../_shared/cors.ts";
 import { getAuthenticatedUserId, createSupabaseAdmin } from "../_shared/auth.ts";
 import { createRateLimiter, rateLimitedResponse } from "../_shared/rate-limit.ts";
+import { z } from "npm:zod@3.24.4";
+import { parseRequestBody } from "../_shared/validation.ts";
 
 const rateLimiter = createRateLimiter({ windowMs: 60_000, maxCalls: 30 });
 
@@ -66,15 +68,14 @@ Deno.serve(async (req) => {
 
     if (!rateLimiter.check(userId)) return rateLimitedResponse(headers);
 
-    const body = await req.json();
-    const action = body.action;
+    const mfaSchema = z.object({
+      action: z.enum(["check", "record-failure", "reset"]),
+    });
 
-    if (!action || !["check", "record-failure", "reset"].includes(action)) {
-      return new Response(
-        JSON.stringify({ error: "Invalid action. Use: check, record-failure, reset" }),
-        { status: 400, headers },
-      );
-    }
+    const parsed = await parseRequestBody(req, mfaSchema, headers);
+    if (!parsed.success) return parsed.response;
+
+    const { action } = parsed.data;
 
     const supabase = createSupabaseAdmin();
     const lockout = await getOrCreateLockout(supabase, userId);

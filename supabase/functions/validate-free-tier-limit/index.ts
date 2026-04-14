@@ -1,6 +1,8 @@
 import { getCorsHeaders, corsPreflightResponse } from "../_shared/cors.ts";
 import { getAuthenticatedUserId, createSupabaseAdmin } from "../_shared/auth.ts";
 import { createRateLimiter, rateLimitedResponse } from "../_shared/rate-limit.ts";
+import { z } from "npm:zod@3.24.4";
+import { parseRequestBody } from "../_shared/validation.ts";
 
 const rateLimiter = createRateLimiter({ windowMs: 60_000, maxCalls: 30 });
 
@@ -25,23 +27,14 @@ Deno.serve(async (req) => {
   }
 
   try {
-    let body: { table?: string };
-    try {
-      body = await req.json();
-    } catch {
-      return new Response(
-        JSON.stringify({ error: "Invalid JSON body" }),
-        { status: 400, headers },
-      );
-    }
-    const { table } = body;
+    const freeTierSchema = z.object({
+      table: z.string().min(1, "Missing table parameter"),
+    });
 
-    if (!table) {
-      return new Response(
-        JSON.stringify({ error: "Missing table parameter" }),
-        { status: 400, headers },
-      );
-    }
+    const parsed = await parseRequestBody(req, freeTierSchema, headers);
+    if (!parsed.success) return parsed.response;
+
+    const { table } = parsed.data;
 
     if (!ALLOWED_TABLES.has(table)) {
       console.warn(`[validate-free-tier-limit] Unknown table requested: ${table}`);

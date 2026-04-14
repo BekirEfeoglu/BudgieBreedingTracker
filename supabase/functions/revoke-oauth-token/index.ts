@@ -1,6 +1,8 @@
 import { getCorsHeaders, corsPreflightResponse } from "../_shared/cors.ts";
 import { getAuthenticatedUserId } from "../_shared/auth.ts";
 import { createRateLimiter, rateLimitedResponse } from "../_shared/rate-limit.ts";
+import { z } from "npm:zod@3.24.4";
+import { parseRequestBody } from "../_shared/validation.ts";
 
 const rateLimiter = createRateLimiter({ windowMs: 60_000, maxCalls: 5 });
 
@@ -37,35 +39,25 @@ Deno.serve(async (req: Request) => {
 
     if (!rateLimiter.check(userId)) return rateLimitedResponse(headers);
 
-    const body: RevokeRequest = await req.json();
-    const { provider, provider_token, provider_refresh_token } = body;
+    const revokeSchema = z.object({
+      provider: z.enum(["google", "apple"]),
+      provider_token: z.string().optional(),
+      provider_refresh_token: z.string().optional(),
+    }).refine(
+      (data) => data.provider_token || data.provider_refresh_token,
+      { message: "Missing token (provider_token or provider_refresh_token)" },
+    );
 
-    if (!provider) {
-      return new Response(
-        JSON.stringify({ error: "Missing 'provider' field" }),
-        { status: 400, headers },
-      );
-    }
+    const parsed = await parseRequestBody(req, revokeSchema, headers);
+    if (!parsed.success) return parsed.response;
 
-    const token = provider_token || provider_refresh_token;
-    if (!token) {
-      return new Response(
-        JSON.stringify({
-          error: "Missing token (provider_token or provider_refresh_token)",
-        }),
-        { status: 400, headers },
-      );
-    }
+    const { provider, provider_token, provider_refresh_token } = parsed.data;
+    const token = (provider_token || provider_refresh_token)!;
 
     if (provider === "google") {
       return await revokeGoogle(token, headers);
-    } else if (provider === "apple") {
-      return await revokeApple(token, !!provider_refresh_token, headers);
     } else {
-      return new Response(
-        JSON.stringify({ error: `Unsupported provider: ${provider}` }),
-        { status: 400, headers },
-      );
+      return await revokeApple(token, !!provider_refresh_token, headers);
     }
   } catch (e) {
     console.error("[revoke-oauth-token] Error:", e);

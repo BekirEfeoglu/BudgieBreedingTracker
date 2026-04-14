@@ -6,6 +6,8 @@ import {
 } from "../_shared/auth.ts";
 import { createRateLimiter, rateLimitedResponse } from "../_shared/rate-limit.ts";
 import { SignJWT, importPKCS8 } from "npm:jose@5.9.6";
+import { z } from "npm:zod@3.24.4";
+import { parseRequestBody } from "../_shared/validation.ts";
 
 const rateLimiter = createRateLimiter({ windowMs: 60_000, maxCalls: 10 });
 
@@ -162,14 +164,21 @@ Deno.serve(async (req: Request) => {
 
     if (!rateLimiter.check(callerId)) return rateLimitedResponse(headers);
 
-    const request = await req.json() as PushRequest;
-    if (!request.title?.trim() || !request.body?.trim()) {
-      return new Response(
-        JSON.stringify({ error: "title and body are required" }),
-        { status: 400, headers },
-      );
-    }
+    const pushSchema = z.object({
+      userId: z.string().optional(),
+      userIds: z.array(z.string()).optional(),
+      tokens: z.array(z.string()).optional(),
+      title: z.string().min(1, "title is required"),
+      body: z.string().min(1, "body is required"),
+      payload: z.string().optional(),
+      data: z.record(z.union([z.string(), z.number(), z.boolean()])).optional(),
+      dryRun: z.boolean().optional(),
+    });
 
+    const parsed = await parseRequestBody(req, pushSchema, headers);
+    if (!parsed.success) return parsed.response;
+
+    const request: PushRequest = parsed.data;
     request.title = request.title.trim().slice(0, 200);
     request.body = request.body.trim().slice(0, 1000);
 
