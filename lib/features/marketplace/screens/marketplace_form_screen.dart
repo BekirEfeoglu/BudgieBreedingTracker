@@ -3,12 +3,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/constants/app_icons.dart';
 import '../../../core/enums/bird_enums.dart';
 import '../../../core/enums/marketplace_enums.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../core/widgets/app_icon.dart';
 import '../../../core/widgets/buttons/primary_button.dart';
+import '../../../data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 import '../providers/marketplace_form_providers.dart';
+import '../widgets/marketplace_bird_picker_sheet.dart';
 import '../widgets/marketplace_image_picker.dart';
 
 class MarketplaceFormScreen extends ConsumerStatefulWidget {
@@ -35,6 +39,8 @@ class _MarketplaceFormScreenState
   MarketplaceListingType _listingType = MarketplaceListingType.sale;
   BirdGender _gender = BirdGender.unknown;
   List<String> _imagePaths = [];
+  String? _linkedBirdId;
+  String? _linkedBirdName;
 
   bool get _isEdit => widget.editListingId != null;
 
@@ -160,6 +166,30 @@ class _MarketplaceFormScreenState
                 ),
                 const SizedBox(height: AppSpacing.lg),
               ],
+              Row(
+                children: [
+                  Expanded(
+                    child: _linkedBirdId != null
+                        ? Chip(
+                            avatar: const AppIcon(AppIcons.bird, size: 18),
+                            label: Text(
+                              _linkedBirdName ?? _linkedBirdId!,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            onDeleted: () => setState(() {
+                              _linkedBirdId = null;
+                              _linkedBirdName = null;
+                            }),
+                          )
+                        : OutlinedButton.icon(
+                            onPressed: _pickBird,
+                            icon: const AppIcon(AppIcons.bird, size: 18),
+                            label: Text('marketplace.select_bird'.tr()),
+                          ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.lg),
               TextFormField(
                 controller: _speciesController,
                 decoration: InputDecoration(
@@ -232,6 +262,27 @@ class _MarketplaceFormScreenState
     );
   }
 
+  Future<void> _pickBird() async {
+    final userId = ref.read(currentUserIdProvider);
+    final bird = await showModalBottomSheet<Bird>(
+      context: context,
+      isScrollControlled: true,
+      builder: (_) => MarketplaceBirdPickerSheet(userId: userId),
+    );
+    if (bird != null && mounted) {
+      setState(() {
+        _linkedBirdId = bird.id;
+        _linkedBirdName = bird.name;
+        _speciesController.text = bird.species.name;
+        if (bird.colorMutation != null &&
+            bird.colorMutation != BirdColor.unknown) {
+          _mutationController.text = bird.colorMutation!.name;
+        }
+        _gender = bird.gender;
+      });
+    }
+  }
+
   void _onSubmit() {
     FocusScope.of(context).unfocus();
     if (!_formKey.currentState!.validate()) return;
@@ -248,6 +299,7 @@ class _MarketplaceFormScreenState
         price: _listingType == MarketplaceListingType.sale
             ? double.tryParse(_priceController.text.trim())
             : null,
+        birdId: _linkedBirdId,
         species: _speciesController.text.trim(),
         mutation: _mutationController.text.trim().isEmpty
             ? null
@@ -268,6 +320,7 @@ class _MarketplaceFormScreenState
         price: _listingType == MarketplaceListingType.sale
             ? double.tryParse(_priceController.text.trim())
             : null,
+        birdId: _linkedBirdId,
         species: _speciesController.text.trim(),
         mutation: _mutationController.text.trim().isEmpty
             ? null
