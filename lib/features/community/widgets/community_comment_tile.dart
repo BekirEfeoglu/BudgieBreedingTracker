@@ -15,7 +15,7 @@ import '../../../data/providers/auth_state_providers.dart';
 import '../../../data/repositories/repository_providers.dart';
 import '../providers/community_comment_providers.dart';
 import '../providers/community_providers.dart';
-import 'community_report_dialog.dart';
+import 'community_report_sheet.dart';
 
 /// Tile widget for displaying a single comment.
 class CommunityCommentTile extends ConsumerWidget {
@@ -141,7 +141,7 @@ class CommunityCommentTile extends ConsumerWidget {
   }
 
   Future<void> _showReportDialog(BuildContext context, WidgetRef ref) async {
-    final reason = await showCommunityReportDialog(
+    final reason = await showCommunityReportSheet(
       context,
       title: 'community.report_comment'.tr(),
     );

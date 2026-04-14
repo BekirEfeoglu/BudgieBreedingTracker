@@ -195,7 +195,7 @@ void main() {
   });
 
   group('CommunityCommentTile — long press interactions', () {
-    testWidgets('long press shows report dialog for other user comments', (
+    testWidgets('long press shows report sheet for other user comments', (
       tester,
     ) async {
       await tester.pumpWidget(
@@ -209,7 +209,7 @@ void main() {
       await tester.longPress(find.text('Test comment content'));
       await tester.pumpAndSettle();
 
-      expect(find.byType(SimpleDialog), findsOneWidget);
+      expect(find.byType(BottomSheet), findsOneWidget);
       expect(find.text(l10n('community.report_comment')), findsOneWidget);
     });
 
@@ -299,8 +299,12 @@ void main() {
       await tester.longPress(find.text('Test comment content'));
       await tester.pumpAndSettle();
 
-      // Select spam reason
+      // Select spam reason (selects but doesn't submit yet)
       await tester.tap(find.text(l10n('community.report_reason_spam')));
+      await tester.pumpAndSettle();
+
+      // Tap confirm to submit
+      await tester.tap(find.text(l10n('community.report_confirm')));
       await tester.pump();
       await tester.pump();
 

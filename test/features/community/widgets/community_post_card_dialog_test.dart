@@ -228,7 +228,7 @@ void main() {
       ).called(1);
     });
 
-    testWidgets('report dialog shows reason options', (tester) async {
+    testWidgets('report sheet shows reason options', (tester) async {
       await tester.pumpWidget(
         createSubject(_testPost(userId: 'someone'), currentUserId: 'me'),
       );
@@ -240,7 +240,7 @@ void main() {
       await tester.tap(find.text(l10n('community.report_post')));
       await tester.pumpAndSettle();
 
-      expect(find.byType(SimpleDialog), findsOneWidget);
+      expect(find.byType(BottomSheet), findsOneWidget);
       expect(find.text(l10n('community.report_reason_spam')), findsOneWidget);
       expect(find.text(l10n('community.report_reason_harassment')), findsOneWidget);
     });
@@ -268,12 +268,14 @@ void main() {
       );
       await tester.pump();
 
-      // Open popup -> report -> select reason
+      // Open popup -> report -> select reason -> confirm
       await tester.tap(find.byType(PopupMenuButton<String>));
       await tester.pumpAndSettle();
       await tester.tap(find.text(l10n('community.report_post')));
       await tester.pumpAndSettle();
       await tester.tap(find.text(l10n('community.report_reason_spam')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(l10n('community.report_confirm')));
       await tester.pump();
       await tester.pump();
 

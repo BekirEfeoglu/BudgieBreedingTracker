@@ -115,7 +115,7 @@ void main() {
       expect(find.text('0'), findsNothing);
     });
 
-    testWidgets('long press shows report dialog for other user comments', (
+    testWidgets('long press shows report sheet for other user comments', (
       tester,
     ) async {
       await tester.pumpWidget(
@@ -129,8 +129,8 @@ void main() {
       await tester.longPress(find.text('Test comment'));
       await tester.pumpAndSettle();
 
-      // Report dialog should appear (SimpleDialog, not AlertDialog)
-      expect(find.byType(SimpleDialog), findsOneWidget);
+      // Report sheet should appear (BottomSheet, not SimpleDialog)
+      expect(find.byType(BottomSheet), findsOneWidget);
       expect(find.text(l10n('community.report_comment')), findsOneWidget);
     });
 
@@ -282,8 +282,12 @@ void main() {
       await tester.longPress(find.text('Test comment'));
       await tester.pumpAndSettle();
 
-      // Select spam reason
+      // Select spam reason (selects it in the sheet)
       await tester.tap(find.text(l10n('community.report_reason_spam')));
+      await tester.pumpAndSettle();
+
+      // Tap confirm to submit
+      await tester.tap(find.text(l10n('community.report_confirm')));
       await tester.pump();
       await tester.pump();
 

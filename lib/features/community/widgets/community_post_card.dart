@@ -2,6 +2,7 @@ import 'package:budgie_breeding_tracker/core/utils/app_haptics.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 
@@ -21,7 +22,7 @@ import 'community_image_viewer.dart';
 import 'community_media_gallery.dart';
 import 'community_post_actions.dart';
 import 'community_post_card_parts.dart';
-import 'community_report_dialog.dart';
+import 'community_report_sheet.dart';
 import 'community_user_header.dart';
 
 /// Card widget displaying a single community post with full interaction.
@@ -54,6 +55,7 @@ class _CommunityPostCardState extends ConsumerState<CommunityPostCard> {
     final isOwnPost = post.userId == currentUserId;
     final hasEngagement = post.likeCount > 0 || post.commentCount > 0;
     final allImages = post.allImageUrls;
+    final isGuide = post.postType == CommunityPostType.guide;
 
     final cardChild = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -88,7 +90,10 @@ class _CommunityPostCardState extends ConsumerState<CommunityPostCard> {
                           .toggleFollow(post.userId),
                 postType: post.postType,
               ),
-              if (post.postType != CommunityPostType.general ||
+              if (isGuide) ...[
+                const SizedBox(height: AppSpacing.md),
+                _GuideLeadBlock(post: post),
+              ] else if (post.postType != CommunityPostType.general ||
                   post.title != null) ...[
                 const SizedBox(height: AppSpacing.md),
                 Wrap(
@@ -161,11 +166,15 @@ class _CommunityPostCardState extends ConsumerState<CommunityPostCard> {
     return Card(
       margin: const EdgeInsets.only(bottom: AppSpacing.md),
       elevation: 0,
-      color: theme.colorScheme.surface,
+      color: isGuide
+          ? theme.colorScheme.surfaceContainerLowest
+          : theme.colorScheme.surface,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
         side: BorderSide(
-          color: theme.colorScheme.outlineVariant.withValues(alpha: 0.22),
+          color: isGuide
+              ? theme.colorScheme.primary.withValues(alpha: 0.22)
+              : theme.colorScheme.outlineVariant.withValues(alpha: 0.22),
         ),
       ),
       clipBehavior: Clip.antiAlias,
@@ -195,7 +204,7 @@ class _CommunityPostCardState extends ConsumerState<CommunityPostCard> {
   }
 
   Future<void> _handleReport() async {
-    final reason = await showCommunityReportDialog(
+    final reason = await showCommunityReportSheet(
       context,
       title: 'community.report_post'.tr(),
     );
@@ -253,6 +262,132 @@ class _CommunityPostCardState extends ConsumerState<CommunityPostCard> {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (_) => CommunityImageViewer(imageUrl: imageUrl),
+      ),
+    );
+  }
+}
+
+class _GuideLeadBlock extends StatelessWidget {
+  const _GuideLeadBlock({required this.post});
+
+  final CommunityPost post;
+
+  int get _estimatedReadMinutes {
+    final text = [if (post.title != null) post.title!, post.content].join(' ');
+    final wordCount = text
+        .split(RegExp(r'\s+'))
+        .where((part) => part.trim().isNotEmpty)
+        .length;
+    final minutes = (wordCount / 180).ceil();
+    return minutes < 1 ? 1 : minutes;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            theme.colorScheme.primary.withValues(alpha: 0.12),
+            theme.colorScheme.surface,
+          ],
+        ),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.sm,
+                  vertical: AppSpacing.xs,
+                ),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.primary,
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+                ),
+                child: Text(
+                  'community.tab_guides'.tr(),
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: theme.colorScheme.onPrimary,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.sm,
+                  vertical: AppSpacing.xs,
+                ),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surface.withValues(alpha: 0.82),
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+                  border: Border.all(
+                    color: theme.colorScheme.primary.withValues(alpha: 0.14),
+                  ),
+                ),
+                child: Text(
+                  'community.guide_read_time'.tr(
+                    args: ['$_estimatedReadMinutes'],
+                  ),
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: theme.colorScheme.primary,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          if (post.title != null && post.title!.isNotEmpty) ...[
+            const SizedBox(height: AppSpacing.md),
+            Text(
+              post.title!,
+              style: theme.textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.w800,
+                height: 1.15,
+              ),
+            ),
+          ],
+          if (post.content.isNotEmpty) ...[
+            const SizedBox(height: AppSpacing.md),
+            Text(
+              post.content,
+              maxLines: 4,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+                height: 1.55,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.md),
+            Row(
+              children: [
+                Icon(
+                  LucideIcons.bookOpen,
+                  size: 16,
+                  color: theme.colorScheme.primary,
+                ),
+                const SizedBox(width: AppSpacing.xs),
+                Text(
+                  'community.guide_open_hint'.tr(),
+                  style: theme.textTheme.labelLarge?.copyWith(
+                    color: theme.colorScheme.primary,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ],
       ),
     );
   }
