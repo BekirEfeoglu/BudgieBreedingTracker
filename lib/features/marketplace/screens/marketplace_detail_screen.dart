@@ -222,7 +222,7 @@ class _MarketplaceDetailScreenState
                                 userId1: userId,
                                 userId2: listing.userId,
                               );
-                              if (!mounted) return;
+                              if (!context.mounted) return;
                               if (conversationId != null) {
                                 context.push(
                                   '${AppRoutes.messages}/$conversationId',
@@ -261,7 +261,7 @@ class _MarketplaceDetailScreenState
                                       marketplaceFormStateProvider.notifier,
                                     )
                                     .deleteListing(listing.id);
-                                if (!mounted) return;
+                                if (!context.mounted) return;
                                 context.pop();
                               }
                             },
