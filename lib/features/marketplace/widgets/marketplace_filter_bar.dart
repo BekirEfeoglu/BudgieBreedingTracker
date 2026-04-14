@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../core/theme/app_spacing.dart';
 import '../providers/marketplace_providers.dart';
+import 'marketplace_filter_sheet.dart';
 
 class MarketplaceFilterBar extends ConsumerWidget {
   const MarketplaceFilterBar({super.key});
@@ -10,6 +12,7 @@ class MarketplaceFilterBar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final currentFilter = ref.watch(marketplaceFilterProvider);
+    final activeCount = ref.watch(activeFilterCountProvider);
     final theme = Theme.of(context);
 
     return SingleChildScrollView(
@@ -19,21 +22,38 @@ class MarketplaceFilterBar extends ConsumerWidget {
         vertical: AppSpacing.sm,
       ),
       child: Row(
-        children: MarketplaceFilter.values.map((filter) {
-          final isSelected = currentFilter == filter;
-          return Padding(
+        children: [
+          ...MarketplaceFilter.values.map((filter) {
+            final isSelected = currentFilter == filter;
+            return Padding(
+              padding: const EdgeInsets.only(right: AppSpacing.sm),
+              child: FilterChip(
+                label: Text(filter.label),
+                selected: isSelected,
+                onSelected: (_) {
+                  ref.read(marketplaceFilterProvider.notifier).state = filter;
+                },
+                selectedColor: theme.colorScheme.primaryContainer,
+                checkmarkColor: theme.colorScheme.primary,
+              ),
+            );
+          }),
+          Padding(
             padding: const EdgeInsets.only(right: AppSpacing.sm),
-            child: FilterChip(
-              label: Text(filter.label),
-              selected: isSelected,
-              onSelected: (_) {
-                ref.read(marketplaceFilterProvider.notifier).state = filter;
-              },
-              selectedColor: theme.colorScheme.primaryContainer,
-              checkmarkColor: theme.colorScheme.primary,
+            child: Badge(
+              isLabelVisible: activeCount > 0,
+              label: Text('$activeCount'),
+              child: IconButton(
+                icon: const Icon(LucideIcons.slidersHorizontal),
+                onPressed: () => showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  builder: (_) => const MarketplaceFilterSheet(),
+                ),
+              ),
             ),
-          );
-        }).toList(),
+          ),
+        ],
       ),
     );
   }

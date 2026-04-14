@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/enums/bird_enums.dart';
 import '../../../data/models/marketplace_listing_model.dart';
 import '../../../data/repositories/repository_providers.dart';
 
@@ -83,6 +84,39 @@ final marketplaceCityFilterProvider =
   MarketplaceCityFilterNotifier.new,
 );
 
+/// Price range filter state
+class MarketplacePriceRangeNotifier
+    extends Notifier<({double? min, double? max})> {
+  @override
+  ({double? min, double? max}) build() => (min: null, max: null);
+}
+
+final marketplacePriceRangeProvider = NotifierProvider<
+    MarketplacePriceRangeNotifier, ({double? min, double? max})>(
+  MarketplacePriceRangeNotifier.new,
+);
+
+/// Gender filter state
+class MarketplaceGenderFilterNotifier extends Notifier<BirdGender?> {
+  @override
+  BirdGender? build() => null;
+}
+
+final marketplaceGenderFilterProvider =
+    NotifierProvider<MarketplaceGenderFilterNotifier, BirdGender?>(
+  MarketplaceGenderFilterNotifier.new,
+);
+
+/// Count of active advanced filters for badge display
+final activeFilterCountProvider = Provider<int>((ref) {
+  int count = 0;
+  if (ref.watch(marketplaceCityFilterProvider) != null) count++;
+  final range = ref.watch(marketplacePriceRangeProvider);
+  if (range.min != null || range.max != null) count++;
+  if (ref.watch(marketplaceGenderFilterProvider) != null) count++;
+  return count;
+});
+
 /// Listings feed provider
 final marketplaceListingsProvider =
     FutureProvider.family<List<MarketplaceListing>, String>(
@@ -139,6 +173,21 @@ final filteredMarketplaceListingsProvider =
             l.city.toLowerCase().contains(query) ||
             (l.mutation?.toLowerCase().contains(query) ?? false);
       }).toList();
+    }
+
+    // Price range filter
+    final priceRange = ref.watch(marketplacePriceRangeProvider);
+    if (priceRange.min != null) {
+      result = result.where((l) => (l.price ?? 0) >= priceRange.min!).toList();
+    }
+    if (priceRange.max != null) {
+      result = result.where((l) => (l.price ?? 0) <= priceRange.max!).toList();
+    }
+
+    // Gender filter
+    final genderFilter = ref.watch(marketplaceGenderFilterProvider);
+    if (genderFilter != null) {
+      result = result.where((l) => l.gender == genderFilter).toList();
     }
 
     switch (sort) {
