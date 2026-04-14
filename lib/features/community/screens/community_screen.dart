@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_spacing.dart';
@@ -29,7 +30,8 @@ class CommunityScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
       appBar: const CommunityAppBar(),
-      floatingActionButton: isEnabled &&
+      floatingActionButton:
+          isEnabled &&
               activeTab != CommunityFeedTab.questions &&
               (activeTab != CommunityFeedTab.guides ||
                   ref.watch(isFounderProvider).value == true)
@@ -37,8 +39,8 @@ class CommunityScreen extends ConsumerWidget {
               onPressed: () => context.push(_buildCreatePostRoute(activeTab)),
               icon: Icon(
                 activeTab == CommunityFeedTab.guides
-                    ? Icons.menu_book_rounded
-                    : Icons.edit_rounded,
+                    ? LucideIcons.bookOpen
+                    : LucideIcons.edit,
               ),
               label: Text('community.create_post'.tr()),
             )
@@ -82,34 +84,37 @@ class CommunityScreen extends ConsumerWidget {
     final theme = Theme.of(context);
 
     // questions tab is repurposed as marketplace tab in UI
-    if (activeTab == CommunityFeedTab.questions) {
-      return Column(
-        children: [
-          const _CommunityTabRail(),
-          Expanded(
-            child: Container(
-              decoration: BoxDecoration(
-                color: theme.colorScheme.surface,
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(AppSpacing.radiusXl),
-                ),
-                border: Border.all(
-                  color: theme.colorScheme.outlineVariant.withValues(
-                    alpha: 0.18,
-                  ),
+    final tabBody = activeTab == CommunityFeedTab.questions
+        ? Container(
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surface,
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(AppSpacing.radiusXl),
+              ),
+              border: Border.all(
+                color: theme.colorScheme.outlineVariant.withValues(
+                  alpha: 0.18,
                 ),
               ),
-              child: const MarketplaceTabContent(),
             ),
-          ),
-        ],
-      );
-    }
+            child: const MarketplaceTabContent(),
+          )
+        : CommunityFeedList(tab: activeTab);
 
     return Column(
       children: [
         const _CommunityTabRail(),
-        Expanded(child: CommunityFeedList(tab: activeTab)),
+        Expanded(
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 250),
+            transitionBuilder: (child, animation) =>
+                FadeTransition(opacity: animation, child: child),
+            child: KeyedSubtree(
+              key: ValueKey(activeTab),
+              child: tabBody,
+            ),
+          ),
+        ),
       ],
     );
   }
