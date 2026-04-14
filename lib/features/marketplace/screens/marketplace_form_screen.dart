@@ -53,6 +53,7 @@ class _MarketplaceFormScreenState
     final formState = ref.watch(marketplaceFormStateProvider);
 
     ref.listen<MarketplaceFormState>(marketplaceFormStateProvider, (_, state) {
+      if (!mounted) return;
       if (state.isSuccess) {
         ref.read(marketplaceFormStateProvider.notifier).reset();
         context.pop();
@@ -225,6 +226,7 @@ class _MarketplaceFormScreenState
   }
 
   void _onSubmit() {
+    FocusScope.of(context).unfocus();
     if (!_formKey.currentState!.validate()) return;
 
     final userId = ref.read(currentUserIdProvider);

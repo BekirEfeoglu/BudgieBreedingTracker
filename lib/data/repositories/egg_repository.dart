@@ -83,6 +83,9 @@ class EggRepository extends BaseRepository<Egg>
       if (clutch == null) {
         return 'Referenced clutch ${egg.clutchId} not found locally';
       }
+      if (clutch.isDeleted) {
+        return 'Referenced clutch ${egg.clutchId} is deleted';
+      }
       final syncMeta = await _syncDao.getByRecord(
         SupabaseConstants.clutchesTable,
         egg.clutchId!,

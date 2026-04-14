@@ -124,6 +124,7 @@ class _BreedingFormScreenState extends ConsumerState<BreedingFormScreen> {
     final formState = ref.watch(breedingFormStateProvider);
 
     ref.listen<BreedingFormState>(breedingFormStateProvider, (_, state) {
+      if (!mounted) return;
       if (state.isSuccess) {
         _savedSuccessfully = true;
         ref.read(breedingFormStateProvider.notifier).reset();

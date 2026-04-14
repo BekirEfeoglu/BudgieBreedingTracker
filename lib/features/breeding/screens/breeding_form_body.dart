@@ -122,6 +122,7 @@ extension _BreedingFormBody on _BreedingFormScreenState {
   }
 
   void _submit() {
+    FocusScope.of(context).unfocus();
     if (!(_formKey.currentState?.validate() ?? false)) return;
     AppHaptics.lightImpact();
 

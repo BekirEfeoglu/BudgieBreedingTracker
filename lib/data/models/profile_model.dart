@@ -15,6 +15,7 @@ abstract class Profile with _$Profile {
     @Default(SubscriptionStatus.free)
     @JsonKey(unknownEnumValue: SubscriptionStatus.free)
     SubscriptionStatus subscriptionStatus,
+    String? displayName,
     String? fullName,
     String? avatarUrl,
     String? role,
@@ -37,8 +38,13 @@ extension ProfileX on Profile {
       subscriptionStatus == SubscriptionStatus.premium ||
       subscriptionStatus == SubscriptionStatus.trial;
 
-  String get resolvedDisplayName =>
-      (fullName != null && fullName!.trim().isNotEmpty)
-      ? fullName!
-      : email.split('@').first;
+  String get resolvedDisplayName {
+    if (displayName != null && displayName!.trim().isNotEmpty) {
+      return displayName!;
+    }
+    if (fullName != null && fullName!.trim().isNotEmpty) {
+      return fullName!;
+    }
+    return email.split('@').first;
+  }
 }

@@ -68,6 +68,7 @@ class _DetailContent extends ConsumerWidget {
       _,
       state,
     ) {
+      if (!context.mounted) return;
       if (state.isSuccess) {
         ref.read(healthRecordFormStateProvider.notifier).reset();
         context.pop();

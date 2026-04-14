@@ -58,22 +58,30 @@ class NotificationRemoteSource extends BaseRemoteSource<AppNotification> {
 
   /// Fetches unread notifications for a user.
   Future<List<AppNotification>> fetchUnread(String userId) async {
-    final response = await table
-        .select()
-        .eq('user_id', userId)
-        .eq('read', false)
-        .order('created_at', ascending: false);
-    return response.map((json) => fromJson(json)).toList();
+    try {
+      final response = await table
+          .select()
+          .eq('user_id', userId)
+          .eq('read', false)
+          .order('created_at', ascending: false);
+      return response.map((json) => fromJson(json)).toList();
+    } catch (e, st) {
+      throw handleError(e, st);
+    }
   }
 
   /// Fetches notification settings for a user.
   Future<NotificationSettings?> fetchSettings(String userId) async {
-    final response = await client
-        .from(SupabaseConstants.notificationSettingsTable)
-        .select()
-        .eq('user_id', userId)
-        .maybeSingle();
-    return response != null ? NotificationSettings.fromJson(response) : null;
+    try {
+      final response = await client
+          .from(SupabaseConstants.notificationSettingsTable)
+          .select()
+          .eq('user_id', userId)
+          .maybeSingle();
+      return response != null ? NotificationSettings.fromJson(response) : null;
+    } catch (e, st) {
+      throw handleError(e, st);
+    }
   }
 
   /// Upserts notification settings.
@@ -81,9 +89,15 @@ class NotificationRemoteSource extends BaseRemoteSource<AppNotification> {
   /// NotificationSettings is primarily local-only but settings are
   /// synced to Supabase for cross-device consistency.
   Future<void> upsertSettings(NotificationSettings settings) async {
-    final json = settings.toJson();
-    json.remove('created_at');
-    json.remove('updated_at');
-    await client.from(SupabaseConstants.notificationSettingsTable).upsert(json);
+    try {
+      final json = settings.toJson();
+      json.remove('created_at');
+      json.remove('updated_at');
+      await client
+          .from(SupabaseConstants.notificationSettingsTable)
+          .upsert(json);
+    } catch (e, st) {
+      throw handleError(e, st);
+    }
   }
 }

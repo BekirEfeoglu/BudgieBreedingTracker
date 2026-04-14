@@ -113,6 +113,7 @@ class _HealthRecordFormScreenState
       _,
       state,
     ) {
+      if (!mounted) return;
       if (state.isSuccess) {
         _savedSuccessfully = true;
         ref.read(healthRecordFormStateProvider.notifier).reset();
@@ -234,6 +235,7 @@ class _HealthRecordFormScreenState
   }
 
   void _submit() {
+    FocusScope.of(context).unfocus();
     if (!_formKey.currentState!.validate()) return;
     AppHaptics.lightImpact();
 

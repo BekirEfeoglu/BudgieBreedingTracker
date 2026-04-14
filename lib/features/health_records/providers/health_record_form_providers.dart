@@ -51,6 +51,7 @@ class HealthRecordFormNotifier extends Notifier<HealthRecordFormState>
     double? cost,
     DateTime? followUpDate,
   }) async {
+    if (state.isLoading) return;
     state = state.copyWith(isLoading: true, error: null, isSuccess: false);
     try {
       final repo = ref.read(healthRecordRepositoryProvider);
@@ -119,6 +120,7 @@ class HealthRecordFormNotifier extends Notifier<HealthRecordFormState>
   }
 
   Future<void> updateRecord(HealthRecord record) async {
+    if (state.isLoading) return;
     state = state.copyWith(isLoading: true, error: null, isSuccess: false);
     try {
       final repo = ref.read(healthRecordRepositoryProvider);
@@ -132,6 +134,7 @@ class HealthRecordFormNotifier extends Notifier<HealthRecordFormState>
   }
 
   Future<void> deleteRecord(String id) async {
+    if (state.isLoading) return;
     state = state.copyWith(isLoading: true, error: null, isSuccess: false);
     try {
       final repo = ref.read(healthRecordRepositoryProvider);

@@ -93,6 +93,7 @@ mixin _BirdFormActions on Notifier<BirdFormState>, SentryErrorFilter {
     List<String>? mutations,
     Map<String, String>? genotypeInfo,
   }) async {
+    if (state.isLoading) return;
     state = state.copyWith(isLoading: true, error: null, isSuccess: false);
     try {
       final repo = ref.read(birdRepositoryProvider);
@@ -178,6 +179,7 @@ mixin _BirdFormActions on Notifier<BirdFormState>, SentryErrorFilter {
   }
 
   Future<void> updateBird(Bird bird) async {
+    if (state.isLoading) return;
     state = state.copyWith(isLoading: true, error: null, isSuccess: false);
     try {
       final repo = ref.read(birdRepositoryProvider);

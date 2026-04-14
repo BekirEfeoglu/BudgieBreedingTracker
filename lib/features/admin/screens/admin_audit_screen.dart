@@ -33,6 +33,7 @@ class _AdminAuditScreenState extends ConsumerState<AdminAuditScreen> {
     final filter = ref.watch(auditLogFilterProvider);
 
     ref.listen<AdminActionState>(adminActionsProvider, (_, state) {
+      if (!mounted) return;
       if (state.isSuccess) {
         ref.read(adminActionsProvider.notifier).reset();
         ref.invalidate(adminAuditLogsProvider);

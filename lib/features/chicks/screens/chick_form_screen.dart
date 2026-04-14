@@ -91,6 +91,7 @@ class _ChickFormScreenState extends ConsumerState<ChickFormScreen> {
     final formState = ref.watch(chickFormStateProvider);
 
     ref.listen<ChickFormState>(chickFormStateProvider, (_, state) {
+      if (!mounted) return;
       if (state.warning != null) {
         ScaffoldMessenger.of(
           context,
@@ -226,6 +227,7 @@ class _ChickFormScreenState extends ConsumerState<ChickFormScreen> {
   }
 
   void _submit() {
+    FocusScope.of(context).unfocus();
     if (!_formKey.currentState!.validate()) return;
 
     if (_hatchDate == null) {

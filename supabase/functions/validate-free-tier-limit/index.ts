@@ -36,19 +36,19 @@ Deno.serve(async (req) => {
 
     const { table } = parsed.data;
 
-    if (!ALLOWED_TABLES.has(table)) {
-      console.warn(`[validate-free-tier-limit] Unknown table requested: ${table}`);
-      return new Response(
-        JSON.stringify({ allowed: true }),
-        { status: 200, headers },
-      );
-    }
-
     const userId = await getAuthenticatedUserId(req);
     if (!userId) {
       return new Response(
         JSON.stringify({ error: "Unauthorized" }),
         { status: 401, headers },
+      );
+    }
+
+    if (!ALLOWED_TABLES.has(table)) {
+      console.warn(`[validate-free-tier-limit] Unknown table requested: ${table}`);
+      return new Response(
+        JSON.stringify({ allowed: true }),
+        { status: 200, headers },
       );
     }
 

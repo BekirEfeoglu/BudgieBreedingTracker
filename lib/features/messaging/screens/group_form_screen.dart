@@ -31,6 +31,7 @@ class _GroupFormScreenState extends ConsumerState<GroupFormScreen> {
     final formState = ref.watch(messagingFormStateProvider);
 
     ref.listen<MessagingFormState>(messagingFormStateProvider, (_, state) {
+      if (!mounted) return;
       if (state.isSuccess && state.resultConversationId != null) {
         ref.read(messagingFormStateProvider.notifier).reset();
         context.pushReplacement(

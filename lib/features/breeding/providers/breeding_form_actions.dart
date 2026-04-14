@@ -2,6 +2,7 @@ part of 'breeding_form_providers.dart';
 
 extension BreedingFormActions on BreedingFormNotifier {
   Future<void> cancelBreeding(String id) async {
+    if (state.isLoading) return;
     state = state.copyWith(isLoading: true, error: null);
     try {
       final repo = ref.read(breedingPairRepositoryProvider);
@@ -41,6 +42,7 @@ extension BreedingFormActions on BreedingFormNotifier {
   }
 
   Future<void> completeBreeding(String id) async {
+    if (state.isLoading) return;
     state = state.copyWith(isLoading: true, error: null);
     try {
       final repo = ref.read(breedingPairRepositoryProvider);
@@ -80,6 +82,7 @@ extension BreedingFormActions on BreedingFormNotifier {
   }
 
   Future<void> deleteBreeding(String id) async {
+    if (state.isLoading) return;
     state = state.copyWith(isLoading: true, error: null, isSuccess: false);
     try {
       final pairRepo = ref.read(breedingPairRepositoryProvider);

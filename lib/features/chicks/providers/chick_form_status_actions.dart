@@ -4,6 +4,7 @@ part of 'chick_form_providers.dart';
 extension ChickFormStatusActions on ChickFormNotifier {
   /// Marks a chick as weaned.
   Future<void> markAsWeaned(String id, {DateTime? weanDate}) async {
+    if (state.isLoading) return;
     state = state.copyWith(isLoading: true, error: null, warning: null);
     try {
       final repo = ref.read(chickRepositoryProvider);
@@ -26,6 +27,7 @@ extension ChickFormStatusActions on ChickFormNotifier {
 
   /// Marks a chick as deceased.
   Future<void> markAsDeceased(String id, {DateTime? deathDate}) async {
+    if (state.isLoading) return;
     state = state.copyWith(isLoading: true, error: null, warning: null);
     try {
       final repo = ref.read(chickRepositoryProvider);
@@ -64,6 +66,7 @@ extension ChickFormStatusActions on ChickFormNotifier {
   /// Promotes a chick to a Bird. Creates a new Bird and sets chick.birdId.
   /// Resolves parent IDs from the breeding pair via egg → incubation → pair.
   Future<void> promoteToBird(Chick chick) async {
+    if (state.isLoading) return;
     state = state.copyWith(
       isLoading: true,
       error: null,

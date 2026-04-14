@@ -55,6 +55,7 @@ class MarketplaceFormNotifier extends Notifier<MarketplaceFormState> {
     required List<String> imageUrls,
     required String city,
   }) async {
+    if (state.isLoading) return;
     state = state.copyWith(isLoading: true, error: null, isSuccess: false);
     try {
       // Input length validation
@@ -130,6 +131,7 @@ class MarketplaceFormNotifier extends Notifier<MarketplaceFormState> {
     required List<String> imageUrls,
     required String city,
   }) async {
+    if (state.isLoading) return;
     state = state.copyWith(isLoading: true, error: null, isSuccess: false);
     try {
       final trimmedTitle = title.trim();
@@ -188,6 +190,7 @@ class MarketplaceFormNotifier extends Notifier<MarketplaceFormState> {
   }
 
   Future<void> deleteListing(String listingId) async {
+    if (state.isLoading) return;
     state = state.copyWith(isLoading: true, error: null, isSuccess: false);
     try {
       final repo = ref.read(marketplaceRepositoryProvider);
@@ -204,6 +207,7 @@ class MarketplaceFormNotifier extends Notifier<MarketplaceFormState> {
     String listingId,
     MarketplaceListingStatus status,
   ) async {
+    if (state.isLoading) return;
     state = state.copyWith(isLoading: true, error: null, isSuccess: false);
     try {
       final repo = ref.read(marketplaceRepositoryProvider);

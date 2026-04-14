@@ -32,6 +32,7 @@ class DatabaseContent extends ConsumerWidget {
     );
 
     ref.listen<AdminActionState>(adminActionsProvider, (prev, next) {
+      if (!context.mounted) return;
       final messenger = ScaffoldMessenger.of(context);
       if (next.isSuccess && next.successMessage != null) {
         ActionFeedbackService.show(next.successMessage!);

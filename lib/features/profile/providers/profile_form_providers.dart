@@ -42,6 +42,7 @@ class AvatarUploadNotifier extends Notifier<AvatarUploadState>
 
   /// Upload an avatar image file.
   Future<void> uploadAvatar(XFile file) async {
+    if (state.isUploading) return;
     state = state.copyWith(isUploading: true, error: null, isSuccess: false);
     try {
       final userId = ref.read(currentUserIdProvider);
@@ -73,6 +74,7 @@ class AvatarUploadNotifier extends Notifier<AvatarUploadState>
 
   /// Remove the current avatar.
   Future<void> removeAvatar() async {
+    if (state.isUploading) return;
     state = state.copyWith(isUploading: true, error: null, isSuccess: false);
     try {
       final userId = ref.read(currentUserIdProvider);
@@ -142,6 +144,7 @@ class PasswordChangeNotifier extends Notifier<PasswordChangeState>
     required String currentPassword,
     required String newPassword,
   }) async {
+    if (state.isLoading) return;
     state = state.copyWith(isLoading: true, error: null, isSuccess: false);
     try {
       final authActions = ref.read(authActionsProvider);

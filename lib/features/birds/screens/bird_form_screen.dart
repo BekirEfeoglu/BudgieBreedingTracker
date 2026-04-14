@@ -106,6 +106,7 @@ class _BirdFormScreenState extends ConsumerState<BirdFormScreen> {
     final formState = ref.watch(birdFormStateProvider);
 
     ref.listen<BirdFormState>(birdFormStateProvider, (_, state) {
+      if (!mounted) return;
       final notifier = ref.read(birdFormStateProvider.notifier);
       if (state.isSuccess) {
         _savedSuccessfully = true;
@@ -203,6 +204,7 @@ class _BirdFormScreenState extends ConsumerState<BirdFormScreen> {
   }
 
   void _submit() {
+    FocusScope.of(context).unfocus();
     if (!(_formKey.currentState?.validate() ?? false)) return;
     AppHaptics.lightImpact();
     submitBirdForm(

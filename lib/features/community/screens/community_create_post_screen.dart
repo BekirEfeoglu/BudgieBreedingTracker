@@ -114,6 +114,7 @@ class _CommunityCreatePostScreenState
     final theme = Theme.of(context);
 
     ref.listen<CreatePostState>(createPostProvider, (_, state) {
+      if (!mounted) return;
       if (state.isSuccess) {
         ref.read(createPostProvider.notifier).reset();
         context.pop();

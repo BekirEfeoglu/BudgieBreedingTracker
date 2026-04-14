@@ -86,6 +86,7 @@ class _EggManagementContent extends ConsumerWidget {
 
     // Show SnackBar when chick is auto-created from hatched egg
     ref.listen<EggActionsState>(eggActionsProvider, (_, state) {
+      if (!context.mounted) return;
       if (state.warning != null) {
         ScaffoldMessenger.of(
           context,

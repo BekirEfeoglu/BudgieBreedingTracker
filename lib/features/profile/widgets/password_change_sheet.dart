@@ -31,6 +31,7 @@ class _PasswordChangeSheetContent extends ConsumerWidget {
     final state = ref.watch(passwordChangeStateProvider);
 
     ref.listen<PasswordChangeState>(passwordChangeStateProvider, (_, s) {
+      if (!context.mounted) return;
       if (s.isSuccess) {
         ref.read(passwordChangeStateProvider.notifier).reset();
         Navigator.of(context).pop();

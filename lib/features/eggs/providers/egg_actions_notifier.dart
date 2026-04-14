@@ -43,6 +43,7 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
     required int eggNumber,
     String? notes,
   }) async {
+    if (state.isLoading) return;
     state = state.copyWith(
       isLoading: true,
       error: null,
@@ -122,6 +123,7 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
 
   /// Updates the status of an existing egg.
   Future<void> updateEggStatus(Egg egg, EggStatus newStatus) async {
+    if (state.isLoading) return;
     state = state.copyWith(
       isLoading: true,
       error: null,
@@ -267,6 +269,7 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
 
   /// Soft-deletes an egg.
   Future<void> deleteEgg(String id) async {
+    if (state.isLoading) return;
     state = state.copyWith(isLoading: true, error: null, isSuccess: false);
     try {
       final repo = ref.read(eggRepositoryProvider);

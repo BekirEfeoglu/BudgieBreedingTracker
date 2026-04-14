@@ -71,6 +71,7 @@ class _DetailContent extends ConsumerWidget {
     final formState = ref.watch(birdFormStateProvider);
 
     ref.listen<BirdFormState>(birdFormStateProvider, (_, state) {
+      if (!context.mounted) return;
       if (state.isSuccess) {
         ref.read(birdFormStateProvider.notifier).reset();
         ActionFeedbackService.show('common.saved_successfully'.tr());

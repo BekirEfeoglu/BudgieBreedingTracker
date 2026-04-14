@@ -37,6 +37,7 @@ class ProfileScreen extends ConsumerWidget {
 
     // Avatar upload side effects
     ref.listen<AvatarUploadState>(avatarUploadStateProvider, (_, state) {
+      if (!context.mounted) return;
       if (state.isSuccess) {
         ref.read(avatarUploadStateProvider.notifier).reset();
         ActionFeedbackService.show('profile.avatar_upload_success'.tr());

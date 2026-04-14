@@ -68,6 +68,7 @@ class _DetailContent extends ConsumerWidget {
 
     // Side effects: success after complete/cancel/delete → pop + snackbar
     ref.listen<BreedingFormState>(breedingFormStateProvider, (prev, state) {
+      if (!context.mounted) return;
       if (state.isSuccess && !(prev?.isSuccess ?? false)) {
         ref.read(breedingFormStateProvider.notifier).reset();
         ActionFeedbackService.show('common.saved_successfully'.tr());

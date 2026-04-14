@@ -19,6 +19,7 @@ class ChickFormNotifier extends Notifier<ChickFormState> with SentryErrorFilter 
     String? notes,
     int bandingDay = 10,
   }) async {
+    if (state.isLoading) return;
     state = state.copyWith(
       isLoading: true,
       error: null,
@@ -116,6 +117,7 @@ class ChickFormNotifier extends Notifier<ChickFormState> with SentryErrorFilter 
 
   /// Updates an existing chick.
   Future<void> updateChick(Chick chick, {Chick? previous}) async {
+    if (state.isLoading) return;
     state = state.copyWith(
       isLoading: true,
       error: null,
@@ -162,6 +164,7 @@ class ChickFormNotifier extends Notifier<ChickFormState> with SentryErrorFilter 
 
   /// Soft-deletes a chick.
   Future<void> deleteChick(String id) async {
+    if (state.isLoading) return;
     state = state.copyWith(isLoading: true, error: null, warning: null);
     try {
       final repo = ref.read(chickRepositoryProvider);

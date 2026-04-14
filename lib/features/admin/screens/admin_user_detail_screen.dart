@@ -30,6 +30,7 @@ class _AdminUserDetailScreenState extends ConsumerState<AdminUserDetailScreen> {
     final contentAsync = ref.watch(adminUserContentProvider(widget.userId));
 
     ref.listen<AdminActionState>(adminActionsProvider, (_, state) {
+      if (!mounted) return;
       if (state.isSuccess) {
         if (state.successMessage != null) {
           ScaffoldMessenger.of(

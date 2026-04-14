@@ -59,6 +59,7 @@ class BirdFormNotifier extends Notifier<BirdFormState>
 
   /// Soft-deletes a bird.
   Future<void> deleteBird(String id) async {
+    if (state.isLoading) return;
     state = state.copyWith(isLoading: true, error: null);
     try {
       final repo = ref.read(birdRepositoryProvider);
@@ -73,6 +74,7 @@ class BirdFormNotifier extends Notifier<BirdFormState>
 
   /// Marks a bird as dead.
   Future<void> markAsDead(String id, {DateTime? deathDate}) async {
+    if (state.isLoading) return;
     state = state.copyWith(isLoading: true, error: null);
     try {
       final repo = ref.read(birdRepositoryProvider);
@@ -102,6 +104,7 @@ class BirdFormNotifier extends Notifier<BirdFormState>
 
   /// Marks a bird as sold.
   Future<void> markAsSold(String id, {DateTime? soldDate}) async {
+    if (state.isLoading) return;
     state = state.copyWith(isLoading: true, error: null);
     try {
       final repo = ref.read(birdRepositoryProvider);

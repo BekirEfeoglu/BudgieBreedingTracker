@@ -22,6 +22,7 @@ class CommunityPostDetailScreen extends ConsumerWidget {
     final commentsAsync = ref.watch(commentsForPostProvider(postId));
 
     ref.listen<CommentFormState>(commentFormProvider, (_, state) {
+      if (!context.mounted) return;
       if (state.isSuccess) {
         ref.read(commentFormProvider.notifier).reset();
         ScaffoldMessenger.of(context).showSnackBar(

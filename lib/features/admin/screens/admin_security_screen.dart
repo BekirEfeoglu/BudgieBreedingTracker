@@ -33,6 +33,7 @@ class _AdminSecurityScreenState extends ConsumerState<AdminSecurityScreen> {
     final filter = ref.watch(securityEventFilterProvider);
 
     ref.listen<AdminActionState>(adminActionsProvider, (_, state) {
+      if (!mounted) return;
       if (state.isSuccess) {
         ref.read(adminActionsProvider.notifier).reset();
         ref.invalidate(adminSecurityEventsProvider);

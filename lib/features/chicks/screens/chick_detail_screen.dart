@@ -70,6 +70,7 @@ class _DetailContent extends ConsumerWidget {
     final formState = ref.watch(chickFormStateProvider);
 
     ref.listen<ChickFormState>(chickFormStateProvider, (_, state) {
+      if (!context.mounted) return;
       if (state.isSuccess) {
         ref.read(chickFormStateProvider.notifier).reset();
         ActionFeedbackService.show('common.saved_successfully'.tr());

@@ -69,6 +69,9 @@ class ChickRepository extends BaseRepository<Chick>
       if (egg == null) {
         return 'Referenced egg ${chick.eggId} not found locally';
       }
+      if (egg.isDeleted) {
+        return 'Referenced egg ${chick.eggId} is deleted';
+      }
       // Check if egg has pending/error sync metadata (not yet on server)
       final syncMeta = await _syncDao.getByRecord(
         SupabaseConstants.eggsTable,
@@ -82,6 +85,9 @@ class ChickRepository extends BaseRepository<Chick>
       final clutch = await _clutchesDao.getById(chick.clutchId!);
       if (clutch == null) {
         return 'Referenced clutch ${chick.clutchId} not found locally';
+      }
+      if (clutch.isDeleted) {
+        return 'Referenced clutch ${chick.clutchId} is deleted';
       }
       final syncMeta = await _syncDao.getByRecord(
         SupabaseConstants.clutchesTable,

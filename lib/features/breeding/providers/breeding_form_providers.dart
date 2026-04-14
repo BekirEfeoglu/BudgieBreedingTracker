@@ -138,6 +138,7 @@ class BreedingFormNotifier extends Notifier<BreedingFormState>
     String? cageNumber,
     String? notes,
   }) async {
+    if (state.isLoading) return;
     state = state.copyWith(isLoading: true, error: null, isSuccess: false);
     try {
       final pairRepo = ref.read(breedingPairRepositoryProvider);
@@ -257,6 +258,7 @@ class BreedingFormNotifier extends Notifier<BreedingFormState>
 
   /// Updates an existing breeding pair.
   Future<void> updateBreeding(BreedingPair pair) async {
+    if (state.isLoading) return;
     state = state.copyWith(isLoading: true, error: null, isSuccess: false);
     try {
       final repo = ref.read(breedingPairRepositoryProvider);

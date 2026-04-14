@@ -58,6 +58,7 @@ class EventFormNotifier extends Notifier<EventFormState> with SentryErrorFilter 
     String? birdId,
     String? breedingPairId,
   }) async {
+    if (state.isLoading) return;
     state = state.copyWith(isLoading: true, error: null, isSuccess: false);
     try {
       final repo = ref.read(eventRepositoryProvider);
@@ -85,6 +86,7 @@ class EventFormNotifier extends Notifier<EventFormState> with SentryErrorFilter 
 
   /// Updates an existing event.
   Future<void> updateEvent(Event event) async {
+    if (state.isLoading) return;
     state = state.copyWith(isLoading: true, error: null, isSuccess: false);
     try {
       final repo = ref.read(eventRepositoryProvider);
@@ -99,6 +101,7 @@ class EventFormNotifier extends Notifier<EventFormState> with SentryErrorFilter 
 
   /// Soft-deletes an event.
   Future<void> deleteEvent(String id) async {
+    if (state.isLoading) return;
     state = state.copyWith(isLoading: true, error: null, isSuccess: false);
     try {
       final repo = ref.read(eventRepositoryProvider);
@@ -113,6 +116,7 @@ class EventFormNotifier extends Notifier<EventFormState> with SentryErrorFilter 
 
   /// Updates the status of an event.
   Future<void> updateEventStatus(String id, EventStatus newStatus) async {
+    if (state.isLoading) return;
     state = state.copyWith(isLoading: true, error: null, isSuccess: false);
     try {
       final repo = ref.read(eventRepositoryProvider);

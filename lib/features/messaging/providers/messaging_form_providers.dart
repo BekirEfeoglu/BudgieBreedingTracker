@@ -116,6 +116,7 @@ class MessagingFormNotifier extends Notifier<MessagingFormState> {
     required String userId1,
     required String userId2,
   }) async {
+    if (state.isLoading) return null;
     state = state.copyWith(isLoading: true, error: null, isSuccess: false);
     try {
       final repo = ref.read(messagingRepositoryProvider);
@@ -142,6 +143,7 @@ class MessagingFormNotifier extends Notifier<MessagingFormState> {
     required List<String> participantIds,
     String? imageUrl,
   }) async {
+    if (state.isLoading) return null;
     state = state.copyWith(isLoading: true, error: null, isSuccess: false);
     try {
       final repo = ref.read(messagingRepositoryProvider);
@@ -165,6 +167,7 @@ class MessagingFormNotifier extends Notifier<MessagingFormState> {
   }
 
   Future<void> leaveGroup(String conversationId, String userId) async {
+    if (state.isLoading) return;
     state = state.copyWith(isLoading: true, error: null, isSuccess: false);
     try {
       final repo = ref.read(messagingRepositoryProvider);

@@ -196,6 +196,7 @@ class FeedbackFormNotifier extends Notifier<FeedbackFormState> {
     String? appVersion,
     String? deviceInfo,
   }) async {
+    if (state.isLoading) return;
     state = state.copyWith(isLoading: true, error: null, isSuccess: false);
 
     try {
