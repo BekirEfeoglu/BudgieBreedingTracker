@@ -170,39 +170,6 @@ class _MarketplaceFormScreenState
               ),
               const SizedBox(height: AppSpacing.xxl),
 
-              // --- Price (only for sale) ---
-              if (_listingType == MarketplaceListingType.sale) ...[
-                _SectionHeader(
-                  icon: LucideIcons.banknote,
-                  label: 'marketplace.price_label'.tr(),
-                ),
-                const SizedBox(height: AppSpacing.md),
-                TextFormField(
-                  controller: _priceController,
-                  decoration: InputDecoration(
-                    labelText: 'marketplace.price_label'.tr(),
-                    prefixIcon: const Icon(LucideIcons.banknote, size: 18),
-                    suffixText: '\u20BA',
-                  ),
-                  keyboardType: TextInputType.number,
-                  maxLength: 10,
-                  validator: (value) {
-                    if (_listingType == MarketplaceListingType.sale &&
-                        (value == null || value.trim().isEmpty)) {
-                      return 'marketplace.price_required'.tr();
-                    }
-                    if (value != null && value.trim().isNotEmpty) {
-                      final price = double.tryParse(value.trim());
-                      if (price == null || price <= 0 || price > 999999) {
-                        return 'validation.invalid_price'.tr();
-                      }
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: AppSpacing.xxl),
-              ],
-
               // --- Bird Info ---
               _SectionHeader(
                 icon: LucideIcons.bird,
