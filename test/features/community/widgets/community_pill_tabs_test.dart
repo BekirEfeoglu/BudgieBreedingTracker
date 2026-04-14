@@ -47,7 +47,7 @@ void main() {
         findsOneWidget,
       );
       expect(
-        find.text(l10n('community.tab_marketplace')),
+        find.text(l10n('community.tab_questions')),
         findsOneWidget,
       );
     });
