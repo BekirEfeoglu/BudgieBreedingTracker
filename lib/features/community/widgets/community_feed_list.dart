@@ -16,6 +16,8 @@ import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/error_state.dart' as app;
 import '../../../data/providers/auth_state_providers.dart';
 import '../../../router/route_names.dart';
+import '../../../features/admin/providers/admin_data_providers.dart'
+    show isFounderProvider;
 import '../providers/community_feed_providers.dart';
 import '../providers/community_providers.dart';
 import 'community_feed_overlays.dart';

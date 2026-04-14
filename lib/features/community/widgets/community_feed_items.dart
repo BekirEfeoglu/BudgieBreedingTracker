@@ -47,12 +47,14 @@ Widget _buildFeedScrollView({
   }
 
   if (isGuides) {
+    final isFounder = ref.watch(isFounderProvider).value == true;
     return _buildGuidesLibraryView(
       context: context,
       ref: ref,
       feedState: feedState,
       visiblePosts: visiblePosts,
       scrollController: scrollController,
+      isFounder: isFounder,
     );
   }
 
@@ -163,6 +165,7 @@ Widget _buildGuidesLibraryView({
   required FeedState feedState,
   required List<CommunityPost> visiblePosts,
   required ScrollController scrollController,
+  required bool isFounder,
 }) {
   if (!feedState.isLoading && visiblePosts.isEmpty) {
     return RefreshIndicator(
@@ -179,7 +182,14 @@ Widget _buildGuidesLibraryView({
         children: [
           const _GuidesIntroHero(),
           const SizedBox(height: AppSpacing.lg),
-          const FilteredFeedEmptyState(tab: CommunityFeedTab.guides, onReset: null),
+          FilteredFeedEmptyState(
+            tab: CommunityFeedTab.guides,
+            onReset: isFounder
+                ? () => context.push(
+                      '${AppRoutes.communityCreatePost}?type=guide',
+                    )
+                : null,
+          ),
         ],
       ),
     );

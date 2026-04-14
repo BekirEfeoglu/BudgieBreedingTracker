@@ -217,8 +217,28 @@ class FilteredFeedEmptyState extends StatelessWidget {
     final hintKey = switch (tab) {
       CommunityFeedTab.explore => 'community.empty_filtered_hint',
       CommunityFeedTab.following => 'community.empty_following_hint',
-      CommunityFeedTab.guides => 'community.empty_guides_hint',
+      CommunityFeedTab.guides => onReset == null
+          ? 'community.guides_coming_soon'
+          : 'community.empty_guides_hint',
       CommunityFeedTab.questions => 'community.empty_questions_hint',
+    };
+
+    final Widget? ctaButton = switch (tab) {
+      CommunityFeedTab.following when onReset != null => OutlinedButton.icon(
+        onPressed: onReset,
+        icon: const Icon(LucideIcons.compass, size: 18),
+        label: Text('community.go_to_explore'.tr()),
+      ),
+      CommunityFeedTab.guides when onReset != null => FilledButton.icon(
+        onPressed: onReset,
+        icon: const Icon(LucideIcons.pencil, size: 18),
+        label: Text('community.write_first_guide'.tr()),
+      ),
+      _ when onReset != null && tab == CommunityFeedTab.explore => FilledButton.tonal(
+        onPressed: onReset,
+        child: Text('community.show_all'.tr()),
+      ),
+      _ => null,
     };
 
     return Container(
@@ -249,12 +269,9 @@ class FilteredFeedEmptyState extends StatelessWidget {
             ),
             textAlign: TextAlign.center,
           ),
-          if (onReset != null) ...[
+          if (ctaButton != null) ...[
             const SizedBox(height: AppSpacing.lg),
-            FilledButton.tonal(
-              onPressed: onReset,
-              child: Text('community.show_all'.tr()),
-            ),
+            ctaButton,
           ],
         ],
       ),
