@@ -94,7 +94,7 @@ final activeBreedingsForDashboardProvider =
           .watchActiveLimited(userId, limit: 3);
     });
 
-Stream<DateTime> _midnightTicker() {
+StreamController<DateTime> _midnightTicker() {
   late final StreamController<DateTime> controller;
   Timer? timer;
 
@@ -119,11 +119,13 @@ Stream<DateTime> _midnightTicker() {
     },
   );
 
-  return controller.stream;
+  return controller;
 }
 
 final _unweanedCountRefreshProvider = StreamProvider<DateTime>((ref) {
-  return _midnightTicker();
+  final controller = _midnightTicker();
+  ref.onDispose(controller.close);
+  return controller.stream;
 });
 
 /// Count of chicks ready to move to birds (60+ days old and not yet moved) — SQL COUNT.
