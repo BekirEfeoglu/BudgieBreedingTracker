@@ -109,6 +109,18 @@ class MarketplaceRepository {
     return _enrichListings(rows, currentUserId);
   }
 
+  Future<List<String>> uploadImages({
+    required String userId,
+    required String listingId,
+    required List<String> localPaths,
+  }) async {
+    return _listingSource.uploadImages(
+      userId: userId,
+      listingId: listingId,
+      localPaths: localPaths,
+    );
+  }
+
   Future<List<MarketplaceListing>> _enrichListings(
     List<Map<String, dynamic>> rows,
     String currentUserId,

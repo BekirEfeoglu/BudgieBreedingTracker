@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/constants/supabase_constants.dart';
@@ -206,6 +208,51 @@ class MarketplaceListingRemoteSource {
     } catch (e, st) {
       AppLogger.error('marketplace', e, st);
       rethrow;
+    }
+  }
+
+  /// Uploads listing images to Supabase Storage and returns public URLs.
+  ///
+  /// Images stored under marketplace-images/{userId}/{listingId}/ path.
+  Future<List<String>> uploadImages({
+    required String userId,
+    required String listingId,
+    required List<String> localPaths,
+  }) async {
+    final urls = <String>[];
+    for (var i = 0; i < localPaths.length; i++) {
+      try {
+        final storagePath = 'marketplace-images/$userId/$listingId/$i.jpg';
+        final file = File(localPaths[i]);
+        await _client.storage.from('photos').upload(
+              storagePath,
+              file,
+              fileOptions: const FileOptions(upsert: true),
+            );
+        final url = _client.storage.from('photos').getPublicUrl(storagePath);
+        urls.add(url);
+      } catch (e, st) {
+        AppLogger.error('marketplace', e, st);
+        rethrow;
+      }
+    }
+    return urls;
+  }
+
+  /// Deletes all images for a listing from Supabase Storage.
+  Future<void> deleteImages({
+    required String userId,
+    required String listingId,
+  }) async {
+    try {
+      final prefix = 'marketplace-images/$userId/$listingId/';
+      final files = await _client.storage.from('photos').list(path: prefix);
+      if (files.isNotEmpty) {
+        final paths = files.map((f) => '$prefix${f.name}').toList();
+        await _client.storage.from('photos').remove(paths);
+      }
+    } catch (e) {
+      AppLogger.warning('marketplace: Failed to delete images: $e');
     }
   }
 }
