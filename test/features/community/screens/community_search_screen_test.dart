@@ -101,6 +101,32 @@ void main() {
 
       await tester.pumpWidget(const MaterialApp(home: SizedBox()));
     });
+
+    testWidgets('TabBar is always in widget tree (no layout shift)', (tester) async {
+      await tester.pumpWidget(buildScope());
+      await tester.pump();
+
+      // TabBar should be present in the widget tree even without a query
+      expect(find.byType(TabBar), findsOneWidget);
+      // AnimatedOpacity wrapping the TabBar should have opacity 0 (invisible but present)
+      final tabBarFinder = find.byType(TabBar);
+      final animatedOpacityFinder = find.ancestor(
+        of: tabBarFinder,
+        matching: find.byType(AnimatedOpacity),
+      );
+      expect(animatedOpacityFinder, findsOneWidget);
+      final opacity = tester.widget<AnimatedOpacity>(animatedOpacityFinder);
+      expect(opacity.opacity, 0.0);
+
+      // After typing a query the TabBar's AnimatedOpacity should become 1.0
+      await tester.enterText(find.byType(TextField), 'budgie');
+      await tester.pump();
+
+      final opacityAfter = tester.widget<AnimatedOpacity>(animatedOpacityFinder);
+      expect(opacityAfter.opacity, 1.0);
+
+      await tester.pumpWidget(const MaterialApp(home: SizedBox()));
+    });
   });
 
   group('CommunitySearchScreen recent searches', () {

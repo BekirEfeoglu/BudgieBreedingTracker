@@ -69,15 +69,24 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen> {
                   : null,
             ),
           ),
-          bottom: searchState.hasQuery
-              ? TabBar(
+          bottom: PreferredSize(
+            preferredSize: const Size.fromHeight(48),
+            child: AnimatedOpacity(
+              opacity: searchState.hasQuery ? 1.0 : 0.0,
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeInOut,
+              child: IgnorePointer(
+                ignoring: !searchState.hasQuery,
+                child: TabBar(
                   tabs: [
                     Tab(text: 'community.search_posts'.tr()),
                     Tab(text: 'community.search_users'.tr()),
                     Tab(text: 'community.search_tags'.tr()),
                   ],
-                )
-              : null,
+                ),
+              ),
+            ),
+          ),
         ),
         body: feedState.isLoading && feedState.posts.isEmpty
             ? const Center(child: CircularProgressIndicator())
