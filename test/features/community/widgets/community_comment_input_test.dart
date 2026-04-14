@@ -69,6 +69,100 @@ void main() {
       final textField = tester.widget<TextField>(find.byType(TextField));
       expect(textField.enabled, isFalse);
     });
+
+    testWidgets('send button is dimmed when text is empty', (tester) async {
+      await tester.pumpWidget(
+        wrap(
+          const CommunityCommentInput(postId: 'post-1'),
+          _FakeCommentFormNotifier.new,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final opacity = tester.widget<AnimatedOpacity>(
+        find.ancestor(
+          of: find.byIcon(LucideIcons.send),
+          matching: find.byType(AnimatedOpacity),
+        ),
+      );
+      expect(opacity.opacity, lessThan(1.0));
+    });
+
+    testWidgets('send button is fully opaque when text is entered',
+        (tester) async {
+      await tester.pumpWidget(
+        wrap(
+          const CommunityCommentInput(postId: 'post-1'),
+          _FakeCommentFormNotifier.new,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.byType(TextField), 'Hello world');
+      await tester.pumpAndSettle();
+
+      final opacity = tester.widget<AnimatedOpacity>(
+        find.ancestor(
+          of: find.byIcon(LucideIcons.send),
+          matching: find.byType(AnimatedOpacity),
+        ),
+      );
+      expect(opacity.opacity, equals(1.0));
+    });
+
+    testWidgets('character counter is hidden below 800 chars', (tester) async {
+      await tester.pumpWidget(
+        wrap(
+          const CommunityCommentInput(postId: 'post-1'),
+          _FakeCommentFormNotifier.new,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.byType(TextField), 'A' * 799);
+      await tester.pumpAndSettle();
+
+      // Counter text like "799/1000" should not appear
+      expect(find.textContaining('/1000'), findsNothing);
+    });
+
+    testWidgets('character counter appears at 800+ chars', (tester) async {
+      await tester.pumpWidget(
+        wrap(
+          const CommunityCommentInput(postId: 'post-1'),
+          _FakeCommentFormNotifier.new,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.byType(TextField), 'A' * 800);
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('/1000'), findsOneWidget);
+    });
+
+    testWidgets('character counter shows error color at 950+ chars',
+        (tester) async {
+      await tester.pumpWidget(
+        wrap(
+          const CommunityCommentInput(postId: 'post-1'),
+          _FakeCommentFormNotifier.new,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.byType(TextField), 'A' * 950);
+      await tester.pumpAndSettle();
+
+      final counterText = tester.widget<Text>(
+        find.textContaining('/1000'),
+      );
+      final theme = Theme.of(tester.element(find.byType(TextField)));
+      expect(
+        counterText.style?.color,
+        equals(theme.colorScheme.error),
+      );
+    });
   });
 }
 

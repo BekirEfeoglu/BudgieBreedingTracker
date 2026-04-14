@@ -13,13 +13,41 @@ import '../widgets/community_feed_states.dart';
 import '../widgets/community_post_card.dart';
 
 /// Detail screen showing a single post with its comments.
-class CommunityPostDetailScreen extends ConsumerWidget {
+class CommunityPostDetailScreen extends ConsumerStatefulWidget {
   final String postId;
 
   const CommunityPostDetailScreen({super.key, required this.postId});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<CommunityPostDetailScreen> createState() =>
+      _CommunityPostDetailScreenState();
+}
+
+class _CommunityPostDetailScreenState
+    extends ConsumerState<CommunityPostDetailScreen> {
+  final _scrollController = ScrollController();
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _scrollToBottom() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final postId = widget.postId;
     final postAsync = ref.watch(communityPostByIdProvider(postId));
     final commentState = ref.watch(commentListProvider(postId));
 
@@ -30,6 +58,7 @@ class CommunityPostDetailScreen extends ConsumerWidget {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('community.comment_success'.tr())),
         );
+        _scrollToBottom();
       }
       if (state.error != null) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -62,6 +91,7 @@ class CommunityPostDetailScreen extends ConsumerWidget {
                     .fetchInitial();
               },
               child: CustomScrollView(
+                controller: _scrollController,
                 physics: const AlwaysScrollableScrollPhysics(),
                 keyboardDismissBehavior:
                     ScrollViewKeyboardDismissBehavior.onDrag,
