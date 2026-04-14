@@ -19,7 +19,10 @@ final communityVisiblePostsProvider =
 
       // Filter by tab
       final filtered = switch (tab) {
-        CommunityFeedTab.explore => unblocked,
+        CommunityFeedTab.explore =>
+          unblocked
+              .where((p) => p.postType != CommunityPostType.guide)
+              .toList(),
         CommunityFeedTab.following =>
           unblocked
               .where((p) => p.isFollowingAuthor && p.userId != currentUserId)

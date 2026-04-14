@@ -8,6 +8,7 @@ import '../../../core/constants/app_icons.dart';
 import '../../../core/widgets/app_icon.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../../router/route_names.dart';
+import '../../admin/providers/admin_data_providers.dart' show isFounderProvider;
 // Cross-feature import: marketplace tab embedded in community hub (composite screen pattern)
 import '../../marketplace/widgets/marketplace_tab_content.dart';
 import '../providers/community_providers.dart';
@@ -28,7 +29,10 @@ class CommunityScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
       appBar: const CommunityAppBar(),
-      floatingActionButton: isEnabled && activeTab != CommunityFeedTab.questions
+      floatingActionButton: isEnabled &&
+              activeTab != CommunityFeedTab.questions &&
+              (activeTab != CommunityFeedTab.guides ||
+                  ref.watch(isFounderProvider).value == true)
           ? FloatingActionButton.extended(
               onPressed: () => context.push(_buildCreatePostRoute(activeTab)),
               icon: Icon(

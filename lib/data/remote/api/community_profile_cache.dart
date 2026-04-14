@@ -89,8 +89,8 @@ class CommunityProfileCache {
       if (profile != null) {
         return {
           ...row,
-          'username': profile['display_name'] ??
-              profile['full_name'] ??
+          'username': _nonEmpty(profile['full_name']) ??
+              _nonEmpty(profile['display_name']) ??
               _emailPrefix(profile['email']) ??
               '',
           'avatar_url': profile['avatar_url'],
@@ -129,6 +129,12 @@ class CommunityProfileCache {
         }
       }
     }
+  }
+
+  static String? _nonEmpty(dynamic value) {
+    if (value == null) return null;
+    final str = value.toString().trim();
+    return str.isEmpty ? null : str;
   }
 
   static String? _emailPrefix(dynamic email) {
