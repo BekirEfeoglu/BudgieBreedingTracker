@@ -1,3 +1,6 @@
+import 'dart:convert';
+
+import 'package:crypto/crypto.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
@@ -98,6 +101,31 @@ class CreatePostNotifier extends Notifier<CreatePostState> {
         return;
       }
 
+      // Server-side guard: account age, rate limit, spam dedup
+      final contentHash = md5.convert(utf8.encode(content.trim())).toString();
+      try {
+        final client = ref.read(supabaseClientProvider);
+        final guardResult = await client.rpc(
+          'check_community_post_allowed',
+          params: {'p_content_hash': contentHash},
+        ) as Map<String, dynamic>;
+        if (guardResult['allowed'] != true) {
+          final reason = guardResult['reason'] as String? ?? 'unknown';
+          state = state.copyWith(
+            isLoading: false,
+            error: 'community.post_guard_$reason'.tr(),
+          );
+          return;
+        }
+      } catch (e, st) {
+        // Non-fatal: if guard RPC fails (e.g. offline), allow post through
+        // — client-side throttle and moderation still apply.
+        AppLogger.warning(
+          'Community post guard RPC failed, continuing: $e',
+        );
+        Sentry.captureException(e, stackTrace: st);
+      }
+
       // Content moderation check (Apple Guideline 1.2)
       final moderationService = ref.read(contentModerationServiceProvider);
       final textToCheck = [
@@ -151,6 +179,7 @@ class CreatePostNotifier extends Notifier<CreatePostState> {
         'id': postId,
         'user_id': userId,
         'content': content.trim(),
+        'content_hash': contentHash,
         'post_type': postType.toJson(),
         'is_deleted': false,
         if (title != null && title.trim().isNotEmpty) 'title': title.trim(),

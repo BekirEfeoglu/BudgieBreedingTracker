@@ -2468,7 +2468,14 @@
     "post_type_showcase": "Showcase",
     "post_type_tip": "Tip",
     "read_more": "Read More",
-    "tab_marketplace": "Market"
+    "tab_marketplace": "Market",
+    "post_guard_account_too_new": "Your account must be at least 24 hours old to create posts.",
+    "post_guard_rate_limit_hourly": "You have reached the hourly post limit. Please try again later.",
+    "post_guard_rate_limit_daily": "You have reached the daily post limit. Please try again tomorrow.",
+    "post_guard_duplicate_content": "This content was already shared recently.",
+    "post_guard_unauthorized": "You need to sign in to create posts.",
+    "post_guard_profile_not_found": "Profile not found. Please sign in again.",
+    "post_guard_unknown": "Could not create post. Please try again."
   },
   "marketplace": {
     "title": "Marketplace",

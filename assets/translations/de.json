@@ -2468,7 +2468,14 @@
     "post_type_showcase": "Schaukasten",
     "post_type_tip": "Tipp",
     "read_more": "Mehr lesen",
-    "tab_marketplace": "Markt"
+    "tab_marketplace": "Markt",
+    "post_guard_account_too_new": "Ihr Konto muss mindestens 24 Stunden alt sein, um Beiträge zu erstellen.",
+    "post_guard_rate_limit_hourly": "Sie haben das stündliche Beitragslimit erreicht. Bitte versuchen Sie es später erneut.",
+    "post_guard_rate_limit_daily": "Sie haben das tägliche Beitragslimit erreicht. Bitte versuchen Sie es morgen erneut.",
+    "post_guard_duplicate_content": "Dieser Inhalt wurde kürzlich bereits geteilt.",
+    "post_guard_unauthorized": "Sie müssen sich anmelden, um Beiträge zu erstellen.",
+    "post_guard_profile_not_found": "Profil nicht gefunden. Bitte melden Sie sich erneut an.",
+    "post_guard_unknown": "Beitrag konnte nicht erstellt werden. Bitte versuchen Sie es erneut."
   },
   "marketplace": {
     "title": "Marktplatz",

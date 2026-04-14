@@ -2468,7 +2468,14 @@
     "post_type_showcase": "Vitrin",
     "post_type_tip": "İpucu",
     "read_more": "Devamını Oku",
-    "tab_marketplace": "Pazar"
+    "tab_marketplace": "Pazar",
+    "post_guard_account_too_new": "Gönderi paylaşabilmek için hesabınızın en az 24 saat önce oluşturulmuş olması gerekir.",
+    "post_guard_rate_limit_hourly": "Saatlik gönderi limitine ulaştınız. Lütfen daha sonra tekrar deneyin.",
+    "post_guard_rate_limit_daily": "Günlük gönderi limitine ulaştınız. Yarın tekrar deneyin.",
+    "post_guard_duplicate_content": "Bu içerik yakın zamanda zaten paylaşıldı.",
+    "post_guard_unauthorized": "Gönderi paylaşmak için giriş yapmanız gerekiyor.",
+    "post_guard_profile_not_found": "Profil bulunamadı. Lütfen tekrar giriş yapın.",
+    "post_guard_unknown": "Gönderi oluşturulamadı. Lütfen tekrar deneyin."
   },
   "marketplace": {
     "title": "Pazar Yeri",
