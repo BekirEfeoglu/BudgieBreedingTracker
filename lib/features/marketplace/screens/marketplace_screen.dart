@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -14,11 +16,44 @@ import '../providers/marketplace_providers.dart';
 import '../widgets/marketplace_filter_bar.dart';
 import '../widgets/marketplace_listing_card.dart';
 
-class MarketplaceScreen extends ConsumerWidget {
+class MarketplaceScreen extends ConsumerStatefulWidget {
   const MarketplaceScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<MarketplaceScreen> createState() => _MarketplaceScreenState();
+}
+
+class _MarketplaceScreenState extends ConsumerState<MarketplaceScreen> {
+  late final TextEditingController _searchController;
+  Timer? _debounceTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController = TextEditingController();
+    _searchController.addListener(() {
+      setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    _debounceTimer?.cancel();
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _onSearchChanged(String value) {
+    _debounceTimer?.cancel();
+    _debounceTimer = Timer(const Duration(milliseconds: 300), () {
+      if (mounted) {
+        ref.read(marketplaceSearchQueryProvider.notifier).state = value.trim();
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final userId = ref.watch(currentUserIdProvider);
     final listingsAsync = ref.watch(marketplaceListingsProvider(userId));
 
@@ -36,6 +71,35 @@ class MarketplaceScreen extends ConsumerWidget {
       ),
       body: Column(
         children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.lg,
+              vertical: AppSpacing.sm,
+            ),
+            child: TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                hintText: 'marketplace.search_hint'.tr(),
+                prefixIcon: const Icon(LucideIcons.search),
+                suffixIcon: _searchController.text.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(LucideIcons.x),
+                        onPressed: () {
+                          _searchController.clear();
+                          ref
+                              .read(marketplaceSearchQueryProvider.notifier)
+                              .state = '';
+                        },
+                      )
+                    : null,
+                isDense: true,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                ),
+              ),
+              onChanged: _onSearchChanged,
+            ),
+          ),
           const MarketplaceFilterBar(),
           Expanded(
             child: RefreshIndicator(
