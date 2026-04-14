@@ -10,7 +10,6 @@ import 'package:budgie_breeding_tracker/core/widgets/error_state.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_screen_title.dart';
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
-import 'package:budgie_breeding_tracker/data/providers/breeding_stream_providers.dart';
 import 'package:budgie_breeding_tracker/features/genetics/providers/genetics_history_providers.dart';
 import 'package:budgie_breeding_tracker/features/genetics/widgets/genetics_history_card.dart';
 import 'package:budgie_breeding_tracker/router/route_names.dart';

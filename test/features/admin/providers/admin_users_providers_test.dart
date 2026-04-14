@@ -1,3 +1,4 @@
+// ignore_for_file: unused_element_parameter
 import 'dart:async';
 
 import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
@@ -39,6 +40,7 @@ class _FakeMaybeSingleBuilder extends Fake
       Future<PostgrestMap?>.value(result).then(onValue, onError: onError);
 }
 
+// ignore: must_be_immutable
 class _FakeFilterBuilder extends Fake
     implements PostgrestFilterBuilder<PostgrestList> {
   _FakeFilterBuilder({this.result = const []});
@@ -211,7 +213,7 @@ void main() {
         final container = _makeContainer(client);
         addTearDown(container.dispose);
 
-        final query = AdminUsersQuery(searchTerm: 'test\x00\x01\x1f');
+        const query = AdminUsersQuery(searchTerm: 'test\x00\x01\x1f');
         await container.read(adminUsersProvider(query).future);
 
         expect(client.usersListFilter.orCalls, hasLength(1));
@@ -225,7 +227,7 @@ void main() {
         final container = _makeContainer(client);
         addTearDown(container.dispose);
 
-        final query = AdminUsersQuery(searchTerm: 'te,s.t(a)[b]\\c');
+        const query = AdminUsersQuery(searchTerm: 'te,s.t(a)[b]\\c');
         await container.read(adminUsersProvider(query).future);
 
         expect(client.usersListFilter.orCalls, hasLength(1));
@@ -237,7 +239,7 @@ void main() {
         final container = _makeContainer(client);
         addTearDown(container.dispose);
 
-        final query = AdminUsersQuery(searchTerm: 'test%user_name');
+        const query = AdminUsersQuery(searchTerm: 'test%user_name');
         await container.read(adminUsersProvider(query).future);
 
         expect(client.usersListFilter.orCalls, hasLength(1));
@@ -250,7 +252,7 @@ void main() {
         final container = _makeContainer(client);
         addTearDown(container.dispose);
 
-        final query = AdminUsersQuery(searchTerm: ',.()[]\\');
+        const query = AdminUsersQuery(searchTerm: ',.()[]\\');
         await container.read(adminUsersProvider(query).future);
 
         expect(client.usersListFilter.orCalls, isEmpty);
@@ -272,7 +274,7 @@ void main() {
         final container = _makeContainer(client);
         addTearDown(container.dispose);
 
-        final query = AdminUsersQuery(searchTerm: 'john');
+        const query = AdminUsersQuery(searchTerm: 'john');
         await container.read(adminUsersProvider(query).future);
 
         expect(client.usersListFilter.orCalls, hasLength(1));
@@ -287,7 +289,7 @@ void main() {
         final container = _makeContainer(client);
         addTearDown(container.dispose);
 
-        final query =
+        const query =
             AdminUsersQuery(sortField: 'email', sortAscending: true);
         await container.read(adminUsersProvider(query).future);
 
@@ -300,7 +302,7 @@ void main() {
         final container = _makeContainer(client);
         addTearDown(container.dispose);
 
-        final query =
+        const query =
             AdminUsersQuery(sortField: 'id; DROP TABLE users');
         await container.read(adminUsersProvider(query).future);
 
@@ -333,7 +335,7 @@ void main() {
         final container = _makeContainer(client);
         addTearDown(container.dispose);
 
-        final query = AdminUsersQuery(isActiveFilter: true);
+        const query = AdminUsersQuery(isActiveFilter: true);
         await container.read(adminUsersProvider(query).future);
 
         final isActiveCall = client.usersListFilter.eqCalls.firstWhere(
@@ -417,7 +419,7 @@ void main() {
         final container = _makeContainer(client);
         addTearDown(container.dispose);
 
-        final query = AdminUsersQuery(limit: 25);
+        const query = AdminUsersQuery(limit: 25);
         await container.read(adminUsersProvider(query).future);
 
         expect(client.usersListFilter.lastLimit, 25);

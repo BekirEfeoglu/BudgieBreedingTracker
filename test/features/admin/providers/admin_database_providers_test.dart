@@ -1,10 +1,10 @@
+// ignore_for_file: unused_element_parameter
 import 'dart:async';
 
 import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
 import 'package:budgie_breeding_tracker/features/admin/constants/admin_constants.dart';
 import 'package:budgie_breeding_tracker/features/admin/providers/admin_database_providers.dart';
 import 'package:budgie_breeding_tracker/features/admin/providers/admin_models.dart';
-import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -30,11 +30,11 @@ class _FakeMaybeSingleBuilder extends Fake
   }
 }
 
+// ignore: must_be_immutable
 class _FakeFilterBuilder extends Fake
     implements PostgrestFilterBuilder<PostgrestList> {
   _FakeFilterBuilder({
     this.result = const [],
-    this.error,
     this.maybeSingleResult,
   });
 
@@ -159,26 +159,12 @@ _FakeFilterBuilder _adminCheck({String role = 'admin'}) {
   );
 }
 
-ProviderContainer _makeContainer({
-  required String userId,
-  required SupabaseClient client,
-}) {
-  return ProviderContainer(
-    overrides: [
-      currentUserIdProvider.overrideWithValue(userId),
-      supabaseClientProvider.overrideWithValue(client),
-      supabaseInitializedProvider.overrideWithValue(true),
-    ],
-    retry: (_, __) => null,
-  );
-}
-
 // ── Tests ───────────────────────────────────────────────────
 
 void main() {
   group('syncStatusSummaryProvider', () {
     test('returns summary with pending and error counts', () async {
-      final client = _FakeDatabaseClient(
+      final _ = _FakeDatabaseClient(
         adminFilterBuilder: _adminCheck(),
         tableResults: {
           SupabaseConstants.syncMetadataTable: _FakeFilterBuilder(

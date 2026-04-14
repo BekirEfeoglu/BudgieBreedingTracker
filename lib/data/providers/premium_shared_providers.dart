@@ -4,6 +4,7 @@
 /// `lib/features/premium/providers/premium_providers.dart`.
 /// This file exists so other features can import premium symbols
 /// without creating cross-feature import violations.
+library;
 export 'package:budgie_breeding_tracker/features/premium/providers/premium_providers.dart'
     show
         effectivePremiumProvider,

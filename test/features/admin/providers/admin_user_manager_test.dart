@@ -1,3 +1,4 @@
+// ignore_for_file: unused_element_parameter
 import 'dart:async';
 
 import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
@@ -47,6 +48,7 @@ class _FakeFilterBuilder extends Fake
   }
 }
 
+// ignore: must_be_immutable
 class _FakeUpdateFilterBuilder extends Fake
     implements PostgrestFilterBuilder<dynamic> {
   Object? error;
@@ -70,6 +72,7 @@ class _FakeUpdateFilterBuilder extends Fake
   }
 }
 
+// ignore: must_be_immutable
 class _FakeUpsertFilterBuilder extends Fake
     implements PostgrestFilterBuilder<dynamic> {
   Object? error;
@@ -86,6 +89,7 @@ class _FakeUpsertFilterBuilder extends Fake
   }
 }
 
+// ignore: must_be_immutable
 class _FakeInsertFilterBuilder extends Fake
     implements PostgrestFilterBuilder<dynamic> {
   Object? error;
@@ -235,14 +239,6 @@ AdminUserManager _makeManager(
   return container.read(provider);
 }
 
-_FakeQueryBuilder _adminProfilesBuilder({String role = 'admin'}) {
-  return _FakeQueryBuilder(
-    _FakeFilterBuilder(
-      _FakeMaybeSingleBuilder(result: {'role': role}),
-    ),
-  );
-}
-
 /// Builds profiles builder that returns [targetRole] on the second
 /// maybeSingle call (the target user fetch), after the first admin check.
 _FakeUserManagerClient _clientWithTargetRole({
@@ -279,6 +275,7 @@ _FakeUserManagerClient _clientWithTargetRole({
 }
 
 /// A filter builder that returns sequential maybeSingle results.
+// ignore: must_be_immutable
 class _SequentialFilterBuilder extends Fake
     implements PostgrestFilterBuilder<PostgrestList> {
   _SequentialFilterBuilder(this._results);

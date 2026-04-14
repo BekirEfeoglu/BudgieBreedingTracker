@@ -68,7 +68,7 @@ Widget _subject({
       sexAiAnalysisProvider
           .overrideWith(() => _FakeSexAnalysis(sexState)),
       localAiConfigProvider.overrideWith(
-        () => _FakeConfig(configState ?? AsyncData(_testConfig)),
+        () => _FakeConfig(configState ?? const AsyncData(_testConfig)),
       ),
     ],
   );

@@ -22,7 +22,6 @@ import 'package:budgie_breeding_tracker/features/breeding/widgets/breeding_filte
 import 'package:budgie_breeding_tracker/features/breeding/widgets/breeding_search_bar.dart';
 import 'package:budgie_breeding_tracker/features/notifications/widgets/notification_bell_button.dart';
 import 'package:budgie_breeding_tracker/features/profile/widgets/profile_menu_button.dart';
-import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 
 /// Main screen listing all breeding pairs with filter and search support.
 class BreedingListScreen extends ConsumerWidget {

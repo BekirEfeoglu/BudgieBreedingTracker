@@ -65,7 +65,7 @@ Widget _subject({
       mutationImageAiAnalysisProvider
           .overrideWith(() => _FakeMutationAnalysis(mutationState)),
       localAiConfigProvider.overrideWith(
-        () => _FakeConfig(configState ?? AsyncData(_testConfig)),
+        () => _FakeConfig(configState ?? const AsyncData(_testConfig)),
       ),
     ],
   );

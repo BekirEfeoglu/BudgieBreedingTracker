@@ -10,7 +10,6 @@ import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:budgie_breeding_tracker/features/birds/providers/bird_providers.dart';
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
-import 'package:budgie_breeding_tracker/data/providers/breeding_stream_providers.dart';
 
 /// Shows offspring and siblings for a given bird in the detail screen.
 class BirdFamilyInfo extends ConsumerWidget {

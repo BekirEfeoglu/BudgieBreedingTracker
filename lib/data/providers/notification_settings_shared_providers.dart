@@ -4,6 +4,7 @@
 /// `lib/features/notifications/providers/notification_settings_providers.dart`.
 /// This file exists so other features can import notification settings
 /// without creating cross-feature import violations.
+library;
 export 'package:budgie_breeding_tracker/features/notifications/providers/notification_settings_providers.dart'
     show
         NotificationToggleSettingsNotifier,

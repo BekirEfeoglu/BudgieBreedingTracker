@@ -1,3 +1,4 @@
+// ignore_for_file: unused_element_parameter
 import 'dart:async';
 
 import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
@@ -44,6 +45,7 @@ class _FakeMaybeSingleBuilder extends Fake
   }
 }
 
+// ignore: must_be_immutable
 class _FakeFilterBuilder extends Fake
     implements PostgrestFilterBuilder<PostgrestList> {
   _FakeFilterBuilder({
