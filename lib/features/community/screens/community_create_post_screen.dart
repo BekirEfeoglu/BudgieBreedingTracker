@@ -212,10 +212,10 @@ class _CommunityCreatePostScreenState
         ref.read(createPostProvider.notifier).reset();
         await _clearDraft();
         if (!mounted) return;
-        context.pop();
+        Navigator.of(context).pop();
         ActionFeedbackService.show('community.post_success'.tr());
       }
-      if (state.error != null) {
+      if (state.error != null && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(state.error ?? 'community.post_error'.tr()),
@@ -253,9 +253,10 @@ class _CommunityCreatePostScreenState
             ],
           ),
         );
-        if (shouldLeave == true && context.mounted) {
+        if (shouldLeave == true && mounted) {
           await _clearDraft();
-          Navigator.pop(context);
+          if (!mounted) return;
+          Navigator.of(context).pop();
         }
       },
       child: Scaffold(

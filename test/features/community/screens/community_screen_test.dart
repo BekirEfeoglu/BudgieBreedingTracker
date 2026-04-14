@@ -24,17 +24,17 @@ class _EmptyActionFeedbackNotifier extends ActionFeedbackNotifier {
 }
 
 void main() {
-  const _testUserId = 'test-user';
+  const testUserId = 'test-user';
 
   Widget createSubject({bool communityEnabled = false, FeedState? feedState}) {
     return ProviderScope(
       overrides: [
         isCommunityEnabledProvider.overrideWithValue(communityEnabled),
         isFounderProvider.overrideWith((ref) async => false),
-        currentUserIdProvider.overrideWithValue(_testUserId),
+        currentUserIdProvider.overrideWithValue(testUserId),
         userProfileProvider.overrideWith((ref) => Stream.value(null)),
-        userLevelProvider(_testUserId).overrideWith((ref) => Future.value(null)),
-        unreadNotificationsProvider(_testUserId)
+        userLevelProvider(testUserId).overrideWith((ref) => Future.value(null)),
+        unreadNotificationsProvider(testUserId)
             .overrideWith((ref) => Stream.value([])),
         actionFeedbackProvider
             .overrideWith(_EmptyActionFeedbackNotifier.new),
