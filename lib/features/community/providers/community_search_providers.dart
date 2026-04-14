@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/utils/logger.dart';
 import '../../../data/models/community_post_model.dart';
@@ -23,14 +26,25 @@ class CommunitySearchState {
 }
 
 class CommunitySearchNotifier extends Notifier<CommunitySearchState> {
+  Timer? _debounceTimer;
+
   @override
-  CommunitySearchState build() => const CommunitySearchState();
+  CommunitySearchState build() {
+    ref.onDispose(() => _debounceTimer?.cancel());
+    return const CommunitySearchState();
+  }
 
   void setQuery(String query) {
     state = state.copyWith(query: query);
+    _debounceTimer?.cancel();
+    _debounceTimer = Timer(const Duration(milliseconds: 400), () {
+      ref.invalidate(communitySearchResultsProvider);
+    });
   }
 
   void clear() {
+    _debounceTimer?.cancel();
+    _debounceTimer = null;
     state = const CommunitySearchState();
   }
 }
@@ -39,6 +53,58 @@ final communitySearchProvider =
     NotifierProvider<CommunitySearchNotifier, CommunitySearchState>(
       CommunitySearchNotifier.new,
     );
+
+// ---------------------------------------------------------------------------
+// Search history
+// ---------------------------------------------------------------------------
+
+final communitySearchHistoryProvider =
+    NotifierProvider<CommunitySearchHistoryNotifier, List<String>>(
+  CommunitySearchHistoryNotifier.new,
+);
+
+class CommunitySearchHistoryNotifier extends Notifier<List<String>> {
+  static const _key = 'community_search_history';
+  static const _maxHistory = 10;
+
+  @override
+  List<String> build() {
+    _load();
+    return [];
+  }
+
+  Future<void> _load() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      state = prefs.getStringList(_key) ?? [];
+    } catch (e, st) {
+      AppLogger.error('CommunitySearchHistoryNotifier._load', e, st);
+    }
+  }
+
+  Future<void> addQuery(String query) async {
+    final trimmed = query.trim();
+    if (trimmed.isEmpty) return;
+    final updated = [trimmed, ...state.where((q) => q != trimmed)];
+    state = updated.take(_maxHistory).toList();
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setStringList(_key, state);
+    } catch (e, st) {
+      AppLogger.error('CommunitySearchHistoryNotifier.addQuery', e, st);
+    }
+  }
+
+  Future<void> clearHistory() async {
+    state = [];
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(_key);
+    } catch (e, st) {
+      AppLogger.error('CommunitySearchHistoryNotifier.clearHistory', e, st);
+    }
+  }
+}
 
 // ---------------------------------------------------------------------------
 // Server-side search results

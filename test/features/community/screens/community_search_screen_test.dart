@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:budgie_breeding_tracker/data/models/community_post_model.dart';
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
@@ -39,6 +40,10 @@ void main() {
       ),
     );
   }
+
+  setUp(() {
+    SharedPreferences.setMockInitialValues({});
+  });
 
   group('CommunitySearchScreen', () {
     testWidgets('shows search text field', (tester) async {
@@ -93,6 +98,72 @@ void main() {
       expect(find.text(l10n('community.search_posts')), findsOneWidget);
       expect(find.text(l10n('community.search_users')), findsOneWidget);
       expect(find.text(l10n('community.search_tags')), findsOneWidget);
+
+      await tester.pumpWidget(const MaterialApp(home: SizedBox()));
+    });
+  });
+
+  group('CommunitySearchScreen recent searches', () {
+    testWidgets('does not show recent searches section when history is empty',
+        (tester) async {
+      await tester.pumpWidget(buildScope());
+      await tester.pump();
+
+      expect(find.text(l10n('community.recent_searches')), findsNothing);
+      expect(find.text(l10n('community.clear_search_history')), findsNothing);
+
+      await tester.pumpWidget(const MaterialApp(home: SizedBox()));
+    });
+
+    testWidgets('shows recent searches section when history has items',
+        (tester) async {
+      SharedPreferences.setMockInitialValues({
+        'community_search_history': ['budgie', 'muhabbet'],
+      });
+
+      await tester.pumpWidget(buildScope());
+      await tester.pumpAndSettle();
+
+      expect(find.text(l10n('community.recent_searches')), findsOneWidget);
+      expect(find.text(l10n('community.clear_search_history')), findsOneWidget);
+      expect(find.text('budgie'), findsOneWidget);
+      expect(find.text('muhabbet'), findsOneWidget);
+
+      await tester.pumpWidget(const MaterialApp(home: SizedBox()));
+    });
+
+    testWidgets('tapping clear history removes recent searches section',
+        (tester) async {
+      SharedPreferences.setMockInitialValues({
+        'community_search_history': ['budgie'],
+      });
+
+      await tester.pumpWidget(buildScope());
+      await tester.pumpAndSettle();
+
+      expect(find.text(l10n('community.recent_searches')), findsOneWidget);
+
+      await tester.tap(find.text(l10n('community.clear_search_history')));
+      await tester.pumpAndSettle();
+
+      expect(find.text(l10n('community.recent_searches')), findsNothing);
+
+      await tester.pumpWidget(const MaterialApp(home: SizedBox()));
+    });
+
+    testWidgets('tapping history chip applies query', (tester) async {
+      SharedPreferences.setMockInitialValues({
+        'community_search_history': ['lutino'],
+      });
+
+      await tester.pumpWidget(buildScope());
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('lutino'));
+      await tester.pump();
+
+      final textField = tester.widget<TextField>(find.byType(TextField));
+      expect(textField.controller!.text, 'lutino');
 
       await tester.pumpWidget(const MaterialApp(home: SizedBox()));
     });

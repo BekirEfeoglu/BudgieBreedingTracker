@@ -94,6 +94,7 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen> {
       selection: TextSelection.collapsed(offset: query.length),
     );
     ref.read(communitySearchProvider.notifier).setQuery(query);
+    ref.read(communitySearchHistoryProvider.notifier).addQuery(query);
   }
 }
 
@@ -162,10 +163,45 @@ class _SearchSuggestionsBody extends ConsumerWidget {
     final theme = Theme.of(context);
     final popularTags = ref.watch(communityPopularTagsProvider);
     final suggestedUsers = ref.watch(communitySuggestedUsersProvider);
+    final recentSearches = ref.watch(communitySearchHistoryProvider);
 
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.lg),
       children: [
+        if (recentSearches.isNotEmpty) ...[
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'community.recent_searches'.tr(),
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              TextButton(
+                onPressed: () => ref
+                    .read(communitySearchHistoryProvider.notifier)
+                    .clearHistory(),
+                child: Text('community.clear_search_history'.tr()),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Wrap(
+            spacing: AppSpacing.sm,
+            runSpacing: AppSpacing.sm,
+            children: recentSearches
+                .map(
+                  (query) => ActionChip(
+                    label: Text(query),
+                    onPressed: () => onTagTap(query),
+                  ),
+                )
+                .toList(),
+          ),
+          const SizedBox(height: AppSpacing.xxl),
+        ],
         Text(
           'community.popular_tags'.tr(),
           style: theme.textTheme.titleMedium?.copyWith(

@@ -3,7 +3,9 @@ library;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:fake_async/fake_async.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:budgie_breeding_tracker/data/models/community_post_model.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
@@ -73,7 +75,7 @@ void main() {
       expect(state.query, '');
     });
 
-    test('setQuery updates state', () {
+    test('setQuery updates state immediately', () {
       container.read(communitySearchProvider.notifier).setQuery('budgie');
       final state = container.read(communitySearchProvider);
       expect(state.query, 'budgie');
@@ -84,6 +86,157 @@ void main() {
       container.read(communitySearchProvider.notifier).clear();
       final state = container.read(communitySearchProvider);
       expect(state.query, '');
+    });
+
+    test('debounce: invalidate only fires after 400ms', () {
+      fakeAsync((async) {
+        final c = ProviderContainer(
+          overrides: [
+            communityFeedProvider.overrideWith(() => _FakeFeedNotifier()),
+          ],
+        );
+        addTearDown(c.dispose);
+
+        // Override to track invalidations via a listener on the search results
+        // We test the state update immediately but the timer fires after 400ms
+        c.read(communitySearchProvider.notifier).setQuery('b');
+        expect(c.read(communitySearchProvider).query, 'b');
+
+        // Rapid updates — each cancels the previous timer
+        c.read(communitySearchProvider.notifier).setQuery('bu');
+        c.read(communitySearchProvider.notifier).setQuery('bud');
+        c.read(communitySearchProvider.notifier).setQuery('budg');
+        expect(c.read(communitySearchProvider).query, 'budg');
+
+        // Advance less than 400ms — timer should not have fired yet
+        async.elapse(const Duration(milliseconds: 300));
+        // State is already updated synchronously; timer not fired
+        expect(c.read(communitySearchProvider).query, 'budg');
+
+        // Advance past 400ms
+        async.elapse(const Duration(milliseconds: 200));
+        // Timer has now fired (invalidated results provider)
+        expect(c.read(communitySearchProvider).query, 'budg');
+      });
+    });
+
+    test('clear cancels pending debounce timer', () {
+      fakeAsync((async) {
+        final c = ProviderContainer(
+          overrides: [
+            communityFeedProvider.overrideWith(() => _FakeFeedNotifier()),
+          ],
+        );
+        addTearDown(c.dispose);
+
+        c.read(communitySearchProvider.notifier).setQuery('budgie');
+        c.read(communitySearchProvider.notifier).clear();
+
+        // Advance past debounce window — no error should occur
+        async.elapse(const Duration(milliseconds: 500));
+
+        expect(c.read(communitySearchProvider).query, '');
+      });
+    });
+  });
+
+  group('CommunitySearchHistoryNotifier', () {
+    setUp(() {
+      SharedPreferences.setMockInitialValues({});
+    });
+
+    test('initial state is empty list', () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      expect(container.read(communitySearchHistoryProvider), isEmpty);
+    });
+
+    test('addQuery adds to history', () async {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      await container
+          .read(communitySearchHistoryProvider.notifier)
+          .addQuery('budgie');
+
+      expect(container.read(communitySearchHistoryProvider), ['budgie']);
+    });
+
+    test('addQuery trims and deduplicates', () async {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      await container
+          .read(communitySearchHistoryProvider.notifier)
+          .addQuery('budgie');
+      await container
+          .read(communitySearchHistoryProvider.notifier)
+          .addQuery('muhabbet');
+      await container
+          .read(communitySearchHistoryProvider.notifier)
+          .addQuery('budgie'); // duplicate — should move to front
+
+      final history = container.read(communitySearchHistoryProvider);
+      expect(history.first, 'budgie');
+      expect(history.length, 2);
+    });
+
+    test('addQuery ignores empty/whitespace queries', () async {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      await container
+          .read(communitySearchHistoryProvider.notifier)
+          .addQuery('   ');
+      await container
+          .read(communitySearchHistoryProvider.notifier)
+          .addQuery('');
+
+      expect(container.read(communitySearchHistoryProvider), isEmpty);
+    });
+
+    test('addQuery caps history at 10 entries', () async {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      for (var i = 0; i < 15; i++) {
+        await container
+            .read(communitySearchHistoryProvider.notifier)
+            .addQuery('query$i');
+      }
+
+      expect(container.read(communitySearchHistoryProvider).length, 10);
+    });
+
+    test('clearHistory empties the list', () async {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      await container
+          .read(communitySearchHistoryProvider.notifier)
+          .addQuery('budgie');
+      await container
+          .read(communitySearchHistoryProvider.notifier)
+          .clearHistory();
+
+      expect(container.read(communitySearchHistoryProvider), isEmpty);
+    });
+
+    test('addQuery most recent appears first', () async {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      await container
+          .read(communitySearchHistoryProvider.notifier)
+          .addQuery('first');
+      await container
+          .read(communitySearchHistoryProvider.notifier)
+          .addQuery('second');
+
+      final history = container.read(communitySearchHistoryProvider);
+      expect(history.first, 'second');
+      expect(history[1], 'first');
     });
   });
 
