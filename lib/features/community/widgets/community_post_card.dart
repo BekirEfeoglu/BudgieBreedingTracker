@@ -26,13 +26,16 @@ import 'community_user_header.dart';
 
 /// Card widget displaying a single community post with full interaction.
 class CommunityPostCard extends ConsumerStatefulWidget {
+  static const interactionKey = ValueKey('community_post_card_interaction');
   final CommunityPost post;
   final bool showFullContent;
+  final bool isInteractive;
 
   const CommunityPostCard({
     super.key,
     required this.post,
     this.showFullContent = false,
+    this.isInteractive = true,
   });
 
   static const _maxContentLines = 3;
@@ -52,6 +55,109 @@ class _CommunityPostCardState extends ConsumerState<CommunityPostCard> {
     final hasEngagement = post.likeCount > 0 || post.commentCount > 0;
     final allImages = post.allImageUrls;
 
+    final cardChild = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.lg,
+            AppSpacing.lg,
+            AppSpacing.lg,
+            AppSpacing.md,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              CommunityUserHeader(
+                userId: post.userId,
+                username: post.username,
+                avatarUrl: post.avatarUrl,
+                createdAt: post.createdAt ?? DateTime.now(),
+                isOwnPost: isOwnPost,
+                isFollowing: post.isFollowingAuthor,
+                onDelete: isOwnPost ? _handleDelete : null,
+                onReport: isOwnPost ? null : _handleReport,
+                onBlock: isOwnPost ? null : _handleBlock,
+                onSendMessage: (!isOwnPost && currentUserId != 'anonymous')
+                    ? _handleSendMessage
+                    : null,
+                onFollowToggle: isOwnPost
+                    ? null
+                    : () => ref
+                          .read(followToggleProvider.notifier)
+                          .toggleFollow(post.userId),
+                postType: post.postType,
+              ),
+              if (post.postType != CommunityPostType.general ||
+                  post.title != null) ...[
+                const SizedBox(height: AppSpacing.md),
+                Wrap(
+                  spacing: AppSpacing.sm,
+                  runSpacing: AppSpacing.sm,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    if (post.postType != CommunityPostType.general &&
+                        post.postType != CommunityPostType.unknown)
+                      PostTypeBadge(postType: post.postType),
+                    if (post.title != null)
+                      Text(
+                        post.title!,
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                  ],
+                ),
+              ],
+              if (post.content.isNotEmpty) ...[
+                const SizedBox(height: AppSpacing.md),
+                ContentText(
+                  content: post.content,
+                  showFull: widget.showFullContent,
+                  maxLines: CommunityPostCard._maxContentLines,
+                ),
+              ],
+              if (post.birdId != null) ...[
+                const SizedBox(height: AppSpacing.md),
+                BirdLinkChip(post: post),
+              ],
+              if (post.mutationTags.isNotEmpty || post.tags.isNotEmpty) ...[
+                const SizedBox(height: AppSpacing.md),
+                PostTagWrap(post: post),
+              ],
+            ],
+          ),
+        ),
+        if (allImages.isNotEmpty)
+          CommunityMediaGallery(
+            imageUrls: allImages,
+            onDoubleTap: () {
+              AppHaptics.mediumImpact();
+              ref.read(likeToggleProvider.notifier).toggleLike(post.id);
+            },
+            onOpenImage: _openImageViewer,
+          ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.lg,
+            AppSpacing.md,
+            AppSpacing.lg,
+            AppSpacing.lg,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              CommunityPostActions(post: post),
+              if (hasEngagement) ...[
+                const SizedBox(height: AppSpacing.md),
+                EngagementSummary(post: post),
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
+
     return Card(
       margin: const EdgeInsets.only(bottom: AppSpacing.md),
       elevation: 0,
@@ -63,114 +169,16 @@ class _CommunityPostCardState extends ConsumerState<CommunityPostCard> {
         ),
       ),
       clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: () => context.push(
-          AppRoutes.communityPostDetail.replaceFirst(':postId', post.id),
-        ),
-        borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.lg,
-                AppSpacing.lg,
-                AppSpacing.lg,
-                AppSpacing.md,
+      child: widget.isInteractive
+          ? InkWell(
+              key: CommunityPostCard.interactionKey,
+              onTap: () => context.push(
+                AppRoutes.communityPostDetail.replaceFirst(':postId', post.id),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  CommunityUserHeader(
-                    userId: post.userId,
-                    username: post.username,
-                    avatarUrl: post.avatarUrl,
-                    createdAt: post.createdAt ?? DateTime.now(),
-                    isOwnPost: isOwnPost,
-                    isFollowing: post.isFollowingAuthor,
-                    onDelete: isOwnPost ? _handleDelete : null,
-                    onReport: isOwnPost ? null : _handleReport,
-                    onBlock: isOwnPost ? null : _handleBlock,
-                    onSendMessage: (!isOwnPost && currentUserId != 'anonymous')
-                        ? _handleSendMessage
-                        : null,
-                    onFollowToggle: isOwnPost
-                        ? null
-                        : () => ref
-                              .read(followToggleProvider.notifier)
-                              .toggleFollow(post.userId),
-                    postType: post.postType,
-                  ),
-                  if (post.postType != CommunityPostType.general ||
-                      post.title != null) ...[
-                    const SizedBox(height: AppSpacing.md),
-                    Wrap(
-                      spacing: AppSpacing.sm,
-                      runSpacing: AppSpacing.sm,
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      children: [
-                        if (post.postType != CommunityPostType.general &&
-                            post.postType != CommunityPostType.unknown)
-                          PostTypeBadge(postType: post.postType),
-                        if (post.title != null)
-                          Text(
-                            post.title!,
-                            style: theme.textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                      ],
-                    ),
-                  ],
-                  if (post.content.isNotEmpty) ...[
-                    const SizedBox(height: AppSpacing.md),
-                    ContentText(
-                      content: post.content,
-                      showFull: widget.showFullContent,
-                      maxLines: CommunityPostCard._maxContentLines,
-                    ),
-                  ],
-                  if (post.birdId != null) ...[
-                    const SizedBox(height: AppSpacing.md),
-                    BirdLinkChip(post: post),
-                  ],
-                  if (post.mutationTags.isNotEmpty || post.tags.isNotEmpty) ...[
-                    const SizedBox(height: AppSpacing.md),
-                    PostTagWrap(post: post),
-                  ],
-                ],
-              ),
-            ),
-            if (allImages.isNotEmpty)
-              CommunityMediaGallery(
-                imageUrls: allImages,
-                onDoubleTap: () {
-                  AppHaptics.mediumImpact();
-                  ref.read(likeToggleProvider.notifier).toggleLike(post.id);
-                },
-                onOpenImage: _openImageViewer,
-              ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.lg,
-                AppSpacing.md,
-                AppSpacing.lg,
-                AppSpacing.lg,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  CommunityPostActions(post: post),
-                  if (hasEngagement) ...[
-                    const SizedBox(height: AppSpacing.md),
-                    EngagementSummary(post: post),
-                  ],
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
+              borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
+              child: cardChild,
+            )
+          : cardChild,
     );
   }
 

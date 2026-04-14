@@ -32,9 +32,7 @@ class CommunityPostDetailScreen extends ConsumerWidget {
       if (state.error != null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-              state.error ?? 'community.comment_error'.tr(),
-            ),
+            content: Text(state.error ?? 'community.comment_error'.tr()),
           ),
         );
       }
@@ -52,37 +50,48 @@ class CommunityPostDetailScreen extends ConsumerWidget {
               },
               child: CustomScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
+                keyboardDismissBehavior:
+                    ScrollViewKeyboardDismissBehavior.onDrag,
                 slivers: [
                   // Post
                   SliverToBoxAdapter(
-                    child: postAsync.when(
-                      loading: () => const Padding(
-                        padding: EdgeInsets.all(AppSpacing.xl),
-                        child: Center(child: CircularProgressIndicator()),
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(
+                        AppSpacing.lg,
+                        AppSpacing.lg,
+                        AppSpacing.lg,
+                        0,
                       ),
-                      error: (e, _) => Padding(
-                        padding: const EdgeInsets.all(AppSpacing.lg),
-                        child: app.ErrorState(
-                          message: 'common.data_load_error'.tr(),
-                          onRetry: () => ref.invalidate(
-                            communityPostByIdProvider(postId),
+                      child: postAsync.when(
+                        loading: () => const Padding(
+                          padding: EdgeInsets.all(AppSpacing.xl),
+                          child: Center(child: CircularProgressIndicator()),
+                        ),
+                        error: (e, _) => Padding(
+                          padding: const EdgeInsets.all(AppSpacing.lg),
+                          child: app.ErrorState(
+                            message: 'common.data_load_error'.tr(),
+                            onRetry: () => ref.invalidate(
+                              communityPostByIdProvider(postId),
+                            ),
                           ),
                         ),
-                      ),
-                      data: (post) {
-                        if (post == null) {
-                          return Padding(
-                            padding: const EdgeInsets.all(AppSpacing.xl),
-                            child: Center(
-                              child: Text('community.post_not_found'.tr()),
-                            ),
+                        data: (post) {
+                          if (post == null) {
+                            return Padding(
+                              padding: const EdgeInsets.all(AppSpacing.xl),
+                              child: Center(
+                                child: Text('community.post_not_found'.tr()),
+                              ),
+                            );
+                          }
+                          return CommunityPostCard(
+                            post: post,
+                            showFullContent: true,
+                            isInteractive: false,
                           );
-                        }
-                        return CommunityPostCard(
-                          post: post,
-                          showFullContent: true,
-                        );
-                      },
+                        },
+                      ),
                     ),
                   ),
 
@@ -156,7 +165,7 @@ class CommunityPostDetailScreen extends ConsumerWidget {
                   ),
 
                   const SliverPadding(
-                    padding: EdgeInsets.only(bottom: AppSpacing.xxxl),
+                    padding: EdgeInsets.only(bottom: AppSpacing.xl),
                   ),
                 ],
               ),

@@ -121,7 +121,10 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        expect(find.text(l10n('legal.community_guidelines_title')), findsOneWidget);
+        expect(
+          find.byKey(const ValueKey('legalDocumentAppBarTitle')),
+          findsOneWidget,
+        );
       });
 
       testWidgets('contains scrollable ListView', (tester) async {
@@ -139,7 +142,22 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        expect(find.byType(Card), findsWidgets);
+        expect(
+          find.byKey(const ValueKey('communityGuidelinesHero')),
+          findsOneWidget,
+        );
+
+        await tester.drag(find.byType(ListView), const Offset(0, -500));
+        await tester.pumpAndSettle();
+
+        expect(find.text(l10n('legal.cg_conduct_title')), findsOneWidget);
+        expect(find.text(l10n('legal.cg_content_title')), findsOneWidget);
+
+        await tester.drag(find.byType(ListView), const Offset(0, -600));
+        await tester.pumpAndSettle();
+
+        expect(find.text(l10n('legal.cg_enforcement_title')), findsOneWidget);
+        expect(find.text(l10n('legal.cg_reporting_title')), findsOneWidget);
       });
 
       testWidgets('shows last updated text', (tester) async {
@@ -148,7 +166,7 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        expect(find.text(l10n('legal.last_updated')), findsOneWidget);
+        expect(find.text(l10n('legal.last_updated')), findsWidgets);
       });
     });
 
@@ -161,7 +179,10 @@ void main() {
         await tester.pumpAndSettle();
         expect(find.text(l10n('settings.privacy_policy')), findsOneWidget);
         expect(find.text(l10n('settings.terms')), findsNothing);
-        expect(find.text(l10n('legal.community_guidelines_title')), findsNothing);
+        expect(
+          find.text(l10n('legal.community_guidelines_title')),
+          findsNothing,
+        );
 
         // Terms of Service
         await tester.pumpWidget(
@@ -170,14 +191,20 @@ void main() {
         await tester.pumpAndSettle();
         expect(find.text(l10n('settings.terms')), findsOneWidget);
         expect(find.text(l10n('settings.privacy_policy')), findsNothing);
-        expect(find.text(l10n('legal.community_guidelines_title')), findsNothing);
+        expect(
+          find.text(l10n('legal.community_guidelines_title')),
+          findsNothing,
+        );
 
         // Community Guidelines
         await tester.pumpWidget(
           createSubject(LegalDocumentType.communityGuidelines),
         );
         await tester.pumpAndSettle();
-        expect(find.text(l10n('legal.community_guidelines_title')), findsOneWidget);
+        expect(
+          find.byKey(const ValueKey('legalDocumentAppBarTitle')),
+          findsOneWidget,
+        );
         expect(find.text(l10n('settings.privacy_policy')), findsNothing);
         expect(find.text(l10n('settings.terms')), findsNothing);
       });

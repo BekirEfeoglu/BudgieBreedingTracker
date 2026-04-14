@@ -199,6 +199,85 @@ void main() {
       expect(find.text(longContent), findsOneWidget);
     });
 
+    testWidgets('showFull renders markdown bold without asterisks', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        createContentText(
+          content: '**Kalsiyum ve Mineral**\nNormal metin',
+          showFull: true,
+        ),
+      );
+      await tester.pump();
+
+      expect(find.text('Kalsiyum ve Mineral'), findsOneWidget);
+      expect(find.text('**Kalsiyum ve Mineral**'), findsNothing);
+      expect(find.text('Normal metin'), findsOneWidget);
+    });
+
+    testWidgets('showFull removes decorative leading marker glyphs', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        createContentText(
+          content: '💧 **Su**\nTemiz su her gün değiştirilmelidir.',
+          showFull: true,
+        ),
+      );
+      await tester.pump();
+
+      expect(find.text('💧'), findsNothing);
+      expect(find.text('Su'), findsOneWidget);
+      expect(find.text('Temiz su her gün değiştirilmelidir.'), findsOneWidget);
+    });
+
+    testWidgets('showFull renders markdown headings without hash markers', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        createContentText(
+          content: '# Ana Baslik\n## Alt Baslik',
+          showFull: true,
+        ),
+      );
+      await tester.pump();
+
+      expect(find.text('Ana Baslik'), findsOneWidget);
+      expect(find.text('Alt Baslik'), findsOneWidget);
+      expect(find.text('# Ana Baslik'), findsNothing);
+      expect(find.text('## Alt Baslik'), findsNothing);
+    });
+
+    testWidgets('showFull renders unordered and ordered markdown lists', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        createContentText(
+          content: '- Ilk oge\n- Ikinci oge\n1. Birinci adim',
+          showFull: true,
+        ),
+      );
+      await tester.pump();
+
+      expect(find.text('Ilk oge'), findsOneWidget);
+      expect(find.text('Ikinci oge'), findsOneWidget);
+      expect(find.text('Birinci adim'), findsOneWidget);
+      expect(find.text('- Ilk oge'), findsNothing);
+      expect(find.text('1. Birinci adim'), findsNothing);
+    });
+
+    testWidgets('showFull renders italic markdown without underscores', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        createContentText(content: 'Bu _italik_ bir metindir.', showFull: true),
+      );
+      await tester.pump();
+
+      expect(find.text('Bu italik bir metindir.'), findsOneWidget);
+      expect(find.text('Bu _italik_ bir metindir.'), findsNothing);
+    });
+
     testWidgets('maxLines parameter is respected', (tester) async {
       // With maxLines=1, threshold is 45 chars
       const content = 'This is a medium length text for testing purposes here.';

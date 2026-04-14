@@ -40,53 +40,61 @@ class _CommunityCommentInputState extends ConsumerState<CommunityCommentInput> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final formState = ref.watch(commentFormProvider);
+    final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
 
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.lg,
-        vertical: AppSpacing.sm,
-      ),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        border: Border(top: BorderSide(color: theme.dividerColor)),
-      ),
-      child: SafeArea(
-        child: Row(
-          children: [
-            Expanded(
-              child: TextField(
-                controller: _controller,
-                enabled: !formState.isLoading,
-                maxLength: 1000,
-                maxLines: null,
-                decoration: InputDecoration(
-                  hintText: 'community.add_comment'.tr(),
-                  counterText: '',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
+    return AnimatedPadding(
+      duration: const Duration(milliseconds: 180),
+      curve: Curves.easeOut,
+      padding: EdgeInsets.only(bottom: bottomInset),
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.lg,
+          vertical: AppSpacing.sm,
+        ),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surface,
+          border: Border(top: BorderSide(color: theme.dividerColor)),
+        ),
+        child: SafeArea(
+          top: false,
+          child: Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _controller,
+                  enabled: !formState.isLoading,
+                  maxLength: 1000,
+                  minLines: 1,
+                  maxLines: 4,
+                  decoration: InputDecoration(
+                    hintText: 'community.add_comment'.tr(),
+                    counterText: '',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.lg,
+                      vertical: AppSpacing.sm,
+                    ),
+                    isDense: true,
                   ),
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.lg,
-                    vertical: AppSpacing.sm,
-                  ),
-                  isDense: true,
+                  textInputAction: TextInputAction.send,
+                  onSubmitted: (_) => _submit(),
                 ),
-                textInputAction: TextInputAction.send,
-                onSubmitted: (_) => _submit(),
               ),
-            ),
-            const SizedBox(width: AppSpacing.sm),
-            IconButton(
-              onPressed: formState.isLoading ? null : _submit,
-              icon: formState.isLoading
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : Icon(LucideIcons.send, color: theme.colorScheme.primary),
-            ),
-          ],
+              const SizedBox(width: AppSpacing.sm),
+              IconButton(
+                onPressed: formState.isLoading ? null : _submit,
+                icon: formState.isLoading
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : Icon(LucideIcons.send, color: theme.colorScheme.primary),
+              ),
+            ],
+          ),
         ),
       ),
     );

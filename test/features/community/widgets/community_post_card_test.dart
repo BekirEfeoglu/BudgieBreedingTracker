@@ -57,6 +57,7 @@ void main() {
   Widget createSubject(
     CommunityPost post, {
     String currentUserId = 'other-user',
+    bool isInteractive = true,
   }) {
     return ProviderScope(
       overrides: [
@@ -65,7 +66,9 @@ void main() {
       ],
       child: MaterialApp(
         home: Scaffold(
-          body: SingleChildScrollView(child: CommunityPostCard(post: post)),
+          body: SingleChildScrollView(
+            child: CommunityPostCard(post: post, isInteractive: isInteractive),
+          ),
         ),
       ),
     );
@@ -206,7 +209,14 @@ void main() {
       await tester.pumpWidget(createSubject(_testPost()));
       await tester.pump();
 
-      expect(find.byType(InkWell), findsWidgets);
+      expect(find.byKey(CommunityPostCard.interactionKey), findsOneWidget);
+    });
+
+    testWidgets('omits InkWell when interaction is disabled', (tester) async {
+      await tester.pumpWidget(createSubject(_testPost(), isInteractive: false));
+      await tester.pump();
+
+      expect(find.byKey(CommunityPostCard.interactionKey), findsNothing);
     });
 
     testWidgets('does not show content section when content is empty', (
