@@ -11,19 +11,48 @@ import '../../../core/widgets/error_state.dart' as app;
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 import '../../../router/route_names.dart';
 import '../../../features/messaging/providers/messaging_form_providers.dart';
+import '../../community/widgets/community_image_viewer.dart';
 import '../providers/marketplace_form_providers.dart';
 import '../providers/marketplace_providers.dart';
 
-class MarketplaceDetailScreen extends ConsumerWidget {
+class MarketplaceDetailScreen extends ConsumerStatefulWidget {
   final String listingId;
 
   const MarketplaceDetailScreen({super.key, required this.listingId});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<MarketplaceDetailScreen> createState() =>
+      _MarketplaceDetailScreenState();
+}
+
+class _MarketplaceDetailScreenState
+    extends ConsumerState<MarketplaceDetailScreen> {
+  late final PageController _pageController;
+  int _currentPage = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController();
+    _pageController.addListener(() {
+      final page = _pageController.page?.round() ?? 0;
+      if (page != _currentPage) {
+        setState(() => _currentPage = page);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final userId = ref.watch(currentUserIdProvider);
     final listingAsync = ref.watch(
-      marketplaceListingByIdProvider((id: listingId, userId: userId)),
+      marketplaceListingByIdProvider((id: widget.listingId, userId: userId)),
     );
     final theme = Theme.of(context);
 
@@ -36,7 +65,8 @@ class MarketplaceDetailScreen extends ConsumerWidget {
         error: (error, _) => app.ErrorState(
           message: '${'marketplace.listing_error'.tr()}: $error',
           onRetry: () => ref.invalidate(
-            marketplaceListingByIdProvider((id: listingId, userId: userId)),
+            marketplaceListingByIdProvider(
+                (id: widget.listingId, userId: userId)),
           ),
         ),
         data: (listing) {
@@ -52,23 +82,57 @@ class MarketplaceDetailScreen extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (listing.imageUrls.isNotEmpty)
+                if (listing.imageUrls.isNotEmpty) ...[
                   AspectRatio(
                     aspectRatio: 16 / 9,
                     child: PageView.builder(
+                      controller: _pageController,
                       itemCount: listing.imageUrls.length,
-                      itemBuilder: (context, index) => CachedNetworkImage(
-                        imageUrl: listing.imageUrls[index],
-                        fit: BoxFit.cover,
-                        memCacheWidth: 960,
-                        placeholder: (context, url) => const Center(
-                          child: CircularProgressIndicator(),
+                      itemBuilder: (context, index) => GestureDetector(
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => CommunityImageViewer(
+                              imageUrl: listing.imageUrls[index],
+                            ),
+                          ),
                         ),
-                        errorWidget: (context, url, error) =>
-                            const Icon(LucideIcons.imageOff),
+                        child: CachedNetworkImage(
+                          imageUrl: listing.imageUrls[index],
+                          fit: BoxFit.cover,
+                          memCacheWidth: 960,
+                          placeholder: (context, url) => const Center(
+                            child: CircularProgressIndicator(),
+                          ),
+                          errorWidget: (context, url, error) =>
+                              const Icon(LucideIcons.imageOff),
+                        ),
                       ),
                     ),
                   ),
+                  if (listing.imageUrls.length > 1)
+                    Padding(
+                      padding: const EdgeInsets.only(top: AppSpacing.sm),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: List.generate(
+                          listing.imageUrls.length,
+                          (index) => Container(
+                            width: 8,
+                            height: 8,
+                            margin:
+                                const EdgeInsets.symmetric(horizontal: 3),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: index == _currentPage
+                                  ? theme.colorScheme.primary
+                                  : theme.colorScheme.outlineVariant,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
                 Padding(
                   padding: AppSpacing.screenPadding,
                   child: Column(
@@ -89,6 +153,24 @@ class MarketplaceDetailScreen extends ConsumerWidget {
                           ),
                         ),
                       ],
+                      const SizedBox(height: AppSpacing.sm),
+                      Row(
+                        children: [
+                          Icon(
+                            LucideIcons.eye,
+                            size: 14,
+                            color: theme.colorScheme.outline,
+                          ),
+                          const SizedBox(width: AppSpacing.xs),
+                          Text(
+                            'marketplace.view_count'
+                                .tr(args: ['${listing.viewCount}']),
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.colorScheme.outline,
+                            ),
+                          ),
+                        ],
+                      ),
                       const SizedBox(height: AppSpacing.lg),
                       Text(
                         listing.description,
@@ -131,8 +213,8 @@ class MarketplaceDetailScreen extends ConsumerWidget {
                                 userId1: userId,
                                 userId2: listing.userId,
                               );
-                              if (context.mounted &&
-                                  conversationId != null) {
+                              if (!mounted) return;
+                              if (conversationId != null) {
                                 context.push(
                                   '${AppRoutes.messages}/$conversationId',
                                 );
@@ -170,7 +252,8 @@ class MarketplaceDetailScreen extends ConsumerWidget {
                                       marketplaceFormStateProvider.notifier,
                                     )
                                     .deleteListing(listing.id);
-                                if (context.mounted) context.pop();
+                                if (!mounted) return;
+                                context.pop();
                               }
                             },
                             icon: const Icon(LucideIcons.trash2),
