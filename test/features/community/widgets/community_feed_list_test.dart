@@ -27,9 +27,7 @@ void main() {
       CommunityFeedTab.following =>
         allPosts.where((p) => p.isFollowingAuthor).toList(),
       CommunityFeedTab.guides =>
-        allPosts
-            .where((p) => p.postType == CommunityPostType.guide)
-            .toList(),
+        allPosts.where((p) => p.postType == CommunityPostType.guide).toList(),
       CommunityFeedTab.questions =>
         allPosts
             .where((p) => p.postType == CommunityPostType.question)
@@ -49,9 +47,7 @@ void main() {
   }
 
   group('CommunityFeedList', () {
-    testWidgets('shows explore sort controls and story strip', (
-      tester,
-    ) async {
+    testWidgets('shows explore sort controls and story strip', (tester) async {
       final now = DateTime.now();
       final posts = [
         CommunityPost(
@@ -155,11 +151,44 @@ void main() {
       );
       await tester.pumpAndSettle();
 
+      expect(find.text(l10n('community.quick_hint')), findsNothing);
+      expect(find.text(l10n('community.guides_library_title')), findsOneWidget);
+      expect(find.text(l10n('community.guides_curated_title')), findsOneWidget);
+
       await tester.drag(find.byType(CustomScrollView), const Offset(0, -700));
       await tester.pumpAndSettle();
 
       expect(find.text('Guide title'), findsOneWidget);
       expect(find.text('Question title'), findsNothing);
+    });
+
+    testWidgets('scroll-to-top FAB is hidden initially (scale 0)', (tester) async {
+      final posts = List.generate(
+        3,
+        (i) => CommunityPost(
+          id: 'p$i',
+          userId: 'u$i',
+          username: 'User$i',
+          content: 'Post $i',
+          createdAt: DateTime.now().subtract(Duration(hours: i)),
+        ),
+      );
+
+      await tester.pumpWidget(
+        createSubject(
+          feedState: FeedState(posts: posts, isLoading: false, hasMore: false),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // FAB should be in tree with scale 0 (hidden)
+      final animatedScale = tester.widget<AnimatedScale>(
+        find.descendant(
+          of: find.byType(Stack),
+          matching: find.byType(AnimatedScale),
+        ),
+      );
+      expect(animatedScale.scale, 0.0);
     });
 
     testWidgets('new posts banner is hidden initially', (tester) async {
@@ -210,17 +239,16 @@ void main() {
                 FeedState(posts: posts, isLoading: false, hasMore: false),
               ),
             ),
-            communityVisiblePostsProvider(CommunityFeedTab.explore)
-                .overrideWithValue(posts),
+            communityVisiblePostsProvider(
+              CommunityFeedTab.explore,
+            ).overrideWithValue(posts),
             userProfileProvider.overrideWith((ref) => Stream.value(null)),
             likeToggleProvider.overrideWith(() {
               likeTriggered = true;
               return _FakeLikeNotifier();
             }),
           ],
-          child: const MaterialApp(
-            home: Scaffold(body: CommunityFeedList()),
-          ),
+          child: const MaterialApp(home: Scaffold(body: CommunityFeedList())),
         ),
       );
       await tester.pumpAndSettle();
@@ -240,9 +268,7 @@ void main() {
       expect(likeTriggered, isTrue);
     });
 
-    testWidgets('following tab renders CommunityFollowingList', (
-      tester,
-    ) async {
+    testWidgets('following tab renders CommunityFollowingList', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
@@ -252,8 +278,9 @@ void main() {
                 const FeedState(posts: [], isLoading: false, hasMore: false),
               ),
             ),
-            communityVisiblePostsProvider(CommunityFeedTab.following)
-                .overrideWithValue([]),
+            communityVisiblePostsProvider(
+              CommunityFeedTab.following,
+            ).overrideWithValue([]),
             userProfileProvider.overrideWith((ref) => Stream.value(null)),
             followedUsersProvider.overrideWith(
               (ref) => Future.value(<Map<String, dynamic>>[]),
@@ -293,17 +320,16 @@ void main() {
                 FeedState(posts: posts, isLoading: false, hasMore: false),
               ),
             ),
-            communityVisiblePostsProvider(CommunityFeedTab.explore)
-                .overrideWithValue(posts),
+            communityVisiblePostsProvider(
+              CommunityFeedTab.explore,
+            ).overrideWithValue(posts),
             userProfileProvider.overrideWith((ref) => Stream.value(null)),
             bookmarkToggleProvider.overrideWith(() {
               bookmarkTriggered = true;
               return _FakeBookmarkNotifier();
             }),
           ],
-          child: const MaterialApp(
-            home: Scaffold(body: CommunityFeedList()),
-          ),
+          child: const MaterialApp(home: Scaffold(body: CommunityFeedList())),
         ),
       );
       await tester.pumpAndSettle();

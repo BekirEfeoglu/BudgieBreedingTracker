@@ -1,8 +1,11 @@
 import 'dart:async';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -37,12 +40,14 @@ class CommunityFeedList extends ConsumerStatefulWidget {
 
 class _CommunityFeedListState extends ConsumerState<CommunityFeedList> {
   static const _swipeOnboardingKey = 'pref_swipe_onboarding_shown';
+  static const _scrollToTopThreshold = 600.0;
 
   final _scrollController = ScrollController();
   Timer? _swipeHintTimer;
   int _lastSeenCount = 0;
   int _newPostCount = 0;
   bool _showSwipeHint = false;
+  bool _showScrollToTop = false;
 
   @override
   void initState() {
@@ -85,6 +90,10 @@ class _CommunityFeedListState extends ConsumerState<CommunityFeedList> {
     if (currentScroll >= maxScroll - 200) {
       ref.read(communityFeedProvider.notifier).fetchMore();
     }
+    final shouldShow = _scrollController.offset > _scrollToTopThreshold;
+    if (shouldShow != _showScrollToTop) {
+      setState(() => _showScrollToTop = shouldShow);
+    }
   }
 
   void _scrollToTopAndDismiss() {
@@ -117,6 +126,7 @@ class _CommunityFeedListState extends ConsumerState<CommunityFeedList> {
       newPostCount: _newPostCount,
       lastSeenCount: _lastSeenCount,
       showSwipeHint: _showSwipeHint,
+      showScrollToTop: _showScrollToTop,
       onUpdateNewPostCount: (v) => setState(() => _newPostCount = v),
       onUpdateLastSeenCount: (v) => _lastSeenCount = v,
       onScrollToTop: _scrollToTopAndDismiss,
