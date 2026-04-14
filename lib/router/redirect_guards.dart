@@ -21,7 +21,11 @@ String? authRedirect(Ref ref, String location) {
   if (!isLoggedIn && !isAuthRoute && !isAnonymousAllowedRoute(location)) {
     return AppRoutes.login;
   }
-  if (isLoggedIn && isAuthRoute && location != AppRoutes.twoFactorVerify) {
+  final isSessionLocked = ref.read(sessionLockedProvider);
+  if (isLoggedIn &&
+      isAuthRoute &&
+      !isSessionLocked &&
+      location != AppRoutes.twoFactorVerify) {
     return AppRoutes.home;
   }
   return null;

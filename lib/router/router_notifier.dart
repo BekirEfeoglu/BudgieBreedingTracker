@@ -41,7 +41,9 @@ class RouterNotifier extends ChangeNotifier {
 }
 
 final routerNotifierProvider = Provider<RouterNotifier>((ref) {
-  return RouterNotifier(ref);
+  final notifier = RouterNotifier(ref);
+  ref.onDispose(notifier.dispose);
+  return notifier;
 });
 
 // Separate navigator keys for each shell to prevent GlobalKey collisions

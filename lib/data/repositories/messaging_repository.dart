@@ -9,6 +9,11 @@ import '../models/message_model.dart';
 import '../remote/api/conversation_remote_source.dart';
 import '../remote/api/message_remote_source.dart';
 
+/// Repository for messaging conversations and messages.
+///
+/// Custom implementation (not extending [BaseRepository]) because messaging
+/// is online-first with realtime subscriptions and no Drift mirror — messages
+/// live only on Supabase and cross user boundaries (multi-party conversations).
 class MessagingRepository {
   final ConversationRemoteSource _conversationSource;
   final MessageRemoteSource _messageSource;

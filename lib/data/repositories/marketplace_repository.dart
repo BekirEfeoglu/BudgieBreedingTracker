@@ -3,6 +3,11 @@ import '../remote/api/marketplace_listing_remote_source.dart';
 import '../remote/api/marketplace_favorite_remote_source.dart';
 import '../../core/utils/logger.dart';
 
+/// Repository for marketplace listings.
+///
+/// Custom implementation (not extending [BaseRepository]) because marketplace
+/// is online-first with no Drift mirror — listings cross user boundaries
+/// (any user can browse all listings) and use server-side search/filtering.
 class MarketplaceRepository {
   final MarketplaceListingRemoteSource _listingSource;
   final MarketplaceFavoriteRemoteSource _favoriteSource;

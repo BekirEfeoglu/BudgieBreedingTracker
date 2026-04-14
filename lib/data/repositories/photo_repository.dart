@@ -11,8 +11,10 @@ import 'package:uuid/uuid.dart';
 
 /// Repository for [Photo] entities.
 ///
-/// Photos use NoSoftDelete remote source since photos table
-/// doesn't have is_deleted column - photos are hard-deleted.
+/// Custom implementation (not extending [BaseRepository]) because photos
+/// use hard-delete (no is_deleted column) and have their own sync logic
+/// via [SyncMetadataDao] — the standard [SyncableRepository] soft-delete
+/// pattern doesn't apply.
 class PhotoRepository {
   final PhotosDao _localDao;
   final PhotoRemoteSource _remoteSource;

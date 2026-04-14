@@ -2,6 +2,10 @@ import '../../core/enums/community_enums.dart';
 import '../remote/api/community_social_remote_source.dart';
 
 /// Repository for community social interactions (likes, bookmarks, reports).
+///
+/// Custom implementation (not extending [BaseRepository]) because social
+/// interactions are online-first toggle operations with no Drift mirror
+/// and no sync metadata — each action is an immediate remote call.
 class CommunitySocialRepository {
   final CommunitySocialRemoteSource _source;
 

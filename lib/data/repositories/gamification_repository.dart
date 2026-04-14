@@ -6,6 +6,11 @@ import '../models/user_level_model.dart';
 import '../models/xp_transaction_model.dart';
 import '../remote/api/gamification_remote_source.dart';
 
+/// Repository for gamification (badges, XP, leaderboard).
+///
+/// Custom implementation (not extending [BaseRepository]) because gamification
+/// is online-first with no Drift mirror — XP and badges are computed
+/// server-side and the leaderboard crosses user boundaries.
 class GamificationRepository {
   final GamificationRemoteSource _remoteSource;
   late final GamificationService _service;

@@ -7,6 +7,10 @@ import '../remote/api/community_comment_remote_source.dart';
 import '../remote/api/community_social_remote_source.dart';
 
 /// Repository for community comments.
+///
+/// Custom implementation (not extending [BaseRepository]) because community
+/// comments are online-first with no Drift mirror — they live only on
+/// Supabase and cross user boundaries (any user can see any post's comments).
 class CommunityCommentRepository {
   final CommunityCommentRemoteSource _commentSource;
   final CommunitySocialRemoteSource _socialSource;
