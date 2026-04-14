@@ -8,9 +8,17 @@ import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
+import 'package:budgie_breeding_tracker/data/providers/action_feedback_providers.dart';
 import 'package:budgie_breeding_tracker/features/community/widgets/community_app_bar.dart';
 import 'package:budgie_breeding_tracker/features/gamification/providers/gamification_providers.dart';
+import 'package:budgie_breeding_tracker/features/notifications/providers/notification_list_providers.dart';
+import 'package:budgie_breeding_tracker/features/notifications/widgets/notification_bell_button.dart';
 import 'package:budgie_breeding_tracker/features/profile/providers/profile_providers.dart';
+
+class _EmptyActionFeedbackNotifier extends ActionFeedbackNotifier {
+  @override
+  List<ActionFeedback> build() => [];
+}
 
 void main() {
   Widget wrap({String userId = 'test-user-123'}) {
@@ -19,6 +27,9 @@ void main() {
         currentUserIdProvider.overrideWithValue(userId),
         userProfileProvider.overrideWith((ref) => Stream.value(null)),
         userLevelProvider(userId).overrideWith((ref) => Future.value(null)),
+        unreadNotificationsProvider(userId)
+            .overrideWith((ref) => Stream.value([])),
+        actionFeedbackProvider.overrideWith(_EmptyActionFeedbackNotifier.new),
       ],
       child: const MaterialApp(
         home: Scaffold(
@@ -57,11 +68,11 @@ void main() {
       expect(find.byIcon(LucideIcons.messageCircle), findsOneWidget);
     });
 
-    testWidgets('shows notification bell icon', (tester) async {
+    testWidgets('shows notification bell button', (tester) async {
       await tester.pumpWidget(wrap());
       await tester.pumpAndSettle();
 
-      expect(find.byIcon(LucideIcons.bell), findsOneWidget);
+      expect(find.byType(NotificationBellButton), findsOneWidget);
     });
 
     testWidgets('shows search icon', (tester) async {
@@ -88,21 +99,18 @@ void main() {
         findsOneWidget,
       );
       expect(
-        find.byTooltip(l10n('notifications.title')),
-        findsOneWidget,
-      );
-      expect(
         find.byTooltip(l10n('community.search')),
         findsOneWidget,
       );
     });
 
-    testWidgets('renders three action IconButtons', (tester) async {
+    testWidgets('renders action IconButtons', (tester) async {
       await tester.pumpWidget(wrap());
       await tester.pumpAndSettle();
 
-      // Three action icons: messages, bell, search
-      expect(find.byType(IconButton), findsNWidgets(3));
+      // Actions: messages (_ActionIcon), NotificationBellButton, search (_ActionIcon)
+      // Plus leading back arrow — total 4 IconButtons
+      expect(find.byType(IconButton), findsNWidgets(4));
     });
 
     testWidgets('renders with transparent AppBar background',

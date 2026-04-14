@@ -11,6 +11,7 @@ import '../../../data/models/profile_model.dart';
 import '../../../data/providers/auth_state_providers.dart';
 import '../../../router/route_names.dart';
 import '../../gamification/providers/gamification_providers.dart';
+import '../../notifications/widgets/notification_bell_button.dart';
 import '../../profile/providers/profile_providers.dart';
 
 /// Profile-centric AppBar for the community screen.
@@ -40,7 +41,7 @@ class CommunityAppBar extends ConsumerWidget implements PreferredSizeWidget {
       surfaceTintColor: Colors.transparent,
       elevation: 0,
       leading: IconButton(
-        icon: const Icon(Icons.arrow_back),
+        icon: const Icon(LucideIcons.arrowLeft),
         onPressed: () => context.pop(),
       ),
       titleSpacing: 0,
@@ -97,11 +98,7 @@ class CommunityAppBar extends ConsumerWidget implements PreferredSizeWidget {
           tooltip: 'messaging.title'.tr(),
           onPressed: () => context.push(AppRoutes.messages),
         ),
-        _ActionIcon(
-          icon: LucideIcons.bell,
-          tooltip: 'notifications.title'.tr(),
-          onPressed: () => context.push(AppRoutes.notifications),
-        ),
+        const NotificationBellButton(),
         _ActionIcon(
           icon: LucideIcons.search,
           tooltip: 'community.search'.tr(),
