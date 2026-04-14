@@ -5,7 +5,6 @@ import 'dart:io';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -208,15 +207,17 @@ class _CommunityCreatePostScreenState
 
     ref.listen<CreatePostState>(createPostProvider, (_, state) async {
       if (!mounted) return;
+      final navigator = Navigator.of(context);
+      final messenger = ScaffoldMessenger.of(context);
       if (state.isSuccess) {
         ref.read(createPostProvider.notifier).reset();
         await _clearDraft();
         if (!mounted) return;
-        Navigator.of(context).pop();
+        navigator.pop();
         ActionFeedbackService.show('community.post_success'.tr());
       }
       if (state.error != null && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        messenger.showSnackBar(
           SnackBar(
             content: Text(state.error ?? 'community.post_error'.tr()),
           ),
@@ -228,12 +229,13 @@ class _CommunityCreatePostScreenState
       canPop: false,
       onPopInvokedWithResult: (didPop, _) async {
         if (didPop) return;
+        final navigator = Navigator.of(context);
         final hasContent = _titleController.text.isNotEmpty ||
             _contentController.text.isNotEmpty ||
             _tags.isNotEmpty ||
             _selectedImages.isNotEmpty;
         if (!hasContent) {
-          Navigator.pop(context);
+          navigator.pop();
           return;
         }
         final shouldLeave = await showDialog<bool>(
@@ -256,7 +258,7 @@ class _CommunityCreatePostScreenState
         if (shouldLeave == true && mounted) {
           await _clearDraft();
           if (!mounted) return;
-          Navigator.of(context).pop();
+          navigator.pop();
         }
       },
       child: Scaffold(
