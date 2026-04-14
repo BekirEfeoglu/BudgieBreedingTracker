@@ -68,7 +68,8 @@
     "just_now": "Just now",
     "minutes_ago": "{} minutes ago",
     "hours_ago": "{} hours ago",
-    "more": "More"
+    "more": "More",
+    "back": "Back"
   },
   "auth": {
     "login": "Log In",
@@ -383,6 +384,7 @@
     "unknown_gender": "Unknown",
     "healthy": "Healthy",
     "sick": "Sick",
+    "unknown_status": "Unknown",
     "name_optional": "Name (optional)",
     "birth_weight": "Birth Weight",
     "birth_weight_label": "Birth Weight (g)",
@@ -2126,7 +2128,8 @@
     "save_failed": "Save operation failed.",
     "delete_failed": "Delete operation failed.",
     "update_failed": "Update operation failed.",
-    "background_tasks_partial": "Saved, but some reminders/calendar tasks could not be scheduled."
+    "background_tasks_partial": "Saved, but some reminders/calendar tasks could not be scheduled.",
+    "not_found": "Not found"
   },
   "validation": {
     "field_required": "{} is required",

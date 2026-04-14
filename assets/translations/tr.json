@@ -68,7 +68,8 @@
     "just_now": "Az önce",
     "minutes_ago": "{} dakika önce",
     "hours_ago": "{} saat önce",
-    "more": "Daha Fazla"
+    "more": "Daha Fazla",
+    "back": "Geri"
   },
   "auth": {
     "login": "Giriş Yap",
@@ -383,6 +384,7 @@
     "unknown_gender": "Bilinmiyor",
     "healthy": "Sağlıklı",
     "sick": "Hasta",
+    "unknown_status": "Bilinmiyor",
     "name_optional": "İsim (opsiyonel)",
     "birth_weight": "Doğum Ağırlığı",
     "birth_weight_label": "Doğum Ağırlığı (g)",
@@ -2126,7 +2128,8 @@
     "save_failed": "Kaydetme işlemi başarısız oldu.",
     "delete_failed": "Silme işlemi başarısız oldu.",
     "update_failed": "Güncelleme işlemi başarısız oldu.",
-    "background_tasks_partial": "Kayıt tamamlandı ancak bazı hatırlatma/takvim görevleri planlanamadı."
+    "background_tasks_partial": "Kayıt tamamlandı ancak bazı hatırlatma/takvim görevleri planlanamadı.",
+    "not_found": "Bulunamadı"
   },
   "validation": {
     "field_required": "{} zorunludur",

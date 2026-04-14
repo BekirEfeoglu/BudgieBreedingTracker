@@ -68,7 +68,8 @@
     "just_now": "Gerade eben",
     "minutes_ago": "vor {} Minuten",
     "hours_ago": "vor {} Stunden",
-    "more": "Mehr"
+    "more": "Mehr",
+    "back": "Zurück"
   },
   "auth": {
     "login": "Anmelden",
@@ -383,6 +384,7 @@
     "unknown_gender": "Unbekannt",
     "healthy": "Gesund",
     "sick": "Krank",
+    "unknown_status": "Unbekannt",
     "name_optional": "Name (optional)",
     "birth_weight": "Geburtsgewicht",
     "birth_weight_label": "Geburtsgewicht (g)",
@@ -2126,7 +2128,8 @@
     "save_failed": "Speichervorgang fehlgeschlagen.",
     "delete_failed": "Löschvorgang fehlgeschlagen.",
     "update_failed": "Aktualisierung fehlgeschlagen.",
-    "background_tasks_partial": "Gespeichert, aber einige Erinnerungs-/Kalenderaufgaben konnten nicht geplant werden."
+    "background_tasks_partial": "Gespeichert, aber einige Erinnerungs-/Kalenderaufgaben konnten nicht geplant werden.",
+    "not_found": "Nicht gefunden"
   },
   "validation": {
     "field_required": "{} ist erforderlich",
