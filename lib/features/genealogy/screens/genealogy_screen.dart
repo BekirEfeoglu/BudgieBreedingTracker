@@ -18,6 +18,9 @@ import 'package:budgie_breeding_tracker/features/genealogy/widgets/depth_chip.da
 import 'package:budgie_breeding_tracker/features/genealogy/widgets/entity_selector.dart';
 import 'package:budgie_breeding_tracker/features/genealogy/widgets/tree_content.dart';
 import 'package:budgie_breeding_tracker/data/providers/action_feedback_providers.dart';
+import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
+import 'package:go_router/go_router.dart';
+import 'package:budgie_breeding_tracker/router/route_names.dart';
 
 /// Screen with a bird/chick selector, search, bidirectional family tree,
 /// family stats, and offspring section.
@@ -74,7 +77,7 @@ class _GenealogyScreenState extends ConsumerState<GenealogyScreen> {
         ],
       ),
       body: birdsAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const LoadingState(),
         error: (error, _) => ErrorState(
           message: 'genealogy.load_error'.tr(),
           onRetry: () {
@@ -84,7 +87,7 @@ class _GenealogyScreenState extends ConsumerState<GenealogyScreen> {
         ),
         data: (birds) {
           return chicksAsync.when(
-            loading: () => const Center(child: CircularProgressIndicator()),
+            loading: () => const LoadingState(),
             error: (_, __) => _buildContent(context, birds, [], selection),
             data: (chicks) => _buildContent(context, birds, chicks, selection),
           );
@@ -104,6 +107,8 @@ class _GenealogyScreenState extends ConsumerState<GenealogyScreen> {
         icon: const AppIcon(AppIcons.genealogy),
         title: 'genealogy.no_birds'.tr(),
         subtitle: 'genealogy.no_birds_subtitle'.tr(),
+        actionLabel: 'birds.add_bird'.tr(),
+        onAction: () => context.push('${AppRoutes.birds}/form'),
       );
     }
 

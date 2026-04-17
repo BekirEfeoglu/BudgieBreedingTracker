@@ -51,6 +51,7 @@ class _GroupFormScreenState extends ConsumerState<GroupFormScreen> {
       ),
       body: Form(
         key: _formKey,
+      autovalidateMode: AutovalidateMode.onUserInteraction,
         child: SingleChildScrollView(
           padding: AppSpacing.screenPadding,
           child: Column(

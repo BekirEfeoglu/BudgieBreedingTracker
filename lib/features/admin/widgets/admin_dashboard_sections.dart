@@ -8,6 +8,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_icon.dart';
 import '../providers/admin_providers.dart';
+import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
 
 /// Active alerts section.
 class DashboardAlertsSection extends ConsumerWidget {
@@ -29,7 +30,7 @@ class DashboardAlertsSection extends ConsumerWidget {
         ),
         const SizedBox(height: AppSpacing.md),
         alertsAsync.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
+          loading: () => const LoadingState(),
           error: (_, __) => Text('admin.action_error'.tr()),
           data: (alerts) {
             if (alerts.isEmpty) {
@@ -147,7 +148,7 @@ class DashboardContentReviewSection extends ConsumerWidget {
         ),
         const SizedBox(height: AppSpacing.md),
         countAsync.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
+          loading: () => const LoadingState(),
           error: (_, __) => Text('admin.action_error'.tr()),
           data: (count) {
             if (count == 0) {
@@ -219,7 +220,7 @@ class DashboardRecentActionsSection extends ConsumerWidget {
         ),
         const SizedBox(height: AppSpacing.md),
         actionsAsync.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
+          loading: () => const LoadingState(),
           error: (_, __) => Text('admin.action_error'.tr()),
           data: (actions) {
             if (actions.isEmpty) {

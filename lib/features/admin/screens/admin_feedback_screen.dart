@@ -15,6 +15,7 @@ import 'package:budgie_breeding_tracker/data/providers/action_feedback_providers
 import '../constants/admin_constants.dart';
 import '../providers/admin_feedback_providers.dart';
 import '_feedback_detail_sheet.dart';
+import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
 
 part 'admin_feedback_screen_tiles.dart';
 
@@ -80,7 +81,7 @@ class _AdminFeedbackScreenState extends ConsumerState<AdminFeedbackScreen> {
         ],
       ),
       body: feedbackAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const LoadingState(),
         error: (e, _) => ErrorState(
           message: 'common.data_load_error'.tr(),
           onRetry: () => ref.invalidate(adminFeedbackProvider),

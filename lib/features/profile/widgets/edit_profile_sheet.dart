@@ -14,6 +14,7 @@ import '../../auth/providers/auth_providers.dart';
 import '../providers/profile_providers.dart';
 import 'avatar_picker_sheet.dart';
 import 'profile_form.dart';
+import 'package:budgie_breeding_tracker/core/widgets/bottom_sheet/app_bottom_sheet.dart';
 
 /// Opens the edit profile bottom sheet.
 void openEditProfileSheet(
@@ -22,7 +23,7 @@ void openEditProfileSheet(
   required Profile? profile,
   required String email,
 }) {
-  showModalBottomSheet(
+  showAppBottomSheet(
     context: context,
     isScrollControlled: true,
     constraints: const BoxConstraints(maxWidth: AppSpacing.maxSheetWidth),

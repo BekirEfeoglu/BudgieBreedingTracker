@@ -12,6 +12,7 @@ import '../../../router/route_names.dart';
 import '../providers/marketplace_providers.dart';
 import 'marketplace_filter_bar.dart';
 import 'marketplace_listing_card.dart';
+import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
 
 /// Scaffold-free marketplace content for embedding in TabBarView.
 class MarketplaceTabContent extends ConsumerWidget {
@@ -49,7 +50,7 @@ class MarketplaceTabContent extends ConsumerWidget {
             },
             child: listingsAsync.when(
               loading: () =>
-                  const Center(child: CircularProgressIndicator()),
+                  const LoadingState(),
               error: (error, _) => app.ErrorState(
                 message: '${'common.data_load_error'.tr()}: $error',
                 onRetry: () =>

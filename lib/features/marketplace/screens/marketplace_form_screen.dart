@@ -10,11 +10,13 @@ import '../../../core/enums/marketplace_enums.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_icon.dart';
 import '../../../core/widgets/buttons/primary_button.dart';
+import '../../../core/widgets/unsaved_changes_scope.dart';
 import '../../../data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 import '../providers/marketplace_form_providers.dart';
 import '../widgets/marketplace_bird_picker_sheet.dart';
 import '../widgets/marketplace_image_picker.dart';
+import 'package:budgie_breeding_tracker/core/widgets/bottom_sheet/app_bottom_sheet.dart';
 
 class MarketplaceFormScreen extends ConsumerStatefulWidget {
   final String? editListingId;
@@ -42,8 +44,30 @@ class _MarketplaceFormScreenState
   List<String> _imagePaths = [];
   String? _linkedBirdId;
   String? _linkedBirdName;
+  bool _isDirty = false;
+  bool _submitted = false;
 
   bool get _isEdit => widget.editListingId != null;
+
+  void _markDirty() {
+    if (!_isDirty) setState(() => _isDirty = true);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    for (final c in [
+      _titleController,
+      _descriptionController,
+      _priceController,
+      _speciesController,
+      _mutationController,
+      _ageController,
+      _cityController,
+    ]) {
+      c.addListener(_markDirty);
+    }
+  }
 
   @override
   void dispose() {
@@ -65,6 +89,7 @@ class _MarketplaceFormScreenState
     ref.listen<MarketplaceFormState>(marketplaceFormStateProvider, (_, state) {
       if (!mounted) return;
       if (state.isSuccess) {
+        _submitted = true;
         ref.read(marketplaceFormStateProvider.notifier).reset();
         context.pop();
       }
@@ -75,7 +100,9 @@ class _MarketplaceFormScreenState
       }
     });
 
-    return Scaffold(
+    return UnsavedChangesScope(
+      isDirty: _isDirty && !_submitted,
+      child: Scaffold(
       appBar: AppBar(
         title: Text(
           _isEdit
@@ -85,6 +112,7 @@ class _MarketplaceFormScreenState
       ),
       body: Form(
         key: _formKey,
+      autovalidateMode: AutovalidateMode.onUserInteraction,
         child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(
             AppSpacing.lg,
@@ -285,12 +313,13 @@ class _MarketplaceFormScreenState
           ),
         ),
       ),
+      ),
     );
   }
 
   Future<void> _pickBird() async {
     final userId = ref.read(currentUserIdProvider);
-    final bird = await showModalBottomSheet<Bird>(
+    final bird = await showAppBottomSheet<Bird>(
       context: context,
       isScrollControlled: true,
       builder: (_) => MarketplaceBirdPickerSheet(userId: userId),

@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/logger.dart';
 import '../providers/admin_actions_provider.dart';
+import 'package:budgie_breeding_tracker/core/widgets/bottom_sheet/app_bottom_sheet.dart';
 
 /// Shows a bottom sheet for sending an admin notification.
 /// Returns true if notification was sent successfully.
@@ -14,7 +15,7 @@ Future<bool?> showAdminNotificationSheet(
   String? targetUserId,
   List<String>? targetUserIds,
 }) {
-  return showModalBottomSheet<bool>(
+  return showAppBottomSheet<bool>(
     context: context,
     isScrollControlled: true,
     builder: (_) => _NotificationSheetContent(
@@ -109,6 +110,7 @@ class _NotificationSheetContentState extends ConsumerState<_NotificationSheetCon
           padding: const EdgeInsets.all(AppSpacing.xl),
           child: Form(
             key: _formKey,
+      autovalidateMode: AutovalidateMode.onUserInteraction,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,

@@ -5,6 +5,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../core/enums/community_enums.dart';
 import '../../../core/theme/app_spacing.dart';
+import 'package:budgie_breeding_tracker/core/widgets/bottom_sheet/app_bottom_sheet.dart';
 
 /// Shows a card-based bottom sheet for the user to pick a [CommunityReportReason].
 ///
@@ -14,7 +15,7 @@ Future<CommunityReportReason?> showCommunityReportSheet(
   BuildContext context, {
   required String title,
 }) {
-  return showModalBottomSheet<CommunityReportReason>(
+  return showAppBottomSheet<CommunityReportReason>(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,

@@ -13,6 +13,7 @@ import 'package:budgie_breeding_tracker/features/home/providers/home_providers.d
 
 /// Breakpoint for switching between bottom nav and side rail.
 const double _kTabletBreakpoint = 600;
+const double _kDesktopBreakpoint = 900;
 
 class MainShell extends ConsumerWidget {
   final Widget child;
@@ -64,7 +65,9 @@ class MainShell extends ConsumerWidget {
     final selectedIndex = _calculateIndex(
       GoRouterState.of(context).matchedLocation,
     );
-    final isWide = MediaQuery.sizeOf(context).width >= _kTabletBreakpoint;
+    final width = MediaQuery.sizeOf(context).width;
+    final isWide = width >= _kTabletBreakpoint;
+    final isDesktop = width >= _kDesktopBreakpoint;
 
     if (isWide) {
       return Scaffold(
@@ -72,7 +75,9 @@ class MainShell extends ConsumerWidget {
           children: [
             NavigationRail(
               selectedIndex: selectedIndex,
-              labelType: NavigationRailLabelType.all,
+              labelType: isDesktop
+                  ? NavigationRailLabelType.all
+                  : NavigationRailLabelType.selected,
               onDestinationSelected: (index) {
                 AppHaptics.lightImpact();
                 context.go(_navItems[index].path);

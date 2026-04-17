@@ -27,8 +27,10 @@ import 'package:budgie_breeding_tracker/features/calendar/widgets/event_detail_m
 import 'package:budgie_breeding_tracker/features/calendar/widgets/event_form_sheet.dart';
 import 'package:budgie_breeding_tracker/features/calendar/widgets/calendar_week_view.dart';
 import 'package:budgie_breeding_tracker/features/calendar/widgets/calendar_day_view.dart';
+import 'package:budgie_breeding_tracker/features/chicks/providers/chick_providers.dart'; // Cross-feature import: banding action for calendar events linked to chicks
 import 'package:budgie_breeding_tracker/features/notifications/widgets/notification_bell_button.dart'; // Cross-feature import: app-shell AppBar widget shared across all main screens
 import 'package:budgie_breeding_tracker/features/profile/widgets/profile_menu_button.dart'; // Cross-feature import: app-shell AppBar widget shared across all main screens
+import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
 
 part 'calendar_screen_bodies.dart';
 
@@ -44,6 +46,8 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
   @override
   Widget build(BuildContext context) {
     final userId = ref.watch(currentUserIdProvider);
+    // IMPROVED: keep realtime subscription alive for cross-device sync
+    ref.watch(eventRealtimeSyncProvider(userId));
     final eventsAsync = ref.watch(eventsStreamProvider(userId));
     final displayedMonth = ref.watch(displayedMonthProvider);
     final selectedDate = ref.watch(selectedDateProvider);
@@ -134,7 +138,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                 },
                 child: eventsAsync.when(
                   loading: () =>
-                      const Center(child: CircularProgressIndicator()),
+                      const LoadingState(),
                   error: (error, _) => ErrorState(
                     message: 'calendar.load_error'.tr(),
                     onRetry: () => ref.invalidate(eventsStreamProvider(userId)),
@@ -261,12 +265,18 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
   }
 
   void _openEventDetail(Event event) {
+    // IMPROVED: pass banding callback to decouple modal from chicks feature
     showEventDetailModal(
       context,
       event: event,
       onEdit: () => showEventFormSheet(context, existingEvent: event),
       onDelete: () => _confirmDelete(event),
       onStatusChange: (status) => _changeEventStatus(event.id, status),
+      onBandingComplete: event.chickId != null
+          ? () => ref
+                .read(bandingActionProvider.notifier)
+                .markBandingComplete(event.chickId!)
+          : null,
     );
   }
 

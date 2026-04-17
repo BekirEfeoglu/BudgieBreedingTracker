@@ -13,6 +13,7 @@ import '../../../data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 import '../../../router/route_names.dart';
 import '../providers/messaging_form_providers.dart';
+import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
 
 class NewDmScreen extends ConsumerStatefulWidget {
   const NewDmScreen({super.key});
@@ -117,7 +118,7 @@ class _NewDmScreenState extends ConsumerState<NewDmScreen> {
           if (_isSearching)
             const Padding(
               padding: EdgeInsets.all(AppSpacing.xl),
-              child: Center(child: CircularProgressIndicator()),
+              child: LoadingState(),
             )
           else if (_results.isEmpty && _searchController.text.trim().length >= 2)
             Padding(

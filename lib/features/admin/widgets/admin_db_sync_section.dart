@@ -9,6 +9,7 @@ import '../../../core/widgets/dialogs/confirm_dialog.dart';
 import '../providers/admin_actions_provider.dart';
 import '../providers/admin_database_providers.dart';
 import '../providers/admin_models.dart';
+import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
 
 /// Shows pending/error sync counts and a reset stuck button.
 class DatabaseSyncStatusSection extends ConsumerWidget {
@@ -33,7 +34,7 @@ class DatabaseSyncStatusSection extends ConsumerWidget {
             ),
             const SizedBox(height: AppSpacing.md),
             asyncSummary.when(
-              loading: () => const Center(child: CircularProgressIndicator()),
+              loading: () => const LoadingState(),
               error: (e, _) => Text(
                 '${'common.data_load_error'.tr()}: $e',
                 style: theme.textTheme.bodySmall,

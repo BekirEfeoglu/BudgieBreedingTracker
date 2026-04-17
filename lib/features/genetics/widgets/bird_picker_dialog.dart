@@ -12,6 +12,7 @@ import 'package:budgie_breeding_tracker/domain/services/genetics/parent_genotype
 import 'package:budgie_breeding_tracker/features/genetics/utils/bird_genotype_mapper.dart';
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 import 'package:budgie_breeding_tracker/data/providers/bird_stream_providers.dart';
+import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
 
 /// Dialog for selecting a bird from the user's collection to populate
 /// genotype information in the genetics calculator.
@@ -86,7 +87,7 @@ class _BirdPickerDialogState extends ConsumerState<BirdPickerDialog> {
             // Bird list
             Expanded(
               child: birdsAsync.when(
-                loading: () => const Center(child: CircularProgressIndicator()),
+                loading: () => const LoadingState(),
                 error: (e, _) =>
                     Center(child: Text('common.data_load_error'.tr())),
                 data: (birds) {

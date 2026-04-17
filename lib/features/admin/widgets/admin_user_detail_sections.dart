@@ -6,6 +6,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../core/theme/app_spacing.dart';
 import '../providers/admin_providers.dart';
+import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
 
 part 'admin_user_detail_record_tiles.dart';
 part 'admin_user_detail_helpers.dart';
@@ -23,7 +24,7 @@ class UserDetailRecordsSection extends StatelessWidget {
       child: Padding(
         padding: AppSpacing.cardPadding,
         child: contentAsync.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
+          loading: () => const LoadingState(),
           error: (_, _) => Text(
             'common.data_load_error'.tr(),
             style: theme.textTheme.bodyMedium,

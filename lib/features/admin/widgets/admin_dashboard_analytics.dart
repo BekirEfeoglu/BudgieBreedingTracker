@@ -9,6 +9,7 @@ import '../../statistics/widgets/chart_states.dart';
 import '../../statistics/widgets/chart_utils.dart';
 import '../providers/admin_dashboard_providers.dart';
 import '../providers/admin_models.dart';
+import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
 
 /// Premium conversion card showing free vs premium ratio.
 class DashboardPremiumConversionCard extends StatelessWidget {
@@ -235,7 +236,7 @@ class DashboardTopUsersTable extends ConsumerWidget {
             ),
             const SizedBox(height: AppSpacing.md),
             dataAsync.when(
-              loading: () => const Center(child: CircularProgressIndicator()),
+              loading: () => const LoadingState(),
               error: (e, _) => Text('common.data_load_error'.tr(), style: theme.textTheme.bodySmall),
               data: (users) {
                 if (users.isEmpty) {

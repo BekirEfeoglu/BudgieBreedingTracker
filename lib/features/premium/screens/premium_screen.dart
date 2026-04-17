@@ -17,6 +17,7 @@ import 'package:budgie_breeding_tracker/features/premium/providers/premium_provi
 import 'package:budgie_breeding_tracker/features/premium/widgets/feature_comparison.dart';
 import 'package:budgie_breeding_tracker/features/premium/widgets/premium_paywall_sections.dart';
 import 'package:budgie_breeding_tracker/features/premium/widgets/subscription_info_card.dart';
+import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
 
 /// Paywall screen showing premium features and pricing plans.
 /// When the user is already premium, shows subscription info instead.
@@ -140,7 +141,7 @@ class _ActivePremiumBody extends ConsumerWidget {
           Padding(
             padding: AppSpacing.screenPadding,
             child: subscriptionInfoAsync.when(
-              loading: () => const Center(child: CircularProgressIndicator()),
+              loading: () => const LoadingState(),
               error: (_, __) => Card(
                 child: Padding(
                   padding: AppSpacing.cardPadding,

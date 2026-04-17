@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../router/route_names.dart';
 import '../providers/auth_providers.dart';
+import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
 
 /// Handles OAuth callback redirect, then navigates to home or login.
 class AuthCallbackScreen extends ConsumerStatefulWidget {
@@ -50,6 +51,6 @@ class _AuthCallbackScreenState extends ConsumerState<AuthCallbackScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    return const Scaffold(body: LoadingState());
   }
 }

@@ -12,6 +12,7 @@ import 'package:budgie_breeding_tracker/features/genetics/providers/genetics_his
 import 'package:budgie_breeding_tracker/features/genetics/utils/phenotype_localizer.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/mendelian_calculator.dart';
 import 'package:budgie_breeding_tracker/features/genetics/widgets/bird_color_simulation.dart';
+import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
 
 /// Screen for comparing multiple genetics history calculations.
 class GeneticsCompareScreen extends ConsumerWidget {
@@ -38,7 +39,7 @@ class GeneticsCompareScreen extends ConsumerWidget {
         ),
       ),
       body: historyAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const LoadingState(),
         error: (e, _) => ErrorState(
           message: 'common.data_load_error'.tr(),
           onRetry: () => ref.invalidate(geneticsHistoryStreamProvider(userId)),
@@ -119,135 +120,132 @@ class _CompareTableState extends State<_CompareTable> {
     // Sort phenotypes arbitrarily (alphabetically for now)
     final sortedPhenotypes = allPhenotypes.toList()..sort();
 
+    // IMPROVED: single horizontal scroll wrapping both header and data rows
+    // to prevent confusing nested horizontal scrolls on small screens
     return Card(
       clipBehavior: Clip.antiAlias,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Sticky header row
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Container(
-              color: theme.colorScheme.surfaceContainerHigh,
-              padding: const EdgeInsets.symmetric(
-                vertical: AppSpacing.sm,
-                horizontal: AppSpacing.md,
-              ),
-              child: Row(
-                children: [
-                  SizedBox(
-                    width: 160,
-                    child: Text(
-                      'genetics.phenotype'.tr(),
-                      style: theme.textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: SizedBox(
+          width: 160.0 + widget.entries.length * 120.0 + AppSpacing.md * 2,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Header row
+              Container(
+                color: theme.colorScheme.surfaceContainerHigh,
+                padding: const EdgeInsets.symmetric(
+                  vertical: AppSpacing.sm,
+                  horizontal: AppSpacing.md,
+                ),
+                child: Row(
+                  children: [
+                    SizedBox(
+                      width: 160,
+                      child: Text(
+                        'genetics.phenotype'.tr(),
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
-                  ),
-                  ...widget.entries.map(
-                    (e) => SizedBox(
-                      width: 120,
-                      child: _EntryHeader(entry: e),
+                    ...widget.entries.map(
+                      (e) => SizedBox(
+                        width: 120,
+                        child: _EntryHeader(entry: e),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          ),
-          const Divider(height: 1),
-          // Phenotype rows — shrinkWrap since parent is scrollable
-          ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: sortedPhenotypes.length,
-              itemBuilder: (context, index) {
+              const Divider(height: 1),
+              // Phenotype rows
+              ...List.generate(sortedPhenotypes.length, (index) {
                 final phenotype = sortedPhenotypes[index];
                 final localizedPhenotype =
                     PhenotypeLocalizer.localizePhenotype(phenotype);
 
-                return SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: index.isOdd
-                          ? theme.colorScheme.surfaceContainerLow
-                          : null,
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                      vertical: AppSpacing.sm,
-                      horizontal: AppSpacing.md,
-                    ),
-                    child: Row(
-                      children: [
-                        SizedBox(
-                          width: 160,
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.only(
-                                  right: AppSpacing.sm,
-                                ),
-                                child: BirdColorSimulation(
-                                  visualMutations: const [],
-                                  phenotype: phenotype,
-                                  height: 48,
-                                ),
+                return Container(
+                  decoration: BoxDecoration(
+                    color: index.isOdd
+                        ? theme.colorScheme.surfaceContainerLow
+                        : null,
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: AppSpacing.sm,
+                    horizontal: AppSpacing.md,
+                  ),
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 160,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.only(
+                                right: AppSpacing.sm,
                               ),
-                              Flexible(
-                                child: Text(
-                                  localizedPhenotype,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
+                              child: BirdColorSimulation(
+                                visualMutations: const [],
+                                phenotype: phenotype,
+                                height: 48,
                               ),
-                            ],
-                          ),
-                        ),
-                        ...widget.entries.map((e) {
-                          final results = _parsedResults[e.id]!;
-                          final match = results.firstWhere(
-                            (r) {
-                              final p = r.compoundPhenotype ??
-                                  (r.isCarrier
-                                      ? r.phenotype
-                                          .replaceAll(' (carrier)', '')
-                                      : r.phenotype);
-                              return p == phenotype;
-                            },
-                            orElse: () => const OffspringResult(
-                              phenotype: '',
-                              visualMutations: [],
-                              probability: 0.0,
                             ),
-                          );
+                            Flexible(
+                              child: Text(
+                                localizedPhenotype,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      ...widget.entries.map((e) {
+                        final results = _parsedResults[e.id]!;
+                        final match = results.firstWhere(
+                          (r) {
+                            final p = r.compoundPhenotype ??
+                                (r.isCarrier
+                                    ? r.phenotype
+                                        .replaceAll(' (carrier)', '')
+                                    : r.phenotype);
+                            return p == phenotype;
+                          },
+                          orElse: () => const OffspringResult(
+                            phenotype: '',
+                            visualMutations: [],
+                            probability: 0.0,
+                          ),
+                        );
 
-                          final prob = match.probability;
-                          return SizedBox(
-                            width: 120,
-                            child: prob == 0.0
-                                ? Text(
-                                    '-',
-                                    style: TextStyle(
-                                      color:
-                                          theme.colorScheme.onSurfaceVariant,
-                                    ),
-                                  )
-                                : Text(
-                                    '${(prob * 100).toStringAsFixed(1)}%',
-                                    style:
-                                        theme.textTheme.bodyMedium?.copyWith(
-                                      fontWeight: FontWeight.w600,
-                                    ),
+                        final prob = match.probability;
+                        return SizedBox(
+                          width: 120,
+                          child: prob == 0.0
+                              ? Text(
+                                  '-',
+                                  style: TextStyle(
+                                    color:
+                                        theme.colorScheme.onSurfaceVariant,
                                   ),
-                          );
-                        }),
-                      ],
-                    ),
+                                )
+                              : Text(
+                                  '${(prob * 100).toStringAsFixed(1)}%',
+                                  style:
+                                      theme.textTheme.bodyMedium?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                        );
+                      }),
+                    ],
                   ),
                 );
-              },
-            ),
-        ],
+              }),
+            ],
+          ),
+        ),
       ),
     );
   }

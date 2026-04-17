@@ -8,6 +8,7 @@ import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/error_state.dart' as app;
 import '../providers/gamification_providers.dart';
 import '../widgets/leaderboard_tile.dart';
+import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
 
 class LeaderboardScreen extends ConsumerWidget {
   const LeaderboardScreen({super.key});
@@ -25,7 +26,7 @@ class LeaderboardScreen extends ConsumerWidget {
           ref.invalidate(leaderboardProvider);
         },
         child: leaderboardAsync.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
+          loading: () => const LoadingState(),
           error: (error, _) => app.ErrorState(
             message: '${'leaderboard.load_error'.tr()}: $error',
             onRetry: () => ref.invalidate(leaderboardProvider),

@@ -6,10 +6,11 @@ import '../../../core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/data/providers/action_feedback_providers.dart';
 import '../providers/profile_providers.dart';
 import 'password_change_form.dart';
+import 'package:budgie_breeding_tracker/core/widgets/bottom_sheet/app_bottom_sheet.dart';
 
 /// Shows a bottom sheet for changing the user's password.
 void showPasswordChangeSheet(BuildContext context, {required WidgetRef ref}) {
-  showModalBottomSheet(
+  showAppBottomSheet(
     context: context,
     isScrollControlled: true,
     constraints: const BoxConstraints(maxWidth: AppSpacing.maxSheetWidth),

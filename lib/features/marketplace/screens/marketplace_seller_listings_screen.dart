@@ -9,6 +9,7 @@ import '../../../core/widgets/error_state.dart' as app;
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 import '../../../data/repositories/repository_providers.dart';
 import '../widgets/marketplace_listing_card.dart';
+import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
 
 final _sellerListingsProvider = FutureProvider.autoDispose
     .family<dynamic, ({String sellerId, String currentUserId})>(
@@ -44,7 +45,7 @@ class MarketplaceSellerListingsScreen extends ConsumerWidget {
           ref.invalidate(_sellerListingsProvider(params));
         },
         child: listingsAsync.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
+          loading: () => const LoadingState(),
           error: (error, _) => app.ErrorState(
             message: '${'common.data_load_error'.tr()}: $error',
             onRetry: () => ref.invalidate(_sellerListingsProvider(params)),

@@ -8,6 +8,7 @@ import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
+import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
 
 /// Horizontal photo strip for bird detail; tapping opens a full-screen gallery.
 class BirdPhotoGallery extends StatelessWidget {
@@ -236,7 +237,7 @@ class _FullScreenGalleryState extends State<_FullScreenGallery> {
         scrollPhysics: const BouncingScrollPhysics(),
         backgroundDecoration: BoxDecoration(color: bgColor),
         loadingBuilder: (_, __) =>
-            const Center(child: CircularProgressIndicator()),
+            const LoadingState(),
       ),
     );
   }

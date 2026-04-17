@@ -9,6 +9,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../providers/admin_dashboard_providers.dart';
 import '../providers/admin_models.dart' show SecurityEvent, UserActivity;
+import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
 
 // -- Helper functions --
 
@@ -51,7 +52,7 @@ class DashboardErrorSummaryCard extends ConsumerWidget {
       child: Padding(
         padding: AppSpacing.cardPadding,
         child: summaryAsync.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
+          loading: () => const LoadingState(),
           error: (e, _) => Text('common.data_load_error'.tr()),
           data: (summary) => Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -166,7 +167,7 @@ class DashboardActivityFeedSection extends ConsumerWidget {
           ]),
           const SizedBox(height: AppSpacing.md),
           activityAsync.when(
-            loading: () => const Center(child: CircularProgressIndicator()),
+            loading: () => const LoadingState(),
             error: (e, _) => Text('common.data_load_error'.tr()),
             data: (activities) {
               if (activities.isEmpty) {

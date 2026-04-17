@@ -13,6 +13,7 @@ import 'package:budgie_breeding_tracker/features/calendar/providers/calendar_for
 import 'package:budgie_breeding_tracker/data/providers/date_format_providers.dart';
 import 'package:budgie_breeding_tracker/features/calendar/widgets/event_card.dart';
 import 'package:budgie_breeding_tracker/data/providers/action_feedback_providers.dart';
+import 'package:budgie_breeding_tracker/core/widgets/bottom_sheet/app_bottom_sheet.dart';
 
 part 'event_form_fields.dart';
 
@@ -22,7 +23,7 @@ Future<void> showEventFormSheet(
   Event? existingEvent,
   DateTime? initialDate,
 }) {
-  return showModalBottomSheet(
+  return showAppBottomSheet(
     context: context,
     isScrollControlled: true,
     constraints: const BoxConstraints(maxWidth: AppSpacing.maxSheetWidth),
@@ -148,6 +149,7 @@ class _EventFormContentState extends ConsumerState<_EventFormContent> {
               const SizedBox(height: AppSpacing.lg),
 
               // Title field
+              // IMPROVED: add maxLength to prevent overflow on small screens
               TextFormField(
                 controller: _titleController,
                 decoration: InputDecoration(
@@ -155,6 +157,7 @@ class _EventFormContentState extends ConsumerState<_EventFormContent> {
                   border: const OutlineInputBorder(),
                   prefixIcon: const Icon(LucideIcons.type),
                 ),
+                maxLength: 100,
                 textInputAction: TextInputAction.next,
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
@@ -203,6 +206,7 @@ class _EventFormContentState extends ConsumerState<_EventFormContent> {
               const SizedBox(height: AppSpacing.lg),
 
               // Notes field
+              // IMPROVED: add maxLength to prevent excessive input
               TextFormField(
                 controller: _notesController,
                 decoration: InputDecoration(
@@ -210,6 +214,7 @@ class _EventFormContentState extends ConsumerState<_EventFormContent> {
                   border: const OutlineInputBorder(),
                   prefixIcon: const Icon(LucideIcons.stickyNote),
                 ),
+                maxLength: 500,
                 maxLines: 3,
                 textInputAction: TextInputAction.done,
               ),

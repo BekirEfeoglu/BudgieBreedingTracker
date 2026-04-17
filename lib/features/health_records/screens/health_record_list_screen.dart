@@ -14,6 +14,7 @@ import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart
 import 'package:budgie_breeding_tracker/features/health_records/providers/health_record_providers.dart';
 import 'package:budgie_breeding_tracker/features/health_records/widgets/health_record_card.dart';
 import 'package:budgie_breeding_tracker/features/health_records/widgets/health_record_filter_bar.dart';
+import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
 
 /// Screen showing all health records for the current user.
 class HealthRecordListScreen extends ConsumerStatefulWidget {
@@ -107,7 +108,7 @@ class _HealthRecordListScreenState
                 ref.invalidate(healthRecordsStreamProvider(userId));
               },
               child: recordsAsync.when(
-                loading: () => const Center(child: CircularProgressIndicator()),
+                loading: () => const LoadingState(),
                 error: (error, _) => ErrorState(
                   message: 'common.data_load_error'.tr(),
                   onRetry: () =>

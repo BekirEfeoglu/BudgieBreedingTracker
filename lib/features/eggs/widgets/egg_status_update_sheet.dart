@@ -6,6 +6,7 @@ import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
 import 'package:budgie_breeding_tracker/domain/services/incubation/incubation_calculator.dart';
 
 import 'egg_status_chip.dart';
+import 'package:budgie_breeding_tracker/core/widgets/bottom_sheet/app_bottom_sheet.dart';
 
 /// Shows a bottom sheet for updating an egg's status.
 ///
@@ -22,7 +23,7 @@ Future<EggStatus?> showEggStatusUpdateSheet(BuildContext context, Egg egg) {
     return Future.value(null);
   }
 
-  return showModalBottomSheet<EggStatus>(
+  return showAppBottomSheet<EggStatus>(
     context: context,
     constraints: const BoxConstraints(maxWidth: AppSpacing.maxSheetWidth),
     shape: const RoundedRectangleBorder(

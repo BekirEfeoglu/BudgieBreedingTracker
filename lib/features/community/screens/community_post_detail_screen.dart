@@ -11,6 +11,7 @@ import '../widgets/community_comment_input.dart';
 import '../widgets/community_comment_tile.dart';
 import '../widgets/community_feed_states.dart';
 import '../widgets/community_post_card.dart';
+import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
 
 /// Detail screen showing a single post with its comments.
 class CommunityPostDetailScreen extends ConsumerStatefulWidget {
@@ -108,7 +109,7 @@ class _CommunityPostDetailScreenState
                       child: postAsync.when(
                         loading: () => const Padding(
                           padding: EdgeInsets.all(AppSpacing.xl),
-                          child: Center(child: CircularProgressIndicator()),
+                          child: LoadingState(),
                         ),
                         error: (e, _) => Padding(
                           padding: const EdgeInsets.all(AppSpacing.lg),
@@ -219,9 +220,7 @@ class _CommunityPostDetailScreenState
                           if (commentState.isLoadingMore) {
                             return const Padding(
                               padding: EdgeInsets.all(AppSpacing.lg),
-                              child: Center(
-                                child: CircularProgressIndicator(),
-                              ),
+                              child: LoadingState(),
                             );
                           }
                           if (commentState.hasMore) {

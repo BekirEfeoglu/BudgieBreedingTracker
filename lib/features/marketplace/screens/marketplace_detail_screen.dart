@@ -10,11 +10,13 @@ import '../../../core/widgets/dialogs/confirm_dialog.dart';
 import '../../../core/widgets/error_state.dart' as app;
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 import '../../../router/route_names.dart';
+// justified: marketplace needs messaging to contact seller
 import '../../../features/messaging/providers/messaging_form_providers.dart';
 import '../../community/widgets/community_image_viewer.dart';
 import '../providers/marketplace_form_providers.dart';
 import '../providers/marketplace_providers.dart';
 import '../widgets/marketplace_seller_card.dart';
+import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
 
 class MarketplaceDetailScreen extends ConsumerStatefulWidget {
   final String listingId;
@@ -62,7 +64,7 @@ class _MarketplaceDetailScreenState
         title: Text('marketplace.listing_detail'.tr()),
       ),
       body: listingAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const LoadingState(),
         error: (error, _) => app.ErrorState(
           message: '${'marketplace.listing_error'.tr()}: $error',
           onRetry: () => ref.invalidate(
@@ -102,9 +104,7 @@ class _MarketplaceDetailScreenState
                           imageUrl: listing.imageUrls[index],
                           fit: BoxFit.cover,
                           memCacheWidth: 960,
-                          placeholder: (context, url) => const Center(
-                            child: CircularProgressIndicator(),
-                          ),
+                          placeholder: (context, url) => const LoadingState(),
                           errorWidget: (context, url, error) =>
                               const Icon(LucideIcons.imageOff),
                         ),

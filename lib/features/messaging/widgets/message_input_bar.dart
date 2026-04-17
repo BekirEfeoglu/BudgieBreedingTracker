@@ -7,6 +7,7 @@ import '../../../core/enums/messaging_enums.dart';
 import '../../../core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 import '../providers/messaging_form_providers.dart';
+import 'package:budgie_breeding_tracker/core/widgets/bottom_sheet/app_bottom_sheet.dart';
 
 class MessageInputBar extends ConsumerStatefulWidget {
   final String conversationId;
@@ -116,7 +117,7 @@ class _MessageInputBarState extends ConsumerState<MessageInputBar> {
   }
 
   void _showAttachmentOptions() {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       builder: (context) => SafeArea(
         child: Column(

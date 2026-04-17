@@ -10,6 +10,7 @@ import '../constants/admin_constants.dart';
 import '../providers/admin_actions_provider.dart';
 import '../providers/admin_database_providers.dart';
 import '../providers/admin_models.dart';
+import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
 
 /// Shows soft-deleted records per table and a cleanup button with day selector.
 class DatabaseSoftDeleteSection extends ConsumerStatefulWidget {
@@ -68,7 +69,7 @@ class _DatabaseSoftDeleteSectionState
             ),
             const SizedBox(height: AppSpacing.md),
             asyncStats.when(
-              loading: () => const Center(child: CircularProgressIndicator()),
+              loading: () => const LoadingState(),
               error: (e, _) => Text(
                 'common.data_load_error'.tr(),
                 style: theme.textTheme.bodySmall,

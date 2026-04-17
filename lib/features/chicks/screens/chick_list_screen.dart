@@ -17,17 +17,44 @@ import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart
 import 'package:budgie_breeding_tracker/features/chicks/providers/chick_providers.dart';
 import 'package:budgie_breeding_tracker/data/providers/premium_shared_providers.dart';
 import 'package:budgie_breeding_tracker/features/chicks/widgets/chick_card.dart';
+import 'package:budgie_breeding_tracker/core/utils/app_haptics.dart';
+import 'package:budgie_breeding_tracker/core/widgets/dialogs/confirm_dialog.dart';
+import 'package:budgie_breeding_tracker/features/chicks/providers/chick_form_providers.dart';
 import 'package:budgie_breeding_tracker/features/chicks/widgets/chick_filter_bar.dart';
 import 'package:budgie_breeding_tracker/features/chicks/widgets/chick_search_bar.dart';
 import 'package:budgie_breeding_tracker/features/notifications/widgets/notification_bell_button.dart'; // Cross-feature import: app-shell AppBar widget shared across all main screens
 import 'package:budgie_breeding_tracker/features/profile/widgets/profile_menu_button.dart'; // Cross-feature import: app-shell AppBar widget shared across all main screens
+import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
 import 'package:budgie_breeding_tracker/router/route_names.dart';
+import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
 
-/// Main screen listing all chicks with search and filter support.
-class ChickListScreen extends ConsumerWidget {
+// IMPROVED: converted to ConsumerStatefulWidget to support bulk selection mode
+/// Main screen listing all chicks with search, filter, and bulk actions.
+class ChickListScreen extends ConsumerStatefulWidget {
   const ChickListScreen({super.key});
 
-  void _handleBack(BuildContext context) {
+  @override
+  ConsumerState<ChickListScreen> createState() => _ChickListScreenState();
+}
+
+class _ChickListScreenState extends ConsumerState<ChickListScreen> {
+  final Set<String> _selectedIds = {};
+
+  bool get _isSelectionMode => _selectedIds.isNotEmpty;
+
+  void _toggleSelection(String id) {
+    setState(() {
+      if (_selectedIds.contains(id)) {
+        _selectedIds.remove(id);
+      } else {
+        _selectedIds.add(id);
+      }
+    });
+  }
+
+  void _clearSelection() => setState(() => _selectedIds.clear());
+
+  void _handleBack() {
     if (Navigator.of(context).canPop()) {
       context.pop();
       return;
@@ -35,77 +62,173 @@ class ChickListScreen extends ConsumerWidget {
     context.push(AppRoutes.more);
   }
 
+  void _navigateWithAd(String route) {
+    final isPremium = ref.read(isPremiumProvider);
+    if (isPremium) {
+      context.push(route);
+      return;
+    }
+    ref
+        .read(adServiceProvider)
+        .showInterstitialAd(
+          onAdClosed: () {
+            if (mounted) context.push(route);
+          },
+        );
+  }
+
+  Future<void> _bulkDelete() async {
+    final count = _selectedIds.length;
+    final confirmed = await showConfirmDialog(
+      context,
+      title: 'common.confirm_delete'.tr(),
+      message: 'chicks.bulk_delete_confirm'.tr(args: ['$count']),
+      isDestructive: true,
+    );
+    if (confirmed != true || !mounted) return;
+
+    final notifier = ref.read(chickFormStateProvider.notifier);
+    final failures = <String>[];
+    for (final id in _selectedIds.toList()) {
+      if (!mounted) return;
+      try {
+        await notifier.deleteChick(id);
+      } catch (_) {
+        failures.add(id);
+      }
+    }
+    if (!mounted) return;
+    if (failures.isEmpty) {
+      _clearSelection();
+    } else {
+      setState(() {
+        _selectedIds
+          ..clear()
+          ..addAll(failures);
+      });
+    }
+  }
+
+  Future<void> _bulkMarkAsDeceased() async {
+    final count = _selectedIds.length;
+    final confirmed = await showConfirmDialog(
+      context,
+      title: 'chicks.mark_dead'.tr(),
+      message: 'chicks.bulk_mark_deceased_confirm'.tr(args: ['$count']),
+      isDestructive: true,
+    );
+    if (confirmed != true || !mounted) return;
+
+    final notifier = ref.read(chickFormStateProvider.notifier);
+    final failures = <String>[];
+    for (final id in _selectedIds.toList()) {
+      if (!mounted) return;
+      try {
+        await notifier.markAsDeceased(id);
+      } catch (_) {
+        failures.add(id);
+      }
+    }
+    if (!mounted) return;
+    if (failures.isEmpty) {
+      _clearSelection();
+    } else {
+      setState(() {
+        _selectedIds
+          ..clear()
+          ..addAll(failures);
+      });
+    }
+  }
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final userId = ref.watch(currentUserIdProvider);
     final chicksAsync = ref.watch(chicksStreamProvider(userId));
     final parentsByEggAsync = ref.watch(chickParentsByEggProvider(userId));
-    void navigateWithAd(String route) {
-      final isPremium = ref.read(isPremiumProvider);
-      if (isPremium) {
-        context.push(route);
-        return;
-      }
-      ref
-          .read(adServiceProvider)
-          .showInterstitialAd(
-            onAdClosed: () {
-              if (context.mounted) context.push(route);
-            },
-          );
-    }
 
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(LucideIcons.arrowLeft),
-          tooltip: 'common.back'.tr(),
-          onPressed: () => _handleBack(context),
-        ),
-        title: AppScreenTitle(
-          title: 'chicks.title'.tr(),
-          iconAsset: AppIcons.chick,
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(LucideIcons.arrowUpDown),
-            tooltip: 'common.sort'.tr(),
-            onPressed: () {
-              final currentSort = ref.read(chickSortProvider);
-              showSortBottomSheet<ChickSort>(
-                context: context,
-                values: ChickSort.values,
-                current: currentSort,
-                labelOf: (s) => s.label,
-                onSelected: (s) =>
-                    ref.read(chickSortProvider.notifier).setSort(s),
-              );
-            },
-          ),
-          const NotificationBellButton(),
-          const ProfileMenuButton(),
-        ],
+        leading: _isSelectionMode
+            ? IconButton(
+                icon: const Icon(LucideIcons.x),
+                onPressed: _clearSelection,
+              )
+            : IconButton(
+                icon: const Icon(LucideIcons.arrowLeft),
+                tooltip: 'common.back'.tr(),
+                onPressed: _handleBack,
+              ),
+        title: _isSelectionMode
+            ? Text(
+                'common.selection_count'.tr(args: ['${_selectedIds.length}']),
+                style: Theme.of(context).textTheme.titleMedium,
+              )
+            : AppScreenTitle(
+                title: 'chicks.title'.tr(),
+                iconAsset: AppIcons.chick,
+              ),
+        actions: _isSelectionMode
+            ? [
+                IconButton(
+                  icon: const AppIcon(AppIcons.delete),
+                  tooltip: 'common.delete'.tr(),
+                  onPressed: _bulkDelete,
+                ),
+                PopupMenuButton<String>(
+                  onSelected: (action) {
+                    if (action == 'deceased') _bulkMarkAsDeceased();
+                  },
+                  itemBuilder: (_) => [
+                    PopupMenuItem(
+                      value: 'deceased',
+                      child: Text('chicks.mark_dead'.tr()),
+                    ),
+                  ],
+                ),
+              ]
+            : [
+                IconButton(
+                  icon: const Icon(LucideIcons.arrowUpDown),
+                  tooltip: 'common.sort'.tr(),
+                  onPressed: () {
+                    final currentSort = ref.read(chickSortProvider);
+                    showSortBottomSheet<ChickSort>(
+                      context: context,
+                      values: ChickSort.values,
+                      current: currentSort,
+                      labelOf: (s) => s.label,
+                      onSelected: (s) =>
+                          ref.read(chickSortProvider.notifier).setSort(s),
+                    );
+                  },
+                ),
+                const NotificationBellButton(),
+                const ProfileMenuButton(),
+              ],
       ),
       body: Column(
         children: [
-          const ChickSearchBar(),
-          const Divider(
-            height: 1,
-            indent: AppSpacing.lg,
-            endIndent: AppSpacing.lg,
-          ),
-          const SizedBox(height: AppSpacing.xs),
-          const ChickFilterBar(),
-          const SizedBox(height: AppSpacing.sm),
-          Center(
-            child: AdBannerWidget(
-              isPremiumProvider: isPremiumProvider,
-              adBannerLoader: () => defaultAdBannerLoader(ref),
+          if (!_isSelectionMode) ...[
+            const ChickSearchBar(),
+            const Divider(
+              height: 1,
+              indent: AppSpacing.lg,
+              endIndent: AppSpacing.lg,
             ),
-          ),
+            const SizedBox(height: AppSpacing.xs),
+            const ChickFilterBar(),
+            const SizedBox(height: AppSpacing.sm),
+            Center(
+              child: AdBannerWidget(
+                isPremiumProvider: isPremiumProvider,
+                adBannerLoader: () => defaultAdBannerLoader(ref),
+              ),
+            ),
+          ],
           Expanded(
             child: chicksAsync.when(
-              loading: () => const Center(child: CircularProgressIndicator()),
+              loading: () => const LoadingState(),
               error: (error, _) => SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
                 child: SizedBox(
@@ -134,7 +257,8 @@ class ChickListScreen extends ConsumerWidget {
                     title: 'chicks.no_chicks'.tr(),
                     subtitle: 'chicks.no_chicks_hint'.tr(),
                     actionLabel: 'chicks.add_chick'.tr(),
-                    onAction: () => context.push('/chicks/form'),
+                    onAction: () =>
+                        context.push('${AppRoutes.chicks}/form'),
                   );
                 }
 
@@ -162,15 +286,25 @@ class ChickListScreen extends ConsumerWidget {
                         ),
                         itemCount: chicks.length,
                         itemBuilder: (context, index) {
-                          return ChickCard(
-                            key: ValueKey(chicks[index].id),
-                            chick: chicks[index],
-                            resolveParents: false,
-                            parents: chicks[index].eggId == null
+                          final chick = chicks[index];
+                          final isSelected =
+                              _selectedIds.contains(chick.id);
+                          return _SelectableChickCard(
+                            key: ValueKey(chick.id),
+                            chick: chick,
+                            parents: chick.eggId == null
                                 ? null
-                                : parentsByEgg[chicks[index].eggId!],
-                            onTap: () =>
-                                navigateWithAd('/chicks/${chicks[index].id}'),
+                                : parentsByEgg[chick.eggId!],
+                            isSelected: isSelected,
+                            isSelectionMode: _isSelectionMode,
+                            onTap: _isSelectionMode
+                                ? () => _toggleSelection(chick.id)
+                                : () => _navigateWithAd(
+                                    '${AppRoutes.chicks}/${chick.id}'),
+                            onLongPress: () {
+                              AppHaptics.mediumImpact();
+                              _toggleSelection(chick.id);
+                            },
                           );
                         },
                       ),
@@ -182,10 +316,78 @@ class ChickListScreen extends ConsumerWidget {
           ),
         ],
       ),
-      floatingActionButton: FabButton(
-        icon: const AppIcon(AppIcons.add),
-        tooltip: 'chicks.new_chick'.tr(),
-        onPressed: () => context.push('/chicks/form'),
+      floatingActionButton: _isSelectionMode
+          ? null
+          : FabButton(
+              icon: const AppIcon(AppIcons.add),
+              tooltip: 'chicks.new_chick'.tr(),
+              onPressed: () =>
+                  context.push('${AppRoutes.chicks}/form'),
+            ),
+    );
+  }
+}
+
+/// Wraps [ChickCard] with selection mode visuals (checkbox, border highlight).
+class _SelectableChickCard extends StatelessWidget {
+  final Chick chick;
+  final ChickParentsInfo? parents;
+  final bool isSelected;
+  final bool isSelectionMode;
+  final VoidCallback onTap;
+  final VoidCallback onLongPress;
+
+  const _SelectableChickCard({
+    super.key,
+    required this.chick,
+    required this.parents,
+    required this.isSelected,
+    required this.isSelectionMode,
+    required this.onTap,
+    required this.onLongPress,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return GestureDetector(
+      onLongPress: onLongPress,
+      child: Container(
+        decoration: isSelected
+            ? BoxDecoration(
+                border: Border.all(
+                  color: theme.colorScheme.primary,
+                  width: 2,
+                ),
+                borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+              )
+            : null,
+        margin: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.xs,
+          vertical: AppSpacing.xxs,
+        ),
+        child: Row(
+          children: [
+            if (isSelectionMode)
+              Padding(
+                padding: const EdgeInsets.only(left: AppSpacing.sm),
+                child: Checkbox(
+                  value: isSelected,
+                  onChanged: (_) => onTap(),
+                  visualDensity: VisualDensity.compact,
+                ),
+              ),
+            Expanded(
+              child: ChickCard(
+                chick: chick,
+                resolveParents: false,
+                parents: parents,
+                onTap: onTap,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

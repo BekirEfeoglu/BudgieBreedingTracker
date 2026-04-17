@@ -6,6 +6,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../providers/admin_database_providers.dart';
 import '../providers/admin_models.dart';
+import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
 
 /// Shows storage bucket usage information.
 class DatabaseStorageSection extends ConsumerWidget {
@@ -30,7 +31,7 @@ class DatabaseStorageSection extends ConsumerWidget {
             ),
             const SizedBox(height: AppSpacing.md),
             asyncUsage.when(
-              loading: () => const Center(child: CircularProgressIndicator()),
+              loading: () => const LoadingState(),
               error: (e, _) => Text(
                 '${'common.data_load_error'.tr()}: $e',
                 style: theme.textTheme.bodySmall,

@@ -8,6 +8,7 @@ import 'package:budgie_breeding_tracker/features/genetics/widgets/ai/ai_mutation
 import 'package:budgie_breeding_tracker/features/genetics/widgets/ai/ai_sex_estimation_tab.dart';
 import 'package:budgie_breeding_tracker/features/genetics/widgets/ai/ai_settings_sheet.dart';
 import 'package:budgie_breeding_tracker/features/genetics/widgets/ai/ai_welcome_screen.dart';
+import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
 
 class AiPredictionsScreen extends ConsumerStatefulWidget {
   const AiPredictionsScreen({
@@ -89,7 +90,7 @@ class _AiPredictionsScreenState extends ConsumerState<AiPredictionsScreen>
             : null,
       ),
       body: configAsync.isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const LoadingState()
           : isConfigured
               ? TabBarView(
                   controller: _tabController,

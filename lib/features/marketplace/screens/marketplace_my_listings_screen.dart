@@ -9,6 +9,7 @@ import '../../../core/widgets/error_state.dart' as app;
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 import '../providers/marketplace_providers.dart';
 import '../widgets/marketplace_listing_card.dart';
+import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
 
 class MarketplaceMyListingsScreen extends ConsumerWidget {
   const MarketplaceMyListingsScreen({super.key});
@@ -27,7 +28,7 @@ class MarketplaceMyListingsScreen extends ConsumerWidget {
           ref.invalidate(myMarketplaceListingsProvider(userId));
         },
         child: listingsAsync.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
+          loading: () => const LoadingState(),
           error: (error, _) => app.ErrorState(
             message: '${'common.data_load_error'.tr()}: $error',
             onRetry: () =>

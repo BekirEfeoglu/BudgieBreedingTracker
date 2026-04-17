@@ -3,12 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
+import '../../../core/theme/app_colors.dart';
+
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/error_state.dart' as app;
 import '../../../data/models/badge_model.dart' as badge_model;
 import '../../breeding/providers/breeding_providers.dart';
 import '../providers/gamification_providers.dart';
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
+import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
 
 class BadgeDetailScreen extends ConsumerWidget {
   final String badgeId;
@@ -27,7 +30,7 @@ class BadgeDetailScreen extends ConsumerWidget {
         title: Text('badges.detail'.tr()),
       ),
       body: badgesAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const LoadingState(),
         error: (error, _) => app.ErrorState(
           message: '${'common.data_load_error'.tr()}: $error',
         ),
@@ -38,7 +41,7 @@ class BadgeDetailScreen extends ConsumerWidget {
           }
 
           return userBadgesAsync.when(
-            loading: () => const Center(child: CircularProgressIndicator()),
+            loading: () => const LoadingState(),
             error: (_, __) => _buildDetail(context, theme, badge, null),
             data: (userBadges) {
               final userBadge =
@@ -170,10 +173,10 @@ class BadgeDetailScreen extends ConsumerWidget {
   }
 
   Color _tierColor(BadgeTier tier, ThemeData theme) => switch (tier) {
-        BadgeTier.bronze => const Color(0xFFCD7F32),
-        BadgeTier.silver => const Color(0xFFC0C0C0),
-        BadgeTier.gold => const Color(0xFFFFD700),
-        BadgeTier.platinum => const Color(0xFFE5E4E2),
+        BadgeTier.bronze => AppColors.tierBronze,
+        BadgeTier.silver => AppColors.tierSilver,
+        BadgeTier.gold => AppColors.tierGold,
+        BadgeTier.platinum => AppColors.tierPlatinum,
         BadgeTier.unknown => theme.colorScheme.outline,
       };
 

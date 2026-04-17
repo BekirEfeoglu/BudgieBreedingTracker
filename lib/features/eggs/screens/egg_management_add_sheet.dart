@@ -10,7 +10,7 @@ void _showAddEggSheet(
   final nextEggNumber = IncubationCalculator.getNextEggNumber(existingEggs);
   final notesController = TextEditingController();
 
-  showModalBottomSheet(
+  showAppBottomSheet(
     context: context,
     isScrollControlled: true,
     constraints: const BoxConstraints(maxWidth: AppSpacing.maxSheetWidth),

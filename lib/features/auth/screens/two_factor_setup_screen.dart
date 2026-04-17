@@ -15,6 +15,7 @@ import 'package:budgie_breeding_tracker/core/widgets/buttons/primary_button.dart
 import 'package:budgie_breeding_tracker/features/auth/providers/two_factor_providers.dart';
 import 'package:budgie_breeding_tracker/data/providers/action_feedback_providers.dart';
 import 'package:budgie_breeding_tracker/features/auth/widgets/otp_input_field.dart';
+import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
 
 part 'two_factor_setup_screen_views.dart';
 
@@ -147,7 +148,7 @@ class _TwoFactorSetupScreenState extends ConsumerState<TwoFactorSetupScreen> {
         child: _enrollmentComplete
             ? _buildSuccessView(theme)
             : _isEnrolling
-            ? const Center(child: CircularProgressIndicator())
+            ? const LoadingState()
             : _error != null && _factorId == null
             ? _buildErrorView(theme)
             : _buildSetupView(theme),

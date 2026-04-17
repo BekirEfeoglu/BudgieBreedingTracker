@@ -5,6 +5,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/features/feedback/providers/feedback_providers.dart';
 import 'package:budgie_breeding_tracker/features/feedback/widgets/feedback_detail_sheet.dart';
+import 'package:budgie_breeding_tracker/core/widgets/bottom_sheet/app_bottom_sheet.dart';
 
 // ---------------------------------------------------------------------------
 // History card
@@ -147,7 +148,7 @@ class FeedbackHistoryCard extends StatelessWidget {
   }
 
   void _showDetail(BuildContext context, ThemeData theme) {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       isScrollControlled: true,
       constraints: const BoxConstraints(maxWidth: AppSpacing.maxSheetWidth),

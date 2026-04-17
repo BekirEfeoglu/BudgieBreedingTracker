@@ -7,6 +7,7 @@ import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 import 'package:budgie_breeding_tracker/features/feedback/providers/feedback_providers.dart';
 import 'package:budgie_breeding_tracker/features/feedback/widgets/feedback_form_widgets.dart';
+import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
 
 /// Tab content that displays the user's previously submitted feedback entries.
 class FeedbackHistoryTab extends ConsumerWidget {
@@ -18,7 +19,7 @@ class FeedbackHistoryTab extends ConsumerWidget {
     final historyAsync = ref.watch(feedbackHistoryProvider(userId));
 
     return historyAsync.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () => const LoadingState(),
       error: (error, _) => FeedbackHistoryError(
         onRetry: () => ref.invalidate(feedbackHistoryProvider(userId)),
       ),

@@ -9,6 +9,7 @@ import '../../../core/utils/app_haptics.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_icon.dart';
 import '../providers/profile_providers.dart';
+import 'package:budgie_breeding_tracker/core/widgets/bottom_sheet/app_bottom_sheet.dart';
 
 /// Shows a bottom sheet for picking an avatar image.
 ///
@@ -18,7 +19,7 @@ Future<void> showAvatarPickerSheet(
   required WidgetRef ref,
   required bool hasAvatar,
 }) {
-  return showModalBottomSheet(
+  return showAppBottomSheet(
     context: context,
     constraints: const BoxConstraints(maxWidth: AppSpacing.maxSheetWidth),
     shape: const RoundedRectangleBorder(

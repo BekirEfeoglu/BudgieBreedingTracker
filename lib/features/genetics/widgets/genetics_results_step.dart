@@ -14,6 +14,7 @@ import 'package:budgie_breeding_tracker/features/genetics/widgets/dihybrid_punne
 import 'package:budgie_breeding_tracker/features/genetics/widgets/punnett_square.dart';
 import 'package:budgie_breeding_tracker/features/genetics/widgets/results_summary_banner.dart';
 import 'package:budgie_breeding_tracker/features/genetics/widgets/sex_specific_results.dart';
+import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
 
 part 'genetics_results_step_helpers.dart';
 part 'genetics_results_step_slivers.dart';
@@ -24,7 +25,17 @@ class GeneticsResultsStep extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final rawResults = ref.watch(offspringResultsProvider);
+    // Handle async loading/error state from isolate-backed calculation
+    final rawResultsAsync = ref.watch(offspringResultsProvider);
+    if (rawResultsAsync.isLoading) {
+      return const LoadingState();
+    }
+    if (rawResultsAsync.hasError) {
+      return Center(
+        child: Text('errors.unknown_error'.tr()),
+      );
+    }
+    final rawResults = rawResultsAsync.value;
     final results = ref.watch(enrichedOffspringResultsProvider);
     final punnett = ref.watch(punnettSquareProvider);
     final chartData = ref.watch(offspringChartDataProvider);

@@ -45,6 +45,7 @@ class _PasswordChangeFormState extends ConsumerState<PasswordChangeForm> {
   Widget build(BuildContext context) {
     return Form(
       key: _formKey,
+      autovalidateMode: AutovalidateMode.onUserInteraction,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [

@@ -7,6 +7,7 @@ import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_screen_title.dart';
 import 'package:budgie_breeding_tracker/core/widgets/empty_state.dart';
+import 'package:budgie_breeding_tracker/core/widgets/bottom_sheet/app_bottom_sheet.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:budgie_breeding_tracker/core/widgets/error_state.dart';
 import 'package:budgie_breeding_tracker/core/widgets/buttons/fab_button.dart';
@@ -21,6 +22,7 @@ import 'package:budgie_breeding_tracker/data/providers/action_feedback_providers
 import 'package:budgie_breeding_tracker/features/eggs/widgets/egg_list_item.dart';
 import 'package:budgie_breeding_tracker/features/eggs/widgets/egg_status_update_sheet.dart';
 import 'package:budgie_breeding_tracker/features/eggs/widgets/egg_summary_row.dart';
+import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
 
 part 'egg_management_add_sheet.dart';
 
@@ -42,7 +44,7 @@ class EggManagementScreen extends ConsumerWidget {
             iconAsset: AppIcons.egg,
           ),
         ),
-        body: const Center(child: CircularProgressIndicator()),
+        body: const LoadingState(),
       ),
       error: (e, _) => Scaffold(
         appBar: AppBar(
@@ -114,7 +116,7 @@ class _EggManagementContent extends ConsumerWidget {
         ),
       ),
       body: eggsAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const LoadingState(),
         error: (e, _) => ErrorState(
           message: 'common.data_load_error'.tr(),
           onRetry: () =>

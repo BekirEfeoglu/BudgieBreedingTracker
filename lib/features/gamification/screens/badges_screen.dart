@@ -13,6 +13,7 @@ import '../providers/gamification_providers.dart';
 import '../widgets/badge_card.dart';
 import '../widgets/xp_progress_bar.dart';
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
+import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
 
 class BadgesScreen extends ConsumerWidget {
   const BadgesScreen({super.key});
@@ -64,7 +65,7 @@ class BadgesScreen extends ConsumerWidget {
               // Badges grid
               badgesAsync.when(
                 loading: () =>
-                    const Center(child: CircularProgressIndicator()),
+                    const LoadingState(),
                 error: (error, _) => app.ErrorState(
                   message: '${'common.data_load_error'.tr()}: $error',
                   onRetry: () => ref.invalidate(badgesProvider),
@@ -72,7 +73,7 @@ class BadgesScreen extends ConsumerWidget {
                 data: (allBadges) {
                   return userBadgesAsync.when(
                     loading: () =>
-                        const Center(child: CircularProgressIndicator()),
+                        const LoadingState(),
                     error: (error, _) => app.ErrorState(
                       message: '${'common.data_load_error'.tr()}: $error',
                     ),

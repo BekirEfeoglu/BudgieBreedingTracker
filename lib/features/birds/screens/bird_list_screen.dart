@@ -19,83 +19,247 @@ import 'package:budgie_breeding_tracker/data/providers/premium_shared_providers.
 import 'package:budgie_breeding_tracker/features/birds/widgets/bird_card.dart';
 import 'package:budgie_breeding_tracker/features/birds/widgets/bird_filter_bar.dart';
 import 'package:budgie_breeding_tracker/features/birds/widgets/bird_search_bar.dart';
+import 'package:budgie_breeding_tracker/core/utils/app_haptics.dart';
+import 'package:budgie_breeding_tracker/core/widgets/dialogs/confirm_dialog.dart';
+import 'package:budgie_breeding_tracker/features/birds/providers/bird_form_providers.dart';
 import 'package:budgie_breeding_tracker/features/notifications/widgets/notification_bell_button.dart'; // Cross-feature import: app-shell AppBar widget shared across all main screens
 import 'package:budgie_breeding_tracker/features/profile/widgets/profile_menu_button.dart'; // Cross-feature import: app-shell AppBar widget shared across all main screens
+import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
+import 'package:budgie_breeding_tracker/router/route_names.dart';
+import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
 
-/// Main screen listing all birds with search, filter, and sort support.
-class BirdListScreen extends ConsumerWidget {
+// IMPROVED: converted to ConsumerStatefulWidget to support bulk selection mode
+/// Main screen listing all birds with search, filter, sort, and bulk actions.
+class BirdListScreen extends ConsumerStatefulWidget {
   const BirdListScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<BirdListScreen> createState() => _BirdListScreenState();
+}
+
+class _BirdListScreenState extends ConsumerState<BirdListScreen> {
+  final Set<String> _selectedIds = {};
+
+  bool get _isSelectionMode => _selectedIds.isNotEmpty;
+
+  void _toggleSelection(String id) {
+    setState(() {
+      if (_selectedIds.contains(id)) {
+        _selectedIds.remove(id);
+      } else {
+        _selectedIds.add(id);
+      }
+    });
+  }
+
+  void _clearSelection() {
+    setState(() => _selectedIds.clear());
+  }
+
+  void _navigateWithAd(String route) {
+    final isPremium = ref.read(isPremiumProvider);
+    if (isPremium) {
+      context.push(route);
+      return;
+    }
+    ref
+        .read(adServiceProvider)
+        .showInterstitialAd(
+          onAdClosed: () {
+            if (mounted) context.push(route);
+          },
+        );
+  }
+
+  Future<void> _bulkDelete() async {
+    final count = _selectedIds.length;
+    final confirmed = await showConfirmDialog(
+      context,
+      title: 'common.confirm_delete'.tr(),
+      message: 'birds.bulk_delete_confirm'.tr(args: ['$count']),
+      isDestructive: true,
+    );
+    if (confirmed != true || !mounted) return;
+
+    final notifier = ref.read(birdFormStateProvider.notifier);
+    final failures = <String>[];
+    for (final id in _selectedIds.toList()) {
+      if (!mounted) return;
+      try {
+        await notifier.deleteBird(id);
+      } catch (_) {
+        failures.add(id);
+      }
+    }
+    if (!mounted) return;
+    if (failures.isEmpty) {
+      _clearSelection();
+    } else {
+      setState(() {
+        _selectedIds
+          ..clear()
+          ..addAll(failures);
+      });
+    }
+  }
+
+  Future<void> _bulkMarkAsDead() async {
+    final count = _selectedIds.length;
+    final confirmed = await showConfirmDialog(
+      context,
+      title: 'birds.mark_dead'.tr(),
+      message: 'birds.bulk_mark_dead_confirm'.tr(args: ['$count']),
+      isDestructive: true,
+    );
+    if (confirmed != true || !mounted) return;
+
+    final notifier = ref.read(birdFormStateProvider.notifier);
+    final failures = <String>[];
+    for (final id in _selectedIds.toList()) {
+      if (!mounted) return;
+      try {
+        await notifier.markAsDead(id);
+      } catch (_) {
+        failures.add(id);
+      }
+    }
+    if (!mounted) return;
+    if (failures.isEmpty) {
+      _clearSelection();
+    } else {
+      setState(() {
+        _selectedIds
+          ..clear()
+          ..addAll(failures);
+      });
+    }
+  }
+
+  Future<void> _bulkMarkAsSold() async {
+    final count = _selectedIds.length;
+    final confirmed = await showConfirmDialog(
+      context,
+      title: 'birds.mark_sold'.tr(),
+      message: 'birds.bulk_mark_sold_confirm'.tr(args: ['$count']),
+    );
+    if (confirmed != true || !mounted) return;
+
+    final notifier = ref.read(birdFormStateProvider.notifier);
+    final failures = <String>[];
+    for (final id in _selectedIds.toList()) {
+      if (!mounted) return;
+      try {
+        await notifier.markAsSold(id);
+      } catch (_) {
+        failures.add(id);
+      }
+    }
+    if (!mounted) return;
+    if (failures.isEmpty) {
+      _clearSelection();
+    } else {
+      setState(() {
+        _selectedIds
+          ..clear()
+          ..addAll(failures);
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final userId = ref.watch(currentUserIdProvider);
     final birdsAsync = ref.watch(birdsStreamProvider(userId));
     final currentSort = ref.watch(birdSortProvider);
 
-    void navigateWithAd(String route) {
-      final isPremium = ref.read(isPremiumProvider);
-      if (isPremium) {
-        context.push(route);
-        return;
-      }
-      ref
-          .read(adServiceProvider)
-          .showInterstitialAd(
-            onAdClosed: () {
-              if (context.mounted) context.push(route);
-            },
-          );
-    }
-
     return Scaffold(
       appBar: AppBar(
-        title:
-            birdsAsync.whenOrNull(
-              data: (allBirds) => AppScreenTitle(
-                title: '${'birds.title'.tr()} (${allBirds.length})',
-                iconAsset: AppIcons.bird,
-              ),
-            ) ??
-            AppScreenTitle(title: 'birds.title'.tr(), iconAsset: AppIcons.bird),
-        actions: [
-          IconButton(
-            icon: const Icon(LucideIcons.arrowUpDown),
-            tooltip: 'common.sort'.tr(),
-            onPressed: () {
-              showSortBottomSheet<BirdSort>(
-                context: context,
-                values: BirdSort.values,
-                current: currentSort,
-                labelOf: (sort) => sort.label,
-                onSelected: (sort) =>
-                    ref.read(birdSortProvider.notifier).state = sort,
-              );
-            },
-          ),
-          const NotificationBellButton(),
-          const ProfileMenuButton(),
-        ],
+        title: _isSelectionMode
+            ? Text(
+                'common.selection_count'.tr(args: ['${_selectedIds.length}']),
+                style: Theme.of(context).textTheme.titleMedium,
+              )
+            : birdsAsync.whenOrNull(
+                  data: (allBirds) => AppScreenTitle(
+                    title: '${'birds.title'.tr()} (${allBirds.length})',
+                    iconAsset: AppIcons.bird,
+                  ),
+                ) ??
+                AppScreenTitle(
+                  title: 'birds.title'.tr(),
+                  iconAsset: AppIcons.bird,
+                ),
+        leading: _isSelectionMode
+            ? IconButton(
+                icon: const Icon(LucideIcons.x),
+                onPressed: _clearSelection,
+              )
+            : null,
+        actions: _isSelectionMode
+            ? [
+                IconButton(
+                  icon: const AppIcon(AppIcons.delete),
+                  tooltip: 'common.delete'.tr(),
+                  onPressed: _bulkDelete,
+                ),
+                PopupMenuButton<String>(
+                  onSelected: (action) {
+                    if (action == 'dead') _bulkMarkAsDead();
+                    if (action == 'sold') _bulkMarkAsSold();
+                  },
+                  itemBuilder: (_) => [
+                    PopupMenuItem(
+                      value: 'dead',
+                      child: Text('birds.mark_dead'.tr()),
+                    ),
+                    PopupMenuItem(
+                      value: 'sold',
+                      child: Text('birds.mark_sold'.tr()),
+                    ),
+                  ],
+                ),
+              ]
+            : [
+                IconButton(
+                  icon: const Icon(LucideIcons.arrowUpDown),
+                  tooltip: 'common.sort'.tr(),
+                  onPressed: () {
+                    showSortBottomSheet<BirdSort>(
+                      context: context,
+                      values: BirdSort.values,
+                      current: currentSort,
+                      labelOf: (sort) => sort.label,
+                      onSelected: (sort) =>
+                          ref.read(birdSortProvider.notifier).state = sort,
+                    );
+                  },
+                ),
+                const NotificationBellButton(),
+                const ProfileMenuButton(),
+              ],
       ),
       body: Column(
         children: [
-          const BirdSearchBar(),
-          const Divider(
-            height: 1,
-            indent: AppSpacing.lg,
-            endIndent: AppSpacing.lg,
-          ),
-          const SizedBox(height: AppSpacing.xs),
-          const BirdFilterBar(),
-          const SizedBox(height: AppSpacing.sm),
-          Center(
-            child: AdBannerWidget(
-              isPremiumProvider: isPremiumProvider,
-              adBannerLoader: () => defaultAdBannerLoader(ref),
+          if (!_isSelectionMode) ...[
+            const BirdSearchBar(),
+            const Divider(
+              height: 1,
+              indent: AppSpacing.lg,
+              endIndent: AppSpacing.lg,
             ),
-          ),
+            const SizedBox(height: AppSpacing.xs),
+            const BirdFilterBar(),
+            const SizedBox(height: AppSpacing.sm),
+            Center(
+              child: AdBannerWidget(
+                isPremiumProvider: isPremiumProvider,
+                adBannerLoader: () => defaultAdBannerLoader(ref),
+              ),
+            ),
+          ],
           Expanded(
             child: birdsAsync.when(
-              loading: () => const Center(child: CircularProgressIndicator()),
+              loading: () => const LoadingState(),
               error: (error, _) => SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
                 child: SizedBox(
@@ -117,7 +281,8 @@ class BirdListScreen extends ConsumerWidget {
                     title: 'birds.no_birds'.tr(),
                     subtitle: 'birds.no_birds_hint'.tr(),
                     actionLabel: 'birds.add_bird'.tr(),
-                    onAction: () => context.push('/birds/form'),
+                    onAction: () =>
+                        context.push('${AppRoutes.birds}/form'),
                   );
                 }
 
@@ -144,11 +309,21 @@ class BirdListScreen extends ConsumerWidget {
                         ),
                         itemCount: birds.length,
                         itemBuilder: (context, index) {
-                          return BirdCard(
-                            key: ValueKey(birds[index].id),
-                            bird: birds[index],
-                            onTap: () =>
-                                navigateWithAd('/birds/${birds[index].id}'),
+                          final bird = birds[index];
+                          final isSelected = _selectedIds.contains(bird.id);
+                          return _SelectableBirdCard(
+                            key: ValueKey(bird.id),
+                            bird: bird,
+                            isSelected: isSelected,
+                            isSelectionMode: _isSelectionMode,
+                            onTap: _isSelectionMode
+                                ? () => _toggleSelection(bird.id)
+                                : () => _navigateWithAd(
+                                    '${AppRoutes.birds}/${bird.id}'),
+                            onLongPress: () {
+                              AppHaptics.mediumImpact();
+                              _toggleSelection(bird.id);
+                            },
                           );
                         },
                       ),
@@ -160,10 +335,68 @@ class BirdListScreen extends ConsumerWidget {
           ),
         ],
       ),
-      floatingActionButton: FabButton(
-        icon: const AppIcon(AppIcons.add),
-        tooltip: 'birds.new_bird'.tr(),
-        onPressed: () => context.push('/birds/form'),
+      floatingActionButton: _isSelectionMode
+          ? null
+          : FabButton(
+              icon: const AppIcon(AppIcons.add),
+              tooltip: 'birds.new_bird'.tr(),
+              onPressed: () =>
+                  context.push('${AppRoutes.birds}/form'),
+            ),
+    );
+  }
+}
+
+/// Wraps [BirdCard] with selection mode visuals (checkbox, border highlight).
+class _SelectableBirdCard extends StatelessWidget {
+  final Bird bird;
+  final bool isSelected;
+  final bool isSelectionMode;
+  final VoidCallback onTap;
+  final VoidCallback onLongPress;
+
+  const _SelectableBirdCard({
+    super.key,
+    required this.bird,
+    required this.isSelected,
+    required this.isSelectionMode,
+    required this.onTap,
+    required this.onLongPress,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return GestureDetector(
+      onLongPress: onLongPress,
+      child: Container(
+        decoration: isSelected
+            ? BoxDecoration(
+                border: Border.all(color: theme.colorScheme.primary, width: 2),
+                borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+              )
+            : null,
+        margin: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.xs,
+          vertical: AppSpacing.xxs,
+        ),
+        child: Row(
+          children: [
+            if (isSelectionMode)
+              Padding(
+                padding: const EdgeInsets.only(left: AppSpacing.sm),
+                child: Checkbox(
+                  value: isSelected,
+                  onChanged: (_) => onTap(),
+                  visualDensity: VisualDensity.compact,
+                ),
+              ),
+            Expanded(
+              child: BirdCard(bird: bird, onTap: onTap),
+            ),
+          ],
+        ),
       ),
     );
   }

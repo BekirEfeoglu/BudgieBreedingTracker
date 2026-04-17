@@ -12,6 +12,7 @@ import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart
 import '../../../router/route_names.dart';
 import '../providers/messaging_providers.dart';
 import '../widgets/conversation_tile.dart';
+import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
 
 class MessagesScreen extends ConsumerWidget {
   const MessagesScreen({super.key});
@@ -39,7 +40,7 @@ class MessagesScreen extends ConsumerWidget {
           ref.invalidate(conversationsProvider(userId));
         },
         child: conversationsAsync.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
+          loading: () => const LoadingState(),
           error: (error, _) => app.ErrorState(
             message: '${'messaging.load_error'.tr()}: $error',
             onRetry: () => ref.invalidate(conversationsProvider(userId)),

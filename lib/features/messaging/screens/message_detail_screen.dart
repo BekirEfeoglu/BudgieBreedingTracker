@@ -9,6 +9,7 @@ import '../providers/messaging_providers.dart';
 import '../providers/messaging_realtime_providers.dart';
 import '../widgets/message_bubble.dart';
 import '../widgets/message_input_bar.dart';
+import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
 
 class MessageDetailScreen extends ConsumerStatefulWidget {
   final String conversationId;
@@ -98,7 +99,7 @@ class _MessageDetailScreenState extends ConsumerState<MessageDetailScreen> {
           Expanded(
             child: messagesAsync.when(
               loading: () =>
-                  const Center(child: CircularProgressIndicator()),
+                  const LoadingState(),
               error: (error, _) => app.ErrorState(
                 message: '${'messaging.load_error'.tr()}: $error',
                 onRetry: () => ref.invalidate(

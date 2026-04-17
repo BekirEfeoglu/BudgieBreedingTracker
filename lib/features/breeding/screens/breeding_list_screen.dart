@@ -22,6 +22,7 @@ import 'package:budgie_breeding_tracker/features/breeding/widgets/breeding_filte
 import 'package:budgie_breeding_tracker/features/breeding/widgets/breeding_search_bar.dart';
 import 'package:budgie_breeding_tracker/features/notifications/widgets/notification_bell_button.dart'; // Cross-feature import: app-shell AppBar widget shared across all main screens
 import 'package:budgie_breeding_tracker/features/profile/widgets/profile_menu_button.dart'; // Cross-feature import: app-shell AppBar widget shared across all main screens
+import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
 
 /// Main screen listing all breeding pairs with filter and search support.
 class BreedingListScreen extends ConsumerWidget {
@@ -92,7 +93,7 @@ class BreedingListScreen extends ConsumerWidget {
           ),
           Expanded(
             child: pairsAsync.when(
-              loading: () => const Center(child: CircularProgressIndicator()),
+              loading: () => const LoadingState(),
               error: (error, _) => SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
                 child: SizedBox(

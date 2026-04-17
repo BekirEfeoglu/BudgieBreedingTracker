@@ -5,6 +5,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../providers/marketplace_providers.dart';
 import 'marketplace_filter_sheet.dart';
+import 'package:budgie_breeding_tracker/core/widgets/bottom_sheet/app_bottom_sheet.dart';
 
 IconData _filterIcon(MarketplaceFilter filter) => switch (filter) {
       MarketplaceFilter.all => LucideIcons.list,
@@ -54,7 +55,7 @@ class MarketplaceFilterBar extends ConsumerWidget {
               label: Text('$activeCount'),
               child: IconButton(
                 icon: const Icon(LucideIcons.slidersHorizontal),
-                onPressed: () => showModalBottomSheet(
+                onPressed: () => showAppBottomSheet(
                   context: context,
                   isScrollControlled: true,
                   builder: (_) => const MarketplaceFilterSheet(),
