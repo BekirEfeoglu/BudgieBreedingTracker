@@ -1,5 +1,8 @@
 import 'package:drift/drift.dart';
 import 'package:budgie_breeding_tracker/data/local/database/converters/enum_converters.dart';
+import 'package:budgie_breeding_tracker/data/local/database/tables/clutches_table.dart';
+import 'package:budgie_breeding_tracker/data/local/database/tables/eggs_table.dart';
+import 'package:budgie_breeding_tracker/data/local/database/tables/birds_table.dart';
 
 @DataClassName('ChickRow')
 class ChicksTable extends Table {
@@ -7,9 +10,12 @@ class ChicksTable extends Table {
   TextColumn get userId => text()();
   TextColumn get gender => text().map(birdGenderConverter)();
   TextColumn get healthStatus => text().map(chickHealthStatusConverter)();
-  TextColumn get clutchId => text().nullable()();
-  TextColumn get eggId => text().nullable()();
-  TextColumn get birdId => text().nullable()();
+  TextColumn get clutchId =>
+      text().nullable().references(ClutchesTable, #id)();
+  TextColumn get eggId =>
+      text().nullable().references(EggsTable, #id)();
+  TextColumn get birdId =>
+      text().nullable().references(BirdsTable, #id)();
   TextColumn get name => text().nullable()();
   TextColumn get ringNumber => text().nullable()();
   IntColumn get bandingDay => integer().withDefault(const Constant(10))();

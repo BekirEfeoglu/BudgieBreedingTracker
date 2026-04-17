@@ -6,6 +6,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'package:budgie_breeding_tracker/core/constants/app_constants.dart';
+import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/constants/feature_flags.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
@@ -15,9 +16,10 @@ import 'package:budgie_breeding_tracker/core/widgets/app_screen_title.dart';
 import '../../../router/route_names.dart';
 import 'package:budgie_breeding_tracker/features/notifications/widgets/notification_bell_button.dart'; // Cross-feature import: app-shell AppBar widget shared across all main screens
 import 'package:budgie_breeding_tracker/features/profile/widgets/profile_menu_button.dart'; // Cross-feature import: app-shell AppBar widget shared across all main screens
-import '../../admin/providers/admin_providers.dart'; // Cross-feature import: more screen shows admin role check
+import '../../../data/providers/user_role_providers.dart';
 import '../../auth/providers/auth_providers.dart'; // Cross-feature import: more screen shows auth state
 import '../../settings/providers/settings_providers.dart'; // Cross-feature import: more screen shows app settings
+import 'package:budgie_breeding_tracker/data/providers/premium_shared_providers.dart'; // Cross-feature import: premium check for feature gating
 
 part 'more_screen_sections.dart';
 
@@ -58,44 +60,29 @@ class MoreScreen extends ConsumerWidget {
             title: 'health_records.title'.tr(),
             onTap: () => context.push(AppRoutes.healthRecords),
           ),
-          if (FeatureFlags.communityEnabled &&
-              ref.watch(isFounderProvider).value == true)
-            _MoreTile(
-              icon: const AppIcon(AppIcons.community),
-              title: 'more.community'.tr(),
-              onTap: () => context.push(AppRoutes.community),
+          if (FeatureFlags.communityEnabled)
+            Builder(
+              builder: (context) {
+                final isFounder = ref.watch(isFounderProvider).value == true;
+                return _MoreTile(
+                  icon: const AppIcon(AppIcons.community),
+                  title: 'more.community'.tr(),
+                  trailing: isFounder ? null : _ComingSoonBadge(theme: theme),
+                  onTap: () {
+                    if (isFounder) {
+                      context.push(AppRoutes.community);
+                    } else {
+                      _showComingSoon(context);
+                    }
+                  },
+                );
+              },
             ),
           // Marketplace, Messaging, Badges, Leaderboard → accessed via Community tab
           // Premium features section
+          // IMPROVED: premium features show hint when not premium instead of silent redirect
           _SectionHeader(title: 'more.section_premium'.tr()),
-          _MoreTile(
-            icon: const AppIcon(AppIcons.statistics),
-            title: 'more.statistics'.tr(),
-            trailing: _PremiumBadge(theme: theme),
-            onTap: () => context.push(AppRoutes.statistics),
-          ),
-          _MoreTile(
-            icon: const AppIcon(AppIcons.genealogy),
-            title: 'more.genealogy'.tr(),
-            trailing: _PremiumBadge(theme: theme),
-            onTap: () => context.push(AppRoutes.genealogy),
-          ),
-          _MoreTile(
-            icon: const AppIcon(AppIcons.dna),
-            title: 'more.genetics'.tr(),
-            trailing: _PremiumBadge(theme: theme),
-            onTap: () => context.push(AppRoutes.genetics),
-          ),
-          _MoreTile(
-            icon: Icon(
-              LucideIcons.sparkles,
-              size: 22,
-              color: theme.colorScheme.primary,
-            ),
-            title: 'more.ai_predictions'.tr(),
-            trailing: _PremiumBadge(theme: theme),
-            onTap: () => context.push(AppRoutes.aiPredictions),
-          ),
+          ..._buildPremiumTiles(context, ref, theme),
           // Subscription section
           _SectionHeader(title: 'more.section_subscription'.tr()),
           _MoreTile(
@@ -148,5 +135,61 @@ class MoreScreen extends ConsumerWidget {
         ],
       ),
     );
+  }
+
+  List<Widget> _buildPremiumTiles(
+    BuildContext context,
+    WidgetRef ref,
+    ThemeData theme,
+  ) {
+    final isPremium = ref.watch(isPremiumProvider);
+    final isFounder = ref.watch(isFounderProvider).value == true;
+
+    void navigateOrHint(String route) {
+      if (isPremium) {
+        context.push(route);
+      } else {
+        context.push(AppRoutes.premium);
+      }
+    }
+
+    return [
+      _MoreTile(
+        icon: const AppIcon(AppIcons.statistics),
+        title: 'more.statistics'.tr(),
+        trailing: _PremiumBadge(theme: theme),
+        onTap: () => navigateOrHint(AppRoutes.statistics),
+      ),
+      _MoreTile(
+        icon: const AppIcon(AppIcons.genealogy),
+        title: 'more.genealogy'.tr(),
+        trailing: _PremiumBadge(theme: theme),
+        onTap: () => navigateOrHint(AppRoutes.genealogy),
+      ),
+      _MoreTile(
+        icon: const AppIcon(AppIcons.dna),
+        title: 'more.genetics'.tr(),
+        trailing: _PremiumBadge(theme: theme),
+        onTap: () => navigateOrHint(AppRoutes.genetics),
+      ),
+      _MoreTile(
+        icon: Icon(
+          LucideIcons.sparkles,
+          size: 22,
+          color: theme.colorScheme.primary,
+        ),
+        title: 'more.ai_predictions'.tr(),
+        trailing: isFounder
+            ? _PremiumBadge(theme: theme)
+            : _ComingSoonBadge(theme: theme),
+        onTap: () {
+          if (isFounder) {
+            navigateOrHint(AppRoutes.aiPredictions);
+          } else {
+            _showComingSoon(context);
+          }
+        },
+      ),
+    ];
   }
 }

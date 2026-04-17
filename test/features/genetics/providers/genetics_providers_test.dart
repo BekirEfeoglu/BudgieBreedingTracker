@@ -39,11 +39,11 @@ void main() {
       final container = ProviderContainer();
       addTearDown(container.dispose);
 
-      final results = container.read(offspringResultsProvider);
+      final results = container.read(offspringResultsProvider).value;
       expect(results, isNull);
     });
 
-    test('calculates offspring results from parent genotypes', () {
+    test('calculates offspring results from parent genotypes', () async {
       final container = ProviderContainer();
       addTearDown(container.dispose);
 
@@ -56,8 +56,10 @@ void main() {
         mutations: {'blue': AlleleState.carrier},
       );
 
-      final results = container.read(offspringResultsProvider)!;
-      expect(results, isNotEmpty);
+      // FutureProvider needs to be awaited after setting genotypes
+      final results = await container.read(offspringResultsProvider.future);
+      expect(results, isNotNull);
+      expect(results!, isNotEmpty);
       final total = results.fold<double>(
         0,
         (sum, item) => sum + item.probability,
@@ -141,7 +143,7 @@ void main() {
       expect(square.mutationName, 'Blue Series');
     });
 
-    test('offspringChartDataProvider maps results to chart items', () {
+    test('offspringChartDataProvider maps results to chart items', () async {
       final container = ProviderContainer();
       addTearDown(container.dispose);
 
@@ -154,10 +156,11 @@ void main() {
         mutations: {'blue': AlleleState.carrier},
       );
 
-      final results = container.read(offspringResultsProvider)!;
+      // Await the FutureProvider before reading derived providers
+      final results = await container.read(offspringResultsProvider.future);
       final chart = container.read(offspringChartDataProvider);
 
-      expect(chart, hasLength(results.length));
+      expect(chart, hasLength(results!.length));
       expect(chart.every((c) => c.value >= 0 && c.value <= 100), isTrue);
     });
 
@@ -166,13 +169,13 @@ void main() {
       () {
         final container = ProviderContainer(
           overrides: [
-            offspringResultsProvider.overrideWithValue(const [
+            offspringResultsProvider.overrideWithValue(const AsyncData([
               OffspringResult(
                 phenotype: 'Albino',
                 probability: 1.0,
                 visualMutations: ['ino', 'blue'],
               ),
-            ]),
+            ])),
           ],
         );
         addTearDown(container.dispose);
@@ -286,7 +289,7 @@ void main() {
 
     test(
       'ino_x_ino warning is not emitted when only one parent is visual ino',
-      () {
+      () async {
         final container = ProviderContainer();
         addTearDown(container.dispose);
 
@@ -299,6 +302,8 @@ void main() {
           mutations: {'ino': AlleleState.visual},
         );
 
+        // Await FutureProvider so derived providers resolve
+        await container.read(offspringResultsProvider.future);
         final analysis = container.read(lethalAnalysisProvider)!;
         expect(
           analysis.warnings.where((w) => w.combination.id == 'ino_x_ino'),
@@ -468,6 +473,9 @@ void main() {
           gender: BirdGender.female,
           mutations: {'blue': AlleleState.carrier},
         );
+
+        // Await FutureProvider so results are available for save
+        await container.read(offspringResultsProvider.future);
 
         final ok = await container
             .read(geneticsHistorySaveProvider.notifier)

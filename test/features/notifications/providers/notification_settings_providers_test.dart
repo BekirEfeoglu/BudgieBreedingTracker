@@ -272,10 +272,10 @@ void main() {
           currentUserIdProvider.overrideWithValue(_testUserId),
         ],
       );
+      addTearDown(container.dispose);
 
       // Trigger provider build (starts async load), then dispose immediately.
       container.read(notificationToggleSettingsProvider);
-      container.dispose();
 
       // Complete pending DAO call after dispose; test should finish without
       // disposed-ref exceptions.

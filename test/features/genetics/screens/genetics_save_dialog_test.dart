@@ -81,7 +81,7 @@ void main() {
             final n = WizardStepNotifier();
             return n;
           }),
-          offspringResultsProvider.overrideWithValue(results),
+          offspringResultsProvider.overrideWithValue(const AsyncData(results)),
         ],
       ],
       child: MaterialApp.router(routerConfig: buildRouter()),

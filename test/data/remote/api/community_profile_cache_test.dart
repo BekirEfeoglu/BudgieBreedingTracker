@@ -230,12 +230,12 @@ void main() {
       expect(result[1]['content'], 'Missing');
     });
 
-    test('falls back to full_name when display_name is null', () async {
+    test('falls back to display_name when full_name is null', () async {
       selectBuilder.result = [
         {
           'id': 'u1',
-          'display_name': null,
-          'full_name': 'Bekir',
+          'full_name': null,
+          'display_name': 'Alice',
           'avatar_url': null,
         },
       ];
@@ -247,10 +247,10 @@ void main() {
       final result = await cache.mergeIntoRows(rows);
 
       expect(result, hasLength(1));
-      expect(result[0]['username'], 'Bekir');
+      expect(result[0]['username'], 'Alice');
     });
 
-    test('prefers display_name over full_name', () async {
+    test('prefers full_name over display_name', () async {
       selectBuilder.result = [
         {
           'id': 'u1',
@@ -267,7 +267,7 @@ void main() {
       final result = await cache.mergeIntoRows(rows);
 
       expect(result, hasLength(1));
-      expect(result[0]['username'], 'Alice');
+      expect(result[0]['username'], 'Alice Smith');
     });
 
     test('falls back to email prefix when both names are null', () async {

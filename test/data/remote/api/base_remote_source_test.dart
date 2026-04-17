@@ -201,7 +201,7 @@ void main() {
           ),
           StackTrace.current,
         );
-        expect(result, isA<NetworkException>());
+        expect(result, isA<AuthException>());
         expect(result.message, 'Database operation failed');
       });
 
@@ -213,7 +213,7 @@ void main() {
           ),
           StackTrace.current,
         );
-        expect(result, isA<NetworkException>());
+        expect(result, isA<ValidationException>());
         expect(result.message, 'Database operation failed');
       });
 
@@ -225,7 +225,7 @@ void main() {
           ),
           StackTrace.current,
         );
-        expect(result, isA<NetworkException>());
+        expect(result, isA<AuthException>());
         expect(result.message, 'Database operation failed');
       });
 

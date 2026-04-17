@@ -82,6 +82,7 @@ void main() {
           ),
         ],
       );
+      addTearDown(container.dispose);
 
       return UncontrolledProviderScope(
         container: container,

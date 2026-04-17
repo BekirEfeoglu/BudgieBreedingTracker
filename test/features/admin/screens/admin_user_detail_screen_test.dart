@@ -6,6 +6,7 @@ import 'package:intl/date_symbol_data_local.dart';
 
 import 'package:budgie_breeding_tracker/features/admin/providers/admin_actions_provider.dart';
 import 'package:budgie_breeding_tracker/features/admin/providers/admin_data_providers.dart';
+import 'package:budgie_breeding_tracker/features/admin/providers/admin_content_models.dart';
 import 'package:budgie_breeding_tracker/features/admin/providers/admin_models.dart';
 import 'package:budgie_breeding_tracker/features/admin/screens/admin_user_detail_screen.dart';
 import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';

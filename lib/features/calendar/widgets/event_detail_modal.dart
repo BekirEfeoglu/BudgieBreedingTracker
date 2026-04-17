@@ -1,4 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/foundation.dart' show AsyncCallback;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -11,16 +12,17 @@ import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/core/widgets/buttons/primary_button.dart';
 import 'package:budgie_breeding_tracker/data/models/event_model.dart';
 import 'package:budgie_breeding_tracker/features/calendar/widgets/event_card.dart';
-import 'package:budgie_breeding_tracker/features/chicks/providers/chick_providers.dart'; // Cross-feature import: calendar events reference chick data
 import 'package:budgie_breeding_tracker/data/providers/action_feedback_providers.dart';
 
 /// Shows an event detail bottom sheet.
+// IMPROVED: accept onBandingComplete callback to decouple calendar from chicks feature
 Future<void> showEventDetailModal(
   BuildContext context, {
   required Event event,
   required VoidCallback onEdit,
   required VoidCallback onDelete,
   ValueChanged<EventStatus>? onStatusChange,
+  AsyncCallback? onBandingComplete,
 }) {
   return showModalBottomSheet(
     context: context,
@@ -36,6 +38,7 @@ Future<void> showEventDetailModal(
       onEdit: onEdit,
       onDelete: onDelete,
       onStatusChange: onStatusChange,
+      onBandingComplete: onBandingComplete,
     ),
   );
 }
@@ -45,18 +48,21 @@ class _EventDetailContent extends ConsumerWidget {
   final VoidCallback onEdit;
   final VoidCallback onDelete;
   final ValueChanged<EventStatus>? onStatusChange;
+  final AsyncCallback? onBandingComplete;
 
   const _EventDetailContent({
     required this.event,
     required this.onEdit,
     required this.onDelete,
     this.onStatusChange,
+    this.onBandingComplete,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final isBandingEvent =
+        onBandingComplete != null &&
         event.type == EventType.banding &&
         event.status == EventStatus.active &&
         event.chickId != null;
@@ -195,15 +201,14 @@ class _EventDetailContent extends ConsumerWidget {
     );
   }
 
+  // IMPROVED: uses injected callback instead of direct chick provider reference
   Widget _buildBandingAction(BuildContext context, WidgetRef ref) {
     return PrimaryButton(
       label: 'common.complete'.tr(),
       icon: const Icon(LucideIcons.checkCircle, size: 18),
       onPressed: () async {
         try {
-          await ref
-              .read(bandingActionProvider.notifier)
-              .markBandingComplete(event.chickId!);
+          await onBandingComplete!();
           if (context.mounted) {
             Navigator.pop(context);
             ActionFeedbackService.show('chicks.banding_success'.tr());

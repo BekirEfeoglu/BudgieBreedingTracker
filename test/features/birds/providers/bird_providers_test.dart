@@ -183,13 +183,13 @@ void main() {
       container.read(birdSortProvider.notifier).state = BirdSort.nameAsc;
       expect(
         container.read(sortedAndFilteredBirdsProvider(birds)).map((e) => e.id),
-        ['b1', 'b3', 'b2'],
+        ['b1', 'b2', 'b3'],
       );
 
       container.read(birdSortProvider.notifier).state = BirdSort.nameDesc;
       expect(
         container.read(sortedAndFilteredBirdsProvider(birds)).map((e) => e.id),
-        ['b2', 'b3', 'b1'],
+        ['b3', 'b2', 'b1'],
       );
     });
 

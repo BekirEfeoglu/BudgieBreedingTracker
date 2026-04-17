@@ -427,6 +427,7 @@ void main() {
             trendStatsProvider(userId).overrideWithValue(const AsyncLoading()),
           ],
         );
+        addTearDown(c.dispose);
         c.read(statsPeriodProvider.notifier).state = period;
         return c;
       }

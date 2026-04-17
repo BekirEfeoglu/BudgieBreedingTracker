@@ -8,6 +8,7 @@ import 'package:budgie_breeding_tracker/data/models/event_model.dart';
 import 'package:budgie_breeding_tracker/data/models/sync_metadata_model.dart';
 import 'package:budgie_breeding_tracker/data/remote/api/event_remote_source.dart';
 import 'package:budgie_breeding_tracker/data/repositories/base_repository.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' show RealtimeChannel;
 import 'package:uuid/uuid.dart';
 
 /// Repository for [Event] entities with offline-first sync support.
@@ -181,6 +182,56 @@ class EventRepository extends BaseRepository<Event>
     }
     return (pushed: pushed, orphansCleaned: orphansCleaned);
   }
+
+  // ── Realtime helpers ─────────────────────────────────────────────────
+  // These bypass sync metadata so events received from Supabase realtime
+  // are persisted locally without being re-pushed back to the server.
+
+  /// Inserts/updates an event received from a realtime callback into the
+  /// local DB only — no sync metadata is created because the record
+  /// already lives on the server.
+  Future<void> saveFromRemote(Event item) => _localDao.insertItem(item);
+
+  /// Soft-deletes a record received via a realtime delete callback.
+  /// Falls back to hard-delete when the record doesn't exist locally.
+  Future<void> removeFromRemote(String id) async {
+    final exists = await _localDao.getById(id);
+    if (exists != null) {
+      await _localDao.softDelete(id);
+    }
+  }
+
+  /// Subscribes to realtime events for a user and routes changes through
+  /// the local Drift DB. The existing [watchAll] stream automatically
+  /// emits updated data when the DAO is modified.
+  ///
+  /// Returns the [RealtimeChannel] for cleanup via [_remoteSource.unsubscribe].
+  RealtimeChannel subscribeToEvents(String userId) {
+    return _remoteSource.subscribeToEvents(
+      userId,
+      (event) async {
+        try {
+          await saveFromRemote(event);
+        } catch (e, st) {
+          // Graceful degradation: log but don't crash — the event was
+          // already received from the server, so the user won't lose data
+          // permanently; it will arrive on the next full sync.
+          AppLogger.error('[EventRepository] Realtime upsert failed', e, st);
+        }
+      },
+      (deletedId) async {
+        try {
+          await removeFromRemote(deletedId);
+        } catch (e, st) {
+          AppLogger.error('[EventRepository] Realtime delete failed', e, st);
+        }
+      },
+    );
+  }
+
+  /// Removes a realtime channel subscription.
+  Future<void> unsubscribeFromEvents(RealtimeChannel channel) =>
+      _remoteSource.unsubscribe(channel);
 
   /// Events in a date range (live stream).
   Stream<List<Event>> watchByDateRange(

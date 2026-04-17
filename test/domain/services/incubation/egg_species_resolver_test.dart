@@ -36,6 +36,7 @@ void main() {
         clutchRepositoryProvider.overrideWithValue(mockClutchRepo),
       ],
     );
+    addTearDown(container.dispose);
     return container;
   }
 

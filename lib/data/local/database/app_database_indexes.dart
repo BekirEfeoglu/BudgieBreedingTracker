@@ -49,6 +49,12 @@ Future<void> _createPerformanceIndexes(AppDatabase db) async {
     'ON genetics_history (user_id, is_deleted)',
   );
 
+  // --- Composite (user_id, gender, is_deleted) for statistics aggregation ---
+  await db.customStatement(
+    'CREATE INDEX IF NOT EXISTS idx_birds_user_gender_deleted '
+    'ON birds (user_id, gender, is_deleted)',
+  );
+
   // --- Composite (user_id, status, is_deleted) for filtered status queries ---
   await db.customStatement(
     'CREATE INDEX IF NOT EXISTS idx_nests_user_status_deleted '

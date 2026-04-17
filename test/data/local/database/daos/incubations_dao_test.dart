@@ -32,9 +32,23 @@ void main() {
     );
   }
 
-  setUp(() {
+  /// Insert a minimal parent breeding_pair row to satisfy FK constraints.
+  Future<void> insertBreedingPair(String id) async {
+    await db.customStatement(
+      'INSERT OR IGNORE INTO breeding_pairs (id, user_id, status, is_deleted) '
+      "VALUES ('$id', 'user-1', 'active', 0)",
+    );
+  }
+
+  setUp(() async {
     db = AppDatabase.forTesting(NativeDatabase.memory());
     dao = db.incubationsDao;
+    // Pre-create parent breeding pairs referenced by test fixtures.
+    await insertBreedingPair('pair-1');
+    await insertBreedingPair('pair-2');
+    await insertBreedingPair('pair-3');
+    await insertBreedingPair('pair-99');
+    await insertBreedingPair('pair-100');
   });
 
   tearDown(() async {

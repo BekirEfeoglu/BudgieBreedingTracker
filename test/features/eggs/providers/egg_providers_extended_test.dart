@@ -83,7 +83,6 @@ void main() {
 
       final container = makeContainer();
       addTearDown(() {
-        container.dispose();
         controller.close();
       });
 

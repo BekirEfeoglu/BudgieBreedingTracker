@@ -1,5 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:budgie_breeding_tracker/data/local/database/converters/enum_converters.dart';
+import 'package:budgie_breeding_tracker/data/local/database/tables/clutches_table.dart';
+import 'package:budgie_breeding_tracker/data/local/database/tables/incubations_table.dart';
 
 @DataClassName('EggRow')
 class EggsTable extends Table {
@@ -7,8 +9,10 @@ class EggsTable extends Table {
   DateTimeColumn get layDate => dateTime()();
   TextColumn get userId => text()();
   TextColumn get status => text().map(eggStatusConverter)();
-  TextColumn get clutchId => text().nullable()();
-  TextColumn get incubationId => text().nullable()();
+  TextColumn get clutchId =>
+      text().nullable().references(ClutchesTable, #id)();
+  TextColumn get incubationId =>
+      text().nullable().references(IncubationsTable, #id)();
   IntColumn get eggNumber => integer().nullable()();
   TextColumn get notes => text().nullable()();
   TextColumn get photoUrl => text().nullable()();

@@ -7,6 +7,7 @@ import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_screen_title.dart';
 import 'package:budgie_breeding_tracker/features/more/widgets/guide_content_widgets.dart';
+import 'package:budgie_breeding_tracker/router/route_names.dart';
 import 'package:budgie_breeding_tracker/features/more/widgets/guide_data.dart';
 
 class GuideDetailScreen extends StatelessWidget {
@@ -172,7 +173,7 @@ class _RelatedTopicItem extends StatelessWidget {
     final topic = guideTopics[topicIndex];
 
     return InkWell(
-      onTap: () => context.push('/user-guide/$topicIndex'),
+      onTap: () => context.push('${AppRoutes.userGuide}/$topicIndex'),
       child: Padding(
         padding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.lg,

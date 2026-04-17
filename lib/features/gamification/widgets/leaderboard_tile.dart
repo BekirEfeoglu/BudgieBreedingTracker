@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
+import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../data/models/user_level_model.dart';
 
@@ -72,9 +73,9 @@ class LeaderboardTile extends StatelessWidget {
   }
 
   Color _rankColor(int rank) => switch (rank) {
-        1 => const Color(0xFFFFD700),
-        2 => const Color(0xFFC0C0C0),
-        3 => const Color(0xFFCD7F32),
-        _ => const Color(0xFF808080),
+        1 => AppColors.tierGold,
+        2 => AppColors.tierSilver,
+        3 => AppColors.tierBronze,
+        _ => AppColors.tierDefault,
       };
 }

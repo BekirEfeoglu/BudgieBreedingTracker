@@ -119,8 +119,9 @@ class _GeneticsReverseScreenState extends ConsumerState<GeneticsReverseScreen> {
     } catch (e, st) {
       AppLogger.error('GeneticsReverseScreen._calculateParents', e, st);
       if (mounted) {
+        // IMPROVED: show specific error message for calculation failures
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('errors.unknown'.tr())),
+          SnackBar(content: Text('genetics.reverse_calculation_error'.tr())),
         );
       }
     } finally {

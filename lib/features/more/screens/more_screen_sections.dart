@@ -1,5 +1,16 @@
 part of 'more_screen.dart';
 
+void _showComingSoon(BuildContext context) {
+  ScaffoldMessenger.of(context)
+    ..hideCurrentSnackBar()
+    ..showSnackBar(
+      SnackBar(
+        content: Text('common.coming_soon_hint'.tr()),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+}
+
 void _showMoreAboutDialog(BuildContext context, WidgetRef ref) {
   final year = DateTime.now().year.toString();
   final appInfo = ref.read(appInfoProvider);
@@ -73,7 +84,14 @@ void _showMoreAboutDialog(BuildContext context, WidgetRef ref) {
             ),
             const SizedBox(height: AppSpacing.sm),
             InkWell(
-              onTap: () => launchUrl(Uri.parse('mailto:${AppConstants.supportEmail}')),
+              // IMPROVED: wrap launchUrl in try-catch to handle missing mail client
+              onTap: () async {
+                try {
+                  await launchUrl(Uri.parse('mailto:${AppConstants.supportEmail}'));
+                } on Exception catch (e) {
+                  AppLogger.warning('launchUrl mailto failed: $e');
+                }
+              },
               borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
@@ -94,7 +112,14 @@ void _showMoreAboutDialog(BuildContext context, WidgetRef ref) {
               ),
             ),
             InkWell(
-              onTap: () => launchUrl(Uri.parse(AppConstants.websiteUrl)),
+              // IMPROVED: wrap launchUrl in try-catch to handle URL launch failure
+              onTap: () async {
+                try {
+                  await launchUrl(Uri.parse(AppConstants.websiteUrl));
+                } on Exception catch (e) {
+                  AppLogger.warning('launchUrl website failed: $e');
+                }
+              },
               borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
@@ -220,6 +245,41 @@ class _PremiumBadge extends StatelessWidget {
             'premium.pro_badge'.tr(),
             style: theme.textTheme.labelSmall?.copyWith(
               color: AppColors.premiumGoldDark,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+        const SizedBox(width: AppSpacing.xs),
+        const Icon(LucideIcons.chevronRight, size: 18),
+      ],
+    );
+  }
+}
+
+class _ComingSoonBadge extends StatelessWidget {
+  const _ComingSoonBadge({required this.theme});
+
+  final ThemeData theme;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = theme.colorScheme;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.sm,
+            vertical: AppSpacing.xxs,
+          ),
+          decoration: BoxDecoration(
+            color: colorScheme.secondaryContainer.withValues(alpha: 0.6),
+            borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+          ),
+          child: Text(
+            'common.coming_soon'.tr(),
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: colorScheme.onSecondaryContainer,
               fontWeight: FontWeight.bold,
             ),
           ),

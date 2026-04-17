@@ -31,6 +31,13 @@ UI (Features) -> Providers (Riverpod) -> Repositories -> Local (Drift DAOs) + Re
 - `data/remote/` never imported directly in UI — always through Repository
 - Exception: `admin/` feature can use `client.from()` directly
 
+### Resolving Cross-Feature Need
+When feature A needs something from feature B:
+1. If it's a shared widget → move to `lib/core/widgets/`
+2. If it's a shared provider (e.g., currentUser, theme) → move to `lib/core/providers/`
+3. If it's domain logic → extract to `lib/domain/services/`
+4. Never shortcut with a direct `features/b/...` import — audit flagged `statistics → home`, `auth → birds`, `profile → admin/settings` as drift
+
 ## 23 Feature Modules
 admin, auth, birds, breeding, calendar, chicks, community, eggs, feedback, gamification, genealogy, genetics, health_records, home, marketplace, messaging, more, notifications, premium, profile, settings, splash, statistics
 

@@ -28,6 +28,10 @@ class MessagingRepository {
         _client = client;
 
   /// Search profiles by display_name or full_name for DM user picker.
+  ///
+  /// Uses [_client] directly because messaging is online-first with no
+  /// dedicated profile remote source — profiles are a cross-cutting concern
+  /// not owned by the messaging domain.
   Future<List<Map<String, dynamic>>> searchProfiles(
     String query, {
     required String excludeUserId,
@@ -36,10 +40,17 @@ class MessagingRepository {
     final trimmed = query.trim();
     if (trimmed.isEmpty) return [];
 
+    // Sanitize input: escape PostgREST filter metacharacters to prevent
+    // filter injection (commas/dots could alter .or() semantics).
+    final sanitized = trimmed
+        .replaceAll(r'\', r'\\')
+        .replaceAll(',', r'\,')
+        .replaceAll('.', r'\.');
+
     final result = await _client
         .from(SupabaseConstants.profilesTable)
         .select('id, display_name, full_name, email, avatar_url')
-        .or('display_name.ilike.%$trimmed%,full_name.ilike.%$trimmed%,email.ilike.%$trimmed%')
+        .or('display_name.ilike.%$sanitized%,full_name.ilike.%$sanitized%,email.ilike.%$sanitized%')
         .neq('id', excludeUserId)
         .limit(limit);
 

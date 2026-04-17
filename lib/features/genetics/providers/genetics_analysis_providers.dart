@@ -2,7 +2,8 @@ part of 'genetics_providers.dart';
 
 /// Chart data derived from offspring results for bar chart visualization.
 final offspringChartDataProvider = Provider<List<GeneticChartItem>>((ref) {
-  final results = ref.watch(offspringResultsProvider);
+  // IMPROVED: .value unwraps AsyncValue from isolate-backed FutureProvider
+  final results = ref.watch(offspringResultsProvider).value;
   if (results == null || results.isEmpty) return [];
 
   return results.map((r) {
@@ -24,7 +25,7 @@ final viabilityAnalyzerProvider = Provider<ViabilityAnalyzer>((ref) {
 
 /// Lethal combination analysis for current parent selections.
 final lethalAnalysisProvider = Provider<LethalAnalysisResult?>((ref) {
-  final results = ref.watch(offspringResultsProvider);
+  final results = ref.watch(offspringResultsProvider).value;
   if (results == null || results.isEmpty) return null;
 
   final fatherMutations = ref.watch(fatherMutationsProvider);
@@ -42,7 +43,7 @@ final lethalAnalysisProvider = Provider<LethalAnalysisResult?>((ref) {
 final enrichedOffspringResultsProvider = Provider<List<OffspringResult>?>((
   ref,
 ) {
-  final results = ref.watch(offspringResultsProvider);
+  final results = ref.watch(offspringResultsProvider).value;
   if (results == null) return null;
 
   final analysis = ref.watch(lethalAnalysisProvider);
@@ -81,7 +82,7 @@ final enrichedOffspringResultsProvider = Provider<List<OffspringResult>?>((
 final epistasisInteractionsProvider = Provider<List<EpistaticInteraction>>((
   ref,
 ) {
-  final results = ref.watch(offspringResultsProvider);
+  final results = ref.watch(offspringResultsProvider).value;
   if (results == null || results.isEmpty) return const [];
 
   const epistasis = EpistasisEngine();

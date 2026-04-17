@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
+import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
+import 'package:budgie_breeding_tracker/data/local/database/dao_providers.dart';
+import 'package:budgie_breeding_tracker/data/local/database/daos/birds_dao.dart';
+import 'package:budgie_breeding_tracker/data/local/database/daos/eggs_dao.dart';
 import 'package:budgie_breeding_tracker/features/birds/providers/bird_providers.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_providers.dart';
 import 'package:budgie_breeding_tracker/features/chicks/providers/chick_providers.dart';
@@ -13,9 +18,26 @@ import 'package:budgie_breeding_tracker/features/statistics/screens/overview_tab
 import 'package:budgie_breeding_tracker/features/statistics/widgets/chart_card.dart';
 import 'package:budgie_breeding_tracker/features/statistics/widgets/summary_stats_grid.dart';
 
+class _MockBirdsDao extends Mock implements BirdsDao {}
+
+class _MockEggsDao extends Mock implements EggsDao {}
+
 Widget _createSubject() {
+  final mockBirdsDao = _MockBirdsDao();
+  when(() => mockBirdsDao.watchGenderDistribution(any()))
+      .thenAnswer((_) => Stream.value(<BirdGender, int>{}));
+  when(() => mockBirdsDao.watchStatusDistribution(any()))
+      .thenAnswer((_) => Stream.value(<BirdStatus, int>{}));
+
+  final mockEggsDao = _MockEggsDao();
+  when(() => mockEggsDao.watchMonthlyProduction(any()))
+      .thenAnswer((_) => Stream.value(<String, int>{}));
+
   return ProviderScope(
     overrides: [
+      // Override DAO providers for SQL aggregate statistics providers.
+      birdsDaoProvider.overrideWithValue(mockBirdsDao),
+      eggsDaoProvider.overrideWithValue(mockEggsDao),
       // Override underlying stream providers with empty data so all
       // computed statistics providers resolve to AsyncData immediately.
       birdsStreamProvider('anonymous').overrideWith((_) => Stream.value([])),

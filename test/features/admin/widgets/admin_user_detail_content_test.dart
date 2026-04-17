@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
+import 'package:budgie_breeding_tracker/features/admin/providers/admin_content_models.dart';
 import 'package:budgie_breeding_tracker/features/admin/providers/admin_models.dart';
 import 'package:budgie_breeding_tracker/features/admin/widgets/admin_user_detail_content.dart';
 import 'package:budgie_breeding_tracker/features/admin/widgets/admin_user_detail_sections.dart';

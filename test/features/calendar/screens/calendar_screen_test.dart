@@ -61,6 +61,8 @@ void main() {
           userProfileProvider.overrideWith((_) => Stream.value(null)),
           currentUserProvider.overrideWith((_) => null),
           adServiceProvider.overrideWithValue(_MockAdService()),
+          // Override realtime provider to avoid Supabase client in tests
+          eventRealtimeSyncProvider('test-user').overrideWith((_) {}),
         ],
         child: const MaterialApp(home: CalendarScreen()),
       ),

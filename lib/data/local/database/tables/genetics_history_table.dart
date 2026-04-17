@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import 'package:budgie_breeding_tracker/data/local/database/tables/birds_table.dart';
 
 @DataClassName('GeneticsHistoryRow')
 class GeneticsHistoryTable extends Table {
@@ -12,10 +13,12 @@ class GeneticsHistoryTable extends Table {
   TextColumn get motherGenotype => text()();
 
   /// Optional bird ID if father was selected from collection.
-  TextColumn get fatherBirdId => text().nullable()();
+  TextColumn get fatherBirdId =>
+      text().nullable().references(BirdsTable, #id)();
 
   /// Optional bird ID if mother was selected from collection.
-  TextColumn get motherBirdId => text().nullable()();
+  TextColumn get motherBirdId =>
+      text().nullable().references(BirdsTable, #id)();
 
   /// JSON-encoded offspring results.
   TextColumn get resultsJson => text()();

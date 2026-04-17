@@ -18,7 +18,7 @@ Widget _wrap({required List<dynamic> overrides}) {
 }
 
 List<dynamic> _emptyOverrides() => [
-  offspringResultsProvider.overrideWithValue(null),
+  offspringResultsProvider.overrideWithValue(const AsyncData(null)),
   enrichedOffspringResultsProvider.overrideWithValue(null),
   punnettSquareProvider.overrideWithValue(null),
   offspringChartDataProvider.overrideWithValue(const []),
@@ -35,7 +35,7 @@ const _results = [
 
 List<dynamic> _dataOverrides() {
   return [
-    offspringResultsProvider.overrideWithValue(_results),
+    offspringResultsProvider.overrideWithValue(const AsyncData(_results)),
     enrichedOffspringResultsProvider.overrideWithValue(_results),
     punnettSquareProvider.overrideWithValue(null),
     offspringChartDataProvider.overrideWithValue(
@@ -155,7 +155,7 @@ void main() {
       await tester.pumpWidget(
         _wrap(
           overrides: [
-            offspringResultsProvider.overrideWithValue(_results),
+            offspringResultsProvider.overrideWithValue(const AsyncData(_results)),
             enrichedOffspringResultsProvider.overrideWithValue(_results),
             punnettSquareProvider.overrideWithValue(null),
             offspringChartDataProvider.overrideWithValue(const []),
@@ -185,7 +185,7 @@ void main() {
       await tester.pumpWidget(
         _wrap(
           overrides: [
-            offspringResultsProvider.overrideWithValue(interactionResults),
+            offspringResultsProvider.overrideWithValue(const AsyncData(interactionResults)),
             enrichedOffspringResultsProvider.overrideWithValue(
               interactionResults,
             ),

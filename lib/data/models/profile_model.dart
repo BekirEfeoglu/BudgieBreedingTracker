@@ -39,11 +39,11 @@ extension ProfileX on Profile {
       subscriptionStatus == SubscriptionStatus.trial;
 
   String get resolvedDisplayName {
-    if (displayName != null && displayName!.trim().isNotEmpty) {
-      return displayName!;
-    }
     if (fullName != null && fullName!.trim().isNotEmpty) {
       return fullName!;
+    }
+    if (displayName != null && displayName!.trim().isNotEmpty) {
+      return displayName!;
     }
     return email.split('@').first;
   }

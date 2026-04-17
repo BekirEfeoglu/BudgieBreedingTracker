@@ -1,6 +1,7 @@
 import { getCorsHeaders, corsPreflightResponse } from "../_shared/cors.ts";
 import { getAuthenticatedUserId, requireAdminRole, createSupabaseAdmin } from "../_shared/auth.ts";
 import { createRateLimiter, rateLimitedResponse } from "../_shared/rate-limit.ts";
+import { buildHealthSnapshot, type CheckStatus } from "./health_core.ts";
 
 const rateLimiter = createRateLimiter({ windowMs: 60_000, maxCalls: 10 });
 
@@ -39,7 +40,7 @@ Deno.serve(async (req) => {
   const supabase = createSupabaseAdmin();
 
   try {
-    const checks: Record<string, string> = {};
+    const checks: Record<string, CheckStatus> = {};
     const startTime = Date.now();
 
     // 1. Database connectivity check
@@ -66,22 +67,18 @@ Deno.serve(async (req) => {
     const storageLatency = Date.now() - storageStart;
 
     const totalLatency = Date.now() - startTime;
-    const allOk = Object.values(checks).every((v) => v === "ok");
-
-    return new Response(
-      JSON.stringify({
-        status: allOk ? "ok" : "degraded",
-        checks,
-        latency: {
-          database_ms: dbLatency,
-          auth_ms: authLatency,
-          storage_ms: storageLatency,
-          total_ms: totalLatency,
-        },
-        timestamp: new Date().toISOString(),
-      }),
-      { status: 200, headers },
+    const snapshot = buildHealthSnapshot(
+      checks,
+      {
+        database_ms: dbLatency,
+        auth_ms: authLatency,
+        storage_ms: storageLatency,
+        total_ms: totalLatency,
+      },
+      new Date().toISOString(),
     );
+
+    return new Response(JSON.stringify(snapshot), { status: 200, headers });
   } catch (_error) {
     console.error("[system-health] Error:", _error);
     return new Response(

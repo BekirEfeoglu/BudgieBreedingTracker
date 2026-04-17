@@ -3,26 +3,26 @@ import { getAuthenticatedUserId, createSupabaseAdmin } from "../_shared/auth.ts"
 import { createRateLimiter, rateLimitedResponse } from "../_shared/rate-limit.ts";
 import { z } from "npm:zod@3.24.4";
 import { parseRequestBody } from "../_shared/validation.ts";
+import {
+  computeFailureUpdate,
+  computeResetCount,
+  isLockedOut,
+  type LockoutRow,
+} from "./lockout_core.ts";
 
 const rateLimiter = createRateLimiter({ windowMs: 60_000, maxCalls: 30 });
 
-const MAX_ATTEMPTS = 5;
-
-const LOCKOUT_TIERS = [
-  120,   // 1st lockout: 2 minutes
-  300,   // 2nd lockout: 5 minutes
-  900,   // 3rd lockout: 15 minutes
-  3600,  // 4th+ lockout: 1 hour
-];
-
-async function getOrCreateLockout(supabase: any, userId: string) {
+async function getOrCreateLockout(
+  supabase: any,
+  userId: string,
+): Promise<LockoutRow | null> {
   const { data } = await supabase
     .from("mfa_lockouts")
     .select("user_id, failed_attempts, locked_until, last_attempt_at, lockout_count")
     .eq("user_id", userId)
     .single();
 
-  if (data) return data;
+  if (data) return data as LockoutRow;
 
   const { data: created } = await supabase
     .from("mfa_lockouts")
@@ -33,23 +33,7 @@ async function getOrCreateLockout(supabase: any, userId: string) {
     .select()
     .single();
 
-  return created;
-}
-
-function isLockedOut(lockout: any): { locked: boolean; remaining_seconds: number } {
-  if (!lockout?.locked_until) return { locked: false, remaining_seconds: 0 };
-  const now = new Date();
-  const lockedUntil = new Date(lockout.locked_until);
-  if (now < lockedUntil) {
-    const remaining = Math.ceil((lockedUntil.getTime() - now.getTime()) / 1000);
-    return { locked: true, remaining_seconds: remaining };
-  }
-  return { locked: false, remaining_seconds: 0 };
-}
-
-function getLockoutDuration(lockoutCount: number): number {
-  const tierIndex = Math.min(lockoutCount, LOCKOUT_TIERS.length - 1);
-  return LOCKOUT_TIERS[tierIndex];
+  return (created ?? null) as LockoutRow | null;
 }
 
 Deno.serve(async (req) => {
@@ -104,56 +88,50 @@ Deno.serve(async (req) => {
         );
       }
 
-      const previouslyLocked = lockout.locked_until && new Date(lockout.locked_until) <= new Date();
-      const baseAttempts = previouslyLocked ? 0 : (lockout.failed_attempts ?? 0);
-      const newAttempts = baseAttempts + 1;
-      const currentLockoutCount = lockout.lockout_count ?? 0;
+      const now = new Date();
+      const outcome = computeFailureUpdate(lockout, now);
+
       const update: Record<string, any> = {
-        failed_attempts: newAttempts,
-        last_attempt_at: new Date().toISOString(),
+        failed_attempts: outcome.failed_attempts,
+        last_attempt_at: now.toISOString(),
       };
-
-      if (newAttempts >= MAX_ATTEMPTS) {
-        const lockoutDuration = getLockoutDuration(currentLockoutCount);
-        const lockedUntil = new Date(Date.now() + lockoutDuration * 1000);
-        update.locked_until = lockedUntil.toISOString();
-        update.lockout_count = currentLockoutCount + 1;
-
-        await supabase.from("mfa_lockouts").update(update).eq("user_id", userId);
-
-        return new Response(
-          JSON.stringify({ locked: true, remaining_seconds: lockoutDuration }),
-          { status: 429, headers },
-        );
+      if (outcome.locked) {
+        update.locked_until = outcome.locked_until;
+        update.lockout_count = outcome.lockout_count;
       }
 
       await supabase.from("mfa_lockouts").update(update).eq("user_id", userId);
 
+      if (outcome.locked) {
+        return new Response(
+          JSON.stringify({ locked: true, remaining_seconds: outcome.remaining_seconds }),
+          { status: 429, headers },
+        );
+      }
+
       return new Response(
-        JSON.stringify({ locked: false, remaining_seconds: 0, failed_attempts: newAttempts }),
+        JSON.stringify({
+          locked: false,
+          remaining_seconds: 0,
+          failed_attempts: outcome.failed_attempts,
+        }),
         { status: 200, headers },
       );
     }
 
     if (action === "reset") {
-      // Only decay lockout_count after 7 quiet days since the last attempt.
-      // A shorter window (e.g. 24h) let attackers alternate wait/brute-force to
-      // keep the lockout tier low; requiring a full week of inactivity makes
-      // sustained brute-force meaningfully slower.
-      const lastAttempt = lockout?.last_attempt_at ? new Date(lockout.last_attempt_at) : new Date();
-      const hoursSinceLastAttempt = (Date.now() - lastAttempt.getTime()) / (1000 * 3600);
-      const LOCKOUT_DECAY_HOURS = 7 * 24; // 7 days
-      const currentCount = lockout?.lockout_count ?? 0;
-      const newLockoutCount = hoursSinceLastAttempt > LOCKOUT_DECAY_HOURS
-        ? Math.max(0, currentCount - 1)
-        : currentCount;
+      // Decay policy: only drop lockout_count after a full week of inactivity.
+      // Shorter windows (e.g. 24h) would let an attacker alternate wait/brute
+      // attempts and keep the tier low; see lockout_core.ts.
+      const now = new Date();
+      const newLockoutCount = computeResetCount(lockout, now);
 
       await supabase
         .from("mfa_lockouts")
         .update({
           failed_attempts: 0,
           locked_until: null,
-          last_attempt_at: new Date().toISOString(),
+          last_attempt_at: now.toISOString(),
           lockout_count: newLockoutCount,
         })
         .eq("user_id", userId);

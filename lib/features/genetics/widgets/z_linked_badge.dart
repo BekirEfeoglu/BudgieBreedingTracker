@@ -82,12 +82,15 @@ class ZLinkedBadge extends StatelessWidget {
               children: [
                 Icon(LucideIcons.link, size: 10, color: theme.colorScheme.tertiary),
                 const SizedBox(width: 3),
-                Text(
-                  'genetics.z_linked'.tr(),
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                    color: theme.colorScheme.tertiary,
+                Flexible(
+                  child: Text(
+                    'genetics.z_linked'.tr(),
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      color: theme.colorScheme.tertiary,
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ],

@@ -138,10 +138,10 @@ void main() {
         ],
         retry: (_, __) => null,
       );
+      addTearDown(container.dispose);
       final sub = container.listen(adminFeedbackProvider, (_, __) {});
       addTearDown(() {
         sub.close();
-        container.dispose();
       });
 
       expect(
@@ -173,10 +173,10 @@ void main() {
           ],
           retry: (_, __) => null,
         );
+        addTearDown(container.dispose);
         final sub = container.listen(adminFeedbackProvider, (_, __) {});
         addTearDown(() {
           sub.close();
-          container.dispose();
         });
 
         final result = await container.read(adminFeedbackProvider.future);

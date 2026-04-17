@@ -7,14 +7,16 @@ import 'package:budgie_breeding_tracker/features/settings/providers/settings_tog
 
 // Build() içinde fire-and-forget _loadFromPrefs() çağrısı yapıldığından,
 // provider'ın ilk değerini okumadan önce async yüklemenin tamamlanmasını
-// beklemek gerekir. Her test manuel dispose kullanır (addTearDown değil).
+// beklemek gerekir. Helpers addTearDown ile otomatik dispose eder.
 
-/// Empty prefs ile container oluşturur.
+/// Empty prefs ile container oluşturur. Caller must be inside a test.
 // ignore: unused_element
 Future<ProviderContainer> _makeContainer() async {
   SharedPreferences.setMockInitialValues({});
   await SharedPreferences.getInstance();
-  return ProviderContainer();
+  final container = ProviderContainer();
+  addTearDown(container.dispose);
+  return container;
 }
 
 /// Container'ı oluşturur, provider'ı tetikler ve _loadFromPrefs() bitmesini bekler.
@@ -25,6 +27,7 @@ Future<ProviderContainer> _makeContainerAndWarm(
   SharedPreferences.setMockInitialValues(values);
   await SharedPreferences.getInstance();
   final container = ProviderContainer();
+  addTearDown(container.dispose);
   container.read(provider);
   await Future<void>.delayed(const Duration(milliseconds: 150));
   return container;
@@ -40,7 +43,6 @@ void main() {
       );
 
       expect(container.read(notificationsMasterProvider), isTrue);
-      container.dispose();
     });
 
     test('toggle() flips state to false', () async {
@@ -51,7 +53,6 @@ void main() {
       await container.read(notificationsMasterProvider.notifier).toggle();
 
       expect(container.read(notificationsMasterProvider), isFalse);
-      container.dispose();
     });
 
     test('toggle() twice returns to true', () async {
@@ -63,20 +64,19 @@ void main() {
       await container.read(notificationsMasterProvider.notifier).toggle();
 
       expect(container.read(notificationsMasterProvider), isTrue);
-      container.dispose();
     });
 
     test('toggle() persists to SharedPreferences', () async {
       SharedPreferences.setMockInitialValues({});
       final prefs = await SharedPreferences.getInstance();
       final container = ProviderContainer();
+      addTearDown(container.dispose);
       container.read(notificationsMasterProvider);
       await Future<void>.delayed(const Duration(milliseconds: 150));
 
       await container.read(notificationsMasterProvider.notifier).toggle();
 
       expect(prefs.getBool(AppPreferences.keyNotificationsEnabled), isFalse);
-      container.dispose();
     });
 
     test('loads persisted false from SharedPreferences', () async {
@@ -86,7 +86,6 @@ void main() {
       );
 
       expect(container.read(notificationsMasterProvider), isFalse);
-      container.dispose();
     });
   });
 
@@ -95,7 +94,6 @@ void main() {
       final container = await _makeContainerAndWarm(compactViewProvider);
 
       expect(container.read(compactViewProvider), isFalse);
-      container.dispose();
     });
 
     test('toggle() enables compact view', () async {
@@ -104,7 +102,6 @@ void main() {
       await container.read(compactViewProvider.notifier).toggle();
 
       expect(container.read(compactViewProvider), isTrue);
-      container.dispose();
     });
 
     test('toggle() twice returns to false', () async {
@@ -114,7 +111,6 @@ void main() {
       await container.read(compactViewProvider.notifier).toggle();
 
       expect(container.read(compactViewProvider), isFalse);
-      container.dispose();
     });
 
     test('loads persisted true from SharedPreferences', () async {
@@ -124,7 +120,6 @@ void main() {
       );
 
       expect(container.read(compactViewProvider), isTrue);
-      container.dispose();
     });
   });
 
@@ -133,7 +128,6 @@ void main() {
       final container = await _makeContainerAndWarm(hapticFeedbackProvider);
 
       expect(container.read(hapticFeedbackProvider), isTrue);
-      container.dispose();
     });
 
     test('toggle() disables haptic feedback', () async {
@@ -142,20 +136,19 @@ void main() {
       await container.read(hapticFeedbackProvider.notifier).toggle();
 
       expect(container.read(hapticFeedbackProvider), isFalse);
-      container.dispose();
     });
 
     test('persists to SharedPreferences', () async {
       SharedPreferences.setMockInitialValues({});
       final prefs = await SharedPreferences.getInstance();
       final container = ProviderContainer();
+      addTearDown(container.dispose);
       container.read(hapticFeedbackProvider);
       await Future<void>.delayed(const Duration(milliseconds: 150));
 
       await container.read(hapticFeedbackProvider.notifier).toggle();
 
       expect(prefs.getBool(AppPreferences.keyHapticFeedback), isFalse);
-      container.dispose();
     });
 
     test('loads persisted false from SharedPreferences', () async {
@@ -165,7 +158,6 @@ void main() {
       );
 
       expect(container.read(hapticFeedbackProvider), isFalse);
-      container.dispose();
     });
   });
 
@@ -174,7 +166,6 @@ void main() {
       final container = await _makeContainerAndWarm(reduceAnimationsProvider);
 
       expect(container.read(reduceAnimationsProvider), isFalse);
-      container.dispose();
     });
 
     test('toggle() enables reduce animations', () async {
@@ -183,7 +174,6 @@ void main() {
       await container.read(reduceAnimationsProvider.notifier).toggle();
 
       expect(container.read(reduceAnimationsProvider), isTrue);
-      container.dispose();
     });
 
     test('toggle() twice returns to false', () async {
@@ -193,7 +183,6 @@ void main() {
       await container.read(reduceAnimationsProvider.notifier).toggle();
 
       expect(container.read(reduceAnimationsProvider), isFalse);
-      container.dispose();
     });
 
     test('loads persisted true from SharedPreferences', () async {
@@ -203,7 +192,6 @@ void main() {
       );
 
       expect(container.read(reduceAnimationsProvider), isTrue);
-      container.dispose();
     });
   });
 
@@ -212,7 +200,6 @@ void main() {
       final container = await _makeContainerAndWarm(eggTurningReminderProvider);
 
       expect(container.read(eggTurningReminderProvider), isTrue);
-      container.dispose();
     });
 
     test('toggle() disables egg turning reminder', () async {
@@ -221,20 +208,19 @@ void main() {
       await container.read(eggTurningReminderProvider.notifier).toggle();
 
       expect(container.read(eggTurningReminderProvider), isFalse);
-      container.dispose();
     });
 
     test('persists disabled state to SharedPreferences', () async {
       SharedPreferences.setMockInitialValues({});
       final prefs = await SharedPreferences.getInstance();
       final container = ProviderContainer();
+      addTearDown(container.dispose);
       container.read(eggTurningReminderProvider);
       await Future<void>.delayed(const Duration(milliseconds: 150));
 
       await container.read(eggTurningReminderProvider.notifier).toggle();
 
       expect(prefs.getBool(AppPreferences.keyEggTurningReminder), isFalse);
-      container.dispose();
     });
 
     test('loads persisted false from SharedPreferences', () async {
@@ -244,7 +230,6 @@ void main() {
       );
 
       expect(container.read(eggTurningReminderProvider), isFalse);
-      container.dispose();
     });
   });
 
@@ -253,7 +238,6 @@ void main() {
       final container = await _makeContainerAndWarm(temperatureAlertProvider);
 
       expect(container.read(temperatureAlertProvider), isTrue);
-      container.dispose();
     });
 
     test('toggle() disables temperature alerts', () async {
@@ -262,20 +246,19 @@ void main() {
       await container.read(temperatureAlertProvider.notifier).toggle();
 
       expect(container.read(temperatureAlertProvider), isFalse);
-      container.dispose();
     });
 
     test('persists to SharedPreferences', () async {
       SharedPreferences.setMockInitialValues({});
       final prefs = await SharedPreferences.getInstance();
       final container = ProviderContainer();
+      addTearDown(container.dispose);
       container.read(temperatureAlertProvider);
       await Future<void>.delayed(const Duration(milliseconds: 150));
 
       await container.read(temperatureAlertProvider.notifier).toggle();
 
       expect(prefs.getBool(AppPreferences.keyTemperatureAlert), isFalse);
-      container.dispose();
     });
 
     test('loads persisted false from SharedPreferences', () async {
@@ -285,7 +268,6 @@ void main() {
       );
 
       expect(container.read(temperatureAlertProvider), isFalse);
-      container.dispose();
     });
   });
 }

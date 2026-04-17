@@ -14,9 +14,10 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_icon.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/error_state.dart' as app;
+import '../../../core/widgets/loading_state.dart';
 import '../../../data/providers/auth_state_providers.dart';
 import '../../../router/route_names.dart';
-import '../../../features/admin/providers/admin_data_providers.dart'
+import '../../../data/providers/user_role_providers.dart'
     show isFounderProvider;
 import '../providers/community_feed_providers.dart';
 import '../providers/community_providers.dart';
@@ -29,6 +30,7 @@ import 'community_story_strip.dart';
 import 'community_swipeable_post_card.dart';
 
 part 'community_feed_items.dart';
+part 'community_feed_guides.dart';
 
 /// Scrollable feed list with infinite scroll and pull-to-refresh.
 class CommunityFeedList extends ConsumerStatefulWidget {

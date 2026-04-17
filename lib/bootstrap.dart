@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
@@ -10,6 +11,9 @@ import 'core/security/certificate_pinning.dart';
 import 'core/utils/logger.dart';
 
 part 'bootstrap_helpers.dart';
+
+bool get _profileStartup =>
+    kDebugMode || const bool.fromEnvironment('PROFILE_STARTUP');
 
 /// Compile-time environment values (from --dart-define or --dart-define-from-file).
 const _compileTimeSupabaseUrl = String.fromEnvironment('SUPABASE_URL');
@@ -95,23 +99,37 @@ Future<bool> ensureSupabaseInitialized({
 /// Orientation lock and Supabase init run concurrently.
 /// Has an overall timeout to prevent permanent white screen.
 Future<void> bootstrapPreInit() async {
+  final preInitSw = Stopwatch()..start();
   try {
+    final orientationSw = Stopwatch()..start();
     await SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown,
     ]);
+    final orientationMs = orientationSw.elapsedMilliseconds;
 
     // Install certificate pinning before any network calls.
     CertificatePinning.install();
 
     // Native fallback: read config injected from Gradle/Xcode (env/local.properties/.env).
+    final nativeCfgSw = Stopwatch()..start();
     await _resolveNativeBuildConfigFallbacks();
+    final nativeCfgMs = nativeCfgSw.elapsedMilliseconds;
 
     // Supabase init — apply timeout to prevent indefinite hang on network issues.
+    final supabaseSw = Stopwatch()..start();
     await ensureSupabaseInitialized(timeout: const Duration(seconds: 10));
+    final supabaseMs = supabaseSw.elapsedMilliseconds;
 
     // Resolve RevenueCat API keys (sync, no await needed)
     _resolveRevenueCatKeys();
+
+    if (_profileStartup) {
+      AppLogger.info('[bootstrap] phase setPreferredOrientations: ${orientationMs}ms');
+      AppLogger.info('[bootstrap] phase resolveNativeBuildConfig: ${nativeCfgMs}ms');
+      AppLogger.info('[bootstrap] phase Supabase.initialize: ${supabaseMs}ms');
+      AppLogger.info('[bootstrap] phase bootstrapPreInit total: ${preInitSw.elapsedMilliseconds}ms');
+    }
   } catch (e, st) {
     AppLogger.error('Bootstrap pre-init failed, continuing to runApp', e, st);
   }
@@ -136,6 +154,7 @@ Future<void> bootstrapRun(
   // Track whether Sentry's appRunner actually launched the app, so we don't
   // call runApp twice on the happy path or miss it entirely on timeout.
   var appLaunched = false;
+  final sentrySw = Stopwatch()..start();
   try {
     await SentryFlutter.init(
       (options) {
@@ -146,6 +165,11 @@ Future<void> bootstrapRun(
       },
       appRunner: () async {
         appLaunched = true;
+        if (_profileStartup) {
+          AppLogger.info(
+            '[bootstrap] phase SentryFlutter.init: ${sentrySw.elapsedMilliseconds}ms',
+          );
+        }
         runApp(await appBuilder());
       },
     ).timeout(sentryInitTimeout);

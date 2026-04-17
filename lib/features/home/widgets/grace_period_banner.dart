@@ -21,12 +21,16 @@ class GracePeriodBanner extends ConsumerWidget {
       return const SizedBox.shrink();
     }
 
-    final profileAsync = ref.watch(userProfileProvider);
-    final profile = profileAsync.value;
-    final gracePeriodEnd = profile?.gracePeriodUntil ??
-        profile?.premiumExpiresAt?.add(
-          const Duration(days: AppConstants.gracePeriodDays),
-        );
+    // IMPROVED: use .select() to only rebuild when grace period dates change
+    final gracePeriodEnd = ref.watch(
+      userProfileProvider.select((async) {
+        final p = async.value;
+        return p?.gracePeriodUntil ??
+            p?.premiumExpiresAt?.add(
+              const Duration(days: AppConstants.gracePeriodDays),
+            );
+      }),
+    );
     final daysRemaining = gracePeriodEnd != null
         ? gracePeriodEnd.difference(DateTime.now()).inDays
         : 0;

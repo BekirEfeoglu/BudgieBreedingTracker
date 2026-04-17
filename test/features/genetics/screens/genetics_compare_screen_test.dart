@@ -172,8 +172,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // The _CompareTable renders a virtualized list inside a Card
-      expect(find.byType(ListView), findsOneWidget);
+      // IMPROVED: table uses Card+Column instead of ListView after nested scroll fix
       expect(find.byType(Card), findsOneWidget);
     });
 
@@ -211,7 +210,8 @@ void main() {
 
       // The default results JSON has 2 phenotypes: Normal and Blue
       // Both should appear as rows in the virtualized list
-      expect(find.byType(ListView), findsOneWidget);
+      // IMPROVED: table uses Card+Column instead of ListView after nested scroll fix
+      expect(find.byType(Card), findsOneWidget);
     });
 
     testWidgets('shows probability percentages in cells', (tester) async {
@@ -244,9 +244,8 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // Card should render with the virtualized list
+      // IMPROVED: table uses Card+Column instead of ListView after nested scroll fix
       expect(find.byType(Card), findsOneWidget);
-      expect(find.byType(ListView), findsOneWidget);
     });
 
     testWidgets('shows dash for missing phenotype in an entry', (tester) async {

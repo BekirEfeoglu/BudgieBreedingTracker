@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show compute;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:budgie_breeding_tracker/core/constants/genetics_constants.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
@@ -19,14 +20,48 @@ final mendelianCalculatorProvider = Provider<MendelianCalculator>((ref) {
   return const MendelianCalculator();
 });
 
+// IMPROVED: run genetics calculation in isolate to avoid UI thread blocking
+// for complex genotypes (8+ mutations). Uses compute() like reverse calculator.
+List<OffspringResult> _calculateInIsolate(
+  ({Map<String, String> father, String fatherGender,
+    Map<String, String> mother, String motherGender}) args,
+) {
+  final fatherMutations = args.father.map(
+    (k, v) => MapEntry(k, AlleleState.values.byName(v)),
+  );
+  final motherMutations = args.mother.map(
+    (k, v) => MapEntry(k, AlleleState.values.byName(v)),
+  );
+  const calculator = MendelianCalculator();
+  return calculator.calculateFromGenotypes(
+    father: ParentGenotype(
+      mutations: fatherMutations,
+      gender: BirdGender.values.byName(args.fatherGender),
+    ),
+    mother: ParentGenotype(
+      mutations: motherMutations,
+      gender: BirdGender.values.byName(args.motherGender),
+    ),
+  );
+}
+
 /// Calculated offspring results from current genotype selections.
-final offspringResultsProvider = Provider<List<OffspringResult>?>((ref) {
+/// Uses isolate for heavy computation to avoid UI thread blocking.
+final offspringResultsProvider = FutureProvider<List<OffspringResult>?>((
+  ref,
+) async {
   final father = ref.watch(fatherGenotypeProvider);
   final mother = ref.watch(motherGenotypeProvider);
 
   if (father.isEmpty && mother.isEmpty) return null;
 
-  final calculator = ref.watch(mendelianCalculatorProvider);
+  // Serialize ParentGenotype for isolate boundary crossing
+  final args = (
+    father: father.mutations.map((k, v) => MapEntry(k, v.name)),
+    fatherGender: father.gender.name,
+    mother: mother.mutations.map((k, v) => MapEntry(k, v.name)),
+    motherGender: mother.gender.name,
+  );
 
-  return calculator.calculateFromGenotypes(father: father, mother: mother);
+  return compute(_calculateInIsolate, args);
 });

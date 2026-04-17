@@ -89,6 +89,12 @@ abstract class SupabaseConstants {
   static const String archiveJobsTable = 'archive_jobs';
   static const String archiveSettingsTable = 'archive_settings';
 
+  // Common columns (shared across most tables)
+  static const String colUserId = 'user_id';
+  static const String colIsDeleted = 'is_deleted';
+  static const String colCreatedAt = 'created_at';
+  static const String colUpdatedAt = 'updated_at';
+
   // Feedback columns
   static const String feedbackColId = 'id';
   static const String feedbackColUserId = 'user_id';

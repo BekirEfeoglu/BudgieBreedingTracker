@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:budgie_breeding_tracker/data/local/database/converters/enum_converters.dart';
+import 'package:budgie_breeding_tracker/data/local/database/tables/birds_table.dart';
 
 @DataClassName('HealthRecordRow')
 class HealthRecordsTable extends Table {
@@ -8,7 +9,8 @@ class HealthRecordsTable extends Table {
   TextColumn get type => text().map(healthRecordTypeConverter)();
   TextColumn get title => text()();
   TextColumn get userId => text()();
-  TextColumn get birdId => text().nullable()();
+  TextColumn get birdId =>
+      text().nullable().references(BirdsTable, #id)();
   TextColumn get description => text().nullable()();
   TextColumn get treatment => text().nullable()();
   TextColumn get veterinarian => text().nullable()();

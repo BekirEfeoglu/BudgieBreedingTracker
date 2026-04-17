@@ -4,6 +4,7 @@ import '../../../core/constants/supabase_constants.dart';
 import '../../auth/providers/auth_providers.dart';
 import '../constants/admin_constants.dart';
 import 'admin_auth_utils.dart';
+import 'admin_content_models.dart';
 import 'admin_models.dart';
 
 /// Admin users list provider with server-side filtering via [AdminUsersQuery].

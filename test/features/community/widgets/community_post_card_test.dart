@@ -197,6 +197,22 @@ void main() {
       expect(find.byType(PostTypeBadge), findsNothing);
     });
 
+    testWidgets('renders guide lead treatment for guide posts', (tester) async {
+      await tester.pumpWidget(
+        createSubject(
+          _testPost(
+            title: 'Guide title',
+            content: 'Detailed guide content for budgie feeding and care.',
+            postType: CommunityPostType.guide,
+          ),
+        ),
+      );
+      await tester.pump();
+
+      expect(find.text(l10n('community.tab_guides')), findsWidgets);
+      expect(find.text(l10n('community.guide_open_hint')), findsOneWidget);
+    });
+
     testWidgets('shows relative timestamp', (tester) async {
       await tester.pumpWidget(createSubject(_testPost()));
       await tester.pump();

@@ -1,5 +1,7 @@
 part of 'app_database.dart';
 
+// ignore_for_file: experimental_member_use
+
 // ---------------------------------------------------------------------------
 // Migration helpers — one per schema version bump.
 // All functions receive a [Migrator] and the [AppDatabase] instance (for
@@ -212,6 +214,165 @@ Future<void> _migrateV20ToV21(AppDatabase db, Migrator m) async {
       'ALTER TABLE profiles ADD COLUMN grace_period_until INTEGER',
     );
   }
+}
+
+/// Migration v21 -> v22: Add foreign key constraints to all FK columns.
+///
+/// Adds `REFERENCES` constraints for all columns that reference other tables.
+/// Uses `alterTable(TableMigration(...))` to recreate tables with the new
+/// constraints. Before recreation, orphaned FK values are cleaned up:
+///   - Nullable FKs: SET NULL where parent row is missing
+///   - Required FKs (event_reminders.eventId, growth_measurements.chickId):
+///     DELETE orphan rows
+///
+/// All FKs use the default NO ACTION on delete. The app uses soft-delete
+/// (isDeleted flag) for most entities, so cascading deletes are unnecessary.
+/// The orphan cleanup in this migration handles pre-existing data integrity.
+Future<void> _migrateV21ToV22(AppDatabase db, Migrator m) async {
+  // Disable foreign keys during migration to allow table recreation.
+  await db.customStatement('PRAGMA foreign_keys = OFF');
+
+  // ------------------------------------------------------------------
+  // Phase 1: Clean orphaned FK references
+  // ------------------------------------------------------------------
+
+  // birds (self-referencing)
+  await db.customStatement(
+    'UPDATE birds SET father_id = NULL '
+    'WHERE father_id IS NOT NULL AND father_id NOT IN (SELECT id FROM birds)',
+  );
+  await db.customStatement(
+    'UPDATE birds SET mother_id = NULL '
+    'WHERE mother_id IS NOT NULL AND mother_id NOT IN (SELECT id FROM birds)',
+  );
+
+  // breeding_pairs -> birds
+  await db.customStatement(
+    'UPDATE breeding_pairs SET male_id = NULL '
+    'WHERE male_id IS NOT NULL AND male_id NOT IN (SELECT id FROM birds)',
+  );
+  await db.customStatement(
+    'UPDATE breeding_pairs SET female_id = NULL '
+    'WHERE female_id IS NOT NULL AND female_id NOT IN (SELECT id FROM birds)',
+  );
+
+  // clutches -> breeding_pairs, birds, nests, incubations
+  await db.customStatement(
+    'UPDATE clutches SET breeding_id = NULL '
+    'WHERE breeding_id IS NOT NULL AND breeding_id NOT IN (SELECT id FROM breeding_pairs)',
+  );
+  await db.customStatement(
+    'UPDATE clutches SET incubation_id = NULL '
+    'WHERE incubation_id IS NOT NULL AND incubation_id NOT IN (SELECT id FROM incubations)',
+  );
+  await db.customStatement(
+    'UPDATE clutches SET male_bird_id = NULL '
+    'WHERE male_bird_id IS NOT NULL AND male_bird_id NOT IN (SELECT id FROM birds)',
+  );
+  await db.customStatement(
+    'UPDATE clutches SET female_bird_id = NULL '
+    'WHERE female_bird_id IS NOT NULL AND female_bird_id NOT IN (SELECT id FROM birds)',
+  );
+  await db.customStatement(
+    'UPDATE clutches SET nest_id = NULL '
+    'WHERE nest_id IS NOT NULL AND nest_id NOT IN (SELECT id FROM nests)',
+  );
+
+  // incubations -> clutches, breeding_pairs
+  await db.customStatement(
+    'UPDATE incubations SET clutch_id = NULL '
+    'WHERE clutch_id IS NOT NULL AND clutch_id NOT IN (SELECT id FROM clutches)',
+  );
+  await db.customStatement(
+    'UPDATE incubations SET breeding_pair_id = NULL '
+    'WHERE breeding_pair_id IS NOT NULL AND breeding_pair_id NOT IN (SELECT id FROM breeding_pairs)',
+  );
+
+  // eggs -> clutches, incubations
+  await db.customStatement(
+    'UPDATE eggs SET clutch_id = NULL '
+    'WHERE clutch_id IS NOT NULL AND clutch_id NOT IN (SELECT id FROM clutches)',
+  );
+  await db.customStatement(
+    'UPDATE eggs SET incubation_id = NULL '
+    'WHERE incubation_id IS NOT NULL AND incubation_id NOT IN (SELECT id FROM incubations)',
+  );
+
+  // chicks -> clutches, eggs, birds
+  await db.customStatement(
+    'UPDATE chicks SET clutch_id = NULL '
+    'WHERE clutch_id IS NOT NULL AND clutch_id NOT IN (SELECT id FROM clutches)',
+  );
+  await db.customStatement(
+    'UPDATE chicks SET egg_id = NULL '
+    'WHERE egg_id IS NOT NULL AND egg_id NOT IN (SELECT id FROM eggs)',
+  );
+  await db.customStatement(
+    'UPDATE chicks SET bird_id = NULL '
+    'WHERE bird_id IS NOT NULL AND bird_id NOT IN (SELECT id FROM birds)',
+  );
+
+  // health_records -> birds
+  await db.customStatement(
+    'UPDATE health_records SET bird_id = NULL '
+    'WHERE bird_id IS NOT NULL AND bird_id NOT IN (SELECT id FROM birds)',
+  );
+
+  // events -> birds, breeding_pairs, chicks
+  await db.customStatement(
+    'UPDATE events SET bird_id = NULL '
+    'WHERE bird_id IS NOT NULL AND bird_id NOT IN (SELECT id FROM birds)',
+  );
+  await db.customStatement(
+    'UPDATE events SET breeding_pair_id = NULL '
+    'WHERE breeding_pair_id IS NOT NULL AND breeding_pair_id NOT IN (SELECT id FROM breeding_pairs)',
+  );
+  await db.customStatement(
+    'UPDATE events SET chick_id = NULL '
+    'WHERE chick_id IS NOT NULL AND chick_id NOT IN (SELECT id FROM chicks)',
+  );
+
+  // genetics_history -> birds
+  await db.customStatement(
+    'UPDATE genetics_history SET father_bird_id = NULL '
+    'WHERE father_bird_id IS NOT NULL AND father_bird_id NOT IN (SELECT id FROM birds)',
+  );
+  await db.customStatement(
+    'UPDATE genetics_history SET mother_bird_id = NULL '
+    'WHERE mother_bird_id IS NOT NULL AND mother_bird_id NOT IN (SELECT id FROM birds)',
+  );
+
+  // Required FK columns — delete orphan rows (CASCADE targets)
+  await db.customStatement(
+    'DELETE FROM event_reminders '
+    'WHERE event_id NOT IN (SELECT id FROM events)',
+  );
+  await db.customStatement(
+    'DELETE FROM growth_measurements '
+    'WHERE chick_id NOT IN (SELECT id FROM chicks)',
+  );
+
+  // ------------------------------------------------------------------
+  // Phase 2: Recreate tables with FK constraints via alterTable
+  // ------------------------------------------------------------------
+  // Order: parents first, children after (to avoid FK violations during
+  // recreation). Self-referencing table (birds) first since nothing depends
+  // on it being recreated before itself — Drift handles the temp copy safely.
+
+  await m.alterTable(TableMigration(db.birdsTable));
+  await m.alterTable(TableMigration(db.breedingPairsTable));
+  await m.alterTable(TableMigration(db.clutchesTable));
+  await m.alterTable(TableMigration(db.incubationsTable));
+  await m.alterTable(TableMigration(db.eggsTable));
+  await m.alterTable(TableMigration(db.chicksTable));
+  await m.alterTable(TableMigration(db.healthRecordsTable));
+  await m.alterTable(TableMigration(db.eventsTable));
+  await m.alterTable(TableMigration(db.eventRemindersTable));
+  await m.alterTable(TableMigration(db.growthMeasurementsTable));
+  await m.alterTable(TableMigration(db.geneticsHistoryTable));
+
+  // Re-enable foreign keys.
+  await db.customStatement('PRAGMA foreign_keys = ON');
 }
 
 /// Checks whether [tableName] has a column named [columnName] via PRAGMA.

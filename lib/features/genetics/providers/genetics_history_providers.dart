@@ -38,7 +38,7 @@ class GeneticsHistorySaveNotifier extends Notifier<AsyncValue<void>> {
     try {
       final father = ref.read(fatherGenotypeProvider);
       final mother = ref.read(motherGenotypeProvider);
-      final results = ref.read(offspringResultsProvider);
+      final results = ref.read(offspringResultsProvider).value;
       final userId = ref.read(currentUserIdProvider);
 
       if (results == null || results.isEmpty) {

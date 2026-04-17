@@ -200,6 +200,24 @@ abstract class AppColors {
   static const genotypeHomozygousMutantDark = Color(0xFF42A5F5);
   static const genotypeHeterozygousCarrierDark = Color(0xFFFFA726);
 
+  // Badge Tier Colors (gamification)
+  static const tierBronze = Color(0xFFCD7F32);
+  static const tierSilver = Color(0xFFC0C0C0);
+  static const tierGold = Color(0xFFFFD700);
+  static const tierPlatinum = Color(0xFFE5E4E2);
+  static const tierDefault = Color(0xFF808080);
+
+  // Marketplace Listing Type Colors
+  static const listingSale = Color(0xFF2196F3);
+  static const listingAdoption = Color(0xFFE91E63);
+  static const listingTrade = Color(0xFF9C27B0);
+  static const listingWanted = Color(0xFFFF9800);
+
+  // Community Guidelines Header Gradient
+  static const guidelinesGradientStart = Color(0xFF102A62);
+  static const guidelinesGradientMid = Color(0xFF1E40AF);
+  static const guidelinesGradientEnd = Color(0xFF60A5FA);
+
   // Audit Severity
   static const severityCritical = Color(0xFF7F1D1D);
 

@@ -10,6 +10,7 @@ import 'package:budgie_breeding_tracker/features/notifications/providers/notific
 import 'package:budgie_breeding_tracker/features/profile/providers/profile_providers.dart';
 import 'package:budgie_breeding_tracker/features/settings/providers/settings_providers.dart';
 import 'package:budgie_breeding_tracker/features/admin/providers/admin_providers.dart';
+import 'package:budgie_breeding_tracker/features/admin/providers/admin_data_providers.dart';
 
 void main() {
   late GoRouter router;
@@ -67,7 +68,11 @@ void main() {
     );
   });
 
-  Widget createSubject({bool isAdmin = false, bool isGuest = false}) {
+  Widget createSubject({
+    bool isAdmin = false,
+    bool isGuest = false,
+    bool isFounder = true,
+  }) {
     final userId = isGuest ? 'anonymous' : 'test-user';
 
     return ProviderScope(
@@ -79,6 +84,7 @@ void main() {
           userId,
         ).overrideWith((_) => Stream.value([])),
         isAdminProvider.overrideWith((_) async => isAdmin),
+        isFounderProvider.overrideWith((_) async => isFounder),
         appInfoProvider.overrideWith((_) async {
           throw UnimplementedError();
         }),
@@ -110,7 +116,7 @@ void main() {
       expect(find.text(l10n('nav.chicks')), findsOneWidget);
 
       expect(find.text('health_records.title'), findsOneWidget);
-      // Community temporarily disabled
+      expect(find.text(l10n('more.community')), findsOneWidget);
       expect(find.text(l10n('more.statistics')), findsOneWidget);
       expect(find.text(l10n('more.genealogy')), findsOneWidget);
       expect(find.text(l10n('more.genetics')), findsOneWidget);
@@ -199,9 +205,26 @@ void main() {
       expect(find.text(l10n('premium.pro_badge')), findsAtLeastNWidgets(3));
     });
 
-    // TODO: Community tests temporarily disabled
-    // testWidgets('shows community menu item in features section', ...);
-    // testWidgets('tapping community navigates to community screen', ...);
+    testWidgets('shows community menu item in features section', (
+      tester,
+    ) async {
+      await tester.pumpWidget(createSubject());
+      await tester.pumpAndSettle();
+
+      expect(find.text(l10n('more.community')), findsOneWidget);
+    });
+
+    testWidgets('tapping community navigates to community screen', (
+      tester,
+    ) async {
+      await tester.pumpWidget(createSubject());
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text(l10n('more.community')));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Community'), findsOneWidget);
+    });
 
     testWidgets('tapping health records navigates to health screen', (
       tester,

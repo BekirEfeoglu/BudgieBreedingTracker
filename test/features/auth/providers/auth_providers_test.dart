@@ -85,8 +85,8 @@ void main() {
           supabaseInitializedProvider.overrideWithValue(true),
         ],
       );
+      addTearDown(container.dispose);
       addTearDown(() {
-        container.dispose();
         authStreamController.close();
       });
 
@@ -123,8 +123,8 @@ void main() {
           supabaseInitializedProvider.overrideWithValue(true),
         ],
       );
+      addTearDown(container.dispose);
       addTearDown(() {
-        container.dispose();
         authStreamController.close();
       });
 

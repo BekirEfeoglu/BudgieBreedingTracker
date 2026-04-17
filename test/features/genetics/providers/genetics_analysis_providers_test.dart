@@ -12,7 +12,7 @@ void main() {
   group('offspringChartDataProvider', () {
     test('returns empty list when offspringResults is null', () {
       final container = ProviderContainer(
-        overrides: [offspringResultsProvider.overrideWithValue(null)],
+        overrides: [offspringResultsProvider.overrideWithValue(const AsyncData(null))],
       );
       addTearDown(container.dispose);
 
@@ -21,7 +21,7 @@ void main() {
 
     test('returns empty list when offspringResults is empty', () {
       final container = ProviderContainer(
-        overrides: [offspringResultsProvider.overrideWithValue(const [])],
+        overrides: [offspringResultsProvider.overrideWithValue(const AsyncData([]))],
       );
       addTearDown(container.dispose);
 
@@ -31,10 +31,10 @@ void main() {
     test('maps results to chart items with correct probability scaling', () {
       final container = ProviderContainer(
         overrides: [
-          offspringResultsProvider.overrideWithValue(const [
+          offspringResultsProvider.overrideWithValue(const AsyncData([
             OffspringResult(phenotype: 'Blue', probability: 0.5),
             OffspringResult(phenotype: 'Normal', probability: 0.5),
-          ]),
+          ])),
         ],
       );
       addTearDown(container.dispose);
@@ -50,13 +50,13 @@ void main() {
     test('assigns color from visual mutations when available', () {
       final container = ProviderContainer(
         overrides: [
-          offspringResultsProvider.overrideWithValue(const [
+          offspringResultsProvider.overrideWithValue(const AsyncData([
             OffspringResult(
               phenotype: 'Blue',
               probability: 1.0,
               visualMutations: ['blue'],
             ),
-          ]),
+          ])),
         ],
       );
       addTearDown(container.dispose);
@@ -68,13 +68,13 @@ void main() {
     test('falls back to phenotype color when no visual mutations', () {
       final container = ProviderContainer(
         overrides: [
-          offspringResultsProvider.overrideWithValue(const [
+          offspringResultsProvider.overrideWithValue(const AsyncData([
             OffspringResult(
               phenotype: 'Normal',
               probability: 1.0,
               visualMutations: [],
             ),
-          ]),
+          ])),
         ],
       );
       addTearDown(container.dispose);
@@ -97,7 +97,7 @@ void main() {
   group('lethalAnalysisProvider', () {
     test('returns null when offspring results are null', () {
       final container = ProviderContainer(
-        overrides: [offspringResultsProvider.overrideWithValue(null)],
+        overrides: [offspringResultsProvider.overrideWithValue(const AsyncData(null))],
       );
       addTearDown(container.dispose);
 
@@ -106,14 +106,14 @@ void main() {
 
     test('returns null when offspring results are empty', () {
       final container = ProviderContainer(
-        overrides: [offspringResultsProvider.overrideWithValue(const [])],
+        overrides: [offspringResultsProvider.overrideWithValue(const AsyncData([]))],
       );
       addTearDown(container.dispose);
 
       expect(container.read(lethalAnalysisProvider), isNull);
     });
 
-    test('returns analysis result for valid offspring results', () {
+    test('returns analysis result for valid offspring results', () async {
       final container = ProviderContainer();
       addTearDown(container.dispose);
 
@@ -126,6 +126,8 @@ void main() {
         mutations: {'blue': AlleleState.carrier},
       );
 
+      // Await FutureProvider so derived providers resolve
+      await container.read(offspringResultsProvider.future);
       final analysis = container.read(lethalAnalysisProvider)!;
       expect(analysis.warnings, isEmpty);
     });
@@ -134,7 +136,7 @@ void main() {
   group('enrichedOffspringResultsProvider', () {
     test('returns null when offspring results are null', () {
       final container = ProviderContainer(
-        overrides: [offspringResultsProvider.overrideWithValue(null)],
+        overrides: [offspringResultsProvider.overrideWithValue(const AsyncData(null))],
       );
       addTearDown(container.dispose);
 
@@ -142,12 +144,12 @@ void main() {
     });
 
     test('returns original results when no lethal warnings', () {
-      const results = [
-        OffspringResult(phenotype: 'Blue', probability: 0.5),
-        OffspringResult(phenotype: 'Normal', probability: 0.5),
+      final results = [
+        const OffspringResult(phenotype: 'Blue', probability: 0.5),
+        const OffspringResult(phenotype: 'Normal', probability: 0.5),
       ];
       final container = ProviderContainer(
-        overrides: [offspringResultsProvider.overrideWithValue(results)],
+        overrides: [offspringResultsProvider.overrideWithValue(AsyncData(results))],
       );
       addTearDown(container.dispose);
 
@@ -161,7 +163,7 @@ void main() {
 
     test(
       'enriches results with lethal combination IDs when warnings present',
-      () {
+      () async {
         // Use ino visual on both parents to trigger ino_x_ino warning
         final container = ProviderContainer();
         addTearDown(container.dispose);
@@ -175,6 +177,8 @@ void main() {
           mutations: {'ino': AlleleState.visual},
         );
 
+        // Await FutureProvider so derived providers resolve
+        await container.read(offspringResultsProvider.future);
         final analysis = container.read(lethalAnalysisProvider)!;
         final enriched = container.read(enrichedOffspringResultsProvider)!;
 
@@ -190,7 +194,7 @@ void main() {
   group('epistasisInteractionsProvider', () {
     test('returns empty list when offspring results are null', () {
       final container = ProviderContainer(
-        overrides: [offspringResultsProvider.overrideWithValue(null)],
+        overrides: [offspringResultsProvider.overrideWithValue(const AsyncData(null))],
       );
       addTearDown(container.dispose);
 
@@ -199,7 +203,7 @@ void main() {
 
     test('returns empty list when offspring results are empty', () {
       final container = ProviderContainer(
-        overrides: [offspringResultsProvider.overrideWithValue(const [])],
+        overrides: [offspringResultsProvider.overrideWithValue(const AsyncData([]))],
       );
       addTearDown(container.dispose);
 
@@ -209,13 +213,13 @@ void main() {
     test('extracts interactions from offspring with multiple mutations', () {
       final container = ProviderContainer(
         overrides: [
-          offspringResultsProvider.overrideWithValue(const [
+          offspringResultsProvider.overrideWithValue(const AsyncData([
             OffspringResult(
               phenotype: 'Albino',
               probability: 1.0,
               visualMutations: ['ino', 'blue'],
             ),
-          ]),
+          ])),
         ],
       );
       addTearDown(container.dispose);
@@ -228,13 +232,13 @@ void main() {
     test('returns empty for results with no visual mutations', () {
       final container = ProviderContainer(
         overrides: [
-          offspringResultsProvider.overrideWithValue(const [
+          offspringResultsProvider.overrideWithValue(const AsyncData([
             OffspringResult(
               phenotype: 'Normal',
               probability: 1.0,
               visualMutations: [],
             ),
-          ]),
+          ])),
         ],
       );
       addTearDown(container.dispose);
@@ -245,7 +249,7 @@ void main() {
     test('deduplicates interactions by result name', () {
       final container = ProviderContainer(
         overrides: [
-          offspringResultsProvider.overrideWithValue(const [
+          offspringResultsProvider.overrideWithValue(const AsyncData([
             OffspringResult(
               phenotype: 'Albino Male',
               probability: 0.5,
@@ -258,7 +262,7 @@ void main() {
               sex: OffspringSex.female,
               visualMutations: ['ino', 'blue'],
             ),
-          ]),
+          ])),
         ],
       );
       addTearDown(container.dispose);
@@ -273,7 +277,7 @@ void main() {
     test('sorts interactions by highest probability', () {
       final container = ProviderContainer(
         overrides: [
-          offspringResultsProvider.overrideWithValue(const [
+          offspringResultsProvider.overrideWithValue(const AsyncData([
             OffspringResult(
               phenotype: 'Lacewing',
               probability: 0.25,
@@ -284,7 +288,7 @@ void main() {
               probability: 0.75,
               visualMutations: ['ino', 'blue'],
             ),
-          ]),
+          ])),
         ],
       );
       addTearDown(container.dispose);
@@ -300,13 +304,13 @@ void main() {
     test('skips offspring with single visual mutation (no interaction)', () {
       final container = ProviderContainer(
         overrides: [
-          offspringResultsProvider.overrideWithValue(const [
+          offspringResultsProvider.overrideWithValue(const AsyncData([
             OffspringResult(
               phenotype: 'Blue',
               probability: 1.0,
               visualMutations: ['blue'],
             ),
-          ]),
+          ])),
         ],
       );
       addTearDown(container.dispose);

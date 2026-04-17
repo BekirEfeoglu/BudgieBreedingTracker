@@ -1,9 +1,11 @@
 import 'package:drift/drift.dart';
+import 'package:budgie_breeding_tracker/data/local/database/tables/chicks_table.dart';
 
 @DataClassName('GrowthMeasurementRow')
 class GrowthMeasurementsTable extends Table {
   TextColumn get id => text()();
-  TextColumn get chickId => text()();
+  TextColumn get chickId =>
+      text().references(ChicksTable, #id)();
   RealColumn get weight => real()();
   DateTimeColumn get measurementDate => dateTime()();
   TextColumn get userId => text()();

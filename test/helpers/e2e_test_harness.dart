@@ -227,7 +227,7 @@ ProviderContainer createTestContainer({
   ).thenAnswer((_) async => false);
   final effectiveTwoFactorService = twoFactorService ?? defaultTwoFactorService;
 
-  return ProviderContainer(
+  final container = ProviderContainer(
     overrides: <dynamic>[
       appDatabaseProvider.overrideWith((ref) {
         final db = createInMemoryDatabase();
@@ -257,6 +257,8 @@ ProviderContainer createTestContainer({
       ...overrides,
     ].cast(),
   );
+  addTearDown(container.dispose);
+  return container;
 }
 
 Future<void> pumpApp(

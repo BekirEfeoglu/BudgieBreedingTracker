@@ -85,7 +85,8 @@ class _BreedingPairTile extends ConsumerWidget {
     return Card(
       clipBehavior: Clip.antiAlias,
       child: InkWell(
-        onTap: () => context.push('/breeding/${pair.id}'),
+        // IMPROVED: use AppRoutes constant instead of hardcoded path
+        onTap: () => context.push('${AppRoutes.breeding}/${pair.id}'),
         borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
         child: IntrinsicHeight(
           child: Row(

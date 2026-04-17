@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart'
     show SupabaseClient, SupabaseQueryBuilder, PostgrestException;
+import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
 import 'package:budgie_breeding_tracker/core/errors/app_exception.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 
@@ -65,9 +66,9 @@ abstract class BaseRemoteSource<T> {
         'fetchAll',
         () => table
             .select()
-            .eq('user_id', userId)
-            .eq('is_deleted', false)
-            .order('created_at'),
+            .eq(SupabaseConstants.colUserId, userId)
+            .eq(SupabaseConstants.colIsDeleted, false)
+            .order(SupabaseConstants.colCreatedAt),
       );
       return response.map((json) => fromJson(json)).toList();
     } catch (e, st) {
@@ -80,7 +81,7 @@ abstract class BaseRemoteSource<T> {
     try {
       final response = await _timed(
         'fetchById',
-        () => table.select().eq('id', id).eq('user_id', userId).maybeSingle(),
+        () => table.select().eq('id', id).eq(SupabaseConstants.colUserId, userId).maybeSingle(),
       );
       return response != null ? fromJson(response) : null;
     } catch (e, st) {
@@ -91,10 +92,15 @@ abstract class BaseRemoteSource<T> {
   /// Maximum records per incremental pull to prevent memory exhaustion.
   static const _maxIncrementalPullSize = 5000;
 
+  /// Maximum pagination iterations to prevent infinite loops.
+  static const _maxPullIterations = 20;
+
   /// Fetches records updated since [since] for a user.
   ///
-  /// Limits results to [_maxIncrementalPullSize] to prevent memory exhaustion
-  /// on large sync gaps. Callers should use [fetchAllPaginated] for full pulls.
+  /// Paginates automatically when results exceed [_maxIncrementalPullSize]
+  /// (5000 records per batch). Uses cursor-based pagination on `updated_at`
+  /// to fetch all changes since the last sync, up to [_maxPullIterations]
+  /// batches (100k records total) as a safety guard.
   ///
   /// Note: `is_deleted` filter is intentionally omitted so that cross-device
   /// soft-deletes propagate during incremental sync. The [since] timestamp
@@ -104,20 +110,49 @@ abstract class BaseRemoteSource<T> {
   /// uses [fetchAll] which filters `is_deleted = false`, keeping that path
   /// fast even for users with many historical deletions.
   Future<List<T>> fetchUpdatedSince(String userId, DateTime since) async {
-    try {
-      final response = await _timed(
-        'fetchUpdatedSince',
-        () => table
-            .select()
-            .eq('user_id', userId)
-            .gte('updated_at', since.toIso8601String())
-            .order('updated_at')
-            .limit(_maxIncrementalPullSize),
-      );
-      return response.map((json) => fromJson(json)).toList();
-    } catch (e, st) {
-      throw handleError(e, st);
+    final allResults = <T>[];
+    var cursor = since;
+
+    for (var i = 0; i < _maxPullIterations; i++) {
+      try {
+        final batch = await _timed(
+          'fetchUpdatedSince${i > 0 ? '(page ${i + 1})' : ''}',
+          () => table
+              .select()
+              .eq(SupabaseConstants.colUserId, userId)
+              .gte(SupabaseConstants.colUpdatedAt, cursor.toIso8601String())
+              .order(SupabaseConstants.colUpdatedAt)
+              .limit(_maxIncrementalPullSize),
+        );
+        final models = batch.map((json) => fromJson(json)).toList();
+        allResults.addAll(models);
+
+        if (batch.length < _maxIncrementalPullSize) break;
+
+        // Advance cursor to last record's updated_at
+        final lastUpdatedAt =
+            batch.last[SupabaseConstants.colUpdatedAt] as String;
+        cursor = DateTime.parse(lastUpdatedAt);
+
+        if (i > 0) {
+          AppLogger.info(
+            '[$tableName] Pull pagination: page ${i + 1}, ${allResults.length} records so far',
+          );
+        }
+      } catch (e, st) {
+        throw handleError(e, st);
+      }
     }
+
+    if (allResults.length >= _maxPullIterations * _maxIncrementalPullSize) {
+      AppLogger.warning(
+        '[$tableName] Pull pagination hit max iterations '
+        '($_maxPullIterations). ${allResults.length} records fetched. '
+        'Consider full reconciliation.',
+      );
+    }
+
+    return allResults;
   }
 
   /// Upserts a single record to the remote table.
@@ -154,19 +189,19 @@ abstract class BaseRemoteSource<T> {
       while (true) {
         var query = table
             .select()
-            .eq('user_id', userId)
-            .eq('is_deleted', false);
+            .eq(SupabaseConstants.colUserId, userId)
+            .eq(SupabaseConstants.colIsDeleted, false);
         if (cursor != null) {
-          query = query.gt('created_at', cursor);
+          query = query.gt(SupabaseConstants.colCreatedAt, cursor);
         }
         final response = await _timed(
           'fetchAllPaginated(page=$page)',
-          () => query.order('created_at').limit(pageSize),
+          () => query.order(SupabaseConstants.colCreatedAt).limit(pageSize),
         );
         if (response.isEmpty) break;
         results.addAll(response.map((json) => fromJson(json)));
         if (response.length < pageSize) break;
-        cursor = response.last['created_at'] as String?;
+        cursor = response.last[SupabaseConstants.colCreatedAt] as String?;
         if (cursor == null) break;
         page++;
       }
@@ -180,7 +215,7 @@ abstract class BaseRemoteSource<T> {
   Future<void> deleteById(String id, {required String userId}) async {
     try {
       await _timed('deleteById', () async {
-        await table.delete().eq('id', id).eq('user_id', userId);
+        await table.delete().eq('id', id).eq(SupabaseConstants.colUserId, userId);
       });
     } catch (e, st) {
       throw handleError(e, st);
@@ -225,8 +260,17 @@ abstract class BaseRemoteSource<T> {
   /// to prevent database internals from leaking to the UI layer.
   /// The original error is preserved in [AppException.originalError] for
   /// logging and Sentry reporting.
-  AppException handleError(dynamic error, StackTrace stackTrace) {
-    AppLogger.error('[$tableName] Remote error', error, stackTrace);
+  AppException handleError(dynamic error, StackTrace stackTrace) =>
+      handleErrorForTag(tableName, error, stackTrace);
+
+  /// Static variant of [handleError] for use by remote sources that don't
+  /// extend [BaseRemoteSource] (e.g. community, messaging).
+  static AppException handleErrorForTag(
+    String tag,
+    dynamic error,
+    StackTrace stackTrace,
+  ) {
+    AppLogger.error('[$tag] Remote error', error, stackTrace);
 
     if (error is PostgrestException) {
       final sanitized = _sanitizeErrorMessage(error.message);
@@ -237,9 +281,30 @@ abstract class BaseRemoteSource<T> {
           level: SentryLevel.warning,
         ));
       }
+
+      final code = error.code ?? '';
+
+      // Auth/permission errors
+      if (code == 'PGRST301' || code == '42501') {
+        return AuthException(
+          sanitized,
+          code: code,
+          originalError: error,
+        );
+      }
+
+      // Constraint violations → validation errors
+      if (code.startsWith('23')) {
+        return ValidationException(
+          sanitized,
+          code: code,
+          originalError: error,
+        );
+      }
+
       return NetworkException(
         sanitized,
-        code: error.code,
+        code: code,
         originalError: error,
       );
     }
@@ -277,7 +342,7 @@ abstract class BaseRemoteSourceNoSoftDelete<T> extends BaseRemoteSource<T> {
     try {
       final response = await _timed(
         'fetchAll',
-        () => table.select().eq('user_id', userId).order('created_at'),
+        () => table.select().eq(SupabaseConstants.colUserId, userId).order(SupabaseConstants.colCreatedAt),
       );
       return response.map((json) => fromJson(json)).toList();
     } catch (e, st) {
@@ -286,22 +351,6 @@ abstract class BaseRemoteSourceNoSoftDelete<T> extends BaseRemoteSource<T> {
   }
 
   /// No `is_deleted` column on these tables, so no soft-delete filtering
-  /// applies. The [since] timestamp limits results to recently changed records.
-  @override
-  Future<List<T>> fetchUpdatedSince(String userId, DateTime since) async {
-    try {
-      final response = await _timed(
-        'fetchUpdatedSince',
-        () => table
-            .select()
-            .eq('user_id', userId)
-            .gte('updated_at', since.toIso8601String())
-            .order('updated_at')
-            .limit(BaseRemoteSource._maxIncrementalPullSize),
-      );
-      return response.map((json) => fromJson(json)).toList();
-    } catch (e, st) {
-      throw handleError(e, st);
-    }
-  }
+  /// applies. The parent [fetchUpdatedSince] already omits `is_deleted`
+  /// filtering, so the inherited paginated implementation works as-is.
 }

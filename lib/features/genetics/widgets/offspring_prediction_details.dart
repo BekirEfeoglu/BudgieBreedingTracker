@@ -29,24 +29,23 @@ class PhenotypeBadges extends StatelessWidget {
     final shortName = PhenotypeLocalizer.shortenPhenotype(displayName);
     final isShortened = shortName != displayName;
 
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return Wrap(
+      crossAxisAlignment: WrapCrossAlignment.center,
+      spacing: AppSpacing.xs,
+      runSpacing: AppSpacing.xs,
       children: [
-        Flexible(
-          child: Tooltip(
-            message: isShortened ? displayName : '',
-            child: Text(
-              shortName,
-              style: theme.textTheme.titleSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-              overflow: TextOverflow.ellipsis,
-              maxLines: 2,
+        Tooltip(
+          message: isShortened ? displayName : '',
+          child: Text(
+            shortName,
+            style: theme.textTheme.titleSmall?.copyWith(
+              fontWeight: FontWeight.bold,
             ),
+            overflow: TextOverflow.ellipsis,
+            maxLines: 2,
           ),
         ),
-        if (result.isCarrier) ...[
-          const SizedBox(width: AppSpacing.xs),
+        if (result.isCarrier)
           Container(
             padding: const EdgeInsets.symmetric(
               horizontal: AppSpacing.xs + 2,
@@ -65,13 +64,9 @@ class PhenotypeBadges extends StatelessWidget {
               ),
             ),
           ),
-        ],
-        if (hasLinkedSexLinkedMutations(result)) ...[
-          const SizedBox(width: AppSpacing.xs),
+        if (hasLinkedSexLinkedMutations(result))
           ZLinkedBadge(linkedIds: getLinkedIds(result)),
-        ],
-        if (result.lethalCombinationIds.isNotEmpty) ...[
-          const SizedBox(width: AppSpacing.xs),
+        if (result.lethalCombinationIds.isNotEmpty)
           Container(
             padding: const EdgeInsets.symmetric(
               horizontal: AppSpacing.xs + 2,
@@ -101,7 +96,6 @@ class PhenotypeBadges extends StatelessWidget {
               ],
             ),
           ),
-        ],
       ],
     );
   }

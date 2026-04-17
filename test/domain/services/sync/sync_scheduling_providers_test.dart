@@ -25,13 +25,13 @@ void main() {
         final container = ProviderContainer(
           overrides: [currentUserIdProvider.overrideWithValue('anonymous')],
         );
+        addTearDown(container.dispose);
 
         // Should not throw — provider returns early for anonymous
         container.read(periodicSyncProvider);
 
         // Advance past jitter window — nothing should happen
         async.elapse(const Duration(minutes: 1));
-        container.dispose();
       });
     });
 
@@ -46,6 +46,7 @@ void main() {
             syncOrchestratorProvider.overrideWithValue(mock),
           ],
         );
+        addTearDown(container.dispose);
 
         container.read(periodicSyncProvider);
 
@@ -56,7 +57,6 @@ void main() {
         verifyNever(() => mock.fullSync());
         verifyNever(() => mock.retryFailedRecords(any()));
 
-        container.dispose();
       });
     });
 
@@ -73,6 +73,7 @@ void main() {
             syncOrchestratorProvider.overrideWithValue(mock),
           ],
         );
+        addTearDown(container.dispose);
 
         // Read the provider to start the timer
         container.read(periodicSyncProvider);
@@ -81,7 +82,6 @@ void main() {
         async.elapse(const Duration(seconds: 61));
 
         // Disposing cancels the periodic timer — no errors
-        container.dispose();
 
         // Advance more — no callbacks should fire after dispose
         async.elapse(const Duration(minutes: 30));

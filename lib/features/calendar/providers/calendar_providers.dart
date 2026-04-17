@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart' show DateUtils;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:budgie_breeding_tracker/data/local/preferences/app_preferences.dart';
@@ -73,12 +74,11 @@ final eventsForSelectedDateProvider = Provider<List<Event>>((ref) {
   final eventsAsync = ref.watch(eventsStreamProvider(userId));
   final selectedDate = ref.watch(selectedDateProvider);
 
+  // IMPROVED: use DateUtils.dateOnly for cleaner date comparison
+  final selectedDay = DateUtils.dateOnly(selectedDate);
   return eventsAsync.whenData((events) {
         return events.where((e) {
-          final eventDate = e.eventDate;
-          return eventDate.year == selectedDate.year &&
-              eventDate.month == selectedDate.month &&
-              eventDate.day == selectedDate.day;
+          return DateUtils.dateOnly(e.eventDate) == selectedDay;
         }).toList();
       }).value ??
       [];
@@ -123,20 +123,36 @@ final eventsForWeekProvider = Provider<Map<DateTime, List<Event>>>((ref) {
   final selectedDate = ref.watch(selectedDateProvider);
 
   final events = eventsAsync.value ?? [];
-  // Get Monday of the selected date's week
+  // Get Monday of the selected date's week (ISO 8601: Monday=1)
+  // Note: locale-aware firstDayOfWeek requires BuildContext; Monday-first
+  // is correct for TR/DE locales. Future: add firstDayOfWeek provider.
   final monday = selectedDate.subtract(
     Duration(days: (selectedDate.weekday - 1)),
   );
 
+  // IMPROVED: use DateUtils.dateOnly for consistent date comparison
   final map = <DateTime, List<Event>>{};
   for (var i = 0; i < 7; i++) {
-    final day = monday.add(Duration(days: i));
-    final key = DateTime(day.year, day.month, day.day);
+    final key = DateUtils.dateOnly(monday.add(Duration(days: i)));
     map[key] = events.where((e) {
-      final d = e.eventDate;
-      return d.year == key.year && d.month == key.month && d.day == key.day;
+      return DateUtils.dateOnly(e.eventDate) == key;
     }).toList();
   }
   return map;
+});
+
+// Realtime subscription for cross-device event updates.
+// Routes changes through the local Drift DB via the repository so the
+// offline-first contract is maintained — the DAO stream ([watchAll])
+// auto-emits updated data, no manual invalidation needed.
+final eventRealtimeSyncProvider = Provider.family<void, String>((ref, userId) {
+  if (userId == 'anonymous') return;
+
+  final repo = ref.watch(eventRepositoryProvider);
+  final channel = repo.subscribeToEvents(userId);
+
+  ref.onDispose(() {
+    repo.unsubscribeFromEvents(channel);
+  });
 });
 

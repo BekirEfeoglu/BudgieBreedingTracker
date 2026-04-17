@@ -99,7 +99,8 @@ class _ChickTile extends StatelessWidget {
 
     return Card(
       child: InkWell(
-        onTap: () => context.push('/chicks/${chick.id}'),
+        // IMPROVED: use AppRoutes constant instead of hardcoded path
+        onTap: () => context.push('${AppRoutes.chicks}/${chick.id}'),
         borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
         child: Padding(
           padding: AppSpacing.cardPadding,

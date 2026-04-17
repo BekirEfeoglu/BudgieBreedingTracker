@@ -1,13 +1,16 @@
 import 'package:drift/drift.dart';
 import 'package:budgie_breeding_tracker/data/local/database/converters/enum_converters.dart';
+import 'package:budgie_breeding_tracker/data/local/database/tables/birds_table.dart';
 
 @DataClassName('BreedingPairRow')
 class BreedingPairsTable extends Table {
   TextColumn get id => text()();
   TextColumn get userId => text()();
   TextColumn get status => text().map(breedingStatusConverter)();
-  TextColumn get maleId => text().nullable()();
-  TextColumn get femaleId => text().nullable()();
+  TextColumn get maleId =>
+      text().nullable().references(BirdsTable, #id)();
+  TextColumn get femaleId =>
+      text().nullable().references(BirdsTable, #id)();
   TextColumn get cageNumber => text().nullable()();
   TextColumn get notes => text().nullable()();
   DateTimeColumn get pairingDate => dateTime().nullable()();

@@ -65,6 +65,9 @@
     "chance": "Olasılık",
     "complete": "Tamamla",
     "selected": "Seçili",
+    "selection_count": "{} seçili",
+    "coming_soon": "Yakında",
+    "coming_soon_hint": "Bu özellik geliştirme aşamasında, yakında hazır olacak",
     "just_now": "Az önce",
     "minutes_ago": "{} dakika önce",
     "hours_ago": "{} saat önce",
@@ -265,7 +268,11 @@
     "color_other": "Diğer Renk",
     "section_basic": "Temel Bilgiler",
     "section_identity": "Kimlik Bilgileri",
-    "default_name_prefix": "Kuş-"
+    "default_name_prefix": "Kuş-",
+    "bulk_delete_confirm": "{} kuş silinecek. Devam etmek istiyor musunuz?",
+    "bulk_mark_dead_confirm": "{} kuş vefat etti olarak işaretlenecek. Devam?",
+    "bulk_mark_sold_confirm": "{} kuş satıldı olarak işaretlenecek. Devam?",
+    "mark_sold": "Satıldı Olarak İşaretle"
   },
   "breeding": {
     "title": "Üreme Takibi",
@@ -443,7 +450,9 @@
     "banding_not_yet": "Henüz takılmadı",
     "banding_confirm_title": "Halka Takıldı mı?",
     "banding_confirm_message": "Bu yavruya halka takıldığını onaylıyor musunuz?",
-    "banding_success": "Halka takma kaydedildi"
+    "banding_success": "Halka takma kaydedildi",
+    "bulk_delete_confirm": "{} yavru silinecek. Devam etmek istiyor musunuz?",
+    "bulk_mark_deceased_confirm": "{} yavru vefat etti olarak işaretlenecek. Devam?"
   },
   "home": {
     "welcome": "Merhaba!",
@@ -638,8 +647,6 @@
     "storage_calculating": "Hesaplanıyor...",
     "wifi_only_sync": "Sadece WiFi'da Senkronize Et",
     "wifi_only_sync_desc": "Mobil veri kullanırken senkronizasyon yapılmaz",
-    "debug_offline_mode": "Offline Simülasyon (Debug)",
-    "debug_offline_desc": "Ağ bağlantısını simüle olarak kapatır",
     "password_changed": "Şifre başarıyla değiştirildi",
     "password_change_error": "Şifre değiştirilirken hata oluştu",
     "just_now": "Az önce",
@@ -1078,7 +1085,9 @@
     "try_free_trial": "7 Gün Ücretsiz Dene",
     "grace_period_title": "Premium Süreniz Doldu",
     "grace_period_message": "Premium aboneliğiniz {} gün önce sona erdi. Yenileyin!",
-    "grace_period_renew": "Şimdi Yenile"
+    "grace_period_renew": "Şimdi Yenile",
+    "upgrade_title": "Premium'a Yükseltin",
+    "upgrade_button": "Yükselt"
   },
   "genealogy": {
     "title": "Soy Ağacı",
@@ -1584,7 +1593,8 @@
     "ai_pattern_reversed": "Ters desen",
     "ai_pattern_grey_barring": "Gri çizgili",
     "ai_pattern_brown_barring": "Kahverengi çizgili",
-    "ai_image_too_large_warning": "Dosya boyutu çok büyük (maks. {} MB). Lütfen daha küçük bir fotoğraf seçin."
+    "ai_image_too_large_warning": "Dosya boyutu çok büyük (maks. {} MB). Lütfen daha küçük bir fotoğraf seçin.",
+    "reverse_calculation_error": "Ters hesaplama sırasında bir hata oluştu. Lütfen tekrar deneyin."
   },
   "admin": {
     "panel_title": "Admin Paneli",
@@ -2129,7 +2139,8 @@
     "delete_failed": "Silme işlemi başarısız oldu.",
     "update_failed": "Güncelleme işlemi başarısız oldu.",
     "background_tasks_partial": "Kayıt tamamlandı ancak bazı hatırlatma/takvim görevleri planlanamadı.",
-    "not_found": "Bulunamadı"
+    "not_found": "Bulunamadı",
+    "unknown_error": "Bilinmeyen bir hata oluştu"
   },
   "validation": {
     "field_required": "{} zorunludur",

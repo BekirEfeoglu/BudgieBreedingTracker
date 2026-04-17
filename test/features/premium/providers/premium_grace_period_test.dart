@@ -15,6 +15,7 @@ Future<ProviderContainer> createContainer({Profile? profile}) async {
       isAuthenticatedProvider.overrideWith((ref) => true),
     ],
   );
+  addTearDown(container.dispose);
   container.listen(userProfileProvider, (_, __) {});
   await container.read(userProfileProvider.future);
   return container;

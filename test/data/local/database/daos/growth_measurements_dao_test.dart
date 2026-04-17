@@ -37,9 +37,21 @@ void main() {
     );
   }
 
-  setUp(() {
+  /// Insert a minimal parent chick row to satisfy FK constraints.
+  Future<void> insertChick(String id) async {
+    await db.customStatement(
+      'INSERT OR IGNORE INTO chicks (id, user_id, gender, health_status, banding_day, is_deleted) '
+      "VALUES ('$id', 'user-1', 'unknown', 'healthy', 10, 0)",
+    );
+  }
+
+  setUp(() async {
     db = AppDatabase.forTesting(NativeDatabase.memory());
     dao = db.growthMeasurementsDao;
+    // Pre-create parent chicks referenced by test fixtures.
+    await insertChick('chick-1');
+    await insertChick('chick-2');
+    await insertChick('chick-99');
   });
 
   tearDown(() async {

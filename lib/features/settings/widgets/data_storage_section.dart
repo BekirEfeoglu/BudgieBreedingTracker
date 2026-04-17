@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:easy_localization/easy_localization.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -11,7 +10,6 @@ import 'package:sentry_flutter/sentry_flutter.dart';
 
 import '../../../core/constants/app_icons.dart';
 import '../../../core/widgets/app_icon.dart';
-import '../../../domain/services/sync/network_status_provider.dart';
 import '../../../domain/services/sync/sync_orchestrator.dart';
 import '../../../domain/services/sync/sync_providers.dart';
 import '../../../router/route_names.dart';
@@ -117,18 +115,6 @@ class _DataStorageSectionState extends ConsumerState<DataStorageSection> {
           icon: const AppIcon(AppIcons.database),
           onTap: () => showStorageInfoDialog(context),
         ),
-        if (kDebugMode)
-          SettingsToggleTile(
-            title: 'settings.debug_offline_mode'.tr(),
-            subtitle: 'settings.debug_offline_desc'.tr(),
-            icon: const Icon(LucideIcons.wifiOff),
-            value: ref.watch(debugOfflineModeProvider),
-            onChanged: (_) {
-              ref.read(debugOfflineModeProvider.notifier).state = !ref.read(
-                debugOfflineModeProvider,
-              );
-            },
-          ),
       ],
     );
   }

@@ -88,9 +88,9 @@ final sortedAndFilteredBirdsProvider = Provider.family<List<Bird>, List<Bird>>((
   final sorted = List<Bird>.of(searched);
   switch (sort) {
     case BirdSort.nameAsc:
-      sorted.sort((a, b) => a.name.compareTo(b.name));
+      sorted.sort((a, b) => _naturalCompare(a.name, b.name));
     case BirdSort.nameDesc:
-      sorted.sort((a, b) => b.name.compareTo(a.name));
+      sorted.sort((a, b) => _naturalCompare(b.name, a.name));
     case BirdSort.ageNewest:
       sorted.sort(
         (a, b) => (b.birthDate ?? DateTime(1900)).compareTo(
@@ -155,4 +155,30 @@ enum BirdSort {
     BirdSort.dateNewest => 'birds.sort_date_newest'.tr(),
     BirdSort.dateOldest => 'birds.sort_date_oldest'.tr(),
   };
+}
+
+final _naturalChunkPattern = RegExp(r'(\d+)|(\D+)');
+
+/// Natural sort comparison: splits strings into text and numeric chunks
+/// so that "Kuş-2" comes before "Kuş-10".
+int _naturalCompare(String a, String b) {
+  final aChunks = _naturalChunkPattern.allMatches(a.toLowerCase()).toList();
+  final bChunks = _naturalChunkPattern.allMatches(b.toLowerCase()).toList();
+
+  for (var i = 0; i < aChunks.length && i < bChunks.length; i++) {
+    final aText = aChunks[i].group(0)!;
+    final bText = bChunks[i].group(0)!;
+
+    final aNum = int.tryParse(aText);
+    final bNum = int.tryParse(bText);
+
+    int cmp;
+    if (aNum != null && bNum != null) {
+      cmp = aNum.compareTo(bNum);
+    } else {
+      cmp = aText.compareTo(bText);
+    }
+    if (cmp != 0) return cmp;
+  }
+  return aChunks.length.compareTo(bChunks.length);
 }

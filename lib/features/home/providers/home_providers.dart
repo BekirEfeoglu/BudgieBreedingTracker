@@ -59,9 +59,11 @@ final dashboardStatsProvider = Provider.family<AsyncValue<DashboardStats>, Strin
   }
 
   int countOrZero(AsyncValue<int> value, String label) {
+    // IMPROVED: include error details for better debugging
     if (value.hasError) {
       AppLogger.warning(
-        '[dashboardStatsProvider] $label count failed, using 0 fallback: ${value.error}',
+        '[dashboardStatsProvider] $label count failed, using 0 fallback: '
+        '${value.error}',
       );
     }
     return value.value ?? 0;

@@ -1,17 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
+import 'package:budgie_breeding_tracker/data/local/database/dao_providers.dart';
+import 'package:budgie_breeding_tracker/data/local/database/daos/eggs_dao.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_providers.dart';
 import 'package:budgie_breeding_tracker/features/eggs/providers/egg_providers.dart';
 import 'package:budgie_breeding_tracker/features/statistics/providers/statistics_breeding_providers.dart';
 import 'package:budgie_breeding_tracker/features/statistics/screens/breeding_tab.dart';
 import 'package:budgie_breeding_tracker/features/statistics/widgets/chart_card.dart';
 
+class _MockEggsDao extends Mock implements EggsDao {}
+
 Widget _createSubject() {
+  final mockEggsDao = _MockEggsDao();
+  when(() => mockEggsDao.watchMonthlyProduction(any()))
+      .thenAnswer((_) => Stream.value(<String, int>{}));
+
   return ProviderScope(
     overrides: [
+      // Override DAO for SQL aggregate fast-path in monthlyEggProductionProvider.
+      eggsDaoProvider.overrideWithValue(mockEggsDao),
       // BreedingTab uses: monthlyBreedingOutcomesProvider (breedingPairs + eggs),
       // monthlyEggProductionProvider (eggs), monthlyFertilityRateProvider (eggs),
       // incubationDurationProvider (incubations stream).

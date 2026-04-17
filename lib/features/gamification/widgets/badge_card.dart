@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
+import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../providers/gamification_providers.dart';
 
@@ -83,10 +84,10 @@ class BadgeCard extends StatelessWidget {
   }
 
   Color _tierColor(BadgeTier tier, ThemeData theme) => switch (tier) {
-        BadgeTier.bronze => const Color(0xFFCD7F32),
-        BadgeTier.silver => const Color(0xFFC0C0C0),
-        BadgeTier.gold => const Color(0xFFFFD700),
-        BadgeTier.platinum => const Color(0xFFE5E4E2),
+        BadgeTier.bronze => AppColors.tierBronze,
+        BadgeTier.silver => AppColors.tierSilver,
+        BadgeTier.gold => AppColors.tierGold,
+        BadgeTier.platinum => AppColors.tierPlatinum,
         BadgeTier.unknown => theme.colorScheme.outline,
       };
 }

@@ -65,6 +65,9 @@
     "chance": "Wahrscheinlichkeit",
     "complete": "Abschließen",
     "selected": "Ausgewählt",
+    "selection_count": "{} ausgewählt",
+    "coming_soon": "Demnächst",
+    "coming_soon_hint": "Diese Funktion ist in Entwicklung und wird bald verfügbar sein",
     "just_now": "Gerade eben",
     "minutes_ago": "vor {} Minuten",
     "hours_ago": "vor {} Stunden",
@@ -265,7 +268,11 @@
     "color_other": "Andere Farbe",
     "section_basic": "Allgemeine Informationen",
     "section_identity": "Identitätsdaten",
-    "default_name_prefix": "Vogel-"
+    "default_name_prefix": "Vogel-",
+    "bulk_delete_confirm": "{} Vögel werden gelöscht. Möchten Sie fortfahren?",
+    "bulk_mark_dead_confirm": "{} Vögel werden als verstorben markiert. Fortfahren?",
+    "bulk_mark_sold_confirm": "{} Vögel werden als verkauft markiert. Fortfahren?",
+    "mark_sold": "Als verkauft markieren"
   },
   "breeding": {
     "title": "Zuchtüberwachung",
@@ -443,7 +450,9 @@
     "banding_not_yet": "Noch nicht beringt",
     "banding_confirm_title": "Beringung abgeschlossen?",
     "banding_confirm_message": "Bestätigen Sie, dass dieser Küken beringt wurde?",
-    "banding_success": "Beringung gespeichert"
+    "banding_success": "Beringung gespeichert",
+    "bulk_delete_confirm": "{} Küken werden gelöscht. Möchten Sie fortfahren?",
+    "bulk_mark_deceased_confirm": "{} Küken werden als verstorben markiert. Fortfahren?"
   },
   "home": {
     "welcome": "Hallo!",
@@ -638,8 +647,6 @@
     "storage_calculating": "Berechnung...",
     "wifi_only_sync": "Nur über WLAN synchronisieren",
     "wifi_only_sync_desc": "Synchronisierung wird bei mobilen Daten nicht ausgeführt",
-    "debug_offline_mode": "Offline-Simulation (Debug)",
-    "debug_offline_desc": "Simuliert das Ausschalten der Netzwerkverbindung",
     "password_changed": "Passwort erfolgreich geändert",
     "password_change_error": "Fehler beim Ändern des Passworts",
     "just_now": "Gerade eben",
@@ -1078,7 +1085,9 @@
     "try_free_trial": "7 Tage kostenlos testen",
     "grace_period_title": "Ihr Premium ist abgelaufen",
     "grace_period_message": "Ihr Premium-Abonnement ist vor {} Tagen abgelaufen. Jetzt erneuern!",
-    "grace_period_renew": "Jetzt erneuern"
+    "grace_period_renew": "Jetzt erneuern",
+    "upgrade_title": "Auf Premium upgraden",
+    "upgrade_button": "Upgraden"
   },
   "genealogy": {
     "title": "Stammbaum",
@@ -1584,7 +1593,8 @@
     "ai_pattern_reversed": "Umgekehrtes Muster",
     "ai_pattern_grey_barring": "Graue Bänderung",
     "ai_pattern_brown_barring": "Braune Bänderung",
-    "ai_image_too_large_warning": "Datei ist zu groß (max. {} MB). Bitte wählen Sie ein kleineres Foto."
+    "ai_image_too_large_warning": "Datei ist zu groß (max. {} MB). Bitte wählen Sie ein kleineres Foto.",
+    "reverse_calculation_error": "Bei der Rückberechnung ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut."
   },
   "admin": {
     "panel_title": "Admin-Panel",
@@ -2129,7 +2139,8 @@
     "delete_failed": "Löschvorgang fehlgeschlagen.",
     "update_failed": "Aktualisierung fehlgeschlagen.",
     "background_tasks_partial": "Gespeichert, aber einige Erinnerungs-/Kalenderaufgaben konnten nicht geplant werden.",
-    "not_found": "Nicht gefunden"
+    "not_found": "Nicht gefunden",
+    "unknown_error": "Ein unbekannter Fehler ist aufgetreten"
   },
   "validation": {
     "field_required": "{} ist erforderlich",

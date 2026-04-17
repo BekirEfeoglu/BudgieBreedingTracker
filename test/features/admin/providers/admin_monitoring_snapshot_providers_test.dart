@@ -189,7 +189,6 @@ void main() {
       final sub = container.listen(monitoringSnapshotsProvider, (_, __) {});
       addTearDown(() {
         sub.close();
-        container.dispose();
       });
 
       await expectLater(
@@ -215,7 +214,6 @@ void main() {
       final sub = container.listen(monitoringSnapshotsProvider, (_, __) {});
       addTearDown(() {
         sub.close();
-        container.dispose();
       });
 
       final trend = await container.read(monitoringSnapshotsProvider.future);
@@ -275,7 +273,6 @@ void main() {
         final sub = container.listen(monitoringSnapshotsProvider, (_, __) {});
         addTearDown(() {
           sub.close();
-          container.dispose();
         });
 
         final trend = await container.read(monitoringSnapshotsProvider.future);
@@ -494,7 +491,6 @@ void main() {
       final sub = container.listen(cronJobStatusProvider, (_, __) {});
       addTearDown(() {
         sub.close();
-        container.dispose();
       });
 
       final result = await container.read(cronJobStatusProvider.future);
@@ -520,7 +516,6 @@ void main() {
       final sub = container.listen(cronJobStatusProvider, (_, __) {});
       addTearDown(() {
         sub.close();
-        container.dispose();
       });
 
       final result = await container.read(cronJobStatusProvider.future);

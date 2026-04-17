@@ -246,6 +246,7 @@ _FakeNotificationClient _makeClient({
     ],
     retry: (_, __) => null,
   );
+  addTearDown(container.dispose);
 
   return (container: container, managerProvider: managerProvider);
 }

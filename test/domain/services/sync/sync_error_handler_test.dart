@@ -73,6 +73,7 @@ void main() {
         profileRepositoryProvider.overrideWithValue(mockProfileRepository),
       ],
     );
+    addTearDown(container.dispose);
     // Read via provider so the handler receives a proper Riverpod Ref (not ProviderContainer)
     return container.read(_syncErrorHandlerProvider);
   }

@@ -58,6 +58,8 @@ class HomeScreen extends ConsumerWidget {
       ),
       body: RefreshIndicator(
         onRefresh: () async {
+          // Capture ScaffoldMessenger before async gap
+          final messenger = ScaffoldMessenger.of(context);
           // Full sync with server (reconciles hard-deleted records)
           await ref.read(syncOrchestratorProvider).forceFullSync();
           ref.invalidate(dashboardStatsProvider(userId));
@@ -66,6 +68,15 @@ class HomeScreen extends ConsumerWidget {
           ref.invalidate(activeBreedingsForDashboardProvider(userId));
           ref.invalidate(unweanedChicksCountProvider(userId));
           ref.invalidate(incubatingEggsSummaryProvider(userId));
+          if (context.mounted) {
+            messenger.showSnackBar(
+              SnackBar(
+                content: Text('sync.synced'.tr()),
+                duration: const Duration(seconds: 2),
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          }
         },
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
@@ -146,9 +157,13 @@ class _UnweanedSection extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final unweanedAsync = ref.watch(unweanedChicksCountProvider(userId));
 
+    // IMPROVED: log error on failure instead of silent SizedBox.shrink
     return unweanedAsync.when(
       loading: () => const SizedBox.shrink(),
-      error: (_, __) => const SizedBox.shrink(),
+      error: (error, st) {
+        AppLogger.error('[HomeScreen] UnweanedCount error', error, st);
+        return const SizedBox.shrink();
+      },
       data: (count) => UnweanedAlertBanner(count: count),
     );
   }
@@ -189,11 +204,19 @@ class _ActiveBreedingsSection extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final pairsAsync = ref.watch(activeBreedingsForDashboardProvider(userId));
 
+    // IMPROVED: show error state with retry instead of silent empty list
     return pairsAsync.when(
       loading: () => const _SectionSkeleton(),
       error: (error, st) {
         AppLogger.error('[HomeScreen] ActiveBreedings error', error, st);
-        return const ActiveBreedingsSection(pairs: []);
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+          child: ErrorState(
+            message: 'common.data_load_error'.tr(),
+            onRetry: () =>
+                ref.invalidate(activeBreedingsForDashboardProvider(userId)),
+          ),
+        );
       },
       data: (pairs) => ActiveBreedingsSection(pairs: pairs),
     );
@@ -209,11 +232,18 @@ class _RecentChicksSection extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final chicksAsync = ref.watch(recentChicksProvider(userId));
 
+    // IMPROVED: show error state with retry instead of silent empty list
     return chicksAsync.when(
       loading: () => const _SectionSkeleton(),
       error: (error, st) {
         AppLogger.error('[HomeScreen] RecentChicks error', error, st);
-        return RecentChicksSection(chicks: const [], userId: userId);
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+          child: ErrorState(
+            message: 'common.data_load_error'.tr(),
+            onRetry: () => ref.invalidate(recentChicksProvider(userId)),
+          ),
+        );
       },
       data: (chicks) => RecentChicksSection(chicks: chicks, userId: userId),
     );
@@ -229,11 +259,20 @@ class _IncubationSummarySection extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final summaryAsync = ref.watch(incubatingEggsSummaryProvider(userId));
 
+    // IMPROVED: show skeleton on loading and error state on failure
+    // instead of silent SizedBox.shrink / misleading empty list
     return summaryAsync.when(
-      loading: () => const SizedBox.shrink(),
+      loading: () => const _SectionSkeleton(),
       error: (error, st) {
         AppLogger.error('[HomeScreen] IncubationSummary error', error, st);
-        return const IncubationSummarySection(eggs: []);
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+          child: ErrorState(
+            message: 'common.data_load_error'.tr(),
+            onRetry: () =>
+                ref.invalidate(incubatingEggsSummaryProvider(userId)),
+          ),
+        );
       },
       data: (eggs) => IncubationSummarySection(eggs: eggs),
     );

@@ -202,8 +202,8 @@ void main() {
           supabaseInitializedProvider.overrideWithValue(true),
         ],
       );
+      addTearDown(container.dispose);
       addTearDown(() {
-        container.dispose();
         controller.close();
       });
 

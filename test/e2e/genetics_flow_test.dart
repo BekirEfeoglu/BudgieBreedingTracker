@@ -84,7 +84,7 @@ void main() {
 
     test(
       'GIVEN multi-locus parent input WHEN calculation runs THEN epistasis and multi-locus phenotype percentages are generated',
-      () {
+      () async {
         final container = createTestContainer();
         addTearDown(container.dispose);
 
@@ -103,7 +103,8 @@ void main() {
           },
         );
 
-        final results = container.read(offspringResultsProvider);
+        // Await FutureProvider before reading derived providers
+        final results = await container.read(offspringResultsProvider.future);
         final loci = container.read(availablePunnettLociProvider);
 
         expect(results, isNotNull);
@@ -121,7 +122,7 @@ void main() {
 
     test(
       'GIVEN selected existing pair WHEN genotypes are loaded to providers THEN calculation uses the selected pair data',
-      () {
+      () async {
         final container = createTestContainer();
         addTearDown(container.dispose);
 
@@ -138,7 +139,8 @@ void main() {
           mutations: {'ino': AlleleState.carrier},
         );
 
-        final results = container.read(offspringResultsProvider);
+        // Await FutureProvider before reading results
+        final results = await container.read(offspringResultsProvider.future);
 
         expect(container.read(selectedFatherBirdNameProvider), 'Sultan');
         expect(container.read(selectedMotherBirdNameProvider), 'Papatya');
@@ -162,6 +164,9 @@ void main() {
           gender: BirdGender.female,
           mutations: {'blue': AlleleState.carrier},
         );
+
+        // Await FutureProvider before saving
+        await container.read(offspringResultsProvider.future);
 
         final saver = container.read(geneticsHistorySaveProvider.notifier);
         await saver.saveCurrentCalculation(notes: 'calc-1');

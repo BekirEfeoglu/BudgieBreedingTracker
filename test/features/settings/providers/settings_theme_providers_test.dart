@@ -17,6 +17,7 @@ Future<ProviderContainer> _makeContainerAndWarm(
   SharedPreferences.setMockInitialValues(values);
   await SharedPreferences.getInstance();
   final container = ProviderContainer();
+  addTearDown(container.dispose);
   container.read(provider);
   await Future<void>.delayed(const Duration(milliseconds: 150));
   return container;
@@ -30,7 +31,6 @@ void main() {
       final container = await _makeContainerAndWarm(themeModeProvider);
 
       expect(container.read(themeModeProvider), ThemeMode.system);
-      container.dispose();
     });
 
     test('setThemeMode changes state to dark', () async {
@@ -41,7 +41,6 @@ void main() {
           .setThemeMode(ThemeMode.dark);
 
       expect(container.read(themeModeProvider), ThemeMode.dark);
-      container.dispose();
     });
 
     test('setThemeMode changes state to light', () async {
@@ -52,13 +51,13 @@ void main() {
           .setThemeMode(ThemeMode.light);
 
       expect(container.read(themeModeProvider), ThemeMode.light);
-      container.dispose();
     });
 
     test('setThemeMode persists to SharedPreferences', () async {
       SharedPreferences.setMockInitialValues({});
       final prefs = await SharedPreferences.getInstance();
       final container = ProviderContainer();
+      addTearDown(container.dispose);
       container.read(themeModeProvider);
       await Future<void>.delayed(const Duration(milliseconds: 150));
 
@@ -67,7 +66,6 @@ void main() {
           .setThemeMode(ThemeMode.dark);
 
       expect(prefs.getString(AppPreferences.keyThemeMode), 'dark');
-      container.dispose();
     });
 
     test('loads persisted dark from SharedPreferences', () async {
@@ -77,7 +75,6 @@ void main() {
       );
 
       expect(container.read(themeModeProvider), ThemeMode.dark);
-      container.dispose();
     });
 
     test('loads persisted light from SharedPreferences', () async {
@@ -87,7 +84,6 @@ void main() {
       );
 
       expect(container.read(themeModeProvider), ThemeMode.light);
-      container.dispose();
     });
 
     test('unknown persisted value defaults to system', () async {
@@ -97,7 +93,6 @@ void main() {
       );
 
       expect(container.read(themeModeProvider), ThemeMode.system);
-      container.dispose();
     });
   });
 
@@ -106,7 +101,6 @@ void main() {
       final container = await _makeContainerAndWarm(appLocaleProvider);
 
       expect(container.read(appLocaleProvider), AppLocale.turkish);
-      container.dispose();
     });
 
     test('loads persisted english from SharedPreferences', () async {
@@ -116,7 +110,6 @@ void main() {
       );
 
       expect(container.read(appLocaleProvider), AppLocale.english);
-      container.dispose();
     });
 
     test('loads persisted german from SharedPreferences', () async {
@@ -126,7 +119,6 @@ void main() {
       );
 
       expect(container.read(appLocaleProvider), AppLocale.german);
-      container.dispose();
     });
 
     test('loads persisted turkish from SharedPreferences', () async {
@@ -136,7 +128,6 @@ void main() {
       );
 
       expect(container.read(appLocaleProvider), AppLocale.turkish);
-      container.dispose();
     });
   });
 
@@ -176,7 +167,6 @@ void main() {
       final container = await _makeContainerAndWarm(fontScaleProvider);
 
       expect(container.read(fontScaleProvider), AppFontScale.normal);
-      container.dispose();
     });
 
     test('setScale changes state to large', () async {
@@ -187,7 +177,6 @@ void main() {
           .setScale(AppFontScale.large);
 
       expect(container.read(fontScaleProvider), AppFontScale.large);
-      container.dispose();
     });
 
     test('setScale changes state to small', () async {
@@ -198,13 +187,13 @@ void main() {
           .setScale(AppFontScale.small);
 
       expect(container.read(fontScaleProvider), AppFontScale.small);
-      container.dispose();
     });
 
     test('setScale persists to SharedPreferences', () async {
       SharedPreferences.setMockInitialValues({});
       final prefs = await SharedPreferences.getInstance();
       final container = ProviderContainer();
+      addTearDown(container.dispose);
       container.read(fontScaleProvider);
       await Future<void>.delayed(const Duration(milliseconds: 150));
 
@@ -213,7 +202,6 @@ void main() {
           .setScale(AppFontScale.extraLarge);
 
       expect(prefs.getString(AppPreferences.keyFontScale), 'extraLarge');
-      container.dispose();
     });
 
     test('loads persisted small from SharedPreferences', () async {
@@ -223,7 +211,6 @@ void main() {
       );
 
       expect(container.read(fontScaleProvider), AppFontScale.small);
-      container.dispose();
     });
 
     test('loads persisted extraLarge from SharedPreferences', () async {
@@ -233,7 +220,6 @@ void main() {
       );
 
       expect(container.read(fontScaleProvider), AppFontScale.extraLarge);
-      container.dispose();
     });
 
     test('unknown persisted value defaults to normal', () async {
@@ -243,7 +229,6 @@ void main() {
       );
 
       expect(container.read(fontScaleProvider), AppFontScale.normal);
-      container.dispose();
     });
   });
 

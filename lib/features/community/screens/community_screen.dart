@@ -9,7 +9,7 @@ import '../../../core/constants/app_icons.dart';
 import '../../../core/widgets/app_icon.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../../router/route_names.dart';
-import '../../admin/providers/admin_data_providers.dart' show isFounderProvider;
+import '../../../data/providers/user_role_providers.dart' show isFounderProvider;
 // Cross-feature import: marketplace tab embedded in community hub (composite screen pattern)
 import '../../marketplace/widgets/marketplace_tab_content.dart';
 import '../providers/community_providers.dart';

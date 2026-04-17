@@ -89,8 +89,8 @@ class CommunityProfileCache {
       if (profile != null) {
         return {
           ...row,
-          'username': _nonEmpty(profile['display_name']) ??
-              _nonEmpty(profile['full_name']) ??
+          'username': _nonEmpty(profile['full_name']) ??
+              _nonEmpty(profile['display_name']) ??
               _emailPrefix(profile['email']) ??
               '',
           'avatar_url': profile['avatar_url'],

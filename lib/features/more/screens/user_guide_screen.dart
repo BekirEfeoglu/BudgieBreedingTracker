@@ -10,6 +10,7 @@ import 'package:budgie_breeding_tracker/core/widgets/app_screen_title.dart';
 import 'package:budgie_breeding_tracker/core/widgets/empty_state.dart';
 import 'package:budgie_breeding_tracker/features/more/widgets/guide_data.dart';
 import 'package:budgie_breeding_tracker/features/more/widgets/guide_topic_list_item.dart';
+import 'package:budgie_breeding_tracker/router/route_names.dart';
 
 class UserGuideScreen extends StatefulWidget {
   const UserGuideScreen({super.key});
@@ -175,7 +176,7 @@ class _UserGuideScreenState extends State<UserGuideScreen> {
         return GuideTopicListItem(
           topic: topic,
           showDivider: i < topics.length - 1,
-          onTap: () => context.push('/user-guide/$index'),
+          onTap: () => context.push('${AppRoutes.userGuide}/$index'),
         );
       },
     );

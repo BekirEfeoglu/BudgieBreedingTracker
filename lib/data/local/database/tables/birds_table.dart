@@ -11,8 +11,10 @@ class BirdsTable extends Table {
   TextColumn get species => text().map(speciesConverter)();
   TextColumn get ringNumber => text().nullable()();
   TextColumn get photoUrl => text().nullable()();
-  TextColumn get fatherId => text().nullable()();
-  TextColumn get motherId => text().nullable()();
+  TextColumn get fatherId =>
+      text().nullable().references(BirdsTable, #id)();
+  TextColumn get motherId =>
+      text().nullable().references(BirdsTable, #id)();
   TextColumn get colorMutation => text().map(birdColorConverter).nullable()();
   TextColumn get cageNumber => text().nullable()();
   TextColumn get notes => text().nullable()();

@@ -21,8 +21,10 @@ class LimitApproachingBanner extends ConsumerWidget {
     final isPremium = ref.watch(isPremiumProvider);
     if (isPremium) return const SizedBox.shrink();
 
-    final birdCountAsync = ref.watch(birdCountProvider(userId));
-    final birdCount = birdCountAsync.value ?? 0;
+    // IMPROVED: use .select() to only rebuild when the resolved count changes
+    final birdCount = ref.watch(
+      birdCountProvider(userId).select((v) => v.value ?? 0),
+    );
     final ratio = birdCount / AppConstants.freeTierMaxBirds;
 
     if (ratio < AppConstants.freeTierWarningRatio) return const SizedBox.shrink();

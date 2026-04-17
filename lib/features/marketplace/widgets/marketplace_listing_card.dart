@@ -5,19 +5,11 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../core/enums/marketplace_enums.dart';
+import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/status_badge.dart';
 import '../../../data/models/marketplace_listing_model.dart';
 import '../../../router/route_names.dart';
-
-// Marketplace listing type badge colors (domain-specific, not theme-dependent)
-abstract final class _ListingTypeColors {
-  static const sale = Color(0xFF2196F3);
-  static const adoption = Color(0xFFE91E63);
-  static const trade = Color(0xFF9C27B0);
-  static const wanted = Color(0xFFFF9800);
-  static const unknown = Color(0xFF9E9E9E);
-}
 
 // Image overlay UI colors (image overlay context, not theme-dependent)
 abstract final class _ImageOverlayColors {
@@ -286,10 +278,10 @@ class MarketplaceListingCard extends StatelessWidget {
       };
 
   Color _listingTypeColor(MarketplaceListingType type) => switch (type) {
-        MarketplaceListingType.sale => _ListingTypeColors.sale,
-        MarketplaceListingType.adoption => _ListingTypeColors.adoption,
-        MarketplaceListingType.trade => _ListingTypeColors.trade,
-        MarketplaceListingType.wanted => _ListingTypeColors.wanted,
-        MarketplaceListingType.unknown => _ListingTypeColors.unknown,
+        MarketplaceListingType.sale => AppColors.listingSale,
+        MarketplaceListingType.adoption => AppColors.listingAdoption,
+        MarketplaceListingType.trade => AppColors.listingTrade,
+        MarketplaceListingType.wanted => AppColors.listingWanted,
+        MarketplaceListingType.unknown => AppColors.neutral400,
       };
 }

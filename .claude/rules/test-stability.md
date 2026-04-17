@@ -88,4 +88,15 @@ final timer = Timer.periodic(duration, callback);
 addTearDown(timer.cancel);
 ```
 
+### ProviderContainer Teardown Rule (CI-enforceable)
+Every `ProviderContainer(...)` instantiation MUST be followed by `addTearDown(container.dispose)` in the same block. Audit 2026-04-17 found 644+ leaks.
+
+Pattern to detect in `verify_code_quality.py`:
+```python
+# Match: ProviderContainer(...)  without nearby container.dispose
+# Scan test/**/*.dart for `ProviderContainer(` — within next 10 lines, expect `dispose`
+```
+
+Exceptions: helper functions that return the container — disposal is caller's responsibility, document with a `/// Caller must dispose` comment.
+
 > **Related**: testing.md (test patterns, mocking), providers.md (provider test setup)

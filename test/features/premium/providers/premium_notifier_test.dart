@@ -352,7 +352,6 @@ void main() {
       container.read(localPremiumProvider);
 
       // Dispose immediately while _load is still awaiting isPremium
-      container.dispose();
 
       // Give enough time for the async _load to attempt completion
       await Future<void>.delayed(const Duration(milliseconds: 100));
@@ -376,7 +375,6 @@ void main() {
           .read(localPremiumProvider.notifier)
           .refresh();
 
-      container.dispose();
       // Should complete without throwing state-after-dispose
       await refreshFuture;
     });

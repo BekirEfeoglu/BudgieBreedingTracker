@@ -232,9 +232,9 @@ void _drainPendingQueue() {
   final container = ProviderContainer(
     overrides: [routerProvider.overrideWithValue(router)],
   );
+  addTearDown(container.dispose);
   try {
     container.read(_drainPendingProvider);
   } finally {
-    container.dispose();
   }
 }

@@ -6,6 +6,19 @@
 - Session tokens stored in secure storage, never in SharedPreferences
 - Auth state managed via Riverpod provider, reactive across app
 
+## MFA Lockout Policy
+- Threshold: 5 failed TOTP attempts → lockout
+- Decay window: **7 days** of inactivity before `lockout_count` decrements
+- Rationale: short decay (e.g., 24h) lets attacker try 1 code/day indefinitely; 7d makes slow brute force economically infeasible
+- Enforced server-side in `supabase/functions/mfa-lockout/index.ts`
+- Grace period for premium accounts: `premiumGracePeriodProvider` — guards MUST honor `GracePeriodStatus.gracePeriod` as passing, not just `isPremium`
+
+## Remote Payload Validation (boundary)
+- All Supabase responses deserialize through Freezed models with `@JsonKey(unknownEnumValue: X.unknown)` on enums
+- Critical models (Profile, Bird, CommunityPost, Message) MUST assert required fields in factory body — do not trust remote to honor non-null contract
+- Edge function responses: parse into typed Freezed model, not `Map<String, dynamic>`; malformed payload throws `ValidationException`, not silent null
+- Never write `data['field'] as String` without null check on remote data — use `as String?` + explicit fallback or validation
+
 ## Route Guards
 | Guard | Protects | Behavior |
 |-------|----------|----------|

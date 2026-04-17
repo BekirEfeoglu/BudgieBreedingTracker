@@ -123,8 +123,8 @@ void main() {
       final container = ProviderContainer(
         overrides: [eggRepositoryProvider.overrideWithValue(mockEggRepo)],
       );
+      addTearDown(container.dispose);
       addTearDown(() {
-        container.dispose();
         controller.close();
       });
 

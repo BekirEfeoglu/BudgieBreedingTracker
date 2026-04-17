@@ -96,6 +96,29 @@ class IncubationsDao extends DatabaseAccessor<AppDatabase>
         .map((row) => row.read(count) ?? 0);
   }
 
+  /// Watches monthly incubation outcomes grouped by status (SQL aggregate).
+  ///
+  /// Returns `{'YYYY-MM': {'completed': 2, 'cancelled': 1, ...}}`.
+  Stream<Map<String, Map<String, int>>> watchMonthlyOutcomes(String userId) {
+    final query = customSelect(
+      "SELECT strftime('%Y-%m', start_date) AS month, status, COUNT(*) AS cnt "
+      'FROM incubations WHERE user_id = ? '
+      'GROUP BY month, status ORDER BY month',
+      variables: [Variable.withString(userId)],
+      readsFrom: {incubationsTable},
+    );
+    return query.watch().map((rows) {
+      final result = <String, Map<String, int>>{};
+      for (final row in rows) {
+        final month = row.read<String>('month');
+        final status = row.read<String>('status');
+        final count = row.read<int>('cnt');
+        result.putIfAbsent(month, () => {})[status] = count;
+      }
+      return result;
+    });
+  }
+
   Future<List<Incubation>> getByBreedingPair(String pairId) async {
     final rows =
         await (select(incubationsTable)

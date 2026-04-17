@@ -3,8 +3,13 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
+import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
+import 'package:budgie_breeding_tracker/data/local/database/dao_providers.dart';
+import 'package:budgie_breeding_tracker/data/local/database/daos/birds_dao.dart';
+import 'package:budgie_breeding_tracker/data/local/database/daos/eggs_dao.dart';
 import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/features/birds/providers/bird_providers.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_providers.dart';
@@ -14,10 +19,33 @@ import 'package:budgie_breeding_tracker/features/health_records/providers/health
 import 'package:budgie_breeding_tracker/features/home/providers/home_providers.dart';
 import 'package:budgie_breeding_tracker/features/statistics/screens/statistics_screen.dart';
 
+class _MockBirdsDao extends Mock implements BirdsDao {}
+
+class _MockEggsDao extends Mock implements EggsDao {}
+
+/// Creates mock DAO instances for SQL aggregate statistics providers.
+({_MockBirdsDao birdsDao, _MockEggsDao eggsDao}) _createMockDaos() {
+  final mockBirdsDao = _MockBirdsDao();
+  when(() => mockBirdsDao.watchGenderDistribution(any()))
+      .thenAnswer((_) => Stream.value(<BirdGender, int>{}));
+  when(() => mockBirdsDao.watchStatusDistribution(any()))
+      .thenAnswer((_) => Stream.value(<BirdStatus, int>{}));
+
+  final mockEggsDao = _MockEggsDao();
+  when(() => mockEggsDao.watchMonthlyProduction(any()))
+      .thenAnswer((_) => Stream.value(<String, int>{}));
+
+  return (birdsDao: mockBirdsDao, eggsDao: mockEggsDao);
+}
+
 void main() {
   Widget createSubject() {
+    final daos = _createMockDaos();
     return ProviderScope(
       overrides: [
+        // Override DAO providers for SQL aggregate statistics providers.
+        birdsDaoProvider.overrideWithValue(daos.birdsDao),
+        eggsDaoProvider.overrideWithValue(daos.eggsDao),
         // currentUserIdProvider defaults to anonymous when not overridden.
         // Override the underlying stream providers with empty data so
         // statistics widgets show empty/zero states instead of crashing.
@@ -82,8 +110,11 @@ void main() {
         birdCtrl.add([]);
 
         Widget buildWith(StreamController<List<Bird>> ctrl) {
+          final daos = _createMockDaos();
           return ProviderScope(
             overrides: [
+              birdsDaoProvider.overrideWithValue(daos.birdsDao),
+              eggsDaoProvider.overrideWithValue(daos.eggsDao),
               birdsStreamProvider('anonymous').overrideWith((_) => ctrl.stream),
               breedingPairsStreamProvider(
                 'anonymous',

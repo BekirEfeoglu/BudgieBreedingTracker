@@ -3,17 +3,16 @@ import { getAuthenticatedUserId } from "../_shared/auth.ts";
 import { createRateLimiter, rateLimitedResponse } from "../_shared/rate-limit.ts";
 import { z } from "npm:zod@3.24.4";
 import { parseRequestBody } from "../_shared/validation.ts";
+import {
+  APPLE_REVOKE_URL,
+  appleRevokeParams,
+  GOOGLE_REVOKE_URL,
+  googleRevokeBody,
+  isRefreshToken,
+  pickToken,
+} from "./revoke_core.ts";
 
 const rateLimiter = createRateLimiter({ windowMs: 60_000, maxCalls: 5 });
-
-const GOOGLE_REVOKE_URL = "https://oauth2.googleapis.com/revoke";
-const APPLE_REVOKE_URL = "https://appleid.apple.com/auth/revoke";
-
-interface RevokeRequest {
-  provider: "google" | "apple";
-  provider_token?: string;
-  provider_refresh_token?: string;
-}
 
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return corsPreflightResponse(req);
@@ -51,13 +50,13 @@ Deno.serve(async (req: Request) => {
     const parsed = await parseRequestBody(req, revokeSchema, headers);
     if (!parsed.success) return parsed.response;
 
-    const { provider, provider_token, provider_refresh_token } = parsed.data;
-    const token = (provider_token || provider_refresh_token)!;
+    const token = pickToken(parsed.data)!;
+    const refresh = isRefreshToken(parsed.data);
 
-    if (provider === "google") {
+    if (parsed.data.provider === "google") {
       return await revokeGoogle(token, headers);
     } else {
-      return await revokeApple(token, !!provider_refresh_token, headers);
+      return await revokeApple(token, refresh, headers);
     }
   } catch (e) {
     console.error("[revoke-oauth-token] Error:", e);
@@ -75,7 +74,7 @@ async function revokeGoogle(
   const res = await fetch(GOOGLE_REVOKE_URL, {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: `token=${encodeURIComponent(token)}`,
+    body: googleRevokeBody(token),
   });
 
   if (res.ok) {
@@ -110,12 +109,7 @@ async function revokeApple(
     );
   }
 
-  const params = new URLSearchParams({
-    client_id: clientId,
-    client_secret: clientSecret,
-    token: token,
-    token_type_hint: isRefreshToken ? "refresh_token" : "access_token",
-  });
+  const params = appleRevokeParams(token, clientId, clientSecret, isRefreshToken);
 
   const res = await fetch(APPLE_REVOKE_URL, {
     method: "POST",

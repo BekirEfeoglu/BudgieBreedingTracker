@@ -72,6 +72,7 @@ Widget _subject({
       ),
     ],
   );
+  addTearDown(container.dispose);
   onContainer(container);
 
   // Set phase after container creation
