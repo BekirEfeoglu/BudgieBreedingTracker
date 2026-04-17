@@ -38,7 +38,7 @@ void main() {
           showFullContent: false,
           maxContentLines: 3,
           isOwnPost: false,
-          currentUserId: 'u2',
+
           onDelete: null,
           onReport: () {},
           onBlock: () {},
@@ -59,7 +59,7 @@ void main() {
           showFullContent: false,
           maxContentLines: 3,
           isOwnPost: false,
-          currentUserId: 'u2',
+
           onDelete: null,
           onReport: () {},
           onBlock: () {},

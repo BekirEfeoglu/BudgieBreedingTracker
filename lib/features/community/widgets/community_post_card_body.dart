@@ -23,7 +23,6 @@ class CommunityPostCardBody extends StatelessWidget {
     required this.showFullContent,
     required this.maxContentLines,
     required this.isOwnPost,
-    required this.currentUserId,
     required this.onDelete,
     required this.onReport,
     required this.onBlock,
@@ -37,7 +36,6 @@ class CommunityPostCardBody extends StatelessWidget {
   final bool showFullContent;
   final int maxContentLines;
   final bool isOwnPost;
-  final String currentUserId;
   final VoidCallback? onDelete;
   final VoidCallback? onReport;
   final VoidCallback? onBlock;

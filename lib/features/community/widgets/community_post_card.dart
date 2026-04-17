@@ -60,7 +60,6 @@ class _CommunityPostCardState extends ConsumerState<CommunityPostCard> {
       showFullContent: widget.showFullContent,
       maxContentLines: CommunityPostCard._maxContentLines,
       isOwnPost: isOwnPost,
-      currentUserId: currentUserId,
       onDelete: isOwnPost ? _handleDelete : null,
       onReport: isOwnPost ? null : _handleReport,
       onBlock: isOwnPost ? null : _handleBlock,
