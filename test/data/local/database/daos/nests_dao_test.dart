@@ -96,13 +96,12 @@ void main() {
     });
 
     test(
-      'returns soft-deleted nest (no isDeleted filter on watchById)',
+      'filters out soft-deleted nest',
       () async {
         await dao.insertItem(makeEntry(id: 'n-1', isDeleted: true));
 
         final result = await dao.watchById('n-1').first;
-        expect(result, isNotNull);
-        expect(result!.isDeleted, isTrue);
+        expect(result, isNull);
       },
     );
   });
@@ -214,9 +213,14 @@ void main() {
 
       await dao.softDelete('n-1');
 
-      final result = await dao.getById('n-1');
-      expect(result, isNotNull);
-      expect(result!.isDeleted, isTrue);
+      // getById filters out soft-deleted rows; verify via raw SQL.
+      final rows = await db
+          .customSelect(
+            "SELECT is_deleted FROM nests WHERE id = 'n-1'",
+          )
+          .get();
+      expect(rows, hasLength(1));
+      expect(rows.first.read<int>('is_deleted'), equals(1));
     });
 
     test('excluded from watchAll after soft delete', () async {

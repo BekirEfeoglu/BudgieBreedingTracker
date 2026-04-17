@@ -23,7 +23,8 @@ class BreedingPairsDao extends DatabaseAccessor<AppDatabase>
 
   /// Watches a single breeding pair by id.
   Stream<BreedingPair?> watchById(String id) {
-    return (select(breedingPairsTable)..where((t) => t.id.equals(id)))
+    return (select(breedingPairsTable)
+          ..where((t) => t.id.equals(id) & t.isDeleted.equals(false)))
         .watchSingleOrNull()
         .map((row) => row?.toModel());
   }
@@ -38,9 +39,9 @@ class BreedingPairsDao extends DatabaseAccessor<AppDatabase>
 
   /// Gets a single breeding pair by id.
   Future<BreedingPair?> getById(String id) async {
-    final row = await (select(
-      breedingPairsTable,
-    )..where((t) => t.id.equals(id))).getSingleOrNull();
+    final row = await (select(breedingPairsTable)..where(
+      (t) => t.id.equals(id) & t.isDeleted.equals(false),
+    )).getSingleOrNull();
     return row?.toModel();
   }
 

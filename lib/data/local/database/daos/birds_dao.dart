@@ -20,7 +20,8 @@ class BirdsDao extends DatabaseAccessor<AppDatabase> with _$BirdsDaoMixin {
   }
 
   Stream<Bird?> watchById(String id) {
-    return (select(birdsTable)..where((t) => t.id.equals(id)))
+    return (select(birdsTable)
+          ..where((t) => t.id.equals(id) & t.isDeleted.equals(false)))
         .watchSingleOrNull()
         .map((row) => row?.toModel());
   }
@@ -33,9 +34,9 @@ class BirdsDao extends DatabaseAccessor<AppDatabase> with _$BirdsDaoMixin {
   }
 
   Future<Bird?> getById(String id) async {
-    final row = await (select(
-      birdsTable,
-    )..where((t) => t.id.equals(id))).getSingleOrNull();
+    final row = await (select(birdsTable)..where(
+      (t) => t.id.equals(id) & t.isDeleted.equals(false),
+    )).getSingleOrNull();
     return row?.toModel();
   }
 
@@ -142,6 +143,46 @@ class BirdsDao extends DatabaseAccessor<AppDatabase> with _$BirdsDaoMixin {
         updatedAt: Value(DateTime.now()),
       ),
     );
+  }
+
+  /// Watches gender distribution for statistics (SQL aggregate — no row mapping).
+  Stream<Map<BirdGender, int>> watchGenderDistribution(String userId) {
+    final query = customSelect(
+      'SELECT gender, COUNT(*) AS cnt '
+      'FROM birds WHERE user_id = ? AND is_deleted = 0 '
+      'GROUP BY gender',
+      variables: [Variable.withString(userId)],
+      readsFrom: {birdsTable},
+    );
+    return query.watch().map((rows) {
+      final result = <BirdGender, int>{};
+      for (final row in rows) {
+        final g = BirdGender.fromJson(row.read<String>('gender'));
+        final c = row.read<int>('cnt');
+        result[g] = c;
+      }
+      return result;
+    });
+  }
+
+  /// Watches status distribution for statistics (SQL aggregate — no row mapping).
+  Stream<Map<BirdStatus, int>> watchStatusDistribution(String userId) {
+    final query = customSelect(
+      'SELECT status, COUNT(*) AS cnt '
+      'FROM birds WHERE user_id = ? AND is_deleted = 0 '
+      'GROUP BY status',
+      variables: [Variable.withString(userId)],
+      readsFrom: {birdsTable},
+    );
+    return query.watch().map((rows) {
+      final result = <BirdStatus, int>{};
+      for (final row in rows) {
+        final s = BirdStatus.fromJson(row.read<String>('status'));
+        final c = row.read<int>('cnt');
+        result[s] = c;
+      }
+      return result;
+    });
   }
 
   /// Checks if a ring number already exists for a given user.

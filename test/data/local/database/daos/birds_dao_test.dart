@@ -47,9 +47,22 @@ void main() {
     );
   }
 
-  setUp(() {
+  /// Insert a minimal parent bird row to satisfy self-referencing FK constraints.
+  /// Uses a dedicated userId so these rows don't interfere with test counts.
+  Future<void> insertParentBird(String id) async {
+    await db.customStatement(
+      'INSERT OR IGNORE INTO birds (id, name, gender, user_id, status, species, is_deleted) '
+      "VALUES ('$id', 'Parent', 'male', 'fk-parent-user', 'alive', 'budgie', 0)",
+    );
+  }
+
+  setUp(() async {
     db = AppDatabase.forTesting(NativeDatabase.memory());
     dao = db.birdsDao;
+    // Pre-create parent birds for self-referencing FK (fatherId, motherId).
+    // Use a separate userId so they don't affect count/getAll assertions.
+    await insertParentBird('father-id');
+    await insertParentBird('mother-id');
   });
 
   tearDown(() async {
@@ -77,7 +90,10 @@ void main() {
     });
 
     test('persists optional fields correctly', () async {
-      final birthDate = DateTime(2023, 6, 15);
+      // Use UTC DateTime explicitly — mappers normalize all DateTime fields to
+      // UTC on read so that Supabase push serializes with a Z suffix and
+      // TIMESTAMPTZ interprets the value as UTC (not the server's local TZ).
+      final birthDate = DateTime.utc(2023, 6, 15);
       final bird = makeBird(
         ringNumber: 'A-123',
         fatherId: 'father-id',
@@ -166,11 +182,11 @@ void main() {
     });
 
     test(
-      'includes soft-deleted birds (watchById is id-scoped, not filtered)',
+      'filters out soft-deleted birds',
       () async {
         await dao.insertItem(makeBird(isDeleted: true));
         final result = await dao.watchById('bird-1').first;
-        expect(result, isNotNull);
+        expect(result, isNull);
       },
     );
   });
@@ -237,13 +253,15 @@ void main() {
       expect(watched, isEmpty);
     });
 
-    test('bird still retrievable via getById after soft delete', () async {
+    test('soft-deleted bird is excluded from getById', () async {
       await dao.insertItem(makeBird());
       await dao.softDelete('bird-1');
 
       final result = await dao.getById('bird-1');
-      expect(result, isNotNull);
-      expect(result!.isDeleted, isTrue);
+      expect(result, isNull);
+
+      final deleted = await dao.getDeleted(userId);
+      expect(deleted.any((b) => b.id == 'bird-1' && b.isDeleted == true), isTrue);
     });
   });
 

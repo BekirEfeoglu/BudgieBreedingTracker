@@ -20,7 +20,8 @@ class EggsDao extends DatabaseAccessor<AppDatabase> with _$EggsDaoMixin {
   }
 
   Stream<Egg?> watchById(String id) {
-    return (select(eggsTable)..where((t) => t.id.equals(id)))
+    return (select(eggsTable)
+          ..where((t) => t.id.equals(id) & t.isDeleted.equals(false)))
         .watchSingleOrNull()
         .map((row) => row?.toModel());
   }
@@ -33,9 +34,9 @@ class EggsDao extends DatabaseAccessor<AppDatabase> with _$EggsDaoMixin {
   }
 
   Future<Egg?> getById(String id) async {
-    final row = await (select(
-      eggsTable,
-    )..where((t) => t.id.equals(id))).getSingleOrNull();
+    final row = await (select(eggsTable)..where(
+      (t) => t.id.equals(id) & t.isDeleted.equals(false),
+    )).getSingleOrNull();
     return row?.toModel();
   }
 
@@ -93,6 +94,26 @@ class EggsDao extends DatabaseAccessor<AppDatabase> with _$EggsDaoMixin {
           ))
         .watchSingle()
         .map((row) => row.read(count) ?? 0);
+  }
+
+  /// Watches monthly egg production for statistics (SQL aggregate).
+  ///
+  /// Returns a map of `'YYYY-MM'` → count. Only non-deleted eggs are counted.
+  Stream<Map<String, int>> watchMonthlyProduction(String userId) {
+    final query = customSelect(
+      "SELECT strftime('%Y-%m', lay_date) AS month, COUNT(*) AS cnt "
+      'FROM eggs WHERE user_id = ? AND is_deleted = 0 '
+      'GROUP BY month ORDER BY month',
+      variables: [Variable.withString(userId)],
+      readsFrom: {eggsTable},
+    );
+    return query.watch().map((rows) {
+      final result = <String, int>{};
+      for (final row in rows) {
+        result[row.read<String>('month')] = row.read<int>('cnt');
+      }
+      return result;
+    });
   }
 
   Stream<List<Egg>> watchByClutch(String clutchId) {

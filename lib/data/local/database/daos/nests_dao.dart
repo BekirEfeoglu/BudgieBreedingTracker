@@ -20,7 +20,8 @@ class NestsDao extends DatabaseAccessor<AppDatabase> with _$NestsDaoMixin {
   }
 
   Stream<Nest?> watchById(String id) {
-    return (select(nestsTable)..where((t) => t.id.equals(id)))
+    return (select(nestsTable)
+          ..where((t) => t.id.equals(id) & t.isDeleted.equals(false)))
         .watchSingleOrNull()
         .map((row) => row?.toModel());
   }
@@ -33,9 +34,9 @@ class NestsDao extends DatabaseAccessor<AppDatabase> with _$NestsDaoMixin {
   }
 
   Future<Nest?> getById(String id) async {
-    final row = await (select(
-      nestsTable,
-    )..where((t) => t.id.equals(id))).getSingleOrNull();
+    final row = await (select(nestsTable)..where(
+      (t) => t.id.equals(id) & t.isDeleted.equals(false),
+    )).getSingleOrNull();
     return row?.toModel();
   }
 

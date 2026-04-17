@@ -27,9 +27,22 @@ void main() {
     );
   }
 
-  setUp(() {
+  /// Insert a minimal parent breeding_pair row to satisfy FK constraints.
+  Future<void> insertBreedingPair(String id) async {
+    await db.customStatement(
+      'INSERT OR IGNORE INTO breeding_pairs (id, user_id, status, is_deleted) '
+      "VALUES ('$id', 'user-1', 'active', 0)",
+    );
+  }
+
+  setUp(() async {
     db = AppDatabase.forTesting(NativeDatabase.memory());
     dao = db.clutchesDao;
+    // Pre-create parent breeding pairs referenced by test fixtures.
+    await insertBreedingPair('pair-1');
+    await insertBreedingPair('pair-2');
+    await insertBreedingPair('pair-updated');
+    await insertBreedingPair('pair-99');
   });
 
   tearDown(() async {
@@ -92,13 +105,12 @@ void main() {
     });
 
     test(
-      'returns soft-deleted clutch (no isDeleted filter on watchById)',
+      'filters out soft-deleted clutch',
       () async {
         await dao.insertItem(makeEntry(id: 'c-1', isDeleted: true));
 
         final result = await dao.watchById('c-1').first;
-        expect(result, isNotNull);
-        expect(result!.isDeleted, isTrue);
+        expect(result, isNull);
       },
     );
   });
@@ -210,9 +222,14 @@ void main() {
 
       await dao.softDelete('c-1');
 
-      final result = await dao.getById('c-1');
-      expect(result, isNotNull);
-      expect(result!.isDeleted, isTrue);
+      // getById filters out soft-deleted rows; verify via raw SQL.
+      final rows = await db
+          .customSelect(
+            "SELECT is_deleted FROM clutches WHERE id = 'c-1'",
+          )
+          .get();
+      expect(rows, hasLength(1));
+      expect(rows.first.read<int>('is_deleted'), equals(1));
     });
 
     test('excluded from watchAll after soft delete', () async {

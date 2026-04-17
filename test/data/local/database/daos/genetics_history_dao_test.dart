@@ -178,13 +178,21 @@ void main() {
       expect(stream, isEmpty);
     });
 
-    test('entry still retrievable via getById after soft delete', () async {
+    test('soft-deleted entry is excluded from getById', () async {
       await dao.insertItem(makeEntry());
       await dao.softDelete('hist-1');
 
       final row = await dao.getById('hist-1');
-      expect(row, isNotNull);
-      expect(row!.isDeleted, isTrue);
+      expect(row, isNull);
+
+      // Verify the row still exists and is flagged is_deleted = 1.
+      final rows = await db
+          .customSelect(
+            "SELECT is_deleted FROM genetics_history WHERE id = 'hist-1'",
+          )
+          .get();
+      expect(rows, hasLength(1));
+      expect(rows.first.read<int>('is_deleted'), equals(1));
     });
   });
 

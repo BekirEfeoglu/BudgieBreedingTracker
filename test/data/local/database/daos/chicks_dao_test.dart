@@ -31,9 +31,19 @@ void main() {
     );
   }
 
-  setUp(() {
+  /// Insert a minimal parent bird row to satisfy FK constraints.
+  Future<void> insertBird(String id) async {
+    await db.customStatement(
+      'INSERT OR IGNORE INTO birds (id, name, gender, user_id, status, species, is_deleted) '
+      "VALUES ('$id', 'Test', 'male', 'user-1', 'alive', 'budgie', 0)",
+    );
+  }
+
+  setUp(() async {
     db = AppDatabase.forTesting(NativeDatabase.memory());
     dao = db.chicksDao;
+    // Pre-create parent bird referenced by test fixtures.
+    await insertBird('bird-1');
   });
 
   tearDown(() async {

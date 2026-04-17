@@ -34,9 +34,21 @@ void main() {
     );
   }
 
-  setUp(() {
+  /// Insert a minimal parent bird row to satisfy FK constraints.
+  Future<void> insertBird(String id) async {
+    await db.customStatement(
+      'INSERT OR IGNORE INTO birds (id, name, gender, user_id, status, species, is_deleted) '
+      "VALUES ('$id', 'Test', 'male', 'user-1', 'alive', 'budgie', 0)",
+    );
+  }
+
+  setUp(() async {
     db = AppDatabase.forTesting(NativeDatabase.memory());
     dao = db.eventsDao;
+    // Pre-create parent birds referenced by test fixtures.
+    await insertBird('bird-1');
+    await insertBird('bird-2');
+    await insertBird('bird-99');
   });
 
   tearDown(() async {
@@ -99,12 +111,11 @@ void main() {
       expect(result, isNull);
     });
 
-    test('returns soft-deleted event (no isDeleted filter)', () async {
+    test('filters out soft-deleted event', () async {
       await dao.insertItem(makeEntry(id: 'evt-1', isDeleted: true));
 
       final result = await dao.watchById('evt-1').first;
-      expect(result, isNotNull);
-      expect(result!.isDeleted, isTrue);
+      expect(result, isNull);
     });
   });
 
@@ -215,9 +226,14 @@ void main() {
 
       await dao.softDelete('evt-1');
 
-      final result = await dao.getById('evt-1');
-      expect(result, isNotNull);
-      expect(result!.isDeleted, isTrue);
+      // getById filters out soft-deleted rows; verify via raw SQL.
+      final rows = await db
+          .customSelect(
+            "SELECT is_deleted FROM events WHERE id = 'evt-1'",
+          )
+          .get();
+      expect(rows, hasLength(1));
+      expect(rows.first.read<int>('is_deleted'), equals(1));
     });
 
     test('excluded from watchAll after soft delete', () async {

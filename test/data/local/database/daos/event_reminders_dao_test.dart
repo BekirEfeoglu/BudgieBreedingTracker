@@ -34,9 +34,22 @@ void main() {
     );
   }
 
-  setUp(() {
+  /// Insert a minimal parent event row to satisfy FK constraints.
+  Future<void> insertEvent(String id) async {
+    final epoch = DateTime(2024, 1, 1).millisecondsSinceEpoch ~/ 1000;
+    await db.customStatement(
+      'INSERT OR IGNORE INTO events (id, title, event_date, type, user_id, status, is_deleted) '
+      "VALUES ('$id', 'Test', $epoch, 'health_check', 'user-1', 'active', 0)",
+    );
+  }
+
+  setUp(() async {
     db = AppDatabase.forTesting(NativeDatabase.memory());
     dao = db.eventRemindersDao;
+    // Pre-create parent events referenced by test fixtures.
+    await insertEvent('evt-1');
+    await insertEvent('evt-2');
+    await insertEvent('evt-99');
   });
 
   tearDown(() async {
@@ -186,12 +199,11 @@ void main() {
       expect(result, isNull);
     });
 
-    test('returns soft-deleted reminder (no isDeleted filter)', () async {
+    test('filters out soft-deleted reminder', () async {
       await dao.insertItem(makeEntry(id: 'rem-1', isDeleted: true));
 
       final result = await dao.getById('rem-1');
-      expect(result, isNotNull);
-      expect(result!.isDeleted, isTrue);
+      expect(result, isNull);
     });
   });
 
@@ -334,9 +346,14 @@ void main() {
 
       await dao.softDelete('rem-1');
 
-      final result = await dao.getById('rem-1');
-      expect(result, isNotNull);
-      expect(result!.isDeleted, isTrue);
+      // getById filters out soft-deleted rows; verify via raw SQL.
+      final rows = await db
+          .customSelect(
+            "SELECT is_deleted FROM event_reminders WHERE id = 'rem-1'",
+          )
+          .get();
+      expect(rows, hasLength(1));
+      expect(rows.first.read<int>('is_deleted'), equals(1));
     });
 
     test('excluded from watchAll after soft delete', () async {

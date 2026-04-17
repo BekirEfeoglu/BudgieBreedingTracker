@@ -22,7 +22,8 @@ class HealthRecordsDao extends DatabaseAccessor<AppDatabase>
 
   /// Watches a single health record by id.
   Stream<HealthRecord?> watchById(String id) {
-    return (select(healthRecordsTable)..where((t) => t.id.equals(id)))
+    return (select(healthRecordsTable)
+          ..where((t) => t.id.equals(id) & t.isDeleted.equals(false)))
         .watchSingleOrNull()
         .map((row) => row?.toModel());
   }
@@ -37,9 +38,9 @@ class HealthRecordsDao extends DatabaseAccessor<AppDatabase>
 
   /// Gets a single health record by id.
   Future<HealthRecord?> getById(String id) async {
-    final row = await (select(
-      healthRecordsTable,
-    )..where((t) => t.id.equals(id))).getSingleOrNull();
+    final row = await (select(healthRecordsTable)..where(
+      (t) => t.id.equals(id) & t.isDeleted.equals(false),
+    )).getSingleOrNull();
     return row?.toModel();
   }
 

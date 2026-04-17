@@ -34,9 +34,22 @@ void main() {
     );
   }
 
-  setUp(() {
+  /// Insert a minimal parent bird row to satisfy FK constraints.
+  Future<void> insertBird(String id) async {
+    await db.customStatement(
+      'INSERT OR IGNORE INTO birds (id, name, gender, user_id, status, species, is_deleted) '
+      "VALUES ('$id', 'Test', 'male', 'user-1', 'alive', 'budgie', 0)",
+    );
+  }
+
+  setUp(() async {
     db = AppDatabase.forTesting(NativeDatabase.memory());
     dao = db.breedingPairsDao;
+    // Pre-create parent birds referenced by test fixtures.
+    await insertBird('bird-1');
+    await insertBird('bird-2');
+    await insertBird('bird-x');
+    await insertBird('bird-y');
   });
 
   tearDown(() async {
@@ -140,13 +153,21 @@ void main() {
       expect(all, isEmpty);
     });
 
-    test('pair still retrievable via getById', () async {
+    test('soft-deleted pair is excluded from getById', () async {
       await dao.insertItem(makePair());
       await dao.softDelete('bp-1');
 
       final result = await dao.getById('bp-1');
-      expect(result, isNotNull);
-      expect(result!.isDeleted, isTrue);
+      expect(result, isNull);
+
+      // Verify the row still exists and is flagged is_deleted = 1.
+      final rows = await db
+          .customSelect(
+            "SELECT is_deleted FROM breeding_pairs WHERE id = 'bp-1'",
+          )
+          .get();
+      expect(rows, hasLength(1));
+      expect(rows.first.read<int>('is_deleted'), equals(1));
     });
   });
 

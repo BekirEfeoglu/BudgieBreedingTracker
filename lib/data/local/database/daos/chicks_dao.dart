@@ -20,7 +20,8 @@ class ChicksDao extends DatabaseAccessor<AppDatabase> with _$ChicksDaoMixin {
   }
 
   Stream<Chick?> watchById(String id) {
-    return (select(chicksTable)..where((t) => t.id.equals(id)))
+    return (select(chicksTable)
+          ..where((t) => t.id.equals(id) & t.isDeleted.equals(false)))
         .watchSingleOrNull()
         .map((row) => row?.toModel());
   }
@@ -33,9 +34,9 @@ class ChicksDao extends DatabaseAccessor<AppDatabase> with _$ChicksDaoMixin {
   }
 
   Future<Chick?> getById(String id) async {
-    final row = await (select(
-      chicksTable,
-    )..where((t) => t.id.equals(id))).getSingleOrNull();
+    final row = await (select(chicksTable)..where(
+      (t) => t.id.equals(id) & t.isDeleted.equals(false),
+    )).getSingleOrNull();
     return row?.toModel();
   }
 

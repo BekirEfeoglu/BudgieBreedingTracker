@@ -20,7 +20,8 @@ class ClutchesDao extends DatabaseAccessor<AppDatabase>
   }
 
   Stream<Clutch?> watchById(String id) {
-    return (select(clutchesTable)..where((t) => t.id.equals(id)))
+    return (select(clutchesTable)
+          ..where((t) => t.id.equals(id) & t.isDeleted.equals(false)))
         .watchSingleOrNull()
         .map((row) => row?.toModel());
   }
@@ -33,9 +34,9 @@ class ClutchesDao extends DatabaseAccessor<AppDatabase>
   }
 
   Future<Clutch?> getById(String id) async {
-    final row = await (select(
-      clutchesTable,
-    )..where((t) => t.id.equals(id))).getSingleOrNull();
+    final row = await (select(clutchesTable)..where(
+      (t) => t.id.equals(id) & t.isDeleted.equals(false),
+    )).getSingleOrNull();
     return row?.toModel();
   }
 

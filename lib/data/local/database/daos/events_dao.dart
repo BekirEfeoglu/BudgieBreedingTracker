@@ -22,7 +22,8 @@ class EventsDao extends DatabaseAccessor<AppDatabase> with _$EventsDaoMixin {
 
   /// Watches a single event by id.
   Stream<Event?> watchById(String id) {
-    return (select(eventsTable)..where((t) => t.id.equals(id)))
+    return (select(eventsTable)
+          ..where((t) => t.id.equals(id) & t.isDeleted.equals(false)))
         .watchSingleOrNull()
         .map((row) => row?.toModel());
   }
@@ -37,9 +38,9 @@ class EventsDao extends DatabaseAccessor<AppDatabase> with _$EventsDaoMixin {
 
   /// Gets a single event by id.
   Future<Event?> getById(String id) async {
-    final row = await (select(
-      eventsTable,
-    )..where((t) => t.id.equals(id))).getSingleOrNull();
+    final row = await (select(eventsTable)..where(
+      (t) => t.id.equals(id) & t.isDeleted.equals(false),
+    )).getSingleOrNull();
     return row?.toModel();
   }
 
