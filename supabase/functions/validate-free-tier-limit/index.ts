@@ -3,17 +3,16 @@ import { getAuthenticatedUserId, createSupabaseAdmin } from "../_shared/auth.ts"
 import { createRateLimiter, rateLimitedResponse } from "../_shared/rate-limit.ts";
 import { z } from "npm:zod@3.24.4";
 import { parseRequestBody } from "../_shared/validation.ts";
+import {
+  evaluateLimit,
+  getLimit,
+  getStatusFilter,
+  isAllowedTable,
+  isExemptProfile,
+  shouldFilterDeleted,
+} from "./limits_core.ts";
 
 const rateLimiter = createRateLimiter({ windowMs: 60_000, maxCalls: 30 });
-
-const LIMITS: Record<string, number> = {
-  birds: 15,
-  breeding_pairs: 5,
-  incubations: 3,
-  marketplace_listings: 3,
-};
-
-const ALLOWED_TABLES = new Set(Object.keys(LIMITS));
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return corsPreflightResponse(req);
@@ -45,18 +44,20 @@ Deno.serve(async (req) => {
       );
     }
 
-    if (!ALLOWED_TABLES.has(table)) {
+    if (!isAllowedTable(table)) {
+      // Fail-closed: an attacker could otherwise bypass free-tier enforcement
+      // by sending an unknown/misspelled table name. Reject at the boundary.
       console.warn(`[validate-free-tier-limit] Unknown table requested: ${table}`);
       return new Response(
-        JSON.stringify({ allowed: true }),
-        { status: 200, headers },
+        JSON.stringify({ allowed: false, error: "invalid_table" }),
+        { status: 400, headers },
       );
     }
 
     if (!rateLimiter.check(userId)) return rateLimitedResponse(headers);
 
     const supabase = createSupabaseAdmin();
-    const limit = LIMITS[table]!;
+    const limit = getLimit(table)!;
 
     const { data: profile } = await supabase
       .from("profiles")
@@ -64,11 +65,7 @@ Deno.serve(async (req) => {
       .eq("id", userId)
       .single();
 
-    if (
-      profile?.is_premium ||
-      profile?.role === "admin" ||
-      profile?.role === "founder"
-    ) {
+    if (isExemptProfile(profile)) {
       return new Response(
         JSON.stringify({ allowed: true }),
         { status: 200, headers },
@@ -80,23 +77,23 @@ Deno.serve(async (req) => {
       .select("id", { count: "exact", head: true })
       .eq("user_id", userId);
 
-    if (table !== "incubations") {
+    if (shouldFilterDeleted(table)) {
       query = query.eq("is_deleted", false);
     }
 
-    if (table === "breeding_pairs") {
-      query = query.in("status", ["active", "ongoing"]);
-    }
-    if (table === "incubations" || table === "marketplace_listings") {
-      query = query.eq("status", "active");
+    const statusFilter = getStatusFilter(table);
+    if (statusFilter) {
+      query = statusFilter.length === 1
+        ? query.eq("status", statusFilter[0])
+        : query.in("status", statusFilter);
     }
 
     const { count } = await query;
-    const allowed = (count ?? 0) < limit;
+    const result = evaluateLimit(count, limit);
 
     return new Response(
-      JSON.stringify({ allowed, count, limit }),
-      { status: allowed ? 200 : 403, headers },
+      JSON.stringify(result),
+      { status: result.allowed ? 200 : 403, headers },
     );
   } catch (_error) {
     console.error("[validate-free-tier-limit] Error:", _error);

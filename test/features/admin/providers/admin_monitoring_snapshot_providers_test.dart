@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
+import 'package:budgie_breeding_tracker/core/errors/app_exception.dart';
 import 'package:budgie_breeding_tracker/features/admin/providers/admin_monitoring_snapshot_providers.dart';
 import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
 
@@ -304,6 +305,175 @@ void main() {
         expect(trend.capturedAt, DateTime.parse('2026-03-31T10:00:00Z'));
       },
     );
+  });
+
+  group('monitoringSnapshotsProvider malformed payloads', () {
+    test('skips slow_queries entries that are not maps', () async {
+      final adminFilter = _FakeFilterBuilder(
+        maybeSingleBuilder: _FakeMaybeSingleBuilder(
+          result: {'role': 'admin'},
+        ),
+      );
+      final snapshotFilter = _FakeFilterBuilder(
+        maybeSingleBuilder: _FakeMaybeSingleBuilder(),
+        listResult: [
+          {
+            'snapshot_type': 'slow_queries',
+            'created_at': '2026-03-31T09:00:00Z',
+            'data': {
+              'queries': [
+                'not-a-map',
+                42,
+                {
+                  'calls': 3,
+                  'total_time_ms': 300,
+                  'mean_time_ms': 100,
+                  'query': 'SELECT 1',
+                },
+              ],
+            },
+          },
+        ],
+      );
+      final client = _FakeAdminMonitoringClient(
+        adminBuilder: _FakeQueryBuilder(adminFilter),
+        snapshotBuilder: _FakeQueryBuilder(snapshotFilter),
+      );
+
+      final container = _makeContainer(userId: 'user-1', client: client);
+      addTearDown(container.dispose);
+      final sub = container.listen(monitoringSnapshotsProvider, (_, __) {});
+      addTearDown(sub.close);
+
+      final trend = await container.read(monitoringSnapshotsProvider.future);
+
+      expect(trend.slowQueries, hasLength(1));
+      expect(trend.slowQueries.first.query, 'SELECT 1');
+    });
+
+    test('tolerates non-map connection state entries', () async {
+      final adminFilter = _FakeFilterBuilder(
+        maybeSingleBuilder: _FakeMaybeSingleBuilder(
+          result: {'role': 'admin'},
+        ),
+      );
+      final snapshotFilter = _FakeFilterBuilder(
+        maybeSingleBuilder: _FakeMaybeSingleBuilder(),
+        listResult: [
+          {
+            'snapshot_type': 'connections',
+            'created_at': '2026-03-31T10:00:00Z',
+            'data': {
+              'total': 2,
+              'max_connections': 100,
+              'states': [
+                'garbage',
+                {'state': 'active', 'count': 2},
+              ],
+            },
+          },
+        ],
+      );
+      final client = _FakeAdminMonitoringClient(
+        adminBuilder: _FakeQueryBuilder(adminFilter),
+        snapshotBuilder: _FakeQueryBuilder(snapshotFilter),
+      );
+
+      final container = _makeContainer(userId: 'user-1', client: client);
+      addTearDown(container.dispose);
+      final sub = container.listen(monitoringSnapshotsProvider, (_, __) {});
+      addTearDown(sub.close);
+
+      final trend = await container.read(monitoringSnapshotsProvider.future);
+
+      expect(trend.connectionStates, hasLength(1));
+      expect(trend.connectionStates.first.state, 'active');
+      expect(trend.connectionStates.first.count, 2);
+    });
+
+    test('treats non-map data field as empty without crashing', () async {
+      final adminFilter = _FakeFilterBuilder(
+        maybeSingleBuilder: _FakeMaybeSingleBuilder(
+          result: {'role': 'admin'},
+        ),
+      );
+      final snapshotFilter = _FakeFilterBuilder(
+        maybeSingleBuilder: _FakeMaybeSingleBuilder(),
+        listResult: [
+          {
+            'snapshot_type': 'slow_queries',
+            'created_at': '2026-03-31T09:00:00Z',
+            'data': 'unexpected-string-instead-of-map',
+          },
+        ],
+      );
+      final client = _FakeAdminMonitoringClient(
+        adminBuilder: _FakeQueryBuilder(adminFilter),
+        snapshotBuilder: _FakeQueryBuilder(snapshotFilter),
+      );
+
+      final container = _makeContainer(userId: 'user-1', client: client);
+      addTearDown(container.dispose);
+      final sub = container.listen(monitoringSnapshotsProvider, (_, __) {});
+      addTearDown(sub.close);
+
+      final trend = await container.read(monitoringSnapshotsProvider.future);
+
+      expect(trend.slowQueries, isEmpty);
+    });
+  });
+
+  group('MonitoringSnapshot.fromJson', () {
+    test('parses well-formed payload', () {
+      final snapshot = MonitoringSnapshot.fromJson({
+        'snapshot_type': 'connections',
+        'data': {'total': 1},
+        'created_at': '2026-03-31T10:00:00Z',
+      });
+
+      expect(snapshot.snapshotType, 'connections');
+      expect(snapshot.data, {'total': 1});
+    });
+
+    test('throws ValidationException when snapshot_type missing', () {
+      expect(
+        () => MonitoringSnapshot.fromJson({
+          'data': {'total': 1},
+          'created_at': '2026-03-31T10:00:00Z',
+        }),
+        throwsA(isA<ValidationException>()),
+      );
+    });
+
+    test('throws ValidationException when snapshot_type is empty', () {
+      expect(
+        () => MonitoringSnapshot.fromJson({
+          'snapshot_type': '',
+          'data': {'total': 1},
+        }),
+        throwsA(isA<ValidationException>()),
+      );
+    });
+
+    test('throws ValidationException when snapshot_type is not a String', () {
+      expect(
+        () => MonitoringSnapshot.fromJson({
+          'snapshot_type': 42,
+          'data': {'total': 1},
+        }),
+        throwsA(isA<ValidationException>()),
+      );
+    });
+
+    test('falls back to empty map for non-map data field', () {
+      final snapshot = MonitoringSnapshot.fromJson({
+        'snapshot_type': 'connections',
+        'data': 'not-a-map',
+        'created_at': '2026-03-31T10:00:00Z',
+      });
+
+      expect(snapshot.data, isEmpty);
+    });
   });
 
   group('cronJobStatusProvider', () {

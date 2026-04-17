@@ -1,7 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/constants/supabase_constants.dart';
+import '../../../core/errors/app_exception.dart';
 import '../../../core/utils/logger.dart';
+import '../../../core/utils/safe_cast.dart';
 import '../../auth/providers/auth_providers.dart';
 import 'admin_auth_utils.dart';
 
@@ -18,9 +20,22 @@ class MonitoringSnapshot {
   });
 
   factory MonitoringSnapshot.fromJson(Map<String, dynamic> json) {
+    // `snapshot_type` is required and must identify the row kind.
+    // Empty/missing is a schema violation, not a silent default.
+    final type = safeString(json, 'snapshot_type');
+    if (type == null) {
+      AppLogger.warning(
+        '[MonitoringSnapshot] malformed payload: missing/invalid snapshot_type '
+        '(raw=${json['snapshot_type']})',
+      );
+      throw const ValidationException(
+        'errors.unknown_error',
+        code: 'monitoring_snapshot_invalid_type',
+      );
+    }
     return MonitoringSnapshot(
-      snapshotType: json['snapshot_type'] as String? ?? '',
-      data: json['data'] as Map<String, dynamic>? ?? {},
+      snapshotType: type,
+      data: safeMap(json, 'data') ?? const {},
       createdAt: DateTime.tryParse(json['created_at']?.toString() ?? '') ??
           DateTime.now(),
     );
@@ -97,13 +112,21 @@ final monitoringSnapshotsProvider =
       orElse: () => <String, dynamic>{},
     );
 
-    // Parse slow queries
+    // Parse slow queries. Each entry is defensively cast — malformed list
+    // items are skipped with a warning rather than crashing the provider.
     final slowQueries = <SlowQueryEntry>[];
     if (slowQueryRow.isNotEmpty) {
-      final data = slowQueryRow['data'] as Map<String, dynamic>? ?? {};
-      final queries = data['queries'] as List? ?? [];
+      final data = safeMap(slowQueryRow, 'data') ?? const {};
+      final queries = safeList(data, 'queries');
       for (final q in queries) {
-        final map = q as Map<String, dynamic>;
+        final map = asStringMap(q);
+        if (map == null) {
+          AppLogger.warning(
+            '[monitoringSnapshotsProvider] skipping slow_queries entry '
+            'with invalid shape (type=${q.runtimeType})',
+          );
+          continue;
+        }
         slowQueries.add(SlowQueryEntry(
           calls: (map['calls'] as num?)?.toInt() ?? 0,
           totalTimeMs: (map['total_time_ms'] as num?)?.toDouble() ?? 0,
@@ -119,13 +142,20 @@ final monitoringSnapshotsProvider =
     var maxConn = 0;
     DateTime? capturedAt;
     if (connRow.isNotEmpty) {
-      final data = connRow['data'] as Map<String, dynamic>? ?? {};
-      final states = data['states'] as List? ?? [];
+      final data = safeMap(connRow, 'data') ?? const {};
+      final states = safeList(data, 'states');
       totalConn = (data['total'] as num?)?.toInt() ?? 0;
       maxConn = (data['max_connections'] as num?)?.toInt() ?? 0;
       capturedAt = DateTime.tryParse(connRow['created_at']?.toString() ?? '');
       for (final s in states) {
-        final map = s as Map<String, dynamic>;
+        final map = asStringMap(s);
+        if (map == null) {
+          AppLogger.warning(
+            '[monitoringSnapshotsProvider] skipping connections state '
+            'entry with invalid shape (type=${s.runtimeType})',
+          );
+          continue;
+        }
         connectionStates.add(ConnectionStateEntry(
           state: map['state']?.toString() ?? 'unknown',
           count: (map['count'] as num?)?.toInt() ?? 0,

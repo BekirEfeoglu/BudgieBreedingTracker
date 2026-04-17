@@ -153,9 +153,23 @@ mixin _AuthOAuthMixin {
     final providerRefreshToken = session.providerRefreshToken;
     if (providerToken == null && providerRefreshToken == null) return;
 
-    // Determine provider from user identities
+    // Determine provider from user identities.
+    // appMetadata is untrusted server-origin data — cast defensively so a
+    // malformed payload (non-String provider value) cannot crash logout.
     final user = _client.auth.currentUser;
-    final provider = user?.appMetadata['provider'] as String?;
+    final provider = safeString(user?.appMetadata, 'provider');
+    if (provider == null) {
+      // Either no user, missing key, or non-String value. Best-effort: skip
+      // revocation rather than crash. Log only when we had a session but
+      // couldn't determine provider — that's the interesting case.
+      if (user != null && user.appMetadata['provider'] != null) {
+        AppLogger.warning(
+          '[AuthActions] OAuth revoke skipped: invalid provider payload '
+          '(type=${user.appMetadata['provider'].runtimeType})',
+        );
+      }
+      return;
+    }
     if (provider != 'google' && provider != 'apple') return;
 
     try {

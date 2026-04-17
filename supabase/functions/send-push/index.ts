@@ -8,19 +8,22 @@ import { createRateLimiter, rateLimitedResponse } from "../_shared/rate-limit.ts
 import { SignJWT, importPKCS8 } from "npm:jose@5.9.6";
 import { z } from "npm:zod@3.24.4";
 import { parseRequestBody } from "../_shared/validation.ts";
+import {
+  authorizePushTargets,
+  BATCH_SIZE,
+  BODY_MAX,
+  batch as batchItems,
+  clampText,
+  clampTokens,
+  MAX_TOKENS,
+  normalizeData,
+  type PushRequest,
+  resultStatus,
+  TITLE_MAX,
+  validateUserIdsCount,
+} from "./push_core.ts";
 
 const rateLimiter = createRateLimiter({ windowMs: 60_000, maxCalls: 10 });
-
-type PushRequest = {
-  userId?: string;
-  userIds?: string[];
-  tokens?: string[];
-  title: string;
-  body: string;
-  payload?: string;
-  data?: Record<string, string | number | boolean>;
-  dryRun?: boolean;
-};
 
 async function createAccessToken(): Promise<string> {
   const rawServiceAccount = Deno.env.get("GOOGLE_SERVICE_ACCOUNT_JSON") ?? "";
@@ -60,29 +63,14 @@ async function createAccessToken(): Promise<string> {
   return json.access_token as string;
 }
 
-function normalizeData(request: PushRequest): Record<string, string> {
-  const normalized: Record<string, string> = {};
-  if (request.payload) normalized.payload = request.payload;
-  for (const [key, value] of Object.entries(request.data ?? {})) {
-    normalized[key] = String(value);
-  }
-  return normalized;
-}
-
-const MAX_USER_IDS = 100;
-const MAX_TOKENS = 500;
-
 async function resolveTokens(request: PushRequest): Promise<string[]> {
   if (request.tokens && request.tokens.length > 0) {
-    const unique = [...new Set(request.tokens)];
-    return unique.slice(0, MAX_TOKENS);
+    return clampTokens(request.tokens);
   }
 
   const ids = request.userIds ?? (request.userId ? [request.userId] : []);
   if (ids.length === 0) return [];
-  if (ids.length > MAX_USER_IDS) {
-    throw new Error(`Too many userIds: ${ids.length} exceeds limit of ${MAX_USER_IDS}`);
-  }
+  validateUserIdsCount(ids);
 
   const supabase = createSupabaseAdmin();
   const { data, error } = await supabase
@@ -95,8 +83,7 @@ async function resolveTokens(request: PushRequest): Promise<string[]> {
     throw new Error(`Failed to resolve FCM tokens: ${error.message}`);
   }
 
-  const unique = [...new Set((data ?? []).map((row: { token: string }) => row.token))];
-  return unique.slice(0, MAX_TOKENS);
+  return clampTokens((data ?? []).map((row: { token: string }) => row.token));
 }
 
 async function sendToFcm(
@@ -155,12 +142,6 @@ Deno.serve(async (req: Request) => {
     }
 
     const isAdmin = await requireAdminRole(callerId);
-    if (!isAdmin) {
-      return new Response(
-        JSON.stringify({ error: "Forbidden: admin role required" }),
-        { status: 403, headers },
-      );
-    }
 
     if (!rateLimiter.check(callerId)) return rateLimitedResponse(headers);
 
@@ -179,8 +160,8 @@ Deno.serve(async (req: Request) => {
     if (!parsed.success) return parsed.response;
 
     const request: PushRequest = parsed.data;
-    request.title = request.title.trim().slice(0, 200);
-    request.body = request.body.trim().slice(0, 1000);
+    request.title = clampText(request.title, TITLE_MAX);
+    request.body = clampText(request.body, BODY_MAX);
 
     const projectId = Deno.env.get("FIREBASE_PROJECT_ID") ?? "";
     if (!projectId) {
@@ -188,6 +169,28 @@ Deno.serve(async (req: Request) => {
       return new Response(
         JSON.stringify({ error: "Internal server error" }),
         { status: 500, headers },
+      );
+    }
+
+    // Authorization: non-admin callers may only push to themselves.
+    // Raw `tokens` arrays bypass DB ownership checks and are admin-only.
+    const authError = authorizePushTargets(request, callerId, isAdmin);
+    if (authError) {
+      return new Response(
+        JSON.stringify({ error: authError }),
+        { status: 403, headers },
+      );
+    }
+
+    // Audit log: record who-pushed-to-whom when admin targets other users
+    // or uses raw device tokens (no userId resolution).
+    const targetIds = request.userIds ?? (request.userId ? [request.userId] : []);
+    const crossUser = targetIds.filter((id) => id !== callerId);
+    if (isAdmin && (crossUser.length > 0 || (request.tokens?.length ?? 0) > 0)) {
+      console.info(
+        `[send-push] admin_audit caller=${callerId} ` +
+          `cross_user_targets=${crossUser.length} ` +
+          `raw_tokens=${request.tokens?.length ?? 0}`,
       );
     }
 
@@ -201,22 +204,19 @@ Deno.serve(async (req: Request) => {
 
     const accessToken = await createAccessToken();
 
-    const BATCH_SIZE = 50;
     let successCount = 0;
     let failureCount = 0;
-    for (let i = 0; i < tokens.length; i += BATCH_SIZE) {
-      const batch = tokens.slice(i, i + BATCH_SIZE);
+    for (const tokenBatch of batchItems(tokens, BATCH_SIZE)) {
       const results = await Promise.all(
-        batch.map((token) => sendToFcm(accessToken, projectId, token, request)),
+        tokenBatch.map((token) => sendToFcm(accessToken, projectId, token, request)),
       );
       successCount += results.filter((item) => item.ok).length;
       failureCount += results.filter((item) => !item.ok).length;
     }
 
-    const status = failureCount === 0 ? 200 : successCount === 0 ? 502 : 207;
     return new Response(
       JSON.stringify({ success: successCount, failure: failureCount }),
-      { status, headers },
+      { status: resultStatus(successCount, failureCount), headers },
     );
   } catch (error) {
     console.error("[send-push] Error:", error);

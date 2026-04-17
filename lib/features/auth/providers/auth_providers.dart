@@ -7,6 +7,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../bootstrap.dart';
 import '../../../core/utils/logger.dart';
+import '../../../core/utils/safe_cast.dart';
 import '../../../data/models/profile_model.dart';
 import '../../../data/repositories/repository_providers.dart';
 import '../../../domain/services/notifications/notification_processor.dart';
@@ -226,10 +227,21 @@ Future<void> _syncAuthMetadataToProfile(Ref ref, String userId) async {
     final metadata = user.userMetadata;
     if (metadata == null || metadata.isEmpty) return;
 
-    final metaDisplayName = metadata['display_name'] as String?;
-    final metaFullName = metadata['full_name'] as String?;
+    // userMetadata is server-origin; cast defensively. `safeString` returns
+    // null for missing key, wrong type, or empty/whitespace-only values.
+    final metaDisplayName = safeString(metadata, 'display_name');
+    final metaFullName = safeString(metadata, 'full_name');
+    if (metaFullName == null &&
+        metaDisplayName == null &&
+        (metadata['display_name'] != null || metadata['full_name'] != null)) {
+      AppLogger.warning(
+        '[AppInit] Auth metadata name fields had non-string/empty values '
+        '(display_name=${metadata['display_name'].runtimeType}, '
+        'full_name=${metadata['full_name'].runtimeType})',
+      );
+    }
     final resolvedName = metaFullName ?? metaDisplayName;
-    if (resolvedName == null || resolvedName.trim().isEmpty) return;
+    if (resolvedName == null) return;
 
     final profileRepo = ref.read(profileRepositoryProvider);
     final profile = await profileRepo.getById(userId);

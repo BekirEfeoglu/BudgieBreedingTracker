@@ -177,5 +177,63 @@ void main() {
         () => mockFunctions.invoke(any(), body: any(named: 'body')),
       );
     });
+
+    test('does not crash when provider is a non-string (malformed payload)',
+        () async {
+      // Regression: `appMetadata['provider'] as String?` would throw a
+      // TypeError if the server returned an int/bool/list. Safe cast must
+      // fall through to the no-op branch instead.
+      final session = MockSession();
+      final user = MockUser();
+      when(() => mockAuth.currentSession).thenReturn(session);
+      when(() => session.providerToken).thenReturn('token');
+      when(() => session.providerRefreshToken).thenReturn(null);
+      when(() => mockAuth.currentUser).thenReturn(user);
+      when(() => user.appMetadata).thenReturn(<String, dynamic>{
+        'provider': 42,
+      });
+
+      await actions.revokeOAuthToken();
+
+      verifyNever(
+        () => mockFunctions.invoke(any(), body: any(named: 'body')),
+      );
+    });
+
+    test('does not crash when provider is a nested object', () async {
+      final session = MockSession();
+      final user = MockUser();
+      when(() => mockAuth.currentSession).thenReturn(session);
+      when(() => session.providerToken).thenReturn('token');
+      when(() => session.providerRefreshToken).thenReturn(null);
+      when(() => mockAuth.currentUser).thenReturn(user);
+      when(() => user.appMetadata).thenReturn(<String, dynamic>{
+        'provider': {'name': 'google'},
+      });
+
+      await actions.revokeOAuthToken();
+
+      verifyNever(
+        () => mockFunctions.invoke(any(), body: any(named: 'body')),
+      );
+    });
+
+    test('treats empty-string provider as missing', () async {
+      final session = MockSession();
+      final user = MockUser();
+      when(() => mockAuth.currentSession).thenReturn(session);
+      when(() => session.providerToken).thenReturn('token');
+      when(() => session.providerRefreshToken).thenReturn(null);
+      when(() => mockAuth.currentUser).thenReturn(user);
+      when(() => user.appMetadata).thenReturn(<String, dynamic>{
+        'provider': '   ',
+      });
+
+      await actions.revokeOAuthToken();
+
+      verifyNever(
+        () => mockFunctions.invoke(any(), body: any(named: 'body')),
+      );
+    });
   });
 }
