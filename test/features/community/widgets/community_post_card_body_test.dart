@@ -1,7 +1,6 @@
 import 'package:budgie_breeding_tracker/core/enums/community_enums.dart';
 import 'package:budgie_breeding_tracker/data/models/community_post_model.dart';
 import 'package:budgie_breeding_tracker/features/community/widgets/community_post_card_body.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../helpers/pump_helpers.dart';
