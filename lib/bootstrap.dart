@@ -119,31 +119,49 @@ Future<void> bootstrapPreInit() async {
 
 /// Phase 2: Run the app with optional Sentry wrapping.
 /// Always ensures [runApp] is called even if Sentry initialization fails.
-Future<void> bootstrapRun(FutureOr<Widget> Function() appBuilder) async {
-  if (_resolvedSentryDsn.isNotEmpty) {
-    try {
-      await SentryFlutter.init(
-        (options) {
-          options.dsn = _resolvedSentryDsn;
-          options.tracesSampleRate = 0.3;
-          options.environment = _resolvedSentryEnv;
-          options.sendDefaultPii = false;
-        },
-        appRunner: () async {
-          runApp(await appBuilder());
-        },
-      );
-    } catch (e, st) {
-      AppLogger.error(
-        'Sentry initialization failed, launching without it',
-        e,
-        st,
-      );
-      runApp(await appBuilder());
-    }
-  } else {
+///
+/// Sentry init is capped by [sentryInitTimeout] so a slow DSN handshake or
+/// network hiccup can't keep the splash screen pinned. If init times out,
+/// the app launches without Sentry and the error is logged.
+Future<void> bootstrapRun(
+  FutureOr<Widget> Function() appBuilder, {
+  Duration sentryInitTimeout = const Duration(seconds: 8),
+}) async {
+  if (_resolvedSentryDsn.isEmpty) {
     AppLogger.info('Sentry DSN not provided, skipping Sentry initialization');
     runApp(await appBuilder());
+    return;
+  }
+
+  // Track whether Sentry's appRunner actually launched the app, so we don't
+  // call runApp twice on the happy path or miss it entirely on timeout.
+  var appLaunched = false;
+  try {
+    await SentryFlutter.init(
+      (options) {
+        options.dsn = _resolvedSentryDsn;
+        options.tracesSampleRate = 0.3;
+        options.environment = _resolvedSentryEnv;
+        options.sendDefaultPii = false;
+      },
+      appRunner: () async {
+        appLaunched = true;
+        runApp(await appBuilder());
+      },
+    ).timeout(sentryInitTimeout);
+  } on TimeoutException {
+    AppLogger.warning(
+      'Sentry initialization timed out after ${sentryInitTimeout.inSeconds}s, '
+      'launching without it',
+    );
+    if (!appLaunched) runApp(await appBuilder());
+  } catch (e, st) {
+    AppLogger.error(
+      'Sentry initialization failed, launching without it',
+      e,
+      st,
+    );
+    if (!appLaunched) runApp(await appBuilder());
   }
 }
 

@@ -120,10 +120,17 @@ final appInitializationProvider = FutureProvider<void>((ref) async {
   }
 
   // Step 1: Profile sync (critical - determines premium, role, etc.)
+  // Capped at 5s so a stalled network can't pin the splash screen —
+  // the app falls back to the cached local profile on timeout.
   ref.read(initStepProvider.notifier).state = InitStep.profile;
   final profileRepo = ref.read(profileRepositoryProvider);
   try {
-    await profileRepo.pull(userId);
+    await profileRepo.pull(userId).timeout(const Duration(seconds: 5));
+  } on TimeoutException catch (e, st) {
+    AppLogger.warning(
+      '[AppInit] Profile pull timed out after 5s, continuing offline',
+    );
+    Sentry.captureException(e, stackTrace: st);
   } catch (e, st) {
     // Non-fatal: continue with cached local profile (or create one below).
     // A persistent network failure should NOT lock the splash screen.
@@ -254,8 +261,8 @@ Future<void> _syncAuthMetadataToProfile(Ref ref, String userId) async {
     } catch (_) {
       // Will be retried by SyncOrchestrator
     }
-  } catch (e) {
-    AppLogger.warning('[AppInit] Auth metadata sync to profile failed: $e');
+  } catch (e, st) {
+    AppLogger.error('[AppInit] Auth metadata sync to profile failed: $e', e, st);
   }
 }
 
@@ -284,8 +291,8 @@ Future<void> _initNotifications(Ref ref, String userId) async {
   // Ensure rate limiter DND / rate-limit data is loaded before scheduling
   try {
     await ref.read(rateLimiterReadyProvider.future);
-  } catch (e) {
-    AppLogger.warning('[AppInit] Rate limiter prefs load failed: $e');
+  } catch (e, st) {
+    AppLogger.error('[AppInit] Rate limiter prefs load failed: $e', e, st);
   }
 }
 
@@ -338,8 +345,8 @@ Future<void> _initRevenueCat(Ref ref, String userId) async {
   try {
     final purchaseService = ref.read(purchaseServiceProvider);
     await purchaseService.initialize(apiKey: apiKey, userId: userId);
-  } catch (e) {
-    AppLogger.warning('[AppInit] RevenueCat init failed: $e');
+  } catch (e, st) {
+    AppLogger.error('[AppInit] RevenueCat init failed: $e', e, st);
   }
 }
 

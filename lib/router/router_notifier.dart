@@ -14,7 +14,10 @@ class RouterNotifier extends ChangeNotifier {
   RouterNotifier(this._ref) {
     _ref.listen(isAuthenticatedProvider, (_, __) => _scheduleNotify());
     _ref.listen(isAdminProvider, (_, __) => _scheduleNotify());
-    _ref.listen(isPremiumProvider, (_, __) => _scheduleNotify());
+    // Listen to effective premium (active + grace period) so the router
+    // re-evaluates when a grace period expires or begins, not just when
+    // raw subscription status flips.
+    _ref.listen(effectivePremiumProvider, (_, __) => _scheduleNotify());
     _ref.listen(appInitializationProvider, (_, __) => _scheduleNotify());
     _ref.listen(initSkippedProvider, (_, __) => _scheduleNotify());
     _ref.listen(pendingMfaFactorIdProvider, (_, __) => _scheduleNotify());

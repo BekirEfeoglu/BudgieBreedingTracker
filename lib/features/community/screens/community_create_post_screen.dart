@@ -117,21 +117,23 @@ class _CommunityCreatePostScreenState
         ],
       ),
     );
-    if (confirmed == true && mounted) {
-      _titleController.text = draft['title'] as String? ?? '';
-      _contentController.text = draft['content'] as String? ?? '';
-      final typeStr = draft['postType'] as String? ?? 'general';
-      _postType = CommunityPostType.values.firstWhere(
-        (e) => e.toJson() == typeStr,
-        orElse: () => CommunityPostType.general,
-      );
-      _tags
-        ..clear()
-        ..addAll(List<String>.from(draft['tags'] as List? ?? []));
-      setState(() {});
-    } else {
+    if (confirmed != true) {
       await _clearDraft();
+      return;
     }
+    if (!mounted) return;
+    _titleController.text = draft['title'] as String? ?? '';
+    _contentController.text = draft['content'] as String? ?? '';
+    final typeStr = draft['postType'] as String? ?? 'general';
+    _postType = CommunityPostType.values.firstWhere(
+      (e) => e.toJson() == typeStr,
+      orElse: () => CommunityPostType.general,
+    );
+    _tags
+      ..clear()
+      ..addAll(List<String>.from(draft['tags'] as List? ?? []));
+    if (!mounted) return;
+    setState(() {});
   }
 
   // ── Image helpers ──────────────────────────────────────────────────────────
@@ -215,6 +217,7 @@ class _CommunityCreatePostScreenState
         if (!mounted) return;
         navigator.pop();
         ActionFeedbackService.show('community.post_success'.tr());
+        return;
       }
       if (state.error != null && mounted) {
         messenger.showSnackBar(
@@ -287,6 +290,7 @@ class _CommunityCreatePostScreenState
                 selected: _postType,
                 enabled: !formState.isLoading,
                 onChanged: (type) {
+                  if (!mounted) return;
                   setState(() => _postType = type);
                   _scheduleDraftSave();
                 },
