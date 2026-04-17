@@ -7,7 +7,6 @@ import 'package:mocktail/mocktail.dart';
 import 'package:budgie_breeding_tracker/data/models/statistics_models.dart';
 import 'package:budgie_breeding_tracker/domain/services/ads/ad_service.dart';
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_providers.dart';
-import 'package:budgie_breeding_tracker/domain/services/sync/sync_conflict_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/sync/sync_orchestrator.dart';
 import 'package:budgie_breeding_tracker/domain/services/sync/sync_providers.dart';
 import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';

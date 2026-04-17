@@ -1,7 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/constants/supabase_constants.dart';
-import '../../../core/utils/logger.dart';
+import 'base_remote_source.dart';
 import 'community_profile_cache.dart';
 
 /// Remote data source for community posts.
@@ -30,7 +30,10 @@ class CommunityPostRemoteSource {
       var query = _client
           .from(SupabaseConstants.communityPostsTable)
           .select(_feedColumns)
-          .eq('is_deleted', false);
+          .eq('is_deleted', false)
+          // Hide posts that crossed the community report threshold; they
+          // stay visible to admins via fetchPendingReview until reviewed.
+          .eq('needs_review', false);
 
       if (before != null) {
         query = query.lt('created_at', before.toIso8601String());
@@ -43,8 +46,8 @@ class CommunityPostRemoteSource {
       final rows = List<Map<String, dynamic>>.from(result);
       return _profileCache.mergeIntoRows(rows);
     } catch (e, st) {
-      AppLogger.error('CommunityPostRemoteSource.fetchFeed', e, st);
-      rethrow;
+      throw BaseRemoteSource.handleErrorForTag(
+          'CommunityPostRemoteSource.fetchFeed', e, st);
     }
   }
 
@@ -55,14 +58,15 @@ class CommunityPostRemoteSource {
           .select(_feedColumns)
           .eq('id', postId)
           .eq('is_deleted', false)
+          .eq('needs_review', false)
           .maybeSingle();
 
       if (row == null) return null;
       final enriched = await _profileCache.mergeIntoRows([row]);
       return enriched.isNotEmpty ? enriched.first : null;
     } catch (e, st) {
-      AppLogger.error('CommunityPostRemoteSource.fetchById', e, st);
-      rethrow;
+      throw BaseRemoteSource.handleErrorForTag(
+          'CommunityPostRemoteSource.fetchById', e, st);
     }
   }
 
@@ -76,14 +80,15 @@ class CommunityPostRemoteSource {
           .select(_feedColumns)
           .eq('user_id', userId)
           .eq('is_deleted', false)
+          .eq('needs_review', false)
           .order('created_at', ascending: false)
           .limit(limit);
 
       final rows = List<Map<String, dynamic>>.from(result);
       return _profileCache.mergeIntoRows(rows);
     } catch (e, st) {
-      AppLogger.error('CommunityPostRemoteSource.fetchByUser', e, st);
-      rethrow;
+      throw BaseRemoteSource.handleErrorForTag(
+          'CommunityPostRemoteSource.fetchByUser', e, st);
     }
   }
 
@@ -91,8 +96,8 @@ class CommunityPostRemoteSource {
     try {
       await _client.from(SupabaseConstants.communityPostsTable).insert(data);
     } catch (e, st) {
-      AppLogger.error('CommunityPostRemoteSource.insert', e, st);
-      rethrow;
+      throw BaseRemoteSource.handleErrorForTag(
+          'CommunityPostRemoteSource.insert', e, st);
     }
   }
 
@@ -104,8 +109,8 @@ class CommunityPostRemoteSource {
           .eq('id', postId)
           .eq('user_id', userId);
     } catch (e, st) {
-      AppLogger.error('CommunityPostRemoteSource.softDelete', e, st);
-      rethrow;
+      throw BaseRemoteSource.handleErrorForTag(
+          'CommunityPostRemoteSource.softDelete', e, st);
     }
   }
 
@@ -137,6 +142,7 @@ class CommunityPostRemoteSource {
           .from(SupabaseConstants.communityPostsTable)
           .select(_feedColumns)
           .eq('is_deleted', false)
+          .eq('needs_review', false)
           .or('content.ilike.%$sanitized%,title.ilike.%$sanitized%')
           .order('created_at', ascending: false)
           .limit(limit);
@@ -144,8 +150,8 @@ class CommunityPostRemoteSource {
       final rows = List<Map<String, dynamic>>.from(result);
       return _profileCache.mergeIntoRows(rows);
     } catch (e, st) {
-      AppLogger.error('CommunityPostRemoteSource.search', e, st);
-      rethrow;
+      throw BaseRemoteSource.handleErrorForTag(
+          'CommunityPostRemoteSource.search', e, st);
     }
   }
 
@@ -165,8 +171,8 @@ class CommunityPostRemoteSource {
       final rows = List<Map<String, dynamic>>.from(result);
       return _profileCache.mergeIntoRows(rows);
     } catch (e, st) {
-      AppLogger.error('CommunityPostRemoteSource.fetchPendingReview', e, st);
-      rethrow;
+      throw BaseRemoteSource.handleErrorForTag(
+          'CommunityPostRemoteSource.fetchPendingReview', e, st);
     }
   }
 
@@ -186,8 +192,8 @@ class CommunityPostRemoteSource {
           .update({'needs_review': false, 'reviewed_by': currentUserId})
           .eq('id', postId);
     } catch (e, st) {
-      AppLogger.error('CommunityPostRemoteSource.clearReviewFlag', e, st);
-      rethrow;
+      throw BaseRemoteSource.handleErrorForTag(
+          'CommunityPostRemoteSource.clearReviewFlag', e, st);
     }
   }
 
@@ -204,8 +210,8 @@ class CommunityPostRemoteSource {
       final rows = List<Map<String, dynamic>>.from(result);
       return _profileCache.mergeIntoRows(rows);
     } catch (e, st) {
-      AppLogger.error('CommunityPostRemoteSource.fetchByIds', e, st);
-      rethrow;
+      throw BaseRemoteSource.handleErrorForTag(
+          'CommunityPostRemoteSource.fetchByIds', e, st);
     }
   }
 }
