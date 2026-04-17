@@ -61,7 +61,7 @@ A class named `*Repository` MUST be offline-first:
 
 If a class is online-only (no local mirror), DO NOT name it `Repository`. Use `*RemoteService` or `*OnlineSource` instead. Lying with the name breaks the offline-first contract — user creates data offline, app crashes on resume, silent data loss.
 
-Audit-flagged offenders needing rename or offline-first implementation: `messaging_repository.dart`, `community_post_repository.dart`, `marketplace_listing_remote_source.dart`.
+Audit-flagged offender needing rename or offline-first implementation: none currently. `messaging_repository.dart` and `community_post_repository.dart` are exempt under the online-first rule (see architecture.md § Online-First Exemption — cross-user feeds). `marketplace_listing_remote_source.dart` already uses the correct `*RemoteSource` naming.
 
 ### Sync Strategy
 - Offline-first: local Drift DB is source of truth for UI

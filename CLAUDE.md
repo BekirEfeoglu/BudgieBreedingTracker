@@ -87,7 +87,7 @@ scripts/test_verify_rules.py            # Tests for verify_rules.py
 | Shared widgets | 23 (15 root + 4 buttons + 2 cards + 1 dialog) |
 | Enum files | 15 |
 | Supabase constants | 110 (tables + buckets + columns) |
-| L10n keys | ~2,724 per language, 39 categories |
+| L10n keys | ~2,726 per language, 39 categories |
 | DB schema version | 22 |
 
 ## CI/CD Pipeline

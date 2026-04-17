@@ -6,11 +6,13 @@ import '../remote/api/community_post_cache.dart';
 import '../remote/api/community_post_remote_source.dart';
 import '../remote/api/community_social_remote_source.dart';
 
-/// Repository for community posts.
+/// Online-first: cross-user public community feed. No local Drift mirror by design.
 ///
-/// Custom implementation (not extending [BaseRepository]) because community
-/// is online-first with no Drift mirror, and queries cross user boundaries.
-/// An optional [CommunityPostCache] reduces redundant Supabase requests for
+/// Exempt from offline-first naming (see `.claude/rules/architecture.md`
+/// § Online-First Exemption). Custom implementation (does not extend
+/// [BaseRepository]) because queries cross user boundaries and a local
+/// mirror would not improve UX for a chronological public feed. An
+/// optional [CommunityPostCache] reduces redundant Supabase requests for
 /// feed and single-post lookups.
 class CommunityPostRepository {
   final CommunityPostRemoteSource _postSource;

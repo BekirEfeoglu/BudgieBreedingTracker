@@ -9,11 +9,12 @@ import '../models/message_model.dart';
 import '../remote/api/conversation_remote_source.dart';
 import '../remote/api/message_remote_source.dart';
 
-/// Repository for messaging conversations and messages.
+/// Online-first: realtime multi-party conversations. No local Drift mirror by design.
 ///
-/// Custom implementation (not extending [BaseRepository]) because messaging
-/// is online-first with realtime subscriptions and no Drift mirror — messages
-/// live only on Supabase and cross user boundaries (multi-party conversations).
+/// Exempt from offline-first naming (see `.claude/rules/architecture.md`
+/// § Online-First Exemption). Custom implementation (does not extend
+/// [BaseRepository]) because messages live only on Supabase with realtime
+/// subscriptions and cross user boundaries.
 class MessagingRepository {
   final ConversationRemoteSource _conversationSource;
   final MessageRemoteSource _messageSource;

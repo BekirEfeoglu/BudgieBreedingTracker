@@ -8,7 +8,7 @@ import 'package:budgie_breeding_tracker/data/repositories/messaging_repository.d
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/data/models/message_model.dart';
 import 'package:budgie_breeding_tracker/domain/services/moderation/content_moderation_service.dart';
-import 'package:budgie_breeding_tracker/features/community/providers/community_moderation_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/moderation/moderation_providers.dart';
 import 'package:budgie_breeding_tracker/features/messaging/providers/messaging_form_providers.dart';
 
 class MockMessagingRepository extends Mock implements MessagingRepository {}

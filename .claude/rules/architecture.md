@@ -38,6 +38,22 @@ When feature A needs something from feature B:
 3. If it's domain logic → extract to `lib/domain/services/`
 4. Never shortcut with a direct `features/b/...` import — audit flagged `statistics → home`, `auth → birds`, `profile → admin/settings` as drift
 
+## Online-First Exemption
+
+A class named `*Repository` MUST be offline-first (Drift table + DAO + `SyncMetadata` entry) UNLESS it serves a **cross-user public feed or realtime multi-party stream** where the server is the source of truth by design and a local mirror would not improve UX.
+
+Exempt classes MUST declare the exemption in the first doc block:
+
+```dart
+/// Online-first: <reason>. No local Drift mirror by design.
+```
+
+Currently exempt:
+- `CommunityPostRepository` — cross-user public feed, chronological
+- `MessagingRepository` — realtime multi-party conversations
+
+Online-only classes that are NOT cross-user/multi-party streams (e.g. a single-user remote-only resource) MUST use `*RemoteService` or `*OnlineSource` naming instead of `*Repository`.
+
 ## 23 Feature Modules
 admin, auth, birds, breeding, calendar, chicks, community, eggs, feedback, gamification, genealogy, genetics, health_records, home, marketplace, messaging, more, notifications, premium, profile, settings, splash, statistics
 
