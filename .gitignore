@@ -203,6 +203,7 @@ skills-lock.json
 .superpowers/
 docs/superpowers/
 .playwright-mcp/
+.worktrees/
 
 # --------------------------------------------------
 # MCP Server Config (contains API tokens - NEVER commit)
