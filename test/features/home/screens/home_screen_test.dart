@@ -7,6 +7,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:budgie_breeding_tracker/data/models/statistics_models.dart';
 import 'package:budgie_breeding_tracker/domain/services/ads/ad_service.dart';
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/sync/sync_conflict_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/sync/sync_orchestrator.dart';
 import 'package:budgie_breeding_tracker/domain/services/sync/sync_providers.dart';
 import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
@@ -79,6 +80,11 @@ void main() {
           adServiceProvider.overrideWithValue(MockAdService()),
           deferredNotificationPermissionProvider.overrideWith((_) async {}),
           syncOrchestratorProvider.overrideWithValue(mockSync),
+          // SyncStatusBar watches persistedConflictCountProvider; stub to 0
+          // so we don't hit the real Drift DAO (which leaks timers in tests).
+          persistedConflictCountProvider(
+            'test-user',
+          ).overrideWith((_) => Stream.value(0)),
         ],
         child: MaterialApp.router(routerConfig: router),
       );

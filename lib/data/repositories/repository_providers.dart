@@ -81,6 +81,7 @@ final healthRecordRepositoryProvider = Provider<HealthRecordRepository>((ref) {
     localDao: ref.watch(healthRecordsDaoProvider),
     remoteSource: ref.watch(healthRecordRemoteSourceProvider),
     syncDao: ref.watch(syncMetadataDaoProvider),
+    birdsDao: ref.watch(birdsDaoProvider),
   );
 });
 

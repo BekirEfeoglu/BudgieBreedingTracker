@@ -17,6 +17,7 @@ class MockHealthRecordRemoteSource extends Mock
 HealthRecord _sampleHealthRecord({
   String id = 'health-1',
   String userId = 'user-1',
+  String? birdId,
 }) {
   return HealthRecord(
     id: id,
@@ -24,6 +25,7 @@ HealthRecord _sampleHealthRecord({
     type: HealthRecordType.checkup,
     title: 'Checkup',
     userId: userId,
+    birdId: birdId,
   );
 }
 
@@ -31,6 +33,7 @@ void main() {
   late MockHealthRecordsDao localDao;
   late MockHealthRecordRemoteSource remoteSource;
   late MockSyncMetadataDao syncDao;
+  late MockBirdsDao birdsDao;
   late HealthRecordRepository repository;
 
   const userId = 'user-1';
@@ -45,11 +48,13 @@ void main() {
     localDao = MockHealthRecordsDao();
     remoteSource = MockHealthRecordRemoteSource();
     syncDao = MockSyncMetadataDao();
+    birdsDao = MockBirdsDao();
 
     repository = HealthRecordRepository(
       localDao: localDao,
       remoteSource: remoteSource,
       syncDao: syncDao,
+      birdsDao: birdsDao,
     );
 
     when(() => localDao.insertItem(any())).thenAnswer((_) async {});
@@ -74,6 +79,11 @@ void main() {
     when(() => syncDao.getPendingRecordIds(any())).thenAnswer((_) async => {});
     when(() => syncDao.getByRecord(any(), any())).thenAnswer((_) async => null);
     when(() => syncDao.updateItem(any())).thenAnswer((_) async {});
+    // ValidatedSyncMixin calls clearStaleErrors before pushAll.
+    when(
+      () => syncDao.getErrorsByTable(any(), any()),
+    ).thenAnswer((_) async => []);
+    when(() => syncDao.hardDelete(any())).thenAnswer((_) async => 1);
   });
 
   group('HealthRecordRepository', () {
@@ -117,6 +127,38 @@ void main() {
         await repository.pushAll(userId);
 
         verify(() => remoteSource.upsert(record)).called(1);
+      },
+    );
+
+    test(
+      'pushAll skips record when referenced bird is not found locally',
+      () async {
+        final record = _sampleHealthRecord(
+          id: 'health-1',
+          userId: userId,
+          birdId: 'missing-bird',
+        );
+        final pending = TestFixtures.sampleSyncMetadata(
+          table: SupabaseConstants.healthRecordsTable,
+          userId: userId,
+          recordId: record.id,
+        );
+        when(
+          () => syncDao.getPendingByTable(
+            userId,
+            SupabaseConstants.healthRecordsTable,
+          ),
+        ).thenAnswer((_) async => [pending]);
+        when(() => localDao.getById(record.id)).thenAnswer((_) async => record);
+        when(
+          () => birdsDao.getById('missing-bird'),
+        ).thenAnswer((_) async => null);
+
+        final stats = await repository.pushAll(userId);
+
+        verifyNever(() => remoteSource.upsert(any()));
+        expect(stats.pushed, 0);
+        expect(stats.orphansCleaned, 1);
       },
     );
   });

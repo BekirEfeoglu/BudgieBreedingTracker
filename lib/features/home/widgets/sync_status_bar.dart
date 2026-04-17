@@ -48,6 +48,14 @@ class _SyncStatusBarState extends ConsumerState<SyncStatusBar>
   @override
   Widget build(BuildContext context) {
     final status = ref.watch(syncStatusProvider);
+    final userId = ref.watch(currentUserIdProvider);
+    // Count of conflicts detected within the last 24h. Non-zero means at
+    // least one local change was overridden by the server-wins resolution
+    // — surface it so the user can open the detail sheet.
+    final recentConflictCount = ref
+        .watch(persistedConflictCountProvider(userId))
+        .asData
+        ?.value ?? 0;
 
     if (status == SyncDisplayStatus.syncing) {
       _rotationController.repeat();
@@ -87,7 +95,10 @@ class _SyncStatusBarState extends ConsumerState<SyncStatusBar>
       button: status != SyncDisplayStatus.syncing,
       child: GestureDetector(
         onTap: () {
-          if (status == SyncDisplayStatus.error) {
+          // Any tap while there are recent conflicts routes to the detail
+          // sheet so the user can review them — otherwise keep the existing
+          // tap-to-sync / tap-to-see-errors behavior.
+          if (recentConflictCount > 0 || status == SyncDisplayStatus.error) {
             showSyncDetailSheet(context);
           } else if (status != SyncDisplayStatus.syncing) {
             final orchestrator = ref.read(syncOrchestratorProvider);
@@ -117,8 +128,42 @@ class _SyncStatusBarState extends ConsumerState<SyncStatusBar>
                   color: color,
                 ),
               ),
+              if (recentConflictCount > 0) ...[
+                const SizedBox(width: AppSpacing.sm),
+                _ConflictChip(count: recentConflictCount),
+              ],
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Small inline badge shown on [SyncStatusBar] when recent conflicts exist.
+class _ConflictChip extends StatelessWidget {
+  const _ConflictChip({required this.count});
+
+  final int count;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: 2,
+      ),
+      decoration: BoxDecoration(
+        color: scheme.errorContainer,
+        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+      ),
+      child: Text(
+        'sync.conflict_detected'.tr(args: ['$count']),
+        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+          color: scheme.onErrorContainer,
         ),
       ),
     );

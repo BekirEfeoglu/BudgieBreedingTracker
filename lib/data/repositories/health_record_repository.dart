@@ -1,6 +1,7 @@
 import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
 import 'package:budgie_breeding_tracker/core/errors/app_exception.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
+import 'package:budgie_breeding_tracker/data/local/database/daos/birds_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/health_records_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/sync_metadata_dao.dart';
 import 'package:budgie_breeding_tracker/data/models/health_record_model.dart';
@@ -10,11 +11,18 @@ import 'package:budgie_breeding_tracker/data/repositories/base_repository.dart';
 import 'package:uuid/uuid.dart';
 
 /// Repository for [HealthRecord] entities with offline-first sync support.
+///
+/// Uses [ValidatedSyncMixin] to validate the optional `birdId` FK before
+/// pushing to Supabase. This matches the discipline applied to sibling
+/// repositories (chick, egg, event_reminder) and prevents FK constraint
+/// violations when a parent bird is deleted locally between record creation
+/// and the next sync cycle.
 class HealthRecordRepository extends BaseRepository<HealthRecord>
-    with SyncableRepository<HealthRecord> {
+    with SyncableRepository<HealthRecord>, ValidatedSyncMixin<HealthRecord> {
   final HealthRecordsDao _localDao;
   final HealthRecordRemoteSource _remoteSource;
   final SyncMetadataDao _syncDao;
+  final BirdsDao _birdsDao;
 
   static const _uuid = Uuid();
 
@@ -22,22 +30,61 @@ class HealthRecordRepository extends BaseRepository<HealthRecord>
     required HealthRecordsDao localDao,
     required HealthRecordRemoteSource remoteSource,
     required SyncMetadataDao syncDao,
+    required BirdsDao birdsDao,
   }) : _localDao = localDao,
        _remoteSource = remoteSource,
-       _syncDao = syncDao;
+       _syncDao = syncDao,
+       _birdsDao = birdsDao;
 
   static const _table = SupabaseConstants.healthRecordsTable;
 
   /// Conflicts detected during the last [pull] operation.
   final List<({String recordId, String detail})> lastPullConflicts = [];
 
-  // ── SyncableRepository overrides ─────────────────────────────────────
+  // ── ValidatedSyncMixin overrides ─────────────────────────────────────
   @override
   SyncMetadataDao get syncDao => _syncDao;
 
   @override
   String get syncTableName => _table;
 
+  @override
+  String get syncLogTag => 'HealthRecordRepository';
+
+  @override
+  Future<HealthRecord?> getLocalById(String id) => _localDao.getById(id);
+
+  @override
+  String getEntityId(HealthRecord item) => item.id;
+
+  @override
+  String getEntityUserId(HealthRecord item) => item.userId;
+
+  @override
+  Future<String?> validateForeignKeys(HealthRecord record) async {
+    // birdId is optional (column is nullable, ON DELETE SET NULL). When
+    // it's set we verify the parent bird exists, is not soft-deleted, and
+    // is already synced to the server — otherwise the insert would FK-fail.
+    if (record.birdId != null) {
+      final bird = await _birdsDao.getById(record.birdId!);
+      if (bird == null) {
+        return 'Referenced bird ${record.birdId} not found locally';
+      }
+      if (bird.isDeleted) {
+        return 'Referenced bird ${record.birdId} is deleted';
+      }
+      final syncMeta = await _syncDao.getByRecord(
+        SupabaseConstants.birdsTable,
+        record.birdId!,
+      );
+      if (syncMeta != null) {
+        return 'Bird ${record.birdId} not yet synced to server';
+      }
+    }
+    return null;
+  }
+
+  // ── BaseRepository overrides ─────────────────────────────────────────
   @override
   Stream<List<HealthRecord>> watchAll(String userId) =>
       _localDao.watchAll(userId);
@@ -161,26 +208,8 @@ class HealthRecordRepository extends BaseRepository<HealthRecord>
     }
   }
 
-  @override
-  Future<PushStats> pushAll(String userId) async {
-    int pushed = 0;
-    int orphansCleaned = 0;
-    final tablePending = await _syncDao.getPendingByTable(userId, _table);
-    for (final meta in tablePending) {
-      final item = await _localDao.getById(meta.recordId ?? '');
-      if (item == null) {
-        AppLogger.warning(
-          '[HealthRecordRepo] Orphan sync_metadata cleaned: ${meta.recordId}',
-        );
-        await _syncDao.deleteByRecord(_table, meta.recordId ?? '');
-        orphansCleaned++;
-        continue;
-      }
-      await push(item);
-      pushed++;
-    }
-    return (pushed: pushed, orphansCleaned: orphansCleaned);
-  }
+  // pushAll() is provided by ValidatedSyncMixin — validates birdId FK
+  // before pushing and cleans up orphaned sync metadata.
 
   /// Health records for a specific bird (live stream).
   Stream<List<HealthRecord>> watchByBird(String birdId) =>

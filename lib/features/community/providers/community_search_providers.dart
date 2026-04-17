@@ -175,7 +175,9 @@ final communitySearchUsersProvider = Provider<List<CommunitySearchUserResult>>((
   ref,
 ) {
   final query = ref.watch(communitySearchProvider).query.trim().toLowerCase();
-  final posts = ref.watch(communityFeedProvider).posts;
+  // Narrow to posts so this provider doesn't recompute on isLoading/error
+  // flips that don't affect the list itself.
+  final posts = ref.watch(communityFeedProvider.select((s) => s.posts));
   final users = _aggregateUsers(posts);
 
   if (query.isEmpty) return const [];
@@ -189,25 +191,28 @@ final communitySearchTagsProvider = Provider<List<String>>((ref) {
   final query = ref.watch(communitySearchProvider).query.trim().toLowerCase();
   if (query.isEmpty) return const [];
 
-  final tags = _extractTags(ref.watch(communityFeedProvider).posts);
+  final tags = _extractTags(
+    ref.watch(communityFeedProvider.select((s) => s.posts)),
+  );
   return tags
       .where((tag) => tag.toLowerCase().contains(query))
       .toList(growable: false);
 });
 
 final communityPopularTagsProvider = Provider<List<String>>((ref) {
-  return _extractTags(ref.watch(communityFeedProvider).posts).take(12).toList();
+  final posts = ref.watch(communityFeedProvider.select((s) => s.posts));
+  return _extractTags(posts).take(12).toList();
 });
 
 final communitySuggestedUsersProvider =
     Provider<List<CommunitySearchUserResult>>((ref) {
-      final users =
-          _aggregateUsers(ref.watch(communityFeedProvider).posts).toList()
-            ..sort((a, b) {
-              final byPosts = b.postCount.compareTo(a.postCount);
-              if (byPosts != 0) return byPosts;
-              return b.totalLikes.compareTo(a.totalLikes);
-            });
+      final posts = ref.watch(communityFeedProvider.select((s) => s.posts));
+      final users = _aggregateUsers(posts).toList()
+        ..sort((a, b) {
+          final byPosts = b.postCount.compareTo(a.postCount);
+          if (byPosts != 0) return byPosts;
+          return b.totalLikes.compareTo(a.totalLikes);
+        });
       return users.take(8).toList(growable: false);
     });
 
