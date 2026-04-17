@@ -97,8 +97,13 @@ class _CommunityMediaGalleryState extends State<CommunityMediaGallery>
                     imageUrl: widget.imageUrls[index],
                     fit: BoxFit.cover,
                     width: double.infinity,
+                    // Memory cache bounds for active rendering.
                     memCacheWidth: 900,
                     memCacheHeight: 1200,
+                    // Disk cache bounds — force downsampling at fetch time
+                    // so 2K+ originals don't balloon the local cache.
+                    maxWidthDiskCache: 900,
+                    maxHeightDiskCache: 1200,
                     placeholder: (_, __) => ColoredBox(
                       color: theme.colorScheme.surfaceContainerHighest,
                       child: const SizedBox(

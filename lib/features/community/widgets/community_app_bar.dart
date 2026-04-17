@@ -186,6 +186,10 @@ class _ProfileAvatar extends StatelessWidget {
           ? CachedNetworkImage(
               imageUrl: avatarUrl!,
               fit: BoxFit.cover,
+              // Avatars render at ~40-64dp; downsample aggressively to
+              // avoid caching full-resolution originals.
+              memCacheWidth: 192,
+              maxWidthDiskCache: 192,
               placeholder: (_, __) => _InitialsCircle(
                 initials: initials,
                 theme: theme,

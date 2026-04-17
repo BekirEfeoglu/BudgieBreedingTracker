@@ -97,44 +97,67 @@ class NotificationListScreen extends ConsumerWidget {
                     );
                   }
 
+                  // Lazy-render notification list via CustomScrollView so
+                  // long lists don't pay the upfront build cost of eager
+                  // ListView children.
                   return Center(
                     child: ConstrainedBox(
                       constraints: const BoxConstraints(maxWidth: 800),
-                      child: ListView(
+                      child: CustomScrollView(
                         physics: const AlwaysScrollableScrollPhysics(),
-                        padding: const EdgeInsets.only(
-                          top: AppSpacing.sm,
-                          bottom: AppSpacing.xxxl * 2,
-                        ),
-                        children: [
-                          // Action feedbacks section
-                          if (hasFeedbacks) ...[
-                            ActionFeedbacksSection(feedbacks: feedbacks),
-                            if (filtered.isNotEmpty)
-                              const Divider(height: AppSpacing.lg),
-                          ],
-
-                          // Notifications
+                        slivers: [
+                          SliverPadding(
+                            padding: const EdgeInsets.only(top: AppSpacing.sm),
+                            sliver: SliverToBoxAdapter(
+                              child: hasFeedbacks
+                                  ? Column(
+                                      children: [
+                                        ActionFeedbacksSection(
+                                          feedbacks: feedbacks,
+                                        ),
+                                        if (filtered.isNotEmpty)
+                                          const Divider(
+                                            height: AppSpacing.lg,
+                                          ),
+                                      ],
+                                    )
+                                  : const SizedBox.shrink(),
+                            ),
+                          ),
                           if (filtered.isEmpty && allNotifications.isNotEmpty)
-                            EmptyState(
-                              icon: const Icon(LucideIcons.searchX),
-                              title: 'common.no_results'.tr(),
-                              subtitle: 'common.no_results_hint'.tr(),
+                            SliverToBoxAdapter(
+                              child: EmptyState(
+                                icon: const Icon(LucideIcons.searchX),
+                                title: 'common.no_results'.tr(),
+                                subtitle: 'common.no_results_hint'.tr(),
+                              ),
                             )
                           else
-                            ...filtered.map(
-                              (notification) => NotificationCard(
-                                key: ValueKey(notification.id),
-                                notification: notification,
-                                onTap: () => _onNotificationTap(
-                                  context,
-                                  ref,
-                                  notification,
-                                ),
-                                onDismiss: () =>
-                                    _onDelete(context, ref, notification.id),
-                              ),
+                            SliverList.builder(
+                              itemCount: filtered.length,
+                              itemBuilder: (context, index) {
+                                final notification = filtered[index];
+                                return NotificationCard(
+                                  key: ValueKey(notification.id),
+                                  notification: notification,
+                                  onTap: () => _onNotificationTap(
+                                    context,
+                                    ref,
+                                    notification,
+                                  ),
+                                  onDismiss: () => _onDelete(
+                                    context,
+                                    ref,
+                                    notification.id,
+                                  ),
+                                );
+                              },
                             ),
+                          const SliverPadding(
+                            padding: EdgeInsets.only(
+                              bottom: AppSpacing.xxxl * 2,
+                            ),
+                          ),
                         ],
                       ),
                     ),

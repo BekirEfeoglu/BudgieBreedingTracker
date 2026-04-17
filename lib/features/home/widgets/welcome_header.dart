@@ -66,7 +66,14 @@ class _WelcomeHeaderState extends ConsumerState<WelcomeHeader>
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final profileAsync = ref.watch(userProfileProvider);
+    // Narrow the watch to just the display name — avoids rebuilding the
+    // welcome header on every other profile field change (plan tier,
+    // grace period, etc.).
+    final displayNameAsync = ref.watch(
+      userProfileProvider.select(
+        (async) => async.whenData((profile) => profile?.resolvedDisplayName),
+      ),
+    );
     final greeting = _greetingKey.tr();
 
     return Container(
@@ -179,7 +186,7 @@ class _WelcomeHeaderState extends ConsumerState<WelcomeHeader>
                 ),
                 const SizedBox(height: AppSpacing.xs),
                 // White text on primary gradient — intentional
-                profileAsync.when(
+                displayNameAsync.when(
                   loading: () => Text(
                     'home.welcome'.tr(),
                     style: theme.textTheme.titleLarge?.copyWith(
@@ -196,11 +203,9 @@ class _WelcomeHeaderState extends ConsumerState<WelcomeHeader>
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  data: (profile) => Text(
-                    profile != null
-                        ? 'home.welcome_name'.tr(
-                            args: [profile.resolvedDisplayName],
-                          )
+                  data: (displayName) => Text(
+                    displayName != null
+                        ? 'home.welcome_name'.tr(args: [displayName])
                         : 'home.welcome'.tr(),
                     style: theme.textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.bold,
