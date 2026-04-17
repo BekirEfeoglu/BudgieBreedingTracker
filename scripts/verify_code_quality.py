@@ -835,6 +835,58 @@ def check_freezed_private_constructor(lines: List[str], filepath: Path, cat: Cat
 
 # --- Main ---
 
+def check_bare_circular_progress(lines: List[str], filepath: Path, cat: Category):
+    """UI/UX: Center(child: CircularProgressIndicator()) -> LoadingState kullan.
+
+    Ad-hoc spinner'lar erisilemez (semanticsLabel eksik) ve tutarsiz. Shared
+    LoadingState widget'ini kullanmak: screen reader destegi + optional message.
+    """
+    fname = filepath.name
+    # LoadingState'in kendisi ve legitimate kullanim
+    if fname in ("loading_state.dart", "submit_button.dart", "app_bottom_sheet.dart"):
+        return
+
+    for i, line in enumerate(lines, 1):
+        if is_comment_line(line):
+            continue
+        if re.search(r'\bCenter\(\s*child:\s*CircularProgressIndicator\(\s*\)', line):
+            cat.findings.append(Finding(
+                file=relative_path(filepath),
+                line_num=i,
+                line_text=line.rstrip(),
+                suggestion="const LoadingState() kullan"
+            ))
+
+
+def check_iconbutton_constraints(lines: List[str], filepath: Path, cat: Category):
+    """UI/UX: IconButton(...) -> AppIconButton kullan (min 48dp tap target).
+
+    WCAG 2.1 AA minimum tap target 44x44 (Apple HIG 44, Material 48). IconButton
+    default constraint'i ile 40x40 olabilir. AppIconButton guarantees 48dp +
+    required semanticLabel.
+    """
+    fname = filepath.name
+    if fname in ("app_icon_button.dart",):
+        return
+
+    for i, line in enumerate(lines, 1):
+        if is_comment_line(line):
+            continue
+        # Raw IconButton( without constraints argument on same or next lines
+        m = re.search(r'\bIconButton\s*\(', line)
+        if m and not is_in_string_literal(line, m.start()):
+            # Quick heuristic: if line contains constraints or AppIconButton, skip
+            window = "".join(lines[i - 1:i + 8])
+            if "constraints:" in window or "AppIconButton" in window:
+                continue
+            cat.findings.append(Finding(
+                file=relative_path(filepath),
+                line_num=i,
+                line_text=line.rstrip(),
+                suggestion="AppIconButton kullan (48dp min tap target garantisi)"
+            ))
+
+
 def main():
     print(f"\n{BOLD}{CYAN}=== BudgieBreedingTracker - Code Quality Scanner ==={RESET}\n")
 
@@ -876,6 +928,8 @@ def main():
         Category("Mounted Check Eksik", "[Mounted]", "await sonrasi setState icin mounted kontrol et", severity="warning"),
         Category("Layer Import Ihlali", "[Layer]", "Katman hiyerarsisi import ihlali"),
         Category("Freezed Private Constructor", "[FreezedCtor]", "const Model._() private constructor eksik"),
+        Category("Ad-hoc CircularProgressIndicator", "[Loading]", "Center+CircularProgressIndicator -> LoadingState kullan", severity="warning"),
+        Category("IconButton 48dp Constraint Eksik", "[TapTarget]", "IconButton -> AppIconButton kullan (a11y)", severity="warning"),
     ]
 
     checkers = [
@@ -900,6 +954,8 @@ def main():
         check_mounted_async,
         check_layer_imports,
         check_freezed_private_constructor,
+        check_bare_circular_progress,
+        check_iconbutton_constraints,
     ]
 
     # Run all checkers on all files

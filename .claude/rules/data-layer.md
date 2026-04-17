@@ -5,7 +5,7 @@
 - **DAOs**: `lib/data/local/database/daos/` (20 DAOs)
 - **Mappers**: `lib/data/local/database/mappers/` (20 mappers)
 - **Converters**: `lib/data/local/database/converters/enum_converters.dart`
-- **Schema version**: 20
+- **Schema version**: 22
 - Import tables DIRECTLY from table file, not via `app_database.dart`
 - Use `.equalsValue()` for enum columns, not `.equals()`
 
@@ -28,9 +28,9 @@ import 'package:budgie/data/local/database/tables/birds_table.dart';
 ## Supabase (Remote)
 - **Remote sources**: `lib/data/remote/api/` (26 entity + base + 2 caches + providers)
 - **Storage**: `lib/data/remote/storage/storage_service.dart`
-- **Constants**: `SupabaseConstants` class (106 table/column constants)
-- **Edge Functions**: 6 in `supabase/functions/`
-- **Migrations**: 116 SQL files in `supabase/migrations/`
+- **Constants**: `SupabaseConstants` class (110 table/column constants)
+- **Edge Functions**: 7 in `supabase/functions/`
+- **Migrations**: 125 SQL files in `supabase/migrations/`
 - Always use `SupabaseConstants` for table/column names — never hardcode
 - Use `.toSupabase()` extension — never send `created_at`/`updated_at` manually
 
@@ -52,12 +52,33 @@ await client.from(SupabaseConstants.birdsTable).upsert(bird.toSupabase());
 - Repositories orchestrate local <-> remote sync
 - UI never calls `client.from()` directly (exception: admin/)
 
+### Offline-First Classification (mandatory)
+A class named `*Repository` MUST be offline-first:
+- Has Drift table + DAO
+- Has `SyncMetadata` entry
+- Writes go local-first, then `.upsert()` (never raw `.insert()`) to remote
+- Reads return local streams, not remote futures
+
+If a class is online-only (no local mirror), DO NOT name it `Repository`. Use `*RemoteService` or `*OnlineSource` instead. Lying with the name breaks the offline-first contract — user creates data offline, app crashes on resume, silent data loss.
+
+Audit-flagged offenders needing rename or offline-first implementation: `messaging_repository.dart`, `community_post_repository.dart`, `marketplace_listing_remote_source.dart`.
+
 ### Sync Strategy
 - Offline-first: local Drift DB is source of truth for UI
 - Background sync: repositories push local changes to Supabase when online
-- Conflict resolution: server wins (last-write-wins with `updated_at` timestamp)
 - `SyncMetadata` table tracks per-entity sync state (last sync time, dirty flag)
 - Use `ref.invalidate()` after sync completes to refresh UI providers
+- All syncable repos MUST use `ValidatedSyncMixin` for FK validation (prevents orphan pushes after parent delete). Current coverage: bird, egg ✓ — chick, health_record still missing.
+
+### Write Safety
+- ALWAYS `.upsert()` for idempotent writes — `.insert()` causes duplicates on retry/sync replay
+- Use stable client-generated UUIDs as primary keys, not server-assigned IDs
+- Batch writes in Drift transactions; batch remote writes where API supports
+
+### Conflict Resolution
+- Last-write-wins via `updated_at` timestamp (server wins when remote newer)
+- Discarded local edits MUST NOT be silent: track in `lastPullConflicts`, surface via provider, show UI banner
+- Never overwrite local dirty rows without conflict accounting
 
 ## Cache
 - `community_profile_cache`, `community_post_cache` in remote/api/

@@ -74,8 +74,8 @@ scripts/test_verify_rules.py            # Tests for verify_rules.py
 
 | Metric | Value |
 | --- | --- |
-| Source files (lib/) | 883 Dart files |
-| Test files (test/) | 850 test files, 10,457+ individual tests |
+| Source files (lib/) | 889 Dart files |
+| Test files (test/) | 851 test files, 10,482+ individual tests |
 | Feature modules | 23 |
 | Drift tables / DAOs / Mappers | 20 each |
 | Repositories | 23 entity + base + sync_metadata |
@@ -84,7 +84,7 @@ scripts/test_verify_rules.py            # Tests for verify_rules.py
 | Domain services | 16 directories |
 | Routes | 72 |
 | Custom SVG icons | 84 constants, 84 files on disk |
-| Shared widgets | 20 (15 root + 2 buttons + 2 cards + 1 dialog) |
+| Shared widgets | 23 (15 root + 4 buttons + 2 cards + 1 dialog) |
 | Enum files | 15 |
 | Supabase constants | 110 (tables + buckets + columns) |
 | L10n keys | ~2,724 per language, 39 categories |
@@ -139,18 +139,19 @@ Config methods: `.env` + `--dart-define-from-file` (local) · GitHub Secrets (CI
 
 ## Supabase
 
-### Edge Functions (6)
+### Edge Functions (7)
 | Function | Purpose |
 | --- | --- |
 | `mfa-lockout` | MFA brute-force lockout handling |
 | `moderate-content` | Community content moderation |
 | `revoke-oauth-token` | Google/Apple OAuth token revocation |
+| `scan-image-safety` | Photo upload safety scan |
 | `send-push` | FCM push notification delivery |
 | `system-health` | Admin dashboard system health check |
 | `validate-free-tier-limit` | Free tier entity limit enforcement |
 
 ### Migrations
-123 SQL migration files in `supabase/migrations/`. Schema managed server-side; never modify RLS policies from client code.
+125 SQL migration files in `supabase/migrations/`. Schema managed server-side; never modify RLS policies from client code.
 
 ## Rules
 
@@ -174,6 +175,7 @@ Comprehensive rules in `.claude/rules/` (auto-loaded):
 | `chat.md` | Response language (Turkish), debugging approach, code review feedback |
 | `ci-actions.md` | GitHub Actions design, Dependabot, billing failures, deployment safety |
 | `release-ops.md` | Release channels, version bump, environment discipline, Supabase ops |
+| `edge-functions.md` | Edge fn inventory, auth/validation, MFA policy, invocation, testing, deploy |
 | `security.md` | Auth, RLS, route guards, credentials, data protection, OAuth |
 | `performance.md` | Drift optimization, Riverpod rebuilds, widget perf, images, sync, startup |
 
@@ -281,7 +283,7 @@ Security:      lib/core/security/
 Preferences:   lib/data/local/preferences/
 EdgeFunctions: lib/data/remote/supabase/
 Edge Fn (SB):  supabase/functions/
-Migrations:    supabase/migrations/ (123 files)
+Migrations:    supabase/migrations/ (125 files)
 Scripts:       scripts/
 CI:            .github/workflows/ + codemagic.yaml
 ```
