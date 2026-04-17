@@ -12,11 +12,11 @@ extension IncubationRowMapper on IncubationRow {
     clutchId: clutchId,
     breedingPairId: breedingPairId,
     notes: notes,
-    startDate: startDate,
-    endDate: endDate,
-    expectedHatchDate: expectedHatchDate,
-    createdAt: createdAt,
-    updatedAt: updatedAt,
+    startDate: startDate?.toUtc(),
+    endDate: endDate?.toUtc(),
+    expectedHatchDate: expectedHatchDate?.toUtc(),
+    createdAt: createdAt?.toUtc(),
+    updatedAt: updatedAt?.toUtc(),
   );
 }
 
@@ -30,10 +30,10 @@ extension IncubationModelMapper on Incubation {
     clutchId: Value(clutchId),
     breedingPairId: Value(breedingPairId),
     notes: Value(notes),
-    startDate: Value(startDate),
-    endDate: Value(endDate),
-    expectedHatchDate: Value(expectedHatchDate),
-    createdAt: Value(createdAt),
-    updatedAt: Value(updatedAt ?? DateTime.now()),
+    startDate: Value(startDate?.toUtc()),
+    endDate: Value(endDate?.toUtc()),
+    expectedHatchDate: Value(expectedHatchDate?.toUtc()),
+    createdAt: Value(createdAt?.toUtc()),
+    updatedAt: Value((updatedAt ?? DateTime.now()).toUtc()),
   );
 }

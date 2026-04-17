@@ -11,9 +11,9 @@ extension SyncMetadataRowMapper on SyncMetadataRow {
     recordId: recordId,
     errorMessage: errorMessage,
     retryCount: retryCount,
-    lastSyncedAt: lastSyncedAt,
-    createdAt: createdAt,
-    updatedAt: updatedAt,
+    lastSyncedAt: lastSyncedAt?.toUtc(),
+    createdAt: createdAt?.toUtc(),
+    updatedAt: updatedAt?.toUtc(),
   );
 }
 
@@ -26,8 +26,8 @@ extension SyncMetadataModelMapper on SyncMetadata {
     recordId: Value(recordId),
     errorMessage: Value(errorMessage),
     retryCount: Value(retryCount),
-    lastSyncedAt: Value(lastSyncedAt),
-    createdAt: Value(createdAt),
-    updatedAt: Value(updatedAt ?? DateTime.now()),
+    lastSyncedAt: Value(lastSyncedAt?.toUtc()),
+    createdAt: Value(createdAt?.toUtc()),
+    updatedAt: Value((updatedAt ?? DateTime.now()).toUtc()),
   );
 }

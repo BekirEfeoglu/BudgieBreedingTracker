@@ -8,7 +8,7 @@ import 'package:budgie_breeding_tracker/data/models/profile_model.dart';
 void main() {
   group('ProfileRowMapper.toModel()', () {
     test('maps all fields correctly', () {
-      final premiumExpiry = DateTime(2025, 12, 31);
+      final premiumExpiry = DateTime.utc(2025, 12, 31);
       final row = ProfileRow(
         id: 'u1',
         email: 'test@example.com',
@@ -19,8 +19,8 @@ void main() {
         role: 'admin',
         language: 'en',
         premiumExpiresAt: premiumExpiry,
-        createdAt: DateTime(2024, 1, 1),
-        updatedAt: DateTime(2024, 6, 1),
+        createdAt: DateTime.utc(2024, 1, 1),
+        updatedAt: DateTime.utc(2024, 6, 1),
       );
       final model = row.toModel();
 
@@ -69,7 +69,7 @@ void main() {
         avatarUrl: 'https://example.com/jane.png',
         role: 'user',
         language: 'de',
-        premiumExpiresAt: DateTime(2025, 6, 30),
+        premiumExpiresAt: DateTime.utc(2025, 6, 30),
       );
       final companion = model.toCompanion();
 

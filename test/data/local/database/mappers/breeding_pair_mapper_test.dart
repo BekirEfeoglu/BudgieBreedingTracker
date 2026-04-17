@@ -8,7 +8,7 @@ import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
 void main() {
   group('BreedingPairRowMapper.toModel()', () {
     test('maps all fields correctly', () {
-      final pairingDate = DateTime(2024, 2, 1);
+      final pairingDate = DateTime.utc(2024, 2, 1);
       final row = BreedingPairRow(
         id: 'bp1',
         userId: 'u1',

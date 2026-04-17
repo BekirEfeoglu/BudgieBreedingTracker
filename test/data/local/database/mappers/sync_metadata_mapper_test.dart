@@ -7,7 +7,7 @@ import 'package:budgie_breeding_tracker/data/models/sync_metadata_model.dart';
 void main() {
   group('SyncMetadataRowMapper.toModel()', () {
     test('maps all fields correctly', () {
-      final lastSynced = DateTime(2024, 6, 1);
+      final lastSynced = DateTime.utc(2024, 6, 1);
       final row = SyncMetadataRow(
         id: 'sm1',
         tableName_: 'birds',

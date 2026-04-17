@@ -7,14 +7,14 @@ extension GrowthMeasurementRowMapper on GrowthMeasurementRow {
     id: id,
     chickId: chickId,
     weight: weight,
-    measurementDate: measurementDate,
+    measurementDate: measurementDate.toUtc(),
     userId: userId,
     height: height,
     wingLength: wingLength,
     tailLength: tailLength,
     notes: notes,
-    createdAt: createdAt,
-    updatedAt: updatedAt,
+    createdAt: createdAt?.toUtc(),
+    updatedAt: updatedAt?.toUtc(),
   );
 }
 
@@ -24,13 +24,13 @@ extension GrowthMeasurementModelMapper on GrowthMeasurement {
         id: Value(id),
         chickId: Value(chickId),
         weight: Value(weight),
-        measurementDate: Value(measurementDate),
+        measurementDate: Value(measurementDate.toUtc()),
         userId: Value(userId),
         height: Value(height),
         wingLength: Value(wingLength),
         tailLength: Value(tailLength),
         notes: Value(notes),
-        createdAt: Value(createdAt),
-        updatedAt: Value(updatedAt ?? DateTime.now()),
+        createdAt: Value(createdAt?.toUtc()),
+        updatedAt: Value((updatedAt ?? DateTime.now()).toUtc()),
       );
 }

@@ -5,7 +5,7 @@ import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
 extension EggRowMapper on EggRow {
   Egg toModel() => Egg(
     id: id,
-    layDate: layDate,
+    layDate: layDate.toUtc(),
     userId: userId,
     status: status,
     clutchId: clutchId,
@@ -13,11 +13,11 @@ extension EggRowMapper on EggRow {
     eggNumber: eggNumber,
     notes: notes,
     photoUrl: photoUrl,
-    hatchDate: hatchDate,
-    fertileCheckDate: fertileCheckDate,
-    discardDate: discardDate,
-    createdAt: createdAt,
-    updatedAt: updatedAt,
+    hatchDate: hatchDate?.toUtc(),
+    fertileCheckDate: fertileCheckDate?.toUtc(),
+    discardDate: discardDate?.toUtc(),
+    createdAt: createdAt?.toUtc(),
+    updatedAt: updatedAt?.toUtc(),
     isDeleted: isDeleted,
   );
 }
@@ -25,7 +25,7 @@ extension EggRowMapper on EggRow {
 extension EggModelMapper on Egg {
   EggsTableCompanion toCompanion() => EggsTableCompanion(
     id: Value(id),
-    layDate: Value(layDate),
+    layDate: Value(layDate.toUtc()),
     userId: Value(userId),
     status: Value(status),
     clutchId: Value(clutchId),
@@ -33,11 +33,11 @@ extension EggModelMapper on Egg {
     eggNumber: Value(eggNumber),
     notes: Value(notes),
     photoUrl: Value(photoUrl),
-    hatchDate: Value(hatchDate),
-    fertileCheckDate: Value(fertileCheckDate),
-    discardDate: Value(discardDate),
-    createdAt: Value(createdAt),
-    updatedAt: Value(updatedAt ?? DateTime.now()),
+    hatchDate: Value(hatchDate?.toUtc()),
+    fertileCheckDate: Value(fertileCheckDate?.toUtc()),
+    discardDate: Value(discardDate?.toUtc()),
+    createdAt: Value(createdAt?.toUtc()),
+    updatedAt: Value((updatedAt ?? DateTime.now()).toUtc()),
     isDeleted: Value(isDeleted),
   );
 }

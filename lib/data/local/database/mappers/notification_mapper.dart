@@ -13,10 +13,10 @@ extension NotificationRowMapper on NotificationRow {
     userId: userId,
     referenceId: referenceId,
     referenceType: referenceType,
-    scheduledAt: scheduledAt,
-    readAt: readAt,
-    createdAt: createdAt,
-    updatedAt: updatedAt,
+    scheduledAt: scheduledAt?.toUtc(),
+    readAt: readAt?.toUtc(),
+    createdAt: createdAt?.toUtc(),
+    updatedAt: updatedAt?.toUtc(),
   );
 }
 
@@ -31,9 +31,9 @@ extension NotificationModelMapper on AppNotification {
     userId: Value(userId),
     referenceId: Value(referenceId),
     referenceType: Value(referenceType),
-    scheduledAt: Value(scheduledAt),
-    readAt: Value(readAt),
-    createdAt: Value(createdAt),
-    updatedAt: Value(updatedAt ?? DateTime.now()),
+    scheduledAt: Value(scheduledAt?.toUtc()),
+    readAt: Value(readAt?.toUtc()),
+    createdAt: Value(createdAt?.toUtc()),
+    updatedAt: Value((updatedAt ?? DateTime.now()).toUtc()),
   );
 }

@@ -8,7 +8,7 @@ import 'package:budgie_breeding_tracker/data/models/clutch_model.dart';
 void main() {
   group('ClutchRowMapper.toModel()', () {
     test('maps all fields correctly', () {
-      final startDate = DateTime(2024, 3, 1);
+      final startDate = DateTime.utc(2024, 3, 1);
       final row = ClutchRow(
         id: 'cl1',
         userId: 'u1',

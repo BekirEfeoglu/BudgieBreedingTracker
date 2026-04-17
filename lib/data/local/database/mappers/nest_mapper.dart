@@ -11,8 +11,8 @@ extension NestRowMapper on NestRow {
     status: status,
     notes: notes,
     isDeleted: isDeleted,
-    createdAt: createdAt,
-    updatedAt: updatedAt,
+    createdAt: createdAt?.toUtc(),
+    updatedAt: updatedAt?.toUtc(),
   );
 }
 
@@ -25,7 +25,7 @@ extension NestModelMapper on Nest {
     status: Value(status),
     notes: Value(notes),
     isDeleted: Value(isDeleted),
-    createdAt: Value(createdAt),
-    updatedAt: Value(updatedAt ?? DateTime.now()),
+    createdAt: Value(createdAt?.toUtc()),
+    updatedAt: Value((updatedAt ?? DateTime.now()).toUtc()),
   );
 }

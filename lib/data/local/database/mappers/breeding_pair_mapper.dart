@@ -11,10 +11,10 @@ extension BreedingPairRowMapper on BreedingPairRow {
     femaleId: femaleId,
     cageNumber: cageNumber,
     notes: notes,
-    pairingDate: pairingDate,
-    separationDate: separationDate,
-    createdAt: createdAt,
-    updatedAt: updatedAt,
+    pairingDate: pairingDate?.toUtc(),
+    separationDate: separationDate?.toUtc(),
+    createdAt: createdAt?.toUtc(),
+    updatedAt: updatedAt?.toUtc(),
     isDeleted: isDeleted,
   );
 }
@@ -28,10 +28,10 @@ extension BreedingPairModelMapper on BreedingPair {
     femaleId: Value(femaleId),
     cageNumber: Value(cageNumber),
     notes: Value(notes),
-    pairingDate: Value(pairingDate),
-    separationDate: Value(separationDate),
-    createdAt: Value(createdAt),
-    updatedAt: Value(updatedAt ?? DateTime.now()),
+    pairingDate: Value(pairingDate?.toUtc()),
+    separationDate: Value(separationDate?.toUtc()),
+    createdAt: Value(createdAt?.toUtc()),
+    updatedAt: Value((updatedAt ?? DateTime.now()).toUtc()),
     isDeleted: Value(isDeleted),
   );
 }

@@ -13,8 +13,8 @@ extension UserPreferenceRowMapper on UserPreferenceRow {
     emailNotifications: emailNotifications,
     pushNotifications: pushNotifications,
     customSettings: customSettings,
-    createdAt: createdAt,
-    updatedAt: updatedAt,
+    createdAt: createdAt?.toUtc(),
+    updatedAt: updatedAt?.toUtc(),
   );
 }
 
@@ -29,7 +29,7 @@ extension UserPreferenceModelMapper on UserPreference {
     emailNotifications: Value(emailNotifications),
     pushNotifications: Value(pushNotifications),
     customSettings: Value(customSettings),
-    createdAt: Value(createdAt),
-    updatedAt: Value(updatedAt ?? DateTime.now()),
+    createdAt: Value(createdAt?.toUtc()),
+    updatedAt: Value((updatedAt ?? DateTime.now()).toUtc()),
   );
 }

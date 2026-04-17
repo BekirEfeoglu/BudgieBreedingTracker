@@ -6,8 +6,8 @@ import 'package:budgie_breeding_tracker/data/local/database/mappers/egg_mapper.d
 import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
 
 void main() {
-  final layDate = DateTime(2024, 3, 1);
-  final hatchDate = DateTime(2024, 3, 19);
+  final layDate = DateTime.utc(2024, 3, 1);
+  final hatchDate = DateTime.utc(2024, 3, 19);
 
   group('EggRowMapper.toModel()', () {
     test('maps all fields correctly', () {
@@ -22,7 +22,7 @@ void main() {
         notes: 'Healthy egg',
         photoUrl: 'photo.jpg',
         hatchDate: hatchDate,
-        fertileCheckDate: DateTime(2024, 3, 7),
+        fertileCheckDate: DateTime.utc(2024, 3, 7),
         discardDate: null,
         isDeleted: false,
       );

@@ -24,8 +24,8 @@ extension NotificationSettingsRowMapper on NotificationSettingsRow {
     feedingReminderIntervalMinutes: feedingReminderIntervalMinutes,
     temperatureCheckIntervalMinutes: temperatureCheckIntervalMinutes,
     cleanupDaysOld: cleanupDaysOld,
-    createdAt: createdAt,
-    updatedAt: updatedAt,
+    createdAt: createdAt?.toUtc(),
+    updatedAt: updatedAt?.toUtc(),
   );
 }
 
@@ -52,7 +52,7 @@ extension NotificationSettingsModelMapper on NotificationSettings {
         feedingReminderIntervalMinutes: Value(feedingReminderIntervalMinutes),
         temperatureCheckIntervalMinutes: Value(temperatureCheckIntervalMinutes),
         cleanupDaysOld: Value(cleanupDaysOld),
-        createdAt: Value(createdAt),
-        updatedAt: Value(updatedAt ?? DateTime.now()),
+        createdAt: Value(createdAt?.toUtc()),
+        updatedAt: Value((updatedAt ?? DateTime.now()).toUtc()),
       );
 }

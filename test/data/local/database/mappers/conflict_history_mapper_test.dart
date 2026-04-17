@@ -9,8 +9,8 @@ import 'package:budgie_breeding_tracker/data/models/conflict_history_model.dart'
 void main() {
   group('ConflictHistoryRowMapper.toModel()', () {
     test('maps all fields correctly', () {
-      final created = DateTime(2024, 5, 1);
-      final resolved = DateTime(2024, 5, 2);
+      final created = DateTime.utc(2024, 5, 1);
+      final resolved = DateTime.utc(2024, 5, 2);
 
       final row = ConflictHistoryRow(
         id: 'c1',
@@ -54,8 +54,8 @@ void main() {
 
   group('ConflictHistoryModelMapper.toCompanion()', () {
     test('maps all fields to companion with Value wrappers', () {
-      final created = DateTime(2024, 5, 1);
-      final resolved = DateTime(2024, 5, 2);
+      final created = DateTime.utc(2024, 5, 1);
+      final resolved = DateTime.utc(2024, 5, 2);
 
       final model = ConflictHistory(
         id: 'c1',
@@ -103,7 +103,7 @@ void main() {
 
   group('round-trip', () {
     test('Row → Model → Companion preserves all fields', () {
-      final created = DateTime(2024, 5, 1);
+      final created = DateTime.utc(2024, 5, 1);
 
       final row = ConflictHistoryRow(
         id: 'c1',

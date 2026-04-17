@@ -5,7 +5,7 @@ import 'package:budgie_breeding_tracker/data/local/database/mappers/health_recor
 import 'package:budgie_breeding_tracker/data/models/health_record_model.dart';
 
 void main() {
-  final date = DateTime(2024, 4, 15);
+  final date = DateTime.utc(2024, 4, 15);
 
   group('HealthRecordRowMapper.toModel()', () {
     test('maps all fields correctly', () {
@@ -22,7 +22,7 @@ void main() {
         notes: 'No reactions',
         weight: 35.5,
         cost: 50.0,
-        followUpDate: DateTime(2024, 5, 15),
+        followUpDate: DateTime.utc(2024, 5, 15),
         isDeleted: false,
       );
       final model = row.toModel();

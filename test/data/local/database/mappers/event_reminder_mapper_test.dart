@@ -16,8 +16,8 @@ void main() {
         type: ReminderType.email,
         isSent: true,
         isDeleted: false,
-        createdAt: DateTime(2024, 4, 1),
-        updatedAt: DateTime(2024, 4, 2),
+        createdAt: DateTime.utc(2024, 4, 1),
+        updatedAt: DateTime.utc(2024, 4, 2),
       );
       final model = row.toModel();
 

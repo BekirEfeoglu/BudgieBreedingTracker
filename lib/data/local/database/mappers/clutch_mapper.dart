@@ -12,14 +12,14 @@ extension ClutchRowMapper on ClutchRow {
     maleBirdId: maleBirdId,
     femaleBirdId: femaleBirdId,
     nestId: nestId,
-    pairDate: pairDate,
-    startDate: startDate,
-    endDate: endDate,
+    pairDate: pairDate?.toUtc(),
+    startDate: startDate?.toUtc(),
+    endDate: endDate?.toUtc(),
     status: status,
     notes: notes,
     isDeleted: isDeleted,
-    createdAt: createdAt,
-    updatedAt: updatedAt,
+    createdAt: createdAt?.toUtc(),
+    updatedAt: updatedAt?.toUtc(),
   );
 }
 
@@ -33,13 +33,13 @@ extension ClutchModelMapper on Clutch {
     maleBirdId: Value(maleBirdId),
     femaleBirdId: Value(femaleBirdId),
     nestId: Value(nestId),
-    pairDate: Value(pairDate),
-    startDate: Value(startDate),
-    endDate: Value(endDate),
+    pairDate: Value(pairDate?.toUtc()),
+    startDate: Value(startDate?.toUtc()),
+    endDate: Value(endDate?.toUtc()),
     status: Value(status),
     notes: Value(notes),
     isDeleted: Value(isDeleted),
-    createdAt: Value(createdAt),
-    updatedAt: Value(updatedAt ?? DateTime.now()),
+    createdAt: Value(createdAt?.toUtc()),
+    updatedAt: Value((updatedAt ?? DateTime.now()).toUtc()),
   );
 }

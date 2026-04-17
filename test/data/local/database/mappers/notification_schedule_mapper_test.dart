@@ -6,8 +6,8 @@ import 'package:budgie_breeding_tracker/data/local/database/mappers/notification
 import 'package:budgie_breeding_tracker/data/models/notification_schedule_model.dart';
 
 void main() {
-  final scheduledAt = DateTime(2024, 6, 15, 9, 0);
-  final processedAt = DateTime(2024, 6, 15, 9, 5);
+  final scheduledAt = DateTime.utc(2024, 6, 15, 9, 0);
+  final processedAt = DateTime.utc(2024, 6, 15, 9, 5);
 
   group('NotificationScheduleRowMapper.toModel()', () {
     test('maps all fields correctly', () {
@@ -25,8 +25,8 @@ void main() {
         priority: NotificationPriority.high,
         metadata: '{"nest":"A"}',
         processedAt: processedAt,
-        createdAt: DateTime(2024, 6, 1),
-        updatedAt: DateTime(2024, 6, 2),
+        createdAt: DateTime.utc(2024, 6, 1),
+        updatedAt: DateTime.utc(2024, 6, 2),
       );
       final model = row.toModel();
 

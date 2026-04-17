@@ -13,10 +13,10 @@ extension ProfileRowMapper on ProfileRow {
     avatarUrl: avatarUrl,
     role: role,
     language: language,
-    premiumExpiresAt: premiumExpiresAt,
-    gracePeriodUntil: gracePeriodUntil,
-    createdAt: createdAt,
-    updatedAt: updatedAt,
+    premiumExpiresAt: premiumExpiresAt?.toUtc(),
+    gracePeriodUntil: gracePeriodUntil?.toUtc(),
+    createdAt: createdAt?.toUtc(),
+    updatedAt: updatedAt?.toUtc(),
   );
 }
 
@@ -31,9 +31,9 @@ extension ProfileModelMapper on Profile {
     avatarUrl: Value(avatarUrl),
     role: Value(role),
     language: Value(language),
-    premiumExpiresAt: Value(premiumExpiresAt),
-    gracePeriodUntil: Value(gracePeriodUntil),
-    createdAt: Value(createdAt),
-    updatedAt: Value(updatedAt ?? DateTime.now()),
+    premiumExpiresAt: Value(premiumExpiresAt?.toUtc()),
+    gracePeriodUntil: Value(gracePeriodUntil?.toUtc()),
+    createdAt: Value(createdAt?.toUtc()),
+    updatedAt: Value((updatedAt ?? DateTime.now()).toUtc()),
   );
 }

@@ -13,8 +13,8 @@ extension PhotoRowMapper on PhotoRow {
     fileSize: fileSize,
     mimeType: mimeType,
     isPrimary: isPrimary,
-    createdAt: createdAt,
-    updatedAt: updatedAt,
+    createdAt: createdAt?.toUtc(),
+    updatedAt: updatedAt?.toUtc(),
   );
 }
 
@@ -29,7 +29,7 @@ extension PhotoModelMapper on Photo {
     fileSize: Value(fileSize),
     mimeType: Value(mimeType),
     isPrimary: Value(isPrimary),
-    createdAt: Value(createdAt),
-    updatedAt: Value(updatedAt ?? DateTime.now()),
+    createdAt: Value(createdAt?.toUtc()),
+    updatedAt: Value((updatedAt ?? DateTime.now()).toUtc()),
   );
 }

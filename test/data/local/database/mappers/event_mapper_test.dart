@@ -6,7 +6,7 @@ import 'package:budgie_breeding_tracker/data/local/database/mappers/event_mapper
 import 'package:budgie_breeding_tracker/data/models/event_model.dart';
 
 void main() {
-  final eventDate = DateTime(2024, 5, 10);
+  final eventDate = DateTime.utc(2024, 5, 10);
 
   group('EventRowMapper.toModel()', () {
     test('maps all fields correctly', () {
@@ -22,7 +22,7 @@ void main() {
         breedingPairId: null,
         notes: 'Bring records',
         endDate: null,
-        reminderDate: DateTime(2024, 5, 9),
+        reminderDate: DateTime.utc(2024, 5, 9),
         isDeleted: false,
       );
       final model = row.toModel();

@@ -11,8 +11,8 @@ extension EventReminderRowMapper on EventReminderRow {
     type: type,
     isSent: isSent,
     isDeleted: isDeleted,
-    createdAt: createdAt,
-    updatedAt: updatedAt,
+    createdAt: createdAt?.toUtc(),
+    updatedAt: updatedAt?.toUtc(),
   );
 }
 
@@ -25,7 +25,7 @@ extension EventReminderModelMapper on EventReminder {
     type: Value(type),
     isSent: Value(isSent),
     isDeleted: Value(isDeleted),
-    createdAt: Value(createdAt),
-    updatedAt: Value(updatedAt ?? DateTime.now()),
+    createdAt: Value(createdAt?.toUtc()),
+    updatedAt: Value((updatedAt ?? DateTime.now()).toUtc()),
   );
 }

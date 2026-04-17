@@ -21,8 +21,8 @@ void main() {
         motherBirdId: 'b2',
         resultsJson: '{"offspring":[]}',
         notes: 'Test calculation',
-        createdAt: DateTime(2024, 5, 1),
-        updatedAt: DateTime(2024, 5, 2),
+        createdAt: DateTime.utc(2024, 5, 1),
+        updatedAt: DateTime.utc(2024, 5, 2),
         isDeleted: false,
       );
       final model = row.toModel();

@@ -16,8 +16,8 @@ void main() {
         status: NestStatus.occupied,
         notes: 'Wooden nest',
         isDeleted: false,
-        createdAt: DateTime(2024, 3, 1),
-        updatedAt: DateTime(2024, 3, 2),
+        createdAt: DateTime.utc(2024, 3, 1),
+        updatedAt: DateTime.utc(2024, 3, 2),
       );
       final model = row.toModel();
 

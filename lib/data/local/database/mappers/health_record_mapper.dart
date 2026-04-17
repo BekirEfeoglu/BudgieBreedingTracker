@@ -5,7 +5,7 @@ import 'package:budgie_breeding_tracker/data/models/health_record_model.dart';
 extension HealthRecordRowMapper on HealthRecordRow {
   HealthRecord toModel() => HealthRecord(
     id: id,
-    date: date,
+    date: date.toUtc(),
     type: type,
     title: title,
     userId: userId,
@@ -16,9 +16,9 @@ extension HealthRecordRowMapper on HealthRecordRow {
     notes: notes,
     weight: weight,
     cost: cost,
-    followUpDate: followUpDate,
-    createdAt: createdAt,
-    updatedAt: updatedAt,
+    followUpDate: followUpDate?.toUtc(),
+    createdAt: createdAt?.toUtc(),
+    updatedAt: updatedAt?.toUtc(),
     isDeleted: isDeleted,
   );
 }
@@ -26,7 +26,7 @@ extension HealthRecordRowMapper on HealthRecordRow {
 extension HealthRecordModelMapper on HealthRecord {
   HealthRecordsTableCompanion toCompanion() => HealthRecordsTableCompanion(
     id: Value(id),
-    date: Value(date),
+    date: Value(date.toUtc()),
     type: Value(type),
     title: Value(title),
     userId: Value(userId),
@@ -37,9 +37,9 @@ extension HealthRecordModelMapper on HealthRecord {
     notes: Value(notes),
     weight: Value(weight),
     cost: Value(cost),
-    followUpDate: Value(followUpDate),
-    createdAt: Value(createdAt),
-    updatedAt: Value(updatedAt ?? DateTime.now()),
+    followUpDate: Value(followUpDate?.toUtc()),
+    createdAt: Value(createdAt?.toUtc()),
+    updatedAt: Value((updatedAt ?? DateTime.now()).toUtc()),
     isDeleted: Value(isDeleted),
   );
 }

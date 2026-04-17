@@ -15,8 +15,8 @@ extension GeneticsHistoryRowMapper on GeneticsHistoryRow {
     resultsJson: resultsJson,
     calculationVersion: calculationVersion,
     notes: notes,
-    createdAt: createdAt,
-    updatedAt: updatedAt,
+    createdAt: createdAt?.toUtc(),
+    updatedAt: updatedAt?.toUtc(),
     isDeleted: isDeleted,
   );
 
@@ -42,8 +42,8 @@ extension GeneticsHistoryModelMapper on GeneticsHistory {
     resultsJson: Value(resultsJson),
     calculationVersion: Value(calculationVersion),
     notes: Value(notes),
-    createdAt: Value(createdAt),
-    updatedAt: Value(updatedAt ?? DateTime.now()),
+    createdAt: Value(createdAt?.toUtc()),
+    updatedAt: Value((updatedAt ?? DateTime.now()).toUtc()),
     isDeleted: Value(isDeleted),
   );
 }

@@ -7,8 +7,8 @@ import 'package:budgie_breeding_tracker/data/local/database/mappers/incubation_m
 import 'package:budgie_breeding_tracker/data/models/incubation_model.dart';
 
 void main() {
-  final startDate = DateTime(2024, 3, 1);
-  final endDate = DateTime(2024, 3, 19);
+  final startDate = DateTime.utc(2024, 3, 1);
+  final endDate = DateTime.utc(2024, 3, 19);
 
   group('IncubationRowMapper.toModel()', () {
     test('maps all fields correctly', () {

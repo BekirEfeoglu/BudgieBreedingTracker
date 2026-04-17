@@ -29,7 +29,7 @@ void main() {
     });
 
     test('maps nullable fields correctly', () {
-      final date = DateTime(2024, 6, 1);
+      final date = DateTime.utc(2024, 6, 1);
       final row = BirdRow(
         id: 'b2',
         name: 'Sky',

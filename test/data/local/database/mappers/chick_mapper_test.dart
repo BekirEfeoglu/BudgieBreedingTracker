@@ -9,7 +9,7 @@ import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
 void main() {
   group('ChickRowMapper.toModel()', () {
     test('maps all fields correctly', () {
-      final hatchDate = DateTime(2024, 3, 19);
+      final hatchDate = DateTime.utc(2024, 3, 19);
       final row = ChickRow(
         id: 'c1',
         userId: 'u1',

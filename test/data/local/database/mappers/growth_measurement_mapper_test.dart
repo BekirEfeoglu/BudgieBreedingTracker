@@ -5,7 +5,7 @@ import 'package:budgie_breeding_tracker/data/local/database/mappers/growth_measu
 import 'package:budgie_breeding_tracker/data/models/growth_measurement_model.dart';
 
 void main() {
-  final measureDate = DateTime(2024, 4, 1);
+  final measureDate = DateTime.utc(2024, 4, 1);
 
   group('GrowthMeasurementRowMapper.toModel()', () {
     test('maps all fields correctly', () {

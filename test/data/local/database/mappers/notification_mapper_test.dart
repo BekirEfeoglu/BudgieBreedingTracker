@@ -8,7 +8,7 @@ import 'package:budgie_breeding_tracker/data/models/notification_model.dart';
 void main() {
   group('NotificationRowMapper.toModel()', () {
     test('maps all fields correctly', () {
-      final scheduledAt = DateTime(2024, 5, 1, 10, 0);
+      final scheduledAt = DateTime.utc(2024, 5, 1, 10, 0);
       final row = NotificationRow(
         id: 'n1',
         title: 'Egg turning',
