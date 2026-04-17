@@ -40,11 +40,15 @@ class CommunityEngagementRemoteSource {
 
   Future<void> bookmarkPost(String userId, String postId) async {
     try {
-      await _client.from(SupabaseConstants.communityBookmarksTable).insert({
-        'id': const Uuid().v7(),
-        'user_id': userId,
-        'post_id': postId,
-      });
+      await _client.from(SupabaseConstants.communityBookmarksTable).upsert(
+        {
+          'id': const Uuid().v7(),
+          'user_id': userId,
+          'post_id': postId,
+        },
+        onConflict: 'post_id,user_id',
+        ignoreDuplicates: true,
+      );
     } catch (e, st) {
       AppLogger.error('CommunityEngagementRemoteSource.bookmarkPost', e, st);
       rethrow;
@@ -136,11 +140,15 @@ class CommunityEngagementRemoteSource {
 
   Future<void> followUser(String userId, String targetUserId) async {
     try {
-      await _client.from(SupabaseConstants.communityFollowsTable).insert({
-        'id': const Uuid().v7(),
-        'follower_id': userId,
-        'following_id': targetUserId,
-      });
+      await _client.from(SupabaseConstants.communityFollowsTable).upsert(
+        {
+          'id': const Uuid().v7(),
+          'follower_id': userId,
+          'following_id': targetUserId,
+        },
+        onConflict: 'follower_id,following_id',
+        ignoreDuplicates: true,
+      );
     } catch (e, st) {
       AppLogger.error('CommunityEngagementRemoteSource.followUser', e, st);
       rethrow;

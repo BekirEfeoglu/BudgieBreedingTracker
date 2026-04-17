@@ -2,6 +2,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/constants/supabase_constants.dart';
 import '../../../core/utils/logger.dart';
+import 'base_remote_source.dart';
 
 class MessageRemoteSource {
   final SupabaseClient _client;
@@ -29,8 +30,7 @@ class MessageRemoteSource {
           .limit(limit);
       return List<Map<String, dynamic>>.from(response);
     } catch (e, st) {
-      AppLogger.error('messaging', e, st);
-      rethrow;
+      throw BaseRemoteSource.handleErrorForTag('messaging', e, st);
     }
   }
 
@@ -47,13 +47,12 @@ class MessageRemoteSource {
     try {
       final response = await _client
           .from(SupabaseConstants.messagesTable)
-          .insert(data)
+          .upsert(data, onConflict: 'id', ignoreDuplicates: false)
           .select()
           .single();
       return response;
     } catch (e, st) {
-      AppLogger.error('messaging', e, st);
-      rethrow;
+      throw BaseRemoteSource.handleErrorForTag('messaging', e, st);
     }
   }
 
@@ -77,8 +76,7 @@ class MessageRemoteSource {
           .eq('id', id)
           .eq('sender_id', userId);
     } catch (e, st) {
-      AppLogger.error('messaging', e, st);
-      rethrow;
+      throw BaseRemoteSource.handleErrorForTag('messaging', e, st);
     }
   }
 
@@ -125,7 +123,13 @@ class MessageRemoteSource {
             onMessage(payload.newRecord);
           },
         )
-        .subscribe();
+        .subscribe((status, error) {
+      if (error != null) {
+        AppLogger.warning(
+          '[messages:$conversationId] Realtime status: $status, error: $error',
+        );
+      }
+    });
     return channel;
   }
 
@@ -147,7 +151,13 @@ class MessageRemoteSource {
             }
           },
         )
-        .subscribe();
+        .subscribe((status, error) {
+      if (error != null) {
+        AppLogger.warning(
+          '[conversation-updates] Realtime status: $status, error: $error',
+        );
+      }
+    });
     return channel;
   }
 

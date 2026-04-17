@@ -48,7 +48,7 @@ void main() {
       await source.addFavorite('user-1', 'listing-1');
 
       expect(client.requestedTable, SupabaseConstants.marketplaceFavoritesTable);
-      final payload = queryBuilder.insertPayload as Map<String, dynamic>;
+      final payload = queryBuilder.upsertPayload as Map<String, dynamic>;
       expect(payload['user_id'], 'user-1');
       expect(payload['listing_id'], 'listing-1');
     });

@@ -27,7 +27,11 @@ class MarketplaceFavoriteRemoteSource {
     try {
       await _client
           .from(SupabaseConstants.marketplaceFavoritesTable)
-          .insert({'user_id': userId, 'listing_id': listingId});
+          .upsert(
+            {'user_id': userId, 'listing_id': listingId},
+            onConflict: 'user_id,listing_id',
+            ignoreDuplicates: true,
+          );
     } catch (e, st) {
       AppLogger.error('marketplace', e, st);
       rethrow;

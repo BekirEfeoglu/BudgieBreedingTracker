@@ -2,12 +2,13 @@ import 'package:drift/drift.dart';
 import 'package:budgie_breeding_tracker/core/enums/egg_enums.dart';
 import 'package:budgie_breeding_tracker/data/local/database/app_database.dart';
 import 'package:budgie_breeding_tracker/data/local/database/tables/eggs_table.dart';
+import 'package:budgie_breeding_tracker/data/local/database/tables/incubations_table.dart';
 import 'package:budgie_breeding_tracker/data/local/database/mappers/egg_mapper.dart';
 import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
 
 part 'eggs_dao.g.dart';
 
-@DriftAccessor(tables: [EggsTable])
+@DriftAccessor(tables: [EggsTable, IncubationsTable])
 class EggsDao extends DatabaseAccessor<AppDatabase> with _$EggsDaoMixin {
   EggsDao(super.db);
 
@@ -106,6 +107,37 @@ class EggsDao extends DatabaseAccessor<AppDatabase> with _$EggsDaoMixin {
       'GROUP BY month ORDER BY month',
       variables: [Variable.withString(userId)],
       readsFrom: {eggsTable},
+    );
+    return query.watch().map((rows) {
+      final result = <String, int>{};
+      for (final row in rows) {
+        result[row.read<String>('month')] = row.read<int>('cnt');
+      }
+      return result;
+    });
+  }
+
+  /// Watches monthly egg production filtered by species (SQL aggregate + JOIN).
+  ///
+  /// Joins eggs → incubations.species. Filters and aggregation run in SQL so
+  /// memory stays O(monthCount), not O(eggCount). Previously this filter was
+  /// applied in Dart after loading all eggs + incubations via stream providers.
+  Stream<Map<String, int>> watchMonthlyProductionBySpecies(
+    String userId,
+    String species,
+  ) {
+    final query = customSelect(
+      "SELECT strftime('%Y-%m', e.lay_date) AS month, COUNT(*) AS cnt "
+      'FROM eggs e '
+      'INNER JOIN incubations i ON e.incubation_id = i.id '
+      'WHERE e.user_id = ? AND e.is_deleted = 0 '
+      'AND i.is_deleted = 0 AND i.species = ? '
+      'GROUP BY month ORDER BY month',
+      variables: [
+        Variable.withString(userId),
+        Variable.withString(species),
+      ],
+      readsFrom: {eggsTable, incubationsTable},
     );
     return query.watch().map((rows) {
       final result = <String, int>{};

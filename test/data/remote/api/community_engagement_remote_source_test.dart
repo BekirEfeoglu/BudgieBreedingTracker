@@ -83,7 +83,7 @@ void main() {
         client.requestedTables,
         contains(SupabaseConstants.communityBookmarksTable),
       );
-      final payload = bookmarkQuery.insertPayload as Map<String, dynamic>;
+      final payload = bookmarkQuery.upsertPayload as Map<String, dynamic>;
       expect(payload['user_id'], 'user-1');
       expect(payload['post_id'], 'post-1');
       expect(payload['id'], isNotNull);
@@ -161,7 +161,7 @@ void main() {
     test('followUser inserts with correct data', () async {
       await source.followUser('user-1', 'user-2');
 
-      final payload = followQuery.insertPayload as Map<String, dynamic>;
+      final payload = followQuery.upsertPayload as Map<String, dynamic>;
       expect(payload['follower_id'], 'user-1');
       expect(payload['following_id'], 'user-2');
     });

@@ -93,7 +93,7 @@ void main() {
 
       await source.addParticipant(data);
 
-      expect(participantsQuery.insertPayload, data);
+      expect(participantsQuery.upsertPayload, data);
     });
 
     test('updateParticipant applies correct filters', () async {

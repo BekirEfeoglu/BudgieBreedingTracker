@@ -55,7 +55,7 @@ class ConversationRemoteSource {
     try {
       final response = await _client
           .from(SupabaseConstants.conversationsTable)
-          .insert(data)
+          .upsert(data, onConflict: 'id', ignoreDuplicates: false)
           .select()
           .single();
       return response;
@@ -97,7 +97,11 @@ class ConversationRemoteSource {
     try {
       await _client
           .from(SupabaseConstants.conversationParticipantsTable)
-          .insert(data);
+          .upsert(
+            data,
+            onConflict: 'conversation_id,user_id',
+            ignoreDuplicates: true,
+          );
     } catch (e, st) {
       AppLogger.error('messaging', e, st);
       rethrow;

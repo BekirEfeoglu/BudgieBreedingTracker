@@ -79,11 +79,15 @@ class CommunitySocialRemoteSource {
 
   Future<void> likePost(String userId, String postId) async {
     try {
-      await _client.from(SupabaseConstants.communityLikesTable).insert({
-        'id': const Uuid().v7(),
-        'user_id': userId,
-        'post_id': postId,
-      });
+      await _client.from(SupabaseConstants.communityLikesTable).upsert(
+        {
+          'id': const Uuid().v7(),
+          'user_id': userId,
+          'post_id': postId,
+        },
+        onConflict: 'post_id,user_id',
+        ignoreDuplicates: true,
+      );
     } catch (e, st) {
       AppLogger.error('CommunitySocialRemoteSource.likePost', e, st);
       rethrow;
@@ -146,11 +150,15 @@ class CommunitySocialRemoteSource {
 
   Future<void> likeComment(String userId, String commentId) async {
     try {
-      await _client.from(SupabaseConstants.communityCommentLikesTable).insert({
-        'id': const Uuid().v7(),
-        'user_id': userId,
-        'comment_id': commentId,
-      });
+      await _client.from(SupabaseConstants.communityCommentLikesTable).upsert(
+        {
+          'id': const Uuid().v7(),
+          'user_id': userId,
+          'comment_id': commentId,
+        },
+        onConflict: 'comment_id,user_id',
+        ignoreDuplicates: true,
+      );
     } catch (e, st) {
       AppLogger.error('CommunitySocialRemoteSource.likeComment', e, st);
       rethrow;

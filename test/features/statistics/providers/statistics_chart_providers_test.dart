@@ -1,10 +1,15 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/breeding_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/chick_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/egg_enums.dart';
+import 'package:budgie_breeding_tracker/data/local/database/dao_providers.dart';
+import 'package:budgie_breeding_tracker/data/local/database/daos/eggs_dao.dart';
 import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
 import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
 import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
@@ -14,6 +19,8 @@ import 'package:budgie_breeding_tracker/features/chicks/providers/chick_provider
 import 'package:budgie_breeding_tracker/features/eggs/providers/egg_providers.dart';
 import 'package:budgie_breeding_tracker/features/statistics/providers/statistics_breeding_providers.dart';
 import 'package:budgie_breeding_tracker/features/statistics/providers/statistics_providers.dart';
+
+class _MockEggsDao extends Mock implements EggsDao {}
 
 // ── Test Factories ──
 
@@ -78,6 +85,60 @@ Incubation _incubation({
   );
 }
 
+// ── Helpers ──
+
+/// Builds a mock [EggsDao] that returns [monthlyCounts] for unfiltered
+/// queries and [speciesFilteredCounts] for species-filtered queries. Both
+/// code paths now go through SQL aggregates on the DAO.
+_MockEggsDao _mockEggsDao({
+  Map<String, int> monthlyCounts = const {},
+  Map<String, int> speciesFilteredCounts = const {},
+}) {
+  final dao = _MockEggsDao();
+  when(() => dao.watchMonthlyProduction(any())).thenAnswer(
+    (_) => Stream.value(monthlyCounts),
+  );
+  when(() => dao.watchMonthlyProductionBySpecies(any(), any())).thenAnswer(
+    (_) => Stream.value(speciesFilteredCounts),
+  );
+  return dao;
+}
+
+/// Converts a list of [Egg] fixtures into the month→count map that the
+/// DAO aggregate would return, so the fast-path and filtered-path produce
+/// consistent results in tests.
+Map<String, int> _eggsToCounts(List<Egg> eggs) {
+  final counts = <String, int>{};
+  for (final egg in eggs) {
+    final key =
+        '${egg.layDate.year}-${egg.layDate.month.toString().padLeft(2, '0')}';
+    counts[key] = (counts[key] ?? 0) + 1;
+  }
+  return counts;
+}
+
+/// Filters [eggs] by [species] via [incubations] and returns month→count
+/// map matching what the DAO's `watchMonthlyProductionBySpecies` JOIN query
+/// would produce.
+Map<String, int> _eggsToCountsBySpecies(
+  List<Egg> eggs,
+  List<Incubation> incubations,
+  Species species,
+) {
+  final allowedIncubationIds = incubations
+      .where((i) => i.species == species)
+      .map((i) => i.id)
+      .toSet();
+  final filtered = eggs
+      .where(
+        (e) =>
+            e.incubationId != null &&
+            allowedIncubationIds.contains(e.incubationId),
+      )
+      .toList();
+  return _eggsToCounts(filtered);
+}
+
 // ── Container Builder ──
 
 ProviderContainer _container({
@@ -90,6 +151,13 @@ ProviderContainer _container({
 }) {
   final container = ProviderContainer(
     overrides: [
+      // Override DAO for both unfiltered and species-filtered SQL aggregates.
+      eggsDaoProvider.overrideWithValue(_mockEggsDao(
+        monthlyCounts: _eggsToCounts(eggs),
+        speciesFilteredCounts: speciesFilter == null
+            ? const {}
+            : _eggsToCountsBySpecies(eggs, incubations, speciesFilter),
+      )),
       eggsStreamProvider('user-1').overrideWith((_) => Stream.value(eggs)),
       chicksStreamProvider('user-1').overrideWith((_) => Stream.value(chicks)),
       breedingPairsStreamProvider(
@@ -100,6 +168,7 @@ ProviderContainer _container({
       ).overrideWith((_) => Stream.value(incubations)),
     ],
   );
+  addTearDown(container.dispose);
   container.read(statsPeriodProvider.notifier).state = period;
   if (speciesFilter != null) {
     container.read(statsSpeciesFilterProvider.notifier).state = (
@@ -111,6 +180,10 @@ ProviderContainer _container({
 }
 
 /// Listens to and awaits all stream providers used by chart providers.
+///
+/// Also reads `monthlyEggProductionProvider` to trigger the DAO aggregate
+/// `StreamProvider` (fast-path when no species filter is active), then yields
+/// the event loop so that `Stream.value()` emissions propagate.
 Future<void> _awaitStreams(ProviderContainer container) async {
   const userId = 'user-1';
   container.listen(eggsStreamProvider(userId), (_, __) {});
@@ -121,6 +194,11 @@ Future<void> _awaitStreams(ProviderContainer container) async {
   await container.read(breedingPairsStreamProvider(userId).future);
   container.listen(incubationsStreamProvider(userId), (_, __) {});
   await container.read(incubationsStreamProvider(userId).future);
+  // Trigger the egg aggregate provider so the internal StreamProvider
+  // subscribes to the mock DAO stream. Then yield to let Stream.value settle.
+  container.listen(monthlyEggProductionProvider(userId), (_, __) {});
+  await Future<void>.delayed(Duration.zero);
+  await Future<void>.delayed(Duration.zero);
 }
 
 void main() {
@@ -245,67 +323,27 @@ void main() {
       expect(total, 2);
     });
 
-    test('returns loading when eggs stream is loading', () {
+    test('returns loading when DAO stream has not emitted (filtered path)', () {
+      final dao = _MockEggsDao();
+      when(() => dao.watchMonthlyProduction(any())).thenAnswer(
+        (_) => Stream.value(<String, int>{}),
+      );
+      when(() => dao.watchMonthlyProductionBySpecies(any(), any())).thenAnswer(
+        (_) => const Stream<Map<String, int>>.empty(),
+      );
       final container = ProviderContainer(
-        overrides: [
-          eggsStreamProvider(
-            userId,
-          ).overrideWith((_) => const Stream<List<Egg>>.empty()),
-          incubationsStreamProvider(
-            userId,
-          ).overrideWith((_) => Stream.value(<Incubation>[])),
-        ],
+        overrides: [eggsDaoProvider.overrideWithValue(dao)],
       );
       addTearDown(container.dispose);
-      container.listen(eggsStreamProvider(userId), (_, __) {});
-      container.listen(incubationsStreamProvider(userId), (_, __) {});
+      container.read(statsSpeciesFilterProvider.notifier).state = (
+        species: Species.budgie,
+        loaded: true,
+      );
 
       final value = container.read(monthlyEggProductionProvider(userId));
       expect(value.isLoading, isTrue);
     });
 
-    test('returns error when eggs stream has error', () async {
-      final container = ProviderContainer(
-        overrides: [
-          eggsStreamProvider(
-            userId,
-          ).overrideWith((_) => Stream<List<Egg>>.error('test error')),
-          incubationsStreamProvider(
-            userId,
-          ).overrideWith((_) => Stream.value(<Incubation>[])),
-        ],
-      );
-      addTearDown(container.dispose);
-      container.listen(eggsStreamProvider(userId), (_, __) {});
-      container.listen(incubationsStreamProvider(userId), (_, __) {});
-      // Wait for error to propagate
-      await Future<void>.delayed(Duration.zero);
-
-      final value = container.read(monthlyEggProductionProvider(userId));
-      expect(value.hasError, isTrue);
-    });
-
-    test('returns error when incubations stream has error', () async {
-      final container = ProviderContainer(
-        overrides: [
-          eggsStreamProvider(
-            userId,
-          ).overrideWith((_) => Stream.value(<Egg>[])),
-          incubationsStreamProvider(
-            userId,
-          ).overrideWith(
-            (_) => Stream<List<Incubation>>.error('incubation error'),
-          ),
-        ],
-      );
-      addTearDown(container.dispose);
-      container.listen(eggsStreamProvider(userId), (_, __) {});
-      container.listen(incubationsStreamProvider(userId), (_, __) {});
-      await Future<void>.delayed(Duration.zero);
-
-      final value = container.read(monthlyEggProductionProvider(userId));
-      expect(value.hasError, isTrue);
-    });
   });
 
   // ── monthlyHatchedChicksProvider ──
@@ -683,6 +721,8 @@ void main() {
 
       container.read(statsPeriodProvider.notifier).state =
           StatsPeriod.twelveMonths;
+      // Allow the aggregate stream provider to re-settle after period change.
+      await Future<void>.delayed(Duration.zero);
       final value12m = container.read(monthlyEggProductionProvider(userId));
       expect(value12m.requireValue.length, 12);
     });

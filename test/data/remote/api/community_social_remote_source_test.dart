@@ -107,14 +107,14 @@ void main() {
       await source.likePost('user-1', 'post-1');
 
       expect(client.requestedTables, contains('community_likes'));
-      final payload = likesQuery.insertPayload as Map<String, dynamic>;
+      final payload = likesQuery.upsertPayload as Map<String, dynamic>;
       expect(payload['user_id'], 'user-1');
       expect(payload['post_id'], 'post-1');
       expect(payload['id'], isNotNull);
     });
 
     test('rethrows on error', () async {
-      likesQuery.insertBuilder.error = Exception('Insert failed');
+      likesQuery.upsertBuilder.error = Exception('Insert failed');
 
       expect(
         () => source.likePost('user-1', 'post-1'),
@@ -210,14 +210,14 @@ void main() {
       await source.likeComment('user-1', 'comment-1');
 
       expect(client.requestedTables, contains('community_comment_likes'));
-      final payload = commentLikesQuery.insertPayload as Map<String, dynamic>;
+      final payload = commentLikesQuery.upsertPayload as Map<String, dynamic>;
       expect(payload['user_id'], 'user-1');
       expect(payload['comment_id'], 'comment-1');
       expect(payload['id'], isNotNull);
     });
 
     test('rethrows on error', () async {
-      commentLikesQuery.insertBuilder.error = Exception('Insert failed');
+      commentLikesQuery.upsertBuilder.error = Exception('Insert failed');
 
       expect(
         () => source.likeComment('user-1', 'comment-1'),
@@ -303,14 +303,14 @@ void main() {
       await source.bookmarkPost('user-1', 'post-1');
 
       expect(client.requestedTables, contains('community_bookmarks'));
-      final payload = bookmarksQuery.insertPayload as Map<String, dynamic>;
+      final payload = bookmarksQuery.upsertPayload as Map<String, dynamic>;
       expect(payload['user_id'], 'user-1');
       expect(payload['post_id'], 'post-1');
       expect(payload['id'], isNotNull);
     });
 
     test('rethrows on error', () async {
-      bookmarksQuery.insertBuilder.error = Exception('Insert failed');
+      bookmarksQuery.upsertBuilder.error = Exception('Insert failed');
 
       expect(
         () => source.bookmarkPost('user-1', 'post-1'),
@@ -450,14 +450,14 @@ void main() {
       await source.followUser('user-1', 'user-2');
 
       expect(client.requestedTables, contains('community_follows'));
-      final payload = followsQuery.insertPayload as Map<String, dynamic>;
+      final payload = followsQuery.upsertPayload as Map<String, dynamic>;
       expect(payload['follower_id'], 'user-1');
       expect(payload['following_id'], 'user-2');
       expect(payload['id'], isNotNull);
     });
 
     test('rethrows on error', () async {
-      followsQuery.insertBuilder.error = Exception('Insert failed');
+      followsQuery.upsertBuilder.error = Exception('Insert failed');
 
       expect(
         () => source.followUser('user-1', 'user-2'),

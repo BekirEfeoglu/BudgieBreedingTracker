@@ -2,12 +2,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/breeding_enums.dart';
+import 'package:budgie_breeding_tracker/data/local/database/dao_providers.dart';
 import 'package:budgie_breeding_tracker/data/local/preferences/app_preferences.dart';
 import 'package:budgie_breeding_tracker/data/models/statistics_models.dart';
 import 'package:budgie_breeding_tracker/data/providers/bird_stream_providers.dart';
 import 'package:budgie_breeding_tracker/data/providers/breeding_stream_providers.dart';
 import 'package:budgie_breeding_tracker/data/providers/chick_stream_providers.dart';
-import 'package:budgie_breeding_tracker/data/providers/egg_stream_providers.dart';
 import 'package:budgie_breeding_tracker/features/statistics/providers/statistics_breeding_providers.dart';
 
 part 'statistics_chart_providers.dart';
@@ -182,31 +182,57 @@ Map<String, int> buildEmptyMonthMap(int monthCount, {DateTime? reference}) {
   return months;
 }
 
-/// Gender distribution statistics from bird data.
+/// Gender distribution via SQL aggregate (no full-list materialisation).
+final _genderDistStreamProvider =
+    StreamProvider.family<Map<BirdGender, int>, String>((ref, userId) {
+      return ref.watch(birdsDaoProvider).watchGenderDistribution(userId);
+    });
+
+/// Status distribution via SQL aggregate (no full-list materialisation).
+final _statusDistStreamProvider =
+    StreamProvider.family<Map<BirdStatus, int>, String>((ref, userId) {
+      return ref.watch(birdsDaoProvider).watchStatusDistribution(userId);
+    });
+
+/// Gender + status distribution statistics from SQL aggregates.
 final genderDistributionProvider =
     Provider.family<AsyncValue<BirdStatistics>, String>((ref, userId) {
-      final birdsAsync = ref.watch(birdsStreamProvider(userId));
+      final genderAsync = ref.watch(_genderDistStreamProvider(userId));
+      final statusAsync = ref.watch(_statusDistStreamProvider(userId));
 
-      return birdsAsync.whenData((birds) {
-        final male = birds.where((b) => b.gender == BirdGender.male).length;
-        final female = birds.where((b) => b.gender == BirdGender.female).length;
-        final unknown = birds
-            .where((b) => b.gender == BirdGender.unknown)
-            .length;
-        final alive = birds.where((b) => b.status == BirdStatus.alive).length;
-        final dead = birds.where((b) => b.status == BirdStatus.dead).length;
-        final sold = birds.where((b) => b.status == BirdStatus.sold).length;
-
-        return BirdStatistics(
-          total: birds.length,
-          male: male,
-          female: female,
-          unknown: unknown,
-          alive: alive,
-          dead: dead,
-          sold: sold,
+      if (genderAsync.hasError) {
+        return AsyncError(
+          genderAsync.error!,
+          genderAsync.stackTrace ?? StackTrace.empty,
         );
-      });
+      }
+      if (statusAsync.hasError) {
+        return AsyncError(
+          statusAsync.error!,
+          statusAsync.stackTrace ?? StackTrace.empty,
+        );
+      }
+      if (genderAsync.isLoading || statusAsync.isLoading) {
+        return const AsyncLoading();
+      }
+
+      final genderMap = genderAsync.requireValue;
+      final statusMap = statusAsync.requireValue;
+
+      final male = genderMap[BirdGender.male] ?? 0;
+      final female = genderMap[BirdGender.female] ?? 0;
+      final unknown = genderMap[BirdGender.unknown] ?? 0;
+      final total = genderMap.values.fold<int>(0, (a, b) => a + b);
+
+      return AsyncData(BirdStatistics(
+        total: total,
+        male: male,
+        female: female,
+        unknown: unknown,
+        alive: statusMap[BirdStatus.alive] ?? 0,
+        dead: statusMap[BirdStatus.dead] ?? 0,
+        sold: statusMap[BirdStatus.sold] ?? 0,
+      ));
     });
 
 /// Species distribution statistics from bird data.
