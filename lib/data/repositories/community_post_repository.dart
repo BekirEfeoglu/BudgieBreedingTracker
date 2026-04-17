@@ -1,7 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 
 import '../../core/enums/community_enums.dart';
-import '../../core/utils/logger.dart';
 import '../models/community_post_model.dart';
 import '../remote/api/community_post_cache.dart';
 import '../remote/api/community_post_remote_source.dart';
@@ -127,16 +126,14 @@ class CommunityPostRepository {
     Set<String> bookmarkedIds = {};
 
     if (currentUserId != 'anonymous' && postIds.isNotEmpty) {
-      try {
-        final results = await Future.wait([
-          _socialSource.fetchLikedPostIds(currentUserId, postIds),
-          _socialSource.fetchBookmarkedPostIds(currentUserId, postIds),
-        ]);
-        likedIds = results[0];
-        bookmarkedIds = results[1];
-      } catch (e) {
-        AppLogger.warning('Failed to fetch social state: $e');
-      }
+      // Single RPC call replaces the previous pair of parallel queries
+      // against community_likes and community_bookmarks.
+      final socialState = await _socialSource.fetchPostSocialState(
+        currentUserId,
+        postIds,
+      );
+      likedIds = socialState.liked;
+      bookmarkedIds = socialState.bookmarked;
     }
 
     return rows

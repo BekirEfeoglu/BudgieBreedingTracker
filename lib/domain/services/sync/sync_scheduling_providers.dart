@@ -18,6 +18,12 @@ const _syncInterval = Duration(minutes: 15);
 /// Automatically starts when watched and disposes the Timer on cleanup.
 /// Also retries failed sync records on each cycle.
 /// Respects [wifiOnlySyncProvider] — skips sync when on cellular and WiFi-only is enabled.
+///
+/// Lifecycle note: this provider watches [currentUserIdProvider], so any sign-out
+/// (userId → 'anonymous') forces a rebuild, disposing the old instance's timers
+/// via [Ref.onDispose]. The early-return on 'anonymous' then prevents new timers
+/// from being created. Timer callbacks also re-read userId defensively in case
+/// a cycle fires in the narrow window between state change and provider rebuild.
 final periodicSyncProvider = Provider<void>((ref) {
   final userId = ref.watch(currentUserIdProvider);
   if (userId == 'anonymous') return;
@@ -34,6 +40,16 @@ final periodicSyncProvider = Provider<void>((ref) {
     if (currentUserId == 'anonymous') return;
     final orchestrator = ref.read(syncOrchestratorProvider);
     orchestrator.fullSync();
+  });
+
+  // Explicit proactive cancellation: if the user signs out between timer
+  // creation and the Riverpod rebuild cycle, cancel immediately rather than
+  // relying solely on onDispose. This tightens the cleanup guarantee and
+  // documents the intent for future maintainers.
+  ref.listen<String>(currentUserIdProvider, (_, next) {
+    if (next == 'anonymous') {
+      jitterTimer.cancel();
+    }
   });
 
   final timer = Timer.periodic(_syncInterval, (_) async {
@@ -70,6 +86,14 @@ final periodicSyncProvider = Provider<void>((ref) {
       AppLogger.info('[PeriodicSync] Periodic sync result: ${result.name}');
     } catch (e) {
       AppLogger.warning('[PeriodicSync] Full sync failed: $e');
+    }
+  });
+
+  // Attach the periodic-timer cancellation to the same listener so sign-out
+  // tears down both timers in one hop.
+  ref.listen<String>(currentUserIdProvider, (_, next) {
+    if (next == 'anonymous') {
+      timer.cancel();
     }
   });
 

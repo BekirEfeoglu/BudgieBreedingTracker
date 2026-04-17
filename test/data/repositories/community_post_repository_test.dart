@@ -54,11 +54,10 @@ void main() {
 
   void stubSocialEmpty() {
     when(
-      () => socialSource.fetchLikedPostIds(any(), any()),
-    ).thenAnswer((_) async => {});
-    when(
-      () => socialSource.fetchBookmarkedPostIds(any(), any()),
-    ).thenAnswer((_) async => {});
+      () => socialSource.fetchPostSocialState(any(), any()),
+    ).thenAnswer(
+      (_) async => (liked: <String>{}, bookmarked: <String>{}),
+    );
   }
 
   group('getFeed', () {
@@ -71,11 +70,10 @@ void main() {
       );
 
       when(
-        () => socialSource.fetchLikedPostIds('u1', ['p1', 'p2']),
-      ).thenAnswer((_) async => {'p1'});
-      when(
-        () => socialSource.fetchBookmarkedPostIds('u1', ['p1', 'p2']),
-      ).thenAnswer((_) async => {'p2'});
+        () => socialSource.fetchPostSocialState('u1', ['p1', 'p2']),
+      ).thenAnswer(
+        (_) async => (liked: {'p1'}, bookmarked: {'p2'}),
+      );
 
       final posts = await repository.getFeed(currentUserId: 'u1');
 
@@ -100,8 +98,7 @@ void main() {
       expect(posts, hasLength(1));
       expect(posts[0].isLikedByMe, isFalse);
       expect(posts[0].isBookmarkedByMe, isFalse);
-      verifyNever(() => socialSource.fetchLikedPostIds(any(), any()));
-      verifyNever(() => socialSource.fetchBookmarkedPostIds(any(), any()));
+      verifyNever(() => socialSource.fetchPostSocialState(any(), any()));
     });
 
     test('returns empty list when no posts', () async {
@@ -118,12 +115,13 @@ void main() {
       when(
         () => postSource.fetchFeed(limit: 20, before: null),
       ).thenAnswer((_) async => [_makePostRow(id: 'p1')]);
+      // The remote source swallows RPC errors and returns empty sets; the
+      // repository should still render posts with neutral social state.
       when(
-        () => socialSource.fetchLikedPostIds(any(), any()),
-      ).thenThrow(Exception('Network error'));
-      when(
-        () => socialSource.fetchBookmarkedPostIds(any(), any()),
-      ).thenThrow(Exception('Network error'));
+        () => socialSource.fetchPostSocialState(any(), any()),
+      ).thenAnswer(
+        (_) async => (liked: <String>{}, bookmarked: <String>{}),
+      );
 
       final posts = await repository.getFeed(currentUserId: 'u1');
 
@@ -208,11 +206,10 @@ void main() {
         ],
       );
       when(
-        () => socialSource.fetchLikedPostIds('u1', any()),
-      ).thenAnswer((_) async => {});
-      when(
-        () => socialSource.fetchBookmarkedPostIds('u1', any()),
-      ).thenAnswer((_) async => {'p1', 'p2'});
+        () => socialSource.fetchPostSocialState('u1', any()),
+      ).thenAnswer(
+        (_) async => (liked: <String>{}, bookmarked: {'p1', 'p2'}),
+      );
 
       final posts = await repository.getBookmarked(currentUserId: 'u1');
 

@@ -136,12 +136,15 @@ Deno.serve(async (req) => {
     }
 
     if (action === "reset") {
-      // Only decay lockout_count if 24+ hours have passed since last attempt
-      // This prevents attackers from alternating success/brute-force to keep tier low
+      // Only decay lockout_count after 7 quiet days since the last attempt.
+      // A shorter window (e.g. 24h) let attackers alternate wait/brute-force to
+      // keep the lockout tier low; requiring a full week of inactivity makes
+      // sustained brute-force meaningfully slower.
       const lastAttempt = lockout?.last_attempt_at ? new Date(lockout.last_attempt_at) : new Date();
       const hoursSinceLastAttempt = (Date.now() - lastAttempt.getTime()) / (1000 * 3600);
+      const LOCKOUT_DECAY_HOURS = 7 * 24; // 7 days
       const currentCount = lockout?.lockout_count ?? 0;
-      const newLockoutCount = hoursSinceLastAttempt > 24
+      const newLockoutCount = hoursSinceLastAttempt > LOCKOUT_DECAY_HOURS
         ? Math.max(0, currentCount - 1)
         : currentCount;
 

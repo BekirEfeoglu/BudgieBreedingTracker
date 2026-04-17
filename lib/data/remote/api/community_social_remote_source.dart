@@ -44,6 +44,39 @@ class CommunitySocialRemoteSource {
     }
   }
 
+  /// Returns liked and bookmarked post IDs for [userId] across [postIds] in a
+  /// single round-trip via the `fetch_user_post_social_state` RPC.
+  ///
+  /// On any failure (RPC missing, network error, RLS rejection) returns empty
+  /// sets — the caller should degrade gracefully (posts render as not-liked /
+  /// not-bookmarked rather than erroring).
+  Future<({Set<String> liked, Set<String> bookmarked})>
+  fetchPostSocialState(String userId, List<String> postIds) async {
+    if (postIds.isEmpty || userId == 'anonymous') {
+      return (liked: <String>{}, bookmarked: <String>{});
+    }
+    try {
+      final result = await _client.rpc(
+        'fetch_user_post_social_state',
+        params: {'p_user_id': userId, 'p_post_ids': postIds},
+      );
+      final rows = result as List;
+      final liked = <String>{};
+      final bookmarked = <String>{};
+      for (final row in rows) {
+        if (row is! Map) continue;
+        final id = row['post_id']?.toString();
+        if (id == null) continue;
+        if (row['is_liked'] == true) liked.add(id);
+        if (row['is_bookmarked'] == true) bookmarked.add(id);
+      }
+      return (liked: liked, bookmarked: bookmarked);
+    } catch (e) {
+      AppLogger.warning('Failed to fetch post social state: $e');
+      return (liked: <String>{}, bookmarked: <String>{});
+    }
+  }
+
   Future<void> likePost(String userId, String postId) async {
     try {
       await _client.from(SupabaseConstants.communityLikesTable).insert({

@@ -87,6 +87,60 @@ void main() {
         async.elapse(const Duration(minutes: 30));
       });
     });
+
+    test(
+      'cancels timers when userId transitions from signed-in to anonymous',
+      () {
+        fakeAsync((async) {
+          final mock = MockSyncOrchestrator();
+          when(
+            () => mock.fullSync(),
+          ).thenAnswer((_) async => SyncResult.success);
+          when(
+            () => mock.retryFailedRecords(any()),
+          ).thenAnswer((_) async {});
+
+          // Build the container with userId='user-1'; flip via
+          // updateOverrides to simulate a sign-out mid-test.
+          final sharedOverrides = [
+            autoSyncProvider.overrideWith(() => _AutoSyncTrue()),
+            wifiOnlySyncProvider.overrideWith(() => _WifiOnlyFalse()),
+            syncOrchestratorProvider.overrideWithValue(mock),
+          ];
+          final container = ProviderContainer(
+            overrides: [
+              currentUserIdProvider.overrideWithValue('user-1'),
+              ...sharedOverrides,
+            ],
+          );
+          addTearDown(container.dispose);
+
+          container.read(periodicSyncProvider);
+
+          // Let the jitter window pass so we know timers are actually armed.
+          async.elapse(const Duration(seconds: 61));
+          clearInteractions(mock);
+
+          // Sign out: flip userId to 'anonymous' via updateOverrides.
+          // The explicit ref.listen in the provider cancels both timers
+          // immediately, and the Riverpod rebuild disposes the instance.
+          container.updateOverrides([
+            currentUserIdProvider.overrideWithValue('anonymous'),
+            ...sharedOverrides,
+          ]);
+          container.read(periodicSyncProvider);
+          // Let any microtasks drain.
+          async.elapse(const Duration(milliseconds: 1));
+
+          // Advance well past the 15-minute periodic interval — no sync
+          // callbacks should fire now that the user is anonymous.
+          async.elapse(const Duration(minutes: 60));
+
+          verifyNever(() => mock.fullSync());
+          verifyNever(() => mock.retryFailedRecords(any()));
+        });
+      },
+    );
   });
 
   group('networkAwareSyncProvider', () {

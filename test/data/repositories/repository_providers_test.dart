@@ -123,11 +123,10 @@ void main() {
           ],
         );
         when(
-          () => socialSource.fetchLikedPostIds('user-1', ['post-1']),
-        ).thenAnswer((_) async => <String>{});
-        when(
-          () => socialSource.fetchBookmarkedPostIds('user-1', ['post-1']),
-        ).thenAnswer((_) async => {'post-1'});
+          () => socialSource.fetchPostSocialState('user-1', ['post-1']),
+        ).thenAnswer(
+          (_) async => (liked: <String>{}, bookmarked: {'post-1'}),
+        );
 
         final container = ProviderContainer(
           overrides: [
