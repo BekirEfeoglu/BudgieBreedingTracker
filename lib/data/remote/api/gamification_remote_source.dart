@@ -155,7 +155,30 @@ class GamificationRemoteSource {
   }
 
   /// Fetch entity counts for verified breeder criteria check.
+  ///
+  /// Uses the `get_entity_counts` RPC to consolidate 4 table queries into a
+  /// single round-trip. Falls back to per-table counts if the RPC is missing
+  /// (e.g. on a project that hasn't applied the 2026-04-17 migration yet).
   Future<Map<String, int>> fetchEntityCounts(String userId) async {
+    try {
+      final response = await _client
+          .rpc('get_entity_counts', params: {'p_user_id': userId});
+      if (response is Map) {
+        return {
+          'birds': (response['birds'] as num?)?.toInt() ?? 0,
+          'breeding_pairs': (response['breeding_pairs'] as num?)?.toInt() ?? 0,
+          'chicks': (response['chicks'] as num?)?.toInt() ?? 0,
+          'posts': (response['posts'] as num?)?.toInt() ?? 0,
+        };
+      }
+      // Unexpected response shape — fall through to fallback below.
+    } catch (e) {
+      // Fall through to fallback on RPC errors (e.g. function not yet deployed).
+      AppLogger.warning(
+        'gamification fetchEntityCounts: RPC failed, using fallback: $e',
+      );
+    }
+
     try {
       final results = await Future.wait([
         _client

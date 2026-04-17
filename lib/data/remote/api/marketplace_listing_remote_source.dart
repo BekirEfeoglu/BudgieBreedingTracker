@@ -76,6 +76,29 @@ class MarketplaceListingRemoteSource {
     }
   }
 
+  /// Batch-fetches listings by id. Preserves caller's order regardless of
+  /// how the server returns rows. Returns an empty list for [ids] empty.
+  Future<List<Map<String, dynamic>>> fetchByIds(List<String> ids) async {
+    if (ids.isEmpty) return [];
+    try {
+      final response = await _client
+          .from(SupabaseConstants.marketplaceListingsTable)
+          .select(_selectColumns)
+          .inFilter('id', ids);
+      final rows = List<Map<String, dynamic>>.from(response);
+      final byId = {
+        for (final row in rows) row['id'] as String: row,
+      };
+      return [
+        for (final id in ids)
+          if (byId[id] != null) byId[id]!,
+      ];
+    } catch (e, st) {
+      AppLogger.error('marketplace', e, st);
+      rethrow;
+    }
+  }
+
   Future<List<Map<String, dynamic>>> fetchByUser(String userId) async {
     try {
       final response = await _client

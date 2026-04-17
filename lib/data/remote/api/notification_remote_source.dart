@@ -20,15 +20,25 @@ class NotificationRemoteSource extends BaseRemoteSource<AppNotification> {
   Map<String, dynamic> toSupabaseJson(AppNotification model) =>
       model.toSupabase();
 
-  /// Fetches all non-deleted notifications (no `is_deleted` filter for
-  /// notifications — they use hard-delete).
+  /// Hard cap on notifications returned by a single fetch. Users who have
+  /// accumulated more than this will see only the most recent; older
+  /// notifications remain in the DB but require server-side cleanup.
+  static const _fetchAllLimit = 500;
+
+  /// Max rows per incremental pull batch. Matches the parent's
+  /// [BaseRemoteSource] internal constant to keep behavior consistent.
+  static const _incrementalPullBatchSize = 5000;
+
+  /// Fetches the most recent [_fetchAllLimit] notifications (no `is_deleted`
+  /// filter — notifications use hard-delete).
   @override
   Future<List<AppNotification>> fetchAll(String userId) async {
     try {
       final response = await table
           .select()
           .eq('user_id', userId)
-          .order('created_at', ascending: false);
+          .order('created_at', ascending: false)
+          .limit(_fetchAllLimit);
       return response.map((json) => fromJson(json)).toList();
     } catch (e, st) {
       throw handleError(e, st);
@@ -38,7 +48,9 @@ class NotificationRemoteSource extends BaseRemoteSource<AppNotification> {
   /// Fetches notifications updated since [since] without `is_deleted` filter.
   ///
   /// Notifications table uses hard-delete, so filtering by `is_deleted`
-  /// would fail on projects where the column is absent.
+  /// would fail on projects where the column is absent. Capped at
+  /// [_incrementalPullBatchSize] rows to prevent runaway payloads; callers
+  /// relying on full sync should use repeated pulls with updated cursors.
   @override
   Future<List<AppNotification>> fetchUpdatedSince(
     String userId,
@@ -49,7 +61,8 @@ class NotificationRemoteSource extends BaseRemoteSource<AppNotification> {
           .select()
           .eq('user_id', userId)
           .gte('updated_at', since.toIso8601String())
-          .order('updated_at');
+          .order('updated_at')
+          .limit(_incrementalPullBatchSize);
       return response.map((json) => fromJson(json)).toList();
     } catch (e, st) {
       throw handleError(e, st);
