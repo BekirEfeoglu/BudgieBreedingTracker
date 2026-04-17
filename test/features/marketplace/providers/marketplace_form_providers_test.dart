@@ -11,7 +11,7 @@ import 'package:budgie_breeding_tracker/data/repositories/marketplace_repository
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/moderation/content_moderation_service.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_providers.dart';
-import 'package:budgie_breeding_tracker/features/community/providers/community_moderation_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/moderation/moderation_providers.dart';
 import 'package:budgie_breeding_tracker/features/marketplace/providers/marketplace_form_providers.dart';
 
 class MockMarketplaceRepository extends Mock implements MarketplaceRepository {}

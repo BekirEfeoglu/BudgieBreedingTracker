@@ -8,7 +8,7 @@ import '../../../data/providers/auth_state_providers.dart';
 import '../../../data/repositories/repository_providers.dart';
 import '../../../domain/services/moderation/content_moderation_service.dart';
 import 'community_feed_providers.dart';
-import 'community_moderation_providers.dart';
+import '../../../domain/services/moderation/moderation_providers.dart';
 
 // ---------------------------------------------------------------------------
 // Comments for a post

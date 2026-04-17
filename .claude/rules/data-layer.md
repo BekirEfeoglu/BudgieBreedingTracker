@@ -52,6 +52,17 @@ await client.from(SupabaseConstants.birdsTable).upsert(bird.toSupabase());
 - Repositories orchestrate local <-> remote sync
 - UI never calls `client.from()` directly (exception: admin/)
 
+### Offline-First Classification (mandatory)
+A class named `*Repository` MUST be offline-first:
+- Has Drift table + DAO
+- Has `SyncMetadata` entry
+- Writes go local-first, then `.upsert()` (never raw `.insert()`) to remote
+- Reads return local streams, not remote futures
+
+If a class is online-only (no local mirror), DO NOT name it `Repository`. Use `*RemoteService` or `*OnlineSource` instead. Lying with the name breaks the offline-first contract — user creates data offline, app crashes on resume, silent data loss.
+
+Audit-flagged offender needing rename or offline-first implementation: none currently. `messaging_repository.dart` and `community_post_repository.dart` are exempt under the online-first rule (see architecture.md § Online-First Exemption — cross-user feeds). `marketplace_listing_remote_source.dart` already uses the correct `*RemoteSource` naming.
+
 ### Sync Strategy
 - Offline-first: local Drift DB is source of truth for UI
 - Background sync: repositories push local changes to Supabase when online

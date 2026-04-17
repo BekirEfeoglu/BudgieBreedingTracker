@@ -5,6 +5,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../core/enums/community_enums.dart';
 import '../../../core/theme/app_spacing.dart';
+import 'community_report_reasons.dart';
 
 /// Shows a card-based bottom sheet for the user to pick a [CommunityReportReason].
 ///
@@ -35,56 +36,11 @@ class _CommunityReportSheetState extends State<_CommunityReportSheet> {
   CommunityReportReason? _selected;
   final _otherController = TextEditingController();
 
-  static const _reasons = [
-    CommunityReportReason.spam,
-    CommunityReportReason.harassment,
-    CommunityReportReason.inappropriate,
-    CommunityReportReason.misinformation,
-    CommunityReportReason.other,
-  ];
-
   @override
   void dispose() {
     _otherController.dispose();
     super.dispose();
   }
-
-  IconData _iconFor(CommunityReportReason reason) => switch (reason) {
-        CommunityReportReason.spam => LucideIcons.mailWarning,
-        CommunityReportReason.harassment => LucideIcons.shieldAlert,
-        CommunityReportReason.inappropriate => LucideIcons.eyeOff,
-        CommunityReportReason.misinformation => LucideIcons.alertCircle,
-        CommunityReportReason.other => LucideIcons.messageCircle,
-        CommunityReportReason.unknown => LucideIcons.helpCircle,
-      };
-
-  String _titleFor(CommunityReportReason reason) => switch (reason) {
-        CommunityReportReason.spam =>
-          'community.report_reason_spam'.tr(),
-        CommunityReportReason.harassment =>
-          'community.report_reason_harassment'.tr(),
-        CommunityReportReason.inappropriate =>
-          'community.report_reason_inappropriate'.tr(),
-        CommunityReportReason.misinformation =>
-          'community.report_reason_misinformation'.tr(),
-        CommunityReportReason.other =>
-          'community.report_reason_other'.tr(),
-        CommunityReportReason.unknown => '',
-      };
-
-  String _hintFor(CommunityReportReason reason) => switch (reason) {
-        CommunityReportReason.spam =>
-          'community.report_spam_hint'.tr(),
-        CommunityReportReason.harassment =>
-          'community.report_harassment_hint'.tr(),
-        CommunityReportReason.inappropriate =>
-          'community.report_inappropriate_hint'.tr(),
-        CommunityReportReason.misinformation =>
-          'community.report_misinformation_hint'.tr(),
-        CommunityReportReason.other =>
-          'community.report_other_hint'.tr(),
-        CommunityReportReason.unknown => '',
-      };
 
   void _onTapReason(CommunityReportReason reason) {
     AppHaptics.selectionClick();
@@ -147,10 +103,10 @@ class _CommunityReportSheetState extends State<_CommunityReportSheet> {
                 ),
               ),
               // Reason cards
-              ..._reasons.map((reason) => _ReasonCard(
-                    icon: _iconFor(reason),
-                    title: _titleFor(reason),
-                    hint: _hintFor(reason),
+              ...kCommunityReportReasons.map((reason) => _ReasonCard(
+                    icon: iconForReportReason(reason),
+                    title: titleForReportReason(reason),
+                    hint: hintForReportReason(reason),
                     isSelected: _selected == reason,
                     onTap: () => _onTapReason(reason),
                   )),
