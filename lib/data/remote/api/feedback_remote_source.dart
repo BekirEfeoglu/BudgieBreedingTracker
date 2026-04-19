@@ -15,8 +15,8 @@ class FeedbackRemoteSource {
       final response = await _client
           .from(SupabaseConstants.feedbackTable)
           .select()
-          .eq('user_id', userId)
-          .order('created_at', ascending: false);
+          .eq(SupabaseConstants.colUserId, userId)
+          .order(SupabaseConstants.colCreatedAt, ascending: false);
       return response;
     } catch (e, st) {
       AppLogger.error('FeedbackRemoteSource', e, st);
@@ -51,10 +51,10 @@ class FeedbackRemoteSource {
     try {
       final founders = await _client
           .from(SupabaseConstants.adminUsersTable)
-          .select('user_id')
-          .eq('role', 'founder');
+          .select(SupabaseConstants.colUserId)
+          .eq(SupabaseConstants.colRole, 'founder');
       return founders
-          .map((f) => f['user_id'] as String?)
+          .map((f) => f[SupabaseConstants.colUserId] as String?)
           .whereType<String>()
           .toList();
     } catch (e) {

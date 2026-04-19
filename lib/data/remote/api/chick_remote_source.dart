@@ -20,10 +20,10 @@ class ChickRemoteSource extends BaseRemoteSource<Chick> {
   Future<List<Chick>> fetchByClutch(String userId, String clutchId) async {
     final response = await table
         .select()
-        .eq('user_id', userId)
-        .eq('clutch_id', clutchId)
-        .eq('is_deleted', false)
-        .order('hatch_date');
+        .eq(SupabaseConstants.colUserId, userId)
+        .eq(SupabaseConstants.colClutchId, clutchId)
+        .eq(SupabaseConstants.colIsDeleted, false)
+        .order(SupabaseConstants.colHatchDate);
     return response.map((json) => fromJson(json)).toList();
   }
 }

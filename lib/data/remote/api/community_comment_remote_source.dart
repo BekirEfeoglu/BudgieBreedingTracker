@@ -20,15 +20,15 @@ class CommunityCommentRemoteSource {
       var query = _client
           .from(SupabaseConstants.communityCommentsTable)
           .select()
-          .eq('post_id', postId)
-          .eq('is_deleted', false);
+          .eq(SupabaseConstants.colPostId, postId)
+          .eq(SupabaseConstants.colIsDeleted, false);
 
       if (cursor != null) {
-        query = query.gt('created_at', cursor.toIso8601String());
+        query = query.gt(SupabaseConstants.colCreatedAt, cursor.toIso8601String());
       }
 
       final result = await query
-          .order('created_at', ascending: true)
+          .order(SupabaseConstants.colCreatedAt, ascending: true)
           .limit(limit);
       final rows = List<Map<String, dynamic>>.from(result);
       return _profileCache.mergeIntoRows(rows);
@@ -51,9 +51,9 @@ class CommunityCommentRemoteSource {
     try {
       await _client
           .from(SupabaseConstants.communityCommentsTable)
-          .update({'is_deleted': true})
-          .eq('id', commentId)
-          .eq('user_id', userId);
+          .update({SupabaseConstants.colIsDeleted: true})
+          .eq(SupabaseConstants.colId, commentId)
+          .eq(SupabaseConstants.colUserId, userId);
     } catch (e, st) {
       AppLogger.error('CommunityCommentRemoteSource.softDelete', e, st);
       rethrow;

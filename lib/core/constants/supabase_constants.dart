@@ -94,6 +94,30 @@ abstract class SupabaseConstants {
   static const String colIsDeleted = 'is_deleted';
   static const String colCreatedAt = 'created_at';
   static const String colUpdatedAt = 'updated_at';
+  static const String colId = 'id';
+  static const String colStatus = 'status';
+  static const String colRole = 'role';
+  static const String colName = 'name';
+  static const String colDate = 'date';
+  static const String colNeedsReview = 'needs_review';
+  static const String colGender = 'gender';
+
+  // Foreign-key columns (shared across multiple tables)
+  static const String colBirdId = 'bird_id';
+  static const String colChickId = 'chick_id';
+  static const String colClutchId = 'clutch_id';
+  static const String colPostId = 'post_id';
+  static const String colBreedingPairId = 'breeding_pair_id';
+
+  // Entity-specific date columns
+  static const String colHatchDate = 'hatch_date';
+  static const String colMeasurementDate = 'measurement_date';
+  static const String colStartDate = 'start_date';
+
+  // Marketplace filter columns
+  static const String colCity = 'city';
+  static const String colListingType = 'listing_type';
+  static const String colPrice = 'price';
 
   // Feedback columns
   static const String feedbackColId = 'id';

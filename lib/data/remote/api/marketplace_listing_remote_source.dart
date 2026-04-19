@@ -30,30 +30,30 @@ class MarketplaceListingRemoteSource {
       var query = _client
           .from(SupabaseConstants.marketplaceListingsTable)
           .select(_selectColumns)
-          .eq('is_deleted', false)
-          .eq('status', 'active');
+          .eq(SupabaseConstants.colIsDeleted, false)
+          .eq(SupabaseConstants.colStatus, 'active');
 
       if (before != null) {
-        query = query.lt('created_at', before.toIso8601String());
+        query = query.lt(SupabaseConstants.colCreatedAt, before.toIso8601String());
       }
       if (city != null && city.isNotEmpty) {
-        query = query.eq('city', city);
+        query = query.eq(SupabaseConstants.colCity, city);
       }
       if (listingType != null && listingType.isNotEmpty) {
-        query = query.eq('listing_type', listingType);
+        query = query.eq(SupabaseConstants.colListingType, listingType);
       }
       if (gender != null && gender.isNotEmpty) {
-        query = query.eq('gender', gender);
+        query = query.eq(SupabaseConstants.colGender, gender);
       }
       if (minPrice != null) {
-        query = query.gte('price', minPrice);
+        query = query.gte(SupabaseConstants.colPrice, minPrice);
       }
       if (maxPrice != null) {
-        query = query.lte('price', maxPrice);
+        query = query.lte(SupabaseConstants.colPrice, maxPrice);
       }
 
       final response = await query
-          .order('created_at', ascending: false)
+          .order(SupabaseConstants.colCreatedAt, ascending: false)
           .limit(limit);
       return List<Map<String, dynamic>>.from(response);
     } catch (e, st) {
@@ -67,7 +67,7 @@ class MarketplaceListingRemoteSource {
       final response = await _client
           .from(SupabaseConstants.marketplaceListingsTable)
           .select(_selectColumns)
-          .eq('id', id)
+          .eq(SupabaseConstants.colId, id)
           .maybeSingle();
       return response;
     } catch (e, st) {
@@ -84,10 +84,10 @@ class MarketplaceListingRemoteSource {
       final response = await _client
           .from(SupabaseConstants.marketplaceListingsTable)
           .select(_selectColumns)
-          .inFilter('id', ids);
+          .inFilter(SupabaseConstants.colId, ids);
       final rows = List<Map<String, dynamic>>.from(response);
       final byId = {
-        for (final row in rows) row['id'] as String: row,
+        for (final row in rows) row[SupabaseConstants.colId] as String: row,
       };
       return [
         for (final id in ids)
@@ -104,9 +104,9 @@ class MarketplaceListingRemoteSource {
       final response = await _client
           .from(SupabaseConstants.marketplaceListingsTable)
           .select(_selectColumns)
-          .eq('user_id', userId)
-          .eq('is_deleted', false)
-          .order('created_at', ascending: false);
+          .eq(SupabaseConstants.colUserId, userId)
+          .eq(SupabaseConstants.colIsDeleted, false)
+          .order(SupabaseConstants.colCreatedAt, ascending: false);
       return List<Map<String, dynamic>>.from(response);
     } catch (e, st) {
       AppLogger.error('marketplace', e, st);
@@ -137,8 +137,8 @@ class MarketplaceListingRemoteSource {
       final response = await _client
           .from(SupabaseConstants.marketplaceListingsTable)
           .update(data)
-          .eq('id', id)
-          .eq('user_id', userId)
+          .eq(SupabaseConstants.colId, id)
+          .eq(SupabaseConstants.colUserId, userId)
           .select(_selectColumns)
           .single();
       return response;
@@ -152,9 +152,9 @@ class MarketplaceListingRemoteSource {
     try {
       await _client
           .from(SupabaseConstants.marketplaceListingsTable)
-          .update({'is_deleted': true})
-          .eq('id', id)
-          .eq('user_id', userId);
+          .update({SupabaseConstants.colIsDeleted: true})
+          .eq(SupabaseConstants.colId, id)
+          .eq(SupabaseConstants.colUserId, userId);
     } catch (e, st) {
       AppLogger.error('marketplace', e, st);
       rethrow;
@@ -169,9 +169,9 @@ class MarketplaceListingRemoteSource {
     try {
       await _client
           .from(SupabaseConstants.marketplaceListingsTable)
-          .update({'status': status})
-          .eq('id', id)
-          .eq('user_id', userId);
+          .update({SupabaseConstants.colStatus: status})
+          .eq(SupabaseConstants.colId, id)
+          .eq(SupabaseConstants.colUserId, userId);
     } catch (e, st) {
       AppLogger.error('marketplace', e, st);
       rethrow;
@@ -184,14 +184,14 @@ class MarketplaceListingRemoteSource {
       final current = await _client
           .from(SupabaseConstants.marketplaceListingsTable)
           .select('view_count')
-          .eq('id', id)
+          .eq(SupabaseConstants.colId, id)
           .maybeSingle();
       if (current != null) {
         final newCount = (current['view_count'] as int? ?? 0) + 1;
         await _client
             .from(SupabaseConstants.marketplaceListingsTable)
             .update({'view_count': newCount})
-            .eq('id', id);
+            .eq(SupabaseConstants.colId, id);
       }
     } catch (e) {
       AppLogger.warning('View count increment failed: $e');
@@ -222,10 +222,10 @@ class MarketplaceListingRemoteSource {
       final response = await _client
           .from(SupabaseConstants.marketplaceListingsTable)
           .select(_selectColumns)
-          .eq('is_deleted', false)
-          .eq('status', 'active')
+          .eq(SupabaseConstants.colIsDeleted, false)
+          .eq(SupabaseConstants.colStatus, 'active')
           .or('title.ilike.%$sanitized%,description.ilike.%$sanitized%')
-          .order('created_at', ascending: false)
+          .order(SupabaseConstants.colCreatedAt, ascending: false)
           .limit(limit);
       return List<Map<String, dynamic>>.from(response);
     } catch (e, st) {

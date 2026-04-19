@@ -21,10 +21,10 @@ class BirdRemoteSource extends BaseRemoteSource<Bird> {
     try {
       final response = await table
           .select()
-          .eq('user_id', userId)
-          .eq('gender', gender)
-          .eq('is_deleted', false)
-          .order('name');
+          .eq(SupabaseConstants.colUserId, userId)
+          .eq(SupabaseConstants.colGender, gender)
+          .eq(SupabaseConstants.colIsDeleted, false)
+          .order(SupabaseConstants.colName);
       return response.map((json) => fromJson(json)).toList();
     } catch (e, st) {
       throw handleError(e, st);
