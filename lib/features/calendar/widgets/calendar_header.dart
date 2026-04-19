@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
+import 'package:budgie_breeding_tracker/core/widgets/buttons/app_icon_button.dart';
 import 'package:budgie_breeding_tracker/features/calendar/providers/calendar_providers.dart';
 
 /// Calendar header with month navigation arrows.
@@ -27,10 +28,11 @@ class CalendarHeader extends ConsumerWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          IconButton(
+          AppIconButton(
             icon: const Icon(LucideIcons.chevronLeft),
             onPressed: () => _changeMonth(ref, -1),
             tooltip: 'calendar.previous_month'.tr(),
+            semanticLabel: 'calendar.previous_month'.tr(),
           ),
           InkWell(
             onTap: () => _goToToday(ref),
@@ -52,10 +54,11 @@ class CalendarHeader extends ConsumerWidget {
               ),
             ),
           ),
-          IconButton(
+          AppIconButton(
             icon: const Icon(LucideIcons.chevronRight),
             onPressed: () => _changeMonth(ref, 1),
             tooltip: 'calendar.next_month'.tr(),
+            semanticLabel: 'calendar.next_month'.tr(),
           ),
         ],
       ),

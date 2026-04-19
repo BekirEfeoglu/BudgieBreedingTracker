@@ -10,6 +10,7 @@ import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
+import 'package:budgie_breeding_tracker/core/widgets/buttons/app_icon_button.dart';
 import 'package:budgie_breeding_tracker/core/widgets/error_state.dart';
 import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
 import 'package:budgie_breeding_tracker/core/widgets/dialogs/confirm_dialog.dart';
@@ -87,16 +88,18 @@ class _DetailContent extends ConsumerWidget {
       appBar: AppBar(
         title: Text(bird.name),
         actions: [
-          IconButton(
+          AppIconButton(
             icon: const Icon(LucideIcons.sparkles, size: 20),
             tooltip: 'more.ai_predictions'.tr(),
+            semanticLabel: 'more.ai_predictions'.tr(),
             onPressed: () => context.push(
               '${AppRoutes.aiPredictions}?tab=mutation&birdId=${bird.id}',
             ),
           ),
-          IconButton(
+          AppIconButton(
             icon: const AppIcon(AppIcons.edit),
             tooltip: 'common.edit'.tr(),
+            semanticLabel: 'common.edit'.tr(),
             onPressed: () => context.push('/birds/form?editId=${bird.id}'),
           ),
           PopupMenuButton<String>(

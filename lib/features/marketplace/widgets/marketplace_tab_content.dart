@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../core/theme/app_spacing.dart';
+import '../../../core/widgets/buttons/app_icon_button.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/error_state.dart' as app;
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
@@ -34,9 +35,10 @@ class MarketplaceTabContent extends ConsumerWidget {
           child: Row(
             children: [
               Expanded(child: _buildFilterChips(ref)),
-              IconButton(
+              AppIconButton(
                 icon: const Icon(LucideIcons.listChecks, size: 20),
                 tooltip: 'marketplace.my_listings'.tr(),
+                semanticLabel: 'marketplace.my_listings'.tr(),
                 onPressed: () =>
                     context.push('${AppRoutes.marketplace}/my-listings'),
               ),

@@ -7,6 +7,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../core/widgets/buttons/app_icon_button.dart';
 import '../../../data/models/profile_model.dart';
 import '../../../data/providers/auth_state_providers.dart';
 import '../../../router/route_names.dart';
@@ -40,8 +41,9 @@ class CommunityAppBar extends ConsumerWidget implements PreferredSizeWidget {
       backgroundColor: Colors.transparent,
       surfaceTintColor: Colors.transparent,
       elevation: 0,
-      leading: IconButton(
+      leading: AppIconButton(
         icon: const Icon(LucideIcons.arrowLeft),
+        semanticLabel: 'common.back'.tr(),
         onPressed: () => context.pop(),
       ),
       titleSpacing: 0,

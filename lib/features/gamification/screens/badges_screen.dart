@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../core/theme/app_spacing.dart';
+import '../../../core/widgets/buttons/app_icon_button.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/error_state.dart' as app;
 import '../../breeding/providers/breeding_providers.dart';
@@ -29,9 +30,10 @@ class BadgesScreen extends ConsumerWidget {
       appBar: AppBar(
         title: Text('badges.title'.tr()),
         actions: [
-          IconButton(
+          AppIconButton(
             icon: const Icon(LucideIcons.trophy),
             tooltip: 'leaderboard.title'.tr(),
+            semanticLabel: 'leaderboard.title'.tr(),
             onPressed: () => context.push(AppRoutes.leaderboard),
           ),
         ],

@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../core/theme/app_spacing.dart';
+import '../../../core/widgets/buttons/app_icon_button.dart';
 import '../../../core/utils/logger.dart';
 import '../../../data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
@@ -103,8 +104,9 @@ class _NewDmScreenState extends ConsumerState<NewDmScreen> {
                 hintText: 'messaging.search_user_hint'.tr(),
                 prefixIcon: const Icon(LucideIcons.search, size: 18),
                 suffixIcon: _searchController.text.isNotEmpty
-                    ? IconButton(
+                    ? AppIconButton(
                         icon: const Icon(LucideIcons.x, size: 18),
+                        semanticLabel: 'common.clear'.tr(),
                         onPressed: () {
                           _searchController.clear();
                           setState(() => _results = []);

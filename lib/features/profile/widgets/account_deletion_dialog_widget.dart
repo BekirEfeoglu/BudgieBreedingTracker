@@ -137,10 +137,13 @@ class _AccountDeletionDialogState extends State<AccountDeletionDialog> {
             decoration: InputDecoration(
               border: const OutlineInputBorder(),
               hintText: 'auth.password'.tr(),
-              suffixIcon: IconButton(
+              suffixIcon: AppIconButton(
                 icon: Icon(
                   _obscurePassword ? Icons.visibility_off : Icons.visibility,
                 ),
+                semanticLabel: _obscurePassword
+                    ? 'auth.show_password'.tr()
+                    : 'auth.hide_password'.tr(),
                 onPressed: () =>
                     setState(() => _obscurePassword = !_obscurePassword),
               ),

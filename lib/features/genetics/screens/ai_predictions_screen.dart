@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
+import 'package:budgie_breeding_tracker/core/widgets/buttons/app_icon_button.dart';
 import 'package:budgie_breeding_tracker/features/genetics/providers/local_ai_providers.dart';
 import 'package:budgie_breeding_tracker/features/genetics/widgets/ai/ai_mutation_tab.dart';
 import 'package:budgie_breeding_tracker/features/genetics/widgets/ai/ai_sex_estimation_tab.dart';
@@ -73,10 +74,11 @@ class _AiPredictionsScreenState extends ConsumerState<AiPredictionsScreen>
       appBar: AppBar(
         title: Text('more.ai_predictions'.tr()),
         actions: [
-          IconButton(
+          AppIconButton(
             onPressed: _openSettings,
             icon: const Icon(LucideIcons.settings2, size: 20),
             tooltip: 'genetics.local_ai_model_settings'.tr(),
+            semanticLabel: 'genetics.local_ai_model_settings'.tr(),
           ),
         ],
         bottom: isConfigured

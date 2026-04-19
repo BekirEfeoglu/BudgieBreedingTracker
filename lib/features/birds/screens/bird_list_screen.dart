@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
+import 'package:budgie_breeding_tracker/core/widgets/buttons/app_icon_button.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_screen_title.dart';
 import 'package:budgie_breeding_tracker/core/widgets/empty_state.dart';
 import 'package:budgie_breeding_tracker/core/widgets/sort_bottom_sheet.dart';
@@ -194,16 +195,18 @@ class _BirdListScreenState extends ConsumerState<BirdListScreen> {
                   iconAsset: AppIcons.bird,
                 ),
         leading: _isSelectionMode
-            ? IconButton(
+            ? AppIconButton(
                 icon: const Icon(LucideIcons.x),
+                semanticLabel: 'common.cancel'.tr(),
                 onPressed: _clearSelection,
               )
             : null,
         actions: _isSelectionMode
             ? [
-                IconButton(
+                AppIconButton(
                   icon: const AppIcon(AppIcons.delete),
                   tooltip: 'common.delete'.tr(),
+                  semanticLabel: 'common.delete'.tr(),
                   onPressed: _bulkDelete,
                 ),
                 PopupMenuButton<String>(
@@ -224,9 +227,10 @@ class _BirdListScreenState extends ConsumerState<BirdListScreen> {
                 ),
               ]
             : [
-                IconButton(
+                AppIconButton(
                   icon: const Icon(LucideIcons.arrowUpDown),
                   tooltip: 'common.sort'.tr(),
+                  semanticLabel: 'common.sort'.tr(),
                   onPressed: () {
                     showSortBottomSheet<BirdSort>(
                       context: context,

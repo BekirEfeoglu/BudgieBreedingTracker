@@ -6,6 +6,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
+import 'package:budgie_breeding_tracker/core/widgets/buttons/app_icon_button.dart';
 import 'package:budgie_breeding_tracker/core/widgets/dialogs/confirm_dialog.dart';
 import 'package:budgie_breeding_tracker/core/widgets/empty_state.dart';
 import 'package:budgie_breeding_tracker/data/models/event_model.dart';
@@ -79,13 +80,14 @@ class DayEventsSheet extends ConsumerWidget {
                       ],
                     ),
                   ),
-                  IconButton(
+                  AppIconButton(
                     icon: const AppIcon(AppIcons.add),
                     onPressed: () {
                       Navigator.of(context).pop();
                       showEventFormSheet(context, initialDate: date);
                     },
                     tooltip: 'calendar.add_event'.tr(),
+                    semanticLabel: 'calendar.add_event'.tr(),
                   ),
                 ],
               ),

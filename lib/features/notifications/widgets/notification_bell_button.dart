@@ -10,6 +10,7 @@ import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
+import 'package:budgie_breeding_tracker/core/widgets/buttons/app_icon_button.dart';
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 import 'package:budgie_breeding_tracker/data/providers/action_feedback_providers.dart';
 import 'package:budgie_breeding_tracker/features/notifications/providers/notification_list_providers.dart';
@@ -132,7 +133,7 @@ class _NotificationBellButtonState
 
     final totalBadge = notifCount + feedbackCount;
 
-    return IconButton(
+    return AppIconButton(
       key: _bellKey,
       onPressed: () {
         if (_isNavigating) return;
@@ -150,10 +151,7 @@ class _NotificationBellButtonState
           );
         }
       },
-      constraints: const BoxConstraints(
-        minWidth: AppSpacing.touchTargetMin,
-        minHeight: AppSpacing.touchTargetMin,
-      ),
+      semanticLabel: 'notifications.inbox_title'.tr(),
       icon: totalBadge > 0
           ? Badge(
               label: Text(

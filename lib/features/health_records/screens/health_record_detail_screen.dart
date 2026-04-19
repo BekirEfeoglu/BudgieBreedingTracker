@@ -9,6 +9,7 @@ import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
 import 'package:budgie_breeding_tracker/core/widgets/error_state.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
+import 'package:budgie_breeding_tracker/core/widgets/buttons/app_icon_button.dart';
 import 'package:budgie_breeding_tracker/core/widgets/dialogs/confirm_dialog.dart';
 import 'package:budgie_breeding_tracker/data/models/health_record_model.dart';
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
@@ -84,9 +85,10 @@ class _DetailContent extends ConsumerWidget {
       appBar: AppBar(
         title: Text(record.title),
         actions: [
-          IconButton(
+          AppIconButton(
             icon: const AppIcon(AppIcons.edit),
             tooltip: 'common.edit'.tr(),
+            semanticLabel: 'common.edit'.tr(),
             onPressed: () =>
                 context.push('/health-records/form?editId=${record.id}'),
           ),

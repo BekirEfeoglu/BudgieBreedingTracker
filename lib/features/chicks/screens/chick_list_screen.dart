@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
+import 'package:budgie_breeding_tracker/core/widgets/buttons/app_icon_button.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_screen_title.dart';
 import 'package:budgie_breeding_tracker/core/widgets/empty_state.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -150,13 +151,15 @@ class _ChickListScreenState extends ConsumerState<ChickListScreen> {
     return Scaffold(
       appBar: AppBar(
         leading: _isSelectionMode
-            ? IconButton(
+            ? AppIconButton(
                 icon: const Icon(LucideIcons.x),
+                semanticLabel: 'common.cancel'.tr(),
                 onPressed: _clearSelection,
               )
-            : IconButton(
+            : AppIconButton(
                 icon: const Icon(LucideIcons.arrowLeft),
                 tooltip: 'common.back'.tr(),
+                semanticLabel: 'common.back'.tr(),
                 onPressed: _handleBack,
               ),
         title: _isSelectionMode
@@ -170,9 +173,10 @@ class _ChickListScreenState extends ConsumerState<ChickListScreen> {
               ),
         actions: _isSelectionMode
             ? [
-                IconButton(
+                AppIconButton(
                   icon: const AppIcon(AppIcons.delete),
                   tooltip: 'common.delete'.tr(),
+                  semanticLabel: 'common.delete'.tr(),
                   onPressed: _bulkDelete,
                 ),
                 PopupMenuButton<String>(
@@ -188,9 +192,10 @@ class _ChickListScreenState extends ConsumerState<ChickListScreen> {
                 ),
               ]
             : [
-                IconButton(
+                AppIconButton(
                   icon: const Icon(LucideIcons.arrowUpDown),
                   tooltip: 'common.sort'.tr(),
+                  semanticLabel: 'common.sort'.tr(),
                   onPressed: () {
                     final currentSort = ref.read(chickSortProvider);
                     showSortBottomSheet<ChickSort>(

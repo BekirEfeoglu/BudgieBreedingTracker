@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../core/theme/app_spacing.dart';
+import '../../../core/widgets/buttons/app_icon_button.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/error_state.dart' as app;
 import '../../../core/widgets/buttons/fab_button.dart';
@@ -28,9 +29,10 @@ class MessagesScreen extends ConsumerWidget {
         title: Text('messaging.title'.tr()),
         actions: [
           if (!isAnonymous)
-            IconButton(
+            AppIconButton(
               icon: const Icon(LucideIcons.edit),
               tooltip: 'messaging.new_message'.tr(),
+              semanticLabel: 'messaging.new_message'.tr(),
               onPressed: () => _showNewMessageOptions(context),
             ),
         ],

@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../core/theme/app_spacing.dart';
+import '../../../core/widgets/buttons/app_icon_button.dart';
 import '../providers/community_comment_providers.dart';
 
 /// Fixed bottom input bar for adding comments.
@@ -134,12 +135,13 @@ class _CommunityCommentInputState extends ConsumerState<CommunityCommentInput> {
                   child: AnimatedScale(
                     scale: hasText ? 1.0 : 0.9,
                     duration: const Duration(milliseconds: 150),
-                    child: IconButton(
+                    child: AppIconButton(
                       onPressed: hasText ? _submit : null,
                       icon: Icon(
                         LucideIcons.send,
                         color: theme.colorScheme.primary,
                       ),
+                      semanticLabel: 'common.save'.tr(),
                     ),
                   ),
                 ),

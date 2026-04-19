@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
+import 'package:budgie_breeding_tracker/core/widgets/buttons/app_icon_button.dart';
 
 /// Shared card wrapper for AI analysis sections.
 /// Provides title with icon, subtitle, info icon with dialog, and left accent bar.
@@ -74,19 +75,15 @@ class AiSectionCard extends StatelessWidget {
                             ),
                           ),
                         ),
-                        IconButton(
+                        AppIconButton(
                           onPressed: () => _showInfoDialog(context),
                           icon: Icon(
                             LucideIcons.info,
                             size: 16,
                             color: theme.colorScheme.onSurfaceVariant,
                           ),
-                          visualDensity: VisualDensity.compact,
+                          semanticLabel: 'common.info'.tr(),
                           padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(
-                            minWidth: 28,
-                            minHeight: 28,
-                          ),
                         ),
                       ],
                     ),
