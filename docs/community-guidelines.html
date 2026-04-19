@@ -881,7 +881,7 @@
     <!-- Page title block -->
     <div class="page-title-block fade-up delay-0 visible">
       <h1 class="page-title" data-i18n="title">Topluluk Kurallari</h1>
-      <p class="page-subtitle" data-i18n="last_updated">Son guncelleme: 17 Mart 2026</p>
+      <p class="page-subtitle" data-i18n="last_updated">Son guncelleme: 19 Nisan 2026</p>
     </div>
 
     <!-- Glass content card -->
@@ -994,13 +994,67 @@
 
       <div class="section-divider"></div>
 
-      <!-- ── Section 7: Iletisim ── -->
-      <section class="fade-up delay-7 section-reveal">
+      <!-- ── Section 7: Moderasyon Sureci ── -->
+      <section class="fade-up delay-7 section-reveal" aria-labelledby="moderation-escalation">
         <div class="section-heading">
           <span class="section-number">7</span>
-          <h2 data-i18n="s7_title">Iletisim</h2>
+          <h2 id="moderation-escalation" data-i18n="s7_title">Moderasyon Süreci</h2>
         </div>
-        <p class="section-intro" data-i18n="s7_text">Topluluk kurallari hakkinda sorulariniz icin bizimle iletisime gecebilirsiniz:</p>
+        <div data-i18n-html="s7_list">
+          <ol>
+            <li><strong>Rapor:</strong> Kullanıcı içeriği rapor eder (spam, taciz, uygunsuz içerik vb.).</li>
+            <li><strong>Otomatik filtre:</strong> Eşik aşıldığında içerik geçici olarak gizlenir.</li>
+            <li><strong>İnceleme:</strong> Moderatör 48 saat içinde inceler.</li>
+            <li><strong>Aksiyon:</strong> Silme, uyarı, askıya alma veya kural ihlali yoksa içeriğin geri yüklenmesi.</li>
+          </ol>
+        </div>
+      </section>
+
+      <div class="section-divider"></div>
+
+      <!-- ── Section 8: Itiraz Sureci ── -->
+      <section class="fade-up delay-7 section-reveal" aria-labelledby="appeal-process">
+        <div class="section-heading">
+          <span class="section-number">8</span>
+          <h2 id="appeal-process" data-i18n="s8_title">İtiraz Süreci</h2>
+        </div>
+        <p class="section-intro" data-i18n="s8_intro">Bir kararın hatalı olduğunu düşünüyorsanız:</p>
+        <div data-i18n-html="s8_list">
+          <ol>
+            <li>Karar bildirimini aldıktan sonra 14 gün içinde itiraz edin.</li>
+            <li><a href="mailto:appeals@budgiebreedingtracker.online" class="section-email">appeals@budgiebreedingtracker.online</a> adresine hesap bilgileri ve itiraz gerekçesiyle başvurun.</li>
+            <li>Farklı bir moderatör 7 iş günü içinde değerlendirir ve sonucu bildirir.</li>
+          </ol>
+        </div>
+      </section>
+
+      <div class="section-divider"></div>
+
+      <!-- ── Section 9: Silme ve Profil Yonetimi ── -->
+      <section class="fade-up delay-7 section-reveal" aria-labelledby="deletion-rights">
+        <div class="section-heading">
+          <span class="section-number">9</span>
+          <h2 id="deletion-rights" data-i18n="s9_title">Silme ve Profil Yönetimi</h2>
+        </div>
+        <div data-i18n-html="s9_list">
+          <ul>
+            <li>Kendi paylaşımlarınızı istediğiniz zaman silebilirsiniz.</li>
+            <li>Profilinizi kapattığınızda herkese açık paylaşımlarınız ve yorumlarınız kaldırılır.</li>
+            <li>Geçmişe dönük yanıtlanmış yorumlarınız, bağlamı bozmamak için "Silindi" yer tutucusuyla gösterilir.</li>
+            <li>Hesabınızı tamamen silmek için <a href="mailto:privacy@budgiebreedingtracker.online" class="section-email">privacy@budgiebreedingtracker.online</a>.</li>
+          </ul>
+        </div>
+      </section>
+
+      <div class="section-divider"></div>
+
+      <!-- ── Section 10: Iletisim ── -->
+      <section class="fade-up delay-7 section-reveal">
+        <div class="section-heading">
+          <span class="section-number">10</span>
+          <h2 data-i18n="s10_title">Iletisim</h2>
+        </div>
+        <p class="section-intro" data-i18n="s10_text">Topluluk kurallari hakkinda sorulariniz icin bizimle iletisime gecebilirsiniz:</p>
         <div class="contact-card">
           <div class="contact-icon">
             <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(232,194,122,0.95)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -1034,7 +1088,7 @@
       tr: {
         back: '\u2190 Ana Sayfa',
         title: 'Topluluk Kurallar\u0131',
-        last_updated: 'Son g\u00fcncelleme: 17 Mart 2026',
+        last_updated: 'Son g\u00fcncelleme: 19 Nisan 2026',
         s1_title: '1. Ama\u00e7',
         s1_text: 'BudgieBreedingTracker toplulu\u011fu, muhabbet ku\u015fu yeti\u015ftiricilerinin deneyimlerini payla\u015fmalar\u0131, birbirlerinden \u00f6\u011frenmeleri ve desteklemeleri i\u00e7in g\u00fcvenli bir ortam sa\u011flamay\u0131 ama\u00e7lar. Bu kurallar, t\u00fcm \u00fcyelerin olumlu bir deneyim ya\u015famas\u0131n\u0131 sa\u011flamak i\u00e7in olu\u015fturulmu\u015ftur.',
         s2_title: '2. Sayg\u0131 ve Nezaket',
@@ -1050,14 +1104,21 @@
         s6_title: '6. Yapt\u0131r\u0131mlar',
         s6_intro: 'Kural ihlallerinde a\u015fa\u011f\u0131daki yapt\u0131r\u0131mlar uygulanabilir:',
         s6_list: '<ul class="warn-list"><li><strong>Uyar\u0131:</strong> \u0130lk ihlallerde yaz\u0131l\u0131 uyar\u0131</li><li><strong>\u0130\u00e7erik kald\u0131rma:</strong> Kurallar\u0131 ihlal eden i\u00e7erikler kald\u0131r\u0131l\u0131r</li><li><strong>Ge\u00e7ici ask\u0131ya alma:</strong> Tekrarlanan ihlallerde hesap ge\u00e7ici olarak ask\u0131ya al\u0131n\u0131r</li><li><strong>Kal\u0131c\u0131 yasaklama:</strong> Ciddi veya s\u00fcrekli ihlallerde hesap kal\u0131c\u0131 olarak yasaklan\u0131r</li></ul>',
-        s7_title: '7. \u0130leti\u015fim',
-        s7_text: 'Topluluk kurallar\u0131 hakk\u0131nda sorular\u0131n\u0131z i\u00e7in bizimle ileti\u015fime ge\u00e7ebilirsiniz:',
+        s7_title: '7. Moderasyon S\u00fcreci',
+        s7_list: '<ol><li><strong>Rapor:</strong> Kullan\u0131c\u0131 i\u00e7eri\u011fi rapor eder (spam, taciz, uygunsuz i\u00e7erik vb.).</li><li><strong>Otomatik filtre:</strong> E\u015fik a\u015f\u0131ld\u0131\u011f\u0131nda i\u00e7erik ge\u00e7ici olarak gizlenir.</li><li><strong>\u0130nceleme:</strong> Moderat\u00f6r 48 saat i\u00e7inde inceler.</li><li><strong>Aksiyon:</strong> Silme, uyar\u0131, ask\u0131ya alma veya kural ihlali yoksa i\u00e7eri\u011fin geri y\u00fcklenmesi.</li></ol>',
+        s8_title: '8. \u0130tiraz S\u00fcreci',
+        s8_intro: 'Bir karar\u0131n hatal\u0131 oldu\u011funu d\u00fc\u015f\u00fcn\u00fcyorsan\u0131z:',
+        s8_list: '<ol><li>Karar bildirimini ald\u0131ktan sonra 14 g\u00fcn i\u00e7inde itiraz edin.</li><li><a href="mailto:appeals@budgiebreedingtracker.online" class="section-email">appeals@budgiebreedingtracker.online</a> adresine hesap bilgileri ve itiraz gerek\u00e7esiyle ba\u015fvurun.</li><li>Farkl\u0131 bir moderat\u00f6r 7 i\u015f g\u00fcn\u00fc i\u00e7inde de\u011ferlendirir ve sonucu bildirir.</li></ol>',
+        s9_title: '9. Silme ve Profil Y\u00f6netimi',
+        s9_list: '<ul><li>Kendi payla\u015f\u0131mlar\u0131n\u0131z\u0131 istedi\u011finiz zaman silebilirsiniz.</li><li>Profilinizi kapatt\u0131\u011f\u0131n\u0131zda herkese a\u00e7\u0131k payla\u015f\u0131mlar\u0131n\u0131z ve yorumlar\u0131n\u0131z kald\u0131r\u0131l\u0131r.</li><li>Ge\u00e7mi\u015fe d\u00f6n\u00fck yan\u0131tlanm\u0131\u015f yorumlar\u0131n\u0131z, ba\u011flam\u0131 bozmamak i\u00e7in "Silindi" yer tutucusuyla g\u00f6sterilir.</li><li>Hesab\u0131n\u0131z\u0131 tamamen silmek i\u00e7in <a href="mailto:privacy@budgiebreedingtracker.online" class="section-email">privacy@budgiebreedingtracker.online</a>.</li></ul>',
+        s10_title: '10. \u0130leti\u015fim',
+        s10_text: 'Topluluk kurallar\u0131 hakk\u0131nda sorular\u0131n\u0131z i\u00e7in bizimle ileti\u015fime ge\u00e7ebilirsiniz:',
         footer: '\u00a9 2025-2026 BudgieBreedingTracker. T\u00fcm haklar\u0131 sakl\u0131d\u0131r.',
       },
       en: {
         back: '\u2190 Home',
         title: 'Community Guidelines',
-        last_updated: 'Last updated: March 17, 2026',
+        last_updated: 'Last updated: April 19, 2026',
         s1_title: '1. Purpose',
         s1_text: 'The BudgieBreedingTracker community aims to provide a safe environment for budgerigar breeders to share their experiences, learn from each other, and support one another. These guidelines are designed to ensure a positive experience for all members.',
         s2_title: '2. Respect and Courtesy',
@@ -1073,14 +1134,21 @@
         s6_title: '6. Enforcement',
         s6_intro: 'The following actions may be taken for guideline violations:',
         s6_list: '<ul class="warn-list"><li><strong>Warning:</strong> Written warning for first-time violations</li><li><strong>Content removal:</strong> Violating content will be removed</li><li><strong>Temporary suspension:</strong> Account temporarily suspended for repeated violations</li><li><strong>Permanent ban:</strong> Account permanently banned for serious or ongoing violations</li></ul>',
-        s7_title: '7. Contact',
-        s7_text: 'If you have questions about community guidelines, you can contact us:',
+        s7_title: '7. Moderation Process',
+        s7_list: '<ol><li><strong>Report:</strong> User reports content (spam, harassment, inappropriate content, etc.).</li><li><strong>Automatic filter:</strong> When the threshold is exceeded, content is temporarily hidden.</li><li><strong>Review:</strong> A moderator reviews within 48 hours.</li><li><strong>Action:</strong> Removal, warning, suspension, or restoring the content if no rule violation is found.</li></ol>',
+        s8_title: '8. Appeal Process',
+        s8_intro: 'If you believe a decision was incorrect:',
+        s8_list: '<ol><li>Submit your appeal within 14 days of receiving the decision notice.</li><li>Email <a href="mailto:appeals@budgiebreedingtracker.online" class="section-email">appeals@budgiebreedingtracker.online</a> with your account information and reason for appeal.</li><li>A different moderator will review within 7 business days and notify you of the result.</li></ol>',
+        s9_title: '9. Deletion and Profile Management',
+        s9_list: '<ul><li>You can delete your own posts at any time.</li><li>When you close your profile, your public posts and comments are removed.</li><li>Your past replies to comments are shown with a "Deleted" placeholder to preserve context.</li><li>To fully delete your account, contact <a href="mailto:privacy@budgiebreedingtracker.online" class="section-email">privacy@budgiebreedingtracker.online</a>.</li></ul>',
+        s10_title: '10. Contact',
+        s10_text: 'If you have questions about community guidelines, you can contact us:',
         footer: '\u00a9 2025-2026 BudgieBreedingTracker. All rights reserved.',
       },
       de: {
         back: '\u2190 Startseite',
         title: 'Community-Richtlinien',
-        last_updated: 'Letzte Aktualisierung: 17. M\u00e4rz 2026',
+        last_updated: 'Letzte Aktualisierung: 19. April 2026',
         s1_title: '1. Zweck',
         s1_text: 'Die BudgieBreedingTracker-Community bietet Wellensittichz\u00fcchtern eine sichere Umgebung zum Austausch von Erfahrungen, gegenseitigem Lernen und Unterst\u00fctzung. Diese Richtlinien sollen allen Mitgliedern eine positive Erfahrung erm\u00f6glichen.',
         s2_title: '2. Respekt und H\u00f6flichkeit',
@@ -1096,8 +1164,15 @@
         s6_title: '6. Durchsetzung',
         s6_intro: 'Bei Richtlinienverst\u00f6\u00dfen k\u00f6nnen folgende Ma\u00dfnahmen ergriffen werden:',
         s6_list: '<ul class="warn-list"><li><strong>Verwarnung:</strong> Schriftliche Verwarnung bei erstmaligen Verst\u00f6\u00dfen</li><li><strong>Inhaltsentfernung:</strong> Versto\u00dfende Inhalte werden entfernt</li><li><strong>Vor\u00fcbergehende Sperrung:</strong> Konto wird bei wiederholten Verst\u00f6\u00dfen vor\u00fcbergehend gesperrt</li><li><strong>Dauerhafte Sperre:</strong> Konto wird bei schwerwiegenden oder andauernden Verst\u00f6\u00dfen dauerhaft gesperrt</li></ul>',
-        s7_title: '7. Kontakt',
-        s7_text: 'Bei Fragen zu den Community-Richtlinien k\u00f6nnen Sie uns kontaktieren:',
+        s7_title: '7. Moderationsprozess',
+        s7_list: '<ol><li><strong>Meldung:</strong> Benutzer meldet Inhalt (Spam, Bel\u00e4stigung, unangemessener Inhalt usw.).</li><li><strong>Automatischer Filter:</strong> Beim \u00dcberschreiten des Schwellenwerts wird der Inhalt vor\u00fcbergehend ausgeblendet.</li><li><strong>Pr\u00fcfung:</strong> Ein Moderator pr\u00fcft innerhalb von 48 Stunden.</li><li><strong>Ma\u00dfnahme:</strong> Entfernung, Verwarnung, Sperrung oder Wiederherstellung des Inhalts, wenn kein Regelversto\u00df vorliegt.</li></ol>',
+        s8_title: '8. Einspruchsverfahren',
+        s8_intro: 'Wenn Sie glauben, dass eine Entscheidung falsch war:',
+        s8_list: '<ol><li>Reichen Sie Ihren Einspruch innerhalb von 14 Tagen nach Erhalt des Entscheidungshinweises ein.</li><li>Schreiben Sie an <a href="mailto:appeals@budgiebreedingtracker.online" class="section-email">appeals@budgiebreedingtracker.online</a> mit Ihren Kontoinformationen und der Begr\u00fcndung des Einspruchs.</li><li>Ein anderer Moderator pr\u00fcft innerhalb von 7 Werktagen und teilt Ihnen das Ergebnis mit.</li></ol>',
+        s9_title: '9. L\u00f6schung und Profilverwaltung',
+        s9_list: '<ul><li>Sie k\u00f6nnen Ihre eigenen Beitr\u00e4ge jederzeit l\u00f6schen.</li><li>Wenn Sie Ihr Profil schlie\u00dfen, werden Ihre \u00f6ffentlichen Beitr\u00e4ge und Kommentare entfernt.</li><li>Ihre vergangenen Antworten auf Kommentare werden mit einem "Gel\u00f6scht"-Platzhalter angezeigt, um den Kontext zu erhalten.</li><li>Um Ihr Konto vollst\u00e4ndig zu l\u00f6schen, kontaktieren Sie <a href="mailto:privacy@budgiebreedingtracker.online" class="section-email">privacy@budgiebreedingtracker.online</a>.</li></ul>',
+        s10_title: '10. Kontakt',
+        s10_text: 'Bei Fragen zu den Community-Richtlinien k\u00f6nnen Sie uns kontaktieren:',
         footer: '\u00a9 2025-2026 BudgieBreedingTracker. Alle Rechte vorbehalten.',
       },
     };
