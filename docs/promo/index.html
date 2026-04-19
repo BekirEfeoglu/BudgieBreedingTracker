@@ -696,9 +696,31 @@
     .particle { display: none !important; }
     .logo-glow { animation: none !important; }
   }
+
+  /* ─── SKIP TO CONTENT (a11y) ─── */
+  .skip-to-content {
+    position: absolute;
+    top: -100px;
+    left: 0;
+    background: var(--gold);
+    color: var(--forest-deep);
+    padding: 0.75rem 1.25rem;
+    z-index: 9999;
+    font-weight: 600;
+    text-decoration: none;
+    border-radius: 0 0 8px 0;
+    transition: top 0.2s;
+  }
+  .skip-to-content:focus {
+    top: 0;
+    outline: 2px solid var(--gold-light);
+    outline-offset: 2px;
+  }
 </style>
 </head>
 <body>
+
+<a class="skip-to-content" href="#main">İçeriğe geç</a>
 
 <!-- Background particles (20 falling leaves/feathers) -->
 <div class="particles">
@@ -732,6 +754,8 @@
 
 <!-- Scene indicator dots -->
 <div class="scene-indicator" id="sceneIndicator"></div>
+
+<main id="main" style="display: contents;">
 
 <!-- ==================== SCENE 1: HOOK ==================== -->
 <div class="scene" id="scene1">
@@ -925,8 +949,10 @@
   </div>
 </div>
 
+</main>
+
 <!-- ==================== CONTROLS ==================== -->
-<div class="controls" role="toolbar" aria-label="Presentation controls">
+<footer class="controls" role="toolbar" aria-label="Presentation controls">
   <button id="prevBtn" onclick="prevScene()" data-i18n="ctrl_prev" aria-label="Previous slide">◀ Geri</button>
   <div class="scene-counter" aria-live="polite"><span id="counterText">1 / 10</span></div>
   <button id="nextBtn" onclick="nextScene()" data-i18n="ctrl_next" aria-label="Next slide">İleri ▶</button>
@@ -936,7 +962,7 @@
     <button onclick="setLanguage('en')" class="lang-btn" id="langEn" aria-label="English" aria-pressed="false" style="padding:6px 12px;font-size:13px;">EN</button>
     <button onclick="setLanguage('de')" class="lang-btn" id="langDe" aria-label="Deutsch" aria-pressed="false" style="padding:6px 12px;font-size:13px;">DE</button>
   </div>
-</div>
+</footer>
 
 <script>
   const scenes = [

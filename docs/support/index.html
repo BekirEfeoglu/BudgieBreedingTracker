@@ -795,9 +795,30 @@
       .cursor-glow { display: none; }
       .particle, .leaf { display: none; }
     }
+
+    /* ─── SKIP TO CONTENT (a11y) ─── */
+    .skip-to-content {
+      position: absolute;
+      top: -100px;
+      left: 0;
+      background: var(--gold);
+      color: var(--forest-deep);
+      padding: 0.75rem 1.25rem;
+      z-index: 9999;
+      font-weight: 600;
+      text-decoration: none;
+      border-radius: 0 0 8px 0;
+      transition: top 0.2s;
+    }
+    .skip-to-content:focus {
+      top: 0;
+      outline: 2px solid var(--gold-light);
+      outline-offset: 2px;
+    }
   </style>
 </head>
 <body>
+  <a class="skip-to-content" href="#main">İçeriğe geç</a>
   <div class="page-curtain"></div>
   <div class="scroll-progress" id="scrollProgress"></div>
   <div class="cursor-glow" id="cursorGlow"></div>
@@ -853,7 +874,7 @@
   </header>
 
   <!-- Main Content -->
-  <main>
+  <main id="main">
     <div class="container">
 
       <!-- Page Header -->
