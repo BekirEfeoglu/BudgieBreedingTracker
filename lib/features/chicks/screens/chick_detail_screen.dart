@@ -16,6 +16,7 @@ import 'package:budgie_breeding_tracker/features/chicks/providers/chick_provider
 import 'package:budgie_breeding_tracker/features/chicks/providers/chick_form_providers.dart';
 import 'package:budgie_breeding_tracker/features/chicks/widgets/chick_detail_header.dart';
 import 'package:budgie_breeding_tracker/features/chicks/widgets/chick_detail_info.dart';
+import 'package:budgie_breeding_tracker/router/route_names.dart';
 
 /// Returns a display name for a chick (shared utility).
 String chickDisplayName(Chick chick) {
@@ -89,7 +90,8 @@ class _DetailContent extends ConsumerWidget {
           IconButton(
             icon: const AppIcon(AppIcons.edit),
             tooltip: 'common.edit'.tr(),
-            onPressed: () => context.push('/chicks/form?editId=${chick.id}'),
+            onPressed: () =>
+                context.push('${AppRoutes.chickForm}?editId=${chick.id}'),
           ),
           PopupMenuButton<String>(
             onSelected: (value) => _handleMenuAction(context, ref, value),

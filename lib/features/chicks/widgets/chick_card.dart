@@ -10,6 +10,7 @@ import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
 import 'package:budgie_breeding_tracker/features/chicks/providers/chick_providers.dart';
 import 'package:budgie_breeding_tracker/features/chicks/screens/chick_detail_screen.dart'
     show chickDisplayName;
+import 'package:budgie_breeding_tracker/router/route_names.dart';
 
 import 'chick_age_formatter.dart';
 import 'chick_health_badge.dart';
@@ -49,7 +50,7 @@ class ChickCard extends ConsumerWidget {
       ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
-        onTap: onTap ?? () => context.push('/chicks/${chick.id}'),
+        onTap: onTap ?? () => context.push('${AppRoutes.chicks}/${chick.id}'),
         child: Padding(
           padding: AppSpacing.cardPadding,
           child: Row(

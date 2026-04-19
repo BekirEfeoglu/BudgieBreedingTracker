@@ -258,7 +258,7 @@ class _ChickListScreenState extends ConsumerState<ChickListScreen> {
                     subtitle: 'chicks.no_chicks_hint'.tr(),
                     actionLabel: 'chicks.add_chick'.tr(),
                     onAction: () =>
-                        context.push('${AppRoutes.chicks}/form'),
+                        context.push(AppRoutes.chickForm),
                   );
                 }
 
@@ -300,7 +300,8 @@ class _ChickListScreenState extends ConsumerState<ChickListScreen> {
                             onTap: _isSelectionMode
                                 ? () => _toggleSelection(chick.id)
                                 : () => _navigateWithAd(
-                                    '${AppRoutes.chicks}/${chick.id}'),
+                                    '${AppRoutes.chicks}/${chick.id}',
+                                  ),
                             onLongPress: () {
                               AppHaptics.mediumImpact();
                               _toggleSelection(chick.id);
@@ -322,7 +323,7 @@ class _ChickListScreenState extends ConsumerState<ChickListScreen> {
               icon: const AppIcon(AppIcons.add),
               tooltip: 'chicks.new_chick'.tr(),
               onPressed: () =>
-                  context.push('${AppRoutes.chicks}/form'),
+                  context.push(AppRoutes.chickForm),
             ),
     );
   }

@@ -20,6 +20,7 @@ import 'package:budgie_breeding_tracker/features/birds/widgets/bird_card.dart';
 import 'package:budgie_breeding_tracker/features/birds/widgets/bird_filter_bar.dart';
 import 'package:budgie_breeding_tracker/features/birds/widgets/bird_search_bar.dart';
 import 'package:budgie_breeding_tracker/core/utils/app_haptics.dart';
+import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/core/widgets/dialogs/confirm_dialog.dart';
 import 'package:budgie_breeding_tracker/features/birds/providers/bird_form_providers.dart';
 import 'package:budgie_breeding_tracker/features/notifications/widgets/notification_bell_button.dart'; // Cross-feature import: app-shell AppBar widget shared across all main screens
@@ -87,7 +88,8 @@ class _BirdListScreenState extends ConsumerState<BirdListScreen> {
       if (!mounted) return;
       try {
         await notifier.deleteBird(id);
-      } catch (_) {
+      } catch (e, st) {
+        AppLogger.error('[BirdListScreen] bulkDelete failed for $id', e, st);
         failures.add(id);
       }
     }
@@ -119,7 +121,8 @@ class _BirdListScreenState extends ConsumerState<BirdListScreen> {
       if (!mounted) return;
       try {
         await notifier.markAsDead(id);
-      } catch (_) {
+      } catch (e, st) {
+        AppLogger.error('[BirdListScreen] bulkMarkAsDead failed for $id', e, st);
         failures.add(id);
       }
     }
@@ -150,7 +153,8 @@ class _BirdListScreenState extends ConsumerState<BirdListScreen> {
       if (!mounted) return;
       try {
         await notifier.markAsSold(id);
-      } catch (_) {
+      } catch (e, st) {
+        AppLogger.error('[BirdListScreen] bulkMarkAsSold failed for $id', e, st);
         failures.add(id);
       }
     }

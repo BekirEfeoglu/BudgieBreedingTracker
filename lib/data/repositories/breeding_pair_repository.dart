@@ -1,6 +1,7 @@
 import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
 import 'package:budgie_breeding_tracker/core/errors/app_exception.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
+import 'package:budgie_breeding_tracker/data/local/database/daos/birds_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/breeding_pairs_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/sync_metadata_dao.dart';
 import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
@@ -10,11 +11,16 @@ import 'package:budgie_breeding_tracker/data/repositories/base_repository.dart';
 import 'package:uuid/uuid.dart';
 
 /// Repository for [BreedingPair] entities with offline-first sync support.
+///
+/// Uses [ValidatedSyncMixin] to validate FK references (male bird, female bird)
+/// before pushing to Supabase, preventing FK constraint violations when a
+/// parent bird is deleted before its pair is synced.
 class BreedingPairRepository extends BaseRepository<BreedingPair>
-    with SyncableRepository<BreedingPair> {
+    with SyncableRepository<BreedingPair>, ValidatedSyncMixin<BreedingPair> {
   final BreedingPairsDao _localDao;
   final BreedingPairRemoteSource _remoteSource;
   final SyncMetadataDao _syncDao;
+  final BirdsDao _birdsDao;
 
   static const _uuid = Uuid();
 
@@ -22,21 +28,68 @@ class BreedingPairRepository extends BaseRepository<BreedingPair>
     required BreedingPairsDao localDao,
     required BreedingPairRemoteSource remoteSource,
     required SyncMetadataDao syncDao,
+    required BirdsDao birdsDao,
   }) : _localDao = localDao,
        _remoteSource = remoteSource,
-       _syncDao = syncDao;
+       _syncDao = syncDao,
+       _birdsDao = birdsDao;
 
   static const _table = SupabaseConstants.breedingPairsTable;
 
   /// Conflicts detected during the last [pull] operation.
   final List<({String recordId, String detail})> lastPullConflicts = [];
 
-  // ── SyncableRepository overrides ─────────────────────────────────────
+  // ── ValidatedSyncMixin overrides ─────────────────────────────────────
   @override
   SyncMetadataDao get syncDao => _syncDao;
 
   @override
   String get syncTableName => _table;
+
+  @override
+  String get syncLogTag => 'BreedingPairRepository';
+
+  @override
+  Future<BreedingPair?> getLocalById(String id) => _localDao.getById(id);
+
+  @override
+  String getEntityId(BreedingPair item) => item.id;
+
+  @override
+  String getEntityUserId(BreedingPair item) => item.userId;
+
+  @override
+  Future<String?> validateForeignKeys(BreedingPair pair) async {
+    final maleId = pair.maleId;
+    if (maleId != null) {
+      final male = await _birdsDao.getById(maleId);
+      if (male == null) {
+        return 'Referenced male bird $maleId not found locally';
+      }
+      final syncMeta = await _syncDao.getByRecord(
+        SupabaseConstants.birdsTable,
+        maleId,
+      );
+      if (syncMeta != null) {
+        return 'Male bird $maleId not yet synced to server';
+      }
+    }
+    final femaleId = pair.femaleId;
+    if (femaleId != null) {
+      final female = await _birdsDao.getById(femaleId);
+      if (female == null) {
+        return 'Referenced female bird $femaleId not found locally';
+      }
+      final syncMeta = await _syncDao.getByRecord(
+        SupabaseConstants.birdsTable,
+        femaleId,
+      );
+      if (syncMeta != null) {
+        return 'Female bird $femaleId not yet synced to server';
+      }
+    }
+    return null;
+  }
 
   @override
   Stream<List<BreedingPair>> watchAll(String userId) =>
@@ -161,30 +214,11 @@ class BreedingPairRepository extends BaseRepository<BreedingPair>
       await _remoteSource.upsert(item);
       await _syncDao.deleteByRecord(_table, item.id);
     } on AppException catch (e) {
-      await markError(item.id, item.userId, e.message);
+      await markSyncError(item.id, item.userId, e.message);
     }
   }
 
-  @override
-  Future<PushStats> pushAll(String userId) async {
-    int pushed = 0;
-    int orphansCleaned = 0;
-    final tablePending = await _syncDao.getPendingByTable(userId, _table);
-    for (final meta in tablePending) {
-      final item = await _localDao.getById(meta.recordId ?? '');
-      if (item == null) {
-        AppLogger.warning(
-          '[BreedingPairRepo] Orphan sync_metadata cleaned: ${meta.recordId}',
-        );
-        await _syncDao.deleteByRecord(_table, meta.recordId ?? '');
-        orphansCleaned++;
-        continue;
-      }
-      await push(item);
-      pushed++;
-    }
-    return (pushed: pushed, orphansCleaned: orphansCleaned);
-  }
+  // pushAll() is provided by ValidatedSyncMixin
 
   /// Active breeding pairs (live stream).
   Stream<List<BreedingPair>> watchActive(String userId) =>

@@ -115,7 +115,7 @@ void main() {
       // Promoted nav items at the top
       expect(find.text(l10n('nav.chicks')), findsOneWidget);
 
-      expect(find.text('health_records.title'), findsOneWidget);
+      expect(find.text(l10n('health_records.title')), findsOneWidget);
       expect(find.text(l10n('more.community')), findsOneWidget);
       expect(find.text(l10n('more.statistics')), findsOneWidget);
       expect(find.text(l10n('more.genealogy')), findsOneWidget);
@@ -232,7 +232,7 @@ void main() {
       await tester.pumpWidget(createSubject());
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('health_records.title'));
+      await tester.tap(find.text(l10n('health_records.title')));
       await tester.pumpAndSettle();
 
       expect(find.text('Health'), findsOneWidget);
@@ -283,5 +283,88 @@ void main() {
       // The about dialog is a custom Dialog (not the Material AboutDialog)
       expect(find.byType(Dialog), findsOneWidget);
     });
+
+    testWidgets(
+      'non-founders see coming soon badge on community tile',
+      (tester) async {
+        await tester.pumpWidget(createSubject(isFounder: false));
+        await tester.pumpAndSettle();
+
+        // Community tile exists but shows coming-soon treatment
+        expect(find.text(l10n('more.community')), findsOneWidget);
+        expect(find.text(l10n('common.coming_soon')), findsWidgets);
+      },
+    );
+
+    testWidgets(
+      'non-founders see coming soon badge on AI predictions tile',
+      (tester) async {
+        await tester.pumpWidget(createSubject(isFounder: false));
+        await tester.pumpAndSettle();
+
+        // Scroll down to reach AI Predictions tile in premium section
+        await tester.scrollUntilVisible(
+          find.text(l10n('more.ai_predictions')),
+          200,
+          scrollable: find.byType(Scrollable),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.text(l10n('more.ai_predictions')), findsOneWidget);
+        // At least one coming soon badge is visible on screen
+        expect(find.text(l10n('common.coming_soon')), findsWidgets);
+      },
+    );
+
+    testWidgets(
+      'non-founder tapping community shows coming soon snackbar and does not navigate',
+      (tester) async {
+        await tester.pumpWidget(createSubject(isFounder: false));
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.text(l10n('more.community')));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 100));
+
+        // SnackBar with coming_soon_hint appears; Community route is NOT entered
+        expect(find.text(l10n('common.coming_soon_hint')), findsOneWidget);
+        expect(find.text('Community'), findsNothing);
+      },
+    );
+
+    testWidgets(
+      'non-founder tapping AI predictions shows coming soon snackbar',
+      (tester) async {
+        await tester.pumpWidget(createSubject(isFounder: false));
+        await tester.pumpAndSettle();
+
+        await tester.scrollUntilVisible(
+          find.text(l10n('more.ai_predictions')),
+          200,
+          scrollable: find.byType(Scrollable),
+        );
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.text(l10n('more.ai_predictions')));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 100));
+
+        expect(find.text(l10n('common.coming_soon_hint')), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'founder-only tiles navigate for founders',
+      (tester) async {
+        await tester.pumpWidget(createSubject(isFounder: true));
+        await tester.pumpAndSettle();
+
+        // Community tile navigates (no coming-soon guard for founder)
+        await tester.tap(find.text(l10n('more.community')));
+        await tester.pumpAndSettle();
+
+        expect(find.text('Community'), findsOneWidget);
+      },
+    );
   });
 }

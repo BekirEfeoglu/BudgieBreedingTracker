@@ -73,6 +73,7 @@ final breedingPairRepositoryProvider = Provider<BreedingPairRepository>((ref) {
     localDao: ref.watch(breedingPairsDaoProvider),
     remoteSource: ref.watch(breedingPairRemoteSourceProvider),
     syncDao: ref.watch(syncMetadataDaoProvider),
+    birdsDao: ref.watch(birdsDaoProvider),
   );
 });
 
