@@ -1572,3 +1572,12 @@
   outline: 2px solid var(--gold-light);
   outline-offset: 2px;
 }
+
+/* ─── VERSION BADGE ─── */
+.version-badge {
+  display: inline-block;
+  font-size: 0.75rem;
+  color: var(--sage);
+  opacity: 0.6;
+  margin-left: 0.75rem;
+}
