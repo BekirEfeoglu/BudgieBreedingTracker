@@ -5,6 +5,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
+import 'package:budgie_breeding_tracker/core/widgets/buttons/app_icon_button.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_screen_title.dart';
 import 'package:budgie_breeding_tracker/core/widgets/empty_state.dart';
 import 'package:budgie_breeding_tracker/core/widgets/error_state.dart';
@@ -146,8 +147,9 @@ class _GenealogyScreenState extends ConsumerState<GenealogyScreen> {
                 selection.isChick ? AppIcons.egg : AppIcons.bird,
                 size: 18,
               ),
-              suffixIcon: IconButton(
+              suffixIcon: AppIconButton(
                 icon: const Icon(LucideIcons.x, size: 18),
+                semanticLabel: 'common.clear'.tr(),
                 onPressed: () {
                   ref.read(selectedEntityForTreeProvider.notifier).state = null;
                 },

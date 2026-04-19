@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
+import 'package:budgie_breeding_tracker/core/widgets/buttons/app_icon_button.dart';
 
 /// Styled text field for auth forms with optional password visibility toggle.
 ///
@@ -88,9 +89,12 @@ class _AuthFormFieldState extends State<AuthFormField> {
               )
             : null,
         suffixIcon: widget.isPassword
-            ? IconButton(
+            ? AppIconButton(
                 icon: Icon(_obscure ? LucideIcons.eyeOff : LucideIcons.eye),
                 tooltip: _obscure
+                    ? 'auth.show_password'.tr()
+                    : 'auth.hide_password'.tr(),
+                semanticLabel: _obscure
                     ? 'auth.show_password'.tr()
                     : 'auth.hide_password'.tr(),
                 onPressed: () => setState(() => _obscure = !_obscure),

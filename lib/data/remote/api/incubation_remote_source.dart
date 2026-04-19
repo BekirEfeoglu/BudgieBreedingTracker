@@ -22,9 +22,9 @@ class IncubationRemoteSource extends BaseRemoteSourceNoSoftDelete<Incubation> {
   Future<List<Incubation>> fetchActive(String userId) async {
     final response = await table
         .select()
-        .eq('user_id', userId)
-        .eq('status', 'active')
-        .order('start_date');
+        .eq(SupabaseConstants.colUserId, userId)
+        .eq(SupabaseConstants.colStatus, 'active')
+        .order(SupabaseConstants.colStartDate);
     return response.map((json) => fromJson(json)).toList();
   }
 
@@ -35,9 +35,9 @@ class IncubationRemoteSource extends BaseRemoteSourceNoSoftDelete<Incubation> {
   ) async {
     final response = await table
         .select()
-        .eq('user_id', userId)
-        .eq('breeding_pair_id', pairId)
-        .order('start_date');
+        .eq(SupabaseConstants.colUserId, userId)
+        .eq(SupabaseConstants.colBreedingPairId, pairId)
+        .order(SupabaseConstants.colStartDate);
     return response.map((json) => fromJson(json)).toList();
   }
 }

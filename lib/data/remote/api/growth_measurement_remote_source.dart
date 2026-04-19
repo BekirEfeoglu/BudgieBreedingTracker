@@ -29,9 +29,9 @@ class GrowthMeasurementRemoteSource
   ) async {
     final response = await table
         .select()
-        .eq('user_id', userId)
-        .eq('chick_id', chickId)
-        .order('measurement_date', ascending: false);
+        .eq(SupabaseConstants.colUserId, userId)
+        .eq(SupabaseConstants.colChickId, chickId)
+        .order(SupabaseConstants.colMeasurementDate, ascending: false);
     return response.map((json) => fromJson(json)).toList();
   }
 }

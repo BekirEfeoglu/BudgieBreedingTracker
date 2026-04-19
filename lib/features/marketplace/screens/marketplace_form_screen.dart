@@ -9,6 +9,7 @@ import '../../../core/enums/bird_enums.dart';
 import '../../../core/enums/marketplace_enums.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_icon.dart';
+import '../../../core/widgets/buttons/app_icon_button.dart';
 import '../../../core/widgets/buttons/primary_button.dart';
 import '../../../core/widgets/unsaved_changes_scope.dart';
 import '../../../data/models/bird_model.dart';
@@ -506,14 +507,14 @@ class _LinkedBirdCard extends StatelessWidget {
                 ],
               ),
             ),
-            IconButton(
+            AppIconButton(
               icon: Icon(
                 LucideIcons.x,
                 size: 18,
                 color: theme.colorScheme.onSurfaceVariant,
               ),
+              semanticLabel: 'common.clear'.tr(),
               onPressed: onClear,
-              visualDensity: VisualDensity.compact,
             ),
           ],
         ),

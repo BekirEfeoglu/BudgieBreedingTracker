@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../core/theme/app_spacing.dart';
+import '../../../core/widgets/buttons/app_icon_button.dart';
 import '../../../router/route_names.dart';
 import '../providers/community_feed_providers.dart';
 import '../providers/community_providers.dart';
@@ -60,12 +61,13 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen> {
               hintText: 'community.search_hint'.tr(),
               border: InputBorder.none,
               suffixIcon: searchState.hasQuery
-                  ? IconButton(
+                  ? AppIconButton(
                       onPressed: () {
                         _controller.clear();
                         ref.read(communitySearchProvider.notifier).clear();
                       },
                       icon: const Icon(LucideIcons.x),
+                      semanticLabel: 'common.clear'.tr(),
                     )
                   : null,
             ),

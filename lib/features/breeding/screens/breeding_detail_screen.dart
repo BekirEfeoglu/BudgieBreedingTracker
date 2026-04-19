@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
+import 'package:budgie_breeding_tracker/core/widgets/buttons/app_icon_button.dart';
 import 'package:budgie_breeding_tracker/core/widgets/error_state.dart';
 import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
 import 'package:budgie_breeding_tracker/core/widgets/progress_bar.dart';
@@ -85,9 +86,10 @@ class _DetailContent extends ConsumerWidget {
       appBar: AppBar(
         title: Text('breeding.detail'.tr()),
         actions: [
-          IconButton(
+          AppIconButton(
             icon: const AppIcon(AppIcons.edit),
             tooltip: 'common.edit'.tr(),
+            semanticLabel: 'common.edit'.tr(),
             onPressed: () => context.push('/breeding/form?editId=${pair.id}'),
           ),
           PopupMenuButton<String>(

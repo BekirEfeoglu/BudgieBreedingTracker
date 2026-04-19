@@ -10,6 +10,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700;800;900&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 
+  <!-- Shared stylesheet (brings navbar + footer utility classes from index.html). -->
+  <!-- 404 page inline <style> below overrides palette variables to keep the forest theme. -->
+  <link rel="stylesheet" href="/style.css">
+
   <style>
     *, *::before, *::after {
       margin: 0;
@@ -735,6 +739,8 @@
 </head>
 <body>
 
+  <a class="skip-to-content" href="#main">İçeriğe geç</a>
+
   <div class="page-curtain"></div>
   <div class="cursor-glow" id="cursorGlow"></div>
 
@@ -768,23 +774,80 @@
     <div class="particle"></div>
   </div>
 
-  <!-- Header -->
-  <header>
-    <div class="header-inner">
-      <a href="/" class="logo-link">
-        <img src="/logo.png" alt="BudgieBreedingTracker" class="logo-img">
-        <span class="logo-text">BudgieBreedingTracker</span>
-      </a>
-      <div class="lang-group">
-        <button onclick="setLanguage('tr')" class="lang-btn active" id="langTr">TR</button>
-        <button onclick="setLanguage('en')" class="lang-btn" id="langEn">EN</button>
-        <button onclick="setLanguage('de')" class="lang-btn" id="langDe">DE</button>
+  <!-- Navbar -->
+  <nav id="navbar" class="fixed top-0 left-0 right-0 z-50 transition-all duration-300" style="background: rgba(15,27,77,0.8); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid rgba(140,180,220,0.15);">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <!-- Logo -->
+        <a href="/" class="flex items-center gap-2.5 group">
+          <img src="/logo.png" alt="BudgieBreedingTracker" class="w-9 h-9 rounded-lg transition-transform duration-300 group-hover:scale-110" style="border: 1px solid rgba(245,200,66,0.3);">
+          <span class="font-extrabold text-lg hidden sm:inline tracking-tight" style="color: var(--gold-light);">BudgieBreedingTracker</span>
+          <span class="font-extrabold text-lg sm:hidden tracking-tight" style="color: var(--gold-light);">BBT</span>
+        </a>
+
+        <!-- Nav Links (desktop) -->
+        <div class="hidden md:flex items-center gap-6">
+          <a href="/#features" class="nav-link text-sm font-medium transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="nav_features">Ozellikler</a>
+          <a href="/#how-it-works" class="nav-link text-sm font-medium transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="nav_how">Nasil Calisir?</a>
+          <a href="/user-guide/" class="nav-link text-sm font-medium transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="nav_user_guide">Kullanım Kılavuzu</a>
+          <a href="/#screenshots" class="nav-link text-sm font-medium transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="nav_screenshots">Ekran Goruntuleri</a>
+          <a href="/#pricing" class="nav-link text-sm font-medium transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="nav_pricing">Fiyatlandirma</a>
+          <a href="/#faq" class="nav-link text-sm font-medium transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="faq_badge">SSS</a>
+          <a href="/#cta" class="text-sm font-semibold px-4 py-2 rounded-lg transition-all duration-200" style="background: linear-gradient(135deg, var(--leaf-mid), var(--leaf-dark)); color: var(--gold-light); border: 1px solid rgba(245,200,66,0.3);" data-i18n="nav_download">Indir</a>
+        </div>
+
+        <!-- Language Switcher + Hamburger -->
+        <div class="flex items-center gap-2">
+          <div class="flex items-center gap-1 rounded-lg p-1" style="background: rgba(20,50,100,0.4); border: 1px solid var(--glass-border);">
+            <button onclick="setLanguage('tr')" class="lang-btn active" data-lang="tr">TR</button>
+            <button onclick="setLanguage('en')" class="lang-btn" data-lang="en">EN</button>
+            <button onclick="setLanguage('de')" class="lang-btn" data-lang="de">DE</button>
+          </div>
+          <!-- Hamburger (mobile only) -->
+          <button id="hamburger-btn" class="md:hidden p-2 rounded-lg transition-colors" style="color: var(--sage);" onclick="toggleMobileMenu()" aria-label="Menü aç/kapat">
+            <svg id="hamburger-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
+            <svg id="close-icon" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
       </div>
     </div>
-  </header>
+  </nav>
+
+  <!-- Mobile Menu Panel -->
+  <div id="mobile-menu" class="fixed inset-0 z-40 hidden" aria-hidden="true">
+    <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="closeMobileMenu()"></div>
+    <div id="mobile-panel" class="absolute top-16 left-0 right-0 shadow-xl" style="background: rgba(15,27,77,0.95); backdrop-filter: blur(20px); border-bottom: 1px solid var(--glass-border); transform: translateY(-110%);">
+      <div class="px-4 py-4 space-y-1">
+        <a href="/#features" onclick="closeMobileMenu()" class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors" style="color: var(--sage-light);" data-i18n="nav_features">Özellikler</a>
+        <a href="/#how-it-works" onclick="closeMobileMenu()" class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors" style="color: var(--sage-light);" data-i18n="nav_how">Nasıl Çalışır?</a>
+        <a href="/user-guide/" onclick="closeMobileMenu()" class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors" style="color: var(--sage-light);" data-i18n="nav_user_guide">Kullanım Kılavuzu</a>
+        <a href="/#screenshots" onclick="closeMobileMenu()" class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors" style="color: var(--sage-light);" data-i18n="nav_screenshots">Ekran Görüntüleri</a>
+        <a href="/#pricing" onclick="closeMobileMenu()" class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors" style="color: var(--sage-light);" data-i18n="nav_pricing">Fiyatlandırma</a>
+        <a href="/#faq" onclick="closeMobileMenu()" class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors" style="color: var(--sage-light);" data-i18n="faq_badge">SSS</a>
+        <div class="px-4 pt-2 pb-3">
+          <a href="/#cta" onclick="closeMobileMenu()" class="flex items-center justify-center w-full py-3 font-semibold rounded-xl transition-all" style="background: linear-gradient(135deg, var(--leaf-mid), var(--leaf-dark)); color: var(--gold-light); border: 1px solid rgba(245,200,66,0.3);" data-i18n="nav_download">İndir</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Prominent "Back to Home" CTA above 404 content -->
+  <div class="text-center my-12" style="padding-top: 6rem;">
+    <a href="/" class="inline-block px-8 py-3 font-semibold rounded-xl"
+       style="background: linear-gradient(135deg, var(--leaf-mid), var(--leaf-dark));
+              color: var(--gold-light); border: 1px solid rgba(245,200,66,0.3);
+              text-decoration: none; font-size: 1rem;"
+       data-i18n="back_home">
+      ← Ana Sayfaya Dön
+    </a>
+  </div>
 
   <!-- 404 Content -->
-  <main>
+  <main id="main">
     <div class="content">
 
       <!-- Huge 404 number -->
@@ -959,8 +1022,66 @@
   </main>
 
   <!-- Footer -->
-  <footer>
-    <p>&copy; 2025-2026 BudgieBreedingTracker</p>
+  <footer class="footer-forest relative z-10" style="color: var(--sage); opacity: 0.9;">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <!-- Main footer -->
+      <div class="py-12 grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
+        <!-- Brand -->
+        <div class="flex items-center gap-3 justify-center md:justify-start">
+          <img src="/logo.png" alt="Logo" class="w-10 h-10 rounded-xl" style="border: 1px solid rgba(245,200,66,0.2);">
+          <div>
+            <span class="font-bold text-lg" style="color: var(--gold-light);">BudgieBreedingTracker</span>
+            <p class="text-xs mt-0.5" style="color: var(--sage); opacity: 0.7;" data-i18n="footer_tagline">Ureme Takip Uygulamasi</p>
+          </div>
+        </div>
+
+        <!-- Links -->
+        <div class="flex items-center justify-center gap-6 text-sm flex-wrap">
+          <a href="/#features" class="transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="footer_features">Ozellikler</a>
+          <a href="/#cta" class="transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="nav_download">Indir</a>
+          <a href="https://github.com/BekirEfeoglu/BudgieBreedingTracker" target="_blank" rel="noopener noreferrer" class="transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'">GitHub</a>
+          <a href="/privacy-policy.html" class="transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="footer_privacy">Gizlilik Politikasi</a>
+          <a href="/terms-of-use.html" class="transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="footer_terms">Kullanım Koşulları</a>
+          <a href="/community-guidelines.html" class="transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="footer_community">Topluluk Kuralları</a>
+          <a href="/support/" class="transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="footer_support">Destek</a>
+          <a href="/user-guide/" class="transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="footer_guide">Kullanım Kılavuzu</a>
+        </div>
+
+        <!-- Contact -->
+        <div class="text-center md:text-right">
+          <h4 class="font-semibold mb-3 text-sm" style="color: var(--sage-light);" data-i18n="footer_contact_title">İletişim</h4>
+          <div class="space-y-2 text-sm">
+            <div>
+              <a href="mailto:support@budgiebreedingtracker.online" class="transition-colors duration-200 break-all" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'">
+                support@budgiebreedingtracker.online
+              </a>
+            </div>
+            <div class="flex items-center gap-3 justify-center md:justify-end">
+              <a href="https://github.com/BekirEfeoglu/BudgieBreedingTracker" target="_blank" rel="noopener noreferrer" class="social-icon inline-flex items-center gap-1.5" style="color: var(--sage);" title="GitHub" aria-label="GitHub">
+                <svg class="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+              </a>
+              <a href="https://www.facebook.com/BudgieBreedingTracker/" target="_blank" rel="noopener noreferrer" class="social-icon inline-flex items-center" style="color: var(--sage);" title="Facebook" aria-label="Facebook">
+                <svg class="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+              </a>
+              <a href="https://www.instagram.com/budgiebreedingtrackerr/" target="_blank" rel="noopener noreferrer" class="social-icon inline-flex items-center" style="color: var(--sage);" title="Instagram" aria-label="Instagram">
+                <svg class="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom bar -->
+      <div class="py-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-center relative z-10" style="border-top: 1px solid rgba(255,255,255,0.04);">
+        <p class="text-xs" style="color: var(--sage); opacity: 0.5;" data-i18n="footer_made">Yetistiriciler tarafindan, yetistiriciler icin yapildi ❤️</p>
+        <p class="text-xs" style="color: var(--sage); opacity: 0.5; white-space: nowrap;">
+          <span data-i18n="footer_copyright">&copy; 2025-2026 BudgieBreedingTracker. Tum haklari saklidir.</span>
+          <span class="version-badge" aria-label="Uygulama sürümü">
+            v1.0.3 · <time datetime="2026-04-19">2026-04-19</time>
+          </span>
+        </p>
+      </div>
+    </div>
   </footer>
 
   <script>
@@ -969,45 +1090,134 @@
         title: 'Sayfa Bulunamadı',
         desc: 'Hay aksi! Bu sayfa uçup gitmiş gibi görünüyor. Sizi doğru yere yönlendirelim.',
         button: 'Ana Sayfaya Git',
+        back_home: '← Ana Sayfaya Dön',
         quick_title: 'Popüler Sayfalar',
         link_support: 'Destek',
         link_privacy: 'Gizlilik Politikası',
         link_terms: 'Kullanım Koşulları',
         link_community: 'Topluluk Kuralları',
+        nav_features: 'Özellikler',
+        nav_how: 'Nasıl Çalışır?',
+        nav_user_guide: 'Kullanım Kılavuzu',
+        nav_screenshots: 'Ekran Görüntüleri',
+        nav_pricing: 'Fiyatlandırma',
+        nav_download: 'İndir',
+        faq_badge: 'SSS',
+        footer_tagline: 'Üreme Takip Uygulaması',
+        footer_features: 'Özellikler',
+        footer_privacy: 'Gizlilik Politikası',
+        footer_terms: 'Kullanım Koşulları',
+        footer_community: 'Topluluk Kuralları',
+        footer_support: 'Destek',
+        footer_guide: 'Kullanım Kılavuzu',
+        footer_contact_title: 'İletişim',
+        footer_made: 'Yetiştiriciler tarafından, yetiştiriciler için yapıldı ❤️',
+        footer_copyright: '© 2025-2026 BudgieBreedingTracker. Tüm hakları saklıdır.',
       },
       en: {
         title: 'Page Not Found',
         desc: "Oops! This page seems to have flown away. Let's get you back on track.",
         button: 'Go to Homepage',
+        back_home: '← Back to Home',
         quick_title: 'Popular Pages',
         link_support: 'Support',
         link_privacy: 'Privacy Policy',
         link_terms: 'Terms of Use',
         link_community: 'Community Guidelines',
+        nav_features: 'Features',
+        nav_how: 'How It Works',
+        nav_user_guide: 'User Guide',
+        nav_screenshots: 'Screenshots',
+        nav_pricing: 'Pricing',
+        nav_download: 'Download',
+        faq_badge: 'FAQ',
+        footer_tagline: 'Breeding Tracker App',
+        footer_features: 'Features',
+        footer_privacy: 'Privacy Policy',
+        footer_terms: 'Terms of Use',
+        footer_community: 'Community Guidelines',
+        footer_support: 'Support',
+        footer_guide: 'User Guide',
+        footer_contact_title: 'Contact',
+        footer_made: 'Made by breeders, for breeders ❤️',
+        footer_copyright: '© 2025-2026 BudgieBreedingTracker. All rights reserved.',
       },
       de: {
         title: 'Seite nicht gefunden',
         desc: 'Hoppla! Diese Seite scheint davongeflogen zu sein. Lassen Sie uns Sie zurückbringen.',
         button: 'Zur Startseite',
+        back_home: '← Zur Startseite',
         quick_title: 'Beliebte Seiten',
         link_support: 'Support',
         link_privacy: 'Datenschutzrichtlinie',
         link_terms: 'Nutzungsbedingungen',
         link_community: 'Community-Richtlinien',
+        nav_features: 'Funktionen',
+        nav_how: 'Wie es funktioniert',
+        nav_user_guide: 'Benutzerhandbuch',
+        nav_screenshots: 'Screenshots',
+        nav_pricing: 'Preise',
+        nav_download: 'Herunterladen',
+        faq_badge: 'FAQ',
+        footer_tagline: 'Zucht-Tracker-App',
+        footer_features: 'Funktionen',
+        footer_privacy: 'Datenschutzrichtlinie',
+        footer_terms: 'Nutzungsbedingungen',
+        footer_community: 'Community-Richtlinien',
+        footer_support: 'Support',
+        footer_guide: 'Benutzerhandbuch',
+        footer_contact_title: 'Kontakt',
+        footer_made: 'Von Züchtern für Züchter gemacht ❤️',
+        footer_copyright: '© 2025-2026 BudgieBreedingTracker. Alle Rechte vorbehalten.',
       }
     };
 
     function setLanguage(lang) {
       localStorage.setItem('bbt-lang', lang);
+      document.documentElement.lang = lang;
       document.querySelectorAll('[data-i18n]').forEach(el => {
         const key = el.getAttribute('data-i18n');
         if (translations[lang] && translations[lang][key]) {
           el.textContent = translations[lang][key];
         }
       });
-      document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
-      const activeBtn = document.getElementById('lang' + lang.charAt(0).toUpperCase() + lang.slice(1));
-      if (activeBtn) activeBtn.classList.add('active');
+      // Active state for both old (id="langTr") and new (data-lang="tr") button styles.
+      document.querySelectorAll('.lang-btn').forEach(btn => {
+        const byData = btn.getAttribute('data-lang');
+        const byId = btn.id === 'lang' + lang.charAt(0).toUpperCase() + lang.slice(1);
+        btn.classList.toggle('active', byData === lang || byId);
+      });
+    }
+
+    // Mobile menu (hamburger) — mirrors index.html behaviour.
+    function toggleMobileMenu() {
+      const menu = document.getElementById('mobile-menu');
+      const panel = document.getElementById('mobile-panel');
+      if (!menu || !panel) return;
+      const isOpen = menu.classList.contains('open');
+      if (isOpen) { closeMobileMenu(); return; }
+      menu.classList.remove('hidden');
+      requestAnimationFrame(() => {
+        menu.classList.add('open');
+        panel.style.transform = 'translateY(0)';
+      });
+      const hi = document.getElementById('hamburger-icon');
+      const ci = document.getElementById('close-icon');
+      if (hi) hi.classList.add('hidden');
+      if (ci) ci.classList.remove('hidden');
+    }
+
+    function closeMobileMenu() {
+      const menu = document.getElementById('mobile-menu');
+      const panel = document.getElementById('mobile-panel');
+      if (!menu || !panel) return;
+      menu.classList.remove('open');
+      panel.style.transform = 'translateY(-110%)';
+      const hi = document.getElementById('hamburger-icon');
+      const ci = document.getElementById('close-icon');
+      if (hi) hi.classList.remove('hidden');
+      if (ci) ci.classList.add('hidden');
+      setTimeout(() => menu.classList.add('hidden'), 300);
     }
 
     // Auto-detect language from localStorage or browser preference

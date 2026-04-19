@@ -21,10 +21,10 @@ class HealthRecordRemoteSource extends BaseRemoteSource<HealthRecord> {
   Future<List<HealthRecord>> fetchByBird(String userId, String birdId) async {
     final response = await table
         .select()
-        .eq('user_id', userId)
-        .eq('bird_id', birdId)
-        .eq('is_deleted', false)
-        .order('date', ascending: false);
+        .eq(SupabaseConstants.colUserId, userId)
+        .eq(SupabaseConstants.colBirdId, birdId)
+        .eq(SupabaseConstants.colIsDeleted, false)
+        .order(SupabaseConstants.colDate, ascending: false);
     return response.map((json) => fromJson(json)).toList();
   }
 }

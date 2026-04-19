@@ -11,6 +11,7 @@ import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/enums/event_enums.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
+import 'package:budgie_breeding_tracker/core/widgets/buttons/app_icon_button.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_screen_title.dart';
 import 'package:budgie_breeding_tracker/core/widgets/buttons/fab_button.dart';
 import 'package:budgie_breeding_tracker/core/widgets/dialogs/confirm_dialog.dart';
@@ -63,10 +64,11 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
           iconAsset: AppIcons.calendar,
         ),
         actions: [
-          IconButton(
+          AppIconButton(
             icon: const Icon(LucideIcons.calendarCheck),
             onPressed: _goToToday,
             tooltip: 'calendar.today'.tr(),
+            semanticLabel: 'calendar.today'.tr(),
           ),
           const NotificationBellButton(),
           const ProfileMenuButton(),

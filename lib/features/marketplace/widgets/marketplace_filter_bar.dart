@@ -1,8 +1,10 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../core/theme/app_spacing.dart';
+import '../../../core/widgets/buttons/app_icon_button.dart';
 import '../providers/marketplace_providers.dart';
 import 'marketplace_filter_sheet.dart';
 import 'package:budgie_breeding_tracker/core/widgets/bottom_sheet/app_bottom_sheet.dart';
@@ -53,8 +55,9 @@ class MarketplaceFilterBar extends ConsumerWidget {
             child: Badge(
               isLabelVisible: activeCount > 0,
               label: Text('$activeCount'),
-              child: IconButton(
+              child: AppIconButton(
                 icon: const Icon(LucideIcons.slidersHorizontal),
+                semanticLabel: 'marketplace.filter_results'.tr(),
                 onPressed: () => showAppBottomSheet(
                   context: context,
                   isScrollControlled: true,

@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../core/theme/app_spacing.dart';
+import '../../../core/widgets/buttons/app_icon_button.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/skeleton_loader.dart';
 import '../../../data/providers/auth_state_providers.dart';
@@ -204,13 +205,14 @@ class _FollowedUserTile extends ConsumerWidget {
               Semantics(
                 button: true,
                 label: 'community.send_message_to'.tr(args: [displayName]),
-                child: IconButton(
+                child: AppIconButton(
                   icon: Icon(
                     LucideIcons.messageCircle,
                     size: 18,
                     color: theme.colorScheme.primary,
                   ),
                   tooltip: 'messaging.direct_message'.tr(),
+                  semanticLabel: 'messaging.direct_message'.tr(),
                   onPressed: () => _handleSendMessage(context, ref, userId),
                 ),
               ),

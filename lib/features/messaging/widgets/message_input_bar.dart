@@ -5,6 +5,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../core/enums/messaging_enums.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../core/widgets/buttons/app_icon_button.dart';
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 import '../providers/messaging_form_providers.dart';
 import 'package:budgie_breeding_tracker/core/widgets/bottom_sheet/app_bottom_sheet.dart';
@@ -57,10 +58,11 @@ class _MessageInputBarState extends ConsumerState<MessageInputBar> {
       child: SafeArea(
         child: Row(
           children: [
-            IconButton(
+            AppIconButton(
               icon: const Icon(LucideIcons.plus),
               onPressed: _showAttachmentOptions,
               tooltip: 'messaging.attach_photo'.tr(),
+              semanticLabel: 'messaging.attach_photo'.tr(),
             ),
             Expanded(
               child: TextField(
@@ -84,7 +86,7 @@ class _MessageInputBarState extends ConsumerState<MessageInputBar> {
               ),
             ),
             const SizedBox(width: AppSpacing.xs),
-            IconButton(
+            AppIconButton(
               icon: Icon(
                 LucideIcons.send,
                 color: _hasText
@@ -93,6 +95,7 @@ class _MessageInputBarState extends ConsumerState<MessageInputBar> {
               ),
               onPressed: _hasText ? _sendMessage : null,
               tooltip: 'messaging.send'.tr(),
+              semanticLabel: 'messaging.send'.tr(),
             ),
           ],
         ),

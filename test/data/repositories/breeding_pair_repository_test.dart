@@ -17,6 +17,7 @@ void main() {
   late MockBreedingPairsDao localDao;
   late MockBreedingPairRemoteSource remoteSource;
   late MockSyncMetadataDao syncDao;
+  late MockBirdsDao birdsDao;
   late BreedingPairRepository repository;
 
   const userId = 'user-1';
@@ -31,11 +32,13 @@ void main() {
     localDao = MockBreedingPairsDao();
     remoteSource = MockBreedingPairRemoteSource();
     syncDao = MockSyncMetadataDao();
+    birdsDao = MockBirdsDao();
 
     repository = BreedingPairRepository(
       localDao: localDao,
       remoteSource: remoteSource,
       syncDao: syncDao,
+      birdsDao: birdsDao,
     );
 
     when(() => localDao.insertItem(any())).thenAnswer((_) async {});
@@ -54,12 +57,18 @@ void main() {
     when(() => syncDao.insertItem(any())).thenAnswer((_) async {});
     when(() => syncDao.insertAll(any())).thenAnswer((_) async {});
     when(() => syncDao.deleteByRecord(any(), any())).thenAnswer((_) async {});
+    when(() => syncDao.hardDelete(any())).thenAnswer((_) async {});
     when(
       () => syncDao.getPendingByTable(any(), any()),
+    ).thenAnswer((_) async => []);
+    when(
+      () => syncDao.getErrorsByTable(any(), any()),
     ).thenAnswer((_) async => []);
     when(() => syncDao.getPendingRecordIds(any())).thenAnswer((_) async => {});
     when(() => syncDao.getByRecord(any(), any())).thenAnswer((_) async => null);
     when(() => syncDao.updateItem(any())).thenAnswer((_) async {});
+
+    when(() => birdsDao.getById(any())).thenAnswer((_) async => null);
   });
 
   group('BreedingPairRepository', () {
@@ -105,10 +114,89 @@ void main() {
           ),
         ).thenAnswer((_) async => [pending]);
         when(() => localDao.getById(pair.id)).thenAnswer((_) async => pair);
+        // FK validation: both parent birds exist locally and are synced
+        when(
+          () => birdsDao.getById('bird-1'),
+        ).thenAnswer((_) async => TestFixtures.sampleBird(id: 'bird-1'));
+        when(
+          () => birdsDao.getById('bird-2'),
+        ).thenAnswer((_) async => TestFixtures.sampleBird(id: 'bird-2'));
 
         await repository.pushAll(userId);
 
         verify(() => remoteSource.upsert(pair)).called(1);
+      },
+    );
+
+    test(
+      'pushAll skips pair when male bird is missing locally (orphan FK)',
+      () async {
+        final pair = TestFixtures.sampleBreedingPair(
+          id: 'pair-orphan',
+          userId: userId,
+          maleId: 'missing-male',
+        );
+        final pending = TestFixtures.sampleSyncMetadata(
+          table: SupabaseConstants.breedingPairsTable,
+          userId: userId,
+          recordId: pair.id,
+        );
+        when(
+          () => syncDao.getPendingByTable(
+            userId,
+            SupabaseConstants.breedingPairsTable,
+          ),
+        ).thenAnswer((_) async => [pending]);
+        when(() => localDao.getById(pair.id)).thenAnswer((_) async => pair);
+        when(() => birdsDao.getById('missing-male')).thenAnswer(
+          (_) async => null,
+        );
+
+        await repository.pushAll(userId);
+
+        verifyNever(() => remoteSource.upsert(any()));
+      },
+    );
+
+    test(
+      'pushAll skips pair when parent bird has pending sync metadata',
+      () async {
+        final pair = TestFixtures.sampleBreedingPair(
+          id: 'pair-pending-parent',
+          userId: userId,
+        );
+        final pending = TestFixtures.sampleSyncMetadata(
+          table: SupabaseConstants.breedingPairsTable,
+          userId: userId,
+          recordId: pair.id,
+        );
+        when(
+          () => syncDao.getPendingByTable(
+            userId,
+            SupabaseConstants.breedingPairsTable,
+          ),
+        ).thenAnswer((_) async => [pending]);
+        when(() => localDao.getById(pair.id)).thenAnswer((_) async => pair);
+        when(
+          () => birdsDao.getById('bird-1'),
+        ).thenAnswer((_) async => TestFixtures.sampleBird(id: 'bird-1'));
+        when(
+          () => birdsDao.getById('bird-2'),
+        ).thenAnswer((_) async => TestFixtures.sampleBird(id: 'bird-2'));
+        // Male bird is still pending sync — pair must wait
+        when(
+          () => syncDao.getByRecord(SupabaseConstants.birdsTable, 'bird-1'),
+        ).thenAnswer(
+          (_) async => TestFixtures.sampleSyncMetadata(
+            table: SupabaseConstants.birdsTable,
+            userId: userId,
+            recordId: 'bird-1',
+          ),
+        );
+
+        await repository.pushAll(userId);
+
+        verifyNever(() => remoteSource.upsert(any()));
       },
     );
   });

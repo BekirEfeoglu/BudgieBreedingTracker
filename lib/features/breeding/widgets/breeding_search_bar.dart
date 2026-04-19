@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
+import 'package:budgie_breeding_tracker/core/widgets/buttons/app_icon_button.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_providers.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
@@ -54,8 +55,9 @@ class _BreedingSearchBarState extends ConsumerState<BreedingSearchBar> {
             child: AppIcon(AppIcons.search, size: 20),
           ),
           suffixIcon: query.isNotEmpty
-              ? IconButton(
+              ? AppIconButton(
                   icon: const Icon(LucideIcons.x),
+                  semanticLabel: 'common.clear'.tr(),
                   onPressed: () {
                     _debounce?.cancel();
                     _controller.clear();

@@ -7,6 +7,23 @@
   <meta name="description" content="BudgieBreedingTracker destek merkezi. Hesap, abonelik, uygulama kullanımı ve daha fazlası için yardım alın.">
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://budgiebreedingtracker.online/support/">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Destek — BudgieBreedingTracker">
+  <meta property="og:description" content="BudgieBreedingTracker destek merkezi, SSS ve iletişim.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://budgiebreedingtracker.online/support/">
+  <meta property="og:image" content="https://budgiebreedingtracker.online/og-image.png">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Destek — BudgieBreedingTracker">
+  <meta name="twitter:description" content="BudgieBreedingTracker destek merkezi, SSS ve iletişim.">
+  <meta name="twitter:image" content="https://budgiebreedingtracker.online/og-image.png">
+
   <link rel="icon" type="image/png" href="../logo.png">
   <link rel="apple-touch-icon" href="../logo.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -778,9 +795,30 @@
       .cursor-glow { display: none; }
       .particle, .leaf { display: none; }
     }
+
+    /* ─── SKIP TO CONTENT (a11y) ─── */
+    .skip-to-content {
+      position: absolute;
+      top: -100px;
+      left: 0;
+      background: var(--gold);
+      color: var(--forest-deep);
+      padding: 0.75rem 1.25rem;
+      z-index: 9999;
+      font-weight: 600;
+      text-decoration: none;
+      border-radius: 0 0 8px 0;
+      transition: top 0.2s;
+    }
+    .skip-to-content:focus {
+      top: 0;
+      outline: 2px solid var(--gold-light);
+      outline-offset: 2px;
+    }
   </style>
 </head>
 <body>
+  <a class="skip-to-content" href="#main">İçeriğe geç</a>
   <div class="page-curtain"></div>
   <div class="scroll-progress" id="scrollProgress"></div>
   <div class="cursor-glow" id="cursorGlow"></div>
@@ -836,7 +874,7 @@
   </header>
 
   <!-- Main Content -->
-  <main>
+  <main id="main">
     <div class="container">
 
       <!-- Page Header -->
@@ -990,7 +1028,12 @@
         <img src="../logo.png" alt="Logo">
         <span class="footer-logo-text">BudgieBreedingTracker</span>
       </div>
-      <p class="footer-copy" data-i18n="footer">&copy; 2025-2026 BudgieBreedingTracker. Tüm hakları saklıdır.</p>
+      <p class="footer-copy">
+        <span data-i18n="footer">&copy; 2025-2026 BudgieBreedingTracker. Tüm hakları saklıdır.</span>
+        <span class="version-badge" aria-label="Uygulama sürümü">
+          v1.0.3 · <time datetime="2026-04-19">2026-04-19</time>
+        </span>
+      </p>
     </div>
   </footer>
 

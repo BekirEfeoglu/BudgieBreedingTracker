@@ -1140,9 +1140,31 @@
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
     }
+
+    /* ─── SKIP TO CONTENT (a11y) ─── */
+    .skip-to-content {
+      position: absolute;
+      top: -100px;
+      left: 0;
+      background: var(--gold);
+      color: var(--forest-deep);
+      padding: 0.75rem 1.25rem;
+      z-index: 9999;
+      font-weight: 600;
+      text-decoration: none;
+      border-radius: 0 0 8px 0;
+      transition: top 0.2s;
+    }
+    .skip-to-content:focus {
+      top: 0;
+      outline: 2px solid var(--gold-light);
+      outline-offset: 2px;
+    }
   </style>
 </head>
 <body>
+
+  <a class="skip-to-content" href="#main">İçeriğe geç</a>
 
   <div class="bg-layer"></div>
   <div class="orb orb-1"></div>
@@ -1181,7 +1203,12 @@
   </header>
 
   <!-- Main Content -->
-  <main>
+  <main id="main">
+    <nav aria-label="Breadcrumb" class="breadcrumb-nav" style="padding: 1rem 1.5rem;">
+      <a href="/" style="color: var(--sage); text-decoration: none;">← Ana Sayfa</a>
+      <span aria-hidden="true" style="margin: 0 0.5rem; color: var(--sage); opacity: 0.5;">/</span>
+      <span style="color: var(--sage-light);">Kullanım Kılavuzu</span>
+    </nav>
     <div class="container">
 
       <!-- Page Header -->
@@ -1253,7 +1280,12 @@
         <img src="../logo.png" alt="Logo">
         <span class="footer-logo-text">BudgieBreedingTracker</span>
       </div>
-      <p class="footer-copy" data-i18n="footer">&copy; 2025-2026 BudgieBreedingTracker. Tüm hakları saklıdır.</p>
+      <p class="footer-copy">
+        <span data-i18n="footer">&copy; 2025-2026 BudgieBreedingTracker. Tüm hakları saklıdır.</span>
+        <span class="version-badge" aria-label="Uygulama sürümü">
+          v1.0.3 · <time datetime="2026-04-19">2026-04-19</time>
+        </span>
+      </p>
     </div>
   </footer>
 

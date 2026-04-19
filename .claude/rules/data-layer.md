@@ -68,7 +68,7 @@ Audit-flagged offender needing rename or offline-first implementation: none curr
 - Background sync: repositories push local changes to Supabase when online
 - `SyncMetadata` table tracks per-entity sync state (last sync time, dirty flag)
 - Use `ref.invalidate()` after sync completes to refresh UI providers
-- All syncable repos MUST use `ValidatedSyncMixin` for FK validation (prevents orphan pushes after parent delete). Current coverage: bird, egg ✓ — chick, health_record still missing.
+- Syncable repos with FK parents MUST use `ValidatedSyncMixin` to prevent orphan pushes after parent delete. Current coverage: egg, chick, health_record, breeding_pair, event_reminder ✓. Bird is a root entity (no FK parent) and does not require the mixin.
 
 ### Write Safety
 - ALWAYS `.upsert()` for idempotent writes — `.insert()` causes duplicates on retry/sync replay

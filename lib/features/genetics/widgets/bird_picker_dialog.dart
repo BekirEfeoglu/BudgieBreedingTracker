@@ -7,6 +7,7 @@ import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
+import 'package:budgie_breeding_tracker/core/widgets/buttons/app_icon_button.dart';
 import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/parent_genotype.dart';
 import 'package:budgie_breeding_tracker/features/genetics/utils/bird_genotype_mapper.dart';
@@ -58,8 +59,9 @@ class _BirdPickerDialogState extends ConsumerState<BirdPickerDialog> {
                       ),
                     ),
                   ),
-                  IconButton(
+                  AppIconButton(
                     icon: const Icon(LucideIcons.x),
+                    semanticLabel: 'common.close'.tr(),
                     onPressed: () => Navigator.of(context).pop(),
                   ),
                 ],

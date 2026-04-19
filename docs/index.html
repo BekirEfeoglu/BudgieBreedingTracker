@@ -57,6 +57,8 @@
 </head>
 <body>
 
+  <a class="skip-to-content" href="#main">İçeriğe geç</a>
+
   <div class="page-curtain" aria-hidden="true"></div>
   <div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
   <!-- cursor-glow removed for performance -->
@@ -149,6 +151,8 @@
       </div>
     </div>
   </div>
+
+  <main id="main">
 
   <!-- Hero Section -->
   <section class="hero-gradient pt-28 pb-16 sm:pt-36 sm:pb-24 overflow-hidden min-h-[90vh] flex items-center">
@@ -926,6 +930,8 @@
     </div>
   </section>
 
+  </main>
+
   <!-- Footer -->
   <footer class="footer-forest relative z-10" style="color: var(--sage); opacity: 0.9;">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -979,7 +985,12 @@
       <!-- Bottom bar -->
       <div class="py-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-center relative z-10" style="border-top: 1px solid rgba(255,255,255,0.04);">
         <p class="text-xs" style="color: var(--sage); opacity: 0.5;" data-i18n="footer_made">Yetistiriciler tarafindan, yetistiriciler icin yapildi ❤️</p>
-        <p class="text-xs" style="color: var(--sage); opacity: 0.5; white-space: nowrap;" data-i18n="footer_copyright">&copy; 2025-2026 BudgieBreedingTracker. Tum haklari saklidir.</p>
+        <p class="text-xs" style="color: var(--sage); opacity: 0.5; white-space: nowrap;">
+          <span data-i18n="footer_copyright">&copy; 2025-2026 BudgieBreedingTracker. Tum haklari saklidir.</span>
+          <span class="version-badge" aria-label="Uygulama sürümü">
+            v1.0.3 · <time datetime="2026-04-19">2026-04-19</time>
+          </span>
+        </p>
       </div>
     </div>
   </footer>

@@ -7,6 +7,7 @@ import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/enums/egg_enums.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
+import 'package:budgie_breeding_tracker/core/widgets/buttons/app_icon_button.dart';
 import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
 import 'package:budgie_breeding_tracker/data/providers/date_format_providers.dart';
 
@@ -106,22 +107,22 @@ class EggListItem extends ConsumerWidget {
 
                 // Actions
                 if (onStatusUpdate != null)
-                  IconButton(
+                  AppIconButton(
                     icon: const Icon(LucideIcons.arrowLeftRight, size: 20),
                     tooltip: 'eggs.update_status'.tr(),
+                    semanticLabel: 'eggs.update_status'.tr(),
                     onPressed: onStatusUpdate,
-                    visualDensity: VisualDensity.compact,
                   ),
                 if (onDelete != null)
-                  IconButton(
+                  AppIconButton(
                     icon: AppIcon(
                       AppIcons.delete,
                       size: 20,
                       color: theme.colorScheme.error,
                     ),
                     tooltip: 'common.delete'.tr(),
+                    semanticLabel: 'common.delete'.tr(),
                     onPressed: onDelete,
-                    visualDensity: VisualDensity.compact,
                   ),
               ],
             ),

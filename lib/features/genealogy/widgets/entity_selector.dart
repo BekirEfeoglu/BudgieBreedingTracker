@@ -4,6 +4,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
+import 'package:budgie_breeding_tracker/core/widgets/buttons/app_icon_button.dart';
 import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
 import 'package:budgie_breeding_tracker/features/genealogy/providers/genealogy_providers.dart';
@@ -101,8 +102,9 @@ class _EntitySelectorState extends State<EntitySelector> {
               ),
               isDense: true,
               suffixIcon: _query.isNotEmpty
-                  ? IconButton(
+                  ? AppIconButton(
                       icon: const Icon(LucideIcons.x, size: 18),
+                      semanticLabel: 'common.clear'.tr(),
                       onPressed: () {
                         _searchController.clear();
                         setState(() => _query = '');

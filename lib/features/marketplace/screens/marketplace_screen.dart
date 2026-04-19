@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../core/theme/app_spacing.dart';
+import '../../../core/widgets/buttons/app_icon_button.dart';
 import '../../../core/widgets/buttons/fab_button.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/error_state.dart' as app;
@@ -62,9 +63,10 @@ class _MarketplaceScreenState extends ConsumerState<MarketplaceScreen> {
       appBar: AppBar(
         title: Text('marketplace.title'.tr()),
         actions: [
-          IconButton(
+          AppIconButton(
             icon: const Icon(LucideIcons.heart),
             tooltip: 'marketplace.favorites'.tr(),
+            semanticLabel: 'marketplace.favorites'.tr(),
             onPressed: () =>
                 context.push('${AppRoutes.marketplace}/favorites'),
           ),
@@ -95,9 +97,10 @@ class _MarketplaceScreenState extends ConsumerState<MarketplaceScreen> {
               }).toList();
             },
           ),
-          IconButton(
+          AppIconButton(
             icon: const Icon(LucideIcons.listChecks),
             tooltip: 'marketplace.my_listings'.tr(),
+            semanticLabel: 'marketplace.my_listings'.tr(),
             onPressed: () =>
                 context.push('${AppRoutes.marketplace}/my-listings'),
           ),
@@ -116,8 +119,9 @@ class _MarketplaceScreenState extends ConsumerState<MarketplaceScreen> {
                 hintText: 'marketplace.search_hint'.tr(),
                 prefixIcon: const Icon(LucideIcons.search),
                 suffixIcon: _searchController.text.isNotEmpty
-                    ? IconButton(
+                    ? AppIconButton(
                         icon: const Icon(LucideIcons.x),
+                        semanticLabel: 'common.clear'.tr(),
                         onPressed: () {
                           _searchController.clear();
                           ref

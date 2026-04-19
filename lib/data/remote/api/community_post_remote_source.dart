@@ -30,17 +30,17 @@ class CommunityPostRemoteSource {
       var query = _client
           .from(SupabaseConstants.communityPostsTable)
           .select(_feedColumns)
-          .eq('is_deleted', false)
+          .eq(SupabaseConstants.colIsDeleted, false)
           // Hide posts that crossed the community report threshold; they
           // stay visible to admins via fetchPendingReview until reviewed.
-          .eq('needs_review', false);
+          .eq(SupabaseConstants.colNeedsReview, false);
 
       if (before != null) {
-        query = query.lt('created_at', before.toIso8601String());
+        query = query.lt(SupabaseConstants.colCreatedAt, before.toIso8601String());
       }
 
       final result = await query
-          .order('created_at', ascending: false)
+          .order(SupabaseConstants.colCreatedAt, ascending: false)
           .limit(limit);
 
       final rows = List<Map<String, dynamic>>.from(result);
@@ -56,9 +56,9 @@ class CommunityPostRemoteSource {
       final row = await _client
           .from(SupabaseConstants.communityPostsTable)
           .select(_feedColumns)
-          .eq('id', postId)
-          .eq('is_deleted', false)
-          .eq('needs_review', false)
+          .eq(SupabaseConstants.colId, postId)
+          .eq(SupabaseConstants.colIsDeleted, false)
+          .eq(SupabaseConstants.colNeedsReview, false)
           .maybeSingle();
 
       if (row == null) return null;
@@ -78,10 +78,10 @@ class CommunityPostRemoteSource {
       final result = await _client
           .from(SupabaseConstants.communityPostsTable)
           .select(_feedColumns)
-          .eq('user_id', userId)
-          .eq('is_deleted', false)
-          .eq('needs_review', false)
-          .order('created_at', ascending: false)
+          .eq(SupabaseConstants.colUserId, userId)
+          .eq(SupabaseConstants.colIsDeleted, false)
+          .eq(SupabaseConstants.colNeedsReview, false)
+          .order(SupabaseConstants.colCreatedAt, ascending: false)
           .limit(limit);
 
       final rows = List<Map<String, dynamic>>.from(result);
@@ -105,9 +105,9 @@ class CommunityPostRemoteSource {
     try {
       await _client
           .from(SupabaseConstants.communityPostsTable)
-          .update({'is_deleted': true})
-          .eq('id', postId)
-          .eq('user_id', userId);
+          .update({SupabaseConstants.colIsDeleted: true})
+          .eq(SupabaseConstants.colId, postId)
+          .eq(SupabaseConstants.colUserId, userId);
     } catch (e, st) {
       throw BaseRemoteSource.handleErrorForTag(
           'CommunityPostRemoteSource.softDelete', e, st);
@@ -141,10 +141,10 @@ class CommunityPostRemoteSource {
       final result = await _client
           .from(SupabaseConstants.communityPostsTable)
           .select(_feedColumns)
-          .eq('is_deleted', false)
-          .eq('needs_review', false)
+          .eq(SupabaseConstants.colIsDeleted, false)
+          .eq(SupabaseConstants.colNeedsReview, false)
           .or('content.ilike.%$sanitized%,title.ilike.%$sanitized%')
-          .order('created_at', ascending: false)
+          .order(SupabaseConstants.colCreatedAt, ascending: false)
           .limit(limit);
 
       final rows = List<Map<String, dynamic>>.from(result);
@@ -163,9 +163,9 @@ class CommunityPostRemoteSource {
       final result = await _client
           .from(SupabaseConstants.communityPostsTable)
           .select()
-          .eq('is_deleted', false)
-          .eq('needs_review', true)
-          .order('created_at', ascending: false)
+          .eq(SupabaseConstants.colIsDeleted, false)
+          .eq(SupabaseConstants.colNeedsReview, true)
+          .order(SupabaseConstants.colCreatedAt, ascending: false)
           .limit(limit);
 
       final rows = List<Map<String, dynamic>>.from(result);
@@ -189,8 +189,8 @@ class CommunityPostRemoteSource {
     try {
       await _client
           .from(SupabaseConstants.communityPostsTable)
-          .update({'needs_review': false, 'reviewed_by': currentUserId})
-          .eq('id', postId);
+          .update({SupabaseConstants.colNeedsReview: false, 'reviewed_by': currentUserId})
+          .eq(SupabaseConstants.colId, postId);
     } catch (e, st) {
       throw BaseRemoteSource.handleErrorForTag(
           'CommunityPostRemoteSource.clearReviewFlag', e, st);
@@ -204,8 +204,8 @@ class CommunityPostRemoteSource {
       final result = await _client
           .from(SupabaseConstants.communityPostsTable)
           .select(_feedColumns)
-          .inFilter('id', postIds)
-          .eq('is_deleted', false);
+          .inFilter(SupabaseConstants.colId, postIds)
+          .eq(SupabaseConstants.colIsDeleted, false);
 
       final rows = List<Map<String, dynamic>>.from(result);
       return _profileCache.mergeIntoRows(rows);

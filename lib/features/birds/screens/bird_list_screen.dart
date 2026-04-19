@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
+import 'package:budgie_breeding_tracker/core/widgets/buttons/app_icon_button.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_screen_title.dart';
 import 'package:budgie_breeding_tracker/core/widgets/empty_state.dart';
 import 'package:budgie_breeding_tracker/core/widgets/sort_bottom_sheet.dart';
@@ -20,6 +21,7 @@ import 'package:budgie_breeding_tracker/features/birds/widgets/bird_card.dart';
 import 'package:budgie_breeding_tracker/features/birds/widgets/bird_filter_bar.dart';
 import 'package:budgie_breeding_tracker/features/birds/widgets/bird_search_bar.dart';
 import 'package:budgie_breeding_tracker/core/utils/app_haptics.dart';
+import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/core/widgets/dialogs/confirm_dialog.dart';
 import 'package:budgie_breeding_tracker/features/birds/providers/bird_form_providers.dart';
 import 'package:budgie_breeding_tracker/features/notifications/widgets/notification_bell_button.dart'; // Cross-feature import: app-shell AppBar widget shared across all main screens
@@ -87,7 +89,8 @@ class _BirdListScreenState extends ConsumerState<BirdListScreen> {
       if (!mounted) return;
       try {
         await notifier.deleteBird(id);
-      } catch (_) {
+      } catch (e, st) {
+        AppLogger.error('[BirdListScreen] bulkDelete failed for $id', e, st);
         failures.add(id);
       }
     }
@@ -119,7 +122,8 @@ class _BirdListScreenState extends ConsumerState<BirdListScreen> {
       if (!mounted) return;
       try {
         await notifier.markAsDead(id);
-      } catch (_) {
+      } catch (e, st) {
+        AppLogger.error('[BirdListScreen] bulkMarkAsDead failed for $id', e, st);
         failures.add(id);
       }
     }
@@ -150,7 +154,8 @@ class _BirdListScreenState extends ConsumerState<BirdListScreen> {
       if (!mounted) return;
       try {
         await notifier.markAsSold(id);
-      } catch (_) {
+      } catch (e, st) {
+        AppLogger.error('[BirdListScreen] bulkMarkAsSold failed for $id', e, st);
         failures.add(id);
       }
     }
@@ -190,16 +195,18 @@ class _BirdListScreenState extends ConsumerState<BirdListScreen> {
                   iconAsset: AppIcons.bird,
                 ),
         leading: _isSelectionMode
-            ? IconButton(
+            ? AppIconButton(
                 icon: const Icon(LucideIcons.x),
+                semanticLabel: 'common.cancel'.tr(),
                 onPressed: _clearSelection,
               )
             : null,
         actions: _isSelectionMode
             ? [
-                IconButton(
+                AppIconButton(
                   icon: const AppIcon(AppIcons.delete),
                   tooltip: 'common.delete'.tr(),
+                  semanticLabel: 'common.delete'.tr(),
                   onPressed: _bulkDelete,
                 ),
                 PopupMenuButton<String>(
@@ -220,9 +227,10 @@ class _BirdListScreenState extends ConsumerState<BirdListScreen> {
                 ),
               ]
             : [
-                IconButton(
+                AppIconButton(
                   icon: const Icon(LucideIcons.arrowUpDown),
                   tooltip: 'common.sort'.tr(),
+                  semanticLabel: 'common.sort'.tr(),
                   onPressed: () {
                     showSortBottomSheet<BirdSort>(
                       context: context,

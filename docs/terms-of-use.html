@@ -7,6 +7,26 @@
   <meta name="description" content="BudgieBreedingTracker uygulamasının kullanım koşulları ve son kullanıcı lisans sözleşmesi (EULA).">
   <meta name="theme-color" content="#0B1A3D">
 
+  <!-- Open Graph -->
+  <meta property="og:title" content="Kullanım Koşulları — BudgieBreedingTracker">
+  <meta property="og:description" content="BudgieBreedingTracker kullanım koşulları ve abonelik şartları.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://budgiebreedingtracker.online/terms-of-use.html">
+  <meta property="og:image" content="https://budgiebreedingtracker.online/og-image.png">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Kullanım Koşulları — BudgieBreedingTracker">
+  <meta name="twitter:description" content="BudgieBreedingTracker kullanım koşulları ve abonelik şartları.">
+  <meta name="twitter:image" content="https://budgiebreedingtracker.online/og-image.png">
+
+  <!-- Canonical -->
+  <link rel="canonical" href="https://budgiebreedingtracker.online/terms-of-use.html">
+  <meta name="robots" content="index, follow">
+
   <!-- Google Fonts: Outfit + DM Sans -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -610,9 +630,30 @@
       .cursor-glow { display: none; }
       .particle, .leaf { display: none; }
     }
+
+    /* ─── SKIP TO CONTENT (a11y) ─── */
+    .skip-to-content {
+      position: absolute;
+      top: -100px;
+      left: 0;
+      background: var(--gold);
+      color: var(--forest-deep);
+      padding: 0.75rem 1.25rem;
+      z-index: 9999;
+      font-weight: 600;
+      text-decoration: none;
+      border-radius: 0 0 8px 0;
+      transition: top 0.2s;
+    }
+    .skip-to-content:focus {
+      top: 0;
+      outline: 2px solid var(--gold-light);
+      outline-offset: 2px;
+    }
   </style>
 </head>
 <body>
+  <a class="skip-to-content" href="#main">İçeriğe geç</a>
   <div class="page-curtain"></div>
   <div class="scroll-progress" id="scrollProgress"></div>
   <div class="cursor-glow" id="cursorGlow"></div>
@@ -667,7 +708,7 @@
   </header>
 
   <!-- Content -->
-  <main>
+  <main id="main">
 
     <div class="page-header">
       <h1 class="page-title" data-i18n="title">Kullanım Koşulları (EULA)</h1>
@@ -792,7 +833,12 @@
   <!-- Footer -->
   <footer class="site-footer">
     <div class="footer-inner">
-      <p class="footer-text" data-i18n="footer">&copy; 2025-2026 BudgieBreedingTracker. Tüm hakları saklıdır.</p>
+      <p class="footer-text">
+        <span data-i18n="footer">&copy; 2025-2026 BudgieBreedingTracker. Tüm hakları saklıdır.</span>
+        <span class="version-badge" aria-label="Uygulama sürümü">
+          v1.0.3 · <time datetime="2026-04-19">2026-04-19</time>
+        </span>
+      </p>
     </div>
   </footer>
 
