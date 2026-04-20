@@ -72,7 +72,7 @@ dependencies:
   http: ^1.5.0
 
   # Ads
-  google_mobile_ads: ^7.0.0
+  google_mobile_ads: ^8.0.0
 
   # Error Tracking
   sentry_flutter: ^9.0.0
