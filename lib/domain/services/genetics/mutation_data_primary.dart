@@ -130,15 +130,24 @@ abstract class MutationDataPrimary {
       category: 'Melanin Modifier',
       visualEffect: 'SF: deepened tone, DF: near-charcoal body color',
     ),
+    // Blackface inheritance is disputed: MUTAVI's 2007 article classifies it
+    // as autosomal recessive, while most modern aviculture databases model it
+    // as autosomal dominant. We follow the dominant convention for calculator
+    // output but flag the dispute so breeders know to log real pairings.
+    // Symbol uses 'Blf' to avoid clashing with Blue Factor I/II ('Bf1'/'Bf2').
     BudgieMutationRecord(
       id: 'blackface',
       name: 'Blackface',
       localizationKey: 'genetics.mutation_blackface',
-      description: 'Increases dark melanin expression in the facial mask area',
+      description:
+          'Increases dark melanin expression in the facial mask area. '
+          'Inheritance is disputed — MUTAVI 2007 classifies it as autosomal '
+          'recessive, most modern databases as autosomal dominant. This app '
+          'uses the dominant interpretation.',
       inheritanceType: InheritanceType.autosomalDominant,
       dominance: Dominance.dominant,
-      alleleSymbol: 'Bf',
-      alleles: ['Bf+', 'Bf'],
+      alleleSymbol: 'Blf',
+      alleles: ['Blf+', 'Blf'],
       category: 'Pattern',
       visualEffect: 'Expanded dark facial markings and stronger contrast',
     ),
@@ -189,7 +198,10 @@ abstract class MutationDataPrimary {
       name: 'Clearflight Pied',
       localizationKey: 'genetics.mutation_clearflight_pied',
       description:
-          'Clear flight feathers and tail with normal body - recessive',
+          'Clear flight feathers and tail with normal body. Inheritance is '
+          'most commonly modelled as autosomal recessive, though some '
+          'breeding standards classify this type differently — kept as '
+          'recessive here for calculator consistency.',
       inheritanceType: InheritanceType.autosomalRecessive,
       dominance: Dominance.recessive,
       alleleSymbol: 'cf',
@@ -197,14 +209,18 @@ abstract class MutationDataPrimary {
       category: 'Pied',
       visualEffect: 'Clear flight and tail feathers, small head patch',
     ),
-    // Note: Dutch Pied inheritance is debated (dominant vs recessive).
-    // Current classification follows the dominant interpretation.
+    // Dutch Pied inheritance is genuinely debated: some references call it
+    // autosomal dominant, others autosomal incomplete dominant. We follow
+    // the dominant convention here for calculator consistency.
     BudgieMutationRecord(
       id: 'dutch_pied',
       name: 'Dutch Pied',
       localizationKey: 'genetics.mutation_dutch_pied',
       description:
-          'Pied variant with variable clear patches and normal iris ring',
+          'Pied variant with variable clear patches and normal iris ring. '
+          'Inheritance is disputed — sources classify it as either autosomal '
+          'dominant or autosomal incomplete dominant. This app uses the '
+          'dominant interpretation.',
       inheritanceType: InheritanceType.autosomalDominant,
       dominance: Dominance.dominant,
       alleleSymbol: 'Dp',

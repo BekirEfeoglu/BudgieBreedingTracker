@@ -1,9 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../data/models/profile_model.dart';
+import '../../../data/providers/entity_count_providers.dart';
 import '../../auth/providers/auth_providers.dart';
 import '../../auth/providers/two_factor_providers.dart';
-import '../../home/providers/home_providers.dart';
 import 'profile_providers.dart';
 
 // ---------------------------------------------------------------------------
@@ -117,7 +117,7 @@ final securityScoreProvider = Provider.family<SecurityScore, String>((
 // ---------------------------------------------------------------------------
 
 /// Provides bird/pair/egg/chick counts for the profile header.
-/// Uses SQL COUNT queries (via home_providers) instead of full entity lists.
+/// Uses SQL COUNT queries (via entity_count_providers) instead of full entity lists.
 final profileStatsProvider = Provider.family<AsyncValue<ProfileStats>, String>((
   ref,
   userId,

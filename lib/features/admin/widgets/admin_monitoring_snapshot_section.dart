@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../core/theme/app_spacing.dart';
+import '../../../core/widgets/buttons/app_icon_button.dart';
 import '../providers/admin_monitoring_snapshot_providers.dart';
 
 part 'admin_monitoring_snapshot_section_charts.dart';
@@ -39,9 +40,10 @@ class MonitoringSnapshotSection extends ConsumerWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-              IconButton(
+              AppIconButton(
                 icon: const Icon(LucideIcons.refreshCw, size: 18),
                 tooltip: 'common.retry'.tr(),
+                semanticLabel: 'common.retry'.tr(),
                 onPressed: () =>
                     ref.invalidate(monitoringSnapshotsProvider),
               ),

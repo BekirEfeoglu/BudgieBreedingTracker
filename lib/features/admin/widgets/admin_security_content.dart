@@ -7,6 +7,7 @@ import '../../../core/constants/app_icons.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_icon.dart';
+import '../../../core/widgets/buttons/app_icon_button.dart';
 import '../../../core/widgets/dialogs/confirm_dialog.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../providers/admin_actions_provider.dart';
@@ -212,12 +213,10 @@ class SecurityEventItem extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(width: AppSpacing.xs),
-                IconButton(
-                  icon: Semantics(
-                    label: 'admin.dismiss_event'.tr(),
-                    child: const Icon(LucideIcons.checkCircle, size: 18),
-                  ),
+                AppIconButton(
+                  icon: const Icon(LucideIcons.checkCircle, size: 18),
                   tooltip: 'admin.dismiss_event'.tr(),
+                  semanticLabel: 'admin.dismiss_event'.tr(),
                   onPressed: () async {
                     final confirmed = await showConfirmDialog(
                       context,
@@ -229,10 +228,6 @@ class SecurityEventItem extends ConsumerWidget {
                         .read(adminActionsProvider.notifier)
                         .dismissSecurityEvent(event.id);
                   },
-                  constraints: const BoxConstraints(
-                    minWidth: AppSpacing.touchTargetMin,
-                    minHeight: AppSpacing.touchTargetMin,
-                  ),
                 ),
               ],
             ),

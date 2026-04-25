@@ -79,15 +79,35 @@ class MendelianCalculator {
     }
 
     // 1. Check for sex-linked linkage pairs on the Z chromosome.
-    //    Gene order on Z: Opaline — Cinnamon — Ino — Slate.
+    //    Gene order on Z: Opaline — Cinnamon — Ino/Pallid/Pearly/TCB — Slate.
+    //    All alleles at ino_locus (ino, pallid, pearly, texas_clearbody) share
+    //    the same chromosomal position, so their linkage distance to cinnamon,
+    //    slate, and opaline is approximately the same as the canonical ino
+    //    distances.
     //    Priority (tightest linkage first):
     //    Ino-Slate (2 cM) → Cin-Ino (3 cM) → Cin-Slate (5 cM) →
     //    Op-Ino (30 cM) → Op-Cin (34 cM) → Op-Slate (40 cM).
     //    Each mutation consumed once paired; remainder stay independent.
     final hasCinnamon = allIds.contains(GeneticsConstants.mutCinnamon);
-    final hasInoAllele = allIds.contains(GeneticsConstants.mutIno);
     final hasOpaline = allIds.contains(GeneticsConstants.mutOpaline);
     final hasSlate = allIds.contains(GeneticsConstants.mutSlate);
+
+    // Resolve the single heterozygous ino_locus allele the father carries so
+    // pallid/pearly/texas_clearbody also trigger the same linkage model as
+    // literal ino. When the father carries two different ino_locus alleles
+    // (compound heterozygote), linkage is skipped and the allelic series
+    // calculator handles it instead.
+    String? inoLocusHetAllele;
+    for (final id in allIds) {
+      final record = MutationDatabase.getById(id);
+      if (record?.locusId != GeneticsConstants.locusIno) continue;
+      if (!fatherIsHeterozygousAt(id)) continue;
+      if (inoLocusHetAllele != null) {
+        inoLocusHetAllele = null;
+        break;
+      }
+      inoLocusHetAllele = id;
+    }
 
     final consumedSexLinked = <String>{};
 
@@ -111,25 +131,36 @@ class MendelianCalculator {
       consumedSexLinked.addAll([id1, id2]);
       independentIds.remove(id1);
       independentIds.remove(id2);
-      // Remove allelic series groups for consumed mutations (e.g. ino_locus).
-      final r1 = MutationDatabase.getById(id1);
-      final r2 = MutationDatabase.getById(id2);
-      if (r1?.locusId != null) allelicGroups.remove(r1!.locusId);
-      if (r2?.locusId != null) allelicGroups.remove(r2!.locusId);
+      // Remove consumed mutations from their allelic series group. Only drop
+      // the group when it becomes empty so other alleles at the same locus
+      // (e.g. pallid when ino was paired) remain part of the allelic series
+      // calculation.
+      void removeFromAllelicGroup(String mutationId) {
+        final record = MutationDatabase.getById(mutationId);
+        final locusId = record?.locusId;
+        if (locusId == null) return;
+        final group = allelicGroups[locusId];
+        if (group == null) return;
+        group.remove(mutationId);
+        if (group.isEmpty) allelicGroups.remove(locusId);
+      }
+
+      removeFromAllelicGroup(id1);
+      removeFromAllelicGroup(id2);
     }
 
     // Ordered by recombination rate (tightest first).
-    if (hasInoAllele && hasSlate) {
+    if (inoLocusHetAllele != null && hasSlate) {
       tryLinkPair(
-        GeneticsConstants.mutIno,
+        inoLocusHetAllele,
         GeneticsConstants.mutSlate,
         GeneticsConstants.inoSlateRecombination,
       );
     }
-    if (hasCinnamon && hasInoAllele) {
+    if (hasCinnamon && inoLocusHetAllele != null) {
       tryLinkPair(
         GeneticsConstants.mutCinnamon,
-        GeneticsConstants.mutIno,
+        inoLocusHetAllele,
         GeneticsConstants.cinnamonInoRecombination,
       );
     }
@@ -140,10 +171,10 @@ class MendelianCalculator {
         GeneticsConstants.cinnamonSlateRecombination,
       );
     }
-    if (hasOpaline && hasInoAllele) {
+    if (hasOpaline && inoLocusHetAllele != null) {
       tryLinkPair(
         GeneticsConstants.mutOpaline,
-        GeneticsConstants.mutIno,
+        inoLocusHetAllele,
         GeneticsConstants.opalineInoRecombination,
       );
     }

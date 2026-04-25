@@ -8,6 +8,7 @@ import 'package:budgie_breeding_tracker/core/errors/app_exception.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
+import 'package:budgie_breeding_tracker/core/widgets/buttons/app_icon_button.dart';
 import 'package:budgie_breeding_tracker/domain/services/local_ai/local_ai_models.dart';
 import 'package:budgie_breeding_tracker/domain/services/local_ai/local_ai_service.dart';
 import 'package:budgie_breeding_tracker/features/genetics/providers/local_ai_providers.dart';
@@ -139,6 +140,26 @@ class _AiSettingsSheetState extends ConsumerState<AiSettingsSheet> {
     }
   }
 
+  /// Non-blocking connectivity probe used on save. Returns false when the
+  /// configured model/endpoint is not reachable, so the UI can warn the user
+  /// instead of silently persisting a broken config.
+  Future<bool> _probeConnectivity(LocalAiConfig config) async {
+    try {
+      await ref
+          .read(localAiServiceProvider)
+          .testConnection(config: config)
+          .timeout(const Duration(seconds: 8));
+      return true;
+    } catch (error, st) {
+      AppLogger.error(
+        '[AiSettingsSheet] Connectivity probe failed',
+        error,
+        st,
+      );
+      return false;
+    }
+  }
+
   String _errorMessage(Object? error) {
     if (error is AppException) {
       final msg = error.message;
@@ -207,10 +228,10 @@ class _AiSettingsSheetState extends ConsumerState<AiSettingsSheet> {
                       ),
                     ),
                   ),
-                  IconButton(
+                  AppIconButton(
                     onPressed: () => Navigator.of(context).pop(),
                     icon: const Icon(LucideIcons.x, size: 20),
-                    visualDensity: VisualDensity.compact,
+                    semanticLabel: 'common.close'.tr(),
                   ),
                 ],
               ),

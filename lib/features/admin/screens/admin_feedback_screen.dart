@@ -10,6 +10,7 @@ import '../../../core/enums/admin_enums.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_icon.dart';
+import '../../../core/widgets/buttons/app_icon_button.dart';
 import '../../../core/widgets/error_state.dart';
 import 'package:budgie_breeding_tracker/data/providers/action_feedback_providers.dart';
 import '../constants/admin_constants.dart';
@@ -73,9 +74,10 @@ class _AdminFeedbackScreenState extends ConsumerState<AdminFeedbackScreen> {
       appBar: AppBar(
         title: Text('admin.feedback_admin'.tr()),
         actions: [
-          IconButton(
+          AppIconButton(
             icon: const Icon(LucideIcons.refreshCw, size: 20),
             tooltip: 'common.retry'.tr(),
+            semanticLabel: 'common.retry'.tr(),
             onPressed: () => ref.invalidate(adminFeedbackProvider),
           ),
         ],
@@ -104,10 +106,11 @@ class _AdminFeedbackScreenState extends ConsumerState<AdminFeedbackScreen> {
                       child: AppIcon(AppIcons.search, size: 18),
                     ),
                     suffixIcon: _searchController.text.isNotEmpty
-                        ? IconButton(
+                        ? AppIconButton(
                             icon: const Icon(LucideIcons.x, size: 18),
                             onPressed: _clearSearch,
                             tooltip: 'common.cancel'.tr(),
+                            semanticLabel: 'common.cancel'.tr(),
                           )
                         : null,
                     isDense: true,

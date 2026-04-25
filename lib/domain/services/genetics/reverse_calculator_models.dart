@@ -17,14 +17,15 @@ class ReverseCalculationResult {
   /// Probability regardless of sex, assuming ~50/50 male/female split.
   double get probabilityAny => (probabilityMale + probabilityFemale) / 2;
 
-  /// The highest available chance across overall, male-only, and female-only.
-  double get maxProbability {
-    final any = probabilityAny;
-    final bySex = probabilityMale > probabilityFemale
-        ? probabilityMale
-        : probabilityFemale;
-    return any > bySex ? any : bySex;
-  }
+  /// The highest available chance across male-only and female-only outcomes.
+  ///
+  /// `probabilityAny` is the mean of the two and cannot exceed `max(male,
+  /// female)`, so ranking by `max(male, female)` is always the stricter and
+  /// more informative signal — it tells the breeder the best sex-targeted
+  /// scenario rather than the average.
+  double get maxProbability => probabilityMale > probabilityFemale
+      ? probabilityMale
+      : probabilityFemale;
 }
 
 /// Internal locus-level result used during reverse calculation.

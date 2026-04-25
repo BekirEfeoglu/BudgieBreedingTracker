@@ -120,12 +120,14 @@ final routerProvider = Provider<GoRouter>((ref) {
         if (premiumRedirect != null) return premiumRedirect;
       }
 
-      // Founder guard: restrict /community/* and /marketplace/* routes to founder only
+      // Founder guard: restrict /community/*, /marketplace/*, and
+      // /ai-predictions routes to founder only.
       // Community guidelines is a public page and must not be gated.
       final isFounderRoute =
           (location.startsWith('/community') &&
               location != AppRoutes.communityGuidelines) ||
-          location.startsWith('/marketplace');
+          location.startsWith('/marketplace') ||
+          location == AppRoutes.aiPredictions;
       if (isFounderRoute) {
         final founderRedirect =
             FounderGuard.redirect(ref.read(isFounderProvider));

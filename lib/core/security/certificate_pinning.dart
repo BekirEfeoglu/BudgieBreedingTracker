@@ -7,9 +7,9 @@ import '../utils/logger.dart';
 
 /// Enforces TLS certificate pinning for known backend hosts.
 ///
-/// In release mode, rejects connections whose certificate fingerprint
-/// is not in the pinned set. In debug mode, all certificates are accepted
-/// to allow proxy-based debugging tools (Charles, mitmproxy, etc.).
+/// Rejects direct HTTPS connections to pinned hosts when the peer certificate
+/// fingerprint is not in the trusted set. Set `--dart-define=ALLOW_PROXY=true`
+/// for proxy-based debugging tools (Charles, mitmproxy, etc.).
 ///
 /// Usage:
 /// ```dart
@@ -36,14 +36,12 @@ class CertificatePinning {
   ///
   /// The Supabase host is derived at runtime from the SUPABASE_URL env var,
   /// so we pin against the shared Supabase infrastructure domain suffix.
-  static const _pinnedDomainSuffixes = <String>[
-    '.supabase.co',
-  ];
+  static const _pinnedDomainSuffixes = <String>['.supabase.co'];
 
   /// SHA-256 fingerprints of trusted certificates for pinned domains.
   ///
-  /// Includes both the leaf certificate and intermediate CA to survive
-  /// certificate rotation. Update these when Supabase rotates certificates.
+  /// Pins the currently deployed Supabase leaf certificate. Update these when
+  /// Supabase rotates certificates.
   /// Obtain new fingerprints via:
   /// ```bash
   /// openssl s_client -connect <host>:443 2>/dev/null | openssl x509 -noout -fingerprint -sha256
@@ -51,7 +49,7 @@ class CertificatePinning {
   static const _trustedFingerprints = <String>{
     // Supabase leaf certificate (rotate when renewed)
     '39:8B:CC:E2:D9:95:CB:23:CB:09:2A:93:7B:5B:58:BD:95:B4:08:A4:5F:BF:89:AB:7B:B1:14:03:47:89:AE:7D',
-    // Supabase intermediate CA (more stable, survives leaf rotation)
+    // Supabase intermediate CA (kept for emergency invalid-chain fallback)
     '1D:FC:16:05:FB:AD:35:8D:8B:C8:44:F7:6D:15:20:3F:AC:9C:A5:C1:A7:9F:D4:85:7F:FA:F2:86:4F:BE:BF:96',
   };
 
@@ -83,9 +81,7 @@ class CertificatePinning {
   @visibleForTesting
   static bool isPinnedHost(String host) {
     final lowerHost = host.toLowerCase();
-    return _pinnedDomainSuffixes.any(
-      (suffix) => lowerHost.endsWith(suffix),
-    );
+    return _pinnedDomainSuffixes.any((suffix) => lowerHost.endsWith(suffix));
   }
 }
 
@@ -96,34 +92,60 @@ class _PinningHttpOverrides extends HttpOverrides {
 
   @override
   HttpClient createHttpClient(SecurityContext? context) {
-    // Use the system default SecurityContext so that non-pinned hosts
-    // work normally with system-trusted CAs (Sentry, RevenueCat, etc.).
-    // Only pinned hosts get additional fingerprint validation.
-    final client = super.createHttpClient(context);
-    client.badCertificateCallback = _validateCertificate;
+    // Use the system default SecurityContext so that non-pinned hosts work
+    // normally with system-trusted CAs (Sentry, RevenueCat, etc.). For pinned
+    // direct HTTPS connections, create the SecureSocket ourselves so the
+    // successfully validated peer certificate can still be fingerprint-checked.
+    final client =
+        previous?.createHttpClient(context) ?? super.createHttpClient(context);
+    client.connectionFactory = (uri, proxyHost, proxyPort) async {
+      if (proxyHost != null && proxyPort != null) {
+        return Socket.startConnect(proxyHost, proxyPort);
+      }
+
+      final port = uri.hasPort ? uri.port : (uri.scheme == 'https' ? 443 : 80);
+      if (uri.scheme != 'https') {
+        return Socket.startConnect(uri.host, port);
+      }
+
+      final task = await SecureSocket.startConnect(
+        uri.host,
+        port,
+        context: context,
+        onBadCertificate: (cert) => _isTrustedPinnedCertificate(uri.host, cert),
+      );
+
+      final checkedSocket = task.socket.then((socket) {
+        if (CertificatePinning.isPinnedHost(uri.host)) {
+          final cert = socket.peerCertificate;
+          if (cert == null || !_isTrustedPinnedCertificate(uri.host, cert)) {
+            socket.destroy();
+            throw TlsException(
+              'Certificate pinning check failed for ${uri.host}:$port',
+            );
+          }
+        }
+        return socket;
+      });
+
+      return ConnectionTask.fromSocket(checkedSocket, task.cancel);
+    };
     return client;
   }
 
-  /// For pinned hosts, validates the certificate SHA-256 fingerprint
-  /// against the trusted set. For non-pinned hosts, rejects bad
-  /// certificates (system default behavior — badCertificateCallback
-  /// is only invoked for certificates the system already rejected).
-  bool _validateCertificate(X509Certificate cert, String host, int port) {
-    if (CertificatePinning.isPinnedHost(host)) {
-      final fingerprint = _computeFingerprint(cert);
-      if (fingerprint != null &&
-          CertificatePinning._trustedFingerprints.contains(fingerprint)) {
-        return true;
-      }
+  static bool _isTrustedPinnedCertificate(String host, X509Certificate cert) {
+    if (!CertificatePinning.isPinnedHost(host)) return false;
+    final fingerprint = _computeFingerprint(cert);
+    final trusted =
+        fingerprint != null &&
+        CertificatePinning._trustedFingerprints.contains(fingerprint);
+    if (!trusted) {
       AppLogger.warning(
-        '[CertificatePinning] Rejected certificate for $host:$port '
+        '[CertificatePinning] Rejected certificate for $host '
         '(fingerprint mismatch)',
       );
-      return false;
     }
-    // Non-pinned hosts: reject bad certificates (secure default).
-    // This callback is only reached for certs the system already rejected.
-    return false;
+    return trusted;
   }
 
   /// Computes the SHA-256 fingerprint of a certificate in the same format
@@ -135,7 +157,9 @@ class _PinningHttpOverrides extends HttpOverrides {
           .map((b) => b.toRadixString(16).padLeft(2, '0').toUpperCase())
           .join(':');
     } catch (e) {
-      AppLogger.warning('[CertificatePinning] Fingerprint computation failed: $e');
+      AppLogger.warning(
+        '[CertificatePinning] Fingerprint computation failed: $e',
+      );
       return null;
     }
   }

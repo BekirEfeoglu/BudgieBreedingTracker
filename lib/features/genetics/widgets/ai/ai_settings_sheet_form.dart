@@ -162,9 +162,19 @@ extension _AiSettingsFormBody on _AiSettingsSheetState {
               ? null
               : () async {
                   final navigator = Navigator.of(context);
-                  await _persistConfig();
+                  final config = await _persistConfig();
                   if (!mounted) return;
-                  _showMessage('common.saved_successfully'.tr());
+                  if (config == null) {
+                    _showMessage(_errorMessage(null));
+                    return;
+                  }
+                  final reachable = await _probeConnectivity(config);
+                  if (!mounted) return;
+                  _showMessage(
+                    reachable
+                        ? 'common.saved_successfully'.tr()
+                        : 'genetics.ai_saved_unreachable'.tr(),
+                  );
                   navigator.pop();
                 },
           icon: const Icon(LucideIcons.save, size: 18),

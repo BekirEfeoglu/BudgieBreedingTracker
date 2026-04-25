@@ -6,6 +6,8 @@ import '../models/user_level_model.dart';
 import '../models/xp_transaction_model.dart';
 import '../remote/api/gamification_remote_source.dart';
 
+/// Online-first: server-authoritative XP/badge ledger. No local Drift mirror by design.
+///
 /// Repository for gamification (badges, XP, leaderboard).
 ///
 /// Custom implementation (not extending [BaseRepository]) because gamification

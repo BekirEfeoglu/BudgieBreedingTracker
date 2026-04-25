@@ -21,7 +21,9 @@ void main() {
   group('BirdFormBasicInfoSection', () {
     testWidgets('renders without crashing', (tester) async {
       final nameCtrl = TextEditingController();
+      addTearDown(nameCtrl.dispose);
       final colorCtrl = TextEditingController();
+      addTearDown(colorCtrl.dispose);
 
       await _pump(
         tester,
@@ -42,7 +44,9 @@ void main() {
 
     testWidgets('shows section header', (tester) async {
       final nameCtrl = TextEditingController();
+      addTearDown(nameCtrl.dispose);
       final colorCtrl = TextEditingController();
+      addTearDown(colorCtrl.dispose);
 
       await _pump(
         tester,
@@ -63,7 +67,9 @@ void main() {
 
     testWidgets('shows name field with label', (tester) async {
       final nameCtrl = TextEditingController();
+      addTearDown(nameCtrl.dispose);
       final colorCtrl = TextEditingController();
+      addTearDown(colorCtrl.dispose);
 
       await _pump(
         tester,
@@ -86,7 +92,9 @@ void main() {
       tester,
     ) async {
       final nameCtrl = TextEditingController();
+      addTearDown(nameCtrl.dispose);
       final colorCtrl = TextEditingController();
+      addTearDown(colorCtrl.dispose);
 
       await _pump(
         tester,
@@ -110,7 +118,9 @@ void main() {
 
     testWidgets('shows gender label text', (tester) async {
       final nameCtrl = TextEditingController();
+      addTearDown(nameCtrl.dispose);
       final colorCtrl = TextEditingController();
+      addTearDown(colorCtrl.dispose);
 
       await _pump(
         tester,
@@ -131,7 +141,9 @@ void main() {
 
     testWidgets('shows species dropdown', (tester) async {
       final nameCtrl = TextEditingController();
+      addTearDown(nameCtrl.dispose);
       final colorCtrl = TextEditingController();
+      addTearDown(colorCtrl.dispose);
 
       await _pump(
         tester,
@@ -152,7 +164,9 @@ void main() {
 
     testWidgets('shows color dropdown', (tester) async {
       final nameCtrl = TextEditingController();
+      addTearDown(nameCtrl.dispose);
       final colorCtrl = TextEditingController();
+      addTearDown(colorCtrl.dispose);
 
       await _pump(
         tester,
@@ -173,7 +187,9 @@ void main() {
 
     testWidgets('validates empty name field', (tester) async {
       final nameCtrl = TextEditingController();
+      addTearDown(nameCtrl.dispose);
       final colorCtrl = TextEditingController();
+      addTearDown(colorCtrl.dispose);
       final formKey = GlobalKey<FormState>();
 
       await tester.pumpWidget(
@@ -207,7 +223,9 @@ void main() {
 
     testWidgets('validates missing species selection', (tester) async {
       final nameCtrl = TextEditingController(text: 'Mavi');
+      addTearDown(nameCtrl.dispose);
       final colorCtrl = TextEditingController();
+      addTearDown(colorCtrl.dispose);
       final formKey = GlobalKey<FormState>();
 
       await tester.pumpWidget(
@@ -241,7 +259,9 @@ void main() {
 
     testWidgets('does not show error when name is provided', (tester) async {
       final nameCtrl = TextEditingController(text: 'Mavi');
+      addTearDown(nameCtrl.dispose);
       final colorCtrl = TextEditingController();
+      addTearDown(colorCtrl.dispose);
       final formKey = GlobalKey<FormState>();
 
       await tester.pumpWidget(
@@ -275,7 +295,9 @@ void main() {
 
     testWidgets('calls onGenderChanged when gender is tapped', (tester) async {
       final nameCtrl = TextEditingController();
+      addTearDown(nameCtrl.dispose);
       final colorCtrl = TextEditingController();
+      addTearDown(colorCtrl.dispose);
       BirdGender? changedGender;
 
       await _pump(
@@ -302,7 +324,9 @@ void main() {
       tester,
     ) async {
       final nameCtrl = TextEditingController();
+      addTearDown(nameCtrl.dispose);
       final colorCtrl = TextEditingController();
+      addTearDown(colorCtrl.dispose);
 
       await _pump(
         tester,
@@ -325,7 +349,9 @@ void main() {
       tester,
     ) async {
       final nameCtrl = TextEditingController();
+      addTearDown(nameCtrl.dispose);
       final colorCtrl = TextEditingController();
+      addTearDown(colorCtrl.dispose);
 
       await _pump(
         tester,
@@ -346,7 +372,9 @@ void main() {
 
     testWidgets('normalizes unknown color to null in dropdown', (tester) async {
       final nameCtrl = TextEditingController();
+      addTearDown(nameCtrl.dispose);
       final colorCtrl = TextEditingController();
+      addTearDown(colorCtrl.dispose);
 
       await _pump(
         tester,
@@ -375,7 +403,9 @@ void main() {
 
     testWidgets('color dropdown excludes unknown value', (tester) async {
       final nameCtrl = TextEditingController();
+      addTearDown(nameCtrl.dispose);
       final colorCtrl = TextEditingController();
+      addTearDown(colorCtrl.dispose);
 
       await _pump(
         tester,
@@ -409,7 +439,9 @@ void main() {
       tester,
     ) async {
       final nameCtrl = TextEditingController();
+      addTearDown(nameCtrl.dispose);
       final colorCtrl = TextEditingController();
+      addTearDown(colorCtrl.dispose);
 
       await _pump(
         tester,
@@ -440,7 +472,9 @@ void main() {
       tester,
     ) async {
       final nameCtrl = TextEditingController();
+      addTearDown(nameCtrl.dispose);
       final colorCtrl = TextEditingController();
+      addTearDown(colorCtrl.dispose);
 
       await _pump(
         tester,
@@ -469,7 +503,9 @@ void main() {
 
     testWidgets('shows AppIcon for bird name prefix icon', (tester) async {
       final nameCtrl = TextEditingController();
+      addTearDown(nameCtrl.dispose);
       final colorCtrl = TextEditingController();
+      addTearDown(colorCtrl.dispose);
 
       await _pump(
         tester,
@@ -492,7 +528,9 @@ void main() {
       tester,
     ) async {
       final nameCtrl = TextEditingController();
+      addTearDown(nameCtrl.dispose);
       final colorCtrl = TextEditingController();
+      addTearDown(colorCtrl.dispose);
 
       await _pump(
         tester,

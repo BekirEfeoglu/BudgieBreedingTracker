@@ -58,6 +58,31 @@ void main() {
       expect(r.probabilityAny, 0.0);
       expect(r.maxProbability, 0.0);
     });
+
+    test('maxProbability prefers sex-specific peak over averaged any', () {
+      // probabilityAny = (0.25 + 0.75)/2 = 0.5, but the female-only peak of
+      // 0.75 is the better signal for a breeder planning a sex-targeted
+      // outcome. maxProbability should surface that peak.
+      const r = ReverseCalculationResult(
+        father: ParentGenotype.empty(gender: BirdGender.male),
+        mother: ParentGenotype.empty(gender: BirdGender.female),
+        probabilityMale: 0.25,
+        probabilityFemale: 0.75,
+      );
+      expect(r.probabilityAny, closeTo(0.5, 1e-12));
+      expect(r.maxProbability, 0.75);
+    });
+
+    test('maxProbability when male and female are equal', () {
+      const r = ReverseCalculationResult(
+        father: ParentGenotype.empty(gender: BirdGender.male),
+        mother: ParentGenotype.empty(gender: BirdGender.female),
+        probabilityMale: 0.4,
+        probabilityFemale: 0.4,
+      );
+      expect(r.maxProbability, 0.4);
+      expect(r.probabilityAny, 0.4);
+    });
   });
 
   group('LocusPairResult', () {

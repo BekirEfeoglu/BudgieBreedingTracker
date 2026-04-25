@@ -6,8 +6,9 @@ import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/core/widgets/error_state.dart';
 import 'package:budgie_breeding_tracker/core/widgets/skeleton_loader.dart';
-import 'package:budgie_breeding_tracker/data/providers/chick_stream_providers.dart';
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
+import 'package:budgie_breeding_tracker/data/providers/chick_stream_providers.dart';
+import 'package:budgie_breeding_tracker/data/providers/entity_count_providers.dart';
 import 'package:budgie_breeding_tracker/features/home/providers/home_providers.dart';
 import 'package:budgie_breeding_tracker/features/home/widgets/active_breedings_section.dart';
 import 'package:budgie_breeding_tracker/features/home/widgets/dashboard_stats_grid.dart';
@@ -40,7 +41,10 @@ class HomeScreen extends ConsumerWidget {
 
     // Request notification permission after the user sees the home screen.
     // Deferred by 3 seconds so the dialog doesn't appear immediately.
-    ref.watch(deferredNotificationPermissionProvider);
+    // Narrowed with .select((_) => null) so HomeScreen does not rebuild when
+    // the permission future transitions loading → data — we only need the
+    // provider to be initialized, not its value.
+    ref.watch(deferredNotificationPermissionProvider.select((_) => null));
 
     // Show a SnackBar with settings action when notification permission is denied.
     // Throttled to once per day to avoid nagging on every app launch.

@@ -8,6 +8,8 @@ part 'community_post_model.g.dart';
 abstract class CommunityPost with _$CommunityPost {
   const CommunityPost._();
 
+  @Assert(r"id != ''", 'CommunityPost.id must not be empty')
+  @Assert(r"userId != ''", 'CommunityPost.userId must not be empty')
   const factory CommunityPost({
     required String id,
     required String userId,

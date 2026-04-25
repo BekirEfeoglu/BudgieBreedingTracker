@@ -6,8 +6,8 @@ import 'package:budgie_breeding_tracker/data/models/statistics_models.dart';
 import 'package:budgie_breeding_tracker/data/providers/bird_stream_providers.dart';
 import 'package:budgie_breeding_tracker/data/providers/chick_stream_providers.dart';
 import 'package:budgie_breeding_tracker/data/providers/egg_stream_providers.dart';
+import 'package:budgie_breeding_tracker/data/providers/entity_count_providers.dart';
 import 'package:budgie_breeding_tracker/data/providers/health_record_stream_providers.dart';
-import 'package:budgie_breeding_tracker/features/home/providers/home_providers.dart'; // Cross-feature import: statistics↔home shared count providers (dashboard aggregation)
 
 /// Summary statistics combining COUNT providers and filtered streams.
 /// Uses SQL COUNT for totalBirds, activeBreedings, totalHealthRecords

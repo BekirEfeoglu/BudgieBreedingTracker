@@ -8,6 +8,8 @@ part 'bird_model.g.dart';
 abstract class Bird with _$Bird {
   const Bird._();
 
+  @Assert(r"id != ''", 'Bird.id must not be empty')
+  @Assert(r"userId != ''", 'Bird.userId must not be empty')
   const factory Bird({
     required String id,
     required String name,

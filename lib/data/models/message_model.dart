@@ -8,6 +8,8 @@ part 'message_model.g.dart';
 abstract class Message with _$Message {
   const Message._();
 
+  @Assert(r"id != ''", 'Message.id must not be empty')
+  @Assert(r"conversationId != ''", 'Message.conversationId must not be empty')
   const factory Message({
     required String id,
     required String conversationId,

@@ -4,6 +4,31 @@ import 'package:budgie_breeding_tracker/domain/services/genetics/mutation_types.
 /// Yellowface / Blue Series allelic locus mutations and legacy ID mappings.
 ///
 /// Part of [MutationData] — see `mutation_data.dart` for the unified list.
+///
+/// ## Blue-series dominance ranks (important caveat)
+///
+/// MUTAVI/WBO literature models the blue-series alleles — yellowface I/II,
+/// goldenface, aqua, turquoise, blue factor I/II, and blue itself — as
+/// codominant variants of a single parblue locus. They do not form a strict
+/// linear dominance hierarchy in nature.
+///
+/// The numeric [BudgieMutationRecord.dominanceRank] values below are a
+/// deterministic tie-breaker for any *unhandled* compound combinations the
+/// allele resolver falls through to. Common pairings (`yf*/blue`, `gf/blue`,
+/// `tq/aq`, `bf2/bf1`, etc.) are resolved explicitly in
+/// `allele_resolver_compounds.dart`, so the ranks only matter when a novel
+/// combination shows up at runtime.
+///
+/// Current ordering preserves intra-group progression:
+///   - Yellowface: yf1 (2) &lt; yf2 (3) &lt; goldenface (4)
+///   - Parblue:    aqua (5) &lt; turquoise (6)
+///   - Blue factor: bf1 (7) &lt; bf2 (8)
+///   - Blue:       1 (most recessive, as defined in primary data)
+///
+/// Cross-group positions (e.g. bf2 &gt; goldenface) are not a biological claim;
+/// they are a stable sort order. Please add an explicit case to
+/// `_resolveBlueSeriesCompound` rather than relying on the fallback when the
+/// exact phenotype name matters.
 abstract class MutationDataCompounds {
   /// Yellowface and Blue Series allelic locus mutations.
   static const List<BudgieMutationRecord> yellowfaceMutations = [

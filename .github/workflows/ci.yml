@@ -254,6 +254,7 @@ jobs:
           supabase functions deploy mfa-lockout --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
           supabase functions deploy moderate-content --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
           supabase functions deploy revoke-oauth-token --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
+          supabase functions deploy scan-image-safety --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
           supabase functions deploy send-push --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
           supabase functions deploy system-health --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
           supabase functions deploy validate-free-tier-limit --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}

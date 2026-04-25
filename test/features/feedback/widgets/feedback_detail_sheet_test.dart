@@ -30,6 +30,8 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   Widget buildSubject(FeedbackEntry entry) {
+    final scrollController = ScrollController();
+    addTearDown(scrollController.dispose);
     return ProviderScope(
       child: MaterialApp(
         home: Scaffold(
@@ -37,7 +39,7 @@ void main() {
             builder: (context) {
               return FeedbackDetailSheet(
                 entry: entry,
-                scrollController: ScrollController(),
+                scrollController: scrollController,
               );
             },
           ),

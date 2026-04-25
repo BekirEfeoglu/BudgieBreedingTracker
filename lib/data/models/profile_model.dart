@@ -8,6 +8,7 @@ part 'profile_model.g.dart';
 abstract class Profile with _$Profile {
   const Profile._();
 
+  @Assert(r"id != ''", 'Profile.id must not be empty')
   const factory Profile({
     required String id,
     required String email,

@@ -19,7 +19,9 @@ abstract class _BudgieLoginAuthBase extends ConsumerState<BudgieLoginScreen>
   late final AnimationController _wingFlapCtrl;
   late final AnimationController _cardEnterCtrl;
   Timer? _peekTimer;
+  Timer? _peekResetTimer;
   Timer? _blinkTimer;
+  Timer? _blinkResetTimer;
   Timer? _errorResetTimer;
   Timer? _oAuthTimeoutTimer;
   bool _isPeeking = false;
@@ -84,9 +86,7 @@ abstract class _BudgieLoginAuthBase extends ConsumerState<BudgieLoginScreen>
         switch (result) {
           case MfaVerificationNeeded(:final factorId):
             ref.read(pendingMfaFactorIdProvider.notifier).state = factorId;
-            context.go(
-              '${AppRoutes.twoFactorVerify}?factorId=$factorId',
-            );
+            context.go('${AppRoutes.twoFactorVerify}?factorId=$factorId');
             return;
           case MfaCheckFailed(:final didSignOut):
             setState(() {

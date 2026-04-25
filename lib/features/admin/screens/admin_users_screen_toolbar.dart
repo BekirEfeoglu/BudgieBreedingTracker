@@ -39,9 +39,11 @@ class _UsersToolbar extends StatelessWidget {
               hintText: 'admin.search_users'.tr(),
               prefixIcon: const AppIcon(AppIcons.search),
               suffixIcon: query.isNotEmpty
-                  ? IconButton(
+                  ? AppIconButton(
                       icon: const Icon(LucideIcons.x),
                       onPressed: onClearSearch,
+                      semanticLabel: 'common.clear'.tr(),
+                      tooltip: 'common.clear'.tr(),
                     )
                   : null,
               border: OutlineInputBorder(

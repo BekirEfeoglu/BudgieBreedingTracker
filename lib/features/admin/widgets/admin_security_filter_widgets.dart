@@ -5,6 +5,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import '../../../core/constants/app_icons.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_icon.dart';
+import '../../../core/widgets/buttons/app_icon_button.dart';
 import '../providers/admin_providers.dart';
 
 /// Filter bar with search and severity filter.
@@ -39,12 +40,10 @@ class SecurityFilterBar extends StatelessWidget {
               hintText: 'admin.search_events'.tr(),
               prefixIcon: AppIcon(AppIcons.search, size: 18, semanticsLabel: 'common.search'.tr()),
               suffixIcon: filter.searchQuery.isNotEmpty
-                  ? IconButton(
+                  ? AppIconButton(
                       tooltip: 'common.clear'.tr(),
-                      icon: Semantics(
-                        label: 'common.clear'.tr(),
-                        child: const Icon(LucideIcons.x, size: 18),
-                      ),
+                      semanticLabel: 'common.clear'.tr(),
+                      icon: const Icon(LucideIcons.x, size: 18),
                       onPressed: () {
                         controller.clear();
                         onSearchChanged('');

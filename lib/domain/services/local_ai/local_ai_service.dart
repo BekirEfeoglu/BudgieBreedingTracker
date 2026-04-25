@@ -2,14 +2,17 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_constants.dart';
 import 'package:budgie_breeding_tracker/core/errors/app_exception.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/mendelian_calculator.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/parent_genotype.dart';
 
+import 'local_ai_cache.dart';
 import 'local_ai_models.dart';
 import 'local_ai_prompts.dart';
 
@@ -17,13 +20,28 @@ import 'local_ai_prompts.dart';
 const _kErrorPrefix = 'genetics.local_ai_error_';
 
 class LocalAiService {
-  LocalAiService({http.Client? client}) : _client = client ?? http.Client();
+  LocalAiService({
+    http.Client? client,
+    LocalAiCache? cache,
+    void Function(Breadcrumb)? breadcrumbSink,
+  })  : _client = client ?? http.Client(),
+        _cache = cache ??
+            LocalAiCache(
+              maxEntries: 8,
+              ttl: const Duration(minutes: 10),
+            ),
+        _breadcrumbSink = breadcrumbSink ?? Sentry.addBreadcrumb;
 
   static const Duration _requestTimeout = Duration(seconds: 25);
   static const Duration _imageRequestTimeout = Duration(seconds: 45);
   final http.Client _client;
+  final LocalAiCache _cache;
+  final void Function(Breadcrumb) _breadcrumbSink;
 
   void dispose() => _client.close();
+
+  @visibleForTesting
+  LocalAiCache get cache => _cache;
 
   Future<LocalAiGeneticsInsight> analyzeGenetics({
     required LocalAiConfig config,
@@ -46,11 +64,16 @@ class LocalAiService {
       calculatorResults: calculatorResults,
       allowedGenetics: allowedGenetics,
     );
-    final payload = await _generate(
+    final payload = await _generateCached(
       config: config,
       system: LocalAiPrompts.systemGenetics,
       prompt: prompt,
       numPredict: 400,
+      cacheKey: _buildCacheKey(
+        config: config,
+        kind: 'genetics',
+        prompt: prompt,
+      ),
     );
     return LocalAiGeneticsInsight.fromJson(
       payload,
@@ -64,6 +87,7 @@ class LocalAiService {
     String? imagePath,
   }) async {
     List<String> images = const [];
+    String? imageToken;
     if (imagePath != null) {
       final file = File(imagePath);
       if (!await file.exists()) {
@@ -71,24 +95,32 @@ class LocalAiService {
           '${_kErrorPrefix}image_not_found',
         );
       }
-      final fileSize = await file.length();
-      if (fileSize > AppConstants.maxLocalAiImageBytes) {
+      final stat = await file.stat();
+      if (stat.size > AppConstants.maxLocalAiImageBytes) {
         throw const ValidationException(
           '${_kErrorPrefix}image_too_large',
         );
       }
+      imageToken = _imageCacheToken(path: imagePath, stat: stat);
       images = [base64Encode(await file.readAsBytes())];
     }
 
     final system = imagePath != null
         ? LocalAiPrompts.systemSexWithImage
         : LocalAiPrompts.systemSex;
-    final payload = await _generate(
+    final trimmedObservations = observations.trim();
+    final payload = await _generateCached(
       config: config,
       system: system,
-      prompt: observations.trim(),
+      prompt: trimmedObservations,
       images: images,
       numPredict: 300,
+      cacheKey: _buildCacheKey(
+        config: config,
+        kind: imagePath != null ? 'sex_image' : 'sex',
+        prompt: trimmedObservations,
+        imageToken: imageToken,
+      ),
     );
     return LocalAiSexInsight.fromJson(payload);
   }
@@ -104,19 +136,26 @@ class LocalAiService {
       );
     }
 
-    final fileSize = await file.length();
-    if (fileSize > AppConstants.maxLocalAiImageBytes) {
+    final stat = await file.stat();
+    if (stat.size > AppConstants.maxLocalAiImageBytes) {
       throw const ValidationException(
         '${_kErrorPrefix}image_too_large',
       );
     }
 
-    final payload = await _generate(
+    const prompt = 'Analyze this budgerigar photo.';
+    final payload = await _generateCached(
       config: config,
       system: LocalAiPrompts.systemMutationImage,
-      prompt: 'Analyze this budgerigar photo.',
+      prompt: prompt,
       images: [base64Encode(await file.readAsBytes())],
       numPredict: 350,
+      cacheKey: _buildCacheKey(
+        config: config,
+        kind: 'mutation_image',
+        prompt: prompt,
+        imageToken: _imageCacheToken(path: imagePath, stat: stat),
+      ),
     );
     return LocalAiMutationInsight.fromJson(payload);
   }
@@ -314,6 +353,112 @@ class LocalAiService {
       AppLogger.error('[LocalAiService] OpenRouter model list failed', e, st);
       return const [];
     }
+  }
+
+  Future<Map<String, dynamic>> _generateCached({
+    required LocalAiConfig config,
+    required String prompt,
+    required String cacheKey,
+    String? system,
+    List<String> images = const [],
+    int numPredict = 400,
+  }) async {
+    final cached = _cache.get(cacheKey);
+    if (cached != null) {
+      _emitBreadcrumb(
+        message: 'LocalAI cache hit',
+        category: 'ai.inference.cache',
+        level: SentryLevel.info,
+        data: {
+          'provider': config.provider.key,
+          'model': config.normalizedModel,
+          'hasImage': images.isNotEmpty,
+        },
+      );
+      return cached;
+    }
+
+    final stopwatch = Stopwatch()..start();
+    try {
+      final result = await _generate(
+        config: config,
+        prompt: prompt,
+        system: system,
+        images: images,
+        numPredict: numPredict,
+      );
+      stopwatch.stop();
+      _cache.put(cacheKey, result);
+      _emitBreadcrumb(
+        message: 'LocalAI inference success',
+        category: 'ai.inference',
+        level: SentryLevel.info,
+        data: {
+          'provider': config.provider.key,
+          'model': config.normalizedModel,
+          'hasImage': images.isNotEmpty,
+          'durationMs': stopwatch.elapsedMilliseconds,
+        },
+      );
+      return result;
+    } catch (error) {
+      stopwatch.stop();
+      _emitBreadcrumb(
+        message: 'LocalAI inference failed',
+        category: 'ai.inference',
+        level: SentryLevel.warning,
+        data: {
+          'provider': config.provider.key,
+          'model': config.normalizedModel,
+          'hasImage': images.isNotEmpty,
+          'durationMs': stopwatch.elapsedMilliseconds,
+          'errorType': error.runtimeType.toString(),
+        },
+      );
+      rethrow;
+    }
+  }
+
+  void _emitBreadcrumb({
+    required String message,
+    required String category,
+    required SentryLevel level,
+    Map<String, dynamic>? data,
+  }) {
+    try {
+      _breadcrumbSink(
+        Breadcrumb(
+          message: message,
+          category: category,
+          level: level,
+          data: data,
+        ),
+      );
+    } catch (_) {
+      // Breadcrumbs are best-effort; never let telemetry break inference.
+    }
+  }
+
+  String _buildCacheKey({
+    required LocalAiConfig config,
+    required String kind,
+    required String prompt,
+    String? imageToken,
+  }) {
+    final bytes = utf8.encode(
+      [
+        kind,
+        config.provider.key,
+        config.normalizedModel,
+        prompt,
+        imageToken ?? '',
+      ].join('\u0001'),
+    );
+    return sha1.convert(bytes).toString();
+  }
+
+  String _imageCacheToken({required String path, required FileStat stat}) {
+    return '$path|${stat.size}|${stat.modified.millisecondsSinceEpoch}';
   }
 
   Future<Map<String, dynamic>> _generate({

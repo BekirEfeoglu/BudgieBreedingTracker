@@ -44,7 +44,9 @@ void main() {
   group('BirdFormBasicInfoSection', () {
     testWidgets('shows name field', (tester) async {
       final nameCtrl = TextEditingController();
+      addTearDown(nameCtrl.dispose);
       final colorCtrl = TextEditingController();
+      addTearDown(colorCtrl.dispose);
 
       await _pumpSimple(
         tester,
@@ -65,7 +67,9 @@ void main() {
 
     testWidgets('shows gender segmented button', (tester) async {
       final nameCtrl = TextEditingController();
+      addTearDown(nameCtrl.dispose);
       final colorCtrl = TextEditingController();
+      addTearDown(colorCtrl.dispose);
 
       await _pumpSimple(
         tester,
@@ -86,7 +90,9 @@ void main() {
 
     testWidgets('shows species dropdown', (tester) async {
       final nameCtrl = TextEditingController();
+      addTearDown(nameCtrl.dispose);
       final colorCtrl = TextEditingController();
+      addTearDown(colorCtrl.dispose);
 
       await _pumpSimple(
         tester,
@@ -109,7 +115,9 @@ void main() {
       tester,
     ) async {
       final nameCtrl = TextEditingController();
+      addTearDown(nameCtrl.dispose);
       final colorCtrl = TextEditingController();
+      addTearDown(colorCtrl.dispose);
 
       await _pumpSimple(
         tester,
@@ -155,7 +163,9 @@ void main() {
       tester,
     ) async {
       final nameCtrl = TextEditingController();
+      addTearDown(nameCtrl.dispose);
       final colorCtrl = TextEditingController();
+      addTearDown(colorCtrl.dispose);
 
       await _pumpSimple(
         tester,
@@ -186,7 +196,9 @@ void main() {
       'color dropdown excludes unknown option and normalizes unknown value',
       (tester) async {
         final nameCtrl = TextEditingController();
+        addTearDown(nameCtrl.dispose);
         final colorCtrl = TextEditingController();
+        addTearDown(colorCtrl.dispose);
 
         await _pumpSimple(
           tester,
@@ -229,7 +241,9 @@ void main() {
       'shows color note field when colorMutation is BirdColor.other',
       (tester) async {
         final nameCtrl = TextEditingController();
+        addTearDown(nameCtrl.dispose);
         final colorCtrl = TextEditingController();
+        addTearDown(colorCtrl.dispose);
 
         await _pumpSimple(
           tester,
@@ -253,7 +267,9 @@ void main() {
       tester,
     ) async {
       final nameCtrl = TextEditingController();
+      addTearDown(nameCtrl.dispose);
       final colorCtrl = TextEditingController();
+      addTearDown(colorCtrl.dispose);
 
       await _pumpSimple(
         tester,
@@ -274,7 +290,9 @@ void main() {
 
     testWidgets('validates empty name', (tester) async {
       final nameCtrl = TextEditingController();
+      addTearDown(nameCtrl.dispose);
       final colorCtrl = TextEditingController();
+      addTearDown(colorCtrl.dispose);
       final formKey = GlobalKey<FormState>();
 
       await tester.pumpWidget(
@@ -308,7 +326,9 @@ void main() {
 
     testWidgets('gender change callback is invoked', (tester) async {
       final nameCtrl = TextEditingController();
+      addTearDown(nameCtrl.dispose);
       final colorCtrl = TextEditingController();
+      addTearDown(colorCtrl.dispose);
       BirdGender? changedGender;
 
       await _pumpSimple(
@@ -335,7 +355,9 @@ void main() {
   group('BirdFormIdentitySection', () {
     testWidgets('shows ring number field', (tester) async {
       final ringCtrl = TextEditingController();
+      addTearDown(ringCtrl.dispose);
       final cageCtrl = TextEditingController();
+      addTearDown(cageCtrl.dispose);
 
       await _pumpSimple(
         tester,
@@ -352,7 +374,9 @@ void main() {
 
     testWidgets('shows cage number field', (tester) async {
       final ringCtrl = TextEditingController();
+      addTearDown(ringCtrl.dispose);
       final cageCtrl = TextEditingController();
+      addTearDown(cageCtrl.dispose);
 
       await _pumpSimple(
         tester,
@@ -369,7 +393,9 @@ void main() {
 
     testWidgets('shows birth date picker field', (tester) async {
       final ringCtrl = TextEditingController();
+      addTearDown(ringCtrl.dispose);
       final cageCtrl = TextEditingController();
+      addTearDown(cageCtrl.dispose);
 
       await _pumpSimple(
         tester,
@@ -405,6 +431,7 @@ void main() {
   group('BirdFormNotesSection', () {
     testWidgets('shows notes text field', (tester) async {
       final notesCtrl = TextEditingController();
+      addTearDown(notesCtrl.dispose);
 
       await _pumpSimple(
         tester,
@@ -416,6 +443,7 @@ void main() {
 
     testWidgets('field has max lines of 4', (tester) async {
       final notesCtrl = TextEditingController();
+      addTearDown(notesCtrl.dispose);
 
       await _pumpSimple(
         tester,

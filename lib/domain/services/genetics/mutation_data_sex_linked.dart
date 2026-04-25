@@ -160,12 +160,20 @@ abstract class MutationDataSexLinked {
       visualEffect: 'Washed-out body color with faded wing markings',
     ),
     // Mottled — progressive loss of melanin patches with each moult.
+    // MUTAVI's revised gene list labels Mottled as "polygenic" rather than a
+    // clean single-locus recessive. We still model it as autosomal recessive
+    // for calculator purposes so breeders can track carriers, but phenotype
+    // expressiveness varies and real outcomes may deviate from Mendelian
+    // ratios.
     BudgieMutationRecord(
       id: 'mottled',
       name: 'Mottled',
       localizationKey: 'genetics.mutation_mottled',
       description:
-          'Progressive mutation where melanin patches disappear with each moult cycle',
+          'Progressive mutation where melanin patches disappear with each '
+          'moult cycle. MUTAVI describes Mottled as polygenic, so real-world '
+          'ratios vary; this app models it as autosomal recessive as a '
+          'practical approximation.',
       inheritanceType: InheritanceType.autosomalRecessive,
       dominance: Dominance.recessive,
       alleleSymbol: 'mo',

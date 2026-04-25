@@ -247,6 +247,28 @@ void main() {
       final tables = await dao.getPendingTableNames(userId);
       expect(tables, equals({'birds', 'eggs'}));
     });
+
+    test('includes tables with pending delete entries', () async {
+      await dao.insertItem(
+        makeEntry(
+          id: 'sync-1',
+          table: 'incubations',
+          recordId: 'i-1',
+          status: SyncStatus.pendingDelete,
+        ),
+      );
+      await dao.insertItem(
+        makeEntry(
+          id: 'sync-2',
+          table: 'notifications',
+          recordId: 'n-1',
+          status: SyncStatus.pendingDelete,
+        ),
+      );
+
+      final tables = await dao.getPendingTableNames(userId);
+      expect(tables, equals({'incubations', 'notifications'}));
+    });
   });
 
   group('countPending', () {

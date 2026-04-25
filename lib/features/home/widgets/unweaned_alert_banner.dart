@@ -5,6 +5,7 @@ import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
+import 'package:budgie_breeding_tracker/router/route_names.dart';
 
 /// Alert banner shown when there are unweaned chicks.
 class UnweanedAlertBanner extends StatelessWidget {
@@ -39,7 +40,7 @@ class UnweanedAlertBanner extends StatelessWidget {
               ),
             ),
             TextButton(
-              onPressed: () => context.push('/chicks'),
+              onPressed: () => context.push(AppRoutes.chicks),
               child: Text('common.view'.tr()),
             ),
           ],

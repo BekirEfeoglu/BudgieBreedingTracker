@@ -81,7 +81,9 @@ class _BudgieLoginScreenState extends _BudgieLoginAuthBase {
     _wingFlapCtrl.dispose();
     _cardEnterCtrl.dispose();
     _peekTimer?.cancel();
+    _peekResetTimer?.cancel();
     _blinkTimer?.cancel();
+    _blinkResetTimer?.cancel();
     _errorResetTimer?.cancel();
     _oAuthTimeoutTimer?.cancel();
     super.dispose();
@@ -89,10 +91,12 @@ class _BudgieLoginScreenState extends _BudgieLoginAuthBase {
 
   void _startPeekTimer() {
     _peekTimer?.cancel();
+    _peekResetTimer?.cancel();
     _peekTimer = Timer.periodic(const Duration(seconds: 7), (_) {
       if (_loginState == LoginState.idle && mounted) {
         setState(() => _isPeeking = true);
-        Future.delayed(const Duration(milliseconds: 1500), () {
+        _peekResetTimer?.cancel();
+        _peekResetTimer = Timer(const Duration(milliseconds: 1500), () {
           if (mounted) setState(() => _isPeeking = false);
         });
       }
@@ -101,12 +105,14 @@ class _BudgieLoginScreenState extends _BudgieLoginAuthBase {
 
   void _startBlinkTimer() {
     _blinkTimer?.cancel();
+    _blinkResetTimer?.cancel();
     void scheduleBlink() {
       final delay = 3000 + Random().nextInt(2000); // 3-5 saniye arasi
       _blinkTimer = Timer(Duration(milliseconds: delay), () {
         if (!mounted) return;
         setState(() => _isBlinking = true);
-        Future.delayed(const Duration(milliseconds: 200), () {
+        _blinkResetTimer?.cancel();
+        _blinkResetTimer = Timer(const Duration(milliseconds: 200), () {
           if (mounted) setState(() => _isBlinking = false);
           if (mounted) scheduleBlink();
         });

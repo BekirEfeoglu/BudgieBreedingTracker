@@ -301,4 +301,101 @@ void main() {
       expect(result.totalAffectedProbability, closeTo(0.25, 0.0001));
     });
   });
+
+  group('ino-locus sub-vital pairings', () {
+    test('pallid x pallid flags all offspring with subVital severity', () {
+      final result = analyzer.analyze(
+        fatherMutations: {'pallid'},
+        motherMutations: {'pallid'},
+        offspringResults: [
+          _offspring(
+            phenotype: 'Pallid',
+            probability: 0.5,
+            visualMutations: ['pallid'],
+          ),
+          _offspring(
+            phenotype: 'Pallid carrier',
+            probability: 0.5,
+          ),
+        ],
+      );
+
+      final pallidWarnings =
+          result.warnings.where((w) => w.combination.id == 'pallid_x_pallid');
+      expect(pallidWarnings, hasLength(2));
+      expect(pallidWarnings.first.combination.severity,
+          LethalSeverity.subVital);
+    });
+
+    test('texas_clearbody x texas_clearbody flags all offspring', () {
+      final result = analyzer.analyze(
+        fatherMutations: {'texas_clearbody'},
+        motherMutations: {'texas_clearbody'},
+        offspringResults: [
+          _offspring(
+            phenotype: 'Texas Clearbody',
+            probability: 1.0,
+            visualMutations: ['texas_clearbody'],
+          ),
+        ],
+      );
+
+      final tcbWarnings = result.warnings
+          .where((w) => w.combination.id == 'texas_clearbody_x_texas_clearbody');
+      expect(tcbWarnings, hasLength(1));
+    });
+
+    test('pallid x normal does not trigger pallid_x_pallid warning', () {
+      final result = analyzer.analyze(
+        fatherMutations: {'pallid'},
+        motherMutations: {'blue'},
+        offspringResults: [
+          _offspring(phenotype: 'Pallid', probability: 0.5),
+        ],
+      );
+      final pallidWarnings =
+          result.warnings.where((w) => w.combination.id == 'pallid_x_pallid');
+      expect(pallidWarnings, isEmpty);
+    });
+  });
+
+  group('double-counting guard', () {
+    test(
+      'offspring hit by multiple warnings contributes only its highest impact',
+      () {
+        // Both Ino × Ino (rate=1.0) and DF Spangle (rate=1.0) would flag the
+        // same DF Spangle + Ino offspring. Without deduplication, the combined
+        // impact would double-count. The analyzer now keeps only the highest
+        // per-offspring impact.
+        final dfSpangleIno = _offspring(
+          phenotype: 'DF Spangle Ino',
+          probability: 0.10,
+          visualMutations: ['spangle', 'ino'],
+          doubleFactorIds: {'spangle'},
+        );
+        final plainIno = _offspring(
+          phenotype: 'Ino',
+          probability: 0.20,
+          visualMutations: ['ino'],
+        );
+        final result = analyzer.analyze(
+          fatherMutations: {'ino', 'spangle'},
+          motherMutations: {'ino', 'spangle'},
+          offspringResults: [dfSpangleIno, plainIno],
+        );
+
+        // Two distinct warning rows may exist for dfSpangleIno (ino_x_ino,
+        // df_spangle) but totalAffectedProbability must reflect it once.
+        final inoWarnings =
+            result.warnings.where((w) => w.combination.id == 'ino_x_ino');
+        final dfSpangleWarnings =
+            result.warnings.where((w) => w.combination.id == 'df_spangle');
+        expect(inoWarnings, isNotEmpty);
+        expect(dfSpangleWarnings, isNotEmpty);
+
+        // Expected: max(0.10*1.0, 0.10*1.0) + 0.20*1.0 = 0.30 — not 0.40.
+        expect(result.totalAffectedProbability, closeTo(0.30, 0.0001));
+      },
+    );
+  });
 }

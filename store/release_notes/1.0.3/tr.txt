@@ -1,0 +1,10 @@
+Muhabbet Kuşu Üreme Takibi v1.0.3
+
+Yenilikler ve iyileştirmeler:
+• Topluluk ve Yapay Zekâ özellikleri "Yakında" olarak işaretlendi — geliştirme tamamlandığında tüm kullanıcılara açılacak.
+• Performans iyileştirmeleri: veritabanı senkronizasyonu ve liste akışları daha hızlı.
+• Genetik hesaplayıcı güncellendi: baskın mutasyon serilerinde daha doğru sonuçlar ve güncellenmiş oran tablosu.
+• Arka plan senkronizasyonunda tekrarlayan kayıt sorunu giderildi.
+• Çeşitli hata düzeltmeleri ve arayüz iyileştirmeleri.
+
+Geri bildiriminiz için teşekkürler!

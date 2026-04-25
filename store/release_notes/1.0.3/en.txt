@@ -1,0 +1,10 @@
+Budgie Breeding Tracker v1.0.3
+
+What's new and improved:
+• Community and AI features are now marked "Coming Soon" — they'll roll out to everyone once development is complete.
+• Performance improvements: faster database sync and list rendering.
+• Genetics calculator updated: more accurate results for dominant mutation series and a refreshed probability table.
+• Fixed a duplicate-record issue in background sync.
+• Various bug fixes and UI polish.
+
+Thanks for your feedback!

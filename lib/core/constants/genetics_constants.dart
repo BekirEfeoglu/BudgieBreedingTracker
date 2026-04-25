@@ -127,7 +127,12 @@ abstract final class GeneticsConstants {
   /// Increment whenever recombination constants or allele resolver logic
   /// changes in a way that would alter offspring results.
   /// Used to detect stale GeneticsHistory entries.
-  static const int calculationVersion = 2;
+  ///
+  /// v3 (2026-04-19): Z-chromosome linkage extended to all ino_locus alleles
+  /// (pallid, pearly, texas_clearbody) with cinnamon/slate/opaline so that
+  /// biologically linked sex-linked crosses return correct recombinant
+  /// probabilities instead of treating them as independent loci.
+  static const int calculationVersion = 3;
 
   // ── ReverseCalculator limits ──
   /// Maximum parent genotype options evaluated per locus in reverse calculation.

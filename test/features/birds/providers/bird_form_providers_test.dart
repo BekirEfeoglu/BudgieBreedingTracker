@@ -18,7 +18,12 @@ void main() {
   setUp(() {
     repo = MockBirdRepository();
     registerFallbackValue(
-      const Bird(id: '', name: '', gender: BirdGender.unknown, userId: ''),
+      const Bird(
+        id: 'fallback-id',
+        name: '',
+        gender: BirdGender.unknown,
+        userId: 'fallback-user',
+      ),
     );
     when(
       () =>

@@ -3,6 +3,8 @@ import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/data/remote/api/feedback_remote_source.dart';
 import 'package:uuid/uuid.dart';
 
+/// Online-first: single-user send-only feedback stream. No local Drift mirror by design.
+///
 /// Repository for user feedback (online-only, no local DB).
 ///
 /// Custom implementation (not extending [BaseRepository]) because feedback

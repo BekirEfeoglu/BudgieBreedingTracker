@@ -6,6 +6,8 @@ import '../models/community_comment_model.dart';
 import '../remote/api/community_comment_remote_source.dart';
 import '../remote/api/community_social_remote_source.dart';
 
+/// Online-first: cross-user nested comments under public posts. No local Drift mirror by design.
+///
 /// Repository for community comments.
 ///
 /// Custom implementation (not extending [BaseRepository]) because community

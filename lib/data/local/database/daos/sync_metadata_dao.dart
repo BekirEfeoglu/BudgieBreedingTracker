@@ -141,15 +141,18 @@ class SyncMetadataDao extends DatabaseAccessor<AppDatabase>
 
   /// Returns the set of table names that have pending sync records.
   ///
-  /// Used by [SyncOrchestrator] to skip layers with no pending changes,
-  /// avoiding unnecessary repository reads and empty push cycles.
+  /// Used by [SyncOrchestrator] to skip layers with no pending writes or
+  /// deletes, avoiding unnecessary repository reads and empty push cycles.
   Future<Set<String>> getPendingTableNames(String userId) async {
     final rows =
         await (selectOnly(syncMetadataTable)
               ..addColumns([syncMetadataTable.tableName_])
               ..where(
                 syncMetadataTable.userId.equals(userId) &
-                    syncMetadataTable.status.equalsValue(SyncStatus.pending),
+                    (syncMetadataTable.status.equalsValue(SyncStatus.pending) |
+                        syncMetadataTable.status.equalsValue(
+                          SyncStatus.pendingDelete,
+                        )),
               )
               ..groupBy([syncMetadataTable.tableName_]))
             .get();
@@ -228,16 +231,25 @@ class SyncMetadataDao extends DatabaseAccessor<AppDatabase>
         .map((row) => row.read(count) ?? 0);
   }
 
-  Future<int> countStaleErrors(String userId, Duration maxAge, int minRetries) async {
+  Future<int> countStaleErrors(
+    String userId,
+    Duration maxAge,
+    int minRetries,
+  ) async {
     final count = syncMetadataTable.id.count();
     final cutoff = DateTime.now().subtract(maxAge);
-    final row = await (selectOnly(syncMetadataTable)
-          ..addColumns([count])
-          ..where(syncMetadataTable.userId.equals(userId) &
-              syncMetadataTable.status.equalsValue(SyncStatus.error) &
-              syncMetadataTable.createdAt.isSmallerOrEqualValue(cutoff) &
-              syncMetadataTable.retryCount.isBiggerOrEqualValue(minRetries)))
-        .getSingle();
+    final row =
+        await (selectOnly(syncMetadataTable)
+              ..addColumns([count])
+              ..where(
+                syncMetadataTable.userId.equals(userId) &
+                    syncMetadataTable.status.equalsValue(SyncStatus.error) &
+                    syncMetadataTable.createdAt.isSmallerOrEqualValue(cutoff) &
+                    syncMetadataTable.retryCount.isBiggerOrEqualValue(
+                      minRetries,
+                    ),
+              ))
+            .getSingle();
     return row.read(count) ?? 0;
   }
 
@@ -248,25 +260,31 @@ class SyncMetadataDao extends DatabaseAccessor<AppDatabase>
     int minRetries,
   ) async {
     final cutoff = DateTime.now().subtract(maxAge);
-    final rows = await (select(syncMetadataTable)
-          ..where(
-            (t) =>
-                t.userId.equals(userId) &
-                t.status.equalsValue(SyncStatus.error) &
-                t.createdAt.isSmallerOrEqualValue(cutoff) &
-                t.retryCount.isBiggerOrEqualValue(minRetries),
-          ))
-        .get();
+    final rows =
+        await (select(syncMetadataTable)..where(
+              (t) =>
+                  t.userId.equals(userId) &
+                  t.status.equalsValue(SyncStatus.error) &
+                  t.createdAt.isSmallerOrEqualValue(cutoff) &
+                  t.retryCount.isBiggerOrEqualValue(minRetries),
+            ))
+            .get();
     return rows.map((r) => r.toModel()).toList();
   }
 
-  Future<int> deleteStaleErrors(String userId, Duration maxAge, int minRetries) async {
+  Future<int> deleteStaleErrors(
+    String userId,
+    Duration maxAge,
+    int minRetries,
+  ) async {
     final cutoff = DateTime.now().subtract(maxAge);
-    return (delete(syncMetadataTable)..where((t) =>
-            t.userId.equals(userId) &
-            t.status.equalsValue(SyncStatus.error) &
-            t.createdAt.isSmallerOrEqualValue(cutoff) &
-            t.retryCount.isBiggerOrEqualValue(minRetries)))
+    return (delete(syncMetadataTable)..where(
+          (t) =>
+              t.userId.equals(userId) &
+              t.status.equalsValue(SyncStatus.error) &
+              t.createdAt.isSmallerOrEqualValue(cutoff) &
+              t.retryCount.isBiggerOrEqualValue(minRetries),
+        ))
         .go();
   }
 
@@ -277,18 +295,24 @@ class SyncMetadataDao extends DatabaseAccessor<AppDatabase>
     final lastTime = syncMetadataTable.updatedAt.max();
     return (selectOnly(syncMetadataTable)
           ..addColumns([tbl, cnt, lastErr, lastTime])
-          ..where(syncMetadataTable.userId.equals(userId) &
-              syncMetadataTable.status.equalsValue(SyncStatus.error))
+          ..where(
+            syncMetadataTable.userId.equals(userId) &
+                syncMetadataTable.status.equalsValue(SyncStatus.error),
+          )
           ..groupBy([tbl]))
         .watch()
-        .map((rows) => rows
-            .map((row) => SyncErrorDetail(
+        .map(
+          (rows) => rows
+              .map(
+                (row) => SyncErrorDetail(
                   tableName: row.read(tbl) ?? '',
                   errorCount: row.read(cnt) ?? 0,
                   lastError: row.read(lastErr),
                   lastAttempt: row.read(lastTime),
-                ))
-            .toList());
+                ),
+              )
+              .toList(),
+        );
   }
 
   Stream<List<SyncErrorDetail>> watchPendingByTable(String userId) {
@@ -296,15 +320,21 @@ class SyncMetadataDao extends DatabaseAccessor<AppDatabase>
     final cnt = syncMetadataTable.id.count();
     return (selectOnly(syncMetadataTable)
           ..addColumns([tbl, cnt])
-          ..where(syncMetadataTable.userId.equals(userId) &
-              syncMetadataTable.status.equalsValue(SyncStatus.pending))
+          ..where(
+            syncMetadataTable.userId.equals(userId) &
+                syncMetadataTable.status.equalsValue(SyncStatus.pending),
+          )
           ..groupBy([tbl]))
         .watch()
-        .map((rows) => rows
-            .map((row) => SyncErrorDetail(
+        .map(
+          (rows) => rows
+              .map(
+                (row) => SyncErrorDetail(
                   tableName: row.read(tbl) ?? '',
                   errorCount: row.read(cnt) ?? 0,
-                ))
-            .toList());
+                ),
+              )
+              .toList(),
+        );
   }
 }

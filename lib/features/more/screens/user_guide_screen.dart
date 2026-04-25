@@ -6,6 +6,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
+import 'package:budgie_breeding_tracker/core/widgets/buttons/app_icon_button.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_screen_title.dart';
 import 'package:budgie_breeding_tracker/core/widgets/empty_state.dart';
 import 'package:budgie_breeding_tracker/features/more/widgets/guide_data.dart';
@@ -130,8 +131,9 @@ class _UserGuideScreenState extends State<UserGuideScreen> {
                 hintText: 'user_guide.search_hint'.tr(),
                 prefixIcon: const AppIcon(AppIcons.search),
                 suffixIcon: _searchQuery.isNotEmpty
-                    ? IconButton(
+                    ? AppIconButton(
                         icon: const Icon(LucideIcons.x),
+                        semanticLabel: 'common.clear'.tr(),
                         onPressed: () {
                           _searchController.clear();
                           setState(() => _searchQuery = '');
@@ -223,8 +225,9 @@ class _UserGuideScreenState extends State<UserGuideScreen> {
                 GuideTopicListItem(
                   topic: categoryTopics[i].$2,
                   showDivider: i < categoryTopics.length - 1,
-                  onTap: () =>
-                      context.push('/user-guide/${categoryTopics[i].$1}'),
+                  onTap: () => context.push(
+                    '${AppRoutes.userGuide}/${categoryTopics[i].$1}',
+                  ),
                 ),
             ],
           ),

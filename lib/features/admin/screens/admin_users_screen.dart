@@ -12,6 +12,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/logger.dart';
 import '../../../core/widgets/app_icon.dart';
+import '../../../core/widgets/buttons/app_icon_button.dart';
 import '../../../core/widgets/dialogs/confirm_dialog.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/error_state.dart';
@@ -265,9 +266,10 @@ class _AdminUsersScreenState extends ConsumerState<AdminUsersScreen> {
                             .withValues(alpha: 0.2),
                         child: Row(
                           children: [
-                            IconButton(
+                            AppIconButton(
                               icon: const Icon(LucideIcons.x),
                               tooltip: 'admin.clear_selection'.tr(),
+                              semanticLabel: 'admin.clear_selection'.tr(),
                               onPressed: _clearSelection,
                             ),
                             Text(

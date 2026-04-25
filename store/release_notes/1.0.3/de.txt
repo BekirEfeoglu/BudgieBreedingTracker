@@ -1,0 +1,10 @@
+Wellensittich Zucht-Tracker v1.0.3
+
+Neuerungen und Verbesserungen:
+• Community- und KI-Funktionen sind jetzt als „Demnächst" markiert — sie werden nach Abschluss der Entwicklung für alle Nutzer freigeschaltet.
+• Leistungsverbesserungen: schnellere Datenbank-Synchronisation und Listendarstellung.
+• Genetik-Rechner aktualisiert: genauere Ergebnisse bei dominanten Mutationsreihen und überarbeitete Wahrscheinlichkeitstabelle.
+• Problem mit doppelten Datensätzen in der Hintergrund-Synchronisation behoben.
+• Diverse Fehlerbehebungen und Oberflächenverbesserungen.
+
+Vielen Dank für Ihr Feedback!

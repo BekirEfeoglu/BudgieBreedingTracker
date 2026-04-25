@@ -54,6 +54,8 @@ Currently exempt:
 
 Online-only classes that are NOT cross-user/multi-party streams (e.g. a single-user remote-only resource) MUST use `*RemoteService` or `*OnlineSource` naming instead of `*Repository`.
 
+Canonical example: `LocalAiService` (`lib/domain/services/local_ai/local_ai_service.dart`) — LLM inference via Ollama/OpenRouter. Network is mandatory (inference happens on the remote endpoint), so offline-first does not apply; correctly named as `*Service`. Applies short-lived in-memory caching for repeated prompts but does not persist to Drift.
+
 ## 23 Feature Modules
 admin, auth, birds, breeding, calendar, chicks, community, eggs, feedback, gamification, genealogy, genetics, health_records, home, marketplace, messaging, more, notifications, premium, profile, settings, splash, statistics
 

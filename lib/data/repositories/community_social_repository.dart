@@ -1,6 +1,8 @@
 import '../../core/enums/community_enums.dart';
 import '../remote/api/community_social_remote_source.dart';
 
+/// Online-first: cross-user reactions/follows on public posts. No local Drift mirror by design.
+///
 /// Repository for community social interactions (likes, bookmarks, reports).
 ///
 /// Custom implementation (not extending [BaseRepository]) because social

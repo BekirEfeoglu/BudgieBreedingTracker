@@ -229,7 +229,9 @@ void main() {
       expect(bf.name, 'Blackface');
       expect(bf.inheritanceType, InheritanceType.autosomalDominant);
       expect(bf.dominance, Dominance.dominant);
-      expect(bf.alleleSymbol, 'Bf');
+      // 'Blf' is used rather than 'Bf' so the symbol does not clash with
+      // Blue Factor I/II which own 'Bf1'/'Bf2'.
+      expect(bf.alleleSymbol, 'Blf');
       expect(bf.category, 'Pattern');
     });
   });

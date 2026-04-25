@@ -369,4 +369,219 @@ void main() {
       expect(compoundFemale, closeTo(0.005, 0.005));
     });
   });
+
+  // =====================================================================
+  // 24. INO-LOCUS ALLELE LINKAGE GENERALISATION
+  //
+  // Pallid, Pearly and Texas Clearbody all share the ino_locus physical
+  // position on Z, so their linkage distance to cinnamon/slate/opaline is
+  // the same as the canonical Ino distances. These tests lock in the
+  // generalised linkage behaviour.
+  // =====================================================================
+  group('Ino-locus allele linkage generalisation', () {
+    test(
+      'pallid+cinnamon (coupling): compound daughters dominate, singles rare',
+      () {
+        final father = ParentGenotype(
+          gender: BirdGender.male,
+          mutations: {
+            'pallid': AlleleState.carrier,
+            'cinnamon': AlleleState.carrier,
+          },
+        );
+        const mother = ParentGenotype.empty(gender: BirdGender.female);
+
+        final results = calculator.calculateFromGenotypes(
+          father: father,
+          mother: mother,
+        );
+
+        expectNormalizedProbabilities(results);
+
+        // Parental compound (Pallid+Cinnamon) females ≈ (1-0.03)/2 * 0.5
+        final compoundFemale = results
+            .where(
+              (r) =>
+                  r.sex == OffspringSex.female &&
+                  r.visualMutations.contains('pallid') &&
+                  r.visualMutations.contains('cinnamon'),
+            )
+            .fold<double>(0, (s, r) => s + r.probability);
+        expect(compoundFemale, closeTo(0.2425, 0.02));
+
+        // Recombinant Pallid-only and Cinnamon-only daughters ≈ 0.75% each.
+        final pallidOnlyFemale = results
+            .where(
+              (r) =>
+                  r.sex == OffspringSex.female &&
+                  r.visualMutations.contains('pallid') &&
+                  !r.visualMutations.contains('cinnamon'),
+            )
+            .fold<double>(0, (s, r) => s + r.probability);
+        expect(pallidOnlyFemale, lessThan(0.03));
+
+        final cinnamonOnlyFemale = results
+            .where(
+              (r) =>
+                  r.sex == OffspringSex.female &&
+                  r.visualMutations.contains('cinnamon') &&
+                  !r.visualMutations.contains('pallid'),
+            )
+            .fold<double>(0, (s, r) => s + r.probability);
+        expect(cinnamonOnlyFemale, lessThan(0.03));
+      },
+    );
+
+    test(
+      'pallid+cinnamon (repulsion): single-mutation daughters dominate',
+      () {
+        final father = ParentGenotype(
+          gender: BirdGender.male,
+          mutations: {
+            'pallid': AlleleState.split,
+            'cinnamon': AlleleState.split,
+          },
+        );
+        const mother = ParentGenotype.empty(gender: BirdGender.female);
+
+        final results = calculator.calculateFromGenotypes(
+          father: father,
+          mother: mother,
+        );
+
+        expectNormalizedProbabilities(results);
+
+        final pallidOnlyFemale = results
+            .where(
+              (r) =>
+                  r.sex == OffspringSex.female &&
+                  r.visualMutations.contains('pallid') &&
+                  !r.visualMutations.contains('cinnamon'),
+            )
+            .fold<double>(0, (s, r) => s + r.probability);
+        expect(pallidOnlyFemale, closeTo(0.2425, 0.02));
+
+        final cinnamonOnlyFemale = results
+            .where(
+              (r) =>
+                  r.sex == OffspringSex.female &&
+                  r.visualMutations.contains('cinnamon') &&
+                  !r.visualMutations.contains('pallid'),
+            )
+            .fold<double>(0, (s, r) => s + r.probability);
+        expect(cinnamonOnlyFemale, closeTo(0.2425, 0.02));
+
+        final compoundFemale = results
+            .where(
+              (r) =>
+                  r.sex == OffspringSex.female &&
+                  r.visualMutations.contains('pallid') &&
+                  r.visualMutations.contains('cinnamon'),
+            )
+            .fold<double>(0, (s, r) => s + r.probability);
+        expect(compoundFemale, lessThan(0.03));
+      },
+    );
+
+    test(
+      'pearly+slate (coupling): compound daughters ≈ (1-0.02)/2 * 0.5',
+      () {
+        final father = ParentGenotype(
+          gender: BirdGender.male,
+          mutations: {
+            'pearly': AlleleState.carrier,
+            'slate': AlleleState.carrier,
+          },
+        );
+        const mother = ParentGenotype.empty(gender: BirdGender.female);
+
+        final results = calculator.calculateFromGenotypes(
+          father: father,
+          mother: mother,
+        );
+
+        expectNormalizedProbabilities(results);
+
+        final compoundFemale = results
+            .where(
+              (r) =>
+                  r.sex == OffspringSex.female &&
+                  r.visualMutations.contains('pearly') &&
+                  r.visualMutations.contains('slate'),
+            )
+            .fold<double>(0, (s, r) => s + r.probability);
+        expect(compoundFemale, closeTo(0.245, 0.02));
+      },
+    );
+
+    test(
+      'texas_clearbody+cinnamon (coupling): compound daughters dominate',
+      () {
+        final father = ParentGenotype(
+          gender: BirdGender.male,
+          mutations: {
+            'texas_clearbody': AlleleState.carrier,
+            'cinnamon': AlleleState.carrier,
+          },
+        );
+        const mother = ParentGenotype.empty(gender: BirdGender.female);
+
+        final results = calculator.calculateFromGenotypes(
+          father: father,
+          mother: mother,
+        );
+
+        expectNormalizedProbabilities(results);
+
+        final compoundFemale = results
+            .where(
+              (r) =>
+                  r.sex == OffspringSex.female &&
+                  r.visualMutations.contains('texas_clearbody') &&
+                  r.visualMutations.contains('cinnamon'),
+            )
+            .fold<double>(0, (s, r) => s + r.probability);
+        expect(compoundFemale, closeTo(0.2425, 0.02));
+      },
+    );
+
+    test(
+      'ino + pallid compound het in father: linkage skipped, allelic series '
+      'handles ino_locus, cinnamon remains independent',
+      () {
+        final father = ParentGenotype(
+          gender: BirdGender.male,
+          mutations: {
+            'ino': AlleleState.carrier,
+            'pallid': AlleleState.carrier,
+            'cinnamon': AlleleState.carrier,
+          },
+        );
+        const mother = ParentGenotype.empty(gender: BirdGender.female);
+
+        final results = calculator.calculateFromGenotypes(
+          father: father,
+          mother: mother,
+        );
+
+        expectNormalizedProbabilities(results);
+        expect(results, isNotEmpty);
+
+        // Both ino and pallid should remain expressible in offspring because
+        // neither is silently dropped by the linkage branch.
+        final hasInoDaughter = results.any(
+          (r) =>
+              r.sex == OffspringSex.female &&
+              r.visualMutations.contains('ino'),
+        );
+        final hasPallidDaughter = results.any(
+          (r) =>
+              r.sex == OffspringSex.female &&
+              r.visualMutations.contains('pallid'),
+        );
+        expect(hasInoDaughter, isTrue);
+        expect(hasPallidDaughter, isTrue);
+      },
+    );
+  });
 }

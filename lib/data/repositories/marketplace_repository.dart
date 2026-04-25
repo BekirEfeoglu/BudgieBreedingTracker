@@ -3,6 +3,8 @@ import '../remote/api/marketplace_listing_remote_source.dart';
 import '../remote/api/marketplace_favorite_remote_source.dart';
 import '../../core/utils/logger.dart';
 
+/// Online-first: cross-user public listings. No local Drift mirror by design.
+///
 /// Repository for marketplace listings.
 ///
 /// Custom implementation (not extending [BaseRepository]) because marketplace

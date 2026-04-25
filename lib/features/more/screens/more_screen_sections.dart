@@ -16,8 +16,8 @@ void _showMoreAboutDialog(BuildContext context, WidgetRef ref) {
   final appInfo = ref.read(appInfoProvider);
   final version = appInfo.when(
     data: (info) => 'v${info.version}',
-    loading: () => 'v1.0.2',
-    error: (_, __) => 'v1.0.2',
+    loading: () => '...',
+    error: (_, __) => '-',
   );
   final theme = Theme.of(context);
   final colorScheme = theme.colorScheme;

@@ -21,8 +21,8 @@ void main() {
       );
     });
 
-    test('appVersion is 1.0.2', () {
-      expect(AppConstants.appVersion, '1.0.2');
+    test('appVersion is 1.0.3', () {
+      expect(AppConstants.appVersion, '1.0.3');
     });
   });
 
@@ -38,42 +38,27 @@ void main() {
 
     test('termsOfUseUrl is a valid https URL', () {
       expect(AppConstants.termsOfUseUrl, startsWith('https://'));
-      expect(
-        Uri.tryParse(AppConstants.termsOfUseUrl),
-        isNotNull,
-      );
+      expect(Uri.tryParse(AppConstants.termsOfUseUrl), isNotNull);
     });
 
     test('supportUrl is a valid https URL', () {
       expect(AppConstants.supportUrl, startsWith('https://'));
-      expect(
-        Uri.tryParse(AppConstants.supportUrl),
-        isNotNull,
-      );
+      expect(Uri.tryParse(AppConstants.supportUrl), isNotNull);
     });
 
     test('communityGuidelinesUrl is a valid https URL', () {
       expect(AppConstants.communityGuidelinesUrl, startsWith('https://'));
-      expect(
-        Uri.tryParse(AppConstants.communityGuidelinesUrl),
-        isNotNull,
-      );
+      expect(Uri.tryParse(AppConstants.communityGuidelinesUrl), isNotNull);
     });
 
     test('appStoreUrl is a valid https URL', () {
       expect(AppConstants.appStoreUrl, startsWith('https://'));
-      expect(
-        Uri.tryParse(AppConstants.appStoreUrl),
-        isNotNull,
-      );
+      expect(Uri.tryParse(AppConstants.appStoreUrl), isNotNull);
     });
 
     test('playStoreUrl is a valid https URL', () {
       expect(AppConstants.playStoreUrl, startsWith('https://'));
-      expect(
-        Uri.tryParse(AppConstants.playStoreUrl),
-        isNotNull,
-      );
+      expect(Uri.tryParse(AppConstants.playStoreUrl), isNotNull);
     });
 
     test('appStoreUrl contains Apple domain', () {

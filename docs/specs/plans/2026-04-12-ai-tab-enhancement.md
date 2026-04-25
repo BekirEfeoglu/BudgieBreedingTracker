@@ -78,7 +78,7 @@ Add these keys inside the `"genetics"` object, after the existing AI keys (aroun
 "ai_phase_error": "Hata oluştu",
 "ai_camera": "Kamera",
 "ai_gallery": "Galeri",
-"ai_change_image": "Deği��tir",
+"ai_change_image": "Değiştir",
 "ai_photo_tips_title": "İpuçları",
 "ai_mutation_photo_tip_1": "Tüm vücut görünsün",
 "ai_mutation_photo_tip_2": "Doğal ışık tercih edin",

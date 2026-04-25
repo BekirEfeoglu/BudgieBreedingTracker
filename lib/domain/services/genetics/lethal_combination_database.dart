@@ -22,6 +22,25 @@ enum LethalSeverity {
   };
 }
 
+/// Which layer of the pairing triggers a lethal combination warning.
+enum LethalScope {
+  /// Both parents must visually express the single required mutation, and
+  /// every offspring is flagged as affected (e.g. Ino × Ino, Pallid × Pallid).
+  parentBothVisual,
+
+  /// Each parent must visually express at least one mutation from the set
+  /// (e.g. any Crested allele × any Crested allele).
+  parentAnyVisual,
+
+  /// An individual offspring must be homozygous (double factor) for the
+  /// required mutation (e.g. DF Spangle, DF Dominant Pied, Feather Duster).
+  offspringHomozygous,
+
+  /// An individual offspring must visually express every required mutation.
+  /// Used for classic compound phenotype warnings.
+  offspringVisual,
+}
+
 /// A known lethal or semi-lethal allele combination in budgies.
 class LethalCombination {
   /// Unique identifier for this combination.
@@ -40,13 +59,17 @@ class LethalCombination {
   /// For lethal: ~0.25 of offspring affected per Mendelian ratio.
   final double affectedRate;
 
-  /// Mutation IDs that must ALL be present in an offspring's visual mutations
-  /// for this combination to trigger. For homozygous checks, see [requiresHomozygous].
+  /// Mutation IDs involved in this combination. Interpretation depends on
+  /// [scope]: `parentBothVisual` uses the first ID for each parent check,
+  /// `parentAnyVisual` matches any allele from the set, `offspringHomozygous`
+  /// uses the first ID for a double-factor offspring check, and
+  /// `offspringVisual` requires every ID to appear in offspring visuals.
   final Set<String> requiredMutationIds;
 
-  /// If true, the combination requires the mutation to be homozygous (double factor).
-  /// Used for incomplete dominant mutations like Crested DF, Spangle DF.
-  final bool requiresHomozygous;
+  /// Which layer of the pairing triggers the warning — parent-level or
+  /// offspring-level, and whether the match is homozygous, every-visual, or
+  /// any-visual.
+  final LethalScope scope;
 
   const LethalCombination({
     required this.id,
@@ -55,7 +78,7 @@ class LethalCombination {
     required this.severity,
     required this.affectedRate,
     required this.requiredMutationIds,
-    this.requiresHomozygous = false,
+    this.scope = LethalScope.offspringVisual,
   });
 }
 
@@ -110,7 +133,7 @@ abstract class LethalCombinationDatabase {
       severity: LethalSeverity.lethal,
       affectedRate: 0.25,
       requiredMutationIds: GeneticsConstants.crestedAlleleIds,
-      requiresHomozygous: false,
+      scope: LethalScope.parentAnyVisual,
     ),
 
     // ── Double Factor Spangle (Sub-vital) ──
@@ -123,7 +146,7 @@ abstract class LethalCombinationDatabase {
       severity: LethalSeverity.subVital,
       affectedRate: 1.0,
       requiredMutationIds: {GeneticsConstants.mutSpangle},
-      requiresHomozygous: true,
+      scope: LethalScope.offspringHomozygous,
     ),
 
     // ── Double Factor Dominant Pied (Semi-Lethal) ──
@@ -136,7 +159,7 @@ abstract class LethalCombinationDatabase {
       severity: LethalSeverity.semiLethal,
       affectedRate: 1.0,
       requiredMutationIds: {GeneticsConstants.mutDominantPied},
-      requiresHomozygous: true,
+      scope: LethalScope.offspringHomozygous,
     ),
 
     // ── Visual Ino x Visual Ino (Sub-Vital) ──
@@ -152,7 +175,7 @@ abstract class LethalCombinationDatabase {
       severity: LethalSeverity.subVital,
       affectedRate: 1.0,
       requiredMutationIds: {GeneticsConstants.mutIno},
-      requiresHomozygous: false,
+      scope: LethalScope.parentBothVisual,
     ),
     // ── Feather Duster (Lethal) ──
     // Homozygous feather duster (fdu/fdu) is invariably lethal.
@@ -165,7 +188,38 @@ abstract class LethalCombinationDatabase {
       severity: LethalSeverity.lethal,
       affectedRate: 1.0,
       requiredMutationIds: {GeneticsConstants.mutFeatherDuster},
-      requiresHomozygous: true,
+      scope: LethalScope.offspringHomozygous,
+    ),
+
+    // ── Visual Pallid × Visual Pallid (Sub-Vital) ──
+    // Pallid belongs to the same ino_locus as Ino but removes less melanin.
+    // Homozygous Pallid offspring are viable but show reduced body melanin,
+    // increased eye sensitivity, and somewhat lower vigour. Weaker effect
+    // than full Ino but still flagged as sub-vital so breeders can plan
+    // around the ino-locus homozygosity risk.
+    LethalCombination(
+      id: 'pallid_x_pallid',
+      nameKey: 'genetics.lethal_pallid_x_pallid_name',
+      descriptionKey: 'genetics.lethal_pallid_x_pallid_desc',
+      severity: LethalSeverity.subVital,
+      affectedRate: 1.0,
+      requiredMutationIds: {GeneticsConstants.mutPallid},
+      scope: LethalScope.parentBothVisual,
+    ),
+
+    // ── Visual Texas Clearbody × Visual Texas Clearbody (Sub-Vital) ──
+    // Texas Clearbody is an ino_locus allele that reduces body melanin while
+    // preserving wing markings. Homozygous offspring can exhibit eye and
+    // immune issues analogous (though milder) to full Ino × Ino. Treated as
+    // sub-vital to warn breeders about the ino-locus dosage effect.
+    LethalCombination(
+      id: 'texas_clearbody_x_texas_clearbody',
+      nameKey: 'genetics.lethal_tcb_x_tcb_name',
+      descriptionKey: 'genetics.lethal_tcb_x_tcb_desc',
+      severity: LethalSeverity.subVital,
+      affectedRate: 1.0,
+      requiredMutationIds: {GeneticsConstants.mutTexasClearbody},
+      scope: LethalScope.parentBothVisual,
     ),
   ];
 

@@ -3,6 +3,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
+import '../../../core/widgets/buttons/app_icon_button.dart';
 import '../../../router/route_names.dart';
 import 'admin_sidebar.dart';
 
@@ -65,17 +66,19 @@ class _NarrowLayout extends StatelessWidget {
       appBar: AppBar(
         title: Text(title.tr()),
         leading: Builder(
-          builder: (ctx) => IconButton(
+          builder: (ctx) => AppIconButton(
             icon: const Icon(LucideIcons.menu),
             onPressed: () => Scaffold.of(ctx).openDrawer(),
             tooltip: 'admin.menu'.tr(),
+            semanticLabel: 'admin.menu'.tr(),
           ),
         ),
         actions: [
-          IconButton(
+          AppIconButton(
             icon: const Icon(LucideIcons.arrowLeft),
             onPressed: () => context.go(AppRoutes.home),
             tooltip: 'admin.back_to_app'.tr(),
+            semanticLabel: 'admin.back_to_app'.tr(),
           ),
         ],
       ),
