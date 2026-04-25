@@ -75,7 +75,10 @@ Deno.test("validateUserIdsCount rejects over limit", () => {
 
 Deno.test("clampText trims and enforces max length", () => {
   assertEquals(clampText("  hello  ", 100), "hello");
-  assertEquals(clampText("a".repeat(TITLE_MAX + 50), TITLE_MAX).length, TITLE_MAX);
+  assertEquals(
+    clampText("a".repeat(TITLE_MAX + 50), TITLE_MAX).length,
+    TITLE_MAX,
+  );
   assertEquals(clampText("a".repeat(BODY_MAX + 50), BODY_MAX).length, BODY_MAX);
 });
 
@@ -131,18 +134,18 @@ const OTHER = "user-other";
 
 Deno.test("authorizePushTargets: non-admin pushing to self is allowed", () => {
   assertEquals(
-    authorizePushTargets({ userId: CALLER, title: "t", body: "b" }, CALLER, false),
+    authorizePushTargets({ userId: CALLER }, CALLER, false),
     null,
   );
   assertEquals(
-    authorizePushTargets({ userIds: [CALLER], title: "t", body: "b" }, CALLER, false),
+    authorizePushTargets({ userIds: [CALLER] }, CALLER, false),
     null,
   );
 });
 
 Deno.test("authorizePushTargets: non-admin pushing to another user is forbidden", () => {
   const r = authorizePushTargets(
-    { userId: OTHER, title: "t", body: "b" },
+    { userId: OTHER },
     CALLER,
     false,
   );
@@ -152,7 +155,7 @@ Deno.test("authorizePushTargets: non-admin pushing to another user is forbidden"
 
 Deno.test("authorizePushTargets: non-admin with mixed userIds is forbidden", () => {
   const r = authorizePushTargets(
-    { userIds: [CALLER, OTHER], title: "t", body: "b" },
+    { userIds: [CALLER, OTHER] },
     CALLER,
     false,
   );
@@ -161,7 +164,7 @@ Deno.test("authorizePushTargets: non-admin with mixed userIds is forbidden", () 
 
 Deno.test("authorizePushTargets: raw tokens require admin", () => {
   const r = authorizePushTargets(
-    { tokens: ["fcm-token-xyz"], title: "t", body: "b" },
+    { tokens: ["fcm-token-xyz"] },
     CALLER,
     false,
   );
@@ -171,7 +174,7 @@ Deno.test("authorizePushTargets: raw tokens require admin", () => {
 Deno.test("authorizePushTargets: admin may push to any user", () => {
   assertEquals(
     authorizePushTargets(
-      { userIds: [OTHER, "u3"], title: "t", body: "b" },
+      { userIds: [OTHER, "u3"] },
       CALLER,
       true,
     ),
@@ -182,7 +185,7 @@ Deno.test("authorizePushTargets: admin may push to any user", () => {
 Deno.test("authorizePushTargets: admin may use raw tokens", () => {
   assertEquals(
     authorizePushTargets(
-      { tokens: ["a", "b"], title: "t", body: "b" },
+      { tokens: ["a", "b"] },
       CALLER,
       true,
     ),
@@ -192,7 +195,7 @@ Deno.test("authorizePushTargets: admin may use raw tokens", () => {
 
 Deno.test("authorizePushTargets: empty target set is allowed (no-op)", () => {
   assertEquals(
-    authorizePushTargets({ title: "t", body: "b" }, CALLER, false),
+    authorizePushTargets({}, CALLER, false),
     null,
   );
 });

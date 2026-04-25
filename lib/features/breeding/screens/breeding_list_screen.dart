@@ -14,7 +14,7 @@ import 'package:budgie_breeding_tracker/core/widgets/sort_bottom_sheet.dart';
 import 'package:budgie_breeding_tracker/core/widgets/buttons/fab_button.dart';
 import 'package:budgie_breeding_tracker/core/widgets/ad_banner_widget.dart';
 import 'package:budgie_breeding_tracker/domain/services/ads/ad_service.dart';
-import 'package:budgie_breeding_tracker/data/providers/premium_shared_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/premium/premium_providers.dart';
 import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_providers.dart';
 import 'package:budgie_breeding_tracker/data/providers/egg_stream_providers.dart';
@@ -149,7 +149,7 @@ class BreedingListScreen extends ConsumerWidget {
                         physics: const AlwaysScrollableScrollPhysics(),
                         padding: const EdgeInsets.only(
                           top: AppSpacing.sm,
-                          bottom: AppSpacing.xxxl * 2,
+                          bottom: AppSpacing.lg,
                         ),
                         itemCount: pairs.length,
                         itemBuilder: (context, index) {
@@ -175,10 +175,25 @@ class BreedingListScreen extends ConsumerWidget {
           ),
         ],
       ),
-      floatingActionButton: FabButton(
-        icon: const AppIcon(AppIcons.add),
-        tooltip: 'breeding.new_breeding'.tr(),
-        onPressed: () => context.push('/breeding/form'),
+      bottomNavigationBar: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.lg,
+            AppSpacing.xs,
+            AppSpacing.lg,
+            AppSpacing.xs,
+          ),
+          child: Align(
+            alignment: Alignment.centerRight,
+            heightFactor: 1,
+            child: FabButton(
+              icon: const AppIcon(AppIcons.add),
+              tooltip: 'breeding.new_breeding'.tr(),
+              onPressed: () => context.push('/breeding/form'),
+            ),
+          ),
+        ),
       ),
     );
   }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
@@ -40,24 +41,36 @@ class BreedingPairInfoSection extends ConsumerWidget {
         children: [
           Text('breeding.pair_info'.tr(), style: theme.textTheme.titleMedium),
           const SizedBox(height: AppSpacing.md),
-          Row(
-            children: [
-              Expanded(
-                child: BirdPairCard(
-                  bird: maleBird,
-                  gender: BirdGender.male,
-                  label: 'breeding.male'.tr(),
-                ),
-              ),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: BirdPairCard(
-                  bird: femaleBird,
-                  gender: BirdGender.female,
-                  label: 'breeding.female'.tr(),
-                ),
-              ),
-            ],
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final useSingleColumn = constraints.maxWidth < 430;
+              final cardWidth = useSingleColumn
+                  ? constraints.maxWidth
+                  : (constraints.maxWidth - AppSpacing.md) / 2;
+
+              return Wrap(
+                spacing: AppSpacing.md,
+                runSpacing: AppSpacing.md,
+                children: [
+                  SizedBox(
+                    width: cardWidth,
+                    child: BirdPairCard(
+                      bird: maleBird,
+                      gender: BirdGender.male,
+                      label: 'breeding.male'.tr(),
+                    ),
+                  ),
+                  SizedBox(
+                    width: cardWidth,
+                    child: BirdPairCard(
+                      bird: femaleBird,
+                      gender: BirdGender.female,
+                      label: 'breeding.female'.tr(),
+                    ),
+                  ),
+                ],
+              );
+            },
           ),
           if (pair.cageNumber != null) ...[
             const SizedBox(height: AppSpacing.sm),
@@ -103,61 +116,66 @@ class BirdPairCard extends StatelessWidget {
     final name = bird?.name ?? 'common.loading'.tr();
 
     return Card(
-      child: Padding(
-        padding: AppSpacing.cardPadding,
-        child: Row(
-          children: [
-            CircleAvatar(
-              radius: 20,
-              backgroundColor: genderColor.withValues(alpha: 0.1),
-              child: bird?.photoUrl != null
-                  ? ClipOval(
-                      child: CachedNetworkImage(
-                        imageUrl: bird!.photoUrl!,
-                        width: 40,
-                        height: 40,
-                        fit: BoxFit.cover,
-                        memCacheWidth: 80,
-                        memCacheHeight: 80,
-                        placeholder: (_, __) => AppIcon(
-                          gender == BirdGender.male
-                              ? AppIcons.male
-                              : AppIcons.female,
-                          size: 20,
-                          color: genderColor,
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: bird == null ? null : () => context.push('/birds/${bird!.id}'),
+        child: Padding(
+          padding: AppSpacing.cardPadding,
+          child: Row(
+            children: [
+              CircleAvatar(
+                radius: 20,
+                backgroundColor: genderColor.withValues(alpha: 0.1),
+                child: bird?.photoUrl != null
+                    ? ClipOval(
+                        child: CachedNetworkImage(
+                          imageUrl: bird!.photoUrl!,
+                          width: 40,
+                          height: 40,
+                          fit: BoxFit.cover,
+                          memCacheWidth: 80,
+                          memCacheHeight: 80,
+                          placeholder: (_, __) => AppIcon(
+                            gender == BirdGender.male
+                                ? AppIcons.male
+                                : AppIcons.female,
+                            size: 20,
+                            color: genderColor,
+                          ),
+                          errorWidget: (_, __, ___) => AppIcon(
+                            gender == BirdGender.male
+                                ? AppIcons.male
+                                : AppIcons.female,
+                            size: 20,
+                            color: genderColor,
+                          ),
                         ),
-                        errorWidget: (_, __, ___) => AppIcon(
-                          gender == BirdGender.male
-                              ? AppIcons.male
-                              : AppIcons.female,
-                          size: 20,
-                          color: genderColor,
-                        ),
+                      )
+                    : AppIcon(
+                        gender == BirdGender.male
+                            ? AppIcons.male
+                            : AppIcons.female,
+                        size: 20,
+                        color: genderColor,
                       ),
-                    )
-                  : AppIcon(
-                      gender == BirdGender.male
-                          ? AppIcons.male
-                          : AppIcons.female,
-                      size: 20,
-                      color: genderColor,
-                    ),
-            ),
-            const SizedBox(width: AppSpacing.sm),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    name,
-                    style: theme.textTheme.titleMedium,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  Text(label, style: theme.textTheme.bodySmall),
-                ],
               ),
-            ),
-          ],
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      name,
+                      style: theme.textTheme.titleMedium,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    Text(label, style: theme.textTheme.bodySmall),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

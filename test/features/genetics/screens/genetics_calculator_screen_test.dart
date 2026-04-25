@@ -7,6 +7,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
+import 'package:budgie_breeding_tracker/data/providers/user_role_providers.dart';
 import 'package:budgie_breeding_tracker/features/genetics/screens/genetics_calculator_screen.dart';
 import 'package:budgie_breeding_tracker/features/genetics/providers/genetics_providers.dart';
 import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
@@ -51,11 +52,12 @@ void main() {
     );
   }
 
-  Widget buildSubject() {
+  Widget buildSubject({bool isFounder = false}) {
     return ProviderScope(
       overrides: [
         currentUserIdProvider.overrideWithValue('test-user'),
         currentUserProvider.overrideWith((_) => null),
+        isFounderProvider.overrideWith((_) async => isFounder),
         geneticsHistoryDaoProvider.overrideWithValue(mockHistoryDao),
       ],
       child: MaterialApp.router(routerConfig: buildRouter()),
@@ -101,7 +103,7 @@ void main() {
     });
 
     testWidgets('opens AI predictions from AppBar menu', (tester) async {
-      await tester.pumpWidget(buildSubject());
+      await tester.pumpWidget(buildSubject(isFounder: true));
       await tester.pumpAndSettle();
 
       await tester.tap(find.byIcon(LucideIcons.moreVertical));
@@ -113,6 +115,18 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('AI Screen'), findsOneWidget);
+    });
+
+    testWidgets('hides AI predictions menu item for non-founder users', (
+      tester,
+    ) async {
+      await tester.pumpWidget(buildSubject());
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byIcon(LucideIcons.moreVertical));
+      await tester.pumpAndSettle();
+
+      expect(find.text(l10n('more.ai_predictions')), findsNothing);
     });
 
     testWidgets('does not show reset button when nothing is selected', (

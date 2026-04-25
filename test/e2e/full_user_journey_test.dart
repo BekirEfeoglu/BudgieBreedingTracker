@@ -151,6 +151,12 @@ void main() {
           eggs.removeWhere((egg) => egg.id == item.id);
           eggs.add(item);
         });
+        when(() => mockEggRepository.getByIncubation(any())).thenAnswer((
+          invocation,
+        ) async {
+          final id = invocation.positionalArguments.first as String;
+          return eggs.where((egg) => egg.incubationId == id).toList();
+        });
         when(
           () => mockChickRepository.getByEggId(any()),
         ).thenAnswer((_) async => null);

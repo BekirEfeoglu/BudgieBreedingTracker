@@ -15,6 +15,7 @@ import 'package:budgie_breeding_tracker/core/widgets/error_state.dart';
 import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
 import 'package:budgie_breeding_tracker/core/widgets/dialogs/confirm_dialog.dart';
 import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
+import 'package:budgie_breeding_tracker/data/providers/user_role_providers.dart';
 import 'package:budgie_breeding_tracker/data/providers/breeding_detail_stream_providers.dart';
 import 'package:budgie_breeding_tracker/data/providers/action_feedback_providers.dart';
 import 'package:budgie_breeding_tracker/features/birds/providers/bird_form_providers.dart';
@@ -70,6 +71,7 @@ class _DetailContent extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final formState = ref.watch(birdFormStateProvider);
+    final isFounder = ref.watch(isFounderProvider).value == true;
 
     ref.listen<BirdFormState>(birdFormStateProvider, (_, state) {
       if (!context.mounted) return;
@@ -88,14 +90,15 @@ class _DetailContent extends ConsumerWidget {
       appBar: AppBar(
         title: Text(bird.name),
         actions: [
-          AppIconButton(
-            icon: const Icon(LucideIcons.sparkles, size: 20),
-            tooltip: 'more.ai_predictions'.tr(),
-            semanticLabel: 'more.ai_predictions'.tr(),
-            onPressed: () => context.push(
-              '${AppRoutes.aiPredictions}?tab=mutation&birdId=${bird.id}',
+          if (isFounder)
+            AppIconButton(
+              icon: const Icon(LucideIcons.sparkles, size: 20),
+              tooltip: 'more.ai_predictions'.tr(),
+              semanticLabel: 'more.ai_predictions'.tr(),
+              onPressed: () => context.push(
+                '${AppRoutes.aiPredictions}?tab=mutation&birdId=${bird.id}',
+              ),
             ),
-          ),
           AppIconButton(
             icon: const AppIcon(AppIcons.edit),
             tooltip: 'common.edit'.tr(),
@@ -135,15 +138,31 @@ class _DetailContent extends ConsumerWidget {
                     children: [
                       BirdDetailHeader(bird: bird),
                       BirdDetailPhotos(bird: bird),
-                      const Divider(height: 1, indent: AppSpacing.lg, endIndent: AppSpacing.lg),
+                      const Divider(
+                        height: 1,
+                        indent: AppSpacing.lg,
+                        endIndent: AppSpacing.lg,
+                      ),
                       BirdDetailInfo(bird: bird),
-                      const Divider(height: 1, indent: AppSpacing.lg, endIndent: AppSpacing.lg),
+                      const Divider(
+                        height: 1,
+                        indent: AppSpacing.lg,
+                        endIndent: AppSpacing.lg,
+                      ),
                       BirdDetailParents(bird: bird),
                       BirdFamilyInfo(bird: bird),
-                      const Divider(height: 1, indent: AppSpacing.lg, endIndent: AppSpacing.lg),
+                      const Divider(
+                        height: 1,
+                        indent: AppSpacing.lg,
+                        endIndent: AppSpacing.lg,
+                      ),
                       BirdDetailHealth(birdId: bird.id),
                       if (bird.notes != null && bird.notes!.isNotEmpty) ...[
-                        const Divider(height: 1, indent: AppSpacing.lg, endIndent: AppSpacing.lg),
+                        const Divider(
+                          height: 1,
+                          indent: AppSpacing.lg,
+                          endIndent: AppSpacing.lg,
+                        ),
                         BirdDetailNotes(notes: bird.notes!),
                       ],
                     ],

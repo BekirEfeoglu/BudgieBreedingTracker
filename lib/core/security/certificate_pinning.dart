@@ -83,6 +83,11 @@ class CertificatePinning {
     final lowerHost = host.toLowerCase();
     return _pinnedDomainSuffixes.any((suffix) => lowerHost.endsWith(suffix));
   }
+
+  @visibleForTesting
+  static bool shouldRejectProxyForHost(String host, {required bool hasProxy}) {
+    return hasProxy && !_allowProxy && isPinnedHost(host);
+  }
 }
 
 class _PinningHttpOverrides extends HttpOverrides {
@@ -100,6 +105,14 @@ class _PinningHttpOverrides extends HttpOverrides {
         previous?.createHttpClient(context) ?? super.createHttpClient(context);
     client.connectionFactory = (uri, proxyHost, proxyPort) async {
       if (proxyHost != null && proxyPort != null) {
+        if (CertificatePinning.shouldRejectProxyForHost(
+          uri.host,
+          hasProxy: true,
+        )) {
+          throw TlsException(
+            'Proxy connections are not allowed for pinned host ${uri.host}',
+          );
+        }
         return Socket.startConnect(proxyHost, proxyPort);
       }
 

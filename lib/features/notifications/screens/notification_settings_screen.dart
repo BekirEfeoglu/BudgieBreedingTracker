@@ -15,7 +15,7 @@ import 'package:budgie_breeding_tracker/data/local/preferences/app_preferences.d
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_permission_handler.dart';
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_providers.dart';
-import 'package:budgie_breeding_tracker/features/notifications/providers/notification_settings_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/notifications/notification_settings_providers.dart';
 
 part 'notification_settings_banners.dart';
 part 'notification_settings_dnd.dart';

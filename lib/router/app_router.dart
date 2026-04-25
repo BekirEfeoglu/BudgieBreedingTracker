@@ -12,7 +12,7 @@ import 'guards/founder_guard.dart';
 import 'guards/premium_guard.dart';
 import 'redirect_guards.dart';
 import '../domain/services/ads/ad_reward_providers.dart';
-import '../features/premium/providers/premium_providers.dart';
+import '../domain/services/premium/premium_providers.dart';
 import '../features/home/screens/home_screen.dart';
 import '../features/birds/screens/bird_list_screen.dart';
 import '../features/birds/screens/bird_detail_screen.dart';
@@ -129,8 +129,9 @@ final routerProvider = Provider<GoRouter>((ref) {
           location.startsWith('/marketplace') ||
           location == AppRoutes.aiPredictions;
       if (isFounderRoute) {
-        final founderRedirect =
-            FounderGuard.redirect(ref.read(isFounderProvider));
+        final founderRedirect = FounderGuard.redirect(
+          ref.read(isFounderProvider),
+        );
         if (founderRedirect != null) return founderRedirect;
       }
 
@@ -278,4 +279,3 @@ final routerProvider = Provider<GoRouter>((ref) {
     errorBuilder: (context, state) => const NotFoundScreen(),
   );
 });
-

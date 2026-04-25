@@ -150,6 +150,8 @@ class BirdFormParentsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final parentSpeciesFilter = species == Species.unknown ? null : species;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -159,7 +161,7 @@ class BirdFormParentsSection extends StatelessWidget {
           icon: const AppIcon(AppIcons.male, size: 20),
           selectedId: fatherId,
           excludeId: editBirdId,
-          speciesFilter: species,
+          speciesFilter: parentSpeciesFilter,
           genderFilter: BirdGender.male,
           onChanged: onFatherChanged,
         ),
@@ -169,7 +171,7 @@ class BirdFormParentsSection extends StatelessWidget {
           icon: const AppIcon(AppIcons.female, size: 20),
           selectedId: motherId,
           excludeId: editBirdId,
-          speciesFilter: species,
+          speciesFilter: parentSpeciesFilter,
           genderFilter: BirdGender.female,
           onChanged: onMotherChanged,
         ),

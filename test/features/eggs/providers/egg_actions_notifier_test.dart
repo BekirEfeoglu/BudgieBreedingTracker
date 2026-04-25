@@ -18,7 +18,7 @@ import 'package:budgie_breeding_tracker/domain/services/calendar/calendar_event_
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_providers.dart';
 import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
 import 'package:budgie_breeding_tracker/features/eggs/providers/egg_providers.dart';
-import 'package:budgie_breeding_tracker/features/notifications/providers/notification_settings_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/notifications/notification_settings_providers.dart';
 
 import '../../../helpers/mocks.dart';
 
@@ -118,6 +118,16 @@ void main() {
         breedingPairId: 'pair-1',
       ),
     );
+    when(() => eggRepo.getByIncubation(any())).thenAnswer(
+      (_) async => [
+        Egg(
+          id: 'existing-egg',
+          userId: 'test-user',
+          incubationId: 'inc-1',
+          layDate: DateTime(2024, 1, 9),
+        ),
+      ],
+    );
     when(() => breedingPairRepo.getById(any())).thenAnswer(
       (_) async => const BreedingPair(
         id: 'pair-1',
@@ -160,17 +170,16 @@ void main() {
     EggStatus status = EggStatus.incubating,
     int? eggNumber,
     String? incubationId,
-  }) =>
-      Egg(
-        id: id,
-        userId: 'test-user',
-        incubationId: incubationId ?? 'inc-1',
-        layDate: DateTime(2024, 1, 10),
-        status: status,
-        eggNumber: eggNumber ?? 1,
-        createdAt: DateTime(2024, 1, 10),
-        updatedAt: DateTime(2024, 1, 10),
-      );
+  }) => Egg(
+    id: id,
+    userId: 'test-user',
+    incubationId: incubationId ?? 'inc-1',
+    layDate: DateTime(2024, 1, 10),
+    status: status,
+    eggNumber: eggNumber ?? 1,
+    createdAt: DateTime(2024, 1, 10),
+    updatedAt: DateTime(2024, 1, 10),
+  );
 
   group('EggActionsNotifier - deleteEgg', () {
     test('transitions to success on successful delete', () async {
@@ -188,8 +197,7 @@ void main() {
     });
 
     test('sets error when delete fails', () async {
-      when(() => eggRepo.remove('egg-1'))
-          .thenThrow(Exception('Delete failed'));
+      when(() => eggRepo.remove('egg-1')).thenThrow(Exception('Delete failed'));
 
       final container = makeContainer();
       addTearDown(container.dispose);
@@ -204,14 +212,14 @@ void main() {
 
     test('loading state is set before async operation', () async {
       final completer = Completer<void>();
-      when(() => eggRepo.remove('egg-1'))
-          .thenAnswer((_) => completer.future);
+      when(() => eggRepo.remove('egg-1')).thenAnswer((_) => completer.future);
 
       final container = makeContainer();
       addTearDown(container.dispose);
 
-      final future =
-          container.read(eggActionsProvider.notifier).deleteEgg('egg-1');
+      final future = container
+          .read(eggActionsProvider.notifier)
+          .deleteEgg('egg-1');
 
       expect(container.read(eggActionsProvider).isLoading, isTrue);
 
@@ -263,59 +271,67 @@ void main() {
       expect(state.isSuccess, isTrue);
     });
 
-    test('sets warning when scheduler side-effect fails during addEgg',
-        () async {
-      when(() => eggRepo.save(any())).thenAnswer((_) async {});
-      when(
-        () => mockScheduler.scheduleEggTurningReminders(
-          eggId: any(named: 'eggId'),
-          startDate: any(named: 'startDate'),
-          eggLabel: any(named: 'eggLabel'),
-          species: any(named: 'species'),
-          settings: any(named: 'settings'),
-        ),
-      ).thenThrow(Exception('scheduler down'));
+    test(
+      'sets warning when scheduler side-effect fails during addEgg',
+      () async {
+        when(() => eggRepo.save(any())).thenAnswer((_) async {});
+        when(
+          () => mockScheduler.scheduleEggTurningReminders(
+            eggId: any(named: 'eggId'),
+            startDate: any(named: 'startDate'),
+            eggLabel: any(named: 'eggLabel'),
+            species: any(named: 'species'),
+            settings: any(named: 'settings'),
+          ),
+        ).thenThrow(Exception('scheduler down'));
 
-      final container = makeContainer();
-      addTearDown(container.dispose);
+        final container = makeContainer();
+        addTearDown(container.dispose);
 
-      await container.read(eggActionsProvider.notifier).addEgg(
-            incubationId: 'inc-1',
-            layDate: DateTime(2024, 1, 10),
-            eggNumber: 1,
-          );
+        await container
+            .read(eggActionsProvider.notifier)
+            .addEgg(
+              incubationId: 'inc-1',
+              layDate: DateTime(2024, 1, 10),
+              eggNumber: 1,
+            );
 
-      final state = container.read(eggActionsProvider);
-      expect(state.isSuccess, isTrue);
-      expect(state.warning, isNotNull);
-    });
+        final state = container.read(eggActionsProvider);
+        expect(state.isSuccess, isTrue);
+        expect(state.warning, isNotNull);
+      },
+    );
 
-    test('sets warning when calendar side-effect fails during addEgg',
-        () async {
-      when(() => eggRepo.save(any())).thenAnswer((_) async {});
-      when(
-        () => mockCalendarGen.generateEggEvents(
-          userId: any(named: 'userId'),
-          layDate: any(named: 'layDate'),
-          eggNumber: any(named: 'eggNumber'),
-          incubationId: any(named: 'incubationId'),
-          species: any(named: 'species'),
-        ),
-      ).thenThrow(Exception('calendar down'));
+    test(
+      'sets warning when calendar side-effect fails during addEgg',
+      () async {
+        when(() => eggRepo.save(any())).thenAnswer((_) async {});
+        when(
+          () => mockCalendarGen.generateEggEvents(
+            userId: any(named: 'userId'),
+            layDate: any(named: 'layDate'),
+            eggNumber: any(named: 'eggNumber'),
+            incubationId: any(named: 'incubationId'),
+            species: any(named: 'species'),
+          ),
+        ).thenThrow(Exception('calendar down'));
 
-      final container = makeContainer();
-      addTearDown(container.dispose);
+        final container = makeContainer();
+        addTearDown(container.dispose);
 
-      await container.read(eggActionsProvider.notifier).addEgg(
-            incubationId: 'inc-1',
-            layDate: DateTime(2024, 1, 10),
-            eggNumber: 1,
-          );
+        await container
+            .read(eggActionsProvider.notifier)
+            .addEgg(
+              incubationId: 'inc-1',
+              layDate: DateTime(2024, 1, 10),
+              eggNumber: 1,
+            );
 
-      final state = container.read(eggActionsProvider);
-      expect(state.isSuccess, isTrue);
-      expect(state.warning, isNotNull);
-    });
+        final state = container.read(eggActionsProvider);
+        expect(state.isSuccess, isTrue);
+        expect(state.warning, isNotNull);
+      },
+    );
   });
 
   group('EggActionsNotifier - state transitions', () {
@@ -327,7 +343,9 @@ void main() {
       addTearDown(container.dispose);
 
       // Add egg
-      await container.read(eggActionsProvider.notifier).addEgg(
+      await container
+          .read(eggActionsProvider.notifier)
+          .addEgg(
             incubationId: 'inc-1',
             layDate: DateTime(2024, 1, 10),
             eggNumber: 1,

@@ -12,7 +12,7 @@ import 'package:budgie_breeding_tracker/data/repositories/repository_providers.d
 import 'package:budgie_breeding_tracker/features/marketplace/providers/marketplace_providers.dart';
 import 'package:budgie_breeding_tracker/features/marketplace/screens/marketplace_screen.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_providers.dart';
-import 'package:budgie_breeding_tracker/features/premium/providers/premium_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/premium/premium_providers.dart';
 
 import '../../../helpers/test_localization.dart';
 

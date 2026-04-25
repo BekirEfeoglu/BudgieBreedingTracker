@@ -14,7 +14,8 @@ class PremiumNotifier extends Notifier<bool> {
 
   static String _cacheKey(String userId) => 'is_premium_$userId';
   static const int _maxSyncRetries = 3;
-  static String _pendingSyncKey(String userId) => 'pending_premium_sync_$userId';
+  static String _pendingSyncKey(String userId) =>
+      'pending_premium_sync_$userId';
 
   Future<void> _load(String userId, int loadToken) async {
     final prefs = await SharedPreferences.getInstance();
@@ -52,7 +53,11 @@ class PremiumNotifier extends Notifier<bool> {
           await prefs.setBool(cacheKey, isPremium);
         }
       } catch (e, st) {
-        AppLogger.error('[PremiumNotifier] RevenueCat query failed, using cached value', e, st);
+        AppLogger.error(
+          '[PremiumNotifier] RevenueCat query failed, using cached value',
+          e,
+          st,
+        );
       }
     }
 

@@ -6,7 +6,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:budgie_breeding_tracker/core/utils/app_haptics.dart';
 import 'package:budgie_breeding_tracker/core/widgets/ad_banner_widget.dart';
 import 'package:budgie_breeding_tracker/domain/services/ads/ad_service.dart';
-import 'package:budgie_breeding_tracker/data/providers/premium_shared_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/premium/premium_providers.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/enums/event_enums.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';

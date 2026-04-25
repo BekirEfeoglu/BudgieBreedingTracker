@@ -2,8 +2,10 @@ import 'dart:io';
 
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../core/constants/app_constants.dart';
 import '../../../core/constants/supabase_constants.dart';
 import '../../../core/utils/logger.dart';
+import '../storage/storage_utils.dart';
 
 class MarketplaceListingRemoteSource {
   final SupabaseClient _client;
@@ -15,6 +17,22 @@ class MarketplaceListingRemoteSource {
       'bird_id, species, mutation, gender, age, image_urls, city, status, '
       'view_count, message_count, is_verified_breeder, is_deleted, '
       'needs_review, username, avatar_url, created_at, updated_at';
+  static const _maxMarketplaceImages = 3;
+  static const _allowedImageExtensions = {
+    'jpg',
+    'jpeg',
+    'png',
+    'gif',
+    'webp',
+    'heic',
+  };
+
+  static String _sanitizePathComponent(String value) {
+    if (!RegExp(r'^[a-zA-Z0-9\-_]+$').hasMatch(value)) {
+      throw ArgumentError('Invalid path component');
+    }
+    return value;
+  }
 
   Future<List<Map<String, dynamic>>> fetchListings({
     int limit = 20,
@@ -34,7 +52,10 @@ class MarketplaceListingRemoteSource {
           .eq(SupabaseConstants.colStatus, 'active');
 
       if (before != null) {
-        query = query.lt(SupabaseConstants.colCreatedAt, before.toIso8601String());
+        query = query.lt(
+          SupabaseConstants.colCreatedAt,
+          before.toIso8601String(),
+        );
       }
       if (city != null && city.isNotEmpty) {
         query = query.eq(SupabaseConstants.colCity, city);
@@ -242,17 +263,42 @@ class MarketplaceListingRemoteSource {
     required String listingId,
     required List<String> localPaths,
   }) async {
+    _sanitizePathComponent(userId);
+    _sanitizePathComponent(listingId);
+    if (localPaths.length > _maxMarketplaceImages) {
+      throw ArgumentError('Too many marketplace images');
+    }
+
     final urls = <String>[];
     for (var i = 0; i < localPaths.length; i++) {
       try {
-        final storagePath = 'marketplace-images/$userId/$listingId/$i.jpg';
         final file = File(localPaths[i]);
-        await _client.storage.from(SupabaseConstants.marketplacePhotosBucket).upload(
-              storagePath,
-              file,
-              fileOptions: const FileOptions(upsert: true),
-            );
-        final url = _client.storage.from(SupabaseConstants.marketplacePhotosBucket).getPublicUrl(storagePath);
+        final ext = StorageUtils.safeExtension(file.path);
+        if (ext == null || !_allowedImageExtensions.contains(ext)) {
+          throw const StorageException('Marketplace image type is not allowed');
+        }
+
+        final bytes = await file.readAsBytes();
+        if (bytes.length > AppConstants.maxUploadSizeBytes) {
+          throw const StorageException('File size exceeds 10 MB limit');
+        }
+        if (!StorageUtils.validateMagicBytes(bytes, ext)) {
+          throw StorageException('File content does not match .$ext format');
+        }
+
+        final storagePath = 'marketplace-images/$userId/$listingId/$i.$ext';
+        final fileApi = _client.storage.from(
+          SupabaseConstants.marketplacePhotosBucket,
+        );
+        await fileApi.uploadBinary(
+          storagePath,
+          bytes,
+          fileOptions: FileOptions(
+            contentType: StorageUtils.getMimeType(file.path),
+            upsert: true,
+          ),
+        );
+        final url = fileApi.getPublicUrl(storagePath);
         urls.add(url);
       } catch (e, st) {
         AppLogger.error('marketplace', e, st);
@@ -269,10 +315,14 @@ class MarketplaceListingRemoteSource {
   }) async {
     try {
       final prefix = 'marketplace-images/$userId/$listingId/';
-      final files = await _client.storage.from(SupabaseConstants.marketplacePhotosBucket).list(path: prefix);
+      final files = await _client.storage
+          .from(SupabaseConstants.marketplacePhotosBucket)
+          .list(path: prefix);
       if (files.isNotEmpty) {
         final paths = files.map((f) => '$prefix${f.name}').toList();
-        await _client.storage.from(SupabaseConstants.marketplacePhotosBucket).remove(paths);
+        await _client.storage
+            .from(SupabaseConstants.marketplacePhotosBucket)
+            .remove(paths);
       }
     } catch (e) {
       AppLogger.warning('marketplace: Failed to delete images: $e');

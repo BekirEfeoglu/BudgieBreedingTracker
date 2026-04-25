@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:budgie_breeding_tracker/features/notifications/providers/notification_settings_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/notifications/notification_settings_providers.dart';
 import 'package:budgie_breeding_tracker/features/settings/widgets/notifications_section.dart';
 import 'package:budgie_breeding_tracker/features/settings/widgets/settings_navigation_tile.dart';
 import 'package:budgie_breeding_tracker/features/settings/widgets/settings_section_header.dart';

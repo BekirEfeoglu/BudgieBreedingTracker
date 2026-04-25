@@ -29,6 +29,35 @@ void main() {
       expect(find.text('Details'), findsOneWidget);
     });
 
+    testWidgets('keeps long titles on one line by scaling down', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: SizedBox(
+              width: 180,
+              child: InfoCard(
+                icon: Icon(Icons.info),
+                title: 'Muhabbet Kuşu',
+                subtitle: 'Tür',
+              ),
+            ),
+          ),
+        ),
+      );
+
+      final title = tester.widget<Text>(find.text('Muhabbet Kuşu'));
+      expect(title.maxLines, 1);
+      expect(
+        find.ancestor(
+          of: find.text('Muhabbet Kuşu'),
+          matching: find.byType(FittedBox),
+        ),
+        findsOneWidget,
+      );
+    });
+
     testWidgets('does not render subtitle when null', (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
@@ -88,10 +117,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: InfoCard(
-              title: 'Bird Info',
-              onTap: () => tapped = true,
-            ),
+            body: InfoCard(title: 'Bird Info', onTap: () => tapped = true),
           ),
         ),
       );
@@ -105,25 +131,25 @@ void main() {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
-            body: InfoCard(
-              title: 'Bird Info',
-              semanticLabel: 'Custom label',
-            ),
+            body: InfoCard(title: 'Bird Info', semanticLabel: 'Custom label'),
           ),
         ),
       );
 
       final semantics = tester.widget<Semantics>(
-        find.descendant(
-          of: find.byType(InfoCard),
-          matching: find.byType(Semantics),
-        ).first,
+        find
+            .descendant(
+              of: find.byType(InfoCard),
+              matching: find.byType(Semantics),
+            )
+            .first,
       );
       expect(semantics.properties.label, 'Custom label');
     });
 
-    testWidgets('builds default semanticLabel from title and subtitle',
-        (tester) async {
+    testWidgets('builds default semanticLabel from title and subtitle', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
@@ -133,16 +159,19 @@ void main() {
       );
 
       final semantics = tester.widget<Semantics>(
-        find.descendant(
-          of: find.byType(InfoCard),
-          matching: find.byType(Semantics),
-        ).first,
+        find
+            .descendant(
+              of: find.byType(InfoCard),
+              matching: find.byType(Semantics),
+            )
+            .first,
       );
       expect(semantics.properties.label, 'Birds: Count');
     });
 
-    testWidgets('marks as button in semantics when onTap is provided',
-        (tester) async {
+    testWidgets('marks as button in semantics when onTap is provided', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -152,10 +181,12 @@ void main() {
       );
 
       final semantics = tester.widget<Semantics>(
-        find.descendant(
-          of: find.byType(InfoCard),
-          matching: find.byType(Semantics),
-        ).first,
+        find
+            .descendant(
+              of: find.byType(InfoCard),
+              matching: find.byType(Semantics),
+            )
+            .first,
       );
       expect(semantics.properties.button, isTrue);
     });

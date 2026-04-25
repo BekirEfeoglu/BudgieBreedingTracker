@@ -15,6 +15,9 @@ String speciesLabel(Species species) => switch (species) {
 /// Example: "2 yıl 3 ay", "5 ay 12 gün", "10 gün"
 String formatBirdAge(({int years, int months, int days}) age) {
   if (age.years > 0) {
+    if (age.months <= 0) {
+      return 'birds.age_years'.tr(namedArgs: {'years': age.years.toString()});
+    }
     return 'birds.age_years_months'.tr(
       namedArgs: {
         'years': age.years.toString(),
@@ -23,6 +26,11 @@ String formatBirdAge(({int years, int months, int days}) age) {
     );
   }
   if (age.months > 0) {
+    if (age.days <= 0) {
+      return 'birds.age_months'.tr(
+        namedArgs: {'months': age.months.toString()},
+      );
+    }
     return 'birds.age_months_days'.tr(
       namedArgs: {'months': age.months.toString(), 'days': age.days.toString()},
     );
@@ -34,6 +42,9 @@ String formatBirdAge(({int years, int months, int days}) age) {
 /// Example: "2y 3a", "5a 12g", "10g"
 String formatBirdAgeShort(({int years, int months, int days}) age) {
   if (age.years > 0) {
+    if (age.months <= 0) {
+      return 'birds.age_short_y'.tr(namedArgs: {'years': age.years.toString()});
+    }
     return 'birds.age_short_ym'.tr(
       namedArgs: {
         'years': age.years.toString(),
@@ -42,6 +53,11 @@ String formatBirdAgeShort(({int years, int months, int days}) age) {
     );
   }
   if (age.months > 0) {
+    if (age.days <= 0) {
+      return 'birds.age_short_m'.tr(
+        namedArgs: {'months': age.months.toString()},
+      );
+    }
     return 'birds.age_short_md'.tr(
       namedArgs: {'months': age.months.toString(), 'days': age.days.toString()},
     );

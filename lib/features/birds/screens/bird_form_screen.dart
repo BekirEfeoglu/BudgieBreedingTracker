@@ -1,11 +1,17 @@
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:lucide_icons/lucide_icons.dart';
+import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/utils/app_haptics.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/species/species_profile.dart';
 import 'package:budgie_breeding_tracker/core/species/species_registry.dart';
+import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
+import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/core/widgets/error_state.dart';
 import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
 import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
@@ -42,6 +48,7 @@ class _BirdFormScreenState extends ConsumerState<BirdFormScreen> {
   Species _species = Species.unknown;
   BirdColor? _colorMutation;
   DateTime? _birthDate;
+  XFile? _photoFile;
   String? _fatherId;
   String? _motherId;
   ParentGenotype _genotype = const ParentGenotype.empty(
@@ -54,33 +61,72 @@ class _BirdFormScreenState extends ConsumerState<BirdFormScreen> {
   ProviderSubscription<AsyncValue<Bird?>>? _editBirdSubscription;
   Bird? _existingBird;
   bool _savedSuccessfully = false;
+  String? _generatedDefaultName;
+  bool _isProgrammaticControllerUpdate = false;
 
   bool get _isDirty {
     if (_savedSuccessfully) return false;
     if (_isEdit) {
       final existing = _existingBird;
       if (existing == null) return true;
-      return _nameController.text != existing.name ||
+      final existingColor = existing.colorMutation == BirdColor.unknown
+          ? null
+          : existing.colorMutation;
+      final notes = buildNotes(
+        colorMutation: _colorMutation,
+        colorNoteText: _colorNoteController.text,
+        notesText: _notesController.text,
+      );
+      final genotypeData = prepareBirdGenotypeData(
+        genotype: _genotype,
+        gender: _gender,
+        species: _species,
+        colorMutation: _colorMutation,
+      );
+      final ring = _ringController.text.trim().isEmpty
+          ? null
+          : _ringController.text.trim();
+      final cage = _cageController.text.trim().isEmpty
+          ? null
+          : _cageController.text.trim();
+      return _nameController.text.trim() != existing.name ||
           _gender != existing.gender ||
           _species != existing.species ||
-          _colorMutation != (existing.colorMutation == BirdColor.unknown ? null : existing.colorMutation) ||
-          _ringController.text != (existing.ringNumber ?? '') ||
+          _colorMutation != existingColor ||
+          ring != existing.ringNumber ||
           _birthDate != existing.birthDate ||
           _fatherId != existing.fatherId ||
           _motherId != existing.motherId ||
-          _cageController.text != (existing.cageNumber ?? '');
+          cage != existing.cageNumber ||
+          notes != existing.notes ||
+          !listEquals(genotypeData.mutationIds, existing.mutations) ||
+          !mapEquals(genotypeData.genotypeInfo, existing.genotypeInfo);
     }
-    return _nameController.text.isNotEmpty ||
-        _ringController.text.isNotEmpty ||
-        _cageController.text.isNotEmpty ||
-        _notesController.text.isNotEmpty ||
-        _colorNoteController.text.isNotEmpty ||
-        _birthDate != null;
+    final name = _nameController.text.trim();
+    final generatedName = _generatedDefaultName;
+    return (name.isNotEmpty && name != generatedName) ||
+        _gender != BirdGender.unknown ||
+        _species != Species.unknown ||
+        _colorMutation != null ||
+        _photoFile != null ||
+        _ringController.text.trim().isNotEmpty ||
+        _cageController.text.trim().isNotEmpty ||
+        _notesController.text.trim().isNotEmpty ||
+        _colorNoteController.text.trim().isNotEmpty ||
+        _birthDate != null ||
+        _fatherId != null ||
+        _motherId != null ||
+        _genotype.isNotEmpty;
   }
 
   @override
   void initState() {
     super.initState();
+    _nameController.addListener(_handleControllerChanged);
+    _ringController.addListener(_handleControllerChanged);
+    _cageController.addListener(_handleControllerChanged);
+    _notesController.addListener(_handleControllerChanged);
+    _colorNoteController.addListener(_handleControllerChanged);
     if (widget.editBirdId != null) {
       _isEdit = true;
       _isEditLoading = true;
@@ -93,6 +139,11 @@ class _BirdFormScreenState extends ConsumerState<BirdFormScreen> {
   @override
   void dispose() {
     _editBirdSubscription?.close();
+    _nameController.removeListener(_handleControllerChanged);
+    _ringController.removeListener(_handleControllerChanged);
+    _cageController.removeListener(_handleControllerChanged);
+    _notesController.removeListener(_handleControllerChanged);
+    _colorNoteController.removeListener(_handleControllerChanged);
     _nameController.dispose();
     _ringController.dispose();
     _cageController.dispose();
@@ -157,6 +208,7 @@ class _BirdFormScreenState extends ConsumerState<BirdFormScreen> {
           cageController: _cageController,
           notesController: _notesController,
           colorNoteController: _colorNoteController,
+          photoFile: _isEdit ? null : _photoFile,
           gender: _gender,
           species: _species,
           colorMutation: _colorMutation,
@@ -167,6 +219,10 @@ class _BirdFormScreenState extends ConsumerState<BirdFormScreen> {
           genotype: _genotype,
           isEdit: _isEdit,
           isLoading: formState.isLoading,
+          onPickPhotoSource: _isEdit ? null : _pickPhoto,
+          onRemovePhoto: _isEdit
+              ? null
+              : () => setState(() => _photoFile = null),
           onGenderChanged: (g) => setState(() {
             _gender = g;
             _genotype = normalizeGenotypeForGender(
@@ -223,6 +279,89 @@ class _BirdFormScreenState extends ConsumerState<BirdFormScreen> {
       motherId: _motherId,
       colorNoteText: _colorNoteController.text,
       notesText: _notesController.text,
+      photoFile: _isEdit ? null : _photoFile,
     );
+  }
+
+  Future<void> _pickPhoto() async {
+    final source = await _pickPhotoSource();
+    if (source == null) return;
+
+    try {
+      final picked = await ImagePicker().pickImage(
+        source: source,
+        maxWidth: 1920,
+        maxHeight: 1920,
+        imageQuality: 85,
+      );
+      if (!mounted || picked == null) return;
+      setState(() => _photoFile = picked);
+    } catch (e) {
+      AppLogger.warning('Failed to pick bird form photo: $e');
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('birds.photo_upload_error'.tr())));
+    }
+  }
+
+  Future<ImageSource?> _pickPhotoSource() {
+    final theme = Theme.of(context);
+
+    return showModalBottomSheet<ImageSource>(
+      context: context,
+      constraints: const BoxConstraints(maxWidth: AppSpacing.maxSheetWidth),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppSpacing.radiusXl),
+        ),
+      ),
+      builder: (sheetContext) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.onSurfaceVariant.withValues(
+                      alpha: 0.4,
+                    ),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              Text(
+                'birds.add_photo'.tr(),
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.md),
+              ListTile(
+                leading: const AppIcon(AppIcons.photo),
+                title: Text('birds.photo_source_gallery'.tr()),
+                onTap: () =>
+                    Navigator.of(sheetContext).pop(ImageSource.gallery),
+              ),
+              ListTile(
+                leading: const Icon(LucideIcons.camera),
+                title: Text('birds.photo_source_camera'.tr()),
+                onTap: () => Navigator.of(sheetContext).pop(ImageSource.camera),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _handleControllerChanged() {
+    if (_isProgrammaticControllerUpdate || !mounted) return;
+    setState(() {});
   }
 }

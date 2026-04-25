@@ -78,21 +78,43 @@ class _BirdDetailPhotosState extends ConsumerState<BirdDetailPhotos> {
               onDeletePhoto: (url) => _deletePhoto(context, ref, url),
             ),
           Padding(
-            padding: AppSpacing.screenPadding,
-            child: OutlinedButton.icon(
-              onPressed: _isUploading ? null : () => _addPhoto(context, ref),
-              icon: _isUploading
-                  ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const AppIcon(AppIcons.photo, size: 18),
-              label: Text(
-                _isUploading
-                    ? 'birds.uploading_photo'.tr()
-                    : 'birds.add_photo'.tr(),
-              ),
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.lg,
+              AppSpacing.xs,
+              AppSpacing.lg,
+              AppSpacing.xl,
+            ),
+            child: Row(
+              children: [
+                if (urls.isEmpty) const SizedBox(width: 116),
+                Flexible(
+                  child: OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
+                      minimumSize: const Size(0, AppSpacing.touchTargetMin),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.lg,
+                      ),
+                      visualDensity: VisualDensity.compact,
+                    ),
+                    onPressed: _isUploading
+                        ? null
+                        : () => _addPhoto(context, ref),
+                    icon: _isUploading
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const AppIcon(AppIcons.photo, size: 18),
+                    label: Text(
+                      _isUploading
+                          ? 'birds.uploading_photo'.tr()
+                          : 'birds.add_photo'.tr(),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ],

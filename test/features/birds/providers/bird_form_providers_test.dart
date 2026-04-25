@@ -8,7 +8,7 @@ import 'package:budgie_breeding_tracker/core/errors/app_exception.dart';
 import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/features/birds/providers/bird_form_providers.dart';
-import 'package:budgie_breeding_tracker/features/premium/providers/premium_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/premium/premium_providers.dart';
 
 import '../../../helpers/mocks.dart';
 

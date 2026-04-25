@@ -53,12 +53,13 @@ void main() {
       expect(container.read(birdFilterProvider), BirdFilter.male);
     });
 
-    testWidgets('renders horizontally scrollable layout', (tester) async {
-      await tester.pumpWidget(_wrap(const BirdFilterBar()));
+    testWidgets('wraps chips on compact width', (tester) async {
+      await tester.pumpWidget(
+        _wrap(const SizedBox(width: 390, child: BirdFilterBar())),
+      );
       await tester.pump();
 
-      // FadeScrollableChipBar uses ListView(scrollDirection: horizontal) + Stack
-      expect(find.byType(ListView), findsAtLeastNWidgets(1));
+      expect(find.byType(Wrap), findsOneWidget);
     });
   });
 }

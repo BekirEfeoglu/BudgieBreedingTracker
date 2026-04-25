@@ -2,10 +2,12 @@ name: CI
 
 on:
   workflow_dispatch:
+  schedule:
+    - cron: "0 2 * * 1"
   push:
-    branches: [main]
+    branches: [main, develop]
   pull_request:
-    branches: [main]
+    branches: [main, develop]
 
 permissions:
   contents: read
@@ -115,6 +117,33 @@ jobs:
             **/golden_failures/*.png
             **/golden_failures/*.txt
           if-no-files-found: ignore
+
+  e2e-community-test:
+    name: E2E and Community Test
+    runs-on: ubuntu-24.04
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Generate code
+        run: dart run build_runner build --delete-conflicting-outputs
+
+      - name: Run e2e and community tests
+        run: |
+          flutter test \
+            --tags "e2e || scenario || community" \
+            --concurrency=4 \
+            --dart-define=SUPABASE_URL=https://placeholder.supabase.co \
+            --dart-define=SUPABASE_ANON_KEY=placeholder_key
+        timeout-minutes: 35
 
   scripts-test:
     name: Scripts Test

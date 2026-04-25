@@ -6,7 +6,7 @@ import 'package:go_router/go_router.dart';
 
 import 'package:budgie_breeding_tracker/data/models/statistics_models.dart';
 import 'package:budgie_breeding_tracker/features/home/widgets/dashboard_stats_grid.dart';
-import 'package:budgie_breeding_tracker/features/premium/providers/premium_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/premium/premium_providers.dart';
 
 Widget _createSubject({DashboardStats? stats, bool isPremium = false}) {
   final router = GoRouter(

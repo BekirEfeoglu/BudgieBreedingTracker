@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 
-import 'package:budgie_breeding_tracker/features/premium/providers/premium_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/premium/premium_providers.dart';
 import 'package:budgie_breeding_tracker/features/premium/widgets/premium_paywall_sections.dart';
 
 Widget _wrap(Widget child, {List<Package> offerings = const []}) {

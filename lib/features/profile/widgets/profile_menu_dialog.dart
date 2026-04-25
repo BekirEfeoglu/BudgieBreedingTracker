@@ -8,7 +8,7 @@ import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/data/models/profile_model.dart';
-import 'package:budgie_breeding_tracker/data/providers/premium_shared_providers.dart'
+import 'package:budgie_breeding_tracker/domain/services/premium/premium_providers.dart'
     show isPremiumProvider;
 import 'package:budgie_breeding_tracker/data/providers/user_role_providers.dart'
     show isFounderProvider;

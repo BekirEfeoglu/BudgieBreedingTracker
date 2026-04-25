@@ -1,5 +1,8 @@
+import 'dart:typed_data';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/species/species_registry.dart';
@@ -17,6 +20,10 @@ class BirdFormBasicInfoSection extends StatelessWidget {
   final Species species;
   final BirdColor? colorMutation;
   final TextEditingController colorNoteController;
+  final XFile? photoFile;
+  final bool showPhotoPicker;
+  final VoidCallback? onPickPhotoSource;
+  final VoidCallback? onRemovePhoto;
   final ValueChanged<BirdGender> onGenderChanged;
   final ValueChanged<Species> onSpeciesChanged;
   final ValueChanged<BirdColor?> onColorChanged;
@@ -28,6 +35,10 @@ class BirdFormBasicInfoSection extends StatelessWidget {
     required this.species,
     required this.colorMutation,
     required this.colorNoteController,
+    this.photoFile,
+    this.showPhotoPicker = false,
+    this.onPickPhotoSource,
+    this.onRemovePhoto,
     required this.onGenderChanged,
     required this.onSpeciesChanged,
     required this.onColorChanged,
@@ -49,6 +60,14 @@ class BirdFormBasicInfoSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         BirdFormSectionHeader('birds.section_basic'.tr()),
+        if (showPhotoPicker) ...[
+          _BirdFormPhotoPicker(
+            photoFile: photoFile,
+            onPickPhotoSource: onPickPhotoSource,
+            onRemovePhoto: onRemovePhoto,
+          ),
+          const SizedBox(height: AppSpacing.md),
+        ],
         TextFormField(
           controller: nameController,
           decoration: InputDecoration(
@@ -75,21 +94,41 @@ class BirdFormBasicInfoSection extends StatelessWidget {
         const SizedBox(height: AppSpacing.sm),
         SegmentedButton<BirdGender>(
           showSelectedIcon: false,
+          style: ButtonStyle(
+            minimumSize: WidgetStateProperty.all(
+              const Size(0, AppSpacing.touchTargetLg),
+            ),
+            padding: WidgetStateProperty.all(
+              const EdgeInsets.symmetric(
+                horizontal: AppSpacing.sm,
+                vertical: AppSpacing.xs,
+              ),
+            ),
+          ),
           segments: [
             ButtonSegment(
               value: BirdGender.male,
-              label: Text('birds.male'.tr()),
-              icon: const AppIcon(AppIcons.male),
+              label: _GenderSegmentLabel(
+                icon: const AppIcon(AppIcons.male, size: 20),
+                label: 'birds.male'.tr(),
+              ),
+              tooltip: 'birds.male'.tr(),
             ),
             ButtonSegment(
               value: BirdGender.female,
-              label: Text('birds.female'.tr()),
-              icon: const AppIcon(AppIcons.female),
+              label: _GenderSegmentLabel(
+                icon: const AppIcon(AppIcons.female, size: 20),
+                label: 'birds.female'.tr(),
+              ),
+              tooltip: 'birds.female'.tr(),
             ),
             ButtonSegment(
               value: BirdGender.unknown,
-              label: Text('birds.unknown'.tr()),
-              icon: const Icon(LucideIcons.helpCircle),
+              label: _GenderSegmentLabel(
+                icon: const Icon(LucideIcons.helpCircle, size: 20),
+                label: 'birds.unknown'.tr(),
+              ),
+              tooltip: 'birds.unknown'.tr(),
             ),
           ],
           selected: {gender},
@@ -213,9 +252,127 @@ class BirdFormBasicInfoSection extends StatelessWidget {
               ),
             ),
             textInputAction: TextInputAction.next,
+            validator: (value) {
+              if (value == null || value.trim().isEmpty) {
+                return 'validation.field_required'.tr(
+                  args: ['birds.color_name'.tr()],
+                );
+              }
+              return null;
+            },
           ),
         ],
       ],
+    );
+  }
+}
+
+class _BirdFormPhotoPicker extends StatelessWidget {
+  final XFile? photoFile;
+  final VoidCallback? onPickPhotoSource;
+  final VoidCallback? onRemovePhoto;
+
+  const _BirdFormPhotoPicker({
+    required this.photoFile,
+    required this.onPickPhotoSource,
+    required this.onRemovePhoto,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final photo = photoFile;
+
+    return Row(
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+          child: Container(
+            width: 72,
+            height: 72,
+            color: theme.colorScheme.primary.withValues(alpha: 0.08),
+            child: photo == null
+                ? Icon(
+                    LucideIcons.camera,
+                    size: 28,
+                    color: theme.colorScheme.primary,
+                  )
+                : _SelectedPhotoPreview(photo: photo),
+          ),
+        ),
+        const SizedBox(width: AppSpacing.md),
+        Expanded(
+          child: Wrap(
+            spacing: AppSpacing.sm,
+            runSpacing: AppSpacing.sm,
+            children: [
+              OutlinedButton.icon(
+                onPressed: onPickPhotoSource,
+                icon: const AppIcon(AppIcons.photo, size: 18),
+                label: Text(
+                  photo == null ? 'birds.add_photo'.tr() : 'common.edit'.tr(),
+                ),
+              ),
+              if (photo != null)
+                TextButton.icon(
+                  onPressed: onRemovePhoto,
+                  icon: const Icon(LucideIcons.x, size: 18),
+                  label: Text('common.delete'.tr()),
+                ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _SelectedPhotoPreview extends StatelessWidget {
+  final XFile photo;
+
+  const _SelectedPhotoPreview({required this.photo});
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<Uint8List>(
+      future: photo.readAsBytes(),
+      builder: (context, snapshot) {
+        final bytes = snapshot.data;
+        if (bytes == null) {
+          return Center(
+            child: SizedBox.square(
+              dimension: 20,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+            ),
+          );
+        }
+        return Image.memory(bytes, fit: BoxFit.cover);
+      },
+    );
+  }
+}
+
+class _GenderSegmentLabel extends StatelessWidget {
+  final Widget icon;
+  final String label;
+
+  const _GenderSegmentLabel({required this.icon, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return FittedBox(
+      fit: BoxFit.scaleDown,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox.square(dimension: 22, child: Center(child: icon)),
+          const SizedBox(width: AppSpacing.xs),
+          Text(label, maxLines: 1),
+        ],
+      ),
     );
   }
 }

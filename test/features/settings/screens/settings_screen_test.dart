@@ -6,7 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 import 'package:budgie_breeding_tracker/domain/services/sync/sync_providers.dart';
-import 'package:budgie_breeding_tracker/features/notifications/providers/notification_settings_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/notifications/notification_settings_providers.dart';
 import 'package:budgie_breeding_tracker/features/settings/providers/settings_providers.dart';
 import 'package:budgie_breeding_tracker/features/settings/screens/settings_screen.dart';
 import 'package:budgie_breeding_tracker/features/settings/widgets/about_section.dart';

@@ -15,7 +15,7 @@ import '../../../core/widgets/app_screen_title.dart';
 import '../../../domain/services/import/import_providers.dart';
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 import '../../../domain/services/ads/ad_reward_providers.dart';
-import 'package:budgie_breeding_tracker/data/providers/premium_shared_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/premium/premium_providers.dart';
 import '../../../router/route_names.dart';
 import '../providers/settings_providers.dart';
 import '../providers/export_providers.dart';

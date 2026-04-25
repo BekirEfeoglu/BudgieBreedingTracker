@@ -10,7 +10,7 @@ import 'package:budgie_breeding_tracker/data/models/profile_model.dart';
 import 'package:budgie_breeding_tracker/features/admin/providers/admin_providers.dart'
     show isFounderProvider;
 import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
-import 'package:budgie_breeding_tracker/features/premium/providers/premium_providers.dart'
+import 'package:budgie_breeding_tracker/domain/services/premium/premium_providers.dart'
     show isPremiumProvider;
 import 'package:budgie_breeding_tracker/features/profile/widgets/profile_menu_dialog.dart';
 import 'package:budgie_breeding_tracker/features/profile/widgets/profile_menu_header.dart';

@@ -6,21 +6,20 @@ extension _BirdFormScreenHelpers on _BirdFormScreenState {
     final prefix = 'birds.default_name_prefix'.tr();
     if (userId.isEmpty || userId == 'anonymous') {
       if (_nameController.text.trim().isEmpty) {
-        _nameController.text = '${prefix}1';
+        _applyGeneratedDefaultName('${prefix}1');
       }
       return;
     }
     try {
       final birds = await ref.read(birdRepositoryProvider).getAll(userId);
       if (!mounted || _nameController.text.trim().isNotEmpty) return;
-      _nameController.text = nextDefaultBirdName(
-        prefix,
-        birds.map((b) => b.name).toList(),
+      _applyGeneratedDefaultName(
+        nextDefaultBirdName(prefix, birds.map((b) => b.name).toList()),
       );
     } catch (e) {
       AppLogger.error('[BirdFormScreen]', e, StackTrace.current);
       if (mounted && _nameController.text.trim().isEmpty) {
-        _nameController.text = '${prefix}1';
+        _applyGeneratedDefaultName('${prefix}1');
       }
     }
   }
@@ -76,32 +75,51 @@ extension _BirdFormScreenHelpers on _BirdFormScreenState {
 
   void _hydrateFromBird(Bird bird) {
     final isOtherColor = bird.colorMutation == BirdColor.other;
-    setState(() {
-      _existingBird = bird;
-      _nameController.text = bird.name;
-      _gender = bird.gender;
-      _species = bird.species;
-      _colorMutation = bird.colorMutation == BirdColor.unknown
-          ? null
-          : bird.colorMutation;
-      _genotype = normalizeGenotypeForGender(
-        genotype: BirdGenotypeMapper.birdToGenotype(bird),
-        gender: bird.gender,
-      );
-      _ringController.text = bird.ringNumber ?? '';
-      _birthDate = bird.birthDate;
-      _fatherId = bird.fatherId;
-      _motherId = bird.motherId;
-      _cageController.text = bird.cageNumber ?? '';
-      _colorNoteController.text = isOtherColor
-          ? (extractColorNote(bird.notes) ?? '')
-          : '';
-      _notesController.text = isOtherColor
-          ? (notesBody(bird.notes) ?? '')
-          : (bird.notes ?? '');
-      _isEditLoading = false;
-      _isEditNotFound = false;
-      _editLoadError = null;
-    });
+    _isProgrammaticControllerUpdate = true;
+    try {
+      setState(() {
+        _existingBird = bird;
+        _generatedDefaultName = null;
+        _nameController.text = bird.name;
+        _gender = bird.gender;
+        _species = bird.species;
+        _colorMutation = bird.colorMutation == BirdColor.unknown
+            ? null
+            : bird.colorMutation;
+        _genotype = normalizeGenotypeForGender(
+          genotype: BirdGenotypeMapper.birdToGenotype(bird),
+          gender: bird.gender,
+        );
+        _ringController.text = bird.ringNumber ?? '';
+        _birthDate = bird.birthDate;
+        _fatherId = bird.fatherId;
+        _motherId = bird.motherId;
+        _cageController.text = bird.cageNumber ?? '';
+        _colorNoteController.text = isOtherColor
+            ? (extractColorNote(bird.notes) ?? '')
+            : '';
+        _notesController.text = isOtherColor
+            ? (notesBody(bird.notes) ?? '')
+            : (bird.notes ?? '');
+        _isEditLoading = false;
+        _isEditNotFound = false;
+        _editLoadError = null;
+      });
+    } finally {
+      _isProgrammaticControllerUpdate = false;
+    }
+  }
+
+  void _applyGeneratedDefaultName(String defaultName) {
+    if (!mounted || _nameController.text.trim().isNotEmpty) return;
+    _isProgrammaticControllerUpdate = true;
+    try {
+      setState(() {
+        _generatedDefaultName = defaultName;
+        _nameController.text = defaultName;
+      });
+    } finally {
+      _isProgrammaticControllerUpdate = false;
+    }
   }
 }

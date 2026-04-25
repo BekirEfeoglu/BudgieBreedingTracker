@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../features/auth/providers/auth_providers.dart';
 import '../features/admin/providers/admin_providers.dart';
-import '../features/premium/providers/premium_providers.dart';
+import '../domain/services/premium/premium_providers.dart';
 import '../features/auth/providers/two_factor_providers.dart';
 
 /// Notifier that triggers GoRouter redirect re-evaluation when auth/init state changes.

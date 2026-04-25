@@ -18,7 +18,7 @@ import 'package:budgie_breeding_tracker/features/chicks/screens/chick_list_scree
 import 'package:budgie_breeding_tracker/features/chicks/widgets/chick_card.dart';
 import 'package:budgie_breeding_tracker/features/chicks/widgets/chick_filter_bar.dart';
 import 'package:budgie_breeding_tracker/features/notifications/providers/notification_list_providers.dart';
-import 'package:budgie_breeding_tracker/features/premium/providers/premium_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/premium/premium_providers.dart';
 import 'package:budgie_breeding_tracker/features/profile/providers/profile_providers.dart';
 
 /// Stub [AdService] that never calls Google Mobile Ads.

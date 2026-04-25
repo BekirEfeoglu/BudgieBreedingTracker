@@ -96,18 +96,21 @@ final searchedAndFilteredBreedingPairsProvider =
 /// Notifier for breeding list sort selection.
 class BreedingSortNotifier extends Notifier<BreedingSort> {
   @override
-  BreedingSort build() => BreedingSort.newest;
+  BreedingSort build() => BreedingSort.cageAsc;
 }
 
 /// Current sort selection for the breeding list.
-final breedingSortProvider = NotifierProvider<BreedingSortNotifier, BreedingSort>(
-  BreedingSortNotifier.new,
-);
+final breedingSortProvider =
+    NotifierProvider<BreedingSortNotifier, BreedingSort>(
+      BreedingSortNotifier.new,
+    );
 
 /// Sorted, searched and filtered breeding pairs (final display list).
 final sortedAndFilteredBreedingPairsProvider =
     Provider.family<List<BreedingPair>, List<BreedingPair>>((ref, pairs) {
-      final searched = ref.watch(searchedAndFilteredBreedingPairsProvider(pairs));
+      final searched = ref.watch(
+        searchedAndFilteredBreedingPairsProvider(pairs),
+      );
       final sort = ref.watch(breedingSortProvider);
 
       final sorted = List<BreedingPair>.of(searched);
@@ -125,9 +128,13 @@ final sortedAndFilteredBreedingPairsProvider =
             ),
           );
         case BreedingSort.cageAsc:
-          sorted.sort((a, b) => _compareCageNumbers(a.cageNumber, b.cageNumber));
+          sorted.sort(
+            (a, b) => _compareCageNumbers(a.cageNumber, b.cageNumber),
+          );
         case BreedingSort.cageDesc:
-          sorted.sort((a, b) => _compareCageNumbers(b.cageNumber, a.cageNumber));
+          sorted.sort(
+            (a, b) => _compareCageNumbers(b.cageNumber, a.cageNumber),
+          );
       }
       return sorted;
     });

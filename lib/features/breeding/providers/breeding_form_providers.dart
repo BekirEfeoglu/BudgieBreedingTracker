@@ -3,18 +3,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_constants.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/breeding_enums.dart';
-import 'package:budgie_breeding_tracker/core/species/species_registry.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
 import 'package:budgie_breeding_tracker/data/models/incubation_model.dart';
-import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/data/providers/bird_stream_providers.dart';
-import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_notification_helpers.dart';
+import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/premium/free_tier_limit_providers.dart';
+import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_notification_helpers.dart';
 import 'package:budgie_breeding_tracker/core/errors/app_exception.dart';
 import 'package:budgie_breeding_tracker/core/utils/sentry_error_filter.dart';
-import 'package:budgie_breeding_tracker/data/providers/premium_shared_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/premium/premium_providers.dart';
 import 'package:uuid/uuid.dart';
 
 part 'breeding_form_actions.dart';
@@ -31,7 +30,9 @@ final maleBirdsProvider = Provider.family<List<Bird>, String>((ref, userId) {
 final femaleBirdsProvider = Provider.family<List<Bird>, String>((ref, userId) {
   final birds = ref.watch(birdsStreamProvider(userId)).value ?? <Bird>[];
   return birds
-      .where((b) => b.gender == BirdGender.female && b.status == BirdStatus.alive)
+      .where(
+        (b) => b.gender == BirdGender.female && b.status == BirdStatus.alive,
+      )
       .toList();
 });
 
@@ -91,10 +92,7 @@ class BreedingFormNotifier extends Notifier<BreedingFormState>
     final maleBird = await birdRepo.getById(maleId);
     final femaleBird = await birdRepo.getById(femaleId);
     if (maleBird == null || femaleBird == null) {
-      state = state.copyWith(
-        isLoading: false,
-        error: 'birds.not_found'.tr(),
-      );
+      state = state.copyWith(isLoading: false, error: 'birds.not_found'.tr());
       return null;
     }
     if (maleBird.species != femaleBird.species) {
@@ -187,8 +185,6 @@ class BreedingFormNotifier extends Notifier<BreedingFormState>
       }
       final maleBird = validated.maleBird;
 
-      final speciesProfile = SpeciesRegistry.of(maleBird.species);
-
       final pairId = const Uuid().v7();
       final incubationId = const Uuid().v7();
 
@@ -211,10 +207,6 @@ class BreedingFormNotifier extends Notifier<BreedingFormState>
         species: maleBird.species,
         status: IncubationStatus.active,
         breedingPairId: pairId,
-        startDate: pairingDate,
-        expectedHatchDate: pairingDate.add(
-          Duration(days: speciesProfile.incubationPeriodDays),
-        ),
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
       );
@@ -227,23 +219,14 @@ class BreedingFormNotifier extends Notifier<BreedingFormState>
         try {
           await pairRepo.remove(pairId);
         } catch (rollbackError, rollbackSt) {
-          AppLogger.error('[BreedingFormNotifier] Rollback failed', rollbackError, rollbackSt);
+          AppLogger.error(
+            '[BreedingFormNotifier] Rollback failed',
+            rollbackError,
+            rollbackSt,
+          );
         }
         rethrow;
       }
-
-      _helper.scheduleBreedingNotifications(
-        pairId,
-        incubationId,
-        pairingDate,
-        maleBird.species,
-      );
-      _helper.generateCalendarEvents(
-        userId,
-        pairId,
-        pairingDate,
-        maleBird.species,
-      );
 
       state = state.copyWith(isLoading: false, isSuccess: true);
     } catch (e, st) {

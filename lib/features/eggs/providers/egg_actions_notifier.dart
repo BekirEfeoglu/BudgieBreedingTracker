@@ -54,6 +54,7 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
       final repo = ref.read(eggRepositoryProvider);
       final userId = ref.read(currentUserIdProvider);
       final sideEffectErrors = <String>[];
+      final existingEggs = await repo.getByIncubation(incubationId);
 
       final egg = Egg(
         id: const Uuid().v7(),
@@ -61,7 +62,7 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
         incubationId: incubationId,
         layDate: layDate,
         eggNumber: eggNumber,
-        status: EggStatus.incubating,
+        status: EggStatus.laid,
         notes: notes,
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
@@ -69,6 +70,12 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
 
       await repo.save(egg);
       final species = await resolveEggSpecies(ref, egg);
+      await _startIncubationFromFirstEgg(
+        incubationId: incubationId,
+        layDate: layDate,
+        species: species,
+        isFirstEgg: existingEggs.isEmpty,
+      );
 
       // Schedule egg turning reminders
       try {
@@ -119,6 +126,29 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
       Sentry.captureException(e, stackTrace: StackTrace.current);
       state = state.copyWith(isLoading: false, error: 'errors.unknown'.tr());
     }
+  }
+
+  Future<void> _startIncubationFromFirstEgg({
+    required String incubationId,
+    required DateTime layDate,
+    required Species species,
+    required bool isFirstEgg,
+  }) async {
+    if (!isFirstEgg) return;
+
+    final incubationRepo = ref.read(incubationRepositoryProvider);
+    final incubation = await incubationRepo.getById(incubationId);
+    if (incubation == null) return;
+
+    await incubationRepo.save(
+      incubation.copyWith(
+        startDate: layDate,
+        expectedHatchDate: layDate.add(
+          Duration(days: incubation.totalIncubationDays(species: species)),
+        ),
+        updatedAt: DateTime.now(),
+      ),
+    );
   }
 
   /// Updates the status of an existing egg.

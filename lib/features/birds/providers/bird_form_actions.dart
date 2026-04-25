@@ -92,6 +92,7 @@ mixin _BirdFormActions on Notifier<BirdFormState>, SentryErrorFilter {
     String? notes,
     List<String>? mutations,
     Map<String, String>? genotypeInfo,
+    XFile? photoFile,
   }) async {
     if (state.isLoading) return;
     state = state.copyWith(isLoading: true, error: null, isSuccess: false);
@@ -135,13 +136,31 @@ mixin _BirdFormActions on Notifier<BirdFormState>, SentryErrorFilter {
         return;
       }
 
+      final birdId = const Uuid().v7();
+      String? photoUrl;
+      if (photoFile != null) {
+        try {
+          photoUrl = await ref
+              .read(storageServiceProvider)
+              .uploadBirdPhoto(userId: userId, birdId: birdId, file: photoFile);
+        } catch (e, st) {
+          AppLogger.error('BirdFormNotifier photo upload', e, st);
+          state = state.copyWith(
+            isLoading: false,
+            error: 'birds.photo_upload_error'.tr(),
+          );
+          return;
+        }
+      }
+
       final bird = Bird(
-        id: const Uuid().v7(),
+        id: birdId,
         userId: userId,
         name: name,
         gender: gender,
         species: species,
         status: BirdStatus.alive,
+        photoUrl: photoUrl,
         colorMutation: colorMutation,
         ringNumber: normalizedRingNumber,
         birthDate: birthDate,
@@ -155,6 +174,23 @@ mixin _BirdFormActions on Notifier<BirdFormState>, SentryErrorFilter {
         updatedAt: DateTime.now(),
       );
       await repo.save(bird);
+      if (photoUrl != null && photoFile != null) {
+        await ref
+            .read(photoRepositoryProvider)
+            .save(
+              Photo(
+                id: const Uuid().v7(),
+                userId: userId,
+                entityType: PhotoEntityType.bird,
+                entityId: birdId,
+                fileName: photoFile.name,
+                filePath: photoUrl,
+                isPrimary: true,
+                createdAt: DateTime.now(),
+                updatedAt: DateTime.now(),
+              ),
+            );
+      }
 
       // Calculate remaining birds for soft upsell
       int? remaining;

@@ -13,7 +13,7 @@ import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_screen_title.dart';
 import 'package:budgie_breeding_tracker/domain/services/payment/purchase_service.dart';
 import 'package:budgie_breeding_tracker/features/premium/widgets/premium_rewarded_ad_section.dart';
-import 'package:budgie_breeding_tracker/features/premium/providers/premium_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/premium/premium_providers.dart';
 import 'package:budgie_breeding_tracker/features/premium/widgets/feature_comparison.dart';
 import 'package:budgie_breeding_tracker/features/premium/widgets/premium_paywall_sections.dart';
 import 'package:budgie_breeding_tracker/features/premium/widgets/subscription_info_card.dart';

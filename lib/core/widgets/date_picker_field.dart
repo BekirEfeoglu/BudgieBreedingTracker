@@ -14,6 +14,7 @@ class DatePickerField extends StatefulWidget {
   final DateTime? firstDate;
   final DateTime? lastDate;
   final bool isRequired;
+  final DatePickerEntryMode initialEntryMode;
 
   /// Optional date formatter. When omitted, defaults to `dd.MM.yyyy`.
   final DateFormat? dateFormatter;
@@ -26,6 +27,7 @@ class DatePickerField extends StatefulWidget {
     this.firstDate,
     this.lastDate,
     this.isRequired = true,
+    this.initialEntryMode = DatePickerEntryMode.calendar,
     this.dateFormatter,
   });
 
@@ -66,7 +68,16 @@ class _DatePickerFieldState extends State<DatePickerField> {
       readOnly: true,
       decoration: InputDecoration(
         labelText: widget.label,
-        suffixIcon: const AppIcon(AppIcons.calendar, size: 20),
+        suffixIcon: const Padding(
+          padding: EdgeInsets.all(14),
+          child: AppIcon(AppIcons.calendar, size: 20),
+        ),
+        suffixIconConstraints: const BoxConstraints(
+          minWidth: 48,
+          minHeight: 48,
+          maxWidth: 56,
+          maxHeight: 56,
+        ),
         border: const OutlineInputBorder(),
       ),
       onTap: () async {
@@ -76,6 +87,7 @@ class _DatePickerFieldState extends State<DatePickerField> {
           firstDate: widget.firstDate ?? DateTime(2020),
           lastDate:
               widget.lastDate ?? DateTime.now().add(const Duration(days: 365)),
+          initialEntryMode: widget.initialEntryMode,
         );
         if (picked != null) {
           widget.onChanged(picked);

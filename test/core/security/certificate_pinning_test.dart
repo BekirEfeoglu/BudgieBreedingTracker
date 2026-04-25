@@ -13,24 +13,15 @@ void main() {
       });
 
       test('matches any supabase.co subdomain', () {
-        expect(
-          CertificatePinning.isPinnedHost('abcdef.supabase.co'),
-          isTrue,
-        );
+        expect(CertificatePinning.isPinnedHost('abcdef.supabase.co'), isTrue);
       });
 
       test('is case insensitive', () {
-        expect(
-          CertificatePinning.isPinnedHost('PROJECT.SUPABASE.CO'),
-          isTrue,
-        );
+        expect(CertificatePinning.isPinnedHost('PROJECT.SUPABASE.CO'), isTrue);
       });
 
       test('matches mixed case', () {
-        expect(
-          CertificatePinning.isPinnedHost('project.Supabase.Co'),
-          isTrue,
-        );
+        expect(CertificatePinning.isPinnedHost('project.Supabase.Co'), isTrue);
       });
     });
 
@@ -63,6 +54,38 @@ void main() {
       test('rejects sentry domain', () {
         expect(CertificatePinning.isPinnedHost('sentry.io'), isFalse);
       });
+    });
+  });
+
+  group('CertificatePinning.shouldRejectProxyForHost', () {
+    test('rejects proxied connections for pinned hosts', () {
+      expect(
+        CertificatePinning.shouldRejectProxyForHost(
+          'lmqkwgitzvpacycujzgc.supabase.co',
+          hasProxy: true,
+        ),
+        isTrue,
+      );
+    });
+
+    test('allows direct connections for pinned hosts', () {
+      expect(
+        CertificatePinning.shouldRejectProxyForHost(
+          'lmqkwgitzvpacycujzgc.supabase.co',
+          hasProxy: false,
+        ),
+        isFalse,
+      );
+    });
+
+    test('does not reject proxied connections for unpinned hosts', () {
+      expect(
+        CertificatePinning.shouldRejectProxyForHost(
+          'example.com',
+          hasProxy: true,
+        ),
+        isFalse,
+      );
     });
   });
 }

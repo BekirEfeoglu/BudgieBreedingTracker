@@ -16,7 +16,7 @@ import 'package:budgie_breeding_tracker/core/widgets/ad_banner_widget.dart';
 import 'package:budgie_breeding_tracker/domain/services/ads/ad_service.dart';
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 import 'package:budgie_breeding_tracker/features/chicks/providers/chick_providers.dart';
-import 'package:budgie_breeding_tracker/data/providers/premium_shared_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/premium/premium_providers.dart';
 import 'package:budgie_breeding_tracker/features/chicks/widgets/chick_card.dart';
 import 'package:budgie_breeding_tracker/core/utils/app_haptics.dart';
 import 'package:budgie_breeding_tracker/core/widgets/dialogs/confirm_dialog.dart';

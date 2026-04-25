@@ -7,7 +7,7 @@ import 'package:purchases_flutter/purchases_flutter.dart';
 
 import 'package:budgie_breeding_tracker/domain/services/payment/purchase_service.dart';
 import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
-import 'package:budgie_breeding_tracker/features/premium/providers/premium_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/premium/premium_providers.dart';
 import 'package:budgie_breeding_tracker/features/premium/widgets/premium_paywall_sections.dart';
 import 'package:budgie_breeding_tracker/features/premium/widgets/subscription_info_card.dart';
 

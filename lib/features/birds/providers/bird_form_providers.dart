@@ -2,13 +2,17 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_constants.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
+import 'package:budgie_breeding_tracker/core/enums/photo_enums.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
+import 'package:budgie_breeding_tracker/data/models/photo_model.dart';
+import 'package:budgie_breeding_tracker/data/remote/storage/storage_providers.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/premium/free_tier_limit_providers.dart';
 import 'package:budgie_breeding_tracker/core/errors/app_exception.dart';
 import 'package:budgie_breeding_tracker/core/utils/sentry_error_filter.dart';
-import 'package:budgie_breeding_tracker/data/providers/premium_shared_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/premium/premium_providers.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
 
 part 'bird_form_actions.dart';
@@ -88,10 +92,7 @@ class BirdFormNotifier extends Notifier<BirdFormState>
           ),
         );
       } else {
-        state = state.copyWith(
-          isLoading: false,
-          error: 'birds.not_found'.tr(),
-        );
+        state = state.copyWith(isLoading: false, error: 'birds.not_found'.tr());
         return;
       }
       state = state.copyWith(isLoading: false, isSuccess: true);
@@ -118,10 +119,7 @@ class BirdFormNotifier extends Notifier<BirdFormState>
           ),
         );
       } else {
-        state = state.copyWith(
-          isLoading: false,
-          error: 'birds.not_found'.tr(),
-        );
+        state = state.copyWith(isLoading: false, error: 'birds.not_found'.tr());
         return;
       }
       state = state.copyWith(isLoading: false, isSuccess: true);

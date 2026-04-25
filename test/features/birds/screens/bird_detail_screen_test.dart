@@ -5,11 +5,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/widgets/error_state.dart';
 import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
 import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
+import 'package:budgie_breeding_tracker/data/providers/user_role_providers.dart';
 import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
 import 'package:budgie_breeding_tracker/features/birds/providers/bird_form_providers.dart';
 import 'package:budgie_breeding_tracker/features/birds/providers/bird_providers.dart';
@@ -62,11 +64,13 @@ void main() {
     Stream<List<Bird>> birdsStream = const Stream.empty(),
     Stream<List<String>> photosStream = const Stream.empty(),
     BirdFormState formState = const BirdFormState(),
+    bool isFounder = false,
   }) {
     return ProviderScope(
       overrides: [
         currentUserIdProvider.overrideWithValue('test-user'),
         currentUserProvider.overrideWith((_) => null),
+        isFounderProvider.overrideWith((_) async => isFounder),
         userProfileProvider.overrideWith((_) => Stream.value(null)),
         unreadNotificationsProvider(
           'test-user',
@@ -136,6 +140,28 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(PopupMenuButton<String>), findsOneWidget);
+    });
+
+    testWidgets('hides AI action for non-founder users', (tester) async {
+      await tester.pumpWidget(
+        createSubject(birdStream: Stream.value(testBird)),
+      );
+
+      await tester.pumpAndSettle();
+
+      expect(find.byIcon(LucideIcons.sparkles), findsNothing);
+      expect(find.text(l10n('more.ai_predictions')), findsNothing);
+    });
+
+    testWidgets('shows AI action for founder users', (tester) async {
+      await tester.pumpWidget(
+        createSubject(birdStream: Stream.value(testBird), isFounder: true),
+      );
+
+      await tester.pumpAndSettle();
+
+      expect(find.text(l10n('more.ai_predictions')), findsNothing);
+      expect(find.byIcon(LucideIcons.sparkles), findsOneWidget);
     });
 
     testWidgets('shows popup menu with dead and sold options for alive bird', (

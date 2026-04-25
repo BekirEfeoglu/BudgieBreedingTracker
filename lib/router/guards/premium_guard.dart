@@ -5,7 +5,7 @@ import '../route_names.dart';
 /// Expects the caller to pass the user's **effective** premium access —
 /// i.e. `true` when the user has an active subscription OR is within the
 /// grace period. Callers should derive this from `effectivePremiumProvider`
-/// (see `lib/features/premium/providers/premium_providers.dart`), not the
+/// (see `lib/domain/services/premium/premium_providers.dart`), not the
 /// raw `isPremiumProvider`, so grace-period users are not bounced to the
 /// paywall.
 class PremiumGuard {

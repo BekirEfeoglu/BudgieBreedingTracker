@@ -18,7 +18,7 @@ import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
 import 'package:budgie_breeding_tracker/domain/services/calendar/calendar_event_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_providers.dart';
 import 'package:budgie_breeding_tracker/features/eggs/providers/egg_providers.dart';
-import 'package:budgie_breeding_tracker/features/notifications/providers/notification_settings_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/notifications/notification_settings_providers.dart';
 
 import '../../../helpers/mocks.dart';
 
@@ -105,6 +105,16 @@ void main() {
         userId: 'user-1',
         breedingPairId: 'pair-1',
       ),
+    );
+    when(() => eggRepo.getByIncubation(any())).thenAnswer(
+      (_) async => [
+        Egg(
+          id: 'existing-egg',
+          userId: 'test-user',
+          incubationId: 'inc-1',
+          layDate: DateTime(2024, 1, 9),
+        ),
+      ],
     );
     when(() => breedingPairRepo.getById(any())).thenAnswer(
       (_) async => const BreedingPair(
@@ -210,7 +220,7 @@ void main() {
       final savedEgg = captured.first as Egg;
       expect(savedEgg.incubationId, 'inc-1');
       expect(savedEgg.eggNumber, 3);
-      expect(savedEgg.status, EggStatus.incubating);
+      expect(savedEgg.status, EggStatus.laid);
       expect(savedEgg.notes, 'Test notes');
       expect(savedEgg.userId, 'test-user');
     });

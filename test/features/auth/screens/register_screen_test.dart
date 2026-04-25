@@ -118,6 +118,8 @@ void main() {
 
       // Tap the register button without filling in fields
       final submitBtn = find.byType(FilledButton).first;
+      await tester.ensureVisible(submitBtn);
+      await tester.pump();
       await tester.tap(submitBtn);
       await tester.pump(const Duration(milliseconds: 300));
 
