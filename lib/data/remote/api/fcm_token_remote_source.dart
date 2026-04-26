@@ -25,17 +25,14 @@ class FcmTokenRemoteSource {
         );
       }
 
-      await _client.from(SupabaseConstants.fcmTokensTable).upsert(
-        {
-          'user_id': userId,
-          'token': token,
-          'platform': platform,
-          'device_id': deviceId,
-          'is_active': true,
-          'last_used_at': DateTime.now().toIso8601String(),
-        },
-        onConflict: 'token',
-      );
+      await _client.from(SupabaseConstants.fcmTokensTable).upsert({
+        'user_id': userId,
+        'token': token,
+        'platform': platform,
+        'device_id': deviceId,
+        'is_active': true,
+        'last_used_at': DateTime.now().toIso8601String(),
+      }, onConflict: 'token');
     } catch (e, st) {
       AppLogger.error('[FcmTokenRemoteSource] upsertToken failed', e, st);
       if (e is NetworkException) rethrow;
@@ -45,10 +42,10 @@ class FcmTokenRemoteSource {
 
   Future<void> deactivateToken(String token) async {
     try {
-      await _client.from(SupabaseConstants.fcmTokensTable).update({
-        'is_active': false,
-        'updated_at': DateTime.now().toIso8601String(),
-      }).eq('token', token);
+      await _client
+          .from(SupabaseConstants.fcmTokensTable)
+          .update({'is_active': false})
+          .eq('token', token);
     } catch (e, st) {
       AppLogger.error('[FcmTokenRemoteSource] deactivateToken failed', e, st);
       throw NetworkException(e.toString(), originalError: e);

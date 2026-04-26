@@ -38,9 +38,9 @@ import 'package:budgie_breeding_tracker/features/admin/providers/admin_providers
 import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
 import 'package:budgie_breeding_tracker/features/auth/providers/two_factor_providers.dart';
 import 'package:budgie_breeding_tracker/features/health_records/providers/health_record_providers.dart';
-import 'package:budgie_breeding_tracker/features/notifications/providers/notification_settings_providers.dart'
+import 'package:budgie_breeding_tracker/domain/services/notifications/notification_settings_providers.dart'
     as notif_settings;
-import 'package:budgie_breeding_tracker/features/premium/providers/premium_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/premium/premium_providers.dart';
 
 import 'mocks.dart';
 import 'test_fixtures.dart';

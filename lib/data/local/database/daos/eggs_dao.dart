@@ -35,9 +35,10 @@ class EggsDao extends DatabaseAccessor<AppDatabase> with _$EggsDaoMixin {
   }
 
   Future<Egg?> getById(String id) async {
-    final row = await (select(eggsTable)..where(
-      (t) => t.id.equals(id) & t.isDeleted.equals(false),
-    )).getSingleOrNull();
+    final row =
+        await (select(eggsTable)
+              ..where((t) => t.id.equals(id) & t.isDeleted.equals(false)))
+            .getSingleOrNull();
     return row?.toModel();
   }
 
@@ -133,10 +134,7 @@ class EggsDao extends DatabaseAccessor<AppDatabase> with _$EggsDaoMixin {
       'WHERE e.user_id = ? AND e.is_deleted = 0 '
       'AND i.is_deleted = 0 AND i.species = ? '
       'GROUP BY month ORDER BY month',
-      variables: [
-        Variable.withString(userId),
-        Variable.withString(species),
-      ],
+      variables: [Variable.withString(userId), Variable.withString(species)],
       readsFrom: {eggsTable, incubationsTable},
     );
     return query.watch().map((rows) {
@@ -157,21 +155,33 @@ class EggsDao extends DatabaseAccessor<AppDatabase> with _$EggsDaoMixin {
   }
 
   Stream<List<Egg>> watchByIncubation(String incubationId) {
-    return (select(eggsTable)..where(
-          (t) =>
-              t.incubationId.equals(incubationId) & t.isDeleted.equals(false),
-        ))
+    return (select(eggsTable)
+          ..where(
+            (t) =>
+                t.incubationId.equals(incubationId) & t.isDeleted.equals(false),
+          )
+          ..orderBy([
+            (t) => OrderingTerm.asc(t.eggNumber),
+            (t) => OrderingTerm.asc(t.layDate),
+            (t) => OrderingTerm.asc(t.createdAt),
+          ]))
         .watch()
         .map((rows) => rows.map((r) => r.toModel()).toList());
   }
 
   Future<List<Egg>> getByIncubation(String incubationId) async {
     final rows =
-        await (select(eggsTable)..where(
-              (t) =>
-                  t.incubationId.equals(incubationId) &
-                  t.isDeleted.equals(false),
-            ))
+        await (select(eggsTable)
+              ..where(
+                (t) =>
+                    t.incubationId.equals(incubationId) &
+                    t.isDeleted.equals(false),
+              )
+              ..orderBy([
+                (t) => OrderingTerm.asc(t.eggNumber),
+                (t) => OrderingTerm.asc(t.layDate),
+                (t) => OrderingTerm.asc(t.createdAt),
+              ]))
             .get();
     return rows.map((r) => r.toModel()).toList();
   }

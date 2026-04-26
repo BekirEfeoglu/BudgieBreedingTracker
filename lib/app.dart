@@ -19,7 +19,7 @@ import 'domain/services/notifications/notification_processor.dart';
 import 'domain/services/notifications/notification_providers.dart';
 import 'features/auth/providers/auth_providers.dart';
 import 'features/genetics/providers/genetics_providers.dart';
-import 'features/premium/providers/premium_providers.dart';
+import 'domain/services/premium/premium_providers.dart';
 import 'features/settings/providers/settings_providers.dart';
 import 'router/app_router.dart';
 import 'router/route_names.dart';

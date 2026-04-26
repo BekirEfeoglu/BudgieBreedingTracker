@@ -23,6 +23,7 @@ import 'package:budgie_breeding_tracker/data/repositories/community_comment_repo
 import 'package:budgie_breeding_tracker/data/repositories/community_social_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/feedback_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/marketplace_repository.dart';
+import 'package:budgie_breeding_tracker/data/remote/storage/storage_providers.dart';
 import 'package:budgie_breeding_tracker/data/remote/supabase/supabase_client.dart';
 import 'messaging_repository.dart';
 import 'gamification_repository.dart';
@@ -144,6 +145,7 @@ final photoRepositoryProvider = Provider<PhotoRepository>((ref) {
     localDao: ref.watch(photosDaoProvider),
     remoteSource: ref.watch(photoRemoteSourceProvider),
     syncDao: ref.watch(syncMetadataDaoProvider),
+    storageService: ref.watch(storageServiceProvider),
   );
 });
 
@@ -177,6 +179,7 @@ final communityPostRepositoryProvider = Provider<CommunityPostRepository>((
   return CommunityPostRepository(
     postSource: ref.watch(communityPostRemoteSourceProvider),
     socialSource: ref.watch(communitySocialRemoteSourceProvider),
+    storageService: ref.watch(storageServiceProvider),
     cache: ref.watch(communityPostCacheProvider),
   );
 });

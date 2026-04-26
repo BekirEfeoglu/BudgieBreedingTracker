@@ -194,16 +194,13 @@ void main() {
       // EggSummaryRow should be visible
       expect(find.byType(EggSummaryRow), findsOneWidget);
 
-      // 2 active eggs shown (infertile + incubating; fertile is also active)
-      // hatched eggs are filtered out, all 3 test eggs are non-hatched
+      // All eggs are shown in management.
       expect(find.byType(EggListItem), findsNWidgets(3));
 
       FlutterError.onError = originalOnError;
     });
 
-    testWidgets('shows all_hatched message when only hatched eggs remain', (
-      tester,
-    ) async {
+    testWidgets('shows hatched eggs in the management list', (tester) async {
       final hatchedEggs = [
         Egg(
           id: 'egg-h1',
@@ -233,8 +230,8 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      expect(find.text(l10n('eggs.all_hatched')), findsOneWidget);
-      expect(find.byType(EggListItem), findsNothing);
+      expect(find.text(l10n('eggs.all_hatched')), findsNothing);
+      expect(find.byType(EggListItem), findsOneWidget);
     });
 
     testWidgets('appBar shows management title', (tester) async {

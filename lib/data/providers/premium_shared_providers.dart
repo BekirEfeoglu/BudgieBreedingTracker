@@ -1,11 +1,8 @@
 /// Re-exports commonly cross-imported premium providers.
 ///
-/// The full premium implementation remains in
-/// `lib/features/premium/providers/premium_providers.dart`.
-/// This file exists so other features can import premium symbols
-/// without creating cross-feature import violations.
+/// The full premium implementation lives in the domain service layer.
 library;
-export 'package:budgie_breeding_tracker/features/premium/providers/premium_providers.dart'
+export 'package:budgie_breeding_tracker/domain/services/premium/premium_providers.dart'
     show
         effectivePremiumProvider,
         isPremiumProvider,

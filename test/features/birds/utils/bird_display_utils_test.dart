@@ -22,6 +22,11 @@ void main() {
       expect(result, isNotEmpty);
     });
 
+    test('omits zero months for year-only age', () {
+      final result = formatBirdAge((years: 1, months: 0, days: 0));
+      expect(result, isNot(contains('0')));
+    });
+
     test('returns non-empty age string for months branch', () {
       final result = formatBirdAge((years: 0, months: 5, days: 10));
       expect(result, isNotEmpty);
@@ -37,6 +42,11 @@ void main() {
     test('returns non-empty short age string for years branch', () {
       final result = formatBirdAgeShort((years: 1, months: 2, days: 0));
       expect(result, isNotEmpty);
+    });
+
+    test('omits zero months for short year-only age', () {
+      final result = formatBirdAgeShort((years: 1, months: 0, days: 0));
+      expect(result, isNot(contains('0')));
     });
 
     test('returns non-empty short age string for months branch', () {

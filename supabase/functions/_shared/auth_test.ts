@@ -41,6 +41,25 @@ const clientTestOpts = {
   sanitizeResources: false,
 };
 
+function base64UrlJson(value: unknown): string {
+  return btoa(JSON.stringify(value))
+    .replaceAll("+", "-")
+    .replaceAll("/", "_")
+    .replaceAll("=", "");
+}
+
+function requestWithClaims(claims: Record<string, unknown>): Request {
+  const token = [
+    base64UrlJson({ alg: "HS256", typ: "JWT" }),
+    base64UrlJson(claims),
+    "signature",
+  ].join(".");
+  return new Request("https://example.com", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
 // ---------------------------------------------------------------------------
 // getAuthenticatedUserId — header validation (no client created)
 // ---------------------------------------------------------------------------
@@ -78,6 +97,43 @@ Deno.test({
     const result = await getAuthenticatedUserId(req);
     assertEquals(result, null);
   },
+});
+
+// ---------------------------------------------------------------------------
+// Access-token claim helpers
+// ---------------------------------------------------------------------------
+
+Deno.test("getAccessTokenClaims: decodes bearer JWT payload", async () => {
+  const { getAccessTokenClaims } = await import("./auth.ts");
+  const req = requestWithClaims({ sub: "user-1", aal: "aal2" });
+
+  const claims = getAccessTokenClaims(req);
+
+  assertEquals(claims?.sub, "user-1");
+  assertEquals(claims?.aal, "aal2");
+});
+
+Deno.test("getAccessTokenClaims: returns null for malformed JWT", async () => {
+  const { getAccessTokenClaims } = await import("./auth.ts");
+  const req = new Request("https://example.com", {
+    headers: { Authorization: "Bearer not-a-jwt" },
+  });
+
+  assertEquals(getAccessTokenClaims(req), null);
+});
+
+Deno.test("getAuthenticatorAssuranceLevel: returns aal claim", async () => {
+  const { getAuthenticatorAssuranceLevel } = await import("./auth.ts");
+  const req = requestWithClaims({ aal: "aal2" });
+
+  assertEquals(getAuthenticatorAssuranceLevel(req), "aal2");
+});
+
+Deno.test("getAuthenticatorAssuranceLevel: returns null when missing", async () => {
+  const { getAuthenticatorAssuranceLevel } = await import("./auth.ts");
+  const req = requestWithClaims({ sub: "user-1" });
+
+  assertEquals(getAuthenticatorAssuranceLevel(req), null);
 });
 
 // ---------------------------------------------------------------------------

@@ -38,6 +38,44 @@ export async function getAuthenticatedUserId(
   }
 }
 
+function decodeBase64Url(value: string): string {
+  const normalized = value.replaceAll("-", "+").replaceAll("_", "/");
+  const padded = normalized.padEnd(
+    Math.ceil(normalized.length / 4) * 4,
+    "=",
+  );
+  return atob(padded);
+}
+
+/**
+ * Extract claims from the bearer access token.
+ *
+ * This does not verify the JWT signature by itself. Use only after
+ * getAuthenticatedUserId(req) has validated the same token via Supabase Auth.
+ */
+export function getAccessTokenClaims(
+  req: Request,
+): Record<string, unknown> | null {
+  const authHeader = req.headers.get("Authorization");
+  if (!authHeader?.startsWith("Bearer ")) return null;
+  const token = authHeader.slice("Bearer ".length);
+  const parts = token.split(".");
+  if (parts.length !== 3) return null;
+
+  try {
+    const payload = JSON.parse(decodeBase64Url(parts[1]));
+    return payload && typeof payload === "object" ? payload : null;
+  } catch {
+    return null;
+  }
+}
+
+export function getAuthenticatorAssuranceLevel(req: Request): string | null {
+  const claims = getAccessTokenClaims(req);
+  const aal = claims?.aal;
+  return typeof aal === "string" ? aal : null;
+}
+
 /**
  * Check if a user has admin or founder role in the profiles table.
  * Uses a service-role client to bypass RLS.

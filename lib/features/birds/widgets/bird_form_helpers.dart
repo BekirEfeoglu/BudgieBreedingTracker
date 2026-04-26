@@ -11,6 +11,7 @@ import 'package:budgie_breeding_tracker/router/route_names.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/mutation_database.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/parent_genotype.dart';
 import 'package:budgie_breeding_tracker/features/genetics/utils/bird_genotype_mapper.dart'; // Cross-feature import: birds↔genetics mutation data mapping
+import 'package:image_picker/image_picker.dart';
 
 export 'package:budgie_breeding_tracker/features/genetics/utils/bird_genotype_mapper.dart' // Cross-feature import: birds↔genetics mutation data mapping
     show BirdGenotypeMapper;
@@ -218,6 +219,7 @@ void submitBirdForm({
   required String? motherId,
   required String colorNoteText,
   required String notesText,
+  XFile? photoFile,
 }) {
   final notes = buildNotes(
     colorMutation: colorMutation,
@@ -265,6 +267,7 @@ void submitBirdForm({
       notes: notes,
       mutations: gData.mutationIds,
       genotypeInfo: gData.genotypeInfo,
+      photoFile: photoFile,
     );
   }
 }

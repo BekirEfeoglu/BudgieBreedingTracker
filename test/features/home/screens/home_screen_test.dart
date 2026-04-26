@@ -18,7 +18,7 @@ import 'package:budgie_breeding_tracker/core/widgets/error_state.dart';
 import 'package:budgie_breeding_tracker/core/widgets/skeleton_loader.dart';
 import 'package:budgie_breeding_tracker/features/home/widgets/dashboard_stats_grid.dart';
 import 'package:budgie_breeding_tracker/features/notifications/providers/notification_list_providers.dart';
-import 'package:budgie_breeding_tracker/features/premium/providers/premium_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/premium/premium_providers.dart';
 import 'package:budgie_breeding_tracker/features/profile/providers/profile_providers.dart';
 
 import '../../../helpers/e2e_test_harness.dart';

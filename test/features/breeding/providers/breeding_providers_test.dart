@@ -394,9 +394,23 @@ void main() {
       );
     }
 
-    test('sorts by newest (default)', () {
+    test('sorts by cage number ascending by default', () {
       final container = makeSortContainer();
       addTearDown(container.dispose);
+
+      final result = container.read(
+        sortedAndFilteredBreedingPairsProvider(sortPairs),
+      );
+
+      // sp3 (null->'') < sp2 (A-01) < sp1 (B-02) < sp4 (C-03)
+      expect(result.map((e) => e.id), ['sp3', 'sp2', 'sp1', 'sp4']);
+    });
+
+    test('sorts by newest when selected', () {
+      final container = makeSortContainer();
+      addTearDown(container.dispose);
+
+      container.read(breedingSortProvider.notifier).state = BreedingSort.newest;
 
       final result = container.read(
         sortedAndFilteredBreedingPairsProvider(sortPairs),
@@ -410,8 +424,7 @@ void main() {
       final container = makeSortContainer();
       addTearDown(container.dispose);
 
-      container.read(breedingSortProvider.notifier).state =
-          BreedingSort.oldest;
+      container.read(breedingSortProvider.notifier).state = BreedingSort.oldest;
 
       final result = container.read(
         sortedAndFilteredBreedingPairsProvider(sortPairs),

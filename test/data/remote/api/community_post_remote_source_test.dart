@@ -113,6 +113,12 @@ void main() {
       expect(postsSelect.inFilterCalls, hasLength(1));
       expect(postsSelect.inFilterCalls.first.key, 'id');
       expect(postsSelect.inFilterCalls.first.value, ['p1', 'p2']);
+      expect(
+        postsSelect.eqCalls.any(
+          (call) => call.key == 'needs_review' && call.value == false,
+        ),
+        isTrue,
+      );
     });
   });
 

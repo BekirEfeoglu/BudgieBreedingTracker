@@ -10,7 +10,7 @@ import 'package:budgie_breeding_tracker/core/widgets/buttons/app_icon_button.dar
 import 'package:budgie_breeding_tracker/features/birds/providers/bird_providers.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
-/// Search bar for filtering birds by name or ring number.
+/// Search bar for filtering birds by name, ring number, or cage number.
 class BirdSearchBar extends ConsumerStatefulWidget {
   const BirdSearchBar({super.key});
 

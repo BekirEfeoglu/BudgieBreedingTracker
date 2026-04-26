@@ -84,12 +84,12 @@ void main() {
           updatedAt: DateTime(2024, 1, 1),
         );
 
-        when(() => mockBirdRepository.getById('male-1')).thenAnswer(
-          (_) async => maleBird,
-        );
-        when(() => mockBirdRepository.getById('female-1')).thenAnswer(
-          (_) async => femaleBird,
-        );
+        when(
+          () => mockBirdRepository.getById('male-1'),
+        ).thenAnswer((_) async => maleBird);
+        when(
+          () => mockBirdRepository.getById('female-1'),
+        ).thenAnswer((_) async => femaleBird);
         when(() => mockPairRepository.save(any())).thenAnswer((_) async {});
         when(
           () => mockPairRepository.getAll(any()),
@@ -240,10 +240,20 @@ void main() {
       'GIVEN active clutch context WHEN 4 eggs are added THEN all eggs are incubating and hatch date calculation/calendar generation runs',
       () async {
         final mockEggRepository = MockEggRepository();
+        final mockIncubationRepository = MockIncubationRepository();
         final mockCalendarGenerator = MockCalendarEventGenerator();
         final mockNotificationScheduler = MockNotificationScheduler();
 
+        when(
+          () => mockEggRepository.getByIncubation('inc-1'),
+        ).thenAnswer((_) async => []);
         when(() => mockEggRepository.save(any())).thenAnswer((_) async {});
+        when(() => mockIncubationRepository.getById('inc-1')).thenAnswer(
+          (_) async => const Incubation(id: 'inc-1', userId: 'test-user'),
+        );
+        when(
+          () => mockIncubationRepository.save(any()),
+        ).thenAnswer((_) async {});
         when(
           () => mockCalendarGenerator.generateEggEvents(
             userId: any(named: 'userId'),
@@ -266,6 +276,9 @@ void main() {
         final container = createTestContainer(
           overrides: [
             eggRepositoryProvider.overrideWithValue(mockEggRepository),
+            incubationRepositoryProvider.overrideWithValue(
+              mockIncubationRepository,
+            ),
             calendarEventGeneratorProvider.overrideWithValue(
               mockCalendarGenerator,
             ),
@@ -287,10 +300,7 @@ void main() {
           () => mockEggRepository.save(captureAny()),
         ).captured.cast<Egg>();
         expect(savedEggs, hasLength(4));
-        expect(
-          savedEggs.every((egg) => egg.status == EggStatus.incubating),
-          isTrue,
-        );
+        expect(savedEggs.every((egg) => egg.status == EggStatus.laid), isTrue);
         expect(
           savedEggs.every(
             (egg) => egg.expectedHatchDate.difference(today).inDays == 18,

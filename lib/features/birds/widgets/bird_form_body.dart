@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/species/species_registry.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
@@ -17,6 +18,7 @@ class BirdFormBody extends ConsumerWidget {
   final TextEditingController cageController;
   final TextEditingController notesController;
   final TextEditingController colorNoteController;
+  final XFile? photoFile;
   final BirdGender gender;
   final Species species;
   final BirdColor? colorMutation;
@@ -34,6 +36,8 @@ class BirdFormBody extends ConsumerWidget {
   final ValueChanged<DateTime?> onBirthDateChanged;
   final ValueChanged<String?> onFatherChanged;
   final ValueChanged<String?> onMotherChanged;
+  final VoidCallback? onPickPhotoSource;
+  final VoidCallback? onRemovePhoto;
   final VoidCallback onSubmit;
 
   const BirdFormBody({
@@ -44,6 +48,7 @@ class BirdFormBody extends ConsumerWidget {
     required this.cageController,
     required this.notesController,
     required this.colorNoteController,
+    this.photoFile,
     required this.gender,
     required this.species,
     required this.colorMutation,
@@ -61,6 +66,8 @@ class BirdFormBody extends ConsumerWidget {
     required this.onBirthDateChanged,
     required this.onFatherChanged,
     required this.onMotherChanged,
+    this.onPickPhotoSource,
+    this.onRemovePhoto,
     required this.onSubmit,
   });
 
@@ -71,65 +78,97 @@ class BirdFormBody extends ConsumerWidget {
     return Form(
       key: formKey,
       autovalidateMode: AutovalidateMode.onUserInteraction,
-      child: SingleChildScrollView(
-        padding: AppSpacing.screenPadding,
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(
-              maxWidth: AppSpacing.maxContentWidth,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                BirdFormBasicInfoSection(
-                  nameController: nameController,
-                  gender: gender,
-                  species: species,
-                  colorMutation: colorMutation,
-                  colorNoteController: colorNoteController,
-                  onGenderChanged: onGenderChanged,
-                  onSpeciesChanged: onSpeciesChanged,
-                  onColorChanged: onColorChanged,
-                ),
-                const SizedBox(height: AppSpacing.xl),
-                if (speciesProfile.supportsGenetics) ...[
-                  BirdFormGeneticsSection(
-                    species: species,
-                    geneticsMode: speciesProfile.geneticsMode,
-                    gender: gender,
-                    genotype: genotype,
-                    onGenotypeChanged: onGenotypeChanged,
+      child: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.lg,
+                AppSpacing.lg,
+                AppSpacing.lg,
+                112,
+              ),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(
+                    maxWidth: AppSpacing.maxContentWidth,
                   ),
-                  const SizedBox(height: AppSpacing.xl),
-                ],
-                BirdFormIdentitySection(
-                  ringController: ringController,
-                  cageController: cageController,
-                  birthDate: birthDate,
-                  onBirthDateChanged: onBirthDateChanged,
-                  dateFormatter: ref.watch(dateFormatProvider).formatter(),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      BirdFormBasicInfoSection(
+                        nameController: nameController,
+                        gender: gender,
+                        species: species,
+                        colorMutation: colorMutation,
+                        colorNoteController: colorNoteController,
+                        photoFile: photoFile,
+                        showPhotoPicker: !isEdit,
+                        onPickPhotoSource: onPickPhotoSource,
+                        onRemovePhoto: onRemovePhoto,
+                        onGenderChanged: onGenderChanged,
+                        onSpeciesChanged: onSpeciesChanged,
+                        onColorChanged: onColorChanged,
+                      ),
+                      const SizedBox(height: AppSpacing.xl),
+                      if (speciesProfile.supportsGenetics) ...[
+                        BirdFormGeneticsSection(
+                          species: species,
+                          geneticsMode: speciesProfile.geneticsMode,
+                          gender: gender,
+                          genotype: genotype,
+                          onGenotypeChanged: onGenotypeChanged,
+                        ),
+                        const SizedBox(height: AppSpacing.xl),
+                      ],
+                      BirdFormIdentitySection(
+                        ringController: ringController,
+                        cageController: cageController,
+                        birthDate: birthDate,
+                        onBirthDateChanged: onBirthDateChanged,
+                        dateFormatter: ref
+                            .watch(dateFormatProvider)
+                            .formatter(),
+                      ),
+                      const SizedBox(height: AppSpacing.xl),
+                      BirdFormParentsSection(
+                        species: species,
+                        fatherId: fatherId,
+                        motherId: motherId,
+                        editBirdId: editBirdId,
+                        onFatherChanged: onFatherChanged,
+                        onMotherChanged: onMotherChanged,
+                      ),
+                      const SizedBox(height: AppSpacing.xl),
+                      BirdFormNotesSection(notesController: notesController),
+                    ],
+                  ),
                 ),
-                const SizedBox(height: AppSpacing.xl),
-                BirdFormParentsSection(
-                  species: species,
-                  fatherId: fatherId,
-                  motherId: motherId,
-                  editBirdId: editBirdId,
-                  onFatherChanged: onFatherChanged,
-                  onMotherChanged: onMotherChanged,
+              ),
+            ),
+          ),
+          SafeArea(
+            top: false,
+            minimum: const EdgeInsets.fromLTRB(
+              AppSpacing.lg,
+              AppSpacing.sm,
+              AppSpacing.lg,
+              AppSpacing.lg,
+            ),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(
+                  maxWidth: AppSpacing.maxContentWidth,
                 ),
-                const SizedBox(height: AppSpacing.xl),
-                BirdFormNotesSection(notesController: notesController),
-                const SizedBox(height: AppSpacing.xl),
-                PrimaryButton(
+                child: PrimaryButton(
                   label: isEdit ? 'common.update'.tr() : 'common.save'.tr(),
                   isLoading: isLoading,
                   onPressed: onSubmit,
                 ),
-              ],
+              ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }

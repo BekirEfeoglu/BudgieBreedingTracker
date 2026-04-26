@@ -6,7 +6,7 @@ import 'package:go_router/go_router.dart';
 
 import 'package:budgie_breeding_tracker/data/providers/entity_count_providers.dart';
 import 'package:budgie_breeding_tracker/features/home/widgets/limit_approaching_banner.dart';
-import 'package:budgie_breeding_tracker/features/premium/providers/premium_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/premium/premium_providers.dart';
 
 void main() {
   const testUserId = 'test-user-id';

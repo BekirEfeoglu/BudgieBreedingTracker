@@ -10,7 +10,7 @@ import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/core/widgets/cards/stat_card.dart';
 import 'package:budgie_breeding_tracker/core/widgets/progress_bar.dart';
 import 'package:budgie_breeding_tracker/data/models/statistics_models.dart';
-import 'package:budgie_breeding_tracker/data/providers/premium_shared_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/premium/premium_providers.dart';
 import 'package:budgie_breeding_tracker/router/route_names.dart';
 
 /// 2x2 grid + 1 full-width card showing key dashboard statistics.

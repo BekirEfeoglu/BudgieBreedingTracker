@@ -10,8 +10,7 @@ import 'package:uuid/uuid.dart';
 import '../../../core/enums/community_enums.dart';
 import '../../../core/utils/logger.dart';
 import '../../../data/providers/auth_state_providers.dart';
-import '../../../data/remote/storage/storage_service.dart';
-import '../../../data/remote/supabase/supabase_client.dart';
+import '../../../data/repositories/community_post_repository.dart';
 import '../../../data/repositories/repository_providers.dart';
 import '../../../domain/services/moderation/content_moderation_service.dart';
 import 'community_feed_providers.dart';
@@ -60,7 +59,9 @@ class CreatePostNotifier extends Notifier<CreatePostState> {
     List<String> tags = const [],
     List<XFile> images = const [],
   }) async {
+    if (state.isLoading) return;
     state = state.copyWith(isLoading: true, error: null, isSuccess: false);
+    final imageUrls = <String>[];
 
     try {
       final userId = ref.read(currentUserIdProvider);
@@ -74,8 +75,7 @@ class CreatePostNotifier extends Notifier<CreatePostState> {
 
       // Client-side throttle — prevent rapid post creation
       final now = DateTime.now();
-      if (_lastPostAt != null &&
-          now.difference(_lastPostAt!) < _postCooldown) {
+      if (_lastPostAt != null && now.difference(_lastPostAt!) < _postCooldown) {
         state = state.copyWith(
           isLoading: false,
           error: 'community.post_cooldown'.tr(),
@@ -103,12 +103,9 @@ class CreatePostNotifier extends Notifier<CreatePostState> {
 
       // Server-side guard: account age, rate limit, spam dedup
       final contentHash = md5.convert(utf8.encode(content.trim())).toString();
+      final repo = ref.read(communityPostRepositoryProvider);
       try {
-        final client = ref.read(supabaseClientProvider);
-        final guardResult = await client.rpc(
-          'check_community_post_allowed',
-          params: {'p_content_hash': contentHash},
-        ) as Map<String, dynamic>;
+        final guardResult = await repo.checkPostAllowed(contentHash);
         if (guardResult['allowed'] != true) {
           final reason = guardResult['reason'] as String? ?? 'unknown';
           state = state.copyWith(
@@ -120,9 +117,7 @@ class CreatePostNotifier extends Notifier<CreatePostState> {
       } catch (e, st) {
         // Non-fatal: if guard RPC fails (e.g. offline), allow post through
         // — client-side throttle and moderation still apply.
-        AppLogger.warning(
-          'Community post guard RPC failed, continuing: $e',
-        );
+        AppLogger.warning('Community post guard RPC failed, continuing: $e');
         Sentry.captureException(e, stackTrace: st);
       }
 
@@ -143,16 +138,13 @@ class CreatePostNotifier extends Notifier<CreatePostState> {
         return;
       }
       final postId = const Uuid().v7();
-      final imageUrls = <String>[];
 
-      // Upload images (with safety scan)
+      // Scan every image before any upload so a later rejection cannot leave
+      // already-uploaded storage files without a post record.
       if (images.isNotEmpty) {
-        final client = ref.read(supabaseClientProvider);
-        final storageService = StorageService(client);
         final imageSafety = ref.read(imageSafetyServiceProvider);
 
         for (final image in images) {
-          // Image safety scan before upload (Apple Guideline 1.2)
           final bytes = await image.readAsBytes();
           final mimeType = _getMimeType(image.name);
           final safetyResult = await imageSafety.scanImage(
@@ -166,7 +158,10 @@ class CreatePostNotifier extends Notifier<CreatePostState> {
             );
             return;
           }
-          final url = await storageService.uploadCommunityPhoto(
+        }
+
+        for (final image in images) {
+          final url = await repo.uploadPhoto(
             userId: userId,
             postId: postId,
             file: image,
@@ -184,11 +179,9 @@ class CreatePostNotifier extends Notifier<CreatePostState> {
         'is_deleted': false,
         if (title != null && title.trim().isNotEmpty) 'title': title.trim(),
         if (tags.isNotEmpty) 'tags': tags,
-        if (imageUrls.isNotEmpty) 'image_url': imageUrls.first,
-        if (imageUrls.length > 1) 'images': imageUrls,
+        if (imageUrls.isNotEmpty) 'image_urls': imageUrls,
       };
 
-      final repo = ref.read(communityPostRepositoryProvider);
       await repo.create(data);
 
       ref.read(communityFeedProvider.notifier).refresh();
@@ -196,6 +189,10 @@ class CreatePostNotifier extends Notifier<CreatePostState> {
 
       state = state.copyWith(isLoading: false, isSuccess: true);
     } catch (e, st) {
+      if (imageUrls.isNotEmpty) {
+        final repo = ref.read(communityPostRepositoryProvider);
+        await _deleteUploadedImages(repo, imageUrls);
+      }
       AppLogger.error('CreatePostNotifier', e, st);
       Sentry.captureException(e, stackTrace: st);
       state = state.copyWith(isLoading: false, error: e.toString());
@@ -209,6 +206,20 @@ final createPostProvider =
     NotifierProvider<CreatePostNotifier, CreatePostState>(
       CreatePostNotifier.new,
     );
+
+Future<void> _deleteUploadedImages(
+  CommunityPostRepository repo,
+  List<String> imageUrls,
+) async {
+  for (final url in imageUrls) {
+    try {
+      await repo.deleteUploadedPhoto(url);
+    } catch (e, st) {
+      AppLogger.warning('Failed to clean up community image upload: $e');
+      Sentry.captureException(e, stackTrace: st);
+    }
+  }
+}
 
 String _getMimeType(String filename) {
   final ext = filename.split('.').last.toLowerCase();

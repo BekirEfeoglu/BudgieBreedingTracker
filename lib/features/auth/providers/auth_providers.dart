@@ -14,7 +14,7 @@ import '../../../domain/services/notifications/notification_processor.dart';
 import '../../../domain/services/notifications/notification_providers.dart';
 import '../../../domain/services/sync/sync_orchestrator.dart';
 import '../../../domain/services/sync/sync_providers.dart';
-import '../../../data/providers/premium_shared_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/premium/premium_providers.dart';
 import 'two_factor_providers.dart';
 
 // Import for internal use within this file.

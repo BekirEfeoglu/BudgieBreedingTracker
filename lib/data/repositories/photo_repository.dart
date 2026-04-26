@@ -6,7 +6,9 @@ import 'package:budgie_breeding_tracker/data/local/database/daos/sync_metadata_d
 import 'package:budgie_breeding_tracker/data/models/photo_model.dart';
 import 'package:budgie_breeding_tracker/data/models/sync_metadata_model.dart';
 import 'package:budgie_breeding_tracker/data/remote/api/photo_remote_source.dart';
+import 'package:budgie_breeding_tracker/data/remote/storage/storage_service.dart';
 import 'package:budgie_breeding_tracker/data/repositories/base_repository.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
 
 /// Repository for [Photo] entities.
@@ -19,6 +21,7 @@ class PhotoRepository {
   final PhotosDao _localDao;
   final PhotoRemoteSource _remoteSource;
   final SyncMetadataDao _syncDao;
+  final StorageService? _storageService;
 
   static const _uuid = Uuid();
 
@@ -26,9 +29,11 @@ class PhotoRepository {
     required PhotosDao localDao,
     required PhotoRemoteSource remoteSource,
     required SyncMetadataDao syncDao,
+    StorageService? storageService,
   }) : _localDao = localDao,
        _remoteSource = remoteSource,
-       _syncDao = syncDao;
+       _syncDao = syncDao,
+       _storageService = storageService;
 
   static const _table = SupabaseConstants.photosTable;
 
@@ -43,6 +48,41 @@ class PhotoRepository {
 
   Future<List<Photo>> getByEntity(String entityId) =>
       _localDao.getByEntity(entityId);
+
+  Future<String> uploadBirdPhoto({
+    required String userId,
+    required String birdId,
+    required XFile file,
+  }) {
+    final storageService = _storageService;
+    if (storageService == null) {
+      throw StateError('Photo storage service is not configured');
+    }
+
+    return storageService.uploadBirdPhoto(
+      userId: userId,
+      birdId: birdId,
+      file: file,
+    );
+  }
+
+  Future<void> deleteStorageForPhoto(Photo photo) {
+    final storageService = _storageService;
+    if (storageService == null) {
+      throw StateError('Photo storage service is not configured');
+    }
+
+    final filePath = photo.filePath;
+    if (filePath == null || filePath.isEmpty) return Future.value();
+
+    final storagePath = _storagePathFromPublicUrl(
+      filePath,
+      SupabaseConstants.birdPhotosBucket,
+    );
+    if (storagePath == null) return Future.value();
+
+    return storageService.deleteBirdPhoto(storagePath: storagePath);
+  }
 
   Future<void> save(Photo item) async {
     await _localDao.insertItem(item);
@@ -199,4 +239,15 @@ class PhotoRepository {
       );
     }
   }
+}
+
+String? _storagePathFromPublicUrl(String url, String bucket) {
+  final uri = Uri.tryParse(url);
+  if (uri == null) return null;
+
+  final segments = uri.pathSegments;
+  final bucketIdx = segments.indexOf(bucket);
+  if (bucketIdx < 0 || bucketIdx + 1 >= segments.length) return null;
+
+  return segments.sublist(bucketIdx + 1).join('/');
 }

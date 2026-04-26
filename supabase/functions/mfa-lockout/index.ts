@@ -1,6 +1,13 @@
-import { getCorsHeaders, corsPreflightResponse } from "../_shared/cors.ts";
-import { getAuthenticatedUserId, createSupabaseAdmin } from "../_shared/auth.ts";
-import { createRateLimiter, rateLimitedResponse } from "../_shared/rate-limit.ts";
+import { corsPreflightResponse, getCorsHeaders } from "../_shared/cors.ts";
+import {
+  createSupabaseAdmin,
+  getAuthenticatedUserId,
+  getAuthenticatorAssuranceLevel,
+} from "../_shared/auth.ts";
+import {
+  createRateLimiter,
+  rateLimitedResponse,
+} from "../_shared/rate-limit.ts";
 import { z } from "npm:zod@3.24.4";
 import { parseRequestBody } from "../_shared/validation.ts";
 import {
@@ -18,7 +25,9 @@ async function getOrCreateLockout(
 ): Promise<LockoutRow | null> {
   const { data } = await supabase
     .from("mfa_lockouts")
-    .select("user_id, failed_attempts, locked_until, last_attempt_at, lockout_count")
+    .select(
+      "user_id, failed_attempts, locked_until, last_attempt_at, lockout_count",
+    )
     .eq("user_id", userId)
     .single();
 
@@ -83,7 +92,10 @@ Deno.serve(async (req) => {
       const status = isLockedOut(lockout);
       if (status.locked) {
         return new Response(
-          JSON.stringify({ locked: true, remaining_seconds: status.remaining_seconds }),
+          JSON.stringify({
+            locked: true,
+            remaining_seconds: status.remaining_seconds,
+          }),
           { status: 429, headers },
         );
       }
@@ -104,7 +116,10 @@ Deno.serve(async (req) => {
 
       if (outcome.locked) {
         return new Response(
-          JSON.stringify({ locked: true, remaining_seconds: outcome.remaining_seconds }),
+          JSON.stringify({
+            locked: true,
+            remaining_seconds: outcome.remaining_seconds,
+          }),
           { status: 429, headers },
         );
       }
@@ -120,6 +135,13 @@ Deno.serve(async (req) => {
     }
 
     if (action === "reset") {
+      if (getAuthenticatorAssuranceLevel(req) !== "aal2") {
+        return new Response(
+          JSON.stringify({ error: "mfa_verification_required" }),
+          { status: 403, headers },
+        );
+      }
+
       // Decay policy: only drop lockout_count after a full week of inactivity.
       // Shorter windows (e.g. 24h) would let an attacker alternate wait/brute
       // attempts and keep the tier low; see lockout_core.ts.

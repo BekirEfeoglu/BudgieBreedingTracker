@@ -19,7 +19,6 @@ import 'package:budgie_breeding_tracker/features/eggs/screens/egg_management_scr
 import 'package:budgie_breeding_tracker/features/eggs/widgets/egg_list_item.dart';
 import 'package:budgie_breeding_tracker/features/eggs/widgets/egg_summary_row.dart';
 
-
 void main() {
   final testIncubation = Incubation(
     id: 'inc-1',
@@ -255,7 +254,7 @@ void main() {
       expect(find.byType(EggListItem), findsNWidgets(2));
     });
 
-    testWidgets('filters out hatched eggs from list display', (tester) async {
+    testWidgets('shows hatched eggs in list display', (tester) async {
       suppressOverflowErrors(tester);
 
       final testEggs = [
@@ -295,13 +294,11 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      // Only 1 active egg shown (hatched is filtered out)
-      expect(find.byType(EggListItem), findsOneWidget);
-      // But summary row includes all eggs
+      expect(find.byType(EggListItem), findsNWidgets(2));
       expect(find.byType(EggSummaryRow), findsOneWidget);
     });
 
-    testWidgets('shows all_hatched message when only hatched eggs', (
+    testWidgets('shows hatched egg rows when only hatched eggs exist', (
       tester,
     ) async {
       final hatchedEggs = [
@@ -333,11 +330,11 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      expect(find.text(l10n('eggs.all_hatched')), findsOneWidget);
-      expect(find.byType(EggListItem), findsNothing);
+      expect(find.text(l10n('eggs.all_hatched')), findsNothing);
+      expect(find.byType(EggListItem), findsOneWidget);
     });
 
-    testWidgets('shows FAB button for adding eggs', (tester) async {
+    testWidgets('hides FAB in empty state', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
@@ -355,7 +352,7 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      expect(find.byType(FloatingActionButton), findsOneWidget);
+      expect(find.byType(FloatingActionButton), findsNothing);
     });
 
     testWidgets('shows mixed status eggs correctly', (tester) async {
@@ -405,7 +402,7 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      // All 3 non-hatched eggs should be shown
+      // All eggs should be shown.
       expect(find.byType(EggListItem), findsNWidgets(3));
     });
   });
@@ -419,9 +416,17 @@ void main() {
             incubationsByPairProvider(
               'pair-1',
             ).overrideWith((_) => Stream.value([testIncubation])),
-            eggsForIncubationProvider(
-              'inc-1',
-            ).overrideWith((_) => Stream.value(<Egg>[])),
+            eggsForIncubationProvider('inc-1').overrideWith(
+              (_) => Stream.value([
+                Egg(
+                  id: 'egg-1',
+                  userId: 'test-user',
+                  incubationId: 'inc-1',
+                  layDate: DateTime(2024, 1, 1),
+                  eggNumber: 1,
+                ),
+              ]),
+            ),
           ],
           child: MaterialApp.router(routerConfig: router),
         ),
@@ -445,9 +450,17 @@ void main() {
             incubationsByPairProvider(
               'pair-1',
             ).overrideWith((_) => Stream.value([testIncubation])),
-            eggsForIncubationProvider(
-              'inc-1',
-            ).overrideWith((_) => Stream.value(<Egg>[])),
+            eggsForIncubationProvider('inc-1').overrideWith(
+              (_) => Stream.value([
+                Egg(
+                  id: 'egg-1',
+                  userId: 'test-user',
+                  incubationId: 'inc-1',
+                  layDate: DateTime(2024, 1, 1),
+                  eggNumber: 1,
+                ),
+              ]),
+            ),
           ],
           child: MaterialApp.router(routerConfig: router),
         ),
@@ -455,7 +468,6 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      // Tap on EmptyState action button or FAB
       await tester.tap(find.byType(FloatingActionButton));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
@@ -484,7 +496,7 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byType(FloatingActionButton));
+      await tester.tap(find.text(l10n('eggs.add_egg')));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
 
@@ -511,7 +523,7 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byType(FloatingActionButton));
+      await tester.tap(find.text(l10n('eggs.add_egg')));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
 
@@ -538,7 +550,7 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byType(FloatingActionButton));
+      await tester.tap(find.text(l10n('eggs.add_egg')));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
 

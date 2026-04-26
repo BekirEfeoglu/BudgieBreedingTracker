@@ -20,7 +20,7 @@ import 'package:budgie_breeding_tracker/features/home/widgets/recent_chicks_sect
 import 'package:budgie_breeding_tracker/features/home/widgets/sync_status_bar.dart';
 import 'package:budgie_breeding_tracker/features/home/widgets/unweaned_alert_banner.dart';
 import 'package:budgie_breeding_tracker/features/home/widgets/welcome_header.dart';
-import 'package:budgie_breeding_tracker/data/providers/premium_shared_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/premium/premium_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/sync/sync_providers.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_brand_title.dart';
 import 'package:budgie_breeding_tracker/features/notifications/widgets/notification_bell_button.dart'; // Cross-feature import: app-shell AppBar widget shared across all main screens

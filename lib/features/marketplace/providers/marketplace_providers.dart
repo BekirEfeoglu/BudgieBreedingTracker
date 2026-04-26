@@ -5,7 +5,7 @@ import '../../../core/enums/bird_enums.dart';
 import '../../../core/enums/marketplace_enums.dart';
 import '../../../data/models/marketplace_listing_model.dart';
 import '../../../data/repositories/repository_providers.dart';
-import '../../premium/providers/premium_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/premium/premium_providers.dart';
 
 export 'package:budgie_breeding_tracker/data/models/marketplace_listing_model.dart';
 export 'package:budgie_breeding_tracker/core/enums/marketplace_enums.dart';

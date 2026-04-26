@@ -5,7 +5,7 @@ import 'package:budgie_breeding_tracker/core/constants/incubation_constants.dart
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_rate_limiter.dart';
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_scheduler.dart';
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_service.dart';
-import 'package:budgie_breeding_tracker/features/notifications/providers/notification_settings_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/notifications/notification_settings_providers.dart';
 
 class _ScheduledNotification {
   _ScheduledNotification({

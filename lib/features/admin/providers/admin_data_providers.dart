@@ -3,7 +3,6 @@ import 'package:sentry_flutter/sentry_flutter.dart';
 
 import '../../../core/constants/supabase_constants.dart';
 import '../../../core/utils/logger.dart';
-import '../../../data/remote/supabase/edge_function_client.dart';
 import '../../auth/providers/auth_providers.dart';
 import '../constants/admin_constants.dart';
 import 'admin_auth_utils.dart';
@@ -12,6 +11,10 @@ import 'admin_models.dart';
 export 'admin_capacity_providers.dart';
 export 'admin_health_providers.dart';
 export 'admin_users_providers.dart';
+export '../../../data/providers/edge_function_provider.dart'
+    show edgeFunctionClientProvider;
+export '../../../data/providers/user_role_providers.dart'
+    show isAdminProvider, isFounderProvider;
 
 /// Notifier for admin users list limit (increases on "load more").
 class AdminUsersLimitNotifier extends Notifier<int> {
@@ -23,54 +26,6 @@ class AdminUsersLimitNotifier extends Notifier<int> {
 final adminUsersLimitProvider = NotifierProvider<AdminUsersLimitNotifier, int>(
   AdminUsersLimitNotifier.new,
 );
-
-/// Edge Function client provider.
-final edgeFunctionClientProvider = Provider<EdgeFunctionClient>((ref) {
-  return EdgeFunctionClient(ref.watch(supabaseClientProvider));
-});
-
-/// Whether current user is an admin/founder.
-final isAdminProvider = FutureProvider<bool>((ref) async {
-  final initialized = ref.watch(supabaseInitializedProvider);
-  if (!initialized) return false;
-  final client = ref.watch(supabaseClientProvider);
-  final userId = ref.watch(currentUserIdProvider);
-  if (userId == 'anonymous') return false;
-
-  try {
-    final result = await client
-        .from(SupabaseConstants.profilesTable)
-        .select('role')
-        .eq('id', userId)
-        .maybeSingle();
-    final role = (result?['role'] as String?)?.toLowerCase();
-    return role == 'admin' || role == 'founder';
-  } catch (e, st) {
-    AppLogger.error('isAdminProvider', e, st);
-    return false;
-  }
-});
-
-/// Whether current user is specifically a founder.
-final isFounderProvider = FutureProvider<bool>((ref) async {
-  final initialized = ref.watch(supabaseInitializedProvider);
-  if (!initialized) return false;
-  final client = ref.watch(supabaseClientProvider);
-  final userId = ref.watch(currentUserIdProvider);
-  if (userId == 'anonymous') return false;
-
-  try {
-    final result = await client
-        .from(SupabaseConstants.profilesTable)
-        .select('role')
-        .eq('id', userId)
-        .maybeSingle();
-    return (result?['role'] as String?)?.toLowerCase() == 'founder';
-  } catch (e, st) {
-    AppLogger.error('isFounderProvider', e, st);
-    return false;
-  }
-});
 
 /// Admin dashboard statistics.
 /// Uses server-side RPC to bypass RLS and get accurate counts.

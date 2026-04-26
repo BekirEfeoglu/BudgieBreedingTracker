@@ -11,7 +11,7 @@ import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/breeding_enums.dart';
 import 'package:budgie_breeding_tracker/core/errors/app_exception.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
-import 'package:budgie_breeding_tracker/features/premium/providers/premium_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/premium/premium_providers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../helpers/mocks.dart';
@@ -185,7 +185,11 @@ void main() {
           );
 
       verify(() => mockPairRepo.save(any())).called(1);
-      verify(() => mockIncubationRepo.save(any())).called(1);
+      final savedIncubation =
+          verify(() => mockIncubationRepo.save(captureAny())).captured.single
+              as Incubation;
+      expect(savedIncubation.startDate, isNull);
+      expect(savedIncubation.expectedHatchDate, isNull);
     });
 
     test('sets error state when pair repo throws', () async {

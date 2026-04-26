@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
-import 'package:budgie_breeding_tracker/core/enums/egg_enums.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_screen_title.dart';
@@ -134,10 +133,6 @@ class _EggManagementContent extends ConsumerWidget {
             );
           }
 
-          final activeEggs = eggs
-              .where((e) => e.status != EggStatus.hatched)
-              .toList();
-
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -146,62 +141,54 @@ class _EggManagementContent extends ConsumerWidget {
                 child: EggSummaryRow(eggs: eggs),
               ),
               const SizedBox(height: AppSpacing.sm),
-              if (activeEggs.isEmpty)
-                Expanded(
-                  child: Center(
-                    child: Text(
-                      'eggs.all_hatched'.tr(),
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ),
-                )
-              else
-                Expanded(
-                  child: RefreshIndicator(
-                    onRefresh: () async {
-                      ref.invalidate(eggsForIncubationProvider(incubationId));
+              Expanded(
+                child: RefreshIndicator(
+                  onRefresh: () async {
+                    ref.invalidate(eggsForIncubationProvider(incubationId));
+                  },
+                  child: ListView.builder(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.only(bottom: AppSpacing.xxxl * 2),
+                    itemCount: eggs.length,
+                    itemBuilder: (context, index) {
+                      final egg = eggs[index];
+                      return EggListItem(
+                        egg: egg,
+                        onStatusUpdate: () async {
+                          final newStatus = await showEggStatusUpdateSheet(
+                            context,
+                            egg,
+                          );
+                          if (newStatus != null) {
+                            ref
+                                .read(eggActionsProvider.notifier)
+                                .updateEggStatus(egg, newStatus);
+                          }
+                        },
+                        onDelete: () => _confirmDeleteEgg(context, ref, egg),
+                      );
                     },
-                    child: ListView.builder(
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      padding: const EdgeInsets.only(
-                        bottom: AppSpacing.xxxl * 2,
-                      ),
-                      itemCount: activeEggs.length,
-                      itemBuilder: (context, index) {
-                        final egg = activeEggs[index];
-                        return EggListItem(
-                          egg: egg,
-                          onStatusUpdate: () async {
-                            final newStatus = await showEggStatusUpdateSheet(
-                              context,
-                              egg,
-                            );
-                            if (newStatus != null) {
-                              ref
-                                  .read(eggActionsProvider.notifier)
-                                  .updateEggStatus(egg, newStatus);
-                            }
-                          },
-                          onDelete: () => _confirmDeleteEgg(context, ref, egg),
-                        );
-                      },
-                    ),
                   ),
                 ),
+              ),
             ],
           );
         },
       ),
-      floatingActionButton: FabButton(
-        icon: const AppIcon(AppIcons.add),
-        tooltip: 'eggs.add_egg'.tr(),
-        onPressed: () {
-          final eggs =
-              ref.read(eggsForIncubationProvider(incubationId)).value ?? [];
-          _showAddEggSheet(context, ref, incubationId, eggs);
-        },
+      floatingActionButton: eggsAsync.maybeWhen(
+        data: (eggs) => eggs.isEmpty
+            ? null
+            : FabButton(
+                icon: const AppIcon(AppIcons.add),
+                tooltip: 'eggs.add_egg'.tr(),
+                onPressed: () {
+                  final eggs =
+                      ref.read(eggsForIncubationProvider(incubationId)).value ??
+                      [];
+                  _showAddEggSheet(context, ref, incubationId, eggs);
+                },
+              ),
+        orElse: () => null,
       ),
     );
   }

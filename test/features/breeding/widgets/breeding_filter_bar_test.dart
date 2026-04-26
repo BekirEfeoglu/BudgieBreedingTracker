@@ -69,11 +69,11 @@ void main() {
       expect(currentFilter, BreedingFilter.all);
     });
 
-    testWidgets('renders inside FadeScrollableChipBar', (tester) async {
+    testWidgets('lays out filters in a wrapping chip group', (tester) async {
       await _pump(tester);
 
-      // Should be scrollable (FadeScrollableChipBar or ListView)
       expect(find.byType(BreedingFilterBar), findsOneWidget);
+      expect(find.byType(Wrap), findsOneWidget);
     });
   });
 }

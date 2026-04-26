@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/breeding_enums.dart';
@@ -171,7 +172,10 @@ void main() {
         ],
       );
 
-      expect(find.textContaining(l10nContains('breeding.cage_number')), findsNothing);
+      expect(
+        find.textContaining(l10nContains('breeding.cage_number')),
+        findsNothing,
+      );
     });
 
     testWidgets('shows two BirdPairCards', (tester) async {
@@ -186,6 +190,30 @@ void main() {
       );
 
       expect(find.byType(BirdPairCard), findsNWidgets(2));
+    });
+
+    testWidgets('stacks bird cards on narrow screens', (tester) async {
+      final pair = _buildPair();
+
+      await tester.binding.setSurfaceSize(const Size(390, 844));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      await _pump(
+        tester,
+        BreedingPairInfoSection(pair: pair),
+        overrides: [
+          birdByIdProvider.overrideWith((ref, id) => const Stream.empty()),
+        ],
+      );
+
+      final cards = tester.widgetList<SizedBox>(
+        find.ancestor(
+          of: find.byType(BirdPairCard),
+          matching: find.byType(SizedBox),
+        ),
+      );
+
+      expect(cards.map((card) => card.width), everyElement(greaterThan(300)));
     });
   });
 
@@ -238,6 +266,41 @@ void main() {
       );
 
       expect(find.text(l10n('common.loading')), findsOneWidget);
+    });
+
+    testWidgets('opens bird profile when tapped', (tester) async {
+      final bird = createTestBird(
+        id: 'bird-123',
+        name: 'Profil Kus',
+        gender: BirdGender.male,
+      );
+      final router = GoRouter(
+        initialLocation: '/',
+        routes: [
+          GoRoute(
+            path: '/',
+            builder: (_, __) => Scaffold(
+              body: BirdPairCard(
+                bird: bird,
+                gender: BirdGender.male,
+                label: 'Erkek',
+              ),
+            ),
+          ),
+          GoRoute(
+            path: '/birds/:id',
+            builder: (_, state) =>
+                Scaffold(body: Text('Bird ${state.pathParameters['id']}')),
+          ),
+        ],
+      );
+
+      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+
+      await tester.tap(find.text('Profil Kus'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Bird bird-123'), findsOneWidget);
     });
   });
 }

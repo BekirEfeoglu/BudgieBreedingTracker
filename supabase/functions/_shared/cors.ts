@@ -15,14 +15,17 @@ export function getCorsHeaders(req: Request): Record<string, string> {
     .split(",")
     .map((s) => s.trim())
     .filter(Boolean);
-  const resolvedOrigin = allowedOrigins.includes(origin) ? origin : "";
-  return {
-    "Access-Control-Allow-Origin": resolvedOrigin,
+  const headers: Record<string, string> = {
     "Access-Control-Allow-Methods": "POST, OPTIONS",
     "Access-Control-Allow-Headers":
       "authorization, x-client-info, apikey, content-type",
     "Content-Type": "application/json",
+    "Vary": "Origin",
   };
+  if (allowedOrigins.includes(origin)) {
+    headers["Access-Control-Allow-Origin"] = origin;
+  }
+  return headers;
 }
 
 /**

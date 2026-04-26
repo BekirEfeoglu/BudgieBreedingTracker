@@ -50,20 +50,25 @@ extension _PremiumSyncHelpers on PremiumNotifier {
           expiresAt = info.expirationDate;
         } catch (e, st) {
           AppLogger.error(
-            '[PremiumNotifier] RevenueCat info unavailable, proceeding without expiry', e, st,
+            '[PremiumNotifier] RevenueCat info unavailable, proceeding without expiry',
+            e,
+            st,
           );
         }
       }
 
       // Atomic sync via RPC — updates both profiles and user_subscriptions
       // in a single transaction, preventing partial state.
-      await client.rpc('sync_premium_status', params: {
-        'p_is_premium': isPremium,
-        'p_subscription_status': isPremium ? 'premium' : 'free',
-        'p_premium_expires_at': expiresAt?.toIso8601String(),
-        'p_plan': 'premium',
-        'p_current_period_end': expiresAt?.toIso8601String(),
-      });
+      await client.rpc(
+        'sync_premium_status',
+        params: {
+          'p_is_premium': isPremium,
+          'p_subscription_status': isPremium ? 'premium' : 'free',
+          'p_premium_expires_at': expiresAt?.toIso8601String(),
+          'p_plan': 'premium',
+          'p_current_period_end': expiresAt?.toIso8601String(),
+        },
+      );
 
       // Sync succeeded — clear any pending retry
       await clearPendingSync(userId);
@@ -74,7 +79,9 @@ extension _PremiumSyncHelpers on PremiumNotifier {
         );
       } else {
         AppLogger.error(
-          '[PremiumNotifier] Supabase sync failed (non-fatal)', e, st,
+          '[PremiumNotifier] Supabase sync failed (non-fatal)',
+          e,
+          st,
         );
         // Save for retry on next app resume
         if (!ref.mounted) return;
@@ -151,7 +158,8 @@ extension _PremiumSyncHelpers on PremiumNotifier {
     // Reset retry count if last attempt was long enough ago (new session).
     // This allows transient issues (missing RPC, downtime) to self-heal.
     if (lastAttemptAt != null &&
-        DateTime.now().toUtc().difference(lastAttemptAt) >= _retryResetDuration) {
+        DateTime.now().toUtc().difference(lastAttemptAt) >=
+            _retryResetDuration) {
       AppLogger.info(
         '[PremiumNotifier] Resetting retry count (last attempt: $lastAttemptAt)',
       );
@@ -195,6 +203,9 @@ extension _PremiumSyncHelpers on PremiumNotifier {
     // Delegate to syncPremiumToSupabase with the current retryCount.
     // On success it clears pending sync. On failure it saves with
     // retryCount + 1 (handled via the currentRetryCount parameter).
-    await syncPremiumToSupabase(isPremium: isPremium, currentRetryCount: retryCount);
+    await syncPremiumToSupabase(
+      isPremium: isPremium,
+      currentRetryCount: retryCount,
+    );
   }
 }

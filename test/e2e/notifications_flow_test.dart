@@ -14,7 +14,7 @@ import 'package:budgie_breeding_tracker/domain/services/notifications/notificati
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_scheduler.dart';
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_service.dart';
 import 'package:budgie_breeding_tracker/features/notifications/providers/notification_list_providers.dart';
-import 'package:budgie_breeding_tracker/features/notifications/providers/notification_settings_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/notifications/notification_settings_providers.dart';
 
 import '../helpers/e2e_test_harness.dart';
 

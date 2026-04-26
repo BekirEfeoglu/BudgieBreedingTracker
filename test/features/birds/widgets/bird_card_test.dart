@@ -52,7 +52,10 @@ void main() {
 
       await pumpWidget(tester, Scaffold(body: BirdCard(bird: bird)));
 
-      expect(find.textContaining(l10nContains('birds.age_short_ym')), findsOneWidget);
+      expect(
+        find.textContaining(l10nContains('birds.age_short_y')),
+        findsOneWidget,
+      );
     });
 
     testWidgets('shows status badge', (tester) async {

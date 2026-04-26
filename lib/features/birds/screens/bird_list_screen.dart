@@ -16,7 +16,7 @@ import 'package:budgie_breeding_tracker/core/widgets/ad_banner_widget.dart';
 import 'package:budgie_breeding_tracker/domain/services/ads/ad_service.dart';
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 import 'package:budgie_breeding_tracker/features/birds/providers/bird_providers.dart';
-import 'package:budgie_breeding_tracker/data/providers/premium_shared_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/premium/premium_providers.dart';
 import 'package:budgie_breeding_tracker/features/birds/widgets/bird_card.dart';
 import 'package:budgie_breeding_tracker/features/birds/widgets/bird_filter_bar.dart';
 import 'package:budgie_breeding_tracker/features/birds/widgets/bird_search_bar.dart';
@@ -40,6 +40,8 @@ class BirdListScreen extends ConsumerStatefulWidget {
 }
 
 class _BirdListScreenState extends ConsumerState<BirdListScreen> {
+  static const double _listBottomInset = AppSpacing.xxxl * 4;
+
   final Set<String> _selectedIds = {};
 
   bool get _isSelectionMode => _selectedIds.isNotEmpty;
@@ -313,7 +315,7 @@ class _BirdListScreenState extends ConsumerState<BirdListScreen> {
                         physics: const AlwaysScrollableScrollPhysics(),
                         padding: const EdgeInsets.only(
                           top: AppSpacing.sm,
-                          bottom: AppSpacing.xxxl * 2,
+                          bottom: _listBottomInset,
                         ),
                         itemCount: birds.length,
                         itemBuilder: (context, index) {

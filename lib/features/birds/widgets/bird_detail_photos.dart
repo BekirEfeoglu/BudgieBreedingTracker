@@ -5,7 +5,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:uuid/uuid.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
-import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
 import 'package:budgie_breeding_tracker/core/enums/photo_enums.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
@@ -14,7 +13,6 @@ import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/core/widgets/dialogs/confirm_dialog.dart';
 import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/data/models/photo_model.dart';
-import 'package:budgie_breeding_tracker/data/remote/storage/storage_providers.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 import 'package:budgie_breeding_tracker/features/birds/providers/bird_providers.dart';
@@ -78,21 +76,43 @@ class _BirdDetailPhotosState extends ConsumerState<BirdDetailPhotos> {
               onDeletePhoto: (url) => _deletePhoto(context, ref, url),
             ),
           Padding(
-            padding: AppSpacing.screenPadding,
-            child: OutlinedButton.icon(
-              onPressed: _isUploading ? null : () => _addPhoto(context, ref),
-              icon: _isUploading
-                  ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const AppIcon(AppIcons.photo, size: 18),
-              label: Text(
-                _isUploading
-                    ? 'birds.uploading_photo'.tr()
-                    : 'birds.add_photo'.tr(),
-              ),
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.lg,
+              AppSpacing.xs,
+              AppSpacing.lg,
+              AppSpacing.xl,
+            ),
+            child: Row(
+              children: [
+                if (urls.isEmpty) const SizedBox(width: 116),
+                Flexible(
+                  child: OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
+                      minimumSize: const Size(0, AppSpacing.touchTargetMin),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.lg,
+                      ),
+                      visualDensity: VisualDensity.compact,
+                    ),
+                    onPressed: _isUploading
+                        ? null
+                        : () => _addPhoto(context, ref),
+                    icon: _isUploading
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const AppIcon(AppIcons.photo, size: 18),
+                    label: Text(
+                      _isUploading
+                          ? 'birds.uploading_photo'.tr()
+                          : 'birds.add_photo'.tr(),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -121,18 +141,7 @@ class _BirdDetailPhotosState extends ConsumerState<BirdDetailPhotos> {
     if (photo == null) return;
 
     try {
-      final storage = ref.read(storageServiceProvider);
-      // Extract storage path from public URL (userId/birdId/filename)
-      final uri = Uri.tryParse(url);
-      if (uri != null) {
-        final segments = uri.pathSegments;
-        // URL format: .../object/public/bird-photos/userId/birdId/filename
-        final bucketIdx = segments.indexOf(SupabaseConstants.birdPhotosBucket);
-        if (bucketIdx >= 0 && bucketIdx + 3 <= segments.length) {
-          final storagePath = segments.sublist(bucketIdx + 1).join('/');
-          await storage.deleteBirdPhoto(storagePath: storagePath);
-        }
-      }
+      await photoRepo.deleteStorageForPhoto(photo);
     } catch (e) {
       AppLogger.warning('Failed to delete storage file: $e');
     }
@@ -181,16 +190,15 @@ class _BirdDetailPhotosState extends ConsumerState<BirdDetailPhotos> {
     setState(() => _isUploading = true);
 
     final userId = ref.read(currentUserIdProvider);
-    final storage = ref.read(storageServiceProvider);
+    final photoRepo = ref.read(photoRepositoryProvider);
 
     try {
-      final url = await storage.uploadBirdPhoto(
+      final url = await photoRepo.uploadBirdPhoto(
         userId: userId,
         birdId: widget.bird.id,
         file: picked,
       );
 
-      final photoRepo = ref.read(photoRepositoryProvider);
       await photoRepo.save(
         Photo(
           id: const Uuid().v7(),

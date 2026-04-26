@@ -8,6 +8,7 @@ import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_screen_title.dart';
+import 'package:budgie_breeding_tracker/data/providers/user_role_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/parent_genotype.dart';
 import 'package:budgie_breeding_tracker/features/genetics/providers/genetics_providers.dart';
 import 'package:budgie_breeding_tracker/features/genetics/providers/genetics_history_providers.dart';
@@ -35,6 +36,7 @@ class GeneticsCalculatorScreen extends ConsumerWidget {
     final hasSelections =
         fatherGenotype.isNotEmpty || motherGenotype.isNotEmpty;
     final canAdvance = fatherGenotype.isNotEmpty && motherGenotype.isNotEmpty;
+    final isFounder = ref.watch(isFounderProvider).value == true;
 
     return Scaffold(
       appBar: AppBar(
@@ -63,15 +65,16 @@ class GeneticsCalculatorScreen extends ConsumerWidget {
               }
             },
             itemBuilder: (_) => [
-              PopupMenuItem(
-                value: 'ai',
-                child: ListTile(
-                  leading: const Icon(LucideIcons.sparkles),
-                  title: Text('more.ai_predictions'.tr()),
-                  dense: true,
-                  contentPadding: EdgeInsets.zero,
+              if (isFounder)
+                PopupMenuItem(
+                  value: 'ai',
+                  child: ListTile(
+                    leading: const Icon(LucideIcons.sparkles),
+                    title: Text('more.ai_predictions'.tr()),
+                    dense: true,
+                    contentPadding: EdgeInsets.zero,
+                  ),
                 ),
-              ),
               PopupMenuItem(
                 value: 'reverse',
                 child: ListTile(
