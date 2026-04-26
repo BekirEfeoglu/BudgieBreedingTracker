@@ -6,7 +6,7 @@ import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
 import 'package:budgie_breeding_tracker/features/chicks/screens/chick_detail_screen.dart';
 import 'package:budgie_breeding_tracker/features/chicks/widgets/chick_age_formatter.dart';
 import 'package:budgie_breeding_tracker/features/chicks/widgets/chick_health_badge.dart';
-import 'package:budgie_breeding_tracker/features/chicks/widgets/development_stage_badge.dart';
+import 'package:budgie_breeding_tracker/shared/widgets/chicks.dart';
 
 /// Header section for the chick detail screen: avatar, name, badges.
 class ChickDetailHeader extends StatelessWidget {

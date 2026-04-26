@@ -24,8 +24,7 @@ import 'package:budgie_breeding_tracker/core/utils/app_haptics.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/core/widgets/dialogs/confirm_dialog.dart';
 import 'package:budgie_breeding_tracker/features/birds/providers/bird_form_providers.dart';
-import 'package:budgie_breeding_tracker/features/notifications/widgets/notification_bell_button.dart'; // Cross-feature import: app-shell AppBar widget shared across all main screens
-import 'package:budgie_breeding_tracker/features/profile/widgets/profile_menu_button.dart'; // Cross-feature import: app-shell AppBar widget shared across all main screens
+import 'package:budgie_breeding_tracker/shared/widgets/app_shell.dart';
 import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/router/route_names.dart';
 import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
@@ -125,7 +124,11 @@ class _BirdListScreenState extends ConsumerState<BirdListScreen> {
       try {
         await notifier.markAsDead(id);
       } catch (e, st) {
-        AppLogger.error('[BirdListScreen] bulkMarkAsDead failed for $id', e, st);
+        AppLogger.error(
+          '[BirdListScreen] bulkMarkAsDead failed for $id',
+          e,
+          st,
+        );
         failures.add(id);
       }
     }
@@ -157,7 +160,11 @@ class _BirdListScreenState extends ConsumerState<BirdListScreen> {
       try {
         await notifier.markAsSold(id);
       } catch (e, st) {
-        AppLogger.error('[BirdListScreen] bulkMarkAsSold failed for $id', e, st);
+        AppLogger.error(
+          '[BirdListScreen] bulkMarkAsSold failed for $id',
+          e,
+          st,
+        );
         failures.add(id);
       }
     }
@@ -187,15 +194,15 @@ class _BirdListScreenState extends ConsumerState<BirdListScreen> {
                 style: Theme.of(context).textTheme.titleMedium,
               )
             : birdsAsync.whenOrNull(
-                  data: (allBirds) => AppScreenTitle(
-                    title: '${'birds.title'.tr()} (${allBirds.length})',
+                    data: (allBirds) => AppScreenTitle(
+                      title: '${'birds.title'.tr()} (${allBirds.length})',
+                      iconAsset: AppIcons.bird,
+                    ),
+                  ) ??
+                  AppScreenTitle(
+                    title: 'birds.title'.tr(),
                     iconAsset: AppIcons.bird,
                   ),
-                ) ??
-                AppScreenTitle(
-                  title: 'birds.title'.tr(),
-                  iconAsset: AppIcons.bird,
-                ),
         leading: _isSelectionMode
             ? AppIconButton(
                 icon: const Icon(LucideIcons.x),
@@ -291,8 +298,7 @@ class _BirdListScreenState extends ConsumerState<BirdListScreen> {
                     title: 'birds.no_birds'.tr(),
                     subtitle: 'birds.no_birds_hint'.tr(),
                     actionLabel: 'birds.add_bird'.tr(),
-                    onAction: () =>
-                        context.push('${AppRoutes.birds}/form'),
+                    onAction: () => context.push('${AppRoutes.birds}/form'),
                   );
                 }
 
@@ -329,7 +335,8 @@ class _BirdListScreenState extends ConsumerState<BirdListScreen> {
                             onTap: _isSelectionMode
                                 ? () => _toggleSelection(bird.id)
                                 : () => _navigateWithAd(
-                                    '${AppRoutes.birds}/${bird.id}'),
+                                    '${AppRoutes.birds}/${bird.id}',
+                                  ),
                             onLongPress: () {
                               AppHaptics.mediumImpact();
                               _toggleSelection(bird.id);
@@ -350,8 +357,7 @@ class _BirdListScreenState extends ConsumerState<BirdListScreen> {
           : FabButton(
               icon: const AppIcon(AppIcons.add),
               tooltip: 'birds.new_bird'.tr(),
-              onPressed: () =>
-                  context.push('${AppRoutes.birds}/form'),
+              onPressed: () => context.push('${AppRoutes.birds}/form'),
             ),
     );
   }

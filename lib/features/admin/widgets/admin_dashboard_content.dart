@@ -45,6 +45,10 @@ class DashboardContent extends StatelessWidget {
           ],
           DashboardSystemHealthBanner(stats: stats),
           const SizedBox(height: AppSpacing.md),
+          const DashboardLiveHealthPanel(),
+          const SizedBox(height: AppSpacing.md),
+          const DashboardNotificationCenterSection(),
+          const SizedBox(height: AppSpacing.md),
           const DashboardErrorSummaryCard(),
           const SizedBox(height: AppSpacing.lg),
           DashboardStatsGrid(stats: stats),
@@ -56,31 +60,85 @@ class DashboardContent extends StatelessWidget {
             ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: AppSpacing.md),
-          Row(
-            children: [
-              Expanded(
-                child: DashboardQuickActionButton(
-                  icon: AppIcon(
-                    AppIcons.settings,
-                    semanticsLabel: 'admin.go_to_settings'.tr(),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final crossAxisCount = constraints.maxWidth >= 900
+                  ? 4
+                  : constraints.maxWidth >= 560
+                  ? 3
+                  : 2;
+              return GridView.count(
+                crossAxisCount: crossAxisCount,
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                crossAxisSpacing: AppSpacing.md,
+                mainAxisSpacing: AppSpacing.md,
+                childAspectRatio: crossAxisCount == 2 ? 1.45 : 1.65,
+                children: [
+                  DashboardQuickActionButton(
+                    icon: AppIcon(
+                      AppIcons.users,
+                      semanticsLabel: 'admin.users'.tr(),
+                    ),
+                    label: 'admin.users'.tr(),
+                    onTap: () => context.push(AppRoutes.adminUsers),
                   ),
-                  label: 'admin.go_to_settings'.tr(),
-                  onTap: () => context.go(AppRoutes.adminSettings),
-                ),
-              ),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: DashboardQuickActionButton(
-                  icon: AppIcon(
-                    AppIcons.users,
-                    semanticsLabel: 'admin.go_to_users'.tr(),
+                  DashboardQuickActionButton(
+                    icon: AppIcon(
+                      AppIcons.monitoring,
+                      semanticsLabel: 'admin.monitoring'.tr(),
+                    ),
+                    label: 'admin.monitoring'.tr(),
+                    onTap: () => context.push(AppRoutes.adminMonitoring),
                   ),
-                  label: 'admin.go_to_users'.tr(),
-                  onTap: () => context.go(AppRoutes.adminUsers),
-                ),
-              ),
-            ],
+                  DashboardQuickActionButton(
+                    icon: AppIcon(
+                      AppIcons.database,
+                      semanticsLabel: 'admin.database'.tr(),
+                    ),
+                    label: 'admin.database'.tr(),
+                    onTap: () => context.push(AppRoutes.adminDatabase),
+                  ),
+                  DashboardQuickActionButton(
+                    icon: AppIcon(
+                      AppIcons.audit,
+                      semanticsLabel: 'admin.audit'.tr(),
+                    ),
+                    label: 'admin.audit'.tr(),
+                    onTap: () => context.push(AppRoutes.adminAudit),
+                  ),
+                  DashboardQuickActionButton(
+                    icon: AppIcon(
+                      AppIcons.security,
+                      semanticsLabel: 'admin.security'.tr(),
+                    ),
+                    label: 'admin.security'.tr(),
+                    onTap: () => context.push(AppRoutes.adminSecurity),
+                  ),
+                  DashboardQuickActionButton(
+                    icon: AppIcon(
+                      AppIcons.comment,
+                      semanticsLabel: 'admin.feedback_admin'.tr(),
+                    ),
+                    label: 'admin.feedback_admin'.tr(),
+                    onTap: () => context.push(AppRoutes.adminFeedback),
+                  ),
+                  DashboardQuickActionButton(
+                    icon: AppIcon(
+                      AppIcons.settings,
+                      semanticsLabel: 'admin.settings'.tr(),
+                    ),
+                    label: 'admin.settings'.tr(),
+                    onTap: () => context.push(AppRoutes.adminSettings),
+                  ),
+                ],
+              );
+            },
           ),
+          const SizedBox(height: AppSpacing.xxl),
+          const DashboardOperationsOverviewSection(),
+          const SizedBox(height: AppSpacing.xxl),
+          const DashboardContentReviewSection(),
           const SizedBox(height: AppSpacing.xxl),
           DashboardPremiumConversionCard(stats: stats),
           const SizedBox(height: AppSpacing.lg),
@@ -99,7 +157,7 @@ class DashboardContent extends StatelessWidget {
           const SizedBox(height: AppSpacing.xxl),
           const DashboardAlertsSection(),
           const SizedBox(height: AppSpacing.xxl),
-          const DashboardRecentActionsSection(),
+          const DashboardAuditTimelineSection(),
           const SizedBox(height: AppSpacing.xxxl),
         ],
       ),

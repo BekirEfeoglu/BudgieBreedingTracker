@@ -9,10 +9,9 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/logger.dart';
 import '../../../core/widgets/app_icon.dart';
 import '../../../router/route_names.dart';
-import '../../auth/providers/auth_providers.dart';
+import 'package:budgie_breeding_tracker/shared/providers/auth.dart';
 import 'package:budgie_breeding_tracker/data/providers/action_feedback_providers.dart';
-import '../../profile/widgets/account_deletion_dialog.dart';
-import '../../profile/widgets/password_change_form.dart';
+import 'package:budgie_breeding_tracker/shared/widgets/profile_account.dart';
 import 'settings_action_tile.dart';
 import 'settings_navigation_tile.dart';
 import 'settings_section_header.dart';
@@ -102,7 +101,9 @@ class PrivacySecuritySection extends ConsumerWidget {
                           newPassword: newPassword,
                         );
                     navigator.pop();
-                    ActionFeedbackService.show('settings.password_changed'.tr());
+                    ActionFeedbackService.show(
+                      'settings.password_changed'.tr(),
+                    );
                   } catch (e) {
                     AppLogger.error(
                       '[PrivacySecurity] Password change failed',
@@ -168,7 +169,11 @@ class PrivacySecuritySection extends ConsumerWidget {
                 navigator.pop();
                 ActionFeedbackService.show('settings.sessions_signed_out'.tr());
               } catch (e) {
-                AppLogger.error('[PrivacySecurity] Sign out all failed', e, StackTrace.current);
+                AppLogger.error(
+                  '[PrivacySecurity] Sign out all failed',
+                  e,
+                  StackTrace.current,
+                );
                 navigator.pop();
                 messenger.showSnackBar(
                   SnackBar(content: Text('errors.unknown'.tr())),

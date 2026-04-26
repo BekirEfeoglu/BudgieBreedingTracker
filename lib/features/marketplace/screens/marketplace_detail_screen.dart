@@ -12,7 +12,7 @@ import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart
 import '../../../router/route_names.dart';
 // justified: marketplace needs messaging to contact seller
 import '../../../features/messaging/providers/messaging_form_providers.dart';
-import '../../community/widgets/community_image_viewer.dart';
+import 'package:budgie_breeding_tracker/shared/widgets/community.dart';
 import '../providers/marketplace_form_providers.dart';
 import '../providers/marketplace_providers.dart';
 import '../widgets/marketplace_seller_card.dart';
@@ -60,23 +60,21 @@ class _MarketplaceDetailScreenState
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text('marketplace.listing_detail'.tr()),
-      ),
+      appBar: AppBar(title: Text('marketplace.listing_detail'.tr())),
       body: listingAsync.when(
         loading: () => const LoadingState(),
         error: (error, _) => app.ErrorState(
           message: '${'marketplace.listing_error'.tr()}: $error',
           onRetry: () => ref.invalidate(
-            marketplaceListingByIdProvider(
-                (id: widget.listingId, userId: userId)),
+            marketplaceListingByIdProvider((
+              id: widget.listingId,
+              userId: userId,
+            )),
           ),
         ),
         data: (listing) {
           if (listing == null) {
-            return app.ErrorState(
-              message: 'error.not_found'.tr(),
-            );
+            return app.ErrorState(message: 'error.not_found'.tr());
           }
 
           final isOwner = listing.userId == userId;
@@ -121,8 +119,7 @@ class _MarketplaceDetailScreenState
                           (index) => Container(
                             width: 8,
                             height: 8,
-                            margin:
-                                const EdgeInsets.symmetric(horizontal: 3),
+                            margin: const EdgeInsets.symmetric(horizontal: 3),
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               color: index == _currentPage
@@ -140,10 +137,7 @@ class _MarketplaceDetailScreenState
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const SizedBox(height: AppSpacing.lg),
-                      Text(
-                        listing.title,
-                        style: theme.textTheme.headlineSmall,
-                      ),
+                      Text(listing.title, style: theme.textTheme.headlineSmall),
                       if (listing.price != null) ...[
                         const SizedBox(height: AppSpacing.sm),
                         Text(
@@ -164,8 +158,9 @@ class _MarketplaceDetailScreenState
                           ),
                           const SizedBox(width: AppSpacing.xs),
                           Text(
-                            'marketplace.view_count'
-                                .tr(args: ['${listing.viewCount}']),
+                            'marketplace.view_count'.tr(
+                              args: ['${listing.viewCount}'],
+                            ),
                             style: theme.textTheme.bodySmall?.copyWith(
                               color: theme.colorScheme.outline,
                             ),
@@ -217,11 +212,11 @@ class _MarketplaceDetailScreenState
                               final notifier = ref.read(
                                 messagingFormStateProvider.notifier,
                               );
-                              final conversationId =
-                                  await notifier.startDirectConversation(
-                                userId1: userId,
-                                userId2: listing.userId,
-                              );
+                              final conversationId = await notifier
+                                  .startDirectConversation(
+                                    userId1: userId,
+                                    userId2: listing.userId,
+                                  );
                               if (!context.mounted) return;
                               if (conversationId != null) {
                                 context.push(
@@ -257,9 +252,7 @@ class _MarketplaceDetailScreenState
                               );
                               if (confirmed == true) {
                                 await ref
-                                    .read(
-                                      marketplaceFormStateProvider.notifier,
-                                    )
+                                    .read(marketplaceFormStateProvider.notifier)
                                     .deleteListing(listing.id);
                                 if (!context.mounted) return;
                                 context.pop();
@@ -307,9 +300,7 @@ class _InfoRow extends StatelessWidget {
               ),
             ),
           ),
-          Expanded(
-            child: Text(value, style: theme.textTheme.bodyMedium),
-          ),
+          Expanded(child: Text(value, style: theme.textTheme.bodyMedium)),
         ],
       ),
     );

@@ -16,7 +16,7 @@ import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart
 import 'package:budgie_breeding_tracker/core/extensions/num_extensions.dart';
 import 'package:budgie_breeding_tracker/features/health_records/providers/health_record_providers.dart';
 import 'package:budgie_breeding_tracker/features/health_records/providers/health_record_form_providers.dart';
-import 'package:budgie_breeding_tracker/features/health_records/widgets/health_record_card.dart';
+import 'package:budgie_breeding_tracker/shared/widgets/health_records.dart';
 
 part 'health_record_detail_widgets.dart';
 

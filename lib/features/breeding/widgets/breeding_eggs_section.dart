@@ -11,11 +11,9 @@ import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/domain/services/incubation/incubation_calculator.dart';
 import 'package:budgie_breeding_tracker/features/breeding/widgets/milestone_timeline.dart';
-import 'package:budgie_breeding_tracker/features/eggs/widgets/egg_list_item.dart'; // Cross-feature import: breeding↔eggs tightly coupled domain
-import 'package:budgie_breeding_tracker/features/eggs/widgets/egg_status_update_sheet.dart'; // Cross-feature import: breeding↔eggs tightly coupled domain
-import 'package:budgie_breeding_tracker/features/eggs/widgets/egg_summary_row.dart'; // Cross-feature import: breeding↔eggs tightly coupled domain
+import 'package:budgie_breeding_tracker/shared/widgets/eggs.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_detail_providers.dart';
-import 'package:budgie_breeding_tracker/features/eggs/providers/egg_providers.dart'; // Cross-feature import: breeding↔eggs tightly coupled domain
+import 'package:budgie_breeding_tracker/shared/providers/eggs.dart';
 import 'package:budgie_breeding_tracker/data/providers/action_feedback_providers.dart';
 
 class BreedingEggsSection extends ConsumerWidget {

@@ -8,7 +8,7 @@ import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/sync/sync_providers.dart';
-import 'package:budgie_breeding_tracker/features/settings/widgets/sync_detail_sheet.dart'; // Cross-feature import: home↔settings sync status display
+import 'package:budgie_breeding_tracker/shared/widgets/sync_detail_sheet.dart';
 
 class SyncStatusBar extends ConsumerStatefulWidget {
   const SyncStatusBar({super.key});
@@ -52,10 +52,8 @@ class _SyncStatusBarState extends ConsumerState<SyncStatusBar>
     // Count of conflicts detected within the last 24h. Non-zero means at
     // least one local change was overridden by the server-wins resolution
     // — surface it so the user can open the detail sheet.
-    final recentConflictCount = ref
-        .watch(persistedConflictCountProvider(userId))
-        .asData
-        ?.value ?? 0;
+    final recentConflictCount =
+        ref.watch(persistedConflictCountProvider(userId)).asData?.value ?? 0;
 
     if (status == SyncDisplayStatus.syncing) {
       _rotationController.repeat();
@@ -114,10 +112,7 @@ class _SyncStatusBarState extends ConsumerState<SyncStatusBar>
             mainAxisSize: MainAxisSize.min,
             children: [
               status == SyncDisplayStatus.syncing
-                  ? RotationTransition(
-                      turns: _rotationController,
-                      child: icon,
-                    )
+                  ? RotationTransition(turns: _rotationController, child: icon)
                   : icon,
               const SizedBox(width: AppSpacing.sm),
               Text(

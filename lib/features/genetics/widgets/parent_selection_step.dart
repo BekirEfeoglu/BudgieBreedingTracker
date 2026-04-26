@@ -7,7 +7,7 @@ import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/parent_genotype.dart';
 import 'package:budgie_breeding_tracker/features/genetics/providers/genetics_providers.dart';
-import 'package:budgie_breeding_tracker/features/genetics/widgets/mutation_selector.dart';
+import 'package:budgie_breeding_tracker/shared/widgets/genetics.dart';
 import 'package:budgie_breeding_tracker/features/genetics/widgets/bird_picker_dialog.dart';
 
 /// Step 0: Parent mutation selection.

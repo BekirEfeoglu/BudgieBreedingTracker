@@ -13,10 +13,10 @@ import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/core/widgets/buttons/app_icon_button.dart';
 import 'package:budgie_breeding_tracker/data/local/database/database_provider.dart';
-import 'package:budgie_breeding_tracker/data/remote/storage/storage_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/profile/account_storage_cleanup_provider.dart';
 import 'package:budgie_breeding_tracker/router/route_names.dart';
 
-import '../../auth/providers/auth_providers.dart';
+import 'package:budgie_breeding_tracker/shared/providers/auth.dart';
 
 part 'account_deletion_dialog_widget.dart';
 
@@ -69,7 +69,7 @@ Future<void> performAccountDeletion(
   try {
     // 1. Delete remote storage files (best-effort)
     try {
-      await ref.read(storageServiceProvider).deleteAllUserFiles(userId);
+      await ref.read(accountStorageCleanupProvider).deleteAllUserFiles(userId);
     } catch (e) {
       AppLogger.warning('[AccountDeletion] Storage cleanup failed: $e');
     }
@@ -86,9 +86,9 @@ Future<void> performAccountDeletion(
     //    unreachable, still allow local cleanup so the user can sign out)
     bool serverDeletionOk = false;
     try {
-      await ref.read(authActionsProvider).requestAccountDeletion(
-        currentPassword: password,
-      );
+      await ref
+          .read(authActionsProvider)
+          .requestAccountDeletion(currentPassword: password);
       serverDeletionOk = true;
     } catch (e) {
       AppLogger.warning('[AccountDeletion] Server deletion failed: $e');
@@ -113,7 +113,9 @@ Future<void> performAccountDeletion(
     try {
       await ref.read(authActionsProvider).signOutAllSessions();
     } catch (e) {
-      AppLogger.debug('[AccountDeletion] Sign-out after deletion failed (expected if auth user already deleted): $e');
+      AppLogger.debug(
+        '[AccountDeletion] Sign-out after deletion failed (expected if auth user already deleted): $e',
+      );
     }
 
     // 7. Dismiss loading dialog and navigate to login
@@ -130,9 +132,11 @@ Future<void> performAccountDeletion(
             action: SnackBarAction(
               label: 'settings.delete_account_contact_support'.tr(),
               onPressed: () => launchUrl(
-                Uri.parse('mailto:support@budgiebreedingtracker.online'
-                    '?subject=Account%20Deletion%20Request'
-                    '&body=User%20ID:%20$userId'),
+                Uri.parse(
+                  'mailto:support@budgiebreedingtracker.online'
+                  '?subject=Account%20Deletion%20Request'
+                  '&body=User%20ID:%20$userId',
+                ),
               ),
             ),
             duration: const Duration(seconds: 8),
@@ -152,4 +156,3 @@ Future<void> performAccountDeletion(
     );
   }
 }
-

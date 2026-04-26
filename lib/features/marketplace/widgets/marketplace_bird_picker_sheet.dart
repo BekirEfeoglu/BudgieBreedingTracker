@@ -11,7 +11,7 @@ import '../../../core/widgets/app_icon.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/loading_state.dart';
 import '../../../data/models/bird_model.dart';
-import '../../birds/providers/bird_providers.dart';
+import 'package:budgie_breeding_tracker/shared/providers/birds.dart';
 
 class MarketplaceBirdPickerSheet extends ConsumerWidget {
   final String userId;
@@ -65,8 +65,7 @@ class MarketplaceBirdPickerSheet extends ConsumerWidget {
                 ),
               ),
               data: (birds) {
-                final alivebirds =
-                    birds.where((b) => b.isAlive).toList();
+                final alivebirds = birds.where((b) => b.isAlive).toList();
                 if (alivebirds.isEmpty) {
                   return Padding(
                     padding: const EdgeInsets.symmetric(
@@ -121,11 +120,7 @@ class _BirdPickerTile extends StatelessWidget {
             ? NetworkImage(bird.photoUrl!)
             : null,
         child: bird.photoUrl == null || bird.photoUrl!.isEmpty
-            ? Icon(
-                LucideIcons.bird,
-                size: 20,
-                color: theme.colorScheme.primary,
-              )
+            ? Icon(LucideIcons.bird, size: 20, color: theme.colorScheme.primary)
             : null,
       ),
       title: Text(bird.name, style: theme.textTheme.bodyMedium),

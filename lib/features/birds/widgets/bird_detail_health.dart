@@ -6,7 +6,7 @@ import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/data/providers/health_record_stream_providers.dart';
-import 'package:budgie_breeding_tracker/features/health_records/widgets/health_record_card.dart'; // Cross-feature import: bird detail shows health records
+import 'package:budgie_breeding_tracker/shared/widgets/health_records.dart';
 
 /// Health history section for bird detail screen showing recent records.
 class BirdDetailHealth extends ConsumerWidget {

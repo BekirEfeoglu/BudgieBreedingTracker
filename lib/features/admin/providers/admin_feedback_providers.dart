@@ -17,8 +17,8 @@ class FeedbackQueryNotifier extends Notifier<FeedbackQuery> {
 
 final feedbackQueryProvider =
     NotifierProvider<FeedbackQueryNotifier, FeedbackQuery>(
-  FeedbackQueryNotifier.new,
-);
+      FeedbackQueryNotifier.new,
+    );
 
 /// Admin feedback list with server-side filtering via [FeedbackQuery].
 final adminFeedbackProvider =
@@ -29,13 +29,11 @@ final adminFeedbackProvider =
 
       // Build filter chain before order/limit (PostgREST filter methods are
       // only available on PostgrestFilterBuilder, not PostgrestTransformBuilder).
-      var filterRequest = client
-          .from(SupabaseConstants.feedbackTable)
-          .select();
+      var filterRequest = client.from(SupabaseConstants.feedbackTable).select();
 
       if (query.statusFilter != null) {
         filterRequest = filterRequest.eq(
-          'status',
+          SupabaseConstants.feedbackColStatus,
           query.statusFilter!.toJson(),
         );
       }
@@ -49,16 +47,30 @@ final adminFeedbackProvider =
             .replaceAll('_', r'\_');
         if (sanitized.isNotEmpty) {
           filterRequest = filterRequest.or(
-            'message.ilike.%$sanitized%,subject.ilike.%$sanitized%',
+            '${SupabaseConstants.feedbackColMessage}.ilike.%$sanitized%,'
+            '${SupabaseConstants.feedbackColSubject}.ilike.%$sanitized%',
           );
         }
       }
 
       final result = await filterRequest
-          .order('created_at', ascending: false)
+          .order(SupabaseConstants.feedbackColCreatedAt, ascending: false)
           .limit(query.limit);
       return List<Map<String, dynamic>>.from(result as List);
     });
+
+/// Open feedback count for admin dashboard operations overview.
+final adminOpenFeedbackCountProvider = FutureProvider<int>((ref) async {
+  await requireAdmin(ref);
+  final client = ref.watch(supabaseClientProvider);
+
+  final count = await client
+      .from(SupabaseConstants.feedbackTable)
+      .count()
+      .eq(SupabaseConstants.feedbackColStatus, FeedbackStatus.open.toJson());
+
+  return count;
+});
 
 /// Status filter for the admin feedback list (null = all).
 /// Kept for backward compatibility — updates [feedbackQueryProvider] internally.
@@ -106,21 +118,30 @@ class AdminFeedbackActionNotifier extends Notifier<AdminFeedbackActionState> {
     required String status,
     required String priority,
     String? adminResponse,
+    String? category,
+    String? assignedAdminId,
+    String? internalNote,
   }) async {
     state = state.copyWith(isLoading: true, error: null, isSuccess: false);
     try {
       await requireAdmin(ref);
       final client = ref.read(supabaseClientProvider);
       final updates = <String, dynamic>{
-        'status': status,
-        'priority': priority,
+        SupabaseConstants.feedbackColStatus: status,
+        SupabaseConstants.feedbackColPriority: priority,
         if (adminResponse != null && adminResponse.isNotEmpty)
-          'admin_response': adminResponse,
+          SupabaseConstants.feedbackColAdminResponse: adminResponse,
+        if (category != null && category.isNotEmpty)
+          SupabaseConstants.feedbackColCategory: category,
+        if (assignedAdminId != null && assignedAdminId.isNotEmpty)
+          SupabaseConstants.feedbackColAssignedAdminId: assignedAdminId,
+        if (internalNote != null && internalNote.isNotEmpty)
+          SupabaseConstants.feedbackColInternalNote: internalNote,
       };
       await client
           .from(SupabaseConstants.feedbackTable)
           .update(updates)
-          .eq('id', feedbackId);
+          .eq(SupabaseConstants.feedbackColId, feedbackId);
       ref.invalidate(adminFeedbackProvider);
       state = state.copyWith(isLoading: false, isSuccess: true);
       return true;

@@ -14,7 +14,7 @@ import '../../../data/models/community_post_model.dart';
 import '../../../data/providers/auth_state_providers.dart';
 import '../../../data/repositories/repository_providers.dart';
 import '../../../router/route_names.dart';
-import '../../messaging/providers/messaging_form_providers.dart';
+import 'package:budgie_breeding_tracker/shared/providers/messaging.dart';
 import '../providers/community_feed_providers.dart';
 import '../providers/community_post_providers.dart';
 import 'community_image_viewer.dart';
@@ -69,8 +69,8 @@ class _CommunityPostCardState extends ConsumerState<CommunityPostCard> {
       onFollowToggle: isOwnPost
           ? null
           : () => ref
-              .read(followToggleProvider.notifier)
-              .toggleFollow(post.userId),
+                .read(followToggleProvider.notifier)
+                .toggleFollow(post.userId),
       onDoubleTapMedia: () {
         AppHaptics.mediumImpact();
         ref.read(likeToggleProvider.notifier).toggleLike(post.id);

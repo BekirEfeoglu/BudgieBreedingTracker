@@ -6,7 +6,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../core/enums/community_enums.dart';
 import '../../../core/theme/app_spacing.dart';
-import '../../profile/providers/profile_providers.dart';
+import 'package:budgie_breeding_tracker/shared/providers/profile.dart';
 
 /// Compact post creation bar with user avatar and quick actions.
 class CommunityQuickComposer extends ConsumerWidget {

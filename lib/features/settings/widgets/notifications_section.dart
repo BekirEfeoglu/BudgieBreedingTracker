@@ -6,7 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_icons.dart';
 import '../../../core/widgets/app_icon.dart';
 import '../../../router/route_names.dart';
-import '../../notifications/providers/notification_settings_providers.dart';
+import 'package:budgie_breeding_tracker/shared/providers/notifications.dart';
 import 'settings_navigation_tile.dart';
 import 'settings_section_header.dart';
 import 'settings_toggle_tile.dart';

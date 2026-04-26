@@ -64,6 +64,15 @@ class DashboardStatsGrid extends StatelessWidget {
               color: AppColors.budgieGreen,
             ),
             DashboardStatCard(
+              icon: Semantics(
+                label: 'admin.premium_users'.tr(),
+                child: const Icon(LucideIcons.crown),
+              ),
+              label: 'admin.premium_users'.tr(),
+              value: '${stats.premiumCount}',
+              color: AppColors.budgieYellow,
+            ),
+            DashboardStatCard(
               icon: AppIcon(
                 AppIcons.breedingActive,
                 semanticsLabel: 'admin.active_breedings'.tr(),

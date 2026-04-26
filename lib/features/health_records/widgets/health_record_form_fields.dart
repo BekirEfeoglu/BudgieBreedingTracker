@@ -9,7 +9,7 @@ import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
 import 'package:budgie_breeding_tracker/data/models/health_record_model.dart';
 import 'package:budgie_breeding_tracker/features/health_records/widgets/health_record_animal_selector.dart';
-import 'package:budgie_breeding_tracker/features/health_records/widgets/health_record_card.dart';
+import 'package:budgie_breeding_tracker/shared/widgets/health_records.dart';
 
 /// Form fields for the health record form (title, type, date, animal,
 /// description, treatment, vet, weight/cost, follow-up, notes).

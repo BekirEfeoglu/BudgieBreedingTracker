@@ -9,7 +9,7 @@ import '../../../core/utils/app_haptics.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_icon.dart';
 import '../../../router/route_names.dart';
-import '../../settings/providers/settings_providers.dart';
+import 'package:budgie_breeding_tracker/shared/providers/settings.dart';
 import 'profile_menu_tile.dart';
 import 'sync_status_tile.dart';
 

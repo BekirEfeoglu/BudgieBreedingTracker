@@ -70,6 +70,8 @@ class DatabaseContent extends ConsumerWidget {
           const DatabaseSoftDeleteSection(),
           const SizedBox(height: AppSpacing.md),
           const DatabaseStorageSection(),
+          const SizedBox(height: AppSpacing.md),
+          const DatabaseIntegritySection(),
           const SizedBox(height: AppSpacing.lg),
           Text(
             'admin.tables'.tr(),
@@ -244,4 +246,3 @@ class DatabaseGlobalActionsBar extends ConsumerWidget {
     }
   }
 }
-

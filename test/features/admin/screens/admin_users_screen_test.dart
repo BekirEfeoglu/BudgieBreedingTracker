@@ -30,6 +30,7 @@ final _testUsers = [
 
 Widget _createSubject({
   AsyncValue<List<AdminUser>> usersAsync = const AsyncLoading(),
+  List<dynamic> extraOverrides = const [],
 }) {
   final router = GoRouter(
     initialLocation: '/',
@@ -50,6 +51,7 @@ Widget _createSubject({
   return ProviderScope(
     overrides: [
       adminUsersProvider(const AdminUsersQuery()).overrideWithValue(usersAsync),
+      ...extraOverrides,
     ],
     child: MaterialApp.router(routerConfig: router),
   );
@@ -134,14 +136,32 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.widgetWithText(ChoiceChip, l10n('common.all')), findsOneWidget);
-      expect(find.widgetWithText(ChoiceChip, l10n('common.active')), findsOneWidget);
-      expect(find.widgetWithText(ChoiceChip, l10n('admin.inactive')), findsOneWidget);
+      expect(
+        find.widgetWithText(ChoiceChip, l10n('common.all')),
+        findsOneWidget,
+      );
+      expect(
+        find.widgetWithText(ChoiceChip, l10n('common.active')),
+        findsOneWidget,
+      );
+      expect(
+        find.widgetWithText(ChoiceChip, l10n('admin.inactive')),
+        findsOneWidget,
+      );
     });
 
     testWidgets('filters list when inactive chip is selected', (tester) async {
       await tester.pumpWidget(
-        _createSubject(usersAsync: AsyncData(_testUsers)),
+        _createSubject(
+          usersAsync: AsyncData(_testUsers),
+          extraOverrides: [
+            adminUsersProvider(
+              const AdminUsersQuery(isActiveFilter: false),
+            ).overrideWithValue(
+              AsyncData(_testUsers.where((user) => !user.isActive).toList()),
+            ),
+          ],
+        ),
       );
       await tester.pump();
 
@@ -151,6 +171,35 @@ void main() {
       expect(find.text('Bob Test'), findsOneWidget);
       expect(find.text('Alice Test'), findsNothing);
     });
+
+    testWidgets(
+      'requests server-side email sort when email option is selected',
+      (tester) async {
+        const emailQuery = AdminUsersQuery(
+          sortField: 'email',
+          sortAscending: true,
+        );
+        await tester.pumpWidget(
+          _createSubject(
+            usersAsync: AsyncData(_testUsers),
+            extraOverrides: [
+              adminUsersProvider(
+                emailQuery,
+              ).overrideWithValue(AsyncData(_testUsers.reversed.toList())),
+            ],
+          ),
+        );
+        await tester.pump();
+
+        await tester.tap(find.text(l10n('common.sort')).first);
+        await tester.pumpAndSettle();
+        await tester.tap(find.text(l10n('auth.email')).last);
+        await tester.pumpAndSettle();
+
+        expect(find.text('Bob Test'), findsOneWidget);
+        expect(find.text('Alice Test'), findsOneWidget);
+      },
+    );
 
     testWidgets('opens sort menu and shows sort options', (tester) async {
       await tester.pumpWidget(

@@ -8,7 +8,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/error_state.dart' as app;
 import '../../../data/models/badge_model.dart' as badge_model;
-import '../../breeding/providers/breeding_providers.dart';
+import 'package:budgie_breeding_tracker/shared/providers/breeding.dart';
 import '../providers/gamification_providers.dart';
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
@@ -26,14 +26,11 @@ class BadgeDetailScreen extends ConsumerWidget {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text('badges.detail'.tr()),
-      ),
+      appBar: AppBar(title: Text('badges.detail'.tr())),
       body: badgesAsync.when(
         loading: () => const LoadingState(),
-        error: (error, _) => app.ErrorState(
-          message: '${'common.data_load_error'.tr()}: $error',
-        ),
+        error: (error, _) =>
+            app.ErrorState(message: '${'common.data_load_error'.tr()}: $error'),
         data: (badges) {
           final badge = badges.where((b) => b.id == badgeId).firstOrNull;
           if (badge == null) {
@@ -44,8 +41,9 @@ class BadgeDetailScreen extends ConsumerWidget {
             loading: () => const LoadingState(),
             error: (_, __) => _buildDetail(context, theme, badge, null),
             data: (userBadges) {
-              final userBadge =
-                  userBadges.where((ub) => ub.badgeId == badgeId).firstOrNull;
+              final userBadge = userBadges
+                  .where((ub) => ub.badgeId == badgeId)
+                  .firstOrNull;
               return _buildDetail(context, theme, badge, userBadge);
             },
           );
@@ -98,8 +96,10 @@ class BadgeDetailScreen extends ConsumerWidget {
           // Tier chip
           Chip(
             label: Text(_tierLabel(badge.tier)),
-            backgroundColor:
-                _tierColor(badge.tier, theme).withValues(alpha: 0.2),
+            backgroundColor: _tierColor(
+              badge.tier,
+              theme,
+            ).withValues(alpha: 0.2),
           ),
           const SizedBox(height: AppSpacing.lg),
           // Description
@@ -137,9 +137,11 @@ class BadgeDetailScreen extends ConsumerWidget {
                 ),
                 const SizedBox(width: AppSpacing.sm),
                 Text(
-                  'badges.unlocked_at'.tr(args: [
-                    '${userBadge!.unlockedAt!.day}/${userBadge.unlockedAt!.month}/${userBadge.unlockedAt!.year}',
-                  ]),
+                  'badges.unlocked_at'.tr(
+                    args: [
+                      '${userBadge!.unlockedAt!.day}/${userBadge.unlockedAt!.month}/${userBadge.unlockedAt!.year}',
+                    ],
+                  ),
                   style: theme.textTheme.bodyMedium,
                 ),
               ],
@@ -173,18 +175,18 @@ class BadgeDetailScreen extends ConsumerWidget {
   }
 
   Color _tierColor(BadgeTier tier, ThemeData theme) => switch (tier) {
-        BadgeTier.bronze => AppColors.tierBronze,
-        BadgeTier.silver => AppColors.tierSilver,
-        BadgeTier.gold => AppColors.tierGold,
-        BadgeTier.platinum => AppColors.tierPlatinum,
-        BadgeTier.unknown => theme.colorScheme.outline,
-      };
+    BadgeTier.bronze => AppColors.tierBronze,
+    BadgeTier.silver => AppColors.tierSilver,
+    BadgeTier.gold => AppColors.tierGold,
+    BadgeTier.platinum => AppColors.tierPlatinum,
+    BadgeTier.unknown => theme.colorScheme.outline,
+  };
 
   String _tierLabel(BadgeTier tier) => switch (tier) {
-        BadgeTier.bronze => 'badges.tier_bronze'.tr(),
-        BadgeTier.silver => 'badges.tier_silver'.tr(),
-        BadgeTier.gold => 'badges.tier_gold'.tr(),
-        BadgeTier.platinum => 'badges.tier_platinum'.tr(),
-        BadgeTier.unknown => '',
-      };
+    BadgeTier.bronze => 'badges.tier_bronze'.tr(),
+    BadgeTier.silver => 'badges.tier_silver'.tr(),
+    BadgeTier.gold => 'badges.tier_gold'.tr(),
+    BadgeTier.platinum => 'badges.tier_platinum'.tr(),
+    BadgeTier.unknown => '',
+  };
 }

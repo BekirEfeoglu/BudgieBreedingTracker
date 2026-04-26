@@ -12,9 +12,11 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_icon.dart';
 import '../../../core/widgets/buttons/app_icon_button.dart';
 import '../../../core/widgets/error_state.dart';
+import '../../../core/widgets/empty_state.dart';
 import 'package:budgie_breeding_tracker/data/providers/action_feedback_providers.dart';
 import '../constants/admin_constants.dart';
 import '../providers/admin_feedback_providers.dart';
+import '../providers/admin_models.dart';
 import '_feedback_detail_sheet.dart';
 import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
 
@@ -52,6 +54,7 @@ class _AdminFeedbackScreenState extends ConsumerState<AdminFeedbackScreen> {
       final current = ref.read(feedbackQueryProvider);
       ref.read(feedbackQueryProvider.notifier).state = current.copyWith(
         searchQuery: value.trim(),
+        limit: AdminConstants.feedbackPageSize,
       );
     });
   }
@@ -62,6 +65,35 @@ class _AdminFeedbackScreenState extends ConsumerState<AdminFeedbackScreen> {
     final current = ref.read(feedbackQueryProvider);
     ref.read(feedbackQueryProvider.notifier).state = current.copyWith(
       searchQuery: '',
+      limit: AdminConstants.feedbackPageSize,
+    );
+  }
+
+  Future<void> _refreshFeedback() async {
+    ref.invalidate(adminFeedbackProvider);
+    await ref.read(adminFeedbackProvider.future);
+  }
+
+  void _setStatusFilter(FeedbackStatus? status) {
+    final current = ref.read(feedbackQueryProvider);
+    ref.read(feedbackQueryProvider.notifier).state = current.copyWith(
+      statusFilter: status,
+      limit: AdminConstants.feedbackPageSize,
+    );
+  }
+
+  void _clearFilters() {
+    _debounce?.cancel();
+    _searchController.clear();
+    ref.read(feedbackQueryProvider.notifier).state = const FeedbackQuery(
+      limit: AdminConstants.feedbackPageSize,
+    );
+  }
+
+  void _loadMore() {
+    final current = ref.read(feedbackQueryProvider);
+    ref.read(feedbackQueryProvider.notifier).state = current.copyWith(
+      limit: current.limit + AdminConstants.feedbackPageSize,
     );
   }
 
@@ -70,109 +102,78 @@ class _AdminFeedbackScreenState extends ConsumerState<AdminFeedbackScreen> {
     final feedbackAsync = ref.watch(adminFeedbackProvider);
     final query = ref.watch(feedbackQueryProvider);
 
+    final hasFilter =
+        query.searchQuery.isNotEmpty || query.statusFilter != null;
+
     return Scaffold(
-      appBar: AppBar(
-        title: Text('admin.feedback_admin'.tr()),
-        actions: [
-          AppIconButton(
-            icon: const Icon(LucideIcons.refreshCw, size: 20),
-            tooltip: 'common.retry'.tr(),
-            semanticLabel: 'common.retry'.tr(),
-            onPressed: () => ref.invalidate(adminFeedbackProvider),
+      body: Column(
+        children: [
+          _FeedbackHeader(
+            onRefresh: () => ref.invalidate(adminFeedbackProvider),
           ),
-        ],
-      ),
-      body: feedbackAsync.when(
-        loading: () => const LoadingState(),
-        error: (e, _) => ErrorState(
-          message: 'common.data_load_error'.tr(),
-          onRetry: () => ref.invalidate(adminFeedbackProvider),
-        ),
-        data: (items) {
-          return Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.lg,
-                  vertical: AppSpacing.sm,
-                ),
-                child: TextField(
-                  controller: _searchController,
-                  onChanged: _onSearchChanged,
-                  decoration: InputDecoration(
-                    hintText: 'admin.search_feedback'.tr(),
-                    prefixIcon: const Padding(
-                      padding: EdgeInsets.all(AppSpacing.md),
-                      child: AppIcon(AppIcons.search, size: 18),
-                    ),
-                    suffixIcon: _searchController.text.isNotEmpty
-                        ? AppIconButton(
-                            icon: const Icon(LucideIcons.x, size: 18),
-                            onPressed: _clearSearch,
-                            tooltip: 'common.cancel'.tr(),
-                            semanticLabel: 'common.cancel'.tr(),
-                          )
-                        : null,
-                    isDense: true,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-                    ),
-                  ),
-                ),
+          Expanded(
+            child: feedbackAsync.when(
+              loading: () => const LoadingState(),
+              error: (e, _) => ErrorState(
+                message: 'common.data_load_error'.tr(),
+                onRetry: () => ref.invalidate(adminFeedbackProvider),
               ),
-              _StatusFilterBar(
-                selected: query.statusFilter,
-                total: items.length,
-                onChanged: (v) {
-                  final current = ref.read(feedbackQueryProvider);
-                  ref.read(feedbackQueryProvider.notifier).state =
-                      current.copyWith(statusFilter: v);
-                },
-              ),
-              Expanded(
-                child: items.isEmpty
-                    ? _buildEmpty(context)
-                    : ListView.builder(
-                        padding: const EdgeInsets.only(
-                          top: AppSpacing.sm,
-                          bottom: AppSpacing.xxxl,
-                        ),
-                        itemCount: items.length,
-                        itemBuilder: (ctx, i) => _FeedbackTile(
-                          key: ValueKey(items[i]['id']),
-                          item: items[i],
-                          onTap: () => _showDetail(ctx, items[i]),
+              data: (items) {
+                return Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.lg,
+                        vertical: AppSpacing.sm,
+                      ),
+                      child: TextField(
+                        controller: _searchController,
+                        onChanged: _onSearchChanged,
+                        decoration: InputDecoration(
+                          hintText: 'admin.search_feedback'.tr(),
+                          prefixIcon: const Padding(
+                            padding: EdgeInsets.all(AppSpacing.md),
+                            child: AppIcon(AppIcons.search, size: 18),
+                          ),
+                          suffixIcon: _searchController.text.isNotEmpty
+                              ? AppIconButton(
+                                  icon: const Icon(LucideIcons.x, size: 18),
+                                  onPressed: _clearSearch,
+                                  tooltip: 'common.clear'.tr(),
+                                  semanticLabel: 'common.clear'.tr(),
+                                )
+                              : null,
+                          isDense: true,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(
+                              AppSpacing.radiusMd,
+                            ),
+                          ),
                         ),
                       ),
-              ),
-            ],
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildEmpty(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            LucideIcons.inbox,
-            size: 48,
-            color: Theme.of(
-              context,
-            ).colorScheme.onSurface.withValues(alpha: 0.3),
-          ),
-          const SizedBox(height: AppSpacing.md),
-          Text(
-            'admin.no_feedback'.tr(),
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-          const SizedBox(height: AppSpacing.xs),
-          Text(
-            'admin.no_feedback_desc'.tr(),
-            style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                    _StatusFilterBar(
+                      selected: query.statusFilter,
+                      total: items.length,
+                      hasFilter: hasFilter,
+                      onChanged: _setStatusFilter,
+                      onClear: _clearFilters,
+                    ),
+                    Expanded(
+                      child: _FeedbackList(
+                        items: items,
+                        hasMore: items.length >= query.limit,
+                        hasFilter: hasFilter,
+                        onRefresh: _refreshFeedback,
+                        onClearFilters: _clearFilters,
+                        onLoadMore: _loadMore,
+                        onTapItem: _showDetail,
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
           ),
         ],
       ),
@@ -180,10 +181,13 @@ class _AdminFeedbackScreenState extends ConsumerState<AdminFeedbackScreen> {
   }
 
   void _showDetail(BuildContext context, Map<String, dynamic> item) {
-    Future<void> onSave({
+    Future<void> onSaveExtended({
       required String status,
       String? adminResponse,
       required String priority,
+      String? category,
+      String? assignedAdminId,
+      String? internalNote,
     }) async {
       final notifier = ref.read(adminFeedbackActionProvider.notifier);
       final success = await notifier.updateFeedback(
@@ -191,17 +195,32 @@ class _AdminFeedbackScreenState extends ConsumerState<AdminFeedbackScreen> {
         status: status,
         priority: priority,
         adminResponse: adminResponse,
+        category: category,
+        assignedAdminId: assignedAdminId,
+        internalNote: internalNote,
       );
       if (context.mounted) {
         if (success) {
           Navigator.of(context).pop();
           ActionFeedbackService.show('admin.feedback_updated'.tr());
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('admin.action_error'.tr())),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('admin.action_error'.tr())));
         }
       }
+    }
+
+    Future<void> onSave({
+      required String status,
+      String? adminResponse,
+      required String priority,
+    }) {
+      return onSaveExtended(
+        status: status,
+        priority: priority,
+        adminResponse: adminResponse,
+      );
     }
 
     showModalBottomSheet(
@@ -213,8 +232,11 @@ class _AdminFeedbackScreenState extends ConsumerState<AdminFeedbackScreen> {
           top: Radius.circular(AppSpacing.radiusXl),
         ),
       ),
-      builder: (_) => FeedbackDetailSheet(item: item, onSave: onSave),
+      builder: (_) => FeedbackDetailSheet(
+        item: item,
+        onSave: onSave,
+        onSaveExtended: onSaveExtended,
+      ),
     );
   }
 }
-

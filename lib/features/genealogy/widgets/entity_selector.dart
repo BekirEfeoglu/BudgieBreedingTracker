@@ -7,7 +7,7 @@ import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/core/widgets/buttons/app_icon_button.dart';
 import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
-import 'package:budgie_breeding_tracker/features/genealogy/providers/genealogy_providers.dart';
+import 'package:budgie_breeding_tracker/shared/providers/genealogy.dart';
 
 /// Direct-list entity selector for genealogy tree.
 /// Shows a search field and a scrollable list of all birds and chicks.

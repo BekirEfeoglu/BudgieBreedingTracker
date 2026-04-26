@@ -47,6 +47,26 @@ Widget _wrapWithProviders(
           path: '/admin/users',
           builder: (_, __) => const Scaffold(body: Text('Users')),
         ),
+        GoRoute(
+          path: '/admin/monitoring',
+          builder: (_, __) => const Scaffold(body: Text('Monitoring')),
+        ),
+        GoRoute(
+          path: '/admin/database',
+          builder: (_, __) => const Scaffold(body: Text('Database')),
+        ),
+        GoRoute(
+          path: '/admin/audit',
+          builder: (_, __) => const Scaffold(body: Text('Audit')),
+        ),
+        GoRoute(
+          path: '/admin/security',
+          builder: (_, __) => const Scaffold(body: Text('Security')),
+        ),
+        GoRoute(
+          path: '/admin/feedback',
+          builder: (_, __) => const Scaffold(body: Text('Feedback')),
+        ),
       ],
     );
     return ProviderScope(
@@ -147,6 +167,24 @@ void main() {
       );
       await tester.pump();
       expect(find.text('DB down'), findsOneWidget);
+    });
+
+    testWidgets('uses friendly message for edge function health failures', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrapWithProviders(
+          const DashboardSystemHealthBanner(stats: _defaultStats),
+          healthData: const AsyncData({
+            'status': 'error',
+            'message': 'Edge function error: 503',
+          }),
+        ),
+      );
+      await tester.pump();
+
+      expect(find.text(l10n('admin.health_check_failed_desc')), findsOneWidget);
+      expect(find.text('Edge function error: 503'), findsNothing);
     });
 
     testWidgets('shows all_services_running text on healthy status', (
@@ -469,7 +507,7 @@ void main() {
       expect(find.text(l10n('admin.quick_actions')), findsOneWidget);
     });
 
-    testWidgets('shows go_to_settings quick action', (tester) async {
+    testWidgets('shows comprehensive admin quick action grid', (tester) async {
       await tester.pumpWidget(
         _wrapWithProviders(
           const DashboardContent(stats: _defaultStats),
@@ -481,13 +519,22 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text(l10n('admin.go_to_settings')), findsOneWidget);
+      expect(find.text(l10n('admin.users')), findsOneWidget);
+      expect(find.text(l10n('admin.monitoring')), findsOneWidget);
+      expect(find.text(l10n('admin.database')), findsOneWidget);
+      expect(find.text(l10n('admin.audit')), findsOneWidget);
+      expect(find.text(l10n('admin.security')), findsOneWidget);
+      expect(find.text(l10n('admin.feedback_admin')), findsOneWidget);
+      expect(find.text(l10n('admin.settings')), findsOneWidget);
     });
 
     testWidgets('uses compact stat cards on small screens', (tester) async {
       await tester.pumpWidget(
         _wrapWithProviders(
-          const SizedBox(width: 375, child: DashboardStatsGrid(stats: _defaultStats)),
+          const SizedBox(
+            width: 375,
+            child: DashboardStatsGrid(stats: _defaultStats),
+          ),
           healthData: const AsyncData({'status': 'ok'}),
           alerts: const AsyncData([]),
           actions: const AsyncData([]),
@@ -495,7 +542,9 @@ void main() {
       );
       await tester.pump();
 
-      final firstCardSize = tester.getSize(find.byType(DashboardStatCard).first);
+      final firstCardSize = tester.getSize(
+        find.byType(DashboardStatCard).first,
+      );
 
       expect(firstCardSize.height, lessThan(140));
       expect(find.text(l10n('admin.pending_sync')), findsOneWidget);

@@ -7,7 +7,7 @@ import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/core/utils/navigation_throttle.dart';
-import 'package:budgie_breeding_tracker/features/birds/widgets/bird_gender_icon.dart'; // Cross-feature import: genealogy↔birds parent-child relationship
+import 'package:budgie_breeding_tracker/shared/widgets/birds.dart';
 import 'package:budgie_breeding_tracker/features/genealogy/providers/offspring_providers.dart';
 import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/data/models/chick_model.dart';

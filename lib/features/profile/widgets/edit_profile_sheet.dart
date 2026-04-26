@@ -10,7 +10,7 @@ import 'package:budgie_breeding_tracker/data/providers/action_feedback_providers
 import '../../../data/models/profile_model.dart';
 import '../../../data/remote/api/remote_source_providers.dart';
 import '../../../data/repositories/repository_providers.dart';
-import '../../auth/providers/auth_providers.dart';
+import 'package:budgie_breeding_tracker/shared/providers/auth.dart';
 import '../providers/profile_providers.dart';
 import 'avatar_picker_sheet.dart';
 import 'profile_form.dart';
@@ -131,7 +131,11 @@ class _EditProfileSheetState extends ConsumerState<EditProfileSheet> {
         ActionFeedbackService.show('common.saved_successfully'.tr());
       }
     } catch (e) {
-      AppLogger.error('[EditProfileSheet] Failed to save profile', e, StackTrace.current);
+      AppLogger.error(
+        '[EditProfileSheet] Failed to save profile',
+        e,
+        StackTrace.current,
+      );
       Sentry.captureException(e, stackTrace: StackTrace.current);
       if (mounted) {
         setState(() => _isLoading = false);

@@ -14,7 +14,7 @@ import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 import 'package:budgie_breeding_tracker/data/providers/bird_stream_providers.dart';
 import 'package:budgie_breeding_tracker/data/providers/chick_stream_providers.dart';
-import 'package:budgie_breeding_tracker/features/genealogy/providers/genealogy_providers.dart';
+import 'package:budgie_breeding_tracker/shared/providers/genealogy.dart';
 import 'package:budgie_breeding_tracker/features/genealogy/widgets/depth_chip.dart';
 import 'package:budgie_breeding_tracker/features/genealogy/widgets/entity_selector.dart';
 import 'package:budgie_breeding_tracker/features/genealogy/widgets/tree_content.dart';

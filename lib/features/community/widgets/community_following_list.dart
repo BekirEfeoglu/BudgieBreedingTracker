@@ -11,7 +11,7 @@ import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/skeleton_loader.dart';
 import '../../../data/providers/auth_state_providers.dart';
 import '../../../router/route_names.dart';
-import '../../messaging/providers/messaging_form_providers.dart';
+import 'package:budgie_breeding_tracker/shared/providers/messaging.dart';
 import '../providers/community_post_providers.dart';
 
 /// Displays a list of followed users with avatar, name, unfollow and DM actions.
@@ -87,16 +87,12 @@ class _CommunityFollowingListState
             if (index >= visibleUsers.length) {
               return _ShowMoreButton(
                 remaining: allUsers.length - _visibleCount,
-                onPressed: () => setState(
-                  () => _visibleCount += _pageSize,
-                ),
+                onPressed: () => setState(() => _visibleCount += _pageSize),
               );
             }
             return _FollowedUserTile(
               user: visibleUsers[index],
-              onUnfollow: () => _handleUnfollow(
-                visibleUsers[index],
-              ),
+              onUnfollow: () => _handleUnfollow(visibleUsers[index]),
             );
           },
         );
@@ -122,9 +118,7 @@ class _CommunityFollowingListState
     ScaffoldMessenger.of(context).clearSnackBars();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(
-          'community.unfollowed_user'.tr(args: [displayName]),
-        ),
+        content: Text('community.unfollowed_user'.tr(args: [displayName])),
         action: SnackBarAction(
           label: 'common.undo'.tr(),
           onPressed: () {
@@ -157,9 +151,7 @@ class _FollowedUserTile extends ConsumerWidget {
     return Semantics(
       label: 'community.following_user_label'.tr(args: [displayName]),
       child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(
-          vertical: AppSpacing.xs,
-        ),
+        contentPadding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
         leading: Semantics(
           button: true,
           label: 'community.view_profile'.tr(args: [displayName]),

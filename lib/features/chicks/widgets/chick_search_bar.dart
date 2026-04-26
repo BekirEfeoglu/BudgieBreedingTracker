@@ -7,7 +7,7 @@ import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/core/widgets/buttons/app_icon_button.dart';
-import 'package:budgie_breeding_tracker/features/chicks/providers/chick_providers.dart';
+import 'package:budgie_breeding_tracker/shared/providers/chicks.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 /// Search bar for filtering chicks by name or ring number.

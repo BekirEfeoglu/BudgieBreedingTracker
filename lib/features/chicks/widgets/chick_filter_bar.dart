@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/fade_scrollable_chip_bar.dart';
-import 'package:budgie_breeding_tracker/features/chicks/providers/chick_providers.dart';
+import 'package:budgie_breeding_tracker/shared/providers/chicks.dart';
 
 /// Horizontal scrollable filter bar with choice chips for chicks.
 class ChickFilterBar extends ConsumerWidget {

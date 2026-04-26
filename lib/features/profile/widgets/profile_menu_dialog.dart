@@ -12,7 +12,7 @@ import 'package:budgie_breeding_tracker/domain/services/premium/premium_provider
     show isPremiumProvider;
 import 'package:budgie_breeding_tracker/data/providers/user_role_providers.dart'
     show isFounderProvider;
-import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart'; // Cross-feature import: profile↔auth logout and user state
+import 'package:budgie_breeding_tracker/shared/providers/auth.dart';
 import 'package:budgie_breeding_tracker/features/profile/widgets/account_deletion_dialog.dart';
 import 'package:budgie_breeding_tracker/features/profile/widgets/password_change_sheet.dart';
 import 'package:budgie_breeding_tracker/features/profile/widgets/profile_menu_header.dart';
@@ -219,7 +219,11 @@ Future<void> _confirmLogout(
     try {
       await authActions.signOut();
     } catch (e) {
-      AppLogger.error('[ProfileMenuDialog] Sign out failed', e, StackTrace.current);
+      AppLogger.error(
+        '[ProfileMenuDialog] Sign out failed',
+        e,
+        StackTrace.current,
+      );
     }
     if (context.mounted) context.go(AppRoutes.login);
   }

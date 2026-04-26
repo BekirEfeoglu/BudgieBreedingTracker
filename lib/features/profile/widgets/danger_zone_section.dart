@@ -9,7 +9,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_icon.dart';
 import '../../../router/route_names.dart';
-import '../../auth/providers/auth_providers.dart';
+import 'package:budgie_breeding_tracker/shared/providers/auth.dart';
 import 'account_deletion_dialog.dart';
 import 'profile_menu_tile.dart';
 

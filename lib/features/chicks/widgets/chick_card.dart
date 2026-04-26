@@ -7,7 +7,7 @@ import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
-import 'package:budgie_breeding_tracker/features/chicks/providers/chick_providers.dart';
+import 'package:budgie_breeding_tracker/shared/providers/chicks.dart';
 import 'package:budgie_breeding_tracker/features/chicks/screens/chick_detail_screen.dart'
     show chickDisplayName;
 import 'package:budgie_breeding_tracker/router/route_names.dart';

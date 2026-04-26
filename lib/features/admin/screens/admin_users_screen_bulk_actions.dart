@@ -30,19 +30,15 @@ class _BulkActionBarState extends ConsumerState<_BulkActionBar> {
           ? ' (${result.skipped} ${'admin.protected_users_skipped'.tr(args: [''])})'
           : '';
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            '$actionLabel: ${result.succeeded}$skippedMsg',
-          ),
-        ),
+        SnackBar(content: Text('$actionLabel: ${result.succeeded}$skippedMsg')),
       );
       widget.onClearSelection();
     } catch (e, st) {
       AppLogger.error('_BulkActionBar', e, st);
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('admin.action_error'.tr())),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('admin.action_error'.tr())));
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -56,10 +52,9 @@ class _BulkActionBarState extends ConsumerState<_BulkActionBar> {
     );
     if (confirmed != true) return;
     await _run(
-      () => ref.read(adminActionsProvider.notifier).bulkToggleActive(
-            widget.selectedIds,
-            activate: true,
-          ),
+      () => ref
+          .read(adminActionsProvider.notifier)
+          .bulkToggleActive(widget.selectedIds, activate: true),
       'admin.bulk_activate'.tr(),
     );
   }
@@ -73,10 +68,9 @@ class _BulkActionBarState extends ConsumerState<_BulkActionBar> {
     );
     if (confirmed != true) return;
     await _run(
-      () => ref.read(adminActionsProvider.notifier).bulkToggleActive(
-            widget.selectedIds,
-            activate: false,
-          ),
+      () => ref
+          .read(adminActionsProvider.notifier)
+          .bulkToggleActive(widget.selectedIds, activate: false),
       'admin.bulk_deactivate'.tr(),
     );
   }
@@ -120,11 +114,10 @@ class _BulkActionBarState extends ConsumerState<_BulkActionBar> {
     );
     if (result == true && mounted) {
       final state = ref.read(adminActionsProvider);
-      final message =
-          state.successMessage ?? 'admin.notification_sent'.tr();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(message)),
-      );
+      final message = state.successMessage ?? 'admin.notification_sent'.tr();
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(message)));
       widget.onClearSelection();
     }
   }
@@ -154,28 +147,104 @@ class _BulkActionBarState extends ConsumerState<_BulkActionBar> {
     } catch (e, st) {
       AppLogger.error('_BulkActionBar.export', e, st);
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('admin.action_error'.tr())),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('admin.action_error'.tr())));
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
   }
 
   Future<void> _onDelete() async {
-    final confirmed = await showConfirmDialog(
-      context,
-      title: 'admin.bulk_delete'.tr(),
-      message: 'admin.bulk_delete_confirm'
-          .tr(args: ['${widget.selectedIds.length}']),
-      isDestructive: true,
-    );
+    final confirmed = await _showDeletePreview();
     if (confirmed != true) return;
     await _run(
       () => ref
           .read(adminActionsProvider.notifier)
           .bulkDeleteUserData(widget.selectedIds),
       'admin.bulk_delete'.tr(),
+    );
+  }
+
+  Future<bool?> _showDeletePreview() {
+    return showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return Consumer(
+          builder: (context, ref, _) {
+            final previewAsync = ref.watch(
+              bulkDeletePreviewProvider(widget.selectedIds),
+            );
+            return AlertDialog(
+              title: Text('admin.bulk_delete_preview'.tr()),
+              content: previewAsync.when(
+                loading: () =>
+                    const SizedBox(width: 240, child: LoadingState()),
+                error: (_, __) => Text('common.data_load_error'.tr()),
+                data: (preview) => Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'admin.bulk_delete_confirm'.tr(
+                        args: ['${preview.userCount}'],
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                    _PreviewRow(
+                      label: 'admin.birds'.tr(),
+                      value: preview.birdsCount,
+                    ),
+                    _PreviewRow(
+                      label: 'admin.pairs_count'.tr(),
+                      value: preview.pairsCount,
+                    ),
+                    _PreviewRow(
+                      label: 'admin.eggs_count'.tr(),
+                      value: preview.eggsCount,
+                    ),
+                    _PreviewRow(
+                      label: 'admin.chicks_count'.tr(),
+                      value: preview.chicksCount,
+                    ),
+                    _PreviewRow(
+                      label: 'admin.health_records_count'.tr(),
+                      value: preview.healthRecordsCount,
+                    ),
+                    _PreviewRow(
+                      label: 'admin.events_count'.tr(),
+                      value: preview.eventsCount,
+                    ),
+                    _PreviewRow(
+                      label: 'birds.photos'.tr(),
+                      value: preview.photosCount,
+                    ),
+                    const Divider(),
+                    _PreviewRow(
+                      label: 'admin.total_records'.tr(),
+                      value: preview.totalRecords,
+                      isStrong: true,
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(false),
+                  child: Text('common.cancel'.tr()),
+                ),
+                FilledButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(true),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: Theme.of(context).colorScheme.error,
+                  ),
+                  child: Text('admin.bulk_delete'.tr()),
+                ),
+              ],
+            );
+          },
+        );
+      },
     );
   }
 
@@ -261,6 +330,34 @@ class _BulkActionBarState extends ConsumerState<_BulkActionBar> {
                   ],
                 ),
               ),
+      ),
+    );
+  }
+}
+
+class _PreviewRow extends StatelessWidget {
+  const _PreviewRow({
+    required this.label,
+    required this.value,
+    this.isStrong = false,
+  });
+
+  final String label;
+  final int value;
+  final bool isStrong;
+
+  @override
+  Widget build(BuildContext context) {
+    final style = isStrong
+        ? Theme.of(context).textTheme.titleSmall
+        : Theme.of(context).textTheme.bodyMedium;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.xxs),
+      child: Row(
+        children: [
+          Expanded(child: Text(label, style: style)),
+          Text('$value', style: style),
+        ],
       ),
     );
   }

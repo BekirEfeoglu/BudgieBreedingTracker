@@ -28,9 +28,8 @@ import 'package:budgie_breeding_tracker/features/calendar/widgets/event_detail_m
 import 'package:budgie_breeding_tracker/features/calendar/widgets/event_form_sheet.dart';
 import 'package:budgie_breeding_tracker/features/calendar/widgets/calendar_week_view.dart';
 import 'package:budgie_breeding_tracker/features/calendar/widgets/calendar_day_view.dart';
-import 'package:budgie_breeding_tracker/features/chicks/providers/chick_providers.dart'; // Cross-feature import: banding action for calendar events linked to chicks
-import 'package:budgie_breeding_tracker/features/notifications/widgets/notification_bell_button.dart'; // Cross-feature import: app-shell AppBar widget shared across all main screens
-import 'package:budgie_breeding_tracker/features/profile/widgets/profile_menu_button.dart'; // Cross-feature import: app-shell AppBar widget shared across all main screens
+import 'package:budgie_breeding_tracker/shared/providers/chicks.dart';
+import 'package:budgie_breeding_tracker/shared/widgets/app_shell.dart';
 import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
 
 part 'calendar_screen_bodies.dart';
@@ -139,8 +138,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                   ref.invalidate(eventsStreamProvider(userId));
                 },
                 child: eventsAsync.when(
-                  loading: () =>
-                      const LoadingState(),
+                  loading: () => const LoadingState(),
                   error: (error, _) => ErrorState(
                     message: 'calendar.load_error'.tr(),
                     onRetry: () => ref.invalidate(eventsStreamProvider(userId)),

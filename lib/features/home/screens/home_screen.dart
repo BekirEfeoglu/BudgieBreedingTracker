@@ -23,8 +23,7 @@ import 'package:budgie_breeding_tracker/features/home/widgets/welcome_header.dar
 import 'package:budgie_breeding_tracker/domain/services/premium/premium_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/sync/sync_providers.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_brand_title.dart';
-import 'package:budgie_breeding_tracker/features/notifications/widgets/notification_bell_button.dart'; // Cross-feature import: app-shell AppBar widget shared across all main screens
-import 'package:budgie_breeding_tracker/features/profile/widgets/profile_menu_button.dart'; // Cross-feature import: app-shell AppBar widget shared across all main screens
+import 'package:budgie_breeding_tracker/shared/widgets/app_shell.dart';
 import 'package:budgie_breeding_tracker/core/widgets/ad_banner_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:budgie_breeding_tracker/domain/services/ads/ad_service.dart';
@@ -120,13 +119,10 @@ class HomeScreen extends ConsumerWidget {
   }
 }
 
-const _permissionSnackBarLastShownKey =
-    'pref_notification_snackbar_last_shown';
+const _permissionSnackBarLastShownKey = 'pref_notification_snackbar_last_shown';
 
 /// Shows the permission-denied SnackBar at most once per day.
-Future<void> _showPermissionDeniedSnackBarIfNeeded(
-  BuildContext context,
-) async {
+Future<void> _showPermissionDeniedSnackBarIfNeeded(BuildContext context) async {
   final prefs = await SharedPreferences.getInstance();
   final lastShown = prefs.getInt(_permissionSnackBarLastShownKey) ?? 0;
   final now = DateTime.now().millisecondsSinceEpoch;

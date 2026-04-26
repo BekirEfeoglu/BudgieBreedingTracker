@@ -45,6 +45,8 @@ class UserDetailContent extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.lg),
           UserDetailStatsRow(detail: detail),
+          const SizedBox(height: AppSpacing.lg),
+          UserDetailRiskProfileSection(userId: detail.id),
           if (contentAsync != null) ...[
             const SizedBox(height: AppSpacing.lg),
             UserDetailRecordsSection(contentAsync: contentAsync!),
@@ -54,6 +56,138 @@ class UserDetailContent extends StatelessWidget {
           const SizedBox(height: AppSpacing.xxxl),
         ],
       ),
+    );
+  }
+}
+
+class UserDetailRiskProfileSection extends StatelessWidget {
+  const UserDetailRiskProfileSection({super.key, required this.userId});
+
+  final String userId;
+
+  @override
+  Widget build(BuildContext context) {
+    try {
+      ProviderScope.containerOf(context, listen: false);
+    } on StateError {
+      return const SizedBox.shrink();
+    }
+    return _UserDetailRiskProfileConsumer(userId: userId);
+  }
+}
+
+class _UserDetailRiskProfileConsumer extends ConsumerWidget {
+  const _UserDetailRiskProfileConsumer({required this.userId});
+
+  final String userId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final riskAsync = ref.watch(adminUserRiskProfileProvider(userId));
+
+    return Card(
+      child: Padding(
+        padding: AppSpacing.cardPadding,
+        child: riskAsync.when(
+          loading: () => const LinearProgressIndicator(),
+          error: (_, __) => Text('common.data_load_error'.tr()),
+          data: (risk) {
+            final color = switch (risk.level) {
+              'high' => AppColors.error,
+              'medium' => AppColors.warning,
+              _ => AppColors.success,
+            };
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(LucideIcons.shieldAlert, color: color, size: 20),
+                    const SizedBox(width: AppSpacing.sm),
+                    Expanded(
+                      child: Text(
+                        'admin.user_risk_profile'.tr(),
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    Text(
+                      '${risk.score}/100',
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        color: color,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                LinearProgressIndicator(
+                  value: risk.score / 100,
+                  color: color,
+                  backgroundColor: color.withValues(alpha: 0.12),
+                ),
+                const SizedBox(height: AppSpacing.md),
+                Wrap(
+                  spacing: AppSpacing.sm,
+                  runSpacing: AppSpacing.sm,
+                  children: [
+                    _RiskMetricChip(
+                      label: 'admin.security_events'.tr(),
+                      value: risk.securityEvents,
+                    ),
+                    _RiskMetricChip(
+                      label: 'admin.open_feedback'.tr(),
+                      value: risk.openFeedback,
+                    ),
+                    _RiskMetricChip(
+                      label: 'admin.sync_errors'.tr(),
+                      value: risk.syncErrors,
+                    ),
+                    _RiskMetricChip(
+                      label: 'admin.admin_actions'.tr(),
+                      value: risk.adminActions,
+                    ),
+                  ],
+                ),
+                if (risk.signals.isNotEmpty) ...[
+                  const SizedBox(height: AppSpacing.md),
+                  Text(
+                    risk.signals
+                        .map((signal) => 'admin.risk_signal_$signal'.tr())
+                        .join(' · '),
+                    style: theme.textTheme.bodySmall?.copyWith(color: color),
+                  ),
+                ],
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class _RiskMetricChip extends StatelessWidget {
+  const _RiskMetricChip({required this.label, required this.value});
+
+  final String label;
+  final int value;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: AppSpacing.xs,
+      ),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+      ),
+      child: Text('$label: $value', style: theme.textTheme.labelSmall),
     );
   }
 }

@@ -123,6 +123,33 @@ void main() {
       expect(find.byType(SegmentedButton<String>), findsAtLeastNWidgets(1));
     });
 
+    testWidgets(
+      'supports pending status and normalizes unknown workflow values',
+      (tester) async {
+        tester.view.physicalSize = const Size(400, 1600);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+
+        final item = Map<String, dynamic>.from(_testItem)
+          ..['status'] = 'pending'
+          ..['priority'] = 'unexpected'
+          ..['category'] = 'unknown';
+
+        await pumpLocalizedApp(tester, _buildSheet(item: item));
+
+        expect(
+          find.text(l10n('admin.feedback_status_pending')),
+          findsOneWidget,
+        );
+        expect(find.text(l10n('admin.feedback_status')), findsOneWidget);
+        expect(
+          find.text(l10n('admin.feedback_category_general')),
+          findsOneWidget,
+        );
+      },
+    );
+
     testWidgets('shows feedback_save button label', (tester) async {
       tester.view.physicalSize = const Size(400, 1600);
       tester.view.devicePixelRatio = 1.0;
@@ -130,6 +157,11 @@ void main() {
       addTearDown(tester.view.resetDevicePixelRatio);
 
       await pumpLocalizedApp(tester, _buildSheet());
+      await tester.scrollUntilVisible(
+        find.text(l10n('admin.feedback_save')),
+        500,
+        scrollable: find.byType(Scrollable).last,
+      );
       expect(find.text(l10n('admin.feedback_save')), findsOneWidget);
     });
 
@@ -204,6 +236,11 @@ void main() {
         ),
       );
       await tester.pump();
+      await tester.scrollUntilVisible(
+        find.byType(FilledButton),
+        500,
+        scrollable: find.byType(Scrollable).last,
+      );
       final saveButton = find.byType(FilledButton);
       await tester.tap(saveButton);
       await tester.pump();

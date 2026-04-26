@@ -15,7 +15,7 @@ import 'package:budgie_breeding_tracker/core/widgets/buttons/fab_button.dart';
 import 'package:budgie_breeding_tracker/core/widgets/ad_banner_widget.dart';
 import 'package:budgie_breeding_tracker/domain/services/ads/ad_service.dart';
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
-import 'package:budgie_breeding_tracker/features/chicks/providers/chick_providers.dart';
+import 'package:budgie_breeding_tracker/shared/providers/chicks.dart';
 import 'package:budgie_breeding_tracker/domain/services/premium/premium_providers.dart';
 import 'package:budgie_breeding_tracker/features/chicks/widgets/chick_card.dart';
 import 'package:budgie_breeding_tracker/core/utils/app_haptics.dart';
@@ -23,8 +23,7 @@ import 'package:budgie_breeding_tracker/core/widgets/dialogs/confirm_dialog.dart
 import 'package:budgie_breeding_tracker/features/chicks/providers/chick_form_providers.dart';
 import 'package:budgie_breeding_tracker/features/chicks/widgets/chick_filter_bar.dart';
 import 'package:budgie_breeding_tracker/features/chicks/widgets/chick_search_bar.dart';
-import 'package:budgie_breeding_tracker/features/notifications/widgets/notification_bell_button.dart'; // Cross-feature import: app-shell AppBar widget shared across all main screens
-import 'package:budgie_breeding_tracker/features/profile/widgets/profile_menu_button.dart'; // Cross-feature import: app-shell AppBar widget shared across all main screens
+import 'package:budgie_breeding_tracker/shared/widgets/app_shell.dart';
 import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
 import 'package:budgie_breeding_tracker/router/route_names.dart';
 import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
@@ -262,8 +261,7 @@ class _ChickListScreenState extends ConsumerState<ChickListScreen> {
                     title: 'chicks.no_chicks'.tr(),
                     subtitle: 'chicks.no_chicks_hint'.tr(),
                     actionLabel: 'chicks.add_chick'.tr(),
-                    onAction: () =>
-                        context.push(AppRoutes.chickForm),
+                    onAction: () => context.push(AppRoutes.chickForm),
                   );
                 }
 
@@ -292,8 +290,7 @@ class _ChickListScreenState extends ConsumerState<ChickListScreen> {
                         itemCount: chicks.length,
                         itemBuilder: (context, index) {
                           final chick = chicks[index];
-                          final isSelected =
-                              _selectedIds.contains(chick.id);
+                          final isSelected = _selectedIds.contains(chick.id);
                           return _SelectableChickCard(
                             key: ValueKey(chick.id),
                             chick: chick,
@@ -327,8 +324,7 @@ class _ChickListScreenState extends ConsumerState<ChickListScreen> {
           : FabButton(
               icon: const AppIcon(AppIcons.add),
               tooltip: 'chicks.new_chick'.tr(),
-              onPressed: () =>
-                  context.push(AppRoutes.chickForm),
+              onPressed: () => context.push(AppRoutes.chickForm),
             ),
     );
   }
@@ -362,10 +358,7 @@ class _SelectableChickCard extends StatelessWidget {
       child: Container(
         decoration: isSelected
             ? BoxDecoration(
-                border: Border.all(
-                  color: theme.colorScheme.primary,
-                  width: 2,
-                ),
+                border: Border.all(color: theme.colorScheme.primary, width: 2),
                 borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
               )
             : null,

@@ -9,9 +9,10 @@ import '../../../core/constants/app_icons.dart';
 import '../../../core/widgets/app_icon.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../../router/route_names.dart';
-import '../../../data/providers/user_role_providers.dart' show isFounderProvider;
+import '../../../data/providers/user_role_providers.dart'
+    show isFounderProvider;
 // Cross-feature import: marketplace tab embedded in community hub (composite screen pattern)
-import '../../marketplace/widgets/marketplace_tab_content.dart';
+import 'package:budgie_breeding_tracker/shared/widgets/marketplace.dart';
 import '../providers/community_providers.dart';
 import '../widgets/community_app_bar.dart';
 import '../widgets/community_feed_list.dart';
@@ -92,9 +93,7 @@ class CommunityScreen extends ConsumerWidget {
                 top: Radius.circular(AppSpacing.radiusXl),
               ),
               border: Border.all(
-                color: theme.colorScheme.outlineVariant.withValues(
-                  alpha: 0.18,
-                ),
+                color: theme.colorScheme.outlineVariant.withValues(alpha: 0.18),
               ),
             ),
             child: const MarketplaceTabContent(),
@@ -109,10 +108,7 @@ class CommunityScreen extends ConsumerWidget {
             duration: const Duration(milliseconds: 250),
             transitionBuilder: (child, animation) =>
                 FadeTransition(opacity: animation, child: child),
-            child: KeyedSubtree(
-              key: ValueKey(activeTab),
-              child: tabBody,
-            ),
+            child: KeyedSubtree(key: ValueKey(activeTab), child: tabBody),
           ),
         ),
       ],

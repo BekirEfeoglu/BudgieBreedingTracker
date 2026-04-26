@@ -7,7 +7,7 @@ import '../../../core/utils/sentry_error_filter.dart';
 import '../../../data/remote/api/remote_source_providers.dart';
 import '../../../data/remote/storage/storage_providers.dart';
 import '../../../data/repositories/repository_providers.dart';
-import '../../auth/providers/auth_providers.dart';
+import 'package:budgie_breeding_tracker/shared/providers/auth.dart';
 
 // ---------------------------------------------------------------------------
 // Avatar Upload
@@ -164,7 +164,10 @@ class PasswordChangeNotifier extends Notifier<PasswordChangeState>
     } catch (e, st) {
       AppLogger.error('[PasswordChange] Failed to change password', e, st);
       reportIfUnexpected(e, st);
-      state = state.copyWith(isLoading: false, error: 'profile.password_change_error');
+      state = state.copyWith(
+        isLoading: false,
+        error: 'profile.password_change_error',
+      );
     }
   }
 

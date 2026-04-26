@@ -5,6 +5,26 @@ import 'package:lucide_icons/lucide_icons.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 
+const _validFeedbackStatuses = {'open', 'pending', 'resolved'};
+const _validFeedbackPriorities = {'low', 'normal', 'high'};
+const _validFeedbackCategories = {
+  'general',
+  'bug',
+  'billing',
+  'account',
+  'feature',
+};
+
+String _normalizeFeedbackValue(
+  Object? value,
+  Set<String> allowed,
+  String fallback,
+) {
+  final raw = value as String?;
+  if (raw == null || !allowed.contains(raw)) return fallback;
+  return raw;
+}
+
 typedef FeedbackSaveCallback =
     Future<void> Function({
       required String status,
@@ -12,14 +32,26 @@ typedef FeedbackSaveCallback =
       required String priority,
     });
 
+typedef FeedbackExtendedSaveCallback =
+    Future<void> Function({
+      required String status,
+      String? adminResponse,
+      required String priority,
+      String? category,
+      String? assignedAdminId,
+      String? internalNote,
+    });
+
 class FeedbackDetailSheet extends StatefulWidget {
   final Map<String, dynamic> item;
   final FeedbackSaveCallback onSave;
+  final FeedbackExtendedSaveCallback? onSaveExtended;
 
   const FeedbackDetailSheet({
     super.key,
     required this.item,
     required this.onSave,
+    this.onSaveExtended,
   });
 
   @override
@@ -28,8 +60,11 @@ class FeedbackDetailSheet extends StatefulWidget {
 
 class _FeedbackDetailSheetState extends State<FeedbackDetailSheet> {
   late final TextEditingController _responseController;
+  late final TextEditingController _assigneeController;
+  late final TextEditingController _internalNoteController;
   late String _status;
   late String _priority;
+  late String _category;
   bool _isLoading = false;
 
   @override
@@ -38,23 +73,56 @@ class _FeedbackDetailSheetState extends State<FeedbackDetailSheet> {
     _responseController = TextEditingController(
       text: widget.item['admin_response'] as String? ?? '',
     );
-    _status = widget.item['status'] as String? ?? 'open';
-    _priority = widget.item['priority'] as String? ?? 'normal';
+    _assigneeController = TextEditingController(
+      text: widget.item['assigned_admin_id'] as String? ?? '',
+    );
+    _internalNoteController = TextEditingController(
+      text: widget.item['internal_note'] as String? ?? '',
+    );
+    _status = _normalizeFeedbackValue(
+      widget.item['status'],
+      _validFeedbackStatuses,
+      'open',
+    );
+    _priority = _normalizeFeedbackValue(
+      widget.item['priority'],
+      _validFeedbackPriorities,
+      'normal',
+    );
+    _category = _normalizeFeedbackValue(
+      widget.item['category'] ?? widget.item['type'],
+      _validFeedbackCategories,
+      'general',
+    );
   }
 
   @override
   void dispose() {
     _responseController.dispose();
+    _assigneeController.dispose();
+    _internalNoteController.dispose();
     super.dispose();
   }
 
   Future<void> _save() async {
     setState(() => _isLoading = true);
-    await widget.onSave(
-      status: _status,
-      adminResponse: _responseController.text.trim(),
-      priority: _priority,
-    );
+    final extended = widget.onSaveExtended;
+    if (extended != null) {
+      await extended(
+        status: _status,
+        adminResponse: _responseController.text.trim(),
+        priority: _priority,
+        category: _category,
+        assignedAdminId: _assigneeController.text.trim(),
+        internalNote: _internalNoteController.text.trim(),
+      );
+    } else {
+      await widget.onSave(
+        status: _status,
+        adminResponse: _responseController.text.trim(),
+        priority: _priority,
+      );
+    }
     if (mounted) setState(() => _isLoading = false);
   }
 
@@ -164,9 +232,8 @@ class _FeedbackDetailSheetState extends State<FeedbackDetailSheet> {
 
             const SizedBox(height: AppSpacing.lg),
 
-            // Status toggle
             Text(
-              'admin.feedback_status_open'.tr(),
+              'admin.feedback_status'.tr(),
               style: theme.textTheme.labelSmall?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
                 fontWeight: FontWeight.w600,
@@ -181,6 +248,11 @@ class _FeedbackDetailSheetState extends State<FeedbackDetailSheet> {
                   icon: const Icon(LucideIcons.circle, size: 14),
                 ),
                 ButtonSegment(
+                  value: 'pending',
+                  label: Text('admin.feedback_status_pending'.tr()),
+                  icon: const Icon(LucideIcons.clock3, size: 14),
+                ),
+                ButtonSegment(
                   value: 'resolved',
                   label: Text('admin.feedback_status_resolved'.tr()),
                   icon: const Icon(LucideIcons.checkCircle2, size: 14),
@@ -189,6 +261,75 @@ class _FeedbackDetailSheetState extends State<FeedbackDetailSheet> {
               selected: {_status},
               onSelectionChanged: (s) => setState(() => _status = s.first),
               style: const ButtonStyle(visualDensity: VisualDensity.compact),
+            ),
+
+            const SizedBox(height: AppSpacing.lg),
+
+            Text(
+              'admin.feedback_category'.tr(),
+              style: theme.textTheme.labelSmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            DropdownButtonFormField<String>(
+              initialValue: _category,
+              isExpanded: true,
+              decoration: const InputDecoration(border: OutlineInputBorder()),
+              items: [
+                DropdownMenuItem(
+                  value: 'general',
+                  child: Text(
+                    'admin.feedback_category_general'.tr(),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                DropdownMenuItem(
+                  value: 'bug',
+                  child: Text(
+                    'admin.feedback_category_bug'.tr(),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                DropdownMenuItem(
+                  value: 'billing',
+                  child: Text(
+                    'admin.feedback_category_billing'.tr(),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                DropdownMenuItem(
+                  value: 'account',
+                  child: Text(
+                    'admin.feedback_category_account'.tr(),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                DropdownMenuItem(
+                  value: 'feature',
+                  child: Text(
+                    'admin.feedback_category_feature'.tr(),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+              onChanged: (value) {
+                if (value == null) return;
+                setState(() => _category = value);
+              },
+            ),
+
+            const SizedBox(height: AppSpacing.lg),
+
+            TextField(
+              controller: _assigneeController,
+              decoration: InputDecoration(
+                labelText: 'admin.feedback_assignee'.tr(),
+                hintText: 'admin.feedback_assignee_hint'.tr(),
+                border: const OutlineInputBorder(),
+              ),
+              textInputAction: TextInputAction.next,
             ),
 
             const SizedBox(height: AppSpacing.lg),
@@ -203,6 +344,21 @@ class _FeedbackDetailSheetState extends State<FeedbackDetailSheet> {
                 alignLabelWithHint: true,
               ),
               maxLines: 4,
+              maxLength: 500,
+              textInputAction: TextInputAction.newline,
+            ),
+
+            const SizedBox(height: AppSpacing.lg),
+
+            TextField(
+              controller: _internalNoteController,
+              decoration: InputDecoration(
+                labelText: 'admin.feedback_internal_note'.tr(),
+                hintText: 'admin.feedback_internal_note_hint'.tr(),
+                border: const OutlineInputBorder(),
+                alignLabelWithHint: true,
+              ),
+              maxLines: 3,
               maxLength: 500,
               textInputAction: TextInputAction.newline,
             ),

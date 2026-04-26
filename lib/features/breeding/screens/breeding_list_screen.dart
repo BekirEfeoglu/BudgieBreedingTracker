@@ -21,8 +21,7 @@ import 'package:budgie_breeding_tracker/data/providers/egg_stream_providers.dart
 import 'package:budgie_breeding_tracker/features/breeding/widgets/breeding_card.dart';
 import 'package:budgie_breeding_tracker/features/breeding/widgets/breeding_filter_bar.dart';
 import 'package:budgie_breeding_tracker/features/breeding/widgets/breeding_search_bar.dart';
-import 'package:budgie_breeding_tracker/features/notifications/widgets/notification_bell_button.dart'; // Cross-feature import: app-shell AppBar widget shared across all main screens
-import 'package:budgie_breeding_tracker/features/profile/widgets/profile_menu_button.dart'; // Cross-feature import: app-shell AppBar widget shared across all main screens
+import 'package:budgie_breeding_tracker/shared/widgets/app_shell.dart';
 import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
 
 /// Main screen listing all breeding pairs with filter and search support.

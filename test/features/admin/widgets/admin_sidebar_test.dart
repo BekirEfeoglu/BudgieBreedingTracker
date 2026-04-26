@@ -23,6 +23,11 @@ GoRouter _buildRouter({String initialLocation = '/admin/dashboard'}) {
             const NoTransitionPage(child: Scaffold(body: Text('Users Screen'))),
       ),
       GoRoute(
+        path: '/admin/users/:userId',
+        pageBuilder: (_, __) =>
+            const NoTransitionPage(child: Scaffold(body: AdminSidebar())),
+      ),
+      GoRoute(
         path: '/admin/monitoring',
         pageBuilder: (_, __) => const NoTransitionPage(
           child: Scaffold(body: Text('Monitoring Screen')),
@@ -122,6 +127,22 @@ void main() {
     testWidgets('users item is selected on users route', (tester) async {
       await _pumpSidebar(tester, initialLocation: '/admin/users');
       expect(find.text('Users Screen'), findsOneWidget);
+    });
+
+    testWidgets('users item remains selected on user detail route', (
+      tester,
+    ) async {
+      await _pumpSidebar(tester, initialLocation: '/admin/users/user-123');
+      expect(find.text(l10n('admin.users')), findsOneWidget);
+      expect(
+        find.byWidgetPredicate(
+          (widget) =>
+              widget is Container &&
+              widget.constraints?.maxWidth == 4 &&
+              widget.constraints?.maxHeight == 20,
+        ),
+        findsOneWidget,
+      );
     });
 
     testWidgets('tapping users menu item navigates to users route', (

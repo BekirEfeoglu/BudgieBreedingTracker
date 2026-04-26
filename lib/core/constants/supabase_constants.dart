@@ -54,7 +54,8 @@ abstract class SupabaseConstants {
 
   // Messaging
   static const String conversationsTable = 'conversations';
-  static const String conversationParticipantsTable = 'conversation_participants';
+  static const String conversationParticipantsTable =
+      'conversation_participants';
   static const String messagesTable = 'messages';
 
   // Gamification
@@ -129,7 +130,11 @@ abstract class SupabaseConstants {
   static const String feedbackColAppVersion = 'app_version';
   static const String feedbackColPlatform = 'platform';
   static const String feedbackColStatus = 'status';
+  static const String feedbackColPriority = 'priority';
   static const String feedbackColAdminResponse = 'admin_response';
+  static const String feedbackColCategory = 'category';
+  static const String feedbackColAssignedAdminId = 'assigned_admin_id';
+  static const String feedbackColInternalNote = 'internal_note';
   static const String feedbackColCreatedAt = 'created_at';
   // Notification columns (used by feedback founder notifications)
   static const String notificationColId = 'id';

@@ -8,7 +8,7 @@ import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/core/widgets/error_state.dart';
 import 'package:budgie_breeding_tracker/core/widgets/skeleton_loader.dart';
 import 'package:budgie_breeding_tracker/features/genealogy/providers/genealogy_calculation_providers.dart';
-import 'package:budgie_breeding_tracker/features/genealogy/providers/genealogy_providers.dart';
+import 'package:budgie_breeding_tracker/shared/providers/genealogy.dart';
 import 'package:budgie_breeding_tracker/features/genealogy/widgets/ancestor_list_view.dart';
 import 'package:budgie_breeding_tracker/features/genealogy/widgets/family_stats_section.dart';
 import 'package:budgie_breeding_tracker/features/genealogy/widgets/family_tree_view.dart';

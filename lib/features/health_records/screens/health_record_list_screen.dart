@@ -13,7 +13,7 @@ import 'package:budgie_breeding_tracker/core/widgets/error_state.dart';
 import 'package:budgie_breeding_tracker/core/widgets/buttons/fab_button.dart';
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 import 'package:budgie_breeding_tracker/features/health_records/providers/health_record_providers.dart';
-import 'package:budgie_breeding_tracker/features/health_records/widgets/health_record_card.dart';
+import 'package:budgie_breeding_tracker/shared/widgets/health_records.dart';
 import 'package:budgie_breeding_tracker/features/health_records/widgets/health_record_filter_bar.dart';
 import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
 

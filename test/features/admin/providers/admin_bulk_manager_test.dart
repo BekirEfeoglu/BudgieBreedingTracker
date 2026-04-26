@@ -347,10 +347,9 @@ void main() {
           tracker.call,
         );
 
-        final result = await manager.bulkExport(
-          {'u1'},
-          format: ExportFormat.csv,
-        );
+        final result = await manager.bulkExport({
+          'u1',
+        }, format: ExportFormat.csv);
 
         expect(
           result,
@@ -428,10 +427,11 @@ void main() {
 
         final manager = AdminBulkManager(ref, userManager, tracker.call);
 
-        final result = await manager.bulkToggleActive(
-          {'user-1', 'user-2', 'protected-user'},
-          activate: true,
-        );
+        final result = await manager.bulkToggleActive({
+          'user-1',
+          'user-2',
+          'protected-user',
+        }, activate: true);
 
         expect(result.succeeded, 2);
         expect(result.skipped, 1);
@@ -452,10 +452,10 @@ void main() {
         final userManager = _StubUserManager(ref, tracker.call);
         final manager = AdminBulkManager(ref, userManager, tracker.call);
 
-        final result = await manager.bulkToggleActive(
-          {'user-1', 'user-2'},
-          activate: false,
-        );
+        final result = await manager.bulkToggleActive({
+          'user-1',
+          'user-2',
+        }, activate: false);
 
         expect(result.succeeded, 2);
         expect(result.skipped, 0);
@@ -476,9 +476,10 @@ void main() {
 
         final manager = AdminBulkManager(ref, userManager, tracker.call);
 
-        final result = await manager.bulkGrantPremium(
-          {'user-1', 'protected-user'},
-        );
+        final result = await manager.bulkGrantPremium({
+          'user-1',
+          'protected-user',
+        });
 
         expect(result.succeeded, 1);
         expect(result.skipped, 1);
@@ -499,9 +500,11 @@ void main() {
 
         final manager = AdminBulkManager(ref, userManager, tracker.call);
 
-        final result = await manager.bulkRevokePremium(
-          {'user-1', 'user-2', 'protected-user'},
-        );
+        final result = await manager.bulkRevokePremium({
+          'user-1',
+          'user-2',
+          'protected-user',
+        });
 
         expect(result.succeeded, 2);
         expect(result.skipped, 1);
@@ -511,9 +514,7 @@ void main() {
 
     group('bulkDeleteUserData', () {
       test('succeeds for valid admin', () async {
-        final client = _makeClient(
-          adminUserResult: const {'role': 'admin'},
-        );
+        final client = _makeClient(adminUserResult: const {'role': 'admin'});
         final container = _makeContainer(userId: 'admin-1', client: client);
         addTearDown(container.dispose);
         final tracker = _StateTracker();
@@ -558,10 +559,9 @@ void main() {
       });
     });
     group('bulkDeleteUserData — partial table failure', () {
-      test('succeeds per user even if individual tables throw', () async {
-        // deleteError causes every table delete to throw, but the inner
-        // try/catch in bulkDeleteUserData swallows per-table errors and
-        // still counts the user as succeeded.
+      test('skips user when individual table deletes throw', () async {
+        // deleteError causes every table delete to throw; the user must not be
+        // counted as fully deleted because some data may remain.
         final client = _makeClient(
           adminUserResult: const {'role': 'admin'},
           deleteError: StateError('table delete failed'),
@@ -576,10 +576,8 @@ void main() {
 
         final result = await manager.bulkDeleteUserData({'user-1'});
 
-        // The user still counts as succeeded because per-table errors
-        // are caught inside the inner loop.
-        expect(result.succeeded, 1);
-        expect(result.skipped, 0);
+        expect(result.succeeded, 0);
+        expect(result.skipped, 1);
         final lastCall = tracker.calls.last;
         expect(lastCall['isSuccess'], isTrue);
         expect(lastCall['isLoading'], isFalse);
@@ -598,12 +596,14 @@ void main() {
         final userManager = _StubUserManager(ref, tracker.call);
         final manager = AdminBulkManager(ref, userManager, tracker.call);
 
-        final result = await manager.bulkDeleteUserData(
-          {'user-1', 'user-2', 'user-3'},
-        );
+        final result = await manager.bulkDeleteUserData({
+          'user-1',
+          'user-2',
+          'user-3',
+        });
 
-        expect(result.succeeded, 3);
-        expect(result.skipped, 0);
+        expect(result.succeeded, 0);
+        expect(result.skipped, 3);
       });
     });
 
