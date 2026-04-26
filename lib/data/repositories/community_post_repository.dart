@@ -1,10 +1,13 @@
 import 'package:easy_localization/easy_localization.dart';
+import 'package:image_picker/image_picker.dart';
 
+import '../../core/constants/supabase_constants.dart';
 import '../../core/enums/community_enums.dart';
 import '../models/community_post_model.dart';
 import '../remote/api/community_post_cache.dart';
 import '../remote/api/community_post_remote_source.dart';
 import '../remote/api/community_social_remote_source.dart';
+import '../remote/storage/storage_service.dart';
 
 /// Online-first: cross-user public community feed. No local Drift mirror by design.
 ///
@@ -18,13 +21,16 @@ class CommunityPostRepository {
   final CommunityPostRemoteSource _postSource;
   final CommunitySocialRemoteSource _socialSource;
   final CommunityPostCache? _cache;
+  final StorageService? _storageService;
 
   const CommunityPostRepository({
     required CommunityPostRemoteSource postSource,
     required CommunitySocialRemoteSource socialSource,
+    StorageService? storageService,
     CommunityPostCache? cache,
   }) : _postSource = postSource,
        _socialSource = socialSource,
+       _storageService = storageService,
        _cache = cache;
 
   Future<List<CommunityPost>> getFeed({
@@ -92,6 +98,41 @@ class CommunityPostRepository {
   Future<void> create(Map<String, dynamic> data) async {
     await _postSource.insert(data);
     _cache?.invalidateAll();
+  }
+
+  Future<Map<String, dynamic>> checkPostAllowed(String contentHash) {
+    return _postSource.checkPostAllowed(contentHash);
+  }
+
+  Future<String> uploadPhoto({
+    required String userId,
+    required String postId,
+    required XFile file,
+  }) {
+    final storageService = _storageService;
+    if (storageService == null) {
+      throw StateError('Community post storage service is not configured');
+    }
+    return storageService.uploadCommunityPhoto(
+      userId: userId,
+      postId: postId,
+      file: file,
+    );
+  }
+
+  Future<void> deleteUploadedPhoto(String publicUrl) {
+    final storageService = _storageService;
+    if (storageService == null) {
+      throw StateError('Community post storage service is not configured');
+    }
+
+    final storagePath = _storagePathFromPublicUrl(
+      publicUrl,
+      SupabaseConstants.communityPhotosBucket,
+    );
+    if (storagePath == null) return Future.value();
+
+    return storageService.deleteCommunityPhoto(storagePath: storagePath);
   }
 
   Future<void> delete({required String postId, required String userId}) async {
@@ -163,10 +204,9 @@ class CommunityPostRepository {
     final avatarUrl = _asString(row['avatar_url']);
 
     final imageUrl = _asString(row['image_url']);
-    final imageUrls = _asStringList(row['images']);
-    final normalizedImages = imageUrls.isNotEmpty
-        ? imageUrls
-        : (imageUrl != null ? [imageUrl] : const <String>[]);
+    final imageUrls = _asStringList(row['image_urls']);
+    final legacyImageUrls = _asStringList(row['images']);
+    final normalizedImages = imageUrls.isNotEmpty ? imageUrls : legacyImageUrls;
 
     final bird = row['birds'];
     final birdMap = bird is Map<String, dynamic> ? bird : null;
@@ -257,4 +297,15 @@ DateTime? _asDateTime(dynamic value) {
     return DateTime.fromMillisecondsSinceEpoch(millis);
   }
   return null;
+}
+
+String? _storagePathFromPublicUrl(String url, String bucket) {
+  final uri = Uri.tryParse(url);
+  if (uri == null) return null;
+
+  final segments = uri.pathSegments;
+  final bucketIdx = segments.indexOf(bucket);
+  if (bucketIdx < 0 || bucketIdx + 1 >= segments.length) return null;
+
+  return segments.sublist(bucketIdx + 1).join('/');
 }

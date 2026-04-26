@@ -6,6 +6,7 @@ import 'package:mocktail/mocktail.dart';
 
 import 'package:budgie_breeding_tracker/data/remote/api/community_post_remote_source.dart';
 import 'package:budgie_breeding_tracker/data/remote/api/community_social_remote_source.dart';
+import 'package:budgie_breeding_tracker/data/remote/storage/storage_service.dart';
 import 'package:budgie_breeding_tracker/data/repositories/community_post_repository.dart';
 
 class MockCommunityPostRemoteSource extends Mock
@@ -13,6 +14,8 @@ class MockCommunityPostRemoteSource extends Mock
 
 class MockCommunitySocialRemoteSource extends Mock
     implements CommunitySocialRemoteSource {}
+
+class MockStorageService extends Mock implements StorageService {}
 
 Map<String, dynamic> _makePostRow({
   required String id,
@@ -55,9 +58,7 @@ void main() {
   void stubSocialEmpty() {
     when(
       () => socialSource.fetchPostSocialState(any(), any()),
-    ).thenAnswer(
-      (_) async => (liked: <String>{}, bookmarked: <String>{}),
-    );
+    ).thenAnswer((_) async => (liked: <String>{}, bookmarked: <String>{}));
   }
 
   group('getFeed', () {
@@ -71,9 +72,7 @@ void main() {
 
       when(
         () => socialSource.fetchPostSocialState('u1', ['p1', 'p2']),
-      ).thenAnswer(
-        (_) async => (liked: {'p1'}, bookmarked: {'p2'}),
-      );
+      ).thenAnswer((_) async => (liked: {'p1'}, bookmarked: {'p2'}));
 
       final posts = await repository.getFeed(currentUserId: 'u1');
 
@@ -86,6 +85,26 @@ void main() {
       expect(posts[1].id, 'p2');
       expect(posts[1].isLikedByMe, isFalse);
       expect(posts[1].isBookmarkedByMe, isTrue);
+    });
+
+    test('parses schema image_urls from feed rows', () async {
+      when(() => postSource.fetchFeed(limit: 20, before: null)).thenAnswer(
+        (_) async => [
+          _makePostRow(id: 'p1')
+            ..['image_urls'] = [
+              'https://example.com/1.jpg',
+              'https://example.com/2.jpg',
+            ],
+        ],
+      );
+      stubSocialEmpty();
+
+      final posts = await repository.getFeed(currentUserId: 'u1');
+
+      expect(posts.single.imageUrls, [
+        'https://example.com/1.jpg',
+        'https://example.com/2.jpg',
+      ]);
     });
 
     test('skips social enrichment for anonymous user', () async {
@@ -119,9 +138,7 @@ void main() {
       // repository should still render posts with neutral social state.
       when(
         () => socialSource.fetchPostSocialState(any(), any()),
-      ).thenAnswer(
-        (_) async => (liked: <String>{}, bookmarked: <String>{}),
-      );
+      ).thenAnswer((_) async => (liked: <String>{}, bookmarked: <String>{}));
 
       final posts = await repository.getFeed(currentUserId: 'u1');
 
@@ -207,9 +224,7 @@ void main() {
       );
       when(
         () => socialSource.fetchPostSocialState('u1', any()),
-      ).thenAnswer(
-        (_) async => (liked: <String>{}, bookmarked: {'p1', 'p2'}),
-      );
+      ).thenAnswer((_) async => (liked: <String>{}, bookmarked: {'p1', 'p2'}));
 
       final posts = await repository.getBookmarked(currentUserId: 'u1');
 
@@ -228,6 +243,67 @@ void main() {
 
       verify(() => postSource.insert(data)).called(1);
     });
+
+    test('checkPostAllowed delegates to postSource', () async {
+      when(
+        () => postSource.checkPostAllowed('hash'),
+      ).thenAnswer((_) async => {'allowed': true});
+
+      final result = await repository.checkPostAllowed('hash');
+
+      expect(result['allowed'], isTrue);
+      verify(() => postSource.checkPostAllowed('hash')).called(1);
+    });
+  });
+
+  group('storage cleanup', () {
+    test('deleteUploadedPhoto deletes parsed community storage path', () async {
+      final storage = MockStorageService();
+      final repository = CommunityPostRepository(
+        postSource: postSource,
+        socialSource: socialSource,
+        storageService: storage,
+      );
+      when(
+        () => storage.deleteCommunityPhoto(
+          storagePath: any(named: 'storagePath'),
+        ),
+      ).thenAnswer((_) async {});
+
+      await repository.deleteUploadedPhoto(
+        'https://project.supabase.co/storage/v1/object/sign/'
+        'community-photos/user-1/post-1/photo.jpg?token=abc',
+      );
+
+      verify(
+        () => storage.deleteCommunityPhoto(
+          storagePath: 'user-1/post-1/photo.jpg',
+        ),
+      ).called(1);
+    });
+
+    test(
+      'deleteUploadedPhoto ignores URLs outside the community bucket',
+      () async {
+        final storage = MockStorageService();
+        final repository = CommunityPostRepository(
+          postSource: postSource,
+          socialSource: socialSource,
+          storageService: storage,
+        );
+
+        await repository.deleteUploadedPhoto(
+          'https://project.supabase.co/storage/v1/object/sign/'
+          'bird-photos/user-1/bird-1/photo.jpg',
+        );
+
+        verifyNever(
+          () => storage.deleteCommunityPhoto(
+            storagePath: any(named: 'storagePath'),
+          ),
+        );
+      },
+    );
   });
 
   group('delete', () {

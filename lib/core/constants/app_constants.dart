@@ -2,7 +2,7 @@ import '../../bootstrap.dart';
 
 abstract class AppConstants {
   static const String appName = 'BudgieBreedingTracker';
-  static const String appVersion = '1.0.3';
+  static const String appVersion = '1.0.4';
   static const String privacyPolicyUrl =
       'https://budgiebreedingtracker.online/privacy-policy.html';
   static const String termsOfUseUrl =
@@ -21,7 +21,7 @@ abstract class AppConstants {
 
   /// Google Play Store listing URL.
   static const String playStoreUrl =
-      'https://play.google.com/store/apps/details?id=com.budgiebreeding.tracker';
+      'https://play.google.com/store/apps/details?id=com.budgiebreeding.budgie_breeding_tracker';
   static const List<String> supportedLanguages = ['tr', 'en', 'de'];
   static const String defaultLanguage = 'tr';
   static const Duration syncInterval = Duration(minutes: 15);

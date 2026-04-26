@@ -6,15 +6,67 @@ type ParseSuccess<T> = { success: true; data: T };
 type ParseFailure = { success: false; response: Response };
 type ParseResult<T> = ParseSuccess<T> | ParseFailure;
 
+const DEFAULT_MAX_BODY_BYTES = 256 * 1024;
+
+async function readLimitedJsonBody(
+  req: Request,
+  maxBodyBytes: number,
+): Promise<unknown> {
+  const contentLength = Number(req.headers.get("content-length") ?? "0");
+  if (Number.isFinite(contentLength) && contentLength > maxBodyBytes) {
+    throw new RangeError("Request body too large");
+  }
+
+  if (!req.body) {
+    throw new SyntaxError("Missing request body");
+  }
+
+  const reader = req.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    if (!value) continue;
+
+    total += value.byteLength;
+    if (total > maxBodyBytes) {
+      await reader.cancel();
+      throw new RangeError("Request body too large");
+    }
+    chunks.push(value);
+  }
+
+  const body = new Uint8Array(total);
+  let offset = 0;
+  for (const chunk of chunks) {
+    body.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+
+  return JSON.parse(new TextDecoder().decode(body));
+}
+
 export async function parseRequestBody<T>(
   req: Request,
   schema: z.ZodSchema<T>,
   headers: HeadersInit,
+  maxBodyBytes = DEFAULT_MAX_BODY_BYTES,
 ): Promise<ParseResult<T>> {
   let raw: unknown;
   try {
-    raw = await req.json();
-  } catch {
+    raw = await readLimitedJsonBody(req, maxBodyBytes);
+  } catch (error) {
+    if (error instanceof RangeError) {
+      return {
+        success: false,
+        response: new Response(
+          JSON.stringify({ error: "Request body too large" }),
+          { status: 413, headers },
+        ),
+      };
+    }
     return {
       success: false,
       response: new Response(

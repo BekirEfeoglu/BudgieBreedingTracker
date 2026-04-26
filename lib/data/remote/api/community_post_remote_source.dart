@@ -18,7 +18,8 @@ class CommunityPostRemoteSource {
   /// Selective columns for feed/list queries.
   /// Excludes admin-only columns (needs_review, is_reported, report_count)
   /// to reduce payload size.
-  static const _feedColumns = 'id, user_id, content, title, post_type, '
+  static const _feedColumns =
+      'id, user_id, content, title, post_type, '
       'image_urls, tags, like_count, comment_count, view_count, '
       'is_pinned, visibility, created_at, updated_at, is_deleted';
 
@@ -36,7 +37,10 @@ class CommunityPostRemoteSource {
           .eq(SupabaseConstants.colNeedsReview, false);
 
       if (before != null) {
-        query = query.lt(SupabaseConstants.colCreatedAt, before.toIso8601String());
+        query = query.lt(
+          SupabaseConstants.colCreatedAt,
+          before.toIso8601String(),
+        );
       }
 
       final result = await query
@@ -47,7 +51,10 @@ class CommunityPostRemoteSource {
       return _profileCache.mergeIntoRows(rows);
     } catch (e, st) {
       throw BaseRemoteSource.handleErrorForTag(
-          'CommunityPostRemoteSource.fetchFeed', e, st);
+        'CommunityPostRemoteSource.fetchFeed',
+        e,
+        st,
+      );
     }
   }
 
@@ -66,7 +73,10 @@ class CommunityPostRemoteSource {
       return enriched.isNotEmpty ? enriched.first : null;
     } catch (e, st) {
       throw BaseRemoteSource.handleErrorForTag(
-          'CommunityPostRemoteSource.fetchById', e, st);
+        'CommunityPostRemoteSource.fetchById',
+        e,
+        st,
+      );
     }
   }
 
@@ -88,7 +98,10 @@ class CommunityPostRemoteSource {
       return _profileCache.mergeIntoRows(rows);
     } catch (e, st) {
       throw BaseRemoteSource.handleErrorForTag(
-          'CommunityPostRemoteSource.fetchByUser', e, st);
+        'CommunityPostRemoteSource.fetchByUser',
+        e,
+        st,
+      );
     }
   }
 
@@ -97,7 +110,28 @@ class CommunityPostRemoteSource {
       await _client.from(SupabaseConstants.communityPostsTable).insert(data);
     } catch (e, st) {
       throw BaseRemoteSource.handleErrorForTag(
-          'CommunityPostRemoteSource.insert', e, st);
+        'CommunityPostRemoteSource.insert',
+        e,
+        st,
+      );
+    }
+  }
+
+  Future<Map<String, dynamic>> checkPostAllowed(String contentHash) async {
+    try {
+      final result = await _client.rpc(
+        'check_community_post_allowed',
+        params: {'p_content_hash': contentHash},
+      );
+      if (result is Map<String, dynamic>) return result;
+      if (result is Map) return Map<String, dynamic>.from(result);
+      return const {'allowed': false, 'reason': 'unknown'};
+    } catch (e, st) {
+      throw BaseRemoteSource.handleErrorForTag(
+        'CommunityPostRemoteSource.checkPostAllowed',
+        e,
+        st,
+      );
     }
   }
 
@@ -110,7 +144,10 @@ class CommunityPostRemoteSource {
           .eq(SupabaseConstants.colUserId, userId);
     } catch (e, st) {
       throw BaseRemoteSource.handleErrorForTag(
-          'CommunityPostRemoteSource.softDelete', e, st);
+        'CommunityPostRemoteSource.softDelete',
+        e,
+        st,
+      );
     }
   }
 
@@ -151,7 +188,10 @@ class CommunityPostRemoteSource {
       return _profileCache.mergeIntoRows(rows);
     } catch (e, st) {
       throw BaseRemoteSource.handleErrorForTag(
-          'CommunityPostRemoteSource.search', e, st);
+        'CommunityPostRemoteSource.search',
+        e,
+        st,
+      );
     }
   }
 
@@ -172,7 +212,10 @@ class CommunityPostRemoteSource {
       return _profileCache.mergeIntoRows(rows);
     } catch (e, st) {
       throw BaseRemoteSource.handleErrorForTag(
-          'CommunityPostRemoteSource.fetchPendingReview', e, st);
+        'CommunityPostRemoteSource.fetchPendingReview',
+        e,
+        st,
+      );
     }
   }
 
@@ -189,11 +232,17 @@ class CommunityPostRemoteSource {
     try {
       await _client
           .from(SupabaseConstants.communityPostsTable)
-          .update({SupabaseConstants.colNeedsReview: false, 'reviewed_by': currentUserId})
+          .update({
+            SupabaseConstants.colNeedsReview: false,
+            'reviewed_by': currentUserId,
+          })
           .eq(SupabaseConstants.colId, postId);
     } catch (e, st) {
       throw BaseRemoteSource.handleErrorForTag(
-          'CommunityPostRemoteSource.clearReviewFlag', e, st);
+        'CommunityPostRemoteSource.clearReviewFlag',
+        e,
+        st,
+      );
     }
   }
 
@@ -205,13 +254,17 @@ class CommunityPostRemoteSource {
           .from(SupabaseConstants.communityPostsTable)
           .select(_feedColumns)
           .inFilter(SupabaseConstants.colId, postIds)
-          .eq(SupabaseConstants.colIsDeleted, false);
+          .eq(SupabaseConstants.colIsDeleted, false)
+          .eq(SupabaseConstants.colNeedsReview, false);
 
       final rows = List<Map<String, dynamic>>.from(result);
       return _profileCache.mergeIntoRows(rows);
     } catch (e, st) {
       throw BaseRemoteSource.handleErrorForTag(
-          'CommunityPostRemoteSource.fetchByIds', e, st);
+        'CommunityPostRemoteSource.fetchByIds',
+        e,
+        st,
+      );
     }
   }
 }

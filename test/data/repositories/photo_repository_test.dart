@@ -1,4 +1,7 @@
+import 'dart:typed_data';
+
 import 'package:flutter_test/flutter_test.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
 import 'package:budgie_breeding_tracker/core/enums/photo_enums.dart';
@@ -132,6 +135,67 @@ void main() {
           SupabaseConstants.photosTable,
           'missing-photo',
         ),
+      ).called(1);
+    });
+
+    test('uploadBirdPhoto delegates to storage service', () async {
+      final storage = MockStorageService();
+      final repository = PhotoRepository(
+        localDao: localDao,
+        remoteSource: remoteSource,
+        syncDao: syncDao,
+        storageService: storage,
+      );
+      final file = XFile.fromData(
+        Uint8List.fromList(const [1, 2, 3]),
+        name: 'photo.jpg',
+        mimeType: 'image/jpeg',
+      );
+      when(
+        () => storage.uploadBirdPhoto(
+          userId: userId,
+          birdId: 'bird-1',
+          file: file,
+        ),
+      ).thenAnswer((_) async => 'https://example.com/photo.jpg');
+
+      final url = await repository.uploadBirdPhoto(
+        userId: userId,
+        birdId: 'bird-1',
+        file: file,
+      );
+
+      expect(url, 'https://example.com/photo.jpg');
+      verify(
+        () => storage.uploadBirdPhoto(
+          userId: userId,
+          birdId: 'bird-1',
+          file: file,
+        ),
+      ).called(1);
+    });
+
+    test('deleteStorageForPhoto deletes parsed bird storage path', () async {
+      final storage = MockStorageService();
+      final repository = PhotoRepository(
+        localDao: localDao,
+        remoteSource: remoteSource,
+        syncDao: syncDao,
+        storageService: storage,
+      );
+      final photo = _samplePhoto().copyWith(
+        filePath:
+            'https://project.supabase.co/storage/v1/object/sign/'
+            'bird-photos/user-1/bird-1/photo.jpg?token=abc',
+      );
+      when(
+        () => storage.deleteBirdPhoto(storagePath: any(named: 'storagePath')),
+      ).thenAnswer((_) async {});
+
+      await repository.deleteStorageForPhoto(photo);
+
+      verify(
+        () => storage.deleteBirdPhoto(storagePath: 'user-1/bird-1/photo.jpg'),
       ).called(1);
     });
   });

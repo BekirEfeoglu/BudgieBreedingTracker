@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
@@ -21,8 +23,15 @@ void main() {
       );
     });
 
-    test('appVersion is 1.0.3', () {
-      expect(AppConstants.appVersion, '1.0.3');
+    test('appVersion matches pubspec version name', () {
+      final pubspec = File('pubspec.yaml').readAsStringSync();
+      final match = RegExp(
+        r'^version:\s*([^\s+]+)',
+        multiLine: true,
+      ).firstMatch(pubspec);
+
+      expect(match, isNotNull);
+      expect(AppConstants.appVersion, match!.group(1));
     });
   });
 
@@ -67,6 +76,15 @@ void main() {
 
     test('playStoreUrl contains Google domain', () {
       expect(AppConstants.playStoreUrl, contains(l10n('google.com')));
+    });
+
+    test('playStoreUrl uses Android applicationId', () {
+      final uri = Uri.parse(AppConstants.playStoreUrl);
+
+      expect(
+        uri.queryParameters['id'],
+        'com.budgiebreeding.budgie_breeding_tracker',
+      );
     });
   });
 

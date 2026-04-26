@@ -141,7 +141,7 @@ mixin _BirdFormActions on Notifier<BirdFormState>, SentryErrorFilter {
       if (photoFile != null) {
         try {
           photoUrl = await ref
-              .read(storageServiceProvider)
+              .read(photoRepositoryProvider)
               .uploadBirdPhoto(userId: userId, birdId: birdId, file: photoFile);
         } catch (e, st) {
           AppLogger.error('BirdFormNotifier photo upload', e, st);
