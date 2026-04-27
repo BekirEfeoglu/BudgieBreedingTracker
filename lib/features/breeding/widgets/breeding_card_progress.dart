@@ -27,15 +27,19 @@ class BreedingCardProgress extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              stageLabel,
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: stageColor,
-                fontWeight: FontWeight.w600,
+            Expanded(
+              child: Text(
+                stageLabel,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: stageColor,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
+            const SizedBox(width: AppSpacing.sm),
             Text(
               'breeding.day_progress'.tr(
                 args: [daysElapsed.toString(), totalDays.toString()],

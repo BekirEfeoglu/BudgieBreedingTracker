@@ -74,24 +74,32 @@ class BirdCard extends StatelessWidget {
                         if (bird.ringNumber != null) ...[
                           AppIcon(
                             AppIcons.ring,
-                            size: 14,
+                            size: 16,
                             color: theme.colorScheme.onSurfaceVariant,
                           ),
                           // 2px icon-to-text gap: tighter than xs(4) for compact info row
                           const SizedBox(width: 2),
-                          Text(
-                            bird.ringNumber!,
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: theme.colorScheme.onSurfaceVariant,
+                          Flexible(
+                            child: Text(
+                              bird.ringNumber!,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: theme.colorScheme.onSurfaceVariant,
+                              ),
                             ),
                           ),
                           const SizedBox(width: AppSpacing.sm),
                         ],
                         if (age != null)
-                          Text(
-                            formatBirdAgeShort(age),
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: theme.colorScheme.onSurfaceVariant,
+                          Flexible(
+                            child: Text(
+                              formatBirdAgeShort(age),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: theme.colorScheme.onSurfaceVariant,
+                              ),
                             ),
                           ),
                       ],

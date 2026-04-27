@@ -25,37 +25,59 @@ class BreedingCardFooter extends ConsumerWidget {
 
     return Row(
       children: [
-        if (pair.pairingDate != null) ...[
-          AppIcon(
-            AppIcons.calendar,
-            size: 12,
-            color: theme.colorScheme.onSurfaceVariant,
+        Expanded(
+          child: Row(
+            children: [
+              if (pair.pairingDate != null) ...[
+                AppIcon(
+                  AppIcons.calendar,
+                  size: 14,
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+                const SizedBox(width: AppSpacing.xs),
+                Flexible(
+                  child: Text(
+                    dateFormat.format(pair.pairingDate!),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: subtitleStyle,
+                  ),
+                ),
+              ],
+              if (incubation?.computedExpectedHatchDate != null) ...[
+                const SizedBox(width: AppSpacing.md),
+                AppIcon(
+                  AppIcons.egg,
+                  size: 14,
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+                const SizedBox(width: AppSpacing.xs),
+                Flexible(
+                  child: Text(
+                    dateFormat.format(incubation!.computedExpectedHatchDate!),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: subtitleStyle,
+                  ),
+                ),
+              ],
+            ],
           ),
-          const SizedBox(width: AppSpacing.xs),
-          Text(dateFormat.format(pair.pairingDate!), style: subtitleStyle),
-        ],
-        if (incubation?.computedExpectedHatchDate != null) ...[
-          const SizedBox(width: AppSpacing.md),
-          AppIcon(
-            AppIcons.egg,
-            size: 12,
-            color: theme.colorScheme.onSurfaceVariant,
-          ),
-          const SizedBox(width: AppSpacing.xs),
-          Text(
-            dateFormat.format(incubation!.computedExpectedHatchDate!),
-            style: subtitleStyle,
-          ),
-        ],
-        const Spacer(),
+        ),
+        const SizedBox(width: AppSpacing.sm),
         if (incubation != null && incubation!.isActive) ...[
-          Text(
-            'breeding.days_remaining'.tr(
-              args: [incubation!.daysRemaining.toString()],
-            ),
-            style: theme.textTheme.bodySmall?.copyWith(
-              fontWeight: FontWeight.w600,
-              color: theme.colorScheme.primary,
+          Flexible(
+            child: Text(
+              'breeding.days_remaining'.tr(
+                args: [incubation!.daysRemaining.toString()],
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.end,
+              style: theme.textTheme.bodySmall?.copyWith(
+                fontWeight: FontWeight.w600,
+                color: theme.colorScheme.primary,
+              ),
             ),
           ),
         ],

@@ -26,8 +26,7 @@ class CommunityPillTabs extends ConsumerWidget {
               spacing: AppSpacing.sm,
               runSpacing: AppSpacing.sm,
               children: CommunityFeedTab.values.map((tab) {
-                final itemWidth =
-                    (constraints.maxWidth - AppSpacing.sm) / 2;
+                final itemWidth = (constraints.maxWidth - AppSpacing.sm) / 2;
                 return SizedBox(
                   width: itemWidth,
                   child: _PillTab(
@@ -55,9 +54,8 @@ class CommunityPillTabs extends ConsumerWidget {
                     isActive: activeTab == CommunityFeedTab.values[i],
                     onTap: () {
                       AppHaptics.selectionClick();
-                      ref
-                          .read(communityActiveTabProvider.notifier)
-                          .state = CommunityFeedTab.values[i];
+                      ref.read(communityActiveTabProvider.notifier).state =
+                          CommunityFeedTab.values[i];
                     },
                     theme: theme,
                   ),
@@ -113,8 +111,9 @@ class _PillTab extends StatelessWidget {
                 : null,
             color: isActive
                 ? null
-                : theme.colorScheme.surfaceContainerHighest
-                      .withValues(alpha: 0.72),
+                : theme.colorScheme.surfaceContainerHighest.withValues(
+                    alpha: 0.72,
+                  ),
             borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
             border: Border.all(
               color: isActive
@@ -124,8 +123,7 @@ class _PillTab extends StatelessWidget {
             boxShadow: isActive
                 ? [
                     BoxShadow(
-                      color:
-                          theme.colorScheme.primary.withValues(alpha: 0.18),
+                      color: theme.colorScheme.primary.withValues(alpha: 0.18),
                       blurRadius: 14,
                       offset: const Offset(0, 6),
                     ),
@@ -137,16 +135,21 @@ class _PillTab extends StatelessWidget {
             children: [
               _tabIcon(tab, isActive, theme),
               const SizedBox(height: AppSpacing.xs),
-              Text(
-                tab.label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
-                style: theme.textTheme.labelLarge?.copyWith(
-                  color: isActive
-                      ? theme.colorScheme.onPrimary
-                      : theme.colorScheme.onSurface,
-                  fontWeight: isActive ? FontWeight.w700 : FontWeight.w600,
+              SizedBox(
+                width: double.infinity,
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    tab.label,
+                    maxLines: 1,
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.labelLarge?.copyWith(
+                      color: isActive
+                          ? theme.colorScheme.onPrimary
+                          : theme.colorScheme.onSurface,
+                      fontWeight: isActive ? FontWeight.w700 : FontWeight.w600,
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -156,20 +159,32 @@ class _PillTab extends StatelessWidget {
     );
   }
 
-  static Widget _tabIcon(
-    CommunityFeedTab tab,
-    bool isActive,
-    ThemeData theme,
-  ) {
+  static Widget _tabIcon(CommunityFeedTab tab, bool isActive, ThemeData theme) {
     final color = isActive
         ? theme.colorScheme.onPrimary
         : theme.colorScheme.onSurfaceVariant;
 
     return switch (tab) {
-      CommunityFeedTab.explore => Icon(LucideIcons.flame, size: 16, color: color),
-      CommunityFeedTab.following => Icon(LucideIcons.users, size: 16, color: color),
-      CommunityFeedTab.guides => Icon(LucideIcons.bookOpen, size: 16, color: color),
-      CommunityFeedTab.questions => Icon(LucideIcons.store, size: 16, color: color),
+      CommunityFeedTab.explore => Icon(
+        LucideIcons.flame,
+        size: 16,
+        color: color,
+      ),
+      CommunityFeedTab.following => Icon(
+        LucideIcons.users,
+        size: 16,
+        color: color,
+      ),
+      CommunityFeedTab.guides => Icon(
+        LucideIcons.bookOpen,
+        size: 16,
+        color: color,
+      ),
+      CommunityFeedTab.questions => Icon(
+        LucideIcons.store,
+        size: 16,
+        color: color,
+      ),
     };
   }
 }

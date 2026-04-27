@@ -170,6 +170,8 @@ class _ChickListScreenState extends ConsumerState<ChickListScreen> {
                 title: 'chicks.title'.tr(),
                 iconAsset: AppIcons.chick,
               ),
+        scrolledUnderElevation: 0,
+        surfaceTintColor: Colors.transparent,
         actions: _isSelectionMode
             ? [
                 AppIconButton(

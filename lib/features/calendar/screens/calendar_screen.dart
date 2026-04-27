@@ -62,9 +62,11 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
           title: 'calendar.title'.tr(),
           iconAsset: AppIcons.calendar,
         ),
+        scrolledUnderElevation: 0,
+        surfaceTintColor: Colors.transparent,
         actions: [
           AppIconButton(
-            icon: const Icon(LucideIcons.calendarCheck),
+            icon: const Icon(LucideIcons.locateFixed),
             onPressed: _goToToday,
             tooltip: 'calendar.today'.tr(),
             semanticLabel: 'calendar.today'.tr(),

@@ -313,7 +313,9 @@ void main() {
       mockTwoFactorService = MockTwoFactorService();
 
       when(() => mockProfileRepository.pull(any())).thenAnswer((_) async {});
-      when(() => mockProfileRepository.getById(any())).thenAnswer((_) async => null);
+      when(
+        () => mockProfileRepository.getById(any()),
+      ).thenAnswer((_) async => null);
       when(() => mockNotificationService.init()).thenAnswer((_) async {});
       when(
         () => mockNotificationService.requestExactAlarmPermissionIfNeeded(),
@@ -322,7 +324,9 @@ void main() {
         () => mockNotificationService
             .requestBatteryOptimizationExemptionIfNeeded(),
       ).thenAnswer((_) async => true);
-      when(() => mockNotificationProcessor.processAll()).thenAnswer((_) async {});
+      when(
+        () => mockNotificationProcessor.processAll(),
+      ).thenAnswer((_) async {});
       when(
         () => mockNotificationRescheduler.rescheduleAll(any()),
       ).thenAnswer((_) async {});
@@ -374,8 +378,9 @@ void main() {
           () => mockPushNotificationService.init(userId: 'user-1'),
         ]);
         verify(() => mockNotificationProcessor.processAll()).called(1);
-        verify(() => mockNotificationRescheduler.rescheduleAll('user-1'))
-            .called(1);
+        verify(
+          () => mockNotificationRescheduler.rescheduleAll('user-1'),
+        ).called(1);
       },
     );
 
@@ -390,10 +395,12 @@ void main() {
           createdAt: DateTime(2026, 4, 11),
           updatedAt: DateTime(2026, 4, 11),
         );
-        when(() => mockTwoFactorService.needsVerification())
-            .thenAnswer((_) async => true);
-        when(() => mockTwoFactorService.getFactors())
-            .thenAnswer((_) async => [factor]);
+        when(
+          () => mockTwoFactorService.needsVerification(),
+        ).thenAnswer((_) async => true);
+        when(
+          () => mockTwoFactorService.getFactors(),
+        ).thenAnswer((_) async => [factor]);
 
         final container = ProviderContainer(
           overrides: [
@@ -429,5 +436,46 @@ void main() {
         );
       },
     );
+
+    test('stops initialization when MFA verification check fails', () async {
+      when(
+        () => mockTwoFactorService.needsVerification(),
+      ).thenThrow(Exception('MFA service unavailable'));
+      when(() => mockTwoFactorService.getFactors()).thenAnswer((_) async => []);
+
+      final container = ProviderContainer(
+        overrides: [
+          currentUserIdProvider.overrideWithValue('user-1'),
+          profileRepositoryProvider.overrideWithValue(mockProfileRepository),
+          notificationServiceProvider.overrideWithValue(
+            mockNotificationService,
+          ),
+          notificationProcessorProvider.overrideWithValue(
+            mockNotificationProcessor,
+          ),
+          notificationReschedulerProvider.overrideWithValue(
+            mockNotificationRescheduler,
+          ),
+          pushNotificationServiceProvider.overrideWithValue(
+            mockPushNotificationService,
+          ),
+          rateLimiterReadyProvider.overrideWith((_) async {}),
+          supabaseClientProvider.overrideWithValue(mockClient),
+          supabaseInitializedProvider.overrideWithValue(true),
+          twoFactorServiceProvider.overrideWithValue(mockTwoFactorService),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      await container.read(appInitializationProvider.future);
+
+      expect(container.read(pendingMfaFactorIdProvider), 'mfa-required');
+      verifyNever(() => mockAuth.signOut());
+      verifyNever(() => mockProfileRepository.pull(any()));
+      verifyNever(() => mockNotificationService.init());
+      verifyNever(
+        () => mockPushNotificationService.init(userId: any(named: 'userId')),
+      );
+    });
   });
 }

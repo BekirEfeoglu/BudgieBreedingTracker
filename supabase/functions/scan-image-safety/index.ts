@@ -1,12 +1,14 @@
 import { corsPreflightResponse, getCorsHeaders } from "../_shared/cors.ts";
 import { getAuthenticatedUserId } from "../_shared/auth.ts";
-import { createRateLimiter, rateLimitedResponse } from "../_shared/rate-limit.ts";
 import {
-  moderateImageWithOpenAI,
-  validateImageInput,
-} from "./moderation.ts";
+  createRateLimiter,
+  rateLimitedResponse,
+} from "../_shared/rate-limit.ts";
+import { parseRequestBody, z } from "../_shared/validation.ts";
+import { moderateImageWithOpenAI, validateImageInput } from "./moderation.ts";
 
 const rateLimiter = createRateLimiter({ windowMs: 60_000, maxCalls: 10 });
+const MAX_BODY_BYTES = 4 * 1024 * 1024;
 
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return corsPreflightResponse(req);
@@ -24,28 +26,30 @@ Deno.serve(async (req: Request) => {
 
     if (!rateLimiter.check(userId)) return rateLimitedResponse(headers);
 
-    // Guard against oversized payloads before parsing body into memory.
-    // MAX_IMAGE_BYTES is 2MB of raw image; base64 encoding inflates ~33%,
-    // plus JSON overhead — cap at 4MB total to prevent OOM.
-    const MAX_BODY_BYTES = 4 * 1024 * 1024;
-    const contentLength = parseInt(req.headers.get("content-length") ?? "0", 10);
-    if (contentLength > MAX_BODY_BYTES) {
+    // MAX_IMAGE_BYTES is 2MB raw image; base64 inflates roughly 33%.
+    // Use streaming parsing so chunked requests cannot bypass the cap.
+    const scanSchema = z.object({
+      image_base64: z.string().optional(),
+      mime_type: z.string().optional(),
+    });
+    const parsed = await parseRequestBody(
+      req,
+      scanSchema,
+      headers,
+      MAX_BODY_BYTES,
+    );
+    if (!parsed.success) {
+      const status = parsed.response.status === 413 ? 413 : 400;
       return new Response(
-        JSON.stringify({ safe: false, reason: "image_too_large" }),
-        { status: 413, headers },
+        JSON.stringify({
+          safe: false,
+          reason: status === 413 ? "image_too_large" : "invalid_request",
+        }),
+        { status, headers },
       );
     }
 
-    let imageBase64: string | undefined;
-    let mimeType: string | undefined;
-    try {
-      ({ image_base64: imageBase64, mime_type: mimeType } = await req.json());
-    } catch {
-      return new Response(
-        JSON.stringify({ safe: false, reason: "invalid_request" }),
-        { status: 400, headers },
-      );
-    }
+    const { image_base64: imageBase64, mime_type: mimeType } = parsed.data;
 
     const inputError = validateImageInput(imageBase64, mimeType);
     if (inputError) {

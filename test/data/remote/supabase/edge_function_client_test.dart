@@ -90,7 +90,21 @@ void main() {
       final result = EdgeFunctionResult.fromResponse(response);
 
       expect(result.success, isFalse);
+      expect(result.data, {'message': 'boom'});
       expect(result.error, contains('Status 500'));
+    });
+
+    test('preserves structured error payloads for non-2xx statuses', () {
+      final response = FunctionResponse(
+        status: 429,
+        data: {'locked': true, 'remaining_seconds': 120},
+      );
+
+      final result = EdgeFunctionResult.fromResponse(response);
+
+      expect(result.success, isFalse);
+      expect(result.data, {'locked': true, 'remaining_seconds': 120});
+      expect(result.error, contains('Status 429'));
     });
   });
 
@@ -98,7 +112,10 @@ void main() {
     test('invoke forwards body+headers and returns parsed result', () async {
       final body = <String, dynamic>{'x': 1};
       final customHeaders = <String, String>{'x-trace': 'abc'};
-      final expectedHeaders = <String, String>{..._authHeader, ...customHeaders};
+      final expectedHeaders = <String, String>{
+        ..._authHeader,
+        ...customHeaders,
+      };
       when(
         () => mockFunctions.invoke(
           'test-function',
@@ -148,11 +165,7 @@ void main() {
 
     test('invoke returns failure when underlying client throws', () async {
       when(
-        () => mockFunctions.invoke(
-          'explode',
-          body: null,
-          headers: _authHeader,
-        ),
+        () => mockFunctions.invoke('explode', body: null, headers: _authHeader),
       ).thenThrow(Exception('network down'));
 
       final result = await client.invoke('explode');
@@ -169,7 +182,11 @@ void main() {
       expect(result.success, isFalse);
       expect(result.error, contains('No authenticated session'));
       verifyNever(
-        () => mockFunctions.invoke(any(), body: any(named: 'body'), headers: any(named: 'headers')),
+        () => mockFunctions.invoke(
+          any(),
+          body: any(named: 'body'),
+          headers: any(named: 'headers'),
+        ),
       );
     });
 
@@ -316,8 +333,9 @@ void main() {
         });
 
         when(() => mockAuth.refreshSession()).thenAnswer((_) async {
-          when(() => mockAuth.currentSession)
-              .thenReturn(createRefreshedSession());
+          when(
+            () => mockAuth.currentSession,
+          ).thenReturn(createRefreshedSession());
           return AuthResponse(session: createRefreshedSession());
         });
 
@@ -351,8 +369,9 @@ void main() {
         );
 
         when(() => mockAuth.refreshSession()).thenAnswer((_) async {
-          when(() => mockAuth.currentSession)
-              .thenReturn(createRefreshedSession());
+          when(
+            () => mockAuth.currentSession,
+          ).thenReturn(createRefreshedSession());
           return AuthResponse(session: createRefreshedSession());
         });
 
@@ -365,11 +384,8 @@ void main() {
 
       test('returns failure when session refresh fails', () async {
         when(
-          () => mockFunctions.invoke(
-            'test-fn',
-            body: null,
-            headers: _authHeader,
-          ),
+          () =>
+              mockFunctions.invoke('test-fn', body: null, headers: _authHeader),
         ).thenThrow(
           const FunctionException(
             status: 401,
@@ -378,8 +394,9 @@ void main() {
           ),
         );
 
-        when(() => mockAuth.refreshSession())
-            .thenThrow(Exception('refresh failed'));
+        when(
+          () => mockAuth.refreshSession(),
+        ).thenThrow(Exception('refresh failed'));
 
         final result = await client.invoke('test-fn');
 
@@ -389,11 +406,8 @@ void main() {
 
       test('returns failure when refreshed session has no token', () async {
         when(
-          () => mockFunctions.invoke(
-            'test-fn',
-            body: null,
-            headers: _authHeader,
-          ),
+          () =>
+              mockFunctions.invoke('test-fn', body: null, headers: _authHeader),
         ).thenThrow(
           const FunctionException(
             status: 401,
@@ -436,8 +450,9 @@ void main() {
         });
 
         when(() => mockAuth.refreshSession()).thenAnswer((_) async {
-          when(() => mockAuth.currentSession)
-              .thenReturn(createRefreshedSession());
+          when(
+            () => mockAuth.currentSession,
+          ).thenReturn(createRefreshedSession());
           return AuthResponse(session: createRefreshedSession());
         });
 

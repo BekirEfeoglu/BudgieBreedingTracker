@@ -54,6 +54,8 @@ class BreedingListScreen extends ConsumerWidget {
           title: 'breeding.title'.tr(),
           iconAsset: AppIcons.breeding,
         ),
+        scrolledUnderElevation: 0,
+        surfaceTintColor: Colors.transparent,
         actions: [
           AppIconButton(
             icon: const Icon(LucideIcons.arrowUpDown),

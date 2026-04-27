@@ -111,10 +111,9 @@ class _BreedingPairTile extends ConsumerWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              '$maleName \u2642 - $femaleName \u2640',
-                              style: Theme.of(context).textTheme.bodyMedium
-                                  ?.copyWith(fontWeight: FontWeight.w600),
+                            _PairTitle(
+                              maleName: maleName,
+                              femaleName: femaleName,
                             ),
                             if (dateDisplay.isNotEmpty) ...[
                               const SizedBox(height: AppSpacing.xs),
@@ -155,4 +154,85 @@ class _BreedingPairTile extends ConsumerWidget {
     BreedingStatus.completed => AppColors.primaryLight,
     BreedingStatus.cancelled || BreedingStatus.unknown => AppColors.neutral400,
   };
+}
+
+class _PairTitle extends StatelessWidget {
+  const _PairTitle({required this.maleName, required this.femaleName});
+
+  final String maleName;
+  final String femaleName;
+
+  @override
+  Widget build(BuildContext context) {
+    final textStyle = Theme.of(
+      context,
+    ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600);
+
+    return Row(
+      children: [
+        Expanded(
+          child: _BirdNameSegment(
+            name: maleName,
+            icon: const AppIcon(
+              AppIcons.male,
+              size: 15,
+              color: AppColors.genderMale,
+            ),
+            textStyle: textStyle,
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+          child: Text(
+            '-',
+            style: textStyle?.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ),
+        Expanded(
+          child: _BirdNameSegment(
+            name: femaleName,
+            icon: const AppIcon(
+              AppIcons.female,
+              size: 15,
+              color: AppColors.genderFemale,
+            ),
+            textStyle: textStyle,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _BirdNameSegment extends StatelessWidget {
+  const _BirdNameSegment({
+    required this.name,
+    required this.icon,
+    required this.textStyle,
+  });
+
+  final String name;
+  final Widget icon;
+  final TextStyle? textStyle;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        icon,
+        const SizedBox(width: AppSpacing.xs),
+        Flexible(
+          child: Text(
+            name,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: textStyle,
+          ),
+        ),
+      ],
+    );
+  }
 }

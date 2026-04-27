@@ -42,8 +42,13 @@ class MfaLockoutService {
   }
 
   MfaLockoutResult _parse(bool success, Map<String, dynamic>? data) {
+    final hasLockoutPayload = data?['locked'] is bool;
+    if (!success && !hasLockoutPayload) {
+      throw StateError('MFA lockout check failed');
+    }
+
     return MfaLockoutResult(
-      success: success,
+      success: success || hasLockoutPayload,
       locked: data?['locked'] as bool? ?? false,
       remainingSeconds: data?['remaining_seconds'] as int? ?? 0,
     );

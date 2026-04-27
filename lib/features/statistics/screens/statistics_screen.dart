@@ -81,10 +81,11 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen>
           title: 'statistics.title'.tr(),
           iconAsset: AppIcons.statistics,
         ),
+        scrolledUnderElevation: 0,
+        surfaceTintColor: Colors.transparent,
         bottom: TabBar(
           controller: _tabController,
-          isScrollable: true,
-          tabAlignment: TabAlignment.start,
+          labelPadding: const EdgeInsets.symmetric(horizontal: 4),
           tabs: [
             Tab(
               icon: const AppIcon(AppIcons.statistics, size: 18),

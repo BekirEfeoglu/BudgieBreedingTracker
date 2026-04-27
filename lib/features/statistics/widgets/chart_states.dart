@@ -65,7 +65,9 @@ class ChartEmpty extends StatelessWidget {
               AppIcon(
                 AppIcons.statistics,
                 size: 40,
-                color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+                color: theme.colorScheme.onSurfaceVariant.withValues(
+                  alpha: 0.4,
+                ),
               ),
               const SizedBox(height: AppSpacing.sm),
               Text(

@@ -53,6 +53,8 @@ class _HealthRecordListScreenState
           title: 'health_records.title'.tr(),
           iconAsset: AppIcons.health,
         ),
+        scrolledUnderElevation: 0,
+        surfaceTintColor: Colors.transparent,
       ),
       body: Column(
         children: [

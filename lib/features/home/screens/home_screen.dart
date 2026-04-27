@@ -57,6 +57,7 @@ class HomeScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const AppBrandTitle(size: AppBrandSize.small),
         centerTitle: true,
+        scrolledUnderElevation: 0,
         actions: const [NotificationBellButton(), ProfileMenuButton()],
       ),
       body: RefreshIndicator(

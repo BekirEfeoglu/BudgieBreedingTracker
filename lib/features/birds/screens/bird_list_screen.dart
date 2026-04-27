@@ -210,6 +210,8 @@ class _BirdListScreenState extends ConsumerState<BirdListScreen> {
                 onPressed: _clearSelection,
               )
             : null,
+        scrolledUnderElevation: 0,
+        surfaceTintColor: Colors.transparent,
         actions: _isSelectionMode
             ? [
                 AppIconButton(

@@ -13,23 +13,28 @@ class EdgeFunctionResult {
   const EdgeFunctionResult({required this.success, this.data, this.error});
 
   factory EdgeFunctionResult.fromResponse(FunctionResponse response) {
-    if (response.status >= 200 && response.status < 300) {
+    Map<String, dynamic> parsedData() {
       final body = response.data;
-      if (body is Map<String, dynamic>) {
-        return EdgeFunctionResult(success: true, data: body);
-      }
+      if (body is Map<String, dynamic>) return body;
       if (body is String) {
         try {
-          final parsed = json.decode(body) as Map<String, dynamic>;
-          return EdgeFunctionResult(success: true, data: parsed);
+          final parsed = json.decode(body);
+          if (parsed is Map<String, dynamic>) return parsed;
         } catch (_) {
-          return EdgeFunctionResult(success: true, data: {'response': body});
+          // Fall through and wrap the string below.
         }
+        return {'response': body};
       }
-      return const EdgeFunctionResult(success: true, data: {});
+      return {};
+    }
+
+    final data = parsedData();
+    if (response.status >= 200 && response.status < 300) {
+      return EdgeFunctionResult(success: true, data: data);
     }
     return EdgeFunctionResult(
       success: false,
+      data: data,
       error: 'Status ${response.status}: ${response.data}',
     );
   }
@@ -99,8 +104,12 @@ class EdgeFunctionClient {
         final expiresAt = DateTime.fromMillisecondsSinceEpoch(
           session!.expiresAt! * 1000,
         );
-        if (expiresAt.isBefore(DateTime.now().add(const Duration(seconds: 30)))) {
-          AppLogger.info('$_tag Refreshing expired session before $functionName');
+        if (expiresAt.isBefore(
+          DateTime.now().add(const Duration(seconds: 30)),
+        )) {
+          AppLogger.info(
+            '$_tag Refreshing expired session before $functionName',
+          );
           await _client.auth.refreshSession();
         }
       }
@@ -138,7 +147,9 @@ class EdgeFunctionClient {
         AppLogger.warning(
           '$_tag $functionName not deployed (404), treating as unavailable',
         );
-        return EdgeFunctionResult.failure('404 NOT_FOUND: $functionName not deployed');
+        return EdgeFunctionResult.failure(
+          '404 NOT_FOUND: $functionName not deployed',
+        );
       }
 
       // Retry once on 401 instead of forcing re-auth (signOut):
@@ -147,7 +158,9 @@ class EdgeFunctionClient {
       // A session refresh is enough — full re-auth would disrupt the user
       // for a transient relay mismatch, not a real auth failure.
       if (e.status == 401) {
-        AppLogger.warning('$_tag 401 on $functionName — refreshing session and retrying');
+        AppLogger.warning(
+          '$_tag 401 on $functionName — refreshing session and retrying',
+        );
         try {
           await _client.auth.refreshSession();
           final freshToken = _client.auth.currentSession?.accessToken;
@@ -165,7 +178,9 @@ class EdgeFunctionClient {
             if (retryResult.success) {
               AppLogger.info('$_tag $functionName succeeded on retry');
             } else {
-              AppLogger.warning('$_tag $functionName retry failed: ${retryResult.error}');
+              AppLogger.warning(
+                '$_tag $functionName retry failed: ${retryResult.error}',
+              );
             }
             return retryResult;
           } else {
@@ -174,17 +189,23 @@ class EdgeFunctionClient {
             );
           }
         } catch (retryError, retrySt) {
-          AppLogger.error('$_tag $functionName retry also failed', retryError, retrySt);
+          AppLogger.error(
+            '$_tag $functionName retry also failed',
+            retryError,
+            retrySt,
+          );
         }
         // 401 after retry — log warning and add Sentry breadcrumb for
         // observability without creating noise from transient relay issues.
         AppLogger.warning('$_tag $functionName 401 after retry exhausted');
-        Sentry.addBreadcrumb(Breadcrumb(
-          message: '$functionName 401 after session refresh retry',
-          category: 'edge_function',
-          level: SentryLevel.warning,
-          data: {'function': functionName, 'status': 401},
-        ));
+        Sentry.addBreadcrumb(
+          Breadcrumb(
+            message: '$functionName 401 after session refresh retry',
+            category: 'edge_function',
+            level: SentryLevel.warning,
+            data: {'function': functionName, 'status': 401},
+          ),
+        );
         return EdgeFunctionResult.failure('Edge function error: ${e.status}');
       }
 
