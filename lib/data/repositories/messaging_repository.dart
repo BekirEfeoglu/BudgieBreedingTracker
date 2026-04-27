@@ -24,9 +24,9 @@ class MessagingRepository {
     required ConversationRemoteSource conversationSource,
     required MessageRemoteSource messageSource,
     required SupabaseClient client,
-  })  : _conversationSource = conversationSource,
-        _messageSource = messageSource,
-        _client = client;
+  }) : _conversationSource = conversationSource,
+       _messageSource = messageSource,
+       _client = client;
 
   /// Search profiles by display_name or full_name for DM user picker.
   ///
@@ -51,7 +51,9 @@ class MessagingRepository {
     final result = await _client
         .from(SupabaseConstants.profilesTable)
         .select('id, display_name, full_name, email, avatar_url')
-        .or('display_name.ilike.%$sanitized%,full_name.ilike.%$sanitized%,email.ilike.%$sanitized%')
+        .or(
+          'display_name.ilike.%$sanitized%,full_name.ilike.%$sanitized%,email.ilike.%$sanitized%',
+        )
         .neq('id', excludeUserId)
         .limit(limit);
 
@@ -75,8 +77,10 @@ class MessagingRepository {
     required String userId2,
   }) async {
     // Try to find existing
-    final existing =
-        await _conversationSource.findDirectConversation(userId1, userId2);
+    final existing = await _conversationSource.findDirectConversation(
+      userId1,
+      userId2,
+    );
     if (existing != null) return existing['id'] as String;
 
     // Create new — if race condition, retry find
@@ -101,10 +105,16 @@ class MessagingRepository {
       });
 
       return conversationId;
-    } catch (e) {
+    } catch (e, st) {
       // Race condition: another request may have created it — retry find
-      final retryFind =
-          await _conversationSource.findDirectConversation(userId1, userId2);
+      AppLogger.warning(
+        'messaging: Direct conversation create failed, retrying lookup: $e',
+      );
+      AppLogger.debug('messaging: direct conversation retry stack: $st');
+      final retryFind = await _conversationSource.findDirectConversation(
+        userId1,
+        userId2,
+      );
       if (retryFind != null) return retryFind['id'] as String;
       rethrow;
     }
@@ -175,8 +185,7 @@ class MessagingRepository {
   Future<List<ConversationParticipant>> getParticipants(
     String conversationId,
   ) async {
-    final rows =
-        await _conversationSource.fetchParticipants(conversationId);
+    final rows = await _conversationSource.fetchParticipants(conversationId);
     return rows.map((r) => ConversationParticipant.fromJson(r)).toList();
   }
 
@@ -192,15 +201,10 @@ class MessagingRepository {
     });
   }
 
-  Future<void> leaveConversation(
-    String conversationId,
-    String userId,
-  ) async {
-    await _conversationSource.updateParticipant(
-      conversationId,
-      userId,
-      {'is_left': true},
-    );
+  Future<void> leaveConversation(String conversationId, String userId) async {
+    await _conversationSource.updateParticipant(conversationId, userId, {
+      'is_left': true,
+    });
   }
 
   Future<void> updateParticipantRole(
@@ -208,11 +212,9 @@ class MessagingRepository {
     String userId,
     String role,
   ) async {
-    await _conversationSource.updateParticipant(
-      conversationId,
-      userId,
-      {'role': role},
-    );
+    await _conversationSource.updateParticipant(conversationId, userId, {
+      'role': role,
+    });
   }
 
   Future<void> muteConversation(
@@ -220,18 +222,16 @@ class MessagingRepository {
     String userId, {
     required bool muted,
   }) async {
-    await _conversationSource.updateParticipant(
-      conversationId,
-      userId,
-      {'is_muted': muted},
-    );
+    await _conversationSource.updateParticipant(conversationId, userId, {
+      'is_muted': muted,
+    });
   }
 
   /// Subscribe to new messages — returns channel for cleanup.
   ///
   /// Verifies the user is a conversation participant before subscribing.
   /// Returns null if the user is not a member (prevents unauthorized subscriptions).
-  Future<RealtimeChannel?> subscribeToMessages(
+  Future<Object?> subscribeToMessages(
     String conversationId,
     String userId,
     void Function(Message message) onMessage,
@@ -247,38 +247,36 @@ class MessagingRepository {
       );
       return null;
     }
-    return _messageSource.subscribeToMessages(
-      conversationId,
-      (payload) {
-        try {
-          final message = Message.fromJson(payload);
-          onMessage(message);
-        } catch (e, st) {
-          AppLogger.error('messaging', e, st);
-        }
-      },
-    );
+    return _messageSource.subscribeToMessages(conversationId, (payload) {
+      try {
+        final message = Message.fromJson(payload);
+        onMessage(message);
+      } catch (e, st) {
+        AppLogger.error('messaging', e, st);
+      }
+    });
   }
 
   /// Subscribe to conversation updates — returns channel for cleanup
-  RealtimeChannel subscribeToConversationUpdates(
+  Object subscribeToConversationUpdates(
     List<String> conversationIds,
     void Function(Conversation conversation) onUpdate,
   ) {
-    return _messageSource.subscribeToConversationUpdates(
-      conversationIds,
-      (payload) {
-        try {
-          final conversation = Conversation.fromJson(payload);
-          onUpdate(conversation);
-        } catch (e, st) {
-          AppLogger.error('messaging', e, st);
-        }
-      },
-    );
+    return _messageSource.subscribeToConversationUpdates(conversationIds, (
+      payload,
+    ) {
+      try {
+        final conversation = Conversation.fromJson(payload);
+        onUpdate(conversation);
+      } catch (e, st) {
+        AppLogger.error('messaging', e, st);
+      }
+    });
   }
 
-  Future<void> unsubscribe(RealtimeChannel channel) async {
-    await _messageSource.unsubscribe(channel);
+  Future<void> unsubscribe(Object channel) async {
+    if (channel is RealtimeChannel) {
+      await _messageSource.unsubscribe(channel);
+    }
   }
 }

@@ -8,7 +8,6 @@ import '../../../core/utils/logger.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:budgie_breeding_tracker/data/providers/action_feedback_providers.dart';
 import '../../../data/models/profile_model.dart';
-import '../../../data/remote/api/remote_source_providers.dart';
 import '../../../data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/shared/providers/auth.dart';
 import '../providers/profile_providers.dart';
@@ -121,9 +120,6 @@ class _EditProfileSheetState extends ConsumerState<EditProfileSheet> {
           );
 
       await repo.save(updatedProfile);
-
-      // Invalidate community profile cache so updated name shows immediately
-      ref.read(communityProfileCacheProvider).invalidate(userId);
 
       if (mounted) {
         AppHaptics.mediumImpact();

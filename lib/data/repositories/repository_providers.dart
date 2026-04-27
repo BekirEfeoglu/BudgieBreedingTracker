@@ -117,6 +117,8 @@ final profileRepositoryProvider = Provider<ProfileRepository>((ref) {
     localDao: ref.watch(profilesDaoProvider),
     remoteSource: ref.watch(profileRemoteSourceProvider),
     syncDao: ref.watch(syncMetadataDaoProvider),
+    storageService: ref.watch(storageServiceProvider),
+    communityProfileCache: ref.watch(communityProfileCacheProvider),
   );
 });
 
@@ -181,6 +183,7 @@ final communityPostRepositoryProvider = Provider<CommunityPostRepository>((
     socialSource: ref.watch(communitySocialRemoteSourceProvider),
     storageService: ref.watch(storageServiceProvider),
     cache: ref.watch(communityPostCacheProvider),
+    profileCache: ref.watch(communityProfileCacheProvider),
   );
 });
 

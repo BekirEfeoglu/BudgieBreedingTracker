@@ -6,6 +6,7 @@ import '../../core/enums/community_enums.dart';
 import '../models/community_post_model.dart';
 import '../remote/api/community_post_cache.dart';
 import '../remote/api/community_post_remote_source.dart';
+import '../remote/api/community_profile_cache.dart';
 import '../remote/api/community_social_remote_source.dart';
 import '../remote/storage/storage_service.dart';
 
@@ -21,6 +22,7 @@ class CommunityPostRepository {
   final CommunityPostRemoteSource _postSource;
   final CommunitySocialRemoteSource _socialSource;
   final CommunityPostCache? _cache;
+  final CommunityProfileCache? _profileCache;
   final StorageService? _storageService;
 
   const CommunityPostRepository({
@@ -28,10 +30,12 @@ class CommunityPostRepository {
     required CommunitySocialRemoteSource socialSource,
     StorageService? storageService,
     CommunityPostCache? cache,
+    CommunityProfileCache? profileCache,
   }) : _postSource = postSource,
        _socialSource = socialSource,
        _storageService = storageService,
-       _cache = cache;
+       _cache = cache,
+       _profileCache = profileCache;
 
   Future<List<CommunityPost>> getFeed({
     required String currentUserId,
@@ -93,6 +97,35 @@ class CommunityPostRepository {
     });
 
     return posts;
+  }
+
+  Future<List<Map<String, dynamic>>> getFollowedUserSummaries({
+    required String currentUserId,
+  }) async {
+    if (currentUserId == 'anonymous') return [];
+
+    final followedIds = await _socialSource.fetchFollowedUserIds(currentUserId);
+    if (followedIds.isEmpty) return [];
+
+    final profileCache = _profileCache;
+    if (profileCache == null) return [];
+
+    final profiles = await profileCache.getProfiles(followedIds);
+    return followedIds
+        .where((id) => profiles.containsKey(id))
+        .map((id) {
+          final profile = profiles[id]!;
+          return <String, dynamic>{
+            'id': id,
+            'display_name':
+                _asString(profile['display_name']) ??
+                _asString(profile['full_name']) ??
+                _emailPrefix(profile['email']) ??
+                '',
+            'avatar_url': profile['avatar_url'],
+          };
+        })
+        .toList(growable: false);
   }
 
   Future<void> create(Map<String, dynamic> data) async {
@@ -258,6 +291,13 @@ String? _asString(dynamic value) {
   if (value == null) return null;
   final str = value.toString().trim();
   return str.isEmpty ? null : str;
+}
+
+String? _emailPrefix(dynamic email) {
+  final str = _asString(email);
+  if (str == null) return null;
+  final atIndex = str.indexOf('@');
+  return atIndex > 0 ? str.substring(0, atIndex) : null;
 }
 
 int? _asInt(dynamic value) {

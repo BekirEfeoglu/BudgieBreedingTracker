@@ -65,6 +65,9 @@ class CommunitySocialRepository {
   Future<List<String>> fetchBlockedUserIds(String userId) =>
       _source.fetchBlockedUserIds(userId);
 
+  Future<Set<String>> fetchFollowedUserIds(String userId) =>
+      _source.fetchFollowedUserIds(userId);
+
   Future<void> blockUser({
     required String userId,
     required String blockedUserId,

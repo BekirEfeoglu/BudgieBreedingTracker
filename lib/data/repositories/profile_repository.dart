@@ -4,7 +4,10 @@ import 'package:budgie_breeding_tracker/data/local/database/daos/profiles_dao.da
 import 'package:budgie_breeding_tracker/data/local/database/daos/sync_metadata_dao.dart';
 import 'package:budgie_breeding_tracker/data/models/profile_model.dart';
 import 'package:budgie_breeding_tracker/data/models/sync_metadata_model.dart';
+import 'package:budgie_breeding_tracker/data/remote/api/community_profile_cache.dart';
 import 'package:budgie_breeding_tracker/data/remote/api/profile_remote_source.dart';
+import 'package:budgie_breeding_tracker/data/remote/storage/storage_service.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
 
 /// Repository for [Profile] entities.
@@ -18,6 +21,8 @@ class ProfileRepository {
   final ProfilesDao _localDao;
   final ProfileRemoteSource _remoteSource;
   final SyncMetadataDao _syncDao;
+  final StorageService? _storageService;
+  final CommunityProfileCache? _communityProfileCache;
 
   static const _table = SupabaseConstants.profilesTable;
 
@@ -25,9 +30,13 @@ class ProfileRepository {
     required ProfilesDao localDao,
     required ProfileRemoteSource remoteSource,
     required SyncMetadataDao syncDao,
+    StorageService? storageService,
+    CommunityProfileCache? communityProfileCache,
   }) : _localDao = localDao,
        _remoteSource = remoteSource,
-       _syncDao = syncDao;
+       _syncDao = syncDao,
+       _storageService = storageService,
+       _communityProfileCache = communityProfileCache;
 
   /// Watches the current user's profile as a live stream.
   Stream<Profile?> watchProfile(String userId) =>
@@ -42,6 +51,43 @@ class ProfileRepository {
     if (profile.id == 'anonymous') return;
     await _localDao.upsert(profile);
     await _markPending(profile.id);
+    _communityProfileCache?.invalidate(profile.id);
+  }
+
+  /// Uploads the user's avatar and saves the new avatar URL locally.
+  Future<void> uploadAvatar({
+    required String userId,
+    required XFile file,
+  }) async {
+    final storageService = _storageService;
+    if (storageService == null) {
+      throw StateError('Profile storage service is not configured');
+    }
+
+    final avatarUrl = await storageService.uploadAvatar(
+      userId: userId,
+      file: file,
+    );
+
+    final profile = await getById(userId);
+    if (profile != null) {
+      await save(profile.copyWith(avatarUrl: avatarUrl));
+    }
+  }
+
+  /// Removes the user's avatar from storage and clears the local profile URL.
+  Future<void> removeAvatar(String userId) async {
+    final storageService = _storageService;
+    if (storageService == null) {
+      throw StateError('Profile storage service is not configured');
+    }
+
+    await storageService.deleteAvatar(userId: userId);
+
+    final profile = await getById(userId);
+    if (profile != null) {
+      await save(profile.copyWith(avatarUrl: null));
+    }
   }
 
   /// Permanently deletes the local profile.

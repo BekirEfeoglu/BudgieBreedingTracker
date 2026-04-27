@@ -4,7 +4,6 @@ import 'package:sentry_flutter/sentry_flutter.dart';
 import '../../../core/utils/logger.dart';
 import '../../../data/models/community_post_model.dart';
 import '../../../data/providers/auth_state_providers.dart';
-import '../../../data/remote/api/remote_source_providers.dart';
 import '../../../data/repositories/repository_providers.dart';
 import 'community_feed_providers.dart';
 
@@ -152,46 +151,20 @@ final followToggleProvider = NotifierProvider<FollowToggleNotifier, void>(
 
 /// Fetches profiles of users the current user follows.
 /// Returns a list of maps with id, display_name, full_name, email, avatar_url.
-final followedUsersProvider =
-    FutureProvider<List<Map<String, dynamic>>>((ref) async {
+final followedUsersProvider = FutureProvider<List<Map<String, dynamic>>>((
+  ref,
+) async {
   final userId = ref.watch(currentUserIdProvider);
   if (userId == 'anonymous') return [];
 
   try {
-    final socialSource = ref.read(communitySocialRemoteSourceProvider);
-    final profileCache = ref.read(communityProfileCacheProvider);
-
-    final followedIds = await socialSource.fetchFollowedUserIds(userId);
-    if (followedIds.isEmpty) return [];
-
-    final profiles = await profileCache.getProfiles(followedIds);
-    return followedIds
-        .where((id) => profiles.containsKey(id))
-        .map((id) {
-          final p = profiles[id]!;
-          return <String, dynamic>{
-            'id': id,
-            'display_name': p['display_name'] ??
-                p['full_name'] ??
-                _emailPrefix(p['email']) ??
-                '',
-            'avatar_url': p['avatar_url'],
-          };
-        })
-        .toList();
+    final repo = ref.read(communityPostRepositoryProvider);
+    return repo.getFollowedUserSummaries(currentUserId: userId);
   } catch (e, st) {
     AppLogger.error('followedUsersProvider', e, st);
     return [];
   }
 });
-
-String? _emailPrefix(dynamic email) {
-  if (email == null) return null;
-  final str = email.toString().trim();
-  if (str.isEmpty) return null;
-  final atIndex = str.indexOf('@');
-  return atIndex > 0 ? str.substring(0, atIndex) : null;
-}
 
 // ---------------------------------------------------------------------------
 // Bookmarked posts

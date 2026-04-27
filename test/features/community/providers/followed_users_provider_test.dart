@@ -6,27 +6,25 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
-import 'package:budgie_breeding_tracker/data/remote/api/remote_source_providers.dart';
+import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/features/community/providers/community_post_providers.dart';
 
 import '../../../helpers/mocks.dart';
 
 void main() {
-  late MockCommunitySocialRemoteSource mockSocialSource;
-  late MockCommunityProfileCache mockProfileCache;
+  late MockCommunityPostRepository mockCommunityPostRepo;
 
   setUp(() {
-    mockSocialSource = MockCommunitySocialRemoteSource();
-    mockProfileCache = MockCommunityProfileCache();
+    mockCommunityPostRepo = MockCommunityPostRepository();
   });
 
   ProviderContainer createContainer({String userId = 'user-1'}) {
     final container = ProviderContainer(
       overrides: [
         currentUserIdProvider.overrideWithValue(userId),
-        communitySocialRemoteSourceProvider
-            .overrideWithValue(mockSocialSource),
-        communityProfileCacheProvider.overrideWithValue(mockProfileCache),
+        communityPostRepositoryProvider.overrideWithValue(
+          mockCommunityPostRepo,
+        ),
       ],
     );
     addTearDown(container.dispose);
@@ -40,42 +38,41 @@ void main() {
       final result = await container.read(followedUsersProvider.future);
       expect(result, isEmpty);
 
-      verifyNever(() => mockSocialSource.fetchFollowedUserIds(any()));
+      verifyNever(
+        () => mockCommunityPostRepo.getFollowedUserSummaries(
+          currentUserId: any(named: 'currentUserId'),
+        ),
+      );
     });
 
     test('returns empty list when no followed users', () async {
-      when(() => mockSocialSource.fetchFollowedUserIds('user-1'))
-          .thenAnswer((_) async => <String>{});
+      when(
+        () => mockCommunityPostRepo.getFollowedUserSummaries(
+          currentUserId: 'user-1',
+        ),
+      ).thenAnswer((_) async => []);
 
       final container = createContainer();
 
       final result = await container.read(followedUsersProvider.future);
       expect(result, isEmpty);
-
-      verifyNever(() => mockProfileCache.getProfiles(any()));
     });
 
     test('returns followed user profiles', () async {
-      when(() => mockSocialSource.fetchFollowedUserIds('user-1'))
-          .thenAnswer((_) async => {'u2', 'u3'});
-
-      when(() => mockProfileCache.getProfiles({'u2', 'u3'}))
-          .thenAnswer((_) async => {
-                'u2': {
-                  'id': 'u2',
-                  'display_name': 'Alice',
-                  'full_name': 'Alice Smith',
-                  'email': 'alice@test.com',
-                  'avatar_url': 'https://example.com/alice.jpg',
-                },
-                'u3': {
-                  'id': 'u3',
-                  'display_name': null,
-                  'full_name': 'Bob Jones',
-                  'email': 'bob@test.com',
-                  'avatar_url': null,
-                },
-              });
+      when(
+        () => mockCommunityPostRepo.getFollowedUserSummaries(
+          currentUserId: 'user-1',
+        ),
+      ).thenAnswer(
+        (_) async => [
+          {
+            'id': 'u2',
+            'display_name': 'Alice',
+            'avatar_url': 'https://example.com/alice.jpg',
+          },
+          {'id': 'u3', 'display_name': 'Bob Jones', 'avatar_url': null},
+        ],
+      );
 
       final container = createContainer();
 
@@ -94,19 +91,15 @@ void main() {
     });
 
     test('falls back to email prefix when names are null', () async {
-      when(() => mockSocialSource.fetchFollowedUserIds('user-1'))
-          .thenAnswer((_) async => {'u4'});
-
-      when(() => mockProfileCache.getProfiles({'u4'}))
-          .thenAnswer((_) async => {
-                'u4': {
-                  'id': 'u4',
-                  'display_name': null,
-                  'full_name': null,
-                  'email': 'charlie@test.com',
-                  'avatar_url': null,
-                },
-              });
+      when(
+        () => mockCommunityPostRepo.getFollowedUserSummaries(
+          currentUserId: 'user-1',
+        ),
+      ).thenAnswer(
+        (_) async => [
+          {'id': 'u4', 'display_name': 'charlie', 'avatar_url': null},
+        ],
+      );
 
       final container = createContainer();
 
@@ -116,8 +109,11 @@ void main() {
     });
 
     test('returns empty list on error', () async {
-      when(() => mockSocialSource.fetchFollowedUserIds('user-1'))
-          .thenThrow(Exception('network error'));
+      when(
+        () => mockCommunityPostRepo.getFollowedUserSummaries(
+          currentUserId: 'user-1',
+        ),
+      ).thenThrow(Exception('network error'));
 
       final container = createContainer();
 

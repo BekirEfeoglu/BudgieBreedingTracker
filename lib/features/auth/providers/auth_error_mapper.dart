@@ -87,3 +87,9 @@ String mapAuthError(AuthException e) {
 
   return 'auth.error_unknown'.tr();
 }
+
+bool isInvalidCredentialsAuthError(Object error) {
+  if (error is! AuthException) return false;
+  final msg = error.message.toLowerCase();
+  return msg.contains('invalid') || msg.contains('credentials');
+}

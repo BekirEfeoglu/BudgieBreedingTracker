@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../data/models/message_model.dart';
 import '../../../data/repositories/repository_providers.dart';
@@ -7,7 +6,7 @@ import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart
 
 /// Manages realtime message subscription for active chat
 class MessagingRealtimeNotifier extends Notifier<List<Message>> {
-  RealtimeChannel? _channel;
+  Object? _channel;
 
   @override
   List<Message> build() {
@@ -21,13 +20,11 @@ class MessagingRealtimeNotifier extends Notifier<List<Message>> {
     _unsubscribe();
     final repo = ref.read(messagingRepositoryProvider);
     final userId = ref.read(currentUserIdProvider);
-    _channel = await repo.subscribeToMessages(
-      conversationId,
-      userId,
-      (message) {
-        state = [message, ...state];
-      },
-    );
+    _channel = await repo.subscribeToMessages(conversationId, userId, (
+      message,
+    ) {
+      state = [message, ...state];
+    });
   }
 
   void _unsubscribe() {
@@ -50,8 +47,8 @@ class MessagingRealtimeNotifier extends Notifier<List<Message>> {
 
 final messagingRealtimeProvider =
     NotifierProvider<MessagingRealtimeNotifier, List<Message>>(
-  MessagingRealtimeNotifier.new,
-);
+      MessagingRealtimeNotifier.new,
+    );
 
 /// Typing indicator state
 class TypingIndicatorNotifier extends Notifier<Set<String>> {
@@ -88,5 +85,5 @@ class TypingIndicatorNotifier extends Notifier<Set<String>> {
 
 final typingIndicatorProvider =
     NotifierProvider<TypingIndicatorNotifier, Set<String>>(
-  TypingIndicatorNotifier.new,
-);
+      TypingIndicatorNotifier.new,
+    );
