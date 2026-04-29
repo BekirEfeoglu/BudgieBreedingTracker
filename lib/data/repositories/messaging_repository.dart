@@ -38,22 +38,17 @@ class MessagingRepository {
     required String excludeUserId,
     int limit = 20,
   }) async {
-    final trimmed = query.trim();
-    if (trimmed.isEmpty) return [];
-
-    // Sanitize input: escape PostgREST filter metacharacters to prevent
-    // filter injection (commas/dots could alter .or() semantics).
-    final sanitized = trimmed
-        .replaceAll(r'\', r'\\')
-        .replaceAll(',', r'\,')
-        .replaceAll('.', r'\.');
+    final sanitized = query
+        .replaceAll(RegExp(r'[\x00-\x1F\x7F]'), '')
+        .replaceAll(RegExp(r'''[\\%_,.()"';`]'''), ' ')
+        .replaceAll(RegExp(r'\s+'), ' ')
+        .trim();
+    if (sanitized.isEmpty) return [];
 
     final result = await _client
         .from(SupabaseConstants.profilesTable)
-        .select('id, display_name, full_name, email, avatar_url')
-        .or(
-          'display_name.ilike.%$sanitized%,full_name.ilike.%$sanitized%,email.ilike.%$sanitized%',
-        )
+        .select('id, display_name, full_name, avatar_url')
+        .or('display_name.ilike.%$sanitized%,full_name.ilike.%$sanitized%')
         .neq('id', excludeUserId)
         .limit(limit);
 

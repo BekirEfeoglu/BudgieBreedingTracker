@@ -15,7 +15,6 @@ import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_pro
 import 'package:budgie_breeding_tracker/features/marketplace/providers/marketplace_form_providers.dart';
 import 'package:budgie_breeding_tracker/features/marketplace/providers/marketplace_providers.dart';
 import 'package:budgie_breeding_tracker/features/marketplace/screens/marketplace_detail_screen.dart';
-import 'package:budgie_breeding_tracker/features/messaging/providers/messaging_form_providers.dart';
 
 import '../../../helpers/test_localization.dart';
 
@@ -54,9 +53,7 @@ void main() {
     mockRepo = MockMarketplaceRepository();
   });
 
-  Widget buildSubject({
-    required AsyncValue<MarketplaceListing?> listingAsync,
-  }) {
+  Widget buildSubject({required AsyncValue<MarketplaceListing?> listingAsync}) {
     return ProviderScope(
       overrides: [
         currentUserIdProvider.overrideWithValue(_testUserId),
@@ -68,10 +65,9 @@ void main() {
             _ => Completer<MarketplaceListing?>().future,
           },
         ),
-        marketplaceFormStateProvider
-            .overrideWith(() => MarketplaceFormNotifier()),
-        messagingFormStateProvider
-            .overrideWith(() => MessagingFormNotifier()),
+        marketplaceFormStateProvider.overrideWith(
+          () => MarketplaceFormNotifier(),
+        ),
       ],
       child: const MaterialApp(
         home: MarketplaceDetailScreen(listingId: _testListingId),
@@ -80,8 +76,9 @@ void main() {
   }
 
   group('MarketplaceDetailScreen', () {
-    testWidgets('loading state shows CircularProgressIndicator',
-        (tester) async {
+    testWidgets('loading state shows CircularProgressIndicator', (
+      tester,
+    ) async {
       final completer = Completer<MarketplaceListing?>();
 
       await pumpLocalizedApp(
@@ -90,13 +87,12 @@ void main() {
           overrides: [
             currentUserIdProvider.overrideWithValue(_testUserId),
             marketplaceRepositoryProvider.overrideWithValue(mockRepo),
-            marketplaceListingByIdProvider(_testParams).overrideWith(
-              (_) => completer.future,
+            marketplaceListingByIdProvider(
+              _testParams,
+            ).overrideWith((_) => completer.future),
+            marketplaceFormStateProvider.overrideWith(
+              () => MarketplaceFormNotifier(),
             ),
-            marketplaceFormStateProvider
-                .overrideWith(() => MarketplaceFormNotifier()),
-            messagingFormStateProvider
-                .overrideWith(() => MessagingFormNotifier()),
           ],
           child: const MaterialApp(
             home: MarketplaceDetailScreen(listingId: _testListingId),
@@ -114,7 +110,10 @@ void main() {
       await pumpLocalizedApp(
         tester,
         buildSubject(
-          listingAsync: AsyncError(Exception('Network error'), StackTrace.empty),
+          listingAsync: AsyncError(
+            Exception('Network error'),
+            StackTrace.empty,
+          ),
         ),
       );
 
@@ -143,17 +142,18 @@ void main() {
       expect(find.text('Istanbul'), findsOneWidget);
     });
 
-    testWidgets('non-owner sees message seller button', (tester) async {
-      await pumpLocalizedApp(
-        tester,
-        buildSubject(listingAsync: const AsyncData(_sampleListing)),
-      );
+    testWidgets(
+      'non-owner does not see message seller when messaging disabled',
+      (tester) async {
+        await pumpLocalizedApp(
+          tester,
+          buildSubject(listingAsync: const AsyncData(_sampleListing)),
+        );
 
-      // Should find the message seller button (key text)
-      expect(find.text('marketplace.message_seller'), findsOneWidget);
-      // Should NOT find edit/delete buttons
-      expect(find.text('marketplace.edit_listing'), findsNothing);
-    });
+        expect(find.text('marketplace.message_seller'), findsNothing);
+        expect(find.text('marketplace.edit_listing'), findsNothing);
+      },
+    );
 
     testWidgets('owner sees edit and delete buttons', (tester) async {
       await pumpLocalizedApp(

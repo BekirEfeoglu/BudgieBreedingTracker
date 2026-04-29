@@ -17,13 +17,13 @@ void main() {
   setUp(() {
     client = RoutingFakeClient();
 
-    final participants =
-        client.addTable(SupabaseConstants.conversationParticipantsTable);
+    final participants = client.addTable(
+      SupabaseConstants.conversationParticipantsTable,
+    );
     participantsSelect = participants.selectBuilder;
     participantsQuery = participants.queryBuilder;
 
-    final conversations =
-        client.addTable(SupabaseConstants.conversationsTable);
+    final conversations = client.addTable(SupabaseConstants.conversationsTable);
     conversationsSelect = conversations.selectBuilder;
     conversationsQuery = conversations.queryBuilder;
 
@@ -40,10 +40,7 @@ void main() {
     });
 
     test('fetchById applies id filter', () async {
-      conversationsSelect.singleResult = {
-        'id': 'conv-1',
-        'type': 'direct',
-      };
+      conversationsSelect.singleResult = {'id': 'conv-1', 'type': 'direct'};
 
       final result = await source.fetchById('conv-1');
 
@@ -97,22 +94,45 @@ void main() {
     });
 
     test('updateParticipant applies correct filters', () async {
-      await source.updateParticipant(
-        'conv-1',
-        'user-1',
-        {'is_left': true},
-      );
+      await source.updateParticipant('conv-1', 'user-1', {'is_left': true});
 
       final payload = participantsQuery.updatePayload as Map<String, dynamic>;
       expect(payload['is_left'], true);
       final eqKeys = participantsQuery.updateBuilder.eqCalls
           .map((e) => '${e.key}:${e.value}')
           .toList();
-      expect(
-        eqKeys,
-        containsAll(['conversation_id:conv-1', 'user_id:user-1']),
-      );
+      expect(eqKeys, containsAll(['conversation_id:conv-1', 'user_id:user-1']));
     });
+
+    test(
+      'findDirectConversation checks all shared participant conversations',
+      () async {
+        participantsSelect.resultQueue.addAll([
+          [
+            {'conversation_id': 'conv-a'},
+            {'conversation_id': 'conv-b'},
+          ],
+          [
+            {'conversation_id': 'conv-b'},
+          ],
+        ]);
+        conversationsSelect.singleResult = {'id': 'conv-b', 'type': 'direct'};
+
+        final result = await source.findDirectConversation('user-1', 'user-2');
+
+        expect(result, isNotNull);
+        expect(result!['id'], 'conv-b');
+        final eqKeys = participantsSelect.eqCalls
+            .map((e) => '${e.key}:${e.value}')
+            .toList();
+        expect(eqKeys, containsAll(['user_id:user-1', 'user_id:user-2']));
+        expect(participantsSelect.inFilterCalls.single.value, [
+          'conv-a',
+          'conv-b',
+        ]);
+        expect(conversationsSelect.inFilterCalls.single.value, ['conv-b']);
+      },
+    );
 
     test('rethrows on error', () {
       participantsSelect.error = Exception('network error');

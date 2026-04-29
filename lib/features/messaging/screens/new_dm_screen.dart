@@ -53,10 +53,7 @@ class _NewDmScreenState extends ConsumerState<NewDmScreen> {
     try {
       final userId = ref.read(currentUserIdProvider);
       final repo = ref.read(messagingRepositoryProvider);
-      final results = await repo.searchProfiles(
-        query,
-        excludeUserId: userId,
-      );
+      final results = await repo.searchProfiles(query, excludeUserId: userId);
       if (!mounted) return;
       setState(() {
         _results = results;
@@ -90,9 +87,7 @@ class _NewDmScreenState extends ConsumerState<NewDmScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text('messaging.direct_message'.tr()),
-      ),
+      appBar: AppBar(title: Text('messaging.direct_message'.tr())),
       body: Column(
         children: [
           Padding(
@@ -122,7 +117,8 @@ class _NewDmScreenState extends ConsumerState<NewDmScreen> {
               padding: EdgeInsets.all(AppSpacing.xl),
               child: LoadingState(),
             )
-          else if (_results.isEmpty && _searchController.text.trim().length >= 2)
+          else if (_results.isEmpty &&
+              _searchController.text.trim().length >= 2)
             Padding(
               padding: const EdgeInsets.all(AppSpacing.xl),
               child: Text(
@@ -170,18 +166,19 @@ class _UserTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final displayName = (user['display_name'] as String?) ??
+    final displayName =
+        (user['display_name'] as String?) ??
         (user['full_name'] as String?) ??
-        _emailPrefix(user['email'] as String?) ??
-        '';
+        'messaging.unknown_user'.tr();
     final avatarUrl = user['avatar_url'] as String?;
     final initial = displayName.isNotEmpty ? displayName[0].toUpperCase() : '?';
 
     return ListTile(
       leading: CircleAvatar(
         backgroundColor: theme.colorScheme.primaryContainer,
-        backgroundImage:
-            avatarUrl != null ? CachedNetworkImageProvider(avatarUrl) : null,
+        backgroundImage: avatarUrl != null
+            ? CachedNetworkImageProvider(avatarUrl)
+            : null,
         child: avatarUrl == null
             ? Text(
                 initial,
@@ -192,10 +189,7 @@ class _UserTile extends StatelessWidget {
               )
             : null,
       ),
-      title: Text(
-        displayName,
-        overflow: TextOverflow.ellipsis,
-      ),
+      title: Text(displayName, overflow: TextOverflow.ellipsis),
       trailing: isLoading
           ? const SizedBox(
               width: 20,
@@ -209,11 +203,5 @@ class _UserTile extends StatelessWidget {
             ),
       onTap: isLoading ? null : onTap,
     );
-  }
-
-  static String? _emailPrefix(String? email) {
-    if (email == null || email.isEmpty) return null;
-    final atIndex = email.indexOf('@');
-    return atIndex > 0 ? email.substring(0, atIndex) : null;
   }
 }

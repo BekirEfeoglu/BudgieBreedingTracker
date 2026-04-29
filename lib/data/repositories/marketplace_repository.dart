@@ -17,8 +17,8 @@ class MarketplaceRepository {
   const MarketplaceRepository({
     required MarketplaceListingRemoteSource listingSource,
     required MarketplaceFavoriteRemoteSource favoriteSource,
-  })  : _listingSource = listingSource,
-        _favoriteSource = favoriteSource;
+  }) : _listingSource = listingSource,
+       _favoriteSource = favoriteSource;
 
   Future<List<MarketplaceListing>> getListings({
     required String currentUserId,
@@ -46,7 +46,10 @@ class MarketplaceRepository {
     required String id,
     required String currentUserId,
   }) async {
-    final row = await _listingSource.fetchById(id);
+    final row = await _listingSource.fetchById(
+      id,
+      currentUserId: currentUserId,
+    );
     if (row == null) return null;
     final enriched = await _enrichListings([row], currentUserId);
     return enriched.firstOrNull;
@@ -105,15 +108,16 @@ class MarketplaceRepository {
   Future<List<MarketplaceListing>> getFavorites({
     required String currentUserId,
   }) async {
-    final favoritedIds =
-        await _favoriteSource.fetchFavoritedListingIds(currentUserId);
+    final favoritedIds = await _favoriteSource.fetchFavoritedListingIds(
+      currentUserId,
+    );
     if (favoritedIds.isEmpty) return [];
 
     final rows = await _listingSource.fetchByIds(favoritedIds);
     return rows
         .map(
-          (row) => MarketplaceListing.fromJson(row)
-              .copyWith(isFavoritedByMe: true),
+          (row) =>
+              MarketplaceListing.fromJson(row).copyWith(isFavoritedByMe: true),
         )
         .toList();
   }
@@ -147,8 +151,9 @@ class MarketplaceRepository {
 
     List<String> favoritedIds = [];
     try {
-      favoritedIds =
-          await _favoriteSource.fetchFavoritedListingIds(currentUserId);
+      favoritedIds = await _favoriteSource.fetchFavoritedListingIds(
+        currentUserId,
+      );
     } catch (e) {
       AppLogger.warning('marketplace: Failed to fetch favorites: $e');
     }

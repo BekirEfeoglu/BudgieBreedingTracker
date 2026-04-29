@@ -83,13 +83,25 @@ class MarketplaceListingRemoteSource {
     }
   }
 
-  Future<Map<String, dynamic>?> fetchById(String id) async {
+  Future<Map<String, dynamic>?> fetchById(
+    String id, {
+    String? currentUserId,
+  }) async {
     try {
       final response = await _client
           .from(SupabaseConstants.marketplaceListingsTable)
           .select(_selectColumns)
           .eq(SupabaseConstants.colId, id)
+          .eq(SupabaseConstants.colIsDeleted, false)
           .maybeSingle();
+
+      if (response == null) return null;
+      final isActive = response[SupabaseConstants.colStatus] == 'active';
+      final isOwner =
+          currentUserId != null &&
+          response[SupabaseConstants.colUserId] == currentUserId;
+      if (!isActive && !isOwner) return null;
+
       return response;
     } catch (e, st) {
       AppLogger.error('marketplace', e, st);
@@ -105,7 +117,9 @@ class MarketplaceListingRemoteSource {
       final response = await _client
           .from(SupabaseConstants.marketplaceListingsTable)
           .select(_selectColumns)
-          .inFilter(SupabaseConstants.colId, ids);
+          .inFilter(SupabaseConstants.colId, ids)
+          .eq(SupabaseConstants.colIsDeleted, false)
+          .eq(SupabaseConstants.colStatus, 'active');
       final rows = List<Map<String, dynamic>>.from(response);
       final byId = {
         for (final row in rows) row[SupabaseConstants.colId] as String: row,

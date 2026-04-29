@@ -81,7 +81,11 @@ abstract class BaseRemoteSource<T> {
     try {
       final response = await _timed(
         'fetchById',
-        () => table.select().eq('id', id).eq(SupabaseConstants.colUserId, userId).maybeSingle(),
+        () => table
+            .select()
+            .eq('id', id)
+            .eq(SupabaseConstants.colUserId, userId)
+            .maybeSingle(),
       );
       return response != null ? fromJson(response) : null;
     } catch (e, st) {
@@ -98,9 +102,9 @@ abstract class BaseRemoteSource<T> {
   /// Fetches records updated since [since] for a user.
   ///
   /// Paginates automatically when results exceed [_maxIncrementalPullSize]
-  /// (5000 records per batch). Uses cursor-based pagination on `updated_at`
-  /// to fetch all changes since the last sync, up to [_maxPullIterations]
-  /// batches (100k records total) as a safety guard.
+  /// (5000 records per batch). Uses deterministic keyset pagination on
+  /// `updated_at` and `id` to fetch all changes since the last sync, up to
+  /// [_maxPullIterations] batches (100k records total) as a safety guard.
   ///
   /// Note: `is_deleted` filter is intentionally omitted so that cross-device
   /// soft-deletes propagate during incremental sync. The [since] timestamp
@@ -111,17 +115,28 @@ abstract class BaseRemoteSource<T> {
   /// fast even for users with many historical deletions.
   Future<List<T>> fetchUpdatedSince(String userId, DateTime since) async {
     final allResults = <T>[];
-    var cursor = since;
+    var cursorUpdatedAt = since.toIso8601String();
+    String? cursorId;
 
     for (var i = 0; i < _maxPullIterations; i++) {
       try {
+        var query = table.select().eq(SupabaseConstants.colUserId, userId);
+
+        if (cursorId == null) {
+          query = query.gt(SupabaseConstants.colUpdatedAt, cursorUpdatedAt);
+        } else {
+          query = query.or(
+            '${SupabaseConstants.colUpdatedAt}.gt.$cursorUpdatedAt,'
+            'and(${SupabaseConstants.colUpdatedAt}.eq.$cursorUpdatedAt,'
+            '${SupabaseConstants.colId}.gt.$cursorId)',
+          );
+        }
+
         final batch = await _timed(
           'fetchUpdatedSince${i > 0 ? '(page ${i + 1})' : ''}',
-          () => table
-              .select()
-              .eq(SupabaseConstants.colUserId, userId)
-              .gte(SupabaseConstants.colUpdatedAt, cursor.toIso8601String())
+          () => query
               .order(SupabaseConstants.colUpdatedAt)
+              .order(SupabaseConstants.colId)
               .limit(_maxIncrementalPullSize),
         );
         final models = batch.map((json) => fromJson(json)).toList();
@@ -129,10 +144,13 @@ abstract class BaseRemoteSource<T> {
 
         if (batch.length < _maxIncrementalPullSize) break;
 
-        // Advance cursor to last record's updated_at
+        // Advance the compound cursor to the last record in the sorted page.
         final lastUpdatedAt =
             batch.last[SupabaseConstants.colUpdatedAt] as String;
-        cursor = DateTime.parse(lastUpdatedAt);
+        final lastId = batch.last[SupabaseConstants.colId] as String?;
+        if (lastId == null) break;
+        cursorUpdatedAt = lastUpdatedAt;
+        cursorId = lastId;
 
         if (i > 0) {
           AppLogger.info(
@@ -215,7 +233,10 @@ abstract class BaseRemoteSource<T> {
   Future<void> deleteById(String id, {required String userId}) async {
     try {
       await _timed('deleteById', () async {
-        await table.delete().eq('id', id).eq(SupabaseConstants.colUserId, userId);
+        await table
+            .delete()
+            .eq('id', id)
+            .eq(SupabaseConstants.colUserId, userId);
       });
     } catch (e, st) {
       throw handleError(e, st);
@@ -275,38 +296,28 @@ abstract class BaseRemoteSource<T> {
     if (error is PostgrestException) {
       final sanitized = _sanitizeErrorMessage(error.message);
       if (sanitized != error.message) {
-        Sentry.addBreadcrumb(Breadcrumb(
-          message: 'Sanitized DB error',
-          category: 'security',
-          level: SentryLevel.warning,
-        ));
+        Sentry.addBreadcrumb(
+          Breadcrumb(
+            message: 'Sanitized DB error',
+            category: 'security',
+            level: SentryLevel.warning,
+          ),
+        );
       }
 
       final code = error.code ?? '';
 
       // Auth/permission errors
       if (code == 'PGRST301' || code == '42501') {
-        return AuthException(
-          sanitized,
-          code: code,
-          originalError: error,
-        );
+        return AuthException(sanitized, code: code, originalError: error);
       }
 
       // Constraint violations → validation errors
       if (code.startsWith('23')) {
-        return ValidationException(
-          sanitized,
-          code: code,
-          originalError: error,
-        );
+        return ValidationException(sanitized, code: code, originalError: error);
       }
 
-      return NetworkException(
-        sanitized,
-        code: code,
-        originalError: error,
-      );
+      return NetworkException(sanitized, code: code, originalError: error);
     }
 
     if (error is SocketException) {
@@ -318,16 +329,15 @@ abstract class BaseRemoteSource<T> {
     final errorStr = error.toString();
     final sanitized = _sanitizeErrorMessage(errorStr);
     if (sanitized != errorStr) {
-      Sentry.addBreadcrumb(Breadcrumb(
-        message: 'Sanitized DB error',
-        category: 'security',
-        level: SentryLevel.warning,
-      ));
+      Sentry.addBreadcrumb(
+        Breadcrumb(
+          message: 'Sanitized DB error',
+          category: 'security',
+          level: SentryLevel.warning,
+        ),
+      );
     }
-    return NetworkException(
-      sanitized,
-      originalError: error,
-    );
+    return NetworkException(sanitized, originalError: error);
   }
 }
 
@@ -342,7 +352,10 @@ abstract class BaseRemoteSourceNoSoftDelete<T> extends BaseRemoteSource<T> {
     try {
       final response = await _timed(
         'fetchAll',
-        () => table.select().eq(SupabaseConstants.colUserId, userId).order(SupabaseConstants.colCreatedAt),
+        () => table
+            .select()
+            .eq(SupabaseConstants.colUserId, userId)
+            .order(SupabaseConstants.colCreatedAt),
       );
       return response.map((json) => fromJson(json)).toList();
     } catch (e, st) {

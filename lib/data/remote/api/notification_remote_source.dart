@@ -25,10 +25,6 @@ class NotificationRemoteSource extends BaseRemoteSource<AppNotification> {
   /// notifications remain in the DB but require server-side cleanup.
   static const _fetchAllLimit = 500;
 
-  /// Max rows per incremental pull batch. Matches the parent's
-  /// [BaseRemoteSource] internal constant to keep behavior consistent.
-  static const _incrementalPullBatchSize = 5000;
-
   /// Fetches the most recent [_fetchAllLimit] notifications (no `is_deleted`
   /// filter — notifications use hard-delete).
   @override
@@ -39,30 +35,6 @@ class NotificationRemoteSource extends BaseRemoteSource<AppNotification> {
           .eq('user_id', userId)
           .order('created_at', ascending: false)
           .limit(_fetchAllLimit);
-      return response.map((json) => fromJson(json)).toList();
-    } catch (e, st) {
-      throw handleError(e, st);
-    }
-  }
-
-  /// Fetches notifications updated since [since] without `is_deleted` filter.
-  ///
-  /// Notifications table uses hard-delete, so filtering by `is_deleted`
-  /// would fail on projects where the column is absent. Capped at
-  /// [_incrementalPullBatchSize] rows to prevent runaway payloads; callers
-  /// relying on full sync should use repeated pulls with updated cursors.
-  @override
-  Future<List<AppNotification>> fetchUpdatedSince(
-    String userId,
-    DateTime since,
-  ) async {
-    try {
-      final response = await table
-          .select()
-          .eq('user_id', userId)
-          .gte('updated_at', since.toIso8601String())
-          .order('updated_at')
-          .limit(_incrementalPullBatchSize);
       return response.map((json) => fromJson(json)).toList();
     } catch (e, st) {
       throw handleError(e, st);

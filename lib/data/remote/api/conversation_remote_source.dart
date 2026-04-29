@@ -144,28 +144,30 @@ class ConversationRemoteSource {
 
       if (user1ConvoIds.isEmpty) return null;
 
-      // Find direct conversations where user2 is also a participant
+      final user2Convos = await _client
+          .from(SupabaseConstants.conversationParticipantsTable)
+          .select('conversation_id')
+          .inFilter('conversation_id', user1ConvoIds)
+          .eq('user_id', userId2)
+          .eq('is_left', false);
+
+      final sharedConvoIds = List<String>.from(
+        (user2Convos as List).map((r) => r['conversation_id'] as String),
+      );
+
+      if (sharedConvoIds.isEmpty) return null;
+
+      // Find any direct conversation shared by both users.
       final result = await _client
           .from(SupabaseConstants.conversationsTable)
           .select()
-          .inFilter('id', user1ConvoIds)
+          .inFilter('id', sharedConvoIds)
           .eq('type', 'direct')
           .eq('is_deleted', false)
           .limit(1)
           .maybeSingle();
 
-      if (result == null) return null;
-
-      // Verify user2 is in this conversation
-      final user2Check = await _client
-          .from(SupabaseConstants.conversationParticipantsTable)
-          .select('conversation_id')
-          .eq('conversation_id', result['id'])
-          .eq('user_id', userId2)
-          .eq('is_left', false)
-          .maybeSingle();
-
-      return user2Check != null ? result : null;
+      return result;
     } catch (e, st) {
       AppLogger.error('messaging', e, st);
       rethrow;

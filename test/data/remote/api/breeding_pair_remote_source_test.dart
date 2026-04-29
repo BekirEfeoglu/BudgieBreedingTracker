@@ -46,16 +46,16 @@ void main() {
       expect(selectBuilder.orderCalls, contains('created_at'));
     });
 
-    test('fetchUpdatedSince applies updated_at gte', () async {
+    test('fetchUpdatedSince applies updated_at gt', () async {
       selectBuilder.result = const [];
       final since = DateTime(2024, 1, 10);
 
       await source.fetchUpdatedSince('user-1', since);
 
-      final gteKeys = selectBuilder.gteCalls
+      final gtKeys = selectBuilder.gtCalls
           .map((entry) => '${entry.key}:${entry.value}')
           .toList();
-      expect(gteKeys, contains('updated_at:${since.toIso8601String()}'));
+      expect(gtKeys, contains('updated_at:${since.toIso8601String()}'));
     });
 
     test('upsert serializes breeding pair payload', () async {

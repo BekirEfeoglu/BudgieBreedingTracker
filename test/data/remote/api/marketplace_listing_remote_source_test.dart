@@ -130,8 +130,12 @@ void main() {
       expect(selectBuilder.limitValue, 10);
     });
 
-    test('fetchById applies id filter with maybeSingle', () async {
-      selectBuilder.singleResult = {'id': 'l1', 'title': 'Blue Budgie'};
+    test('fetchById applies id and deleted filters with maybeSingle', () async {
+      selectBuilder.singleResult = {
+        'id': 'l1',
+        'title': 'Blue Budgie',
+        'status': 'active',
+      };
 
       final result = await source.fetchById('l1');
 
@@ -140,7 +144,46 @@ void main() {
       final eqKeys = selectBuilder.eqCalls
           .map((e) => '${e.key}:${e.value}')
           .toList();
-      expect(eqKeys, contains('id:l1'));
+      expect(eqKeys, containsAll(['id:l1', 'is_deleted:false']));
+    });
+
+    test('fetchById hides inactive listing from non-owner', () async {
+      selectBuilder.singleResult = {
+        'id': 'l1',
+        'user_id': 'seller-1',
+        'status': 'sold',
+      };
+
+      final result = await source.fetchById('l1', currentUserId: 'buyer-1');
+
+      expect(result, isNull);
+    });
+
+    test('fetchById allows inactive listing for owner', () async {
+      selectBuilder.singleResult = {
+        'id': 'l1',
+        'user_id': 'seller-1',
+        'status': 'sold',
+      };
+
+      final result = await source.fetchById('l1', currentUserId: 'seller-1');
+
+      expect(result, isNotNull);
+      expect(result!['id'], 'l1');
+    });
+
+    test('fetchByIds filters deleted and inactive listings', () async {
+      selectBuilder.result = [
+        {'id': 'l1', 'title': 'Blue Budgie'},
+      ];
+
+      final result = await source.fetchByIds(['l1', 'l2']);
+
+      expect(result, hasLength(1));
+      final eqKeys = selectBuilder.eqCalls
+          .map((e) => '${e.key}:${e.value}')
+          .toList();
+      expect(eqKeys, containsAll(['is_deleted:false', 'status:active']));
     });
 
     test('fetchByUser filters by user_id and is_deleted', () async {

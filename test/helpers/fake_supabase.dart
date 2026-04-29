@@ -12,11 +12,13 @@ class FakeFilterBuilder<T> extends Fake implements PostgrestFilterBuilder<T> {
   FakeFilterBuilder({this.result, this.error});
 
   T? result;
+  final resultQueue = <T>[];
   Object? error;
   final eqCalls = <MapEntry<String, Object>>[];
   final gtCalls = <MapEntry<String, Object>>[];
   final gteCalls = <MapEntry<String, Object>>[];
   final inFilterCalls = <MapEntry<String, List<dynamic>>>[];
+  final neqCalls = <MapEntry<String, Object>>[];
   final orderCalls = <String>[];
   final ltCalls = <MapEntry<String, Object>>[];
   final lteCalls = <MapEntry<String, Object>>[];
@@ -44,6 +46,12 @@ class FakeFilterBuilder<T> extends Fake implements PostgrestFilterBuilder<T> {
   @override
   PostgrestFilterBuilder<T> inFilter(String column, List<dynamic> values) {
     inFilterCalls.add(MapEntry(column, values));
+    return this;
+  }
+
+  @override
+  PostgrestFilterBuilder<T> neq(String column, Object value) {
+    neqCalls.add(MapEntry(column, value));
     return this;
   }
 
@@ -86,13 +94,16 @@ class FakeFilterBuilder<T> extends Fake implements PostgrestFilterBuilder<T> {
   ///
   /// When set, [maybeSingle] returns this value. When null, returns null.
   Map<String, dynamic>? singleResult;
+  final singleResultQueue = <Map<String, dynamic>?>[];
 
   @override
   PostgrestTransformBuilder<Map<String, dynamic>?> maybeSingle() {
     // Return a FakeFilterBuilder<Map<String, dynamic>?> that resolves with
     // singleResult. We reuse the error field for error propagation.
     final builder = FakeFilterBuilder<Map<String, dynamic>?>(
-      result: singleResult,
+      result: singleResultQueue.isNotEmpty
+          ? singleResultQueue.removeAt(0)
+          : singleResult,
       error: error,
     );
     return builder;
@@ -105,6 +116,11 @@ class FakeFilterBuilder<T> extends Fake implements PostgrestFilterBuilder<T> {
   }) {
     if (error != null) {
       return Future<T>.error(error!).then(onValue, onError: onError);
+    }
+    if (resultQueue.isNotEmpty) {
+      return Future<T>.value(
+        resultQueue.removeAt(0),
+      ).then(onValue, onError: onError);
     }
     return Future<T>.value(result as T).then(onValue, onError: onError);
   }
@@ -131,10 +147,13 @@ class FakeQueryBuilder extends Fake implements SupabaseQueryBuilder {
   Object? upsertPayload;
   Object? insertPayload;
   Object? updatePayload;
+  String? selectedColumns;
 
   @override
-  PostgrestFilterBuilder<PostgrestList> select([String columns = '*']) =>
-      selectBuilder;
+  PostgrestFilterBuilder<PostgrestList> select([String columns = '*']) {
+    selectedColumns = columns;
+    return selectBuilder;
+  }
 
   @override
   PostgrestFilterBuilder<dynamic> upsert(

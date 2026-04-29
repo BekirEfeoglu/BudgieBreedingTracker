@@ -51,10 +51,10 @@ void main() {
 
       await source.fetchUpdatedSince('user-1', since);
 
-      final gteKeys = selectBuilder.gteCalls
+      final gtKeys = selectBuilder.gtCalls
           .map((entry) => '${entry.key}:${entry.value}')
           .toList();
-      expect(gteKeys, contains('updated_at:${since.toIso8601String()}'));
+      expect(gtKeys, contains('updated_at:${since.toIso8601String()}'));
     });
 
     test('upsert sends serialized event reminder payload', () async {

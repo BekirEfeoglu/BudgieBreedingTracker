@@ -32,31 +32,30 @@ Map<String, dynamic> _makeListingRow({
   bool isDeleted = false,
   bool needsReview = false,
   List<String> imageUrls = const [],
-}) =>
-    {
-      'id': id,
-      'user_id': userId,
-      'title': title,
-      'description': description,
-      'price': price,
-      'currency': currency,
-      'listing_type': listingType,
-      'gender': gender,
-      'species': species,
-      'mutation': null,
-      'bird_id': null,
-      'age': null,
-      'image_urls': imageUrls,
-      'city': city,
-      'status': status,
-      'view_count': viewCount,
-      'message_count': messageCount,
-      'is_verified_breeder': isVerifiedBreeder,
-      'is_deleted': isDeleted,
-      'needs_review': needsReview,
-      'created_at': '2026-04-01T10:00:00Z',
-      'updated_at': '2026-04-01T10:00:00Z',
-    };
+}) => {
+  'id': id,
+  'user_id': userId,
+  'title': title,
+  'description': description,
+  'price': price,
+  'currency': currency,
+  'listing_type': listingType,
+  'gender': gender,
+  'species': species,
+  'mutation': null,
+  'bird_id': null,
+  'age': null,
+  'image_urls': imageUrls,
+  'city': city,
+  'status': status,
+  'view_count': viewCount,
+  'message_count': messageCount,
+  'is_verified_breeder': isVerifiedBreeder,
+  'is_deleted': isDeleted,
+  'needs_review': needsReview,
+  'created_at': '2026-04-01T10:00:00Z',
+  'updated_at': '2026-04-01T10:00:00Z',
+};
 
 void main() {
   late MockMarketplaceListingRemoteSource listingSource;
@@ -182,9 +181,7 @@ void main() {
           minPrice: null,
           maxPrice: null,
         ),
-      ).thenAnswer(
-        (_) async => [_makeListingRow(id: 'l1')],
-      );
+      ).thenAnswer((_) async => [_makeListingRow(id: 'l1')]);
 
       when(
         () => favoriteSource.fetchFavoritedListingIds(any()),
@@ -199,9 +196,7 @@ void main() {
 
   group('getById', () {
     test('returns enriched listing when found', () async {
-      when(
-        () => listingSource.fetchById('l1'),
-      ).thenAnswer(
+      when(() => listingSource.fetchById('l1', currentUserId: 'u1')).thenAnswer(
         (_) async => _makeListingRow(id: 'l1', title: 'Rare Budgie'),
       );
 
@@ -209,10 +204,7 @@ void main() {
         () => favoriteSource.fetchFavoritedListingIds('u1'),
       ).thenAnswer((_) async => ['l1']);
 
-      final listing = await repository.getById(
-        id: 'l1',
-        currentUserId: 'u1',
-      );
+      final listing = await repository.getById(id: 'l1', currentUserId: 'u1');
 
       expect(listing, isNotNull);
       expect(listing!.id, 'l1');
@@ -222,7 +214,7 @@ void main() {
 
     test('returns null when not found', () async {
       when(
-        () => listingSource.fetchById('missing'),
+        () => listingSource.fetchById('missing', currentUserId: 'u1'),
       ).thenAnswer((_) async => null);
 
       final listing = await repository.getById(
@@ -233,21 +225,20 @@ void main() {
       expect(listing, isNull);
     });
 
-    test('returns listing with isFavoritedByMe false when not favorited',
-        () async {
-      when(
-        () => listingSource.fetchById('l1'),
-      ).thenAnswer((_) async => _makeListingRow(id: 'l1'));
-      stubFavoritesEmpty();
+    test(
+      'returns listing with isFavoritedByMe false when not favorited',
+      () async {
+        when(
+          () => listingSource.fetchById('l1', currentUserId: 'u1'),
+        ).thenAnswer((_) async => _makeListingRow(id: 'l1'));
+        stubFavoritesEmpty();
 
-      final listing = await repository.getById(
-        id: 'l1',
-        currentUserId: 'u1',
-      );
+        final listing = await repository.getById(id: 'l1', currentUserId: 'u1');
 
-      expect(listing, isNotNull);
-      expect(listing!.isFavoritedByMe, isFalse);
-    });
+        expect(listing, isNotNull);
+        expect(listing!.isFavoritedByMe, isFalse);
+      },
+    );
   });
 
   group('getByUser', () {
@@ -270,9 +261,7 @@ void main() {
     });
 
     test('returns empty list when user has no listings', () async {
-      when(
-        () => listingSource.fetchByUser('u2'),
-      ).thenAnswer((_) async => []);
+      when(() => listingSource.fetchByUser('u2')).thenAnswer((_) async => []);
 
       final listings = await repository.getByUser(
         userId: 'u2',
@@ -303,9 +292,9 @@ void main() {
     });
 
     test('rethrows on insert failure', () async {
-      when(() => listingSource.insert(any())).thenThrow(
-        Exception('Insert failed'),
-      );
+      when(
+        () => listingSource.insert(any()),
+      ).thenThrow(Exception('Insert failed'));
 
       expect(
         () => repository.create({'title': 'Fail'}),
@@ -315,25 +304,31 @@ void main() {
   });
 
   group('updateListing', () {
-    test('delegates to listingSource.update and returns updated model',
-        () async {
-      final data = {'title': 'Updated Title'};
+    test(
+      'delegates to listingSource.update and returns updated model',
+      () async {
+        final data = {'title': 'Updated Title'};
 
-      when(() => listingSource.update('l1', data, userId: 'u1')).thenAnswer(
-        (_) async => _makeListingRow(id: 'l1', title: 'Updated Title'),
-      );
+        when(() => listingSource.update('l1', data, userId: 'u1')).thenAnswer(
+          (_) async => _makeListingRow(id: 'l1', title: 'Updated Title'),
+        );
 
-      final listing = await repository.updateListing('l1', data, userId: 'u1');
+        final listing = await repository.updateListing(
+          'l1',
+          data,
+          userId: 'u1',
+        );
 
-      expect(listing.id, 'l1');
-      expect(listing.title, 'Updated Title');
-      verify(() => listingSource.update('l1', data, userId: 'u1')).called(1);
-    });
+        expect(listing.id, 'l1');
+        expect(listing.title, 'Updated Title');
+        verify(() => listingSource.update('l1', data, userId: 'u1')).called(1);
+      },
+    );
 
     test('rethrows on update failure', () async {
-      when(() => listingSource.update(any(), any(), userId: any(named: 'userId'))).thenThrow(
-        Exception('Update failed'),
-      );
+      when(
+        () => listingSource.update(any(), any(), userId: any(named: 'userId')),
+      ).thenThrow(Exception('Update failed'));
 
       expect(
         () => repository.updateListing('l1', {'title': 'Fail'}, userId: 'u1'),
@@ -344,7 +339,9 @@ void main() {
 
   group('delete', () {
     test('delegates to listingSource.softDelete', () async {
-      when(() => listingSource.softDelete('l1', userId: 'u1')).thenAnswer((_) async {});
+      when(
+        () => listingSource.softDelete('l1', userId: 'u1'),
+      ).thenAnswer((_) async {});
 
       await repository.delete('l1', userId: 'u1');
 
@@ -352,9 +349,9 @@ void main() {
     });
 
     test('rethrows on delete failure', () async {
-      when(() => listingSource.softDelete(any(), userId: any(named: 'userId'))).thenThrow(
-        Exception('Delete failed'),
-      );
+      when(
+        () => listingSource.softDelete(any(), userId: any(named: 'userId')),
+      ).thenThrow(Exception('Delete failed'));
 
       expect(
         () => repository.delete('l1', userId: 'u1'),
@@ -371,7 +368,9 @@ void main() {
 
       await repository.updateStatus('l1', 'sold', userId: 'u1');
 
-      verify(() => listingSource.updateStatus('l1', 'sold', userId: 'u1')).called(1);
+      verify(
+        () => listingSource.updateStatus('l1', 'sold', userId: 'u1'),
+      ).called(1);
     });
   });
 
@@ -437,9 +436,7 @@ void main() {
   group('search', () {
     test('returns matching enriched listings', () async {
       when(() => listingSource.search('mavi', limit: 20)).thenAnswer(
-        (_) async => [
-          _makeListingRow(id: 'l1', title: 'Mavi Muhabbet Kusu'),
-        ],
+        (_) async => [_makeListingRow(id: 'l1', title: 'Mavi Muhabbet Kusu')],
       );
 
       when(
@@ -475,11 +472,7 @@ void main() {
       ).thenAnswer((_) async => []);
       stubFavoritesEmpty();
 
-      await repository.search(
-        query: 'budgie',
-        currentUserId: 'u1',
-        limit: 10,
-      );
+      await repository.search(query: 'budgie', currentUserId: 'u1', limit: 10);
 
       verify(() => listingSource.search('budgie', limit: 10)).called(1);
     });
@@ -531,7 +524,7 @@ void main() {
     });
 
     test('parses listing fields correctly', () async {
-      when(() => listingSource.fetchById('l1')).thenAnswer(
+      when(() => listingSource.fetchById('l1', currentUserId: 'u1')).thenAnswer(
         (_) async => _makeListingRow(
           id: 'l1',
           title: 'Beautiful Budgie',
@@ -544,10 +537,7 @@ void main() {
       );
       stubFavoritesEmpty();
 
-      final listing = await repository.getById(
-        id: 'l1',
-        currentUserId: 'u1',
-      );
+      final listing = await repository.getById(id: 'l1', currentUserId: 'u1');
 
       expect(listing, isNotNull);
       expect(listing!.price, 350.0);
