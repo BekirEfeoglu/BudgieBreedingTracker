@@ -59,6 +59,7 @@
 </head>
 <body>
 
+  <a href="#main-content" class="skip-link">İçeriğe geç</a>
   <div class="page-curtain" aria-hidden="true"></div>
   <div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
   <!-- cursor-glow removed for performance -->
@@ -66,33 +67,8 @@
   <!-- Background Layer -->
   <div class="bg-layer" aria-hidden="true"></div>
 
-  <!-- Decorative Orbs -->
-  <div class="orb orb-1" aria-hidden="true"></div>
-  <div class="orb orb-2" aria-hidden="true"></div>
-  <div class="orb orb-3" aria-hidden="true"></div>
-
-  <!-- Floating Particles -->
-  <div class="particles" aria-hidden="true">
-    <div class="particle leaf"></div>
-    <div class="particle"></div>
-    <div class="particle leaf"></div>
-    <div class="particle feather"></div>
-    <div class="particle leaf"></div>
-    <div class="particle"></div>
-  </div>
-
-  <!-- Sparkle Stars -->
-  <div class="sparkles" aria-hidden="true">
-    <div class="sparkle star" style="--star-size: 14px;"></div>
-    <div class="sparkle"></div>
-    <div class="sparkle star" style="--star-size: 10px;"></div>
-    <div class="sparkle"></div>
-    <div class="sparkle star" style="--star-size: 12px;"></div>
-    <div class="sparkle"></div>
-  </div>
-
   <!-- Navbar -->
-  <nav id="navbar" class="fixed top-0 left-0 right-0 z-50 transition-all duration-300" style="background: rgba(15,27,77,0.8); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid rgba(140,180,220,0.15);">
+  <nav id="navbar" class="fixed top-0 left-0 right-0 z-50 transition-all duration-300" style="background: rgba(15,27,77,0.8); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid rgba(140,180,220,0.15);" aria-label="Ana gezinme">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex items-center justify-between h-16">
         <!-- Logo -->
@@ -104,24 +80,24 @@
 
         <!-- Nav Links (desktop) -->
         <div class="hidden md:flex items-center gap-6">
-          <a href="#features" class="nav-link text-sm font-medium transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="nav_features">Ozellikler</a>
-          <a href="#how-it-works" class="nav-link text-sm font-medium transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="nav_how">Nasil Calisir?</a>
+          <a href="#features" class="nav-link text-sm font-medium transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="nav_features">Özellikler</a>
+          <a href="#how-it-works" class="nav-link text-sm font-medium transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="nav_how">Nasıl Çalışır?</a>
           <a href="/user-guide/" class="nav-link text-sm font-medium transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="nav_user_guide">Kullanım Kılavuzu</a>
-          <a href="#screenshots" class="nav-link text-sm font-medium transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="nav_screenshots">Ekran Goruntuleri</a>
-          <a href="#pricing" class="nav-link text-sm font-medium transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="nav_pricing">Fiyatlandirma</a>
+          <a href="#screenshots" class="nav-link text-sm font-medium transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="nav_screenshots">Ekran Görüntüleri</a>
+          <a href="#pricing" class="nav-link text-sm font-medium transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="nav_pricing">Fiyatlandırma</a>
           <a href="#faq" class="nav-link text-sm font-medium transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="faq_badge">SSS</a>
-          <a href="#cta" class="text-sm font-semibold px-4 py-2 rounded-lg transition-all duration-200" style="background: linear-gradient(135deg, var(--leaf-mid), var(--leaf-dark)); color: var(--gold-light); border: 1px solid rgba(245,200,66,0.3);" data-i18n="nav_download">Indir</a>
+          <a href="#cta" class="text-sm font-semibold px-4 py-2 rounded-lg transition-all duration-200" style="background: linear-gradient(135deg, var(--leaf-mid), var(--leaf-dark)); color: var(--gold-light); border: 1px solid rgba(245,200,66,0.3);" data-i18n="nav_download">İndir</a>
         </div>
 
         <!-- Language Switcher + Hamburger -->
         <div class="flex items-center gap-2">
-          <div class="flex items-center gap-1 rounded-lg p-1" style="background: rgba(20,50,100,0.4); border: 1px solid var(--glass-border);">
-            <button onclick="setLanguage('tr')" class="lang-btn active" data-lang="tr">TR</button>
-            <button onclick="setLanguage('en')" class="lang-btn" data-lang="en">EN</button>
-            <button onclick="setLanguage('de')" class="lang-btn" data-lang="de">DE</button>
+          <div class="flex items-center gap-1 rounded-lg p-1" style="background: rgba(20,50,100,0.4); border: 1px solid var(--glass-border);" role="group" aria-label="Dil seçimi">
+            <button type="button" onclick="setLanguage('tr')" class="lang-btn active" data-lang="tr" aria-pressed="true">TR</button>
+            <button type="button" onclick="setLanguage('en')" class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
+            <button type="button" onclick="setLanguage('de')" class="lang-btn" data-lang="de" aria-pressed="false">DE</button>
           </div>
           <!-- Hamburger (mobile only) -->
-          <button id="hamburger-btn" class="md:hidden p-2 rounded-lg transition-colors" style="color: var(--sage);" onclick="toggleMobileMenu()" aria-label="Menü aç/kapat">
+          <button id="hamburger-btn" type="button" class="md:hidden p-2 rounded-lg transition-colors" style="color: var(--sage);" onclick="toggleMobileMenu()" aria-label="Menüyü aç" aria-controls="mobile-menu" aria-expanded="false">
             <svg id="hamburger-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
             </svg>
@@ -135,7 +111,7 @@
   </nav>
 
   <!-- Mobile Menu Panel -->
-  <div id="mobile-menu" class="fixed inset-0 z-40 hidden" aria-hidden="true">
+  <div id="mobile-menu" class="fixed inset-0 z-40 hidden" inert>
     <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="closeMobileMenu()"></div>
     <div id="mobile-panel" class="absolute top-16 left-0 right-0 shadow-xl" style="background: rgba(15,27,77,0.95); backdrop-filter: blur(20px); border-bottom: 1px solid var(--glass-border); transform: translateY(-110%);">
       <div class="px-4 py-4 space-y-1">
@@ -153,43 +129,33 @@
   </div>
 
   <!-- Hero Section -->
-  <section class="hero-gradient pt-28 pb-16 sm:pt-36 sm:pb-24 overflow-hidden min-h-[90vh] flex items-center">
+  <section id="main-content" class="hero-gradient pt-28 pb-16 sm:pt-36 sm:pb-24 overflow-hidden min-h-[90vh] flex items-center" tabindex="-1">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full">
-      <!-- Floating particles -->
-      <div class="floating-particle w-3 h-3 top-20 left-[10%] animate-float opacity-40" style="position:absolute;"></div>
-      <div class="floating-particle w-5 h-5 top-40 right-[15%] animate-float-delayed opacity-30" style="position:absolute;"></div>
-      <div class="floating-particle w-4 h-4 bottom-20 left-[20%] animate-float-slow opacity-35" style="position:absolute;"></div>
-      <!-- Extra animated blobs -->
-      <div class="morph-blob w-48 h-48 top-10 right-[5%] opacity-50" style="position:absolute;animation-delay:-4s;"></div>
-      <div class="morph-blob w-64 h-64 bottom-0 left-[5%] opacity-40" style="position:absolute;animation-delay:-8s;"></div>
-      <div class="floating-particle w-2 h-2 top-[60%] right-[30%] animate-float opacity-25" style="position:absolute;animation-delay:-3s;"></div>
-      <div class="floating-particle w-6 h-6 top-[30%] left-[35%] animate-float-slow opacity-20" style="position:absolute;animation-delay:-5s;"></div>
-
       <div class="flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
         <!-- Hero Text -->
         <div class="flex-1 text-center lg:text-left">
           <div class="inline-flex items-center gap-2 px-4 py-2 backdrop-blur rounded-full mb-6 shadow-sm opacity-0 animate-fade-up" style="background: rgba(20,50,100,0.4); border: 1px solid var(--glass-border);">
             <span class="w-2 h-2 rounded-full animate-pulse-soft" style="background: var(--leaf-light);"></span>
-            <span class="text-xs font-semibold tracking-wide uppercase" style="color: var(--gold);" data-i18n="hero_badge">Yetistiriciler Icin Tasarlandi</span>
+            <span class="text-xs font-semibold tracking-wide uppercase" style="color: var(--gold);" data-i18n="hero_badge">Yetiştiriciler İçin Tasarlandı</span>
           </div>
 
           <h1 class="hero-title text-4xl sm:text-5xl lg:text-6xl font-black leading-[1.1] tracking-tight mb-6">
-            <span class="hero-word" style="color: var(--sage-light); animation-delay: 0.5s;" data-i18n="hero_title_1">Muhabbet Kusu</span><br>
-            <span class="hero-word gradient-text" style="animation-delay: 0.7s;" data-i18n="hero_title_2">Ureme Takibi</span><br>
-            <span class="hero-word" style="color: var(--sage-light); animation-delay: 0.9s;" data-i18n="hero_title_3">Artik Kolay</span>
+            <span class="hero-word" style="color: var(--sage-light); animation-delay: 0.5s;" data-i18n="hero_title_1">Muhabbet Kuşu</span><br>
+            <span class="hero-word gradient-text" style="animation-delay: 0.7s;" data-i18n="hero_title_2">Üreme Takibi</span><br>
+            <span class="hero-word" style="color: var(--sage-light); animation-delay: 0.9s;" data-i18n="hero_title_3">Artık Kolay</span>
           </h1>
 
           <p class="text-lg sm:text-xl max-w-lg mx-auto lg:mx-0 mb-10 leading-relaxed opacity-0 animate-fade-up-delay-2" style="color: var(--sage);" data-i18n="hero_subtitle">
-            Kuslarinizi, yumurtalarinizi, yavrularinizi ve genetik hesaplamarinizi tek bir uygulamada yonetin. Offline calisin, verileriniz guvende kalsin.
+            Kuşlarınızı, yumurtalarınızı, yavrularınızı ve genetik hesaplamalarınızı tek bir uygulamada yönetin. Offline çalışın, verileriniz güvende kalsın.
           </p>
 
           <div class="flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start opacity-0 animate-fade-up-delay-3">
             <a href="#cta" class="group inline-flex items-center gap-2.5 px-8 py-4 btn-shimmer rounded-2xl transition-all hover:scale-[1.02] magnetic-btn cta-primary-enhanced" style="box-shadow: 0 8px 32px rgba(245,200,66,0.2);">
               <svg class="w-5 h-5 transition-transform group-hover:-translate-y-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-              <span data-i18n="hero_cta_primary">Uygulamayi Indir</span>
+              <span data-i18n="hero_cta_primary">Uygulamayı İndir</span>
             </a>
             <a href="#features" class="group inline-flex items-center gap-2 px-8 py-4 backdrop-blur font-semibold rounded-2xl transition-all hover:shadow-md" style="background: rgba(20,50,100,0.35); color: var(--gold-light); border: 1px solid var(--glass-border);" onmouseover="this.style.borderColor='var(--glass-border-hover)'" onmouseout="this.style.borderColor='var(--glass-border)'">
-              <span data-i18n="hero_cta_secondary">Ozellikleri Kesfet</span>
+              <span data-i18n="hero_cta_secondary">Özellikleri Keşfet</span>
               <svg class="w-4 h-4 transition-transform group-hover:translate-y-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
             </a>
           </div>
@@ -212,23 +178,29 @@
                 <!-- Mock stats inside phone -->
                 <div class="w-full space-y-2.5 px-1">
                   <div class="flex items-center gap-3 rounded-xl p-3 shadow-sm" style="background: rgba(220,235,250,0.9); border: 1px solid rgba(180,210,240,0.6);">
-                    <div class="w-9 h-9 rounded-lg flex items-center justify-center text-base" style="background: rgba(80,140,220,0.15);">🐦</div>
+                    <div class="w-9 h-9 rounded-lg flex items-center justify-center" style="background: rgba(80,140,220,0.15); color: #3366B8;">
+                      <svg class="icon-svg" aria-hidden="true" viewBox="0 0 24 24"><path d="M14 5.5c2.8.4 5 2.8 5 5.7 0 3.5-3 6.3-6.8 6.3H7.8a3.8 3.8 0 0 1 0-7.6h1.4A5.6 5.6 0 0 1 14 5.5Z"/><path d="M15.5 8.8h.01"/><path d="M17.9 11.1h2.1l-1.8 1.3"/></svg>
+                    </div>
                     <div class="flex-1">
-                      <div class="text-[11px]" style="color: #6B8AAE;" data-i18n="phone_birds">Kuslarim</div>
+                      <div class="text-[11px]" style="color: #6B8AAE;" data-i18n="phone_birds">Kuşlarım</div>
                       <div class="text-sm font-bold" style="color: #1E3F7A;">24</div>
                     </div>
                     <div class="text-[10px] font-semibold" style="color: #3366B8;">+3</div>
                   </div>
                   <div class="flex items-center gap-3 rounded-xl p-3 shadow-sm" style="background: rgba(220,235,250,0.9); border: 1px solid rgba(180,210,240,0.6);">
-                    <div class="w-9 h-9 rounded-lg flex items-center justify-center text-base" style="background: rgba(220,80,120,0.12);">💕</div>
+                    <div class="w-9 h-9 rounded-lg flex items-center justify-center" style="background: rgba(220,80,120,0.12); color: #C43F73;">
+                      <svg class="icon-svg" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 19s-6.5-3.9-8.5-7.5C2 8.7 3.5 6 6.3 6c1.6 0 2.7.8 3.4 1.8C10.4 6.8 11.5 6 13.1 6c2.8 0 4.3 2.7 2.8 5.5C14 15.1 12 19 12 19Z"/><path d="M17.5 6.3c1.8.3 3 2.1 2.2 4.1"/></svg>
+                    </div>
                     <div class="flex-1">
-                      <div class="text-[11px]" style="color: #6B8AAE;" data-i18n="phone_pairs">Ciftler</div>
+                      <div class="text-[11px]" style="color: #6B8AAE;" data-i18n="phone_pairs">Çiftler</div>
                       <div class="text-sm font-bold" style="color: #1E3F7A;">8</div>
                     </div>
                     <div class="text-[10px] font-semibold" style="color: #3366B8;">+1</div>
                   </div>
                   <div class="flex items-center gap-3 rounded-xl p-3 shadow-sm" style="background: rgba(220,235,250,0.9); border: 1px solid rgba(180,210,240,0.6);">
-                    <div class="w-9 h-9 rounded-lg flex items-center justify-center text-base" style="background: rgba(245,200,66,0.15);">🥚</div>
+                    <div class="w-9 h-9 rounded-lg flex items-center justify-center" style="background: rgba(245,200,66,0.15); color: #D4940A;">
+                      <svg class="icon-svg" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 3.5c3.3 0 6 4.4 6 9.1 0 4.9-2.5 7.9-6 7.9s-6-3-6-7.9c0-4.7 2.7-9.1 6-9.1Z"/></svg>
+                    </div>
                     <div class="flex-1">
                       <div class="text-[11px]" style="color: #6B8AAE;" data-i18n="phone_eggs">Yumurtalar</div>
                       <div class="text-sm font-bold" style="color: #1E3F7A;">15</div>
@@ -236,7 +208,9 @@
                     <div class="text-[10px] font-semibold" style="color: #D4940A;" data-i18n="phone_eggs_incubating">5 kuluçka</div>
                   </div>
                   <div class="flex items-center gap-3 rounded-xl p-3 shadow-sm" style="background: rgba(220,235,250,0.9); border: 1px solid rgba(180,210,240,0.6);">
-                    <div class="w-9 h-9 rounded-lg flex items-center justify-center text-base" style="background: rgba(80,200,120,0.12);">🐥</div>
+                    <div class="w-9 h-9 rounded-lg flex items-center justify-center" style="background: rgba(80,200,120,0.12); color: #238A57;">
+                      <svg class="icon-svg" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 7.5c3 0 5.5 2.3 5.5 5.3 0 3.4-2.4 5.7-5.5 5.7s-5.5-2.3-5.5-5.7c0-3 2.5-5.3 5.5-5.3Z"/><path d="M10 7.7 8.9 5"/><path d="M14 7.7 15.1 5"/><path d="M10 12h.01"/><path d="M14 12h.01"/><path d="M11 14.4h2"/></svg>
+                    </div>
                     <div class="flex-1">
                       <div class="text-[11px]" style="color: #6B8AAE;" data-i18n="phone_chicks">Yavrular</div>
                       <div class="text-sm font-bold" style="color: #1E3F7A;">12</div>
@@ -250,7 +224,7 @@
             <!-- Animated SVG Budgie — top-right -->
             <div class="absolute -top-16 -right-6 sm:-right-14 z-10">
               <div class="budgie-hero">
-                <span class="budgie-heart" aria-hidden="true">💛</span>
+                <span class="budgie-heart" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 20s-7.4-4.7-9.2-9C1.6 8.2 3.1 5.5 6 5.5c1.8 0 3.1 1 4 2.3 0.9-1.3 2.2-2.3 4-2.3 2.9 0 4.4 2.7 3.2 5.5C19.4 15.3 12 20 12 20Z"/></svg></span>
                 <svg class="budgie-svg" viewBox="0 0 130 160" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Animated budgie">
                   <ellipse cx="65" cy="152" rx="28" ry="5" fill="rgba(0,0,0,0.2)"/>
                   <g><path d="M52 118 Q44 138 38 148 Q50 140 56 124 Z" fill="#1A3A6B"/><path d="M58 120 Q55 142 52 152 Q62 143 64 124 Z" fill="#2D5A9E"/><path d="M66 120 Q68 143 68 153 Q74 143 72 124 Z" fill="#1A3A6B"/><path d="M72 118 Q80 138 86 148 Q76 140 70 124 Z" fill="#4A8FD4"/></g>
@@ -280,7 +254,9 @@
             <!-- Floating badge — bottom-left -->
             <div class="absolute -bottom-2 -left-6 sm:-left-10 rounded-2xl p-3 shadow-xl animate-float-slow z-10" style="background: rgba(18,30,65,0.9); backdrop-filter: blur(12px); border: 1px solid var(--glass-border);">
               <div class="flex items-center gap-2">
-                <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: rgba(30,70,140,0.4);">☁️</div>
+                <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: rgba(30,70,140,0.4); color: var(--sage-light);">
+                  <svg class="icon-svg" aria-hidden="true" viewBox="0 0 24 24"><path d="M7.5 18h9a4 4 0 0 0 .6-8A5.8 5.8 0 0 0 6 11.6 3.2 3.2 0 0 0 7.5 18Z"/></svg>
+                </div>
                 <div>
                   <div class="text-[10px]" style="color: var(--sage);">Sync</div>
                   <div class="text-xs font-bold" style="color: var(--leaf-light);">Online ✓</div>
@@ -298,23 +274,23 @@
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex flex-wrap items-center justify-center gap-6 sm:gap-12 text-sm" style="color: var(--sage);">
         <div class="flex items-center gap-2">
-          <span class="text-xl">🔒</span>
-          <span class="font-medium" data-i18n="trust_1">AES-256 Sifreleme</span>
+          <svg class="trust-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M7 11V8a5 5 0 0 1 10 0v3"/><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M12 15v2"/></svg>
+          <span class="font-medium" data-i18n="trust_1">AES-256 Şifreleme</span>
         </div>
         <div class="w-px h-5 hidden sm:block" style="background: var(--glass-border);"></div>
         <div class="flex items-center gap-2">
-          <span class="text-xl">📱</span>
+          <svg class="trust-icon" aria-hidden="true" viewBox="0 0 24 24"><rect x="7" y="2.5" width="10" height="19" rx="2"/><path d="M11 18.5h2"/></svg>
           <span class="font-medium" data-i18n="trust_2">iOS & Android</span>
         </div>
         <div class="w-px h-5 hidden sm:block" style="background: var(--glass-border);"></div>
         <div class="flex items-center gap-2">
-          <span class="text-xl">🌐</span>
-          <span class="font-medium" data-i18n="trust_3">3 Dil Destegi</span>
+          <svg class="trust-icon" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a13.5 13.5 0 0 1 0 18"/><path d="M12 3a13.5 13.5 0 0 0 0 18"/></svg>
+          <span class="font-medium" data-i18n="trust_3">3 Dil Desteği</span>
         </div>
         <div class="w-px h-5 hidden sm:block" style="background: var(--glass-border);"></div>
         <div class="flex items-center gap-2">
-          <span class="text-xl">⚡</span>
-          <span class="font-medium" data-i18n="trust_4">Offline Calisir</span>
+          <svg class="trust-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z"/></svg>
+          <span class="font-medium" data-i18n="trust_4">Offline Çalışır</span>
         </div>
       </div>
     </div>
@@ -326,10 +302,10 @@
       <!-- Section Header -->
       <div class="text-center mb-16 reveal">
         <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full mb-4" style="background: rgba(30,70,140,0.2); border: 1px solid var(--glass-border);">
-          <span class="text-xs font-semibold uppercase tracking-wider" style="color: var(--gold);" data-i18n="features_badge">Ozellikler</span>
+          <span class="text-xs font-semibold uppercase tracking-wider" style="color: var(--gold);" data-i18n="features_badge">Özellikler</span>
         </div>
-        <h2 class="text-3xl sm:text-4xl lg:text-5xl font-black mb-4 tracking-tight heading-reveal" style="color: var(--sage-light);" data-i18n="features_title">Her Sey Tek Uygulamada</h2>
-        <p class="text-lg max-w-2xl mx-auto leading-relaxed" style="color: var(--sage);" data-i18n="features_subtitle">Profesyonel yetistiricilik icin ihtiyaciniz olan tum araclar, akilli ve kullanimi kolay bir arayuzle.</p>
+        <h2 class="text-3xl sm:text-4xl lg:text-5xl font-black mb-4 tracking-tight heading-reveal" style="color: var(--sage-light);" data-i18n="features_title">Her Şey Tek Uygulamada</h2>
+        <p class="text-lg max-w-2xl mx-auto leading-relaxed" style="color: var(--sage);" data-i18n="features_subtitle">Profesyonel yetiştiricilik için ihtiyacınız olan tüm araçlar, akıllı ve kullanımı kolay bir arayüzle.</p>
       </div>
 
       <!-- Feature Cards Grid -->
@@ -337,87 +313,87 @@
 
         <!-- Feature 1 -->
         <div class="feature-card-enhanced reveal-scale stagger-1">
-          <div class="feature-icon mb-5" style="background: rgba(30,70,140,0.3);">🐦</div>
-          <h3 class="text-lg font-bold mb-2" style="color: var(--sage-light);" data-i18n="feature_1_title">Kus Takibi</h3>
-          <p class="text-sm leading-relaxed" style="color: var(--sage);" data-i18n="feature_1_desc">Tum kuslarinizi halka numarasi, cinsiyet, mutasyon ve fotograflariyla detayli kayit altina alin.</p>
+          <div class="feature-icon mb-5" style="background: rgba(30,70,140,0.3);"><svg class="icon-svg" aria-hidden="true" viewBox="0 0 24 24"><path d="M14 5.5c2.8.4 5 2.8 5 5.7 0 3.5-3 6.3-6.8 6.3H7.8a3.8 3.8 0 0 1 0-7.6h1.4A5.6 5.6 0 0 1 14 5.5Z"/><path d="M15.5 8.8h.01"/><path d="M17.9 11.1h2.1l-1.8 1.3"/></svg></div>
+          <h3 class="text-lg font-bold mb-2" style="color: var(--sage-light);" data-i18n="feature_1_title">Kuş Takibi</h3>
+          <p class="text-sm leading-relaxed" style="color: var(--sage);" data-i18n="feature_1_desc">Tüm kuşlarınızı halka numarası, cinsiyet, mutasyon ve fotoğraflarıyla detaylı kayıt altına alın.</p>
         </div>
 
         <!-- Feature 2 -->
         <div class="feature-card-enhanced reveal-scale stagger-2">
-          <div class="feature-icon mb-5" style="background: rgba(30,70,140,0.3);">💕</div>
-          <h3 class="text-lg font-bold mb-2" style="color: var(--sage-light);" data-i18n="feature_2_title">Ureme Yonetimi</h3>
-          <p class="text-sm leading-relaxed" style="color: var(--sage);" data-i18n="feature_2_desc">Ciftlestirme, yumurta takibi, kulucka sureci ve yavru gelisimini adim adim izleyin.</p>
+          <div class="feature-icon mb-5" style="background: rgba(30,70,140,0.3);"><svg class="icon-svg" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 19s-6.5-3.9-8.5-7.5C2 8.7 3.5 6 6.3 6c1.6 0 2.7.8 3.4 1.8C10.4 6.8 11.5 6 13.1 6c2.8 0 4.3 2.7 2.8 5.5C14 15.1 12 19 12 19Z"/><path d="M17.5 6.3c1.8.3 3 2.1 2.2 4.1"/></svg></div>
+          <h3 class="text-lg font-bold mb-2" style="color: var(--sage-light);" data-i18n="feature_2_title">Üreme Yönetimi</h3>
+          <p class="text-sm leading-relaxed" style="color: var(--sage);" data-i18n="feature_2_desc">Çiftleştirme, yumurta takibi, kuluçka süreci ve yavru gelişimini adım adım izleyin.</p>
         </div>
 
         <!-- Feature 3 -->
         <div class="feature-card-enhanced reveal-scale stagger-3 relative">
-          <div class="premium-badge">⭐ <span data-i18n="badge_premium">Premium</span></div>
-          <div class="feature-icon mb-5" style="background: rgba(245,200,66,0.15);">🧬</div>
-          <h3 class="text-lg font-bold mb-2" style="color: var(--sage-light);" data-i18n="feature_3_title">Genetik Hesaplayici</h3>
-          <p class="text-sm leading-relaxed" style="color: var(--sage);" data-i18n="feature_3_desc">Punnett karesi ile mutasyon tahminleri yapin, genotip analizi ve soy agaci olusturun.</p>
+          <div class="premium-badge"><svg class="premium-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3l-5.6 2.9 1.1-6.2L3 9.6l6.2-.9L12 3Z"/></svg><span data-i18n="badge_premium">Premium</span></div>
+          <div class="feature-icon mb-5" style="background: rgba(245,200,66,0.15);"><svg class="icon-svg" aria-hidden="true" viewBox="0 0 24 24"><path d="M7 3c6 4 10 10 10 18"/><path d="M17 3C11 7 7 13 7 21"/><path d="M8.6 7h6.8"/><path d="M6.8 12h10.4"/><path d="M8.6 17h6.8"/></svg></div>
+          <h3 class="text-lg font-bold mb-2" style="color: var(--sage-light);" data-i18n="feature_3_title">Genetik Hesaplayıcı</h3>
+          <p class="text-sm leading-relaxed" style="color: var(--sage);" data-i18n="feature_3_desc">Punnett karesi ile mutasyon tahminleri yapın, genotip analizi ve soy ağacı oluşturun.</p>
         </div>
 
         <!-- Feature 4 -->
         <div class="feature-card-enhanced reveal-scale stagger-4">
-          <div class="feature-icon mb-5" style="background: rgba(30,70,140,0.3);">❤️‍🩹</div>
-          <h3 class="text-lg font-bold mb-2" style="color: var(--sage-light);" data-i18n="feature_4_title">Saglik Kayitlari</h3>
-          <p class="text-sm leading-relaxed" style="color: var(--sage);" data-i18n="feature_4_desc">Veteriner ziyaretleri, tedaviler ve saglik gecmisini kaydedin. Hatirlaticilarla hicbir seyi kacirmayin.</p>
+          <div class="feature-icon mb-5" style="background: rgba(30,70,140,0.3);"><svg class="icon-svg" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 21s-7-4.4-9-9c-1.4-3.1.4-6 3.6-6 1.7 0 3 1 3.8 2.1C11.2 7 12.5 6 14.2 6c3.2 0 5 2.9 3.6 6-2 4.6-5.8 9-5.8 9Z"/><path d="M12 10v6"/><path d="M9 13h6"/></svg></div>
+          <h3 class="text-lg font-bold mb-2" style="color: var(--sage-light);" data-i18n="feature_4_title">Sağlık Kayıtları</h3>
+          <p class="text-sm leading-relaxed" style="color: var(--sage);" data-i18n="feature_4_desc">Veteriner ziyaretleri, tedaviler ve sağlık geçmişini kaydedin. Hatırlatıcılarla hiçbir şeyi kaçırmayın.</p>
         </div>
 
         <!-- Feature 5 -->
         <div class="feature-card-enhanced reveal-scale stagger-5">
-          <div class="feature-icon mb-5" style="background: rgba(30,70,140,0.3);">☁️</div>
+          <div class="feature-icon mb-5" style="background: rgba(30,70,140,0.3);"><svg class="icon-svg" aria-hidden="true" viewBox="0 0 24 24"><path d="M7.5 18h9a4 4 0 0 0 .6-8A5.8 5.8 0 0 0 6 11.6 3.2 3.2 0 0 0 7.5 18Z"/><path d="M8 14h8"/></svg></div>
           <h3 class="text-lg font-bold mb-2" style="color: var(--sage-light);" data-i18n="feature_5_title">Offline-First & Sync</h3>
-          <p class="text-sm leading-relaxed" style="color: var(--sage);" data-i18n="feature_5_desc">Internet olmadan da calisin. Baglanti geldiginde verileriniz otomatik olarak senkronize edilir.</p>
+          <p class="text-sm leading-relaxed" style="color: var(--sage);" data-i18n="feature_5_desc">İnternet olmadan da çalışın. Bağlantı geldiğinde verileriniz otomatik olarak senkronize edilir.</p>
         </div>
 
         <!-- Feature 6 -->
         <div class="feature-card-enhanced reveal-scale stagger-6">
-          <div class="feature-icon mb-5" style="background: rgba(245,200,66,0.15);">🌍</div>
-          <h3 class="text-lg font-bold mb-2" style="color: var(--sage-light);" data-i18n="feature_6_title">Cok Dilli Destek</h3>
-          <p class="text-sm leading-relaxed" style="color: var(--sage);" data-i18n="feature_6_desc">Turkce, Ingilizce ve Almanca dil destegi. Uygulama dilinizi istediginiz zaman degistirin.</p>
+          <div class="feature-icon mb-5" style="background: rgba(245,200,66,0.15);"><svg class="icon-svg" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a13.5 13.5 0 0 1 0 18"/><path d="M12 3a13.5 13.5 0 0 0 0 18"/></svg></div>
+          <h3 class="text-lg font-bold mb-2" style="color: var(--sage-light);" data-i18n="feature_6_title">Çok Dilli Destek</h3>
+          <p class="text-sm leading-relaxed" style="color: var(--sage);" data-i18n="feature_6_desc">Türkçe, İngilizce ve Almanca dil desteği. Uygulama dilinizi istediğiniz zaman değiştirin.</p>
         </div>
 
         <!-- Feature 7 — Statistics (Premium) -->
         <div class="feature-card-enhanced reveal-scale stagger-7 relative">
-          <div class="premium-badge">⭐ <span data-i18n="badge_premium">Premium</span></div>
-          <div class="feature-icon mb-5" style="background: rgba(245,200,66,0.15);">📈</div>
+          <div class="premium-badge"><svg class="premium-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3l-5.6 2.9 1.1-6.2L3 9.6l6.2-.9L12 3Z"/></svg><span data-i18n="badge_premium">Premium</span></div>
+          <div class="feature-icon mb-5" style="background: rgba(245,200,66,0.15);"><svg class="icon-svg" aria-hidden="true" viewBox="0 0 24 24"><path d="M4 19V5"/><path d="M4 19h16"/><path d="m7 15 4-4 3 3 5-7"/></svg></div>
           <h3 class="text-lg font-bold mb-2" style="color: var(--sage-light);" data-i18n="feature_7_title">İstatistikler</h3>
           <p class="text-sm leading-relaxed" style="color: var(--sage);" data-i18n="feature_7_desc">Üreme başarı oranları, yavru gelişim grafikleri ve kapsamlı analitik raporlar ile veriye dayalı kararlar alın.</p>
         </div>
 
         <!-- Feature 8 — Genealogy (Premium) -->
         <div class="feature-card-enhanced reveal-scale stagger-8 relative">
-          <div class="premium-badge">⭐ <span data-i18n="badge_premium">Premium</span></div>
-          <div class="feature-icon mb-5" style="background: rgba(245,200,66,0.15);">🌳</div>
+          <div class="premium-badge"><svg class="premium-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3l-5.6 2.9 1.1-6.2L3 9.6l6.2-.9L12 3Z"/></svg><span data-i18n="badge_premium">Premium</span></div>
+          <div class="feature-icon mb-5" style="background: rgba(245,200,66,0.15);"><svg class="icon-svg" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="5" r="2"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/><path d="M12 7v4"/><path d="M12 11 6 16"/><path d="M12 11 18 16"/></svg></div>
           <h3 class="text-lg font-bold mb-2" style="color: var(--sage-light);" data-i18n="feature_8_title">Soy Ağacı</h3>
           <p class="text-sm leading-relaxed" style="color: var(--sage);" data-i18n="feature_8_desc">Kuşlarınızın soy ağacını görselleştirin, akrabalık ilişkilerini ve genetik geçmişi interaktif olarak keşfedin.</p>
         </div>
 
         <!-- Feature 9 — Calendar & Reminders -->
         <div class="feature-card-enhanced reveal-scale stagger-9">
-          <div class="feature-icon mb-5" style="background: rgba(30,70,140,0.3);">📅</div>
+          <div class="feature-icon mb-5" style="background: rgba(30,70,140,0.3);"><svg class="icon-svg" aria-hidden="true" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4"/><path d="M16 3v4"/><path d="M4 10h16"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/></svg></div>
           <h3 class="text-lg font-bold mb-2" style="color: var(--sage-light);" data-i18n="feature_9_title">Takvim & Hatırlatıcılar</h3>
           <p class="text-sm leading-relaxed" style="color: var(--sage);" data-i18n="feature_9_desc">Kuluçka tarihleri, veteriner randevuları ve tüm etkinlikleri takvimde görün. Akıllı hatırlatıcılarla hiçbir şeyi kaçırmayın.</p>
         </div>
 
         <!-- Feature 10 — Backup & Export -->
         <div class="feature-card-enhanced reveal-scale stagger-10">
-          <div class="feature-icon mb-5" style="background: rgba(30,70,140,0.3);">💾</div>
+          <div class="feature-icon mb-5" style="background: rgba(30,70,140,0.3);"><svg class="icon-svg" aria-hidden="true" viewBox="0 0 24 24"><path d="M5 4h11l3 3v13H5Z"/><path d="M8 4v6h8V4"/><path d="M8 20v-5h8v5"/></svg></div>
           <h3 class="text-lg font-bold mb-2" style="color: var(--sage-light);" data-i18n="feature_10_title">Yedekleme & Dışa Aktarma</h3>
           <p class="text-sm leading-relaxed" style="color: var(--sage);" data-i18n="feature_10_desc">Verilerinizi PDF ve Excel olarak dışa aktarın. AES-256 şifreli yedeklerle veri güvenliğinizi sağlayın.</p>
         </div>
 
         <!-- Feature 11 — Community -->
         <div class="feature-card-enhanced reveal-scale stagger-1">
-          <div class="feature-icon mb-5" style="background: rgba(30,70,140,0.3);">👥</div>
+          <div class="feature-icon mb-5" style="background: rgba(30,70,140,0.3);"><svg class="icon-svg" aria-hidden="true" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3.5 19c.8-3.5 3-5 5.5-5s4.7 1.5 5.5 5"/><path d="M14.5 14.5c2.4.2 4.2 1.6 5 4.5"/></svg></div>
           <h3 class="text-lg font-bold mb-2" style="color: var(--sage-light);" data-i18n="feature_11_title">Topluluk</h3>
           <p class="text-sm leading-relaxed" style="color: var(--sage);" data-i18n="feature_11_desc">Diğer yetiştiricilerle deneyimlerinizi paylaşın, sorular sorun ve bilgi alışverişinde bulunun.</p>
         </div>
 
         <!-- Feature 12 — Marketplace -->
         <div class="feature-card-enhanced reveal-scale stagger-2">
-          <div class="feature-icon mb-5" style="background: rgba(30,70,140,0.3);">🏪</div>
+          <div class="feature-icon mb-5" style="background: rgba(30,70,140,0.3);"><svg class="icon-svg" aria-hidden="true" viewBox="0 0 24 24"><path d="M4 9h16l-1.2-5H5.2Z"/><path d="M6 9v11h12V9"/><path d="M9 20v-6h6v6"/><path d="M4 9c0 1.3 1.1 2.4 2.4 2.4S8.8 10.3 8.8 9"/><path d="M8.8 9c0 1.3 1.1 2.4 2.4 2.4s2.4-1.1 2.4-2.4"/><path d="M13.6 9c0 1.3 1.1 2.4 2.4 2.4s2.4-1.1 2.4-2.4"/></svg></div>
           <h3 class="text-lg font-bold mb-2" style="color: var(--sage-light);" data-i18n="feature_12_title">Pazar Yeri</h3>
           <p class="text-sm leading-relaxed" style="color: var(--sage);" data-i18n="feature_12_desc">Kuşlarınızı satışa çıkarın veya diğer yetiştiricilerin ilanlarını keşfedin. Güvenli mesajlaşma ile iletişim kurun.</p>
         </div>
@@ -432,10 +408,10 @@
       <!-- Section Header -->
       <div class="text-center mb-14 reveal">
         <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full mb-4" style="background: rgba(30,70,140,0.2); border: 1px solid var(--glass-border);">
-          <span class="text-xs font-semibold uppercase tracking-wider" style="color: var(--gold);" data-i18n="screenshots_badge">Ekran Goruntuleri</span>
+          <span class="text-xs font-semibold uppercase tracking-wider" style="color: var(--gold);" data-i18n="screenshots_badge">Ekran Görüntüleri</span>
         </div>
-        <h2 class="text-3xl sm:text-4xl lg:text-5xl font-black mb-4 tracking-tight heading-reveal" style="color: var(--sage-light);" data-i18n="screenshots_title">Uygulamayi Kesfet</h2>
-        <p class="text-lg max-w-2xl mx-auto leading-relaxed" style="color: var(--sage);" data-i18n="screenshots_subtitle">Guclu ozellikleri, temiz arayuzu ve sezgisel tasarimiyla tanisin.</p>
+        <h2 class="text-3xl sm:text-4xl lg:text-5xl font-black mb-4 tracking-tight heading-reveal" style="color: var(--sage-light);" data-i18n="screenshots_title">Uygulamayı Keşfet</h2>
+        <p class="text-lg max-w-2xl mx-auto leading-relaxed" style="color: var(--sage);" data-i18n="screenshots_subtitle">Güçlü özellikleri, temiz arayüzü ve sezgisel tasarımıyla tanışın.</p>
       </div>
 
       <!-- Screenshot Carousel -->
@@ -515,13 +491,13 @@
       <!-- Screenshot labels -->
       <div class="flex flex-wrap items-center justify-center gap-3 mt-10 reveal" style="transition-delay: 0.25s;">
         <span class="ss-label-pill" data-i18n="ss_label_dashboard">Ana Sayfa</span>
-        <span class="ss-label-pill" data-i18n="ss_label_birds">Kus Yonetimi</span>
-        <span class="ss-label-pill" data-i18n="ss_label_breeding">Ureme Takibi</span>
+        <span class="ss-label-pill" data-i18n="ss_label_birds">Kuş Yönetimi</span>
+        <span class="ss-label-pill" data-i18n="ss_label_breeding">Üreme Takibi</span>
         <span class="ss-label-pill" data-i18n="ss_label_chicks">Yavrular</span>
         <span class="ss-label-pill" data-i18n="ss_label_calendar">Takvim</span>
-        <span class="ss-label-pill" data-i18n="ss_label_health">Saglik Kayitlari</span>
-        <span class="ss-label-pill premium" data-i18n="ss_label_statistics">Istatistikler</span>
-        <span class="ss-label-pill premium" data-i18n="ss_label_genealogy">Soy Agaci</span>
+        <span class="ss-label-pill" data-i18n="ss_label_health">Sağlık Kayıtları</span>
+        <span class="ss-label-pill premium" data-i18n="ss_label_statistics">İstatistikler</span>
+        <span class="ss-label-pill premium" data-i18n="ss_label_genealogy">Soy Ağacı</span>
         <span class="ss-label-pill premium" data-i18n="ss_label_genetics">Genetik</span>
         <span class="ss-label-pill" data-i18n="ss_label_settings">Ayarlar</span>
       </div>
@@ -541,7 +517,7 @@
       <div class="flex flex-col md:flex-row items-center justify-center reveal" style="transition-delay: 0.1s;">
         <!-- Step 1 -->
         <div class="flex flex-col items-center text-center flex-1 px-6 max-w-xs">
-          <div class="w-20 h-20 rounded-2xl flex items-center justify-center text-4xl mb-4 shadow-sm step-icon-wiggle" style="background: rgba(30,70,140,0.25); border: 1px solid var(--glass-border);">📥</div>
+          <div class="w-20 h-20 rounded-2xl flex items-center justify-center mb-4 shadow-sm step-icon-wiggle" style="background: rgba(30,70,140,0.25); border: 1px solid var(--glass-border); color: var(--leaf-light);"><svg class="step-svg" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 3v11"/><path d="m7 10 5 5 5-5"/><path d="M5 20h14"/></svg></div>
           <div class="w-9 h-9 rounded-full flex items-center justify-center font-black text-base mb-4 shadow-lg" style="background: var(--leaf-mid); color: var(--forest-deep);">1</div>
           <h3 class="text-xl font-bold mb-2" style="color: var(--sage-light);" data-i18n="how_step1_title">İndir</h3>
           <p class="text-sm leading-relaxed" style="color: var(--sage);" data-i18n="how_step1_desc">Uygulamayı iOS veya Android cihazınıza ücretsiz indirin ve hesabınızı oluşturun.</p>
@@ -557,7 +533,7 @@
 
         <!-- Step 2 -->
         <div class="flex flex-col items-center text-center flex-1 px-6 max-w-xs">
-          <div class="w-20 h-20 rounded-2xl flex items-center justify-center text-4xl mb-4 shadow-sm step-icon-wiggle" style="background: rgba(30,70,140,0.25); border: 1px solid var(--glass-border);">🐦</div>
+          <div class="w-20 h-20 rounded-2xl flex items-center justify-center mb-4 shadow-sm step-icon-wiggle" style="background: rgba(30,70,140,0.25); border: 1px solid var(--glass-border); color: var(--leaf-light);"><svg class="step-svg" aria-hidden="true" viewBox="0 0 24 24"><path d="M14 5.5c2.8.4 5 2.8 5 5.7 0 3.5-3 6.3-6.8 6.3H7.8a3.8 3.8 0 0 1 0-7.6h1.4A5.6 5.6 0 0 1 14 5.5Z"/><path d="M15.5 8.8h.01"/><path d="M17.9 11.1h2.1l-1.8 1.3"/></svg></div>
           <div class="w-9 h-9 rounded-full flex items-center justify-center font-black text-base mb-4 shadow-lg" style="background: var(--leaf-light); color: var(--forest-deep);">2</div>
           <h3 class="text-xl font-bold mb-2" style="color: var(--sage-light);" data-i18n="how_step2_title">Kuşlarını Ekle</h3>
           <p class="text-sm leading-relaxed" style="color: var(--sage);" data-i18n="how_step2_desc">Kuşlarınızı, çiftleştirme kayıtlarınızı ve yumurtalarınızı kolayca profile edin.</p>
@@ -573,7 +549,7 @@
 
         <!-- Step 3 -->
         <div class="flex flex-col items-center text-center flex-1 px-6 max-w-xs">
-          <div class="w-20 h-20 rounded-2xl flex items-center justify-center text-4xl mb-4 shadow-sm step-icon-wiggle" style="background: rgba(245,200,66,0.15); border: 1px solid rgba(245,200,66,0.2);">📊</div>
+          <div class="w-20 h-20 rounded-2xl flex items-center justify-center mb-4 shadow-sm step-icon-wiggle" style="background: rgba(245,200,66,0.15); border: 1px solid rgba(245,200,66,0.2); color: var(--gold-light);"><svg class="step-svg" aria-hidden="true" viewBox="0 0 24 24"><path d="M4 19V5"/><path d="M4 19h16"/><path d="M8 16v-4"/><path d="M12 16V8"/><path d="M16 16v-6"/></svg></div>
           <div class="w-9 h-9 rounded-full flex items-center justify-center font-black text-base mb-4 shadow-lg" style="background: var(--gold); color: var(--forest-deep);">3</div>
           <h3 class="text-xl font-bold mb-2" style="color: var(--sage-light);" data-i18n="how_step3_title">Takip Et & Analiz Et</h3>
           <p class="text-sm leading-relaxed" style="color: var(--sage);" data-i18n="how_step3_desc">Genetik hesaplamalar, istatistikler ve soy ağacı ile yetiştiriciliğinizi optimize edin.</p>
@@ -591,8 +567,8 @@
           <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full mb-4" style="background: rgba(30,70,140,0.2); border: 1px solid var(--glass-border);">
             <span class="text-xs font-semibold uppercase tracking-wider" style="color: var(--gold);" data-i18n="showcase_badge">Neden Biz?</span>
           </div>
-          <h2 class="text-3xl sm:text-4xl font-black mb-6 tracking-tight heading-reveal" style="color: var(--sage-light);" data-i18n="showcase_title">Yetistiriciligin Dijital Asistani</h2>
-          <p class="text-lg mb-8 leading-relaxed" style="color: var(--sage);" data-i18n="showcase_subtitle">Deneyimli yetistiriciler tarafindan, yetistiriciler icin tasarlandi. Her detay dusunuldu.</p>
+          <h2 class="text-3xl sm:text-4xl font-black mb-6 tracking-tight heading-reveal" style="color: var(--sage-light);" data-i18n="showcase_title">Yetiştiriciliğin Dijital Asistanı</h2>
+          <p class="text-lg mb-8 leading-relaxed" style="color: var(--sage);" data-i18n="showcase_subtitle">Deneyimli yetiştiriciler tarafından, yetiştiriciler için tasarlandı. Her detay düşünüldü.</p>
 
           <div class="space-y-5">
             <div class="flex items-start gap-4">
@@ -601,7 +577,7 @@
               </div>
               <div>
                 <h4 class="font-semibold mb-1" style="color: var(--sage-light);" data-i18n="benefit_1_title">Tam Kontrol</h4>
-                <p class="text-sm leading-relaxed" style="color: var(--sage);" data-i18n="benefit_1_desc">Her kus, yumurta ve yavru icin detayli kayit. Hicbir sey gozden kacmaz.</p>
+                <p class="text-sm leading-relaxed" style="color: var(--sage);" data-i18n="benefit_1_desc">Her kuş, yumurta ve yavru için detaylı kayıt. Hiçbir şey gözden kaçmaz.</p>
               </div>
             </div>
             <div class="flex items-start gap-4">
@@ -609,8 +585,8 @@
                 <svg class="w-5 h-5" style="color: var(--gold);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
               </div>
               <div>
-                <h4 class="font-semibold mb-1" style="color: var(--sage-light);" data-i18n="benefit_2_title">Aninda Senkronizasyon</h4>
-                <p class="text-sm leading-relaxed" style="color: var(--sage);" data-i18n="benefit_2_desc">Offline calisin, online olunca otomatik senkronize edin. Veri kaybi yok.</p>
+                <h4 class="font-semibold mb-1" style="color: var(--sage-light);" data-i18n="benefit_2_title">Anında Senkronizasyon</h4>
+                <p class="text-sm leading-relaxed" style="color: var(--sage);" data-i18n="benefit_2_desc">Offline çalışın, online olunca otomatik senkronize edin. Veri kaybı yok.</p>
               </div>
             </div>
             <div class="flex items-start gap-4">
@@ -618,8 +594,8 @@
                 <svg class="w-5 h-5" style="color: var(--gold-light);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
               </div>
               <div>
-                <h4 class="font-semibold mb-1" style="color: var(--sage-light);" data-i18n="benefit_3_title">Guvende</h4>
-                <p class="text-sm leading-relaxed" style="color: var(--sage);" data-i18n="benefit_3_desc">AES-256 sifreleme ile yedekleme. Verileriniz sadece sizin kontrolunuzde.</p>
+                <h4 class="font-semibold mb-1" style="color: var(--sage-light);" data-i18n="benefit_3_title">Güvende</h4>
+                <p class="text-sm leading-relaxed" style="color: var(--sage);" data-i18n="benefit_3_desc">AES-256 şifreleme ile yedekleme. Verileriniz sadece sizin kontrolünüzde.</p>
               </div>
             </div>
           </div>
@@ -676,15 +652,15 @@
           </div>
           <div class="stat-item stat-item-enhanced">
             <div class="text-3xl sm:text-5xl font-black text-white mb-2 stat-number" data-stat="3">3</div>
-            <div class="text-sm font-medium" style="color: var(--gold); opacity: 0.75;" data-i18n="stat_2">Dil Destegi</div>
+            <div class="text-sm font-medium" style="color: var(--gold); opacity: 0.75;" data-i18n="stat_2">Dil Desteği</div>
           </div>
           <div class="stat-item stat-item-enhanced">
             <div class="text-3xl sm:text-5xl font-black text-white mb-2 stat-number">100%</div>
-            <div class="text-sm font-medium" style="color: var(--gold); opacity: 0.75;" data-i18n="stat_3">Offline Calisma</div>
+            <div class="text-sm font-medium" style="color: var(--gold); opacity: 0.75;" data-i18n="stat_3">Offline Çalışma</div>
           </div>
           <div class="stat-item stat-item-enhanced">
             <div class="text-3xl sm:text-5xl font-black text-white mb-2 stat-number">256-bit</div>
-            <div class="text-sm font-medium" style="color: var(--gold); opacity: 0.75;" data-i18n="stat_4">AES Sifreleme</div>
+            <div class="text-sm font-medium" style="color: var(--gold); opacity: 0.75;" data-i18n="stat_4">AES Şifreleme</div>
           </div>
         </div>
       </div>
@@ -786,7 +762,7 @@
 
       <div class="reveal" style="transition-delay: 0.1s; border-top: 1px solid var(--glass-border);">
         <div class="faq-item faq-item-enhanced py-5">
-          <button class="faq-question flex items-center justify-between w-full text-left gap-4 py-1" onclick="toggleFaq(this)">
+          <button type="button" class="faq-question flex items-center justify-between w-full text-left gap-4 py-1" onclick="toggleFaq(this)">
             <span class="font-semibold" style="color: var(--sage-light);" data-i18n="faq_q1">Uygulama ücretsiz mi?</span>
             <svg class="faq-icon w-5 h-5 flex-shrink-0" style="color: var(--sage);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
           </button>
@@ -796,7 +772,7 @@
         </div>
 
         <div class="faq-item faq-item-enhanced py-5">
-          <button class="faq-question flex items-center justify-between w-full text-left gap-4 py-1" onclick="toggleFaq(this)">
+          <button type="button" class="faq-question flex items-center justify-between w-full text-left gap-4 py-1" onclick="toggleFaq(this)">
             <span class="font-semibold" style="color: var(--sage-light);" data-i18n="faq_q2">Verilerim güvende mi?</span>
             <svg class="faq-icon w-5 h-5 flex-shrink-0" style="color: var(--sage);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
           </button>
@@ -806,7 +782,7 @@
         </div>
 
         <div class="faq-item faq-item-enhanced py-5">
-          <button class="faq-question flex items-center justify-between w-full text-left gap-4 py-1" onclick="toggleFaq(this)">
+          <button type="button" class="faq-question flex items-center justify-between w-full text-left gap-4 py-1" onclick="toggleFaq(this)">
             <span class="font-semibold" style="color: var(--sage-light);" data-i18n="faq_q3">Offline çalışıyor mu?</span>
             <svg class="faq-icon w-5 h-5 flex-shrink-0" style="color: var(--sage);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
           </button>
@@ -816,7 +792,7 @@
         </div>
 
         <div class="faq-item faq-item-enhanced py-5">
-          <button class="faq-question flex items-center justify-between w-full text-left gap-4 py-1" onclick="toggleFaq(this)">
+          <button type="button" class="faq-question flex items-center justify-between w-full text-left gap-4 py-1" onclick="toggleFaq(this)">
             <span class="font-semibold" style="color: var(--sage-light);" data-i18n="faq_q4">Kaç kuş kaydedebilirim?</span>
             <svg class="faq-icon w-5 h-5 flex-shrink-0" style="color: var(--sage);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
           </button>
@@ -826,7 +802,7 @@
         </div>
 
         <div class="faq-item faq-item-enhanced py-5">
-          <button class="faq-question flex items-center justify-between w-full text-left gap-4 py-1" onclick="toggleFaq(this)">
+          <button type="button" class="faq-question flex items-center justify-between w-full text-left gap-4 py-1" onclick="toggleFaq(this)">
             <span class="font-semibold" style="color: var(--sage-light);" data-i18n="faq_q5">Hangi platformlarda çalışıyor?</span>
             <svg class="faq-icon w-5 h-5 flex-shrink-0" style="color: var(--sage);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
           </button>
@@ -836,7 +812,7 @@
         </div>
 
         <div class="faq-item faq-item-enhanced py-5">
-          <button class="faq-question flex items-center justify-between w-full text-left gap-4 py-1" onclick="toggleFaq(this)">
+          <button type="button" class="faq-question flex items-center justify-between w-full text-left gap-4 py-1" onclick="toggleFaq(this)">
             <span class="font-semibold" style="color: var(--sage-light);" data-i18n="faq_q6">Genetik hesaplayıcı nasıl çalışıyor?</span>
             <svg class="faq-icon w-5 h-5 flex-shrink-0" style="color: var(--sage);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
           </button>
@@ -846,7 +822,7 @@
         </div>
 
         <div class="faq-item py-5" style="border-bottom: none;">
-          <button class="faq-question flex items-center justify-between w-full text-left gap-4 py-1" onclick="toggleFaq(this)">
+          <button type="button" class="faq-question flex items-center justify-between w-full text-left gap-4 py-1" onclick="toggleFaq(this)">
             <span class="font-semibold" style="color: var(--sage-light);" data-i18n="faq_q7">Verilerimi başka cihaza aktarabilir miyim?</span>
             <svg class="faq-icon w-5 h-5 flex-shrink-0" style="color: var(--sage);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
           </button>
@@ -867,24 +843,24 @@
     <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
       <div class="reveal">
         <img src="logo.png" alt="BudgieBreedingTracker" class="w-20 h-20 rounded-2xl mx-auto mb-6 shadow-lg logo-glow" style="border: 1px solid rgba(245,200,66,0.3);">
-        <h2 class="text-3xl sm:text-4xl lg:text-5xl font-black mb-4 tracking-tight heading-reveal" style="color: var(--sage-light);" data-i18n="cta_title">Hemen Baslayin</h2>
-        <p class="text-lg mb-10 max-w-xl mx-auto leading-relaxed" style="color: var(--sage);" data-i18n="cta_subtitle">Kuslarinizin bakimini profesyonel seviyeye tasiyin. Ucretsiz indirin, hemen kullanmaya baslayin.</p>
+        <h2 class="text-3xl sm:text-4xl lg:text-5xl font-black mb-4 tracking-tight heading-reveal" style="color: var(--sage-light);" data-i18n="cta_title">Hemen Başlayın</h2>
+        <p class="text-lg mb-10 max-w-xl mx-auto leading-relaxed" style="color: var(--sage);" data-i18n="cta_subtitle">Kuşlarınızın bakımını profesyonel seviyeye taşıyın. Ücretsiz indirin, hemen kullanmaya başlayın.</p>
       </div>
 
       <div class="flex flex-col sm:flex-row items-center justify-center gap-4 reveal" style="transition-delay: 0.15s;">
         <!-- Google Play -->
-        <a href="javascript:void(0)" class="store-btn-enhanced magnetic-btn" onclick="showStoreToast()" role="button">
+        <button type="button" class="store-btn-enhanced magnetic-btn store-btn-disabled" onclick="showStoreToast()" aria-describedby="google-play-status">
           <svg class="flex-shrink-0" style="width: 32px; height: 32px;" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
             <path d="M270.4 254.9L67.8 467.2c3.6 2.8 7.8 4.4 12.5 4.4 3.3 0 6.8-.8 10-2.6l228.3-131.8-48.2-82.3z" fill="#EA4335"/>
             <path d="M390.7 233.5L318.6 192 270.4 254.9l48.2 82.3 72-41.6c12.5-7.2 19.4-18.2 19.4-30.9s-6.9-24-19.3-31.2z" fill="#FBBC04"/>
             <path d="M67.8 44.8C65.5 48.8 64 53.6 64 59.2v393.6c0 5.6 1.5 10.4 3.8 14.4L270.4 254.9 67.8 44.8z" fill="#4285F4"/>
             <path d="M270.4 254.9l48.2-62.9L90.3 60.2c-3.2-1.8-6.7-2.6-10-2.6-4.7 0-8.9 1.6-12.5 4.4L270.4 254.9z" fill="#34A853"/>
           </svg>
-          <div class="text-left">
-            <div class="text-[10px] uppercase tracking-wider" style="color: var(--sage);" data-i18n="cta_google_label">Google Play'den</div>
-            <div class="text-base font-bold" style="color: var(--gold-light);" data-i18n="cta_google_action">Indirin</div>
-          </div>
-        </a>
+          <span class="text-left">
+            <span class="block text-[10px] uppercase tracking-wider" style="color: var(--sage);" data-i18n="cta_google_label">Google Play'de</span>
+            <span class="block text-base font-bold" style="color: var(--gold-light);" data-i18n="cta_google_action">Yakında</span>
+          </span>
+        </button>
 
         <!-- App Store -->
         <a href="https://apps.apple.com/us/app/budgie-breeding-tracker/id6759828211" target="_blank" rel="noopener noreferrer" class="store-btn-enhanced magnetic-btn">
@@ -899,18 +875,19 @@
           </svg>
           <div class="text-left">
             <div class="text-[10px] uppercase tracking-wider" style="color: var(--sage);" data-i18n="cta_apple_label">App Store'dan</div>
-            <div class="text-base font-bold" style="color: var(--gold-light);" data-i18n="cta_apple_action">Indirin</div>
+            <div class="text-base font-bold" style="color: var(--gold-light);" data-i18n="cta_apple_action">İndirin</div>
           </div>
         </a>
       </div>
 
-      <p class="text-sm mt-6 reveal animate-pulse-soft" style="color: var(--gold); opacity: 0.7; transition-delay: 0.3s;" data-i18n="cta_note">App Store'da mevcut · Google Play yakında</p>
+      <p id="google-play-status" class="text-sm mt-6 reveal" style="color: var(--gold); opacity: 0.82; transition-delay: 0.3s;" data-i18n="cta_note">App Store'da mevcut · Google Play yakında</p>
 
       <!-- Email Signup -->
       <div class="mt-10 reveal" style="transition-delay: 0.45s;">
         <p class="text-sm mb-4" style="color: var(--sage);" data-i18n="cta_email_intro">Google Play çıkışından haberdar olmak için e-posta adresinizi bırakın:</p>
         <form id="email-form" class="flex flex-col sm:flex-row gap-3 max-w-md mx-auto" onsubmit="handleEmailSignup(event)">
           <input type="text" name="_honey" style="display:none" tabindex="-1" autocomplete="off">
+          <label for="email-input" class="sr-only" data-i18n="cta_email_label">E-posta adresi</label>
           <input
             type="email"
             id="email-input"
@@ -919,11 +896,14 @@
             style="background: rgba(20,50,100,0.4); border: 1px solid var(--glass-border); color: var(--sage-light); outline: none;"
             data-i18n-placeholder="cta_email_placeholder"
             placeholder="e-posta@adresiniz.com"
+            autocomplete="email"
+            inputmode="email"
+            aria-describedby="email-status"
             required
           >
           <button type="submit" class="px-6 py-3 font-semibold rounded-xl transition-all hover:shadow-lg whitespace-nowrap text-sm" style="background: linear-gradient(135deg, var(--leaf-mid), var(--leaf-dark)); color: var(--gold-light); border: 1px solid rgba(245,200,66,0.3);" data-i18n="cta_email_btn">Haberdar Et</button>
         </form>
-        <p id="email-thanks" class="text-sm font-medium mt-3 hidden" style="color: var(--leaf-light);" data-i18n="cta_email_thanks">Teşekkürler! Size haber vereceğiz 🎉</p>
+        <p id="email-status" class="text-sm font-medium mt-3 form-message hidden" role="status" aria-live="polite" data-i18n="cta_email_thanks">Teşekkürler! Size haber vereceğiz.</p>
       </div>
     </div>
   </section>
@@ -938,16 +918,16 @@
           <img src="logo.png" alt="Logo" class="w-10 h-10 rounded-xl" style="border: 1px solid rgba(245,200,66,0.2);">
           <div>
             <span class="font-bold text-lg" style="color: var(--gold-light);">BudgieBreedingTracker</span>
-            <p class="text-xs mt-0.5" style="color: var(--sage); opacity: 0.7;" data-i18n="footer_tagline">Ureme Takip Uygulamasi</p>
+            <p class="text-xs mt-0.5" style="color: var(--sage); opacity: 0.7;" data-i18n="footer_tagline">Üreme Takip Uygulaması</p>
           </div>
         </div>
 
         <!-- Links -->
         <div class="flex items-center justify-center gap-6 text-sm flex-wrap">
-          <a href="#features" class="transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="footer_features">Ozellikler</a>
-          <a href="#cta" class="transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="nav_download">Indir</a>
+          <a href="#features" class="transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="footer_features">Özellikler</a>
+          <a href="#cta" class="transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="nav_download">İndir</a>
           <a href="https://github.com/BekirEfeoglu/BudgieBreedingTracker" target="_blank" rel="noopener noreferrer" class="transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'">GitHub</a>
-          <a href="privacy-policy.html" class="transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="footer_privacy">Gizlilik Politikasi</a>
+          <a href="privacy-policy.html" class="transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="footer_privacy">Gizlilik Politikası</a>
           <a href="terms-of-use.html" class="transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="footer_terms">Kullanım Koşulları</a>
           <a href="community-guidelines.html" class="transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="footer_community">Topluluk Kuralları</a>
           <a href="support/" class="transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="footer_support">Destek</a>
@@ -980,14 +960,14 @@
 
       <!-- Bottom bar -->
       <div class="py-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-center relative z-10" style="border-top: 1px solid rgba(255,255,255,0.04);">
-        <p class="text-xs" style="color: var(--sage); opacity: 0.5;" data-i18n="footer_made">Yetistiriciler tarafindan, yetistiriciler icin yapildi ❤️</p>
-        <p class="text-xs" style="color: var(--sage); opacity: 0.5; white-space: nowrap;" data-i18n="footer_copyright">&copy; 2025-2026 BudgieBreedingTracker. Tum haklari saklidir.</p>
+        <p class="text-xs" style="color: var(--sage); opacity: 0.5;" data-i18n="footer_made">Yetiştiriciler tarafından, yetiştiriciler için yapıldı.</p>
+        <p class="text-xs" style="color: var(--sage); opacity: 0.5; white-space: nowrap;" data-i18n="footer_copyright">&copy; 2025-2026 BudgieBreedingTracker. Tüm hakları saklıdır.</p>
       </div>
     </div>
   </footer>
 
   <!-- Back to Top Button -->
-  <button id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})" class="fixed bottom-6 right-6 w-12 h-12 rounded-xl shadow-lg transition-all duration-300 z-40 flex items-center justify-center" style="background: linear-gradient(135deg, var(--leaf-mid), var(--leaf-dark)); color: var(--gold-light); border: 1px solid rgba(245,200,66,0.3);" aria-label="Sayfanın başına dön">
+  <button id="backToTop" type="button" onclick="window.scrollTo({top:0,behavior:'smooth'})" class="fixed bottom-6 right-6 w-12 h-12 rounded-xl shadow-lg transition-all duration-300 z-40 flex items-center justify-center" style="background: linear-gradient(135deg, var(--leaf-mid), var(--leaf-dark)); color: var(--gold-light); border: 1px solid rgba(245,200,66,0.3);" aria-label="Sayfanın başına dön">
     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/></svg>
   </button>
 
@@ -1047,8 +1027,8 @@
         stat_4: 'AES Şifreleme',
         cta_title: 'Hemen Başlayın',
         cta_subtitle: 'Kuşlarınızın bakımını profesyonel seviyeye taşıyın. Ücretsiz indirin, hemen kullanmaya başlayın.',
-        cta_google_label: "Google Play'den",
-        cta_google_action: 'İndirin',
+        cta_google_label: "Google Play'de",
+        cta_google_action: 'Yakında',
         cta_apple_label: "App Store'dan",
         cta_apple_action: 'İndirin',
         cta_note: 'App Store\'da mevcut · Google Play yakında',
@@ -1071,7 +1051,7 @@
         footer_privacy: 'Gizlilik Politikası',
         footer_copyright: '© 2025-2026 BudgieBreedingTracker. Tüm hakları saklıdır.',
         footer_tagline: 'Üreme Takip Uygulaması',
-        footer_made: 'Yetiştiriciler tarafından, yetiştiriciler için yapıldı ❤️',
+        footer_made: 'Yetiştiriciler tarafından, yetiştiriciler için yapıldı.',
         footer_contact_title: 'İletişim',
         nav_how: 'Nasıl Çalışır?',
         nav_user_guide: 'Kullanım Kılavuzu',
@@ -1105,20 +1085,13 @@
         faq_q5: 'Hangi platformlarda çalışıyor?',
         faq_a5: 'BudgieBreedingTracker iOS (iPhone/iPad) cihazlarda App Store üzerinden kullanılabilir. Android desteği Google Play\'de yakında yayınlanacaktır.',
         cta_email_intro: 'Google Play çıkışından haberdar olmak için e-posta adresinizi bırakın:',
+        cta_email_label: 'E-posta adresi',
         cta_email_placeholder: 'e-posta@adresiniz.com',
         cta_email_btn: 'Haberdar Et',
-        cta_email_thanks: 'Teşekkürler! Size haber vereceğiz 🎉',
-        testimonials_badge: 'Kullanıcı Yorumları',
-        testimonials_title: 'Yetiştiriciler Ne Diyor?',
-        testimonial_1_text: '"Kuşlarımı takip etmek hiç bu kadar kolay olmamıştı. Genetik hesaplayıcı ile hangi mutasyonların çıkacağını önceden görebiliyorum."',
-        testimonial_1_name: 'Ahmet Y.',
-        testimonial_1_role: 'Hobi Yetiştiricisi',
-        testimonial_2_text: '"Offline çalışması harika. Kuş evinde internet yok ama tüm kayıtlarımı anında girebiliyorum. Eve gelince otomatik senkronize oluyor."',
-        testimonial_2_name: 'Fatma K.',
-        testimonial_2_role: 'Profesyonel Yetiştirici',
-        testimonial_3_text: '"Soy ağacı özelliği sayesinde akraba çiftleştirmelerden kaçınabiliyorum. İstatistikler de üreme başarımı artırmamda çok yardımcı oldu."',
-        testimonial_3_name: 'Mehmet O.',
-        testimonial_3_role: 'Kuş Kulübü Üyesi',
+        cta_email_thanks: 'Teşekkürler! Size haber vereceğiz.',
+        cta_email_error: 'Şu anda gönderilemedi. Lütfen daha sonra tekrar deneyin.',
+        cta_email_loading: 'Gönderiliyor...',
+        store_soon_message: 'Google Play sürümü yakında yayınlanacak.',
         premium_badge: 'Planlar',
         premium_title: 'Ücretsiz Başlayın, Premium\'la Büyüyün',
         premium_subtitle: 'Temel özellikler tamamen ücretsiz. Profesyonel araçlar için Premium\'a geçin.',
@@ -1150,7 +1123,6 @@
         feature_11_desc: 'Diğer yetiştiricilerle deneyimlerinizi paylaşın, sorular sorun ve bilgi alışverişinde bulunun.',
         feature_12_title: 'Pazar Yeri',
         feature_12_desc: 'Kuşlarınızı satışa çıkarın veya diğer yetiştiricilerin ilanlarını keşfedin. Güvenli mesajlaşma ile iletişim kurun.',
-        nav_testimonials: 'Yorumlar',
       },
       en: {
         nav_features: 'Features',
@@ -1204,8 +1176,8 @@
         stat_4: 'AES Encryption',
         cta_title: 'Get Started Now',
         cta_subtitle: 'Take your bird care to a professional level. Download for free and start using today.',
-        cta_google_label: 'GET IT ON',
-        cta_google_action: 'Google Play',
+        cta_google_label: 'GOOGLE PLAY',
+        cta_google_action: 'Coming Soon',
         cta_apple_label: 'DOWNLOAD ON THE',
         cta_apple_action: 'App Store',
         cta_note: 'Available on App Store · Google Play coming soon',
@@ -1228,7 +1200,7 @@
         footer_privacy: 'Privacy Policy',
         footer_copyright: '© 2025-2026 BudgieBreedingTracker. All rights reserved.',
         footer_tagline: 'Breeding Tracker App',
-        footer_made: 'Made by breeders, for breeders ❤️',
+        footer_made: 'Made by breeders, for breeders.',
         footer_contact_title: 'Contact',
         nav_how: 'How It Works',
         nav_user_guide: 'User Guide',
@@ -1262,20 +1234,13 @@
         faq_q5: 'Which platforms does it support?',
         faq_a5: 'BudgieBreedingTracker is available on the App Store for iOS (iPhone/iPad). Android support is coming soon to Google Play.',
         cta_email_intro: 'Leave your email to get notified when Google Play launches:',
+        cta_email_label: 'Email address',
         cta_email_placeholder: 'your@email.com',
         cta_email_btn: 'Notify Me',
-        cta_email_thanks: 'Thank you! We\'ll keep you posted 🎉',
-        testimonials_badge: 'User Reviews',
-        testimonials_title: 'What Breeders Say',
-        testimonial_1_text: '"Tracking my birds has never been this easy. With the genetics calculator, I can predict which mutations will appear."',
-        testimonial_1_name: 'Ahmet Y.',
-        testimonial_1_role: 'Hobby Breeder',
-        testimonial_2_text: '"The offline feature is amazing. There\'s no internet in the bird room, but I can enter all records instantly. They sync automatically when I get home."',
-        testimonial_2_name: 'Fatma K.',
-        testimonial_2_role: 'Professional Breeder',
-        testimonial_3_text: '"Thanks to the family tree feature, I can avoid inbreeding. The statistics have been very helpful in improving my breeding success."',
-        testimonial_3_name: 'Mehmet O.',
-        testimonial_3_role: 'Bird Club Member',
+        cta_email_thanks: 'Thank you! We\'ll keep you posted.',
+        cta_email_error: 'Could not send right now. Please try again later.',
+        cta_email_loading: 'Sending...',
+        store_soon_message: 'Google Play release is coming soon.',
         premium_badge: 'Plans',
         premium_title: 'Start Free, Grow with Premium',
         premium_subtitle: 'Core features are completely free. Upgrade to Premium for professional tools.',
@@ -1307,7 +1272,6 @@
         feature_11_desc: 'Share your experiences with other breeders, ask questions, and exchange knowledge.',
         feature_12_title: 'Marketplace',
         feature_12_desc: 'List your birds for sale or browse other breeders\' listings. Communicate securely via messaging.',
-        nav_testimonials: 'Reviews',
       },
       de: {
         nav_features: 'Funktionen',
@@ -1361,8 +1325,8 @@
         stat_4: 'AES-Verschlüsselung',
         cta_title: 'Jetzt loslegen',
         cta_subtitle: 'Bringen Sie Ihre Vogelpflege auf professionelles Niveau. Kostenlos herunterladen und sofort nutzen.',
-        cta_google_label: 'JETZT BEI',
-        cta_google_action: 'Google Play',
+        cta_google_label: 'GOOGLE PLAY',
+        cta_google_action: 'Bald verfügbar',
         cta_apple_label: 'LADEN IM',
         cta_apple_action: 'App Store',
         cta_note: 'Im App Store verfügbar · Google Play kommt bald',
@@ -1385,7 +1349,7 @@
         footer_privacy: 'Datenschutzrichtlinie',
         footer_copyright: '© 2025-2026 BudgieBreedingTracker. Alle Rechte vorbehalten.',
         footer_tagline: 'Zucht-Tracker-App',
-        footer_made: 'Von Züchtern für Züchter gemacht ❤️',
+        footer_made: 'Von Züchtern für Züchter gemacht.',
         footer_contact_title: 'Kontakt',
         nav_how: 'Wie es funktioniert',
         nav_user_guide: 'Benutzerhandbuch',
@@ -1419,20 +1383,13 @@
         faq_q5: 'Welche Plattformen werden unterstützt?',
         faq_a5: 'BudgieBreedingTracker ist im App Store für iOS (iPhone/iPad) verfügbar. Android-Unterstützung kommt bald bei Google Play.',
         cta_email_intro: 'Hinterlassen Sie Ihre E-Mail, um über den Google Play-Start informiert zu werden:',
+        cta_email_label: 'E-Mail-Adresse',
         cta_email_placeholder: 'ihre@email.de',
         cta_email_btn: 'Benachrichtigen',
-        cta_email_thanks: 'Danke! Wir halten Sie auf dem Laufenden 🎉',
-        testimonials_badge: 'Nutzerbewertungen',
-        testimonials_title: 'Was Züchter sagen',
-        testimonial_1_text: '"Meine Vögel zu verfolgen war noch nie so einfach. Mit dem Genetikrechner kann ich vorhersagen, welche Mutationen auftreten werden."',
-        testimonial_1_name: 'Ahmet Y.',
-        testimonial_1_role: 'Hobbyzüchter',
-        testimonial_2_text: '"Die Offline-Funktion ist großartig. Im Vogelzimmer gibt es kein Internet, aber ich kann alle Einträge sofort eingeben. Sie synchronisieren sich automatisch."',
-        testimonial_2_name: 'Fatma K.',
-        testimonial_2_role: 'Professionelle Züchterin',
-        testimonial_3_text: '"Dank der Stammbaum-Funktion kann ich Inzucht vermeiden. Die Statistiken haben mir sehr geholfen, meinen Zuchterfolg zu verbessern."',
-        testimonial_3_name: 'Mehmet O.',
-        testimonial_3_role: 'Vogelclub-Mitglied',
+        cta_email_thanks: 'Danke! Wir halten Sie auf dem Laufenden.',
+        cta_email_error: 'Senden derzeit nicht möglich. Bitte versuchen Sie es später erneut.',
+        cta_email_loading: 'Wird gesendet...',
+        store_soon_message: 'Die Google-Play-Version erscheint bald.',
         premium_badge: 'Pläne',
         premium_title: 'Kostenlos starten, mit Premium wachsen',
         premium_subtitle: 'Kernfunktionen sind völlig kostenlos. Upgrade auf Premium für professionelle Werkzeuge.',
@@ -1464,7 +1421,6 @@
         feature_11_desc: 'Teilen Sie Ihre Erfahrungen mit anderen Züchtern, stellen Sie Fragen und tauschen Sie Wissen aus.',
         feature_12_title: 'Marktplatz',
         feature_12_desc: 'Bieten Sie Ihre Vögel zum Verkauf an oder entdecken Sie Angebote anderer Züchter. Kommunizieren Sie sicher per Nachricht.',
-        nav_testimonials: 'Bewertungen',
       },
     };
 
@@ -1493,7 +1449,9 @@
       document.title = titles[lang];
 
       document.querySelectorAll('.lang-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.getAttribute('data-lang') === lang);
+        const active = btn.getAttribute('data-lang') === lang;
+        btn.classList.toggle('active', active);
+        btn.setAttribute('aria-pressed', active ? 'true' : 'false');
       });
     }
 
@@ -1501,13 +1459,17 @@
     function toggleMobileMenu() {
       const menu = document.getElementById('mobile-menu');
       const panel = document.getElementById('mobile-panel');
+      const button = document.getElementById('hamburger-btn');
       const isOpen = menu.classList.contains('open');
       if (isOpen) { closeMobileMenu(); return; }
       menu.classList.remove('hidden');
+      menu.inert = false;
       requestAnimationFrame(() => {
         menu.classList.add('open');
         panel.style.transform = 'translateY(0)';
       });
+      button.setAttribute('aria-expanded', 'true');
+      button.setAttribute('aria-label', 'Menüyü kapat');
       document.getElementById('hamburger-icon').classList.add('hidden');
       document.getElementById('close-icon').classList.remove('hidden');
     }
@@ -1515,14 +1477,32 @@
     function closeMobileMenu() {
       const menu = document.getElementById('mobile-menu');
       const panel = document.getElementById('mobile-panel');
+      const button = document.getElementById('hamburger-btn');
       menu.classList.remove('open');
+      menu.inert = true;
       panel.style.transform = 'translateY(-110%)';
+      button.setAttribute('aria-expanded', 'false');
+      button.setAttribute('aria-label', 'Menüyü aç');
       document.getElementById('hamburger-icon').classList.remove('hidden');
       document.getElementById('close-icon').classList.add('hidden');
       setTimeout(() => menu.classList.add('hidden'), 300);
     }
 
     // ─── FAQ Accordion ───
+    function initializeFaq() {
+      document.querySelectorAll('.faq-item').forEach((item, index) => {
+        const button = item.querySelector('.faq-question');
+        const answer = item.querySelector('.faq-answer');
+        if (!button || !answer) return;
+        const id = answer.id || 'faq-answer-' + (index + 1);
+        answer.id = id;
+        answer.setAttribute('role', 'region');
+        answer.setAttribute('aria-hidden', item.classList.contains('open') ? 'false' : 'true');
+        button.setAttribute('aria-controls', id);
+        button.setAttribute('aria-expanded', item.classList.contains('open') ? 'true' : 'false');
+      });
+    }
+
     function toggleFaq(btn) {
       const item = btn.closest('.faq-item');
       const answer = item.querySelector('.faq-answer');
@@ -1530,11 +1510,17 @@
       document.querySelectorAll('.faq-item.open').forEach(openItem => {
         if (openItem !== item) {
           openItem.classList.remove('open');
-          openItem.querySelector('.faq-answer').classList.remove('open');
+          const openAnswer = openItem.querySelector('.faq-answer');
+          const openButton = openItem.querySelector('.faq-question');
+          openAnswer.classList.remove('open');
+          openAnswer.setAttribute('aria-hidden', 'true');
+          openButton.setAttribute('aria-expanded', 'false');
         }
       });
       item.classList.toggle('open', !isOpen);
       answer.classList.toggle('open', !isOpen);
+      answer.setAttribute('aria-hidden', !isOpen ? 'false' : 'true');
+      btn.setAttribute('aria-expanded', !isOpen ? 'true' : 'false');
     }
 
     // ─── Store Coming Soon Toast ───
@@ -1545,8 +1531,7 @@
       toast.id = 'store-toast';
       toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);padding:12px 24px;border-radius:12px;font-size:14px;font-weight:500;z-index:9999;opacity:0;transition:all 0.3s ease;background:rgba(15,27,77,0.95);backdrop-filter:blur(12px);border:1px solid var(--glass-border);color:var(--gold-light);box-shadow:0 8px 32px rgba(0,0,0,0.3);';
       const lang = document.documentElement.lang || 'tr';
-      const msgs = { tr: 'Google Play\'de yakında yayında! 🚀', en: 'Coming soon to Google Play! 🚀', de: 'Bald im Google Play Store! 🚀' };
-      toast.textContent = msgs[lang] || msgs.tr;
+      toast.textContent = translations[lang]?.store_soon_message || translations.tr.store_soon_message;
       document.body.appendChild(toast);
       requestAnimationFrame(() => { toast.style.opacity = '1'; toast.style.transform = 'translateX(-50%) translateY(0)'; });
       setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateX(-50%) translateY(20px)'; setTimeout(() => toast.remove(), 300); }, 3000);
@@ -1559,9 +1544,13 @@
       if (!email) return;
       const form = document.getElementById('email-form');
       const btn = form.querySelector('button[type="submit"]');
+      const status = document.getElementById('email-status');
+      const lang = document.documentElement.lang || 'tr';
       const originalText = btn.textContent;
       btn.disabled = true;
-      btn.textContent = '...';
+      btn.textContent = translations[lang]?.cta_email_loading || translations.tr.cta_email_loading;
+      status.classList.add('hidden');
+      status.classList.remove('error');
 
       fetch('https://formsubmit.co/ajax/support@budgiebreedingtracker.online', {
         method: 'POST',
@@ -1575,12 +1564,13 @@
       .then(res => res.json())
       .then(data => {
         form.style.display = 'none';
-        document.getElementById('email-thanks').classList.remove('hidden');
+        status.textContent = translations[lang]?.cta_email_thanks || translations.tr.cta_email_thanks;
+        status.classList.remove('hidden');
       })
       .catch(() => {
-        // Fallback: still show success (email saved locally)
-        form.style.display = 'none';
-        document.getElementById('email-thanks').classList.remove('hidden');
+        status.textContent = translations[lang]?.cta_email_error || translations.tr.cta_email_error;
+        status.classList.add('error');
+        status.classList.remove('hidden');
       })
       .finally(() => {
         btn.disabled = false;
@@ -1693,6 +1683,9 @@
 
       // Initial reveal check
       setTimeout(handleReveal, 100);
+
+      // FAQ accessibility attributes
+      initializeFaq();
 
       // Init 3D tilt on feature cards
       initTilt();
