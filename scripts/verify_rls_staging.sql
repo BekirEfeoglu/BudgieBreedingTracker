@@ -459,6 +459,197 @@ WHERE routine_name = 'sync_premium_status'
 
 
 -- =====================================================================
+-- N. Messaging + Marketplace UPDATE hardening (audit migration 20260430140000)
+-- =====================================================================
+-- After applying 20260430140000_messaging_marketplace_with_check_hardening.sql:
+--   - All four UPDATE policies have a non-NULL with_check clause
+--   - Four BEFORE UPDATE guard triggers exist
+--   - mark_message_read RPC is deployed with SECURITY DEFINER
+
+-- N1. Verify UPDATE policies all have WITH CHECK
+SELECT
+  tablename,
+  policyname,
+  CASE
+    WHEN with_check IS NULL THEN 'FAIL: missing WITH CHECK'
+    ELSE 'PASS: WITH CHECK present'
+  END AS status
+FROM pg_policies
+WHERE schemaname = 'public'
+  AND policyname IN (
+    'messages_update',
+    'conversations_update',
+    'participants_update',
+    'marketplace_listings_update'
+  )
+ORDER BY tablename, policyname;
+
+-- Expected: 4 rows, all status = 'PASS'
+
+-- N2. Verify guard triggers are attached
+SELECT
+  c.relname AS table_name,
+  t.tgname  AS trigger_name,
+  CASE WHEN t.tgenabled = 'O' THEN 'PASS: enabled' ELSE 'FAIL: disabled' END AS status
+FROM pg_trigger t
+JOIN pg_class c ON c.oid = t.tgrelid
+WHERE NOT t.tgisinternal
+  AND t.tgname IN (
+    'trg_guard_messages_update',
+    'trg_guard_conversations_update',
+    'trg_guard_participants_update',
+    'trg_guard_marketplace_listings_update'
+  )
+ORDER BY c.relname, t.tgname;
+
+-- Expected: 4 rows, all status = 'PASS: enabled'
+
+-- N3. Verify mark_message_read RPC exists with SECURITY DEFINER + hardened search_path
+SELECT
+  proname AS function_name,
+  prosecdef AS security_definer,
+  pronargs AS param_count,
+  CASE
+    WHEN proconfig::text ILIKE '%search_path=%'
+     AND proconfig::text NOT ILIKE '%search_path=public%'
+    THEN 'PASS: search_path hardened'
+    ELSE 'FAIL: search_path missing or = public'
+  END AS search_path_status
+FROM pg_proc
+WHERE proname = 'mark_message_read'
+  AND pronamespace = 'public'::regnamespace;
+
+-- Expected: 1 row, security_definer = true, param_count = 2, search_path_status = PASS
+
+-- N4. Functional test — sender_id forgery must fail (run as authenticated sender)
+-- BEGIN;
+-- UPDATE messages SET sender_id = '00000000-0000-0000-0000-000000000000'
+--   WHERE id = '<own_message_id>';
+-- ROLLBACK;
+-- Expected: ERROR 'messages_sender_immutable' from guard trigger
+--           OR new_row_violates_row_level_security from WITH CHECK
+
+-- N5. Functional test — non-moderator role escalation must fail
+-- BEGIN;
+-- UPDATE conversation_participants SET role = 'owner'
+--   WHERE conversation_id = '<conv_id>' AND user_id = auth.uid();
+-- ROLLBACK;
+-- Expected: ERROR 'participants_self_role_change_forbidden'
+
+-- N6. Functional test — listing user_id transfer must fail
+-- BEGIN;
+-- UPDATE marketplace_listings SET user_id = '00000000-0000-0000-0000-000000000000'
+--   WHERE id = '<own_listing_id>';
+-- ROLLBACK;
+-- Expected: ERROR 'marketplace_listings_user_id_immutable'
+
+-- N7. Functional test — non-admin clearing needs_review must fail
+-- BEGIN;
+-- UPDATE marketplace_listings SET needs_review = false
+--   WHERE id = '<own_listing_with_pending_review>';
+-- ROLLBACK;
+-- Expected: ERROR 'marketplace_listings_moderation_admin_only'
+
+
+-- =====================================================================
+-- O. audit_logs append-only lockdown (audit migration 20260430150000)
+-- =====================================================================
+-- Verifies authenticated/anon clients can no longer write to audit_logs
+-- and only admin SELECT/UPDATE/DELETE remain.
+
+-- O1. No client-facing INSERT policies remain
+SELECT
+  policyname,
+  cmd,
+  'UNEXPECTED: client-facing INSERT policy still present' AS issue
+FROM pg_policies
+WHERE schemaname = 'public'
+  AND tablename = 'audit_logs'
+  AND cmd = 'INSERT';
+
+-- Expected: empty result set
+
+-- O2. INSERT GRANT revoked from authenticated/anon
+SELECT
+  grantee,
+  privilege_type
+FROM information_schema.role_table_grants
+WHERE table_schema = 'public'
+  AND table_name = 'audit_logs'
+  AND grantee IN ('authenticated', 'anon')
+  AND privilege_type = 'INSERT';
+
+-- Expected: empty result set
+
+-- O3. SECURITY DEFINER trigger writers still present (so audit hattı çalışır)
+SELECT
+  proname,
+  prosecdef
+FROM pg_proc
+WHERE pronamespace = 'public'::regnamespace
+  AND proname IN ('fn_audit_row_change', 'fn_audit_profile_role_change')
+  AND prosecdef = true;
+
+-- Expected: 2 rows (both SECURITY DEFINER)
+
+
+-- =====================================================================
+-- P. SECURITY DEFINER search_path consistency (migration 20260430160000)
+-- =====================================================================
+-- Verifies the three trigger functions touched by the consistency migration
+-- now declare search_path = '' (empty), not public/public,pg_temp.
+
+SELECT
+  proname AS function_name,
+  proconfig AS config,
+  CASE
+    WHEN proconfig::text ILIKE '%search_path=%'
+     AND proconfig::text NOT ILIKE '%search_path=public%'
+     AND proconfig::text NOT ILIKE '%search_path=public, pg_temp%'
+    THEN 'PASS: search_path = ''''  '
+    WHEN proconfig::text ILIKE '%search_path=public%'
+    THEN 'FAIL: still using search_path=public'
+    ELSE 'FAIL: no search_path set'
+  END AS status
+FROM pg_proc
+WHERE pronamespace = 'public'::regnamespace
+  AND proname IN (
+    'apply_community_report_aggregation',
+    'fn_audit_row_change',
+    'fn_audit_profile_role_change'
+  )
+ORDER BY proname;
+
+-- Expected: 3 rows, all PASS
+
+
+-- =====================================================================
+-- Q. Free-tier policy (SELECT auth.uid()) wrap (migration 20260430170000)
+-- =====================================================================
+-- After the wrap fix, Section C's "bare auth.uid()" query should still pass
+-- (no rows). This section is a more targeted re-check.
+
+SELECT
+  tablename,
+  policyname,
+  CASE
+    WHEN with_check ILIKE '%select auth.uid()%' THEN 'PASS: wrapped'
+    WHEN with_check ~ 'auth\.uid\(\)'           THEN 'FAIL: bare auth.uid()'
+    ELSE 'INFO: no auth.uid() reference'
+  END AS status
+FROM pg_policies
+WHERE schemaname = 'public'
+  AND policyname IN (
+    'free_tier_bird_limit',
+    'free_tier_breeding_pair_limit',
+    'free_tier_incubation_limit'
+  )
+ORDER BY tablename;
+
+-- Expected: 3 rows, all status = 'PASS: wrapped'
+
+
+-- =====================================================================
 -- Summary
 -- =====================================================================
 -- Section A: 0 rows = all tables have FORCE RLS
@@ -474,3 +665,7 @@ WHERE routine_name = 'sync_premium_status'
 -- Section K: all SECURITY DEFINER functions have search_path
 -- Section L: free tier limit RLS policies deployed with premium bypass
 -- Section M: sync_premium_status RPC deployed with correct security
+-- Section N: messaging/marketplace UPDATE hardening (WITH CHECK + triggers + RPC)
+-- Section O: audit_logs lockdown (no client INSERT, definer triggers intact)
+-- Section P: definer trigger functions hardened to search_path = ''
+-- Section Q: free-tier policies use (SELECT auth.uid()) wrapper
