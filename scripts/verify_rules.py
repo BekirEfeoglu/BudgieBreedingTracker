@@ -77,7 +77,9 @@ def main():
 
     if FIX_MODE:
         updates = build_fix_updates(actual)
-        fix_claude_md(updates, actual)
+        # Patch'lenebilir verify_rules ROOT/CLAUDE_MD'sini ileterek test'lerin
+        # gercek CLAUDE.md'yi modifiye etmesini engelle.
+        fix_claude_md(updates, actual, root=ROOT, claude_md=CLAUDE_MD)
         return 0
 
     # ── Verification Mode ──

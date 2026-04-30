@@ -2,6 +2,7 @@
 
 import re
 from pathlib import Path
+from typing import Optional
 
 from _rules_utils import Colors
 
@@ -197,10 +198,32 @@ def _fix_file(
     return changed
 
 
-def fix_claude_md(updates: dict, actual: dict):
-    """CLAUDE.md ve .claude/rules/*.md'deki tablo + inline referanslari guncelle."""
-    rules_dir = ROOT / ".claude" / "rules"
-    targets = [CLAUDE_MD]
+def fix_claude_md(
+    updates: dict,
+    actual: dict,
+    *,
+    root: Optional[Path] = None,
+    claude_md: Optional[Path] = None,
+):
+    """CLAUDE.md ve .claude/rules/*.md'deki tablo + inline referanslari guncelle.
+
+    Args:
+        updates: Codebase Stats tablo satirlari icin guncelleme dict'i.
+        actual: Kaynak kodtan toplanan gercek degerler.
+        root: Repo kok dizini. Verilmezse modul-seviyesi ROOT kullanilir.
+        claude_md: Kok CLAUDE.md dosyasi. Verilmezse modul-seviyesi CLAUDE_MD kullanilir.
+
+    Test izolasyonu: argumanlari acikca alarak cagrici (verify_rules.main)
+    kendi patch edilmis ROOT/CLAUDE_MD'sini iletebilir; boylece test'lerde
+    yanlislikla unit test fixture'lariyla gercek CLAUDE.md uzerine yazilmaz.
+    """
+    if root is None:
+        root = ROOT
+    if claude_md is None:
+        claude_md = CLAUDE_MD
+
+    rules_dir = root / ".claude" / "rules"
+    targets = [claude_md]
     if rules_dir.exists():
         for rule_file in sorted(rules_dir.glob("*.md")):
             targets.append(rule_file)
@@ -210,7 +233,7 @@ def fix_claude_md(updates: dict, actual: dict):
         # Table row fixes (Codebase Stats) only apply to root CLAUDE.md.
         # Rule files only get inline reference updates to avoid rewriting
         # unrelated tables (e.g., schema version in data-layer.md).
-        is_root = fp == CLAUDE_MD
+        is_root = fp == claude_md
         if _fix_file(fp, updates, actual, apply_table_fixes=is_root):
             any_changed = True
 

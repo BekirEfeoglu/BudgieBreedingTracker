@@ -131,7 +131,7 @@ class PremiumNotifier extends Notifier<bool> {
     if (!ref.mounted) return success;
     if (success) {
       await setPremium(true);
-      await syncPremiumToSupabase(isPremium: true, package: package);
+      await syncPremiumToSupabase(isPremium: true);
     }
     return success;
   }

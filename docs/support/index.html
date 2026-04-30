@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://budgiebreedingtracker.online; connect-src 'self' https://formsubmit.co; form-action 'self' https://formsubmit.co; frame-src 'none'; upgrade-insecure-requests">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://budgiebreedingtracker.online; connect-src 'self' https://formsubmit.co; form-action 'self' https://formsubmit.co; frame-ancestors 'none'; frame-src 'none'; upgrade-insecure-requests">
   <meta name="referrer" content="no-referrer">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Destek Merkezi — BudgieBreedingTracker</title>
@@ -1092,6 +1092,28 @@
 
     let currentLang = 'tr';
 
+    function setSafeLocalizedHtml(el, value) {
+      if (typeof value !== 'string') return;
+      const template = document.createElement('template');
+      template.innerHTML = value;
+      const disallowed = template.content.querySelectorAll('*:not(strong):not(br):not(ul):not(li):not(a)');
+      if (disallowed.length > 0) {
+        el.textContent = value;
+        return;
+      }
+      const links = template.content.querySelectorAll('a');
+      for (const link of links) {
+        const href = link.getAttribute('href') || '';
+        if (!href.startsWith('mailto:') && !href.startsWith('https://')) {
+          el.textContent = value;
+          return;
+        }
+        link.setAttribute('rel', 'noopener noreferrer');
+      }
+      el.replaceChildren(template.content.cloneNode(true));
+    }
+
+
     function setLanguage(lang) {
       currentLang = lang;
       localStorage.setItem('bbt-lang', lang);
@@ -1102,8 +1124,8 @@
       document.querySelectorAll('[data-i18n]').forEach(el => {
         const key = el.getAttribute('data-i18n');
         if (t[key]) {
-          if (t[key].includes('<strong>') || t[key].includes('<')) {
-            el.innerHTML = t[key];
+          if (t[key].includes('<')) {
+            setSafeLocalizedHtml(el, t[key]);
           } else {
             el.textContent = t[key];
           }

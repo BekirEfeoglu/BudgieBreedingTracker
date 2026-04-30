@@ -22,7 +22,9 @@ class SyncPushHandler {
   /// Returns `true` if all layers pushed successfully, `false` if any
   /// layer had errors.
   Future<bool> pushChanges(String userId) async {
-    AppLogger.info('[SyncOrchestrator] Pushing changes for $userId');
+    AppLogger.info(
+      '[SyncOrchestrator] Pushing changes for ${AppLogger.obfuscate(userId)}',
+    );
     final ctx = _PushContext();
 
     final syncDao = _ref.read(syncMetadataDaoProvider);

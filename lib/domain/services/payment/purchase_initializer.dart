@@ -47,17 +47,14 @@ mixin PurchaseInitializer on PurchaseErrorMapper {
     required String userId,
   }) async {
     try {
-      final maskedKey = apiKey.length > 4
-          ? '${apiKey.substring(0, 4)}...'
-          : '****';
-      AppLogger.info('Configuring RevenueCat (key=$maskedKey, user=$userId)');
+      AppLogger.info('Configuring RevenueCat SDK');
       final config = PurchasesConfiguration(apiKey)..appUserID = userId;
       await Purchases.configure(config);
       _initialized = true;
       _configuredApiKey = apiKey;
       _configuredUserId = userId;
       clearStoreUnavailableState();
-      AppLogger.info('RevenueCat initialized for user: $userId');
+      AppLogger.info('RevenueCat initialized successfully');
       return true;
     } catch (e, st) {
       clearIdentity();
@@ -71,22 +68,24 @@ mixin PurchaseInitializer on PurchaseErrorMapper {
 
   Future<bool> _switchUser(String userId) async {
     try {
-      Sentry.addBreadcrumb(Breadcrumb(
-        message: 'PurchaseService: Merging identified user purchases',
-        data: {'userId': userId},
-        category: 'payment.merge',
-        level: SentryLevel.info,
-      ));
+      Sentry.addBreadcrumb(
+        Breadcrumb(
+          message: 'PurchaseService: Merging identified user purchases',
+          category: 'payment.merge',
+          level: SentryLevel.info,
+        ),
+      );
       await Purchases.logIn(userId);
       _configuredUserId = userId;
       clearStoreUnavailableState();
-      Sentry.addBreadcrumb(Breadcrumb(
-        message: 'PurchaseService: User merge completed',
-        data: {'userId': userId},
-        category: 'payment.merge',
-        level: SentryLevel.info,
-      ));
-      AppLogger.info('RevenueCat switched to user: $userId');
+      Sentry.addBreadcrumb(
+        Breadcrumb(
+          message: 'PurchaseService: User merge completed',
+          category: 'payment.merge',
+          level: SentryLevel.info,
+        ),
+      );
+      AppLogger.info('RevenueCat user switch completed');
       return true;
     } catch (e, st) {
       clearIdentity();

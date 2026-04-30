@@ -10,11 +10,11 @@ import 'package:budgie_breeding_tracker/bootstrap.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_constants.dart';
 import 'package:budgie_breeding_tracker/core/enums/subscription_enums.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
+import 'package:budgie_breeding_tracker/data/providers/edge_function_provider.dart';
 import 'package:budgie_breeding_tracker/domain/services/payment/purchase_service.dart';
 import 'package:budgie_breeding_tracker/data/models/profile_model.dart';
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 import 'package:budgie_breeding_tracker/data/providers/profile_stream_providers.dart';
-import 'package:budgie_breeding_tracker/data/remote/supabase/supabase_client.dart';
 
 export 'package:budgie_breeding_tracker/core/enums/subscription_enums.dart'
     show GracePeriodStatus;

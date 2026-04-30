@@ -246,6 +246,7 @@ flutter run \
 | `SENTRY_ENVIRONMENT` | No | Sentry environment label |
 | `REVENUECAT_API_KEY_IOS` | No | RevenueCat iOS API key |
 | `REVENUECAT_API_KEY_ANDROID` | No | RevenueCat Android API key |
+| `REVENUECAT_SECRET_API_KEY` | Required for `sync-premium-status` Edge Function | RevenueCat secret API key (`sk_...`) used only server-side |
 | `OPENAI_API_KEY` | Required for `scan-image-safety` Edge Function | OpenAI API key used for image moderation |
 
 The app can still boot without Supabase credentials, but authentication, sync, and other cloud-backed flows will be unavailable.

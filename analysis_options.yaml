@@ -11,10 +11,31 @@ analyzer:
 
 linter:
   rules:
+    # Const & immutability (perf + safety)
     prefer_const_constructors: true
     prefer_final_locals: true
     prefer_const_declarations: true
+
+    # Logging hygiene — `print()` leaks to stdout in release builds.
+    # AppLogger.error wraps Sentry capture and respects log levels.
     avoid_print: true
+
+    # Mounted/BuildContext safety after await — prevents using disposed
+    # state for navigation/SnackBars (CLAUDE.md anti-pattern 3, 4).
+    use_build_context_synchronously: true
+
+    # Resource leak guards — must close streams/sinks (controllers,
+    # subscriptions) to avoid memory leaks (CLAUDE.md anti-pattern 20).
+    cancel_subscriptions: true
+    close_sinks: true
+
+    # Catching `Error` (vs `Exception`) hides programmer bugs — these
+    # should propagate, not be suppressed silently.
+    avoid_catching_errors: true
+
+    # Dead/unused code — surfaces unreachable error paths.
+    avoid_returning_null_for_void: true
+
     unnecessary_underscores: false
     use_null_aware_elements: false
     unintended_html_in_doc_comment: false

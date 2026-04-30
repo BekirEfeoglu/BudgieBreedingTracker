@@ -67,33 +67,45 @@ def parse_anti_patterns_from_claude_md() -> List[str]:
     return patterns
 
 
-# Anti-pattern ID -> checker mapping (hangi CLAUDE.md anti-pattern'i hangi checker ile kapsaniyor)
+# Anti-pattern ID -> checker mapping (CLAUDE.md "Critical Anti-Patterns" numaralarina gore).
+# Numaralandirma CLAUDE.md "## Critical Anti-Patterns (24 rules)" listesi ile birebir hizali olmalidir.
+# Coverage report: len(ANTI_PATTERN_COVERAGE) / total_patterns_in_claude_md.
 ANTI_PATTERN_COVERAGE = {
-    1: "check_with_opacity",           # withOpacity() -> withValues
-    2: "check_dropdown_value",          # value on Dropdown -> initialValue
-    3: "check_drift_equals",            # .equals() -> .equalsValue()
-    4: "check_ref_watch_in_callback",   # ref.watch() in callbacks -> ref.read()
-    5: "check_print_statements",        # print() -> AppLogger
-    6: "check_missing_tr",              # Hardcoded text -> .tr()
-    7: "check_icon_icons",             # Icon(Icons.x) -> AppIcon(AppIcons.x)
-    8: "check_json_key_unknown_enum",    # Missing @JsonKey(unknownEnumValue)
-    9: "check_switch_unknown_case",      # switch without unknown (warning)
-    10: "check_context_go_forward_nav",  # context.go() -> context.push()
-    11: "check_dao_import_app_database", # Import table via app_database (warning)
-    12: "check_route_ordering",          # Route ordering (warning)
-    13: "check_hardcoded_colors",       # Hardcoded colors -> Theme/AppColors
-    14: "check_controller_dispose",      # Missing controller.dispose() (warning)
-    15: "check_freezed3_pattern",       # Missing const Model._() in Freezed
-    # 16: Hardcoded SVG paths — low occurrence, covered by AppIcons convention
-    17: "check_icondata_param",         # IconData param -> Widget param
+    1: "check_with_opacity",                # withOpacity() -> withValues(alpha:)
+    2: "check_dropdown_value",              # value on DropdownButtonFormField -> initialValue
+    3: "check_mounted_async",               # setState after dispose/await -> mounted check
+    4: "check_ref_watch_in_callback",       # ref.watch() in callbacks -> ref.read()
+    5: "check_drift_equals",                # .equals() on enum Drift column -> .equalsValue()
+    6: "check_dao_import_app_database",     # DAO must import table file directly
+    # 7: client.from() in feature/UI layer — no static checker (architectural review)
+    # 8: Hardcoded Supabase table/column names — no static checker (constants module)
+    # 9: Sending created_at/updated_at to Supabase — no static checker (toSupabase() convention)
+    10: "check_print_statements",            # print() -> AppLogger
+    11: "check_missing_tr",                  # Hardcoded label/hint text -> .tr()
+    12: "check_icon_icons",                  # Icon(Icons.x) -> AppIcon(AppIcons.x)
+    # 13: Hardcoded SVG paths — covered by AppIcons constants convention (no checker)
+    14: "check_icondata_param",              # IconData param in shared widgets -> Widget param
+    15: "check_json_key_unknown_enum",       # Missing @JsonKey(unknownEnumValue:)
+    16: "check_switch_unknown_case",         # switch over enum missing 'unknown' case
+    17: "check_context_go_forward_nav",      # context.go() forward nav -> context.push()
+    18: "check_route_ordering",              # Parameterized route before specific in GoRouter
+    19: "check_hardcoded_colors",            # Hardcoded Colors.x -> Theme/AppColors
+                                             # (spacing kismi check_hardcoded_spacing extra'sinda)
+    20: "check_controller_dispose",          # Missing controller.dispose() in ConsumerStatefulWidget
+    21: "check_freezed_private_constructor", # Missing const Model._() in @freezed model
+    22: "check_bare_catch",                  # Bare catch (e) without AppLogger/Sentry
+    # 23: Critical errors without Sentry — partial overlap with check_bare_catch lookahead
+    # 24: LucideIcons for domain icons — no checker (manual review)
 }
-# Extra checkers not directly numbered in CLAUDE.md list but enforce documented rules
+
+# Ek checker'lar: CLAUDE.md numarali listesinde dogrudan yer almayan ama
+# rules dosyalarinda dokumante edilmis kurallari uygulayanlar.
 EXTRA_CHECKERS = {
-    "check_hardcoded_spacing": "Hardcoded spacing (AppSpacing convention)",
-    "check_bare_catch": "Bare catch without logging (coding-standards #17)",
-    "check_mounted_async": "setState after async without mounted (coding-standards #18)",
+    "check_hardcoded_spacing": "Hardcoded spacing values (#19 spacing kismi, AppSpacing convention)",
+    "check_freezed3_pattern": "@freezed abstract class syntax (Freezed 3 gerekliligi)",
     "check_layer_imports": "Layer hierarchy import violations (architecture.md)",
-    "check_freezed_private_constructor": "Missing const Model._() in Freezed (coding-standards #15)",
+    "check_bare_circular_progress": "Ad-hoc CircularProgressIndicator -> LoadingState (ui-patterns.md)",
+    "check_iconbutton_constraints": "IconButton 48dp tap target (a11y, WCAG 2.1 AA)",
 }
 
 # --- Whitelist (checker bazinda dosya/dizin istisna listesi) ---

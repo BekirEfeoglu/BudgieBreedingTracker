@@ -106,7 +106,8 @@ class AdminUserManager {
           'AdminUserManager.grantPremium: subscription record failed (non-fatal): $e\n$st',
         );
         Sentry.addBreadcrumb(Breadcrumb(
-          message: 'subscription upsert failed for $targetUserId',
+          message:
+              'subscription upsert failed for ${AppLogger.obfuscate(targetUserId)}',
           category: 'admin.premium',
           level: SentryLevel.warning,
           data: {'error': e.toString()},
@@ -183,7 +184,8 @@ class AdminUserManager {
           'AdminUserManager.revokePremium: subscription record failed (non-fatal): $e\n$st',
         );
         Sentry.addBreadcrumb(Breadcrumb(
-          message: 'subscription update failed for $targetUserId',
+          message:
+              'subscription update failed for ${AppLogger.obfuscate(targetUserId)}',
           category: 'admin.premium',
           level: SentryLevel.warning,
           data: {'error': e.toString()},

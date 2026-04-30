@@ -89,8 +89,10 @@ class PhotoRepository {
     await _markPending(item.id, item.userId);
     try {
       await push(item);
-    } catch (_) {
+    } catch (e, st) {
       // Offline or error — pending record stays for next sync
+      AppLogger.warning('[PhotoRepo] save->push deferred: $e');
+      AppLogger.debug('[PhotoRepo] save->push stack trace: $st');
     }
   }
 

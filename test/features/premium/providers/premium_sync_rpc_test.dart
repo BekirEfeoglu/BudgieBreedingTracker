@@ -5,10 +5,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:budgie_breeding_tracker/bootstrap.dart';
 import 'package:budgie_breeding_tracker/data/models/profile_model.dart';
+import 'package:budgie_breeding_tracker/data/providers/edge_function_provider.dart';
+import 'package:budgie_breeding_tracker/data/remote/supabase/edge_function_client.dart';
 import 'package:budgie_breeding_tracker/domain/services/payment/purchase_service.dart';
 import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/premium/premium_providers.dart';
@@ -19,9 +20,6 @@ import '../../../helpers/mocks.dart';
 import '../../../helpers/test_helpers.dart';
 
 class MockPackage extends Mock implements Package {}
-
-class MockPostgrestFilterBuilder extends Mock
-    implements PostgrestFilterBuilder<dynamic> {}
 
 Future<void> _flushAsync() async {
   await Future<void>.delayed(const Duration(milliseconds: 1));
@@ -44,21 +42,19 @@ void main() {
     resetMocktailState();
   });
 
-  /// Creates a fresh mock client with RPC stubbed.
-  MockSupabaseClient createMockClient({bool rpcSuccess = true}) {
-    final client = MockSupabaseClient();
-    if (rpcSuccess) {
-      when(() => client.rpc(any(), params: any(named: 'params')))
-          .thenAnswer((_) => MockPostgrestFilterBuilder());
-    } else {
-      when(() => client.rpc(any(), params: any(named: 'params')))
-          .thenThrow(Exception('Supabase RPC error'));
-    }
-    return client;
+  /// Creates a fresh mock Edge Function client with sync stubbed.
+  MockEdgeFunctionClient createMockEdgeClient({bool syncSuccess = true}) {
+    final edgeClient = MockEdgeFunctionClient();
+    when(() => edgeClient.invoke(any())).thenAnswer(
+      (_) async => syncSuccess
+          ? const EdgeFunctionResult(success: true, data: {'is_premium': true})
+          : EdgeFunctionResult.failure('sync-premium-status failed'),
+    );
+    return edgeClient;
   }
 
   ProviderContainer createContainer(
-    MockSupabaseClient mockClient, {
+    MockEdgeFunctionClient edgeClient, {
     String userId = 'user-1',
     Profile? profile,
   }) {
@@ -66,7 +62,7 @@ void main() {
       overrides: [
         currentUserIdProvider.overrideWithValue(userId),
         purchaseServiceProvider.overrideWithValue(service),
-        supabaseClientProvider.overrideWithValue(mockClient),
+        edgeFunctionClientProvider.overrideWithValue(edgeClient),
         if (profile != null)
           userProfileProvider.overrideWith((_) => Stream.value(profile)),
       ],
@@ -74,114 +70,81 @@ void main() {
     );
   }
 
-  group('syncPremiumToSupabase RPC integration', () {
-    test('calls sync_premium_status RPC on successful purchase', () async {
-      service.purchaseResult = true;
-      service.isPremiumError = Exception('skip');
-      service.subscriptionInfoResult = SubscriptionInfo(
-        isActive: true,
-        expirationDate: DateTime.utc(2027, 1, 15),
-        willRenew: true,
-        productId: 'com.app.premium.yearly',
-      );
-      final mockClient = createMockClient();
+  group('syncPremiumToSupabase Edge Function integration', () {
+    test(
+      'calls sync-premium-status Edge Function on successful purchase',
+      () async {
+        service.purchaseResult = true;
+        service.isPremiumError = Exception('skip');
+        final edgeClient = createMockEdgeClient();
 
-      final container = createContainer(mockClient);
-      addTearDown(container.dispose);
+        final container = createContainer(edgeClient);
+        addTearDown(container.dispose);
 
-      container.read(localPremiumProvider);
-      await waitUntil(() => service.isPremiumCallCount > 0);
-      await _flushAsync();
+        container.read(localPremiumProvider);
+        await waitUntil(() => service.isPremiumCallCount > 0);
+        await _flushAsync();
 
-      final package = MockPackage();
-      await container.read(localPremiumProvider.notifier).purchase(package);
-      await _flushAsync();
+        final package = MockPackage();
+        await container.read(localPremiumProvider.notifier).purchase(package);
+        await _flushAsync();
 
-      final captured = verify(
-        () => mockClient.rpc(
-          captureAny(),
-          params: captureAny(named: 'params'),
-        ),
-      ).captured;
+        verify(() => edgeClient.invoke('sync-premium-status')).called(1);
+      },
+    );
 
-      Map<String, dynamic>? rpcParams;
-      for (var i = 0; i < captured.length - 1; i += 2) {
-        if (captured[i] == 'sync_premium_status') {
-          rpcParams = captured[i + 1] as Map<String, dynamic>;
-          break;
-        }
-      }
+    test(
+      'does not send client premium assertions on expiration refresh',
+      () async {
+        service.isPremiumResult = true;
+        final edgeClient = createMockEdgeClient();
 
-      expect(rpcParams, isNotNull, reason: 'sync_premium_status RPC should be called');
-      expect(rpcParams!['p_is_premium'], isTrue);
-      expect(rpcParams['p_subscription_status'], 'premium');
-      expect(rpcParams['p_plan'], 'premium');
-      expect(rpcParams['p_premium_expires_at'], contains('2027-01-15'));
-    });
+        final container = createContainer(edgeClient);
+        addTearDown(container.dispose);
 
-    test('calls RPC with isPremium=false on expiration during refresh', () async {
-      service.isPremiumResult = true;
-      final mockClient = createMockClient();
+        container.read(localPremiumProvider);
+        await waitUntil(() => service.isPremiumCallCount > 0);
+        await _flushAsync();
 
-      final container = createContainer(mockClient);
-      addTearDown(container.dispose);
+        service.isPremiumResult = false;
+        service.isPremiumError = null;
+        await container.read(localPremiumProvider.notifier).refresh();
+        await _flushAsync();
 
-      container.read(localPremiumProvider);
-      await waitUntil(() => service.isPremiumCallCount > 0);
-      await _flushAsync();
+        verify(() => edgeClient.invoke('sync-premium-status')).called(1);
+      },
+    );
 
-      service.isPremiumResult = false;
-      service.isPremiumError = null;
-      await container.read(localPremiumProvider.notifier).refresh();
-      await _flushAsync();
+    test(
+      'saves pending sync with retryCount=0 when Edge Function fails',
+      () async {
+        service.purchaseResult = true;
+        service.isPremiumError = Exception('skip');
+        service.subscriptionInfoResult = const SubscriptionInfo(isActive: true);
+        final edgeClient = createMockEdgeClient(syncSuccess: false);
 
-      final captured = verify(
-        () => mockClient.rpc(
-          captureAny(),
-          params: captureAny(named: 'params'),
-        ),
-      ).captured;
+        final container = createContainer(edgeClient);
+        addTearDown(container.dispose);
 
-      Map<String, dynamic>? lastParams;
-      for (var i = 0; i < captured.length - 1; i += 2) {
-        if (captured[i] == 'sync_premium_status') {
-          lastParams = captured[i + 1] as Map<String, dynamic>;
-        }
-      }
+        container.read(localPremiumProvider);
+        await waitUntil(() => service.isPremiumCallCount > 0);
+        await _flushAsync();
 
-      expect(lastParams, isNotNull);
-      expect(lastParams!['p_is_premium'], isFalse);
-      expect(lastParams['p_subscription_status'], 'free');
-      expect(lastParams['p_premium_expires_at'], isNull);
-    });
+        final package = MockPackage();
+        await container.read(localPremiumProvider.notifier).purchase(package);
+        await _flushAsync();
 
-    test('saves pending sync with retryCount=0 when RPC fails', () async {
-      service.purchaseResult = true;
-      service.isPremiumError = Exception('skip');
-      service.subscriptionInfoResult = const SubscriptionInfo(isActive: true);
-      final mockClient = createMockClient(rpcSuccess: false);
+        final prefs = await SharedPreferences.getInstance();
+        final raw = prefs.getString('pending_premium_sync_user-1');
+        expect(raw, isNotNull);
 
-      final container = createContainer(mockClient);
-      addTearDown(container.dispose);
+        final map = jsonDecode(raw!) as Map<String, dynamic>;
+        expect(map['isPremium'], isTrue);
+        expect(map['retryCount'], 0);
+      },
+    );
 
-      container.read(localPremiumProvider);
-      await waitUntil(() => service.isPremiumCallCount > 0);
-      await _flushAsync();
-
-      final package = MockPackage();
-      await container.read(localPremiumProvider.notifier).purchase(package);
-      await _flushAsync();
-
-      final prefs = await SharedPreferences.getInstance();
-      final raw = prefs.getString('pending_premium_sync_user-1');
-      expect(raw, isNotNull);
-
-      final map = jsonDecode(raw!) as Map<String, dynamic>;
-      expect(map['isPremium'], isTrue);
-      expect(map['retryCount'], 0);
-    });
-
-    test('increments retryCount when retry RPC also fails', () async {
+    test('increments retryCount when retry Edge Function also fails', () async {
       SharedPreferences.setMockInitialValues({
         'pending_premium_sync_user-1': jsonEncode({
           'isPremium': true,
@@ -191,9 +154,9 @@ void main() {
         }),
       });
       service.isPremiumError = Exception('skip');
-      final mockClient = createMockClient(rpcSuccess: false);
+      final edgeClient = createMockEdgeClient(syncSuccess: false);
 
-      final container = createContainer(mockClient);
+      final container = createContainer(edgeClient);
       addTearDown(container.dispose);
 
       container.read(localPremiumProvider);
@@ -225,9 +188,9 @@ void main() {
         }),
       });
       service.isPremiumError = Exception('skip');
-      final mockClient = createMockClient(rpcSuccess: false);
+      final edgeClient = createMockEdgeClient(syncSuccess: false);
 
-      final container = createContainer(mockClient);
+      final container = createContainer(edgeClient);
       addTearDown(container.dispose);
 
       container.read(localPremiumProvider);
@@ -245,37 +208,40 @@ void main() {
       expect(map['retryCount'], 1);
     });
 
-    test('preserves pending sync at max retries for future session retry', () async {
-      SharedPreferences.setMockInitialValues({
-        'pending_premium_sync_user-1': jsonEncode({
-          'isPremium': true,
-          'retryCount': 3,
-          'timestamp': DateTime.now().toUtc().toIso8601String(),
-          'lastAttemptAt': DateTime.now().toUtc().toIso8601String(),
-        }),
-      });
-      service.isPremiumError = Exception('skip');
-      final mockClient = createMockClient(rpcSuccess: false);
+    test(
+      'preserves pending sync at max retries for future session retry',
+      () async {
+        SharedPreferences.setMockInitialValues({
+          'pending_premium_sync_user-1': jsonEncode({
+            'isPremium': true,
+            'retryCount': 3,
+            'timestamp': DateTime.now().toUtc().toIso8601String(),
+            'lastAttemptAt': DateTime.now().toUtc().toIso8601String(),
+          }),
+        });
+        service.isPremiumError = Exception('skip');
+        final edgeClient = createMockEdgeClient(syncSuccess: false);
 
-      final container = createContainer(mockClient);
-      addTearDown(container.dispose);
+        final container = createContainer(edgeClient);
+        addTearDown(container.dispose);
 
-      container.read(localPremiumProvider);
-      await waitUntil(() => service.isPremiumCallCount > 0);
-      await _flushAsync();
-      await _flushAsync();
+        container.read(localPremiumProvider);
+        await waitUntil(() => service.isPremiumCallCount > 0);
+        await _flushAsync();
+        await _flushAsync();
 
-      // Pending sync should be preserved (not cleared) so it can retry
-      // after _retryResetDuration elapses
-      final prefs = await SharedPreferences.getInstance();
-      final raw = prefs.getString('pending_premium_sync_user-1');
-      expect(raw, isNotNull);
+        // Pending sync should be preserved (not cleared) so it can retry
+        // after _retryResetDuration elapses
+        final prefs = await SharedPreferences.getInstance();
+        final raw = prefs.getString('pending_premium_sync_user-1');
+        expect(raw, isNotNull);
 
-      final map = jsonDecode(raw!) as Map<String, dynamic>;
-      expect(map['retryCount'], 3);
-    });
+        final map = jsonDecode(raw!) as Map<String, dynamic>;
+        expect(map['retryCount'], 3);
+      },
+    );
 
-    test('clears pending sync when retry RPC succeeds', () async {
+    test('clears pending sync when retry Edge Function succeeds', () async {
       SharedPreferences.setMockInitialValues({
         'pending_premium_sync_user-1': jsonEncode({
           'isPremium': true,
@@ -285,9 +251,9 @@ void main() {
         }),
       });
       service.isPremiumError = Exception('skip');
-      final mockClient = createMockClient(rpcSuccess: true);
+      final edgeClient = createMockEdgeClient(syncSuccess: true);
 
-      final container = createContainer(mockClient);
+      final container = createContainer(edgeClient);
       addTearDown(container.dispose);
 
       container.read(localPremiumProvider);
@@ -300,36 +266,35 @@ void main() {
 
       final prefs = await SharedPreferences.getInstance();
       final raw = prefs.getString('pending_premium_sync_user-1');
-      // RPC mock may not fully resolve the PostgrestBuilder Future chain.
-      // If pending sync is still present, verify the RPC was at least attempted.
       if (raw != null) {
-        verify(() => mockClient.rpc('sync_premium_status', params: any(named: 'params')))
-            .called(greaterThanOrEqualTo(1));
+        verify(
+          () => edgeClient.invoke('sync-premium-status'),
+        ).called(greaterThanOrEqualTo(1));
       } else {
         expect(raw, isNull);
       }
     });
 
-    test('skips RPC call for anonymous user', () async {
-      final mockClient = createMockClient();
+    test('skips Edge Function call for anonymous user', () async {
+      final edgeClient = createMockEdgeClient();
 
-      final container = createContainer(mockClient, userId: 'anonymous');
+      final container = createContainer(edgeClient, userId: 'anonymous');
       addTearDown(container.dispose);
 
       container.read(localPremiumProvider);
       await _flushAsync();
       await _flushAsync();
 
-      verifyNever(() => mockClient.rpc(any(), params: any(named: 'params')));
+      verifyNever(() => edgeClient.invoke(any()));
     });
 
-    test('calls RPC on successful restore', () async {
+    test('calls Edge Function on successful restore', () async {
       service.restoreResult = true;
       service.isPremiumError = Exception('skip');
       service.subscriptionInfoResult = const SubscriptionInfo(isActive: true);
-      final mockClient = createMockClient();
+      final edgeClient = createMockEdgeClient();
 
-      final container = createContainer(mockClient);
+      final container = createContainer(edgeClient);
       addTearDown(container.dispose);
 
       container.read(localPremiumProvider);
@@ -339,23 +304,21 @@ void main() {
       await container.read(localPremiumProvider.notifier).restore();
       await _flushAsync();
 
-      verify(() => mockClient.rpc('sync_premium_status', params: any(named: 'params')))
-          .called(greaterThanOrEqualTo(1));
+      verify(
+        () => edgeClient.invoke('sync-premium-status'),
+      ).called(greaterThanOrEqualTo(1));
     });
 
-    test('skips RPC call for admin user', () async {
+    test('skips Edge Function call for admin user', () async {
       service.isPremiumError = Exception('skip');
-      final mockClient = createMockClient();
+      final edgeClient = createMockEdgeClient();
       const adminProfile = Profile(
         id: 'user-1',
         email: 'admin@test.com',
         role: 'admin',
       );
 
-      final container = createContainer(
-        mockClient,
-        profile: adminProfile,
-      );
+      final container = createContainer(edgeClient, profile: adminProfile);
       addTearDown(container.dispose);
 
       // Ensure profile stream emits before notifier loads
@@ -370,24 +333,19 @@ void main() {
       await container.read(localPremiumProvider.notifier).refresh();
       await _flushAsync();
 
-      verifyNever(
-        () => mockClient.rpc('sync_premium_status', params: any(named: 'params')),
-      );
+      verifyNever(() => edgeClient.invoke('sync-premium-status'));
     });
 
-    test('skips RPC call for founder user', () async {
+    test('skips Edge Function call for founder user', () async {
       service.isPremiumError = Exception('skip');
-      final mockClient = createMockClient();
+      final edgeClient = createMockEdgeClient();
       const founderProfile = Profile(
         id: 'user-1',
         email: 'founder@test.com',
         role: 'founder',
       );
 
-      final container = createContainer(
-        mockClient,
-        profile: founderProfile,
-      );
+      final container = createContainer(edgeClient, profile: founderProfile);
       addTearDown(container.dispose);
 
       container.read(userProfileProvider);
@@ -400,24 +358,19 @@ void main() {
       await container.read(localPremiumProvider.notifier).refresh();
       await _flushAsync();
 
-      verifyNever(
-        () => mockClient.rpc('sync_premium_status', params: any(named: 'params')),
-      );
+      verifyNever(() => edgeClient.invoke('sync-premium-status'));
     });
 
-    test('admin refresh does not trigger RPC sync', () async {
+    test('admin refresh does not trigger Edge Function sync', () async {
       service.isPremiumResult = false;
-      final mockClient = createMockClient();
+      final edgeClient = createMockEdgeClient();
       const adminProfile = Profile(
         id: 'user-1',
         email: 'admin@test.com',
         role: 'admin',
       );
 
-      final container = createContainer(
-        mockClient,
-        profile: adminProfile,
-      );
+      final container = createContainer(edgeClient, profile: adminProfile);
       addTearDown(container.dispose);
 
       container.read(userProfileProvider);
@@ -429,15 +382,13 @@ void main() {
       await _flushAsync();
 
       // Reset mock verification state before refresh
-      clearInteractions(mockClient);
+      clearInteractions(edgeClient);
 
       await container.read(localPremiumProvider.notifier).refresh();
       await _flushAsync();
 
-      // Admin refresh returns early — no RPC sync should happen
-      verifyNever(
-        () => mockClient.rpc('sync_premium_status', params: any(named: 'params')),
-      );
+      // Admin refresh returns early — no Edge Function sync should happen
+      verifyNever(() => edgeClient.invoke('sync-premium-status'));
     });
   });
 }

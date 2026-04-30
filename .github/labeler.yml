@@ -84,6 +84,8 @@
       - any-glob-to-any-file:
           - "lib/features/premium/**"
           - "lib/domain/services/payment/**"
+          - "lib/domain/services/premium/**"
+          - "supabase/functions/sync-premium-status/**"
 
 "area: admin":
   - changed-files:

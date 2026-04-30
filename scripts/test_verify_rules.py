@@ -935,7 +935,14 @@ class TestVerifyRulesMain(unittest.TestCase):
             return vr.main()
 
     def test_fix_mode_returns_0_and_writes_updates(self):
-        """FIX_MODE=True iken satirlar 78-81 calisir: updates hesaplanir, return 0."""
+        """FIX_MODE=True iken satirlar 78-81 calisir: updates hesaplanir, return 0.
+
+        Regression koruma: vr.main() FIX_MODE'da kendi (patch'lenmis) ROOT ve
+        CLAUDE_MD degerlerini fix_claude_md'ye actikca iletmeli — aksi halde
+        test calistirildiginda gercek CLAUDE.md / .claude/rules/*.md dosyalari
+        unit test fixture degerleriyle UZERINE YAZILIR.
+        """
+        import _rules_fixers as rf
         import verify_rules as vr
 
         key_count = 3
@@ -946,13 +953,28 @@ class TestVerifyRulesMain(unittest.TestCase):
             assets = self._make_assets(root, key_count=key_count)
             tmp_md = root / "CLAUDE.md"
             tmp_md.write_text(content, encoding="utf-8")
+
+            # Sentinel: _rules_fixers'in modul-seviyesi yollari KASITLI olarak
+            # patch edilmiyor. Eger vr.main() bunlari kullanirsa sentinel
+            # path'lere yazmaya calisir; bu da gercek CLAUDE.md hasari demek.
+            sentinel_root = root / "__must_not_be_used__"
+            sentinel_claude = sentinel_root / "CLAUDE.md"
+
             with patch.object(vr, "CLAUDE_MD", tmp_md), \
                  patch.object(vr, "ASSETS", assets), \
                  patch.object(vr, "ROOT", root), \
+                 patch.object(rf, "ROOT", sentinel_root), \
+                 patch.object(rf, "CLAUDE_MD", sentinel_claude), \
                  patch.object(vr, "collect_actual_values", return_value=actual), \
                  patch.object(vr, "FIX_MODE", True):
                 result = vr.main()
         self.assertEqual(result, 0)
+        # Sentinel hedefe asla yazilmamis olmali (vr.main() kendi yolunu iletmis).
+        self.assertFalse(
+            sentinel_claude.exists(),
+            "fix_claude_md gercek modul-seviyesi CLAUDE_MD'ye yazdi; "
+            "verify_rules.main() patch'li ROOT/CLAUDE_MD'sini iletmiyor.",
+        )
 
     def test_strict_mode_prints_message(self):
         """STRICT_MODE=True iken satir 94 calisir: 'STRICT modu' mesaji basilir."""

@@ -40,7 +40,7 @@ dart fix --apply
 ### Quality Scripts
 ```bash
 python3 scripts/check_l10n_sync.py       # Verify tr/en/de translation keys are in sync
-python3 scripts/verify_code_quality.py    # Anti-pattern scan (21 checkers, 16/17 CLAUDE.md patterns + 5 extra)
+python3 scripts/verify_code_quality.py    # Anti-pattern scan (23 checkers, 18/24 CLAUDE.md patterns + 5 extra)
 python3 scripts/verify_rules.py          # Validate CLAUDE.md stats against codebase (single source of truth)
 python3 scripts/verify_rules.py --fix    # Auto-fix CLAUDE.md stats table with actual values
 ```
@@ -74,20 +74,20 @@ scripts/test_verify_rules.py            # Tests for verify_rules.py
 
 | Metric | Value |
 | --- | --- |
-| Source files (lib/) | 923 Dart files |
-| Test files (test/) | 855 test files, 10,578+ individual tests |
+| Source files (lib/) | 925 Dart files |
+| Test files (test/) | 856 test files, 10,593+ individual tests |
 | Feature modules | 23 |
 | Drift tables / DAOs / Mappers | 20 each |
 | Repositories | 23 entity + base + sync_metadata |
 | Remote sources | 26 entity + base + 2 caches + providers |
 | Freezed models | 29 model files + statistics_models + supabase_extensions |
 | Domain services | 17 directories |
-| Routes | 72 |
+| Routes | 73 |
 | Custom SVG icons | 84 constants, 84 files on disk |
 | Shared widgets | 23 (15 root + 4 buttons + 2 cards + 1 dialog) |
 | Enum files | 15 |
 | Supabase constants | 132 (tables + buckets + columns) |
-| L10n keys | ~2,794 per language, 39 categories |
+| L10n keys | ~2,797 per language, 40 categories |
 | DB schema version | 22 |
 
 ## CI/CD Pipeline
@@ -123,6 +123,7 @@ scripts/test_verify_rules.py            # Tests for verify_rules.py
 | `SENTRY_ENVIRONMENT` | No | `production` | Sentry environment tag |
 | `REVENUECAT_API_KEY_IOS` | No | — | RevenueCat iOS |
 | `REVENUECAT_API_KEY_ANDROID` | No | — | RevenueCat Android |
+| `REVENUECAT_SECRET_API_KEY` | Edge Function secret | — | Server-side RevenueCat subscription verification |
 | `GOOGLE_WEB_CLIENT_ID` | No | — | Google OAuth (web) |
 | `GOOGLE_IOS_CLIENT_ID` | No | — | Google OAuth (iOS) |
 | `DEBUG_START_ROUTE` | No | — | Debug: open at specific route |
@@ -136,10 +137,11 @@ Config methods: `.env` + `--dart-define-from-file` (local) · GitHub Secrets (CI
 | --- | --- | --- |
 | `SUPABASE_ACCESS_TOKEN` | Edge Function deployment | Supabase Dashboard → Account → Access Tokens |
 | `SUPABASE_PROJECT_REF` | Edge Function deployment | Supabase Dashboard URL project reference ID |
+| `REVENUECAT_SECRET_API_KEY` | `sync-premium-status` Edge Function runtime | RevenueCat Dashboard → Project settings → API keys → Secret API keys |
 
 ## Supabase
 
-### Edge Functions (7)
+### Edge Functions (8)
 | Function | Purpose |
 | --- | --- |
 | `mfa-lockout` | MFA brute-force lockout handling |
@@ -148,10 +150,11 @@ Config methods: `.env` + `--dart-define-from-file` (local) · GitHub Secrets (CI
 | `scan-image-safety` | Photo upload safety scan |
 | `send-push` | FCM push notification delivery |
 | `system-health` | Admin dashboard system health check |
+| `sync-premium-status` | Server-side RevenueCat premium status verification |
 | `validate-free-tier-limit` | Free tier entity limit enforcement |
 
 ### Migrations
-129 SQL migration files in `supabase/migrations/`. Schema managed server-side; never modify RLS policies from client code.
+140 SQL migration files in `supabase/migrations/`. Schema managed server-side; never modify RLS policies from client code.
 
 ## Rules
 
@@ -283,7 +286,7 @@ Security:      lib/core/security/
 Preferences:   lib/data/local/preferences/
 EdgeFunctions: lib/data/remote/supabase/
 Edge Fn (SB):  supabase/functions/
-Migrations:    supabase/migrations/ (129 files)
+Migrations:    supabase/migrations/ (140 files)
 Scripts:       scripts/
 CI:            .github/workflows/ + codemagic.yaml
 ```
