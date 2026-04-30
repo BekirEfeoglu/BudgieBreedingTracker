@@ -26,8 +26,10 @@ import '../features/chicks/screens/chick_detail_screen.dart';
 import '../features/chicks/screens/chick_form_screen.dart';
 import '../features/calendar/screens/calendar_screen.dart';
 import '../features/more/screens/more_screen.dart';
+import '../features/splash/screens/maintenance_screen.dart';
 import '../features/splash/screens/splash_screen.dart';
 import '../core/widgets/not_found_screen.dart';
+import '../data/providers/maintenance_mode_provider.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'route_names.dart';
 import 'route_utils.dart';
@@ -64,6 +66,14 @@ final routerProvider = Provider<GoRouter>((ref) {
     debugLogDiagnostics: false,
     redirect: (context, state) {
       final location = state.matchedLocation;
+      final isMaintenanceRoute = location == AppRoutes.maintenance;
+      final isAdminRoute = location.startsWith('/admin');
+      final maintenanceMode = ref.read(maintenanceModeProvider).value ?? false;
+
+      if (maintenanceMode && !isMaintenanceRoute && !isAdminRoute) {
+        return AppRoutes.maintenance;
+      }
+      if (!maintenanceMode && isMaintenanceRoute) return AppRoutes.home;
 
       // Session lock, auth, and 2FA guards (extracted to redirect_guards.dart)
       final sessionLock = sessionLockRedirect(ref, location);
@@ -136,7 +146,6 @@ final routerProvider = Provider<GoRouter>((ref) {
       }
 
       // Admin guard: restrict /admin/* routes to admin users
-      final isAdminRoute = location.startsWith('/admin');
       if (isAdminRoute) {
         final adminRedirect = AdminGuard.redirect(ref.read(isAdminProvider));
         if (adminRedirect != null) return adminRedirect;
@@ -149,6 +158,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.splash,
         builder: (context, state) => const SplashScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.maintenance,
+        builder: (context, state) => const MaintenanceScreen(),
       ),
 
       // Public routes (Auth)

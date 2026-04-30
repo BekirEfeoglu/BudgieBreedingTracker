@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../features/auth/providers/auth_providers.dart';
 import '../features/admin/providers/admin_providers.dart';
+import '../data/providers/maintenance_mode_provider.dart';
 import '../domain/services/premium/premium_providers.dart';
 import '../features/auth/providers/two_factor_providers.dart';
 
@@ -18,6 +19,7 @@ class RouterNotifier extends ChangeNotifier {
     // re-evaluates when a grace period expires or begins, not just when
     // raw subscription status flips.
     _ref.listen(effectivePremiumProvider, (_, __) => _scheduleNotify());
+    _ref.listen(maintenanceModeProvider, (_, __) => _scheduleNotify());
     _ref.listen(appInitializationProvider, (_, __) => _scheduleNotify());
     _ref.listen(initSkippedProvider, (_, __) => _scheduleNotify());
     _ref.listen(pendingMfaFactorIdProvider, (_, __) => _scheduleNotify());
@@ -25,6 +27,7 @@ class RouterNotifier extends ChangeNotifier {
 
   final Ref _ref;
   bool _scheduled = false;
+  bool _disposed = false;
 
   /// Coalesce multiple rapid provider changes into a single notification
   /// to prevent GoRouter key reservation conflicts during redirect.
@@ -34,12 +37,20 @@ class RouterNotifier extends ChangeNotifier {
   /// phases are complete — preventing Navigator key reservation conflicts
   /// when multiple redirects fire during widget tree construction.
   void _scheduleNotify() {
+    if (_disposed) return;
     if (_scheduled) return;
     _scheduled = true;
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_disposed) return;
       _scheduled = false;
       notifyListeners();
     });
+  }
+
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
   }
 }
 

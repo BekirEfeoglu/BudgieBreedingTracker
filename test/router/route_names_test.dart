@@ -6,6 +6,7 @@ import 'package:budgie_breeding_tracker/router/route_names.dart';
 /// Used for exhaustive validation.
 const _allRoutes = <String, String>{
   'splash': '/splash',
+  'maintenance': '/maintenance',
   'login': '/login',
   'register': '/register',
   'authCallback': '/auth/callback',
@@ -70,6 +71,10 @@ void main() {
   group('AppRoutes — all route values match specification', () {
     test('splash route', () {
       expect(AppRoutes.splash, '/splash');
+    });
+
+    test('maintenance route', () {
+      expect(AppRoutes.maintenance, '/maintenance');
     });
 
     test('login route', () {

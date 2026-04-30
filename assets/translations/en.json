@@ -2323,6 +2323,11 @@
     "retry": "Retry",
     "continue_offline": "Continue Offline"
   },
+  "maintenance": {
+    "title": "Under Maintenance",
+    "message": "The app is temporarily in maintenance mode while a critical fix is being released. Please try again shortly.",
+    "retry": "Check Again"
+  },
   "export": {
     "title": "Export",
     "sheet_birds": "Birds",

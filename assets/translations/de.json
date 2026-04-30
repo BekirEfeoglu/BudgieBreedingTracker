@@ -2323,6 +2323,11 @@
     "retry": "Erneut versuchen",
     "continue_offline": "Offline fortfahren"
   },
+  "maintenance": {
+    "title": "Wartungsmodus",
+    "message": "Die App befindet sich vorübergehend im Wartungsmodus, während ein kritisches Update veröffentlicht wird. Bitte versuchen Sie es in Kürze erneut.",
+    "retry": "Erneut prüfen"
+  },
   "export": {
     "title": "Exportieren",
     "sheet_birds": "Vögel",

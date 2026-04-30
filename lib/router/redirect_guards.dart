@@ -55,6 +55,7 @@ bool _isAuthRoute(String location) =>
 
 /// Routes accessible without authentication.
 bool isAnonymousAllowedRoute(String location) =>
+    location == AppRoutes.maintenance ||
     location == AppRoutes.premium ||
     location == AppRoutes.userGuide ||
     location == AppRoutes.privacyPolicy ||

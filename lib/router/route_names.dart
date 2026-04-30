@@ -1,6 +1,7 @@
 abstract class AppRoutes {
   // App initialization
   static const splash = '/splash';
+  static const maintenance = '/maintenance';
 
   // Public
   static const login = '/login';
