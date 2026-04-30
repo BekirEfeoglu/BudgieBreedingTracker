@@ -215,6 +215,22 @@ jobs:
       - name: Verify CLAUDE.md stats match codebase
         run: python scripts/verify_rules.py --strict
 
+  security-audit:
+    name: Security Audit
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6
+        with:
+          python-version: "3.x"
+
+      - name: Verify security posture
+        # Verifies release-build obfuscation, edge-function HTTP security
+        # headers, certificate pinning, RLS audit logging, .gitignore secret
+        # patterns, and that no service-role keys leak into client code.
+        run: python scripts/verify_security.py
+
   auto-fix-stats:
     name: Auto-fix Stats
     runs-on: ubuntu-24.04
@@ -366,7 +382,12 @@ jobs:
 
       - name: Build Android App Bundle (release)
         run: |
+          # --obfuscate + --split-debug-info: hides Dart symbols in release
+          # binary. Symbol files are kept as artifacts so production crash
+          # reports can be deobfuscated via Sentry/dart symbolize.
           flutter build appbundle --release \
+            --obfuscate \
+            --split-debug-info=build/symbols/android \
             --dart-define=SUPABASE_URL=${{ secrets.SUPABASE_URL }} \
             --dart-define=SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }} \
             --dart-define=GOOGLE_WEB_CLIENT_ID=${{ secrets.GOOGLE_WEB_CLIENT_ID }} \
@@ -378,6 +399,14 @@ jobs:
           name: android-release-${{ github.sha }}
           path: build/app/outputs/bundle/release/app-release.aab
           retention-days: 30
+
+      - name: Upload Android debug symbols
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        with:
+          name: android-symbols-${{ github.sha }}
+          path: build/symbols/android/**
+          retention-days: 90
+          if-no-files-found: warn
 
   ios-build:
     name: iOS Build

@@ -120,8 +120,14 @@ workflows:
 
       - name: Build Android App Bundle
         script: |
+          # --obfuscate + --split-debug-info: hides Dart symbols in release binary
+          # so attackers cannot easily reverse-engineer business logic. Symbol
+          # files are uploaded as artifacts and used by Sentry to deobfuscate
+          # production crash reports.
           flutter build appbundle --release \
             --build-number=$ANDROID_BUILD_NUMBER \
+            --obfuscate \
+            --split-debug-info=build/symbols/android \
             --dart-define=SUPABASE_URL="$SUPABASE_URL" \
             --dart-define=SUPABASE_ANON_KEY="$SUPABASE_ANON_KEY" \
             --dart-define=SENTRY_DSN="${SENTRY_DSN:-}" \
@@ -131,6 +137,7 @@ workflows:
     artifacts:
       - build/**/outputs/**/*.aab
       - build/**/outputs/**/mapping.txt
+      - build/symbols/android/**
       - flutter_drive.log
 
     publishing:
@@ -250,9 +257,12 @@ workflows:
             exit 1
           fi
           echo "Using export options plist: $EXPORT_PLIST"
+          # --obfuscate + --split-debug-info: see android-release notes above.
           flutter build ipa --release \
             --build-number=$IOS_BUILD_NUMBER \
             --export-options-plist="$EXPORT_PLIST" \
+            --obfuscate \
+            --split-debug-info=build/symbols/ios \
             --dart-define=SUPABASE_URL="$SUPABASE_URL" \
             --dart-define=SUPABASE_ANON_KEY="$SUPABASE_ANON_KEY" \
             --dart-define=SENTRY_DSN="${SENTRY_DSN:-}" \
@@ -261,6 +271,7 @@ workflows:
 
     artifacts:
       - build/ios/ipa/*.ipa
+      - build/symbols/ios/**
       - /tmp/xcodebuild_logs/*.log
       - flutter_drive.log
 
