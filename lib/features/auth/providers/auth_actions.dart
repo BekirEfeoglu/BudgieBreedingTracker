@@ -119,8 +119,10 @@ class AuthActions with _AuthOAuthMixin, _AuthAccountMixin {
     // Best-effort: revoke OAuth provider token before session is destroyed
     try {
       await revokeOAuthToken();
-    } catch (_) {
+    } catch (e, st) {
       // Non-blocking: provider token will expire naturally
+      AppLogger.warning('OAuth token revocation failed during sign-out: $e');
+      Sentry.captureException(e, stackTrace: st);
     }
     await _client.auth.signOut();
   }

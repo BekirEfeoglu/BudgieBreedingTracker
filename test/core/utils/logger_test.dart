@@ -112,4 +112,41 @@ void main() {
       expect(() => AppLogger.info('Line 1\nLine 2\nLine 3'), returnsNormally);
     });
   });
+
+  group('AppLogger.obfuscate — PII redaction', () {
+    test('returns <unknown> for null input', () {
+      expect(AppLogger.obfuscate(null), '<unknown>');
+    });
+
+    test('returns <unknown> for empty input', () {
+      expect(AppLogger.obfuscate(''), '<unknown>');
+    });
+
+    test('returns the value unchanged when shorter than visibleLength', () {
+      expect(AppLogger.obfuscate('abc'), 'abc');
+    });
+
+    test('returns the value unchanged when equal to visibleLength', () {
+      expect(AppLogger.obfuscate('abcdefgh'), 'abcdefgh');
+    });
+
+    test('truncates long UUID-like values to first 8 chars + ellipsis', () {
+      const uuid = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890';
+      final masked = AppLogger.obfuscate(uuid);
+      expect(masked, 'a1b2c3d4…');
+      expect(masked.contains(uuid), isFalse);
+      expect(masked.length, lessThan(uuid.length));
+    });
+
+    test('respects custom visibleLength', () {
+      expect(AppLogger.obfuscate('abcdefghij', visibleLength: 4), 'abcd…');
+    });
+
+    test('does not leak the trailing portion of the value', () {
+      const sensitive = 'super-secret-token-tail';
+      final masked = AppLogger.obfuscate(sensitive);
+      expect(masked.endsWith('tail'), isFalse);
+      expect(masked.endsWith('token-tail'), isFalse);
+    });
+  });
 }

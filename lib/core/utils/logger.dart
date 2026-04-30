@@ -96,4 +96,17 @@ class AppLogger {
     // Note: Sentry.captureException is NOT called here to avoid double
     // reporting. Use ErrorHandler.handleAndReport() for Sentry capture.
   }
+
+  /// Returns a safe, partial representation of a sensitive identifier
+  /// (such as a Supabase user UUID) for use in logs and breadcrumbs.
+  ///
+  /// Logging the full user UUID is treated as PII leakage per the security
+  /// rules, so this helper masks all but the first [visibleLength] characters
+  /// (default 8 — enough for log correlation, insufficient to deanonymise).
+  /// Returns `'<unknown>'` for null/empty values.
+  static String obfuscate(String? value, {int visibleLength = 8}) {
+    if (value == null || value.isEmpty) return '<unknown>';
+    if (value.length <= visibleLength) return value;
+    return '${value.substring(0, visibleLength)}…';
+  }
 }

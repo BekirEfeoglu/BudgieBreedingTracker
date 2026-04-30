@@ -36,7 +36,9 @@ class SyncPullHandler {
       since = null;
     }
 
-    AppLogger.info('[SyncOrchestrator] Pulling changes for $userId');
+    AppLogger.info(
+      '[SyncOrchestrator] Pulling changes for ${AppLogger.obfuscate(userId)}',
+    );
     int layerErrors = 0;
 
     // Layer 0: no FK deps

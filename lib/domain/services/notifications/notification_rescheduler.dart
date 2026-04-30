@@ -32,7 +32,10 @@ class NotificationRescheduler {
   /// Each category (incubations, eggs, chicks) is processed independently —
   /// a failure in one category does not prevent the others from running.
   Future<void> rescheduleAll(String userId) async {
-    AppLogger.info('[NotificationRescheduler] Starting rescheduleAll for $userId');
+    final maskedUserId = AppLogger.obfuscate(userId);
+    AppLogger.info(
+      '[NotificationRescheduler] Starting rescheduleAll for $maskedUserId',
+    );
 
     await Future.wait([
       _rescheduleIncubations(userId),
@@ -40,7 +43,9 @@ class NotificationRescheduler {
       _rescheduleChicks(userId),
     ]);
 
-    AppLogger.info('[NotificationRescheduler] Completed rescheduleAll for $userId');
+    AppLogger.info(
+      '[NotificationRescheduler] Completed rescheduleAll for $maskedUserId',
+    );
   }
 
   Future<void> _rescheduleIncubations(String userId) async {

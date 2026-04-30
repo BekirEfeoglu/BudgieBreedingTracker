@@ -196,7 +196,12 @@ class AppDatabase extends _$AppDatabase {
               'Database integrity check failed: $status',
               level: SentryLevel.error,
             );
-          } catch (_) {}
+          } catch (e, st) {
+            AppLogger.warning(
+              '[DB] Failed to report integrity issue to Sentry: $e',
+            );
+            AppLogger.debug('[DB] Sentry report stack trace: $st');
+          }
         }
       }
     },

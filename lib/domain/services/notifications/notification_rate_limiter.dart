@@ -137,7 +137,8 @@ class NotificationRateLimiter {
     final recentCount = _recentNotifications[key]?.length ?? 0;
     if (recentCount >= maxPerTypePerHour) {
       AppLogger.info(
-        '$_tag Rate limit reached for $type (user: $userId): '
+        '$_tag Rate limit reached for $type '
+        '(user: ${AppLogger.obfuscate(userId)}): '
         '$recentCount/$maxPerTypePerHour per hour',
       );
       return false;
@@ -151,7 +152,10 @@ class NotificationRateLimiter {
     final key = '${userId}_$type';
     _recentNotifications.putIfAbsent(key, () => []);
     _recentNotifications[key]!.add(DateTime.now());
-    AppLogger.info('$_tag Recorded notification: $type for user $userId');
+    AppLogger.info(
+      '$_tag Recorded notification: $type '
+      'for user ${AppLogger.obfuscate(userId)}',
+    );
     _schedulePersist();
   }
 

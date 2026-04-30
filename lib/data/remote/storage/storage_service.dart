@@ -271,11 +271,14 @@ class StorageService {
       _communityPhotosBucket,
     ];
 
+    final maskedUserId = AppLogger.obfuscate(userId);
     for (final bucket in buckets) {
       try {
         await _deleteRecursive(bucket, userId);
       } catch (e) {
-        AppLogger.warning('Failed to clear bucket $bucket for $userId: $e');
+        AppLogger.warning(
+          'Failed to clear bucket $bucket for $maskedUserId: $e',
+        );
       }
     }
   }
