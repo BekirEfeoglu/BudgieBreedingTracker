@@ -1,0 +1,14 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.budgiebreeding.budgie_breeding_tracker",
+      "sha256_cert_fingerprints": [
+        "CB:F3:A0:8D:07:86:C2:86:F8:CA:0D:ED:31:51:DF:DD:9C:AE:69:DE:C7:C5:24:CC:7F:F3:66:90:B6:4A:93:83"
+      ]
+    }
+  }
+]

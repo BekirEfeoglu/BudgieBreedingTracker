@@ -1,0 +1,14 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "GKFR8WRJR7.com.budgiebreeding.tracker",
+        "paths": [
+          "/auth/callback",
+          "/auth/callback/*"
+        ]
+      }
+    ]
+  }
+}

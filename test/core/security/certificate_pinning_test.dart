@@ -88,4 +88,24 @@ void main() {
       );
     });
   });
+
+  group('CertificatePinning.isTrustedFingerprint', () {
+    test('trusts the active Supabase leaf certificate', () {
+      expect(
+        CertificatePinning.isTrustedFingerprint(
+          'B9:B8:F4:CE:6C:86:1D:3D:D1:67:87:08:FA:4A:40:62:10:7E:E7:05:0B:52:82:0F:99:10:50:F1:2E:B2:91:00',
+        ),
+        isTrue,
+      );
+    });
+
+    test('rejects unknown fingerprints', () {
+      expect(
+        CertificatePinning.isTrustedFingerprint(
+          '00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00',
+        ),
+        isFalse,
+      );
+    });
+  });
 }

@@ -30,11 +30,12 @@ import AppTrackingTransparency
   }
 
   override init() {
+    AppDelegate.configureFirebaseIfNeeded()
     super.init()
-    configureFirebaseIfNeeded()
+    AppDelegate.configureFirebaseIfNeeded()
   }
 
-  private func configureFirebaseIfNeeded() {
+  private static func configureFirebaseIfNeeded() {
     guard FirebaseApp.app() == nil else { return }
     guard Bundle.main.path(forResource: "GoogleService-Info", ofType: "plist") != nil else { return }
     FirebaseApp.configure()
@@ -44,7 +45,7 @@ import AppTrackingTransparency
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
-    configureFirebaseIfNeeded()
+    AppDelegate.configureFirebaseIfNeeded()
 
     // Required for flutter_local_notifications to show notifications in foreground
     if #available(iOS 10.0, *) {
@@ -137,7 +138,7 @@ import AppTrackingTransparency
   }
 
   func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
-    configureFirebaseIfNeeded()
+    AppDelegate.configureFirebaseIfNeeded()
     GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
     // NOTE: The keyboard-fix and ATT MethodChannels are set up in
     // SceneDelegate (not here) because engineBridge.pluginRegistry
