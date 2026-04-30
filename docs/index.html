@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://budgiebreedingtracker.online; connect-src 'self' https://formsubmit.co; form-action 'self' https://formsubmit.co; frame-src 'none'; upgrade-insecure-requests">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://budgiebreedingtracker.online; connect-src 'self' https://formsubmit.co; form-action 'self' https://formsubmit.co; frame-ancestors 'none'; frame-src 'none'; upgrade-insecure-requests">
   <meta http-equiv="Permissions-Policy" content="camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()">
   <meta http-equiv="X-Content-Type-Options" content="nosniff">
   <meta name="referrer" content="no-referrer">
@@ -915,6 +915,8 @@
           <input type="text" name="_honey" style="display:none" tabindex="-1" autocomplete="off">
           <input
             type="email"
+            maxlength="254"
+            inputmode="email"
             id="email-input"
             name="email"
             class="flex-1 px-4 py-3 rounded-xl transition-all text-sm email-input-glow"
@@ -1558,7 +1560,8 @@
     function handleEmailSignup(e) {
       e.preventDefault();
       const email = document.getElementById('email-input').value.trim();
-      if (!email) return;
+      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!email || !emailPattern.test(email) || email.length > 254) return;
       const form = document.getElementById('email-form');
       const btn = form.querySelector('button[type="submit"]');
       const originalText = btn.textContent;

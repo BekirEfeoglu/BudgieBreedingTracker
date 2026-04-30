@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://budgiebreedingtracker.online; connect-src 'self' https://formsubmit.co; form-action 'self' https://formsubmit.co; frame-src 'none'; upgrade-insecure-requests">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://budgiebreedingtracker.online; connect-src 'self' https://formsubmit.co; form-action 'self' https://formsubmit.co; frame-ancestors 'none'; frame-src 'none'; upgrade-insecure-requests">
   <meta http-equiv="Permissions-Policy" content="camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()">
   <meta http-equiv="X-Content-Type-Options" content="nosniff">
   <meta name="referrer" content="no-referrer">
@@ -1062,6 +1062,28 @@
 
     let currentLang = 'tr';
 
+    function setSafeLocalizedHtml(el, value) {
+      if (typeof value !== 'string') return;
+      const template = document.createElement('template');
+      template.innerHTML = value;
+      const disallowed = template.content.querySelectorAll('*:not(strong):not(br):not(ul):not(li):not(a)');
+      if (disallowed.length > 0) {
+        el.textContent = value;
+        return;
+      }
+      const links = template.content.querySelectorAll('a');
+      for (const link of links) {
+        const href = link.getAttribute('href') || '';
+        if (!href.startsWith('mailto:') && !href.startsWith('https://')) {
+          el.textContent = value;
+          return;
+        }
+        link.setAttribute('rel', 'noopener noreferrer');
+      }
+      el.replaceChildren(template.content.cloneNode(true));
+    }
+
+
     function setLanguage(lang) {
       currentLang = lang;
       localStorage.setItem('bbt-lang', lang);
@@ -1074,7 +1096,7 @@
       });
       document.querySelectorAll('[data-i18n-html]').forEach(el => {
         const key = el.getAttribute('data-i18n-html');
-        if (t[key]) el.innerHTML = t[key];
+        if (t[key]) setSafeLocalizedHtml(el, t[key]);
       });
 
       const titles = {
