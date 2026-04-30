@@ -159,12 +159,21 @@ jobs:
         run: python -m pip install coverage
 
       - name: Run all script unit tests with coverage
+        # verify_security.py is excluded from coverage: it is a CI smoke-test
+        # script (audits config files / repo state) executed by the dedicated
+        # `security-audit` job, not unit-testable business logic.
         run: |
-          python -m coverage run --source=scripts --omit="scripts/test_*.py" \
+          python -m coverage run \
+            --source=scripts \
+            --omit="scripts/test_*.py,scripts/verify_security.py" \
             -m unittest discover -s scripts -p "test_*.py" -v --failfast
-          python -m coverage report --include="scripts/*.py" --omit="scripts/test_*.py" \
+          python -m coverage report \
+            --include="scripts/*.py" \
+            --omit="scripts/test_*.py,scripts/verify_security.py" \
             --fail-under=98
-          python -m coverage html --include="scripts/*.py" --omit="scripts/test_*.py" \
+          python -m coverage html \
+            --include="scripts/*.py" \
+            --omit="scripts/test_*.py,scripts/verify_security.py" \
             -d coverage-html
 
       - name: Upload coverage HTML report

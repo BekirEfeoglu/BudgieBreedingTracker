@@ -40,7 +40,7 @@ dart fix --apply
 ### Quality Scripts
 ```bash
 python3 scripts/check_l10n_sync.py       # Verify tr/en/de translation keys are in sync
-python3 scripts/verify_code_quality.py    # Anti-pattern scan (21 checkers, 16/17 CLAUDE.md patterns + 5 extra)
+python3 scripts/verify_code_quality.py    # Anti-pattern scan (23 checkers, 18/24 CLAUDE.md patterns + 5 extra)
 python3 scripts/verify_rules.py          # Validate CLAUDE.md stats against codebase (single source of truth)
 python3 scripts/verify_rules.py --fix    # Auto-fix CLAUDE.md stats table with actual values
 ```
