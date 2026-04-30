@@ -406,5 +406,8 @@ verify_jwt = true
 [functions.system-health]
 verify_jwt = true
 
+[functions.sync-premium-status]
+verify_jwt = true
+
 [functions.validate-free-tier-limit]
 verify_jwt = true

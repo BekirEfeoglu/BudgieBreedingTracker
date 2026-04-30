@@ -392,10 +392,11 @@ ORDER BY tablename;
 
 
 -- =====================================================================
--- M. sync_premium_status RPC verification
+-- M. sync_premium_status RPC lock-down verification
 -- =====================================================================
--- Verifies the sync_premium_status RPC is deployed, has correct
--- security settings, and functions correctly.
+-- Premium sync must go through the sync-premium-status Edge Function, which
+-- verifies RevenueCat server-side. The legacy RPC must remain fail-closed and
+-- non-callable by authenticated clients.
 
 -- M1. Verify function exists with correct security settings
 SELECT
@@ -413,10 +414,10 @@ FROM pg_proc
 WHERE proname = 'sync_premium_status'
   AND pronamespace = 'public'::regnamespace;
 
--- Expected: 1 row, security_definer = true, param_count = 5,
+-- Expected: 1 row, security_definer = false, param_count = 5,
 --           search_path_status = 'PASS: search_path hardened'
 
--- M2. Verify authenticated role has execute permission
+-- M2. Verify authenticated role cannot execute the legacy RPC
 SELECT
   grantee,
   privilege_type
@@ -425,37 +426,18 @@ WHERE routine_name = 'sync_premium_status'
   AND routine_schema = 'public'
   AND grantee = 'authenticated';
 
--- Expected: 1 row with privilege_type = 'EXECUTE'
+-- Expected: 0 rows
 
--- M3. Functional test — activate premium (run as authenticated user)
--- SELECT sync_premium_status(
---   true,                         -- p_is_premium
---   'premium',                    -- p_subscription_status
---   now() + interval '6 months',  -- p_premium_expires_at
---   'premium',                    -- p_plan
---   now() + interval '6 months'   -- p_current_period_end
--- );
--- Expected: {"success": true, "user_id": "<uuid>", "is_premium": true}
--- Verify: SELECT is_premium, subscription_status, premium_expires_at
---         FROM profiles WHERE id = auth.uid();
-
--- M4. Functional test — deactivate premium (run as same user)
--- SELECT sync_premium_status(
---   false,                        -- p_is_premium
---   'free',                       -- p_subscription_status
---   NULL,                         -- p_premium_expires_at
---   'premium',                    -- p_plan
---   NULL                          -- p_current_period_end
--- );
--- Expected: {"success": true, "user_id": "<uuid>", "is_premium": false}
--- Verify: SELECT status FROM user_subscriptions WHERE user_id = auth.uid();
--- Expected: status = 'cancelled'
-
--- M5. Verify unauthenticated call fails
--- SET role TO anon;
+-- M3. Verify any direct call fails closed even if permissions are granted
+-- temporarily in a staging session.
+-- GRANT EXECUTE ON FUNCTION public.sync_premium_status(
+--   boolean, text, timestamptz, text, timestamptz
+-- ) TO authenticated;
 -- SELECT sync_premium_status(true, 'premium');
--- Expected: ERROR 'Authentication required'
--- RESET role;
+-- Expected: ERROR 'premium_sync_requires_server_verification'
+-- REVOKE ALL ON FUNCTION public.sync_premium_status(
+--   boolean, text, timestamptz, text, timestamptz
+-- ) FROM authenticated;
 
 
 -- =====================================================================
@@ -664,7 +646,7 @@ ORDER BY tablename;
 -- Section J: pg_trgm in extensions schema, gin indexes work
 -- Section K: all SECURITY DEFINER functions have search_path
 -- Section L: free tier limit RLS policies deployed with premium bypass
--- Section M: sync_premium_status RPC deployed with correct security
+-- Section M: sync_premium_status RPC is fail-closed; Edge Function owns sync
 -- Section N: messaging/marketplace UPDATE hardening (WITH CHECK + triggers + RPC)
 -- Section O: audit_logs lockdown (no client INSERT, definer triggers intact)
 -- Section P: definer trigger functions hardened to search_path = ''

@@ -282,6 +282,55 @@ def check_pgaudit_migration() -> List[Tuple[str, bool, str]]:
     ]
 
 
+def check_premium_sync_server_verified() -> List[Tuple[str, bool, str]]:
+    """Premium state must be derived server-side, not from client RPC params."""
+    results: List[Tuple[str, bool, str]] = []
+
+    premium_sources = "\n".join(
+        p.read_text(encoding="utf-8", errors="ignore")
+        for p in (ROOT / "lib" / "domain" / "services" / "premium").glob("*.dart")
+    )
+    if "sync_premium_status" in premium_sources or ".rpc(" in premium_sources:
+        results.append(
+            fail(
+                "premium sync client path",
+                "premium code still calls a Supabase RPC directly",
+            )
+        )
+    elif "sync-premium-status" in premium_sources:
+        results.append(
+            ok("premium sync client path", "uses Edge Function verification")
+        )
+    else:
+        results.append(
+            fail(
+                "premium sync client path",
+                "sync-premium-status Edge Function call not found",
+            )
+        )
+
+    migrations = "\n".join(
+        p.read_text(encoding="utf-8", errors="ignore")
+        for p in (ROOT / "supabase" / "migrations").glob("*.sql")
+    )
+    if (
+        "premium_sync_requires_server_verification" in migrations
+        and "sync-premium-status Edge Function" in migrations
+    ):
+        results.append(
+            ok("premium sync RPC", "legacy RPC is fail-closed")
+        )
+    else:
+        results.append(
+            fail(
+                "premium sync RPC",
+                "legacy sync_premium_status RPC is not explicitly fail-closed",
+            )
+        )
+
+    return results
+
+
 CHECKS = [
     ("Release build obfuscation", check_release_obfuscation),
     ("Edge Function security headers", check_edge_function_security_headers),
@@ -290,6 +339,7 @@ CHECKS = [
     (".gitignore secret patterns", check_gitignore_secrets),
     ("No secrets committed to git", check_no_secrets_committed),
     ("Audit logging (pgaudit / audit_logs)", check_pgaudit_migration),
+    ("Premium sync authorization", check_premium_sync_server_verified),
 ]
 
 

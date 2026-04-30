@@ -10,6 +10,7 @@
 | `system-health` | Admin dashboard | JWT + admin role |
 | `validate-free-tier-limit` | Entity insert path | JWT |
 | `scan-image-safety` | Photo upload pipeline | JWT |
+| `sync-premium-status` | RevenueCat premium sync | JWT |
 
 All functions MUST enforce JWT verification. Never deploy with `--no-verify-jwt` — audit flagged this as release-blocker.
 
@@ -35,6 +36,7 @@ All functions MUST enforce JWT verification. Never deploy with `--no-verify-jwt`
 |----------|--------|-----------|
 | `mfa-lockout` | 5 fails → lockout, 7-day decay | Prevent slow brute force (prior 24h decay allowed 1 try/day forever) |
 | `validate-free-tier-limit` | Server-side enforcement, client cannot bypass | Free tier limits must not depend on client trust |
+| `sync-premium-status` | RevenueCat checked server-side with secret key | Premium access must not depend on client assertions |
 | `moderate-content` | Threshold-based auto-flag + human review queue | Scalable moderation, low false-positive risk |
 
 ## Testing Requirements

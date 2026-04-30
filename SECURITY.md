@@ -77,6 +77,7 @@ This application implements:
 - **OAuth Token Revocation** on logout via `revoke-oauth-token` Edge Function
 - **Image Safety Scanning** before storage uploads (`scan-image-safety` Edge Function)
 - **Free Tier Enforcement** server-side via `validate-free-tier-limit` Edge Function
+- **Premium Status Verification** server-side via `sync-premium-status` Edge Function and RevenueCat secret API key; clients cannot assert `is_premium`
 
 ### Operational / CI
 - **Sentry Error Tracking** with PII scrubbing
@@ -93,6 +94,7 @@ The following must be configured directly in the Supabase project — they are n
 - **MFA enrollment** policy and enforced AAL2 for sensitive endpoints
 - **Allowed redirect URLs** locked to production domains
 - **`pgaudit` extension** enabled (Database → Extensions → pgaudit) + `pgaudit.log = 'ddl, role'`
+- **`REVENUECAT_SECRET_API_KEY`** configured as an Edge Function secret for server-side premium sync
 - **Network restrictions** to limit DB access to known origins/CIDRs
 
 ## Security Best Practices for Users

@@ -16,12 +16,10 @@ extension _PremiumSyncHelpers on PremiumNotifier {
   /// the retry counter when saving a failed sync for later retry.
   Future<void> syncPremiumToSupabase({
     required bool isPremium,
-    Package? package,
     int currentRetryCount = -1,
   }) async {
     if (!ref.mounted) return;
     try {
-      final client = ref.read(supabaseClientProvider);
       final userId = ref.read(currentUserIdProvider);
       if (userId == 'anonymous') return;
 
@@ -35,40 +33,25 @@ extension _PremiumSyncHelpers on PremiumNotifier {
       if (profile == null) {
         AppLogger.debug(
           '[PremiumNotifier] Profile not yet loaded — skipping admin/founder guard, '
-          'falling through to RPC sync',
+          'falling through to Edge Function sync',
         );
       }
 
-      // Determine expiry from RevenueCat subscription info
-      DateTime? expiresAt;
-      if (isPremium) {
-        try {
-          if (!ref.mounted) return;
-          final info = await ref
-              .read(purchaseServiceProvider)
-              .getSubscriptionInfo();
-          expiresAt = info.expirationDate;
-        } catch (e, st) {
-          AppLogger.error(
-            '[PremiumNotifier] RevenueCat info unavailable, proceeding without expiry',
-            e,
-            st,
-          );
-        }
+      // Server-side RevenueCat verification. The client never sends the
+      // desired premium value; the Edge Function derives it from RevenueCat
+      // using a server-only API key before updating Supabase.
+      final result = await ref
+          .read(edgeFunctionClientProvider)
+          .invoke('sync-premium-status');
+
+      if (!result.success) {
+        throw StateError(result.error ?? 'sync-premium-status failed');
       }
 
-      // Atomic sync via RPC — updates both profiles and user_subscriptions
-      // in a single transaction, preventing partial state.
-      await client.rpc(
-        'sync_premium_status',
-        params: {
-          'p_is_premium': isPremium,
-          'p_subscription_status': isPremium ? 'premium' : 'free',
-          'p_premium_expires_at': expiresAt?.toIso8601String(),
-          'p_plan': 'premium',
-          'p_current_period_end': expiresAt?.toIso8601String(),
-        },
-      );
+      final serverPremium = result.data?['is_premium'] as bool?;
+      if (serverPremium != null && serverPremium != state) {
+        await setPremium(serverPremium);
+      }
 
       // Sync succeeded — clear any pending retry
       await clearPendingSync(userId);

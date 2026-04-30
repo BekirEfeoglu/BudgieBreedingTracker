@@ -123,6 +123,7 @@ scripts/test_verify_rules.py            # Tests for verify_rules.py
 | `SENTRY_ENVIRONMENT` | No | `production` | Sentry environment tag |
 | `REVENUECAT_API_KEY_IOS` | No | — | RevenueCat iOS |
 | `REVENUECAT_API_KEY_ANDROID` | No | — | RevenueCat Android |
+| `REVENUECAT_SECRET_API_KEY` | Edge Function secret | — | Server-side RevenueCat subscription verification |
 | `GOOGLE_WEB_CLIENT_ID` | No | — | Google OAuth (web) |
 | `GOOGLE_IOS_CLIENT_ID` | No | — | Google OAuth (iOS) |
 | `DEBUG_START_ROUTE` | No | — | Debug: open at specific route |
@@ -136,10 +137,11 @@ Config methods: `.env` + `--dart-define-from-file` (local) · GitHub Secrets (CI
 | --- | --- | --- |
 | `SUPABASE_ACCESS_TOKEN` | Edge Function deployment | Supabase Dashboard → Account → Access Tokens |
 | `SUPABASE_PROJECT_REF` | Edge Function deployment | Supabase Dashboard URL project reference ID |
+| `REVENUECAT_SECRET_API_KEY` | `sync-premium-status` Edge Function runtime | RevenueCat Dashboard → Project settings → API keys → Secret API keys |
 
 ## Supabase
 
-### Edge Functions (7)
+### Edge Functions (8)
 | Function | Purpose |
 | --- | --- |
 | `mfa-lockout` | MFA brute-force lockout handling |
@@ -148,10 +150,11 @@ Config methods: `.env` + `--dart-define-from-file` (local) · GitHub Secrets (CI
 | `scan-image-safety` | Photo upload safety scan |
 | `send-push` | FCM push notification delivery |
 | `system-health` | Admin dashboard system health check |
+| `sync-premium-status` | Server-side RevenueCat premium status verification |
 | `validate-free-tier-limit` | Free tier entity limit enforcement |
 
 ### Migrations
-134 SQL migration files in `supabase/migrations/`. Schema managed server-side; never modify RLS policies from client code.
+141 SQL migration files in `supabase/migrations/`. Schema managed server-side; never modify RLS policies from client code.
 
 ## Rules
 
