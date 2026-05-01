@@ -10,7 +10,7 @@ import '../../../core/widgets/app_icon.dart';
 import '../../../data/providers/auth_state_providers.dart';
 import '../../../domain/services/sync/sync_orchestrator.dart';
 import '../../../domain/services/sync/sync_providers.dart';
-import '../../settings/widgets/sync_detail_sheet.dart';
+import 'package:budgie_breeding_tracker/shared/widgets/sync_detail_sheet.dart';
 
 /// Displays current sync status with last sync time, pending count,
 /// stale error warning, and manual sync button.
@@ -118,9 +118,8 @@ class SyncStatusTile extends ConsumerWidget {
     if (status == SyncDisplayStatus.error) {
       final userId = ref.watch(currentUserIdProvider);
       final errorDetails = ref.watch(syncErrorDetailsProvider(userId));
-      final totalErrors = errorDetails.value
-              ?.fold<int>(0, (sum, d) => sum + d.errorCount) ??
-          0;
+      final totalErrors =
+          errorDetails.value?.fold<int>(0, (sum, d) => sum + d.errorCount) ?? 0;
       if (totalErrors > 0) {
         return 'sync.error_count_summary'.tr(args: ['$totalErrors']) +
             pendingSuffix;

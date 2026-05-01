@@ -10,7 +10,7 @@ import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/core/widgets/buttons/app_icon_button.dart';
 import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/parent_genotype.dart';
-import 'package:budgie_breeding_tracker/features/genetics/utils/bird_genotype_mapper.dart';
+import 'package:budgie_breeding_tracker/shared/utils/bird_genotype_mapper.dart';
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 import 'package:budgie_breeding_tracker/data/providers/bird_stream_providers.dart';
 import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';

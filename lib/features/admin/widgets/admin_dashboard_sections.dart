@@ -10,6 +10,98 @@ import '../../../core/widgets/app_icon.dart';
 import '../providers/admin_providers.dart';
 import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
 
+export 'admin_dashboard_operations_overview_section.dart';
+export 'admin_dashboard_live_health_panel.dart';
+
+/// Admin notification center for actionable operational items.
+class DashboardNotificationCenterSection extends ConsumerWidget {
+  const DashboardNotificationCenterSection({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final notificationsAsync = ref.watch(adminNotificationCenterProvider);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'admin.notification_center'.tr(),
+          style: theme.textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.md),
+        notificationsAsync.when(
+          loading: () => const LoadingState(),
+          error: (_, __) => Text('common.data_load_error'.tr()),
+          data: (items) {
+            if (items.isEmpty) {
+              return Card(
+                child: Padding(
+                  padding: AppSpacing.cardPadding,
+                  child: Text('admin.no_admin_notifications'.tr()),
+                ),
+              );
+            }
+            return Column(
+              children: items
+                  .map(
+                    (item) => Card(
+                      key: ValueKey(item.id),
+                      margin: const EdgeInsets.only(bottom: AppSpacing.xs),
+                      child: ListTile(
+                        leading: Icon(
+                          _notificationIcon(item.severity),
+                          color: _notificationColor(item.severity),
+                        ),
+                        title: Text(_notificationTitle(item.title)),
+                        subtitle: Text(
+                          _notificationMessage(item),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        dense: true,
+                      ),
+                    ),
+                  )
+                  .toList(),
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  IconData _notificationIcon(String severity) => switch (severity) {
+    'critical' => LucideIcons.alertOctagon,
+    'warning' => LucideIcons.alertTriangle,
+    _ => LucideIcons.info,
+  };
+
+  Color _notificationColor(String severity) => switch (severity) {
+    'critical' => AppColors.error,
+    'warning' => AppColors.warning,
+    _ => AppColors.info,
+  };
+
+  String _notificationTitle(String title) => switch (title) {
+    'open_feedback' => 'admin.open_feedback'.tr(),
+    'sync_errors' => 'admin.sync_errors'.tr(),
+    'security_high' => 'admin.high_security_events'.tr(),
+    _ => title,
+  };
+
+  String _notificationMessage(AdminNotificationItem item) => switch (item.id) {
+    'open_feedback' => 'admin.open_feedback_notification'.tr(
+      args: [item.message],
+    ),
+    'sync_errors' => 'admin.sync_error_notification'.tr(args: [item.message]),
+    'security_high' => 'admin.security_notification'.tr(args: [item.message]),
+    _ => item.message,
+  };
+}
+
 /// Active alerts section.
 class DashboardAlertsSection extends ConsumerWidget {
   const DashboardAlertsSection({super.key});
@@ -200,9 +292,9 @@ class DashboardContentReviewSection extends ConsumerWidget {
   }
 }
 
-/// Recent admin actions section.
-class DashboardRecentActionsSection extends ConsumerWidget {
-  const DashboardRecentActionsSection({super.key});
+/// Audit timeline section with target/admin context.
+class DashboardAuditTimelineSection extends ConsumerWidget {
+  const DashboardAuditTimelineSection({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -249,10 +341,32 @@ class DashboardRecentActionsSection extends ConsumerWidget {
                         const AppIcon(AppIcons.monitoring, size: 16),
                         const SizedBox(width: AppSpacing.sm),
                         Expanded(
-                          child: Text(
-                            log.action,
-                            style: theme.textTheme.bodySmall,
-                            overflow: TextOverflow.ellipsis,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                log.action,
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              if (log.adminUserId != null ||
+                                  log.targetUserId != null)
+                                Text(
+                                  [
+                                    if (log.adminUserId != null)
+                                      '${'admin.admin_actor'.tr()}: ${log.adminUserId}',
+                                    if (log.targetUserId != null)
+                                      '${'admin.target_user'.tr()}: ${log.targetUserId}',
+                                  ].join(' · '),
+                                  style: theme.textTheme.labelSmall?.copyWith(
+                                    color: theme.colorScheme.outline,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                            ],
                           ),
                         ),
                         Text(
@@ -275,4 +389,9 @@ class DashboardRecentActionsSection extends ConsumerWidget {
       ],
     );
   }
+}
+
+/// Backward-compatible name used by older widget tests and callers.
+class DashboardRecentActionsSection extends DashboardAuditTimelineSection {
+  const DashboardRecentActionsSection({super.key});
 }

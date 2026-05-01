@@ -63,18 +63,29 @@ class HealthRecordCard extends ConsumerWidget {
                     const SizedBox(height: 2),
                     Row(
                       children: [
-                        Text(
-                          healthRecordTypeLabel(record.type),
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: healthRecordTypeColor(record.type),
-                            fontWeight: FontWeight.w600,
+                        Flexible(
+                          child: Text(
+                            healthRecordTypeLabel(record.type),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: healthRecordTypeColor(record.type),
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
                         const SizedBox(width: AppSpacing.sm),
-                        Text(
-                          ref.watch(dateFormatProvider).formatter().format(record.date),
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: theme.colorScheme.onSurfaceVariant,
+                        Flexible(
+                          child: Text(
+                            ref
+                                .watch(dateFormatProvider)
+                                .formatter()
+                                .format(record.date),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.colorScheme.onSurfaceVariant,
+                            ),
                           ),
                         ),
                       ],

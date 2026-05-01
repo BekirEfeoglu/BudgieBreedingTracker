@@ -40,6 +40,16 @@
                     android:scheme="io.supabase.budgiebreeding"
                     android:host="login-callback" />
             </intent-filter>
+            <!-- Verified HTTPS App Link for email auth callbacks -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="https"
+                    android:host="budgiebreedingtracker.online"
+                    android:pathPrefix="/auth/callback" />
+            </intent-filter>
         </activity>
         <!-- FCM default notification icon (monochrome silhouette) -->
         <meta-data

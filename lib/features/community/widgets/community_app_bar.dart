@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -11,9 +12,9 @@ import '../../../core/widgets/buttons/app_icon_button.dart';
 import '../../../data/models/profile_model.dart';
 import '../../../data/providers/auth_state_providers.dart';
 import '../../../router/route_names.dart';
-import '../../gamification/providers/gamification_providers.dart';
-import '../../notifications/widgets/notification_bell_button.dart';
-import '../../profile/providers/profile_providers.dart';
+import 'package:budgie_breeding_tracker/shared/providers/gamification.dart';
+import 'package:budgie_breeding_tracker/shared/widgets/app_shell.dart';
+import 'package:budgie_breeding_tracker/shared/providers/profile.dart';
 
 /// Profile-centric AppBar for the community screen.
 class CommunityAppBar extends ConsumerWidget implements PreferredSizeWidget {
@@ -33,14 +34,16 @@ class CommunityAppBar extends ConsumerWidget implements PreferredSizeWidget {
     final initials = displayName.isNotEmpty
         ? displayName[0].toUpperCase()
         : (userId.length >= 2
-            ? userId.substring(0, 2).toUpperCase()
-            : userId.toUpperCase());
+              ? userId.substring(0, 2).toUpperCase()
+              : userId.toUpperCase());
 
     return AppBar(
       toolbarHeight: 92,
       backgroundColor: Colors.transparent,
       surfaceTintColor: Colors.transparent,
       elevation: 0,
+      scrolledUnderElevation: 0,
+      systemOverlayStyle: SystemUiOverlayStyle.dark,
       leading: AppIconButton(
         icon: const Icon(LucideIcons.arrowLeft),
         semanticLabel: 'common.back'.tr(),
@@ -192,14 +195,10 @@ class _ProfileAvatar extends StatelessWidget {
               // avoid caching full-resolution originals.
               memCacheWidth: 192,
               maxWidthDiskCache: 192,
-              placeholder: (_, __) => _InitialsCircle(
-                initials: initials,
-                theme: theme,
-              ),
-              errorWidget: (_, __, ___) => _InitialsCircle(
-                initials: initials,
-                theme: theme,
-              ),
+              placeholder: (_, __) =>
+                  _InitialsCircle(initials: initials, theme: theme),
+              errorWidget: (_, __, ___) =>
+                  _InitialsCircle(initials: initials, theme: theme),
             )
           : _InitialsCircle(initials: initials, theme: theme),
     );

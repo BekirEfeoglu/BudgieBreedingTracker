@@ -40,15 +40,15 @@ class CertificatePinning {
 
   /// SHA-256 fingerprints of trusted certificates for pinned domains.
   ///
-  /// Pins the currently deployed Supabase leaf certificate. Update these when
-  /// Supabase rotates certificates.
+  /// Pins the currently deployed Supabase leaf certificate. Update this before
+  /// the certificate expires or when Supabase rotates certificates.
   /// Obtain new fingerprints via:
   /// ```bash
   /// openssl s_client -connect <host>:443 2>/dev/null | openssl x509 -noout -fingerprint -sha256
   /// ```
   static const _trustedFingerprints = <String>{
-    // Supabase leaf certificate (rotate when renewed)
-    '39:8B:CC:E2:D9:95:CB:23:CB:09:2A:93:7B:5B:58:BD:95:B4:08:A4:5F:BF:89:AB:7B:B1:14:03:47:89:AE:7D',
+    // Supabase leaf certificate, valid 2026-04-30 through 2026-07-29.
+    'B9:B8:F4:CE:6C:86:1D:3D:D1:67:87:08:FA:4A:40:62:10:7E:E7:05:0B:52:82:0F:99:10:50:F1:2E:B2:91:00',
     // Supabase intermediate CA (kept for emergency invalid-chain fallback)
     '1D:FC:16:05:FB:AD:35:8D:8B:C8:44:F7:6D:15:20:3F:AC:9C:A5:C1:A7:9F:D4:85:7F:FA:F2:86:4F:BE:BF:96',
   };
@@ -87,6 +87,11 @@ class CertificatePinning {
   @visibleForTesting
   static bool shouldRejectProxyForHost(String host, {required bool hasProxy}) {
     return hasProxy && !_allowProxy && isPinnedHost(host);
+  }
+
+  @visibleForTesting
+  static bool isTrustedFingerprint(String fingerprint) {
+    return _trustedFingerprints.contains(fingerprint.toUpperCase());
   }
 }
 
@@ -148,6 +153,16 @@ class _PinningHttpOverrides extends HttpOverrides {
 
   static bool _isTrustedPinnedCertificate(String host, X509Certificate cert) {
     if (!CertificatePinning.isPinnedHost(host)) return false;
+    final now = DateTime.now().toUtc();
+    if (now.isBefore(cert.startValidity.toUtc()) ||
+        now.isAfter(cert.endValidity.toUtc())) {
+      AppLogger.warning(
+        '[CertificatePinning] Rejected certificate for $host '
+        '(outside validity period)',
+      );
+      return false;
+    }
+
     final fingerprint = _computeFingerprint(cert);
     final trusted =
         fingerprint != null &&
@@ -155,7 +170,7 @@ class _PinningHttpOverrides extends HttpOverrides {
     if (!trusted) {
       AppLogger.warning(
         '[CertificatePinning] Rejected certificate for $host '
-        '(fingerprint mismatch)',
+        '(fingerprint mismatch: ${fingerprint ?? 'unavailable'})',
       );
     }
     return trusted;

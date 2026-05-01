@@ -28,11 +28,21 @@ final _testFeedbackItems = [
   {
     'id': 'f-3',
     'type': 'general',
-    'status': 'open',
+    'status': 'pending',
     'priority': 'low',
     'subject': 'Great app!',
     'email': 'user3@test.com',
     'created_at': '2024-03-03T12:00:00Z',
+  },
+  {
+    'id': 'f-4',
+    'type': 'bug',
+    'category': 'billing',
+    'status': 'open',
+    'priority': 'normal',
+    'subject': 'Invoice mismatch',
+    'email': 'user4@test.com',
+    'created_at': 'not-a-date',
   },
 ];
 
@@ -126,6 +136,7 @@ void main() {
       await tester.pump();
 
       expect(find.text(l10n('admin.feedback_status_all')), findsOneWidget);
+      expect(find.text(l10n('admin.feedback_status_pending')), findsOneWidget);
     });
 
     testWidgets('shows refresh icon button in AppBar', (tester) async {
@@ -133,6 +144,21 @@ void main() {
       await tester.pump();
 
       expect(find.byType(IconButton), findsAtLeastNWidgets(1));
+    });
+
+    testWidgets('uses category label and tolerates malformed dates', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _createSubject(feedbackAsync: AsyncData(_testFeedbackItems)),
+      );
+      await tester.pump();
+
+      expect(
+        find.text(l10n('admin.feedback_category_billing')),
+        findsOneWidget,
+      );
+      expect(find.text('Invoice mismatch'), findsOneWidget);
     });
   });
 }

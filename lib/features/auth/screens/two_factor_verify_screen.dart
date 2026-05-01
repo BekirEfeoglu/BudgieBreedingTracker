@@ -9,8 +9,7 @@ import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
-import 'package:budgie_breeding_tracker/data/providers/edge_function_provider.dart';
-import 'package:budgie_breeding_tracker/data/remote/supabase/edge_function_client.dart';
+import 'package:budgie_breeding_tracker/domain/services/auth/mfa_lockout_service.dart';
 import 'package:budgie_breeding_tracker/features/auth/providers/two_factor_providers.dart';
 import 'package:budgie_breeding_tracker/features/auth/widgets/otp_input_field.dart';
 import 'package:budgie_breeding_tracker/router/route_names.dart';
@@ -41,7 +40,8 @@ class _TwoFactorVerifyScreenState extends ConsumerState<TwoFactorVerifyScreen> {
   }
 
   /// Lockout threshold: first lockout at 5 failures.
-  static bool _shouldLockout(int attempts) => attempts >= 5 && attempts % 5 == 0;
+  static bool _shouldLockout(int attempts) =>
+      attempts >= 5 && attempts % 5 == 0;
 
   bool _isVerifying = false;
   String? _error;
@@ -68,22 +68,27 @@ class _TwoFactorVerifyScreenState extends ConsumerState<TwoFactorVerifyScreen> {
   /// Checks server-side lockout status via Edge Function.
   Future<void> _checkServerLockout() async {
     try {
-      final client = ref.read(edgeFunctionClientProvider);
-      final result = await client.checkMfaLockout();
+      final result = await ref.read(mfaLockoutServiceProvider).check();
       if (!mounted) return;
-      if (result.success && result.data != null) {
-        final locked = result.data!['locked'] as bool? ?? false;
-        final remaining = result.data!['remaining_seconds'] as int? ?? 0;
-        if (locked && remaining > 0) {
+      if (result.success) {
+        if (result.locked && result.remainingSeconds > 0) {
           setState(() {
-            _lockoutUntil = DateTime.now().add(Duration(seconds: remaining));
-            _error = 'auth.2fa_too_many_attempts'.tr(args: ['$remaining']);
+            _lockoutUntil = DateTime.now().add(
+              Duration(seconds: result.remainingSeconds),
+            );
+            _error = 'auth.2fa_too_many_attempts'.tr(
+              args: ['${result.remainingSeconds}'],
+            );
           });
         }
       }
     } catch (e, st) {
       // Fail closed: if we can't verify server lockout status, block verification
-      AppLogger.error('$_tag Server lockout check failed — failing closed: $e', e, st);
+      AppLogger.error(
+        '$_tag Server lockout check failed — failing closed: $e',
+        e,
+        st,
+      );
       if (mounted) {
         setState(() {
           _error = 'auth.2fa_server_unavailable'.tr();
@@ -110,10 +115,7 @@ class _TwoFactorVerifyScreenState extends ConsumerState<TwoFactorVerifyScreen> {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt(_prefsKeyAttempts, _failedAttempts);
     if (_lockoutUntil != null) {
-      await prefs.setString(
-        _prefsKeyLockout,
-        _lockoutUntil!.toIso8601String(),
-      );
+      await prefs.setString(_prefsKeyLockout, _lockoutUntil!.toIso8601String());
     } else {
       await prefs.remove(_prefsKeyLockout);
     }
@@ -156,8 +158,7 @@ class _TwoFactorVerifyScreenState extends ConsumerState<TwoFactorVerifyScreen> {
   Future<void> _handleSuccess() async {
     // Reset server-side lockout
     try {
-      final client = ref.read(edgeFunctionClientProvider);
-      await client.resetMfaLockout();
+      await ref.read(mfaLockoutServiceProvider).reset();
     } catch (e, st) {
       AppLogger.error('$_tag Server lockout reset failed: $e', e, st);
     }
@@ -173,10 +174,9 @@ class _TwoFactorVerifyScreenState extends ConsumerState<TwoFactorVerifyScreen> {
 
   Future<void> _handleFailure() async {
     // Record failure server-side
-    EdgeFunctionResult? serverResult;
+    MfaLockoutResult? serverResult;
     try {
-      final client = ref.read(edgeFunctionClientProvider);
-      serverResult = await client.recordMfaFailure();
+      serverResult = await ref.read(mfaLockoutServiceProvider).recordFailure();
     } catch (e, st) {
       AppLogger.error('$_tag Server failure recording failed: $e', e, st);
     }
@@ -184,10 +184,8 @@ class _TwoFactorVerifyScreenState extends ConsumerState<TwoFactorVerifyScreen> {
     if (!mounted) return;
 
     // Check if server responded with lockout
-    final serverLocked =
-        serverResult?.data?['locked'] as bool? ?? false;
-    final serverRemaining =
-        serverResult?.data?['remaining_seconds'] as int? ?? 0;
+    final serverLocked = serverResult?.locked ?? false;
+    final serverRemaining = serverResult?.remainingSeconds ?? 0;
 
     // Always accumulate attempts locally (never reset to 0)
     _failedAttempts++;

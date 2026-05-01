@@ -6,7 +6,7 @@ import '../../../core/enums/bird_enums.dart';
 import '../../../core/enums/marketplace_enums.dart';
 import '../../../core/utils/logger.dart';
 import '../../../data/repositories/repository_providers.dart';
-import '../../breeding/providers/breeding_providers.dart';
+import 'package:budgie_breeding_tracker/shared/providers/breeding.dart';
 import '../../../domain/services/moderation/moderation_providers.dart';
 import '../../../domain/services/moderation/content_moderation_service.dart';
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
@@ -26,12 +26,11 @@ class MarketplaceFormState {
     bool? isLoading,
     String? error,
     bool? isSuccess,
-  }) =>
-      MarketplaceFormState(
-        isLoading: isLoading ?? this.isLoading,
-        error: error,
-        isSuccess: isSuccess ?? this.isSuccess,
-      );
+  }) => MarketplaceFormState(
+    isLoading: isLoading ?? this.isLoading,
+    error: error,
+    isSuccess: isSuccess ?? this.isSuccess,
+  );
 }
 
 class MarketplaceFormNotifier extends Notifier<MarketplaceFormState> {
@@ -263,5 +262,5 @@ class MarketplaceFormNotifier extends Notifier<MarketplaceFormState> {
 
 final marketplaceFormStateProvider =
     NotifierProvider<MarketplaceFormNotifier, MarketplaceFormState>(
-  MarketplaceFormNotifier.new,
-);
+      MarketplaceFormNotifier.new,
+    );

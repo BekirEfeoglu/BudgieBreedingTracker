@@ -52,8 +52,8 @@
         stat_4: 'AES Şifreleme',
         cta_title: 'Hemen Başlayın',
         cta_subtitle: 'Kuşlarınızın bakımını profesyonel seviyeye taşıyın. Ücretsiz indirin, hemen kullanmaya başlayın.',
-        cta_google_label: "Google Play'den",
-        cta_google_action: 'İndirin',
+        cta_google_label: "Google Play'de",
+        cta_google_action: 'Yakında',
         cta_apple_label: "App Store'dan",
         cta_apple_action: 'İndirin',
         cta_note: 'App Store\'da mevcut · Google Play yakında',
@@ -76,7 +76,7 @@
         footer_privacy: 'Gizlilik Politikası',
         footer_copyright: '© 2025-2026 BudgieBreedingTracker. Tüm hakları saklıdır.',
         footer_tagline: 'Üreme Takip Uygulaması',
-        footer_made: 'Yetiştiriciler tarafından, yetiştiriciler için yapıldı ❤️',
+        footer_made: 'Yetiştiriciler tarafından, yetiştiriciler için yapıldı.',
         footer_contact_title: 'İletişim',
         nav_how: 'Nasıl Çalışır?',
         nav_user_guide: 'Kullanım Kılavuzu',
@@ -110,20 +110,13 @@
         faq_q5: 'Hangi platformlarda çalışıyor?',
         faq_a5: 'BudgieBreedingTracker iOS (iPhone/iPad) cihazlarda App Store üzerinden kullanılabilir. Android desteği Google Play\'de yakında yayınlanacaktır.',
         cta_email_intro: 'Google Play çıkışından haberdar olmak için e-posta adresinizi bırakın:',
+        cta_email_label: 'E-posta adresi',
         cta_email_placeholder: 'e-posta@adresiniz.com',
         cta_email_btn: 'Haberdar Et',
-        cta_email_thanks: 'Teşekkürler! Size haber vereceğiz 🎉',
-        testimonials_badge: 'Kullanıcı Yorumları',
-        testimonials_title: 'Yetiştiriciler Ne Diyor?',
-        testimonial_1_text: '"Kuşlarımı takip etmek hiç bu kadar kolay olmamıştı. Genetik hesaplayıcı ile hangi mutasyonların çıkacağını önceden görebiliyorum."',
-        testimonial_1_name: 'Ahmet Y.',
-        testimonial_1_role: 'Hobi Yetiştiricisi',
-        testimonial_2_text: '"Offline çalışması harika. Kuş evinde internet yok ama tüm kayıtlarımı anında girebiliyorum. Eve gelince otomatik senkronize oluyor."',
-        testimonial_2_name: 'Fatma K.',
-        testimonial_2_role: 'Profesyonel Yetiştirici',
-        testimonial_3_text: '"Soy ağacı özelliği sayesinde akraba çiftleştirmelerden kaçınabiliyorum. İstatistikler de üreme başarımı artırmamda çok yardımcı oldu."',
-        testimonial_3_name: 'Mehmet O.',
-        testimonial_3_role: 'Kuş Kulübü Üyesi',
+        cta_email_thanks: 'Teşekkürler! Size haber vereceğiz.',
+        cta_email_error: 'Şu anda gönderilemedi. Lütfen daha sonra tekrar deneyin.',
+        cta_email_loading: 'Gönderiliyor...',
+        store_soon_message: 'Google Play sürümü yakında yayınlanacak.',
         premium_badge: 'Planlar',
         premium_title: 'Ücretsiz Başlayın, Premium\'la Büyüyün',
         premium_subtitle: 'Temel özellikler tamamen ücretsiz. Profesyonel araçlar için Premium\'a geçin.',
@@ -155,7 +148,6 @@
         feature_11_desc: 'Diğer yetiştiricilerle deneyimlerinizi paylaşın, sorular sorun ve bilgi alışverişinde bulunun.',
         feature_12_title: 'Pazar Yeri',
         feature_12_desc: 'Kuşlarınızı satışa çıkarın veya diğer yetiştiricilerin ilanlarını keşfedin. Güvenli mesajlaşma ile iletişim kurun.',
-        nav_testimonials: 'Yorumlar',
       },
       en: {
         nav_features: 'Features',
@@ -209,8 +201,8 @@
         stat_4: 'AES Encryption',
         cta_title: 'Get Started Now',
         cta_subtitle: 'Take your bird care to a professional level. Download for free and start using today.',
-        cta_google_label: 'GET IT ON',
-        cta_google_action: 'Google Play',
+        cta_google_label: 'GOOGLE PLAY',
+        cta_google_action: 'Coming Soon',
         cta_apple_label: 'DOWNLOAD ON THE',
         cta_apple_action: 'App Store',
         cta_note: 'Available on App Store · Google Play coming soon',
@@ -233,7 +225,7 @@
         footer_privacy: 'Privacy Policy',
         footer_copyright: '© 2025-2026 BudgieBreedingTracker. All rights reserved.',
         footer_tagline: 'Breeding Tracker App',
-        footer_made: 'Made by breeders, for breeders ❤️',
+        footer_made: 'Made by breeders, for breeders.',
         footer_contact_title: 'Contact',
         nav_how: 'How It Works',
         nav_user_guide: 'User Guide',
@@ -267,20 +259,13 @@
         faq_q5: 'Which platforms does it support?',
         faq_a5: 'BudgieBreedingTracker is available on the App Store for iOS (iPhone/iPad). Android support is coming soon to Google Play.',
         cta_email_intro: 'Leave your email to get notified when Google Play launches:',
+        cta_email_label: 'Email address',
         cta_email_placeholder: 'your@email.com',
         cta_email_btn: 'Notify Me',
-        cta_email_thanks: 'Thank you! We\'ll keep you posted 🎉',
-        testimonials_badge: 'User Reviews',
-        testimonials_title: 'What Breeders Say',
-        testimonial_1_text: '"Tracking my birds has never been this easy. With the genetics calculator, I can predict which mutations will appear."',
-        testimonial_1_name: 'Ahmet Y.',
-        testimonial_1_role: 'Hobby Breeder',
-        testimonial_2_text: '"The offline feature is amazing. There\'s no internet in the bird room, but I can enter all records instantly. They sync automatically when I get home."',
-        testimonial_2_name: 'Fatma K.',
-        testimonial_2_role: 'Professional Breeder',
-        testimonial_3_text: '"Thanks to the family tree feature, I can avoid inbreeding. The statistics have been very helpful in improving my breeding success."',
-        testimonial_3_name: 'Mehmet O.',
-        testimonial_3_role: 'Bird Club Member',
+        cta_email_thanks: 'Thank you! We\'ll keep you posted.',
+        cta_email_error: 'Could not send right now. Please try again later.',
+        cta_email_loading: 'Sending...',
+        store_soon_message: 'Google Play release is coming soon.',
         premium_badge: 'Plans',
         premium_title: 'Start Free, Grow with Premium',
         premium_subtitle: 'Core features are completely free. Upgrade to Premium for professional tools.',
@@ -312,7 +297,6 @@
         feature_11_desc: 'Share your experiences with other breeders, ask questions, and exchange knowledge.',
         feature_12_title: 'Marketplace',
         feature_12_desc: 'List your birds for sale or browse other breeders\' listings. Communicate securely via messaging.',
-        nav_testimonials: 'Reviews',
       },
       de: {
         nav_features: 'Funktionen',
@@ -366,8 +350,8 @@
         stat_4: 'AES-Verschlüsselung',
         cta_title: 'Jetzt loslegen',
         cta_subtitle: 'Bringen Sie Ihre Vogelpflege auf professionelles Niveau. Kostenlos herunterladen und sofort nutzen.',
-        cta_google_label: 'JETZT BEI',
-        cta_google_action: 'Google Play',
+        cta_google_label: 'GOOGLE PLAY',
+        cta_google_action: 'Bald verfügbar',
         cta_apple_label: 'LADEN IM',
         cta_apple_action: 'App Store',
         cta_note: 'Im App Store verfügbar · Google Play kommt bald',
@@ -390,7 +374,7 @@
         footer_privacy: 'Datenschutzrichtlinie',
         footer_copyright: '© 2025-2026 BudgieBreedingTracker. Alle Rechte vorbehalten.',
         footer_tagline: 'Zucht-Tracker-App',
-        footer_made: 'Von Züchtern für Züchter gemacht ❤️',
+        footer_made: 'Von Züchtern für Züchter gemacht.',
         footer_contact_title: 'Kontakt',
         nav_how: 'Wie es funktioniert',
         nav_user_guide: 'Benutzerhandbuch',
@@ -424,20 +408,13 @@
         faq_q5: 'Welche Plattformen werden unterstützt?',
         faq_a5: 'BudgieBreedingTracker ist im App Store für iOS (iPhone/iPad) verfügbar. Android-Unterstützung kommt bald bei Google Play.',
         cta_email_intro: 'Hinterlassen Sie Ihre E-Mail, um über den Google Play-Start informiert zu werden:',
+        cta_email_label: 'E-Mail-Adresse',
         cta_email_placeholder: 'ihre@email.de',
         cta_email_btn: 'Benachrichtigen',
-        cta_email_thanks: 'Danke! Wir halten Sie auf dem Laufenden 🎉',
-        testimonials_badge: 'Nutzerbewertungen',
-        testimonials_title: 'Was Züchter sagen',
-        testimonial_1_text: '"Meine Vögel zu verfolgen war noch nie so einfach. Mit dem Genetikrechner kann ich vorhersagen, welche Mutationen auftreten werden."',
-        testimonial_1_name: 'Ahmet Y.',
-        testimonial_1_role: 'Hobbyzüchter',
-        testimonial_2_text: '"Die Offline-Funktion ist großartig. Im Vogelzimmer gibt es kein Internet, aber ich kann alle Einträge sofort eingeben. Sie synchronisieren sich automatisch."',
-        testimonial_2_name: 'Fatma K.',
-        testimonial_2_role: 'Professionelle Züchterin',
-        testimonial_3_text: '"Dank der Stammbaum-Funktion kann ich Inzucht vermeiden. Die Statistiken haben mir sehr geholfen, meinen Zuchterfolg zu verbessern."',
-        testimonial_3_name: 'Mehmet O.',
-        testimonial_3_role: 'Vogelclub-Mitglied',
+        cta_email_thanks: 'Danke! Wir halten Sie auf dem Laufenden.',
+        cta_email_error: 'Senden derzeit nicht möglich. Bitte versuchen Sie es später erneut.',
+        cta_email_loading: 'Wird gesendet...',
+        store_soon_message: 'Die Google-Play-Version erscheint bald.',
         premium_badge: 'Pläne',
         premium_title: 'Kostenlos starten, mit Premium wachsen',
         premium_subtitle: 'Kernfunktionen sind völlig kostenlos. Upgrade auf Premium für professionelle Werkzeuge.',
@@ -469,7 +446,6 @@
         feature_11_desc: 'Teilen Sie Ihre Erfahrungen mit anderen Züchtern, stellen Sie Fragen und tauschen Sie Wissen aus.',
         feature_12_title: 'Marktplatz',
         feature_12_desc: 'Bieten Sie Ihre Vögel zum Verkauf an oder entdecken Sie Angebote anderer Züchter. Kommunizieren Sie sicher per Nachricht.',
-        nav_testimonials: 'Bewertungen',
       },
     };
 
@@ -498,7 +474,9 @@
       document.title = titles[lang];
 
       document.querySelectorAll('.lang-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.getAttribute('data-lang') === lang);
+        const active = btn.getAttribute('data-lang') === lang;
+        btn.classList.toggle('active', active);
+        btn.setAttribute('aria-pressed', active ? 'true' : 'false');
       });
     }
 
@@ -506,13 +484,17 @@
     function toggleMobileMenu() {
       const menu = document.getElementById('mobile-menu');
       const panel = document.getElementById('mobile-panel');
+      const button = document.getElementById('hamburger-btn');
       const isOpen = menu.classList.contains('open');
       if (isOpen) { closeMobileMenu(); return; }
       menu.classList.remove('hidden');
+      menu.inert = false;
       requestAnimationFrame(() => {
         menu.classList.add('open');
         panel.style.transform = 'translateY(0)';
       });
+      button.setAttribute('aria-expanded', 'true');
+      button.setAttribute('aria-label', 'Menüyü kapat');
       document.getElementById('hamburger-icon').classList.add('hidden');
       document.getElementById('close-icon').classList.remove('hidden');
     }
@@ -520,14 +502,32 @@
     function closeMobileMenu() {
       const menu = document.getElementById('mobile-menu');
       const panel = document.getElementById('mobile-panel');
+      const button = document.getElementById('hamburger-btn');
       menu.classList.remove('open');
+      menu.inert = true;
       panel.style.transform = 'translateY(-110%)';
+      button.setAttribute('aria-expanded', 'false');
+      button.setAttribute('aria-label', 'Menüyü aç');
       document.getElementById('hamburger-icon').classList.remove('hidden');
       document.getElementById('close-icon').classList.add('hidden');
       setTimeout(() => menu.classList.add('hidden'), 300);
     }
 
     // ─── FAQ Accordion ───
+    function initializeFaq() {
+      document.querySelectorAll('.faq-item').forEach((item, index) => {
+        const button = item.querySelector('.faq-question');
+        const answer = item.querySelector('.faq-answer');
+        if (!button || !answer) return;
+        const id = answer.id || 'faq-answer-' + (index + 1);
+        answer.id = id;
+        answer.setAttribute('role', 'region');
+        answer.setAttribute('aria-hidden', item.classList.contains('open') ? 'false' : 'true');
+        button.setAttribute('aria-controls', id);
+        button.setAttribute('aria-expanded', item.classList.contains('open') ? 'true' : 'false');
+      });
+    }
+
     function toggleFaq(btn) {
       const item = btn.closest('.faq-item');
       const answer = item.querySelector('.faq-answer');
@@ -535,11 +535,17 @@
       document.querySelectorAll('.faq-item.open').forEach(openItem => {
         if (openItem !== item) {
           openItem.classList.remove('open');
-          openItem.querySelector('.faq-answer').classList.remove('open');
+          const openAnswer = openItem.querySelector('.faq-answer');
+          const openButton = openItem.querySelector('.faq-question');
+          openAnswer.classList.remove('open');
+          openAnswer.setAttribute('aria-hidden', 'true');
+          openButton.setAttribute('aria-expanded', 'false');
         }
       });
       item.classList.toggle('open', !isOpen);
       answer.classList.toggle('open', !isOpen);
+      answer.setAttribute('aria-hidden', !isOpen ? 'false' : 'true');
+      btn.setAttribute('aria-expanded', !isOpen ? 'true' : 'false');
     }
 
     // ─── Store Coming Soon Toast ───
@@ -550,8 +556,7 @@
       toast.id = 'store-toast';
       toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);padding:12px 24px;border-radius:12px;font-size:14px;font-weight:500;z-index:9999;opacity:0;transition:all 0.3s ease;background:rgba(15,27,77,0.95);backdrop-filter:blur(12px);border:1px solid var(--glass-border);color:var(--gold-light);box-shadow:0 8px 32px rgba(0,0,0,0.3);';
       const lang = document.documentElement.lang || 'tr';
-      const msgs = { tr: 'Google Play\'de yakında yayında! 🚀', en: 'Coming soon to Google Play! 🚀', de: 'Bald im Google Play Store! 🚀' };
-      toast.textContent = msgs[lang] || msgs.tr;
+      toast.textContent = translations[lang]?.store_soon_message || translations.tr.store_soon_message;
       document.body.appendChild(toast);
       requestAnimationFrame(() => { toast.style.opacity = '1'; toast.style.transform = 'translateX(-50%) translateY(0)'; });
       setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateX(-50%) translateY(20px)'; setTimeout(() => toast.remove(), 300); }, 3000);
@@ -561,13 +566,16 @@
     function handleEmailSignup(e) {
       e.preventDefault();
       const email = document.getElementById('email-input').value.trim();
-      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!email || !emailPattern.test(email) || email.length > 254) return;
+      if (!email) return;
       const form = document.getElementById('email-form');
       const btn = form.querySelector('button[type="submit"]');
+      const status = document.getElementById('email-status');
+      const lang = document.documentElement.lang || 'tr';
       const originalText = btn.textContent;
       btn.disabled = true;
-      btn.textContent = '...';
+      btn.textContent = translations[lang]?.cta_email_loading || translations.tr.cta_email_loading;
+      status.classList.add('hidden');
+      status.classList.remove('error');
 
       fetch('https://formsubmit.co/ajax/support@budgiebreedingtracker.online', {
         method: 'POST',
@@ -581,12 +589,13 @@
       .then(res => res.json())
       .then(data => {
         form.style.display = 'none';
-        document.getElementById('email-thanks').classList.remove('hidden');
+        status.textContent = translations[lang]?.cta_email_thanks || translations.tr.cta_email_thanks;
+        status.classList.remove('hidden');
       })
       .catch(() => {
-        // Fallback: still show success (email saved locally)
-        form.style.display = 'none';
-        document.getElementById('email-thanks').classList.remove('hidden');
+        status.textContent = translations[lang]?.cta_email_error || translations.tr.cta_email_error;
+        status.classList.add('error');
+        status.classList.remove('hidden');
       })
       .finally(() => {
         btn.disabled = false;
@@ -700,6 +709,9 @@
       // Initial reveal check
       setTimeout(handleReveal, 100);
 
+      // FAQ accessibility attributes
+      initializeFaq();
+
       // Init 3D tilt on feature cards
       initTilt();
 
@@ -759,29 +771,35 @@
 
     // Scroll progress merged into main scroll handler above
 
-// ─── CSP-safe event delegation (replaces inline onclick handlers) ───
-document.addEventListener('click', function (e) {
-  var el = e.target.closest('[data-action]');
-  if (!el) return;
-  var action = el.dataset.action;
-  switch (action) {
-    case 'setLanguage':
-      if (typeof setLanguage === 'function') setLanguage(el.dataset.lang);
-      break;
-    case 'toggleMobileMenu':
-      if (typeof toggleMobileMenu === 'function') toggleMobileMenu();
-      break;
-    case 'closeMobileMenu':
-      if (typeof closeMobileMenu === 'function') closeMobileMenu();
-      break;
-    case 'toggleFaq':
-      if (typeof toggleFaq === 'function') toggleFaq(el);
-      break;
-    case 'showStoreToast':
-      if (typeof showStoreToast === 'function') showStoreToast();
-      break;
-    case 'scrollTop':
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      break;
-  }
-});
+    document.addEventListener('click', (event) => {
+      const el = event.target.closest('[data-action]');
+      if (!el) return;
+      switch (el.dataset.action) {
+        case 'setLanguage':
+          setLanguage(el.dataset.lang);
+          break;
+        case 'toggleMobileMenu':
+          toggleMobileMenu();
+          break;
+        case 'closeMobileMenu':
+          closeMobileMenu();
+          break;
+        case 'toggleFaq':
+          toggleFaq(el);
+          break;
+        case 'showStoreToast':
+          event.preventDefault();
+          showStoreToast();
+          break;
+        case 'scrollTop':
+          event.preventDefault();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          break;
+      }
+    });
+
+    document.addEventListener('submit', (event) => {
+      if (event.target && event.target.id === 'email-form') {
+        handleEmailSignup(event);
+      }
+    });

@@ -5,8 +5,7 @@ import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/buttons/primary_button.dart';
-import 'package:budgie_breeding_tracker/features/auth/widgets/auth_form_field.dart'; // Cross-feature import: profile↔auth shared form components
-import 'package:budgie_breeding_tracker/features/auth/widgets/password_strength_meter.dart'; // Cross-feature import: profile↔auth shared form components
+import 'package:budgie_breeding_tracker/shared/widgets/auth.dart';
 
 /// Form for changing the user's password with strength validation.
 class PasswordChangeForm extends ConsumerStatefulWidget {

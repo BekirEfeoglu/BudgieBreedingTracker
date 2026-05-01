@@ -18,9 +18,7 @@ import 'package:budgie_breeding_tracker/domain/services/incubation/incubation_ca
 import 'package:budgie_breeding_tracker/data/providers/breeding_detail_stream_providers.dart';
 import 'package:budgie_breeding_tracker/features/eggs/providers/egg_providers.dart';
 import 'package:budgie_breeding_tracker/data/providers/action_feedback_providers.dart';
-import 'package:budgie_breeding_tracker/features/eggs/widgets/egg_list_item.dart';
-import 'package:budgie_breeding_tracker/features/eggs/widgets/egg_status_update_sheet.dart';
-import 'package:budgie_breeding_tracker/features/eggs/widgets/egg_summary_row.dart';
+import 'package:budgie_breeding_tracker/shared/widgets/eggs.dart';
 import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
 
 part 'egg_management_add_sheet.dart';

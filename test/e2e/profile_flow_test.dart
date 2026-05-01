@@ -9,7 +9,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:budgie_breeding_tracker/data/models/profile_model.dart';
-import 'package:budgie_breeding_tracker/data/remote/storage/storage_providers.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/features/profile/providers/profile_providers.dart';
 
@@ -117,32 +116,21 @@ void main() {
     );
 
     test(
-      'GIVEN profile screen WHEN avatar image is picked and uploaded THEN storage upload is called and profile photoUrl is updated',
+      'GIVEN profile screen WHEN avatar image is picked and uploaded THEN repository avatar upload is called',
       () async {
         final mockProfileRepository = MockProfileRepository();
-        final mockStorageService = MockStorageService();
         final picked = XFile('avatar.jpg');
-        const current = Profile(
-          id: 'test-user',
-          email: 'test@example.com',
-          fullName: 'Test Kullanici',
-        );
 
         when(
-          () => mockStorageService.uploadAvatar(
+          () => mockProfileRepository.uploadAvatar(
             userId: 'test-user',
             file: picked,
           ),
-        ).thenAnswer((_) async => 'https://cdn.example.com/new-avatar.jpg');
-        when(
-          () => mockProfileRepository.getById('test-user'),
-        ).thenAnswer((_) async => current);
-        when(() => mockProfileRepository.save(any())).thenAnswer((_) async {});
+        ).thenAnswer((_) async {});
 
         final container = createTestContainer(
           overrides: [
             profileRepositoryProvider.overrideWithValue(mockProfileRepository),
-            storageServiceProvider.overrideWithValue(mockStorageService),
           ],
         );
         addTearDown(container.dispose);
@@ -151,13 +139,12 @@ void main() {
             .read(avatarUploadStateProvider.notifier)
             .uploadAvatar(picked);
 
-        final captured =
-            verify(
-                  () => mockProfileRepository.save(captureAny()),
-                ).captured.single
-                as Profile;
-
-        expect(captured.avatarUrl, 'https://cdn.example.com/new-avatar.jpg');
+        verify(
+          () => mockProfileRepository.uploadAvatar(
+            userId: 'test-user',
+            file: picked,
+          ),
+        ).called(1);
         expect(container.read(avatarUploadStateProvider).isSuccess, isTrue);
       },
       timeout: e2eTimeout,

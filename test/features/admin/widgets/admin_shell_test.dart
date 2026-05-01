@@ -24,6 +24,10 @@ Widget _wrapWithRouter({
         builder: (_, __) => AdminShell(child: shellChild),
       ),
       GoRoute(
+        path: '/admin/users/:userId',
+        builder: (_, __) => AdminShell(child: shellChild),
+      ),
+      GoRoute(
         path: '/admin/audit',
         builder: (_, __) => AdminShell(child: shellChild),
       ),
@@ -109,6 +113,28 @@ void main() {
         initialLocation: '/admin/users',
       );
       expect(find.text(l10n('admin.users')), findsOneWidget);
+    });
+
+    testWidgets('title shows admin.users for user detail route', (
+      tester,
+    ) async {
+      await _pumpShell(
+        tester,
+        size: const Size(600, 900),
+        initialLocation: '/admin/users/user-123',
+      );
+      expect(find.text(l10n('admin.users')), findsOneWidget);
+    });
+
+    testWidgets('title shows admin.feedback_admin for feedback route', (
+      tester,
+    ) async {
+      await _pumpShell(
+        tester,
+        size: const Size(600, 900),
+        initialLocation: '/admin/feedback',
+      );
+      expect(find.text(l10n('admin.feedback_admin')), findsOneWidget);
     });
 
     testWidgets('shows back-to-app icon button', (tester) async {

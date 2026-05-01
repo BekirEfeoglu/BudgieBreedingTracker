@@ -8,7 +8,7 @@ import '../../../core/utils/app_haptics.dart';
 import '../../../core/widgets/app_screen_title.dart';
 import '../../../core/widgets/error_state.dart';
 import '../../../data/models/profile_model.dart';
-import '../../auth/providers/auth_providers.dart';
+import 'package:budgie_breeding_tracker/shared/providers/auth.dart';
 import '../providers/profile_providers.dart';
 import '../widgets/account_info_card.dart';
 import '../widgets/animated_section.dart';
@@ -188,5 +188,4 @@ class ProfileScreen extends ConsumerWidget {
       ),
     );
   }
-
 }

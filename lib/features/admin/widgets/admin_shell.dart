@@ -5,10 +5,8 @@ import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../core/widgets/buttons/app_icon_button.dart';
 import '../../../router/route_names.dart';
+import '../constants/admin_constants.dart';
 import 'admin_sidebar.dart';
-
-/// Breakpoint for switching between sidebar and drawer layout.
-const double _kWideBreakpoint = 840;
 
 /// Shell widget for admin routes.
 ///
@@ -22,7 +20,8 @@ class AdminShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isWide = MediaQuery.sizeOf(context).width >= _kWideBreakpoint;
+    final isWide =
+        MediaQuery.sizeOf(context).width >= AdminConstants.wideLayoutBreakpoint;
 
     if (isWide) {
       return _WideLayout(child: child);
@@ -95,6 +94,7 @@ class _NarrowLayout extends StatelessWidget {
     if (location.contains('/audit')) return 'admin.audit';
     if (location.contains('/security')) return 'admin.security';
     if (location.contains('/settings')) return 'admin.settings';
+    if (location.contains('/feedback')) return 'admin.feedback_admin';
     return 'admin.dashboard';
   }
 }

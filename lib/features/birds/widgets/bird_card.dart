@@ -7,7 +7,7 @@ import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/features/birds/utils/bird_display_utils.dart';
-import 'package:budgie_breeding_tracker/features/birds/widgets/bird_gender_icon.dart';
+import 'package:budgie_breeding_tracker/shared/widgets/birds.dart';
 import 'package:budgie_breeding_tracker/features/birds/widgets/bird_status_badge.dart';
 
 /// Card displaying a bird's summary in the list.
@@ -74,24 +74,32 @@ class BirdCard extends StatelessWidget {
                         if (bird.ringNumber != null) ...[
                           AppIcon(
                             AppIcons.ring,
-                            size: 14,
+                            size: 16,
                             color: theme.colorScheme.onSurfaceVariant,
                           ),
                           // 2px icon-to-text gap: tighter than xs(4) for compact info row
                           const SizedBox(width: 2),
-                          Text(
-                            bird.ringNumber!,
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: theme.colorScheme.onSurfaceVariant,
+                          Flexible(
+                            child: Text(
+                              bird.ringNumber!,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: theme.colorScheme.onSurfaceVariant,
+                              ),
                             ),
                           ),
                           const SizedBox(width: AppSpacing.sm),
                         ],
                         if (age != null)
-                          Text(
-                            formatBirdAgeShort(age),
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: theme.colorScheme.onSurfaceVariant,
+                          Flexible(
+                            child: Text(
+                              formatBirdAgeShort(age),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: theme.colorScheme.onSurfaceVariant,
+                              ),
                             ),
                           ),
                       ],

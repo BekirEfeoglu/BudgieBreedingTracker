@@ -48,7 +48,7 @@ void main() {
 
       await source.fetchUpdatedSince('user-1', since);
 
-      final gteKeys = selectBuilder.gteCalls
+      final gtKeys = selectBuilder.gtCalls
           .map((entry) => '${entry.key}:${entry.value}')
           .toList();
       final eqKeys = selectBuilder.eqCalls
@@ -58,7 +58,7 @@ void main() {
       expect(eqKeys, contains('user_id:user-1'));
       // Notifications table has no is_deleted column.
       expect(eqKeys, isNot(contains('is_deleted:false')));
-      expect(gteKeys, contains('updated_at:${since.toIso8601String()}'));
+      expect(gtKeys, contains('updated_at:${since.toIso8601String()}'));
     });
 
     test('upsert sends serialized notification payload', () async {

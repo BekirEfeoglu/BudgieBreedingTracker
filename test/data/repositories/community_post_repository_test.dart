@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:budgie_breeding_tracker/data/remote/api/community_post_remote_source.dart';
+import 'package:budgie_breeding_tracker/data/remote/api/community_profile_cache.dart';
 import 'package:budgie_breeding_tracker/data/remote/api/community_social_remote_source.dart';
 import 'package:budgie_breeding_tracker/data/remote/storage/storage_service.dart';
 import 'package:budgie_breeding_tracker/data/repositories/community_post_repository.dart';
@@ -14,6 +15,8 @@ class MockCommunityPostRemoteSource extends Mock
 
 class MockCommunitySocialRemoteSource extends Mock
     implements CommunitySocialRemoteSource {}
+
+class MockCommunityProfileCache extends Mock implements CommunityProfileCache {}
 
 class MockStorageService extends Mock implements StorageService {}
 
@@ -231,6 +234,93 @@ void main() {
       expect(posts, hasLength(2));
       expect(posts[0].id, 'p2');
       expect(posts[1].id, 'p1');
+    });
+  });
+
+  group('getFollowedUserSummaries', () {
+    test('returns empty for anonymous user', () async {
+      final profiles = MockCommunityProfileCache();
+      final repository = CommunityPostRepository(
+        postSource: postSource,
+        socialSource: socialSource,
+        profileCache: profiles,
+      );
+
+      final result = await repository.getFollowedUserSummaries(
+        currentUserId: 'anonymous',
+      );
+
+      expect(result, isEmpty);
+      verifyNever(() => socialSource.fetchFollowedUserIds(any()));
+    });
+
+    test('maps followed profile display names and avatar URLs', () async {
+      final profiles = MockCommunityProfileCache();
+      final repository = CommunityPostRepository(
+        postSource: postSource,
+        socialSource: socialSource,
+        profileCache: profiles,
+      );
+      when(
+        () => socialSource.fetchFollowedUserIds('u1'),
+      ).thenAnswer((_) async => {'u2', 'u3'});
+      when(() => profiles.getProfiles({'u2', 'u3'})).thenAnswer(
+        (_) async => {
+          'u2': {
+            'id': 'u2',
+            'display_name': 'Alice',
+            'full_name': 'Alice Smith',
+            'email': 'alice@example.com',
+            'avatar_url': 'https://example.com/alice.jpg',
+          },
+          'u3': {
+            'id': 'u3',
+            'display_name': null,
+            'full_name': 'Bob Jones',
+            'email': 'bob@example.com',
+            'avatar_url': null,
+          },
+        },
+      );
+
+      final result = await repository.getFollowedUserSummaries(
+        currentUserId: 'u1',
+      );
+
+      expect(result, hasLength(2));
+      expect(result[0]['display_name'], 'Alice');
+      expect(result[0]['avatar_url'], 'https://example.com/alice.jpg');
+      expect(result[1]['display_name'], 'Bob Jones');
+      expect(result[1]['avatar_url'], isNull);
+    });
+
+    test('falls back to email prefix when names are missing', () async {
+      final profiles = MockCommunityProfileCache();
+      final repository = CommunityPostRepository(
+        postSource: postSource,
+        socialSource: socialSource,
+        profileCache: profiles,
+      );
+      when(
+        () => socialSource.fetchFollowedUserIds('u1'),
+      ).thenAnswer((_) async => {'u4'});
+      when(() => profiles.getProfiles({'u4'})).thenAnswer(
+        (_) async => {
+          'u4': {
+            'id': 'u4',
+            'display_name': null,
+            'full_name': null,
+            'email': 'charlie@example.com',
+            'avatar_url': null,
+          },
+        },
+      );
+
+      final result = await repository.getFollowedUserSummaries(
+        currentUserId: 'u1',
+      );
+
+      expect(result.single['display_name'], 'charlie');
     });
   });
 

@@ -31,13 +31,13 @@ class AppBrandTitle extends StatelessWidget {
     final accentColor = isDark ? AppColors.accentLight : AppColors.accent;
 
     final double fontSize = switch (size) {
-      AppBrandSize.small => 17,
+      AppBrandSize.small => 16,
       AppBrandSize.medium => 20,
       AppBrandSize.large => 26,
     };
 
     final double iconSize = switch (size) {
-      AppBrandSize.small => 18,
+      AppBrandSize.small => 17,
       AppBrandSize.medium => 26,
       AppBrandSize.large => 52,
     };
@@ -61,7 +61,7 @@ class AppBrandTitle extends StatelessWidget {
     final baseStyle = TextStyle(
       fontSize: fontSize,
       fontWeight: FontWeight.w900,
-      letterSpacing: isCompact ? -0.2 : -0.5,
+      letterSpacing: 0,
       height: 1.2,
       shadows: shadows,
     );
@@ -78,7 +78,7 @@ class AppBrandTitle extends StatelessWidget {
             style: baseStyle.copyWith(
               color: accentColor,
               fontWeight: isCompact ? FontWeight.w700 : FontWeight.w500,
-              letterSpacing: isCompact ? 0.2 : 1.2,
+              letterSpacing: 0,
               fontStyle: isCompact ? FontStyle.normal : FontStyle.italic,
               shadows: isCompact
                   ? const []
@@ -97,6 +97,9 @@ class AppBrandTitle extends StatelessWidget {
           ),
         ],
       ),
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      softWrap: false,
     );
 
     final Widget content;

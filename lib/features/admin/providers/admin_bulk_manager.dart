@@ -54,9 +54,9 @@ class AdminBulkManager {
         final result = await _userManager.toggleUserActive(userId, activate);
         switch (result) {
           case AdminUserOperationResult.success:
-          succeeded++;
+            succeeded++;
           case AdminUserOperationResult.protected:
-          skipped++;
+            skipped++;
           case AdminUserOperationResult.failed:
             throw StateError('bulk toggle failed for user $userId');
         }
@@ -84,9 +84,9 @@ class AdminBulkManager {
         final result = await _userManager.grantPremium(userId);
         switch (result) {
           case AdminUserOperationResult.success:
-          succeeded++;
+            succeeded++;
           case AdminUserOperationResult.protected:
-          skipped++;
+            skipped++;
           case AdminUserOperationResult.failed:
             throw StateError('bulk premium grant failed for user $userId');
         }
@@ -114,9 +114,9 @@ class AdminBulkManager {
         final result = await _userManager.revokePremium(userId);
         switch (result) {
           case AdminUserOperationResult.success:
-          succeeded++;
+            succeeded++;
           case AdminUserOperationResult.protected:
-          skipped++;
+            skipped++;
           case AdminUserOperationResult.failed:
             throw StateError('bulk premium revoke failed for user $userId');
         }
@@ -190,23 +190,24 @@ class AdminBulkManager {
 
       for (final userId in userIds) {
         try {
+          var userHadDeleteError = false;
           for (final table in deletionOrder) {
             try {
-              await client
-                  .from(table)
-                  .delete()
-                  .eq('user_id', userId);
+              await client.from(table).delete().eq('user_id', userId);
             } catch (e) {
+              userHadDeleteError = true;
               AppLogger.warning(
                 'bulkDeleteUserData: table $table for $userId: $e',
               );
             }
           }
-          succeeded++;
+          if (userHadDeleteError) {
+            skipped++;
+          } else {
+            succeeded++;
+          }
         } catch (e) {
-          AppLogger.warning(
-            'admin: bulkDeleteUserData failed for $userId: $e',
-          );
+          AppLogger.warning('admin: bulkDeleteUserData failed for $userId: $e');
           skipped++;
         }
       }

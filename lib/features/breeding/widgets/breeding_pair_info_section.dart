@@ -10,7 +10,7 @@ import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
-import 'package:budgie_breeding_tracker/features/birds/widgets/bird_gender_icon.dart'; // Cross-feature import: breeding↔birds tightly coupled domain
+import 'package:budgie_breeding_tracker/shared/widgets/birds.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_detail_providers.dart';
 
 class BreedingPairInfoSection extends ConsumerWidget {

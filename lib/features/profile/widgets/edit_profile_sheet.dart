@@ -8,9 +8,8 @@ import '../../../core/utils/logger.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:budgie_breeding_tracker/data/providers/action_feedback_providers.dart';
 import '../../../data/models/profile_model.dart';
-import '../../../data/remote/api/remote_source_providers.dart';
 import '../../../data/repositories/repository_providers.dart';
-import '../../auth/providers/auth_providers.dart';
+import 'package:budgie_breeding_tracker/shared/providers/auth.dart';
 import '../providers/profile_providers.dart';
 import 'avatar_picker_sheet.dart';
 import 'profile_form.dart';
@@ -122,16 +121,17 @@ class _EditProfileSheetState extends ConsumerState<EditProfileSheet> {
 
       await repo.save(updatedProfile);
 
-      // Invalidate community profile cache so updated name shows immediately
-      ref.read(communityProfileCacheProvider).invalidate(userId);
-
       if (mounted) {
         AppHaptics.mediumImpact();
         Navigator.of(context).pop();
         ActionFeedbackService.show('common.saved_successfully'.tr());
       }
     } catch (e) {
-      AppLogger.error('[EditProfileSheet] Failed to save profile', e, StackTrace.current);
+      AppLogger.error(
+        '[EditProfileSheet] Failed to save profile',
+        e,
+        StackTrace.current,
+      );
       Sentry.captureException(e, stackTrace: StackTrace.current);
       if (mounted) {
         setState(() => _isLoading = false);

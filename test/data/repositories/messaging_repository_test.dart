@@ -5,12 +5,15 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
 import 'package:budgie_breeding_tracker/data/models/conversation_model.dart';
 import 'package:budgie_breeding_tracker/data/models/conversation_participant_model.dart';
 import 'package:budgie_breeding_tracker/data/models/message_model.dart';
 import 'package:budgie_breeding_tracker/data/remote/api/conversation_remote_source.dart';
 import 'package:budgie_breeding_tracker/data/remote/api/message_remote_source.dart';
 import 'package:budgie_breeding_tracker/data/repositories/messaging_repository.dart';
+
+import '../../helpers/fake_supabase.dart';
 
 class MockConversationRemoteSource extends Mock
     implements ConversationRemoteSource {}
@@ -33,21 +36,20 @@ Map<String, dynamic> _makeConversationRow({
   String creatorId = 'u1',
   String? lastMessageContent,
   int participantCount = 2,
-}) =>
-    {
-      'id': id,
-      'type': type,
-      'name': name,
-      'image_url': null,
-      'creator_id': creatorId,
-      'last_message_content': lastMessageContent,
-      'last_message_at': '2026-04-01T10:00:00Z',
-      'last_message_user_id': creatorId,
-      'participant_count': participantCount,
-      'is_deleted': false,
-      'created_at': '2026-03-15T10:00:00Z',
-      'updated_at': '2026-03-15T10:00:00Z',
-    };
+}) => {
+  'id': id,
+  'type': type,
+  'name': name,
+  'image_url': null,
+  'creator_id': creatorId,
+  'last_message_content': lastMessageContent,
+  'last_message_at': '2026-04-01T10:00:00Z',
+  'last_message_user_id': creatorId,
+  'participant_count': participantCount,
+  'is_deleted': false,
+  'created_at': '2026-03-15T10:00:00Z',
+  'updated_at': '2026-03-15T10:00:00Z',
+};
 
 Map<String, dynamic> _makeMessageRow({
   required String id,
@@ -56,37 +58,35 @@ Map<String, dynamic> _makeMessageRow({
   String senderName = 'TestUser',
   String? content = 'Hello',
   String messageType = 'text',
-}) =>
-    {
-      'id': id,
-      'conversation_id': conversationId,
-      'sender_id': senderId,
-      'sender_name': senderName,
-      'sender_avatar_url': null,
-      'content': content,
-      'message_type': messageType,
-      'image_url': null,
-      'reference_id': null,
-      'reference_data': <String, dynamic>{},
-      'read_by': <String>[],
-      'is_deleted': false,
-      'created_at': '2026-04-01T10:00:00Z',
-    };
+}) => {
+  'id': id,
+  'conversation_id': conversationId,
+  'sender_id': senderId,
+  'sender_name': senderName,
+  'sender_avatar_url': null,
+  'content': content,
+  'message_type': messageType,
+  'image_url': null,
+  'reference_id': null,
+  'reference_data': <String, dynamic>{},
+  'read_by': <String>[],
+  'is_deleted': false,
+  'created_at': '2026-04-01T10:00:00Z',
+};
 
 Map<String, dynamic> _makeParticipantRow({
   required String conversationId,
   required String userId,
   String role = 'member',
-}) =>
-    {
-      'conversation_id': conversationId,
-      'user_id': userId,
-      'role': role,
-      'joined_at': '2026-03-15T10:00:00Z',
-      'last_read_at': null,
-      'is_muted': false,
-      'is_left': false,
-    };
+}) => {
+  'conversation_id': conversationId,
+  'user_id': userId,
+  'role': role,
+  'joined_at': '2026-03-15T10:00:00Z',
+  'last_read_at': null,
+  'is_muted': false,
+  'is_left': false,
+};
 
 void main() {
   late MockConversationRemoteSource conversationSource;
@@ -130,8 +130,9 @@ void main() {
     });
 
     test('returns empty list when no conversations', () async {
-      when(() => conversationSource.fetchConversations('u1'))
-          .thenAnswer((_) async => []);
+      when(
+        () => conversationSource.fetchConversations('u1'),
+      ).thenAnswer((_) async => []);
 
       final result = await repository.getConversations('u1');
 
@@ -139,8 +140,9 @@ void main() {
     });
 
     test('rethrows on remote source failure', () async {
-      when(() => conversationSource.fetchConversations(any()))
-          .thenThrow(Exception('Network error'));
+      when(
+        () => conversationSource.fetchConversations(any()),
+      ).thenThrow(Exception('Network error'));
 
       expect(
         () => repository.getConversations('u1'),
@@ -164,8 +166,9 @@ void main() {
     });
 
     test('returns null when not found', () async {
-      when(() => conversationSource.fetchById('missing'))
-          .thenAnswer((_) async => null);
+      when(
+        () => conversationSource.fetchById('missing'),
+      ).thenAnswer((_) async => null);
 
       final result = await repository.getConversationById('missing');
 
@@ -327,11 +330,13 @@ void main() {
 
     test('skips creator in participant list to avoid duplicate', () async {
       final participantCalls = <Map<String, dynamic>>[];
-      when(() => conversationSource.create(any()))
-          .thenAnswer((_) async => <String, dynamic>{});
+      when(
+        () => conversationSource.create(any()),
+      ).thenAnswer((_) async => <String, dynamic>{});
       when(() => conversationSource.addParticipant(any())).thenAnswer((inv) {
-        participantCalls
-            .add(inv.positionalArguments[0] as Map<String, dynamic>);
+        participantCalls.add(
+          inv.positionalArguments[0] as Map<String, dynamic>,
+        );
         return Future.value();
       });
 
@@ -374,21 +379,13 @@ void main() {
     test('passes limit and before parameters', () async {
       final before = DateTime(2026, 4, 1);
       when(
-        () => messageSource.fetchMessages(
-          'conv-1',
-          limit: 10,
-          before: before,
-        ),
+        () => messageSource.fetchMessages('conv-1', limit: 10, before: before),
       ).thenAnswer((_) async => []);
 
       await repository.getMessages('conv-1', limit: 10, before: before);
 
       verify(
-        () => messageSource.fetchMessages(
-          'conv-1',
-          limit: 10,
-          before: before,
-        ),
+        () => messageSource.fetchMessages('conv-1', limit: 10, before: before),
       ).called(1);
     });
 
@@ -426,8 +423,9 @@ void main() {
     });
 
     test('rethrows on insert failure', () async {
-      when(() => messageSource.insert(any()))
-          .thenThrow(Exception('Insert failed'));
+      when(
+        () => messageSource.insert(any()),
+      ).thenThrow(Exception('Insert failed'));
 
       expect(
         () => repository.sendMessage({'content': 'x'}),
@@ -440,8 +438,7 @@ void main() {
 
   group('markAsRead', () {
     test('delegates to message source', () async {
-      when(() => messageSource.markAsRead('m1', 'u1'))
-          .thenAnswer((_) async {});
+      when(() => messageSource.markAsRead('m1', 'u1')).thenAnswer((_) async {});
 
       await repository.markAsRead('m1', 'u1');
 
@@ -453,8 +450,9 @@ void main() {
 
   group('deleteMessage', () {
     test('delegates soft delete to message source', () async {
-      when(() => messageSource.softDelete('m1', userId: 'u1'))
-          .thenAnswer((_) async {});
+      when(
+        () => messageSource.softDelete('m1', userId: 'u1'),
+      ).thenAnswer((_) async {});
 
       await repository.deleteMessage('m1', userId: 'u1');
 
@@ -488,8 +486,9 @@ void main() {
     });
 
     test('returns empty list when no participants', () async {
-      when(() => conversationSource.fetchParticipants('conv-1'))
-          .thenAnswer((_) async => []);
+      when(
+        () => conversationSource.fetchParticipants('conv-1'),
+      ).thenAnswer((_) async => []);
 
       final result = await repository.getParticipants('conv-1');
 
@@ -501,28 +500,34 @@ void main() {
 
   group('addParticipant', () {
     test('adds participant with default role', () async {
-      when(() => conversationSource.addParticipant(any()))
-          .thenAnswer((_) async {});
+      when(
+        () => conversationSource.addParticipant(any()),
+      ).thenAnswer((_) async {});
 
       await repository.addParticipant('conv-1', 'u3');
 
-      final captured = verify(
-        () => conversationSource.addParticipant(captureAny()),
-      ).captured.single as Map<String, dynamic>;
+      final captured =
+          verify(
+                () => conversationSource.addParticipant(captureAny()),
+              ).captured.single
+              as Map<String, dynamic>;
       expect(captured['conversation_id'], 'conv-1');
       expect(captured['user_id'], 'u3');
       expect(captured['role'], 'member');
     });
 
     test('adds participant with custom role', () async {
-      when(() => conversationSource.addParticipant(any()))
-          .thenAnswer((_) async {});
+      when(
+        () => conversationSource.addParticipant(any()),
+      ).thenAnswer((_) async {});
 
       await repository.addParticipant('conv-1', 'u3', role: 'admin');
 
-      final captured = verify(
-        () => conversationSource.addParticipant(captureAny()),
-      ).captured.single as Map<String, dynamic>;
+      final captured =
+          verify(
+                () => conversationSource.addParticipant(captureAny()),
+              ).captured.single
+              as Map<String, dynamic>;
       expect(captured['role'], 'admin');
     });
   });
@@ -537,9 +542,15 @@ void main() {
 
       await repository.leaveConversation('conv-1', 'u1');
 
-      final captured = verify(
-        () => conversationSource.updateParticipant('conv-1', 'u1', captureAny()),
-      ).captured.single as Map<String, dynamic>;
+      final captured =
+          verify(
+                () => conversationSource.updateParticipant(
+                  'conv-1',
+                  'u1',
+                  captureAny(),
+                ),
+              ).captured.single
+              as Map<String, dynamic>;
       expect(captured['is_left'], isTrue);
     });
   });
@@ -554,9 +565,15 @@ void main() {
 
       await repository.updateParticipantRole('conv-1', 'u2', 'admin');
 
-      final captured = verify(
-        () => conversationSource.updateParticipant('conv-1', 'u2', captureAny()),
-      ).captured.single as Map<String, dynamic>;
+      final captured =
+          verify(
+                () => conversationSource.updateParticipant(
+                  'conv-1',
+                  'u2',
+                  captureAny(),
+                ),
+              ).captured.single
+              as Map<String, dynamic>;
       expect(captured['role'], 'admin');
     });
   });
@@ -571,9 +588,15 @@ void main() {
 
       await repository.muteConversation('conv-1', 'u1', muted: true);
 
-      final captured = verify(
-        () => conversationSource.updateParticipant('conv-1', 'u1', captureAny()),
-      ).captured.single as Map<String, dynamic>;
+      final captured =
+          verify(
+                () => conversationSource.updateParticipant(
+                  'conv-1',
+                  'u1',
+                  captureAny(),
+                ),
+              ).captured.single
+              as Map<String, dynamic>;
       expect(captured['is_muted'], isTrue);
     });
 
@@ -584,9 +607,15 @@ void main() {
 
       await repository.muteConversation('conv-1', 'u1', muted: false);
 
-      final captured = verify(
-        () => conversationSource.updateParticipant('conv-1', 'u1', captureAny()),
-      ).captured.single as Map<String, dynamic>;
+      final captured =
+          verify(
+                () => conversationSource.updateParticipant(
+                  'conv-1',
+                  'u1',
+                  captureAny(),
+                ),
+              ).captured.single
+              as Map<String, dynamic>;
       expect(captured['is_muted'], isFalse);
     });
   });
@@ -601,16 +630,18 @@ void main() {
       when(
         () => messageSource.isConversationParticipant('conv-1', 'u1'),
       ).thenAnswer((_) async => true);
-      when(
-        () => messageSource.subscribeToMessages('conv-1', any()),
-      ).thenAnswer((inv) {
-        capturedCallback =
-            inv.positionalArguments[1] as void Function(Map<String, dynamic>);
-        return mockChannel;
-      });
+      when(() => messageSource.subscribeToMessages('conv-1', any())).thenAnswer(
+        (inv) {
+          capturedCallback =
+              inv.positionalArguments[1] as void Function(Map<String, dynamic>);
+          return mockChannel;
+        },
+      );
 
       Message? receivedMessage;
-      final channel = await repository.subscribeToMessages('conv-1', 'u1', (msg) {
+      final channel = await repository.subscribeToMessages('conv-1', 'u1', (
+        msg,
+      ) {
         receivedMessage = msg;
       });
 
@@ -631,13 +662,13 @@ void main() {
       when(
         () => messageSource.isConversationParticipant('conv-1', 'u1'),
       ).thenAnswer((_) async => true);
-      when(
-        () => messageSource.subscribeToMessages('conv-1', any()),
-      ).thenAnswer((inv) {
-        capturedCallback =
-            inv.positionalArguments[1] as void Function(Map<String, dynamic>);
-        return mockChannel;
-      });
+      when(() => messageSource.subscribeToMessages('conv-1', any())).thenAnswer(
+        (inv) {
+          capturedCallback =
+              inv.positionalArguments[1] as void Function(Map<String, dynamic>);
+          return mockChannel;
+        },
+      );
 
       Message? receivedMessage;
       await repository.subscribeToMessages('conv-1', 'u1', (msg) {
@@ -660,10 +691,7 @@ void main() {
       final mockChannel = MockRealtimeChannel();
 
       when(
-        () => messageSource.subscribeToConversationUpdates(
-          ['c1', 'c2'],
-          any(),
-        ),
+        () => messageSource.subscribeToConversationUpdates(['c1', 'c2'], any()),
       ).thenAnswer((inv) {
         capturedCallback =
             inv.positionalArguments[1] as void Function(Map<String, dynamic>);
@@ -671,12 +699,11 @@ void main() {
       });
 
       Conversation? receivedConversation;
-      final channel = repository.subscribeToConversationUpdates(
-        ['c1', 'c2'],
-        (conv) {
-          receivedConversation = conv;
-        },
-      );
+      final channel = repository.subscribeToConversationUpdates(['c1', 'c2'], (
+        conv,
+      ) {
+        receivedConversation = conv;
+      });
 
       expect(channel, mockChannel);
 
@@ -694,8 +721,9 @@ void main() {
   group('unsubscribe', () {
     test('delegates to message source', () async {
       final mockChannel = MockRealtimeChannel();
-      when(() => messageSource.unsubscribe(mockChannel))
-          .thenAnswer((_) async {});
+      when(
+        () => messageSource.unsubscribe(mockChannel),
+      ).thenAnswer((_) async {});
 
       await repository.unsubscribe(mockChannel);
 
@@ -707,10 +735,7 @@ void main() {
 
   group('searchProfiles', () {
     test('returns empty list for empty query', () async {
-      final result = await repository.searchProfiles(
-        '',
-        excludeUserId: 'u1',
-      );
+      final result = await repository.searchProfiles('', excludeUserId: 'u1');
 
       expect(result, isEmpty);
       verifyNever(() => client.from(any()));
@@ -724,5 +749,46 @@ void main() {
 
       expect(result, isEmpty);
     });
+
+    test('returns empty list for query stripped by sanitizer', () async {
+      final result = await repository.searchProfiles(
+        '.,;()\'"`',
+        excludeUserId: 'u1',
+      );
+
+      expect(result, isEmpty);
+      verifyNever(() => client.from(any()));
+    });
+
+    test(
+      'searches public profile names without selecting or filtering email',
+      () async {
+        final stack = createFakeSupabaseStack();
+        stack.selectBuilder.result = [
+          {'id': 'u2', 'display_name': 'Ada', 'avatar_url': null},
+        ];
+        final searchRepository = MessagingRepository(
+          conversationSource: conversationSource,
+          messageSource: messageSource,
+          client: stack.client,
+        );
+
+        final result = await searchRepository.searchProfiles(
+          'ada@example.com',
+          excludeUserId: 'u1',
+        );
+
+        expect(stack.client.requestedTable, SupabaseConstants.profilesTable);
+        expect(result, hasLength(1));
+        expect(stack.queryBuilder.selectedColumns, isNot(contains('email')));
+        expect(stack.selectBuilder.orCalls.single, contains('display_name'));
+        expect(stack.selectBuilder.orCalls.single, contains('full_name'));
+        expect(stack.selectBuilder.orCalls.single, isNot(contains('email')));
+        final neqKeys = stack.selectBuilder.neqCalls
+            .map((e) => '${e.key}:${e.value}')
+            .toList();
+        expect(neqKeys, contains('id:u1'));
+      },
+    );
   });
 }

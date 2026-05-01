@@ -29,7 +29,8 @@ class BreedingSuccessChart extends StatelessWidget {
     final theme = Theme.of(context);
     final keys = completed.keys.toList();
 
-    if (keys.isEmpty) {
+    if (keys.isEmpty ||
+        !hasPositiveValues([...completed.values, ...cancelled.values])) {
       return const ChartEmpty();
     }
 

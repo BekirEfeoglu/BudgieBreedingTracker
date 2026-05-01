@@ -105,21 +105,46 @@ void main() {
     });
 
     group('fetchUpdatedSince', () {
-      test('applies gte filter on updated_at without is_deleted filter', () async {
+      test('applies updated_at cursor without is_deleted filter', () async {
         selectBuilder.result = const [];
         final since = DateTime(2025, 6, 1);
 
         await source.fetchUpdatedSince('user-1', since);
 
-        final gteKeys = selectBuilder.gteCalls
+        final gtKeys = selectBuilder.gtCalls
             .map((e) => '${e.key}:${e.value}')
             .toList();
-        expect(gteKeys, contains('updated_at:${since.toIso8601String()}'));
+        expect(gtKeys, contains('updated_at:${since.toIso8601String()}'));
         final eqKeys = selectBuilder.eqCalls
             .map((e) => '${e.key}:${e.value}')
             .toList();
         expect(eqKeys, contains('user_id:user-1'));
         expect(eqKeys, isNot(contains('is_deleted:false')));
+        expect(selectBuilder.orderCalls, containsAll(['updated_at', 'id']));
+      });
+
+      test('uses updated_at and id keyset cursor after a full page', () async {
+        final since = DateTime(2025, 6, 1);
+        const timestamp = '2025-06-02T10:00:00.000Z';
+        selectBuilder.resultQueue.addAll([
+          [
+            for (var i = 0; i < 5000; i++)
+              {
+                'id': 'item-${i.toString().padLeft(4, '0')}',
+                'updated_at': timestamp,
+              },
+          ],
+          const [],
+        ]);
+
+        final result = await source.fetchUpdatedSince('user-1', since);
+
+        expect(result, hasLength(5000));
+        expect(selectBuilder.orCalls, hasLength(1));
+        expect(
+          selectBuilder.orCalls.single,
+          'updated_at.gt.$timestamp,and(updated_at.eq.$timestamp,id.gt.item-4999)',
+        );
       });
     });
 
@@ -196,7 +221,8 @@ void main() {
       test('sanitizes PostgrestException with RLS policy violation', () {
         final result = source.handleError(
           const PostgrestException(
-            message: 'new row violates row-level security policy for table "birds"',
+            message:
+                'new row violates row-level security policy for table "birds"',
             code: '42501',
           ),
           StackTrace.current,
@@ -231,10 +257,7 @@ void main() {
 
       test('preserves non-sensitive PostgrestException message', () {
         final result = source.handleError(
-          const PostgrestException(
-            message: 'Request timeout',
-            code: '57014',
-          ),
+          const PostgrestException(message: 'Request timeout', code: '57014'),
           StackTrace.current,
         );
         expect(result, isA<NetworkException>());

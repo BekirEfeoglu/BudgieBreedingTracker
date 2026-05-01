@@ -10,11 +10,10 @@ import 'package:budgie_breeding_tracker/data/providers/action_feedback_providers
 import 'package:budgie_breeding_tracker/router/route_names.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/mutation_database.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/parent_genotype.dart';
-import 'package:budgie_breeding_tracker/features/genetics/utils/bird_genotype_mapper.dart'; // Cross-feature import: birds↔genetics mutation data mapping
+import 'package:budgie_breeding_tracker/shared/utils/bird_genotype_mapper.dart';
 import 'package:image_picker/image_picker.dart';
 
-export 'package:budgie_breeding_tracker/features/genetics/utils/bird_genotype_mapper.dart' // Cross-feature import: birds↔genetics mutation data mapping
-    show BirdGenotypeMapper;
+export 'package:budgie_breeding_tracker/shared/utils/bird_genotype_mapper.dart';
 
 /// Finds the next sequential name for a bird using the given [prefix].
 ///

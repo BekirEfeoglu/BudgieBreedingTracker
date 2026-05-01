@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 
+import 'package:budgie_breeding_tracker/data/providers/maintenance_mode_provider.dart';
 import 'package:budgie_breeding_tracker/features/admin/providers/admin_providers.dart';
 import 'package:budgie_breeding_tracker/data/providers/entity_count_providers.dart';
 import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
@@ -68,10 +69,12 @@ ProviderContainer _createContainer({
   bool initSkipped = false,
   String? pendingMfaFactorId,
   bool sessionLocked = false,
+  bool maintenanceMode = false,
 }) {
   return ProviderContainer(
     overrides: [
       isAuthenticatedProvider.overrideWithValue(isLoggedIn),
+      maintenanceModeProvider.overrideWith((_) async => maintenanceMode),
       sessionLockedProvider.overrideWith(
         () => _TestSessionLockedNotifier(sessionLocked),
       ),
@@ -230,6 +233,41 @@ void main() {
       expect(resolved, AppRoutes.login);
     });
 
+    testWidgets('redirects non-admin routes to maintenance when active', (
+      tester,
+    ) async {
+      final container = _createContainer(
+        isLoggedIn: true,
+        isPremium: true,
+        initSkipped: true,
+        maintenanceMode: true,
+      );
+      final resolved = await _navigateAndResolve(
+        tester,
+        container,
+        AppRoutes.home,
+      );
+
+      expect(resolved, AppRoutes.maintenance);
+    });
+
+    testWidgets('keeps maintenance route accessible while active', (
+      tester,
+    ) async {
+      final container = _createContainer(
+        isLoggedIn: false,
+        isPremium: false,
+        maintenanceMode: true,
+      );
+      final resolved = await _navigateAndResolve(
+        tester,
+        container,
+        AppRoutes.maintenance,
+      );
+
+      expect(resolved, AppRoutes.maintenance);
+    });
+
     testWidgets('redirects unauthenticated user to login', (tester) async {
       final container = _createContainer(
         isLoggedIn: false,
@@ -273,8 +311,9 @@ void main() {
       expect(resolved, AppRoutes.userGuide);
     });
 
-    testWidgets('allows anonymous user on privacy policy route',
-        (tester) async {
+    testWidgets('allows anonymous user on privacy policy route', (
+      tester,
+    ) async {
       final container = _createContainer(
         isLoggedIn: false,
         isPremium: false,
@@ -288,8 +327,9 @@ void main() {
       expect(resolved, AppRoutes.privacyPolicy);
     });
 
-    testWidgets('allows anonymous user on terms of service route',
-        (tester) async {
+    testWidgets('allows anonymous user on terms of service route', (
+      tester,
+    ) async {
       final container = _createContainer(
         isLoggedIn: false,
         isPremium: false,
@@ -303,8 +343,9 @@ void main() {
       expect(resolved, AppRoutes.termsOfService);
     });
 
-    testWidgets('allows anonymous user on community guidelines route',
-        (tester) async {
+    testWidgets('allows anonymous user on community guidelines route', (
+      tester,
+    ) async {
       final container = _createContainer(
         isLoggedIn: false,
         isPremium: false,
@@ -318,8 +359,7 @@ void main() {
       expect(resolved, AppRoutes.communityGuidelines);
     });
 
-    testWidgets('redirects anonymous user from home to login',
-        (tester) async {
+    testWidgets('redirects anonymous user from home to login', (tester) async {
       final container = _createContainer(
         isLoggedIn: false,
         isPremium: false,
@@ -333,8 +373,7 @@ void main() {
       expect(resolved, AppRoutes.login);
     });
 
-    testWidgets('redirects anonymous user from birds to login',
-        (tester) async {
+    testWidgets('redirects anonymous user from birds to login', (tester) async {
       final container = _createContainer(
         isLoggedIn: false,
         isPremium: false,
@@ -348,8 +387,9 @@ void main() {
       expect(resolved, AppRoutes.login);
     });
 
-    testWidgets('redirects anonymous user from settings to login',
-        (tester) async {
+    testWidgets('redirects anonymous user from settings to login', (
+      tester,
+    ) async {
       final container = _createContainer(
         isLoggedIn: false,
         isPremium: false,
@@ -363,8 +403,7 @@ void main() {
       expect(resolved, AppRoutes.login);
     });
 
-    testWidgets('redirects authenticated user away from login',
-        (tester) async {
+    testWidgets('redirects authenticated user away from login', (tester) async {
       final container = _createContainer(
         isLoggedIn: true,
         isPremium: false,
@@ -396,8 +435,9 @@ void main() {
       },
     );
 
-    testWidgets('redirects splash to home when app init is ready',
-        (tester) async {
+    testWidgets('redirects splash to home when app init is ready', (
+      tester,
+    ) async {
       final container = _createContainer(
         isLoggedIn: true,
         isPremium: false,
@@ -411,8 +451,9 @@ void main() {
       expect(resolved, AppRoutes.home);
     });
 
-    testWidgets('keeps splash when init has error and skip is false',
-        (tester) async {
+    testWidgets('keeps splash when init has error and skip is false', (
+      tester,
+    ) async {
       final container = _createContainer(
         isLoggedIn: true,
         isPremium: false,
@@ -427,8 +468,7 @@ void main() {
       expect(resolved, AppRoutes.splash);
     });
 
-    testWidgets('blocks non-premium user from genetics route',
-        (tester) async {
+    testWidgets('blocks non-premium user from genetics route', (tester) async {
       final container = _createContainer(
         isLoggedIn: true,
         isPremium: false,
@@ -456,8 +496,9 @@ void main() {
       expect(resolved, AppRoutes.genetics);
     });
 
-    testWidgets('redirects non-premium users for statistics route',
-        (tester) async {
+    testWidgets('redirects non-premium users for statistics route', (
+      tester,
+    ) async {
       final container = _createContainer(
         isLoggedIn: true,
         isPremium: false,
@@ -471,8 +512,9 @@ void main() {
       expect(resolved, AppRoutes.premium);
     });
 
-    testWidgets('redirects non-premium users for genealogy route',
-        (tester) async {
+    testWidgets('redirects non-premium users for genealogy route', (
+      tester,
+    ) async {
       final container = _createContainer(
         isLoggedIn: true,
         isPremium: false,
@@ -553,8 +595,9 @@ void main() {
       expect(resolved, AppRoutes.adminDashboard);
     });
 
-    testWidgets('blocks non-admin from nested admin user detail route',
-        (tester) async {
+    testWidgets('blocks non-admin from nested admin user detail route', (
+      tester,
+    ) async {
       final container = _createContainer(
         isLoggedIn: true,
         isPremium: true,
@@ -569,8 +612,9 @@ void main() {
       expect(resolved, AppRoutes.home);
     });
 
-    testWidgets('allows admin on nested admin user detail route',
-        (tester) async {
+    testWidgets('allows admin on nested admin user detail route', (
+      tester,
+    ) async {
       final container = _createContainer(
         isLoggedIn: true,
         isPremium: true,
@@ -600,6 +644,7 @@ void main() {
         paths,
         containsAll([
           AppRoutes.splash,
+          AppRoutes.maintenance,
           AppRoutes.login,
           AppRoutes.home,
           AppRoutes.birds,

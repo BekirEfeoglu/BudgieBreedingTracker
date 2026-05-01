@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'package:budgie_breeding_tracker/data/providers/action_feedback_providers.dart';
+import 'package:budgie_breeding_tracker/core/services/action_feedback_service.dart';
 
 extension ContextExtensions on BuildContext {
   ThemeData get theme => Theme.of(this);
@@ -19,23 +19,16 @@ extension ContextExtensions on BuildContext {
   }) {
     if (isError) {
       ScaffoldMessenger.of(this).showSnackBar(
-        SnackBar(
-          content: Text(message),
-          backgroundColor: colorScheme.error,
-        ),
+        SnackBar(content: Text(message), backgroundColor: colorScheme.error),
       );
     } else if (ActionFeedbackService.hasListeners) {
       ActionFeedbackService.show(
         message,
-        type: isSuccess
-            ? ActionFeedbackType.success
-            : ActionFeedbackType.info,
+        type: isSuccess ? ActionFeedbackType.success : ActionFeedbackType.info,
       );
     } else {
       // Fallback: no bell button on current screen — use SnackBar
-      ScaffoldMessenger.of(this).showSnackBar(
-        SnackBar(content: Text(message)),
-      );
+      ScaffoldMessenger.of(this).showSnackBar(SnackBar(content: Text(message)));
     }
   }
 

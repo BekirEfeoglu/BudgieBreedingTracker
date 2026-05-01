@@ -31,6 +31,29 @@ enum _UserStatusFilter { all, active, inactive }
 
 enum _UserSortOption { newest, oldest, nameAsc, emailAsc }
 
+extension _UserStatusFilterQuery on _UserStatusFilter {
+  bool? get queryValue => switch (this) {
+    _UserStatusFilter.active => true,
+    _UserStatusFilter.inactive => false,
+    _UserStatusFilter.all => null,
+  };
+}
+
+extension _UserSortOptionQuery on _UserSortOption {
+  String get sortField => switch (this) {
+    _UserSortOption.newest || _UserSortOption.oldest => 'created_at',
+    _UserSortOption.nameAsc => 'full_name',
+    _UserSortOption.emailAsc => 'email',
+  };
+
+  bool get sortAscending => switch (this) {
+    _UserSortOption.oldest ||
+    _UserSortOption.nameAsc ||
+    _UserSortOption.emailAsc => true,
+    _UserSortOption.newest => false,
+  };
+}
+
 /// Admin users list screen with search and user cards.
 class AdminUsersScreen extends ConsumerStatefulWidget {
   const AdminUsersScreen({super.key});
@@ -40,7 +63,6 @@ class AdminUsersScreen extends ConsumerStatefulWidget {
 }
 
 class _AdminUsersScreenState extends ConsumerState<AdminUsersScreen> {
-
   late final TextEditingController _searchController;
   Timer? _debounceTimer;
 
@@ -62,15 +84,19 @@ class _AdminUsersScreenState extends ConsumerState<AdminUsersScreen> {
   }
 
   AdminUsersQuery get _buildQuery => AdminUsersQuery(
-        searchTerm: _query,
-        limit: ref.read(adminUsersLimitProvider),
-      );
+    searchTerm: _query,
+    isActiveFilter: _statusFilter.queryValue,
+    sortField: _sortOption.sortField,
+    sortAscending: _sortOption.sortAscending,
+    limit: ref.read(adminUsersLimitProvider),
+  );
 
   Future<void> _refreshUsers() async {
     try {
       ref.invalidate(adminUsersProvider(_buildQuery));
       await ref.read(adminUsersProvider(_buildQuery).future);
-    } catch (_) {
+    } catch (e, st) {
+      AppLogger.error('AdminUsersScreen._refreshUsers', e, st);
       // Error state is handled by the provider/UI.
     }
   }
@@ -102,6 +128,7 @@ class _AdminUsersScreenState extends ConsumerState<AdminUsersScreen> {
     _clearSearch();
     if (_statusFilter != _UserStatusFilter.all) {
       setState(() => _statusFilter = _UserStatusFilter.all);
+      _resetPagination();
     }
   }
 
@@ -128,7 +155,9 @@ class _AdminUsersScreenState extends ConsumerState<AdminUsersScreen> {
           message: 'admin.confirm_activate_desc'.tr(),
         );
         if (confirmed != true) return;
-        await ref.read(adminActionsProvider.notifier).toggleUserActive(userId, true);
+        await ref
+            .read(adminActionsProvider.notifier)
+            .toggleUserActive(userId, true);
       case 'deactivate':
         final confirmed = await showConfirmDialog(
           context,
@@ -137,7 +166,9 @@ class _AdminUsersScreenState extends ConsumerState<AdminUsersScreen> {
           isDestructive: true,
         );
         if (confirmed != true) return;
-        await ref.read(adminActionsProvider.notifier).toggleUserActive(userId, false);
+        await ref
+            .read(adminActionsProvider.notifier)
+            .toggleUserActive(userId, false);
       case 'grant_premium':
         final confirmed = await showConfirmDialog(
           context,
@@ -159,61 +190,21 @@ class _AdminUsersScreenState extends ConsumerState<AdminUsersScreen> {
     if (mounted) _refreshUsers();
   }
 
-  List<AdminUser> _applyFiltersAndSort(List<AdminUser> users) {
-    final filtered = switch (_statusFilter) {
-      _UserStatusFilter.active => users.where((user) => user.isActive).toList(),
-      _UserStatusFilter.inactive =>
-        users.where((user) => !user.isActive).toList(),
-      _UserStatusFilter.all => List<AdminUser>.from(users),
-    };
-
-    int compareByName(AdminUser a, AdminUser b) {
-      final aName = _displayName(a).toLowerCase();
-      final bName = _displayName(b).toLowerCase();
-      return aName.compareTo(bName);
-    }
-
-    int compareByEmail(AdminUser a, AdminUser b) =>
-        a.email.toLowerCase().compareTo(b.email.toLowerCase());
-
-    filtered.sort((a, b) {
-      final compare = switch (_sortOption) {
-        _UserSortOption.newest => b.createdAt.compareTo(a.createdAt),
-        _UserSortOption.oldest => a.createdAt.compareTo(b.createdAt),
-        _UserSortOption.nameAsc => compareByName(a, b),
-        _UserSortOption.emailAsc => compareByEmail(a, b),
-      };
-      if (compare != 0) return compare;
-      return b.createdAt.compareTo(a.createdAt);
-    });
-
-    return filtered;
-  }
-
-  String _displayName(AdminUser user) {
-    final fullName = user.fullName?.trim();
-    if (fullName != null && fullName.isNotEmpty) return fullName;
-    return user.email;
-  }
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final limit = ref.watch(adminUsersLimitProvider);
-    final usersAsync = ref.watch(
-      adminUsersProvider(
-        AdminUsersQuery(searchTerm: _query, limit: limit),
-      ),
-    );
+    final usersQuery = _buildQuery.copyWith(limit: limit);
+    final usersAsync = ref.watch(adminUsersProvider(usersQuery));
 
     ref.listen<AdminActionState>(adminActionsProvider, (_, state) {
       if (state.isSuccess) {
         ref.read(adminActionsProvider.notifier).reset();
       }
       if (state.error != null && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(state.error!)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(state.error!)));
       }
     });
 
@@ -231,23 +222,23 @@ class _AdminUsersScreenState extends ConsumerState<AdminUsersScreen> {
             sortOption: _sortOption,
             onSearchChanged: _onSearchChanged,
             onClearSearch: _clearSearch,
-            onStatusFilterChanged: (value) =>
-                setState(() => _statusFilter = value),
-            onSortChanged: (value) => setState(() => _sortOption = value),
+            onStatusFilterChanged: (value) {
+              setState(() => _statusFilter = value);
+              _resetPagination();
+            },
+            onSortChanged: (value) {
+              setState(() => _sortOption = value);
+              _resetPagination();
+            },
           ),
           Expanded(
             child: usersAsync.when(
               loading: () => const LoadingState(),
               error: (error, _) => ErrorState(
                 message: 'common.data_load_error'.tr(),
-                onRetry: () => ref.invalidate(
-                  adminUsersProvider(
-                    AdminUsersQuery(searchTerm: _query, limit: limit),
-                  ),
-                ),
+                onRetry: () => ref.invalidate(adminUsersProvider(usersQuery)),
               ),
               data: (users) {
-                final filteredUsers = _applyFiltersAndSort(users);
                 final activeUsers = users.where((user) => user.isActive).length;
                 final inactiveUsers = users.length - activeUsers;
                 final hasMore = users.length >= limit;
@@ -262,8 +253,9 @@ class _AdminUsersScreenState extends ConsumerState<AdminUsersScreen> {
                           horizontal: AppSpacing.lg,
                           vertical: AppSpacing.sm,
                         ),
-                        color: theme.colorScheme.primaryContainer
-                            .withValues(alpha: 0.2),
+                        color: theme.colorScheme.primaryContainer.withValues(
+                          alpha: 0.2,
+                        ),
                         child: Row(
                           children: [
                             AppIconButton(
@@ -273,13 +265,14 @@ class _AdminUsersScreenState extends ConsumerState<AdminUsersScreen> {
                               onPressed: _clearSelection,
                             ),
                             Text(
-                              'admin.selected_count'
-                                  .tr(args: ['$selectedCount']),
+                              'admin.selected_count'.tr(
+                                args: ['$selectedCount'],
+                              ),
                               style: theme.textTheme.titleSmall,
                             ),
                             const Spacer(),
                             TextButton(
-                              onPressed: () => _selectAllVisible(filteredUsers),
+                              onPressed: () => _selectAllVisible(users),
                               child: Text('admin.select_all'.tr()),
                             ),
                           ],
@@ -287,13 +280,13 @@ class _AdminUsersScreenState extends ConsumerState<AdminUsersScreen> {
                       ),
                     _UsersSummaryBar(
                       totalUsers: users.length,
-                      visibleUsers: filteredUsers.length,
+                      visibleUsers: users.length,
                       activeUsers: activeUsers,
                       inactiveUsers: inactiveUsers,
                     ),
                     Expanded(
                       child: _UsersList(
-                        users: filteredUsers,
+                        users: users,
                         hasMore: hasMore,
                         hasFilter: hasFilter,
                         onRefresh: _refreshUsers,

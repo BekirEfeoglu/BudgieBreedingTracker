@@ -120,9 +120,9 @@ class TwoFactorService {
 
   /// Whether the current session needs 2FA verification.
   ///
-  /// Returns false on any error to avoid blocking login — the router and
-  /// [appInitializationProvider._checkPendingMfa] will re-evaluate 2FA on
-  /// the next navigation cycle.
+  /// Throws on assurance-level lookup failures so callers can fail closed.
+  /// Treating this as "not required" would allow MFA bypass during transient
+  /// auth/API failures.
   Future<bool> needsVerification() async {
     try {
       final aal = await getAssuranceLevel();
@@ -133,7 +133,7 @@ class TwoFactorService {
         '[TwoFactorService] needsVerification check failed: $e',
       );
       Sentry.captureException(e, stackTrace: st);
-      return false;
+      rethrow;
     }
   }
 }

@@ -2,8 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../data/models/profile_model.dart';
 import '../../../data/providers/entity_count_providers.dart';
-import '../../auth/providers/auth_providers.dart';
-import '../../auth/providers/two_factor_providers.dart';
+import 'package:budgie_breeding_tracker/shared/providers/auth.dart';
 import 'profile_providers.dart';
 
 // ---------------------------------------------------------------------------

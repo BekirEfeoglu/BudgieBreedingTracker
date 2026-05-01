@@ -14,7 +14,7 @@ import '../../../data/models/incubation_model.dart';
 import '../../../data/repositories/repository_providers.dart';
 import '../../../domain/services/export/excel_export_service.dart';
 import '../../../domain/services/export/pdf_export_service.dart';
-import '../../auth/providers/auth_providers.dart';
+import 'package:budgie_breeding_tracker/shared/providers/auth.dart';
 import 'package:budgie_breeding_tracker/data/providers/action_feedback_providers.dart';
 import '../../../core/utils/logger.dart';
 

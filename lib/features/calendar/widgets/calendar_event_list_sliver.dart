@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/empty_state.dart';
 import 'package:budgie_breeding_tracker/data/models/event_model.dart';
 import 'package:budgie_breeding_tracker/features/calendar/widgets/event_card.dart';
@@ -26,11 +27,13 @@ class CalendarEventListSliver extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (events.isEmpty) {
-      return SliverFillRemaining(
-        hasScrollBody: false,
-        child: EmptyState(
-          icon: const Icon(LucideIcons.calendarX),
-          title: 'calendar.no_events'.tr(),
+      return SliverToBoxAdapter(
+        child: Padding(
+          padding: const EdgeInsets.only(top: AppSpacing.xxl),
+          child: EmptyState(
+            icon: const Icon(LucideIcons.calendarX),
+            title: 'calendar.no_events'.tr(),
+          ),
         ),
       );
     }

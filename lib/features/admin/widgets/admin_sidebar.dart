@@ -22,6 +22,7 @@ class AdminSidebar extends StatelessWidget {
       icon: AppIcon(AppIcons.users),
       labelKey: 'admin.users',
       route: AppRoutes.adminUsers,
+      matchPrefix: AppRoutes.adminUsers,
     ),
     const _AdminMenuItem(
       icon: AppIcon(AppIcons.monitoring),
@@ -76,7 +77,7 @@ class AdminSidebar extends StatelessWidget {
               itemCount: _menuItems.length,
               itemBuilder: (context, index) {
                 final item = _menuItems[index];
-                final isSelected = currentRoute == item.route;
+                final isSelected = item.matches(currentRoute);
                 return _buildMenuItem(context, item, isSelected);
               },
             ),
@@ -139,6 +140,7 @@ class AdminSidebar extends StatelessWidget {
             if (scaffold != null && scaffold.isDrawerOpen) {
               scaffold.closeDrawer();
             }
+            if (isSelected) return;
             context.go(item.route);
           },
           borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
@@ -195,43 +197,45 @@ class AdminSidebar extends StatelessWidget {
         child: Tooltip(
           message: 'admin.back_to_app'.tr(),
           child: InkWell(
-          onTap: () {
-            final scaffold = Scaffold.maybeOf(context);
-            if (scaffold != null && scaffold.isDrawerOpen) {
-              scaffold.closeDrawer();
-            }
-            context.go(AppRoutes.home);
-          },
-          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.md,
-              vertical: AppSpacing.md,
-            ),
-            child: Row(
-              children: [
-                Semantics(
-                  label: 'admin.back_to_app'.tr(),
-                  child: Icon(
-                    LucideIcons.arrowLeft,
-                    size: 20,
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
-                  ),
-                ),
-                const SizedBox(width: AppSpacing.md),
-                Expanded(
-                  child: Text(
-                    'admin.back_to_app'.tr(),
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.bodyMedium?.copyWith(
+            onTap: () {
+              final scaffold = Scaffold.maybeOf(context);
+              if (scaffold != null && scaffold.isDrawerOpen) {
+                scaffold.closeDrawer();
+              }
+              context.go(AppRoutes.home);
+            },
+            borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.md,
+                vertical: AppSpacing.md,
+              ),
+              child: Row(
+                children: [
+                  Semantics(
+                    label: 'admin.back_to_app'.tr(),
+                    child: Icon(
+                      LucideIcons.arrowLeft,
+                      size: 20,
                       color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
                     ),
                   ),
-                ),
-              ],
+                  const SizedBox(width: AppSpacing.md),
+                  Expanded(
+                    child: Text(
+                      'admin.back_to_app'.tr(),
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.onSurface.withValues(
+                          alpha: 0.7,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
         ),
       ),
     );
@@ -243,9 +247,17 @@ class _AdminMenuItem {
     required this.icon,
     required this.labelKey,
     required this.route,
+    this.matchPrefix,
   });
 
   final Widget icon;
   final String labelKey;
   final String route;
+  final String? matchPrefix;
+
+  bool matches(String location) {
+    final prefix = matchPrefix;
+    if (prefix == null) return location == route;
+    return location == route || location.startsWith('$prefix/');
+  }
 }

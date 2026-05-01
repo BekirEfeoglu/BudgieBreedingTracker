@@ -293,5 +293,13 @@ void main() {
       );
       expect(await service.needsVerification(), isFalse);
     });
+
+    test('needsVerification rethrows assurance lookup failures', () async {
+      when(
+        () => mockMfa.getAuthenticatorAssuranceLevel(),
+      ).thenThrow(Exception('auth unavailable'));
+
+      await expectLater(service.needsVerification(), throwsA(isA<Exception>()));
+    });
   });
 }

@@ -8,7 +8,7 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/buttons/app_icon_button.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/error_state.dart' as app;
-import '../../breeding/providers/breeding_providers.dart';
+import 'package:budgie_breeding_tracker/shared/providers/breeding.dart';
 import '../../../router/route_names.dart';
 import '../providers/gamification_providers.dart';
 import '../widgets/badge_card.dart';
@@ -66,25 +66,27 @@ class BadgesScreen extends ConsumerWidget {
               const SizedBox(height: AppSpacing.lg),
               // Badges grid
               badgesAsync.when(
-                loading: () =>
-                    const LoadingState(),
+                loading: () => const LoadingState(),
                 error: (error, _) => app.ErrorState(
                   message: '${'common.data_load_error'.tr()}: $error',
                   onRetry: () => ref.invalidate(badgesProvider),
                 ),
                 data: (allBadges) {
                   return userBadgesAsync.when(
-                    loading: () =>
-                        const LoadingState(),
+                    loading: () => const LoadingState(),
                     error: (error, _) => app.ErrorState(
                       message: '${'common.data_load_error'.tr()}: $error',
                     ),
                     data: (userBadges) {
-                      final filtered =
-                          ref.watch(filteredBadgesProvider(allBadges));
-                      final enriched = ref.watch(enrichedBadgesProvider(
-                        (badges: filtered, userBadges: userBadges),
-                      ));
+                      final filtered = ref.watch(
+                        filteredBadgesProvider(allBadges),
+                      );
+                      final enriched = ref.watch(
+                        enrichedBadgesProvider((
+                          badges: filtered,
+                          userBadges: userBadges,
+                        )),
+                      );
 
                       if (enriched.isEmpty) {
                         return EmptyState(
@@ -102,11 +104,11 @@ class BadgesScreen extends ConsumerWidget {
                         ),
                         gridDelegate:
                             const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          childAspectRatio: 0.85,
-                          crossAxisSpacing: AppSpacing.md,
-                          mainAxisSpacing: AppSpacing.md,
-                        ),
+                              crossAxisCount: 2,
+                              childAspectRatio: 0.85,
+                              crossAxisSpacing: AppSpacing.md,
+                              mainAxisSpacing: AppSpacing.md,
+                            ),
                         itemCount: enriched.length,
                         itemBuilder: (context, index) => BadgeCard(
                           enrichedBadge: enriched[index],

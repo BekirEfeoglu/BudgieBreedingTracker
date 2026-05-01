@@ -5,14 +5,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
+import '../../../core/constants/feature_flags.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../core/utils/logger.dart';
 import '../../../core/widgets/dialogs/confirm_dialog.dart';
 import '../../../core/widgets/error_state.dart' as app;
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
+import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import '../../../router/route_names.dart';
-// justified: marketplace needs messaging to contact seller
-import '../../../features/messaging/providers/messaging_form_providers.dart';
-import '../../community/widgets/community_image_viewer.dart';
+import 'package:budgie_breeding_tracker/shared/widgets/community.dart';
 import '../providers/marketplace_form_providers.dart';
 import '../providers/marketplace_providers.dart';
 import '../widgets/marketplace_seller_card.dart';
@@ -32,6 +33,7 @@ class _MarketplaceDetailScreenState
     extends ConsumerState<MarketplaceDetailScreen> {
   late final PageController _pageController;
   int _currentPage = 0;
+  bool _isStartingConversation = false;
 
   @override
   void initState() {
@@ -60,23 +62,21 @@ class _MarketplaceDetailScreenState
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text('marketplace.listing_detail'.tr()),
-      ),
+      appBar: AppBar(title: Text('marketplace.listing_detail'.tr())),
       body: listingAsync.when(
         loading: () => const LoadingState(),
         error: (error, _) => app.ErrorState(
           message: '${'marketplace.listing_error'.tr()}: $error',
           onRetry: () => ref.invalidate(
-            marketplaceListingByIdProvider(
-                (id: widget.listingId, userId: userId)),
+            marketplaceListingByIdProvider((
+              id: widget.listingId,
+              userId: userId,
+            )),
           ),
         ),
         data: (listing) {
           if (listing == null) {
-            return app.ErrorState(
-              message: 'error.not_found'.tr(),
-            );
+            return app.ErrorState(message: 'error.not_found'.tr());
           }
 
           final isOwner = listing.userId == userId;
@@ -121,8 +121,7 @@ class _MarketplaceDetailScreenState
                           (index) => Container(
                             width: 8,
                             height: 8,
-                            margin:
-                                const EdgeInsets.symmetric(horizontal: 3),
+                            margin: const EdgeInsets.symmetric(horizontal: 3),
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               color: index == _currentPage
@@ -140,10 +139,7 @@ class _MarketplaceDetailScreenState
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const SizedBox(height: AppSpacing.lg),
-                      Text(
-                        listing.title,
-                        style: theme.textTheme.headlineSmall,
-                      ),
+                      Text(listing.title, style: theme.textTheme.headlineSmall),
                       if (listing.price != null) ...[
                         const SizedBox(height: AppSpacing.sm),
                         Text(
@@ -164,8 +160,9 @@ class _MarketplaceDetailScreenState
                           ),
                           const SizedBox(width: AppSpacing.xs),
                           Text(
-                            'marketplace.view_count'
-                                .tr(args: ['${listing.viewCount}']),
+                            'marketplace.view_count'.tr(
+                              args: ['${listing.viewCount}'],
+                            ),
                             style: theme.textTheme.bodySmall?.copyWith(
                               color: theme.colorScheme.outline,
                             ),
@@ -209,27 +206,62 @@ class _MarketplaceDetailScreenState
                         memberSince: listing.createdAt,
                       ),
                       const SizedBox(height: AppSpacing.lg),
-                      if (!isOwner)
+                      if (!isOwner && FeatureFlags.messagingEnabled)
                         SizedBox(
                           width: double.infinity,
                           child: FilledButton.icon(
-                            onPressed: () async {
-                              final notifier = ref.read(
-                                messagingFormStateProvider.notifier,
-                              );
-                              final conversationId =
-                                  await notifier.startDirectConversation(
-                                userId1: userId,
-                                userId2: listing.userId,
-                              );
-                              if (!context.mounted) return;
-                              if (conversationId != null) {
-                                context.push(
-                                  '${AppRoutes.messages}/$conversationId',
-                                );
-                              }
-                            },
-                            icon: const Icon(LucideIcons.messageCircle),
+                            onPressed: _isStartingConversation
+                                ? null
+                                : () async {
+                                    setState(
+                                      () => _isStartingConversation = true,
+                                    );
+                                    try {
+                                      final conversationId = await ref
+                                          .read(messagingRepositoryProvider)
+                                          .getOrCreateDirectConversation(
+                                            userId1: userId,
+                                            userId2: listing.userId,
+                                          );
+                                      if (!context.mounted) return;
+                                      context.push(
+                                        '${AppRoutes.messages}/$conversationId',
+                                      );
+                                    } catch (e, st) {
+                                      AppLogger.error(
+                                        'marketplace: failed to start seller conversation',
+                                        e,
+                                        st,
+                                      );
+                                      if (!context.mounted) return;
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            'messaging.message_error'.tr(),
+                                          ),
+                                          backgroundColor:
+                                              theme.colorScheme.error,
+                                        ),
+                                      );
+                                    } finally {
+                                      if (mounted) {
+                                        setState(
+                                          () => _isStartingConversation = false,
+                                        );
+                                      }
+                                    }
+                                  },
+                            icon: _isStartingConversation
+                                ? const SizedBox(
+                                    width: 18,
+                                    height: 18,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                : const Icon(LucideIcons.messageCircle),
                             label: Text('marketplace.message_seller'.tr()),
                           ),
                         ),
@@ -257,9 +289,7 @@ class _MarketplaceDetailScreenState
                               );
                               if (confirmed == true) {
                                 await ref
-                                    .read(
-                                      marketplaceFormStateProvider.notifier,
-                                    )
+                                    .read(marketplaceFormStateProvider.notifier)
                                     .deleteListing(listing.id);
                                 if (!context.mounted) return;
                                 context.pop();
@@ -307,9 +337,7 @@ class _InfoRow extends StatelessWidget {
               ),
             ),
           ),
-          Expanded(
-            child: Text(value, style: theme.textTheme.bodyMedium),
-          ),
+          Expanded(child: Text(value, style: theme.textTheme.bodyMedium)),
         ],
       ),
     );

@@ -37,6 +37,7 @@ class _DashboardSystemHealthBannerState
           data['status'] == 'error' ? data['message'] as String? : null,
       error: (e, _) => e.toString(),
     );
+    final displayError = _friendlyHealthError(errorMsg);
 
     final Color color;
     final String title;
@@ -53,11 +54,11 @@ class _DashboardSystemHealthBannerState
     } else if (isHealthy) {
       color = AppColors.success;
       title = 'admin.system_healthy'.tr();
-      subtitle = errorMsg ?? 'admin.all_services_running'.tr();
+      subtitle = displayError ?? 'admin.all_services_running'.tr();
     } else {
       color = AppColors.warning;
       title = 'admin.system_degraded'.tr();
-      subtitle = errorMsg ?? 'admin.all_services_running'.tr();
+      subtitle = displayError ?? 'admin.all_services_running'.tr();
     }
 
     // Extract service check details for expanded view
@@ -177,6 +178,18 @@ class _DashboardSystemHealthBannerState
         ),
       ),
     );
+  }
+
+  String? _friendlyHealthError(String? message) {
+    if (message == null || message.trim().isEmpty) return null;
+    final normalized = message.toLowerCase();
+    if (normalized.contains('edge function') ||
+        normalized.contains('503') ||
+        normalized.contains('timeout') ||
+        normalized.contains('network')) {
+      return 'admin.health_check_failed_desc'.tr();
+    }
+    return message;
   }
 }
 

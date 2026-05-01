@@ -7,7 +7,7 @@ import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
-import 'package:budgie_breeding_tracker/features/chicks/providers/chick_providers.dart';
+import 'package:budgie_breeding_tracker/shared/providers/chicks.dart';
 import 'package:budgie_breeding_tracker/features/chicks/screens/chick_detail_screen.dart'
     show chickDisplayName;
 import 'package:budgie_breeding_tracker/router/route_names.dart';
@@ -83,23 +83,31 @@ class ChickCard extends ConsumerWidget {
                         if (chick.ringNumber != null) ...[
                           AppIcon(
                             AppIcons.ring,
-                            size: 14,
+                            size: 16,
                             color: theme.colorScheme.onSurfaceVariant,
                           ),
                           const SizedBox(width: 2),
-                          Text(
-                            chick.ringNumber!,
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: theme.colorScheme.onSurfaceVariant,
+                          Flexible(
+                            child: Text(
+                              chick.ringNumber!,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: theme.colorScheme.onSurfaceVariant,
+                              ),
                             ),
                           ),
                           const SizedBox(width: AppSpacing.sm),
                         ],
                         if (age != null)
-                          Text(
-                            formatChickAge(age, short: true),
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: theme.colorScheme.onSurfaceVariant,
+                          Flexible(
+                            child: Text(
+                              formatChickAge(age, short: true),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: theme.colorScheme.onSurfaceVariant,
+                              ),
                             ),
                           ),
                       ],
@@ -166,5 +174,4 @@ class ChickCard extends ConsumerWidget {
       ),
     );
   }
-
 }

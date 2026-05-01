@@ -1,6 +1,10 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
+/// Returns true when a numeric series has at least one meaningful value.
+bool hasPositiveValues(Iterable<num> values) =>
+    values.any((value) => value > 0);
+
 /// Calculates a clean Y-axis interval based on the maximum data value.
 ///
 /// Returns an interval that produces 3-6 tick marks on the axis,
@@ -20,18 +24,13 @@ double calcChartMaxY(double maxValue, double interval) {
 }
 
 /// Builds light horizontal grid lines at the given interval.
-FlGridData chartGridData(
-  BuildContext context, {
-  required double interval,
-}) {
+FlGridData chartGridData(BuildContext context, {required double interval}) {
   final color = Theme.of(context).colorScheme.outlineVariant;
   return FlGridData(
     show: true,
     horizontalInterval: interval,
     drawVerticalLine: false,
-    getDrawingHorizontalLine: (value) => FlLine(
-      color: color.withValues(alpha: 0.3),
-      strokeWidth: 1,
-    ),
+    getDrawingHorizontalLine: (value) =>
+        FlLine(color: color.withValues(alpha: 0.3), strokeWidth: 1),
   );
 }
