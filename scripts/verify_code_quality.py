@@ -106,6 +106,7 @@ EXTRA_CHECKERS = {
     "check_layer_imports": "Layer hierarchy import violations (architecture.md)",
     "check_bare_circular_progress": "Ad-hoc CircularProgressIndicator -> LoadingState (ui-patterns.md)",
     "check_iconbutton_constraints": "IconButton 48dp tap target (a11y, WCAG 2.1 AA)",
+    "check_provider_container_dispose": "ProviderContainer dispose missing in test/ (test-stability.md)",
 }
 
 # --- Whitelist (checker bazinda dosya/dizin istisna listesi) ---
@@ -186,6 +187,25 @@ def get_dart_files() -> List[Path]:
         # Skip excluded directories
         dirs[:] = [d for d in dirs if d not in EXCLUDED_DIRS]
 
+        for f in files:
+            if not f.endswith(".dart"):
+                continue
+            if any(f.endswith(suffix) for suffix in EXCLUDED_SUFFIXES):
+                continue
+            dart_files.append(Path(root) / f)
+
+    return sorted(dart_files)
+
+
+def get_test_dart_files() -> List[Path]:
+    """Get all Dart files in test/ for test-only checkers (ProviderContainer dispose)."""
+    test_dir = ROOT_DIR / "test"
+    if not test_dir.exists():
+        return []
+
+    dart_files = []
+    for root, dirs, files in os.walk(test_dir):
+        dirs[:] = [d for d in dirs if d not in EXCLUDED_DIRS]
         for f in files:
             if not f.endswith(".dart"):
                 continue
@@ -899,6 +919,95 @@ def check_iconbutton_constraints(lines: List[str], filepath: Path, cat: Category
             ))
 
 
+def check_provider_container_dispose(lines: List[str], filepath: Path, cat: Category):
+    """Test: ProviderContainer(...) -> addTearDown(<var>.dispose) zorunlu.
+
+    test-stability.md "ProviderContainer Teardown Rule" — 2026-04-17 audit'te
+    644+ leak tespit edildi. Helper function'lar (`/// Caller must dispose`
+    yorumu olanlar) istisna.
+    """
+    # Skip non-test files (defensive — caller should pass test files only)
+    fpath_str = str(filepath)
+    if "/test/" not in fpath_str and not fpath_str.endswith("_test.dart"):
+        return
+
+    # Helper file istisnasi: dosya basinda "Caller must dispose" yorumu varsa,
+    # bu dosya container donduren helper'lar barindiriyor demektir; atla.
+    head = "".join(lines[:30])
+    if "Caller must dispose" in head:
+        return
+
+    # Pattern: var/final container = ProviderContainer(  (or similar)
+    container_re = re.compile(
+        r'\b(?:final|var|late\s+final)\s+(\w+)\s*=\s*ProviderContainer\s*\('
+    )
+
+    for i, line in enumerate(lines, 1):
+        if is_comment_line(line):
+            continue
+        m = container_re.search(line)
+        if not m:
+            # Also catch return ProviderContainer( in helpers — explicitly OK
+            # (function returns container, caller disposes)
+            continue
+
+        var_name = m.group(1)
+        # ProviderContainer literal'i uzun olabilir (30+ override satiri).
+        # Closing paren'i bulup sonrasinda 25 satira bak. Bulamazsak satir
+        # bazinda 100 satirlik genis pencere kullan (worst case fallback).
+        depth = 0
+        close_idx = None
+        for j in range(i - 1, min(len(lines), i + 200)):
+            for ch in lines[j]:
+                if ch == '(':
+                    depth += 1
+                elif ch == ')':
+                    depth -= 1
+                    if depth == 0:
+                        close_idx = j
+                        break
+            if close_idx is not None:
+                break
+
+        if close_idx is not None:
+            window_start = close_idx
+            window_end = min(len(lines), close_idx + 26)
+        else:
+            window_start = i - 1
+            window_end = min(len(lines), i + 100)
+        # Comment satirlarini hariç tut — yorumdaki "addTearDown(container.dispose)"
+        # gibi metinler false negative uretmesin.
+        window = "".join(
+            ln for ln in lines[window_start:window_end] if not is_comment_line(ln)
+        )
+
+        # Accepted patterns:
+        #  - addTearDown(container.dispose)
+        #  - addTearDown(() => container.dispose())
+        #  - addTearDown(() async => container.dispose())
+        dispose_patterns = [
+            rf'addTearDown\s*\(\s*{re.escape(var_name)}\.dispose\s*\)',
+            rf'addTearDown\s*\(\s*\(\s*\)\s*(?:async\s+)?=>\s*{re.escape(var_name)}\.dispose\s*\(',
+            rf'addTearDown\s*\(\s*\(\s*\)\s*\{{[^}}]*{re.escape(var_name)}\.dispose',
+        ]
+        if any(re.search(p, window, re.DOTALL) for p in dispose_patterns):
+            continue
+
+        # Inside a function that returns ProviderContainer? (helper)
+        # Look back for `ProviderContainer\s+\w+\(` function signature.
+        backstep_start = max(0, i - 30)
+        backstep = "".join(lines[backstep_start:i])
+        if re.search(r'ProviderContainer\s+\w+\s*\([^)]*\)\s*\{', backstep):
+            continue
+
+        cat.findings.append(Finding(
+            file=relative_path(filepath),
+            line_num=i,
+            line_text=line.rstrip(),
+            suggestion=f"addTearDown({var_name}.dispose) ekle"
+        ))
+
+
 def main():
     print(f"\n{BOLD}{CYAN}=== BudgieBreedingTracker - Code Quality Scanner ==={RESET}\n")
 
@@ -942,6 +1051,7 @@ def main():
         Category("Freezed Private Constructor", "[FreezedCtor]", "const Model._() private constructor eksik"),
         Category("Ad-hoc CircularProgressIndicator", "[Loading]", "Center+CircularProgressIndicator -> LoadingState kullan", severity="warning"),
         Category("IconButton 48dp Constraint Eksik", "[TapTarget]", "IconButton -> AppIconButton kullan (a11y)", severity="warning"),
+        Category("ProviderContainer Dispose Eksik", "[Container]", "ProviderContainer -> addTearDown(container.dispose) ekle (test/)", severity="warning"),
     ]
 
     checkers = [
@@ -968,9 +1078,15 @@ def main():
         check_freezed_private_constructor,
         check_bare_circular_progress,
         check_iconbutton_constraints,
+        check_provider_container_dispose,  # test/ only
     ]
 
-    # Run all checkers on all files
+    # check_provider_container_dispose is the LAST checker — only it scans test/
+    lib_checkers = checkers[:-1]
+    test_only_checker = checkers[-1]
+    test_only_category = categories[-1]
+
+    # Run lib/ checkers
     for filepath in dart_files:
         try:
             with open(filepath, "r", encoding="utf-8") as f:
@@ -979,8 +1095,19 @@ def main():
             print(f"{YELLOW}UYARI: {filepath} okunamadi: {e}{RESET}")
             continue
 
-        for checker, cat in zip(checkers, categories):
+        for checker, cat in zip(lib_checkers, categories[:-1]):
             checker(lines, filepath, cat)
+
+    # Run test-only checkers on test/
+    test_files = get_test_dart_files()
+    for filepath in test_files:
+        try:
+            with open(filepath, "r", encoding="utf-8") as f:
+                lines = f.readlines()
+        except Exception as e:
+            print(f"{YELLOW}UYARI: {filepath} okunamadi: {e}{RESET}")
+            continue
+        test_only_checker(lines, filepath, test_only_category)
 
     # Report results
     total_errors = 0
