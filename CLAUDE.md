@@ -40,9 +40,9 @@ dart fix --apply
 ### Quality Scripts
 ```bash
 python3 scripts/check_l10n_sync.py       # Verify tr/en/de translation keys are in sync
-python3 scripts/verify_code_quality.py    # Anti-pattern scan (23 checkers, 18/24 CLAUDE.md patterns + 5 extra)
+python3 scripts/verify_code_quality.py    # Anti-pattern scan (24 checkers, 18/24 CLAUDE.md patterns + 6 extra)
 python3 scripts/verify_rules.py          # Validate CLAUDE.md stats against codebase (single source of truth)
-python3 scripts/verify_rules.py --fix    # Auto-fix CLAUDE.md stats table with actual values
+python3 scripts/verify_rules.py --fix    # Auto-fix CLAUDE.md stats + rule inline references
 ```
 
 ### Other Scripts
@@ -84,7 +84,7 @@ scripts/test_verify_rules.py            # Tests for verify_rules.py
 | Domain services | 17 directories |
 | Routes | 73 |
 | Custom SVG icons | 84 constants, 84 files on disk |
-| Shared widgets | 23 (15 root + 4 buttons + 2 cards + 1 dialog) |
+| Shared widgets | 23 (15 root + 4 buttons + 2 cards + 1 dialog + 1 bottom_sheet) |
 | Enum files | 15 |
 | Supabase constants | 132 (tables + buckets + columns) |
 | L10n keys | ~2,797 per language, 40 categories |
@@ -181,6 +181,9 @@ Comprehensive rules in `.claude/rules/` (auto-loaded):
 | `edge-functions.md` | Edge fn inventory, auth/validation, MFA policy, invocation, testing, deploy |
 | `security.md` | Auth, RLS, route guards, credentials, data protection, OAuth |
 | `performance.md` | Drift optimization, Riverpod rebuilds, widget perf, images, sync, startup |
+| `accessibility.md` | WCAG 2.1 AA, touch targets, semantic labels, contrast, font scaling |
+| `observability.md` | AppLogger + Sentry, breadcrumb, tag conventions, PII protection |
+| `code-review.md` | Self-review + reviewer checklist, anti-pattern spot-check, approval rules |
 
 ## Critical Anti-Patterns (24 rules — must avoid)
 
@@ -278,7 +281,7 @@ Remote:        lib/data/remote/api/
 Services:      lib/domain/services/
 Router:        lib/router/ (+ guards/)
 Theme:         lib/core/theme/
-Shared UI:     lib/core/widgets/ (buttons/, cards/, dialogs/)
+Shared UI:     lib/core/widgets/ (buttons/, cards/, dialogs/, bottom_sheet/)
 Icons:         lib/core/constants/app_icons.dart
 SVG Assets:    assets/icons/ (10 subdirs)
 Translations:  assets/translations/ (tr.json, en.json, de.json)

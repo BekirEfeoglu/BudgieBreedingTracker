@@ -59,7 +59,8 @@ final [birds, eggs] = await Future.wait([
 
 ## 24 Critical Anti-Patterns
 Full list with explanations: CLAUDE.md § "Critical Anti-Patterns (24 rules)"
-Enforced by: `verify_code_quality.py` (21 automated checkers)
+Enforced by: `verify_code_quality.py` — 18/24 CLAUDE.md kuralı + 6 ek checker = 24 statik tarayıcı.
+Statik tarayıcı dışı (manuel review): #7, #8, #9, #13, #23 (kısmi), #24.
 
 **Top 10 most common:**
 1. `withOpacity()` -> `withValues(alpha:)` — Flutter deprecation
@@ -68,9 +69,16 @@ Enforced by: `verify_code_quality.py` (21 automated checkers)
 4. Hardcoded text -> `.tr()` — 3 languages supported
 5. `print()` -> `AppLogger` — structured logging
 6. `context.go()` forward nav -> `context.push()` — stack replacement
-7. Hardcoded colors/spacing -> `Theme.of(context)` / `AppSpacing` — theming
+7. Hardcoded colors/spacing -> `Theme.of(context)` / `AppSpacing` — theming + dark mode
 8. Missing `controller.dispose()` -> ALWAYS dispose — memory leaks
 9. Bare `catch(e)` -> `AppLogger.error` — silent failures
 10. Critical errors without Sentry -> `Sentry.captureException` — observability
 
-> **Related**: ai-workflow.md (prohibited actions), ui-patterns.md (widget patterns), data-layer.md (Drift conventions)
+**Audit-flagged ek kurallar (CLAUDE.md numarali liste disinda):**
+- `ProviderContainer(...)` -> `addTearDown(container.dispose)` (test-stability.md, 2026-04-17 audit, 644+ leak)
+- `*Repository` adi -> offline-first OR `*RemoteService`/`*OnlineSource` rename (data-layer.md)
+- `client.insert()` -> `client.upsert()` — idempotent retry/sync replay
+- FK parent'li syncable repo -> `ValidatedSyncMixin` (orphan push engelle)
+- `IconButton` -> `constraints: BoxConstraints(minWidth: 48, minHeight: 48)` (a11y, accessibility.md)
+
+> **Related**: ai-workflow.md (prohibited actions), ui-patterns.md (widget patterns), data-layer.md (Drift conventions), accessibility.md (a11y), observability.md (logging + Sentry)

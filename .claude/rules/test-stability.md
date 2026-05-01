@@ -89,14 +89,28 @@ addTearDown(timer.cancel);
 ```
 
 ### ProviderContainer Teardown Rule (CI-enforceable)
-Every `ProviderContainer(...)` instantiation MUST be followed by `addTearDown(container.dispose)` in the same block. Audit 2026-04-17 found 644+ leaks.
+Every `ProviderContainer(...)` instantiation MUST be followed by `addTearDown(container.dispose)` in the same block. Audit 2026-04-17 sweep'inden geldi (644+ leak), 2026-04-19 sweep'inde teardown helper'lari yayginlasti — yeni eklenen test'ler hala bu kurali kirar.
 
-Pattern to detect in `verify_code_quality.py`:
-```python
-# Match: ProviderContainer(...)  without nearby container.dispose
-# Scan test/**/*.dart for `ProviderContainer(` — within next 10 lines, expect `dispose`
+```dart
+// CORRECT
+final container = ProviderContainer(overrides: [...]);
+addTearDown(container.dispose);
+
+// WRONG — leak
+final container = ProviderContainer(overrides: [...]);
+final notifier = container.read(myProvider.notifier);
+// No dispose — test sonunda leak
 ```
 
 Exceptions: helper functions that return the container — disposal is caller's responsibility, document with a `/// Caller must dispose` comment.
 
-> **Related**: testing.md (test patterns, mocking), providers.md (provider test setup)
+**Statik tarama aktif** — `check_provider_container_dispose` (`scripts/verify_code_quality.py`):
+- Sadece `test/` ve `*_test.dart` dosyalarini tarar
+- `final/var/late final <name> = ProviderContainer(...)` pattern'ini yakalar
+- Closing paren'dan sonra 25 satir icinde `addTearDown(<name>.dispose)` bekler
+- Yorum satirlari pencereden cikarilir (false negative engeli)
+- Helper istisna: dosya basinda `Caller must dispose` yorumu varsa atlar
+
+Bu kural CLAUDE.md "Critical Anti-Patterns" numarali listesinde yer almaz (audit-flagged ek kural) ama artik CI'da `code-quality` job'inda warning olarak rapor edilir.
+
+> **Related**: testing.md (test patterns, mocking), providers.md (provider test setup), code-review.md (review checklist)
