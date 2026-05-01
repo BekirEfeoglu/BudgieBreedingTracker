@@ -28,9 +28,9 @@ import 'package:budgie/data/local/database/tables/birds_table.dart';
 ## Supabase (Remote)
 - **Remote sources**: `lib/data/remote/api/` (26 entity + base + 2 caches + providers)
 - **Storage**: `lib/data/remote/storage/storage_service.dart`
-- **Constants**: `SupabaseConstants` class (110 table/column constants)
-- **Edge Functions**: 7 in `supabase/functions/`
-- **Migrations**: 125 SQL files in `supabase/migrations/`
+- **Constants**: `SupabaseConstants` class (128 table/column constants)
+- **Edge Functions**: 8 in `supabase/functions/`
+- **Migrations**: 144 SQL files in `supabase/migrations/`
 - Always use `SupabaseConstants` for table/column names — never hardcode
 - Use `.toSupabase()` extension — never send `created_at`/`updated_at` manually
 
@@ -72,8 +72,26 @@ Audit-flagged offender needing rename or offline-first implementation: none curr
 
 ### Write Safety
 - ALWAYS `.upsert()` for idempotent writes — `.insert()` causes duplicates on retry/sync replay
-- Use stable client-generated UUIDs as primary keys, not server-assigned IDs
+- Use stable client-generated UUIDs (`const Uuid().v4()`) as primary keys, not server-assigned IDs
 - Batch writes in Drift transactions; batch remote writes where API supports
+
+```dart
+// CORRECT - idempotent, retry-safe
+await client
+    .from(SupabaseConstants.birdsTable)
+    .upsert(bird.toSupabase(), onConflict: 'id');
+
+// WRONG - duplicates on retry, sync replay breaks
+await client.from(SupabaseConstants.birdsTable).insert(bird.toSupabase());
+```
+
+Drift toplu yazimda `batch`:
+```dart
+await db.batch((batch) {
+  batch.insertAll(birdsTable, birds.map((b) => b.toCompanion()).toList(),
+    mode: InsertMode.insertOrReplace);
+});
+```
 
 ### Conflict Resolution
 - Last-write-wins via `updated_at` timestamp (server wins when remote newer)
