@@ -5,6 +5,8 @@ import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 
+import 'package:budgie_breeding_tracker/data/providers/edge_function_provider.dart';
+import 'package:budgie_breeding_tracker/data/remote/supabase/edge_function_client.dart';
 import 'package:budgie_breeding_tracker/features/auth/providers/two_factor_providers.dart';
 import 'package:budgie_breeding_tracker/features/auth/screens/two_factor_verify_screen.dart';
 
@@ -12,15 +14,23 @@ import '../../../helpers/e2e_test_harness.dart';
 
 void main() {
   late MockTwoFactorService mockTwoFactor;
+  late MockEdgeFunctionClient mockEdgeFunctionClient;
 
   setUp(() {
     mockTwoFactor = MockTwoFactorService();
+    mockEdgeFunctionClient = MockEdgeFunctionClient();
     when(
       () => mockTwoFactor.challengeAndVerify(
         factorId: any(named: 'factorId'),
         code: any(named: 'code'),
       ),
     ).thenAnswer((_) async => false);
+    when(() => mockEdgeFunctionClient.checkMfaLockout()).thenAnswer(
+      (_) async => const EdgeFunctionResult(
+        success: true,
+        data: {'locked': false, 'remaining_seconds': 0},
+      ),
+    );
   });
 
   Widget createSubject({String factorId = 'test-factor-id'}) {
@@ -39,7 +49,10 @@ void main() {
     );
 
     return ProviderScope(
-      overrides: [twoFactorServiceProvider.overrideWithValue(mockTwoFactor)],
+      overrides: [
+        twoFactorServiceProvider.overrideWithValue(mockTwoFactor),
+        edgeFunctionClientProvider.overrideWithValue(mockEdgeFunctionClient),
+      ],
       child: MaterialApp.router(routerConfig: router),
     );
   }
@@ -105,6 +118,19 @@ void main() {
 
       // No loading indicator at start (before any OTP entered)
       expect(find.byType(CircularProgressIndicator), findsNothing);
+    });
+
+    testWidgets('fails closed when server lockout check returns failure', (
+      tester,
+    ) async {
+      when(() => mockEdgeFunctionClient.checkMfaLockout()).thenAnswer(
+        (_) async => EdgeFunctionResult.failure('no authenticated session'),
+      );
+
+      await tester.pumpWidget(createSubject());
+      await tester.pumpAndSettle();
+
+      expect(find.text(l10n('auth.2fa_server_unavailable')), findsOneWidget);
     });
   });
 }

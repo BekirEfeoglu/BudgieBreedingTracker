@@ -145,15 +145,12 @@ void main() {
           password: any(named: 'password'),
         ),
       ).thenAnswer((_) async => AuthResponse());
-      when(() => mockAuth.updateUser(any())).thenThrow(
-        const AuthException('Weak password'),
-      );
+      when(
+        () => mockAuth.updateUser(any()),
+      ).thenThrow(const AuthException('Weak password'));
 
       expect(
-        () => actions.changePassword(
-          currentPassword: 'old',
-          newPassword: '1',
-        ),
+        () => actions.changePassword(currentPassword: 'old', newPassword: '1'),
         throwsA(isA<AuthException>()),
       );
     });
@@ -169,8 +166,9 @@ void main() {
     });
 
     test('propagates error from signOut', () {
-      when(() => mockAuth.signOut())
-          .thenThrow(const AuthException('Sign out failed'));
+      when(
+        () => mockAuth.signOut(),
+      ).thenThrow(const AuthException('Sign out failed'));
 
       expect(() => actions.signOut(), throwsA(isA<AuthException>()));
     });
@@ -188,12 +186,12 @@ void main() {
     });
   });
 
-  group('_AuthAccountMixin.requestAccountDeletion', () {
+  group('_AuthAccountMixin.verifyCurrentPassword', () {
     test('throws AuthException when no authenticated user', () {
       when(() => mockAuth.currentUser).thenReturn(null);
 
       expect(
-        () => actions.requestAccountDeletion(currentPassword: 'pass'),
+        () => actions.verifyCurrentPassword(currentPassword: 'pass'),
         throwsA(
           isA<AuthException>().having(
             (e) => e.message,
@@ -211,7 +209,7 @@ void main() {
       when(() => mockAuth.currentUser).thenReturn(user);
 
       expect(
-        () => actions.requestAccountDeletion(currentPassword: 'pass'),
+        () => actions.verifyCurrentPassword(currentPassword: 'pass'),
         throwsA(
           isA<AuthException>().having(
             (e) => e.message,
@@ -222,6 +220,48 @@ void main() {
       );
     });
 
+    test('re-authenticates with current password', () async {
+      final user = MockUser();
+      when(() => user.email).thenReturn('user@test.com');
+      when(() => user.id).thenReturn('user-id-123');
+      when(() => mockAuth.currentUser).thenReturn(user);
+      when(
+        () => mockAuth.signInWithPassword(
+          email: any(named: 'email'),
+          password: any(named: 'password'),
+        ),
+      ).thenAnswer((_) async => AuthResponse());
+
+      await actions.verifyCurrentPassword(currentPassword: 'myPass');
+
+      verify(
+        () => mockAuth.signInWithPassword(
+          email: 'user@test.com',
+          password: 'myPass',
+        ),
+      ).called(1);
+    });
+
+    test('propagates error when re-authentication fails', () async {
+      final user = MockUser();
+      when(() => user.email).thenReturn('user@test.com');
+      when(() => user.id).thenReturn('user-id-123');
+      when(() => mockAuth.currentUser).thenReturn(user);
+      when(
+        () => mockAuth.signInWithPassword(
+          email: any(named: 'email'),
+          password: any(named: 'password'),
+        ),
+      ).thenThrow(const AuthException('Invalid login credentials'));
+
+      expect(
+        () => actions.verifyCurrentPassword(currentPassword: 'wrong'),
+        throwsA(isA<AuthException>()),
+      );
+    });
+  });
+
+  group('_AuthAccountMixin.requestAccountDeletion', () {
     test('re-authenticates and calls RPC with user ID', () async {
       // Use _RpcTrackingClient to avoid mocktail Future-type issues with rpc()
       final rpcClient = _RpcTrackingClient(mockAuth);
@@ -270,8 +310,31 @@ void main() {
         () => rpcActions.requestAccountDeletion(currentPassword: 'wrong'),
         throwsA(isA<AuthException>()),
       );
-      // RPC should never be called when re-auth fails
       expect(rpcClient.rpcCalls, isEmpty);
     });
+
+    test(
+      'verified-session deletion calls RPC without re-authentication',
+      () async {
+        final rpcClient = _RpcTrackingClient(mockAuth);
+        final rpcActions = AuthActions(rpcClient);
+
+        final user = MockUser();
+        when(() => user.id).thenReturn('user-id-123');
+        when(() => mockAuth.currentUser).thenReturn(user);
+
+        await rpcActions.requestAccountDeletionForVerifiedSession();
+
+        verifyNever(
+          () => mockAuth.signInWithPassword(
+            email: any(named: 'email'),
+            password: any(named: 'password'),
+          ),
+        );
+        expect(rpcClient.rpcCalls, hasLength(1));
+        expect(rpcClient.rpcCalls.first.fn, 'request_account_deletion');
+        expect(rpcClient.rpcCalls.first.params, {'p_user_id': 'user-id-123'});
+      },
+    );
   });
 }

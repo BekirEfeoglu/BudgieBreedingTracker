@@ -21,11 +21,8 @@ class _TestTrigger extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       body: ElevatedButton(
-        onPressed: () => performAccountDeletion(
-          context,
-          ref,
-          password: 'test-password',
-        ),
+        onPressed: () =>
+            performAccountDeletion(context, ref, password: 'test-password'),
         child: const Text('trigger-delete'),
       ),
     );
@@ -45,13 +42,15 @@ void main() {
   });
 
   void stubAllSuccess() {
-    when(() => mockStorage.deleteAllUserFiles(any()))
-        .thenAnswer((_) async {});
+    when(() => mockStorage.deleteAllUserFiles(any())).thenAnswer((_) async {});
     when(() => mockAuth.revokeOAuthToken()).thenAnswer((_) async {});
     when(
-      () => mockAuth.requestAccountDeletion(
+      () => mockAuth.verifyCurrentPassword(
         currentPassword: any(named: 'currentPassword'),
       ),
+    ).thenAnswer((_) async {});
+    when(
+      () => mockAuth.requestAccountDeletionForVerifiedSession(),
     ).thenAnswer((_) async {});
     when(() => mockDb.clearAllUserData(any())).thenAnswer((_) async {});
     when(() => mockAuth.signOutAllSessions()).thenAnswer((_) async {});
@@ -61,10 +60,7 @@ void main() {
     final router = GoRouter(
       initialLocation: '/test',
       routes: [
-        GoRoute(
-          path: '/test',
-          builder: (_, __) => const _TestTrigger(),
-        ),
+        GoRoute(path: '/test', builder: (_, __) => const _TestTrigger()),
         GoRoute(
           path: AppRoutes.login,
           builder: (_, __) => const Scaffold(body: Text('login-screen')),
@@ -91,20 +87,37 @@ void main() {
       await tester.tap(find.text('trigger-delete'));
       await tester.pumpAndSettle();
 
+      verify(
+        () => mockAuth.verifyCurrentPassword(currentPassword: 'test-password'),
+      ).called(1);
       verify(() => mockStorage.deleteAllUserFiles('test-user-id')).called(1);
       verify(() => mockAuth.revokeOAuthToken()).called(1);
       verify(
-        () => mockAuth.requestAccountDeletion(
-          currentPassword: 'test-password',
-        ),
+        () => mockAuth.requestAccountDeletionForVerifiedSession(),
       ).called(1);
       verify(() => mockDb.clearAllUserData('test-user-id')).called(1);
       verify(() => mockAuth.signOutAllSessions()).called(1);
     });
 
-    testWidgets('navigates to login after successful deletion', (
+    testWidgets('cleans remote storage before deleting auth user', (
       tester,
     ) async {
+      stubAllSuccess();
+      await pumpLocalizedApp(tester, buildSubject());
+
+      await tester.tap(find.text('trigger-delete'));
+      await tester.pumpAndSettle();
+
+      verifyInOrder([
+        () => mockAuth.verifyCurrentPassword(currentPassword: 'test-password'),
+        () => mockStorage.deleteAllUserFiles('test-user-id'),
+        () => mockAuth.revokeOAuthToken(),
+        () => mockAuth.requestAccountDeletionForVerifiedSession(),
+        () => mockDb.clearAllUserData('test-user-id'),
+      ]);
+    });
+
+    testWidgets('navigates to login after successful deletion', (tester) async {
       stubAllSuccess();
       await pumpLocalizedApp(tester, buildSubject());
 
@@ -123,76 +136,90 @@ void main() {
       await tester.tap(find.text('trigger-delete'));
       await tester.pumpAndSettle();
 
-      expect(
-        find.text('settings.delete_account_requested'),
-        findsOneWidget,
-      );
+      expect(find.text('settings.delete_account_requested'), findsOneWidget);
     });
 
-    testWidgets('continues when storage cleanup fails', (tester) async {
-      stubAllSuccess();
-      when(() => mockStorage.deleteAllUserFiles(any()))
-          .thenThrow(Exception('storage error'));
-
-      await pumpLocalizedApp(tester, buildSubject());
-      await tester.tap(find.text('trigger-delete'));
-      await tester.pumpAndSettle();
-
-      // Remaining steps still execute
-      verify(
-        () => mockAuth.requestAccountDeletion(
-          currentPassword: 'test-password',
-        ),
-      ).called(1);
-      verify(() => mockDb.clearAllUserData('test-user-id')).called(1);
-      verify(() => mockAuth.signOutAllSessions()).called(1);
-      expect(find.text('login-screen'), findsOneWidget);
-    });
-
-    testWidgets('continues when OAuth revocation fails', (tester) async {
-      stubAllSuccess();
-      when(() => mockAuth.revokeOAuthToken())
-          .thenThrow(Exception('oauth error'));
-
-      await pumpLocalizedApp(tester, buildSubject());
-      await tester.tap(find.text('trigger-delete'));
-      await tester.pumpAndSettle();
-
-      verify(() => mockDb.clearAllUserData('test-user-id')).called(1);
-      verify(() => mockAuth.signOutAllSessions()).called(1);
-      expect(find.text('login-screen'), findsOneWidget);
-    });
-
-    testWidgets('shows local-only message when server deletion fails', (
+    testWidgets('does not delete account when storage cleanup fails', (
       tester,
     ) async {
       stubAllSuccess();
       when(
-        () => mockAuth.requestAccountDeletion(
-          currentPassword: any(named: 'currentPassword'),
-        ),
+        () => mockStorage.deleteAllUserFiles(any()),
+      ).thenThrow(Exception('storage error'));
+
+      await pumpLocalizedApp(tester, buildSubject());
+      await tester.tap(find.text('trigger-delete'));
+      await tester.pumpAndSettle();
+
+      verifyNever(() => mockAuth.revokeOAuthToken());
+      verifyNever(() => mockAuth.requestAccountDeletionForVerifiedSession());
+      verifyNever(() => mockDb.clearAllUserData(any()));
+      verifyNever(() => mockAuth.signOutAllSessions());
+      expect(find.text('settings.delete_account_error'), findsOneWidget);
+      expect(find.text('login-screen'), findsNothing);
+    });
+
+    testWidgets('continues when OAuth revocation fails', (tester) async {
+      stubAllSuccess();
+      when(
+        () => mockAuth.revokeOAuthToken(),
+      ).thenThrow(Exception('oauth error'));
+
+      await pumpLocalizedApp(tester, buildSubject());
+      await tester.tap(find.text('trigger-delete'));
+      await tester.pumpAndSettle();
+
+      verify(() => mockDb.clearAllUserData('test-user-id')).called(1);
+      verify(() => mockAuth.signOutAllSessions()).called(1);
+      expect(find.text('login-screen'), findsOneWidget);
+    });
+
+    testWidgets('does not wipe local data when server deletion fails', (
+      tester,
+    ) async {
+      stubAllSuccess();
+      when(
+        () => mockAuth.requestAccountDeletionForVerifiedSession(),
       ).thenThrow(Exception('server error'));
 
       await pumpLocalizedApp(tester, buildSubject());
       await tester.tap(find.text('trigger-delete'));
       await tester.pumpAndSettle();
 
-      // Local cleanup still executed
-      verify(() => mockDb.clearAllUserData('test-user-id')).called(1);
-      verify(() => mockAuth.signOutAllSessions()).called(1);
+      verifyNever(() => mockDb.clearAllUserData(any()));
+      verifyNever(() => mockAuth.signOutAllSessions());
 
-      // Shows local-only message instead of success
-      expect(
-        find.text('settings.delete_account_local_only'),
-        findsOneWidget,
-      );
-      expect(find.text('login-screen'), findsOneWidget);
+      expect(find.text('settings.delete_account_error'), findsOneWidget);
+      expect(find.text('login-screen'), findsNothing);
+    });
+
+    testWidgets('does not clear remote storage when password check fails', (
+      tester,
+    ) async {
+      stubAllSuccess();
+      when(
+        () => mockAuth.verifyCurrentPassword(
+          currentPassword: any(named: 'currentPassword'),
+        ),
+      ).thenThrow(Exception('invalid password'));
+
+      await pumpLocalizedApp(tester, buildSubject());
+      await tester.tap(find.text('trigger-delete'));
+      await tester.pumpAndSettle();
+
+      verifyNever(() => mockStorage.deleteAllUserFiles(any()));
+      verifyNever(() => mockAuth.requestAccountDeletionForVerifiedSession());
+      verifyNever(() => mockDb.clearAllUserData(any()));
+      verifyNever(() => mockAuth.signOutAllSessions());
+      expect(find.text('settings.delete_account_error'), findsOneWidget);
+      expect(find.text('login-screen'), findsNothing);
     });
 
     testWidgets('shows error snackbar when DB wipe fails', (tester) async {
       stubAllSuccess();
-      when(() => mockDb.clearAllUserData(any()))
-          .thenThrow(Exception('db error'));
+      when(
+        () => mockDb.clearAllUserData(any()),
+      ).thenThrow(Exception('db error'));
 
       await pumpLocalizedApp(tester, buildSubject());
       await tester.tap(find.text('trigger-delete'));
@@ -207,8 +234,9 @@ void main() {
       tester,
     ) async {
       stubAllSuccess();
-      when(() => mockAuth.signOutAllSessions())
-          .thenThrow(Exception('signout error'));
+      when(
+        () => mockAuth.signOutAllSessions(),
+      ).thenThrow(Exception('signout error'));
 
       await pumpLocalizedApp(tester, buildSubject());
       await tester.tap(find.text('trigger-delete'));
@@ -217,34 +245,27 @@ void main() {
       // signOut is best-effort (auth user may already be deleted server-side)
       // so the flow still navigates to login with success snackbar
       expect(find.text('login-screen'), findsOneWidget);
-      expect(
-        find.text('settings.delete_account_requested'),
-        findsOneWidget,
-      );
+      expect(find.text('settings.delete_account_requested'), findsOneWidget);
     });
 
-    testWidgets('all best-effort steps fail but local cleanup still works', (
+    testWidgets('storage failure blocks all later destructive steps', (
       tester,
     ) async {
       stubAllSuccess();
-      when(() => mockStorage.deleteAllUserFiles(any()))
-          .thenThrow(Exception('storage'));
-      when(() => mockAuth.revokeOAuthToken())
-          .thenThrow(Exception('oauth'));
       when(
-        () => mockAuth.requestAccountDeletion(
-          currentPassword: any(named: 'currentPassword'),
-        ),
-      ).thenThrow(Exception('server'));
+        () => mockStorage.deleteAllUserFiles(any()),
+      ).thenThrow(Exception('storage'));
 
       await pumpLocalizedApp(tester, buildSubject());
       await tester.tap(find.text('trigger-delete'));
       await tester.pumpAndSettle();
 
-      // Critical steps still run
-      verify(() => mockDb.clearAllUserData('test-user-id')).called(1);
-      verify(() => mockAuth.signOutAllSessions()).called(1);
-      expect(find.text('login-screen'), findsOneWidget);
+      verifyNever(() => mockAuth.revokeOAuthToken());
+      verifyNever(() => mockAuth.requestAccountDeletionForVerifiedSession());
+      verifyNever(() => mockDb.clearAllUserData(any()));
+      verifyNever(() => mockAuth.signOutAllSessions());
+      expect(find.text('settings.delete_account_error'), findsOneWidget);
+      expect(find.text('login-screen'), findsNothing);
     });
   });
 }
