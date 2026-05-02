@@ -74,20 +74,20 @@ scripts/test_verify_rules.py            # Tests for verify_rules.py
 
 | Metric | Value |
 | --- | --- |
-| Source files (lib/) | 924 Dart files |
-| Test files (test/) | 857 test files, 10,595+ individual tests |
-| Feature modules | 23 |
+| Source files (lib/) | 932 Dart files |
+| Test files (test/) | 861 test files, 10,609+ individual tests |
+| Feature modules | 24 |
 | Drift tables / DAOs / Mappers | 20 each |
 | Repositories | 23 entity + base + sync_metadata |
-| Remote sources | 26 entity + base + 2 caches + providers |
-| Freezed models | 29 model files + statistics_models + supabase_extensions |
-| Domain services | 17 directories |
+| Remote sources | 27 entity + base + 2 caches + providers |
+| Freezed models | 30 model files + statistics_models + supabase_extensions |
+| Domain services | 18 directories |
 | Routes | 73 |
 | Custom SVG icons | 84 constants, 84 files on disk |
 | Shared widgets | 23 (15 root + 4 buttons + 2 cards + 1 dialog + 1 bottom_sheet) |
 | Enum files | 15 |
-| Supabase constants | 132 (tables + buckets + columns) |
-| L10n keys | ~2,797 per language, 40 categories |
+| Supabase constants | 141 (tables + buckets + columns) |
+| L10n keys | ~2,805 per language, 41 categories |
 | DB schema version | 22 |
 
 ## CI/CD Pipeline
@@ -154,7 +154,7 @@ Config methods: `.env` + `--dart-define-from-file` (local) · GitHub Secrets (CI
 | `validate-free-tier-limit` | Free tier entity limit enforcement |
 
 ### Migrations
-147 SQL migration files in `supabase/migrations/`. Schema managed server-side; never modify RLS policies from client code.
+148 SQL migration files in `supabase/migrations/`. Schema managed server-side; never modify RLS policies from client code.
 
 ## Rules
 
@@ -289,7 +289,7 @@ Security:      lib/core/security/
 Preferences:   lib/data/local/preferences/
 EdgeFunctions: lib/data/remote/supabase/
 Edge Fn (SB):  supabase/functions/
-Migrations:    supabase/migrations/ (147 files)
+Migrations:    supabase/migrations/ (148 files)
 Scripts:       scripts/
 CI:            .github/workflows/ + codemagic.yaml
 ```
