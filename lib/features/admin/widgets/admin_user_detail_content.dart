@@ -67,11 +67,6 @@ class UserDetailRiskProfileSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    try {
-      ProviderScope.containerOf(context, listen: false);
-    } on StateError {
-      return const SizedBox.shrink();
-    }
     return _UserDetailRiskProfileConsumer(userId: userId);
   }
 }

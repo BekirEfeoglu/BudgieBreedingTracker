@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -8,8 +9,10 @@ import 'package:budgie_breeding_tracker/features/admin/widgets/admin_user_detail
 
 import '../../../helpers/test_localization.dart';
 
-Widget _wrap(Widget child) => MaterialApp(
-  home: Scaffold(body: SingleChildScrollView(child: child)),
+Widget _wrap(Widget child) => ProviderScope(
+  child: MaterialApp(
+    home: Scaffold(body: SingleChildScrollView(child: child)),
+  ),
 );
 
 AdminUserDetail _makeDetail({
@@ -41,14 +44,16 @@ void main() {
 
   group('UserDetailProfileHeader', () {
     testWidgets('renders without crashing', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(UserDetailProfileHeader(detail: _makeDetail())),
       );
       expect(find.byType(UserDetailProfileHeader), findsOneWidget);
     });
 
     testWidgets('shows user full name', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(
           UserDetailProfileHeader(detail: _makeDetail(fullName: 'Jane Doe')),
         ),
@@ -57,7 +62,8 @@ void main() {
     });
 
     testWidgets('shows email address', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(
           UserDetailProfileHeader(
             detail: _makeDetail(email: 'jane@example.com'),
@@ -68,14 +74,16 @@ void main() {
     });
 
     testWidgets('shows no_name when fullName is null', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(UserDetailProfileHeader(detail: _makeDetail(fullName: null))),
       );
       expect(find.text(l10n('admin.no_name')), findsOneWidget);
     });
 
     testWidgets('shows CircleAvatar', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(UserDetailProfileHeader(detail: _makeDetail())),
       );
       expect(find.byType(CircleAvatar), findsOneWidget);
@@ -84,7 +92,8 @@ void main() {
 
   group('UserDetailSubscriptionSection', () {
     testWidgets('renders without crashing for free user', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(
           UserDetailSubscriptionSection(
             detail: _makeDetail(),
@@ -97,7 +106,8 @@ void main() {
     });
 
     testWidgets('shows grant_premium button for free user', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(
           UserDetailSubscriptionSection(
             detail: _makeDetail(subscriptionPlan: 'free'),
@@ -110,7 +120,8 @@ void main() {
     });
 
     testWidgets('shows revoke_premium button for premium user', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(
           UserDetailSubscriptionSection(
             detail: _makeDetail(subscriptionPlan: 'premium'),
@@ -126,7 +137,8 @@ void main() {
       tester,
     ) async {
       var tapped = false;
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(
           UserDetailSubscriptionSection(
             detail: _makeDetail(subscriptionPlan: 'free'),
@@ -145,7 +157,8 @@ void main() {
       tester,
     ) async {
       var tapped = false;
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(
           UserDetailSubscriptionSection(
             detail: _makeDetail(subscriptionPlan: 'premium'),
@@ -161,7 +174,8 @@ void main() {
     });
 
     testWidgets('shows subscription label', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(
           UserDetailSubscriptionSection(
             detail: _makeDetail(),
@@ -176,7 +190,8 @@ void main() {
     testWidgets(
       'hides premium action buttons for founder/admin role-based premium',
       (tester) async {
-        await pumpLocalizedApp(tester,
+        await pumpLocalizedApp(
+          tester,
           _wrap(
             UserDetailSubscriptionSection(
               detail: _makeDetail(
@@ -197,26 +212,32 @@ void main() {
 
   group('UserDetailStatsRow', () {
     testWidgets('renders without crashing', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(UserDetailStatsRow(detail: _makeDetail(birdsCount: 10))),
       );
       expect(find.byType(UserDetailStatsRow), findsOneWidget);
     });
 
     testWidgets('shows birds count', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(UserDetailStatsRow(detail: _makeDetail(birdsCount: 7))),
       );
       expect(find.text('7'), findsAtLeastNWidgets(1));
     });
 
     testWidgets('shows admin.birds label', (tester) async {
-      await pumpLocalizedApp(tester,_wrap(UserDetailStatsRow(detail: _makeDetail())));
+      await pumpLocalizedApp(
+        tester,
+        _wrap(UserDetailStatsRow(detail: _makeDetail())),
+      );
       expect(find.text(l10n('admin.birds')), findsOneWidget);
     });
 
     testWidgets('shows events count label', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(UserDetailStatsRow(detail: _makeDetail())),
       );
       expect(find.text(l10n('admin.events_count')), findsOneWidget);
@@ -225,7 +246,8 @@ void main() {
 
   group('UserDetailContent', () {
     testWidgets('renders without crashing', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(
           UserDetailContent(
             detail: _makeDetail(),
@@ -238,7 +260,8 @@ void main() {
     });
 
     testWidgets('shows profile header', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(
           UserDetailContent(
             detail: _makeDetail(),
