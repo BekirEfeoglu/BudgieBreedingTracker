@@ -11,6 +11,7 @@ Stack: Flutter/Dart, Riverpod 3, GoRouter 17, Drift, Supabase, Freezed, easy_loc
 - Reply to the user in Turkish unless they explicitly ask for another language.
 - Be direct and implementation-focused.
 - If the worktree is dirty, preserve existing changes and avoid unrelated rewrites.
+- Treat `AGENTS.md` as the compact agent contract. Use `CLAUDE.md` and `.claude/rules/*.md` as the detailed development rulebook when a task touches architecture, data, UI, security, CI, or release flow.
 
 ## Architecture Rules
 
@@ -30,6 +31,7 @@ Stack: Flutter/Dart, Riverpod 3, GoRouter 17, Drift, Supabase, Freezed, easy_loc
 - Import Drift table files directly in DAOs instead of relying on broad database imports.
 - Do not send `created_at` or `updated_at` to Supabase. Use the existing `.toSupabase()` style.
 - Use `SupabaseConstants` for table, bucket, and column names.
+- Do not edit generated Drift, Freezed, JSON, or Riverpod files by hand. Change the source file and regenerate.
 
 ## Riverpod Rules
 
@@ -121,6 +123,13 @@ If codebase metrics in `CLAUDE.md` changed, run:
 python3 scripts/verify_rules.py --fix
 ```
 
+## Rule Maintenance
+
+- When a feature changes counts, generated files, routes, shared widgets, migrations, Edge Functions, or quality checker coverage, update `CLAUDE.md` and `.claude/rules/*.md` together through `python3 scripts/verify_rules.py --fix`.
+- When adding or changing anti-pattern scanners, update `scripts/verify_code_quality.py`, `CLAUDE.md`, `.claude/rules/ai-workflow.md`, `.claude/rules/coding-standards.md`, and `scripts/test_verify_rules.py` together.
+- When changing CI, releases, Supabase deploys, or required secrets, update the matching rule file and `.github/pull_request_template.md` in the same change.
+- Prefer extending the existing verification scripts over adding manual-only rules that will drift.
+
 ## Common Anti-Patterns To Avoid
 
 - `withOpacity()` instead of `withValues(alpha:)`
@@ -135,4 +144,3 @@ python3 scripts/verify_rules.py --fix
 - `Icon(Icons.x)` for domain icons
 - bare `catch` without logging
 - unguarded route access for protected screens
-

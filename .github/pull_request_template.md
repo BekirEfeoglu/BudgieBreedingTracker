@@ -32,8 +32,10 @@
 <!-- Varsa ekleyin -->
 
 ## Kontrol Listesi
-- [ ] `dart analyze` hatasız geçiyor
-- [ ] `dart format` uygulandı
-- [ ] Testler yazıldı / güncellendi
-- [ ] `build_runner build` sorunsuz çalışıyor
-- [ ] Lokalizasyon anahtarları 3 dil dosyasında senkron (tr/en/de)
+- [ ] `dart format .` uygulandı
+- [ ] `flutter analyze --no-fatal-infos` hatasız geçiyor
+- [ ] `python3 scripts/verify_code_quality.py` hatasız geçiyor
+- [ ] Testler yazıldı / güncellendi ve ilgili `flutter test ...` komutu geçti
+- [ ] Freezed/Drift/JSON/Riverpod değiştiyse `dart run build_runner build --delete-conflicting-outputs` çalıştırıldı
+- [ ] Lokalizasyon değiştiyse `python3 scripts/check_l10n_sync.py` geçti
+- [ ] Kural/metrik değiştiyse `python3 scripts/verify_rules.py --strict` geçti
