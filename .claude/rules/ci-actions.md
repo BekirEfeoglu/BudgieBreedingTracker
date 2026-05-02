@@ -34,6 +34,9 @@
 - Billing kilidi varken scheduled workflow'lari gecici disable et
 
 ## Workflow Hygiene
+- Workflow YAML'i push oncesi local parse et: `ruby -e 'require "yaml"; YAML.load_file(ARGV.fetch(0))' .github/workflows/<file>.yml`
+- `run:` satirinda `:` iceren komutlari quote et veya block scalar kullan; aksi halde Actions run'i jobs/log olmadan 0 saniyede fail olabilir
+- Event/actor/job-level `if:` filtreleri tum job'lari skip edebiliyorsa no-op guard job ekle; GitHub'da kirmizi workflow olusmasin
 - Gecici degisiklikler bitince schedule job'larini yeniden enable et
 - Tekrar eden failure: once workflow'u duzelt, sonra eski run'lari temizle
 - Debug araclari: `gh run list`, `gh run view`, `gh api .../check-runs/.../annotations`

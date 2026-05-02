@@ -109,6 +109,8 @@ scripts/test_verify_rules.py            # Tests for verify_rules.py
 | `ios-build` | iOS build (no code signing) |
 | `pages` | GitHub Pages deployment from `docs/` |
 
+Workflow changes must be validated locally before push: parse the edited YAML, quote or block-scalar `run:` commands containing `:`, and ensure each triggering event has at least one non-skipped job.
+
 ### Codemagic (`codemagic.yaml`) — production releases
 - `android-release`: AAB → Google Play (alpha track)
 - `ios-release`: IPA → App Store TestFlight (App ID: 6759828211)

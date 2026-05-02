@@ -128,6 +128,7 @@ python3 scripts/verify_rules.py --fix
 - When a feature changes counts, generated files, routes, shared widgets, migrations, Edge Functions, or quality checker coverage, update `CLAUDE.md` and `.claude/rules/*.md` together through `python3 scripts/verify_rules.py --fix`.
 - When adding or changing anti-pattern scanners, update `scripts/verify_code_quality.py`, `CLAUDE.md`, `.claude/rules/ai-workflow.md`, `.claude/rules/coding-standards.md`, and `scripts/test_verify_rules.py` together.
 - When changing CI, releases, Supabase deploys, or required secrets, update the matching rule file and `.github/pull_request_template.md` in the same change.
+- Before pushing any GitHub Actions workflow change, validate workflow YAML locally and make sure every triggering event has at least one non-skipped job. Quote or block-scalar `run:` commands that contain `:` and add no-op guard jobs when actor/event filters would otherwise skip all jobs.
 - Prefer extending the existing verification scripts over adding manual-only rules that will drift.
 
 ## Common Anti-Patterns To Avoid
