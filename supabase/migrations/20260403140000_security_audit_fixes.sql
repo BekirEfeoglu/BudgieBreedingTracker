@@ -46,13 +46,17 @@ $$;
 
 -- admin_get_table_counts
 CREATE OR REPLACE FUNCTION public.admin_get_table_counts()
-RETURNS json
+RETURNS TABLE(
+  table_name text,
+  row_count bigint
+)
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = ''
 AS $$
 DECLARE
-  result json;
+  tbl_name text;
+  tbl_count bigint;
   v_admin_id uuid;
 BEGIN
   SELECT au.user_id INTO v_admin_id
@@ -63,20 +67,18 @@ BEGIN
     RAISE EXCEPTION 'Permission denied: admin role required';
   END IF;
 
-  SELECT json_build_object(
-    'birds', (SELECT count(*) FROM public.birds WHERE is_deleted = false),
-    'nests', (SELECT count(*) FROM public.nests WHERE is_deleted = false),
-    'breeding_pairs', (SELECT count(*) FROM public.breeding_pairs WHERE is_deleted = false),
-    'eggs', (SELECT count(*) FROM public.eggs WHERE is_deleted = false),
-    'chicks', (SELECT count(*) FROM public.chicks WHERE is_deleted = false),
-    'clutches', (SELECT count(*) FROM public.clutches WHERE is_deleted = false),
-    'health_records', (SELECT count(*) FROM public.health_records WHERE is_deleted = false),
-    'events', (SELECT count(*) FROM public.events WHERE is_deleted = false),
-    'profiles', (SELECT count(*) FROM public.profiles),
-    'notifications', (SELECT count(*) FROM public.notifications WHERE is_deleted = false)
-  ) INTO result;
-
-  RETURN result;
+  FOR tbl_name IN
+    SELECT t.table_name::text
+    FROM information_schema.tables t
+    WHERE t.table_schema = 'public'
+      AND t.table_type = 'BASE TABLE'
+    ORDER BY t.table_name
+  LOOP
+    EXECUTE format('SELECT count(*) FROM public.%I', tbl_name) INTO tbl_count;
+    table_name := tbl_name;
+    row_count := tbl_count;
+    RETURN NEXT;
+  END LOOP;
 END;
 $$;
 
