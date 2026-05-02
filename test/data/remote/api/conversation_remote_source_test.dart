@@ -81,6 +81,33 @@ void main() {
       expect(eqKeys, containsAll(['conversation_id:conv-1', 'is_left:false']));
     });
 
+    test(
+      'findDirectConversation checks all direct conversation candidates',
+      () async {
+        participantsSelect.result = [
+          {'conversation_id': 'conv-other'},
+          {'conversation_id': 'conv-match'},
+        ];
+        conversationsSelect.singleResult = {
+          'id': 'conv-other',
+          'type': 'direct',
+        };
+        conversationsSelect.result = [
+          {'id': 'conv-other', 'type': 'direct'},
+          {'id': 'conv-match', 'type': 'direct'},
+        ];
+        participantsSelect.singleResultQueue.addAll([
+          null,
+          {'conversation_id': 'conv-match'},
+        ]);
+
+        final result = await source.findDirectConversation('user-1', 'user-2');
+
+        expect(result?['id'], 'conv-match');
+        expect(conversationsSelect.limitValue, isNull);
+      },
+    );
+
     test('addParticipant inserts participant data', () async {
       final data = {
         'conversation_id': 'conv-1',
