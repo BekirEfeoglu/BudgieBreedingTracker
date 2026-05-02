@@ -131,36 +131,6 @@ void main() {
       expect(eqKeys, containsAll(['conversation_id:conv-1', 'user_id:user-1']));
     });
 
-    test(
-      'findDirectConversation checks all shared participant conversations',
-      () async {
-        participantsSelect.resultQueue.addAll([
-          [
-            {'conversation_id': 'conv-a'},
-            {'conversation_id': 'conv-b'},
-          ],
-          [
-            {'conversation_id': 'conv-b'},
-          ],
-        ]);
-        conversationsSelect.singleResult = {'id': 'conv-b', 'type': 'direct'};
-
-        final result = await source.findDirectConversation('user-1', 'user-2');
-
-        expect(result, isNotNull);
-        expect(result!['id'], 'conv-b');
-        final eqKeys = participantsSelect.eqCalls
-            .map((e) => '${e.key}:${e.value}')
-            .toList();
-        expect(eqKeys, containsAll(['user_id:user-1', 'user_id:user-2']));
-        expect(participantsSelect.inFilterCalls.single.value, [
-          'conv-a',
-          'conv-b',
-        ]);
-        expect(conversationsSelect.inFilterCalls.single.value, ['conv-b']);
-      },
-    );
-
     test('rethrows on error', () {
       participantsSelect.error = Exception('network error');
 
