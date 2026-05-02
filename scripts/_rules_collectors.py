@@ -1,5 +1,6 @@
 """Codebase'den gercek degerleri toplayan fonksiyonlar."""
 
+import ast
 import json
 import re
 from pathlib import Path
@@ -121,12 +122,18 @@ def collect_widgets(lib: Path) -> dict:
     buttons = count_files(widgets_dir / "buttons") if (widgets_dir / "buttons").exists() else 0
     cards = count_files(widgets_dir / "cards") if (widgets_dir / "cards").exists() else 0
     dialogs = count_files(widgets_dir / "dialogs") if (widgets_dir / "dialogs").exists() else 0
+    bottom_sheet = (
+        count_files(widgets_dir / "bottom_sheet")
+        if (widgets_dir / "bottom_sheet").exists()
+        else 0
+    )
     return {
         "widgets_total": root_w + sub_w,
         "widgets_root": root_w,
         "widgets_buttons": buttons,
         "widgets_cards": cards,
         "widgets_dialogs": dialogs,
+        "widgets_bottom_sheet": bottom_sheet,
     }
 
 
@@ -181,6 +188,56 @@ def count_migrations(root: Path) -> int:
     return len(list(migrations_dir.glob("*.sql")))
 
 
+def count_edge_functions(root: Path) -> int:
+    """Supabase Edge Function sayisini index.ts giris noktalarindan topla."""
+    functions_dir = root / "supabase" / "functions"
+    if not functions_dir.exists():
+        return 0
+    return len([
+        f
+        for f in functions_dir.glob("*/index.ts")
+        if not f.parent.name.startswith("_")
+    ])
+
+
+def collect_quality_checker_counts(root: Path) -> dict:
+    """verify_code_quality.py checker kapsam sayilarini AST uzerinden topla."""
+    scanner = root / "scripts" / "verify_code_quality.py"
+    result = {
+        "quality_covered": 0,
+        "quality_extra": 0,
+        "quality_total": 0,
+    }
+    if not scanner.exists():
+        return result
+
+    try:
+        tree = ast.parse(scanner.read_text(encoding="utf-8"))
+    except (OSError, SyntaxError):
+        return result
+
+    counts = {}
+    for node in tree.body:
+        if not isinstance(node, ast.Assign):
+            continue
+        for target in node.targets:
+            if not isinstance(target, ast.Name):
+                continue
+            if target.id not in {"ANTI_PATTERN_COVERAGE", "EXTRA_CHECKERS"}:
+                continue
+            try:
+                value = ast.literal_eval(node.value)
+            except (ValueError, SyntaxError):
+                continue
+            if isinstance(value, dict):
+                counts[target.id] = len(value)
+
+    result["quality_covered"] = counts.get("ANTI_PATTERN_COVERAGE", 0)
+    result["quality_extra"] = counts.get("EXTRA_CHECKERS", 0)
+    result["quality_total"] = result["quality_covered"] + result["quality_extra"]
+    return result
+
+
 def collect_actual_values() -> dict:
     """Codebase'den gercek degerleri topla."""
     result: dict = {}
@@ -200,4 +257,6 @@ def collect_actual_values() -> dict:
     result.update(collect_test_counts(ROOT))
     result["source_files"] = collect_source_file_count(LIB)
     result["migrations"] = count_migrations(ROOT)
+    result["edge_functions"] = count_edge_functions(ROOT)
+    result.update(collect_quality_checker_counts(ROOT))
     return result

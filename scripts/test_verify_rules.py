@@ -21,11 +21,13 @@ SCRIPTS_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(SCRIPTS_DIR))
 
 from _rules_collectors import (
+    collect_quality_checker_counts,
     collect_data_layer,
     collect_repos_and_remotes,
     collect_source_file_count,
     collect_test_counts,
     collect_widgets,
+    count_edge_functions,
     count_files_recursive,
     count_json_leaf_keys,
     count_json_top_keys,
@@ -64,11 +66,16 @@ def _make_sample_actual(overrides=None) -> dict:
         "widgets_buttons": 2,
         "widgets_cards": 2,
         "widgets_dialogs": 1,
+        "widgets_bottom_sheet": 0,
         "test_files": 680,
         "individual_tests": 7974,
         "source_files": 717,
         "indexes": 34,
         "migrations": 104,
+        "edge_functions": 7,
+        "quality_covered": 18,
+        "quality_extra": 5,
+        "quality_total": 23,
     }
     if overrides:
         base.update(overrides)
@@ -321,6 +328,14 @@ class TestBuildFixUpdates(unittest.TestCase):
         updates = build_fix_updates(actual)
         self.assertEqual(updates["Shared widgets"], "19 (14 root + 2 buttons + 2 cards + 1 dialog)")
 
+    def test_shared_widgets_format_includes_bottom_sheet(self):
+        actual = _make_sample_actual({"widgets_total": 20, "widgets_bottom_sheet": 1})
+        updates = build_fix_updates(actual)
+        self.assertEqual(
+            updates["Shared widgets"],
+            "20 (14 root + 2 buttons + 2 cards + 1 dialog + 1 bottom_sheet)",
+        )
+
     def test_test_files_format(self):
         actual = _make_sample_actual()
         updates = build_fix_updates(actual)
@@ -513,6 +528,47 @@ class TestApplyInlineFixes(unittest.TestCase):
         self.assertNotIn("~100", fixed)
         self.assertTrue(any("l10n" in m.lower() or "key" in m.lower() for m in messages))
 
+    def test_updates_rule_inventory_counts(self):
+        actual = _make_sample_actual({
+            "supa": 128,
+            "edge_functions": 8,
+            "migrations": 144,
+            "test_files": 855,
+            "individual_tests": 10566,
+            "widgets_total": 23,
+        })
+        content = "\n".join([
+            "- **Constants**: `SupabaseConstants` class (110 table/column constants)",
+            "- **Edge Functions**: 7 in `supabase/functions/`",
+            "- **Migrations**: 125 SQL files in `supabase/migrations/`",
+            "- 820 test files, 10,093+ individual tests",
+            "## Shared Widgets (20)",
+        ])
+        fixed, messages = _apply_inline_fixes(content, actual)
+        self.assertIn("(128 table/column constants)", fixed)
+        self.assertIn("**Edge Functions**: 8 in `supabase/functions/`", fixed)
+        self.assertIn("**Migrations**: 144 SQL files in `supabase/migrations/`", fixed)
+        self.assertIn("- 855 test files, 10,566+ individual tests", fixed)
+        self.assertIn("## Shared Widgets (23)", fixed)
+        self.assertGreaterEqual(len(messages), 4)
+
+    def test_updates_quality_checker_counts(self):
+        actual = _make_sample_actual({
+            "quality_covered": 18,
+            "quality_extra": 5,
+            "quality_total": 23,
+        })
+        content = "\n".join([
+            "python3 scripts/verify_code_quality.py    # Anti-pattern scan (21 checkers, 16/24 CLAUDE.md patterns + 5 extra)",
+            "- `verify_code_quality.py` scans for 21 patterns (16 from CLAUDE.md + 5 extra)",
+            "Enforced by: `verify_code_quality.py` (21 automated checkers)",
+        ])
+        fixed, messages = _apply_inline_fixes(content, actual)
+        self.assertIn("Anti-pattern scan (23 checkers, 18/24 CLAUDE.md patterns + 5 extra)", fixed)
+        self.assertIn("scans with 23 checkers (18 from CLAUDE.md + 5 extra)", fixed)
+        self.assertIn("Enforced by: `verify_code_quality.py` (23 automated checkers)", fixed)
+        self.assertTrue(any("quality checker" in m.lower() for m in messages))
+
 
 # ── Collector helpers ─────────────────────────────────────────────────────────
 
@@ -596,6 +652,7 @@ class TestCollectWidgets(unittest.TestCase):
         (w / "buttons").mkdir(parents=True)
         (w / "cards").mkdir(parents=True)
         (w / "dialogs").mkdir(parents=True)
+        (w / "bottom_sheet").mkdir(parents=True)
         return w
 
     def test_counts_root_and_subdir_widgets(self):
@@ -617,9 +674,11 @@ class TestCollectWidgets(unittest.TestCase):
             (w / "cards" / "stat_card.dart").touch()
             (w / "cards" / "info_card.dart").touch()
             (w / "dialogs" / "confirm_dialog.dart").touch()
+            (w / "bottom_sheet" / "app_bottom_sheet.dart").touch()
             result = collect_widgets(lib)
             self.assertEqual(result["widgets_cards"], 2)
             self.assertEqual(result["widgets_dialogs"], 1)
+            self.assertEqual(result["widgets_bottom_sheet"], 1)
 
     def test_returns_zeros_when_no_widgets_dir(self):
         with tempfile.TemporaryDirectory() as d:
@@ -743,6 +802,43 @@ class TestCountStringConsts(unittest.TestCase):
             tmp.write("class Foo {}\n")
             p = Path(tmp.name)
         self.assertEqual(count_string_consts(p), 0)
+
+
+class TestCountEdgeFunctions(unittest.TestCase):
+    def test_counts_index_ts_functions_excluding_shared(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            for name in ("send-push", "system-health", "_shared"):
+                fn_dir = root / "supabase" / "functions" / name
+                fn_dir.mkdir(parents=True)
+                (fn_dir / "index.ts").touch()
+            self.assertEqual(count_edge_functions(root), 2)
+
+    def test_returns_zero_when_functions_dir_missing(self):
+        with tempfile.TemporaryDirectory() as d:
+            self.assertEqual(count_edge_functions(Path(d)), 0)
+
+
+class TestCollectQualityCheckerCounts(unittest.TestCase):
+    def test_counts_quality_checker_dicts(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            scripts = root / "scripts"
+            scripts.mkdir()
+            (scripts / "verify_code_quality.py").write_text(
+                "ANTI_PATTERN_COVERAGE = {1: 'a', 2: 'b'}\n"
+                "EXTRA_CHECKERS = {'x': 'extra'}\n",
+                encoding="utf-8",
+            )
+            result = collect_quality_checker_counts(root)
+            self.assertEqual(result["quality_covered"], 2)
+            self.assertEqual(result["quality_extra"], 1)
+            self.assertEqual(result["quality_total"], 3)
+
+    def test_returns_zero_counts_when_scanner_missing(self):
+        with tempfile.TemporaryDirectory() as d:
+            result = collect_quality_checker_counts(Path(d))
+            self.assertEqual(result["quality_total"], 0)
 
 
 class TestCountRouteConsts(unittest.TestCase):
