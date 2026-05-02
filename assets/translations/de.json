@@ -2907,5 +2907,15 @@
     "cg_enforcement_body": "Verstöße können zu folgenden Konsequenzen führen: Entfernung von Inhalten ohne Vorankündigung, vorübergehende oder dauerhafte Kontosperrung, Verlust des Community-Zugangs. Schwere und Häufigkeit der Verstöße bestimmen die Konsequenz. Entscheidungen sind endgültig, können aber über support@budgiebreedingtracker.online angefochten werden.",
     "cg_reporting_title": "Verstöße melden",
     "cg_reporting_body": "Verwenden Sie die Melden-Schaltfläche bei jedem Beitrag oder Kommentar, um Inhalte zu melden die gegen diese Richtlinien verstoßen. Wählen Sie den entsprechenden Grund (Spam, Belästigung, unangemessener Inhalt, Fehlinformation oder Sonstiges). Meldungen werden geprüft und zeitnah bearbeitet. Falschmeldungen können selbst zu Maßnahmen führen."
+  },
+  "update": {
+    "title": "Neue Version verfügbar",
+    "optional_message": "Installieren Sie die neueste Version für ein besseres Erlebnis.",
+    "forced_title": "Update erforderlich",
+    "forced_message": "Sie müssen die App aktualisieren, um fortzufahren.",
+    "update_now": "Jetzt aktualisieren",
+    "later": "Später",
+    "release_notes": "Versionshinweise",
+    "store_open_failed": "Store konnte nicht geöffnet werden"
   }
 }

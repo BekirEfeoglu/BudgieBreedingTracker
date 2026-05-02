@@ -2907,5 +2907,15 @@
     "cg_enforcement_body": "Violations may result in: content removal without notice, temporary or permanent account suspension, loss of community access. Severity and frequency of violations determine the consequence. Decisions are final but may be appealed via support@budgiebreedingtracker.online.",
     "cg_reporting_title": "Reporting Violations",
     "cg_reporting_body": "Use the report button on any post or comment to flag content that violates these guidelines. Select the appropriate reason (spam, harassment, inappropriate content, misinformation, or other). Reports are reviewed and actioned promptly. False reports may themselves result in enforcement action."
+  },
+  "update": {
+    "title": "New version available",
+    "optional_message": "Install the latest version for a better experience.",
+    "forced_title": "Update required",
+    "forced_message": "You need to update the app to continue.",
+    "update_now": "Update now",
+    "later": "Later",
+    "release_notes": "Release notes",
+    "store_open_failed": "Could not open store"
   }
 }
