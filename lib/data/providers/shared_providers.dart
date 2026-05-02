@@ -5,7 +5,7 @@
 /// This prevents cross-feature import violations.
 library;
 
-export 'action_feedback_providers.dart';
+export 'package:budgie_breeding_tracker/core/providers/action_feedback_providers.dart';
 export 'auth_state_providers.dart';
 export 'bird_stream_providers.dart';
 export 'breeding_detail_stream_providers.dart';
