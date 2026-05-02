@@ -26,6 +26,7 @@
 - `GITHUB_TOKEN` read-only gelebilir; merge/edit/label kolayca fail olur
 - Workflow'lari triage/summary odakli tut; destructive action kullanma
 - PR metadata icin `dependabot/fetch-metadata` kullan
+- Dependabot disi eventlerde workflow'un kirmiziya dusmemesi icin no-op guard job bulundur
 
 ## Billing / Runner Failures
 - Tum job'lar 0-5 saniyede dusuyorsa: Actions account durumunu kontrol et

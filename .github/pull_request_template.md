@@ -39,3 +39,4 @@
 - [ ] Freezed/Drift/JSON/Riverpod değiştiyse `dart run build_runner build --delete-conflicting-outputs` çalıştırıldı
 - [ ] Lokalizasyon değiştiyse `python3 scripts/check_l10n_sync.py` geçti
 - [ ] Kural/metrik değiştiyse `python3 scripts/verify_rules.py --strict` geçti
+- [ ] CI/workflow değiştiyse `.claude/rules/ci-actions.md` güncellendi

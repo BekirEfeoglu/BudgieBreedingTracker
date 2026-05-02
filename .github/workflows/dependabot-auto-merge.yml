@@ -10,6 +10,14 @@ permissions:
   pull-requests: write
 
 jobs:
+  non-dependabot-event:
+    if: github.actor != 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+    steps:
+      - name: Skip Dependabot automation
+        run: echo "Dependabot automation is skipped for ${GITHUB_ACTOR}."
+
   auto-merge:
     if: github.actor == 'dependabot[bot]'
     runs-on: ubuntu-latest
@@ -33,7 +41,8 @@ jobs:
       # Minor update'lere bilgi etiketi ekle
       - name: Label minor updates
         if: steps.metadata.outputs.update-type == 'version-update:semver-minor'
-        run: gh pr edit "$PR_URL" --add-label "priority: medium"
+        run: |
+          gh pr edit "$PR_URL" --add-label "priority: medium"
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -41,7 +50,8 @@ jobs:
       # Major update'lere uyari etiketi ekle
       - name: Label major updates
         if: steps.metadata.outputs.update-type == 'version-update:semver-major'
-        run: gh pr edit "$PR_URL" --add-label "priority: high"
+        run: |
+          gh pr edit "$PR_URL" --add-label "priority: high"
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
