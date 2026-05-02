@@ -142,6 +142,26 @@ class TestVerifyCodeQualityMain(unittest.TestCase):
 class TestVerifyCodeQualityMainBranches(unittest.TestCase):
     """main() icerisindeki kalan branch'leri kapsayan entegrasyon testleri."""
 
+    def test_get_test_dart_files_returns_empty_when_test_dir_missing(self):
+        import verify_code_quality as vcq
+
+        with tempfile.TemporaryDirectory() as d:
+            with patch.object(vcq, "ROOT_DIR", Path(d)):
+                self.assertEqual(vcq.get_test_dart_files(), [])
+
+    def test_get_test_dart_files_skips_generated_files(self):
+        import verify_code_quality as vcq
+
+        with tempfile.TemporaryDirectory() as d:
+            test_dir = Path(d) / "test"
+            test_dir.mkdir()
+            keep = test_dir / "bird_test.dart"
+            generated = test_dir / "bird_test.g.dart"
+            keep.touch()
+            generated.touch()
+            with patch.object(vcq, "ROOT_DIR", Path(d)):
+                self.assertEqual(vcq.get_test_dart_files(), [keep])
+
     def test_prints_pattern_count_when_claude_md_has_patterns(self):
         """total_patterns > 0 branch'ini calistiriyor (satirlar 839-840)."""
         import io
@@ -194,6 +214,30 @@ class TestVerifyCodeQualityMainBranches(unittest.TestCase):
             with patch.object(vcq, "LIB_DIR", lib), patch.object(
                 vcq, "CLAUDE_MD", Path("/nonexistent_claude.md")
             ), patch("builtins.open", side_effect=_mock_open):
+                result = vcq.main()
+        self.assertEqual(result, 0)
+
+    def test_handles_unreadable_test_dart_file_gracefully(self):
+        import verify_code_quality as vcq
+
+        with tempfile.TemporaryDirectory() as d:
+            lib = Path(d) / "lib"
+            lib.mkdir()
+            test_file = Path(d) / "test" / "bad_test.dart"
+            test_file.parent.mkdir()
+            test_file.touch()
+
+            original_open = open
+
+            def _mock_open(file, *args, **kwargs):
+                if Path(file) == test_file:
+                    raise OSError("permission denied")
+                return original_open(file, *args, **kwargs)
+
+            with patch.object(vcq, "LIB_DIR", lib), \
+                 patch.object(vcq, "CLAUDE_MD", Path("/nonexistent_claude.md")), \
+                 patch.object(vcq, "get_test_dart_files", return_value=[test_file]), \
+                 patch("builtins.open", side_effect=_mock_open):
                 result = vcq.main()
         self.assertEqual(result, 0)
 

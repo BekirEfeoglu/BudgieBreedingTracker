@@ -20,6 +20,7 @@ sys.path.insert(0, str(SCRIPTS_DIR))
 from verify_code_quality import (
     Category,
     Finding,
+    check_bare_circular_progress,
     check_bare_catch,
     check_context_go_forward_nav,
     check_dao_import_app_database,
@@ -30,10 +31,12 @@ from verify_code_quality import (
     check_hardcoded_colors,
     check_hardcoded_spacing,
     check_icon_icons,
+    check_iconbutton_constraints,
     check_icondata_param,
     check_layer_imports,
     check_missing_tr,
     check_mounted_async,
+    check_provider_container_dispose,
     check_print_statements,
     check_ref_watch_in_callback,
     check_route_ordering,
@@ -331,6 +334,42 @@ class TestCheckPrintStatements(unittest.TestCase):
         # 'print(' kelime sinirinda eslesir; ayni satirda debugPrint var → continue
         lines = ["  debugPrint('x'); print('y');"]
         cat = _run_checker(check_print_statements, lines)
+        self.assertEqual(len(cat.findings), 0)
+
+
+class TestCheckBareCircularProgress(unittest.TestCase):
+    def test_detects_bare_centered_spinner(self):
+        lines = ["return const Center(child: CircularProgressIndicator());"]
+        cat = _run_checker(check_bare_circular_progress, lines)
+        self.assertEqual(len(cat.findings), 1)
+        self.assertIn("LoadingState", cat.findings[0].suggestion)
+
+    def test_skips_shared_loading_files(self):
+        lines = ["return const Center(child: CircularProgressIndicator());"]
+        cat = _run_checker(
+            check_bare_circular_progress,
+            lines,
+            Path("lib/core/widgets/loading_state.dart"),
+        )
+        self.assertEqual(len(cat.findings), 0)
+
+
+class TestCheckIconButtonConstraints(unittest.TestCase):
+    def test_detects_raw_icon_button_without_constraints(self):
+        lines = ["IconButton(onPressed: () {}, icon: const Icon(Icons.add)),\n"]
+        cat = _run_checker(check_iconbutton_constraints, lines)
+        self.assertEqual(len(cat.findings), 1)
+        self.assertIn("AppIconButton", cat.findings[0].suggestion)
+
+    def test_skips_icon_button_when_constraints_present_nearby(self):
+        lines = [
+            "IconButton(\n",
+            "  constraints: const BoxConstraints(minWidth: 48, minHeight: 48),\n",
+            "  onPressed: () {},\n",
+            "  icon: const Icon(Icons.add),\n",
+            "),\n",
+        ]
+        cat = _run_checker(check_iconbutton_constraints, lines)
         self.assertEqual(len(cat.findings), 0)
 
 
@@ -1348,6 +1387,46 @@ class TestCheckJsonKeyUnknownEnum(unittest.TestCase):
         ]
         # Bos set → if not known_enums: return (satir 552)
         cat = self._run_with_cache(lines, self.MODEL_PATH, set())
+        self.assertEqual(len(cat.findings), 0)
+
+
+class TestCheckProviderContainerDispose(unittest.TestCase):
+    TEST_PATH = Path("test/features/birds/bird_provider_test.dart")
+    LIB_PATH = Path("lib/features/birds/bird_provider.dart")
+
+    def test_skips_non_test_files(self):
+        lines = ["final container = ProviderContainer();\n"]
+        cat = _run_checker(check_provider_container_dispose, lines, self.LIB_PATH)
+        self.assertEqual(len(cat.findings), 0)
+
+    def test_skips_helper_file_with_caller_must_dispose_comment(self):
+        lines = [
+            "/// Caller must dispose the returned container.\n",
+            "final container = ProviderContainer();\n",
+        ]
+        cat = _run_checker(check_provider_container_dispose, lines, self.TEST_PATH)
+        self.assertEqual(len(cat.findings), 0)
+
+    def test_detects_missing_teardown_with_fallback_window(self):
+        lines = [
+            "test('leaks', () {\n",
+            "  final container = ProviderContainer(\n",
+            "    overrides: [\n",
+            "  ;\n",
+            "});\n",
+        ]
+        cat = _run_checker(check_provider_container_dispose, lines, self.TEST_PATH)
+        self.assertEqual(len(cat.findings), 1)
+        self.assertIn("addTearDown", cat.findings[0].suggestion)
+
+    def test_skips_provider_container_factory_helper(self):
+        lines = [
+            "ProviderContainer makeContainer() {\n",
+            "  final container = ProviderContainer();\n",
+            "  return container;\n",
+            "}\n",
+        ]
+        cat = _run_checker(check_provider_container_dispose, lines, self.TEST_PATH)
         self.assertEqual(len(cat.findings), 0)
 
 

@@ -21,6 +21,7 @@ SCRIPTS_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(SCRIPTS_DIR))
 
 from _rules_collectors import (
+    _count_indexes,
     collect_quality_checker_counts,
     collect_data_layer,
     collect_repos_and_remotes,
@@ -569,6 +570,36 @@ class TestApplyInlineFixes(unittest.TestCase):
         self.assertIn("Enforced by: `verify_code_quality.py` (23 automated checkers)", fixed)
         self.assertTrue(any("quality checker" in m.lower() for m in messages))
 
+    def test_updates_inline_asset_index_constant_and_migration_counts(self):
+        actual = _make_sample_actual({
+            "icons": 91,
+            "indexes": 42,
+            "supa": 128,
+            "migrations": 144,
+        })
+        content = "\n".join([
+            "- 82 custom SVG icons in `assets/icons/`",
+            "- 34+ composite indexes keep local queries fast",
+            "- Supabase constants — 110 constants",
+            "- 125 SQL migration files in `supabase/migrations/`",
+            "- supabase/migrations/ (125 files)",
+            "- **Migrations**: 125 SQL files in `supabase/migrations/`",
+        ])
+        fixed, messages = _apply_inline_fixes(content, actual)
+        self.assertIn("91 custom SVG icons in", fixed)
+        self.assertIn("42 composite indexes", fixed)
+        self.assertIn("— 128 constants", fixed)
+        self.assertIn("144 SQL migration files in", fixed)
+        self.assertIn("supabase/migrations/ (144 files)", fixed)
+        self.assertIn("**Migrations**: 144 SQL files in `supabase/migrations/`", fixed)
+        self.assertGreaterEqual(len(messages), 6)
+
+    def test_missing_indexes_key_raises(self):
+        actual = _make_sample_actual()
+        actual.pop("indexes")
+        with self.assertRaises(KeyError):
+            _apply_inline_fixes("34 composite indexes\n", actual)
+
 
 # ── Collector helpers ─────────────────────────────────────────────────────────
 
@@ -819,6 +850,21 @@ class TestCountEdgeFunctions(unittest.TestCase):
             self.assertEqual(count_edge_functions(Path(d)), 0)
 
 
+class TestCountIndexes(unittest.TestCase):
+    def test_ignores_commented_create_index_lines(self):
+        with tempfile.TemporaryDirectory() as d:
+            db_dir = Path(d)
+            (db_dir / "app_database_indexes.dart").write_text(
+                "\n".join([
+                    "// CREATE INDEX ignored_comment",
+                    "/// CREATE INDEX ignored_doc_comment",
+                    "CREATE INDEX active_index ON birds(id);",
+                ]),
+                encoding="utf-8",
+            )
+            self.assertEqual(_count_indexes(db_dir), 1)
+
+
 class TestCollectQualityCheckerCounts(unittest.TestCase):
     def test_counts_quality_checker_dicts(self):
         with tempfile.TemporaryDirectory() as d:
@@ -839,6 +885,31 @@ class TestCollectQualityCheckerCounts(unittest.TestCase):
         with tempfile.TemporaryDirectory() as d:
             result = collect_quality_checker_counts(Path(d))
             self.assertEqual(result["quality_total"], 0)
+
+    def test_returns_zero_counts_when_scanner_has_invalid_python(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            scripts = root / "scripts"
+            scripts.mkdir()
+            (scripts / "verify_code_quality.py").write_text("ANTI_PATTERN_COVERAGE = {\n", encoding="utf-8")
+            result = collect_quality_checker_counts(root)
+            self.assertEqual(result["quality_total"], 0)
+
+    def test_ignores_non_name_assignments_and_non_literal_values(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            scripts = root / "scripts"
+            scripts.mkdir()
+            (scripts / "verify_code_quality.py").write_text(
+                "ANTI_PATTERN_COVERAGE['x'] = 'ignored'\n"
+                "ANTI_PATTERN_COVERAGE = dict(a='not literal')\n"
+                "EXTRA_CHECKERS = {'x': 'extra'}\n",
+                encoding="utf-8",
+            )
+            result = collect_quality_checker_counts(root)
+            self.assertEqual(result["quality_covered"], 0)
+            self.assertEqual(result["quality_extra"], 1)
+            self.assertEqual(result["quality_total"], 1)
 
 
 class TestCountRouteConsts(unittest.TestCase):
