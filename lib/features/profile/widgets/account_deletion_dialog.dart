@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
@@ -13,10 +12,10 @@ import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/core/widgets/buttons/app_icon_button.dart';
 import 'package:budgie_breeding_tracker/data/local/database/database_provider.dart';
-import 'package:budgie_breeding_tracker/domain/services/profile/account_storage_cleanup_provider.dart';
+import 'package:budgie_breeding_tracker/data/remote/storage/storage_providers.dart';
 import 'package:budgie_breeding_tracker/router/route_names.dart';
 
-import 'package:budgie_breeding_tracker/shared/providers/auth.dart';
+import '../../auth/providers/auth_providers.dart';
 
 part 'account_deletion_dialog_widget.dart';
 
@@ -33,11 +32,11 @@ Future<void> confirmAndDeleteAccount(
   await performAccountDeletion(context, ref, password: password);
 }
 
-/// Performs full account deletion: local DB wipe, storage cleanup,
-/// server-side RPC, sign-out, and navigation to login.
+/// Performs full account deletion: password validation, storage cleanup,
+/// server-side RPC, local DB wipe, sign-out, and navigation to login.
 ///
 /// Shows a loading dialog while the operation is running.
-/// Local cleanup always completes even if the server-side RPC fails.
+/// Server-side deletion scheduling is required before destructive local cleanup.
 ///
 /// Call this after the user confirms deletion via [AccountDeletionDialog].
 Future<void> performAccountDeletion(
@@ -67,14 +66,18 @@ Future<void> performAccountDeletion(
   );
 
   try {
-    // 1. Delete remote storage files (best-effort)
-    try {
-      await ref.read(accountStorageCleanupProvider).deleteAllUserFiles(userId);
-    } catch (e) {
-      AppLogger.warning('[AccountDeletion] Storage cleanup failed: $e');
-    }
+    // 1. Validate the current password before any destructive cleanup.
+    await ref
+        .read(authActionsProvider)
+        .verifyCurrentPassword(currentPassword: password);
 
-    // 2. Revoke OAuth provider token (best-effort — token may not be
+    if (!context.mounted) return;
+
+    // 2. Delete remote storage files. This must fail closed because the
+    //    server RPC deletes auth.users and cannot retry user-scoped storage.
+    await ref.read(storageServiceProvider).deleteAllUserFiles(userId);
+
+    // 3. Revoke OAuth provider token (best-effort — token may not be
     //    available if the session was restored from storage)
     try {
       await ref.read(authActionsProvider).revokeOAuthToken();
@@ -82,25 +85,20 @@ Future<void> performAccountDeletion(
       AppLogger.warning('[AccountDeletion] OAuth token revocation failed: $e');
     }
 
-    // 3. Request server-side account deletion (best-effort — if server is
-    //    unreachable, still allow local cleanup so the user can sign out)
-    bool serverDeletionOk = false;
-    try {
-      await ref
-          .read(authActionsProvider)
-          .requestAccountDeletion(currentPassword: password);
-      serverDeletionOk = true;
-    } catch (e) {
-      AppLogger.warning('[AccountDeletion] Server deletion failed: $e');
-      // Continue with local cleanup — user should not be stuck
-    }
+    if (!context.mounted) return;
+
+    // 4. Request server-side account deletion. The RPC deletes auth.users, so
+    //    storage cleanup must already have been attempted by this point.
+    await ref
+        .read(authActionsProvider)
+        .requestAccountDeletionForVerifiedSession();
 
     if (!context.mounted) return;
 
-    // 4. Wipe local database (atomic transaction)
+    // 5. Wipe local database (atomic transaction)
     await ref.read(appDatabaseProvider).clearAllUserData(userId);
 
-    // 5. Clear SharedPreferences (after all remote ops completed)
+    // 6. Clear SharedPreferences (after all remote ops completed)
     // NOTE: prefs.clear() removes ALL preferences, not just user-specific
     // ones. This is acceptable here because account deletion is a full reset.
     final prefs = await SharedPreferences.getInstance();
@@ -108,7 +106,7 @@ Future<void> performAccountDeletion(
 
     if (!context.mounted) return;
 
-    // 6. Sign out globally (best-effort — auth user may already be deleted
+    // 7. Sign out globally (best-effort — auth user may already be deleted
     // server-side, which invalidates all sessions automatically).
     try {
       await ref.read(authActionsProvider).signOutAllSessions();
@@ -118,31 +116,12 @@ Future<void> performAccountDeletion(
       );
     }
 
-    // 7. Dismiss loading dialog and navigate to login
+    // 8. Dismiss loading dialog and navigate to login
     if (context.mounted) {
       Navigator.of(context).pop(); // close loading dialog
-      if (serverDeletionOk) {
-        messenger.showSnackBar(
-          SnackBar(content: Text('settings.delete_account_requested'.tr())),
-        );
-      } else {
-        messenger.showSnackBar(
-          SnackBar(
-            content: Text('settings.delete_account_local_only'.tr()),
-            action: SnackBarAction(
-              label: 'settings.delete_account_contact_support'.tr(),
-              onPressed: () => launchUrl(
-                Uri.parse(
-                  'mailto:support@budgiebreedingtracker.online'
-                  '?subject=Account%20Deletion%20Request'
-                  '&body=User%20ID:%20$userId',
-                ),
-              ),
-            ),
-            duration: const Duration(seconds: 8),
-          ),
-        );
-      }
+      messenger.showSnackBar(
+        SnackBar(content: Text('settings.delete_account_requested'.tr())),
+      );
       context.go(AppRoutes.login);
     }
   } catch (e, st) {
