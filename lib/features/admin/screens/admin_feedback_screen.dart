@@ -13,7 +13,7 @@ import '../../../core/widgets/app_icon.dart';
 import '../../../core/widgets/buttons/app_icon_button.dart';
 import '../../../core/widgets/error_state.dart';
 import '../../../core/widgets/empty_state.dart';
-import 'package:budgie_breeding_tracker/data/providers/action_feedback_providers.dart';
+import 'package:budgie_breeding_tracker/core/providers/action_feedback_providers.dart';
 import '../constants/admin_constants.dart';
 import '../providers/admin_feedback_providers.dart';
 import '../providers/admin_models.dart';

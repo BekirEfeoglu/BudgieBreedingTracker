@@ -34,7 +34,9 @@ mixin _AuthAccountMixin {
       // Password was changed successfully; other-session cleanup is
       // best-effort. Tokens will expire naturally if this fails.
       // Log to Sentry since this is security-relevant.
-      AppLogger.warning('[Auth] Session invalidation after password change failed: $e');
+      AppLogger.warning(
+        '[Auth] Session invalidation after password change failed: $e',
+      );
       Sentry.captureException(e, stackTrace: st);
     }
   }
@@ -49,25 +51,37 @@ mixin _AuthAccountMixin {
     await _client.auth.signOut(scope: SignOutScope.global);
   }
 
-  /// Request account deletion via Edge Function RPC.
-  ///
-  /// Re-authenticates with the user's current password before scheduling
-  /// deletion to prevent unauthorized account removal.
-  /// The actual deletion is handled by a server function for security.
-  Future<void> requestAccountDeletion({
-    required String currentPassword,
-  }) async {
+  /// Re-authenticates with the user's current password.
+  Future<void> verifyCurrentPassword({required String currentPassword}) async {
     final email = _client.auth.currentUser?.email;
-    final userId = _client.auth.currentUser?.id;
-    if (email == null || userId == null) {
+    if (email == null) {
       throw const AuthException('No authenticated user');
     }
 
-    // Re-authenticate to confirm the user owns this account
     await _client.auth.signInWithPassword(
       email: email,
       password: currentPassword,
     );
+  }
+
+  /// Request account deletion via server-side RPC.
+  ///
+  /// Re-authenticates with the user's current password before deleting
+  /// the account to prevent unauthorized account removal.
+  Future<void> requestAccountDeletion({required String currentPassword}) async {
+    await verifyCurrentPassword(currentPassword: currentPassword);
+    await requestAccountDeletionForVerifiedSession();
+  }
+
+  /// Calls the destructive account deletion RPC after a recent password check.
+  ///
+  /// Use this when the flow must perform remote cleanup between password
+  /// verification and `auth.users` deletion.
+  Future<void> requestAccountDeletionForVerifiedSession() async {
+    final userId = _client.auth.currentUser?.id;
+    if (userId == null) {
+      throw const AuthException('No authenticated user');
+    }
 
     await _client.rpc(
       'request_account_deletion',

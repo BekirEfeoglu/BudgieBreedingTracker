@@ -33,33 +33,4 @@ class FeedbackRemoteSource {
       rethrow;
     }
   }
-
-  /// Sends notifications to all founder-role admins.
-  Future<void> notifyFounders(List<Map<String, dynamic>> notifications) async {
-    if (notifications.isEmpty) return;
-    try {
-      await _client
-          .from(SupabaseConstants.notificationsTable)
-          .insert(notifications);
-    } catch (e) {
-      AppLogger.warning('FeedbackRemoteSource: Failed to notify founders: $e');
-    }
-  }
-
-  /// Fetches founder user IDs from admin_users table.
-  Future<List<String>> fetchFounderIds() async {
-    try {
-      final founders = await _client
-          .from(SupabaseConstants.adminUsersTable)
-          .select(SupabaseConstants.colUserId)
-          .eq(SupabaseConstants.colRole, 'founder');
-      return founders
-          .map((f) => f[SupabaseConstants.colUserId] as String?)
-          .whereType<String>()
-          .toList();
-    } catch (e) {
-      AppLogger.warning('FeedbackRemoteSource: Failed to fetch founders: $e');
-      return [];
-    }
-  }
 }

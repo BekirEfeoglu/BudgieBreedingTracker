@@ -256,3 +256,6 @@ supabase/functions/**/*.js.map
 .cache/
 node_modules/
 __pycache__/
+
+# Editor settings
+.cursor/

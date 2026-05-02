@@ -51,8 +51,8 @@ GoRoute(
 ),
 ```
 
-## Shared Widgets (20)
-`lib/core/widgets/`: EmptyState, ErrorState, LoadingState, SkeletonLoader, AppScreenTitle, InfoCard, StatCard, buttons/ (2), cards/ (2), dialogs/ (1)
+## Shared Widgets (23)
+`lib/core/widgets/`: 15 root widgets plus `buttons/` (4), `cards/` (2), `dialogs/` (1), and `bottom_sheet/` (1)
 - Accept `Widget icon` param, not `IconData`
 - Use existing shared widgets before creating new ones
 

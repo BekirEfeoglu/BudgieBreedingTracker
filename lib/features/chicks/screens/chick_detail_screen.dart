@@ -11,7 +11,7 @@ import 'package:budgie_breeding_tracker/core/widgets/buttons/app_icon_button.dar
 import 'package:budgie_breeding_tracker/core/widgets/error_state.dart';
 import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
 import 'package:budgie_breeding_tracker/core/widgets/dialogs/confirm_dialog.dart';
-import 'package:budgie_breeding_tracker/data/providers/action_feedback_providers.dart';
+import 'package:budgie_breeding_tracker/core/providers/action_feedback_providers.dart';
 import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
 import 'package:budgie_breeding_tracker/shared/providers/chicks.dart';
 import 'package:budgie_breeding_tracker/features/chicks/providers/chick_form_providers.dart';

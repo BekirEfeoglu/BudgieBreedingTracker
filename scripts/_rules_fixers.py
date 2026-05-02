@@ -11,6 +11,20 @@ CLAUDE_MD = ROOT / "CLAUDE.md"
 RULES_CLAUDE_MD = ROOT / ".claude" / "rules" / "CLAUDE.md"
 
 
+def _widget_summary(actual: dict) -> str:
+    """Shared widget sayisini okunabilir alt kirilimla bicimlendir."""
+    parts = [
+        f"{actual['widgets_root']} root",
+        f"{actual['widgets_buttons']} buttons",
+        f"{actual['widgets_cards']} cards",
+        f"{actual['widgets_dialogs']} dialog",
+    ]
+    bottom_sheet = actual.get("widgets_bottom_sheet", 0)
+    if bottom_sheet:
+        parts.append(f"{bottom_sheet} bottom_sheet")
+    return f"{actual['widgets_total']} (" + " + ".join(parts) + ")"
+
+
 def build_fix_updates(actual: dict) -> dict:
     """Gercek degerlerden CLAUDE.md tablo satir guncellemeleri olustur."""
     a = actual
@@ -27,7 +41,7 @@ def build_fix_updates(actual: dict) -> dict:
         "DB schema version": str(a["schema"]),
         "L10n keys": f"~{a['tr_keys']:,} per language, {a['categories']} categories",
         "Supabase constants": f"{a['supa']} (tables + buckets + columns)",
-        "Shared widgets": f"{a['widgets_total']} ({a['widgets_root']} root + {a['widgets_buttons']} buttons + {a['widgets_cards']} cards + {a['widgets_dialogs']} dialog)",
+        "Shared widgets": _widget_summary(a),
         "Source files (lib/)": f"{a['source_files']} Dart files",
         "Test files (test/)": f"{a['test_files']} test files, {a['individual_tests']:,}+ individual tests",
     }
@@ -54,19 +68,25 @@ def _apply_inline_fixes(content: str, actual: dict) -> tuple[str, list[str]]:
 
     # Shared UI widget count: "(N widgets: X root + Y buttons + Z cards + W dialog)"
     w = actual
-    new_widget_inline = (
-        f"({w['widgets_total']} widgets: {w['widgets_root']} root"
-        f" + {w['widgets_buttons']} buttons + {w['widgets_cards']} cards"
-        f" + {w['widgets_dialogs']} dialog)"
-    )
+    new_widget_inline = f"({_widget_summary(w).replace(' (', ' widgets: ').rstrip(')')})"
     fixed = re.sub(
-        r"\(\d+ widgets: \d+ root \+ \d+ buttons \+ \d+ cards \+ \d+ dialog\)",
+        r"\(\d+ widgets: \d+ root \+ \d+ buttons \+ \d+ cards \+ \d+ dialog(?: \+ \d+ bottom_sheet)?\)",
         new_widget_inline,
         updated,
     )
     if fixed != updated:
         updated = fixed
         messages.append("Inline Shared UI widget count updated")
+
+    # UI rule heading: "## Shared Widgets (N)"
+    fixed = re.sub(
+        r"Shared Widgets \(\d+\)",
+        f"Shared Widgets ({actual['widgets_total']})",
+        updated,
+    )
+    if fixed != updated:
+        updated = fixed
+        messages.append("Inline Shared Widgets heading updated")
 
     # schemaVersion inline
     fixed = re.sub(r"schemaVersion \d+", f"schemaVersion {w['schema']}", updated)
@@ -128,6 +148,71 @@ def _apply_inline_fixes(content: str, actual: dict) -> tuple[str, list[str]]:
         if fixed != updated:
             updated = fixed
             messages.append("Inline migrations key location updated")
+
+        # Data-layer rule inventory: "**Migrations**: N SQL files in ..."
+        fixed = re.sub(
+            r"\*\*Migrations\*\*: \d+ SQL files in `supabase/migrations/`",
+            f"**Migrations**: {migrations} SQL files in `supabase/migrations/`",
+            updated,
+        )
+        if fixed != updated:
+            updated = fixed
+            messages.append("Inline data-layer migration count updated")
+
+    # Data-layer Supabase inventory.
+    fixed = re.sub(
+        r"SupabaseConstants` class \(\d+ table/column constants\)",
+        f"SupabaseConstants` class ({actual['supa']} table/column constants)",
+        updated,
+    )
+    if fixed != updated:
+        updated = fixed
+        messages.append("Inline SupabaseConstants data-layer count updated")
+
+    edge_functions = actual.get("edge_functions")
+    if edge_functions is not None:
+        fixed = re.sub(
+            r"\*\*Edge Functions\*\*: \d+ in `supabase/functions/`",
+            f"**Edge Functions**: {edge_functions} in `supabase/functions/`",
+            updated,
+        )
+        if fixed != updated:
+            updated = fixed
+            messages.append("Inline Edge Function count updated")
+
+    # Testing rule stats.
+    fixed = re.sub(
+        r"- \d+ test files, [\d,]+\+ individual tests",
+        f"- {actual['test_files']} test files, {actual['individual_tests']:,}+ individual tests",
+        updated,
+    )
+    if fixed != updated:
+        updated = fixed
+        messages.append("Inline test suite count updated")
+
+    # Quality checker coverage references.
+    quality_total = actual.get("quality_total")
+    quality_covered = actual.get("quality_covered")
+    quality_extra = actual.get("quality_extra")
+    if quality_total is not None and quality_covered is not None and quality_extra is not None:
+        fixed = re.sub(
+            r"Anti-pattern scan \(\d+ checkers, \d+/\d+ CLAUDE\.md patterns \+ \d+ extra\)",
+            f"Anti-pattern scan ({quality_total} checkers, {quality_covered}/24 CLAUDE.md patterns + {quality_extra} extra)",
+            updated,
+        )
+        fixed = re.sub(
+            r"`verify_code_quality\.py` scans for \d+ patterns \(\d+ from CLAUDE\.md \+ \d+ extra\)",
+            f"`verify_code_quality.py` scans with {quality_total} checkers ({quality_covered} from CLAUDE.md + {quality_extra} extra)",
+            fixed,
+        )
+        fixed = re.sub(
+            r"Enforced by: `verify_code_quality\.py` \(\d+ automated checkers\)",
+            f"Enforced by: `verify_code_quality.py` ({quality_total} automated checkers)",
+            fixed,
+        )
+        if fixed != updated:
+            updated = fixed
+            messages.append("Inline quality checker count updated")
 
     return updated, messages
 

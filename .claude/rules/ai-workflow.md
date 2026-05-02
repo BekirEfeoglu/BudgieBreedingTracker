@@ -44,7 +44,7 @@ If generation gets stuck: `dart run build_runner clean` first.
 - Never import across feature modules
 
 ## Anti-Pattern Enforcement
-- `verify_code_quality.py` scans for 21 patterns (16 from CLAUDE.md + 5 extra)
+- `verify_code_quality.py` scans with 23 checkers (18 from CLAUDE.md + 5 extra)
 - CI `code-quality` job blocks PRs with violations
 - Full list: CLAUDE.md § "Critical Anti-Patterns (24 rules)"
 

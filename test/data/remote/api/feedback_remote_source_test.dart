@@ -11,8 +11,6 @@ void main() {
 
   late FakeFilterBuilder<PostgrestList> feedbackSelectBuilder;
   late FakeFilterBuilder<dynamic> feedbackInsertBuilder;
-  late FakeFilterBuilder<PostgrestList> adminSelectBuilder;
-  late FakeFilterBuilder<dynamic> notifInsertBuilder;
 
   setUp(() {
     client = RoutingFakeClient();
@@ -20,12 +18,6 @@ void main() {
     final feedback = client.addTable(SupabaseConstants.feedbackTable);
     feedbackSelectBuilder = feedback.selectBuilder;
     feedbackInsertBuilder = feedback.insertBuilder;
-
-    final admin = client.addTable(SupabaseConstants.adminUsersTable);
-    adminSelectBuilder = admin.selectBuilder;
-
-    final notif = client.addTable(SupabaseConstants.notificationsTable);
-    notifInsertBuilder = notif.insertBuilder;
 
     source = FeedbackRemoteSource(client);
   });
@@ -57,10 +49,7 @@ void main() {
     test('rethrows error on failure', () async {
       feedbackSelectBuilder.error = Exception('Network error');
 
-      expect(
-        () => source.fetchByUser('user-1'),
-        throwsA(isA<Exception>()),
-      );
+      expect(() => source.fetchByUser('user-1'), throwsA(isA<Exception>()));
     });
   });
 
@@ -84,73 +73,6 @@ void main() {
         () => source.insert({'user_id': 'user-1', 'message': 'test'}),
         throwsA(isA<Exception>()),
       );
-    });
-  });
-
-  group('notifyFounders', () {
-    test('does nothing for empty notification list', () async {
-      await source.notifyFounders([]);
-
-      expect(
-        client.requestedTables,
-        isNot(contains(SupabaseConstants.notificationsTable)),
-      );
-    });
-
-    test('inserts notifications into notifications table', () async {
-      notifInsertBuilder.result = null;
-
-      await source.notifyFounders([
-        {'user_id': 'admin-1', 'title': 'New feedback'},
-      ]);
-
-      expect(
-        client.requestedTables,
-        contains(SupabaseConstants.notificationsTable),
-      );
-    });
-
-    test('swallows errors silently', () async {
-      notifInsertBuilder.error = Exception('Insert failed');
-
-      // Should not throw
-      await source.notifyFounders([
-        {'user_id': 'admin-1', 'title': 'New feedback'},
-      ]);
-    });
-  });
-
-  group('fetchFounderIds', () {
-    test('returns founder user IDs', () async {
-      adminSelectBuilder.result = [
-        {'user_id': 'founder-1'},
-        {'user_id': 'founder-2'},
-      ];
-
-      final result = await source.fetchFounderIds();
-
-      expect(result, ['founder-1', 'founder-2']);
-      expect(
-        client.requestedTables,
-        contains(SupabaseConstants.adminUsersTable),
-      );
-    });
-
-    test('filters out null user IDs', () async {
-      adminSelectBuilder.result = [
-        {'user_id': 'founder-1'},
-        {'user_id': null},
-      ];
-
-      final result = await source.fetchFounderIds();
-      expect(result, ['founder-1']);
-    });
-
-    test('returns empty list on error', () async {
-      adminSelectBuilder.error = Exception('RLS error');
-
-      final result = await source.fetchFounderIds();
-      expect(result, isEmpty);
     });
   });
 }

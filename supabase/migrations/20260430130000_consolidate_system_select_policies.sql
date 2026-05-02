@@ -6,7 +6,7 @@
 --
 --   public.system_settings:
 --     - "Public can view public settings"  ({anon,authenticated}, is_public=true)
---     - "Users can view settings"          ({authenticated},      is_public=true OR private.is_admin())
+--     - "Users can view settings"          ({authenticated},      is_public=true OR public.is_admin())
 --
 --   public.system_status:
 --     - "Public can view system status"    ({anon,authenticated}, true)
@@ -20,7 +20,7 @@
 -- Effective access stays identical:
 --   * anon          -> can read system_status (true) and public system_settings.
 --   * authenticated -> can read system_status (true) and system_settings rows
---                      where is_public=true OR private.is_admin().
+--                      where is_public=true OR public.is_admin().
 --
 -- Idempotent (uses DROP POLICY IF EXISTS / CREATE POLICY).
 -- =============================================================================
@@ -38,7 +38,7 @@ CREATE POLICY "Anon can view public settings" ON public.system_settings
 
 CREATE POLICY "Users can view settings" ON public.system_settings
   FOR SELECT TO authenticated
-  USING (is_public = true OR (SELECT private.is_admin()));
+  USING (is_public = true OR (SELECT public.is_admin()));
 
 -- ---------------------------------------------------------------------------
 -- 2. public.system_status -- one SELECT policy per role.

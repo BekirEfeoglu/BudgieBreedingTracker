@@ -14,7 +14,7 @@ class FeedbackRepository {
   final FeedbackRemoteSource _remoteSource;
 
   const FeedbackRepository({required FeedbackRemoteSource remoteSource})
-      : _remoteSource = remoteSource;
+    : _remoteSource = remoteSource;
 
   /// Fetches all feedback entries for a user, ordered by newest first.
   Future<List<Map<String, dynamic>>> fetchByUser(String userId) async {
@@ -28,7 +28,8 @@ class FeedbackRepository {
 
   /// Submits a new feedback entry to Supabase.
   ///
-  /// Returns the generated feedback ID for downstream use (e.g. notifications).
+  /// Founder notifications are created atomically by the database feedback
+  /// INSERT trigger. Returns the generated feedback ID for callers that need it.
   Future<String> submit({
     required String userId,
     required String categoryValue,
@@ -55,42 +56,5 @@ class FeedbackRepository {
     });
 
     return feedbackId;
-  }
-
-  /// Sends notifications to all founder-role admins about new feedback.
-  ///
-  /// [notificationTitle] should be a localized string from the caller.
-  Future<void> notifyFounders({
-    required String feedbackId,
-    required String notificationTitle,
-    required String subject,
-  }) async {
-    try {
-      final founderIds = await _remoteSource.fetchFounderIds();
-      if (founderIds.isEmpty) return;
-
-      final now = DateTime.now().toIso8601String();
-      final notifications = <Map<String, dynamic>>[];
-
-      for (final founderId in founderIds) {
-        notifications.add({
-          SupabaseConstants.notificationColId: const Uuid().v7(),
-          SupabaseConstants.notificationColUserId: founderId,
-          SupabaseConstants.notificationColTitle: notificationTitle,
-          SupabaseConstants.notificationColBody: subject,
-          SupabaseConstants.notificationColType: 'custom',
-          SupabaseConstants.notificationColPriority: 'normal',
-          SupabaseConstants.notificationColRead: false,
-          SupabaseConstants.notificationColReferenceId: feedbackId,
-          SupabaseConstants.notificationColReferenceType: 'feedback',
-          SupabaseConstants.notificationColCreatedAt: now,
-          SupabaseConstants.notificationColUpdatedAt: now,
-        });
-      }
-
-      await _remoteSource.notifyFounders(notifications);
-    } catch (e) {
-      AppLogger.warning('FeedbackRepository: Failed to notify founders: $e');
-    }
   }
 }

@@ -11,7 +11,7 @@ import 'package:budgie_breeding_tracker/data/remote/storage/storage_utils.dart';
 /// All paths are scoped under the user's ID for RLS compatibility.
 ///
 /// **Supabase Dashboard requirements:**
-/// - Buckets (bird-photos, egg-photos, chick-photos, avatars, backups)
+/// - Buckets (bird-photos, egg-photos, chick-photos, avatars, backups, photos)
 ///   must be created manually in Supabase Dashboard.
 /// - Bird/egg/chick photo buckets should be set to **public** so that
 ///   `getPublicUrl()` returns accessible URLs.
@@ -87,12 +87,14 @@ class StorageService {
     }
     final path = '$userId/avatar.$ext';
 
-    return _uploadFile(
+    await _uploadBinary(
       bucket: _avatarsBucket,
       path: path,
       file: file,
       upsert: true,
     );
+
+    return _client.storage.from(_avatarsBucket).getPublicUrl(path);
   }
 
   /// Deletes a bird photo by its storage path.
@@ -184,7 +186,7 @@ class StorageService {
     }
   }
 
-  /// Gets the avatar URL for a user, or null if not set.
+  /// Gets the public avatar URL for a user, or null if not set.
   ///
   /// Requires an authenticated session. Returns null if the caller is
   /// not authenticated to prevent unauthenticated avatar enumeration.
@@ -200,7 +202,7 @@ class StorageService {
 
       return _client.storage
           .from(_avatarsBucket)
-          .createSignedUrl('$userId/${files.first.name}', _signedUrlExpiry);
+          .getPublicUrl('$userId/${files.first.name}');
     } on StorageException catch (e) {
       AppLogger.warning('Failed to get avatar URL: ${e.message}');
       return null;
@@ -214,38 +216,13 @@ class StorageService {
     bool upsert = false,
   }) async {
     try {
-      final ext = StorageUtils.safeExtension(file.name);
-      if (ext == null || !_allowedExtensions.contains(ext)) {
-        throw StorageException(
-          'File type ${ext != null ? '.$ext' : '(unknown)'} is not allowed. '
-          'Allowed: ${_allowedExtensions.join(', ')}',
-        );
-      }
+      await _uploadBinary(
+        bucket: bucket,
+        path: path,
+        file: file,
+        upsert: upsert,
+      );
 
-      final bytes = await file.readAsBytes();
-
-      if (bytes.length > AppConstants.maxUploadSizeBytes) {
-        throw const StorageException('File size exceeds 10 MB limit');
-      }
-
-      // Validate file content matches claimed extension via magic bytes
-      if (!StorageUtils.validateMagicBytes(bytes, ext)) {
-        throw StorageException(
-          'File content does not match .$ext format',
-        );
-      }
-
-      final mimeType = StorageUtils.getMimeType(file.name);
-
-      await _client.storage
-          .from(bucket)
-          .uploadBinary(
-            path,
-            bytes,
-            fileOptions: FileOptions(contentType: mimeType, upsert: upsert),
-          );
-
-      // Signed URL works for both public and private buckets (1 year expiry)
       return _client.storage
           .from(bucket)
           .createSignedUrl(path, _signedUrlExpiry);
@@ -255,11 +232,49 @@ class StorageService {
     }
   }
 
+  Future<void> _uploadBinary({
+    required String bucket,
+    required String path,
+    required XFile file,
+    bool upsert = false,
+  }) async {
+    final ext = StorageUtils.safeExtension(file.name);
+    if (ext == null || !_allowedExtensions.contains(ext)) {
+      throw StorageException(
+        'File type ${ext != null ? '.$ext' : '(unknown)'} is not allowed. '
+        'Allowed: ${_allowedExtensions.join(', ')}',
+      );
+    }
+
+    final bytes = await file.readAsBytes();
+
+    if (bytes.length > AppConstants.maxUploadSizeBytes) {
+      throw const StorageException('File size exceeds 10 MB limit');
+    }
+
+    // Validate file content matches claimed extension via magic bytes
+    if (!StorageUtils.validateMagicBytes(bytes, ext)) {
+      throw StorageException('File content does not match .$ext format');
+    }
+
+    final mimeType = StorageUtils.getMimeType(file.name);
+
+    await _client.storage
+        .from(bucket)
+        .uploadBinary(
+          path,
+          bytes,
+          fileOptions: FileOptions(contentType: mimeType, upsert: upsert),
+        );
+  }
+
   /// Deletes all files owned by [userId] across every storage bucket.
   ///
-  /// Recursively walks subdirectories (e.g. `bird-photos/{userId}/{birdId}/`).
-  /// Errors are logged but do not throw — the server-side RPC also
-  /// handles storage cleanup, so client-side deletion is best-effort.
+  /// Recursively walks subdirectories (e.g. `bird-photos/{userId}/{birdId}/`
+  /// and `photos/marketplace-images/{userId}/{listingId}/`).
+  /// Attempts every bucket, then throws if any bucket failed. The account
+  /// deletion RPC removes auth.users and cannot retry user-scoped storage
+  /// afterwards, so callers must treat this as fail-closed.
   Future<void> deleteAllUserFiles(String userId) async {
     _sanitizePath(userId);
     const buckets = [
@@ -270,16 +285,32 @@ class StorageService {
       SupabaseConstants.backupsBucket,
       _communityPhotosBucket,
     ];
+    final cleanupTargets = [
+      for (final bucket in buckets) MapEntry(bucket, userId),
+      MapEntry(
+        SupabaseConstants.marketplacePhotosBucket,
+        'marketplace-images/$userId',
+      ),
+    ];
 
     final maskedUserId = AppLogger.obfuscate(userId);
-    for (final bucket in buckets) {
+    final failures = <String>[];
+    for (final target in cleanupTargets) {
       try {
-        await _deleteRecursive(bucket, userId);
+        await _deleteRecursive(target.key, target.value);
       } catch (e) {
+        failures.add(target.key);
         AppLogger.warning(
-          'Failed to clear bucket $bucket for $maskedUserId: $e',
+          'Failed to clear bucket ${target.key} for $maskedUserId: $e',
         );
       }
+    }
+
+    if (failures.isNotEmpty) {
+      throw StorageException(
+        'Failed to clear ${failures.length} storage bucket(s): '
+        '${failures.join(', ')}',
+      );
     }
   }
 
@@ -303,5 +334,4 @@ class StorageService {
       await _client.storage.from(bucket).remove(filePaths);
     }
   }
-
 }

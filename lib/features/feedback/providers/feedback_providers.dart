@@ -203,7 +203,7 @@ class FeedbackFormNotifier extends Notifier<FeedbackFormState> {
       final repo = ref.read(feedbackRepositoryProvider);
       final userId = ref.read(currentUserIdProvider);
 
-      final feedbackId = await repo.submit(
+      await repo.submit(
         userId: userId,
         categoryValue: category.value,
         subject: subject,
@@ -211,14 +211,6 @@ class FeedbackFormNotifier extends Notifier<FeedbackFormState> {
         email: email,
         appVersion: appVersion,
         deviceInfo: deviceInfo,
-      );
-
-      // Notify founders about the new feedback
-      await repo.notifyFounders(
-        feedbackId: feedbackId,
-        notificationTitle:
-            'feedback.notify_founder_title'.tr(args: [category.label]),
-        subject: subject,
       );
 
       // Refresh history so newly submitted feedback appears immediately

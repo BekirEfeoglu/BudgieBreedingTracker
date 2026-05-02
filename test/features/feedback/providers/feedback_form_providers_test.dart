@@ -35,15 +35,6 @@ class _FakeFeedbackRepository implements FeedbackRepository {
     if (_error != null) throw _error;
     return 'fake-feedback-id';
   }
-
-  @override
-  Future<void> notifyFounders({
-    required String feedbackId,
-    required String notificationTitle,
-    required String subject,
-  }) async {
-    // No-op in tests
-  }
 }
 
 void main() {
@@ -167,11 +158,14 @@ void main() {
   group('FeedbackFormNotifier', () {
     late ProviderContainer container;
 
-    ProviderContainer createContainer({Object? repoError}) {
+    ProviderContainer createContainer({
+      Object? repoError,
+      _FakeFeedbackRepository? repository,
+    }) {
       return ProviderContainer(
         overrides: [
           feedbackRepositoryProvider.overrideWithValue(
-            _FakeFeedbackRepository(error: repoError),
+            repository ?? _FakeFeedbackRepository(error: repoError),
           ),
           currentUserIdProvider.overrideWithValue('test-user'),
         ],
@@ -213,6 +207,24 @@ void main() {
       expect(states.last.isSuccess, isTrue);
       expect(states.last.error, isNull);
     });
+
+    test(
+      'submit relies on database trigger instead of client notify RPC',
+      () async {
+        final repository = _FakeFeedbackRepository();
+        container = createContainer(repository: repository);
+
+        await container
+            .read(feedbackFormStateProvider.notifier)
+            .submit(
+              category: FeedbackCategory.general,
+              subject: 'Trigger handles this',
+              message: 'Server-side notification should be atomic with insert',
+            );
+
+        expect(container.read(feedbackFormStateProvider).isSuccess, isTrue);
+      },
+    );
 
     test('submit sets loading then error on failure', () async {
       container = createContainer(repoError: Exception('Network failure'));

@@ -41,6 +41,9 @@ void main() {
     final mockUser = MockUser();
     when(() => mockClient.auth).thenReturn(mockAuth);
     when(() => mockAuth.currentUser).thenReturn(mockUser);
+    when(
+      () => mockFileApi.getPublicUrl(any()),
+    ).thenReturn('https://cdn.example.com/public-object');
 
     service = StorageService(mockClient);
   });
@@ -203,8 +206,8 @@ void main() {
           ),
         ).thenAnswer((_) async => '');
         when(
-          () => mockFileApi.createSignedUrl(any(), any()),
-        ).thenAnswer((_) async => 'https://cdn.example.com/u1/avatar.png');
+          () => mockFileApi.getPublicUrl(any()),
+        ).thenReturn('https://cdn.example.com/u1/avatar.png');
 
         final url = await service.uploadAvatar(userId: 'u1', file: file);
 
@@ -220,9 +223,7 @@ void main() {
             fileOptions: any(named: 'fileOptions'),
           ),
         ).thenAnswer((_) async => '');
-        when(
-          () => mockFileApi.createSignedUrl(any(), any()),
-        ).thenAnswer((_) async => 'https://url');
+        when(() => mockFileApi.getPublicUrl(any())).thenReturn('https://url');
 
         await service.uploadAvatar(userId: 'u1', file: file);
 
@@ -244,9 +245,7 @@ void main() {
           capturedPath = invocation.positionalArguments.first as String;
           return '';
         });
-        when(
-          () => mockFileApi.createSignedUrl(any(), any()),
-        ).thenAnswer((_) async => 'https://url');
+        when(() => mockFileApi.getPublicUrl(any())).thenReturn('https://url');
 
         await service.uploadAvatar(userId: 'u1', file: file);
 
@@ -380,8 +379,8 @@ void main() {
           () => mockFileApi.list(path: any(named: 'path')),
         ).thenAnswer((_) async => [obj]);
         when(
-          () => mockFileApi.createSignedUrl(any(), any()),
-        ).thenAnswer((_) async => 'https://cdn.example.com/u1/avatar.jpg');
+          () => mockFileApi.getPublicUrl(any()),
+        ).thenReturn('https://cdn.example.com/u1/avatar.jpg');
 
         final url = await service.getAvatarUrl(userId: 'u1');
 
@@ -563,6 +562,19 @@ void main() {
         verifyNever(() => mockFileApi.remove(any()));
       });
 
+      test('clears marketplace image prefix for account deletion', () async {
+        when(
+          () => mockFileApi.list(path: any(named: 'path')),
+        ).thenAnswer((_) async => []);
+
+        await service.deleteAllUserFiles('u1');
+
+        verify(
+          () => mockStorage.from(SupabaseConstants.marketplacePhotosBucket),
+        ).called(1);
+        verify(() => mockFileApi.list(path: 'marketplace-images/u1')).called(1);
+      });
+
       test('removes files found in the first bucket', () async {
         final fileObj = FileObject.fromJson({'name': 'photo.jpg', 'id': 'f1'});
         var callCount = 0;
@@ -579,13 +591,16 @@ void main() {
         verify(() => mockFileApi.remove(any())).called(1);
       });
 
-      test('swallows per-bucket errors and continues', () async {
+      test('reports per-bucket errors after attempting all buckets', () async {
         when(
           () => mockFileApi.list(path: any(named: 'path')),
         ).thenThrow(Exception('network error'));
 
-        // Must not throw — errors are caught per bucket
-        await service.deleteAllUserFiles('u1');
+        await expectLater(
+          () => service.deleteAllUserFiles('u1'),
+          throwsA(isA<StorageException>()),
+        );
+        verify(() => mockStorage.from(any())).called(7);
       });
 
       test('recurses into sub-folders (id == null → folder)', () async {
