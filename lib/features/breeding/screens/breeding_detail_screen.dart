@@ -15,7 +15,7 @@ import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
 import 'package:budgie_breeding_tracker/data/models/incubation_model.dart';
 import 'package:budgie_breeding_tracker/domain/services/incubation/incubation_calculator.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_detail_providers.dart';
-import 'package:budgie_breeding_tracker/data/providers/action_feedback_providers.dart';
+import 'package:budgie_breeding_tracker/core/providers/action_feedback_providers.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_form_providers.dart';
 import 'package:budgie_breeding_tracker/features/breeding/widgets/breeding_pair_info_section.dart';
 import 'package:budgie_breeding_tracker/features/breeding/widgets/breeding_eggs_section.dart';

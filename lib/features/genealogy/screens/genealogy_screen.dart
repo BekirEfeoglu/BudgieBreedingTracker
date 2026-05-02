@@ -18,7 +18,7 @@ import 'package:budgie_breeding_tracker/shared/providers/genealogy.dart';
 import 'package:budgie_breeding_tracker/features/genealogy/widgets/depth_chip.dart';
 import 'package:budgie_breeding_tracker/features/genealogy/widgets/entity_selector.dart';
 import 'package:budgie_breeding_tracker/features/genealogy/widgets/tree_content.dart';
-import 'package:budgie_breeding_tracker/data/providers/action_feedback_providers.dart';
+import 'package:budgie_breeding_tracker/core/providers/action_feedback_providers.dart';
 import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
 import 'package:go_router/go_router.dart';
 import 'package:budgie_breeding_tracker/router/route_names.dart';

@@ -8,7 +8,7 @@ import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
-import 'package:budgie_breeding_tracker/data/providers/action_feedback_providers.dart';
+import 'package:budgie_breeding_tracker/core/providers/action_feedback_providers.dart';
 import 'package:budgie_breeding_tracker/features/community/widgets/community_app_bar.dart';
 import 'package:budgie_breeding_tracker/features/gamification/providers/gamification_providers.dart';
 import 'package:budgie_breeding_tracker/features/notifications/providers/notification_list_providers.dart';

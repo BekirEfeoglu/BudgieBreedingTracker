@@ -12,7 +12,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/enums/community_enums.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/app_haptics.dart';
-import '../../../data/providers/action_feedback_providers.dart';
+import '../../../core/providers/action_feedback_providers.dart';
 import '../providers/community_create_providers.dart';
 
 part 'community_create_post_widgets.dart';
