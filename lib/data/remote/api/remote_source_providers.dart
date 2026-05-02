@@ -21,6 +21,7 @@ import 'package:budgie_breeding_tracker/data/remote/api/community_post_remote_so
 import 'package:budgie_breeding_tracker/data/remote/api/community_comment_remote_source.dart';
 import 'package:budgie_breeding_tracker/data/remote/api/community_social_remote_source.dart';
 import 'package:budgie_breeding_tracker/data/remote/api/feedback_remote_source.dart';
+import 'package:budgie_breeding_tracker/data/remote/api/app_version_remote_source.dart';
 import 'marketplace_listing_remote_source.dart';
 import 'marketplace_favorite_remote_source.dart';
 import 'conversation_remote_source.dart';
@@ -133,6 +134,10 @@ final communitySocialRemoteSourceProvider =
 
 final feedbackRemoteSourceProvider = Provider<FeedbackRemoteSource>((ref) {
   return FeedbackRemoteSource(ref.watch(supabaseClientProvider));
+});
+
+final appVersionRemoteSourceProvider = Provider<AppVersionRemoteSource>((ref) {
+  return AppVersionRemoteSource(ref.watch(supabaseClientProvider));
 });
 
 final marketplaceListingRemoteSourceProvider =
