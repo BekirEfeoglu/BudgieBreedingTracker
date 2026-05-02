@@ -13,179 +13,212 @@ void _showComingSoon(BuildContext context) {
 
 void _showMoreAboutDialog(BuildContext context, WidgetRef ref) {
   final year = DateTime.now().year.toString();
-  final appInfo = ref.read(appInfoProvider);
-  final version = appInfo.when(
-    data: (info) => 'v${info.version}',
-    loading: () => '...',
-    error: (_, __) => '-',
-  );
   final theme = Theme.of(context);
   final colorScheme = theme.colorScheme;
 
   showDialog(
     context: context,
-    builder: (ctx) => Dialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.xxl),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
-              child: Image.asset(
-                'assets/images/app_logo.png',
-                width: 88,
-                height: 88,
-              ),
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            Text(
-              'more.about_app_name'.tr(),
-              style: theme.textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: AppSpacing.xs),
-            Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.md,
-                vertical: AppSpacing.xs,
-              ),
-              decoration: BoxDecoration(
-                color: colorScheme.primaryContainer.withValues(alpha: 0.4),
-                borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
-              ),
-              child: Text(
-                version,
-                style: theme.textTheme.labelMedium?.copyWith(
-                  color: colorScheme.primary,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-            const SizedBox(height: AppSpacing.xl),
-            Divider(color: colorScheme.outlineVariant.withValues(alpha: 0.5)),
-            const SizedBox(height: AppSpacing.md),
-            Row(
+    builder: (ctx) => Consumer(
+      builder: (context, ref, _) {
+        final appInfo = ref.watch(appInfoProvider);
+        final version = appInfo.when(
+          data: (info) => 'v${info.version}',
+          loading: () => '...',
+          error: (_, __) => '-',
+        );
+
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.xxl),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(LucideIcons.user, size: 16, color: colorScheme.onSurfaceVariant),
-                const SizedBox(width: AppSpacing.sm),
-                Text(
-                  'more.about_developer'.tr(),
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
+                  child: Image.asset(
+                    'assets/images/app_logo.png',
+                    width: 88,
+                    height: 88,
                   ),
                 ),
-              ],
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            InkWell(
-              // IMPROVED: wrap launchUrl in try-catch to handle missing mail client
-              onTap: () async {
-                try {
-                  await launchUrl(Uri.parse('mailto:${AppConstants.supportEmail}'));
-                } on Exception catch (e) {
-                  AppLogger.warning('launchUrl mailto failed: $e');
-                }
-              },
-              borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-                child: Row(
-                  children: [
-                    Icon(LucideIcons.mail, size: 16, color: colorScheme.primary),
-                    const SizedBox(width: AppSpacing.sm),
-                    Text(
-                      AppConstants.supportEmail,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: colorScheme.primary,
-                        decoration: TextDecoration.underline,
-                        decorationColor: colorScheme.primary,
-                      ),
-                    ),
-                  ],
+                const SizedBox(height: AppSpacing.lg),
+                Text(
+                  'more.about_app_name'.tr(),
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
-              ),
-            ),
-            InkWell(
-              // IMPROVED: wrap launchUrl in try-catch to handle URL launch failure
-              onTap: () async {
-                try {
-                  await launchUrl(Uri.parse(AppConstants.websiteUrl));
-                } on Exception catch (e) {
-                  AppLogger.warning('launchUrl website failed: $e');
-                }
-              },
-              borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-                child: Row(
-                  children: [
-                    Icon(LucideIcons.globe, size: 16, color: colorScheme.primary),
-                    const SizedBox(width: AppSpacing.sm),
-                    Text(
-                      Uri.parse(AppConstants.websiteUrl).host,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: colorScheme.primary,
-                        decoration: TextDecoration.underline,
-                        decorationColor: colorScheme.primary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            Row(
-              children: [
-                Icon(LucideIcons.copyright, size: 16, color: colorScheme.onSurfaceVariant),
-                const SizedBox(width: AppSpacing.sm),
-                Expanded(
+                const SizedBox(height: AppSpacing.xs),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.md,
+                    vertical: AppSpacing.xs,
+                  ),
+                  decoration: BoxDecoration(
+                    color: colorScheme.primaryContainer.withValues(alpha: 0.4),
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+                  ),
                   child: Text(
-                    'more.about_legalese'.tr(args: [year]),
-                    style: theme.textTheme.bodySmall?.copyWith(
+                    version,
+                    style: theme.textTheme.labelMedium?.copyWith(
+                      color: colorScheme.primary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.xl),
+                Divider(
+                  color: colorScheme.outlineVariant.withValues(alpha: 0.5),
+                ),
+                const SizedBox(height: AppSpacing.md),
+                Row(
+                  children: [
+                    Icon(
+                      LucideIcons.user,
+                      size: 16,
                       color: colorScheme.onSurfaceVariant,
                     ),
-                  ),
+                    const SizedBox(width: AppSpacing.sm),
+                    Text(
+                      'more.about_developer'.tr(),
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-            const SizedBox(height: AppSpacing.xl),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () {
-                      Navigator.of(ctx).pop();
-                      showLicensePage(
-                        context: context,
-                        applicationName: 'more.about_app_name'.tr(),
-                        applicationVersion: version,
-                        applicationIcon: Padding(
-                          padding: const EdgeInsets.all(AppSpacing.sm),
-                          child: AppIcon(AppIcons.bird, size: 48, color: colorScheme.primary),
-                        ),
+                const SizedBox(height: AppSpacing.sm),
+                InkWell(
+                  // IMPROVED: wrap launchUrl in try-catch to handle missing mail client
+                  onTap: () async {
+                    try {
+                      await launchUrl(
+                        Uri.parse('mailto:${AppConstants.supportEmail}'),
                       );
-                    },
-                    child: Text('more.about_licenses'.tr()),
+                    } on Exception catch (e) {
+                      AppLogger.warning('launchUrl mailto failed: $e');
+                    }
+                  },
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: AppSpacing.sm,
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          LucideIcons.mail,
+                          size: 16,
+                          color: colorScheme.primary,
+                        ),
+                        const SizedBox(width: AppSpacing.sm),
+                        Text(
+                          AppConstants.supportEmail,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: colorScheme.primary,
+                            decoration: TextDecoration.underline,
+                            decorationColor: colorScheme.primary,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-                const SizedBox(width: AppSpacing.md),
-                Expanded(
-                  child: FilledButton(
-                    onPressed: () => Navigator.of(ctx).pop(),
-                    child: Text('common.close'.tr()),
+                InkWell(
+                  // IMPROVED: wrap launchUrl in try-catch to handle URL launch failure
+                  onTap: () async {
+                    try {
+                      await launchUrl(Uri.parse(AppConstants.websiteUrl));
+                    } on Exception catch (e) {
+                      AppLogger.warning('launchUrl website failed: $e');
+                    }
+                  },
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: AppSpacing.sm,
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          LucideIcons.globe,
+                          size: 16,
+                          color: colorScheme.primary,
+                        ),
+                        const SizedBox(width: AppSpacing.sm),
+                        Text(
+                          Uri.parse(AppConstants.websiteUrl).host,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: colorScheme.primary,
+                            decoration: TextDecoration.underline,
+                            decorationColor: colorScheme.primary,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                Row(
+                  children: [
+                    Icon(
+                      LucideIcons.copyright,
+                      size: 16,
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                    const SizedBox(width: AppSpacing.sm),
+                    Expanded(
+                      child: Text(
+                        'more.about_legalese'.tr(args: [year]),
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AppSpacing.xl),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () {
+                          Navigator.of(ctx).pop();
+                          showLicensePage(
+                            context: context,
+                            applicationName: 'more.about_app_name'.tr(),
+                            applicationVersion: version,
+                            applicationIcon: Padding(
+                              padding: const EdgeInsets.all(AppSpacing.sm),
+                              child: AppIcon(
+                                AppIcons.bird,
+                                size: 48,
+                                color: colorScheme.primary,
+                              ),
+                            ),
+                          );
+                        },
+                        child: Text('more.about_licenses'.tr()),
+                      ),
+                    ),
+                    const SizedBox(width: AppSpacing.md),
+                    Expanded(
+                      child: FilledButton(
+                        onPressed: () => Navigator.of(ctx).pop(),
+                        child: Text('common.close'.tr()),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     ),
   );
 }

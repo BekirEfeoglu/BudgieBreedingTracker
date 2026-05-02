@@ -239,6 +239,39 @@ void main() {
       },
     );
 
+    test(
+      'scheduleIncubationMilestones skips same-day milestones when preferred hour has passed',
+      () async {
+        final fixedNow = DateTime(2026, 1, 10, 21, 35);
+        final startDate = fixedNow.subtract(const Duration(days: 7));
+
+        await scheduler.scheduleIncubationMilestones(
+          incubationId: 'inc-past-hour',
+          startDate: startDate,
+          label: 'Pair Past Hour',
+          preferredHour: 8,
+          now: fixedNow,
+        );
+
+        expect(fakeService.scheduled, isNotEmpty);
+        expect(
+          fakeService.scheduled.every(
+            (notification) => notification.scheduledDate.isAfter(fixedNow),
+          ),
+          isTrue,
+        );
+        expect(
+          fakeService.scheduled.any(
+            (notification) =>
+                notification.scheduledDate.year == fixedNow.year &&
+                notification.scheduledDate.month == fixedNow.month &&
+                notification.scheduledDate.day == fixedNow.day,
+          ),
+          isFalse,
+        );
+      },
+    );
+
     test('scheduleEggTurningReminders schedules 3 reminders per day', () async {
       final fixedNow = DateTime(2026, 1, 10, 8, 0);
       final startDate = fixedNow.add(const Duration(days: 1));

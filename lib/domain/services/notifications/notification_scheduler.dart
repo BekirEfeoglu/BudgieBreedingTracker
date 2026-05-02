@@ -154,8 +154,14 @@ class NotificationScheduler
 
     var index = 0;
     for (final entry in milestones.entries) {
-      final scheduledDate = startDate.add(Duration(days: entry.key));
-      if (scheduledDate.isBefore(now0)) {
+      final milestoneDate = startDate.add(Duration(days: entry.key));
+      final scheduledDate = DateTime(
+        milestoneDate.year,
+        milestoneDate.month,
+        milestoneDate.day,
+        hour,
+      );
+      if (!scheduledDate.isAfter(now0)) {
         index++;
         continue;
       }
@@ -171,12 +177,7 @@ class NotificationScheduler
           id: id,
           title: entry.value,
           body: 'notifications.milestone_day'.tr(args: [label, '${entry.key}']),
-          scheduledDate: DateTime(
-            scheduledDate.year,
-            scheduledDate.month,
-            scheduledDate.day,
-            hour,
-          ),
+          scheduledDate: scheduledDate,
           channelId: NotificationService.incubationChannelId,
           payload: 'incubation:$incubationId',
         ),

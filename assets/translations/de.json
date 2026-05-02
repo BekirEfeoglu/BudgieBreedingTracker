@@ -74,6 +74,14 @@
     "more": "Mehr",
     "back": "Zurück"
   },
+  "app_update": {
+    "available_title": "Neue Version verfügbar",
+    "required_title": "Update erforderlich",
+    "message": "BudgieBreedingTracker v{} ist verfügbar. Öffnen Sie den Store, um zu aktualisieren.",
+    "message_with_notes": "BudgieBreedingTracker v{} ist verfügbar.\n\n{}",
+    "update_now": "Jetzt aktualisieren",
+    "later": "Später"
+  },
   "auth": {
     "login": "Anmelden",
     "register": "Registrieren",

@@ -74,6 +74,14 @@
     "more": "More",
     "back": "Back"
   },
+  "app_update": {
+    "available_title": "New version available",
+    "required_title": "Update required",
+    "message": "BudgieBreedingTracker v{} is available. Open the store to update.",
+    "message_with_notes": "BudgieBreedingTracker v{} is available.\n\n{}",
+    "update_now": "Update Now",
+    "later": "Later"
+  },
   "auth": {
     "login": "Log In",
     "register": "Sign Up",

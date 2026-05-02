@@ -12,12 +12,14 @@ import 'core/enums/bird_enums.dart';
 import 'core/security/inactivity_guard.dart';
 import 'core/theme/app_theme.dart';
 import 'core/utils/logger.dart';
+import 'domain/services/app_update/app_update_providers.dart';
 import 'domain/services/encryption/encryption_providers.dart';
-import 'domain/services/sync/sync_providers.dart';
 import 'domain/services/genetics/parent_genotype.dart';
 import 'domain/services/notifications/notification_processor.dart';
 import 'domain/services/notifications/notification_providers.dart';
+import 'domain/services/sync/sync_providers.dart';
 import 'features/auth/providers/auth_providers.dart';
+import 'features/app_update/widgets/app_update_prompt.dart';
 import 'features/genetics/providers/genetics_providers.dart';
 import 'domain/services/premium/premium_providers.dart';
 import 'features/settings/providers/settings_providers.dart';
@@ -91,6 +93,7 @@ class _BudgieBreedingAppState extends ConsumerState<BudgieBreedingApp> {
   }
 
   void _onAppResumed() {
+    ref.invalidate(appUpdateStatusProvider);
     final userId = ref.read(currentUserIdProvider);
     if (userId == 'anonymous') return;
     // Restart inactivity guard when app comes back to foreground
@@ -100,7 +103,6 @@ class _BudgieBreedingAppState extends ConsumerState<BudgieBreedingApp> {
     // Re-check exact alarm permission — user may have granted it via Settings
     // while the app was backgrounded.
     unawaited(_refreshExactAlarmPermission());
-
     // Push pending local changes on app resume.
     // Uses lightweight pushChanges instead of fullSync — periodic and
     // network-aware providers handle full reconciliation separately.
@@ -259,41 +261,43 @@ class _BudgieBreedingAppState extends ConsumerState<BudgieBreedingApp> {
         ? const VisualDensity(horizontal: -1, vertical: -1)
         : VisualDensity.standard;
 
-    return _inactivityGuard.wrapWithListener(child: MaterialApp.router(
-      title: 'BudgieBreedingTracker',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.light().copyWith(
-        visualDensity: visualDensity,
-        listTileTheme: ListTileThemeData(
-          dense: compactView,
+    return _inactivityGuard.wrapWithListener(
+      child: MaterialApp.router(
+        title: 'BudgieBreedingTracker',
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.light().copyWith(
           visualDensity: visualDensity,
-        ),
-      ),
-      darkTheme: AppTheme.dark().copyWith(
-        visualDensity: visualDensity,
-        listTileTheme: ListTileThemeData(
-          dense: compactView,
-          visualDensity: visualDensity,
-        ),
-      ),
-      themeMode: themeMode,
-      themeAnimationDuration: reduceAnimations
-          ? Duration.zero
-          : kThemeAnimationDuration,
-      localizationsDelegates: context.localizationDelegates,
-      supportedLocales: context.supportedLocales,
-      locale: context.locale,
-      routerConfig: router,
-      builder: (context, child) {
-        final scale = fontScale.scaleFactor;
-        return MediaQuery(
-          data: MediaQuery.of(context).copyWith(
-            textScaler: TextScaler.linear(scale),
-            disableAnimations: reduceAnimations,
+          listTileTheme: ListTileThemeData(
+            dense: compactView,
+            visualDensity: visualDensity,
           ),
-          child: child!,
-        );
-      },
-    ));
+        ),
+        darkTheme: AppTheme.dark().copyWith(
+          visualDensity: visualDensity,
+          listTileTheme: ListTileThemeData(
+            dense: compactView,
+            visualDensity: visualDensity,
+          ),
+        ),
+        themeMode: themeMode,
+        themeAnimationDuration: reduceAnimations
+            ? Duration.zero
+            : kThemeAnimationDuration,
+        localizationsDelegates: context.localizationDelegates,
+        supportedLocales: context.supportedLocales,
+        locale: context.locale,
+        routerConfig: router,
+        builder: (context, child) {
+          final scale = fontScale.scaleFactor;
+          return MediaQuery(
+            data: MediaQuery.of(context).copyWith(
+              textScaler: TextScaler.linear(scale),
+              disableAnimations: reduceAnimations,
+            ),
+            child: AppUpdatePrompt(child: child ?? const SizedBox.shrink()),
+          );
+        },
+      ),
+    );
   }
 }

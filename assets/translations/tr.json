@@ -74,6 +74,14 @@
     "more": "Daha Fazla",
     "back": "Geri"
   },
+  "app_update": {
+    "available_title": "Yeni sürüm hazır",
+    "required_title": "Güncelleme gerekli",
+    "message": "BudgieBreedingTracker v{} yayınlandı. Güncellemek için mağazayı açın.",
+    "message_with_notes": "BudgieBreedingTracker v{} yayınlandı.\n\n{}",
+    "update_now": "Şimdi Güncelle",
+    "later": "Daha Sonra"
+  },
   "auth": {
     "login": "Giriş Yap",
     "register": "Kayıt Ol",

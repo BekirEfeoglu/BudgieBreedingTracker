@@ -15,9 +15,13 @@ abstract class AppConstants {
   static const String supportEmail = 'support@budgiebreedingtracker.online';
   static const String websiteUrl = 'https://budgiebreedingtracker.online/';
 
+  /// Apple App Store product page URL.
+  static const String appStoreProductUrl =
+      'https://apps.apple.com/app/id6759828211';
+
   /// Apple App Store product page URL for "Write a Review" deep link.
   static const String appStoreUrl =
-      'https://apps.apple.com/app/id6740091218?action=write-review';
+      'https://apps.apple.com/app/id6759828211?action=write-review';
 
   /// Google Play Store listing URL.
   static const String playStoreUrl =
