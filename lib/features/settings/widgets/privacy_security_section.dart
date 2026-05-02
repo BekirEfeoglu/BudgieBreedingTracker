@@ -10,7 +10,7 @@ import '../../../core/utils/logger.dart';
 import '../../../core/widgets/app_icon.dart';
 import '../../../router/route_names.dart';
 import 'package:budgie_breeding_tracker/shared/providers/auth.dart';
-import 'package:budgie_breeding_tracker/data/providers/action_feedback_providers.dart';
+import 'package:budgie_breeding_tracker/core/providers/action_feedback_providers.dart';
 import 'package:budgie_breeding_tracker/shared/widgets/profile_account.dart';
 import 'settings_action_tile.dart';
 import 'settings_navigation_tile.dart';

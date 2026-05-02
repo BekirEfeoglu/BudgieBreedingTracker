@@ -14,7 +14,7 @@ import 'package:budgie_breeding_tracker/features/breeding/widgets/milestone_time
 import 'package:budgie_breeding_tracker/shared/widgets/eggs.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_detail_providers.dart';
 import 'package:budgie_breeding_tracker/shared/providers/eggs.dart';
-import 'package:budgie_breeding_tracker/data/providers/action_feedback_providers.dart';
+import 'package:budgie_breeding_tracker/core/providers/action_feedback_providers.dart';
 
 class BreedingEggsSection extends ConsumerWidget {
   final String incubationId;
