@@ -85,5 +85,57 @@ void main() {
       expect(find.text(l10n('backup.export_data')), findsOneWidget);
       expect(find.text(l10n('backup.import_data')), findsOneWidget);
     });
+
+    testWidgets('shows export date when available', (tester) async {
+      final testDate = DateTime(2026, 5, 1, 12, 0);
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            exportLoadingProvider.overrideWith(() => ExportLoadingNotifier()),
+            lastExportDateProvider.overrideWith(
+              () => _FakeLastExportDateNotifier(testDate),
+            ),
+          ],
+          child: MaterialApp.router(routerConfig: router),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byType(BackupScreen), findsOneWidget);
+      expect(find.text(l10n('backup.never')), findsNothing);
+    });
+
+    testWidgets('shows loading indicator during export', (tester) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            exportLoadingProvider.overrideWith(
+              () => _FakeExportLoadingNotifier(true),
+            ),
+            lastExportDateProvider.overrideWith(() => LastExportDateNotifier()),
+          ],
+          child: MaterialApp.router(routerConfig: router),
+        ),
+      );
+      await tester.pump();
+
+      expect(find.byType(BackupScreen), findsOneWidget);
+    });
   });
+}
+
+class _FakeLastExportDateNotifier extends LastExportDateNotifier {
+  final DateTime? _date;
+  _FakeLastExportDateNotifier(this._date);
+
+  @override
+  DateTime? build() => _date;
+}
+
+class _FakeExportLoadingNotifier extends ExportLoadingNotifier {
+  final bool _loading;
+  _FakeExportLoadingNotifier(this._loading);
+
+  @override
+  bool build() => _loading;
 }

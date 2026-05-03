@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' show PostgrestException;
 
@@ -188,6 +190,106 @@ void main() {
             .map((e) => '${e.key}:${e.value}')
             .toList();
         expect(eqKeys, containsAll(['id:item-1', 'user_id:user-1']));
+      });
+    });
+
+    group('fetchAllPaginated', () {
+      test('returns all pages using cursor pagination', () async {
+        final t1 = '2025-01-01T00:00:00.000Z';
+        final t2 = '2025-01-02T00:00:00.000Z';
+        selectBuilder.resultQueue.addAll([
+          [
+            {'id': '1', 'created_at': t1},
+            {'id': '2', 'created_at': t1},
+          ],
+          [
+            {'id': '3', 'created_at': t2},
+          ],
+          const [],
+        ]);
+
+        final result = await source.fetchAllPaginated('user-1', pageSize: 2);
+
+        expect(result, hasLength(3));
+        expect(result.last['id'], '3');
+        expect(selectBuilder.gtCalls, hasLength(1));
+        expect(
+          selectBuilder.gtCalls.map((e) => e.key),
+          contains('created_at'),
+        );
+      });
+
+      test('returns empty list when no records', () async {
+        selectBuilder.result = const [];
+        final result = await source.fetchAllPaginated('user-1');
+        expect(result, isEmpty);
+      });
+
+      test('stops when response is smaller than pageSize', () async {
+        selectBuilder.result = [
+          {'id': '1', 'created_at': '2025-01-01T00:00:00.000Z'},
+        ];
+        final result = await source.fetchAllPaginated('user-1', pageSize: 10);
+        expect(result, hasLength(1));
+      });
+
+      test('throws NetworkException on query failure', () async {
+        selectBuilder.error = Exception('paginated fail');
+        expect(
+          () => source.fetchAllPaginated('user-1'),
+          throwsA(isA<NetworkException>()),
+        );
+      });
+    });
+
+    group('fetchById error path', () {
+      test('throws NetworkException on query failure', () async {
+        selectBuilder.error = Exception('fetchById fail');
+        expect(
+          () => source.fetchById('1', userId: 'user-1'),
+          throwsA(isA<NetworkException>()),
+        );
+      });
+    });
+
+    group('deleteById error path', () {
+      test('throws NetworkException on delete failure', () async {
+        deleteBuilder.error = Exception('delete fail');
+        expect(
+          () => source.deleteById('1', userId: 'user-1'),
+          throwsA(isA<NetworkException>()),
+        );
+      });
+    });
+
+    group('fetchUpdatedSince error path', () {
+      test('throws NetworkException on query failure', () async {
+        selectBuilder.error = Exception('fetchUpdatedSince fail');
+        expect(
+          () => source.fetchUpdatedSince('user-1', DateTime(2025, 1, 1)),
+          throwsA(isA<NetworkException>()),
+        );
+      });
+    });
+
+    group('upsertAll error path', () {
+      test('throws NetworkException on batch upsert failure', () async {
+        upsertBuilder.error = Exception('batch upsert fail');
+        expect(
+          () => source.upsertAll([{'id': '1'}, {'id': '2'}]),
+          throwsA(isA<NetworkException>()),
+        );
+      });
+    });
+
+    group('SocketException handling', () {
+      test('converts SocketException to no-internet NetworkException', () {
+        final result = source.handleError(
+          const SocketException('Connection refused'),
+          StackTrace.current,
+        );
+        expect(result, isA<NetworkException>());
+        expect(result.message, 'No internet connection');
       });
     });
 

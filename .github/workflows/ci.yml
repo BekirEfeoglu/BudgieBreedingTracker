@@ -77,6 +77,7 @@ jobs:
   golden-test:
     name: Golden Test
     runs-on: ubuntu-24.04
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
@@ -96,6 +97,7 @@ jobs:
           flutter test test/golden \
             --update-goldens \
             --tags golden \
+            --concurrency=2 \
             --dart-define=SUPABASE_URL=https://placeholder.supabase.co \
             --dart-define=SUPABASE_ANON_KEY=placeholder_key
 
@@ -103,6 +105,7 @@ jobs:
         run: |
           flutter test test/golden \
             --tags golden \
+            --concurrency=2 \
             --dart-define=SUPABASE_URL=https://placeholder.supabase.co \
             --dart-define=SUPABASE_ANON_KEY=placeholder_key
 

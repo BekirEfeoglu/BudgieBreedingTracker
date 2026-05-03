@@ -345,6 +345,56 @@ void main() {
 
       expect(bookmarkTriggered, isTrue);
     });
+
+    testWidgets('guides tab shows empty state when no guides', (tester) async {
+      await tester.pumpWidget(
+        createSubject(
+          feedState: const FeedState(posts: [], isLoading: false, hasMore: false),
+          tab: CommunityFeedTab.guides,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text(l10n('community.guides_library_title')), findsOneWidget);
+      expect(find.byType(RefreshIndicator), findsOneWidget);
+    });
+
+    testWidgets('questions tab renders question posts', (tester) async {
+      final posts = [
+        CommunityPost(
+          id: '1',
+          userId: 'u1',
+          username: 'Question Author',
+          title: 'How to breed?',
+          content: 'Need advice',
+          postType: CommunityPostType.question,
+          likeCount: 2,
+          commentCount: 1,
+          createdAt: DateTime(2026, 3, 5, 10),
+        ),
+      ];
+
+      await tester.pumpWidget(
+        createSubject(
+          feedState: FeedState(posts: posts, isLoading: false, hasMore: false),
+          tab: CommunityFeedTab.questions,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('How to breed?'), findsOneWidget);
+    });
+
+    testWidgets('loading state shows shimmer placeholder', (tester) async {
+      await tester.pumpWidget(
+        createSubject(
+          feedState: const FeedState(posts: [], isLoading: true, hasMore: false),
+        ),
+      );
+      await tester.pump();
+
+      expect(find.byType(CommunityFeedList), findsOneWidget);
+    });
   });
 }
 
