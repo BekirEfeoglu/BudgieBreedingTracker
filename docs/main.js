@@ -1,4 +1,9 @@
-    // ─── i18n Translations ───
+(function() {
+  'use strict';
+
+  const prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // ─── i18n Translations ───
     const translations = {
       tr: {
         nav_features: 'Özellikler',
@@ -620,7 +625,7 @@
 
     // ─── Scroll Reveal (enhanced with stagger) ───
     function handleReveal() {
-      const reveals = document.querySelectorAll('.reveal, .reveal-scale, .reveal-left, .reveal-right, .reveal-flip');
+      const reveals = document.querySelectorAll('.reveal, .reveal-scale, .reveal-left, .reveal-right');
       const windowHeight = window.innerHeight;
       reveals.forEach(el => {
         const top = el.getBoundingClientRect().top;
@@ -712,8 +717,10 @@
       // FAQ accessibility attributes
       initializeFaq();
 
-      // Init 3D tilt on feature cards
-      initTilt();
+      // Init 3D tilt on feature cards (skip if user prefers reduced motion)
+      if (!prefersReducedMotion) {
+        initTilt();
+      }
 
       // Stats count-up via IntersectionObserver (enhanced with underline reveal)
       const statsObserver = new IntersectionObserver((entries) => {
@@ -755,17 +762,19 @@
       }
 
       // ─── Magnetic Buttons ───
-      document.querySelectorAll('.magnetic-btn').forEach(btn => {
-        btn.addEventListener('mousemove', (e) => {
-          const rect = btn.getBoundingClientRect();
-          const x = (e.clientX - rect.left - rect.width / 2) * 0.15;
-          const y = (e.clientY - rect.top - rect.height / 2) * 0.15;
-          btn.style.transform = 'translate(' + x + 'px, ' + y + 'px)';
+      if (!prefersReducedMotion) {
+        document.querySelectorAll('.magnetic-btn').forEach(btn => {
+          btn.addEventListener('mousemove', (e) => {
+            const rect = btn.getBoundingClientRect();
+            const x = (e.clientX - rect.left - rect.width / 2) * 0.15;
+            const y = (e.clientY - rect.top - rect.height / 2) * 0.15;
+            btn.style.transform = 'translate(' + x + 'px, ' + y + 'px)';
+          });
+          btn.addEventListener('mouseleave', () => {
+            btn.style.transform = 'translate(0, 0)';
+          });
         });
-        btn.addEventListener('mouseleave', () => {
-          btn.style.transform = 'translate(0, 0)';
-        });
-      });
+      }
 
     });
 
@@ -803,3 +812,4 @@
         handleEmailSignup(event);
       }
     });
+})();

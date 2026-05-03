@@ -207,18 +207,6 @@
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
     }
-    @keyframes bounceIn {
-      0% { opacity: 0; transform: scale(0.3); }
-      50% { opacity: 1; transform: scale(1.08); }
-      70% { transform: scale(0.95); }
-      100% { transform: scale(1); }
-    }
-    @keyframes flipIn {
-      from { opacity: 0; transform: perspective(400px) rotateY(90deg); }
-      40% { transform: perspective(400px) rotateY(-15deg); }
-      70% { transform: perspective(400px) rotateY(10deg); }
-      to { opacity: 1; transform: perspective(400px) rotateY(0); }
-    }
     @keyframes glowPulse {
       0%, 100% { box-shadow: 0 0 24px rgba(245, 200, 66, 0.15), 0 0 70px rgba(50, 120, 200, 0.08); }
       50% { box-shadow: 0 0 40px rgba(245, 200, 66, 0.28), 0 0 100px rgba(50, 120, 200, 0.14); }
@@ -228,20 +216,10 @@
       50% { background-position: 100% 50%; }
       100% { background-position: 0% 50%; }
     }
-    @keyframes slideUp {
-      from { opacity: 0; transform: translateY(60px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
     @keyframes wiggle {
       0%, 100% { transform: rotate(0deg); }
       25% { transform: rotate(3deg); }
       75% { transform: rotate(-3deg); }
-    }
-    @keyframes morphBlob {
-      0%, 100% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
-      25% { border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%; }
-      50% { border-radius: 50% 60% 30% 60% / 40% 70% 50% 60%; }
-      75% { border-radius: 60% 30% 50% 40% / 70% 40% 60% 30%; }
     }
     /* Scroll-triggered animations — no blur for performance */
     .reveal {
@@ -275,14 +253,6 @@
                   transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .reveal-right.active { opacity: 1; transform: translateX(0); }
-
-    .reveal-flip {
-      opacity: 0;
-      transform: perspective(400px) rotateY(30deg);
-      transition: opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1),
-                  transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-    .reveal-flip.active { opacity: 1; transform: perspective(400px) rotateY(0); }
 
     /* Card hover — dark glassmorphism (no backdrop-filter for perf) */
     .card-hover {
@@ -387,6 +357,58 @@
       background: linear-gradient(135deg, rgba(30, 70, 140, 0.12), rgba(50, 120, 200, 0.08));
     }
 
+
+    /* Nav & Footer hover (replaces inline onmouseover/onmouseout) */
+    .nav-link {
+      color: var(--sage);
+      transition: color 0.2s ease;
+    }
+    .nav-link:hover,
+    .nav-link:focus-visible {
+      color: var(--gold-light);
+    }
+
+    .footer-forest a {
+      color: var(--sage);
+      transition: color 0.2s ease;
+    }
+    .footer-forest a:hover,
+    .footer-forest a:focus-visible {
+      color: var(--gold-light);
+    }
+
+    .hero-cta-secondary {
+      background: rgba(20,50,100,0.35);
+      color: var(--gold-light);
+      border: 1px solid var(--glass-border);
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .hero-cta-secondary:hover,
+    .hero-cta-secondary:focus-visible {
+      border-color: var(--glass-border-hover);
+    }
+
+    .plan-free-cta {
+      background: rgba(140,180,220,0.15);
+      color: var(--sage-light);
+      border: 1px solid var(--glass-border);
+      transition: background 0.2s ease;
+    }
+    .plan-free-cta:hover,
+    .plan-free-cta:focus-visible {
+      background: rgba(140,180,220,0.25);
+    }
+
+    .plan-premium-cta {
+      background: linear-gradient(135deg, var(--gold), var(--gold-light));
+      color: var(--forest-deep);
+      border: none;
+      transition: filter 0.2s ease;
+    }
+    .plan-premium-cta:hover,
+    .plan-premium-cta:focus-visible {
+      filter: brightness(1.1);
+    }
 
     /* Language button */
     .lang-btn {
@@ -1567,8 +1589,6 @@
       /* Kill orbs */
       .orb, .orb-1, .orb-2, .orb-3 { display: none !important; }
 
-      /* Kill morph blobs */
-      .morph-blob { display: none !important; }
       .floating-particle { display: none !important; }
 
       /* Remove backdrop-filter (GPU killer on mobile) */
@@ -1598,7 +1618,7 @@
       .animate-float, .animate-float-delayed, .animate-float-slow { animation: none !important; }
 
       /* Simplify reveal: no blur filter */
-      .reveal, .reveal-scale, .reveal-left, .reveal-right, .reveal-flip {
+      .reveal, .reveal-scale, .reveal-left, .reveal-right {
         filter: none !important;
       }
 
@@ -1626,10 +1646,13 @@
         transition-duration: 0.01ms !important;
         scroll-behavior: auto !important;
       }
-      .reveal, .reveal-scale, .reveal-left, .reveal-right, .reveal-flip {
+      .reveal, .reveal-scale, .reveal-left, .reveal-right {
         opacity: 1 !important;
         transform: none !important;
         filter: none !important;
+      }
+      .feature-card-enhanced {
+        transform: none !important;
       }
       body::before { display: none; }
       .page-curtain { display: none; }
@@ -1637,7 +1660,7 @@
       .particle { display: none; }
       .particles { display: none; }
       .orb, .orb-1, .orb-2, .orb-3 { display: none; }
-      .floating-particle, .morph-blob { display: none; }
+      .floating-particle { display: none; }
       .sparkles, .sparkle { display: none; }
       .scroll-progress { display: none; }
       .budgie-svg * { animation: none !important; }
