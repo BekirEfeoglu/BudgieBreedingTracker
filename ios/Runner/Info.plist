@@ -81,6 +81,8 @@
 		<string>fetch</string>
 		<string>remote-notification</string>
 	</array>
+	<key>FirebaseAppDelegateProxyEnabled</key>
+	<true/>
 	<key>GADApplicationIdentifier</key>
 	<string>ca-app-pub-4121152941965334~4085433559</string>
 	<key>SKAdNetworkItems</key>

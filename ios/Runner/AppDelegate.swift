@@ -30,9 +30,7 @@ import AppTrackingTransparency
   }
 
   override init() {
-    AppDelegate.configureFirebaseIfNeeded()
     super.init()
-    AppDelegate.configureFirebaseIfNeeded()
   }
 
   private static func configureFirebaseIfNeeded() {
@@ -138,7 +136,6 @@ import AppTrackingTransparency
   }
 
   func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
-    AppDelegate.configureFirebaseIfNeeded()
     GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
     // NOTE: The keyboard-fix and ATT MethodChannels are set up in
     // SceneDelegate (not here) because engineBridge.pluginRegistry
