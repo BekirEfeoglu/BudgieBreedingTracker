@@ -1960,10 +1960,10 @@
 
     function renderCategoryChips() {
       const t = uiTranslations[currentLang];
-      let html = `<button class="category-chip ${activeCategory === null ? 'active' : ''}" onclick="filterCategory(null)"><span>${t.all_categories}</span><span class="category-chip-count">${topics.length}</span></button>`;
+      let html = `<button class="category-chip ${activeCategory === null ? 'active' : ''}" onclick="filterCategory(null)"><span>${escapeHtml(t.all_categories)}</span><span class="category-chip-count">${topics.length}</span></button>`;
       categories.forEach(cat => {
         const count = topics.filter(t => t.category === cat.id).length;
-        html += `<button class="category-chip ${activeCategory === cat.id ? 'active' : ''}" onclick="filterCategory('${cat.id}')"><span class="category-chip-icon">${cat.icon}</span><span>${cat[currentLang]}</span><span class="category-chip-count">${count}</span></button>`;
+        html += `<button class="category-chip ${activeCategory === cat.id ? 'active' : ''}" onclick="filterCategory('${cat.id}')"><span class="category-chip-icon">${escapeHtml(cat.icon)}</span><span>${escapeHtml(cat[currentLang])}</span><span class="category-chip-count">${count}</span></button>`;
       });
       document.getElementById('categoryChips').innerHTML = html;
     }
@@ -1974,13 +1974,26 @@
       renderGuide(document.getElementById('searchInput').value);
     }
 
+    function escapeHtml(str) {
+      if (typeof str !== 'string') return '';
+      return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
     function highlightText(text, query) {
       if (!query) return text;
       const nText = normalize(text);
       const nQuery = normalize(query);
       const idx = nText.indexOf(nQuery);
       if (idx === -1) return text;
-      return text.slice(0, idx) + '<span class="search-highlight">' + text.slice(idx, idx + query.length) + '</span>' + text.slice(idx + query.length);
+      const before = text.slice(0, idx);
+      const match = text.slice(idx, idx + query.length);
+      const after = text.slice(idx + query.length);
+      return escapeHtml(before) + '<span class="search-highlight">' + escapeHtml(match) + '</span>' + escapeHtml(after);
     }
 
     // ─── RENDER ───
@@ -2072,24 +2085,24 @@
       const cat = categories.find(c => c.id === topic.category);
       const isSearching = !!query;
 
-      const title = isSearching ? highlightText(data.title, query) : data.title;
-      const subtitle = isSearching ? highlightText(data.subtitle, query) : data.subtitle;
+      const title = isSearching ? highlightText(data.title, query) : escapeHtml(data.title);
+      const subtitle = isSearching ? highlightText(data.subtitle, query) : escapeHtml(data.subtitle);
 
       let meta = '';
       if (isSearching && cat) {
-        meta += `<span class="topic-category-badge">${cat.icon} ${cat[currentLang]}</span>`;
+        meta += `<span class="topic-category-badge">${escapeHtml(cat.icon)} ${escapeHtml(cat[currentLang])}</span>`;
       }
       if (stepCount > 0) {
-        meta += `<span class="step-badge">${t.step_count.replace('{}', stepCount)}</span>`;
+        meta += `<span class="step-badge">${escapeHtml(t.step_count.replace('{}', stepCount))}</span>`;
       }
       if (topic.isPremium) {
-        meta += `<span class="premium-badge">${t.premium_label}</span>`;
+        meta += `<span class="premium-badge">${escapeHtml(t.premium_label)}</span>`;
       }
 
       return `
         <div class="topic-card fade-up delay-${Math.min(delay, 3)}" onclick="openDetail(${index})">
           <div class="topic-card-header">
-            <div class="topic-icon-wrap">${topic.icon}</div>
+            <div class="topic-icon-wrap">${escapeHtml(topic.icon)}</div>
             <div>
               <div class="topic-title">${title}</div>
               <div class="topic-subtitle">${subtitle}</div>
