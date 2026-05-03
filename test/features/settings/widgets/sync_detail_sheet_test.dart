@@ -198,6 +198,50 @@ void main() {
       // Bottom sheet should be gone, title no longer visible
       expect(find.text(l10n('sync.error_details_title')), findsNothing);
     });
+
+    testWidgets('shows both pending and failed sections together', (tester) async {
+      await pumpLocalizedApp(
+        tester,
+        buildSubject(
+          pending: [
+            const SyncErrorDetail(tableName: 'birds', errorCount: 3),
+          ],
+          errors: [
+            const SyncErrorDetail(
+              tableName: 'eggs',
+              errorCount: 2,
+              lastError: 'Timeout',
+            ),
+          ],
+        ),
+      );
+
+      await tester.tap(find.text('Open'));
+      await tester.pumpAndSettle();
+
+      expect(find.text(l10n('sync.pending_section')), findsOneWidget);
+      expect(find.text(l10n('sync.failed_section')), findsOneWidget);
+      expect(find.text('Timeout'), findsOneWidget);
+    });
+
+    testWidgets('shows multiple pending items', (tester) async {
+      await pumpLocalizedApp(
+        tester,
+        buildSubject(
+          pending: [
+            const SyncErrorDetail(tableName: 'birds', errorCount: 3),
+            const SyncErrorDetail(tableName: 'eggs', errorCount: 5),
+          ],
+        ),
+      );
+
+      await tester.tap(find.text('Open'));
+      await tester.pumpAndSettle();
+
+      expect(find.text(l10n('sync.pending_section')), findsOneWidget);
+      expect(find.text('3'), findsOneWidget);
+      expect(find.text('5'), findsOneWidget);
+    });
   });
 }
 

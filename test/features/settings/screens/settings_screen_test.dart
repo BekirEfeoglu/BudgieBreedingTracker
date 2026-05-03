@@ -152,5 +152,18 @@ void main() {
 
       expect(find.byType(ListView), findsOneWidget);
     });
+
+    testWidgets('scrolls through all sections without error', (tester) async {
+      await tester.pumpWidget(createSubject());
+      await tester.pump();
+
+      final listFinder = find.byType(ListView);
+      await tester.fling(listFinder, const Offset(0, -2000), 3000);
+      await tester.pumpAndSettle();
+      await tester.fling(listFinder, const Offset(0, 2000), 3000);
+      await tester.pumpAndSettle();
+
+      expect(find.byType(SettingsScreen), findsOneWidget);
+    });
   });
 }
