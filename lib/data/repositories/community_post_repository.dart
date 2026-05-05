@@ -3,6 +3,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../core/constants/supabase_constants.dart';
 import '../../core/enums/community_enums.dart';
+import '../../core/utils/storage_url_normalizer.dart';
 import '../models/community_post_model.dart';
 import '../remote/api/community_post_cache.dart';
 import '../remote/api/community_post_remote_source.dart';
@@ -122,7 +123,9 @@ class CommunityPostRepository {
                 _asString(profile['full_name']) ??
                 _emailPrefix(profile['email']) ??
                 '',
-            'avatar_url': profile['avatar_url'],
+            'avatar_url': StorageUrlNormalizer.normalizePublicObjectUrl(
+              _asString(profile['avatar_url']),
+            ),
           };
         })
         .toList(growable: false);
@@ -234,11 +237,19 @@ class CommunityPostRepository {
     final username =
         _asString(row['username']) ?? 'community.anonymous_user'.tr();
 
-    final avatarUrl = _asString(row['avatar_url']);
+    final avatarUrl = StorageUrlNormalizer.normalizePublicObjectUrl(
+      _asString(row['avatar_url']),
+    );
 
-    final imageUrl = _asString(row['image_url']);
-    final imageUrls = _asStringList(row['image_urls']);
-    final legacyImageUrls = _asStringList(row['images']);
+    final imageUrl = StorageUrlNormalizer.normalizePublicObjectUrl(
+      _asString(row['image_url']),
+    );
+    final imageUrls = StorageUrlNormalizer.normalizePublicObjectUrls(
+      _asStringList(row['image_urls']),
+    );
+    final legacyImageUrls = StorageUrlNormalizer.normalizePublicObjectUrls(
+      _asStringList(row['images']),
+    );
     final normalizedImages = imageUrls.isNotEmpty ? imageUrls : legacyImageUrls;
 
     final bird = row['birds'];

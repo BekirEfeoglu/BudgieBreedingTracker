@@ -53,6 +53,26 @@ void main() {
       expect(model.mimeType, isNull);
       expect(model.isPrimary, false);
     });
+
+    test('keeps signed private storage URL unchanged', () {
+      const row = PhotoRow(
+        id: 'p3',
+        userId: 'u1',
+        entityType: PhotoEntityType.bird,
+        entityId: 'b1',
+        fileName: 'bird.jpg',
+        filePath:
+            'https://project.supabase.co/storage/v1/object/sign/'
+            'bird-photos/u1/b1/bird.jpg?token=expired',
+        isPrimary: false,
+      );
+
+      expect(
+        row.toModel().filePath,
+        'https://project.supabase.co/storage/v1/object/sign/'
+        'bird-photos/u1/b1/bird.jpg?token=expired',
+      );
+    });
   });
 
   group('PhotoModelMapper.toCompanion()', () {
@@ -97,6 +117,25 @@ void main() {
           before.subtract(const Duration(seconds: 1)),
         ),
         isTrue,
+      );
+    });
+
+    test('keeps signed private storage URL before saving locally', () {
+      const model = Photo(
+        id: 'p1',
+        userId: 'u1',
+        entityType: PhotoEntityType.bird,
+        entityId: 'b1',
+        fileName: 'test.jpg',
+        filePath:
+            'https://project.supabase.co/storage/v1/object/sign/'
+            'bird-photos/u1/b1/test.jpg?token=expired',
+      );
+
+      expect(
+        model.toCompanion().filePath.value,
+        'https://project.supabase.co/storage/v1/object/sign/'
+        'bird-photos/u1/b1/test.jpg?token=expired',
       );
     });
   });

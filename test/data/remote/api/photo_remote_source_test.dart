@@ -79,6 +79,66 @@ void main() {
       expect(payload['entity_type'], 'bird');
       expect(payload['entity_id'], 'bird-1');
       expect(payload['url'], 'test.jpg');
+      expect(payload['is_primary'], isFalse);
+    });
+
+    test('upsert sends primary photo state', () async {
+      const photo = Photo(
+        id: 'photo-1',
+        userId: 'user-1',
+        entityType: PhotoEntityType.bird,
+        entityId: 'bird-1',
+        fileName: 'test.jpg',
+        isPrimary: true,
+      );
+
+      await source.upsert(photo);
+
+      final payload = queryBuilder.upsertPayload as Map<String, dynamic>;
+      expect(payload['is_primary'], isTrue);
+    });
+
+    test('upsert keeps signed private storage URL in payload', () async {
+      const photo = Photo(
+        id: 'photo-1',
+        userId: 'user-1',
+        entityType: PhotoEntityType.bird,
+        entityId: 'bird-1',
+        fileName: 'test.jpg',
+        filePath:
+            'https://project.supabase.co/storage/v1/object/sign/'
+            'bird-photos/user-1/bird-1/test.jpg?token=expired',
+      );
+
+      await source.upsert(photo);
+
+      final payload = queryBuilder.upsertPayload as Map<String, dynamic>;
+      expect(
+        payload['thumbnail_url'],
+        'https://project.supabase.co/storage/v1/object/sign/'
+        'bird-photos/user-1/bird-1/test.jpg?token=expired',
+      );
+    });
+
+    test('fromJson keeps signed private storage URL', () {
+      final photo = source.fromJson({
+        'id': 'photo-1',
+        'user_id': 'user-1',
+        'entity_type': 'bird',
+        'entity_id': 'bird-1',
+        'url': 'test.jpg',
+        'is_primary': true,
+        'thumbnail_url':
+            'https://project.supabase.co/storage/v1/object/sign/'
+            'bird-photos/user-1/bird-1/test.jpg?token=expired',
+      });
+
+      expect(photo.isPrimary, isTrue);
+      expect(
+        photo.filePath,
+        'https://project.supabase.co/storage/v1/object/sign/'
+        'bird-photos/user-1/bird-1/test.jpg?token=expired',
+      );
     });
 
     test('converts fetch failures to NetworkException', () async {

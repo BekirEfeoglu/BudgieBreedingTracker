@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:drift/drift.dart';
+import 'package:budgie_breeding_tracker/core/utils/storage_url_normalizer.dart';
 import 'package:budgie_breeding_tracker/data/local/database/app_database.dart';
 import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 
@@ -13,7 +14,7 @@ extension BirdRowMapper on BirdRow {
     status: status,
     species: species,
     ringNumber: ringNumber,
-    photoUrl: photoUrl,
+    photoUrl: StorageUrlNormalizer.normalizePublicObjectUrl(photoUrl),
     fatherId: fatherId,
     motherId: motherId,
     colorMutation: colorMutation,
@@ -61,7 +62,7 @@ extension BirdModelMapper on Bird {
     status: Value(status),
     species: Value(species),
     ringNumber: Value(ringNumber),
-    photoUrl: Value(photoUrl),
+    photoUrl: Value(StorageUrlNormalizer.normalizePublicObjectUrl(photoUrl)),
     fatherId: Value(fatherId),
     motherId: Value(motherId),
     colorMutation: Value(colorMutation),

@@ -1,3 +1,4 @@
+import 'package:budgie_breeding_tracker/core/utils/storage_url_normalizer.dart';
 import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
 import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
@@ -23,15 +24,33 @@ Map<String, dynamic> _stripServerFields(Map<String, dynamic> json) {
 
 /// Supabase JSON conversion extensions for all models.
 extension BirdSupabase on Bird {
-  Map<String, dynamic> toSupabase() => _stripServerFields(toJson());
+  Map<String, dynamic> toSupabase() {
+    final json = _stripServerFields(toJson());
+    json['photo_url'] = StorageUrlNormalizer.normalizePublicObjectUrl(
+      json['photo_url'] as String?,
+    );
+    return json;
+  }
 }
 
 extension EggSupabase on Egg {
-  Map<String, dynamic> toSupabase() => _stripServerFields(toJson());
+  Map<String, dynamic> toSupabase() {
+    final json = _stripServerFields(toJson());
+    json['photo_url'] = StorageUrlNormalizer.normalizePublicObjectUrl(
+      json['photo_url'] as String?,
+    );
+    return json;
+  }
 }
 
 extension ChickSupabase on Chick {
-  Map<String, dynamic> toSupabase() => _stripServerFields(toJson());
+  Map<String, dynamic> toSupabase() {
+    final json = _stripServerFields(toJson());
+    json['photo_url'] = StorageUrlNormalizer.normalizePublicObjectUrl(
+      json['photo_url'] as String?,
+    );
+    return json;
+  }
 }
 
 extension IncubationSupabase on Incubation {
@@ -59,7 +78,13 @@ extension AppNotificationSupabase on AppNotification {
 }
 
 extension ProfileSupabase on Profile {
-  Map<String, dynamic> toSupabase() => _stripServerFields(toJson());
+  Map<String, dynamic> toSupabase() {
+    final json = _stripServerFields(toJson());
+    json['avatar_url'] = StorageUrlNormalizer.normalizePublicObjectUrl(
+      json['avatar_url'] as String?,
+    );
+    return json;
+  }
 }
 
 extension ClutchSupabase on Clutch {
@@ -93,10 +118,10 @@ extension PhotoSupabase on Photo {
       json['url'] = json.remove('file_name');
     }
     if (json.containsKey('file_path')) {
-      json['thumbnail_url'] = json.remove('file_path');
+      json['thumbnail_url'] = StorageUrlNormalizer.normalizePublicObjectUrl(
+        json.remove('file_path') as String?,
+      );
     }
-    // Strip local-only fields
-    json.remove('is_primary');
     return json;
   }
 }

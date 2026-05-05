@@ -1,5 +1,8 @@
 import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
-import { resolvePremiumStatus } from "./premium_core.ts";
+import {
+  profileMatchesPremiumStatus,
+  resolvePremiumStatus,
+} from "./premium_core.ts";
 
 const now = new Date("2026-05-01T12:00:00.000Z");
 
@@ -86,4 +89,46 @@ Deno.test("resolvePremiumStatus: missing entitlement is free", () => {
   assertEquals(result.subscriptionStatus, "free");
   assertEquals(result.expiresAt, null);
   assertEquals(result.gracePeriodUntil, null);
+});
+
+Deno.test("profileMatchesPremiumStatus: accepts equivalent timestamp formats", () => {
+  const status = {
+    isPremium: true,
+    subscriptionStatus: "premium" as const,
+    subscriptionRecordStatus: "active" as const,
+    expiresAt: "2026-11-04T02:49:00Z",
+    gracePeriodUntil: null,
+    productIdentifier: "budgie_premium_semi_annual",
+  };
+
+  assertEquals(
+    profileMatchesPremiumStatus({
+      is_premium: true,
+      subscription_status: "premium",
+      premium_expires_at: "2026-11-04 02:49:00+00",
+      grace_period_until: null,
+    }, status),
+    true,
+  );
+});
+
+Deno.test("profileMatchesPremiumStatus: rejects trigger-reverted profile", () => {
+  const status = {
+    isPremium: true,
+    subscriptionStatus: "premium" as const,
+    subscriptionRecordStatus: "active" as const,
+    expiresAt: "2026-11-04T02:49:00Z",
+    gracePeriodUntil: null,
+    productIdentifier: "budgie_premium_semi_annual",
+  };
+
+  assertEquals(
+    profileMatchesPremiumStatus({
+      is_premium: false,
+      subscription_status: "free",
+      premium_expires_at: null,
+      grace_period_until: null,
+    }, status),
+    false,
+  );
 });

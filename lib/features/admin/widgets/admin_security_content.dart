@@ -181,9 +181,9 @@ class SecurityEventItem extends ConsumerWidget {
             Row(
               children: [
                 Semantics(
-                label: sev.label,
-                child: Icon(sev.icon, size: 18, color: sev.color),
-              ),
+                  label: sev.label,
+                  child: Icon(sev.icon, size: 18, color: sev.color),
+                ),
                 const SizedBox(width: AppSpacing.sm),
                 Expanded(
                   child: Text(
@@ -223,7 +223,7 @@ class SecurityEventItem extends ConsumerWidget {
                       title: 'admin.dismiss_event'.tr(),
                       message: 'admin.dismiss_event_confirm'.tr(),
                     );
-                    if (confirmed != true) return;
+                    if (confirmed != true || !context.mounted) return;
                     ref
                         .read(adminActionsProvider.notifier)
                         .dismissSecurityEvent(event.id);

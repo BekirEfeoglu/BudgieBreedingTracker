@@ -32,6 +32,7 @@ abstract final class AdminConstants {
   static const int recentActionsLimit = 5;
   static const int userActivityLogsLimit = 20;
   static const int maxAlertsLimit = 10;
+  static const int onlineUsersCandidateLimit = 1000;
 
   // Responsive breakpoints
   static const double wideLayoutBreakpoint = 840.0;

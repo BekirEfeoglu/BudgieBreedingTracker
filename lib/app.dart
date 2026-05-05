@@ -17,6 +17,7 @@ import 'domain/services/encryption/encryption_providers.dart';
 import 'domain/services/genetics/parent_genotype.dart';
 import 'domain/services/notifications/notification_processor.dart';
 import 'domain/services/notifications/notification_providers.dart';
+import 'domain/services/presence/user_presence_providers.dart';
 import 'domain/services/sync/sync_providers.dart';
 import 'features/auth/providers/auth_providers.dart';
 import 'features/app_update/widgets/app_update_prompt.dart';
@@ -77,6 +78,7 @@ class _BudgieBreedingAppState extends ConsumerState<BudgieBreedingApp> {
   /// backgrounded to reduce the exposure window if the device is compromised.
   void _onAppHidden() {
     _inactivityGuard.stop();
+    unawaited(ref.read(userPresenceControllerProvider.notifier).markInactive());
     ref.read(encryptionServiceProvider).dispose();
   }
 
@@ -96,6 +98,9 @@ class _BudgieBreedingAppState extends ConsumerState<BudgieBreedingApp> {
     ref.invalidate(appUpdateStatusProvider);
     final userId = ref.read(currentUserIdProvider);
     if (userId == 'anonymous') return;
+    unawaited(
+      ref.read(userPresenceControllerProvider.notifier).markActive(userId),
+    );
     // Restart inactivity guard when app comes back to foreground
     _inactivityGuard.start();
     ref.read(localPremiumProvider.notifier).refresh();
@@ -202,6 +207,8 @@ class _BudgieBreedingAppState extends ConsumerState<BudgieBreedingApp> {
     ref.watch(authSessionSideEffectsProvider);
     // Mount premium → local cache sync (keep-alive side-effect).
     ref.watch(premiumSyncProvider);
+    // Mount foreground presence heartbeat for admin online-user visibility.
+    ref.watch(userPresenceLifecycleProvider);
 
     final router = ref.watch(routerProvider);
     final themeMode = ref.watch(themeModeProvider);

@@ -309,13 +309,35 @@ void main() {
       expect(container.read(purchaseActionProvider).isSuccess, isTrue);
     });
 
+    test('matches monthly plan to monthly package type', () async {
+      final monthly = MockPackage();
+      _stubPackage(
+        monthly,
+        packageType: PackageType.monthly,
+        identifier: 'monthly',
+        productIdentifier: 'budgie_premium_monthly',
+      );
+      service.offeringsResult = [monthly];
+      service.purchaseResult = true;
+
+      final container = _containerWithService(service);
+      addTearDown(container.dispose);
+
+      await container
+          .read(purchaseActionProvider.notifier)
+          .purchasePlan(PremiumPlan.monthly);
+
+      expect(service.lastPurchasedPackage, same(monthly));
+      expect(container.read(purchaseActionProvider).isSuccess, isTrue);
+    });
+
     test('matches lifetime plan to lifetime package type', () async {
       final lifetime = MockPackage();
       _stubPackage(
         lifetime,
-        packageType: PackageType.annual,
-        identifier: 'annual',
-        productIdentifier: 'budgie_premium_yearly',
+        packageType: PackageType.lifetime,
+        identifier: 'lifetime',
+        productIdentifier: 'budgie_premium_lifetime',
       );
       service.offeringsResult = [lifetime];
       service.purchaseResult = true;
@@ -325,7 +347,7 @@ void main() {
 
       await container
           .read(purchaseActionProvider.notifier)
-          .purchasePlan(PremiumPlan.yearly);
+          .purchasePlan(PremiumPlan.lifetime);
 
       expect(service.lastPurchasedPackage, same(lifetime));
       expect(container.read(purchaseActionProvider).isSuccess, isTrue);

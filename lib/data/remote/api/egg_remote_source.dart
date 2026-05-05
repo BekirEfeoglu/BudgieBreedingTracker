@@ -1,4 +1,5 @@
 import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
+import 'package:budgie_breeding_tracker/core/utils/storage_url_normalizer.dart';
 import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
 import 'package:budgie_breeding_tracker/data/models/supabase_extensions.dart';
 import 'package:budgie_breeding_tracker/data/remote/api/base_remote_source.dart';
@@ -11,7 +12,12 @@ class EggRemoteSource extends BaseRemoteSource<Egg> {
   String get tableName => SupabaseConstants.eggsTable;
 
   @override
-  Egg fromJson(Map<String, dynamic> json) => Egg.fromJson(json);
+  Egg fromJson(Map<String, dynamic> json) => Egg.fromJson({
+    ...json,
+    'photo_url': StorageUrlNormalizer.normalizePublicObjectUrl(
+      json['photo_url'] as String?,
+    ),
+  });
 
   @override
   Map<String, dynamic> toSupabaseJson(Egg model) => model.toSupabase();

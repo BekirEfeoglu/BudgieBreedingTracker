@@ -44,6 +44,9 @@ void main() {
     when(
       () => mockFileApi.getPublicUrl(any()),
     ).thenReturn('https://cdn.example.com/public-object');
+    when(
+      () => mockFileApi.createSignedUrl(any(), any()),
+    ).thenAnswer((_) async => 'https://cdn.example.com/signed-object');
 
     service = StorageService(mockClient);
   });
@@ -99,7 +102,7 @@ void main() {
   group('StorageService', () {
     // -----------------------------------------------------------------------
     group('uploadBirdPhoto', () {
-      test('returns public URL on success', () async {
+      test('returns signed URL on success', () async {
         final file = makeXFile();
         when(
           () => mockFileApi.uploadBinary(
@@ -119,6 +122,8 @@ void main() {
         );
 
         expect(url, 'https://cdn.example.com/photo.jpg');
+        verify(() => mockFileApi.createSignedUrl(any(), any())).called(1);
+        verifyNever(() => mockFileApi.getPublicUrl(any()));
       });
 
       test('throws StorageException when file exceeds 10 MB', () async {
@@ -159,9 +164,6 @@ void main() {
             fileOptions: any(named: 'fileOptions'),
           ),
         ).thenAnswer((_) async => '');
-        when(
-          () => mockFileApi.createSignedUrl(any(), any()),
-        ).thenAnswer((_) async => 'https://url');
 
         await service.uploadBirdPhoto(userId: 'u1', birdId: 'b1', file: file);
 
@@ -183,9 +185,6 @@ void main() {
           capturedPath = invocation.positionalArguments.first as String;
           return '';
         });
-        when(
-          () => mockFileApi.createSignedUrl(any(), any()),
-        ).thenAnswer((_) async => 'https://url');
 
         await service.uploadBirdPhoto(userId: 'u1', birdId: 'b1', file: file);
 
@@ -319,7 +318,7 @@ void main() {
 
     // -----------------------------------------------------------------------
     group('listBirdPhotos', () {
-      test('returns sorted public URLs (descending)', () async {
+      test('returns sorted signed URLs (descending)', () async {
         final files = [
           FileObject.fromJson({'name': 'a.jpg', 'id': '1'}),
           FileObject.fromJson({'name': 'b.jpg', 'id': '2'}),
@@ -327,24 +326,30 @@ void main() {
         when(
           () => mockFileApi.list(path: any(named: 'path')),
         ).thenAnswer((_) async => files);
-        when(() => mockFileApi.createSignedUrls(any(), any())).thenAnswer(
-          (_) async => [
-            const SignedUrl(
-              signedUrl: 'https://cdn.example.com/photo-1.jpg',
-              path: 'u1/b1/a.jpg',
-            ),
-            const SignedUrl(
-              signedUrl: 'https://cdn.example.com/photo-0.jpg',
-              path: 'u1/b1/b.jpg',
-            ),
-          ],
-        );
+        when(() => mockFileApi.createSignedUrls(any(), any())).thenAnswer((
+          invocation,
+        ) async {
+          final paths = invocation.positionalArguments.first as List<String>;
+          return [
+            for (final path in paths)
+              SignedUrl(
+                signedUrl:
+                    'https://cdn.example.com/storage/v1/object/sign/'
+                    '${SupabaseConstants.birdPhotosBucket}/$path?token=abc',
+                path: path,
+              ),
+          ];
+        });
 
         final urls = await service.listBirdPhotos(userId: 'u1', birdId: 'b1');
 
-        expect(urls, hasLength(2));
-        // Sorted b.compareTo(a) → descending
-        expect(urls.first.compareTo(urls.last), greaterThan(0));
+        expect(urls, [
+          'https://cdn.example.com/storage/v1/object/sign/'
+              '${SupabaseConstants.birdPhotosBucket}/u1/b1/b.jpg?token=abc',
+          'https://cdn.example.com/storage/v1/object/sign/'
+              '${SupabaseConstants.birdPhotosBucket}/u1/b1/a.jpg?token=abc',
+        ]);
+        verifyNever(() => mockFileApi.getPublicUrl(any()));
       });
 
       test('returns empty list on StorageException', () async {
@@ -361,13 +366,11 @@ void main() {
         when(
           () => mockFileApi.list(path: any(named: 'path')),
         ).thenAnswer((_) async => []);
-        when(
-          () => mockFileApi.createSignedUrls(any(), any()),
-        ).thenAnswer((_) async => []);
 
         final urls = await service.listBirdPhotos(userId: 'u1', birdId: 'b1');
 
         expect(urls, isEmpty);
+        verifyNever(() => mockFileApi.createSignedUrls(any(), any()));
       });
     });
 
@@ -456,9 +459,6 @@ void main() {
             fileOptions: any(named: 'fileOptions'),
           ),
         ).thenAnswer((_) async => '');
-        when(
-          () => mockFileApi.createSignedUrl(any(), any()),
-        ).thenAnswer((_) async => 'https://url');
 
         final url = await service.uploadBirdPhoto(
           userId: 'u1',
@@ -478,9 +478,6 @@ void main() {
             fileOptions: any(named: 'fileOptions'),
           ),
         ).thenAnswer((_) async => '');
-        when(
-          () => mockFileApi.createSignedUrl(any(), any()),
-        ).thenAnswer((_) async => 'https://url');
 
         final url = await service.uploadAvatar(userId: 'u1', file: file);
 
@@ -496,9 +493,6 @@ void main() {
             fileOptions: any(named: 'fileOptions'),
           ),
         ).thenAnswer((_) async => '');
-        when(
-          () => mockFileApi.createSignedUrl(any(), any()),
-        ).thenAnswer((_) async => 'https://url');
 
         final url = await service.uploadBirdPhoto(
           userId: 'u1',
@@ -518,9 +512,6 @@ void main() {
             fileOptions: any(named: 'fileOptions'),
           ),
         ).thenAnswer((_) async => '');
-        when(
-          () => mockFileApi.createSignedUrl(any(), any()),
-        ).thenAnswer((_) async => 'https://url');
 
         final url = await service.uploadAvatar(userId: 'u1', file: file);
 
@@ -536,9 +527,6 @@ void main() {
             fileOptions: any(named: 'fileOptions'),
           ),
         ).thenAnswer((_) async => '');
-        when(
-          () => mockFileApi.createSignedUrl(any(), any()),
-        ).thenAnswer((_) async => 'https://url');
 
         final url = await service.uploadBirdPhoto(
           userId: 'u1',

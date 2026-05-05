@@ -26,6 +26,7 @@ class _UserCard extends StatelessWidget {
         : user.email;
     final showEmail = displayName.toLowerCase() != user.email.toLowerCase();
     final isProtected = _isProtectedRole(user.role);
+    final lastActiveAt = user.lastActiveAt;
 
     return Card(
       color: isSelected
@@ -35,8 +36,8 @@ class _UserCard extends StatelessWidget {
         onTap: isSelectionMode
             ? onSelectionToggle
             : () => context.push(
-                  AppRoutes.adminUserDetail.replaceFirst(':userId', user.id),
-                ),
+                AppRoutes.adminUserDetail.replaceFirst(':userId', user.id),
+              ),
         onLongPress: onSelectionToggle,
         borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
         child: Padding(
@@ -87,6 +88,10 @@ class _UserCard extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
+                        if (user.isOnline) ...[
+                          const SizedBox(width: AppSpacing.xs),
+                          const _OnlineBadge(),
+                        ],
                         if (user.isPremium || isProtected) ...[
                           const SizedBox(width: AppSpacing.xs),
                           _PremiumBadge(
@@ -136,6 +141,22 @@ class _UserCard extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
+                    if (lastActiveAt != null) ...[
+                      const SizedBox(height: AppSpacing.xs / 2),
+                      Text(
+                        '${'admin.last_active'.tr()}: ${_formatRelativeTime(lastActiveAt)}',
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: user.isOnline
+                              ? AppColors.success
+                              : theme.colorScheme.onSurfaceVariant,
+                          fontWeight: user.isOnline
+                              ? FontWeight.w700
+                              : FontWeight.w400,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -149,8 +170,7 @@ class _UserCard extends StatelessWidget {
                     size: 18,
                     color: theme.colorScheme.outline,
                   ),
-                  onSelected: (action) =>
-                      onQuickAction?.call(action, user.id),
+                  onSelected: (action) => onQuickAction?.call(action, user.id),
                   itemBuilder: (_) => [
                     PopupMenuItem(
                       value: user.isActive ? 'deactivate' : 'activate',
@@ -214,6 +234,59 @@ class _UserCard extends StatelessWidget {
     final locale = Localizations.localeOf(context).languageCode;
     return DateFormat('dd MMM yyyy', locale).format(date);
   }
+
+  String _formatRelativeTime(DateTime date) {
+    final age = DateTime.now().toUtc().difference(date.toUtc());
+    if (age.inMinutes < 1) return 'common.just_now'.tr();
+    if (age.inHours < 1) {
+      return 'common.minutes_ago'.tr(args: ['${age.inMinutes}']);
+    }
+    if (age.inDays < 1) {
+      return 'common.hours_ago'.tr(args: ['${age.inHours}']);
+    }
+    return 'common.days_ago'.tr(args: ['${age.inDays}']);
+  }
+}
+
+class _OnlineBadge extends StatelessWidget {
+  const _OnlineBadge();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: 2,
+      ),
+      decoration: BoxDecoration(
+        color: AppColors.success.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 6,
+            height: 6,
+            decoration: const BoxDecoration(
+              color: AppColors.success,
+              shape: BoxShape.circle,
+            ),
+          ),
+          const SizedBox(width: AppSpacing.xs),
+          Text(
+            'admin.online'.tr(),
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: AppColors.success,
+              fontWeight: FontWeight.w700,
+              fontSize: 10,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _PremiumBadge extends StatelessWidget {
@@ -231,13 +304,13 @@ class _PremiumBadge extends StatelessWidget {
     final label = isFounder
         ? 'admin.role_founder'.tr()
         : isAdmin
-            ? 'admin.role_admin'.tr()
-            : 'admin.role_premium'.tr();
+        ? 'admin.role_admin'.tr()
+        : 'admin.role_premium'.tr();
     final color = isFounder
         ? AppColors.accent
         : isAdmin
-            ? AppColors.info
-            : AppColors.budgieYellow;
+        ? AppColors.info
+        : AppColors.budgieYellow;
 
     return Container(
       padding: const EdgeInsets.symmetric(

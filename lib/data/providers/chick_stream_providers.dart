@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
+import 'package:budgie_breeding_tracker/data/remote/storage/storage_providers.dart';
+import 'package:budgie_breeding_tracker/data/remote/storage/storage_url_resolver.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 
 typedef ChickParentsInfo = ({
@@ -16,14 +18,35 @@ final chicksStreamProvider = StreamProvider.family<List<Chick>, String>((
   userId,
 ) {
   final repo = ref.watch(chickRepositoryProvider);
-  return repo.watchAll(userId);
+  final resolver = ref.watch(storageUrlResolverProvider);
+  return repo
+      .watchAll(userId)
+      .asyncMap(
+        (chicks) => Future.wait(
+          chicks.map((chick) => _resolveChickPhoto(chick, resolver)),
+        ),
+      );
 });
 
 /// Single chick by ID (live stream).
 final chickByIdProvider = StreamProvider.family<Chick?, String>((ref, id) {
   final repo = ref.watch(chickRepositoryProvider);
-  return repo.watchById(id);
+  final resolver = ref.watch(storageUrlResolverProvider);
+  return repo.watchById(id).asyncMap((chick) async {
+    if (chick == null) return null;
+    return _resolveChickPhoto(chick, resolver);
+  });
 });
+
+Future<Chick> _resolveChickPhoto(
+  Chick chick,
+  StorageUrlResolver resolver,
+) async {
+  final photoUrl = await resolver.resolve(chick.photoUrl);
+  return photoUrl == chick.photoUrl
+      ? chick
+      : chick.copyWith(photoUrl: photoUrl);
+}
 
 /// Parent bird info for a chick (looked up via egg → incubation → breeding pair).
 /// Takes the chick's eggId and returns parent names.

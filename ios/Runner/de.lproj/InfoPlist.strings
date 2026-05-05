@@ -1,0 +1,6 @@
+CFBundleDisplayName = "BudgieTrack";
+CFBundleName = "BudgieTrack";
+NSCameraUsageDescription = "Diese App benötigt Kamerazugriff, um Fotos Ihrer Vögel und Eier aufzunehmen.";
+NSPhotoLibraryUsageDescription = "Diese App benötigt Zugriff auf Ihre Fotomediathek, um Fotos Ihrer Vögel und Eier auszuwählen.";
+NSPhotoLibraryAddUsageDescription = "Diese App benötigt die Berechtigung, Vogel- und Eierfotos für Sicherung und Teilen in Ihrer Fotomediathek zu speichern.";
+NSUserTrackingUsageDescription = "Wir und unsere Werbepartner verwenden diese Kennung, um interessenbasierte personalisierte Werbung bereitzustellen. Sie können ablehnen und die App weiterhin mit nicht personalisierter Werbung nutzen.";

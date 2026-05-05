@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import 'package:budgie_breeding_tracker/core/utils/storage_url_normalizer.dart';
 import 'package:budgie_breeding_tracker/data/local/database/app_database.dart';
 import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
 
@@ -16,7 +17,7 @@ extension ChickRowMapper on ChickRow {
     bandingDay: bandingDay,
     bandingDate: bandingDate?.toUtc(),
     notes: notes,
-    photoUrl: photoUrl,
+    photoUrl: StorageUrlNormalizer.normalizePublicObjectUrl(photoUrl),
     hatchWeight: hatchWeight,
     hatchDate: hatchDate?.toUtc(),
     weanDate: weanDate?.toUtc(),
@@ -41,7 +42,7 @@ extension ChickModelMapper on Chick {
     bandingDay: Value(bandingDay),
     bandingDate: Value(bandingDate?.toUtc()),
     notes: Value(notes),
-    photoUrl: Value(photoUrl),
+    photoUrl: Value(StorageUrlNormalizer.normalizePublicObjectUrl(photoUrl)),
     hatchWeight: Value(hatchWeight),
     hatchDate: Value(hatchDate?.toUtc()),
     weanDate: Value(weanDate?.toUtc()),

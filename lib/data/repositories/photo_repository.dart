@@ -1,6 +1,7 @@
 import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
 import 'package:budgie_breeding_tracker/core/errors/app_exception.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
+import 'package:budgie_breeding_tracker/core/utils/storage_url_normalizer.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/photos_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/sync_metadata_dao.dart';
 import 'package:budgie_breeding_tracker/data/models/photo_model.dart';
@@ -75,13 +76,13 @@ class PhotoRepository {
     final filePath = photo.filePath;
     if (filePath == null || filePath.isEmpty) return Future.value();
 
-    final storagePath = _storagePathFromPublicUrl(
-      filePath,
-      SupabaseConstants.birdPhotosBucket,
-    );
-    if (storagePath == null) return Future.value();
+    final objectPath = StorageUrlNormalizer.extractObjectPath(filePath);
+    if (objectPath == null ||
+        objectPath.bucket != SupabaseConstants.birdPhotosBucket) {
+      return Future.value();
+    }
 
-    return storageService.deleteBirdPhoto(storagePath: storagePath);
+    return storageService.deleteBirdPhoto(storagePath: objectPath.path);
   }
 
   Future<void> save(Photo item) async {
@@ -241,15 +242,4 @@ class PhotoRepository {
       );
     }
   }
-}
-
-String? _storagePathFromPublicUrl(String url, String bucket) {
-  final uri = Uri.tryParse(url);
-  if (uri == null) return null;
-
-  final segments = uri.pathSegments;
-  final bucketIdx = segments.indexOf(bucket);
-  if (bucketIdx < 0 || bucketIdx + 1 >= segments.length) return null;
-
-  return segments.sublist(bucketIdx + 1).join('/');
 }

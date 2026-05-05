@@ -50,7 +50,7 @@ class _BulkActionBarState extends ConsumerState<_BulkActionBar> {
       title: 'admin.confirm_activate'.tr(),
       message: 'admin.confirm_activate_desc'.tr(),
     );
-    if (confirmed != true) return;
+    if (confirmed != true || !mounted) return;
     await _run(
       () => ref
           .read(adminActionsProvider.notifier)
@@ -66,7 +66,7 @@ class _BulkActionBarState extends ConsumerState<_BulkActionBar> {
       message: 'admin.confirm_deactivate_desc'.tr(),
       isDestructive: true,
     );
-    if (confirmed != true) return;
+    if (confirmed != true || !mounted) return;
     await _run(
       () => ref
           .read(adminActionsProvider.notifier)
@@ -81,7 +81,7 @@ class _BulkActionBarState extends ConsumerState<_BulkActionBar> {
       title: 'admin.confirm_grant_premium'.tr(),
       message: 'admin.confirm_grant_premium_desc'.tr(),
     );
-    if (confirmed != true) return;
+    if (confirmed != true || !mounted) return;
     await _run(
       () => ref
           .read(adminActionsProvider.notifier)
@@ -97,7 +97,7 @@ class _BulkActionBarState extends ConsumerState<_BulkActionBar> {
       message: 'admin.confirm_revoke_premium_desc'.tr(),
       isDestructive: true,
     );
-    if (confirmed != true) return;
+    if (confirmed != true || !mounted) return;
     await _run(
       () => ref
           .read(adminActionsProvider.notifier)
@@ -112,7 +112,8 @@ class _BulkActionBarState extends ConsumerState<_BulkActionBar> {
       ref: ref,
       targetUserIds: widget.selectedIds.toList(),
     );
-    if (result == true && mounted) {
+    if (!mounted) return;
+    if (result == true) {
       final state = ref.read(adminActionsProvider);
       final message = state.successMessage ?? 'admin.notification_sent'.tr();
       ScaffoldMessenger.of(
@@ -128,8 +129,7 @@ class _BulkActionBarState extends ConsumerState<_BulkActionBar> {
       title: 'admin.bulk_export'.tr(),
       message: 'common.continue_confirm'.tr(),
     );
-    if (confirmed != true) return;
-    if (!mounted) return;
+    if (confirmed != true || !mounted) return;
     setState(() => _isLoading = true);
     try {
       await ref
@@ -157,7 +157,7 @@ class _BulkActionBarState extends ConsumerState<_BulkActionBar> {
 
   Future<void> _onDelete() async {
     final confirmed = await _showDeletePreview();
-    if (confirmed != true) return;
+    if (confirmed != true || !mounted) return;
     await _run(
       () => ref
           .read(adminActionsProvider.notifier)

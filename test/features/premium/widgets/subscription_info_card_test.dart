@@ -78,8 +78,24 @@ void main() {
       expect(find.text(l10n('premium.current_plan')), findsOneWidget);
     });
 
-    testWidgets('shows plan_semi_annual for semi-annual product id', (tester) async {
+    testWidgets('shows plan_semi_annual for semi-annual product id', (
+      tester,
+    ) async {
       await tester.pumpWidget(createSubject());
+      await tester.pump();
+
+      expect(find.text(l10n('premium.plan_semi_annual')), findsOneWidget);
+    });
+
+    testWidgets('shows plan_semi_annual for Play Store base-plan product id', (
+      tester,
+    ) async {
+      const semiAnnualInfo = SubscriptionInfo(
+        isActive: true,
+        productId: 'budgie_premium:semi-annual',
+        willRenew: true,
+      );
+      await tester.pumpWidget(createSubject(info: semiAnnualInfo));
       await tester.pump();
 
       expect(find.text(l10n('premium.plan_semi_annual')), findsOneWidget);

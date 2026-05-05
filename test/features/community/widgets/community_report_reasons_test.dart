@@ -1,7 +1,6 @@
 @Tags(['community'])
 library;
 
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
@@ -12,26 +11,56 @@ void main() {
   group('kCommunityReportReasons', () {
     test('contains expected reasons without unknown', () {
       expect(kCommunityReportReasons, hasLength(5));
-      expect(kCommunityReportReasons, isNot(contains(CommunityReportReason.unknown)));
+      expect(
+        kCommunityReportReasons,
+        isNot(contains(CommunityReportReason.unknown)),
+      );
       expect(kCommunityReportReasons, contains(CommunityReportReason.spam));
-      expect(kCommunityReportReasons, contains(CommunityReportReason.harassment));
-      expect(kCommunityReportReasons, contains(CommunityReportReason.inappropriate));
-      expect(kCommunityReportReasons, contains(CommunityReportReason.misinformation));
+      expect(
+        kCommunityReportReasons,
+        contains(CommunityReportReason.harassment),
+      );
+      expect(
+        kCommunityReportReasons,
+        contains(CommunityReportReason.inappropriate),
+      );
+      expect(
+        kCommunityReportReasons,
+        contains(CommunityReportReason.misinformation),
+      );
       expect(kCommunityReportReasons, contains(CommunityReportReason.other));
     });
   });
 
   group('iconForReportReason', () {
     test('returns correct icons for all reasons', () {
-      expect(iconForReportReason(CommunityReportReason.spam), LucideIcons.mailWarning);
-      expect(iconForReportReason(CommunityReportReason.harassment), LucideIcons.shieldAlert);
-      expect(iconForReportReason(CommunityReportReason.inappropriate), LucideIcons.eyeOff);
-      expect(iconForReportReason(CommunityReportReason.misinformation), LucideIcons.alertCircle);
-      expect(iconForReportReason(CommunityReportReason.other), LucideIcons.messageCircle);
+      expect(
+        iconForReportReason(CommunityReportReason.spam),
+        LucideIcons.mailWarning,
+      );
+      expect(
+        iconForReportReason(CommunityReportReason.harassment),
+        LucideIcons.shieldAlert,
+      );
+      expect(
+        iconForReportReason(CommunityReportReason.inappropriate),
+        LucideIcons.eyeOff,
+      );
+      expect(
+        iconForReportReason(CommunityReportReason.misinformation),
+        LucideIcons.alertCircle,
+      );
+      expect(
+        iconForReportReason(CommunityReportReason.other),
+        LucideIcons.messageCircle,
+      );
     });
 
     test('returns helpCircle for unknown fallback', () {
-      expect(iconForReportReason(CommunityReportReason.unknown), LucideIcons.helpCircle);
+      expect(
+        iconForReportReason(CommunityReportReason.unknown),
+        LucideIcons.helpCircle,
+      );
     });
   });
 

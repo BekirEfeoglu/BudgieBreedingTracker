@@ -141,6 +141,10 @@ void main() {
         findsOneWidget,
       );
       expect(
+        find.widgetWithText(ChoiceChip, l10n('admin.online')),
+        findsOneWidget,
+      );
+      expect(
         find.widgetWithText(ChoiceChip, l10n('common.active')),
         findsOneWidget,
       );
@@ -151,6 +155,9 @@ void main() {
     });
 
     testWidgets('filters list when inactive chip is selected', (tester) async {
+      await tester.binding.setSurfaceSize(const Size(1200, 800));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
       await tester.pumpWidget(
         _createSubject(
           usersAsync: AsyncData(_testUsers),
@@ -170,6 +177,37 @@ void main() {
 
       expect(find.text('Bob Test'), findsOneWidget);
       expect(find.text('Alice Test'), findsNothing);
+    });
+
+    testWidgets('filters list when online chip is selected', (tester) async {
+      final onlineUser = _testUsers.first.copyWith(
+        lastActiveAt: DateTime.now().toUtc().subtract(
+          const Duration(minutes: 1),
+        ),
+      );
+      const onlineQuery = AdminUsersQuery(
+        onlineOnly: true,
+        sortField: 'last_active_at',
+      );
+
+      await tester.pumpWidget(
+        _createSubject(
+          usersAsync: AsyncData(_testUsers),
+          extraOverrides: [
+            adminUsersProvider(
+              onlineQuery,
+            ).overrideWithValue(AsyncData([onlineUser])),
+          ],
+        ),
+      );
+      await tester.pump();
+
+      await tester.tap(find.widgetWithText(ChoiceChip, l10n('admin.online')));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Alice Test'), findsOneWidget);
+      expect(find.text('Bob Test'), findsNothing);
+      expect(find.text(l10n('admin.online')), findsAtLeast(1));
     });
 
     testWidgets(
@@ -212,6 +250,7 @@ void main() {
 
       expect(find.text(l10n('breeding.sort_newest')), findsOneWidget);
       expect(find.text(l10n('breeding.sort_oldest')), findsOneWidget);
+      expect(find.text(l10n('admin.last_active')), findsOneWidget);
       expect(find.text(l10n('birds.sort_name_asc')), findsOneWidget);
       expect(find.text(l10n('auth.email')), findsOneWidget);
     });

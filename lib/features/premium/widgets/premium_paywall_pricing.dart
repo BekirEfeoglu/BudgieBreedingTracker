@@ -12,16 +12,24 @@ class PremiumPricingSection extends ConsumerWidget {
     final purchaseIssue = ref.watch(premiumPurchaseIssueProvider);
     final canPurchase = !actionState.isLoading && purchaseIssue == null;
 
+    String monthlyPrice = 'premium.price_monthly'.tr();
     String semiAnnualPrice = 'premium.price_semi_annual'.tr();
     String yearlyPrice = 'premium.price_yearly'.tr();
+    String lifetimePrice = 'premium.price_lifetime'.tr();
 
-    final semiAnnualPackage =
-        matchPackageForPlan(packages, PremiumPlan.semiAnnual);
+    final monthlyPackage = matchPackageForPlan(packages, PremiumPlan.monthly);
+    final semiAnnualPackage = matchPackageForPlan(
+      packages,
+      PremiumPlan.semiAnnual,
+    );
     final yearlyPackage = matchPackageForPlan(packages, PremiumPlan.yearly);
+    final lifetimePackage = matchPackageForPlan(packages, PremiumPlan.lifetime);
 
+    monthlyPrice = monthlyPackage?.storeProduct.priceString ?? monthlyPrice;
     semiAnnualPrice =
         semiAnnualPackage?.storeProduct.priceString ?? semiAnnualPrice;
     yearlyPrice = yearlyPackage?.storeProduct.priceString ?? yearlyPrice;
+    lifetimePrice = lifetimePackage?.storeProduct.priceString ?? lifetimePrice;
 
     // When offerings are unavailable, keep localized fallback prices
     // as reference instead of showing "price unavailable" for all plans.
@@ -31,6 +39,11 @@ class PremiumPricingSection extends ConsumerWidget {
       semiAnnualPrice: semiAnnualPackage?.storeProduct.price,
       yearlyPrice: yearlyPackage?.storeProduct.price,
     );
+
+    bool canSelectPlan(Object? package) {
+      if (isGuest) return !actionState.isLoading;
+      return canPurchase && package != null;
+    }
 
     return Padding(
       padding: AppSpacing.screenPadding,
@@ -57,10 +70,26 @@ class PremiumPricingSection extends ConsumerWidget {
             const SizedBox(height: AppSpacing.lg),
           ],
           PricingCard(
+            planName: 'premium.plan_monthly'.tr(),
+            price: monthlyPrice,
+            period: 'premium.period_monthly'.tr(),
+            isEnabled: canSelectPlan(monthlyPackage),
+            isLoading:
+                actionState.isLoading &&
+                actionState.purchasingPlan == PremiumPlan.monthly,
+            onSubscribe: () => _handleSubscribe(
+              context,
+              ref,
+              isGuest: isGuest,
+              plan: PremiumPlan.monthly,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          PricingCard(
             planName: 'premium.plan_semi_annual'.tr(),
             price: semiAnnualPrice,
             period: 'premium.period_semi_annual'.tr(),
-            isEnabled: canPurchase,
+            isEnabled: canSelectPlan(semiAnnualPackage),
             isLoading:
                 actionState.isLoading &&
                 actionState.purchasingPlan == PremiumPlan.semiAnnual,
@@ -79,7 +108,7 @@ class PremiumPricingSection extends ConsumerWidget {
             isHighlighted: true,
             badge: 'premium.best_value'.tr(),
             savingsText: 'premium.save_percent'.tr(args: [savingsPercent]),
-            isEnabled: canPurchase,
+            isEnabled: canSelectPlan(yearlyPackage),
             isLoading:
                 actionState.isLoading &&
                 actionState.purchasingPlan == PremiumPlan.yearly,
@@ -88,6 +117,23 @@ class PremiumPricingSection extends ConsumerWidget {
               ref,
               isGuest: isGuest,
               plan: PremiumPlan.yearly,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          PricingCard(
+            planName: 'premium.plan_lifetime'.tr(),
+            price: lifetimePrice,
+            period: 'premium.period_lifetime'.tr(),
+            buttonText: 'premium.buy_lifetime'.tr(),
+            isEnabled: canSelectPlan(lifetimePackage),
+            isLoading:
+                actionState.isLoading &&
+                actionState.purchasingPlan == PremiumPlan.lifetime,
+            onSubscribe: () => _handleSubscribe(
+              context,
+              ref,
+              isGuest: isGuest,
+              plan: PremiumPlan.lifetime,
             ),
           ),
           const SizedBox(height: AppSpacing.md),
@@ -210,10 +256,7 @@ String _purchaseIssueBodyKey(PremiumPurchaseIssue issue) {
 /// Returns a string like '20' (percent). Falls back to '17' when prices
 /// are unavailable (based on $15×2=$30 vs $25 default pricing).
 @visibleForTesting
-String calculateSavingsPercent({
-  double? semiAnnualPrice,
-  double? yearlyPrice,
-}) {
+String calculateSavingsPercent({double? semiAnnualPrice, double? yearlyPrice}) {
   if (semiAnnualPrice == null ||
       yearlyPrice == null ||
       semiAnnualPrice <= 0 ||

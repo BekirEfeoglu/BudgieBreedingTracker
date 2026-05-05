@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../core/utils/logger.dart';
+import '../../core/utils/storage_url_normalizer.dart';
 import '../models/community_comment_model.dart';
 import '../remote/api/community_comment_remote_source.dart';
 import '../remote/api/community_social_remote_source.dart';
@@ -97,7 +98,9 @@ class CommunityCommentRepository {
         ? rawUsername
         : 'community.anonymous_user'.tr();
 
-    final avatarUrl = row['avatar_url']?.toString();
+    final avatarUrl = StorageUrlNormalizer.normalizePublicObjectUrl(
+      row['avatar_url']?.toString(),
+    );
 
     final likeCount = row['like_count'] is int
         ? row['like_count'] as int

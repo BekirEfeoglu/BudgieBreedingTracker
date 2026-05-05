@@ -39,6 +39,7 @@ Map<String, dynamic> _packageJson({
   required String packageType,
   required String productIdentifier,
   required String priceString,
+  String productCategory = 'SUBSCRIPTION',
 }) {
   return {
     'identifier': identifier,
@@ -50,7 +51,7 @@ Map<String, dynamic> _packageJson({
       'price': 9.99,
       'priceString': priceString,
       'currencyCode': 'USD',
-      'productCategory': 'SUBSCRIPTION',
+      'productCategory': productCategory,
       'presentedOfferingContext': {
         'offeringIdentifier': 'default',
         'placementIdentifier': null,
@@ -232,8 +233,14 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text(l10n('premium.purchase_setup_missing_title')), findsOneWidget);
-      expect(find.text(l10n('premium.purchase_setup_missing_body')), findsOneWidget);
+      expect(
+        find.text(l10n('premium.purchase_setup_missing_title')),
+        findsOneWidget,
+      );
+      expect(
+        find.text(l10n('premium.purchase_setup_missing_body')),
+        findsOneWidget,
+      );
       // missingApiKey has no retry button
       expect(find.text(l10n('common.retry')), findsNothing);
     });
@@ -247,8 +254,14 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text(l10n('premium.ios_debug_purchase_title')), findsOneWidget);
-      expect(find.text(l10n('premium.ios_debug_purchase_body')), findsOneWidget);
+      expect(
+        find.text(l10n('premium.ios_debug_purchase_title')),
+        findsOneWidget,
+      );
+      expect(
+        find.text(l10n('premium.ios_debug_purchase_body')),
+        findsOneWidget,
+      );
       // iosDebugStoreKitRequired has no retry button
       expect(find.text(l10n('common.retry')), findsNothing);
     });
@@ -284,7 +297,10 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text(l10n('premium.account_required_title')), findsOneWidget);
-      expect(find.text(l10n('premium.sign_in_to_purchase')), findsAtLeastNWidgets(1));
+      expect(
+        find.text(l10n('premium.sign_in_to_purchase')),
+        findsAtLeastNWidgets(1),
+      );
     });
 
     testWidgets('does not show trial text on pricing cards', (tester) async {
@@ -376,6 +392,21 @@ void main() {
   });
 
   group('matchPackageForPlan', () {
+    test('matches monthly by PackageType.monthly', () {
+      final packages = [
+        Package.fromJson(
+          _packageJson(
+            identifier: r'$rc_monthly',
+            packageType: 'MONTHLY',
+            productIdentifier: 'budgie_premium_monthly',
+            priceString: '\$9.99',
+          ),
+        ),
+      ];
+      final result = matchPackageForPlan(packages, PremiumPlan.monthly)!;
+      expect(result.storeProduct.identifier, 'budgie_premium_monthly');
+    });
+
     test('matches semi-annual by PackageType.sixMonth', () {
       final packages = [
         Package.fromJson(
@@ -406,8 +437,72 @@ void main() {
       expect(result.storeProduct.identifier, 'budgie_premium_yearly');
     });
 
+    test('matches lifetime by PackageType.lifetime', () {
+      final packages = [
+        Package.fromJson(
+          _packageJson(
+            identifier: r'$rc_lifetime',
+            packageType: 'LIFETIME',
+            productIdentifier: 'budgie_premium_lifetime',
+            priceString: '\$49.99',
+            productCategory: 'NON_SUBSCRIPTION',
+          ),
+        ),
+      ];
+      final result = matchPackageForPlan(packages, PremiumPlan.lifetime)!;
+      expect(result.storeProduct.identifier, 'budgie_premium_lifetime');
+    });
+
+    test('prefers active premium products over legacy pro products', () {
+      final packages = [
+        Package.fromJson(
+          _packageJson(
+            identifier: 'legacy_pro_yearly',
+            packageType: 'ANNUAL',
+            productIdentifier: 'budgie_pro_yearly',
+            priceString: '\$14.99',
+          ),
+        ),
+        Package.fromJson(
+          _packageJson(
+            identifier: 'active_premium_yearly',
+            packageType: 'ANNUAL',
+            productIdentifier: 'budgie_premium_yearly',
+            priceString: '\$34.99',
+          ),
+        ),
+      ];
+
+      final result = matchPackageForPlan(packages, PremiumPlan.yearly)!;
+
+      expect(result.storeProduct.identifier, 'budgie_premium_yearly');
+    });
+
+    test('returns null for legacy pro-only products', () {
+      final packages = [
+        Package.fromJson(
+          _packageJson(
+            identifier: 'legacy_pro_yearly',
+            packageType: 'ANNUAL',
+            productIdentifier: 'budgie_pro_yearly',
+            priceString: '\$14.99',
+          ),
+        ),
+      ];
+
+      expect(matchPackageForPlan(packages, PremiumPlan.yearly), isNull);
+    });
+
     test('falls back to identifier hint for CUSTOM package types', () {
       final packages = [
+        Package.fromJson(
+          _packageJson(
+            identifier: r'$rc_monthly',
+            packageType: 'CUSTOM',
+            productIdentifier: 'budgie_premium_monthly',
+            priceString: '\$9.99',
+          ),
+        ),
         Package.fromJson(
           _packageJson(
             identifier: ':six_month',
@@ -424,8 +519,24 @@ void main() {
             priceString: '\$25.00',
           ),
         ),
+        Package.fromJson(
+          _packageJson(
+            identifier: r'$rc_lifetime',
+            packageType: 'CUSTOM',
+            productIdentifier: 'budgie_premium_lifetime',
+            priceString: '\$49.99',
+            productCategory: 'NON_SUBSCRIPTION',
+          ),
+        ),
       ];
 
+      expect(
+        matchPackageForPlan(
+          packages,
+          PremiumPlan.monthly,
+        )?.storeProduct.identifier,
+        'budgie_premium_monthly',
+      );
       expect(
         matchPackageForPlan(
           packages,
@@ -440,6 +551,34 @@ void main() {
         )?.storeProduct.identifier,
         'budgie_premium_yearly',
       );
+      expect(
+        matchPackageForPlan(
+          packages,
+          PremiumPlan.lifetime,
+        )?.storeProduct.identifier,
+        'budgie_premium_lifetime',
+      );
+    });
+
+    test('matches Play Store semi-annual base-plan identifier', () {
+      final packages = [
+        Package.fromJson(
+          _packageJson(
+            identifier: r'$rc_six_month',
+            packageType: 'CUSTOM',
+            productIdentifier: 'budgie_premium:semi-annual',
+            priceString: '\$15.00',
+          ),
+        ),
+      ];
+
+      expect(
+        matchPackageForPlan(
+          packages,
+          PremiumPlan.semiAnnual,
+        )?.storeProduct.identifier,
+        'budgie_premium:semi-annual',
+      );
     });
 
     test('returns null when no matching plan found', () {
@@ -453,15 +592,17 @@ void main() {
           ),
         ),
       ];
+      expect(matchPackageForPlan(packages, PremiumPlan.monthly), isNull);
       expect(matchPackageForPlan(packages, PremiumPlan.semiAnnual), isNull);
       expect(matchPackageForPlan(packages, PremiumPlan.yearly), isNull);
-      expect(matchPackageForPlan(packages, PremiumPlan.yearly), isNull);
+      expect(matchPackageForPlan(packages, PremiumPlan.lifetime), isNull);
     });
 
     test('returns null for empty package list', () {
+      expect(matchPackageForPlan([], PremiumPlan.monthly), isNull);
       expect(matchPackageForPlan([], PremiumPlan.semiAnnual), isNull);
       expect(matchPackageForPlan([], PremiumPlan.yearly), isNull);
-      expect(matchPackageForPlan([], PremiumPlan.yearly), isNull);
+      expect(matchPackageForPlan([], PremiumPlan.lifetime), isNull);
     });
   });
 

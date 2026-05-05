@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import 'package:budgie_breeding_tracker/core/utils/storage_url_normalizer.dart';
 import 'package:budgie_breeding_tracker/data/local/database/app_database.dart';
 import 'package:budgie_breeding_tracker/data/models/profile_model.dart';
 
@@ -10,7 +11,7 @@ extension ProfileRowMapper on ProfileRow {
     subscriptionStatus: subscriptionStatus,
     displayName: displayName,
     fullName: fullName,
-    avatarUrl: avatarUrl,
+    avatarUrl: StorageUrlNormalizer.normalizePublicObjectUrl(avatarUrl),
     role: role,
     language: language,
     premiumExpiresAt: premiumExpiresAt?.toUtc(),
@@ -28,7 +29,7 @@ extension ProfileModelMapper on Profile {
     subscriptionStatus: Value(subscriptionStatus),
     displayName: Value(displayName),
     fullName: Value(fullName),
-    avatarUrl: Value(avatarUrl),
+    avatarUrl: Value(StorageUrlNormalizer.normalizePublicObjectUrl(avatarUrl)),
     role: Value(role),
     language: Value(language),
     premiumExpiresAt: Value(premiumExpiresAt?.toUtc()),

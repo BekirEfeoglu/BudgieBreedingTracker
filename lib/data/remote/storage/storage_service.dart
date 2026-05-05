@@ -13,8 +13,7 @@ import 'package:budgie_breeding_tracker/data/remote/storage/storage_utils.dart';
 /// **Supabase Dashboard requirements:**
 /// - Buckets (bird-photos, egg-photos, chick-photos, avatars, backups, photos)
 ///   must be created manually in Supabase Dashboard.
-/// - Bird/egg/chick photo buckets should be set to **public** so that
-///   `getPublicUrl()` returns accessible URLs.
+/// - Bird/egg/chick photo buckets are private and use signed URLs.
 /// - RLS policies needed:
 ///   - `SELECT`: public (or authenticated for private buckets)
 ///   - `INSERT`: authenticated, restricted to own user path
@@ -37,8 +36,7 @@ class StorageService {
     'heic',
   };
 
-  /// Signed URL expiry: 7 days in seconds.
-  /// Short-lived URLs reduce exposure window if URLs are leaked or shared.
+  /// Signed URL expiry for private buckets: 7 days in seconds.
   static const int _signedUrlExpiry = 60 * 60 * 24 * 7;
 
   const StorageService(this._client);
@@ -52,7 +50,7 @@ class StorageService {
     return id;
   }
 
-  /// Uploads a bird photo and returns the public URL.
+  /// Uploads a bird photo and returns a signed URL.
   ///
   /// File is stored at: `bird-photos/{userId}/{birdId}/{filename}`.
   Future<String> uploadBirdPhoto({
@@ -125,7 +123,7 @@ class StorageService {
     }
   }
 
-  /// Uploads a community post photo and returns the public URL.
+  /// Uploads a community post photo and returns a signed URL.
   ///
   /// File is stored at: `community-photos/{userId}/{postId}/{timestamp}.{ext}`.
   Future<String> uploadCommunityPhoto({
@@ -157,7 +155,7 @@ class StorageService {
 
   /// Lists all photos for a bird.
   ///
-  /// Returns public URLs sorted by upload time (newest first).
+  /// Returns signed URLs sorted by upload time (newest first).
   Future<List<String>> listBirdPhotos({
     required String userId,
     required String birdId,
@@ -172,14 +170,14 @@ class StorageService {
       final validFiles = files
           .where((f) => f.id != null && f.name != '.emptyFolderPlaceholder')
           .toList();
+      if (validFiles.isEmpty) return [];
 
+      validFiles.sort((a, b) => b.name.compareTo(a.name));
       final paths = validFiles.map((f) => '$userId/$birdId/${f.name}').toList();
       final signedUrls = await _client.storage
           .from(_birdPhotosBucket)
           .createSignedUrls(paths, _signedUrlExpiry);
-      final urls = signedUrls.map((s) => s.signedUrl).toList();
-      urls.sort((a, b) => b.compareTo(a));
-      return urls;
+      return signedUrls.map((s) => s.signedUrl).toList();
     } on StorageException catch (e) {
       AppLogger.warning('Failed to list bird photos: ${e.message}');
       return [];

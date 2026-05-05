@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/supabase_constants.dart';
 import '../../../core/enums/admin_enums.dart';
 import '../../../core/utils/logger.dart';
+import '../../../core/utils/storage_url_normalizer.dart';
 import '../../auth/providers/auth_providers.dart';
 import '../constants/admin_constants.dart';
 import 'admin_auth_utils.dart';
@@ -88,10 +89,14 @@ final adminSystemSettingsProvider =
     });
 
 /// User growth data for the last 30 days (new registrations per day).
-final userGrowthDataProvider = FutureProvider<List<DailyDataPoint>>((ref) async {
+final userGrowthDataProvider = FutureProvider<List<DailyDataPoint>>((
+  ref,
+) async {
   await requireAdmin(ref);
   final client = ref.watch(supabaseClientProvider);
-  final since = DateTime.now().subtract(const Duration(days: AdminConstants.chartPeriodDays));
+  final since = DateTime.now().subtract(
+    const Duration(days: AdminConstants.chartPeriodDays),
+  );
 
   final result = await client
       .from(SupabaseConstants.profilesTable)
@@ -102,14 +107,16 @@ final userGrowthDataProvider = FutureProvider<List<DailyDataPoint>>((ref) async 
   final Map<String, int> grouped = {};
   for (final row in (result as List)) {
     final date = DateTime.parse(row['created_at'] as String);
-    final key = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+    final key =
+        '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
     grouped[key] = (grouped[key] ?? 0) + 1;
   }
 
   final points = <DailyDataPoint>[];
   for (var i = AdminConstants.chartPeriodDays - 1; i >= 0; i--) {
     final date = DateTime.now().subtract(Duration(days: i));
-    final key = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+    final key =
+        '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
     points.add(DailyDataPoint(date: date, count: grouped[key] ?? 0));
   }
   return points;
@@ -123,16 +130,21 @@ final topUsersProvider = FutureProvider<List<TopUser>>((ref) async {
 
   try {
     // Try RPC first (single query, server-side aggregation)
-    final result = await client.rpc('admin_top_users', params: {
-      'p_limit': AdminConstants.topUsersLimit,
-    });
-    return (result as List).map((row) => TopUser(
-      userId: row['user_id'] as String,
-      fullName: row['full_name'] as String? ?? '',
-      birdsCount: (row['birds_count'] as num?)?.toInt() ?? 0,
-      pairsCount: (row['pairs_count'] as num?)?.toInt() ?? 0,
-      totalEntities: (row['total_entities'] as num?)?.toInt() ?? 0,
-    )).toList();
+    final result = await client.rpc(
+      'admin_top_users',
+      params: {'p_limit': AdminConstants.topUsersLimit},
+    );
+    return (result as List)
+        .map(
+          (row) => TopUser(
+            userId: row['user_id'] as String,
+            fullName: row['full_name'] as String? ?? '',
+            birdsCount: (row['birds_count'] as num?)?.toInt() ?? 0,
+            pairsCount: (row['pairs_count'] as num?)?.toInt() ?? 0,
+            totalEntities: (row['total_entities'] as num?)?.toInt() ?? 0,
+          ),
+        )
+        .toList();
   } catch (e, st) {
     AppLogger.error('topUsersProvider RPC failed, using fallback', e, st);
     // Fallback: fetch all birds and pairs, group by user_id client-side
@@ -176,13 +188,15 @@ final topUsersProvider = FutureProvider<List<TopUser>>((ref) async {
     for (final userId in allUserIds) {
       final bc = birdCounts[userId] ?? 0;
       final pc = pairCounts[userId] ?? 0;
-      users.add(TopUser(
-        userId: userId,
-        fullName: profileMap[userId] ?? '',
-        birdsCount: bc,
-        pairsCount: pc,
-        totalEntities: bc + pc,
-      ));
+      users.add(
+        TopUser(
+          userId: userId,
+          fullName: profileMap[userId] ?? '',
+          birdsCount: bc,
+          pairsCount: pc,
+          totalEntities: bc + pc,
+        ),
+      );
     }
     users.sort((a, b) => b.totalEntities.compareTo(a.totalEntities));
     return users.take(AdminConstants.topUsersLimit).toList();
@@ -190,10 +204,15 @@ final topUsersProvider = FutureProvider<List<TopUser>>((ref) async {
 });
 
 /// Recent user activity in last 24 hours (entity creation grouped by user).
-final recentUserActivityProvider = FutureProvider<List<UserActivity>>((ref) async {
+final recentUserActivityProvider = FutureProvider<List<UserActivity>>((
+  ref,
+) async {
   await requireAdmin(ref);
   final client = ref.watch(supabaseClientProvider);
-  final since = DateTime.now().subtract(const Duration(hours: 24)).toUtc().toIso8601String();
+  final since = DateTime.now()
+      .subtract(const Duration(hours: 24))
+      .toUtc()
+      .toIso8601String();
 
   Future<List<Map<String, dynamic>>> fetchRecent(String table) async {
     final result = await client
@@ -222,7 +241,9 @@ final recentUserActivityProvider = FutureProvider<List<UserActivity>>((ref) asyn
       if (existing != null) {
         grouped[key] = existing.copyWith(
           count: existing.count + 1,
-          latestAt: createdAt.isAfter(existing.latestAt) ? createdAt : existing.latestAt,
+          latestAt: createdAt.isAfter(existing.latestAt)
+              ? createdAt
+              : existing.latestAt,
         );
       } else {
         grouped[key] = UserActivity(
@@ -255,7 +276,9 @@ final recentUserActivityProvider = FutureProvider<List<UserActivity>>((ref) asyn
     final profile = profiles[a.userId];
     return a.copyWith(
       fullName: profile?['full_name'] as String? ?? '',
-      avatarUrl: profile?['avatar_url'] as String?,
+      avatarUrl: StorageUrlNormalizer.normalizePublicObjectUrl(
+        profile?['avatar_url'] as String?,
+      ),
     );
   }).toList();
 
@@ -267,7 +290,10 @@ final recentUserActivityProvider = FutureProvider<List<UserActivity>>((ref) asyn
 final recentErrorsSummaryProvider = FutureProvider<ErrorSummary>((ref) async {
   await requireAdmin(ref);
   final client = ref.watch(supabaseClientProvider);
-  final since = DateTime.now().subtract(const Duration(hours: 24)).toUtc().toIso8601String();
+  final since = DateTime.now()
+      .subtract(const Duration(hours: 24))
+      .toUtc()
+      .toIso8601String();
 
   final eventsResult = await client
       .from(SupabaseConstants.securityEventsTable)

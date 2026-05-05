@@ -97,7 +97,10 @@ class SubscriptionInfoCard extends StatelessWidget {
                   _InfoRow(
                     icon: const Icon(LucideIcons.calendar),
                     label: 'premium.expires_at'.tr(),
-                    value: _formatDate(context, subscriptionInfo.expirationDate!),
+                    value: _formatDate(
+                      context,
+                      subscriptionInfo.expirationDate!,
+                    ),
                   ),
                 ],
                 const SizedBox(height: AppSpacing.md),
@@ -129,8 +132,10 @@ class SubscriptionInfoCard extends StatelessWidget {
 
   String _resolvePlanName(String productId) {
     return switch (PremiumPlan.fromProductId(productId)) {
+      PremiumPlan.monthly => 'premium.plan_monthly'.tr(),
       PremiumPlan.semiAnnual => 'premium.plan_semi_annual'.tr(),
       PremiumPlan.yearly => 'premium.plan_yearly'.tr(),
+      PremiumPlan.lifetime => 'premium.plan_lifetime'.tr(),
       null => productId,
     };
   }

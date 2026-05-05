@@ -29,17 +29,15 @@ class _NotificationSheetContent extends ConsumerStatefulWidget {
   final String? targetUserId;
   final List<String>? targetUserIds;
 
-  const _NotificationSheetContent({
-    this.targetUserId,
-    this.targetUserIds,
-  });
+  const _NotificationSheetContent({this.targetUserId, this.targetUserIds});
 
   @override
   ConsumerState<_NotificationSheetContent> createState() =>
       _NotificationSheetContentState();
 }
 
-class _NotificationSheetContentState extends ConsumerState<_NotificationSheetContent> {
+class _NotificationSheetContentState
+    extends ConsumerState<_NotificationSheetContent> {
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final _messageController = TextEditingController();
@@ -47,6 +45,9 @@ class _NotificationSheetContentState extends ConsumerState<_NotificationSheetCon
 
   bool get _isBulk =>
       widget.targetUserIds != null && widget.targetUserIds!.isNotEmpty;
+
+  bool get _hasTarget =>
+      _isBulk || (widget.targetUserId?.trim().isNotEmpty ?? false);
 
   @override
   void dispose() {
@@ -57,6 +58,12 @@ class _NotificationSheetContentState extends ConsumerState<_NotificationSheetCon
 
   Future<void> _send() async {
     if (!_formKey.currentState!.validate()) return;
+    if (!_hasTarget) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('admin.notification_target_required'.tr())),
+      );
+      return;
+    }
     setState(() => _isLoading = true);
 
     try {
@@ -65,8 +72,7 @@ class _NotificationSheetContentState extends ConsumerState<_NotificationSheetCon
       final body = _messageController.text.trim();
 
       if (_isBulk) {
-        await notifier.sendBulkNotification(
-            widget.targetUserIds!, title, body);
+        await notifier.sendBulkNotification(widget.targetUserIds!, title, body);
       } else if (widget.targetUserId != null) {
         await notifier.sendNotification(widget.targetUserId!, title, body);
       }
@@ -77,23 +83,22 @@ class _NotificationSheetContentState extends ConsumerState<_NotificationSheetCon
       if (state.isSuccess) {
         Navigator.of(context).pop(true);
       } else if (state.error != null) {
-        if (mounted) setState(() => _isLoading = false);
-        Navigator.of(context).pop(false);
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.error!)),
-          );
-        }
+        if (!mounted) return;
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(state.error!)));
       } else {
-        if (mounted) setState(() => _isLoading = false);
+        if (!mounted) return;
+        setState(() => _isLoading = false);
       }
-    } catch (e) {
-      AppLogger.error('_NotificationSheetContent._send', e, StackTrace.current);
+    } catch (e, st) {
+      AppLogger.error('_NotificationSheetContent._send', e, st);
       if (!mounted) return;
       setState(() => _isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('admin.action_error'.tr())),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('admin.action_error'.tr())));
     }
   }
 
@@ -110,7 +115,7 @@ class _NotificationSheetContentState extends ConsumerState<_NotificationSheetCon
           padding: const EdgeInsets.all(AppSpacing.xl),
           child: Form(
             key: _formKey,
-      autovalidateMode: AutovalidateMode.onUserInteraction,
+            autovalidateMode: AutovalidateMode.onUserInteraction,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -186,8 +191,7 @@ class _NotificationSheetContentState extends ConsumerState<_NotificationSheetCon
                         ? const SizedBox(
                             width: 20,
                             height: 20,
-                            child:
-                                CircularProgressIndicator(strokeWidth: 2),
+                            child: CircularProgressIndicator(strokeWidth: 2),
                           )
                         : Text('admin.send'.tr()),
                   ),

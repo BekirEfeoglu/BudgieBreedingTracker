@@ -100,8 +100,7 @@ class _AdminAuditScreenState extends ConsumerState<AdminAuditScreen> {
       message: 'admin.confirm_clear_logs'.tr(),
       isDestructive: true,
     );
-    if (confirmed == true) {
-      ref.read(adminActionsProvider.notifier).clearAuditLogs();
-    }
+    if (confirmed != true || !mounted) return;
+    ref.read(adminActionsProvider.notifier).clearAuditLogs();
   }
 }

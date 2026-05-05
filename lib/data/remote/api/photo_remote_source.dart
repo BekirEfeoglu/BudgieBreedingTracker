@@ -1,4 +1,5 @@
 import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
+import 'package:budgie_breeding_tracker/core/utils/storage_url_normalizer.dart';
 import 'package:budgie_breeding_tracker/data/models/photo_model.dart';
 import 'package:budgie_breeding_tracker/data/models/supabase_extensions.dart';
 import 'package:budgie_breeding_tracker/data/remote/api/base_remote_source.dart';
@@ -19,6 +20,9 @@ class PhotoRemoteSource extends BaseRemoteSourceNoSoftDelete<Photo> {
         !mapped.containsKey('file_path')) {
       mapped['file_path'] = mapped.remove('thumbnail_url');
     }
+    mapped['file_path'] = StorageUrlNormalizer.normalizePublicObjectUrl(
+      mapped['file_path'] as String?,
+    );
     return Photo.fromJson(mapped);
   }
 

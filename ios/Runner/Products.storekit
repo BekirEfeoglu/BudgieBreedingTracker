@@ -30,23 +30,48 @@
       "internalID" : "A1B2C3D4-E5F6-7890-ABCD-EF0123456789",
       "localizations" : [
         {
-          "description" : "Lifetime premium access — one-time purchase",
-          "displayName" : "Premium Lifetime",
+          "description" : "Lifetime Pro access — one-time purchase",
+          "displayName" : "Budgie Pro Lifetime",
           "locale" : "en_US"
         },
         {
-          "description" : "Ömür boyu premium erişim — tek seferlik ödeme",
-          "displayName" : "Premium Ömür Boyu",
+          "description" : "Ömür boyu Pro erişim — tek seferlik ödeme",
+          "displayName" : "Budgie Pro Ömür Boyu",
           "locale" : "tr"
         },
         {
-          "description" : "Lebenslanger Premium-Zugang — einmaliger Kauf",
-          "displayName" : "Premium Lebenslang",
+          "description" : "Lebenslanger Pro-Zugang — einmaliger Kauf",
+          "displayName" : "Budgie Pro Lebenslang",
           "locale" : "de"
         }
       ],
       "productID" : "budgie_pro_lifetime",
-      "referenceName" : "Premium Lifetime",
+      "referenceName" : "Budgie Pro Lifetime",
+      "type" : "NonConsumable"
+    },
+    {
+      "displayPrice" : "499.99",
+      "familyShareable" : false,
+      "internalID" : "C1D2E3F4-A5B6-7890-CDEF-0123456789AB",
+      "localizations" : [
+        {
+          "description" : "Lifetime Premium access — one-time purchase",
+          "displayName" : "Budgie Premium Lifetime",
+          "locale" : "en_US"
+        },
+        {
+          "description" : "Ömür boyu Premium erişim — tek seferlik ödeme",
+          "displayName" : "Budgie Premium Ömür Boyu",
+          "locale" : "tr"
+        },
+        {
+          "description" : "Lebenslanger Premium-Zugang — einmaliger Kauf",
+          "displayName" : "Budgie Premium Lebenslang",
+          "locale" : "de"
+        }
+      ],
+      "productID" : "budgie_premium_lifetime",
+      "referenceName" : "Budgie Premium Lifetime",
       "type" : "NonConsumable"
     }
   ],
@@ -112,24 +137,24 @@
           },
           "localizations" : [
             {
-              "description" : "Monthly premium access with 7-day free trial",
-              "displayName" : "Premium Monthly",
+              "description" : "Monthly Pro access with 7-day free trial",
+              "displayName" : "Budgie Pro Monthly",
               "locale" : "en_US"
             },
             {
-              "description" : "7 gün ücretsiz deneme ile aylık premium erişim",
-              "displayName" : "Premium Aylık",
+              "description" : "7 gün ücretsiz deneme ile aylık Pro erişim",
+              "displayName" : "Budgie Pro Aylık",
               "locale" : "tr"
             },
             {
-              "description" : "Monatlicher Premium-Zugang mit 7-tägiger kostenloser Testversion",
-              "displayName" : "Premium Monatlich",
+              "description" : "Monatlicher Pro-Zugang mit 7-tägiger kostenloser Testversion",
+              "displayName" : "Budgie Pro Monatlich",
               "locale" : "de"
             }
           ],
           "productID" : "budgie_pro_monthly",
           "recurringSubscriptionPeriod" : "P1M",
-          "referenceName" : "Premium Monthly",
+          "referenceName" : "Budgie Pro Monthly",
           "subscriptionGroupID" : "F1E2D3C4-B5A6-9870-FEDC-BA0987654321",
           "type" : "RecurringSubscription"
         },
@@ -152,24 +177,144 @@
           },
           "localizations" : [
             {
-              "description" : "Yearly premium access with 7-day free trial — save 50%",
-              "displayName" : "Premium Yearly",
+              "description" : "Yearly Pro access with 7-day free trial",
+              "displayName" : "Budgie Pro Yearly",
               "locale" : "en_US"
             },
             {
-              "description" : "7 gün ücretsiz deneme ile yıllık premium erişim — %50 tasarruf",
-              "displayName" : "Premium Yıllık",
+              "description" : "7 gün ücretsiz deneme ile yıllık Pro erişim",
+              "displayName" : "Budgie Pro Yıllık",
               "locale" : "tr"
             },
             {
-              "description" : "Jährlicher Premium-Zugang mit 7-tägiger kostenloser Testversion — 50% sparen",
-              "displayName" : "Premium Jährlich",
+              "description" : "Jährlicher Pro-Zugang mit 7-tägiger kostenloser Testversion",
+              "displayName" : "Budgie Pro Jährlich",
               "locale" : "de"
             }
           ],
           "productID" : "budgie_pro_yearly",
           "recurringSubscriptionPeriod" : "P1Y",
-          "referenceName" : "Premium Yearly",
+          "referenceName" : "Budgie Pro Yearly",
+          "subscriptionGroupID" : "F1E2D3C4-B5A6-9870-FEDC-BA0987654321",
+          "type" : "RecurringSubscription"
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "99.99",
+          "familyShareable" : false,
+          "groupNumber" : 3,
+          "internalID" : "22222222-3333-4444-5555-666666666666",
+          "introductoryOffer" : {
+            "displayPrice" : "0",
+            "internalID" : "CCCCCCCC-DDDD-EEEE-FFFF-000000000001",
+            "paymentMode" : "free",
+            "subscriptionPeriod" : "P1W"
+          },
+          "localizations" : [
+            {
+              "description" : "Monthly Premium access with 7-day free trial",
+              "displayName" : "Budgie Premium Monthly",
+              "locale" : "en_US"
+            },
+            {
+              "description" : "7 gün ücretsiz deneme ile aylık Premium erişim",
+              "displayName" : "Budgie Premium Aylık",
+              "locale" : "tr"
+            },
+            {
+              "description" : "Monatlicher Premium-Zugang mit 7-tägiger kostenloser Testversion",
+              "displayName" : "Budgie Premium Monatlich",
+              "locale" : "de"
+            }
+          ],
+          "productID" : "budgie_premium_monthly",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "Budgie Premium Monthly",
+          "subscriptionGroupID" : "F1E2D3C4-B5A6-9870-FEDC-BA0987654321",
+          "type" : "RecurringSubscription"
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "299.99",
+          "familyShareable" : false,
+          "groupNumber" : 4,
+          "internalID" : "77777777-8888-9999-AAAA-BBBBBBBBBBBB",
+          "introductoryOffer" : {
+            "displayPrice" : "0",
+            "internalID" : "DDDDDDDD-EEEE-FFFF-0000-000000000002",
+            "paymentMode" : "free",
+            "subscriptionPeriod" : "P1W"
+          },
+          "localizations" : [
+            {
+              "description" : "Yearly Premium access with 7-day free trial",
+              "displayName" : "Budgie Premium Yearly",
+              "locale" : "en_US"
+            },
+            {
+              "description" : "7 gün ücretsiz deneme ile yıllık Premium erişim",
+              "displayName" : "Budgie Premium Yıllık",
+              "locale" : "tr"
+            },
+            {
+              "description" : "Jährlicher Premium-Zugang mit 7-tägiger kostenloser Testversion",
+              "displayName" : "Budgie Premium Jährlich",
+              "locale" : "de"
+            }
+          ],
+          "productID" : "budgie_premium_yearly",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "Budgie Premium Yearly",
+          "subscriptionGroupID" : "F1E2D3C4-B5A6-9870-FEDC-BA0987654321",
+          "type" : "RecurringSubscription"
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "149.99",
+          "familyShareable" : false,
+          "groupNumber" : 5,
+          "internalID" : "CCCCCCCC-DDDD-EEEE-FFFF-000000000000",
+          "introductoryOffer" : {
+            "displayPrice" : "0",
+            "internalID" : "EEEEEEEE-FFFF-0000-1111-000000000003",
+            "paymentMode" : "free",
+            "subscriptionPeriod" : "P1W"
+          },
+          "localizations" : [
+            {
+              "description" : "Premium access for 6 months with 7-day free trial",
+              "displayName" : "Premium 6 Months",
+              "locale" : "en_US"
+            },
+            {
+              "description" : "7 gün ücretsiz deneme ile 6 aylık Premium erişim",
+              "displayName" : "Premium 6 Ay",
+              "locale" : "tr"
+            },
+            {
+              "description" : "Premium-Zugang für 6 Monate mit 7-tägiger kostenloser Testversion",
+              "displayName" : "Premium 6 Monate",
+              "locale" : "de"
+            }
+          ],
+          "productID" : "budgie_premium_semi_annual",
+          "recurringSubscriptionPeriod" : "P6M",
+          "referenceName" : "Premium 6 Months",
           "subscriptionGroupID" : "F1E2D3C4-B5A6-9870-FEDC-BA0987654321",
           "type" : "RecurringSubscription"
         }

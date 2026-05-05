@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import 'package:budgie_breeding_tracker/core/utils/storage_url_normalizer.dart';
 import 'package:budgie_breeding_tracker/data/local/database/app_database.dart';
 import 'package:budgie_breeding_tracker/data/models/photo_model.dart';
 
@@ -9,7 +10,7 @@ extension PhotoRowMapper on PhotoRow {
     entityType: entityType,
     entityId: entityId,
     fileName: fileName,
-    filePath: filePath,
+    filePath: StorageUrlNormalizer.normalizePublicObjectUrl(filePath),
     fileSize: fileSize,
     mimeType: mimeType,
     isPrimary: isPrimary,
@@ -25,7 +26,7 @@ extension PhotoModelMapper on Photo {
     entityType: Value(entityType),
     entityId: Value(entityId),
     fileName: Value(fileName),
-    filePath: Value(filePath),
+    filePath: Value(StorageUrlNormalizer.normalizePublicObjectUrl(filePath)),
     fileSize: Value(fileSize),
     mimeType: Value(mimeType),
     isPrimary: Value(isPrimary),

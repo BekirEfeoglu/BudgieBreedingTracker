@@ -10,15 +10,9 @@ import 'package:budgie_breeding_tracker/features/community/widgets/community_fee
 void main() {
   group('NewPostsBanner', () {
     testWidgets('renders with count and arrow icon', (tester) async {
-      var tapped = false;
       await tester.pumpWidget(
         MaterialApp(
-          home: Scaffold(
-            body: NewPostsBanner(
-              count: 3,
-              onTap: () => tapped = true,
-            ),
-          ),
+          home: Scaffold(body: NewPostsBanner(count: 3, onTap: () {})),
         ),
       );
       await tester.pump();
@@ -33,10 +27,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: NewPostsBanner(
-              count: 1,
-              onTap: () => tapped = true,
-            ),
+            body: NewPostsBanner(count: 1, onTap: () => tapped = true),
           ),
         ),
       );
@@ -51,12 +42,7 @@ void main() {
     testWidgets('renders with zero count', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
-          home: Scaffold(
-            body: NewPostsBanner(
-              count: 0,
-              onTap: () {},
-            ),
-          ),
+          home: Scaffold(body: NewPostsBanner(count: 0, onTap: () {})),
         ),
       );
       await tester.pump();
@@ -69,9 +55,7 @@ void main() {
     testWidgets('renders title and dismiss icon', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
-          home: Scaffold(
-            body: SwipeOnboardingHint(onDismiss: () {}),
-          ),
+          home: Scaffold(body: SwipeOnboardingHint(onDismiss: () {})),
         ),
       );
       await tester.pump();
@@ -84,9 +68,7 @@ void main() {
     testWidgets('shows left and right swipe hints', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
-          home: Scaffold(
-            body: SwipeOnboardingHint(onDismiss: () {}),
-          ),
+          home: Scaffold(body: SwipeOnboardingHint(onDismiss: () {})),
         ),
       );
       await tester.pump();

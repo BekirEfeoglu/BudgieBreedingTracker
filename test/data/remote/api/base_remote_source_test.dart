@@ -195,8 +195,8 @@ void main() {
 
     group('fetchAllPaginated', () {
       test('returns all pages using cursor pagination', () async {
-        final t1 = '2025-01-01T00:00:00.000Z';
-        final t2 = '2025-01-02T00:00:00.000Z';
+        const t1 = '2025-01-01T00:00:00.000Z';
+        const t2 = '2025-01-02T00:00:00.000Z';
         selectBuilder.resultQueue.addAll([
           [
             {'id': '1', 'created_at': t1},
@@ -213,10 +213,7 @@ void main() {
         expect(result, hasLength(3));
         expect(result.last['id'], '3');
         expect(selectBuilder.gtCalls, hasLength(1));
-        expect(
-          selectBuilder.gtCalls.map((e) => e.key),
-          contains('created_at'),
-        );
+        expect(selectBuilder.gtCalls.map((e) => e.key), contains('created_at'));
       });
 
       test('returns empty list when no records', () async {
@@ -276,7 +273,10 @@ void main() {
       test('throws NetworkException on batch upsert failure', () async {
         upsertBuilder.error = Exception('batch upsert fail');
         expect(
-          () => source.upsertAll([{'id': '1'}, {'id': '2'}]),
+          () => source.upsertAll([
+            {'id': '1'},
+            {'id': '2'},
+          ]),
           throwsA(isA<NetworkException>()),
         );
       });

@@ -1,0 +1,6 @@
+CFBundleDisplayName = "BudgieTrack";
+CFBundleName = "BudgieTrack";
+NSCameraUsageDescription = "This app needs camera access to take photos of your birds and eggs.";
+NSPhotoLibraryUsageDescription = "This app needs photo library access to select photos of your birds and eggs.";
+NSPhotoLibraryAddUsageDescription = "This app needs permission to save bird and egg photos to your photo library for backup and sharing.";
+NSUserTrackingUsageDescription = "We and our advertising partners use this identifier to deliver personalized ads based on your interests. You can decline and still use the app with non-personalized ads.";

@@ -1,0 +1,6 @@
+CFBundleDisplayName = "BudgieTrack";
+CFBundleName = "BudgieTrack";
+NSCameraUsageDescription = "Bu uygulama, kuslarinizin ve yumurtalarinizin fotografini cekmek icin kamera erisimine ihtiyac duyar.";
+NSPhotoLibraryUsageDescription = "Bu uygulama, kuslarinizin ve yumurtalarinizin fotograflarini secmek icin fotograf arsivi erisimine ihtiyac duyar.";
+NSPhotoLibraryAddUsageDescription = "Bu uygulama, yedekleme ve paylasim icin kus ve yumurta fotograflarini fotograf arsivinize kaydetme iznine ihtiyac duyar.";
+NSUserTrackingUsageDescription = "Biz ve reklam ortaklarimiz, ilgi alanlariniza gore kisisellestirilmis reklamlar sunmak icin bu tanimlayiciyi kullaniriz. Reddederseniz uygulamayi kisisellestirilmemis reklamlarla kullanmaya devam edebilirsiniz.";

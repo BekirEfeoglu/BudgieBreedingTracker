@@ -15,6 +15,7 @@ class PricingCard extends StatelessWidget {
   final String? badge;
   final String? savingsText;
   final String? trialText;
+  final String? buttonText;
   final bool isLoading;
   final bool isEnabled;
   final VoidCallback onSubscribe;
@@ -28,6 +29,7 @@ class PricingCard extends StatelessWidget {
     this.badge,
     this.savingsText,
     this.trialText,
+    this.buttonText,
     this.isLoading = false,
     this.isEnabled = true,
     required this.onSubscribe,
@@ -37,6 +39,7 @@ class PricingCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final actionText = buttonText ?? 'premium.subscribe'.tr();
 
     return Card(
       elevation: isHighlighted ? 4 : 0,
@@ -138,7 +141,7 @@ class PricingCard extends StatelessWidget {
                                     color: colorScheme.onPrimary,
                                   ),
                                 )
-                              : Text('premium.subscribe'.tr()),
+                              : Text(actionText),
                         )
                       : OutlinedButton(
                           onPressed: isLoading || !isEnabled
@@ -153,7 +156,7 @@ class PricingCard extends StatelessWidget {
                                     color: colorScheme.primary,
                                   ),
                                 )
-                              : Text('premium.subscribe'.tr()),
+                              : Text(actionText),
                         ),
                 ),
               ],

@@ -8,6 +8,7 @@ import 'package:easy_localization/easy_localization.dart';
 import '../../../core/widgets/dialogs/confirm_dialog.dart';
 import '../../../core/widgets/error_state.dart';
 import '../../../core/widgets/loading_state.dart';
+import '../../../core/utils/logger.dart';
 import '../providers/admin_actions_provider.dart';
 import '../providers/admin_providers.dart';
 import '../widgets/admin_notification_sheet.dart';
@@ -116,11 +117,10 @@ class _AdminUserDetailScreenState extends ConsumerState<AdminUserDetailScreen> {
             : 'admin.confirm_activate_desc'.tr(),
         isDestructive: currentlyActive,
       );
-      if (confirmed == true) {
-        ref
-            .read(adminActionsProvider.notifier)
-            .toggleUserActive(widget.userId, !currentlyActive);
-      }
+      if (confirmed != true || !mounted) return;
+      ref
+          .read(adminActionsProvider.notifier)
+          .toggleUserActive(widget.userId, !currentlyActive);
     }
     if (action == 'send_notification') {
       if (!mounted) return;
@@ -148,9 +148,8 @@ class _AdminUserDetailScreenState extends ConsumerState<AdminUserDetailScreen> {
       title: 'admin.confirm_grant_premium'.tr(),
       message: 'admin.confirm_grant_premium_desc'.tr(),
     );
-    if (confirmed == true) {
-      ref.read(adminActionsProvider.notifier).grantPremium(widget.userId);
-    }
+    if (confirmed != true || !mounted) return;
+    ref.read(adminActionsProvider.notifier).grantPremium(widget.userId);
   }
 
   Future<void> _handleRevokePremium() async {
@@ -160,120 +159,130 @@ class _AdminUserDetailScreenState extends ConsumerState<AdminUserDetailScreen> {
       message: 'admin.confirm_revoke_premium_desc'.tr(),
       isDestructive: true,
     );
-    if (confirmed == true) {
-      ref.read(adminActionsProvider.notifier).revokePremium(widget.userId);
-    }
+    if (confirmed != true || !mounted) return;
+    ref.read(adminActionsProvider.notifier).revokePremium(widget.userId);
   }
 
   Future<void> _handleExportUserData() async {
-    final detail = await ref.read(
-      adminUserDetailProvider(widget.userId).future,
-    );
-    final content = await ref.read(
-      adminUserContentProvider(widget.userId).future,
-    );
+    try {
+      final detail = await ref.read(
+        adminUserDetailProvider(widget.userId).future,
+      );
+      final content = await ref.read(
+        adminUserContentProvider(widget.userId).future,
+      );
+      if (!mounted) return;
 
-    final payload = {
-      'user': {
-        'id': detail.id,
-        'email': detail.email,
-        'full_name': detail.fullName,
-        'created_at': detail.createdAt.toIso8601String(),
-        'is_active': detail.isActive,
-        'subscription_plan': detail.subscriptionPlan,
-        'subscription_status': detail.subscriptionStatus,
-        'subscription_updated_at': detail.subscriptionUpdatedAt
-            ?.toIso8601String(),
-      },
-      'stats': {
-        'birds_count': detail.birdsCount,
-        'pairs_count': detail.pairsCount,
-        'eggs_count': detail.eggsCount,
-        'chicks_count': detail.chicksCount,
-        'health_records_count': detail.healthRecordsCount,
-        'events_count': detail.eventsCount,
-      },
-      'birds': content.birds
-          .map(
-            (bird) => {
-              'id': bird.id,
-              'name': bird.name,
-              'gender': bird.gender,
-              'status': bird.status,
-              'species': bird.species,
-              'ring_number': bird.ringNumber,
-              'cage_number': bird.cageNumber,
-              'photo_url': bird.photoUrl,
-              'created_at': bird.createdAt?.toIso8601String(),
-            },
-          )
-          .toList(),
-      'pairs': content.pairs
-          .map(
-            (pair) => {
-              'id': pair.id,
-              'status': pair.status,
-              'male_id': pair.maleId,
-              'male_name': pair.maleName,
-              'female_id': pair.femaleId,
-              'female_name': pair.femaleName,
-              'cage_number': pair.cageNumber,
-              'pairing_date': pair.pairingDate?.toIso8601String(),
-              'created_at': pair.createdAt?.toIso8601String(),
-            },
-          )
-          .toList(),
-      'eggs': content.eggs
-          .map(
-            (egg) => {
-              'id': egg.id,
-              'status': egg.status,
-              'egg_number': egg.eggNumber,
-              'clutch_id': egg.clutchId,
-              'lay_date': egg.layDate.toIso8601String(),
-              'hatch_date': egg.hatchDate?.toIso8601String(),
-              'photo_url': egg.photoUrl,
-              'created_at': egg.createdAt?.toIso8601String(),
-            },
-          )
-          .toList(),
-      'chicks': content.chicks
-          .map(
-            (chick) => {
-              'id': chick.id,
-              'name': chick.name,
-              'gender': chick.gender,
-              'health_status': chick.healthStatus,
-              'ring_number': chick.ringNumber,
-              'hatch_date': chick.hatchDate?.toIso8601String(),
-              'photo_url': chick.photoUrl,
-              'bird_id': chick.birdId,
-              'created_at': chick.createdAt?.toIso8601String(),
-            },
-          )
-          .toList(),
-      'photos': content.photos
-          .map(
-            (photo) => {
-              'id': photo.id,
-              'entity_type': photo.entityType,
-              'entity_id': photo.entityId,
-              'entity_label': photo.entityLabel,
-              'file_name': photo.fileName,
-              'file_path': photo.filePath,
-              'is_primary': photo.isPrimary,
-              'created_at': photo.createdAt?.toIso8601String(),
-            },
-          )
-          .toList(),
-    };
+      final payload = {
+        'user': {
+          'id': detail.id,
+          'email': detail.email,
+          'full_name': detail.fullName,
+          'created_at': detail.createdAt.toIso8601String(),
+          'is_active': detail.isActive,
+          'subscription_plan': detail.subscriptionPlan,
+          'subscription_status': detail.subscriptionStatus,
+          'subscription_updated_at': detail.subscriptionUpdatedAt
+              ?.toIso8601String(),
+        },
+        'stats': {
+          'birds_count': detail.birdsCount,
+          'pairs_count': detail.pairsCount,
+          'eggs_count': detail.eggsCount,
+          'chicks_count': detail.chicksCount,
+          'health_records_count': detail.healthRecordsCount,
+          'events_count': detail.eventsCount,
+        },
+        'birds': content.birds
+            .map(
+              (bird) => {
+                'id': bird.id,
+                'name': bird.name,
+                'gender': bird.gender,
+                'status': bird.status,
+                'species': bird.species,
+                'ring_number': bird.ringNumber,
+                'cage_number': bird.cageNumber,
+                'photo_url': bird.photoUrl,
+                'created_at': bird.createdAt?.toIso8601String(),
+              },
+            )
+            .toList(),
+        'pairs': content.pairs
+            .map(
+              (pair) => {
+                'id': pair.id,
+                'status': pair.status,
+                'male_id': pair.maleId,
+                'male_name': pair.maleName,
+                'female_id': pair.femaleId,
+                'female_name': pair.femaleName,
+                'cage_number': pair.cageNumber,
+                'pairing_date': pair.pairingDate?.toIso8601String(),
+                'created_at': pair.createdAt?.toIso8601String(),
+              },
+            )
+            .toList(),
+        'eggs': content.eggs
+            .map(
+              (egg) => {
+                'id': egg.id,
+                'status': egg.status,
+                'egg_number': egg.eggNumber,
+                'clutch_id': egg.clutchId,
+                'lay_date': egg.layDate.toIso8601String(),
+                'hatch_date': egg.hatchDate?.toIso8601String(),
+                'photo_url': egg.photoUrl,
+                'created_at': egg.createdAt?.toIso8601String(),
+              },
+            )
+            .toList(),
+        'chicks': content.chicks
+            .map(
+              (chick) => {
+                'id': chick.id,
+                'name': chick.name,
+                'gender': chick.gender,
+                'health_status': chick.healthStatus,
+                'ring_number': chick.ringNumber,
+                'hatch_date': chick.hatchDate?.toIso8601String(),
+                'photo_url': chick.photoUrl,
+                'bird_id': chick.birdId,
+                'created_at': chick.createdAt?.toIso8601String(),
+              },
+            )
+            .toList(),
+        'photos': content.photos
+            .map(
+              (photo) => {
+                'id': photo.id,
+                'entity_type': photo.entityType,
+                'entity_id': photo.entityId,
+                'entity_label': photo.entityLabel,
+                'file_name': photo.fileName,
+                'file_path': photo.filePath,
+                'is_primary': photo.isPrimary,
+                'created_at': photo.createdAt?.toIso8601String(),
+              },
+            )
+            .toList(),
+      };
 
-    await Clipboard.setData(
-      ClipboardData(text: const JsonEncoder.withIndent('  ').convert(payload)),
-    );
-    if (!mounted) return;
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text('admin.export_ready'.tr())));
+      await Clipboard.setData(
+        ClipboardData(
+          text: const JsonEncoder.withIndent('  ').convert(payload),
+        ),
+      );
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('admin.export_ready'.tr())));
+    } catch (e, st) {
+      AppLogger.error('AdminUserDetailScreen._handleExportUserData', e, st);
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('common.data_load_error'.tr())));
+    }
   }
 }

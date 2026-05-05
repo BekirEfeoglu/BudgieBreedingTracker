@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import 'package:budgie_breeding_tracker/core/utils/storage_url_normalizer.dart';
 import 'package:budgie_breeding_tracker/data/local/database/app_database.dart';
 import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
 
@@ -12,7 +13,7 @@ extension EggRowMapper on EggRow {
     incubationId: incubationId,
     eggNumber: eggNumber,
     notes: notes,
-    photoUrl: photoUrl,
+    photoUrl: StorageUrlNormalizer.normalizePublicObjectUrl(photoUrl),
     hatchDate: hatchDate?.toUtc(),
     fertileCheckDate: fertileCheckDate?.toUtc(),
     discardDate: discardDate?.toUtc(),
@@ -32,7 +33,7 @@ extension EggModelMapper on Egg {
     incubationId: Value(incubationId),
     eggNumber: Value(eggNumber),
     notes: Value(notes),
-    photoUrl: Value(photoUrl),
+    photoUrl: Value(StorageUrlNormalizer.normalizePublicObjectUrl(photoUrl)),
     hatchDate: Value(hatchDate?.toUtc()),
     fertileCheckDate: Value(fertileCheckDate?.toUtc()),
     discardDate: Value(discardDate?.toUtc()),

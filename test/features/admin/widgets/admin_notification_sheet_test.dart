@@ -40,10 +40,7 @@ class _StubAdminActionsNotifier extends Notifier<AdminActionState>
         successMessage: 'Notification sent',
       );
     } else {
-      state = state.copyWith(
-        isLoading: false,
-        error: 'Send failed',
-      );
+      state = state.copyWith(isLoading: false, error: 'Send failed');
     }
   }
 
@@ -108,9 +105,7 @@ Widget _buildApp({
 }) {
   final stub = notifier ?? _StubAdminActionsNotifier();
   return ProviderScope(
-    overrides: [
-      adminActionsProvider.overrideWith(() => stub),
-    ],
+    overrides: [adminActionsProvider.overrideWith(() => stub)],
     child: MaterialApp(
       home: _SheetLauncher(
         targetUserId: targetUserId,
@@ -130,20 +125,11 @@ void main() {
     testWidgets('renders title and form fields for single user', (
       tester,
     ) async {
-      await pumpLocalizedApp(
-        tester,
-        _buildApp(targetUserId: 'user-1'),
-      );
+      await pumpLocalizedApp(tester, _buildApp(targetUserId: 'user-1'));
       await _openSheet(tester);
 
-      expect(
-        find.text(l10n('admin.send_notification')),
-        findsOneWidget,
-      );
-      expect(
-        find.text(l10n('admin.notification_title_label')),
-        findsOneWidget,
-      );
+      expect(find.text(l10n('admin.send_notification')), findsOneWidget);
+      expect(find.text(l10n('admin.notification_title_label')), findsOneWidget);
       expect(
         find.text(l10n('admin.notification_message_label')),
         findsOneWidget,
@@ -158,19 +144,13 @@ void main() {
       );
       await _openSheet(tester);
 
-      expect(
-        find.text(l10n('admin.bulk_send_notification')),
-        findsOneWidget,
-      );
+      expect(find.text(l10n('admin.bulk_send_notification')), findsOneWidget);
       // Shows "3 admin.users"
       expect(find.textContaining('3'), findsAtLeastNWidgets(1));
     });
 
     testWidgets('validates empty title', (tester) async {
-      await pumpLocalizedApp(
-        tester,
-        _buildApp(targetUserId: 'user-1'),
-      );
+      await pumpLocalizedApp(tester, _buildApp(targetUserId: 'user-1'));
       await _openSheet(tester);
 
       // Tap send without filling fields
@@ -184,17 +164,11 @@ void main() {
     });
 
     testWidgets('validates empty message', (tester) async {
-      await pumpLocalizedApp(
-        tester,
-        _buildApp(targetUserId: 'user-1'),
-      );
+      await pumpLocalizedApp(tester, _buildApp(targetUserId: 'user-1'));
       await _openSheet(tester);
 
       // Fill title only
-      await tester.enterText(
-        find.byType(TextFormField).first,
-        'Test Title',
-      );
+      await tester.enterText(find.byType(TextFormField).first, 'Test Title');
       await tester.tap(find.text(l10n('admin.send')));
       await tester.pumpAndSettle();
 
@@ -213,15 +187,9 @@ void main() {
       await _openSheet(tester);
 
       // Fill title
-      await tester.enterText(
-        find.byType(TextFormField).first,
-        'Test Title',
-      );
+      await tester.enterText(find.byType(TextFormField).first, 'Test Title');
       // Fill message
-      await tester.enterText(
-        find.byType(TextFormField).last,
-        'Test Message',
-      );
+      await tester.enterText(find.byType(TextFormField).last, 'Test Message');
       await tester.tap(find.text(l10n('admin.send')));
       await tester.pumpAndSettle();
 
@@ -235,21 +203,12 @@ void main() {
       final notifier = _StubAdminActionsNotifier();
       await pumpLocalizedApp(
         tester,
-        _buildApp(
-          targetUserIds: ['u1', 'u2'],
-          notifier: notifier,
-        ),
+        _buildApp(targetUserIds: ['u1', 'u2'], notifier: notifier),
       );
       await _openSheet(tester);
 
-      await tester.enterText(
-        find.byType(TextFormField).first,
-        'Bulk Title',
-      );
-      await tester.enterText(
-        find.byType(TextFormField).last,
-        'Bulk Message',
-      );
+      await tester.enterText(find.byType(TextFormField).first, 'Bulk Title');
+      await tester.enterText(find.byType(TextFormField).last, 'Bulk Message');
       await tester.tap(find.text(l10n('admin.send')));
       await tester.pumpAndSettle();
 
@@ -267,14 +226,8 @@ void main() {
       );
       await _openSheet(tester);
 
-      await tester.enterText(
-        find.byType(TextFormField).first,
-        'Title',
-      );
-      await tester.enterText(
-        find.byType(TextFormField).last,
-        'Message',
-      );
+      await tester.enterText(find.byType(TextFormField).first, 'Title');
+      await tester.enterText(find.byType(TextFormField).last, 'Message');
       await tester.tap(find.text(l10n('admin.send')));
       await tester.pumpAndSettle();
 
@@ -282,7 +235,7 @@ void main() {
       expect(find.text(l10n('admin.notification_title_label')), findsNothing);
     });
 
-    testWidgets('closes sheet and shows error snackbar on failure', (
+    testWidgets('keeps sheet open and shows error snackbar on failure', (
       tester,
     ) async {
       final notifier = _StubAdminActionsNotifier()..shouldSucceed = false;
@@ -292,24 +245,33 @@ void main() {
       );
       await _openSheet(tester);
 
-      await tester.enterText(
-        find.byType(TextFormField).first,
-        'Title',
-      );
-      await tester.enterText(
-        find.byType(TextFormField).last,
-        'Message',
-      );
+      await tester.enterText(find.byType(TextFormField).first, 'Title');
+      await tester.enterText(find.byType(TextFormField).last, 'Message');
       await tester.tap(find.text(l10n('admin.send')));
       await tester.pumpAndSettle();
 
-      // Sheet should be dismissed (widget pops on error)
-      expect(
-        find.text(l10n('admin.notification_title_label')),
-        findsNothing,
-      );
-      // Error snackbar shown
+      // Sheet stays open so the admin can correct/retry without retyping.
+      expect(find.text(l10n('admin.notification_title_label')), findsOneWidget);
       expect(find.text('Send failed'), findsOneWidget);
+    });
+
+    testWidgets('requires a target user before sending', (tester) async {
+      final notifier = _StubAdminActionsNotifier();
+      await pumpLocalizedApp(tester, _buildApp(notifier: notifier));
+      await _openSheet(tester);
+
+      await tester.enterText(find.byType(TextFormField).first, 'Title');
+      await tester.enterText(find.byType(TextFormField).last, 'Message');
+      await tester.tap(find.text(l10n('admin.send')));
+      await tester.pumpAndSettle();
+
+      expect(notifier.sendNotificationCalled, isFalse);
+      expect(notifier.sendBulkNotificationCalled, isFalse);
+      expect(
+        find.text(l10n('admin.notification_target_required')),
+        findsOneWidget,
+      );
+      expect(find.text(l10n('admin.notification_title_label')), findsOneWidget);
     });
 
     testWidgets('send button is disabled while loading', (tester) async {
@@ -318,9 +280,7 @@ void main() {
       await pumpLocalizedApp(
         tester,
         ProviderScope(
-          overrides: [
-            adminActionsProvider.overrideWith(() => notifier),
-          ],
+          overrides: [adminActionsProvider.overrideWith(() => notifier)],
           child: const MaterialApp(
             home: _SheetLauncher(targetUserId: 'user-1'),
           ),
@@ -328,14 +288,8 @@ void main() {
       );
       await _openSheet(tester);
 
-      await tester.enterText(
-        find.byType(TextFormField).first,
-        'Title',
-      );
-      await tester.enterText(
-        find.byType(TextFormField).last,
-        'Message',
-      );
+      await tester.enterText(find.byType(TextFormField).first, 'Title');
+      await tester.enterText(find.byType(TextFormField).last, 'Message');
       await tester.tap(find.text(l10n('admin.send')));
       await tester.pump(); // single frame — stays in loading
 

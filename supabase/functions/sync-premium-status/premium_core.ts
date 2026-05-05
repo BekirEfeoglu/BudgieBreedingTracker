@@ -11,6 +11,13 @@ export interface PremiumStatus {
   productIdentifier: string | null;
 }
 
+export interface PremiumProfileSnapshot {
+  is_premium?: unknown;
+  subscription_status?: unknown;
+  premium_expires_at?: unknown;
+  grace_period_until?: unknown;
+}
+
 function asObject(value: unknown): JsonObject | null {
   return value !== null && typeof value === "object" && !Array.isArray(value)
     ? value as JsonObject
@@ -31,6 +38,29 @@ function addDays(date: Date, days: number): string {
   const copy = new Date(date.getTime());
   copy.setUTCDate(copy.getUTCDate() + days);
   return copy.toISOString();
+}
+
+function normalizeInstant(value: unknown): string | null {
+  const raw = stringOrNull(value);
+  if (raw === null) return null;
+  const parsed = new Date(raw);
+  return Number.isNaN(parsed.getTime()) ? raw : parsed.toISOString();
+}
+
+function sameInstant(left: unknown, right: unknown): boolean {
+  return normalizeInstant(left) === normalizeInstant(right);
+}
+
+export function profileMatchesPremiumStatus(
+  profile: PremiumProfileSnapshot | null | undefined,
+  status: PremiumStatus,
+): boolean {
+  if (!profile) return false;
+
+  return profile.is_premium === status.isPremium &&
+    profile.subscription_status === status.subscriptionStatus &&
+    sameInstant(profile.premium_expires_at, status.expiresAt) &&
+    sameInstant(profile.grace_period_until, status.gracePeriodUntil);
 }
 
 export function resolvePremiumStatus(

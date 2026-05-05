@@ -5,12 +5,14 @@ class _UsersSummaryBar extends StatelessWidget {
   final int visibleUsers;
   final int activeUsers;
   final int inactiveUsers;
+  final int onlineUsers;
 
   const _UsersSummaryBar({
     required this.totalUsers,
     required this.visibleUsers,
     required this.activeUsers,
     required this.inactiveUsers,
+    required this.onlineUsers,
   });
 
   @override
@@ -21,6 +23,7 @@ class _UsersSummaryBar extends StatelessWidget {
         : '${'admin.users'.tr()}: $visibleUsers / $totalUsers';
     final activityLabel =
         '${'common.active'.tr()}: $activeUsers   ${'admin.inactive'.tr()}: $inactiveUsers';
+    final onlineLabel = '${'admin.online'.tr()}: $onlineUsers';
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(
@@ -43,6 +46,13 @@ class _UsersSummaryBar extends StatelessWidget {
             activityLabel,
             style: theme.textTheme.labelMedium?.copyWith(
               color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+          Text(
+            onlineLabel,
+            style: theme.textTheme.labelMedium?.copyWith(
+              color: AppColors.success,
+              fontWeight: FontWeight.w700,
             ),
           ),
         ],

@@ -731,7 +731,7 @@
 
     <div class="page-header">
       <h1 class="page-title" data-i18n="title">Gizlilik Politikası</h1>
-      <p class="page-subtitle" data-i18n="last_updated">Son güncelleme: 15 Mart 2026</p>
+      <p class="page-subtitle" data-i18n="last_updated">Son güncelleme: 5 Mayıs 2026</p>
     </div>
 
     <div class="content-card">
@@ -773,8 +773,10 @@
           <div data-i18n-html="s2_3_list">
             <ul class="policy-list">
               <li>Uygulama çökme raporları ve hata günlükleri (Sentry aracılığıyla)</li>
-              <li>Cihaz türü ve işletim sistemi versiyonu</li>
+              <li>Cihaz türü, işletim sistemi versiyonu ve reklam cihaz tanımlayıcıları (Google AdMob aracılığıyla)</li>
+              <li>Hesap/kullanıcı tanımlayıcısı (kimlik doğrulama, senkronizasyon, satın alma durumu ve uygulama analitiği için)</li>
               <li>Uygulama kullanım istatistikleri (ekran gezinme verileri)</li>
+              <li>Bildirimleri etkinleştirirseniz push bildirim tokenı</li>
             </ul>
           </div>
         </section>
@@ -819,8 +821,8 @@
           <p class="section-intro" data-i18n="s5_intro">Kişisel verilerinizi üçüncü taraflarla <strong>satmaz veya kiralamayız</strong>. Verileriniz yalnızca aşağıdaki durumlarda paylaşılabilir:</p>
           <div data-i18n-html="s5_list">
             <ul class="policy-list">
-              <li><strong>Hizmet sağlayıcılar:</strong> Supabase (veritabanı ve kimlik doğrulama), Sentry (hata raporlama) — yalnızca hizmetin işletilmesi için gerekli veriler paylaşılır.</li>
-              <li><strong>Ödeme yönetimi:</strong> RevenueCat (abonelik ve satın alma işlemleri) — yalnızca abonelik durumu ve işlem verileri paylaşılır.</li>
+              <li><strong>Hizmet sağlayıcılar:</strong> Supabase (veritabanı, kimlik doğrulama, dosya depolama ve senkronizasyon), Sentry (hata raporlama) — yalnızca hizmetin işletilmesi için gerekli veriler paylaşılır.</li>
+              <li><strong>Ödeme yönetimi:</strong> RevenueCat (abonelik ve satın alma işlemleri) — kullanıcı/satın alma tanımlayıcısı, abonelik durumu ve işlem verileri paylaşılır.</li>
               <li><strong>Reklam servisi:</strong> Google AdMob (reklam gösterimi) — cihaz tanımlayıcıları ve reklam tercihleri paylaşılır. Kişiselleştirilmiş reklam gösterimi için izleme izni ayrıca istenir.</li>
               <li><strong>Yasal zorunluluk:</strong> Yasal düzenlemeler veya mahkeme kararları gerektirdiğinde.</li>
             </ul>
@@ -854,7 +856,7 @@
 
         <section class="policy-section section-reveal">
           <h2 class="section-h2" data-i18n="s8_title">8. Çerezler ve İzleme</h2>
-          <p class="section-text" data-i18n="s8_text">Uygulama, çerez (cookie) kullanmaz. Hata raporlama amacıyla Sentry SDK'sı kullanılmakta olup, bu hizmet yalnızca uygulama çökmelerini ve performans sorunlarını tespit etmek için anonim teknik veriler toplar. Reklam gösterimi için Google AdMob SDK'sı kullanılmaktadır; kişiselleştirilmiş reklam izleme yalnızca kullanıcının açık izniyle (ATT onayı) etkinleştirilir.</p>
+          <p class="section-text" data-i18n="s8_text">Uygulama, çerez (cookie) kullanmaz. Hesap/kullanıcı tanımlayıcısı kimlik doğrulama, senkronizasyon, satın alma durumu ve uygulama analitiği için kullanılır; üçüncü taraf uygulama veya web sitelerinde izleme amacıyla kullanılmaz. Hata raporlama amacıyla Sentry SDK'sı kullanılmakta olup, bu hizmet yalnızca uygulama çökmelerini ve performans sorunlarını tespit etmek için teknik veriler toplar. Reklam gösterimi için Google AdMob SDK'sı kullanılmaktadır; reklam cihaz tanımlayıcılarıyla kişiselleştirilmiş reklam izleme yalnızca kullanıcının açık izniyle (ATT onayı) etkinleştirilir.</p>
         </section>
 
         <hr class="section-divider">

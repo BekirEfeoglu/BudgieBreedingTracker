@@ -10,6 +10,7 @@ import AppTrackingTransparency
   // versions present auth UI in window/controller types that are not matched
   // by class-name heuristics, which can otherwise lead to a blank OAuth page.
   private static var windowReclaimSuspendedUntil: Date?
+  private static var firebaseConfigured = false
 
   static func setWindowReclaimSuspended(for duration: TimeInterval) {
     let clamped = max(1, duration)
@@ -30,13 +31,15 @@ import AppTrackingTransparency
   }
 
   override init() {
+    AppDelegate.configureFirebaseIfNeeded()
     super.init()
   }
 
   private static func configureFirebaseIfNeeded() {
-    guard FirebaseApp.app() == nil else { return }
+    guard !firebaseConfigured else { return }
     guard Bundle.main.path(forResource: "GoogleService-Info", ofType: "plist") != nil else { return }
     FirebaseApp.configure()
+    firebaseConfigured = true
   }
 
   override func application(
@@ -136,6 +139,7 @@ import AppTrackingTransparency
   }
 
   func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
+    AppDelegate.configureFirebaseIfNeeded()
     GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
     // NOTE: The keyboard-fix and ATT MethodChannels are set up in
     // SceneDelegate (not here) because engineBridge.pluginRegistry

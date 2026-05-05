@@ -72,6 +72,13 @@ class _UsersToolbar extends StatelessWidget {
                       ),
                       const SizedBox(width: AppSpacing.sm),
                       _StatusChip(
+                        label: 'admin.online'.tr(),
+                        selected: statusFilter == _UserStatusFilter.online,
+                        onTap: () =>
+                            onStatusFilterChanged(_UserStatusFilter.online),
+                      ),
+                      const SizedBox(width: AppSpacing.sm),
+                      _StatusChip(
                         label: 'common.active'.tr(),
                         selected: statusFilter == _UserStatusFilter.active,
                         onTap: () =>
@@ -154,6 +161,7 @@ class _UsersToolbar extends StatelessWidget {
     return switch (option) {
       _UserSortOption.newest => 'breeding.sort_newest'.tr(),
       _UserSortOption.oldest => 'breeding.sort_oldest'.tr(),
+      _UserSortOption.recentlyActive => 'admin.last_active'.tr(),
       _UserSortOption.nameAsc => 'birds.sort_name_asc'.tr(),
       _UserSortOption.emailAsc => 'auth.email'.tr(),
     };

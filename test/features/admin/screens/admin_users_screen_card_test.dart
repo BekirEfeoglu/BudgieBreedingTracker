@@ -36,6 +36,15 @@ final _premiumUser = AdminUser(
   isPremium: true,
 );
 
+final _onlineUser = AdminUser(
+  id: 'user-online',
+  email: 'online@test.com',
+  fullName: 'Online User',
+  createdAt: DateTime(2024, 4, 1),
+  isActive: true,
+  lastActiveAt: DateTime.now().toUtc().subtract(const Duration(minutes: 1)),
+);
+
 final _founderUser = AdminUser(
   id: 'user-4',
   email: 'founder@test.com',
@@ -46,31 +55,28 @@ final _founderUser = AdminUser(
   role: 'founder',
 );
 
-Widget _createSubject({
-  required List<AdminUser> users,
-}) {
+Widget _createSubject({required List<AdminUser> users}) {
   final router = GoRouter(
     initialLocation: '/',
     routes: [
       GoRoute(
         path: '/',
-        pageBuilder: (_, __) => const NoTransitionPage(
-          child: Scaffold(body: AdminUsersScreen()),
-        ),
+        pageBuilder: (_, __) =>
+            const NoTransitionPage(child: Scaffold(body: AdminUsersScreen())),
       ),
       GoRoute(
         path: '/admin/users/:userId',
-        pageBuilder: (_, __) => const NoTransitionPage(
-          child: Scaffold(body: Text('UserDetail')),
-        ),
+        pageBuilder: (_, __) =>
+            const NoTransitionPage(child: Scaffold(body: Text('UserDetail'))),
       ),
     ],
   );
 
   return ProviderScope(
     overrides: [
-      adminUsersProvider(const AdminUsersQuery())
-          .overrideWithValue(AsyncData(users)),
+      adminUsersProvider(
+        const AdminUsersQuery(),
+      ).overrideWithValue(AsyncData(users)),
     ],
     child: MaterialApp.router(routerConfig: router),
   );
@@ -91,35 +97,39 @@ void main() {
     testWidgets('should_show_joined_date', (tester) async {
       await tester.pumpWidget(_createSubject(users: [_activeUser]));
       await tester.pumpAndSettle();
-      expect(
-        find.textContaining(l10n('admin.joined')),
-        findsOneWidget,
-      );
+      expect(find.textContaining(l10n('admin.joined')), findsOneWidget);
     });
 
-    testWidgets('should_show_inactive_badge_for_inactive_user',
-        (tester) async {
+    testWidgets('should_show_inactive_badge_for_inactive_user', (tester) async {
       await tester.pumpWidget(_createSubject(users: [_inactiveUser]));
       await tester.pumpAndSettle();
       expect(find.text(l10n('admin.inactive')), findsAtLeast(1));
     });
 
-    testWidgets('should_show_premium_badge_for_premium_user',
-        (tester) async {
+    testWidgets('should_show_premium_badge_for_premium_user', (tester) async {
       await tester.pumpWidget(_createSubject(users: [_premiumUser]));
       await tester.pumpAndSettle();
       expect(find.text(l10n('admin.role_premium')), findsOneWidget);
     });
 
-    testWidgets('should_show_founder_badge_for_founder_user',
-        (tester) async {
+    testWidgets('should_show_online_badge_and_last_active_for_online_user', (
+      tester,
+    ) async {
+      await tester.pumpWidget(_createSubject(users: [_onlineUser]));
+      await tester.pumpAndSettle();
+      expect(find.text(l10n('admin.online')), findsAtLeast(1));
+      expect(find.textContaining(l10n('admin.last_active')), findsOneWidget);
+    });
+
+    testWidgets('should_show_founder_badge_for_founder_user', (tester) async {
       await tester.pumpWidget(_createSubject(users: [_founderUser]));
       await tester.pumpAndSettle();
       expect(find.text(l10n('admin.role_founder')), findsOneWidget);
     });
 
-    testWidgets('should_show_email_as_display_name_when_no_fullName',
-        (tester) async {
+    testWidgets('should_show_email_as_display_name_when_no_fullName', (
+      tester,
+    ) async {
       final noNameUser = AdminUser(
         id: 'user-5',
         email: 'noname@test.com',

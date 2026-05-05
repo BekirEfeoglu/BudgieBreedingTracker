@@ -38,6 +38,7 @@ Map<String, dynamic> _packageJson({
   required String productIdentifier,
   required String priceString,
   double price = 9.99,
+  String productCategory = 'SUBSCRIPTION',
 }) {
   return {
     'identifier': identifier,
@@ -49,7 +50,7 @@ Map<String, dynamic> _packageJson({
       'price': price,
       'priceString': priceString,
       'currencyCode': 'USD',
-      'productCategory': 'SUBSCRIPTION',
+      'productCategory': productCategory,
       'presentedOfferingContext': {
         'offeringIdentifier': 'default',
         'placementIdentifier': null,
@@ -75,23 +76,25 @@ void main() {
       expect(find.byType(PremiumPricingSection), findsOneWidget);
     });
 
-    testWidgets('shows two pricing cards', (tester) async {
+    testWidgets('shows all available pricing cards', (tester) async {
       await tester.pumpWidget(
         _wrapWithProviders(const PremiumPricingSection()),
       );
       await tester.pumpAndSettle();
 
-      expect(find.byType(PricingCard), findsNWidgets(2));
+      expect(find.byType(PricingCard), findsNWidgets(4));
     });
 
-    testWidgets('shows plan names for both plans', (tester) async {
+    testWidgets('shows plan names for all purchase options', (tester) async {
       await tester.pumpWidget(
         _wrapWithProviders(const PremiumPricingSection()),
       );
       await tester.pumpAndSettle();
 
+      expect(find.text(l10n('premium.plan_monthly')), findsOneWidget);
       expect(find.text(l10n('premium.plan_semi_annual')), findsOneWidget);
       expect(find.text(l10n('premium.plan_yearly')), findsOneWidget);
+      expect(find.text(l10n('premium.plan_lifetime')), findsOneWidget);
     });
 
     testWidgets('shows fallback prices when no packages available', (
@@ -103,11 +106,19 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(
+        find.textContaining('premium.price_monthly', findRichText: true),
+        findsOneWidget,
+      );
+      expect(
         find.textContaining('premium.price_semi_annual', findRichText: true),
         findsOneWidget,
       );
       expect(
         find.textContaining('premium.price_yearly', findRichText: true),
+        findsOneWidget,
+      );
+      expect(
+        find.textContaining('premium.price_lifetime', findRichText: true),
         findsOneWidget,
       );
     });
@@ -116,6 +127,14 @@ void main() {
       tester,
     ) async {
       final offerings = [
+        Package.fromJson(
+          _packageJson(
+            identifier: r'$rc_monthly',
+            packageType: 'MONTHLY',
+            productIdentifier: 'budgie_premium_monthly',
+            priceString: '\$10.00',
+          ),
+        ),
         Package.fromJson(
           _packageJson(
             identifier: r'$rc_six_month',
@@ -132,22 +151,36 @@ void main() {
             priceString: '\$25.00',
           ),
         ),
+        Package.fromJson(
+          _packageJson(
+            identifier: r'$rc_lifetime',
+            packageType: 'LIFETIME',
+            productIdentifier: 'budgie_premium_lifetime',
+            priceString: '\$50.00',
+            productCategory: 'NON_SUBSCRIPTION',
+          ),
+        ),
       ];
 
       await tester.pumpWidget(
-        _wrapWithProviders(
-          const PremiumPricingSection(),
-          offerings: offerings,
-        ),
+        _wrapWithProviders(const PremiumPricingSection(), offerings: offerings),
       );
       await tester.pumpAndSettle();
 
+      expect(
+        find.textContaining('\$10.00', findRichText: true),
+        findsOneWidget,
+      );
       expect(
         find.textContaining('\$15.00', findRichText: true),
         findsOneWidget,
       );
       expect(
         find.textContaining('\$25.00', findRichText: true),
+        findsOneWidget,
+      );
+      expect(
+        find.textContaining('\$50.00', findRichText: true),
         findsOneWidget,
       );
     });
@@ -159,6 +192,17 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text(l10n('premium.best_value')), findsOneWidget);
+    });
+
+    testWidgets('uses one-time purchase label for lifetime plan', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrapWithProviders(const PremiumPricingSection()),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text(l10n('premium.buy_lifetime')), findsOneWidget);
     });
 
     testWidgets('shows savings text on yearly plan', (tester) async {
@@ -190,10 +234,7 @@ void main() {
 
     testWidgets('shows guest access card for anonymous user', (tester) async {
       await tester.pumpWidget(
-        _wrapWithProviders(
-          const PremiumPricingSection(),
-          userId: 'anonymous',
-        ),
+        _wrapWithProviders(const PremiumPricingSection(), userId: 'anonymous'),
       );
       await tester.pumpAndSettle();
 
@@ -204,9 +245,7 @@ void main() {
       );
     });
 
-    testWidgets('does not show guest card for logged-in user', (
-      tester,
-    ) async {
+    testWidgets('does not show guest card for logged-in user', (tester) async {
       await tester.pumpWidget(
         _wrapWithProviders(const PremiumPricingSection()),
       );
@@ -215,9 +254,7 @@ void main() {
       expect(find.text(l10n('premium.account_required_title')), findsNothing);
     });
 
-    testWidgets('shows purchase issue card when issue exists', (
-      tester,
-    ) async {
+    testWidgets('shows purchase issue card when issue exists', (tester) async {
       await tester.pumpWidget(
         _wrapWithProviders(
           const PremiumPricingSection(),
@@ -273,8 +310,14 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text(l10n('premium.ios_debug_purchase_title')), findsOneWidget);
-      expect(find.text(l10n('premium.ios_debug_purchase_body')), findsOneWidget);
+      expect(
+        find.text(l10n('premium.ios_debug_purchase_title')),
+        findsOneWidget,
+      );
+      expect(
+        find.text(l10n('premium.ios_debug_purchase_body')),
+        findsOneWidget,
+      );
     });
 
     testWidgets('shows legal links section', (tester) async {
@@ -312,10 +355,7 @@ void main() {
       ];
 
       await tester.pumpWidget(
-        _wrapWithProviders(
-          const PremiumPricingSection(),
-          offerings: offerings,
-        ),
+        _wrapWithProviders(const PremiumPricingSection(), offerings: offerings),
       );
       await tester.pumpAndSettle();
 
@@ -345,11 +385,19 @@ void main() {
 
       // Period labels are rendered inside RichText (TextSpan), not standalone Text
       expect(
+        find.textContaining('premium.period_monthly', findRichText: true),
+        findsOneWidget,
+      );
+      expect(
         find.textContaining('premium.period_semi_annual', findRichText: true),
         findsOneWidget,
       );
       expect(
         find.textContaining('premium.period_yearly', findRichText: true),
+        findsOneWidget,
+      );
+      expect(
+        find.textContaining('premium.period_lifetime', findRichText: true),
         findsOneWidget,
       );
     });
@@ -387,10 +435,7 @@ void main() {
     });
 
     test('returns fallback when prices are zero', () {
-      expect(
-        calculateSavingsPercent(semiAnnualPrice: 0, yearlyPrice: 0),
-        '17',
-      );
+      expect(calculateSavingsPercent(semiAnnualPrice: 0, yearlyPrice: 0), '17');
     });
 
     test('returns fallback when yearly >= annualized semi-annual', () {

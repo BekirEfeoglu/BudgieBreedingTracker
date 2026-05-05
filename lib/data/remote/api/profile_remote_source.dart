@@ -1,4 +1,5 @@
 import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
+import 'package:budgie_breeding_tracker/core/utils/storage_url_normalizer.dart';
 import 'package:budgie_breeding_tracker/data/models/profile_model.dart';
 import 'package:budgie_breeding_tracker/data/models/supabase_extensions.dart';
 import 'package:budgie_breeding_tracker/data/remote/api/base_remote_source.dart';
@@ -14,7 +15,12 @@ class ProfileRemoteSource extends BaseRemoteSourceNoSoftDelete<Profile> {
   String get tableName => SupabaseConstants.profilesTable;
 
   @override
-  Profile fromJson(Map<String, dynamic> json) => Profile.fromJson(json);
+  Profile fromJson(Map<String, dynamic> json) => Profile.fromJson({
+    ...json,
+    'avatar_url': StorageUrlNormalizer.normalizePublicObjectUrl(
+      json['avatar_url'] as String?,
+    ),
+  });
 
   @override
   Map<String, dynamic> toSupabaseJson(Profile model) => model.toSupabase();
@@ -35,10 +41,7 @@ class ProfileRemoteSource extends BaseRemoteSourceNoSoftDelete<Profile> {
       throw ArgumentError('Profile ID must match authenticated user ID');
     }
     try {
-      final response = await table
-          .select()
-          .eq('id', userId)
-          .maybeSingle();
+      final response = await table.select().eq('id', userId).maybeSingle();
       return response != null ? fromJson(response) : null;
     } catch (e, st) {
       throw handleError(e, st);

@@ -148,6 +148,7 @@ void main() {
       const query = AdminUsersQuery();
       expect(query.searchTerm, '');
       expect(query.isActiveFilter, isNull);
+      expect(query.onlineOnly, isFalse);
       expect(query.sortField, 'created_at');
       expect(query.sortAscending, isFalse);
       expect(query.limit, 50);
@@ -155,16 +156,26 @@ void main() {
 
     test('copyWith works', () {
       const query = AdminUsersQuery();
-      final updated = query.copyWith(searchTerm: 'test', isActiveFilter: true);
+      final updated = query.copyWith(
+        searchTerm: 'test',
+        isActiveFilter: true,
+        onlineOnly: true,
+      );
       expect(updated.searchTerm, 'test');
       expect(updated.isActiveFilter, isTrue);
+      expect(updated.onlineOnly, isTrue);
     });
 
     test('toJson/fromJson round-trip', () {
-      const query = AdminUsersQuery(searchTerm: 'hello', limit: 100);
+      const query = AdminUsersQuery(
+        searchTerm: 'hello',
+        onlineOnly: true,
+        limit: 100,
+      );
       final json = query.toJson();
       final restored = AdminUsersQuery.fromJson(json);
       expect(restored.searchTerm, 'hello');
+      expect(restored.onlineOnly, isTrue);
       expect(restored.limit, 100);
     });
   });
@@ -202,8 +213,14 @@ void main() {
 
     test('fromSettingsMap parses correctly', () {
       final map = <String, Map<String, dynamic>>{
-        'maintenance_mode': {'value': true, 'updated_at': '2026-01-15T10:00:00Z'},
-        'registration_open': {'value': false, 'updated_at': '2026-01-14T10:00:00Z'},
+        'maintenance_mode': {
+          'value': true,
+          'updated_at': '2026-01-15T10:00:00Z',
+        },
+        'registration_open': {
+          'value': false,
+          'updated_at': '2026-01-14T10:00:00Z',
+        },
         'auto_backup_enabled': {'value': 'true', 'updated_at': null},
       };
       final settings = AdminSystemSettings.fromSettingsMap(map);

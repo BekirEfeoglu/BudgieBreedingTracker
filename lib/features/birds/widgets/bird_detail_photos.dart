@@ -8,6 +8,7 @@ import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/enums/photo_enums.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
+import 'package:budgie_breeding_tracker/core/utils/storage_url_normalizer.dart';
 import 'package:budgie_breeding_tracker/core/providers/action_feedback_providers.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/core/widgets/dialogs/confirm_dialog.dart';
@@ -136,7 +137,12 @@ class _BirdDetailPhotosState extends ConsumerState<BirdDetailPhotos> {
 
     final photoRepo = ref.read(photoRepositoryProvider);
     final photos = await photoRepo.getByEntity(widget.bird.id);
-    final photo = photos.where((p) => p.filePath == url).firstOrNull;
+    final targetPath = StorageUrlNormalizer.extractObjectPath(url);
+    final photo = photos.where((p) {
+      if (p.filePath == url) return true;
+      final photoPath = StorageUrlNormalizer.extractObjectPath(p.filePath);
+      return targetPath != null && photoPath == targetPath;
+    }).firstOrNull;
 
     if (photo == null) return;
 

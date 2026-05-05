@@ -3,6 +3,8 @@ import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
 import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
 import 'package:budgie_breeding_tracker/data/models/incubation_model.dart';
+import 'package:budgie_breeding_tracker/data/remote/storage/storage_providers.dart';
+import 'package:budgie_breeding_tracker/data/remote/storage/storage_url_resolver.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 
 /// Watches a single breeding pair by ID (live stream).
@@ -27,14 +29,30 @@ final eggsByIncubationProvider = StreamProvider.family<List<Egg>, String>((
   incubationId,
 ) {
   final repo = ref.watch(eggRepositoryProvider);
-  return repo.watchByIncubation(incubationId);
+  final resolver = ref.watch(storageUrlResolverProvider);
+  return repo
+      .watchByIncubation(incubationId)
+      .asyncMap(
+        (eggs) =>
+            Future.wait(eggs.map((egg) => _resolveEggPhoto(egg, resolver))),
+      );
 });
 
 /// Watches a single bird by ID (live stream).
 final birdByIdProvider = StreamProvider.family<Bird?, String>((ref, id) {
   final repo = ref.watch(birdRepositoryProvider);
-  return repo.watchById(id);
+  final resolver = ref.watch(storageUrlResolverProvider);
+  return repo.watchById(id).asyncMap((bird) async {
+    if (bird == null) return null;
+    final photoUrl = await resolver.resolve(bird.photoUrl);
+    return photoUrl == bird.photoUrl ? bird : bird.copyWith(photoUrl: photoUrl);
+  });
 });
+
+Future<Egg> _resolveEggPhoto(Egg egg, StorageUrlResolver resolver) async {
+  final photoUrl = await resolver.resolve(egg.photoUrl);
+  return photoUrl == egg.photoUrl ? egg : egg.copyWith(photoUrl: photoUrl);
+}
 
 /// Sorts incubations from newest to oldest using startDate/createdAt.
 List<Incubation> sortIncubationsByRecency(List<Incubation> incubations) {

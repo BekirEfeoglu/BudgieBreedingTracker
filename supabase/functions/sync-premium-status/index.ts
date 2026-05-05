@@ -9,6 +9,7 @@ import {
 } from "../_shared/rate-limit.ts";
 import {
   DEFAULT_ENTITLEMENT_ID,
+  profileMatchesPremiumStatus,
   resolvePremiumStatus,
 } from "./premium_core.ts";
 
@@ -98,7 +99,7 @@ Deno.serve(async (req: Request) => {
     );
     const now = new Date().toISOString();
 
-    const { error: profileUpdateError } = await supabase
+    const { data: syncedProfile, error: profileUpdateError } = await supabase
       .from("profiles")
       .update({
         is_premium: status.isPremium,
@@ -107,12 +108,20 @@ Deno.serve(async (req: Request) => {
         grace_period_until: status.gracePeriodUntil,
         updated_at: now,
       })
-      .eq("id", userId);
+      .eq("id", userId)
+      .select(
+        "is_premium, subscription_status, premium_expires_at, grace_period_until",
+      )
+      .single();
 
     if (profileUpdateError) {
       throw new Error(
         `Profile premium sync failed: ${profileUpdateError.message}`,
       );
+    }
+
+    if (!profileMatchesPremiumStatus(syncedProfile, status)) {
+      throw new Error("Profile premium sync verification failed");
     }
 
     if (status.isPremium) {

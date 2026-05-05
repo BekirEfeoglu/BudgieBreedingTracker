@@ -1,6 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 import '../../../core/enums/admin_enums.dart';
+import '../../../domain/services/presence/user_presence_constants.dart';
 
 part 'admin_models.freezed.dart';
 part 'admin_models.g.dart';
@@ -55,10 +56,18 @@ abstract class AdminUser with _$AdminUser {
     @Default(true) bool isActive,
     @Default(false) bool isPremium,
     String? role,
+    @JsonKey(name: 'last_active_at') DateTime? lastActiveAt,
   }) = _AdminUser;
 
   factory AdminUser.fromJson(Map<String, dynamic> json) =>
       _$AdminUserFromJson(json);
+
+  bool get isOnline {
+    final lastActive = lastActiveAt;
+    if (lastActive == null) return false;
+    final age = DateTime.now().toUtc().difference(lastActive.toUtc());
+    return age >= Duration.zero && age <= UserPresenceConstants.onlineThreshold;
+  }
 }
 
 /// Detailed user model for admin user detail screen.
@@ -213,6 +222,7 @@ abstract class AdminUsersQuery with _$AdminUsersQuery {
   const factory AdminUsersQuery({
     @Default('') String searchTerm,
     @Default(null) bool? isActiveFilter,
+    @Default(false) bool onlineOnly,
     @Default('created_at') String sortField,
     @Default(false) bool sortAscending,
     @Default(50) int limit,
@@ -416,4 +426,3 @@ abstract class ErrorSummary with _$ErrorSummary {
   factory ErrorSummary.fromJson(Map<String, dynamic> json) =>
       _$ErrorSummaryFromJson(json);
 }
-

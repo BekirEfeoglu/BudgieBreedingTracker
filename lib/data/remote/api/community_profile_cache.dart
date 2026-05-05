@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/constants/supabase_constants.dart';
 import '../../../core/utils/logger.dart';
+import '../../../core/utils/storage_url_normalizer.dart';
 
 /// Shared profile cache for community remote sources.
 ///
@@ -89,11 +90,14 @@ class CommunityProfileCache {
       if (profile != null) {
         return {
           ...row,
-          'username': _nonEmpty(profile['full_name']) ??
+          'username':
+              _nonEmpty(profile['full_name']) ??
               _nonEmpty(profile['display_name']) ??
               _emailPrefix(profile['email']) ??
               '',
-          'avatar_url': profile['avatar_url'],
+          'avatar_url': StorageUrlNormalizer.normalizePublicObjectUrl(
+            _nonEmpty(profile['avatar_url']),
+          ),
         };
       }
       return row;
@@ -124,8 +128,14 @@ class CommunityProfileCache {
       for (final p in profiles) {
         final id = p['id']?.toString();
         if (id != null) {
-          resolved[id] = p;
-          _cache[id] = _CachedProfile(p, now);
+          final normalized = {
+            ...p,
+            'avatar_url': StorageUrlNormalizer.normalizePublicObjectUrl(
+              _nonEmpty(p['avatar_url']),
+            ),
+          };
+          resolved[id] = normalized;
+          _cache[id] = _CachedProfile(normalized, now);
         }
       }
     }

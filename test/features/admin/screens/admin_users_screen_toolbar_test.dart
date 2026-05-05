@@ -40,8 +40,7 @@ Widget _createSubject({
 
   return ProviderScope(
     overrides: [
-      adminUsersProvider(const AdminUsersQuery())
-          .overrideWithValue(usersAsync),
+      adminUsersProvider(const AdminUsersQuery()).overrideWithValue(usersAsync),
     ],
     child: MaterialApp.router(routerConfig: router),
   );
@@ -67,6 +66,7 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(find.text(l10n('common.all')), findsOneWidget);
+      expect(find.text(l10n('admin.online')), findsOneWidget);
       expect(find.text(l10n('common.active')), findsOneWidget);
       expect(find.text(l10n('admin.inactive')), findsAtLeast(1));
     });

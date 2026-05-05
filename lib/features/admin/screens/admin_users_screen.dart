@@ -27,21 +27,24 @@ part 'admin_users_screen_list.dart';
 part 'admin_users_screen_card.dart';
 part 'admin_users_screen_bulk_actions.dart';
 
-enum _UserStatusFilter { all, active, inactive }
+enum _UserStatusFilter { all, online, active, inactive }
 
-enum _UserSortOption { newest, oldest, nameAsc, emailAsc }
+enum _UserSortOption { newest, oldest, recentlyActive, nameAsc, emailAsc }
 
 extension _UserStatusFilterQuery on _UserStatusFilter {
   bool? get queryValue => switch (this) {
     _UserStatusFilter.active => true,
     _UserStatusFilter.inactive => false,
-    _UserStatusFilter.all => null,
+    _UserStatusFilter.all || _UserStatusFilter.online => null,
   };
+
+  bool get onlineOnly => this == _UserStatusFilter.online;
 }
 
 extension _UserSortOptionQuery on _UserSortOption {
   String get sortField => switch (this) {
     _UserSortOption.newest || _UserSortOption.oldest => 'created_at',
+    _UserSortOption.recentlyActive => 'last_active_at',
     _UserSortOption.nameAsc => 'full_name',
     _UserSortOption.emailAsc => 'email',
   };
@@ -50,7 +53,7 @@ extension _UserSortOptionQuery on _UserSortOption {
     _UserSortOption.oldest ||
     _UserSortOption.nameAsc ||
     _UserSortOption.emailAsc => true,
-    _UserSortOption.newest => false,
+    _UserSortOption.newest || _UserSortOption.recentlyActive => false,
   };
 }
 
@@ -86,6 +89,7 @@ class _AdminUsersScreenState extends ConsumerState<AdminUsersScreen> {
   AdminUsersQuery get _buildQuery => AdminUsersQuery(
     searchTerm: _query,
     isActiveFilter: _statusFilter.queryValue,
+    onlineOnly: _statusFilter.onlineOnly,
     sortField: _sortOption.sortField,
     sortAscending: _sortOption.sortAscending,
     limit: ref.read(adminUsersLimitProvider),
@@ -154,7 +158,7 @@ class _AdminUsersScreenState extends ConsumerState<AdminUsersScreen> {
           title: 'admin.confirm_activate'.tr(),
           message: 'admin.confirm_activate_desc'.tr(),
         );
-        if (confirmed != true) return;
+        if (confirmed != true || !mounted) return;
         await ref
             .read(adminActionsProvider.notifier)
             .toggleUserActive(userId, true);
@@ -165,7 +169,7 @@ class _AdminUsersScreenState extends ConsumerState<AdminUsersScreen> {
           message: 'admin.confirm_deactivate_desc'.tr(),
           isDestructive: true,
         );
-        if (confirmed != true) return;
+        if (confirmed != true || !mounted) return;
         await ref
             .read(adminActionsProvider.notifier)
             .toggleUserActive(userId, false);
@@ -175,7 +179,7 @@ class _AdminUsersScreenState extends ConsumerState<AdminUsersScreen> {
           title: 'admin.confirm_grant_premium'.tr(),
           message: 'admin.confirm_grant_premium_desc'.tr(),
         );
-        if (confirmed != true) return;
+        if (confirmed != true || !mounted) return;
         await ref.read(adminActionsProvider.notifier).grantPremium(userId);
       case 'revoke_premium':
         final confirmed = await showConfirmDialog(
@@ -184,7 +188,7 @@ class _AdminUsersScreenState extends ConsumerState<AdminUsersScreen> {
           message: 'admin.confirm_revoke_premium_desc'.tr(),
           isDestructive: true,
         );
-        if (confirmed != true) return;
+        if (confirmed != true || !mounted) return;
         await ref.read(adminActionsProvider.notifier).revokePremium(userId);
     }
     if (mounted) _refreshUsers();
@@ -223,7 +227,12 @@ class _AdminUsersScreenState extends ConsumerState<AdminUsersScreen> {
             onSearchChanged: _onSearchChanged,
             onClearSearch: _clearSearch,
             onStatusFilterChanged: (value) {
-              setState(() => _statusFilter = value);
+              setState(() {
+                _statusFilter = value;
+                if (value == _UserStatusFilter.online) {
+                  _sortOption = _UserSortOption.recentlyActive;
+                }
+              });
               _resetPagination();
             },
             onSortChanged: (value) {
@@ -241,6 +250,7 @@ class _AdminUsersScreenState extends ConsumerState<AdminUsersScreen> {
               data: (users) {
                 final activeUsers = users.where((user) => user.isActive).length;
                 final inactiveUsers = users.length - activeUsers;
+                final onlineUsers = users.where((user) => user.isOnline).length;
                 final hasMore = users.length >= limit;
                 final hasFilter =
                     _query.isNotEmpty || _statusFilter != _UserStatusFilter.all;
@@ -283,6 +293,7 @@ class _AdminUsersScreenState extends ConsumerState<AdminUsersScreen> {
                       visibleUsers: users.length,
                       activeUsers: activeUsers,
                       inactiveUsers: inactiveUsers,
+                      onlineUsers: onlineUsers,
                     ),
                     Expanded(
                       child: _UsersList(

@@ -17,6 +17,7 @@ final _testUsers = [
     fullName: 'Alice Test',
     createdAt: DateTime(2024, 1, 15),
     isActive: true,
+    lastActiveAt: DateTime.now().toUtc().subtract(const Duration(minutes: 1)),
   ),
   AdminUser(
     id: 'user-2',
@@ -55,8 +56,7 @@ Widget _createSubject({
 
   return ProviderScope(
     overrides: [
-      adminUsersProvider(const AdminUsersQuery())
-          .overrideWithValue(usersAsync),
+      adminUsersProvider(const AdminUsersQuery()).overrideWithValue(usersAsync),
     ],
     child: MaterialApp.router(routerConfig: router),
   );
@@ -69,15 +69,12 @@ void main() {
 
   group('UsersList rendering', () {
     testWidgets('should_show_empty_state_when_no_users', (tester) async {
-      await tester.pumpWidget(
-        _createSubject(usersAsync: const AsyncData([])),
-      );
+      await tester.pumpWidget(_createSubject(usersAsync: const AsyncData([])));
       await tester.pumpAndSettle();
       expect(find.byType(EmptyState), findsOneWidget);
     });
 
-    testWidgets('should_show_all_user_cards_when_data_exists',
-        (tester) async {
+    testWidgets('should_show_all_user_cards_when_data_exists', (tester) async {
       await tester.pumpWidget(
         _createSubject(usersAsync: AsyncData(_testUsers)),
       );
@@ -93,10 +90,8 @@ void main() {
       );
       await tester.pumpAndSettle();
       // Summary bar shows total, active, inactive counts
-      expect(
-        find.textContaining(l10n('admin.inactive')),
-        findsAtLeast(1),
-      );
+      expect(find.textContaining(l10n('admin.inactive')), findsAtLeast(1));
+      expect(find.textContaining(l10n('admin.online')), findsAtLeast(1));
     });
 
     testWidgets('should_show_loading_when_data_is_loading', (tester) async {

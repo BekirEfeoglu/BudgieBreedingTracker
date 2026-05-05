@@ -2,6 +2,7 @@ import '../models/marketplace_listing_model.dart';
 import '../remote/api/marketplace_listing_remote_source.dart';
 import '../remote/api/marketplace_favorite_remote_source.dart';
 import '../../core/utils/logger.dart';
+import '../../core/utils/storage_url_normalizer.dart';
 
 /// Online-first: cross-user public listings. No local Drift mirror by design.
 ///
@@ -65,7 +66,7 @@ class MarketplaceRepository {
 
   Future<MarketplaceListing> create(Map<String, dynamic> data) async {
     final row = await _listingSource.insert(data);
-    return MarketplaceListing.fromJson(row);
+    return _listingFromRow(row);
   }
 
   Future<MarketplaceListing> updateListing(
@@ -74,7 +75,7 @@ class MarketplaceRepository {
     required String userId,
   }) async {
     final row = await _listingSource.update(id, data, userId: userId);
-    return MarketplaceListing.fromJson(row);
+    return _listingFromRow(row);
   }
 
   Future<void> delete(String id, {required String userId}) async {
@@ -115,10 +116,7 @@ class MarketplaceRepository {
 
     final rows = await _listingSource.fetchByIds(favoritedIds);
     return rows
-        .map(
-          (row) =>
-              MarketplaceListing.fromJson(row).copyWith(isFavoritedByMe: true),
-        )
+        .map((row) => _listingFromRow(row, isFavoritedByMe: true))
         .toList();
   }
 
@@ -159,10 +157,40 @@ class MarketplaceRepository {
     }
 
     return rows.map((row) {
-      final listing = MarketplaceListing.fromJson(row);
+      final listing = _listingFromRow(row);
       return listing.copyWith(
         isFavoritedByMe: favoritedIds.contains(listing.id),
       );
     }).toList();
   }
+
+  MarketplaceListing _listingFromRow(
+    Map<String, dynamic> row, {
+    bool? isFavoritedByMe,
+  }) {
+    final normalized = {
+      ...row,
+      'avatar_url': StorageUrlNormalizer.normalizePublicObjectUrl(
+        row['avatar_url']?.toString(),
+      ),
+      'image_urls': StorageUrlNormalizer.normalizePublicObjectUrls(
+        _asStringList(row['image_urls']),
+      ),
+    };
+    final listing = MarketplaceListing.fromJson(normalized);
+    return isFavoritedByMe == null
+        ? listing
+        : listing.copyWith(isFavoritedByMe: isFavoritedByMe);
+  }
+}
+
+List<String> _asStringList(dynamic value) {
+  if (value is List) {
+    return value
+        .map((item) => item?.toString().trim())
+        .whereType<String>()
+        .where((item) => item.isNotEmpty)
+        .toList(growable: false);
+  }
+  return const [];
 }
