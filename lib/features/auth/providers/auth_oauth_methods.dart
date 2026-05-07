@@ -17,7 +17,7 @@ mixin _AuthOAuthMixin {
       final launched = await _client.auth.signInWithOAuth(
         provider,
         redirectTo: AuthActions._oAuthRedirectTo,
-        authScreenLaunchMode: LaunchMode.externalApplication,
+        authScreenLaunchMode: AuthActions.oAuthLaunchMode,
       );
       if (!launched && isIos) {
         await _resumeIosWindowReclaim();
