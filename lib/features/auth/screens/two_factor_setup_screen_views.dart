@@ -94,8 +94,8 @@ extension _TwoFactorSetupViews on _TwoFactorSetupScreenState {
                   ),
                   const SizedBox(height: AppSpacing.sm),
                   TextButton.icon(
-                    onPressed: () {
-                      Clipboard.setData(ClipboardData(text: _secret!));
+                    onPressed: () async {
+                      await SensitiveClipboard.copyText(_secret!);
                       ActionFeedbackService.show('auth.2fa_key_copied'.tr());
                     },
                     icon: const Icon(LucideIcons.copy, size: 16),

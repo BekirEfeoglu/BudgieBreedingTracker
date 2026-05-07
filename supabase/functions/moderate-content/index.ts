@@ -2,14 +2,22 @@
 // Checks user-generated text for policy violations.
 // Apple App Store Guideline 1.2: UGC content filtering.
 
-import { getCorsHeaders, corsPreflightResponse } from "../_shared/cors.ts";
+import { corsPreflightResponse, getCorsHeaders } from "../_shared/cors.ts";
 import { getAuthenticatedUserId } from "../_shared/auth.ts";
-import { createRateLimiter, rateLimitedResponse } from "../_shared/rate-limit.ts";
-import { moderateText, MAX_TEXT_LENGTH } from "./moderation.ts";
+import {
+  createRateLimiter,
+  createSupabaseRateLimitStore,
+  rateLimitedResponse,
+} from "../_shared/rate-limit.ts";
+import { MAX_TEXT_LENGTH, moderateText } from "./moderation.ts";
 import { z } from "npm:zod@3.24.4";
 import { parseRequestBody } from "../_shared/validation.ts";
 
-const rateLimiter = createRateLimiter({ windowMs: 60_000, maxCalls: 30 });
+const rateLimiter = createRateLimiter({
+  windowMs: 60_000,
+  maxCalls: 30,
+  store: createSupabaseRateLimitStore("moderate-content"),
+});
 
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return corsPreflightResponse(req);
@@ -25,7 +33,7 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    if (!rateLimiter.check(userId)) return rateLimitedResponse(headers);
+    if (!(await rateLimiter.check(userId))) return rateLimitedResponse(headers);
 
     const moderateSchema = z.object({
       text: z.string().optional(),
@@ -58,7 +66,9 @@ Deno.serve(async (req: Request) => {
 
     if (!result.allowed) {
       console.log(
-        `[moderate-content] Rejected: user=${userId}, reason=${result.reason}, type=${type ?? "text"}`,
+        `[moderate-content] Rejected: user=${userId}, reason=${result.reason}, type=${
+          type ?? "text"
+        }`,
       );
     }
 

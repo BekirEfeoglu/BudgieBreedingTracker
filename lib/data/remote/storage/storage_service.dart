@@ -10,14 +10,8 @@ import 'package:budgie_breeding_tracker/data/remote/storage/storage_utils.dart';
 /// Provides methods for bird photos, avatars, and general file uploads.
 /// All paths are scoped under the user's ID for RLS compatibility.
 ///
-/// **Supabase Dashboard requirements:**
-/// - Buckets (bird-photos, egg-photos, chick-photos, avatars, backups, photos)
-///   must be created manually in Supabase Dashboard.
-/// - Bird/egg/chick photo buckets are private and use signed URLs.
-/// - RLS policies needed:
-///   - `SELECT`: public (or authenticated for private buckets)
-///   - `INSERT`: authenticated, restricted to own user path
-///   - `DELETE`: authenticated, restricted to own user path
+/// Private user-scoped buckets and RLS policies are migration-managed.
+/// Bird/egg/chick/community photo buckets use signed URLs.
 class StorageService {
   final SupabaseClient _client;
 

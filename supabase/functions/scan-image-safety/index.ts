@@ -2,12 +2,17 @@ import { corsPreflightResponse, getCorsHeaders } from "../_shared/cors.ts";
 import { getAuthenticatedUserId } from "../_shared/auth.ts";
 import {
   createRateLimiter,
+  createSupabaseRateLimitStore,
   rateLimitedResponse,
 } from "../_shared/rate-limit.ts";
 import { parseRequestBody, z } from "../_shared/validation.ts";
 import { moderateImageWithOpenAI, validateImageInput } from "./moderation.ts";
 
-const rateLimiter = createRateLimiter({ windowMs: 60_000, maxCalls: 10 });
+const rateLimiter = createRateLimiter({
+  windowMs: 60_000,
+  maxCalls: 10,
+  store: createSupabaseRateLimitStore("scan-image-safety"),
+});
 const MAX_BODY_BYTES = 4 * 1024 * 1024;
 
 Deno.serve(async (req: Request) => {
@@ -24,7 +29,7 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    if (!rateLimiter.check(userId)) return rateLimitedResponse(headers);
+    if (!(await rateLimiter.check(userId))) return rateLimitedResponse(headers);
 
     // MAX_IMAGE_BYTES is 2MB raw image; base64 inflates roughly 33%.
     // Use streaming parsing so chunked requests cannot bypass the cap.

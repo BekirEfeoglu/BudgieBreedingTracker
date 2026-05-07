@@ -67,7 +67,9 @@ void main() {
     test(
       'runIfScheduled triggers backup and records timestamp on success',
       () async {
-        when(() => mockBackupService.createBackup('user-1')).thenAnswer(
+        when(
+          () => mockBackupService.createBackup('user-1', encrypt: true),
+        ).thenAnswer(
           (_) async => BackupResult.success(
             filePath: '/tmp/backup.json',
             recordCount: 10,
@@ -80,13 +82,15 @@ void main() {
         expect(result, isNotNull);
         expect(result!.success, isTrue);
         expect(await scheduler.getLastBackupTime(), isNotNull);
-        verify(() => mockBackupService.createBackup('user-1')).called(1);
+        verify(
+          () => mockBackupService.createBackup('user-1', encrypt: true),
+        ).called(1);
       },
     );
 
     test('runIfScheduled does not record timestamp on failed backup', () async {
       when(
-        () => mockBackupService.createBackup('user-1'),
+        () => mockBackupService.createBackup('user-1', encrypt: true),
       ).thenAnswer((_) async => BackupResult.failure('failed'));
       await scheduler.setFrequency(BackupFrequency.daily);
 
@@ -101,12 +105,15 @@ void main() {
   group('BackupFrequency', () {
     test('has all expected values', () {
       expect(BackupFrequency.values, hasLength(4));
-      expect(BackupFrequency.values, containsAll([
-        BackupFrequency.daily,
-        BackupFrequency.weekly,
-        BackupFrequency.monthly,
-        BackupFrequency.never,
-      ]));
+      expect(
+        BackupFrequency.values,
+        containsAll([
+          BackupFrequency.daily,
+          BackupFrequency.weekly,
+          BackupFrequency.monthly,
+          BackupFrequency.never,
+        ]),
+      );
     });
 
     test('interval returns correct durations', () {

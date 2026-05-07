@@ -1,6 +1,10 @@
-import { getCorsHeaders, corsPreflightResponse } from "../_shared/cors.ts";
+import { corsPreflightResponse, getCorsHeaders } from "../_shared/cors.ts";
 import { getAuthenticatedUserId } from "../_shared/auth.ts";
-import { createRateLimiter, rateLimitedResponse } from "../_shared/rate-limit.ts";
+import {
+  createRateLimiter,
+  createSupabaseRateLimitStore,
+  rateLimitedResponse,
+} from "../_shared/rate-limit.ts";
 import { z } from "npm:zod@3.24.4";
 import { parseRequestBody } from "../_shared/validation.ts";
 import {
@@ -12,7 +16,11 @@ import {
   pickToken,
 } from "./revoke_core.ts";
 
-const rateLimiter = createRateLimiter({ windowMs: 60_000, maxCalls: 5 });
+const rateLimiter = createRateLimiter({
+  windowMs: 60_000,
+  maxCalls: 5,
+  store: createSupabaseRateLimitStore("revoke-oauth-token"),
+});
 
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return corsPreflightResponse(req);
@@ -36,7 +44,7 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    if (!rateLimiter.check(userId)) return rateLimitedResponse(headers);
+    if (!(await rateLimiter.check(userId))) return rateLimitedResponse(headers);
 
     const revokeSchema = z.object({
       provider: z.enum(["google", "apple"]),
@@ -86,9 +94,15 @@ async function revokeGoogle(
   }
 
   const errorBody = await res.text();
-  console.warn(`[revoke-oauth-token] Google revoke failed (${res.status}): ${errorBody}`);
+  console.warn(
+    `[revoke-oauth-token] Google revoke failed (${res.status}): ${errorBody}`,
+  );
   return new Response(
-    JSON.stringify({ success: false, provider: "google", error: "revocation_failed" }),
+    JSON.stringify({
+      success: false,
+      provider: "google",
+      error: "revocation_failed",
+    }),
     { status: 502, headers },
   );
 }
@@ -104,12 +118,21 @@ async function revokeApple(
   if (!clientId || !clientSecret) {
     console.warn("[revoke-oauth-token] Apple credentials not configured");
     return new Response(
-      JSON.stringify({ success: false, provider: "apple", error: "not_configured" }),
+      JSON.stringify({
+        success: false,
+        provider: "apple",
+        error: "not_configured",
+      }),
       { status: 500, headers },
     );
   }
 
-  const params = appleRevokeParams(token, clientId, clientSecret, isRefreshToken);
+  const params = appleRevokeParams(
+    token,
+    clientId,
+    clientSecret,
+    isRefreshToken,
+  );
 
   const res = await fetch(APPLE_REVOKE_URL, {
     method: "POST",
@@ -126,9 +149,15 @@ async function revokeApple(
   }
 
   const errorBody = await res.text();
-  console.warn(`[revoke-oauth-token] Apple revoke failed (${res.status}): ${errorBody}`);
+  console.warn(
+    `[revoke-oauth-token] Apple revoke failed (${res.status}): ${errorBody}`,
+  );
   return new Response(
-    JSON.stringify({ success: false, provider: "apple", error: "revocation_failed" }),
+    JSON.stringify({
+      success: false,
+      provider: "apple",
+      error: "revocation_failed",
+    }),
     { status: 502, headers },
   );
 }

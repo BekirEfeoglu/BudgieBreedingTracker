@@ -381,6 +381,29 @@ void main() {
         },
       );
 
+      test(
+        'encrypts backups by default when encryption service is provided',
+        () async {
+          final encryptionService = _MockEncryptionService();
+          when(
+            () => encryptionService.encrypt(any()),
+          ).thenAnswer((_) async => 'encrypted-content');
+
+          final encryptedCollector = BackupDataCollector(
+            repos: repos,
+            encryptionService: encryptionService,
+          );
+
+          stubAllRepositoriesEmpty();
+
+          final result = await encryptedCollector.createBackup('user-1');
+
+          expect(result.success, isTrue);
+          expect(result.filePath, endsWith('.enc.json'));
+          verify(() => encryptionService.encrypt(any())).called(1);
+        },
+      );
+
       test('returns failure when repository throws exception', () async {
         stubAllRepositoriesEmpty();
         when(

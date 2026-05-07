@@ -5,6 +5,7 @@ import {
 } from "../_shared/auth.ts";
 import {
   createRateLimiter,
+  createSupabaseRateLimitStore,
   rateLimitedResponse,
 } from "../_shared/rate-limit.ts";
 import {
@@ -13,7 +14,11 @@ import {
   resolvePremiumStatus,
 } from "./premium_core.ts";
 
-const rateLimiter = createRateLimiter({ windowMs: 60_000, maxCalls: 10 });
+const rateLimiter = createRateLimiter({
+  windowMs: 60_000,
+  maxCalls: 10,
+  store: createSupabaseRateLimitStore("sync-premium-status"),
+});
 
 async function fetchRevenueCatSubscriber(userId: string): Promise<unknown> {
   const apiKey = Deno.env.get("REVENUECAT_SECRET_API_KEY") ?? "";
@@ -64,7 +69,7 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    if (!rateLimiter.check(userId)) return rateLimitedResponse(headers);
+    if (!(await rateLimiter.check(userId))) return rateLimitedResponse(headers);
 
     const supabase = createSupabaseAdmin();
     const { data: profile, error: profileError } = await supabase

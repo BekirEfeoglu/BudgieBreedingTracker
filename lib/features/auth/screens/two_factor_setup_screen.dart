@@ -1,6 +1,7 @@
+import 'dart:async';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
@@ -12,6 +13,8 @@ import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/core/widgets/buttons/primary_button.dart';
+import 'package:budgie_breeding_tracker/core/security/sensitive_clipboard.dart';
+import 'package:budgie_breeding_tracker/core/security/sensitive_screen_guard.dart';
 import 'package:budgie_breeding_tracker/features/auth/providers/two_factor_providers.dart';
 import 'package:budgie_breeding_tracker/core/providers/action_feedback_providers.dart';
 import 'package:budgie_breeding_tracker/features/auth/widgets/otp_input_field.dart';
@@ -49,6 +52,7 @@ class _TwoFactorSetupScreenState extends ConsumerState<TwoFactorSetupScreen> {
   @override
   void initState() {
     super.initState();
+    unawaited(SensitiveScreenGuard.enable());
     _startEnrollment();
   }
 
@@ -84,8 +88,9 @@ class _TwoFactorSetupScreenState extends ConsumerState<TwoFactorSetupScreen> {
     if (_factorId == null || _isVerifying) return;
 
     if (_isVerifyLockedOut) {
-      final remaining =
-          _verifyLockoutUntil!.difference(DateTime.now()).inSeconds;
+      final remaining = _verifyLockoutUntil!
+          .difference(DateTime.now())
+          .inSeconds;
       setState(() {
         _error = 'auth.2fa_too_many_attempts'.tr(args: ['$remaining']);
       });
@@ -134,6 +139,7 @@ class _TwoFactorSetupScreenState extends ConsumerState<TwoFactorSetupScreen> {
   void dispose() {
     _secret = null;
     _qrCode = null;
+    unawaited(SensitiveScreenGuard.disable());
     super.dispose();
   }
 
@@ -155,5 +161,4 @@ class _TwoFactorSetupScreenState extends ConsumerState<TwoFactorSetupScreen> {
       ),
     );
   }
-
 }

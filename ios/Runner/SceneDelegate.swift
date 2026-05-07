@@ -12,6 +12,10 @@ class SceneDelegate: FlutterSceneDelegate {
   private var keyboardFixChannel: FlutterMethodChannel?
   private var attChannel: FlutterMethodChannel?
   private var configChannel: FlutterMethodChannel?
+  private var sensitiveScreenChannel: FlutterMethodChannel?
+  private var sensitiveScreenEnabled = false
+  private var sensitiveScreenObservers: [NSObjectProtocol] = []
+  private var privacyOverlay: UIView?
 
   override func scene(
     _ scene: UIScene,
@@ -24,6 +28,7 @@ class SceneDelegate: FlutterSceneDelegate {
     setupKeyboardFixChannel()
     setupATTChannel()
     setupConfigChannel()
+    setupSensitiveScreenChannel()
   }
 
   /// Sets up the MethodChannel that Dart calls on every text-field tap
@@ -125,6 +130,103 @@ class SceneDelegate: FlutterSceneDelegate {
       ])
     }
     configChannel = channel
+  }
+
+  /// Best-effort protection for sensitive screens on iOS.
+  ///
+  /// iOS does not expose an app-level screenshot blocking flag. When enabled,
+  /// the app blanks the scene while it is captured or inactive.
+  private func setupSensitiveScreenChannel() {
+    guard let flutterVC = window?.rootViewController as? FlutterViewController else { return }
+    let engine = flutterVC.engine
+
+    let channel = FlutterMethodChannel(
+      name: "com.budgiebreeding.budgie_breeding_tracker/sensitive_screen",
+      binaryMessenger: engine.binaryMessenger
+    )
+    channel.setMethodCallHandler { [weak self] (call: FlutterMethodCall, result: @escaping FlutterResult) in
+      guard call.method == "setSecureScreen" else {
+        result(FlutterMethodNotImplemented)
+        return
+      }
+      let args = call.arguments as? [String: Any]
+      let enabled = args?["enabled"] as? Bool ?? false
+      self?.setSensitiveScreenEnabled(enabled)
+      result(true)
+    }
+    sensitiveScreenChannel = channel
+  }
+
+  private func setSensitiveScreenEnabled(_ enabled: Bool) {
+    sensitiveScreenEnabled = enabled
+    if enabled {
+      installSensitiveScreenObservers()
+      updatePrivacyOverlay(visible: UIScreen.main.isCaptured)
+    } else {
+      removeSensitiveScreenObservers()
+      updatePrivacyOverlay(visible: false)
+    }
+  }
+
+  private func installSensitiveScreenObservers() {
+    guard sensitiveScreenObservers.isEmpty else { return }
+
+    let center = NotificationCenter.default
+    sensitiveScreenObservers.append(
+      center.addObserver(
+        forName: UIScreen.capturedDidChangeNotification,
+        object: UIScreen.main,
+        queue: .main
+      ) { [weak self] _ in
+        guard let self = self, self.sensitiveScreenEnabled else { return }
+        self.updatePrivacyOverlay(visible: UIScreen.main.isCaptured)
+      }
+    )
+    sensitiveScreenObservers.append(
+      center.addObserver(
+        forName: UIScene.willDeactivateNotification,
+        object: nil,
+        queue: .main
+      ) { [weak self] _ in
+        guard let self = self, self.sensitiveScreenEnabled else { return }
+        self.updatePrivacyOverlay(visible: true)
+      }
+    )
+    sensitiveScreenObservers.append(
+      center.addObserver(
+        forName: UIScene.didActivateNotification,
+        object: nil,
+        queue: .main
+      ) { [weak self] _ in
+        guard let self = self, self.sensitiveScreenEnabled else { return }
+        self.updatePrivacyOverlay(visible: UIScreen.main.isCaptured)
+      }
+    )
+  }
+
+  private func removeSensitiveScreenObservers() {
+    let center = NotificationCenter.default
+    for token in sensitiveScreenObservers {
+      center.removeObserver(token)
+    }
+    sensitiveScreenObservers.removeAll()
+  }
+
+  private func updatePrivacyOverlay(visible: Bool) {
+    guard let window = window else { return }
+    if visible {
+      if privacyOverlay == nil {
+        let overlay = UIView(frame: window.bounds)
+        overlay.backgroundColor = UIColor.systemBackground
+        overlay.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        privacyOverlay = overlay
+      }
+      if privacyOverlay?.superview == nil, let overlay = privacyOverlay {
+        window.addSubview(overlay)
+      }
+    } else {
+      privacyOverlay?.removeFromSuperview()
+    }
   }
 
   // Required for supabase_flutter (app_links) to process deep link callbacks on iOS 13+.

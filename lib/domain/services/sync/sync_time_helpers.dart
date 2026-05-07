@@ -27,20 +27,18 @@ extension _SyncTimeHelpers on SyncOrchestrator {
       final encryptionService = _ref.read(encryptionServiceProvider);
       final birdsDao = _ref.read(birdsDaoProvider);
 
-      // Fetch only birds with ring numbers (lightweight query).
-      // When additional encrypted fields are added (geneticInfo, etc.),
-      // add their collection logic here following the same pattern.
-      final birds = await birdsDao.getWithRingNumber(userId);
-      final encryptedValues = <String>[];
-      final idToValue = <String, String>{};
-      for (final bird in birds) {
-        if (bird.ringNumber != null && bird.ringNumber!.isNotEmpty) {
-          if (looksLikeEncrypted(bird.ringNumber!)) {
-            encryptedValues.add(bird.ringNumber!);
-            idToValue[bird.id] = bird.ringNumber!;
-          }
-        }
+      final plaintextMigrated = await birdsDao.migratePlaintextSensitiveFields(
+        userId,
+      );
+      if (plaintextMigrated > 0) {
+        AppLogger.info(
+          '[SyncOrchestrator] Encryption migration: '
+          '$plaintextMigrated birds encrypted at rest',
+        );
       }
+
+      final idToValue = await birdsDao.getRawEncryptedRingNumbers(userId);
+      final encryptedValues = idToValue.values.toList(growable: false);
 
       if (encryptedValues.isEmpty) {
         await _clearPendingMigration();
@@ -82,9 +80,7 @@ extension _SyncTimeHelpers on SyncOrchestrator {
         await _clearPendingMigration();
       }
     } catch (e, st) {
-      AppLogger.warning(
-        '[SyncOrchestrator] Encryption migration failed: $e',
-      );
+      AppLogger.warning('[SyncOrchestrator] Encryption migration failed: $e');
       Sentry.captureException(e, stackTrace: st);
     }
   }
@@ -96,7 +92,9 @@ extension _SyncTimeHelpers on SyncOrchestrator {
       final prefs = await _getPrefs();
       return prefs.getBool(_keyPendingEncryptionMigration) ?? false;
     } catch (e) {
-      AppLogger.debug('[SyncOrchestrator] Failed to check pending migration: $e');
+      AppLogger.debug(
+        '[SyncOrchestrator] Failed to check pending migration: $e',
+      );
       return false;
     }
   }
@@ -115,7 +113,9 @@ extension _SyncTimeHelpers on SyncOrchestrator {
       final prefs = await _getPrefs();
       await prefs.remove(_keyPendingEncryptionMigration);
     } catch (e) {
-      AppLogger.debug('[SyncOrchestrator] Failed to clear pending migration: $e');
+      AppLogger.debug(
+        '[SyncOrchestrator] Failed to clear pending migration: $e',
+      );
     }
   }
 

@@ -1,18 +1,22 @@
-import { getCorsHeaders, corsPreflightResponse } from "../_shared/cors.ts";
+import { corsPreflightResponse, getCorsHeaders } from "../_shared/cors.ts";
 import {
+  createSupabaseAdmin,
   getAuthenticatedUserId,
   requireAdminRole,
-  createSupabaseAdmin,
 } from "../_shared/auth.ts";
-import { createRateLimiter, rateLimitedResponse } from "../_shared/rate-limit.ts";
-import { SignJWT, importPKCS8 } from "npm:jose@5.9.6";
+import {
+  createRateLimiter,
+  createSupabaseRateLimitStore,
+  rateLimitedResponse,
+} from "../_shared/rate-limit.ts";
+import { importPKCS8, SignJWT } from "npm:jose@5.9.6";
 import { z } from "npm:zod@3.24.4";
 import { parseRequestBody } from "../_shared/validation.ts";
 import {
   authorizePushTargets,
+  batch as batchItems,
   BATCH_SIZE,
   BODY_MAX,
-  batch as batchItems,
   clampText,
   clampTokens,
   MAX_TOKENS,
@@ -23,7 +27,11 @@ import {
   validateUserIdsCount,
 } from "./push_core.ts";
 
-const rateLimiter = createRateLimiter({ windowMs: 60_000, maxCalls: 10 });
+const rateLimiter = createRateLimiter({
+  windowMs: 60_000,
+  maxCalls: 10,
+  store: createSupabaseRateLimitStore("send-push"),
+});
 
 async function createAccessToken(): Promise<string> {
   const rawServiceAccount = Deno.env.get("GOOGLE_SERVICE_ACCOUNT_JSON") ?? "";
@@ -56,7 +64,9 @@ async function createAccessToken(): Promise<string> {
   });
 
   if (!response.ok) {
-    throw new Error(`Google OAuth failed: ${response.status} ${await response.text()}`);
+    throw new Error(
+      `Google OAuth failed: ${response.status} ${await response.text()}`,
+    );
   }
 
   const json = await response.json();
@@ -126,7 +136,6 @@ async function sendToFcm(
   return { ok: true };
 }
 
-
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return corsPreflightResponse(req);
 
@@ -143,7 +152,9 @@ Deno.serve(async (req: Request) => {
 
     const isAdmin = await requireAdminRole(callerId);
 
-    if (!rateLimiter.check(callerId)) return rateLimitedResponse(headers);
+    if (!(await rateLimiter.check(callerId))) {
+      return rateLimitedResponse(headers);
+    }
 
     const pushSchema = z.object({
       userId: z.string().optional(),
@@ -184,9 +195,12 @@ Deno.serve(async (req: Request) => {
 
     // Audit log: record who-pushed-to-whom when admin targets other users
     // or uses raw device tokens (no userId resolution).
-    const targetIds = request.userIds ?? (request.userId ? [request.userId] : []);
+    const targetIds = request.userIds ??
+      (request.userId ? [request.userId] : []);
     const crossUser = targetIds.filter((id) => id !== callerId);
-    if (isAdmin && (crossUser.length > 0 || (request.tokens?.length ?? 0) > 0)) {
+    if (
+      isAdmin && (crossUser.length > 0 || (request.tokens?.length ?? 0) > 0)
+    ) {
       console.info(
         `[send-push] admin_audit caller=${callerId} ` +
           `cross_user_targets=${crossUser.length} ` +
@@ -208,7 +222,9 @@ Deno.serve(async (req: Request) => {
     let failureCount = 0;
     for (const tokenBatch of batchItems(tokens, BATCH_SIZE)) {
       const results = await Promise.all(
-        tokenBatch.map((token) => sendToFcm(accessToken, projectId, token, request)),
+        tokenBatch.map((token) =>
+          sendToFcm(accessToken, projectId, token, request)
+        ),
       );
       successCount += results.filter((item) => item.ok).length;
       failureCount += results.filter((item) => !item.ok).length;

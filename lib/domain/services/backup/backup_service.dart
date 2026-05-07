@@ -46,7 +46,7 @@ class BackupService {
        _encryptionService = encryptionService;
 
   /// Create a full backup of user data as JSON file.
-  Future<BackupResult> createBackup(String userId, {bool encrypt = false}) {
+  Future<BackupResult> createBackup(String userId, {bool? encrypt}) {
     return _collector.createBackup(userId, encrypt: encrypt);
   }
 
@@ -59,7 +59,7 @@ class BackupService {
   Future<BackupResult> uploadBackup(
     String userId,
     String filePath, {
-    bool encrypt = false,
+    bool? encrypt,
   }) async {
     if (_supabaseClient == null) {
       return BackupResult.failure('Supabase client not available');
@@ -72,7 +72,9 @@ class BackupService {
         return BackupResult.failure('Backup file not found');
       }
 
-      if (encrypt && _encryptionService == null) {
+      final shouldEncryptRequest = encrypt ?? _encryptionService != null;
+
+      if (shouldEncryptRequest && _encryptionService == null) {
         return BackupResult.failure(
           'Encryption service not available for encrypted upload',
         );
@@ -80,7 +82,7 @@ class BackupService {
 
       final timestamp = DateTime.now().toIso8601String().replaceAll(':', '-');
       final isAlreadyEncrypted = filePath.endsWith('.enc.json');
-      final shouldEncrypt = encrypt && !isAlreadyEncrypted;
+      final shouldEncrypt = shouldEncryptRequest && !isAlreadyEncrypted;
 
       File fileToUpload;
       if (shouldEncrypt && _encryptionService != null) {

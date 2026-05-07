@@ -19,13 +19,17 @@ import 'package:budgie_breeding_tracker/data/local/database/daos/event_reminders
 import 'package:budgie_breeding_tracker/data/local/database/daos/notification_schedules_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/genetics_history_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/conflict_history_dao.dart';
+import 'package:budgie_breeding_tracker/domain/services/encryption/encryption_providers.dart';
 
 /// Riverpod providers for all Drift DAOs.
 ///
 /// Each provider extracts its DAO from the shared [AppDatabase] instance.
 
 final birdsDaoProvider = Provider<BirdsDao>((ref) {
-  return ref.watch(appDatabaseProvider).birdsDao;
+  return BirdsDao(
+    ref.watch(appDatabaseProvider),
+    ref.watch(encryptionServiceProvider),
+  );
 });
 
 final eggsDaoProvider = Provider<EggsDao>((ref) {

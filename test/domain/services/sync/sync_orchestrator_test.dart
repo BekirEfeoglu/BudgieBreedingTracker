@@ -129,8 +129,7 @@ void main() {
         any(),
         lastSyncedAt: any(named: 'lastSyncedAt'),
       ),
-      lastPullConflicts: () =>
-          mockBreedingPairRepository.lastPullConflicts,
+      lastPullConflicts: () => mockBreedingPairRepository.lastPullConflicts,
     );
     stubPushAndPull(
       pushAll: () => mockClutchRepository.pushAll(any()),
@@ -162,8 +161,7 @@ void main() {
         any(),
         lastSyncedAt: any(named: 'lastSyncedAt'),
       ),
-      lastPullConflicts: () =>
-          mockHealthRecordRepository.lastPullConflicts,
+      lastPullConflicts: () => mockHealthRecordRepository.lastPullConflicts,
     );
     stubPushAndPull(
       pushAll: () => mockEventRepository.pushAll(any()),
@@ -188,8 +186,7 @@ void main() {
         any(),
         lastSyncedAt: any(named: 'lastSyncedAt'),
       ),
-      lastPullConflicts: () =>
-          mockEventReminderRepository.lastPullConflicts,
+      lastPullConflicts: () => mockEventReminderRepository.lastPullConflicts,
     );
 
     // Syncable repositories without lastPullConflicts
@@ -199,8 +196,7 @@ void main() {
         any(),
         lastSyncedAt: any(named: 'lastSyncedAt'),
       ),
-      lastPullConflicts: () =>
-          mockIncubationRepository.lastPullConflicts,
+      lastPullConflicts: () => mockIncubationRepository.lastPullConflicts,
     );
     stubPushAndPull(
       pushAll: () => mockGrowthMeasurementRepository.pushAll(any()),
@@ -956,7 +952,11 @@ void main() {
       final persistedValue = prefs.getString('pref_last_synced_at');
       expect(persistedValue, isNotNull);
       final persistedTime = DateTime.parse(persistedValue!);
-      expect(persistedTime.isAfter(beforeSync) || persistedTime.isAtSameMomentAs(beforeSync), isTrue);
+      expect(
+        persistedTime.isAfter(beforeSync) ||
+            persistedTime.isAtSameMomentAs(beforeSync),
+        isTrue,
+      );
       expect(container.read(lastSyncTimeProvider), isNotNull);
     });
 
@@ -995,8 +995,16 @@ void main() {
       final reconcileTime = prefs.getString('pref_last_reconciled_at');
       expect(syncTime, isNotNull);
       expect(reconcileTime, isNotNull);
-      expect(DateTime.parse(syncTime!).isAfter(beforeSync) || DateTime.parse(syncTime).isAtSameMomentAs(beforeSync), isTrue);
-      expect(DateTime.parse(reconcileTime!).isAfter(beforeSync) || DateTime.parse(reconcileTime).isAtSameMomentAs(beforeSync), isTrue);
+      expect(
+        DateTime.parse(syncTime!).isAfter(beforeSync) ||
+            DateTime.parse(syncTime).isAtSameMomentAs(beforeSync),
+        isTrue,
+      );
+      expect(
+        DateTime.parse(reconcileTime!).isAfter(beforeSync) ||
+            DateTime.parse(reconcileTime).isAtSameMomentAs(beforeSync),
+        isTrue,
+      );
     });
   });
 
@@ -1034,8 +1042,9 @@ void main() {
     test(
       'fullSync skips reconciliation when last reconcile is within 6 hours',
       () async {
-        final recentReconcile =
-            DateTime.now().subtract(const Duration(hours: 3));
+        final recentReconcile = DateTime.now().subtract(
+          const Duration(hours: 3),
+        );
         final lastSync = DateTime.now().subtract(const Duration(hours: 1));
         SharedPreferences.setMockInitialValues({
           'pref_last_synced_at': lastSync.toIso8601String(),
@@ -1112,15 +1121,18 @@ void main() {
       mockConflictHistoryDao = MockConflictHistoryDao();
       mockEncryptionService = MockEncryptionService();
 
-      when(() => mockBirdsDao.getWithRingNumber(any()))
-          .thenAnswer((_) async => []);
-      when(() => mockConflictHistoryDao.deleteOlderThan(any()))
-          .thenAnswer((_) async => 0);
+      when(
+        () => mockBirdsDao.migratePlaintextSensitiveFields(any()),
+      ).thenAnswer((_) async => 0);
+      when(
+        () => mockBirdsDao.getRawEncryptedRingNumbers(any()),
+      ).thenAnswer((_) async => {});
+      when(
+        () => mockConflictHistoryDao.deleteOlderThan(any()),
+      ).thenAnswer((_) async => 0);
     });
 
-    ProviderContainer createContainerWithEncryption({
-      String userId = _userId,
-    }) {
+    ProviderContainer createContainerWithEncryption({String userId = _userId}) {
       final base = createContainer(userId: userId);
       // Layer encryption-specific overrides on top of the base container.
       // We dispose the base and create a new one with all overrides merged.
@@ -1166,9 +1178,7 @@ void main() {
           ),
           // Encryption-specific overrides
           birdsDaoProvider.overrideWithValue(mockBirdsDao),
-          conflictHistoryDaoProvider.overrideWithValue(
-            mockConflictHistoryDao,
-          ),
+          conflictHistoryDaoProvider.overrideWithValue(mockConflictHistoryDao),
           encryptionServiceProvider.overrideWithValue(mockEncryptionService),
         ],
       );
@@ -1186,16 +1196,21 @@ void main() {
         final result = await orchestrator.fullSync();
 
         expect(result, SyncResult.success);
-        // Migration should query birds with ring numbers
-        verify(() => mockBirdsDao.getWithRingNumber(_userId)).called(1);
+        verify(
+          () => mockBirdsDao.migratePlaintextSensitiveFields(_userId),
+        ).called(1);
+        verify(
+          () => mockBirdsDao.getRawEncryptedRingNumbers(_userId),
+        ).called(1);
       },
     );
 
     test(
       'fullSync skips encryption migration during incremental sync',
       () async {
-        final recentReconcile =
-            DateTime.now().subtract(const Duration(hours: 2));
+        final recentReconcile = DateTime.now().subtract(
+          const Duration(hours: 2),
+        );
         final lastSync = DateTime.now().subtract(const Duration(hours: 1));
         SharedPreferences.setMockInitialValues({
           'pref_last_synced_at': lastSync.toIso8601String(),
@@ -1209,25 +1224,25 @@ void main() {
         final result = await orchestrator.fullSync();
 
         expect(result, SyncResult.success);
-        // No migration during incremental sync
-        verifyNever(() => mockBirdsDao.getWithRingNumber(any()));
+        verifyNever(() => mockBirdsDao.migratePlaintextSensitiveFields(any()));
+        verifyNever(() => mockBirdsDao.getRawEncryptedRingNumbers(any()));
       },
     );
 
-    test(
-      'forceFullSync always runs encryption migration',
-      () async {
-        SharedPreferences.setMockInitialValues({});
+    test('forceFullSync always runs encryption migration', () async {
+      SharedPreferences.setMockInitialValues({});
 
-        final container = createContainerWithEncryption();
-        addTearDown(container.dispose);
-        final orchestrator = container.read(syncOrchestratorProvider);
+      final container = createContainerWithEncryption();
+      addTearDown(container.dispose);
+      final orchestrator = container.read(syncOrchestratorProvider);
 
-        final result = await orchestrator.forceFullSync();
+      final result = await orchestrator.forceFullSync();
 
-        expect(result, SyncResult.success);
-        verify(() => mockBirdsDao.getWithRingNumber(_userId)).called(1);
-      },
-    );
+      expect(result, SyncResult.success);
+      verify(
+        () => mockBirdsDao.migratePlaintextSensitiveFields(_userId),
+      ).called(1);
+      verify(() => mockBirdsDao.getRawEncryptedRingNumbers(_userId)).called(1);
+    });
   });
 }

@@ -95,7 +95,7 @@ class BackupScheduler {
     }
 
     AppLogger.info('$_tag Running scheduled backup');
-    final result = await _backupService.createBackup(userId);
+    final result = await _backupService.createBackup(userId, encrypt: true);
 
     if (result.success) {
       await _recordBackup();

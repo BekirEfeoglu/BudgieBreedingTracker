@@ -42,16 +42,14 @@ class BackupDataCollector {
   static int get backupVersion => _backupVersion;
 
   /// Create a full backup of user data as JSON file.
-  Future<BackupResult> createBackup(
-    String userId, {
-    bool encrypt = false,
-  }) async {
+  Future<BackupResult> createBackup(String userId, {bool? encrypt}) async {
     try {
+      final shouldEncrypt = encrypt ?? _encryptionService != null;
       AppLogger.info(
-        '$_tag Creating backup${encrypt ? ' (encrypted)' : ''}',
+        '$_tag Creating backup${shouldEncrypt ? ' (encrypted)' : ''}',
       );
 
-      if (encrypt && _encryptionService == null) {
+      if (shouldEncrypt && _encryptionService == null) {
         return BackupResult.failure(
           'Encryption service not available for encrypted backup',
         );
@@ -82,7 +80,7 @@ class BackupDataCollector {
       final jsonString = const JsonEncoder.withIndent('  ').convert(backupData);
 
       String contentToWrite;
-      if (encrypt && _encryptionService != null) {
+      if (shouldEncrypt && _encryptionService != null) {
         contentToWrite = await _encryptionService.encrypt(jsonString);
         AppLogger.info('$_tag Backup content encrypted');
       } else {
@@ -91,7 +89,7 @@ class BackupDataCollector {
 
       final dir = await getTemporaryDirectory();
       final timestamp = DateTime.now().toIso8601String().replaceAll(':', '-');
-      final extension = encrypt ? '.enc.json' : '.json';
+      final extension = shouldEncrypt ? '.enc.json' : '.json';
       final fileName = 'budgie_backup_$timestamp$extension';
       final file = File(p.join(dir.path, fileName));
 
@@ -111,14 +109,30 @@ class BackupDataCollector {
 
   static List<_ExportEntry> _buildExportEntries(BackupRepositories r) => [
     _export('birds', r.bird.getAll, (Bird b) => b.toJson()),
-    _export('breeding_pairs', r.breedingPair.getAll, (BreedingPair b) => b.toJson()),
+    _export(
+      'breeding_pairs',
+      r.breedingPair.getAll,
+      (BreedingPair b) => b.toJson(),
+    ),
     _export('eggs', r.egg.getAll, (Egg e) => e.toJson()),
     _export('chicks', r.chick.getAll, (Chick c) => c.toJson()),
-    _export('health_records', r.healthRecord.getAll, (HealthRecord h) => h.toJson()),
+    _export(
+      'health_records',
+      r.healthRecord.getAll,
+      (HealthRecord h) => h.toJson(),
+    ),
     _export('events', r.event.getAll, (Event e) => e.toJson()),
     _export('incubations', r.incubation.getAll, (Incubation i) => i.toJson()),
-    _export('growth_measurements', r.growthMeasurement.getAll, (GrowthMeasurement g) => g.toJson()),
-    _export('notifications', r.notification.getAll, (AppNotification n) => n.toJson()),
+    _export(
+      'growth_measurements',
+      r.growthMeasurement.getAll,
+      (GrowthMeasurement g) => g.toJson(),
+    ),
+    _export(
+      'notifications',
+      r.notification.getAll,
+      (AppNotification n) => n.toJson(),
+    ),
     _export('clutches', r.clutch.getAll, (Clutch c) => c.toJson()),
     _export('nests', r.nest.getAll, (Nest n) => n.toJson()),
     _export('photos', r.photo.getAll, (Photo p) => p.toJson()),

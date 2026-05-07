@@ -193,11 +193,11 @@ Deno.test("rateLimitedResponse with empty headers", async () => {
 // Edge cases
 // ---------------------------------------------------------------------------
 
-Deno.test("rapid sequential calls are counted correctly", () => {
+Deno.test("rapid sequential calls are counted correctly", async () => {
   const limiter = createRateLimiter({ maxCalls: 5, windowMs: 60_000 });
   const results: boolean[] = [];
   for (let i = 0; i < 10; i++) {
-    results.push(limiter.check("rapid"));
+    results.push(await limiter.check("rapid"));
   }
   // First 5 allowed, rest blocked
   assertEquals(results.filter((r) => r === true).length, 5);
@@ -232,4 +232,21 @@ Deno.test("separate limiter instances have independent stores", () => {
 
   // limiter2 has its own store — should allow
   assert(limiter2.check("shared-key"));
+});
+
+Deno.test("async durable store receives key and limiter config", async () => {
+  const calls: Array<[string, number, number]> = [];
+  const limiter = createRateLimiter({
+    windowMs: 1234,
+    maxCalls: 7,
+    store: {
+      check(key: string, windowMs: number, maxCalls: number) {
+        calls.push([key, windowMs, maxCalls]);
+        return Promise.resolve(false);
+      },
+    },
+  });
+
+  assertEquals(await limiter.check("user-1"), false);
+  assertEquals(calls, [["user-1", 1234, 7]]);
 });

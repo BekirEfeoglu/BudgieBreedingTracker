@@ -6,6 +6,7 @@ import {
 } from "../_shared/auth.ts";
 import {
   createRateLimiter,
+  createSupabaseRateLimitStore,
   rateLimitedResponse,
 } from "../_shared/rate-limit.ts";
 import { z } from "npm:zod@3.24.4";
@@ -17,7 +18,11 @@ import {
   type LockoutRow,
 } from "./lockout_core.ts";
 
-const rateLimiter = createRateLimiter({ windowMs: 60_000, maxCalls: 30 });
+const rateLimiter = createRateLimiter({
+  windowMs: 60_000,
+  maxCalls: 30,
+  store: createSupabaseRateLimitStore("mfa-lockout"),
+});
 
 async function getOrCreateLockout(
   supabase: any,
@@ -59,7 +64,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    if (!rateLimiter.check(userId)) return rateLimitedResponse(headers);
+    if (!(await rateLimiter.check(userId))) return rateLimitedResponse(headers);
 
     const mfaSchema = z.object({
       action: z.enum(["check", "record-failure", "reset"]),

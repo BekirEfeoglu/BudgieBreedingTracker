@@ -1,9 +1,26 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
+import 'package:drift/drift.dart' show Variable;
 import 'package:drift/native.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/data/local/database/app_database.dart';
+import 'package:budgie_breeding_tracker/data/local/database/dao_providers.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/birds_dao.dart';
+import 'package:budgie_breeding_tracker/data/local/database/database_provider.dart';
 import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
+import 'package:budgie_breeding_tracker/domain/services/encryption/encryption_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/encryption/encryption_service.dart';
+
+class MockFlutterSecureStorage extends Mock implements FlutterSecureStorage {}
+
+const _encryptionKeyName = 'budgie_encryption_key';
+final _testKeyBytes = Uint8List.fromList(List<int>.generate(32, (i) => i));
+final _testBase64Key = base64Encode(_testKeyBytes);
 
 void main() {
   late AppDatabase db;
@@ -25,6 +42,8 @@ void main() {
     DateTime? birthDate,
     DateTime? deathDate,
     DateTime? soldDate,
+    String? notes,
+    Map<String, String>? genotypeInfo,
     bool isDeleted = false,
     DateTime? createdAt,
   }) {
@@ -41,6 +60,8 @@ void main() {
       birthDate: birthDate,
       deathDate: deathDate,
       soldDate: soldDate,
+      notes: notes,
+      genotypeInfo: genotypeInfo,
       isDeleted: isDeleted,
       createdAt: createdAt ?? DateTime(2024, 1, 1),
       updatedAt: DateTime(2024, 1, 1),
@@ -181,14 +202,11 @@ void main() {
       expect(result, isNull);
     });
 
-    test(
-      'filters out soft-deleted birds',
-      () async {
-        await dao.insertItem(makeBird(isDeleted: true));
-        final result = await dao.watchById('bird-1').first;
-        expect(result, isNull);
-      },
-    );
+    test('filters out soft-deleted birds', () async {
+      await dao.insertItem(makeBird(isDeleted: true));
+      final result = await dao.watchById('bird-1').first;
+      expect(result, isNull);
+    });
   });
 
   group('getAll', () {
@@ -261,7 +279,10 @@ void main() {
       expect(result, isNull);
 
       final deleted = await dao.getDeleted(userId);
-      expect(deleted.any((b) => b.id == 'bird-1' && b.isDeleted == true), isTrue);
+      expect(
+        deleted.any((b) => b.id == 'bird-1' && b.isDeleted == true),
+        isTrue,
+      );
     });
   });
 
@@ -384,6 +405,88 @@ void main() {
 
       final deleted = await dao.getDeleted(userId);
       expect(deleted, isEmpty);
+    });
+  });
+
+  group('sensitive field encryption', () {
+    late MockFlutterSecureStorage mockStorage;
+    late EncryptionService encryptionService;
+    late ProviderContainer container;
+    late BirdsDao encryptedDao;
+
+    setUp(() {
+      mockStorage = MockFlutterSecureStorage();
+      when(
+        () => mockStorage.read(key: _encryptionKeyName),
+      ).thenAnswer((_) async => _testBase64Key);
+      when(
+        () => mockStorage.read(key: 'budgie_encryption_key_version'),
+      ).thenAnswer((_) async => null);
+      when(
+        () => mockStorage.write(
+          key: any(named: 'key'),
+          value: any(named: 'value'),
+        ),
+      ).thenAnswer((_) async {});
+      when(
+        () => mockStorage.delete(key: any(named: 'key')),
+      ).thenAnswer((_) async {});
+
+      encryptionService = EncryptionService(mockStorage);
+      container = ProviderContainer(
+        overrides: [
+          appDatabaseProvider.overrideWithValue(db),
+          encryptionServiceProvider.overrideWithValue(encryptionService),
+        ],
+      );
+      encryptedDao = container.read(birdsDaoProvider);
+    });
+
+    tearDown(() {
+      container.dispose();
+      encryptionService.dispose();
+    });
+
+    test('stores sensitive bird fields encrypted at rest', () async {
+      final bird = makeBird(
+        id: 'bird-secret',
+        ringNumber: 'TR-2026-001',
+        notes: 'Private health note',
+        genotypeInfo: const {'blue': 'visual'},
+      );
+
+      await encryptedDao.insertItem(bird);
+
+      final raw = await db
+          .customSelect(
+            'SELECT ring_number, notes, genotype_info FROM birds WHERE id = ?',
+            variables: [Variable.withString('bird-secret')],
+          )
+          .getSingle();
+      final rawRingNumber = raw.read<String>('ring_number');
+      final rawNotes = raw.read<String>('notes');
+      final rawGenotypeInfo = raw.read<String>('genotype_info');
+
+      expect(rawRingNumber, isNot('TR-2026-001'));
+      expect(rawNotes, isNot('Private health note'));
+      expect(rawGenotypeInfo, isNot(jsonEncode({'blue': 'visual'})));
+      expect(looksLikeEncrypted(rawRingNumber), isTrue);
+      expect(looksLikeEncrypted(rawNotes), isTrue);
+      expect(looksLikeEncrypted(rawGenotypeInfo), isTrue);
+
+      final result = await encryptedDao.getById('bird-secret');
+      expect(result!.ringNumber, 'TR-2026-001');
+      expect(result.notes, 'Private health note');
+      expect(result.genotypeInfo, {'blue': 'visual'});
+    });
+
+    test('matches ring number uniqueness against encrypted values', () async {
+      await encryptedDao.insertItem(
+        makeBird(id: 'bird-secret', ringNumber: 'TR-2026-002'),
+      );
+
+      expect(await encryptedDao.hasRingNumber(userId, 'TR-2026-002'), isTrue);
+      expect(await encryptedDao.hasRingNumber(userId, 'TR-2026-999'), isFalse);
     });
   });
 

@@ -4,57 +4,64 @@ import 'package:budgie_breeding_tracker/data/local/database/app_database.dart';
 import 'package:budgie_breeding_tracker/data/local/database/tables/birds_table.dart';
 import 'package:budgie_breeding_tracker/data/local/database/mappers/bird_mapper.dart';
 import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
+import 'package:budgie_breeding_tracker/domain/services/encryption/encryption_service.dart';
 
 part 'birds_dao.g.dart';
 
 @DriftAccessor(tables: [BirdsTable])
 class BirdsDao extends DatabaseAccessor<AppDatabase> with _$BirdsDaoMixin {
-  BirdsDao(super.db);
+  BirdsDao(super.db, [this._encryptionService]);
+
+  final EncryptionService? _encryptionService;
 
   Stream<List<Bird>> watchAll(String userId) {
     return (select(birdsTable)
           ..where((t) => t.userId.equals(userId) & t.isDeleted.equals(false))
           ..orderBy([(t) => OrderingTerm.desc(t.createdAt)]))
         .watch()
-        .map((rows) => rows.map((r) => r.toModel()).toList());
+        .asyncMap(_rowsToModels);
   }
 
   Stream<Bird?> watchById(String id) {
     return (select(birdsTable)
           ..where((t) => t.id.equals(id) & t.isDeleted.equals(false)))
         .watchSingleOrNull()
-        .map((row) => row?.toModel());
+        .asyncMap((row) => row == null ? null : _rowToModel(row));
   }
 
   Future<List<Bird>> getAll(String userId) async {
     final rows = await (select(
       birdsTable,
     )..where((t) => t.userId.equals(userId) & t.isDeleted.equals(false))).get();
-    return rows.map((r) => r.toModel()).toList();
+    return _rowsToModels(rows);
   }
 
   Future<Bird?> getById(String id) async {
-    final row = await (select(birdsTable)..where(
-      (t) => t.id.equals(id) & t.isDeleted.equals(false),
-    )).getSingleOrNull();
-    return row?.toModel();
+    final row =
+        await (select(birdsTable)
+              ..where((t) => t.id.equals(id) & t.isDeleted.equals(false)))
+            .getSingleOrNull();
+    return row == null ? null : _rowToModel(row);
   }
 
-  Future<void> insertItem(Bird model) {
-    return into(birdsTable).insertOnConflictUpdate(model.toCompanion());
+  Future<void> insertItem(Bird model) async {
+    await into(
+      birdsTable,
+    ).insertOnConflictUpdate(await _encryptedCompanion(model));
   }
 
-  Future<void> insertAll(List<Bird> models) {
+  Future<void> insertAll(List<Bird> models) async {
+    final companions = <BirdsTableCompanion>[];
+    for (final model in models) {
+      companions.add(await _encryptedCompanion(model));
+    }
     return batch((b) {
-      b.insertAllOnConflictUpdate(
-        birdsTable,
-        models.map((m) => m.toCompanion()).toList(),
-      );
+      b.insertAllOnConflictUpdate(birdsTable, companions);
     });
   }
 
-  Future<void> updateItem(Bird model) {
-    return update(birdsTable).replace(model.toCompanion());
+  Future<void> updateItem(Bird model) async {
+    await update(birdsTable).replace(await _encryptedCompanion(model));
   }
 
   Future<void> softDelete(String id) {
@@ -79,7 +86,7 @@ class BirdsDao extends DatabaseAccessor<AppDatabase> with _$BirdsDaoMixin {
                   t.isDeleted.equals(false),
             ))
             .get();
-    return rows.map((r) => r.toModel()).toList();
+    return _rowsToModels(rows);
   }
 
   /// Reactive count of all non-deleted birds for a user (lightweight).
@@ -98,13 +105,14 @@ class BirdsDao extends DatabaseAccessor<AppDatabase> with _$BirdsDaoMixin {
   /// Returns the count of non-deleted birds for a user (lightweight — no row mapping).
   Future<int> getCount(String userId) async {
     final count = birdsTable.id.count();
-    final row = await (selectOnly(birdsTable)
-          ..addColumns([count])
-          ..where(
-            birdsTable.userId.equals(userId) &
-                birdsTable.isDeleted.equals(false),
-          ))
-        .getSingle();
+    final row =
+        await (selectOnly(birdsTable)
+              ..addColumns([count])
+              ..where(
+                birdsTable.userId.equals(userId) &
+                    birdsTable.isDeleted.equals(false),
+              ))
+            .getSingle();
     return row.read(count) ?? 0;
   }
 
@@ -112,7 +120,7 @@ class BirdsDao extends DatabaseAccessor<AppDatabase> with _$BirdsDaoMixin {
     final rows = await (select(
       birdsTable,
     )..where((t) => t.userId.equals(userId) & t.isDeleted.equals(true))).get();
-    return rows.map((r) => r.toModel()).toList();
+    return _rowsToModels(rows);
   }
 
   /// Returns only birds that have a non-null ring number (lightweight).
@@ -120,15 +128,69 @@ class BirdsDao extends DatabaseAccessor<AppDatabase> with _$BirdsDaoMixin {
   /// Used by the encryption migration pipeline to avoid fetching all
   /// birds when only those with encrypted ring numbers are needed.
   Future<List<Bird>> getWithRingNumber(String userId) async {
-    final rows = await (select(birdsTable)
-          ..where(
-            (t) =>
-                t.userId.equals(userId) &
-                t.isDeleted.equals(false) &
-                t.ringNumber.isNotNull(),
-          ))
-        .get();
-    return rows.map((r) => r.toModel()).toList();
+    final rows =
+        await (select(birdsTable)..where(
+              (t) =>
+                  t.userId.equals(userId) &
+                  t.isDeleted.equals(false) &
+                  t.ringNumber.isNotNull(),
+            ))
+            .get();
+    return _rowsToModels(rows);
+  }
+
+  /// Returns raw encrypted ring-number payloads for migration/audit code.
+  Future<Map<String, String>> getRawEncryptedRingNumbers(String userId) async {
+    final rows =
+        await (select(birdsTable)..where(
+              (t) =>
+                  t.userId.equals(userId) &
+                  t.isDeleted.equals(false) &
+                  t.ringNumber.isNotNull(),
+            ))
+            .get();
+
+    final result = <String, String>{};
+    for (final row in rows) {
+      final value = row.ringNumber;
+      if (value != null && looksLikeEncrypted(value)) {
+        result[row.id] = value;
+      }
+    }
+    return result;
+  }
+
+  /// Encrypts existing plaintext sensitive bird fields in place.
+  Future<int> migratePlaintextSensitiveFields(String userId) async {
+    if (_encryptionService == null) return 0;
+
+    final rows = await (select(
+      birdsTable,
+    )..where((t) => t.userId.equals(userId) & t.isDeleted.equals(false))).get();
+
+    var migrated = 0;
+    for (final row in rows) {
+      final ringNumber = await _encryptPlaintextOnly(row.ringNumber);
+      final notes = await _encryptPlaintextOnly(row.notes);
+      final genotypeInfo = await _encryptPlaintextOnly(row.genotypeInfo);
+
+      if (ringNumber == row.ringNumber &&
+          notes == row.notes &&
+          genotypeInfo == row.genotypeInfo) {
+        continue;
+      }
+
+      await (update(birdsTable)..where((t) => t.id.equals(row.id))).write(
+        BirdsTableCompanion(
+          ringNumber: Value(ringNumber),
+          notes: Value(notes),
+          genotypeInfo: Value(genotypeInfo),
+          updatedAt: Value(DateTime.now()),
+        ),
+      );
+      migrated++;
+    }
+    return migrated;
   }
 
   /// Updates the encrypted ring number for a single bird.
@@ -194,18 +256,108 @@ class BirdsDao extends DatabaseAccessor<AppDatabase> with _$BirdsDaoMixin {
     String ringNumber, {
     String? excludeId,
   }) async {
-    final rows = await (select(birdsTable)
-          ..where((t) {
-            var condition = t.userId.equals(userId) &
-                t.ringNumber.equals(ringNumber) &
-                t.isDeleted.equals(false);
-            if (excludeId != null) {
-              condition = condition & t.id.equals(excludeId).not();
-            }
-            return condition;
-          })
-          ..limit(1))
-        .get();
+    if (_encryptionService != null) {
+      final rows =
+          await (select(birdsTable)..where((t) {
+                var condition =
+                    t.userId.equals(userId) &
+                    t.ringNumber.isNotNull() &
+                    t.isDeleted.equals(false);
+                if (excludeId != null) {
+                  condition = condition & t.id.equals(excludeId).not();
+                }
+                return condition;
+              }))
+              .get();
+
+      for (final row in rows) {
+        if (await _decryptSensitive(row.ringNumber) == ringNumber) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    final rows =
+        await (select(birdsTable)
+              ..where((t) {
+                var condition =
+                    t.userId.equals(userId) &
+                    t.ringNumber.equals(ringNumber) &
+                    t.isDeleted.equals(false);
+                if (excludeId != null) {
+                  condition = condition & t.id.equals(excludeId).not();
+                }
+                return condition;
+              })
+              ..limit(1))
+            .get();
     return rows.isNotEmpty;
+  }
+
+  Future<List<Bird>> _rowsToModels(List<BirdRow> rows) async {
+    final models = <Bird>[];
+    for (final row in rows) {
+      models.add(await _rowToModel(row));
+    }
+    return models;
+  }
+
+  Future<Bird> _rowToModel(BirdRow row) async {
+    if (_encryptionService == null) return row.toModel();
+
+    return row
+        .copyWith(
+          ringNumber: Value(await _decryptSensitive(row.ringNumber)),
+          notes: Value(await _decryptSensitive(row.notes)),
+          genotypeInfo: Value(await _decryptSensitive(row.genotypeInfo)),
+        )
+        .toModel();
+  }
+
+  Future<BirdsTableCompanion> _encryptedCompanion(Bird model) async {
+    final companion = model.toCompanion();
+    if (_encryptionService == null) return companion;
+
+    return companion.copyWith(
+      ringNumber: Value(await _encryptSensitive(companion.ringNumber.value)),
+      notes: Value(await _encryptSensitive(companion.notes.value)),
+      genotypeInfo: Value(
+        await _encryptSensitive(companion.genotypeInfo.value),
+      ),
+    );
+  }
+
+  Future<String?> _encryptSensitive(String? value) async {
+    if (value == null || value.isEmpty) {
+      return value;
+    }
+    if (looksLikeEncrypted(value)) {
+      try {
+        await _encryptionService!.decrypt(value);
+        return value;
+      } catch (_) {
+        // Base64-looking plaintext should still be encrypted at rest.
+      }
+    }
+    return _encryptionService!.encrypt(value);
+  }
+
+  Future<String?> _encryptPlaintextOnly(String? value) async {
+    if (value == null || value.isEmpty || looksLikeEncrypted(value)) {
+      return value;
+    }
+    return _encryptionService!.encrypt(value);
+  }
+
+  Future<String?> _decryptSensitive(String? value) async {
+    if (value == null || value.isEmpty || !looksLikeEncrypted(value)) {
+      return value;
+    }
+    try {
+      return await _encryptionService!.decrypt(value);
+    } catch (_) {
+      return value;
+    }
   }
 }

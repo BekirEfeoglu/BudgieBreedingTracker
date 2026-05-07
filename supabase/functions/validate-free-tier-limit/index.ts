@@ -1,6 +1,13 @@
-import { getCorsHeaders, corsPreflightResponse } from "../_shared/cors.ts";
-import { getAuthenticatedUserId, createSupabaseAdmin } from "../_shared/auth.ts";
-import { createRateLimiter, rateLimitedResponse } from "../_shared/rate-limit.ts";
+import { corsPreflightResponse, getCorsHeaders } from "../_shared/cors.ts";
+import {
+  createSupabaseAdmin,
+  getAuthenticatedUserId,
+} from "../_shared/auth.ts";
+import {
+  createRateLimiter,
+  createSupabaseRateLimitStore,
+  rateLimitedResponse,
+} from "../_shared/rate-limit.ts";
 import { z } from "npm:zod@3.24.4";
 import { parseRequestBody } from "../_shared/validation.ts";
 import {
@@ -12,7 +19,11 @@ import {
   shouldFilterDeleted,
 } from "./limits_core.ts";
 
-const rateLimiter = createRateLimiter({ windowMs: 60_000, maxCalls: 30 });
+const rateLimiter = createRateLimiter({
+  windowMs: 60_000,
+  maxCalls: 30,
+  store: createSupabaseRateLimitStore("validate-free-tier-limit"),
+});
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return corsPreflightResponse(req);
@@ -47,14 +58,16 @@ Deno.serve(async (req) => {
     if (!isAllowedTable(table)) {
       // Fail-closed: an attacker could otherwise bypass free-tier enforcement
       // by sending an unknown/misspelled table name. Reject at the boundary.
-      console.warn(`[validate-free-tier-limit] Unknown table requested: ${table}`);
+      console.warn(
+        `[validate-free-tier-limit] Unknown table requested: ${table}`,
+      );
       return new Response(
         JSON.stringify({ allowed: false, error: "invalid_table" }),
         { status: 400, headers },
       );
     }
 
-    if (!rateLimiter.check(userId)) return rateLimitedResponse(headers);
+    if (!(await rateLimiter.check(userId))) return rateLimitedResponse(headers);
 
     const supabase = createSupabaseAdmin();
     const limit = getLimit(table)!;

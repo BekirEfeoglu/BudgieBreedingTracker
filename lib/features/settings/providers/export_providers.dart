@@ -157,7 +157,17 @@ class ExportActions {
     final name = fileName.replaceAll('.', '_$timestamp.');
     final file = File(p.join(dir.path, name));
     await file.writeAsBytes(bytes);
-    await SharePlus.instance.share(ShareParams(files: [XFile(file.path)]));
+    try {
+      await SharePlus.instance.share(ShareParams(files: [XFile(file.path)]));
+    } finally {
+      try {
+        if (await file.exists()) {
+          await file.delete();
+        }
+      } catch (e) {
+        AppLogger.warning('ExportActions._shareFile cleanup failed: $e');
+      }
+    }
   }
 }
 

@@ -6,6 +6,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.PowerManager
 import android.provider.Settings
+import android.view.WindowManager
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -16,6 +17,8 @@ class MainActivity : FlutterActivity() {
             "com.budgiebreeding.budgie_breeding_tracker/config"
         private const val BATTERY_CHANNEL =
             "com.budgiebreeding.budgie_breeding_tracker/battery"
+        private const val SENSITIVE_SCREEN_CHANNEL =
+            "com.budgiebreeding.budgie_breeding_tracker/sensitive_screen"
     }
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
@@ -89,6 +92,25 @@ class MainActivity : FlutterActivity() {
                         } catch (e: Exception) {
                             result.success(false)
                         }
+                    }
+                    else -> result.notImplemented()
+                }
+            }
+
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, SENSITIVE_SCREEN_CHANNEL)
+            .setMethodCallHandler { call, result ->
+                when (call.method) {
+                    "setSecureScreen" -> {
+                        val enabled = call.argument<Boolean>("enabled") ?: false
+                        if (enabled) {
+                            window.setFlags(
+                                WindowManager.LayoutParams.FLAG_SECURE,
+                                WindowManager.LayoutParams.FLAG_SECURE
+                            )
+                        } else {
+                            window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+                        }
+                        result.success(true)
                     }
                     else -> result.notImplemented()
                 }

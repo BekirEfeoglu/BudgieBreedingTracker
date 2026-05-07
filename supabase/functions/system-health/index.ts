@@ -1,9 +1,21 @@
-import { getCorsHeaders, corsPreflightResponse } from "../_shared/cors.ts";
-import { getAuthenticatedUserId, requireAdminRole, createSupabaseAdmin } from "../_shared/auth.ts";
-import { createRateLimiter, rateLimitedResponse } from "../_shared/rate-limit.ts";
+import { corsPreflightResponse, getCorsHeaders } from "../_shared/cors.ts";
+import {
+  createSupabaseAdmin,
+  getAuthenticatedUserId,
+  requireAdminRole,
+} from "../_shared/auth.ts";
+import {
+  createRateLimiter,
+  createSupabaseRateLimitStore,
+  rateLimitedResponse,
+} from "../_shared/rate-limit.ts";
 import { buildHealthSnapshot, type CheckStatus } from "./health_core.ts";
 
-const rateLimiter = createRateLimiter({ windowMs: 60_000, maxCalls: 10 });
+const rateLimiter = createRateLimiter({
+  windowMs: 60_000,
+  maxCalls: 10,
+  store: createSupabaseRateLimitStore("system-health"),
+});
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return corsPreflightResponse(req);
@@ -26,7 +38,7 @@ Deno.serve(async (req) => {
     );
   }
 
-  if (!rateLimiter.check(userId)) return rateLimitedResponse(headers);
+  if (!(await rateLimiter.check(userId))) return rateLimitedResponse(headers);
 
   // Verify caller is admin/founder using shared auth utility
   const isAdmin = await requireAdminRole(userId);

@@ -155,8 +155,7 @@ abstract class SupabaseConstants {
   static const String chickPhotosBucket = 'chick-photos';
   static const String avatarsBucket = 'avatars';
   static const String backupsBucket = 'backups';
-  // Requires manual creation in Supabase Dashboard:
-  // RLS: authenticated users can INSERT, public can SELECT
+  // Managed by Supabase storage migrations.
   static const String communityPhotosBucket = 'community-photos';
   static const String marketplacePhotosBucket = 'photos';
   static const String messagePhotosBucket = 'message-photos';
