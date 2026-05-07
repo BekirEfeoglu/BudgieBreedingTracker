@@ -36,7 +36,8 @@ class MonitoringSnapshot {
     return MonitoringSnapshot(
       snapshotType: type,
       data: safeMap(json, 'data') ?? const {},
-      createdAt: DateTime.tryParse(json['created_at']?.toString() ?? '') ??
+      createdAt:
+          DateTime.tryParse(json['created_at']?.toString() ?? '') ??
           DateTime.now(),
     );
   }
@@ -83,8 +84,9 @@ class MonitoringTrend {
 }
 
 /// Fetches the latest monitoring snapshots (last 24h) for the admin dashboard.
-final monitoringSnapshotsProvider =
-    FutureProvider<MonitoringTrend>((ref) async {
+final monitoringSnapshotsProvider = FutureProvider<MonitoringTrend>((
+  ref,
+) async {
   await requireAdmin(ref);
   final client = ref.watch(supabaseClientProvider);
 
@@ -92,8 +94,13 @@ final monitoringSnapshotsProvider =
     final result = await client
         .from(SupabaseConstants.dbMonitoringSnapshotsTable)
         .select('snapshot_type, data, created_at')
-        .gte('created_at',
-            DateTime.now().subtract(const Duration(hours: 24)).toUtc().toIso8601String())
+        .gte(
+          'created_at',
+          DateTime.now()
+              .subtract(const Duration(hours: 24))
+              .toUtc()
+              .toIso8601String(),
+        )
         .order('created_at', ascending: false)
         .limit(10);
 
@@ -127,12 +134,14 @@ final monitoringSnapshotsProvider =
           );
           continue;
         }
-        slowQueries.add(SlowQueryEntry(
-          calls: (map['calls'] as num?)?.toInt() ?? 0,
-          totalTimeMs: (map['total_time_ms'] as num?)?.toDouble() ?? 0,
-          meanTimeMs: (map['mean_time_ms'] as num?)?.toDouble() ?? 0,
-          query: map['query']?.toString() ?? '',
-        ));
+        slowQueries.add(
+          SlowQueryEntry(
+            calls: (map['calls'] as num?)?.toInt() ?? 0,
+            totalTimeMs: (map['total_time_ms'] as num?)?.toDouble() ?? 0,
+            meanTimeMs: (map['mean_time_ms'] as num?)?.toDouble() ?? 0,
+            query: map['query']?.toString() ?? '',
+          ),
+        );
       }
     }
 
@@ -156,10 +165,12 @@ final monitoringSnapshotsProvider =
           );
           continue;
         }
-        connectionStates.add(ConnectionStateEntry(
-          state: map['state']?.toString() ?? 'unknown',
-          count: (map['count'] as num?)?.toInt() ?? 0,
-        ));
+        connectionStates.add(
+          ConnectionStateEntry(
+            state: map['state']?.toString() ?? 'unknown',
+            count: (map['count'] as num?)?.toInt() ?? 0,
+          ),
+        );
       }
     }
 

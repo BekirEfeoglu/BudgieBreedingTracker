@@ -100,7 +100,7 @@ class _SlowQueryRow extends StatelessWidget {
               ],
             ),
             Padding(
-              padding: const EdgeInsets.only(left: 20, top: 2),
+              padding: const EdgeInsets.only(left: AppSpacing.xl, top: 2),
               child: Text(
                 query.query.length > 80
                     ? '${query.query.substring(0, 80)}...'
@@ -127,8 +127,9 @@ class _SlowQueryRow extends StatelessWidget {
       context: context,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
-        borderRadius:
-            BorderRadius.vertical(top: Radius.circular(AppSpacing.radiusLg)),
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppSpacing.radiusLg),
+        ),
       ),
       builder: (context) => DraggableScrollableSheet(
         initialChildSize: 0.5,
@@ -146,10 +147,10 @@ class _SlowQueryRow extends StatelessWidget {
                   width: 32,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: theme.colorScheme.onSurfaceVariant
-                        .withValues(alpha: 0.4),
-                    borderRadius:
-                        BorderRadius.circular(AppSpacing.radiusFull),
+                    color: theme.colorScheme.onSurfaceVariant.withValues(
+                      alpha: 0.4,
+                    ),
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
                   ),
                 ),
               ),
@@ -166,8 +167,7 @@ class _SlowQueryRow extends StatelessWidget {
                 padding: const EdgeInsets.all(AppSpacing.md),
                 decoration: BoxDecoration(
                   color: theme.colorScheme.surfaceContainerHighest,
-                  borderRadius:
-                      BorderRadius.circular(AppSpacing.radiusMd),
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
                 ),
                 child: SelectableText(
                   query.query,
@@ -200,8 +200,7 @@ class _SlowQueryRow extends StatelessWidget {
                   Expanded(
                     child: _QueryStatTile(
                       label: 'admin.query_mean_time'.tr(),
-                      value:
-                          '${query.meanTimeMs.toStringAsFixed(1)} ms',
+                      value: '${query.meanTimeMs.toStringAsFixed(1)} ms',
                       theme: theme,
                     ),
                   ),
@@ -209,8 +208,7 @@ class _SlowQueryRow extends StatelessWidget {
                   Expanded(
                     child: _QueryStatTile(
                       label: 'admin.query_total_time'.tr(),
-                      value:
-                          '${query.totalTimeMs.toStringAsFixed(1)} ms',
+                      value: '${query.totalTimeMs.toStringAsFixed(1)} ms',
                       theme: theme,
                     ),
                   ),

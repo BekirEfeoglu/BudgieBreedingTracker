@@ -5,12 +5,11 @@ import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../core/widgets/loading_state.dart';
 import '../../../core/widgets/dialogs/confirm_dialog.dart';
 import '../constants/admin_constants.dart';
 import '../providers/admin_actions_provider.dart';
 import '../providers/admin_database_providers.dart';
-import '../providers/admin_models.dart';
-import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
 
 /// Shows soft-deleted records per table and a cleanup button with day selector.
 class DatabaseSoftDeleteSection extends ConsumerStatefulWidget {
@@ -74,10 +73,8 @@ class _DatabaseSoftDeleteSectionState
                 'common.data_load_error'.tr(),
                 style: theme.textTheme.bodySmall,
               ),
-              data: (stats) => _SoftDeleteBody(
-                stats: stats,
-                selectedDays: _selectedDays,
-              ),
+              data: (stats) =>
+                  _SoftDeleteBody(stats: stats, selectedDays: _selectedDays),
             ),
           ],
         ),
@@ -90,10 +87,7 @@ class _SoftDeleteBody extends ConsumerWidget {
   final List<SoftDeleteStats> stats;
   final int selectedDays;
 
-  const _SoftDeleteBody({
-    required this.stats,
-    required this.selectedDays,
-  });
+  const _SoftDeleteBody({required this.stats, required this.selectedDays});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -103,9 +97,7 @@ class _SoftDeleteBody extends ConsumerWidget {
     if (totalOld == 0) {
       return Text(
         'admin.no_soft_deleted'.tr(),
-        style: theme.textTheme.bodyMedium?.copyWith(
-          color: AppColors.success,
-        ),
+        style: theme.textTheme.bodyMedium?.copyWith(color: AppColors.success),
       );
     }
 
@@ -146,9 +138,7 @@ class _SoftDeleteBody extends ConsumerWidget {
           width: double.infinity,
           child: FilledButton.icon(
             onPressed: () => _cleanOldRecords(context, ref),
-            style: FilledButton.styleFrom(
-              backgroundColor: AppColors.error,
-            ),
+            style: FilledButton.styleFrom(backgroundColor: AppColors.error),
             icon: const Icon(LucideIcons.trash2, size: 16),
             label: Text('admin.clean_soft_deleted'.tr()),
           ),

@@ -12,9 +12,9 @@ class UserDetailStatsRow extends StatelessWidget {
       children: [
         Text(
           'admin.entity_summary'.tr(),
-          style: Theme.of(context).textTheme.titleSmall?.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
+          style: Theme.of(
+            context,
+          ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
         ),
         const SizedBox(height: AppSpacing.md),
         Row(

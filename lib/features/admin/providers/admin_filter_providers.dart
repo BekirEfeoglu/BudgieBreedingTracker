@@ -27,8 +27,8 @@ class AdminSecurityLimitNotifier extends Notifier<int> {
 /// Current limit for security events list (increases on "load more").
 final adminSecurityLimitProvider =
     NotifierProvider<AdminSecurityLimitNotifier, int>(
-  AdminSecurityLimitNotifier.new,
-);
+      AdminSecurityLimitNotifier.new,
+    );
 
 // ─── Filter State Classes ───────────────────────────────────────
 
@@ -121,8 +121,9 @@ String _sanitizeSearchQuery(String query) {
 // ─── Server-Side Filtered Providers ────────────────────────────
 
 /// Audit logs provider — applies date and text filters server-side.
-final adminAuditLogsProvider =
-    FutureProvider.autoDispose<List<AdminLog>>((ref) async {
+final adminAuditLogsProvider = FutureProvider.autoDispose<List<AdminLog>>((
+  ref,
+) async {
   await requireAdmin(ref);
   final client = ref.watch(supabaseClientProvider);
   final filter = ref.watch(auditLogFilterProvider);
@@ -158,9 +159,7 @@ final adminAuditLogsProvider =
     }
   }
 
-  final result = await query
-      .order('created_at', ascending: false)
-      .limit(limit);
+  final result = await query.order('created_at', ascending: false).limit(limit);
 
   return (result as List)
       .map((row) => AdminLog.fromJson(row as Map<String, dynamic>))
@@ -168,8 +167,9 @@ final adminAuditLogsProvider =
 });
 
 /// Security events provider — applies text and severity filters server-side.
-final adminSecurityEventsProvider =
-    FutureProvider.autoDispose<List<SecurityEvent>>((ref) async {
+final adminSecurityEventsProvider = FutureProvider.autoDispose<List<SecurityEvent>>((
+  ref,
+) async {
   await requireAdmin(ref);
   final client = ref.watch(supabaseClientProvider);
   final filter = ref.watch(securityEventFilterProvider);
@@ -181,9 +181,7 @@ final adminSecurityEventsProvider =
   if (filter.severity != null) {
     final patterns = filter.severity!.eventTypePatterns;
     if (patterns.isNotEmpty) {
-      final orClause = patterns
-          .map((p) => 'event_type.ilike.$p')
-          .join(',');
+      final orClause = patterns.map((p) => 'event_type.ilike.$p').join(',');
       query = query.or(orClause);
     }
   }
@@ -199,11 +197,51 @@ final adminSecurityEventsProvider =
     }
   }
 
-  final result = await query
-      .order('created_at', ascending: false)
-      .limit(limit);
+  final result = await query.order('created_at', ascending: false).limit(limit);
 
   return (result as List)
       .map((row) => SecurityEvent.fromJson(row as Map<String, dynamic>))
       .toList();
+});
+
+/// Security event trend provider — daily counts for the last 7 days.
+final securityEventTrendProvider = FutureProvider<List<DailyDataPoint>>((
+  ref,
+) async {
+  await requireAdmin(ref);
+  final client = ref.watch(supabaseClientProvider);
+  final sevenDaysAgo = DateTime.now().subtract(const Duration(days: 7));
+
+  final result = await client
+      .from(SupabaseConstants.securityEventsTable)
+      .select('created_at')
+      .gte('created_at', sevenDaysAgo.toIso8601String())
+      .order('created_at');
+
+  final rows = result as List;
+  // Use YYYY-MM-DD key to handle year boundary correctly
+  final grouped = <String, int>{};
+  for (final row in rows) {
+    final date = DateTime.parse(row['created_at'] as String);
+    final key =
+        '${date.year}-'
+        '${date.month.toString().padLeft(2, '0')}-'
+        '${date.day.toString().padLeft(2, '0')}';
+    grouped[key] = (grouped[key] ?? 0) + 1;
+  }
+
+  final sortedEntries = grouped.entries.toList()
+    ..sort((a, b) => a.key.compareTo(b.key));
+
+  return sortedEntries.map((e) {
+    final parts = e.key.split('-');
+    return DailyDataPoint(
+      date: DateTime(
+        int.parse(parts[0]),
+        int.parse(parts[1]),
+        int.parse(parts[2]),
+      ),
+      count: e.value,
+    );
+  }).toList();
 });

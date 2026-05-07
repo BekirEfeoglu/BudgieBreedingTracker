@@ -24,7 +24,11 @@ class AdminNotificationManager {
   AdminNotificationManager(this._ref, this._updateState);
 
   /// Send an in-app notification and push notification to a single user.
-  Future<void> sendNotification(String targetUserId, String title, String body) async {
+  Future<void> sendNotification(
+    String targetUserId,
+    String title,
+    String body,
+  ) async {
     _updateState(isLoading: true, error: null, isSuccess: false);
     try {
       await requireAdmin(_ref);
@@ -96,7 +100,11 @@ class AdminNotificationManager {
   }
 
   /// Send an in-app notification and push notification to multiple users.
-  Future<void> sendBulkNotification(List<String> userIds, String title, String body) async {
+  Future<void> sendBulkNotification(
+    List<String> userIds,
+    String title,
+    String body,
+  ) async {
     _updateState(isLoading: true, error: null, isSuccess: false);
     try {
       await requireAdmin(_ref);
@@ -109,15 +117,19 @@ class AdminNotificationManager {
           ? body.trim().substring(0, 1000)
           : body.trim();
 
-      final rows = userIds.map((uid) => {
-        'id': const Uuid().v4(),
-        'user_id': uid,
-        'title': sanitizedTitle,
-        'body': sanitizedBody,
-        'type': 'custom',
-        'priority': 'normal',
-        'read': false,
-      }).toList();
+      final rows = userIds
+          .map(
+            (uid) => {
+              'id': const Uuid().v4(),
+              'user_id': uid,
+              'title': sanitizedTitle,
+              'body': sanitizedBody,
+              'type': 'custom',
+              'priority': 'normal',
+              'read': false,
+            },
+          )
+          .toList();
 
       await client.from(SupabaseConstants.notificationsTable).insert(rows);
 

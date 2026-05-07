@@ -72,10 +72,7 @@ class AdminSettingsActionNotifier extends Notifier<AdminSettingsActionState> {
   AdminSettingsActionState build() => const AdminSettingsActionState();
 
   /// Updates a single setting in Supabase system_settings table.
-  Future<bool> updateSetting({
-    required String key,
-    required bool value,
-  }) async {
+  Future<bool> updateSetting({required String key, required bool value}) async {
     state = state.copyWith(isLoading: true, error: null, isSuccess: false);
     try {
       await requireAdmin(ref);
@@ -93,7 +90,10 @@ class AdminSettingsActionNotifier extends Notifier<AdminSettingsActionState> {
       return true;
     } catch (e, st) {
       AppLogger.error('AdminSettingsAction.updateSetting', e, st);
-      state = state.copyWith(isLoading: false, error: 'admin.setting_update_error'.tr());
+      state = state.copyWith(
+        isLoading: false,
+        error: 'admin.setting_update_error'.tr(),
+      );
       return false;
     }
   }
@@ -107,8 +107,8 @@ class AdminSettingsActionNotifier extends Notifier<AdminSettingsActionState> {
       final now = DateTime.now().toUtc().toIso8601String();
       final userId = client.auth.currentUser?.id;
       await Future.wait(
-        settingDefaults.entries.map((entry) =>
-          client.from(SupabaseConstants.systemSettingsTable).upsert({
+        settingDefaults.entries.map(
+          (entry) => client.from(SupabaseConstants.systemSettingsTable).upsert({
             'key': entry.key,
             'value': entry.value,
             'category': categoryForKey(entry.key),
@@ -123,7 +123,10 @@ class AdminSettingsActionNotifier extends Notifier<AdminSettingsActionState> {
       return true;
     } catch (e, st) {
       AppLogger.error('AdminSettingsAction.resetToDefaults', e, st);
-      state = state.copyWith(isLoading: false, error: 'admin.setting_update_error'.tr());
+      state = state.copyWith(
+        isLoading: false,
+        error: 'admin.setting_update_error'.tr(),
+      );
       return false;
     }
   }

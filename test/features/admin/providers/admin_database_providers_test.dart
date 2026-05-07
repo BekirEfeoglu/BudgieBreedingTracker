@@ -4,7 +4,6 @@ import 'dart:async';
 import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
 import 'package:budgie_breeding_tracker/features/admin/constants/admin_constants.dart';
 import 'package:budgie_breeding_tracker/features/admin/providers/admin_database_providers.dart';
-import 'package:budgie_breeding_tracker/features/admin/providers/admin_models.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -33,10 +32,7 @@ class _FakeMaybeSingleBuilder extends Fake
 // ignore: must_be_immutable
 class _FakeFilterBuilder extends Fake
     implements PostgrestFilterBuilder<PostgrestList> {
-  _FakeFilterBuilder({
-    this.result = const [],
-    this.maybeSingleResult,
-  });
+  _FakeFilterBuilder({this.result = const [], this.maybeSingleResult});
 
   PostgrestList result;
   Object? error;
@@ -59,7 +55,9 @@ class _FakeFilterBuilder extends Fake
   @override
   PostgrestTransformBuilder<PostgrestMap?> maybeSingle() {
     return maybeSingleResult ??
-        _FakeMaybeSingleBuilder(result: result.isNotEmpty ? result.first : null);
+        _FakeMaybeSingleBuilder(
+          result: result.isNotEmpty ? result.first : null,
+        );
   }
 
   @override
@@ -68,7 +66,9 @@ class _FakeFilterBuilder extends Fake
     Function? onError,
   }) {
     if (error != null) {
-      return Future<PostgrestList>.error(error!).then(onValue, onError: onError);
+      return Future<PostgrestList>.error(
+        error!,
+      ).then(onValue, onError: onError);
     }
     return Future<PostgrestList>.value(result).then(onValue, onError: onError);
   }

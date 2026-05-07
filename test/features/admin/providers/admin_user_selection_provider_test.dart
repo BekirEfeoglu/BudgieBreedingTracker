@@ -40,13 +40,11 @@ void main() {
 
     test('selectAll replaces current selection', () {
       container.read(adminUserSelectionProvider.notifier).toggle('old');
-      container
-          .read(adminUserSelectionProvider.notifier)
-          .selectAll(['new-1', 'new-2']);
-      expect(
-        container.read(adminUserSelectionProvider),
-        {'new-1', 'new-2'},
-      );
+      container.read(adminUserSelectionProvider.notifier).selectAll([
+        'new-1',
+        'new-2',
+      ]);
+      expect(container.read(adminUserSelectionProvider), {'new-1', 'new-2'});
     });
 
     test('selectAll with empty list results in empty set', () {
@@ -56,9 +54,7 @@ void main() {
     });
 
     test('clear empties all selections', () {
-      container
-          .read(adminUserSelectionProvider.notifier)
-          .selectAll(['a', 'b']);
+      container.read(adminUserSelectionProvider.notifier).selectAll(['a', 'b']);
       container.read(adminUserSelectionProvider.notifier).clear();
       expect(container.read(adminUserSelectionProvider), isEmpty);
     });
@@ -69,9 +65,11 @@ void main() {
     });
 
     test('selectAll deduplicates IDs', () {
-      container
-          .read(adminUserSelectionProvider.notifier)
-          .selectAll(['a', 'a', 'b']);
+      container.read(adminUserSelectionProvider.notifier).selectAll([
+        'a',
+        'a',
+        'b',
+      ]);
       expect(container.read(adminUserSelectionProvider), {'a', 'b'});
     });
   });
@@ -133,9 +131,7 @@ void main() {
     });
 
     test('returns 0 after clear', () {
-      container
-          .read(adminUserSelectionProvider.notifier)
-          .selectAll(['a', 'b']);
+      container.read(adminUserSelectionProvider.notifier).selectAll(['a', 'b']);
       container.read(adminUserSelectionProvider.notifier).clear();
       expect(container.read(selectedUserCountProvider), 0);
     });

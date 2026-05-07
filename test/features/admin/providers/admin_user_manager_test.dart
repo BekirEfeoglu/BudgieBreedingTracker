@@ -107,13 +107,14 @@ class _FakeInsertFilterBuilder extends Fake
 }
 
 class _FakeQueryBuilder extends Fake implements SupabaseQueryBuilder {
-  _FakeQueryBuilder(this.filterBuilder, {
+  _FakeQueryBuilder(
+    this.filterBuilder, {
     _FakeUpdateFilterBuilder? updateBuilder,
     _FakeUpsertFilterBuilder? upsertBuilder,
     _FakeInsertFilterBuilder? insertBuilder,
-  })  : updateBuilder = updateBuilder ?? _FakeUpdateFilterBuilder(),
-        upsertBuilder = upsertBuilder ?? _FakeUpsertFilterBuilder(),
-        insertBuilder = insertBuilder ?? _FakeInsertFilterBuilder();
+  }) : updateBuilder = updateBuilder ?? _FakeUpdateFilterBuilder(),
+       upsertBuilder = upsertBuilder ?? _FakeUpsertFilterBuilder(),
+       insertBuilder = insertBuilder ?? _FakeInsertFilterBuilder();
 
   final _FakeFilterBuilder filterBuilder;
   final _FakeUpdateFilterBuilder updateBuilder;
@@ -159,10 +160,9 @@ class _FakeUserManagerClient extends Fake implements SupabaseClient {
     required this.profilesBuilder,
     SupabaseQueryBuilder? subscriptionsBuilder,
     SupabaseQueryBuilder? adminLogsBuilder,
-  })  : subscriptionsBuilder =
-            subscriptionsBuilder ?? _FakeQueryBuilder(_dummyFilter()),
-        adminLogsBuilder =
-            adminLogsBuilder ?? _FakeQueryBuilder(_dummyFilter());
+  }) : subscriptionsBuilder =
+           subscriptionsBuilder ?? _FakeQueryBuilder(_dummyFilter()),
+       adminLogsBuilder = adminLogsBuilder ?? _FakeQueryBuilder(_dummyFilter());
 
   final SupabaseQueryBuilder profilesBuilder;
   final SupabaseQueryBuilder subscriptionsBuilder;
@@ -269,9 +269,7 @@ _FakeUserManagerClient _clientWithTargetRole({
     upsertBuilder: upsertBuilder,
   );
 
-  return _FakeUserManagerClient(
-    profilesBuilder: profilesBuilder,
-  );
+  return _FakeUserManagerClient(profilesBuilder: profilesBuilder);
 }
 
 /// A filter builder that returns sequential maybeSingle results.
@@ -301,11 +299,12 @@ class _SequentialFilterBuilder extends Fake
 }
 
 class _FakeQueryBuilderSequential extends Fake implements SupabaseQueryBuilder {
-  _FakeQueryBuilderSequential(this.filterBuilder, {
+  _FakeQueryBuilderSequential(
+    this.filterBuilder, {
     _FakeUpdateFilterBuilder? updateBuilder,
     _FakeUpsertFilterBuilder? upsertBuilder,
-  })  : updateBuilder = updateBuilder ?? _FakeUpdateFilterBuilder(),
-        upsertBuilder = upsertBuilder ?? _FakeUpsertFilterBuilder();
+  }) : updateBuilder = updateBuilder ?? _FakeUpdateFilterBuilder(),
+       upsertBuilder = upsertBuilder ?? _FakeUpsertFilterBuilder();
 
   final _SequentialFilterBuilder filterBuilder;
   final _FakeUpdateFilterBuilder updateBuilder;
@@ -362,9 +361,18 @@ void main() {
   group('AdminUserOperationResult', () {
     test('has expected values', () {
       expect(AdminUserOperationResult.values, hasLength(3));
-      expect(AdminUserOperationResult.values, contains(AdminUserOperationResult.success));
-      expect(AdminUserOperationResult.values, contains(AdminUserOperationResult.protected));
-      expect(AdminUserOperationResult.values, contains(AdminUserOperationResult.failed));
+      expect(
+        AdminUserOperationResult.values,
+        contains(AdminUserOperationResult.success),
+      );
+      expect(
+        AdminUserOperationResult.values,
+        contains(AdminUserOperationResult.protected),
+      );
+      expect(
+        AdminUserOperationResult.values,
+        contains(AdminUserOperationResult.failed),
+      );
     });
   });
 
@@ -378,8 +386,10 @@ void main() {
       final container = _makeContainer(userId: 'admin-1', client: client);
       addTearDown(container.dispose);
 
-      final result = await _makeManager(container, updates)
-          .toggleUserActive('target-user', true);
+      final result = await _makeManager(
+        container,
+        updates,
+      ).toggleUserActive('target-user', true);
 
       expect(result, AdminUserOperationResult.success);
       expect(updates.first.isLoading, isTrue);
@@ -400,8 +410,10 @@ void main() {
       final container = _makeContainer(userId: 'admin-1', client: client);
       addTearDown(container.dispose);
 
-      final result = await _makeManager(container, updates)
-          .toggleUserActive('target-user', false);
+      final result = await _makeManager(
+        container,
+        updates,
+      ).toggleUserActive('target-user', false);
 
       expect(result, AdminUserOperationResult.success);
       expect(
@@ -419,8 +431,10 @@ void main() {
       final container = _makeContainer(userId: 'admin-1', client: client);
       addTearDown(container.dispose);
 
-      final result = await _makeManager(container, updates)
-          .toggleUserActive('founder-user', true);
+      final result = await _makeManager(
+        container,
+        updates,
+      ).toggleUserActive('founder-user', true);
 
       expect(result, AdminUserOperationResult.protected);
       expect(updates.last.error, contains('admin.protected_user_error'));
@@ -435,8 +449,10 @@ void main() {
       final container = _makeContainer(userId: 'founder-1', client: client);
       addTearDown(container.dispose);
 
-      final result = await _makeManager(container, updates)
-          .toggleUserActive('admin-user', false);
+      final result = await _makeManager(
+        container,
+        updates,
+      ).toggleUserActive('admin-user', false);
 
       expect(result, AdminUserOperationResult.protected);
       expect(updates.last.error, contains('admin.protected_user_error'));
@@ -446,14 +462,17 @@ void main() {
       final client = _clientWithTargetRole(
         adminRole: 'admin',
         targetRole: 'user',
-        updateBuilder: _FakeUpdateFilterBuilder()..error = Exception('db error'),
+        updateBuilder: _FakeUpdateFilterBuilder()
+          ..error = Exception('db error'),
       );
       final updates = <_StateUpdate>[];
       final container = _makeContainer(userId: 'admin-1', client: client);
       addTearDown(container.dispose);
 
-      final result = await _makeManager(container, updates)
-          .toggleUserActive('target-user', true);
+      final result = await _makeManager(
+        container,
+        updates,
+      ).toggleUserActive('target-user', true);
 
       expect(result, AdminUserOperationResult.failed);
       expect(updates.last.error, contains('admin.action_error'));
@@ -469,8 +488,10 @@ void main() {
       final container = _makeContainer(userId: 'regular-user', client: client);
       addTearDown(container.dispose);
 
-      final result = await _makeManager(container, updates)
-          .toggleUserActive('target-user', true);
+      final result = await _makeManager(
+        container,
+        updates,
+      ).toggleUserActive('target-user', true);
 
       expect(result, AdminUserOperationResult.failed);
       expect(updates.last.error, contains('admin.action_error'));
@@ -485,8 +506,10 @@ void main() {
       final container = _makeContainer(userId: 'anonymous', client: client);
       addTearDown(container.dispose);
 
-      final result = await _makeManager(container, updates)
-          .toggleUserActive('target-user', true);
+      final result = await _makeManager(
+        container,
+        updates,
+      ).toggleUserActive('target-user', true);
 
       expect(result, AdminUserOperationResult.failed);
       expect(updates.last.error, contains('admin.action_error'));
@@ -501,8 +524,10 @@ void main() {
       final container = _makeContainer(userId: 'admin-1', client: client);
       addTearDown(container.dispose);
 
-      await _makeManager(container, updates)
-          .toggleUserActive('target-user', true);
+      await _makeManager(
+        container,
+        updates,
+      ).toggleUserActive('target-user', true);
 
       expect(updates.first.isLoading, isTrue);
       expect(updates.first.error, isNull);
@@ -520,8 +545,10 @@ void main() {
       final container = _makeContainer(userId: 'admin-1', client: client);
       addTearDown(container.dispose);
 
-      final result = await _makeManager(container, updates)
-          .grantPremium('target-user');
+      final result = await _makeManager(
+        container,
+        updates,
+      ).grantPremium('target-user');
 
       expect(result, AdminUserOperationResult.success);
       expect(updates.last.isSuccess, isTrue);
@@ -540,8 +567,10 @@ void main() {
       final container = _makeContainer(userId: 'admin-1', client: client);
       addTearDown(container.dispose);
 
-      final result = await _makeManager(container, updates)
-          .grantPremium('founder-user');
+      final result = await _makeManager(
+        container,
+        updates,
+      ).grantPremium('founder-user');
 
       expect(result, AdminUserOperationResult.protected);
       expect(
@@ -559,8 +588,10 @@ void main() {
       final container = _makeContainer(userId: 'founder-1', client: client);
       addTearDown(container.dispose);
 
-      final result = await _makeManager(container, updates)
-          .grantPremium('admin-user');
+      final result = await _makeManager(
+        container,
+        updates,
+      ).grantPremium('admin-user');
 
       expect(result, AdminUserOperationResult.protected);
     });
@@ -576,8 +607,10 @@ void main() {
       final container = _makeContainer(userId: 'admin-1', client: client);
       addTearDown(container.dispose);
 
-      final result = await _makeManager(container, updates)
-          .grantPremium('target-user');
+      final result = await _makeManager(
+        container,
+        updates,
+      ).grantPremium('target-user');
 
       expect(result, AdminUserOperationResult.failed);
       expect(updates.last.error, contains('admin.action_error'));
@@ -609,8 +642,10 @@ void main() {
       final container = _makeContainer(userId: 'admin-1', client: client);
       addTearDown(container.dispose);
 
-      final result = await _makeManager(container, updates)
-          .grantPremium('target-user');
+      final result = await _makeManager(
+        container,
+        updates,
+      ).grantPremium('target-user');
 
       // Should still succeed — subscription record is non-fatal
       expect(result, AdminUserOperationResult.success);
@@ -628,8 +663,10 @@ void main() {
       final container = _makeContainer(userId: 'admin-1', client: client);
       addTearDown(container.dispose);
 
-      final result = await _makeManager(container, updates)
-          .revokePremium('target-user');
+      final result = await _makeManager(
+        container,
+        updates,
+      ).revokePremium('target-user');
 
       expect(result, AdminUserOperationResult.success);
       expect(updates.last.isSuccess, isTrue);
@@ -648,8 +685,10 @@ void main() {
       final container = _makeContainer(userId: 'admin-1', client: client);
       addTearDown(container.dispose);
 
-      final result = await _makeManager(container, updates)
-          .revokePremium('founder-user');
+      final result = await _makeManager(
+        container,
+        updates,
+      ).revokePremium('founder-user');
 
       expect(result, AdminUserOperationResult.protected);
       expect(
@@ -669,8 +708,10 @@ void main() {
       final container = _makeContainer(userId: 'admin-1', client: client);
       addTearDown(container.dispose);
 
-      final result = await _makeManager(container, updates)
-          .revokePremium('target-user');
+      final result = await _makeManager(
+        container,
+        updates,
+      ).revokePremium('target-user');
 
       expect(result, AdminUserOperationResult.failed);
       expect(updates.last.error, contains('admin.action_error'));
@@ -685,8 +726,10 @@ void main() {
       final container = _makeContainer(userId: 'anonymous', client: client);
       addTearDown(container.dispose);
 
-      final result = await _makeManager(container, updates)
-          .revokePremium('target-user');
+      final result = await _makeManager(
+        container,
+        updates,
+      ).revokePremium('target-user');
 
       expect(result, AdminUserOperationResult.failed);
       expect(updates.last.error, contains('admin.action_error'));
@@ -721,15 +764,15 @@ void main() {
       final filterBuilder = _SequentialFilterBuilder(results);
       final profilesBuilder = _FakeQueryBuilderSequential(filterBuilder);
 
-      final client = _FakeUserManagerClient(
-        profilesBuilder: profilesBuilder,
-      );
+      final client = _FakeUserManagerClient(profilesBuilder: profilesBuilder);
       final updates = <_StateUpdate>[];
       final container = _makeContainer(userId: 'admin-1', client: client);
       addTearDown(container.dispose);
 
-      final result = await _makeManager(container, updates)
-          .toggleUserActive('nonexistent-user', true);
+      final result = await _makeManager(
+        container,
+        updates,
+      ).toggleUserActive('nonexistent-user', true);
 
       expect(result, AdminUserOperationResult.failed);
       expect(updates.last.error, contains('admin.action_error'));
@@ -745,15 +788,15 @@ void main() {
       final filterBuilder = _SequentialFilterBuilder(results);
       final profilesBuilder = _FakeQueryBuilderSequential(filterBuilder);
 
-      final client = _FakeUserManagerClient(
-        profilesBuilder: profilesBuilder,
-      );
+      final client = _FakeUserManagerClient(profilesBuilder: profilesBuilder);
       final updates = <_StateUpdate>[];
       final container = _makeContainer(userId: 'admin-1', client: client);
       addTearDown(container.dispose);
 
-      final result = await _makeManager(container, updates)
-          .toggleUserActive('target-user', true);
+      final result = await _makeManager(
+        container,
+        updates,
+      ).toggleUserActive('target-user', true);
 
       expect(result, AdminUserOperationResult.success);
     });

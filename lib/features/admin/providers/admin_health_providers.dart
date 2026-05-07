@@ -30,7 +30,8 @@ final systemHealthProvider = FutureProvider<Map<String, dynamic>>((ref) async {
     return {'status': 'unavailable'};
   }
   // Auth error → session issue, not a system health problem
-  if (errorStr.contains('401') || errorStr.contains('No authenticated session')) {
+  if (errorStr.contains('401') ||
+      errorStr.contains('No authenticated session')) {
     return {'status': 'unavailable'};
   }
   return {'status': 'error', 'message': result.error};
@@ -81,7 +82,8 @@ final systemHealthAlertProvider = Provider<void>((ref) {
 
         final alertBody = degradedServices.isNotEmpty
             ? 'admin.degraded_services'.tr(args: [degradedServices.join(', ')])
-            : data['message'] as String? ?? 'admin.system_status_alert'.tr(args: [status]);
+            : data['message'] as String? ??
+                  'admin.system_status_alert'.tr(args: [status]);
 
         _sendHealthAlertToAdmins(
           ref,
@@ -116,7 +118,9 @@ Future<void> _sendHealthAlertToAdmins(
       body: body,
       data: {'type': 'system_health_alert'},
     );
-    AppLogger.info('[systemHealthAlert] Push sent to ${adminIds.length} admins');
+    AppLogger.info(
+      '[systemHealthAlert] Push sent to ${adminIds.length} admins',
+    );
   } catch (e, st) {
     AppLogger.error('[systemHealthAlert] $e', e, st);
   }

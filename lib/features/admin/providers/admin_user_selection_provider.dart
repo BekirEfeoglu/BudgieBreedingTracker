@@ -17,8 +17,8 @@ class AdminUserSelectionNotifier extends Notifier<Set<String>> {
 
 final adminUserSelectionProvider =
     NotifierProvider<AdminUserSelectionNotifier, Set<String>>(
-  AdminUserSelectionNotifier.new,
-);
+      AdminUserSelectionNotifier.new,
+    );
 
 final isSelectionActiveProvider = Provider<bool>((ref) {
   return ref.watch(adminUserSelectionProvider).isNotEmpty;

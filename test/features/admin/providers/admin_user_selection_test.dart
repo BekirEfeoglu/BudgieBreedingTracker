@@ -34,10 +34,11 @@ void main() {
       container.read(adminUserSelectionProvider.notifier).toggle('user-1');
       container.read(adminUserSelectionProvider.notifier).toggle('user-2');
       container.read(adminUserSelectionProvider.notifier).toggle('user-3');
-      expect(
-        container.read(adminUserSelectionProvider),
-        {'user-1', 'user-2', 'user-3'},
-      );
+      expect(container.read(adminUserSelectionProvider), {
+        'user-1',
+        'user-2',
+        'user-3',
+      });
     });
 
     test('toggle removes one user from multiple', () {
@@ -45,21 +46,21 @@ void main() {
       container.read(adminUserSelectionProvider.notifier).toggle('user-2');
       container.read(adminUserSelectionProvider.notifier).toggle('user-3');
       container.read(adminUserSelectionProvider.notifier).toggle('user-2');
-      expect(
-        container.read(adminUserSelectionProvider),
-        {'user-1', 'user-3'},
-      );
+      expect(container.read(adminUserSelectionProvider), {'user-1', 'user-3'});
     });
 
     test('selectAll replaces existing selection', () {
       container.read(adminUserSelectionProvider.notifier).toggle('old-user');
-      container.read(adminUserSelectionProvider.notifier).selectAll(
-        ['user-a', 'user-b', 'user-c'],
-      );
-      expect(
-        container.read(adminUserSelectionProvider),
-        {'user-a', 'user-b', 'user-c'},
-      );
+      container.read(adminUserSelectionProvider.notifier).selectAll([
+        'user-a',
+        'user-b',
+        'user-c',
+      ]);
+      expect(container.read(adminUserSelectionProvider), {
+        'user-a',
+        'user-b',
+        'user-c',
+      });
     });
 
     test('selectAll with empty list clears selection', () {
@@ -69,9 +70,11 @@ void main() {
     });
 
     test('clear empties selection', () {
-      container.read(adminUserSelectionProvider.notifier).selectAll(
-        ['user-a', 'user-b', 'user-c'],
-      );
+      container.read(adminUserSelectionProvider.notifier).selectAll([
+        'user-a',
+        'user-b',
+        'user-c',
+      ]);
       container.read(adminUserSelectionProvider.notifier).clear();
       expect(container.read(adminUserSelectionProvider), isEmpty);
     });
@@ -155,9 +158,11 @@ void main() {
     });
 
     test('decrements when users are toggled off', () {
-      container.read(adminUserSelectionProvider.notifier).selectAll(
-        ['user-a', 'user-b', 'user-c'],
-      );
+      container.read(adminUserSelectionProvider.notifier).selectAll([
+        'user-a',
+        'user-b',
+        'user-c',
+      ]);
       expect(container.read(selectedUserCountProvider), 3);
 
       container.read(adminUserSelectionProvider.notifier).toggle('user-b');
@@ -165,16 +170,22 @@ void main() {
     });
 
     test('reflects count from selectAll', () {
-      container.read(adminUserSelectionProvider.notifier).selectAll(
-        ['a', 'b', 'c', 'd', 'e'],
-      );
+      container.read(adminUserSelectionProvider.notifier).selectAll([
+        'a',
+        'b',
+        'c',
+        'd',
+        'e',
+      ]);
       expect(container.read(selectedUserCountProvider), 5);
     });
 
     test('resets to 0 when cleared', () {
-      container.read(adminUserSelectionProvider.notifier).selectAll(
-        ['user-a', 'user-b', 'user-c'],
-      );
+      container.read(adminUserSelectionProvider.notifier).selectAll([
+        'user-a',
+        'user-b',
+        'user-c',
+      ]);
       expect(container.read(selectedUserCountProvider), 3);
 
       container.read(adminUserSelectionProvider.notifier).clear();

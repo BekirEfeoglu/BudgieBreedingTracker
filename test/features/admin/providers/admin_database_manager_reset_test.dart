@@ -232,10 +232,7 @@ _FakeChunkedClient _makeClient({
 }
 
 List<Map<String, dynamic>> _generateRows(int count) {
-  return List.generate(
-    count,
-    (i) => {'id': i, 'name': 'Row $i'},
-  );
+  return List.generate(count, (i) => {'id': i, 'name': 'Row $i'});
 }
 
 void main() {
@@ -257,8 +254,10 @@ void main() {
       final container = _makeContainer(userId: 'admin-1', client: client);
       addTearDown(container.dispose);
 
-      final result = await _makeManager(container, updates)
-          .exportTable(SupabaseConstants.birdsTable);
+      final result = await _makeManager(
+        container,
+        updates,
+      ).exportTable(SupabaseConstants.birdsTable);
 
       expect(result, isNotNull);
       expect(result!.length, lessThan(1024)); // under 1 KB
@@ -278,8 +277,10 @@ void main() {
       final container = _makeContainer(userId: 'admin-1', client: client);
       addTearDown(container.dispose);
 
-      final result = await _makeManager(container, updates)
-          .exportTable(SupabaseConstants.birdsTable);
+      final result = await _makeManager(
+        container,
+        updates,
+      ).exportTable(SupabaseConstants.birdsTable);
 
       expect(result, isNotNull);
       expect(result!.length, greaterThan(1024)); // over 1 KB
@@ -296,8 +297,10 @@ void main() {
       final container = _makeContainer(userId: 'admin-1', client: client);
       addTearDown(container.dispose);
 
-      final result = await _makeManager(container, updates)
-          .exportTable(SupabaseConstants.birdsTable);
+      final result = await _makeManager(
+        container,
+        updates,
+      ).exportTable(SupabaseConstants.birdsTable);
 
       expect(result, isNotNull);
       expect(result!.length, greaterThan(1024 * 1024)); // over 1 MB
@@ -315,8 +318,10 @@ void main() {
       final container = _makeContainer(userId: 'admin-1', client: client);
       addTearDown(container.dispose);
 
-      final result = await _makeManager(container, updates)
-          .exportTable(SupabaseConstants.birdsTable);
+      final result = await _makeManager(
+        container,
+        updates,
+      ).exportTable(SupabaseConstants.birdsTable);
 
       expect(result, isNotNull);
       final decoded = jsonDecode(result!) as List;
@@ -336,8 +341,10 @@ void main() {
       final container = _makeContainer(userId: 'admin-1', client: client);
       addTearDown(container.dispose);
 
-      final result = await _makeManager(container, updates)
-          .exportTable(SupabaseConstants.birdsTable);
+      final result = await _makeManager(
+        container,
+        updates,
+      ).exportTable(SupabaseConstants.birdsTable);
 
       expect(result, isNotNull);
       final decoded = jsonDecode(result!) as List;
@@ -353,8 +360,10 @@ void main() {
       final container = _makeContainer(userId: 'admin-1', client: client);
       addTearDown(container.dispose);
 
-      final result = await _makeManager(container, updates)
-          .exportTable(SupabaseConstants.birdsTable);
+      final result = await _makeManager(
+        container,
+        updates,
+      ).exportTable(SupabaseConstants.birdsTable);
 
       expect(result, isNotNull);
       final decoded = jsonDecode(result!) as List;
@@ -362,15 +371,15 @@ void main() {
     });
 
     test('empty table returns empty JSON array', () async {
-      final client = _makeClient(
-        tableData: {SupabaseConstants.birdsTable: []},
-      );
+      final client = _makeClient(tableData: {SupabaseConstants.birdsTable: []});
       final updates = <_StateUpdate>[];
       final container = _makeContainer(userId: 'admin-1', client: client);
       addTearDown(container.dispose);
 
-      final result = await _makeManager(container, updates)
-          .exportTable(SupabaseConstants.birdsTable);
+      final result = await _makeManager(
+        container,
+        updates,
+      ).exportTable(SupabaseConstants.birdsTable);
 
       expect(result, isNotNull);
       final decoded = jsonDecode(result!) as List;
@@ -387,17 +396,16 @@ void main() {
       final container = _makeContainer(userId: 'admin-1', client: client);
       addTearDown(container.dispose);
 
-      await _makeManager(container, updates)
-          .exportTable(SupabaseConstants.birdsTable);
+      await _makeManager(
+        container,
+        updates,
+      ).exportTable(SupabaseConstants.birdsTable);
 
       // RPC was attempted
       expect(client.rpcCalls, hasLength(1));
       expect(client.rpcCalls.single.fn, 'admin_export_table');
       // Fallback queried the table directly
-      expect(
-        client.requestedTables,
-        contains(SupabaseConstants.birdsTable),
-      );
+      expect(client.requestedTables, contains(SupabaseConstants.birdsTable));
     });
 
     test('state transitions: loading then success', () async {
@@ -408,8 +416,10 @@ void main() {
       final container = _makeContainer(userId: 'admin-1', client: client);
       addTearDown(container.dispose);
 
-      await _makeManager(container, updates)
-          .exportTable(SupabaseConstants.birdsTable);
+      await _makeManager(
+        container,
+        updates,
+      ).exportTable(SupabaseConstants.birdsTable);
 
       expect(updates.first.isLoading, isTrue);
       expect(updates.first.error, isNull);
@@ -431,8 +441,10 @@ void main() {
       final container = _makeContainer(userId: 'admin-1', client: client);
       addTearDown(container.dispose);
 
-      final result = await _makeManager(container, updates)
-          .exportTable(SupabaseConstants.birdsTable);
+      final result = await _makeManager(
+        container,
+        updates,
+      ).exportTable(SupabaseConstants.birdsTable);
 
       expect(result, contains('\n'));
       expect(result, contains('  '));
@@ -447,8 +459,10 @@ void main() {
       final container = _makeContainer(userId: 'admin-1', client: client);
       addTearDown(container.dispose);
 
-      final result = await _makeManager(container, updates)
-          .exportTable('secret_table');
+      final result = await _makeManager(
+        container,
+        updates,
+      ).exportTable('secret_table');
 
       expect(result, isNull);
       expect(updates.single.isLoading, isFalse);

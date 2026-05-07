@@ -113,7 +113,12 @@ class MonitoringIndexUsageCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                AppIcon(AppIcons.statistics, color: color, size: 20, semanticsLabel: 'admin.index_usage'.tr()),
+                AppIcon(
+                  AppIcons.statistics,
+                  color: color,
+                  size: 20,
+                  semanticsLabel: 'admin.index_usage'.tr(),
+                ),
                 const SizedBox(width: AppSpacing.sm),
                 Text(
                   'admin.index_usage'.tr(),

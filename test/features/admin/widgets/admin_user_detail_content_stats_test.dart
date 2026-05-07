@@ -25,7 +25,9 @@ final _emptyDetail = AdminUserDetail(
 );
 
 Widget _wrap(Widget child) {
-  return MaterialApp(home: Scaffold(body: SingleChildScrollView(child: child)));
+  return MaterialApp(
+    home: Scaffold(body: SingleChildScrollView(child: child)),
+  );
 }
 
 void main() {

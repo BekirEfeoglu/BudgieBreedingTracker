@@ -74,7 +74,11 @@ class _MiniStat extends StatelessWidget {
   final String label;
   final String value;
   final Color color;
-  const _MiniStat({required this.label, required this.value, required this.color});
+  const _MiniStat({
+    required this.label,
+    required this.value,
+    required this.color,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -89,7 +93,11 @@ class _MiniStat extends StatelessWidget {
           ),
         ),
         const SizedBox(height: AppSpacing.xs),
-        Text(label, style: theme.textTheme.labelSmall, textAlign: TextAlign.center),
+        Text(
+          label,
+          style: theme.textTheme.labelSmall,
+          textAlign: TextAlign.center,
+        ),
       ],
     );
   }
@@ -152,7 +160,9 @@ class DashboardUserGrowthChart extends ConsumerWidget {
 
   Widget _buildLineChart(BuildContext context, List<DailyDataPoint> data) {
     final theme = Theme.of(context);
-    final maxVal = data.fold<int>(0, (max, d) => d.count > max ? d.count : max).toDouble();
+    final maxVal = data
+        .fold<int>(0, (max, d) => d.count > max ? d.count : max)
+        .toDouble();
     final interval = calcChartInterval(maxVal);
     final maxY = calcChartMaxY(maxVal, interval);
 
@@ -165,10 +175,8 @@ class DashboardUserGrowthChart extends ConsumerWidget {
               showTitles: true,
               reservedSize: 32,
               interval: interval,
-              getTitlesWidget: (value, _) => Text(
-                '${value.toInt()}',
-                style: theme.textTheme.labelSmall,
-              ),
+              getTitlesWidget: (value, _) =>
+                  Text('${value.toInt()}', style: theme.textTheme.labelSmall),
             ),
           ),
           bottomTitles: AxisTitles(
@@ -177,7 +185,9 @@ class DashboardUserGrowthChart extends ConsumerWidget {
               interval: 7,
               getTitlesWidget: (value, _) {
                 final index = value.toInt();
-                if (index < 0 || index >= data.length) return const SizedBox.shrink();
+                if (index < 0 || index >= data.length) {
+                  return const SizedBox.shrink();
+                }
                 final date = data[index].date;
                 return Text(
                   '${date.day}/${date.month}',
@@ -186,8 +196,12 @@ class DashboardUserGrowthChart extends ConsumerWidget {
               },
             ),
           ),
-          topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          topTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+          rightTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
         ),
         borderData: FlBorderData(show: false),
         minY: 0,
@@ -237,7 +251,10 @@ class DashboardTopUsersTable extends ConsumerWidget {
             const SizedBox(height: AppSpacing.md),
             dataAsync.when(
               loading: () => const LoadingState(),
-              error: (e, _) => Text('common.data_load_error'.tr(), style: theme.textTheme.bodySmall),
+              error: (e, _) => Text(
+                'common.data_load_error'.tr(),
+                style: theme.textTheme.bodySmall,
+              ),
               data: (users) {
                 if (users.isEmpty) {
                   return Text(

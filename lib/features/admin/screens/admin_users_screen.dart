@@ -27,7 +27,7 @@ part 'admin_users_screen_list.dart';
 part 'admin_users_screen_card.dart';
 part 'admin_users_screen_bulk_actions.dart';
 
-enum _UserStatusFilter { all, online, active, inactive }
+enum _UserStatusFilter { all, online, active, inactive, premium, free }
 
 enum _UserSortOption { newest, oldest, recentlyActive, nameAsc, emailAsc }
 
@@ -35,10 +35,19 @@ extension _UserStatusFilterQuery on _UserStatusFilter {
   bool? get queryValue => switch (this) {
     _UserStatusFilter.active => true,
     _UserStatusFilter.inactive => false,
-    _UserStatusFilter.all || _UserStatusFilter.online => null,
+    _UserStatusFilter.all ||
+    _UserStatusFilter.online ||
+    _UserStatusFilter.premium ||
+    _UserStatusFilter.free => null,
   };
 
   bool get onlineOnly => this == _UserStatusFilter.online;
+
+  bool? get premiumValue => switch (this) {
+    _UserStatusFilter.premium => true,
+    _UserStatusFilter.free => false,
+    _ => null,
+  };
 }
 
 extension _UserSortOptionQuery on _UserSortOption {
@@ -89,6 +98,7 @@ class _AdminUsersScreenState extends ConsumerState<AdminUsersScreen> {
   AdminUsersQuery get _buildQuery => AdminUsersQuery(
     searchTerm: _query,
     isActiveFilter: _statusFilter.queryValue,
+    isPremiumFilter: _statusFilter.premiumValue,
     onlineOnly: _statusFilter.onlineOnly,
     sortField: _sortOption.sortField,
     sortAscending: _sortOption.sortAscending,

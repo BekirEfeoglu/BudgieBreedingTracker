@@ -6,9 +6,7 @@ import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:budgie_breeding_tracker/features/admin/providers/admin_models.dart';
 import 'package:budgie_breeding_tracker/features/admin/widgets/admin_database_content.dart';
 
-final _singleTable = [
-  const TableInfo(name: 'birds', rowCount: 42),
-];
+final _singleTable = [const TableInfo(name: 'birds', rowCount: 42)];
 
 final _multipleTables = [
   const TableInfo(name: 'birds', rowCount: 42),
@@ -78,10 +76,7 @@ void main() {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
-            body: DatabaseSummaryCard(
-              tableCount: 3,
-              totalRows: 2500000,
-            ),
+            body: DatabaseSummaryCard(tableCount: 3, totalRows: 2500000),
           ),
         ),
       );
@@ -175,9 +170,7 @@ void main() {
       expect(find.text('Backup All'), findsOneWidget);
     });
 
-    testWidgets('shows CircularProgressIndicator when loading', (
-      tester,
-    ) async {
+    testWidgets('shows CircularProgressIndicator when loading', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -322,41 +315,31 @@ void main() {
 
   group('DatabaseContent', () {
     testWidgets('renders without crashing with single table', (tester) async {
-      await tester.pumpWidget(
-        _wrap(DatabaseContent(tables: _singleTable)),
-      );
+      await tester.pumpWidget(_wrap(DatabaseContent(tables: _singleTable)));
       await tester.pump();
       expect(find.byType(DatabaseContent), findsOneWidget);
     });
 
     testWidgets('renders without crashing with empty tables', (tester) async {
-      await tester.pumpWidget(
-        _wrap(DatabaseContent(tables: _emptyTables)),
-      );
+      await tester.pumpWidget(_wrap(DatabaseContent(tables: _emptyTables)));
       await tester.pump();
       expect(find.byType(DatabaseContent), findsOneWidget);
     });
 
     testWidgets('shows DatabaseSummaryCard', (tester) async {
-      await tester.pumpWidget(
-        _wrap(DatabaseContent(tables: _singleTable)),
-      );
+      await tester.pumpWidget(_wrap(DatabaseContent(tables: _singleTable)));
       await tester.pump();
       expect(find.byType(DatabaseSummaryCard), findsOneWidget);
     });
 
     testWidgets('shows DatabaseGlobalActionsBar', (tester) async {
-      await tester.pumpWidget(
-        _wrap(DatabaseContent(tables: _singleTable)),
-      );
+      await tester.pumpWidget(_wrap(DatabaseContent(tables: _singleTable)));
       await tester.pump();
       expect(find.byType(DatabaseGlobalActionsBar), findsOneWidget);
     });
 
     testWidgets('shows admin.tables section title', (tester) async {
-      await tester.pumpWidget(
-        _wrap(DatabaseContent(tables: _singleTable)),
-      );
+      await tester.pumpWidget(_wrap(DatabaseContent(tables: _singleTable)));
       await tester.pump();
       // admin.tables appears in summary card and section title
       expect(find.text(l10n('admin.tables')), findsAtLeastNWidgets(1));
@@ -364,27 +347,21 @@ void main() {
 
     testWidgets('computes totalRows from all tables', (tester) async {
       // multiple tables: 42 + 120 + 30 = 192
-      await tester.pumpWidget(
-        _wrap(DatabaseContent(tables: _multipleTables)),
-      );
+      await tester.pumpWidget(_wrap(DatabaseContent(tables: _multipleTables)));
       await tester.pump();
       // DatabaseSummaryCard should show total rows
       expect(find.text('192'), findsOneWidget);
     });
 
     testWidgets('shows zero totalRows with empty tables', (tester) async {
-      await tester.pumpWidget(
-        _wrap(DatabaseContent(tables: _emptyTables)),
-      );
+      await tester.pumpWidget(_wrap(DatabaseContent(tables: _emptyTables)));
       await tester.pump();
       // With 0 tables and 0 total rows
       expect(find.text('0'), findsAtLeastNWidgets(1));
     });
 
     testWidgets('renders SingleChildScrollView', (tester) async {
-      await tester.pumpWidget(
-        _wrap(DatabaseContent(tables: _singleTable)),
-      );
+      await tester.pumpWidget(_wrap(DatabaseContent(tables: _singleTable)));
       await tester.pump();
       expect(find.byType(SingleChildScrollView), findsOneWidget);
     });

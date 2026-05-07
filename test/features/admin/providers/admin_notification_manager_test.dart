@@ -79,9 +79,7 @@ class _FakeMutationBuilder extends Fake
 }
 
 class _FakeMutationQueryBuilder extends Fake implements SupabaseQueryBuilder {
-  _FakeMutationQueryBuilder({
-    this.insertError,
-  });
+  _FakeMutationQueryBuilder({this.insertError});
 
   final Object? insertError;
   Object? insertPayload;
@@ -101,8 +99,7 @@ class _FakeMutationQueryBuilder extends Fake implements SupabaseQueryBuilder {
   PostgrestFilterBuilder<dynamic> update(
     Object values, {
     bool defaultToNull = true,
-  }) =>
-      _FakeMutationBuilder();
+  }) => _FakeMutationBuilder();
 
   @override
   PostgrestFilterBuilder<dynamic> delete() => _FakeMutationBuilder();
@@ -227,8 +224,11 @@ _FakeNotificationClient _makeClient({
 ///
 /// Returns both the container and the provider so callers can read the
 /// manager from the container.
-({ProviderContainer container, Provider<AdminNotificationManager> managerProvider})
-    _makeContainerAndManager({
+({
+  ProviderContainer container,
+  Provider<AdminNotificationManager> managerProvider,
+})
+_makeContainerAndManager({
   required String userId,
   required _FakeNotificationClient client,
   required _FakeEdgeFunctionClient edgeClient,
@@ -254,102 +254,103 @@ _FakeNotificationClient _makeClient({
 void main() {
   group('AdminNotificationManager', () {
     group('sendNotification', () {
-      test('success path - admin check passes, insert and push succeed',
-          () async {
-        final client = _makeClient(
-          adminUserResult: const {'role': 'admin'},
-        );
-        final edgeClient = _FakeEdgeFunctionClient(
-          pushResult: const EdgeFunctionResult(
-            success: true,
-            data: {'success': 1, 'failure': 0},
-          ),
-        );
-        final recorder = _StateRecorder();
-        final setup = _makeContainerAndManager(
-          userId: 'admin-user',
-          client: client,
-          edgeClient: edgeClient,
-          recorder: recorder,
-        );
-        addTearDown(setup.container.dispose);
+      test(
+        'success path - admin check passes, insert and push succeed',
+        () async {
+          final client = _makeClient(adminUserResult: const {'role': 'admin'});
+          final edgeClient = _FakeEdgeFunctionClient(
+            pushResult: const EdgeFunctionResult(
+              success: true,
+              data: {'success': 1, 'failure': 0},
+            ),
+          );
+          final recorder = _StateRecorder();
+          final setup = _makeContainerAndManager(
+            userId: 'admin-user',
+            client: client,
+            edgeClient: edgeClient,
+            recorder: recorder,
+          );
+          addTearDown(setup.container.dispose);
 
-        final manager = setup.container.read(setup.managerProvider);
-        await manager.sendNotification('target-user', 'Test Title', 'Test Body');
+          final manager = setup.container.read(setup.managerProvider);
+          await manager.sendNotification(
+            'target-user',
+            'Test Title',
+            'Test Body',
+          );
 
-        // Verify state ends with success
-        expect(recorder.isLoading, isFalse);
-        expect(recorder.isSuccess, isTrue);
-        expect(recorder.error, isNull);
-        expect(recorder.successMessage, 'admin.notification_sent');
+          // Verify state ends with success
+          expect(recorder.isLoading, isFalse);
+          expect(recorder.isSuccess, isTrue);
+          expect(recorder.error, isNull);
+          expect(recorder.successMessage, 'admin.notification_sent');
 
-        // Verify notification insert was called
-        expect(client.notificationsQueryBuilder.insertCallCount, 1);
-        final payload = client.notificationsQueryBuilder.insertPayload
-            as Map<String, dynamic>;
-        expect(payload['user_id'], 'target-user');
-        expect(payload['title'], 'Test Title');
-        expect(payload['body'], 'Test Body');
-        expect(payload['type'], 'custom');
-        expect(payload['priority'], 'normal');
-        expect(payload['read'], false);
+          // Verify notification insert was called
+          expect(client.notificationsQueryBuilder.insertCallCount, 1);
+          final payload =
+              client.notificationsQueryBuilder.insertPayload
+                  as Map<String, dynamic>;
+          expect(payload['user_id'], 'target-user');
+          expect(payload['title'], 'Test Title');
+          expect(payload['body'], 'Test Body');
+          expect(payload['type'], 'custom');
+          expect(payload['priority'], 'normal');
+          expect(payload['read'], false);
 
-        // Verify push was called
-        expect(edgeClient.pushCallCount, 1);
-        expect(edgeClient.lastPushUserIds, ['target-user']);
-        expect(edgeClient.lastPushTitle, 'Test Title');
-        expect(edgeClient.lastPushBody, 'Test Body');
+          // Verify push was called
+          expect(edgeClient.pushCallCount, 1);
+          expect(edgeClient.lastPushUserIds, ['target-user']);
+          expect(edgeClient.lastPushTitle, 'Test Title');
+          expect(edgeClient.lastPushBody, 'Test Body');
 
-        // Verify admin log was recorded
-        expect(client.adminLogsQueryBuilder.insertCallCount, 1);
-        final logPayload = client.adminLogsQueryBuilder.insertPayload
-            as Map<String, dynamic>;
-        expect(logPayload['action'], 'notification_sent');
-        expect(logPayload['target_user_id'], 'target-user');
-        expect(logPayload['admin_user_id'], 'admin-user');
-        expect(
-          (logPayload['details'] as Map)['push_delivered'],
-          isTrue,
-        );
-      });
+          // Verify admin log was recorded
+          expect(client.adminLogsQueryBuilder.insertCallCount, 1);
+          final logPayload =
+              client.adminLogsQueryBuilder.insertPayload
+                  as Map<String, dynamic>;
+          expect(logPayload['action'], 'notification_sent');
+          expect(logPayload['target_user_id'], 'target-user');
+          expect(logPayload['admin_user_id'], 'admin-user');
+          expect((logPayload['details'] as Map)['push_delivered'], isTrue);
+        },
+      );
 
-      test('push fails but in-app notification succeeds (pushFailed = true)',
-          () async {
-        final client = _makeClient(
-          adminUserResult: const {'role': 'admin'},
-        );
-        final edgeClient = _FakeEdgeFunctionClient(
-          pushResult: const EdgeFunctionResult(
-            success: false,
-            error: 'FCM unavailable',
-          ),
-        );
-        final recorder = _StateRecorder();
-        final setup = _makeContainerAndManager(
-          userId: 'admin-user',
-          client: client,
-          edgeClient: edgeClient,
-          recorder: recorder,
-        );
-        addTearDown(setup.container.dispose);
+      test(
+        'push fails but in-app notification succeeds (pushFailed = true)',
+        () async {
+          final client = _makeClient(adminUserResult: const {'role': 'admin'});
+          final edgeClient = _FakeEdgeFunctionClient(
+            pushResult: const EdgeFunctionResult(
+              success: false,
+              error: 'FCM unavailable',
+            ),
+          );
+          final recorder = _StateRecorder();
+          final setup = _makeContainerAndManager(
+            userId: 'admin-user',
+            client: client,
+            edgeClient: edgeClient,
+            recorder: recorder,
+          );
+          addTearDown(setup.container.dispose);
 
-        final manager = setup.container.read(setup.managerProvider);
-        await manager.sendNotification('target-user', 'Title', 'Body');
+          final manager = setup.container.read(setup.managerProvider);
+          await manager.sendNotification('target-user', 'Title', 'Body');
 
-        expect(recorder.isSuccess, isTrue);
-        expect(recorder.successMessage, 'admin.notification_sent_no_push');
+          expect(recorder.isSuccess, isTrue);
+          expect(recorder.successMessage, 'admin.notification_sent_no_push');
 
-        // Notification was still inserted
-        expect(client.notificationsQueryBuilder.insertCallCount, 1);
+          // Notification was still inserted
+          expect(client.notificationsQueryBuilder.insertCallCount, 1);
 
-        // Admin log records push_delivered as false
-        final logPayload = client.adminLogsQueryBuilder.insertPayload
-            as Map<String, dynamic>;
-        expect(
-          (logPayload['details'] as Map)['push_delivered'],
-          isFalse,
-        );
-      });
+          // Admin log records push_delivered as false
+          final logPayload =
+              client.adminLogsQueryBuilder.insertPayload
+                  as Map<String, dynamic>;
+          expect((logPayload['details'] as Map)['push_delivered'], isFalse);
+        },
+      );
 
       test('requireAdmin fails (not admin user)', () async {
         final client = _makeClient(adminUserResult: null);
@@ -376,9 +377,7 @@ void main() {
       });
 
       test('sanitizes long title and body', () async {
-        final client = _makeClient(
-          adminUserResult: const {'role': 'admin'},
-        );
+        final client = _makeClient(adminUserResult: const {'role': 'admin'});
         final edgeClient = _FakeEdgeFunctionClient(
           pushResult: const EdgeFunctionResult(
             success: true,
@@ -404,8 +403,9 @@ void main() {
         expect(recorder.isSuccess, isTrue);
 
         // Verify title was truncated to 200 chars
-        final payload = client.notificationsQueryBuilder.insertPayload
-            as Map<String, dynamic>;
+        final payload =
+            client.notificationsQueryBuilder.insertPayload
+                as Map<String, dynamic>;
         expect((payload['title'] as String).length, 200);
         expect(payload['title'], 'A' * 200);
 
@@ -418,39 +418,37 @@ void main() {
         expect(edgeClient.lastPushBody!.length, 1000);
       });
 
-      test('push succeeds but delivered count is 0 (pushFailed = true)',
-          () async {
-        final client = _makeClient(
-          adminUserResult: const {'role': 'admin'},
-        );
-        final edgeClient = _FakeEdgeFunctionClient(
-          pushResult: const EdgeFunctionResult(
-            success: true,
-            data: {'success': 0, 'failure': 1},
-          ),
-        );
-        final recorder = _StateRecorder();
-        final setup = _makeContainerAndManager(
-          userId: 'admin-user',
-          client: client,
-          edgeClient: edgeClient,
-          recorder: recorder,
-        );
-        addTearDown(setup.container.dispose);
+      test(
+        'push succeeds but delivered count is 0 (pushFailed = true)',
+        () async {
+          final client = _makeClient(adminUserResult: const {'role': 'admin'});
+          final edgeClient = _FakeEdgeFunctionClient(
+            pushResult: const EdgeFunctionResult(
+              success: true,
+              data: {'success': 0, 'failure': 1},
+            ),
+          );
+          final recorder = _StateRecorder();
+          final setup = _makeContainerAndManager(
+            userId: 'admin-user',
+            client: client,
+            edgeClient: edgeClient,
+            recorder: recorder,
+          );
+          addTearDown(setup.container.dispose);
 
-        final manager = setup.container.read(setup.managerProvider);
-        await manager.sendNotification('target-user', 'Title', 'Body');
+          final manager = setup.container.read(setup.managerProvider);
+          await manager.sendNotification('target-user', 'Title', 'Body');
 
-        expect(recorder.isSuccess, isTrue);
-        expect(recorder.successMessage, 'admin.notification_sent_no_push');
-      });
+          expect(recorder.isSuccess, isTrue);
+          expect(recorder.successMessage, 'admin.notification_sent_no_push');
+        },
+      );
     });
 
     group('sendBulkNotification', () {
       test('success path - multiple users', () async {
-        final client = _makeClient(
-          adminUserResult: const {'role': 'admin'},
-        );
+        final client = _makeClient(adminUserResult: const {'role': 'admin'});
         final edgeClient = _FakeEdgeFunctionClient(
           pushResult: const EdgeFunctionResult(
             success: true,
@@ -483,24 +481,16 @@ void main() {
         expect(edgeClient.lastPushBody, 'Bulk Body');
 
         // Verify admin log was recorded
-        final logPayload = client.adminLogsQueryBuilder.insertPayload
-            as Map<String, dynamic>;
+        final logPayload =
+            client.adminLogsQueryBuilder.insertPayload as Map<String, dynamic>;
         expect(logPayload['action'], 'bulk_notification_sent');
         expect(logPayload['admin_user_id'], 'admin-user');
-        expect(
-          (logPayload['details'] as Map)['count'],
-          3,
-        );
-        expect(
-          (logPayload['details'] as Map)['push_delivered'],
-          isTrue,
-        );
+        expect((logPayload['details'] as Map)['count'], 3);
+        expect((logPayload['details'] as Map)['push_delivered'], isTrue);
       });
 
       test('inserts correct number of notification rows', () async {
-        final client = _makeClient(
-          adminUserResult: const {'role': 'admin'},
-        );
+        final client = _makeClient(adminUserResult: const {'role': 'admin'});
         final edgeClient = _FakeEdgeFunctionClient(
           pushResult: const EdgeFunctionResult(
             success: true,
@@ -522,8 +512,9 @@ void main() {
 
         // Verify insert was called once with a list of 3 rows
         expect(client.notificationsQueryBuilder.insertCallCount, 1);
-        final rows = client.notificationsQueryBuilder.insertPayload
-            as List<Map<String, dynamic>>;
+        final rows =
+            client.notificationsQueryBuilder.insertPayload
+                as List<Map<String, dynamic>>;
         expect(rows.length, 3);
 
         // Verify each row has the correct user_id
@@ -547,9 +538,7 @@ void main() {
       });
 
       test('bulk push fails but in-app notifications succeed', () async {
-        final client = _makeClient(
-          adminUserResult: const {'role': 'admin'},
-        );
+        final client = _makeClient(adminUserResult: const {'role': 'admin'});
         final edgeClient = _FakeEdgeFunctionClient(
           pushResult: const EdgeFunctionResult(
             success: false,
@@ -573,10 +562,7 @@ void main() {
         );
 
         expect(recorder.isSuccess, isTrue);
-        expect(
-          recorder.successMessage,
-          'admin.notification_sent_bulk_no_push',
-        );
+        expect(recorder.successMessage, 'admin.notification_sent_bulk_no_push');
 
         // Notifications still inserted
         expect(client.notificationsQueryBuilder.insertCallCount, 1);

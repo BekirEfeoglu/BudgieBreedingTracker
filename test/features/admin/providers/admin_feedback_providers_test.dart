@@ -119,36 +119,38 @@ class _FeedbackQueryNotifier extends FeedbackQueryNotifier {
 
 void main() {
   group('adminFeedbackProvider', () {
-    test('throws AsyncError when admin check fails for anonymous user',
-        () async {
-      final maybeSingleBuilder = _FakeAdminMaybeSingleBuilder();
-      final filterBuilder = _FakeAdminSelectBuilder(
-        maybeSingleBuilder: maybeSingleBuilder,
-        listResult: [
-          {'id': 'fb-1', 'message': 'First'},
-          {'id': 'fb-2', 'message': 'Second'},
-        ],
-      );
-      final queryBuilder = _FakeAdminQueryBuilder(filterBuilder);
-      final client = _FakeAdminSupabaseClient(queryBuilder);
-      final container = ProviderContainer(
-        overrides: [
-          currentUserIdProvider.overrideWithValue('anonymous'),
-          supabaseClientProvider.overrideWithValue(client),
-        ],
-        retry: (_, __) => null,
-      );
-      addTearDown(container.dispose);
-      final sub = container.listen(adminFeedbackProvider, (_, __) {});
-      addTearDown(() {
-        sub.close();
-      });
+    test(
+      'throws AsyncError when admin check fails for anonymous user',
+      () async {
+        final maybeSingleBuilder = _FakeAdminMaybeSingleBuilder();
+        final filterBuilder = _FakeAdminSelectBuilder(
+          maybeSingleBuilder: maybeSingleBuilder,
+          listResult: [
+            {'id': 'fb-1', 'message': 'First'},
+            {'id': 'fb-2', 'message': 'Second'},
+          ],
+        );
+        final queryBuilder = _FakeAdminQueryBuilder(filterBuilder);
+        final client = _FakeAdminSupabaseClient(queryBuilder);
+        final container = ProviderContainer(
+          overrides: [
+            currentUserIdProvider.overrideWithValue('anonymous'),
+            supabaseClientProvider.overrideWithValue(client),
+          ],
+          retry: (_, __) => null,
+        );
+        addTearDown(container.dispose);
+        final sub = container.listen(adminFeedbackProvider, (_, __) {});
+        addTearDown(() {
+          sub.close();
+        });
 
-      expect(
-        () => container.read(adminFeedbackProvider.future),
-        throwsA(isA<Exception>()),
-      );
-    });
+        expect(
+          () => container.read(adminFeedbackProvider.future),
+          throwsA(isA<Exception>()),
+        );
+      },
+    );
 
     test(
       'returns newest feedback list with expected query modifiers',

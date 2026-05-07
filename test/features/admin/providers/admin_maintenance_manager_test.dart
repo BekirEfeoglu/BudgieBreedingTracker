@@ -103,10 +103,7 @@ class _FakeMutationBuilder extends Fake
 }
 
 class _FakeMutationQueryBuilder extends Fake implements SupabaseQueryBuilder {
-  _FakeMutationQueryBuilder({
-    this.insertError,
-    this.mutationBuilder,
-  });
+  _FakeMutationQueryBuilder({this.insertError, this.mutationBuilder});
 
   final Object? insertError;
   final _FakeMutationBuilder? mutationBuilder;
@@ -127,8 +124,7 @@ class _FakeMutationQueryBuilder extends Fake implements SupabaseQueryBuilder {
   PostgrestFilterBuilder<dynamic> update(
     Object values, {
     bool defaultToNull = true,
-  }) =>
-      mutationBuilder ?? _FakeMutationBuilder();
+  }) => mutationBuilder ?? _FakeMutationBuilder();
 
   @override
   PostgrestFilterBuilder<dynamic> delete() =>
@@ -224,8 +220,11 @@ _FakeMaintenanceClient _makeClient({
   );
 }
 
-({ProviderContainer container, Provider<AdminMaintenanceManager> managerProvider})
-    _makeContainerAndManager({
+({
+  ProviderContainer container,
+  Provider<AdminMaintenanceManager> managerProvider,
+})
+_makeContainerAndManager({
   required String userId,
   required _FakeMaintenanceClient client,
   required _StateRecorder recorder,
@@ -319,9 +318,7 @@ void main() {
     // -----------------------------------------------------------------------
     group('clearAuditLogs', () {
       test('success - deletes old logs, logs action, sets isSuccess', () async {
-        final client = _makeClient(
-          adminUserResult: const {'role': 'admin'},
-        );
+        final client = _makeClient(adminUserResult: const {'role': 'admin'});
         final recorder = _StateRecorder();
         final setup = _makeContainerAndManager(
           userId: 'admin-user',
@@ -378,55 +375,58 @@ void main() {
     // cleanSoftDeletedRecords
     // -----------------------------------------------------------------------
     group('cleanSoftDeletedRecords', () {
-      test('success - iterates tables, logs total cleaned, sets successMessage',
-          () async {
-        // Return a list with 2 items for each soft-deletable table
-        final genericBuilder = _FakeMutationQueryBuilder(
-          mutationBuilder: _FakeMutationBuilder(
-            selectResult: [
-              {'id': 'r1'},
-              {'id': 'r2'},
-            ],
-          ),
-        );
-        final client = _makeClient(
-          adminUserResult: const {'role': 'admin'},
-          genericTableBuilder: genericBuilder,
-        );
-        final recorder = _StateRecorder();
-        final setup = _makeContainerAndManager(
-          userId: 'admin-user',
-          client: client,
-          recorder: recorder,
-        );
-        addTearDown(setup.container.dispose);
+      test(
+        'success - iterates tables, logs total cleaned, sets successMessage',
+        () async {
+          // Return a list with 2 items for each soft-deletable table
+          final genericBuilder = _FakeMutationQueryBuilder(
+            mutationBuilder: _FakeMutationBuilder(
+              selectResult: [
+                {'id': 'r1'},
+                {'id': 'r2'},
+              ],
+            ),
+          );
+          final client = _makeClient(
+            adminUserResult: const {'role': 'admin'},
+            genericTableBuilder: genericBuilder,
+          );
+          final recorder = _StateRecorder();
+          final setup = _makeContainerAndManager(
+            userId: 'admin-user',
+            client: client,
+            recorder: recorder,
+          );
+          addTearDown(setup.container.dispose);
 
-        final manager = setup.container.read(setup.managerProvider);
-        await manager.cleanSoftDeletedRecords(30);
+          final manager = setup.container.read(setup.managerProvider);
+          await manager.cleanSoftDeletedRecords(30);
 
-        // Verify state ends with success
-        expect(recorder.isLoading, isFalse);
-        expect(recorder.isSuccess, isTrue);
-        expect(recorder.error, isNull);
-        expect(recorder.successMessage, 'admin.soft_deleted_cleaned');
+          // Verify state ends with success
+          expect(recorder.isLoading, isFalse);
+          expect(recorder.isSuccess, isTrue);
+          expect(recorder.error, isNull);
+          expect(recorder.successMessage, 'admin.soft_deleted_cleaned');
 
-        // Verify all soft-deletable tables were accessed
-        for (final table in AdminConstants.softDeletableTables) {
-          expect(client.requestedTables, contains(table));
-        }
+          // Verify all soft-deletable tables were accessed
+          for (final table in AdminConstants.softDeletableTables) {
+            expect(client.requestedTables, contains(table));
+          }
 
-        // Verify admin log was recorded with cleaned count
-        expect(client.adminLogsQueryBuilder.insertCallCount, 1);
-        final logPayload =
-            client.adminLogsQueryBuilder.insertPayload as Map<String, dynamic>;
-        expect(logPayload['action'], 'soft_delete_cleanup');
-        expect(logPayload['admin_user_id'], 'admin-user');
-        expect((logPayload['details'] as Map)['days'], 30);
-        expect(
-          (logPayload['details'] as Map)['cleaned'],
-          AdminConstants.softDeletableTables.length * 2,
-        );
-      });
+          // Verify admin log was recorded with cleaned count
+          expect(client.adminLogsQueryBuilder.insertCallCount, 1);
+          final logPayload =
+              client.adminLogsQueryBuilder.insertPayload
+                  as Map<String, dynamic>;
+          expect(logPayload['action'], 'soft_delete_cleanup');
+          expect(logPayload['admin_user_id'], 'admin-user');
+          expect((logPayload['details'] as Map)['days'], 30);
+          expect(
+            (logPayload['details'] as Map)['cleaned'],
+            AdminConstants.softDeletableTables.length * 2,
+          );
+        },
+      );
 
       test('fails when not admin', () async {
         final client = _makeClient(adminUserResult: null);
@@ -452,43 +452,46 @@ void main() {
     // resetStuckSyncRecords
     // -----------------------------------------------------------------------
     group('resetStuckSyncRecords', () {
-      test('success - deletes stuck records, logs action, sets successMessage',
-          () async {
-        final syncBuilder = _FakeMutationQueryBuilder();
-        final client = _makeClient(
-          adminUserResult: const {'role': 'admin'},
-          syncMetadataQueryBuilder: syncBuilder,
-        );
-        final recorder = _StateRecorder();
-        final setup = _makeContainerAndManager(
-          userId: 'admin-user',
-          client: client,
-          recorder: recorder,
-        );
-        addTearDown(setup.container.dispose);
+      test(
+        'success - deletes stuck records, logs action, sets successMessage',
+        () async {
+          final syncBuilder = _FakeMutationQueryBuilder();
+          final client = _makeClient(
+            adminUserResult: const {'role': 'admin'},
+            syncMetadataQueryBuilder: syncBuilder,
+          );
+          final recorder = _StateRecorder();
+          final setup = _makeContainerAndManager(
+            userId: 'admin-user',
+            client: client,
+            recorder: recorder,
+          );
+          addTearDown(setup.container.dispose);
 
-        final manager = setup.container.read(setup.managerProvider);
-        await manager.resetStuckSyncRecords();
+          final manager = setup.container.read(setup.managerProvider);
+          await manager.resetStuckSyncRecords();
 
-        // Verify state ends with success
-        expect(recorder.isLoading, isFalse);
-        expect(recorder.isSuccess, isTrue);
-        expect(recorder.error, isNull);
-        expect(recorder.successMessage, 'admin.stuck_reset');
+          // Verify state ends with success
+          expect(recorder.isLoading, isFalse);
+          expect(recorder.isSuccess, isTrue);
+          expect(recorder.error, isNull);
+          expect(recorder.successMessage, 'admin.stuck_reset');
 
-        // Verify sync_metadata table was accessed
-        expect(
-          client.requestedTables,
-          contains(SupabaseConstants.syncMetadataTable),
-        );
+          // Verify sync_metadata table was accessed
+          expect(
+            client.requestedTables,
+            contains(SupabaseConstants.syncMetadataTable),
+          );
 
-        // Verify admin log was recorded
-        expect(client.adminLogsQueryBuilder.insertCallCount, 1);
-        final logPayload =
-            client.adminLogsQueryBuilder.insertPayload as Map<String, dynamic>;
-        expect(logPayload['action'], 'sync_stuck_reset');
-        expect(logPayload['admin_user_id'], 'admin-user');
-      });
+          // Verify admin log was recorded
+          expect(client.adminLogsQueryBuilder.insertCallCount, 1);
+          final logPayload =
+              client.adminLogsQueryBuilder.insertPayload
+                  as Map<String, dynamic>;
+          expect(logPayload['action'], 'sync_stuck_reset');
+          expect(logPayload['admin_user_id'], 'admin-user');
+        },
+      );
 
       test('fails when not admin', () async {
         final client = _makeClient(adminUserResult: null);

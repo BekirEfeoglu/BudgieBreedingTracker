@@ -64,7 +64,10 @@ void main() {
         _wrap(const SettingsOverviewBanner(activeCount: 0, totalCount: 3)),
       );
       await tester.pump();
-      expect(find.textContaining(l10nContains('admin.settings_last_updated')), findsNothing);
+      expect(
+        find.textContaining(l10nContains('admin.settings_last_updated')),
+        findsNothing,
+      );
     });
 
     testWidgets('renders Card widget', (tester) async {

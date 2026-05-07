@@ -1,4 +1,3 @@
-
 import 'package:budgie_breeding_tracker/data/remote/supabase/edge_function_client.dart';
 import 'package:budgie_breeding_tracker/features/admin/providers/admin_data_providers.dart';
 import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
@@ -15,7 +14,10 @@ void main() {
       when(() => mockEdgeClient.checkSystemHealth()).thenAnswer(
         (_) async => const EdgeFunctionResult(
           success: true,
-          data: {'status': 'ok', 'checks': {'database': 'ok', 'auth': 'ok'}},
+          data: {
+            'status': 'ok',
+            'checks': {'database': 'ok', 'auth': 'ok'},
+          },
         ),
       );
 
@@ -205,9 +207,7 @@ void main() {
     });
 
     test('does not send alert during loading', () {
-      final container = createContainer(
-        healthValue: const AsyncLoading(),
-      );
+      final container = createContainer(healthValue: const AsyncLoading());
       addTearDown(container.dispose);
 
       container.read(systemHealthAlertProvider);
@@ -260,9 +260,9 @@ void main() {
     });
 
     test('triggers alert logic when status is error', () async {
-      when(() => mockSupabaseClient.from(any())).thenThrow(
-        Exception('expected: verifying error status triggers alert'),
-      );
+      when(
+        () => mockSupabaseClient.from(any()),
+      ).thenThrow(Exception('expected: verifying error status triggers alert'));
 
       final container = createContainer(
         healthValue: const AsyncData({
@@ -292,7 +292,9 @@ void main() {
 
     test('handles null status gracefully', () async {
       final container = createContainer(
-        healthValue: const AsyncData({'checks': {'database': 'ok'}}),
+        healthValue: const AsyncData({
+          'checks': {'database': 'ok'},
+        }),
       );
       addTearDown(container.dispose);
 
@@ -304,9 +306,9 @@ void main() {
     });
 
     test('handles empty checks map in degraded status', () async {
-      when(() => mockSupabaseClient.from(any())).thenThrow(
-        Exception('expected'),
-      );
+      when(
+        () => mockSupabaseClient.from(any()),
+      ).thenThrow(Exception('expected'));
 
       final container = createContainer(
         healthValue: const AsyncData({
@@ -323,9 +325,9 @@ void main() {
     });
 
     test('handles missing checks key in degraded status', () async {
-      when(() => mockSupabaseClient.from(any())).thenThrow(
-        Exception('expected'),
-      );
+      when(
+        () => mockSupabaseClient.from(any()),
+      ).thenThrow(Exception('expected'));
 
       final container = createContainer(
         healthValue: const AsyncData({'status': 'degraded'}),
@@ -341,10 +343,7 @@ void main() {
 
   group('EdgeFunctionResult', () {
     test('success factory creates success result', () {
-      const result = EdgeFunctionResult(
-        success: true,
-        data: {'key': 'value'},
-      );
+      const result = EdgeFunctionResult(success: true, data: {'key': 'value'});
       expect(result.success, isTrue);
       expect(result.data, {'key': 'value'});
       expect(result.error, isNull);

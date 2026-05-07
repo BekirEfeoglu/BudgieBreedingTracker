@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:budgie_breeding_tracker/features/admin/providers/admin_actions_provider.dart';
 import 'package:budgie_breeding_tracker/features/admin/providers/admin_database_providers.dart';
-import 'package:budgie_breeding_tracker/features/admin/providers/admin_models.dart';
 import 'package:budgie_breeding_tracker/features/admin/widgets/admin_database_maintenance.dart';
 import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:flutter/material.dart';
@@ -16,9 +15,7 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            syncStatusSummaryProvider.overrideWith(
-              (ref) => completer.future,
-            ),
+            syncStatusSummaryProvider.overrideWith((ref) => completer.future),
           ],
           child: const MaterialApp(
             home: Scaffold(body: DatabaseSyncStatusSection()),
@@ -35,10 +32,8 @@ void main() {
         ProviderScope(
           overrides: [
             syncStatusSummaryProvider.overrideWith(
-              (ref) async => const SyncStatusSummary(
-                pendingCount: 0,
-                errorCount: 0,
-              ),
+              (ref) async =>
+                  const SyncStatusSummary(pendingCount: 0, errorCount: 0),
             ),
           ],
           child: const MaterialApp(
@@ -58,10 +53,8 @@ void main() {
         ProviderScope(
           overrides: [
             syncStatusSummaryProvider.overrideWith(
-              (ref) async => const SyncStatusSummary(
-                pendingCount: 5,
-                errorCount: 0,
-              ),
+              (ref) async =>
+                  const SyncStatusSummary(pendingCount: 5, errorCount: 0),
             ),
           ],
           child: const MaterialApp(
@@ -80,10 +73,8 @@ void main() {
         ProviderScope(
           overrides: [
             syncStatusSummaryProvider.overrideWith(
-              (ref) async => const SyncStatusSummary(
-                pendingCount: 0,
-                errorCount: 3,
-              ),
+              (ref) async =>
+                  const SyncStatusSummary(pendingCount: 0, errorCount: 3),
             ),
           ],
           child: const MaterialApp(
@@ -152,17 +143,13 @@ void main() {
       expect(find.byType(Card), findsOneWidget);
     });
 
-    testWidgets('shows both pending and error counts together', (
-      tester,
-    ) async {
+    testWidgets('shows both pending and error counts together', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
             syncStatusSummaryProvider.overrideWith(
-              (ref) async => const SyncStatusSummary(
-                pendingCount: 2,
-                errorCount: 7,
-              ),
+              (ref) async =>
+                  const SyncStatusSummary(pendingCount: 2, errorCount: 7),
             ),
           ],
           child: const MaterialApp(
@@ -184,10 +171,8 @@ void main() {
         ProviderScope(
           overrides: [
             syncStatusSummaryProvider.overrideWith(
-              (ref) async => const SyncStatusSummary(
-                pendingCount: 0,
-                errorCount: 1,
-              ),
+              (ref) async =>
+                  const SyncStatusSummary(pendingCount: 0, errorCount: 1),
             ),
             adminActionsProvider.overrideWith(AdminActionsNotifier.new),
           ],
@@ -212,9 +197,7 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            softDeleteStatsProvider(30).overrideWith(
-              (ref) => completer.future,
-            ),
+            softDeleteStatsProvider(30).overrideWith((ref) => completer.future),
           ],
           child: const MaterialApp(
             home: Scaffold(body: DatabaseSoftDeleteSection()),
@@ -344,9 +327,7 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            softDeleteStatsProvider(30).overrideWith(
-              (ref) async => const [],
-            ),
+            softDeleteStatsProvider(30).overrideWith((ref) async => const []),
           ],
           child: const MaterialApp(
             home: Scaffold(body: DatabaseSoftDeleteSection()),
@@ -363,9 +344,9 @@ void main() {
       // UncontrolledProviderScope so the widget picks it up.
       final container = ProviderContainer(
         overrides: [
-          softDeleteStatsProvider(30).overrideWith(
-            (ref) async => throw StateError('query failed'),
-          ),
+          softDeleteStatsProvider(
+            30,
+          ).overrideWith((ref) async => throw StateError('query failed')),
         ],
         retry: (_, __) => null,
       );
@@ -389,9 +370,7 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            softDeleteStatsProvider(30).overrideWith(
-              (ref) async => const [],
-            ),
+            softDeleteStatsProvider(30).overrideWith((ref) async => const []),
           ],
           child: const MaterialApp(
             home: Scaffold(body: DatabaseSoftDeleteSection()),
@@ -410,9 +389,7 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            storageUsageProvider.overrideWith(
-              (ref) => completer.future,
-            ),
+            storageUsageProvider.overrideWith((ref) => completer.future),
           ],
           child: const MaterialApp(
             home: Scaffold(body: DatabaseStorageSection()),

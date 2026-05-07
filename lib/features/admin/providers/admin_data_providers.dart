@@ -27,6 +27,46 @@ final adminUsersLimitProvider = NotifierProvider<AdminUsersLimitNotifier, int>(
   AdminUsersLimitNotifier.new,
 );
 
+/// Cache of user ID to display name for admin UIs.
+final adminUserNameCacheProvider =
+    NotifierProvider<AdminUserNameCacheNotifier, Map<String, String>>(
+      AdminUserNameCacheNotifier.new,
+    );
+
+class AdminUserNameCacheNotifier extends Notifier<Map<String, String>> {
+  @override
+  Map<String, String> build() => {};
+
+  Future<String> resolve(String userId) async {
+    final cached = state[userId];
+    if (cached != null) return cached;
+
+    try {
+      final client = ref.read(supabaseClientProvider);
+      final result = await client
+          .from(SupabaseConstants.profilesTable)
+          .select('full_name')
+          .eq('id', userId)
+          .maybeSingle();
+      final fullName = result?['full_name'] as String?;
+      final fallback = _shortUserId(userId);
+      final name = fullName?.trim().isNotEmpty == true
+          ? fullName!.trim()
+          : fallback;
+      state = Map<String, String>.from(state)..[userId] = name;
+      return name;
+    } catch (e, st) {
+      AppLogger.error('AdminUserNameCacheNotifier.resolve', e, st);
+      final fallback = _shortUserId(userId);
+      state = Map<String, String>.from(state)..[userId] = fallback;
+      return fallback;
+    }
+  }
+
+  String _shortUserId(String userId) =>
+      userId.length <= 8 ? userId : '${userId.substring(0, 8)}...';
+}
+
 /// Admin dashboard statistics.
 /// Uses server-side RPC to bypass RLS and get accurate counts.
 /// requireAdmin() is called outside try-catch so permission failures

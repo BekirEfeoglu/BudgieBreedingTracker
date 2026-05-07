@@ -5,11 +5,10 @@ import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../core/widgets/loading_state.dart';
 import '../../../core/widgets/dialogs/confirm_dialog.dart';
 import '../providers/admin_actions_provider.dart';
 import '../providers/admin_database_providers.dart';
-import '../providers/admin_models.dart';
-import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
 
 /// Shows pending/error sync counts and a reset stuck button.
 class DatabaseSyncStatusSection extends ConsumerWidget {
@@ -60,7 +59,11 @@ class _SyncStatusBody extends ConsumerWidget {
     if (!hasIssues) {
       return Row(
         children: [
-          const Icon(LucideIcons.checkCircle, color: AppColors.success, size: 20),
+          const Icon(
+            LucideIcons.checkCircle,
+            color: AppColors.success,
+            size: 20,
+          ),
           const SizedBox(width: AppSpacing.sm),
           Text(
             'admin.no_sync_issues'.tr(),
@@ -157,9 +160,7 @@ class _SyncRow extends StatelessWidget {
         children: [
           Icon(icon, size: 16, color: color),
           const SizedBox(width: AppSpacing.sm),
-          Expanded(
-            child: Text(label, style: theme.textTheme.bodyMedium),
-          ),
+          Expanded(child: Text(label, style: theme.textTheme.bodyMedium)),
           Text(
             '$count',
             style: theme.textTheme.titleSmall?.copyWith(

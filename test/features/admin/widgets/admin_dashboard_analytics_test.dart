@@ -29,7 +29,9 @@ Widget _wrap(
       userGrowthDataProvider.overrideWithValue(growthData),
       topUsersProvider.overrideWithValue(topUsers),
     ],
-    child: MaterialApp(home: Scaffold(body: SingleChildScrollView(child: child))),
+    child: MaterialApp(
+      home: Scaffold(body: SingleChildScrollView(child: child)),
+    ),
   );
 }
 
@@ -44,10 +46,7 @@ void main() {
         ),
       );
       await tester.pump();
-      expect(
-        find.byType(DashboardPremiumConversionCard),
-        findsOneWidget,
-      );
+      expect(find.byType(DashboardPremiumConversionCard), findsOneWidget);
     });
 
     testWidgets('should_show_premium_user_count', (tester) async {
@@ -86,8 +85,7 @@ void main() {
       expect(find.text('25.0%'), findsOneWidget);
     });
 
-    testWidgets('should_show_0_percent_when_no_premium_users',
-        (tester) async {
+    testWidgets('should_show_0_percent_when_no_premium_users', (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
@@ -102,9 +100,7 @@ void main() {
 
   group('DashboardUserGrowthChart', () {
     testWidgets('should_show_loading_when_data_is_loading', (tester) async {
-      await tester.pumpWidget(
-        _wrap(const DashboardUserGrowthChart()),
-      );
+      await tester.pumpWidget(_wrap(const DashboardUserGrowthChart()));
       await tester.pump();
       expect(find.text(l10n('admin.user_growth')), findsOneWidget);
     });
@@ -134,19 +130,14 @@ void main() {
 
   group('DashboardTopUsersTable', () {
     testWidgets('should_show_loading_when_data_is_loading', (tester) async {
-      await tester.pumpWidget(
-        _wrap(const DashboardTopUsersTable()),
-      );
+      await tester.pumpWidget(_wrap(const DashboardTopUsersTable()));
       await tester.pump();
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
     });
 
     testWidgets('should_show_empty_text_when_no_users', (tester) async {
       await tester.pumpWidget(
-        _wrap(
-          const DashboardTopUsersTable(),
-          topUsers: const AsyncData([]),
-        ),
+        _wrap(const DashboardTopUsersTable(), topUsers: const AsyncData([])),
       );
       await tester.pump();
       expect(find.text(l10n('admin.top_users_empty')), findsOneWidget);
@@ -158,10 +149,7 @@ void main() {
         TopUser(userId: 'u2', fullName: 'Top Bob', totalEntities: 30),
       ];
       await tester.pumpWidget(
-        _wrap(
-          const DashboardTopUsersTable(),
-          topUsers: const AsyncData(users),
-        ),
+        _wrap(const DashboardTopUsersTable(), topUsers: const AsyncData(users)),
       );
       await tester.pump();
       expect(find.text('Top Alice'), findsOneWidget);
@@ -170,31 +158,21 @@ void main() {
       expect(find.text('30'), findsOneWidget);
     });
 
-    testWidgets('should_show_no_name_label_when_fullName_is_empty',
-        (tester) async {
-      const users = [
-        TopUser(userId: 'u1', fullName: '', totalEntities: 10),
-      ];
+    testWidgets('should_show_no_name_label_when_fullName_is_empty', (
+      tester,
+    ) async {
+      const users = [TopUser(userId: 'u1', fullName: '', totalEntities: 10)];
       await tester.pumpWidget(
-        _wrap(
-          const DashboardTopUsersTable(),
-          topUsers: const AsyncData(users),
-        ),
+        _wrap(const DashboardTopUsersTable(), topUsers: const AsyncData(users)),
       );
       await tester.pump();
       expect(find.text(l10n('admin.no_name')), findsOneWidget);
     });
 
-    testWidgets('should_show_initial_avatar_for_named_users',
-        (tester) async {
-      const users = [
-        TopUser(userId: 'u1', fullName: 'Zara', totalEntities: 5),
-      ];
+    testWidgets('should_show_initial_avatar_for_named_users', (tester) async {
+      const users = [TopUser(userId: 'u1', fullName: 'Zara', totalEntities: 5)];
       await tester.pumpWidget(
-        _wrap(
-          const DashboardTopUsersTable(),
-          topUsers: const AsyncData(users),
-        ),
+        _wrap(const DashboardTopUsersTable(), topUsers: const AsyncData(users)),
       );
       await tester.pump();
       expect(find.text('Z'), findsOneWidget);

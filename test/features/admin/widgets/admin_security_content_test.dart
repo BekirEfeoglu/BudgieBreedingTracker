@@ -64,25 +64,19 @@ void main() {
     });
 
     testWidgets('shows EmptyState when events are empty', (tester) async {
-      await tester.pumpWidget(
-        _wrap(const SecurityContent(events: [])),
-      );
+      await tester.pumpWidget(_wrap(const SecurityContent(events: [])));
       await tester.pump();
       expect(find.byType(EmptyState), findsOneWidget);
     });
 
     testWidgets('shows empty state title text', (tester) async {
-      await tester.pumpWidget(
-        _wrap(const SecurityContent(events: [])),
-      );
+      await tester.pumpWidget(_wrap(const SecurityContent(events: [])));
       await tester.pump();
       expect(find.text(l10n('admin.no_security_events')), findsOneWidget);
     });
 
     testWidgets('shows empty state subtitle text', (tester) async {
-      await tester.pumpWidget(
-        _wrap(const SecurityContent(events: [])),
-      );
+      await tester.pumpWidget(_wrap(const SecurityContent(events: [])));
       await tester.pump();
       expect(find.text(l10n('admin.no_security_events_desc')), findsOneWidget);
     });
@@ -118,9 +112,7 @@ void main() {
     testWidgets('renders without crashing', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
-          home: Scaffold(
-            body: SecuritySummary(events: [_failedLoginEvent]),
-          ),
+          home: Scaffold(body: SecuritySummary(events: [_failedLoginEvent])),
         ),
       );
       await tester.pump();
@@ -175,9 +167,7 @@ void main() {
     testWidgets('shows failed_logins label', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
-          home: Scaffold(
-            body: SecuritySummary(events: [_failedLoginEvent]),
-          ),
+          home: Scaffold(body: SecuritySummary(events: [_failedLoginEvent])),
         ),
       );
       await tester.pump();
@@ -187,9 +177,7 @@ void main() {
     testWidgets('shows rate_limits label', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
-          home: Scaffold(
-            body: SecuritySummary(events: [_failedLoginEvent]),
-          ),
+          home: Scaffold(body: SecuritySummary(events: [_failedLoginEvent])),
         ),
       );
       await tester.pump();
@@ -199,9 +187,7 @@ void main() {
     testWidgets('shows total_events label', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
-          home: Scaffold(
-            body: SecuritySummary(events: [_failedLoginEvent]),
-          ),
+          home: Scaffold(body: SecuritySummary(events: [_failedLoginEvent])),
         ),
       );
       await tester.pump();
@@ -211,9 +197,7 @@ void main() {
     testWidgets('renders three SecuritySummaryCard widgets', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
-          home: Scaffold(
-            body: SecuritySummary(events: [_failedLoginEvent]),
-          ),
+          home: Scaffold(body: SecuritySummary(events: [_failedLoginEvent])),
         ),
       );
       await tester.pump();
@@ -322,9 +306,7 @@ void main() {
         eventType: SecurityEventType.unknown,
         createdAt: DateTime(2024, 3, 15),
       );
-      await tester.pumpWidget(
-        _wrap(SecurityEventItem(event: eventNoDetails)),
-      );
+      await tester.pumpWidget(_wrap(SecurityEventItem(event: eventNoDetails)));
       await tester.pump();
       // Should only render the event type, not a details section
       expect(find.text(SecurityEventType.unknown.toJson()), findsOneWidget);
@@ -336,9 +318,7 @@ void main() {
     //   failedLogin | rateLimited       → low
     //   unknown                         → low (falls through to _ case)
 
-    testWidgets('shows severity_low label for failed login', (
-      tester,
-    ) async {
+    testWidgets('shows severity_low label for failed login', (tester) async {
       await tester.pumpWidget(
         _wrap(SecurityEventItem(event: _failedLoginEvent)),
       );
@@ -349,9 +329,7 @@ void main() {
     testWidgets('shows severity_low label for rate_limit event', (
       tester,
     ) async {
-      await tester.pumpWidget(
-        _wrap(SecurityEventItem(event: _rateLimitEvent)),
-      );
+      await tester.pumpWidget(_wrap(SecurityEventItem(event: _rateLimitEvent)));
       await tester.pump();
       expect(find.text(l10n('admin.severity_low')), findsOneWidget);
     });
@@ -367,9 +345,7 @@ void main() {
     });
 
     testWidgets('shows severity_low label for unknown event', (tester) async {
-      await tester.pumpWidget(
-        _wrap(SecurityEventItem(event: _infoEvent)),
-      );
+      await tester.pumpWidget(_wrap(SecurityEventItem(event: _infoEvent)));
       await tester.pump();
       expect(find.text(l10n('admin.severity_low')), findsOneWidget);
     });
@@ -382,9 +358,7 @@ void main() {
         eventType: SecurityEventType.bruteForce,
         createdAt: DateTime(2024, 1, 15),
       );
-      await tester.pumpWidget(
-        _wrap(SecurityEventItem(event: bruteForceEvent)),
-      );
+      await tester.pumpWidget(_wrap(SecurityEventItem(event: bruteForceEvent)));
       await tester.pump();
       expect(find.text(l10n('admin.severity_high')), findsOneWidget);
     });
@@ -410,9 +384,7 @@ void main() {
         eventType: SecurityEventType.bruteForce,
         createdAt: DateTime(2024, 1, 15),
       );
-      await tester.pumpWidget(
-        _wrap(SecurityEventItem(event: bruteForceEvent)),
-      );
+      await tester.pumpWidget(_wrap(SecurityEventItem(event: bruteForceEvent)));
       await tester.pump();
       // alertOctagon icon is rendered for high severity events
       expect(find.byIcon(LucideIcons.alertOctagon), findsOneWidget);
@@ -467,9 +439,7 @@ void main() {
     testWidgets('renders without crashing', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
-          home: Scaffold(
-            body: SecurityMetadataRow(event: _failedLoginEvent),
-          ),
+          home: Scaffold(body: SecurityMetadataRow(event: _failedLoginEvent)),
         ),
       );
       await tester.pump();
@@ -479,9 +449,7 @@ void main() {
     testWidgets('shows masked IP address when provided', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
-          home: Scaffold(
-            body: SecurityMetadataRow(event: _failedLoginEvent),
-          ),
+          home: Scaffold(body: SecurityMetadataRow(event: _failedLoginEvent)),
         ),
       );
       await tester.pump();
@@ -493,9 +461,7 @@ void main() {
     testWidgets('hides IP section when ipAddress is null', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
-          home: Scaffold(
-            body: SecurityMetadataRow(event: _infoEvent),
-          ),
+          home: Scaffold(body: SecurityMetadataRow(event: _infoEvent)),
         ),
       );
       await tester.pump();
@@ -506,9 +472,7 @@ void main() {
     testWidgets('shows formatted timestamp', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
-          home: Scaffold(
-            body: SecurityMetadataRow(event: _failedLoginEvent),
-          ),
+          home: Scaffold(body: SecurityMetadataRow(event: _failedLoginEvent)),
         ),
       );
       await tester.pump();

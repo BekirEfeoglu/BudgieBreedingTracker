@@ -92,7 +92,9 @@ final authSessionSideEffectsProvider = Provider<void>((ref) {
       ref.read(sessionLockedProvider.notifier).state = false;
       unawaited(ref.read(purchaseServiceProvider).logout());
       unawaited(ref.read(localPremiumProvider.notifier).setPremium(false));
-      unawaited(ref.read(pushNotificationServiceProvider).deactivateCurrentToken());
+      unawaited(
+        ref.read(pushNotificationServiceProvider).deactivateCurrentToken(),
+      );
       return;
     }
 
@@ -185,7 +187,9 @@ Future<bool> _checkPendingMfa(Ref ref) async {
     ref.read(pendingMfaFactorIdProvider.notifier).state = null;
     return true;
   } catch (e, st) {
-    AppLogger.warning('[AppInit] MFA check failed, requiring re-verification: $e');
+    AppLogger.warning(
+      '[AppInit] MFA check failed, requiring re-verification: $e',
+    );
     Sentry.captureException(e, stackTrace: st);
     // On MFA check failure, force re-verification rather than silently
     // allowing access. This prevents bypass when network is unavailable.
@@ -274,7 +278,11 @@ Future<void> _syncAuthMetadataToProfile(Ref ref, String userId) async {
       // Will be retried by SyncOrchestrator
     }
   } catch (e, st) {
-    AppLogger.error('[AppInit] Auth metadata sync to profile failed: $e', e, st);
+    AppLogger.error(
+      '[AppInit] Auth metadata sync to profile failed: $e',
+      e,
+      st,
+    );
   }
 }
 

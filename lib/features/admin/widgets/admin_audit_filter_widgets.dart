@@ -37,7 +37,11 @@ class AuditFilterBar extends StatelessWidget {
             controller: controller,
             decoration: InputDecoration(
               hintText: 'admin.search_logs'.tr(),
-              prefixIcon: AppIcon(AppIcons.search, size: 18, semanticsLabel: 'common.search'.tr()),
+              prefixIcon: AppIcon(
+                AppIcons.search,
+                size: 18,
+                semanticsLabel: 'common.search'.tr(),
+              ),
               suffixIcon: filter.hasFilter
                   ? AppIconButton(
                       tooltip: 'common.clear'.tr(),

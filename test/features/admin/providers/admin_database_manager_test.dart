@@ -317,9 +317,7 @@ void main() {
       );
       final client = _FakeAdminDatabaseClient(
         adminBuilder: _FakeQueryBuilder(adminFilter),
-        rpcErrors: {
-          'admin_reset_table': StateError('rpc unavailable'),
-        },
+        rpcErrors: {'admin_reset_table': StateError('rpc unavailable')},
       );
       final updates = <_StateUpdate>[];
       final container = _makeContainer(userId: 'user-9', client: client);

@@ -38,7 +38,11 @@ class SecurityFilterBar extends StatelessWidget {
             controller: controller,
             decoration: InputDecoration(
               hintText: 'admin.search_events'.tr(),
-              prefixIcon: AppIcon(AppIcons.search, size: 18, semanticsLabel: 'common.search'.tr()),
+              prefixIcon: AppIcon(
+                AppIcons.search,
+                size: 18,
+                semanticsLabel: 'common.search'.tr(),
+              ),
               suffixIcon: filter.searchQuery.isNotEmpty
                   ? AppIconButton(
                       tooltip: 'common.clear'.tr(),

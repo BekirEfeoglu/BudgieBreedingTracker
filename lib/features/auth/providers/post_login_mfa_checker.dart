@@ -38,8 +38,8 @@ class PostLoginMfaChecker {
   const PostLoginMfaChecker({
     required TwoFactorService twoFactorService,
     required AuthActions authActions,
-  })  : _twoFactorService = twoFactorService,
-        _authActions = authActions;
+  }) : _twoFactorService = twoFactorService,
+       _authActions = authActions;
 
   Future<PostLoginMfaResult> check() async {
     try {
@@ -54,11 +54,13 @@ class PostLoginMfaChecker {
         AppLogger.warning(
           '[Login] 2FA required but no factors found — signing out',
         );
-        Sentry.addBreadcrumb(Breadcrumb(
-          message: '2FA required but no factors found — signing out',
-          category: 'auth.mfa',
-          level: SentryLevel.warning,
-        ));
+        Sentry.addBreadcrumb(
+          Breadcrumb(
+            message: '2FA required but no factors found — signing out',
+            category: 'auth.mfa',
+            level: SentryLevel.warning,
+          ),
+        );
         var didSignOut = false;
         try {
           await _authActions.signOut();

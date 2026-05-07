@@ -11,12 +11,8 @@ Widget _createSubject({
   AsyncValue<List<Map<String, dynamic>>> feedbackData = const AsyncLoading(),
 }) {
   return ProviderScope(
-    overrides: [
-      adminFeedbackProvider.overrideWithValue(feedbackData),
-    ],
-    child: const MaterialApp(
-      home: Scaffold(body: AdminFeedbackScreen()),
-    ),
+    overrides: [adminFeedbackProvider.overrideWithValue(feedbackData)],
+    child: const MaterialApp(home: Scaffold(body: AdminFeedbackScreen())),
   );
 }
 
@@ -57,8 +53,7 @@ void main() {
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
     });
 
-    testWidgets('should_show_feedback_tiles_when_data_exists',
-        (tester) async {
+    testWidgets('should_show_feedback_tiles_when_data_exists', (tester) async {
       await tester.pumpWidget(
         _createSubject(feedbackData: AsyncData(_sampleFeedback)),
       );
@@ -91,10 +86,7 @@ void main() {
       await tester.pump();
       expect(find.text(l10n('admin.feedback_status_all')), findsOneWidget);
       expect(find.text(l10n('admin.feedback_status_open')), findsOneWidget);
-      expect(
-        find.text(l10n('admin.feedback_status_resolved')),
-        findsOneWidget,
-      );
+      expect(find.text(l10n('admin.feedback_status_resolved')), findsOneWidget);
     });
   });
 }

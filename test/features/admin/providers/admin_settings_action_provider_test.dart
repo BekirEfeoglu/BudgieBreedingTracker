@@ -82,11 +82,11 @@ class _FakeFilterBuilder extends Fake
     Function? onError,
   }) {
     if (error != null) {
-      return Future<PostgrestList>.error(error!)
-          .then(onValue, onError: onError);
+      return Future<PostgrestList>.error(
+        error!,
+      ).then(onValue, onError: onError);
     }
-    return Future<PostgrestList>.value(result)
-        .then(onValue, onError: onError);
+    return Future<PostgrestList>.value(result).then(onValue, onError: onError);
   }
 }
 
@@ -102,11 +102,13 @@ class _FakeUpsertBuilder extends Fake
     Function? onError,
   }) {
     if (error != null) {
-      return Future<PostgrestList>.error(error!)
-          .then(onValue, onError: onError);
+      return Future<PostgrestList>.error(
+        error!,
+      ).then(onValue, onError: onError);
     }
-    return Future<PostgrestList>.value(<PostgrestMap>[])
-        .then(onValue, onError: onError);
+    return Future<PostgrestList>.value(
+      <PostgrestMap>[],
+    ).then(onValue, onError: onError);
   }
 }
 
@@ -131,7 +133,8 @@ class _FakeQueryBuilder extends Fake implements SupabaseQueryBuilder {
     if (values is Map<String, dynamic>) {
       filterBuilder.upsertPayloads.add(values);
     }
-    return upsertBuilder ?? _FakeUpsertBuilder(error: filterBuilder.upsertError);
+    return upsertBuilder ??
+        _FakeUpsertBuilder(error: filterBuilder.upsertError);
   }
 }
 
@@ -162,8 +165,8 @@ class _FakeSupabaseClient extends Fake implements SupabaseClient {
       return _FakeQueryBuilder(adminFilterBuilder);
     }
     if (table == SupabaseConstants.systemSettingsTable) {
-      final fb = settingsFilterBuilder ??
-          _FakeFilterBuilder(upsertError: upsertError);
+      final fb =
+          settingsFilterBuilder ?? _FakeFilterBuilder(upsertError: upsertError);
       return _FakeQueryBuilder(fb, upsertBuilder: upsertBuilder);
     }
     return _FakeQueryBuilder(_FakeFilterBuilder());
@@ -434,10 +437,7 @@ void main() {
         expect(settingsFilter.upsertPayloads, hasLength(1));
         expect(settingsFilter.upsertPayloads.first['key'], 'maintenance_mode');
         expect(settingsFilter.upsertPayloads.first['value'], true);
-        expect(
-          settingsFilter.upsertPayloads.first['category'],
-          'maintenance',
-        );
+        expect(settingsFilter.upsertPayloads.first['category'], 'maintenance');
         expect(settingsFilter.upsertPayloads.first['is_public'], false);
       });
 
@@ -467,46 +467,43 @@ void main() {
           settingsFilterBuilder: settingsFilter,
           currentUser: _FakeUser(idValue: 'admin-123'),
         );
-        final container = _makeContainer(
-          client: client,
-          userId: 'admin-123',
-        );
+        final container = _makeContainer(client: client, userId: 'admin-123');
         addTearDown(container.dispose);
 
         final notifier = container.read(adminSettingsActionProvider.notifier);
         await notifier.updateSetting(key: 'maintenance_mode', value: true);
 
-        expect(
-          settingsFilter.upsertPayloads.first['updated_by'],
-          'admin-123',
-        );
+        expect(settingsFilter.upsertPayloads.first['updated_by'], 'admin-123');
       });
 
-      test('should return false and set error on admin check failure',
-          () async {
-        // Non-admin user
-        final client = _FakeSupabaseClient(
-          adminFilterBuilder: _FakeFilterBuilder(
-            maybeSingleResult:
-                _FakeMaybeSingleBuilder(result: {'role': 'user'}),
-          ),
-          currentUser: _FakeUser(),
-        );
-        final container = _makeContainer(client: client);
-        addTearDown(container.dispose);
+      test(
+        'should return false and set error on admin check failure',
+        () async {
+          // Non-admin user
+          final client = _FakeSupabaseClient(
+            adminFilterBuilder: _FakeFilterBuilder(
+              maybeSingleResult: _FakeMaybeSingleBuilder(
+                result: {'role': 'user'},
+              ),
+            ),
+            currentUser: _FakeUser(),
+          );
+          final container = _makeContainer(client: client);
+          addTearDown(container.dispose);
 
-        final notifier = container.read(adminSettingsActionProvider.notifier);
-        final result = await notifier.updateSetting(
-          key: 'maintenance_mode',
-          value: true,
-        );
+          final notifier = container.read(adminSettingsActionProvider.notifier);
+          final result = await notifier.updateSetting(
+            key: 'maintenance_mode',
+            value: true,
+          );
 
-        expect(result, false);
-        final state = container.read(adminSettingsActionProvider);
-        expect(state.isLoading, false);
-        expect(state.isSuccess, false);
-        expect(state.error, isNotNull);
-      });
+          expect(result, false);
+          final state = container.read(adminSettingsActionProvider);
+          expect(state.isLoading, false);
+          expect(state.isSuccess, false);
+          expect(state.error, isNotNull);
+        },
+      );
 
       test('should return false and set error on upsert failure', () async {
         final client = _FakeSupabaseClient(
@@ -535,10 +532,7 @@ void main() {
           adminFilterBuilder: _adminCheck(),
           currentUser: _FakeUser(),
         );
-        final container = _makeContainer(
-          client: client,
-          userId: 'anonymous',
-        );
+        final container = _makeContainer(client: client, userId: 'anonymous');
         addTearDown(container.dispose);
 
         final notifier = container.read(adminSettingsActionProvider.notifier);
@@ -593,8 +587,9 @@ void main() {
         );
 
         // Verify all default keys are present
-        final upsertedKeys =
-            settingsFilter.upsertPayloads.map((p) => p['key']).toSet();
+        final upsertedKeys = settingsFilter.upsertPayloads
+            .map((p) => p['key'])
+            .toSet();
         for (final key in settingDefaults.keys) {
           expect(upsertedKeys, contains(key));
         }
@@ -648,27 +643,30 @@ void main() {
         }
       });
 
-      test('should return false and set error on admin check failure',
-          () async {
-        final client = _FakeSupabaseClient(
-          adminFilterBuilder: _FakeFilterBuilder(
-            maybeSingleResult:
-                _FakeMaybeSingleBuilder(result: {'role': 'user'}),
-          ),
-          currentUser: _FakeUser(),
-        );
-        final container = _makeContainer(client: client);
-        addTearDown(container.dispose);
+      test(
+        'should return false and set error on admin check failure',
+        () async {
+          final client = _FakeSupabaseClient(
+            adminFilterBuilder: _FakeFilterBuilder(
+              maybeSingleResult: _FakeMaybeSingleBuilder(
+                result: {'role': 'user'},
+              ),
+            ),
+            currentUser: _FakeUser(),
+          );
+          final container = _makeContainer(client: client);
+          addTearDown(container.dispose);
 
-        final notifier = container.read(adminSettingsActionProvider.notifier);
-        final result = await notifier.resetToDefaults();
+          final notifier = container.read(adminSettingsActionProvider.notifier);
+          final result = await notifier.resetToDefaults();
 
-        expect(result, false);
-        final state = container.read(adminSettingsActionProvider);
-        expect(state.isLoading, false);
-        expect(state.isSuccess, false);
-        expect(state.error, isNotNull);
-      });
+          expect(result, false);
+          final state = container.read(adminSettingsActionProvider);
+          expect(state.isLoading, false);
+          expect(state.isSuccess, false);
+          expect(state.error, isNotNull);
+        },
+      );
 
       test('should return false and set error on upsert failure', () async {
         final client = _FakeSupabaseClient(
@@ -694,10 +692,7 @@ void main() {
           adminFilterBuilder: _adminCheck(),
           currentUser: _FakeUser(),
         );
-        final container = _makeContainer(
-          client: client,
-          userId: 'anonymous',
-        );
+        final container = _makeContainer(client: client, userId: 'anonymous');
         addTearDown(container.dispose);
 
         final notifier = container.read(adminSettingsActionProvider.notifier);
@@ -716,10 +711,7 @@ void main() {
           settingsFilterBuilder: settingsFilter,
           currentUser: _FakeUser(idValue: 'admin-456'),
         );
-        final container = _makeContainer(
-          client: client,
-          userId: 'admin-456',
-        );
+        final container = _makeContainer(client: client, userId: 'admin-456');
         addTearDown(container.dispose);
 
         final notifier = container.read(adminSettingsActionProvider.notifier);
@@ -734,35 +726,38 @@ void main() {
     });
 
     group('reset', () {
-      test('should return state to default after updateSetting success',
-          () async {
-        final client = _FakeSupabaseClient(
-          adminFilterBuilder: _adminCheck(),
-          currentUser: _FakeUser(),
-        );
-        final container = _makeContainer(client: client);
-        addTearDown(container.dispose);
+      test(
+        'should return state to default after updateSetting success',
+        () async {
+          final client = _FakeSupabaseClient(
+            adminFilterBuilder: _adminCheck(),
+            currentUser: _FakeUser(),
+          );
+          final container = _makeContainer(client: client);
+          addTearDown(container.dispose);
 
-        final notifier = container.read(adminSettingsActionProvider.notifier);
-        await notifier.updateSetting(key: 'maintenance_mode', value: true);
+          final notifier = container.read(adminSettingsActionProvider.notifier);
+          await notifier.updateSetting(key: 'maintenance_mode', value: true);
 
-        // State should be success
-        expect(container.read(adminSettingsActionProvider).isSuccess, true);
+          // State should be success
+          expect(container.read(adminSettingsActionProvider).isSuccess, true);
 
-        // Reset to default
-        notifier.reset();
+          // Reset to default
+          notifier.reset();
 
-        final state = container.read(adminSettingsActionProvider);
-        expect(state.isLoading, false);
-        expect(state.error, isNull);
-        expect(state.isSuccess, false);
-      });
+          final state = container.read(adminSettingsActionProvider);
+          expect(state.isLoading, false);
+          expect(state.error, isNull);
+          expect(state.isSuccess, false);
+        },
+      );
 
       test('should clear error state after failed operation', () async {
         final client = _FakeSupabaseClient(
           adminFilterBuilder: _FakeFilterBuilder(
-            maybeSingleResult:
-                _FakeMaybeSingleBuilder(result: {'role': 'user'}),
+            maybeSingleResult: _FakeMaybeSingleBuilder(
+              result: {'role': 'user'},
+            ),
           ),
           currentUser: _FakeUser(),
         );

@@ -4,7 +4,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/features/admin/providers/admin_database_providers.dart';
-import 'package:budgie_breeding_tracker/features/admin/providers/admin_models.dart';
 import 'package:budgie_breeding_tracker/features/admin/widgets/admin_db_storage_section.dart';
 
 Widget _wrap(
@@ -12,19 +11,17 @@ Widget _wrap(
   AsyncValue<List<BucketUsage>> storageUsage = const AsyncLoading(),
 }) {
   return ProviderScope(
-    overrides: [
-      storageUsageProvider.overrideWithValue(storageUsage),
-    ],
-    child: MaterialApp(home: Scaffold(body: SingleChildScrollView(child: child))),
+    overrides: [storageUsageProvider.overrideWithValue(storageUsage)],
+    child: MaterialApp(
+      home: Scaffold(body: SingleChildScrollView(child: child)),
+    ),
   );
 }
 
 void main() {
   group('DatabaseStorageSection', () {
     testWidgets('should_show_loading_when_data_is_loading', (tester) async {
-      await tester.pumpWidget(
-        _wrap(const DatabaseStorageSection()),
-      );
+      await tester.pumpWidget(_wrap(const DatabaseStorageSection()));
       await tester.pump();
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
     });
@@ -52,19 +49,12 @@ void main() {
       );
       await tester.pump();
       expect(find.text('photos'), findsOneWidget);
-      expect(
-        find.text('42 ${l10n('admin.file_count')}'),
-        findsOneWidget,
-      );
+      expect(find.text('42 ${l10n('admin.file_count')}'), findsOneWidget);
     });
 
     testWidgets('should_format_size_in_KB', (tester) async {
       const usage = [
-        BucketUsage(
-          bucketName: 'avatars',
-          fileCount: 10,
-          totalSizeBytes: 2048,
-        ),
+        BucketUsage(bucketName: 'avatars', fileCount: 10, totalSizeBytes: 2048),
       ];
       await tester.pumpWidget(
         _wrap(

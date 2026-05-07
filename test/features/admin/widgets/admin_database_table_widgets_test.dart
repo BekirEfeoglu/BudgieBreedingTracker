@@ -37,7 +37,10 @@ void main() {
         TableInfo(name: 'eggs', rowCount: 50),
       ];
 
-      await pumpLocalizedApp(tester,_wrap(const DatabaseTableList(tables: tables)));
+      await pumpLocalizedApp(
+        tester,
+        _wrap(const DatabaseTableList(tables: tables)),
+      );
       await tester.pump(const Duration(milliseconds: 300));
       expect(find.byType(DatabaseTableList), findsOneWidget);
     });
@@ -49,12 +52,18 @@ void main() {
         TableInfo(name: 'chicks', rowCount: 25),
       ];
 
-      await pumpLocalizedApp(tester,_wrap(const DatabaseTableList(tables: tables)));
+      await pumpLocalizedApp(
+        tester,
+        _wrap(const DatabaseTableList(tables: tables)),
+      );
       expect(find.byType(DatabaseTableRow), findsNWidgets(3));
     });
 
     testWidgets('renders empty list without crashing', (tester) async {
-      await pumpLocalizedApp(tester,_wrap(const DatabaseTableList(tables: [])));
+      await pumpLocalizedApp(
+        tester,
+        _wrap(const DatabaseTableList(tables: [])),
+      );
       expect(find.byType(DatabaseTableList), findsOneWidget);
       expect(find.byType(DatabaseTableRow), findsNothing);
     });
@@ -62,7 +71,8 @@ void main() {
 
   group('DatabaseTableRow', () {
     testWidgets('shows table name', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(
           const DatabaseTableRow(table: TableInfo(name: 'birds', rowCount: 42)),
         ),
@@ -71,7 +81,8 @@ void main() {
     });
 
     testWidgets('shows row count', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(
           const DatabaseTableRow(table: TableInfo(name: 'eggs', rowCount: 99)),
         ),
@@ -82,7 +93,8 @@ void main() {
     testWidgets('shows protected_table label for protected table', (
       tester,
     ) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(
           const DatabaseTableRow(
             table: TableInfo(name: 'profiles', rowCount: 10),
@@ -95,7 +107,8 @@ void main() {
     testWidgets('does not show protected label for unprotected table', (
       tester,
     ) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(
           const DatabaseTableRow(table: TableInfo(name: 'birds', rowCount: 10)),
         ),
@@ -106,7 +119,8 @@ void main() {
     testWidgets('shows warning icon for negative row count (error state)', (
       tester,
     ) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(
           const DatabaseTableRow(table: TableInfo(name: 'eggs', rowCount: -1)),
         ),
@@ -116,7 +130,8 @@ void main() {
     });
 
     testWidgets('is tappable (InkWell)', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(
           const DatabaseTableRow(table: TableInfo(name: 'birds', rowCount: 5)),
         ),

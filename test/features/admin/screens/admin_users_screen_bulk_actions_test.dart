@@ -45,8 +45,9 @@ Widget _createSubject() {
 
   return ProviderScope(
     overrides: [
-      adminUsersProvider(const AdminUsersQuery())
-          .overrideWithValue(AsyncData(_testUsers)),
+      adminUsersProvider(
+        const AdminUsersQuery(),
+      ).overrideWithValue(AsyncData(_testUsers)),
     ],
     child: MaterialApp.router(routerConfig: router),
   );
@@ -65,8 +66,7 @@ void main() {
       expect(find.text(l10n('admin.bulk_activate')), findsNothing);
     });
 
-    testWidgets('should_show_selection_count_after_long_press',
-        (tester) async {
+    testWidgets('should_show_selection_count_after_long_press', (tester) async {
       await tester.pumpWidget(_createSubject());
       await tester.pumpAndSettle();
 
@@ -78,8 +78,9 @@ void main() {
       expect(find.text(l10n('admin.bulk_activate')), findsOneWidget);
     });
 
-    testWidgets('should_show_bulk_action_chips_in_selection_mode',
-        (tester) async {
+    testWidgets('should_show_bulk_action_chips_in_selection_mode', (
+      tester,
+    ) async {
       await tester.pumpWidget(_createSubject());
       await tester.pumpAndSettle();
 

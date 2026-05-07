@@ -40,10 +40,7 @@ class DashboardStatCard extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 IconTheme(
-                  data: IconThemeData(
-                    color: color,
-                    size: isCompact ? 20 : 24,
-                  ),
+                  data: IconThemeData(color: color, size: isCompact ? 20 : 24),
                   child: icon,
                 ),
                 SizedBox(height: isCompact ? AppSpacing.xxs : AppSpacing.xs),
@@ -82,48 +79,6 @@ class DashboardStatCard extends StatelessWidget {
           ),
         );
       },
-    );
-  }
-}
-
-/// Quick action button for dashboard.
-class DashboardQuickActionButton extends StatelessWidget {
-  final Widget icon;
-  final String label;
-  final VoidCallback onTap;
-
-  const DashboardQuickActionButton({
-    super.key,
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Card(
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-        child: Padding(
-          padding: AppSpacing.cardPadding,
-          child: Column(
-            children: [
-              IconTheme(
-                data: IconThemeData(color: theme.colorScheme.primary, size: 24),
-                child: icon,
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              Text(
-                label,
-                style: theme.textTheme.labelMedium,
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }

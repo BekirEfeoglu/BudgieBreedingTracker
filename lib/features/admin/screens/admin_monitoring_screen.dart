@@ -24,7 +24,9 @@ class _AdminMonitoringScreenState extends ConsumerState<AdminMonitoringScreen> {
   @override
   void initState() {
     super.initState();
-    _refreshTimer = Timer.periodic(AdminConstants.monitoringRefreshInterval, (_) {
+    _refreshTimer = Timer.periodic(AdminConstants.monitoringRefreshInterval, (
+      _,
+    ) {
       ref.invalidate(serverCapacityProvider);
     });
   }

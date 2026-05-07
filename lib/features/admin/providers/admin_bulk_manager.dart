@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 
 import '../../../core/constants/supabase_constants.dart';
+import '../constants/admin_constants.dart';
 import '../../../core/utils/logger.dart';
 import '../../auth/providers/auth_providers.dart';
 import 'admin_auth_utils.dart';
@@ -170,23 +171,7 @@ class AdminBulkManager {
         '[admin] bulkDeleteUserData called for ${userIds.length} users',
       );
 
-      const deletionOrder = [
-        SupabaseConstants.eventRemindersTable,
-        SupabaseConstants.growthMeasurementsTable,
-        SupabaseConstants.healthRecordsTable,
-        SupabaseConstants.photosTable,
-        SupabaseConstants.eventsTable,
-        SupabaseConstants.incubationsTable,
-        SupabaseConstants.chicksTable,
-        SupabaseConstants.eggsTable,
-        SupabaseConstants.clutchesTable,
-        SupabaseConstants.breedingPairsTable,
-        SupabaseConstants.nestsTable,
-        SupabaseConstants.notificationsTable,
-        SupabaseConstants.notificationSettingsTable,
-        SupabaseConstants.notificationSchedulesTable,
-        SupabaseConstants.birdsTable,
-      ];
+      const deletionOrder = AdminConstants.userDataDeletionOrder;
 
       for (final userId in userIds) {
         try {

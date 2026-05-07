@@ -112,9 +112,7 @@ void main() {
     }) {
       final client = _FakeSupabaseClient(
         _FakeQueryBuilder(
-          _FakeFilterBuilder(
-            _FakeMaybeSingleBuilder(result: result),
-          ),
+          _FakeFilterBuilder(_FakeMaybeSingleBuilder(result: result)),
         ),
       );
       return ProviderContainer(
@@ -294,6 +292,108 @@ void main() {
     });
   });
 
+  group('isAdminProvider', () {
+    test('returns false when user is anonymous', () async {
+      final mockClient = MockSupabaseClient();
+      final container = ProviderContainer(
+        overrides: [
+          supabaseInitializedProvider.overrideWithValue(true),
+          supabaseClientProvider.overrideWithValue(mockClient),
+          currentUserIdProvider.overrideWithValue('anonymous'),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final result = await container.read(isAdminProvider.future);
+      expect(result, isFalse);
+    });
+
+    test('returns false when supabase is not initialized', () async {
+      final mockClient = MockSupabaseClient();
+      final container = ProviderContainer(
+        overrides: [
+          supabaseInitializedProvider.overrideWithValue(false),
+          supabaseClientProvider.overrideWithValue(mockClient),
+          currentUserIdProvider.overrideWithValue('user-1'),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final result = await container.read(isAdminProvider.future);
+      expect(result, isFalse);
+    });
+
+    test('returns false when DB query throws', () async {
+      final mockClient = MockSupabaseClient();
+      when(
+        () => mockClient.from(any()),
+      ).thenThrow(Exception('connection failed'));
+
+      final container = ProviderContainer(
+        overrides: [
+          supabaseInitializedProvider.overrideWithValue(true),
+          supabaseClientProvider.overrideWithValue(mockClient),
+          currentUserIdProvider.overrideWithValue('user-1'),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final result = await container.read(isAdminProvider.future);
+      expect(result, isFalse);
+    });
+  });
+
+  group('isFounderProvider', () {
+    test('returns false when user is anonymous', () async {
+      final mockClient = MockSupabaseClient();
+      final container = ProviderContainer(
+        overrides: [
+          supabaseInitializedProvider.overrideWithValue(true),
+          supabaseClientProvider.overrideWithValue(mockClient),
+          currentUserIdProvider.overrideWithValue('anonymous'),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final result = await container.read(isFounderProvider.future);
+      expect(result, isFalse);
+    });
+
+    test('returns false when supabase is not initialized', () async {
+      final mockClient = MockSupabaseClient();
+      final container = ProviderContainer(
+        overrides: [
+          supabaseInitializedProvider.overrideWithValue(false),
+          supabaseClientProvider.overrideWithValue(mockClient),
+          currentUserIdProvider.overrideWithValue('user-1'),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final result = await container.read(isFounderProvider.future);
+      expect(result, isFalse);
+    });
+
+    test('returns false when DB query throws', () async {
+      final mockClient = MockSupabaseClient();
+      when(
+        () => mockClient.from(any()),
+      ).thenThrow(Exception('connection failed'));
+
+      final container = ProviderContainer(
+        overrides: [
+          supabaseInitializedProvider.overrideWithValue(true),
+          supabaseClientProvider.overrideWithValue(mockClient),
+          currentUserIdProvider.overrideWithValue('user-1'),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final result = await container.read(isFounderProvider.future);
+      expect(result, isFalse);
+    });
+  });
+
   group('systemHealthAlertProvider', () {
     late MockEdgeFunctionClient mockEdgeClient;
     late MockSupabaseClient mockSupabaseClient;
@@ -353,9 +453,7 @@ void main() {
     });
 
     test('does not send alert during loading', () {
-      final container = createContainer(
-        healthValue: const AsyncLoading(),
-      );
+      final container = createContainer(healthValue: const AsyncLoading());
       addTearDown(container.dispose);
 
       container.read(systemHealthAlertProvider);
@@ -395,24 +493,26 @@ void main() {
       verify(() => mockSupabaseClient.from(any())).called(1);
     });
 
-    test('does not trigger alert when status is ok (no supabase query)',
-        () async {
-      final container = createContainer(
-        healthValue: const AsyncData({'status': 'ok'}),
-      );
-      addTearDown(container.dispose);
+    test(
+      'does not trigger alert when status is ok (no supabase query)',
+      () async {
+        final container = createContainer(
+          healthValue: const AsyncData({'status': 'ok'}),
+        );
+        addTearDown(container.dispose);
 
-      container.read(systemHealthAlertProvider);
-      await Future<void>.delayed(const Duration(milliseconds: 50));
+        container.read(systemHealthAlertProvider);
+        await Future<void>.delayed(const Duration(milliseconds: 50));
 
-      // No alert path triggered — from() never called
-      verifyNever(() => mockSupabaseClient.from(any()));
-    });
+        // No alert path triggered — from() never called
+        verifyNever(() => mockSupabaseClient.from(any()));
+      },
+    );
 
     test('includes degraded service names in alert body', () async {
-      when(() => mockSupabaseClient.from(any())).thenThrow(
-        Exception('expected: verify body content via alert trigger'),
-      );
+      when(
+        () => mockSupabaseClient.from(any()),
+      ).thenThrow(Exception('expected: verify body content via alert trigger'));
 
       final container = createContainer(
         healthValue: const AsyncData({
@@ -434,9 +534,9 @@ void main() {
     });
 
     test('handles error status with message fallback', () async {
-      when(() => mockSupabaseClient.from(any())).thenThrow(
-        Exception('expected: verify error status triggers alert'),
-      );
+      when(
+        () => mockSupabaseClient.from(any()),
+      ).thenThrow(Exception('expected: verify error status triggers alert'));
 
       final container = createContainer(
         healthValue: const AsyncData({

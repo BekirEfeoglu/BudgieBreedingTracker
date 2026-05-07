@@ -6,6 +6,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/constants/supabase_constants.dart';
 import '../../../core/utils/logger.dart';
 import '../../auth/providers/auth_providers.dart';
+import '../constants/admin_constants.dart';
 import 'admin_auth_utils.dart';
 
 class ProtectedRoleError implements Exception {
@@ -67,10 +68,7 @@ class AdminUserManager {
       );
       return AdminUserOperationResult.success;
     } on ProtectedRoleError {
-      _updateState(
-        isLoading: false,
-        error: 'admin.protected_user_error'.tr(),
-      );
+      _updateState(isLoading: false, error: 'admin.protected_user_error'.tr());
       return AdminUserOperationResult.protected;
     } catch (e, st) {
       AppLogger.error('AdminUserManager.toggleUserActive', e, st);
@@ -91,27 +89,32 @@ class AdminUserManager {
 
       await client
           .from(SupabaseConstants.profilesTable)
-          .update({'is_premium': true, 'subscription_status': 'premium'})
+          .update({
+            'is_premium': true,
+            'subscription_status': AdminConstants.planPremium,
+          })
           .eq('id', targetUserId);
 
       // Supplementary record — non-fatal: profile is the source of truth
       try {
         await _upsertSubscription(client, targetUserId, {
-          'plan': 'premium',
-          'status': 'active',
+          'plan': AdminConstants.planPremium,
+          'status': AdminConstants.statusActive,
           'updated_at': now,
         });
       } catch (e, st) {
         AppLogger.warning(
           'AdminUserManager.grantPremium: subscription record failed (non-fatal): $e\n$st',
         );
-        Sentry.addBreadcrumb(Breadcrumb(
-          message:
-              'subscription upsert failed for ${AppLogger.obfuscate(targetUserId)}',
-          category: 'admin.premium',
-          level: SentryLevel.warning,
-          data: {'error': e.toString()},
-        ));
+        Sentry.addBreadcrumb(
+          Breadcrumb(
+            message:
+                'subscription upsert failed for ${AppLogger.obfuscate(targetUserId)}',
+            category: 'admin.premium',
+            level: SentryLevel.warning,
+            data: {'error': e.toString()},
+          ),
+        );
       }
 
       await logAdminAction(
@@ -166,16 +169,19 @@ class AdminUserManager {
 
       await client
           .from(SupabaseConstants.profilesTable)
-          .update({'is_premium': false, 'subscription_status': 'free'})
+          .update({
+            'is_premium': false,
+            'subscription_status': AdminConstants.planFree,
+          })
           .eq('id', targetUserId);
 
       // Soft-revoke subscription record — non-fatal: profile is the source of truth.
-      // Uses 'canceled' (valid CHECK constraint value).
+      // Uses statusRevoked = 'canceled', a valid CHECK constraint value.
       try {
         await client
             .from(SupabaseConstants.userSubscriptionsTable)
             .update({
-              'status': 'canceled',
+              'status': AdminConstants.statusRevoked,
               'updated_at': DateTime.now().toUtc().toIso8601String(),
             })
             .eq('user_id', targetUserId);
@@ -183,13 +189,15 @@ class AdminUserManager {
         AppLogger.warning(
           'AdminUserManager.revokePremium: subscription record failed (non-fatal): $e\n$st',
         );
-        Sentry.addBreadcrumb(Breadcrumb(
-          message:
-              'subscription update failed for ${AppLogger.obfuscate(targetUserId)}',
-          category: 'admin.premium',
-          level: SentryLevel.warning,
-          data: {'error': e.toString()},
-        ));
+        Sentry.addBreadcrumb(
+          Breadcrumb(
+            message:
+                'subscription update failed for ${AppLogger.obfuscate(targetUserId)}',
+            category: 'admin.premium',
+            level: SentryLevel.warning,
+            data: {'error': e.toString()},
+          ),
+        );
       }
 
       await logAdminAction(
@@ -238,7 +246,8 @@ class AdminUserManager {
   bool _isProtectedRole(String? role) {
     if (role == null) return false;
     final normalized = role.toLowerCase().trim();
-    return normalized == 'founder' || normalized == 'admin';
+    return normalized == AdminConstants.roleFounder ||
+        normalized == AdminConstants.roleAdmin;
   }
 
   bool _isProtectedRoleMutationError(PostgrestException e) {
@@ -270,13 +279,9 @@ class AdminUserManager {
     String targetUserId,
     Map<String, dynamic> data,
   ) async {
-    await client.from(SupabaseConstants.userSubscriptionsTable).upsert(
-      {
-        ...data,
-        'user_id': targetUserId,
-      },
-      onConflict: 'user_id',
-    );
+    await client.from(SupabaseConstants.userSubscriptionsTable).upsert({
+      ...data,
+      'user_id': targetUserId,
+    }, onConflict: 'user_id');
   }
-
 }

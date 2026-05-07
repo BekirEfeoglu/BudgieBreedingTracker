@@ -23,9 +23,7 @@ final _settingsMap = <String, Map<String, dynamic>>{
 Widget _wrap(Widget child) {
   return ProviderScope(
     overrides: [
-      cronJobStatusProvider.overrideWith(
-        (ref) => throw UnimplementedError(),
-      ),
+      cronJobStatusProvider.overrideWith((ref) => throw UnimplementedError()),
     ],
     child: MaterialApp(home: Scaffold(body: child)),
   );
@@ -73,8 +71,9 @@ void main() {
       expect(find.text(l10n('admin.security')), findsOneWidget);
     });
 
-    testWidgets('should_show_multiple_accent_settings_sections',
-        (tester) async {
+    testWidgets('should_show_multiple_accent_settings_sections', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         _wrap(AdminSettingsContent(settings: _settingsMap)),
       );
@@ -96,17 +95,13 @@ void main() {
         'maintenance_mode': {'value': 'true'},
         'registration_open': {'value': 'false'},
       };
-      await tester.pumpWidget(
-        _wrap(AdminSettingsContent(settings: settings)),
-      );
+      await tester.pumpWidget(_wrap(AdminSettingsContent(settings: settings)));
       await tester.pump();
       expect(find.byType(AdminSettingsContent), findsOneWidget);
     });
 
     testWidgets('should_handle_empty_settings_map', (tester) async {
-      await tester.pumpWidget(
-        _wrap(const AdminSettingsContent(settings: {})),
-      );
+      await tester.pumpWidget(_wrap(const AdminSettingsContent(settings: {})));
       await tester.pump();
       expect(find.byType(AdminSettingsContent), findsOneWidget);
     });

@@ -29,8 +29,11 @@ class MonitoringSnapshotSection extends ConsumerWidget {
           padding: AppSpacing.cardPadding,
           child: Row(
             children: [
-              Icon(LucideIcons.alertTriangle,
-                  size: 20, color: theme.colorScheme.error),
+              Icon(
+                LucideIcons.alertTriangle,
+                size: 20,
+                color: theme.colorScheme.error,
+              ),
               const SizedBox(width: AppSpacing.md),
               Expanded(
                 child: Text(
@@ -44,8 +47,7 @@ class MonitoringSnapshotSection extends ConsumerWidget {
                 icon: const Icon(LucideIcons.refreshCw, size: 18),
                 tooltip: 'common.retry'.tr(),
                 semanticLabel: 'common.retry'.tr(),
-                onPressed: () =>
-                    ref.invalidate(monitoringSnapshotsProvider),
+                onPressed: () => ref.invalidate(monitoringSnapshotsProvider),
               ),
             ],
           ),
@@ -173,8 +175,8 @@ class _ConnectionUsageCard extends StatelessWidget {
                 color: ratio > 0.9
                     ? theme.colorScheme.error
                     : ratio > 0.7
-                        ? theme.colorScheme.tertiary
-                        : theme.colorScheme.primary,
+                    ? theme.colorScheme.tertiary
+                    : theme.colorScheme.primary,
                 minHeight: 8,
               ),
             ),
@@ -197,4 +199,3 @@ class _ConnectionUsageCard extends StatelessWidget {
     );
   }
 }
-

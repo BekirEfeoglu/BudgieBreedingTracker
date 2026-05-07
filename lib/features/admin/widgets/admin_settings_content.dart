@@ -116,7 +116,14 @@ class _AdminSettingsContentState extends ConsumerState<AdminSettingsContent> {
       'registration_open',
       'email_verification_required',
     ];
-    const featureKeys = ['premium_enabled'];
+    const featureKeys = [
+      'premium_enabled',
+      'community_enabled',
+      'marketplace_enabled',
+      'gamification_enabled',
+      'messaging_enabled',
+      'genetics_enabled',
+    ];
     const securityKeys = ['rate_limiting_enabled', 'two_factor_required'];
     const dataKeys = ['auto_backup_enabled', 'auto_cleanup_enabled'];
     const notifKeys = ['global_push_enabled', 'email_alerts_enabled'];
@@ -201,10 +208,31 @@ class _AdminSettingsContentState extends ConsumerState<AdminSettingsContent> {
     activeCount: _activeIn(keys),
     totalCount: keys.length,
     children: [
+      _toggle('premium_enabled', 'premium_features', 'premium_features_desc'),
       _toggle(
-        'premium_enabled',
-        'premium_features',
-        'premium_features_desc',
+        'community_enabled',
+        'community_feature',
+        'community_feature_desc',
+      ),
+      _toggle(
+        'marketplace_enabled',
+        'marketplace_feature',
+        'marketplace_feature_desc',
+      ),
+      _toggle(
+        'gamification_enabled',
+        'gamification_feature',
+        'gamification_feature_desc',
+      ),
+      _toggle(
+        'messaging_enabled',
+        'messaging_feature',
+        'messaging_feature_desc',
+      ),
+      _toggle(
+        'genetics_enabled',
+        'genetics_feature',
+        'genetics_feature_desc',
         showDivider: false,
       ),
     ],

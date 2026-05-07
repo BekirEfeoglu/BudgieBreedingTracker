@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../core/constants/app_icons.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_icon.dart';
-import '../../../router/route_names.dart';
 import '../providers/admin_providers.dart';
 import 'admin_dashboard_activity.dart';
 import 'admin_dashboard_analytics.dart';
+import 'admin_dashboard_quick_actions.dart';
 import 'admin_dashboard_sections.dart';
+
+export 'admin_dashboard_quick_actions.dart';
 
 part 'admin_dashboard_content_cards.dart';
 part 'admin_dashboard_analytics_sections.dart';
@@ -53,88 +54,7 @@ class DashboardContent extends StatelessWidget {
           const SizedBox(height: AppSpacing.lg),
           DashboardStatsGrid(stats: stats),
           const SizedBox(height: AppSpacing.xxl),
-          Text(
-            'admin.quick_actions'.tr(),
-            style: Theme.of(
-              context,
-            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
-          ),
-          const SizedBox(height: AppSpacing.md),
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final crossAxisCount = constraints.maxWidth >= 900
-                  ? 4
-                  : constraints.maxWidth >= 560
-                  ? 3
-                  : 2;
-              return GridView.count(
-                crossAxisCount: crossAxisCount,
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                crossAxisSpacing: AppSpacing.md,
-                mainAxisSpacing: AppSpacing.md,
-                childAspectRatio: crossAxisCount == 2 ? 1.45 : 1.65,
-                children: [
-                  DashboardQuickActionButton(
-                    icon: AppIcon(
-                      AppIcons.users,
-                      semanticsLabel: 'admin.users'.tr(),
-                    ),
-                    label: 'admin.users'.tr(),
-                    onTap: () => context.push(AppRoutes.adminUsers),
-                  ),
-                  DashboardQuickActionButton(
-                    icon: AppIcon(
-                      AppIcons.monitoring,
-                      semanticsLabel: 'admin.monitoring'.tr(),
-                    ),
-                    label: 'admin.monitoring'.tr(),
-                    onTap: () => context.push(AppRoutes.adminMonitoring),
-                  ),
-                  DashboardQuickActionButton(
-                    icon: AppIcon(
-                      AppIcons.database,
-                      semanticsLabel: 'admin.database'.tr(),
-                    ),
-                    label: 'admin.database'.tr(),
-                    onTap: () => context.push(AppRoutes.adminDatabase),
-                  ),
-                  DashboardQuickActionButton(
-                    icon: AppIcon(
-                      AppIcons.audit,
-                      semanticsLabel: 'admin.audit'.tr(),
-                    ),
-                    label: 'admin.audit'.tr(),
-                    onTap: () => context.push(AppRoutes.adminAudit),
-                  ),
-                  DashboardQuickActionButton(
-                    icon: AppIcon(
-                      AppIcons.security,
-                      semanticsLabel: 'admin.security'.tr(),
-                    ),
-                    label: 'admin.security'.tr(),
-                    onTap: () => context.push(AppRoutes.adminSecurity),
-                  ),
-                  DashboardQuickActionButton(
-                    icon: AppIcon(
-                      AppIcons.comment,
-                      semanticsLabel: 'admin.feedback_admin'.tr(),
-                    ),
-                    label: 'admin.feedback_admin'.tr(),
-                    onTap: () => context.push(AppRoutes.adminFeedback),
-                  ),
-                  DashboardQuickActionButton(
-                    icon: AppIcon(
-                      AppIcons.settings,
-                      semanticsLabel: 'admin.settings'.tr(),
-                    ),
-                    label: 'admin.settings'.tr(),
-                    onTap: () => context.push(AppRoutes.adminSettings),
-                  ),
-                ],
-              );
-            },
-          ),
+          const DashboardQuickActionsSection(),
           const SizedBox(height: AppSpacing.xxl),
           const DashboardOperationsOverviewSection(),
           const SizedBox(height: AppSpacing.xxl),

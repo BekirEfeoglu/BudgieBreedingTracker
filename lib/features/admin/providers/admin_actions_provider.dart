@@ -102,11 +102,17 @@ class AdminActionsNotifier extends Notifier<AdminActionState> {
 
   // ── Notification Operations (delegated) ──────────────
 
-  Future<void> sendNotification(String targetUserId, String title, String body) =>
-      _notificationManager.sendNotification(targetUserId, title, body);
+  Future<void> sendNotification(
+    String targetUserId,
+    String title,
+    String body,
+  ) => _notificationManager.sendNotification(targetUserId, title, body);
 
-  Future<void> sendBulkNotification(List<String> userIds, String title, String body) =>
-      _notificationManager.sendBulkNotification(userIds, title, body);
+  Future<void> sendBulkNotification(
+    List<String> userIds,
+    String title,
+    String body,
+  ) => _notificationManager.sendBulkNotification(userIds, title, body);
 
   // ── Bulk Operations (delegated) ──────────────────────
 
@@ -115,19 +121,22 @@ class AdminActionsNotifier extends Notifier<AdminActionState> {
     required bool activate,
   }) => _bulkManager.bulkToggleActive(userIds, activate: activate);
 
-  Future<({int succeeded, int skipped})> bulkGrantPremium(Set<String> userIds) =>
-      _bulkManager.bulkGrantPremium(userIds);
+  Future<({int succeeded, int skipped})> bulkGrantPremium(
+    Set<String> userIds,
+  ) => _bulkManager.bulkGrantPremium(userIds);
 
-  Future<({int succeeded, int skipped})> bulkRevokePremium(Set<String> userIds) =>
-      _bulkManager.bulkRevokePremium(userIds);
+  Future<({int succeeded, int skipped})> bulkRevokePremium(
+    Set<String> userIds,
+  ) => _bulkManager.bulkRevokePremium(userIds);
 
   Future<String> bulkExport(
     Set<String> userIds, {
     ExportFormat format = ExportFormat.json,
   }) => _bulkManager.bulkExport(userIds, format: format);
 
-  Future<({int succeeded, int skipped})> bulkDeleteUserData(Set<String> userIds) =>
-      _bulkManager.bulkDeleteUserData(userIds);
+  Future<({int succeeded, int skipped})> bulkDeleteUserData(
+    Set<String> userIds,
+  ) => _bulkManager.bulkDeleteUserData(userIds);
 
   // ── Security & Audit (delegated) ─────────────────────
 

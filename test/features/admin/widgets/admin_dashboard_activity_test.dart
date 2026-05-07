@@ -20,10 +20,7 @@ Widget _wrap(
     ],
     child: MaterialApp(
       home: Scaffold(
-        body: SizedBox(
-          width: 1200,
-          child: SingleChildScrollView(child: child),
-        ),
+        body: SizedBox(width: 1200, child: SingleChildScrollView(child: child)),
       ),
     ),
   );
@@ -44,15 +41,14 @@ void _suppressOverflowErrors() {
 void main() {
   group('DashboardErrorSummaryCard', () {
     testWidgets('should_show_loading_when_data_is_loading', (tester) async {
-      await tester.pumpWidget(
-        _wrap(const DashboardErrorSummaryCard()),
-      );
+      await tester.pumpWidget(_wrap(const DashboardErrorSummaryCard()));
       await tester.pump();
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
     });
 
-    testWidgets('should_show_no_errors_message_when_totalErrors_is_zero',
-        (tester) async {
+    testWidgets('should_show_no_errors_message_when_totalErrors_is_zero', (
+      tester,
+    ) async {
       const summary = ErrorSummary(totalErrors: 0);
       await tester.pumpWidget(
         _wrap(
@@ -64,8 +60,9 @@ void main() {
       expect(find.text(l10n('admin.no_errors')), findsOneWidget);
     });
 
-    testWidgets('should_show_severity_badges_when_errors_exist',
-        (tester) async {
+    testWidgets('should_show_severity_badges_when_errors_exist', (
+      tester,
+    ) async {
       _suppressOverflowErrors();
       const summary = ErrorSummary(
         totalErrors: 5,
@@ -80,22 +77,12 @@ void main() {
         ),
       );
       await tester.pump();
-      expect(
-        find.text('2 ${l10n('admin.severity_high')}'),
-        findsOneWidget,
-      );
-      expect(
-        find.text('2 ${l10n('admin.severity_medium')}'),
-        findsOneWidget,
-      );
-      expect(
-        find.text('1 ${l10n('admin.severity_low')}'),
-        findsOneWidget,
-      );
+      expect(find.text('2 ${l10n('admin.severity_high')}'), findsOneWidget);
+      expect(find.text('2 ${l10n('admin.severity_medium')}'), findsOneWidget);
+      expect(find.text('1 ${l10n('admin.severity_low')}'), findsOneWidget);
     });
 
-    testWidgets('should_show_error_text_when_provider_errors',
-        (tester) async {
+    testWidgets('should_show_error_text_when_provider_errors', (tester) async {
       await tester.pumpWidget(
         _wrap(
           const DashboardErrorSummaryCard(),
@@ -106,8 +93,9 @@ void main() {
       expect(find.text(l10n('common.data_load_error')), findsOneWidget);
     });
 
-    testWidgets('should_show_recent_event_rows_when_events_exist',
-        (tester) async {
+    testWidgets('should_show_recent_event_rows_when_events_exist', (
+      tester,
+    ) async {
       _suppressOverflowErrors();
       final event = SecurityEvent(
         id: 'e1',
@@ -132,11 +120,8 @@ void main() {
   });
 
   group('DashboardActivityFeedSection', () {
-    testWidgets('should_show_loading_when_activity_is_loading',
-        (tester) async {
-      await tester.pumpWidget(
-        _wrap(const DashboardActivityFeedSection()),
-      );
+    testWidgets('should_show_loading_when_activity_is_loading', (tester) async {
+      await tester.pumpWidget(_wrap(const DashboardActivityFeedSection()));
       await tester.pump();
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
     });
@@ -172,8 +157,9 @@ void main() {
       expect(find.text('Alice Test'), findsOneWidget);
     });
 
-    testWidgets('should_show_user_id_prefix_when_fullName_is_empty',
-        (tester) async {
+    testWidgets('should_show_user_id_prefix_when_fullName_is_empty', (
+      tester,
+    ) async {
       final activities = [
         UserActivity(
           userId: 'abcdefgh-1234',

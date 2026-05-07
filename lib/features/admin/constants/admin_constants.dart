@@ -3,6 +3,19 @@ import '../../../core/constants/supabase_constants.dart';
 /// Centralized constants for the admin panel.
 /// Replaces magic numbers scattered across admin files.
 abstract final class AdminConstants {
+  // Role values (admin_users.role column)
+  static const String roleFounder = 'founder';
+  static const String roleAdmin = 'admin';
+
+  // Subscription plan values
+  static const String planPremium = 'premium';
+  static const String planFree = 'free';
+
+  // Subscription status values
+  static const String statusActive = 'active';
+  static const String statusRevoked = 'canceled';
+  static const String statusFree = 'free';
+
   // Pagination
   static const int usersPageSize = 50;
   static const int auditLogsPageSize = 100;
@@ -21,6 +34,19 @@ abstract final class AdminConstants {
   static const int dbSizeLimitBytes = 8 * 1024 * 1024 * 1024; // 8 GB (Pro Plan)
   static const double healthyThreshold = 0.7;
   static const double warningThreshold = 0.9;
+
+  // DB size limits by Supabase plan (bytes)
+  static const Map<String, int> dbSizeLimitByPlan = {
+    'free': 500 * 1024 * 1024, // 500 MB
+    'pro': 8 * 1024 * 1024 * 1024, // 8 GB
+    'team': 8 * 1024 * 1024 * 1024, // 8 GB
+    'enterprise': 16 * 1024 * 1024 * 1024, // 16 GB
+  };
+  static const int dbSizeLimitDefault = 8 * 1024 * 1024 * 1024; // 8 GB
+
+  /// Returns DB size limit for the given Supabase plan name.
+  static int dbSizeLimitForPlan(String plan) =>
+      dbSizeLimitByPlan[plan.toLowerCase()] ?? dbSizeLimitDefault;
 
   // Debounce
   static const Duration searchDebounceDuration = Duration(milliseconds: 350);
@@ -63,7 +89,30 @@ abstract final class AdminConstants {
     SupabaseConstants.eventsTable,
     SupabaseConstants.eventRemindersTable,
     SupabaseConstants.healthRecordsTable,
+    SupabaseConstants.notificationsTable,
     SupabaseConstants.photosTable,
+  ];
+
+  /// FK-safe deletion order for user data: children before parents.
+  /// Single source of truth — used by DatabaseManager and BulkManager.
+  static const List<String> userDataDeletionOrder = [
+    SupabaseConstants.eventRemindersTable,
+    SupabaseConstants.notificationSchedulesTable,
+    SupabaseConstants.notificationsTable,
+    SupabaseConstants.notificationSettingsTable,
+    SupabaseConstants.photosTable,
+    SupabaseConstants.growthMeasurementsTable,
+    SupabaseConstants.healthRecordsTable,
+    SupabaseConstants.eventsTable,
+    SupabaseConstants.chicksTable,
+    SupabaseConstants.eggsTable,
+    SupabaseConstants.incubationsTable,
+    SupabaseConstants.clutchesTable,
+    SupabaseConstants.breedingPairsTable,
+    SupabaseConstants.nestsTable,
+    SupabaseConstants.birdsTable,
+    SupabaseConstants.userPreferencesTable,
+    SupabaseConstants.feedbackTable,
   ];
 
   // Storage buckets
