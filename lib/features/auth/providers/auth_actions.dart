@@ -37,6 +37,7 @@ class AuthActions with _AuthOAuthMixin, _AuthAccountMixin {
 
   static const _oAuthRedirectTo =
       'io.supabase.budgiebreeding://login-callback/';
+  static const oAuthLaunchMode = LaunchMode.inAppBrowserView;
   static const _iosWindowGuardChannel = MethodChannel(
     'com.budgie/ios_keyboard_fix',
   );
