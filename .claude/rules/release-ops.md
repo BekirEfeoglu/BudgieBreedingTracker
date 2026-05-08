@@ -4,13 +4,14 @@
 | Channel | Platform | Purpose |
 |---------|----------|---------|
 | GitHub Actions | CI | Dogrulama, hafif deployment |
-| Xcode Cloud | iOS | App Store Connect archive/status check |
+| Xcode Cloud | iOS | App Store Connect build/status check |
 | Codemagic | App Store / Google Play | Production release |
 | GitHub Pages | Web | `docs/` deployment |
 
 - App Store / Google Play publish mantigini GitHub Actions'a tasima
 - `docs/` deployment mobil app release'lerinden ayri deger
-- Xcode Cloud Flutter archive temiz clone'da `ios/ci_scripts/ci_post_clone.sh` ile hazirlanir
+- Xcode Cloud Flutter build temiz clone'da `ios/ci_scripts/ci_post_clone.sh` ile hazirlanir
+- Xcode Cloud main workflow build-only olmalidir; archive/TestFlight/App Store export ancak Apple signing hesabi, Development/Ad Hoc profil ihtiyaci ve kayitli fiziksel cihazlar hazirsa acilir
 
 ## Version Bump
 - `pubspec.yaml` icindeki `version: X.Y.Z+build` formatini kullan
@@ -40,7 +41,8 @@
 - Store release oncesi version bump tutarliligini kontrol et
 - iOS ve Android release config'leri birbirinden bagimsiz hata ayiklanabilir tut
 - Release branch'i kesmeden once `develop`in temiz oldugunu dogrula
-- Xcode Cloud archive hatalarinda once generated Dart dosyalari, `Generated.xcconfig` ve `Pods-Runner-*.xcfilelist` uretilmis mi kontrol et; bu dosyalari commit etme, post-clone script'i duzelt
+- Xcode Cloud build hatalarinda once generated Dart dosyalari, `Generated.xcconfig` ve `Pods-Runner-*.xcfilelist` uretilmis mi kontrol et; bu dosyalari commit etme, post-clone script'i duzelt
+- Xcode Cloud archive/export hatalarinda `Development` veya `Ad Hoc` export gorulurse once Apple Developer hesabinda kayitli fiziksel cihaz ve provisioning profile gereksinimlerini dogrula
 - Xcode Cloud `pod install` hatalarinda ag/DNS kaynakli pod arsivi indirme sorunlarini ayir; transient indirme hatalari icin `ios/ci_scripts/ci_post_clone.sh` retry/backoff davranisini koru
 
 ## Documentation Drift

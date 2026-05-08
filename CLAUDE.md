@@ -115,8 +115,10 @@ Workflow changes must be validated locally before push: parse the edited YAML, q
 - `android-release`: AAB → Google Play (alpha track)
 - `ios-release`: IPA → App Store TestFlight (App ID: 6759828211)
 
-### Xcode Cloud (`ios/ci_scripts/ci_post_clone.sh`) - App Store Connect archive
-- Xcode Cloud builds a clean clone and must run the post-clone script before archive.
+### Xcode Cloud (`ios/ci_scripts/ci_post_clone.sh`) - App Store Connect build
+- Xcode Cloud builds a clean clone and must run the post-clone script before the iOS build action.
+- The default Xcode Cloud workflow is build-only (`Build - iOS`, scheme `Runner`, `Any iOS Simulator`) so main-branch status checks do not require Development or Ad Hoc provisioning profiles.
+- Archive/TestFlight/App Store distribution in Xcode Cloud requires Apple signing prerequisites, including registered physical devices for Development/Ad Hoc exports; use Codemagic for production store releases until those account prerequisites are intentionally configured.
 - The script installs/activates Flutter, runs `flutter pub get`, runs `dart run build_runner build --delete-conflicting-outputs`, and runs `pod install` under `ios/`.
 - Network-heavy setup steps must stay retry-aware because Xcode Cloud can hit transient DNS/download failures while cloning Flutter, precaching artifacts, resolving Pub packages, installing CocoaPods, or downloading pod source archives such as `sqlite3`.
 - Do not commit generated Dart files, `ios/Flutter/Generated.xcconfig`, `ios/Pods/`, or `Pods-Runner-*.xcfilelist`; regenerate them in CI.
