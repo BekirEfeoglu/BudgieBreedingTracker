@@ -2,14 +2,30 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://budgiebreedingtracker.online; connect-src 'self' https://formsubmit.co; form-action 'self' https://formsubmit.co; frame-ancestors 'none'; frame-src 'none'; upgrade-insecure-requests">
-  <meta http-equiv="Permissions-Policy" content="camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()">
-  <meta http-equiv="X-Content-Type-Options" content="nosniff">
-  <meta name="referrer" content="no-referrer">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Topluluk Kurallari — BudgieBreedingTracker</title>
   <meta name="description" content="BudgieBreedingTracker topluluk kurallari ve icerik politikasi.">
   <meta name="theme-color" content="#1A3A6B">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Topluluk Kuralları — BudgieBreedingTracker">
+  <meta property="og:description" content="BudgieBreedingTracker topluluk kuralları, moderasyon ve itiraz süreci.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://budgiebreedingtracker.online/community-guidelines.html">
+  <meta property="og:image" content="https://budgiebreedingtracker.online/og-image.png">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Topluluk Kuralları — BudgieBreedingTracker">
+  <meta name="twitter:description" content="BudgieBreedingTracker topluluk kuralları, moderasyon ve itiraz süreci.">
+  <meta name="twitter:image" content="https://budgiebreedingtracker.online/og-image.png">
+
+  <!-- Canonical -->
+  <link rel="canonical" href="https://budgiebreedingtracker.online/community-guidelines.html">
+  <meta name="robots" content="index, follow">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -785,9 +801,30 @@
       .cursor-glow { display: none; }
       .particle, .leaf { display: none; }
     }
+
+    /* ─── SKIP TO CONTENT (a11y) ─── */
+    .skip-to-content {
+      position: absolute;
+      top: -100px;
+      left: 0;
+      background: var(--gold);
+      color: var(--forest-deep);
+      padding: 0.75rem 1.25rem;
+      z-index: 9999;
+      font-weight: 600;
+      text-decoration: none;
+      border-radius: 0 0 8px 0;
+      transition: top 0.2s;
+    }
+    .skip-to-content:focus {
+      top: 0;
+      outline: 2px solid var(--gold-light);
+      outline-offset: 2px;
+    }
   </style>
 </head>
 <body>
+  <a class="skip-to-content" href="#main">İçeriğe geç</a>
   <div class="page-curtain"></div>
   <div class="scroll-progress" id="scrollProgress"></div>
   <div class="cursor-glow" id="cursorGlow"></div>
@@ -829,9 +866,9 @@
       </a>
       <div class="header-right">
         <div class="lang-group">
-          <button data-action="setLanguage" data-lang="tr" class="lang-btn active">TR</button>
-          <button data-action="setLanguage" data-lang="en" class="lang-btn">EN</button>
-          <button data-action="setLanguage" data-lang="de" class="lang-btn">DE</button>
+          <button onclick="setLanguage('tr')" class="lang-btn active" data-lang="tr">TR</button>
+          <button onclick="setLanguage('en')" class="lang-btn" data-lang="en">EN</button>
+          <button onclick="setLanguage('de')" class="lang-btn" data-lang="de">DE</button>
         </div>
         <a href="index.html" class="back-link" data-i18n="back">&larr; Ana Sayfa</a>
       </div>
@@ -839,12 +876,12 @@
   </header>
 
   <!-- ══════════════ MAIN ══════════════ -->
-  <main>
+  <main id="main">
 
     <!-- Page title block -->
     <div class="page-title-block fade-up delay-0 visible">
       <h1 class="page-title" data-i18n="title">Topluluk Kurallari</h1>
-      <p class="page-subtitle" data-i18n="last_updated">Son guncelleme: 17 Mart 2026</p>
+      <p class="page-subtitle" data-i18n="last_updated">Son guncelleme: 19 Nisan 2026</p>
     </div>
 
     <!-- Glass content card -->
@@ -957,13 +994,67 @@
 
       <div class="section-divider"></div>
 
-      <!-- ── Section 7: Iletisim ── -->
-      <section class="fade-up delay-7 section-reveal">
+      <!-- ── Section 7: Moderasyon Sureci ── -->
+      <section class="fade-up delay-7 section-reveal" aria-labelledby="moderation-escalation">
         <div class="section-heading">
           <span class="section-number">7</span>
-          <h2 data-i18n="s7_title">Iletisim</h2>
+          <h2 id="moderation-escalation" data-i18n="s7_title">Moderasyon Süreci</h2>
         </div>
-        <p class="section-intro" data-i18n="s7_text">Topluluk kurallari hakkinda sorulariniz icin bizimle iletisime gecebilirsiniz:</p>
+        <div data-i18n-html="s7_list">
+          <ol>
+            <li><strong>Rapor:</strong> Kullanıcı içeriği rapor eder (spam, taciz, uygunsuz içerik vb.).</li>
+            <li><strong>Otomatik filtre:</strong> Eşik aşıldığında içerik geçici olarak gizlenir.</li>
+            <li><strong>İnceleme:</strong> Moderatör 48 saat içinde inceler.</li>
+            <li><strong>Aksiyon:</strong> Silme, uyarı, askıya alma veya kural ihlali yoksa içeriğin geri yüklenmesi.</li>
+          </ol>
+        </div>
+      </section>
+
+      <div class="section-divider"></div>
+
+      <!-- ── Section 8: Itiraz Sureci ── -->
+      <section class="fade-up delay-7 section-reveal" aria-labelledby="appeal-process">
+        <div class="section-heading">
+          <span class="section-number">8</span>
+          <h2 id="appeal-process" data-i18n="s8_title">İtiraz Süreci</h2>
+        </div>
+        <p class="section-intro" data-i18n="s8_intro">Bir kararın hatalı olduğunu düşünüyorsanız:</p>
+        <div data-i18n-html="s8_list">
+          <ol>
+            <li>Karar bildirimini aldıktan sonra 14 gün içinde itiraz edin.</li>
+            <li><a href="mailto:appeals@budgiebreedingtracker.online" class="section-email">appeals@budgiebreedingtracker.online</a> adresine hesap bilgileri ve itiraz gerekçesiyle başvurun.</li>
+            <li>Farklı bir moderatör 7 iş günü içinde değerlendirir ve sonucu bildirir.</li>
+          </ol>
+        </div>
+      </section>
+
+      <div class="section-divider"></div>
+
+      <!-- ── Section 9: Silme ve Profil Yonetimi ── -->
+      <section class="fade-up delay-7 section-reveal" aria-labelledby="deletion-rights">
+        <div class="section-heading">
+          <span class="section-number">9</span>
+          <h2 id="deletion-rights" data-i18n="s9_title">Silme ve Profil Yönetimi</h2>
+        </div>
+        <div data-i18n-html="s9_list">
+          <ul>
+            <li>Kendi paylaşımlarınızı istediğiniz zaman silebilirsiniz.</li>
+            <li>Profilinizi kapattığınızda herkese açık paylaşımlarınız ve yorumlarınız kaldırılır.</li>
+            <li>Geçmişe dönük yanıtlanmış yorumlarınız, bağlamı bozmamak için "Silindi" yer tutucusuyla gösterilir.</li>
+            <li>Hesabınızı tamamen silmek için <a href="mailto:privacy@budgiebreedingtracker.online" class="section-email">privacy@budgiebreedingtracker.online</a>.</li>
+          </ul>
+        </div>
+      </section>
+
+      <div class="section-divider"></div>
+
+      <!-- ── Section 10: Iletisim ── -->
+      <section class="fade-up delay-7 section-reveal">
+        <div class="section-heading">
+          <span class="section-number">10</span>
+          <h2 data-i18n="s10_title">Iletisim</h2>
+        </div>
+        <p class="section-intro" data-i18n="s10_text">Topluluk kurallari hakkinda sorulariniz icin bizimle iletisime gecebilirsiniz:</p>
         <div class="contact-card">
           <div class="contact-icon">
             <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(232,194,122,0.95)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -983,11 +1074,182 @@
 
   <!-- ══════════════ FOOTER ══════════════ -->
   <footer>
-    <p class="footer-text" data-i18n="footer">&copy; 2025-2026 BudgieBreedingTracker. Tum haklari saklidir.</p>
+    <p class="footer-text">
+      <span data-i18n="footer">&copy; 2025-2026 BudgieBreedingTracker. Tum haklari saklidir.</span>
+      <span class="version-badge" aria-label="Uygulama sürümü">
+        v1.0.3 · <time datetime="2026-04-19">2026-04-19</time>
+      </span>
+    </p>
   </footer>
 
   <!-- ══════════════ SCRIPTS ══════════════ -->
-  <script src="community-guidelines.js" defer></script>
+  <script>
+    const translations = {
+      tr: {
+        back: '\u2190 Ana Sayfa',
+        title: 'Topluluk Kurallar\u0131',
+        last_updated: 'Son g\u00fcncelleme: 19 Nisan 2026',
+        s1_title: '1. Ama\u00e7',
+        s1_text: 'BudgieBreedingTracker toplulu\u011fu, muhabbet ku\u015fu yeti\u015ftiricilerinin deneyimlerini payla\u015fmalar\u0131, birbirlerinden \u00f6\u011frenmeleri ve desteklemeleri i\u00e7in g\u00fcvenli bir ortam sa\u011flamay\u0131 ama\u00e7lar. Bu kurallar, t\u00fcm \u00fcyelerin olumlu bir deneyim ya\u015famas\u0131n\u0131 sa\u011flamak i\u00e7in olu\u015fturulmu\u015ftur.',
+        s2_title: '2. Sayg\u0131 ve Nezaket',
+        s2_list: '<ul class="check-list"><li>Di\u011fer \u00fcyelere sayg\u0131 ve nezaketle davran\u0131n</li><li>Farkl\u0131 g\u00f6r\u00fc\u015flere ve deneyimlere a\u00e7\u0131k olun</li><li>Yap\u0131c\u0131 ele\u015ftiri yap\u0131n, ki\u015fisel sald\u0131r\u0131larda bulunmay\u0131n</li><li>\u0130rk, din, cinsiyet, etnik k\u00f6ken veya cinsel y\u00f6nelime dayal\u0131 ayr\u0131mc\u0131l\u0131k yasaklanm\u0131\u015ft\u0131r</li></ul>',
+        s3_title: '3. Yasaklanan \u0130\u00e7erikler',
+        s3_list: '<ul class="x-list"><li><strong>Nefret s\u00f6ylemi:</strong> Herhangi bir gruba y\u00f6nelik nefret, tehdit veya \u015fiddet i\u00e7eren i\u00e7erikler</li><li><strong>Taciz:</strong> Di\u011fer kullan\u0131c\u0131lar\u0131 hedef alan zorbal\u0131k, tehdit veya ki\u015fisel sald\u0131r\u0131lar</li><li><strong>Uygunsuz i\u00e7erik:</strong> Cinsel, \u015fiddet i\u00e7eren veya rahats\u0131z edici g\u00f6rseller ve metinler</li><li><strong>Spam:</strong> Tekrarlanan, anlams\u0131z veya reklam ama\u00e7l\u0131 i\u00e7erikler</li><li><strong>Doland\u0131r\u0131c\u0131l\u0131k:</strong> Yan\u0131lt\u0131c\u0131 bilgiler, sahte sat\u0131\u015f ilanlar\u0131 veya ki\u015fisel bilgi toplama giri\u015fimleri</li><li><strong>Hayvan istismar\u0131:</strong> Hayvanlara zarar vermeyi te\u015fvik eden veya g\u00f6steren i\u00e7erikler</li><li><strong>Yasad\u0131\u015f\u0131 faaliyetler:</strong> Ka\u00e7ak hayvan ticaretini te\u015fvik eden veya kolayla\u015ft\u0131ran i\u00e7erikler</li></ul>',
+        s4_title: '4. \u0130\u00e7erik Payla\u015f\u0131m Kurallar\u0131',
+        s4_list: '<ul class="check-list"><li>Yaln\u0131zca muhabbet ku\u015fu yeti\u015ftiricili\u011fi ile ilgili i\u00e7erikler payla\u015f\u0131n</li><li>Payla\u015f\u0131mlarda do\u011fru ve g\u00fcvenilir bilgiler verin</li><li>Ba\u015fkalar\u0131n\u0131n foto\u011fraflar\u0131n\u0131 izinsiz kullanmay\u0131n</li><li>Ki\u015fisel ileti\u015fim bilgilerinizi herkese a\u00e7\u0131k payla\u015f\u0131rken dikkatli olun</li><li>Ticari reklam ve tan\u0131t\u0131m i\u00e7in topluluk \u00f6zelliklerini kullanmay\u0131n</li></ul>',
+        s5_title: '5. Raporlama ve Moderasyon',
+        s5_intro: 'Topluluk kurallar\u0131n\u0131 ihlal eden i\u00e7erikleri g\u00f6rd\u00fc\u011f\u00fcn\u00fczde:',
+        s5_list: '<ul class="shield-list"><li>\u0130\u00e7erik \u00fczerindeki <strong>Raporla</strong> butonunu kullan\u0131n</li><li>Sorunlu kullan\u0131c\u0131lar\u0131 <strong>Engelle</strong> se\u00e7ene\u011fi ile engelleyin</li><li>Ciddi ihlallerde <a href="mailto:support@budgiebreedingtracker.online" class="section-email">support@budgiebreedingtracker.online</a> adresine e-posta g\u00f6nderin</li></ul>',
+        s5_note: 'Raporlar moderasyon ekibimiz taraf\u0131ndan incelenir ve uygun g\u00f6r\u00fcld\u00fc\u011f\u00fcnde i\u00e7erik kald\u0131r\u0131l\u0131r, hesap uyar\u0131l\u0131r veya ask\u0131ya al\u0131n\u0131r.',
+        s6_title: '6. Yapt\u0131r\u0131mlar',
+        s6_intro: 'Kural ihlallerinde a\u015fa\u011f\u0131daki yapt\u0131r\u0131mlar uygulanabilir:',
+        s6_list: '<ul class="warn-list"><li><strong>Uyar\u0131:</strong> \u0130lk ihlallerde yaz\u0131l\u0131 uyar\u0131</li><li><strong>\u0130\u00e7erik kald\u0131rma:</strong> Kurallar\u0131 ihlal eden i\u00e7erikler kald\u0131r\u0131l\u0131r</li><li><strong>Ge\u00e7ici ask\u0131ya alma:</strong> Tekrarlanan ihlallerde hesap ge\u00e7ici olarak ask\u0131ya al\u0131n\u0131r</li><li><strong>Kal\u0131c\u0131 yasaklama:</strong> Ciddi veya s\u00fcrekli ihlallerde hesap kal\u0131c\u0131 olarak yasaklan\u0131r</li></ul>',
+        s7_title: '7. Moderasyon S\u00fcreci',
+        s7_list: '<ol><li><strong>Rapor:</strong> Kullan\u0131c\u0131 i\u00e7eri\u011fi rapor eder (spam, taciz, uygunsuz i\u00e7erik vb.).</li><li><strong>Otomatik filtre:</strong> E\u015fik a\u015f\u0131ld\u0131\u011f\u0131nda i\u00e7erik ge\u00e7ici olarak gizlenir.</li><li><strong>\u0130nceleme:</strong> Moderat\u00f6r 48 saat i\u00e7inde inceler.</li><li><strong>Aksiyon:</strong> Silme, uyar\u0131, ask\u0131ya alma veya kural ihlali yoksa i\u00e7eri\u011fin geri y\u00fcklenmesi.</li></ol>',
+        s8_title: '8. \u0130tiraz S\u00fcreci',
+        s8_intro: 'Bir karar\u0131n hatal\u0131 oldu\u011funu d\u00fc\u015f\u00fcn\u00fcyorsan\u0131z:',
+        s8_list: '<ol><li>Karar bildirimini ald\u0131ktan sonra 14 g\u00fcn i\u00e7inde itiraz edin.</li><li><a href="mailto:appeals@budgiebreedingtracker.online" class="section-email">appeals@budgiebreedingtracker.online</a> adresine hesap bilgileri ve itiraz gerek\u00e7esiyle ba\u015fvurun.</li><li>Farkl\u0131 bir moderat\u00f6r 7 i\u015f g\u00fcn\u00fc i\u00e7inde de\u011ferlendirir ve sonucu bildirir.</li></ol>',
+        s9_title: '9. Silme ve Profil Y\u00f6netimi',
+        s9_list: '<ul><li>Kendi payla\u015f\u0131mlar\u0131n\u0131z\u0131 istedi\u011finiz zaman silebilirsiniz.</li><li>Profilinizi kapatt\u0131\u011f\u0131n\u0131zda herkese a\u00e7\u0131k payla\u015f\u0131mlar\u0131n\u0131z ve yorumlar\u0131n\u0131z kald\u0131r\u0131l\u0131r.</li><li>Ge\u00e7mi\u015fe d\u00f6n\u00fck yan\u0131tlanm\u0131\u015f yorumlar\u0131n\u0131z, ba\u011flam\u0131 bozmamak i\u00e7in "Silindi" yer tutucusuyla g\u00f6sterilir.</li><li>Hesab\u0131n\u0131z\u0131 tamamen silmek i\u00e7in <a href="mailto:privacy@budgiebreedingtracker.online" class="section-email">privacy@budgiebreedingtracker.online</a>.</li></ul>',
+        s10_title: '10. \u0130leti\u015fim',
+        s10_text: 'Topluluk kurallar\u0131 hakk\u0131nda sorular\u0131n\u0131z i\u00e7in bizimle ileti\u015fime ge\u00e7ebilirsiniz:',
+        footer: '\u00a9 2025-2026 BudgieBreedingTracker. T\u00fcm haklar\u0131 sakl\u0131d\u0131r.',
+      },
+      en: {
+        back: '\u2190 Home',
+        title: 'Community Guidelines',
+        last_updated: 'Last updated: April 19, 2026',
+        s1_title: '1. Purpose',
+        s1_text: 'The BudgieBreedingTracker community aims to provide a safe environment for budgerigar breeders to share their experiences, learn from each other, and support one another. These guidelines are designed to ensure a positive experience for all members.',
+        s2_title: '2. Respect and Courtesy',
+        s2_list: '<ul class="check-list"><li>Treat other members with respect and courtesy</li><li>Be open to different opinions and experiences</li><li>Offer constructive criticism, avoid personal attacks</li><li>Discrimination based on race, religion, gender, ethnicity, or sexual orientation is prohibited</li></ul>',
+        s3_title: '3. Prohibited Content',
+        s3_list: '<ul class="x-list"><li><strong>Hate speech:</strong> Content containing hatred, threats, or violence toward any group</li><li><strong>Harassment:</strong> Bullying, threats, or personal attacks targeting other users</li><li><strong>Inappropriate content:</strong> Sexual, violent, or disturbing images and text</li><li><strong>Spam:</strong> Repetitive, meaningless, or promotional content</li><li><strong>Fraud:</strong> Misleading information, fake sales listings, or attempts to collect personal information</li><li><strong>Animal abuse:</strong> Content encouraging or depicting harm to animals</li><li><strong>Illegal activities:</strong> Content promoting or facilitating illegal animal trade</li></ul>',
+        s4_title: '4. Content Sharing Rules',
+        s4_list: '<ul class="check-list"><li>Share only content related to budgerigar breeding</li><li>Provide accurate and reliable information in your posts</li><li>Do not use others\' photos without permission</li><li>Be careful when sharing personal contact information publicly</li><li>Do not use community features for commercial advertising</li></ul>',
+        s5_title: '5. Reporting and Moderation',
+        s5_intro: 'When you encounter content that violates community guidelines:',
+        s5_list: '<ul class="shield-list"><li>Use the <strong>Report</strong> button on the content</li><li>Block problematic users using the <strong>Block</strong> option</li><li>For serious violations, email <a href="mailto:support@budgiebreedingtracker.online" class="section-email">support@budgiebreedingtracker.online</a></li></ul>',
+        s5_note: 'Reports are reviewed by our moderation team, and where appropriate, content is removed and accounts are warned or suspended.',
+        s6_title: '6. Enforcement',
+        s6_intro: 'The following actions may be taken for guideline violations:',
+        s6_list: '<ul class="warn-list"><li><strong>Warning:</strong> Written warning for first-time violations</li><li><strong>Content removal:</strong> Violating content will be removed</li><li><strong>Temporary suspension:</strong> Account temporarily suspended for repeated violations</li><li><strong>Permanent ban:</strong> Account permanently banned for serious or ongoing violations</li></ul>',
+        s7_title: '7. Moderation Process',
+        s7_list: '<ol><li><strong>Report:</strong> User reports content (spam, harassment, inappropriate content, etc.).</li><li><strong>Automatic filter:</strong> When the threshold is exceeded, content is temporarily hidden.</li><li><strong>Review:</strong> A moderator reviews within 48 hours.</li><li><strong>Action:</strong> Removal, warning, suspension, or restoring the content if no rule violation is found.</li></ol>',
+        s8_title: '8. Appeal Process',
+        s8_intro: 'If you believe a decision was incorrect:',
+        s8_list: '<ol><li>Submit your appeal within 14 days of receiving the decision notice.</li><li>Email <a href="mailto:appeals@budgiebreedingtracker.online" class="section-email">appeals@budgiebreedingtracker.online</a> with your account information and reason for appeal.</li><li>A different moderator will review within 7 business days and notify you of the result.</li></ol>',
+        s9_title: '9. Deletion and Profile Management',
+        s9_list: '<ul><li>You can delete your own posts at any time.</li><li>When you close your profile, your public posts and comments are removed.</li><li>Your past replies to comments are shown with a "Deleted" placeholder to preserve context.</li><li>To fully delete your account, contact <a href="mailto:privacy@budgiebreedingtracker.online" class="section-email">privacy@budgiebreedingtracker.online</a>.</li></ul>',
+        s10_title: '10. Contact',
+        s10_text: 'If you have questions about community guidelines, you can contact us:',
+        footer: '\u00a9 2025-2026 BudgieBreedingTracker. All rights reserved.',
+      },
+      de: {
+        back: '\u2190 Startseite',
+        title: 'Community-Richtlinien',
+        last_updated: 'Letzte Aktualisierung: 19. April 2026',
+        s1_title: '1. Zweck',
+        s1_text: 'Die BudgieBreedingTracker-Community bietet Wellensittichz\u00fcchtern eine sichere Umgebung zum Austausch von Erfahrungen, gegenseitigem Lernen und Unterst\u00fctzung. Diese Richtlinien sollen allen Mitgliedern eine positive Erfahrung erm\u00f6glichen.',
+        s2_title: '2. Respekt und H\u00f6flichkeit',
+        s2_list: '<ul class="check-list"><li>Behandeln Sie andere Mitglieder mit Respekt und H\u00f6flichkeit</li><li>Seien Sie offen f\u00fcr verschiedene Meinungen und Erfahrungen</li><li>Geben Sie konstruktive Kritik, vermeiden Sie pers\u00f6nliche Angriffe</li><li>Diskriminierung aufgrund von Rasse, Religion, Geschlecht, Ethnie oder sexueller Orientierung ist verboten</li></ul>',
+        s3_title: '3. Verbotene Inhalte',
+        s3_list: '<ul class="x-list"><li><strong>Hassrede:</strong> Inhalte mit Hass, Drohungen oder Gewalt gegen\u00fcber einer Gruppe</li><li><strong>Bel\u00e4stigung:</strong> Mobbing, Drohungen oder pers\u00f6nliche Angriffe gegen andere Benutzer</li><li><strong>Unangemessene Inhalte:</strong> Sexuelle, gewaltt\u00e4tige oder verst\u00f6rende Bilder und Texte</li><li><strong>Spam:</strong> Wiederholende, sinnlose oder werbliche Inhalte</li><li><strong>Betrug:</strong> Irref\u00fchrende Informationen, gef\u00e4lschte Verkaufsanzeigen oder Versuche, pers\u00f6nliche Daten zu sammeln</li><li><strong>Tierqu\u00e4lerei:</strong> Inhalte, die Tiermisshandlung f\u00f6rdern oder zeigen</li><li><strong>Illegale Aktivit\u00e4ten:</strong> Inhalte, die illegalen Tierhandel f\u00f6rdern oder erleichtern</li></ul>',
+        s4_title: '4. Regeln f\u00fcr das Teilen von Inhalten',
+        s4_list: '<ul class="check-list"><li>Teilen Sie nur Inhalte im Zusammenhang mit Wellensittichzucht</li><li>Geben Sie in Ihren Beitr\u00e4gen genaue und zuverl\u00e4ssige Informationen an</li><li>Verwenden Sie keine Fotos anderer ohne Erlaubnis</li><li>Seien Sie vorsichtig beim \u00f6ffentlichen Teilen pers\u00f6nlicher Kontaktinformationen</li><li>Nutzen Sie Community-Funktionen nicht f\u00fcr kommerzielle Werbung</li></ul>',
+        s5_title: '5. Meldung und Moderation',
+        s5_intro: 'Wenn Sie Inhalte sehen, die gegen Community-Richtlinien versto\u00dfen:',
+        s5_list: '<ul class="shield-list"><li>Verwenden Sie die <strong>Melden</strong>-Schaltfl\u00e4che am Inhalt</li><li>Blockieren Sie problematische Benutzer mit der <strong>Blockieren</strong>-Option</li><li>Bei schwerwiegenden Verst\u00f6\u00dfen senden Sie eine E-Mail an <a href="mailto:support@budgiebreedingtracker.online" class="section-email">support@budgiebreedingtracker.online</a></li></ul>',
+        s5_note: 'Meldungen werden von unserem Moderationsteam \u00fcberpr\u00fcft. Bei Bedarf werden Inhalte entfernt und Konten verwarnt oder gesperrt.',
+        s6_title: '6. Durchsetzung',
+        s6_intro: 'Bei Richtlinienverst\u00f6\u00dfen k\u00f6nnen folgende Ma\u00dfnahmen ergriffen werden:',
+        s6_list: '<ul class="warn-list"><li><strong>Verwarnung:</strong> Schriftliche Verwarnung bei erstmaligen Verst\u00f6\u00dfen</li><li><strong>Inhaltsentfernung:</strong> Versto\u00dfende Inhalte werden entfernt</li><li><strong>Vor\u00fcbergehende Sperrung:</strong> Konto wird bei wiederholten Verst\u00f6\u00dfen vor\u00fcbergehend gesperrt</li><li><strong>Dauerhafte Sperre:</strong> Konto wird bei schwerwiegenden oder andauernden Verst\u00f6\u00dfen dauerhaft gesperrt</li></ul>',
+        s7_title: '7. Moderationsprozess',
+        s7_list: '<ol><li><strong>Meldung:</strong> Benutzer meldet Inhalt (Spam, Bel\u00e4stigung, unangemessener Inhalt usw.).</li><li><strong>Automatischer Filter:</strong> Beim \u00dcberschreiten des Schwellenwerts wird der Inhalt vor\u00fcbergehend ausgeblendet.</li><li><strong>Pr\u00fcfung:</strong> Ein Moderator pr\u00fcft innerhalb von 48 Stunden.</li><li><strong>Ma\u00dfnahme:</strong> Entfernung, Verwarnung, Sperrung oder Wiederherstellung des Inhalts, wenn kein Regelversto\u00df vorliegt.</li></ol>',
+        s8_title: '8. Einspruchsverfahren',
+        s8_intro: 'Wenn Sie glauben, dass eine Entscheidung falsch war:',
+        s8_list: '<ol><li>Reichen Sie Ihren Einspruch innerhalb von 14 Tagen nach Erhalt des Entscheidungshinweises ein.</li><li>Schreiben Sie an <a href="mailto:appeals@budgiebreedingtracker.online" class="section-email">appeals@budgiebreedingtracker.online</a> mit Ihren Kontoinformationen und der Begr\u00fcndung des Einspruchs.</li><li>Ein anderer Moderator pr\u00fcft innerhalb von 7 Werktagen und teilt Ihnen das Ergebnis mit.</li></ol>',
+        s9_title: '9. L\u00f6schung und Profilverwaltung',
+        s9_list: '<ul><li>Sie k\u00f6nnen Ihre eigenen Beitr\u00e4ge jederzeit l\u00f6schen.</li><li>Wenn Sie Ihr Profil schlie\u00dfen, werden Ihre \u00f6ffentlichen Beitr\u00e4ge und Kommentare entfernt.</li><li>Ihre vergangenen Antworten auf Kommentare werden mit einem "Gel\u00f6scht"-Platzhalter angezeigt, um den Kontext zu erhalten.</li><li>Um Ihr Konto vollst\u00e4ndig zu l\u00f6schen, kontaktieren Sie <a href="mailto:privacy@budgiebreedingtracker.online" class="section-email">privacy@budgiebreedingtracker.online</a>.</li></ul>',
+        s10_title: '10. Kontakt',
+        s10_text: 'Bei Fragen zu den Community-Richtlinien k\u00f6nnen Sie uns kontaktieren:',
+        footer: '\u00a9 2025-2026 BudgieBreedingTracker. Alle Rechte vorbehalten.',
+      },
+    };
+
+    let currentLang = 'tr';
+
+    function setLanguage(lang) {
+      currentLang = lang;
+      localStorage.setItem('bbt-lang', lang);
+      document.documentElement.lang = lang;
+
+      const t = translations[lang];
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (t[key]) el.textContent = t[key];
+      });
+      document.querySelectorAll('[data-i18n-html]').forEach(el => {
+        const key = el.getAttribute('data-i18n-html');
+        if (t[key]) el.innerHTML = t[key];
+      });
+
+      const titles = {
+        tr: 'Topluluk Kurallar\u0131 \u2014 BudgieBreedingTracker',
+        en: 'Community Guidelines \u2014 BudgieBreedingTracker',
+        de: 'Community-Richtlinien \u2014 BudgieBreedingTracker',
+      };
+      document.title = titles[lang];
+
+      document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('data-lang') === lang);
+      });
+    }
+
+    /* ── Intersection Observer for staggered entrance animations ── */
+    document.addEventListener('DOMContentLoaded', () => {
+      // Language init
+      const saved = localStorage.getItem('bbt-lang');
+      if (saved && translations[saved]) {
+        setLanguage(saved);
+      } else {
+        const browserLang = (navigator.language || navigator.userLanguage || 'tr').substring(0, 2).toLowerCase();
+        if (translations[browserLang]) {
+          setLanguage(browserLang);
+        }
+      }
+
+      // Entrance animations (handles both .fade-up and .section-reveal)
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('visible');
+              observer.unobserve(entry.target);
+            }
+          });
+        },
+        { threshold: 0.08, rootMargin: '0px 0px -30px 0px' }
+      );
+
+      document.querySelectorAll('.fade-up:not(.visible), .section-reveal:not(.visible)').forEach(el => observer.observe(el));
+    });
+
+    // Scroll progress bar
+    window.addEventListener('scroll', () => {
+      const p = document.documentElement.scrollTop / (document.documentElement.scrollHeight - window.innerHeight);
+      document.getElementById('scrollProgress').style.transform = 'scaleX(' + p + ')';
+    }, { passive: true });
+
+    // Cursor glow (desktop only)
+    if (window.matchMedia('(pointer: fine)').matches) {
+      const g = document.getElementById('cursorGlow');
+      document.addEventListener('mousemove', (e) => {
+        g.style.left = e.clientX + 'px';
+        g.style.top = e.clientY + 'px';
+      }, { passive: true });
+    }
+  </script>
 
 </body>
 </html>
