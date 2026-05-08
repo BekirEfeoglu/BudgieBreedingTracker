@@ -6,9 +6,11 @@
 | GitHub Actions | CI | Dogrulama, hafif deployment |
 | Xcode Cloud | iOS | App Store Connect build/status check |
 | Codemagic | App Store / Google Play | Production release |
+| GitHub Actions `release-ready.yml` | Android | Manual signed AAB readiness artifact |
 | GitHub Pages | Web | `docs/` deployment |
 
 - App Store / Google Play publish mantigini GitHub Actions'a tasima
+- Main push CI'si release artifact uretmemeli; signed AAB icin manuel `Release Ready` workflow'u veya Codemagic kullan
 - `docs/` deployment mobil app release'lerinden ayri deger
 - Xcode Cloud Flutter build temiz clone'da `ios/ci_scripts/ci_post_clone.sh` ile hazirlanir
 - Xcode Cloud main workflow build-only olmalidir; archive/TestFlight/App Store export ancak Apple signing hesabi, Development/Ad Hoc profil ihtiyaci ve kayitli fiziksel cihazlar hazirsa acilir
@@ -38,6 +40,7 @@
 
 ## Release Safety
 - Release oncesi kalite kapilari gecmeli (bkz. ai-workflow.md § Quality Gates)
+- Manuel `Release Ready` calistirmadan once main'in remote status'u `python3 scripts/check_remote_status.py` ile temiz olmali
 - Store release oncesi version bump tutarliligini kontrol et
 - iOS ve Android release config'leri birbirinden bagimsiz hata ayiklanabilir tut
 - Release branch'i kesmeden once `develop`in temiz oldugunu dogrula

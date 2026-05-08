@@ -21,6 +21,12 @@
 | `auto-fix-stats` | Auto-PR for stats drift | main only |
 | `deploy-edge-functions` | Supabase Edge Function deploy | main only, needs analyze+test |
 
+## Release-Ready Workflow
+- `release-ready.yml` manuel calisir; main push CI'sini store artifact uretimiyle yavaslatma
+- `Release Ready Plan` no-op guard job'i workflow_dispatch eventinde en az bir job'in calismasini garanti eder
+- `Android Release (AAB)` sadece manuel release hazirlik kontrolunde signed AAB ve Dart symbol artifact uretir
+- Main push icin `android-build` debug APK smoke gate olarak kalir; store'a gidecek AAB icin release-ready veya Codemagic kullan
+
 ## Dependabot Rules
 - Auto-merge veya label yazma islemlerine guvenme
 - `GITHUB_TOKEN` read-only gelebilir; merge/edit/label kolayca fail olur
@@ -46,9 +52,7 @@
 - Push sonrasi sadece GitHub Branches UI rozetine bakma; exact commit SHA icin status ve check-run API'larini birlikte kontrol et
 - Zorunlu status ornegi:
   ```bash
-  HEAD=$(git rev-parse HEAD)
-  gh api repos/BekirEfeoglu/BudgieBreedingTracker/commits/$HEAD/status
-  gh api repos/BekirEfeoglu/BudgieBreedingTracker/commits/$HEAD/check-runs
+  python3 scripts/check_remote_status.py
   ```
 - Basari saymak icin status state `success`, tum check-run'lar `completed` olmali; yalnizca bilinen/intentional skipped job kabul edilir
 - `in_progress`, `queued`, `failure`, `error`, `action_required` veya conclusion'siz check varken "temiz" ya da "cozuldu" deme

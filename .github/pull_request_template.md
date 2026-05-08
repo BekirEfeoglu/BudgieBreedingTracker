@@ -40,4 +40,6 @@
 - [ ] Lokalizasyon değiştiyse `python3 scripts/check_l10n_sync.py` geçti
 - [ ] Kural/metrik değiştiyse `python3 scripts/verify_rules.py --strict` geçti
 - [ ] CI/workflow değiştiyse `.claude/rules/ci-actions.md` güncellendi
+- [ ] CI/workflow değiştiyse workflow YAML parse edildi ve push sonrası `python3 scripts/check_remote_status.py` ile exact commit doğrulandı
+- [ ] Release artifact davranışı değiştiyse `release-ready.yml`, `CLAUDE.md`, `.claude/rules/release-ops.md` birlikte güncellendi
 - [ ] Xcode Cloud/iOS workflow değiştiyse `ios/ci_scripts/ci_post_clone.sh` executable/retry-aware ve `.claude/rules/release-ops.md` güncel

@@ -2,10 +2,8 @@
 
 ## Quality Gates (canonical — other files reference here)
 ```bash
+scripts/run_local_quality_gate.sh         # Diff, rules, quality, conditional l10n/script tests
 flutter analyze --no-fatal-infos          # Static analysis — 0 errors
-python3 scripts/verify_code_quality.py    # Anti-pattern scan — 0 violations
-python3 scripts/check_l10n_sync.py        # 3-language key parity
-python3 scripts/verify_rules.py --fix     # CLAUDE.md stats sync
 flutter test                               # All tests pass
 ```
 Run before every commit. CI enforces all five gates on PRs.
@@ -31,6 +29,7 @@ If generation gets stuck: `dart run build_runner clean` first.
 - Prefer one root-cause fix per commit. If a second issue appears, gather evidence and decide whether it needs a separate commit.
 - Do not call work complete from local success alone when the task touched CI, release, signing, or branch state.
 - For pushed fixes, verify the exact commit SHA, not the branch name alone.
+- Prefer `python3 scripts/check_remote_status.py` for exact SHA GitHub status/check-run verification.
 - Stale green checks from an earlier commit or workflow run are not completion evidence.
 
 ## Investigation Before Fix

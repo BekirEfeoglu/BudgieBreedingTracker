@@ -105,9 +105,14 @@ scripts/test_verify_rules.py            # Tests for verify_rules.py
 | `auto-fix-stats` | Auto-PR for CLAUDE.md drift (main only) |
 | `deploy-edge-functions` | Supabase Edge Function deployment (main only, needs analyze+test) |
 | `android-build` | Debug APK build |
-| `android-release` | Signed AAB (main only, needs analyze+test) |
 | `ios-build` | iOS build (no code signing) |
 | `pages` | GitHub Pages deployment from `docs/` |
+
+### GitHub Actions (`release-ready.yml`) — manual release readiness
+| Job | Purpose |
+| --- | --- |
+| `plan` | No-op guard that records selected release checks |
+| `android-release` | Signed AAB artifact + Dart symbol upload, manually triggered |
 
 Workflow changes must be validated locally before push: parse the edited YAML, quote or block-scalar `run:` commands containing `:`, and ensure each triggering event has at least one non-skipped job.
 
@@ -274,14 +279,17 @@ dart run build_runner build --delete-conflicting-outputs  # Regenerate if .g.dar
 
 ### Pre-commit quality check
 ```bash
-flutter analyze --no-fatal-infos && python3 scripts/verify_code_quality.py && python3 scripts/check_l10n_sync.py
+scripts/run_local_quality_gate.sh
 ```
 
 ### Post-push status check
 ```bash
-HEAD=$(git rev-parse HEAD)
-gh api repos/BekirEfeoglu/BudgieBreedingTracker/commits/$HEAD/status
-gh api repos/BekirEfeoglu/BudgieBreedingTracker/commits/$HEAD/check-runs
+python3 scripts/check_remote_status.py
+```
+
+### Targeted breeding/egg regression
+```bash
+scripts/run_breeding_egg_regression.sh
 ```
 
 ## Key File Locations
