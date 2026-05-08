@@ -96,7 +96,7 @@ scripts/test_verify_rules.py            # Tests for verify_rules.py
 | Job | Purpose |
 | --- | --- |
 | `analyze` | `flutter analyze --no-fatal-infos` |
-| `test` | Unit + widget tests, Codecov upload (excludes golden, e2e), timeout 25m |
+| `test` | Unit + widget tests, optional Codecov upload when `CODECOV_TOKEN` is configured (excludes golden, e2e), timeout 25m |
 | `golden-test` | Visual regression on Linux baseline |
 | `scripts-test` | Python script tests (>=98% coverage) |
 | `l10n-sync` | Translation key parity (--strict-keys) |

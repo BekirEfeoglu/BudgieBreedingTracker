@@ -12,7 +12,7 @@
 | Job | Gate | Blocker |
 |-----|------|---------|
 | `analyze` | `flutter analyze --no-fatal-infos` | PR merge |
-| `test` | Unit + widget tests, Codecov | PR merge |
+| `test` | Unit + widget tests, optional Codecov when `CODECOV_TOKEN` exists | PR merge |
 | `golden-test` | Visual regression (Linux) | PR merge |
 | `scripts-test` | Python script tests (>=98% cov) | PR merge |
 | `l10n-sync` | Translation key parity | PR merge |
@@ -47,6 +47,7 @@
 - Tekrar eden failure: once workflow'u duzelt, sonra eski run'lari temizle
 - Debug araclari: `gh run list`, `gh run view`, `gh api .../check-runs/.../annotations`
 - CI job isimleri degisirse branch protection / required checks'i guncelle
+- Codecov upload token gerektiriyorsa test job'unu kirmiziya dusurme; `CODECOV_TOKEN` yokken upload adimini intentional skip/no-op yap
 
 ## Post-Push Verification
 - Push sonrasi sadece GitHub Branches UI rozetine bakma; exact commit SHA icin status ve check-run API'larini birlikte kontrol et
