@@ -74,7 +74,7 @@ scripts/test_verify_rules.py            # Tests for verify_rules.py
 
 | Metric | Value |
 | --- | --- |
-| Source files (lib/) | 955 Dart files |
+| Source files (lib/) | 958 Dart files |
 | Test files (test/) | 883 test files, 10,853+ individual tests |
 | Feature modules | 25 |
 | Drift tables / DAOs / Mappers | 20 each |
