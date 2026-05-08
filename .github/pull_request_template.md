@@ -40,4 +40,4 @@
 - [ ] Lokalizasyon değiştiyse `python3 scripts/check_l10n_sync.py` geçti
 - [ ] Kural/metrik değiştiyse `python3 scripts/verify_rules.py --strict` geçti
 - [ ] CI/workflow değiştiyse `.claude/rules/ci-actions.md` güncellendi
-- [ ] Xcode Cloud/iOS archive değiştiyse `ios/ci_scripts/ci_post_clone.sh` executable ve `.claude/rules/release-ops.md` güncel
+- [ ] Xcode Cloud/iOS archive değiştiyse `ios/ci_scripts/ci_post_clone.sh` executable/retry-aware ve `.claude/rules/release-ops.md` güncel

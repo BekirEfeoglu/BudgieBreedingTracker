@@ -118,6 +118,7 @@ Workflow changes must be validated locally before push: parse the edited YAML, q
 ### Xcode Cloud (`ios/ci_scripts/ci_post_clone.sh`) - App Store Connect archive
 - Xcode Cloud builds a clean clone and must run the post-clone script before archive.
 - The script installs/activates Flutter, runs `flutter pub get`, runs `dart run build_runner build --delete-conflicting-outputs`, and runs `pod install` under `ios/`.
+- Network-heavy setup steps must stay retry-aware because Xcode Cloud can hit transient DNS/download failures while cloning Flutter, precaching artifacts, resolving Pub packages, installing CocoaPods, or downloading pod source archives such as `sqlite3`.
 - Do not commit generated Dart files, `ios/Flutter/Generated.xcconfig`, `ios/Pods/`, or `Pods-Runner-*.xcfilelist`; regenerate them in CI.
 
 ## Environment Variables (dart-define)
