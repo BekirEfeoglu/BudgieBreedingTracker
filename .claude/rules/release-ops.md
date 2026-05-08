@@ -4,11 +4,13 @@
 | Channel | Platform | Purpose |
 |---------|----------|---------|
 | GitHub Actions | CI | Dogrulama, hafif deployment |
+| Xcode Cloud | iOS | App Store Connect archive/status check |
 | Codemagic | App Store / Google Play | Production release |
 | GitHub Pages | Web | `docs/` deployment |
 
 - App Store / Google Play publish mantigini GitHub Actions'a tasima
 - `docs/` deployment mobil app release'lerinden ayri deger
+- Xcode Cloud Flutter archive temiz clone'da `ios/ci_scripts/ci_post_clone.sh` ile hazirlanir
 
 ## Version Bump
 - `pubspec.yaml` icindeki `version: X.Y.Z+build` formatini kullan
@@ -38,6 +40,7 @@
 - Store release oncesi version bump tutarliligini kontrol et
 - iOS ve Android release config'leri birbirinden bagimsiz hata ayiklanabilir tut
 - Release branch'i kesmeden once `develop`in temiz oldugunu dogrula
+- Xcode Cloud archive hatalarinda once generated Dart dosyalari, `Generated.xcconfig` ve `Pods-Runner-*.xcfilelist` uretilmis mi kontrol et; bu dosyalari commit etme, post-clone script'i duzelt
 
 ## Documentation Drift
 - CI, release veya deploy akisi degisirse ilgili kural dosyalarini guncelle

@@ -115,6 +115,11 @@ Workflow changes must be validated locally before push: parse the edited YAML, q
 - `android-release`: AAB → Google Play (alpha track)
 - `ios-release`: IPA → App Store TestFlight (App ID: 6759828211)
 
+### Xcode Cloud (`ios/ci_scripts/ci_post_clone.sh`) - App Store Connect archive
+- Xcode Cloud builds a clean clone and must run the post-clone script before archive.
+- The script installs/activates Flutter, runs `flutter pub get`, runs `dart run build_runner build --delete-conflicting-outputs`, and runs `pod install` under `ios/`.
+- Do not commit generated Dart files, `ios/Flutter/Generated.xcconfig`, `ios/Pods/`, or `Pods-Runner-*.xcfilelist`; regenerate them in CI.
+
 ## Environment Variables (dart-define)
 
 | Variable | Required | Default | Purpose |
@@ -294,5 +299,5 @@ EdgeFunctions: lib/data/remote/supabase/
 Edge Fn (SB):  supabase/functions/
 Migrations:    supabase/migrations/ (155 files)
 Scripts:       scripts/
-CI:            .github/workflows/ + codemagic.yaml
+CI:            .github/workflows/ + codemagic.yaml + ios/ci_scripts/
 ```
