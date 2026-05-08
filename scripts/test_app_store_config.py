@@ -56,17 +56,11 @@ class TestStoreKitProducts(unittest.TestCase):
 
         self.assertEqual(
             products,
-            {"budgie_pro_lifetime", "budgie_premium_lifetime"},
+            set(),
         )
         self.assertEqual(
             subscriptions,
-            {
-                "budgie_pro_monthly",
-                "budgie_pro_yearly",
-                "budgie_premium_monthly",
-                "budgie_premium_yearly",
-                "budgie_premium_semi_annual",
-            },
+            {"budgie_premium_semi_annual", "budgie_premium_yearly"},
         )
 
 
