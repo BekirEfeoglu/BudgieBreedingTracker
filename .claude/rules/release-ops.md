@@ -45,6 +45,12 @@
 - Xcode Cloud archive/export hatalarinda `Development` veya `Ad Hoc` export gorulurse once Apple Developer hesabinda kayitli fiziksel cihaz ve provisioning profile gereksinimlerini dogrula
 - Xcode Cloud `pod install` hatalarinda ag/DNS kaynakli pod arsivi indirme sorunlarini ayir; transient indirme hatalari icin `ios/ci_scripts/ci_post_clone.sh` retry/backoff davranisini koru
 
+## Release Verification Closure
+- Release/CI duzeltmesi ancak exact commit uzerinde GitHub status `success` ve check-run ozeti tamamen `completed:success` veya kabul edilen `completed:skipped` ise kapanmis sayilir
+- Xcode Cloud icin App Store Connect status context'i ve `BudgieBreedingTracker | Default | Build - iOS` check-run'i ayni committe `success` olmali
+- Main-only deploy/build job'lari sonradan tetiklenebilir; final durum icin tum gec gelen check-run'lar da tamamlanana kadar bekle
+- Bir run'da export/provisioning hatasi gorulurse build-only workflow ayarini degistirme; once fiziksel cihaz/profil hazirligini kanitla
+
 ## Documentation Drift
 - CI, release veya deploy akisi degisirse ilgili kural dosyalarini guncelle
 - Yeni secret, workflow veya adim eklendiginde: rule file + CLAUDE.md + workflow yorumlari birlikte guncellenmeli
@@ -58,5 +64,7 @@
 5. CI basarisizken release/deploy tetiklemek
 6. Release davranisini sadece local test ile dogrulanmis saymak
 7. Version bump yapmadan store release gondermek
+8. Eski commit/run yesil oldugu icin yeni commit'i dogrulanmis saymak
+9. Xcode Cloud `action_required` durumunu warning kabul edip kapatmak
 
 > **Ilgili**: ci-actions.md (workflow detaylari), branch-workflow.md (merge policy), ai-workflow.md (kalite kapilari)

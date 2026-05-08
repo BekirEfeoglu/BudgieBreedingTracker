@@ -42,6 +42,18 @@
 - Debug araclari: `gh run list`, `gh run view`, `gh api .../check-runs/.../annotations`
 - CI job isimleri degisirse branch protection / required checks'i guncelle
 
+## Post-Push Verification
+- Push sonrasi sadece GitHub Branches UI rozetine bakma; exact commit SHA icin status ve check-run API'larini birlikte kontrol et
+- Zorunlu status ornegi:
+  ```bash
+  HEAD=$(git rev-parse HEAD)
+  gh api repos/BekirEfeoglu/BudgieBreedingTracker/commits/$HEAD/status
+  gh api repos/BekirEfeoglu/BudgieBreedingTracker/commits/$HEAD/check-runs
+  ```
+- Basari saymak icin status state `success`, tum check-run'lar `completed` olmali; yalnizca bilinen/intentional skipped job kabul edilir
+- `in_progress`, `queued`, `failure`, `error`, `action_required` veya conclusion'siz check varken "temiz" ya da "cozuldu" deme
+- Workflow UI degisikligi yapildiysa once yeni commit veya clean rebuild ile yeni run baslat; eski run sonucunu yeni ayarin kaniti sayma
+
 ## Deployment Safety
 - GitHub Pages, Supabase deploy ve store release job'larini gereksiz birbirine baglama
 - Production deploy'da branch ve event filter'lari acik olsun

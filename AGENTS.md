@@ -13,6 +13,16 @@ Stack: Flutter/Dart, Riverpod 3, GoRouter 17, Drift, Supabase, Freezed, easy_loc
 - If the worktree is dirty, preserve existing changes and avoid unrelated rewrites.
 - Treat `AGENTS.md` as the compact agent contract. Use `CLAUDE.md` and `.claude/rules/*.md` as the detailed development rulebook when a task touches architecture, data, UI, security, CI, release flow, or domain-specific breeding/egg lifecycle behavior.
 
+## Development Hygiene
+
+- Start work by checking `git status --short --branch`; identify user changes before editing.
+- Keep each change focused on the requested behavior. Do not mix cleanup, rule updates, generated files, and feature logic unless the rulebook explicitly requires them together.
+- Before claiming a fix, run the smallest command that proves the changed behavior and read the output.
+- After pushing to `main`, verify the exact pushed commit with both GitHub statuses and check-runs; stale runs from previous commits do not count.
+- Treat Xcode Cloud separately from GitHub Actions: verify the App Store Connect status context and the matching check-run URL for the current commit.
+- If a CI failure requires UI-side workflow changes, document the intended workflow state in `CLAUDE.md` and `.claude/rules/*.md` in the same change.
+- End handoff with current branch/commit, dirty-state summary, commands run, and any remaining skipped or intentionally pending checks.
+
 ## Architecture Rules
 
 - Respect the layer order: `core/`, `data/`, `domain/`, `features/`, `router/`.

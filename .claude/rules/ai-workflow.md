@@ -25,6 +25,14 @@ If generation gets stuck: `dart run build_runner clean` first.
 5. **Run quality gates** — after every significant change, before declaring done
 6. **Update stats** — if codebase metrics change, run `verify_rules.py --fix`
 
+## Clean Development Loop
+- Begin with `git status --short --branch`; never overwrite unrelated local changes.
+- Keep the working set reviewable: separate feature code, rule/documentation updates, generated code, and release workflow changes unless they must ship together.
+- Prefer one root-cause fix per commit. If a second issue appears, gather evidence and decide whether it needs a separate commit.
+- Do not call work complete from local success alone when the task touched CI, release, signing, or branch state.
+- For pushed fixes, verify the exact commit SHA, not the branch name alone.
+- Stale green checks from an earlier commit or workflow run are not completion evidence.
+
 ## Investigation Before Fix
 - Read error messages fully before acting
 - Check if the issue is in generated code (`.g.dart`, `.freezed.dart`) — regenerate first
@@ -54,5 +62,13 @@ If generation gets stuck: `dart run build_runner clean` first.
 - Verify: `python3 scripts/check_l10n_sync.py`
 - CI `l10n-sync` job blocks PRs with missing keys
 - Details: see localization.md
+
+## Handoff Evidence
+Before reporting completion, capture:
+- `git status --short --branch`
+- relevant local verification command outputs
+- pushed commit SHA when a push was requested
+- GitHub status/check-run summary for the pushed commit when CI is part of the task
+- remaining skipped checks with the reason they are acceptable
 
 > **Related**: git-rules.md (commit format), branch-workflow.md (merge policy), new-feature-checklist.md (entity steps)

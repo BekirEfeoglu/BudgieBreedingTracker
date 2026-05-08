@@ -17,6 +17,8 @@
   ```bash
   dart run build_runner build --delete-conflicting-outputs
   ```
+- `main`e push yapildiginda exact commit SHA icin tum status/check-run'lar tamamlanmadan branch temiz kabul edilmez
+- Branch protection bypass edilirse bu bir istisnadir; push sonrasi remote dogrulama zorunlulugu ortadan kalkmaz
 
 ## GitHub Workflow
 - Temel aktif branch yapisi: `main` + `develop`

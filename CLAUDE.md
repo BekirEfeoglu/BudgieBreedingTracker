@@ -111,6 +111,8 @@ scripts/test_verify_rules.py            # Tests for verify_rules.py
 
 Workflow changes must be validated locally before push: parse the edited YAML, quote or block-scalar `run:` commands containing `:`, and ensure each triggering event has at least one non-skipped job.
 
+After pushing CI or release fixes, verify the exact commit SHA with both GitHub commit status and check-runs. Do not close a CI task while any check-run is `queued`, `in_progress`, `failure`, `error`, or `action_required`; only intentional skipped jobs are acceptable.
+
 ### Codemagic (`codemagic.yaml`) — production releases
 - `android-release`: AAB → Google Play (alpha track)
 - `ios-release`: IPA → App Store TestFlight (App ID: 6759828211)
@@ -273,6 +275,13 @@ dart run build_runner build --delete-conflicting-outputs  # Regenerate if .g.dar
 ### Pre-commit quality check
 ```bash
 flutter analyze --no-fatal-infos && python3 scripts/verify_code_quality.py && python3 scripts/check_l10n_sync.py
+```
+
+### Post-push status check
+```bash
+HEAD=$(git rev-parse HEAD)
+gh api repos/BekirEfeoglu/BudgieBreedingTracker/commits/$HEAD/status
+gh api repos/BekirEfeoglu/BudgieBreedingTracker/commits/$HEAD/check-runs
 ```
 
 ## Key File Locations
