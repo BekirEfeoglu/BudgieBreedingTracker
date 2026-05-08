@@ -30,6 +30,18 @@ Widget _wrapWithRouter(Widget child) {
         builder: (_, __) => const Scaffold(body: Text('Database')),
       ),
       GoRoute(
+        path: '/admin/audit',
+        builder: (_, __) => const Scaffold(body: Text('Audit')),
+      ),
+      GoRoute(
+        path: '/admin/security',
+        builder: (_, __) => const Scaffold(body: Text('Security')),
+      ),
+      GoRoute(
+        path: '/admin/feedback',
+        builder: (_, __) => const Scaffold(body: Text('Feedback')),
+      ),
+      GoRoute(
         path: '/admin/settings',
         builder: (_, __) => const Scaffold(body: Text('Settings')),
       ),
@@ -56,12 +68,12 @@ void main() {
       expect(find.text(l10n('admin.quick_actions')), findsOneWidget);
     });
 
-    testWidgets('displays 4 action chips', (tester) async {
+    testWidgets('displays 7 action chips', (tester) async {
       await pumpLocalizedApp(
         tester,
         _wrap(const DashboardQuickActionsSection()),
       );
-      expect(find.byType(Card), findsNWidgets(4));
+      expect(find.byType(Card), findsNWidgets(7));
     });
 
     testWidgets('shows all action labels', (tester) async {
@@ -69,10 +81,13 @@ void main() {
         tester,
         _wrap(const DashboardQuickActionsSection()),
       );
-      expect(find.text(l10n('admin.go_to_users')), findsAtLeast(1));
-      expect(find.text(l10n('admin.go_to_monitoring')), findsAtLeast(1));
-      expect(find.text(l10n('admin.go_to_database')), findsAtLeast(1));
-      expect(find.text(l10n('admin.go_to_settings')), findsAtLeast(1));
+      expect(find.text(l10n('admin.users')), findsAtLeast(1));
+      expect(find.text(l10n('admin.monitoring')), findsAtLeast(1));
+      expect(find.text(l10n('admin.database')), findsAtLeast(1));
+      expect(find.text(l10n('admin.audit')), findsAtLeast(1));
+      expect(find.text(l10n('admin.security')), findsAtLeast(1));
+      expect(find.text(l10n('admin.feedback_admin')), findsAtLeast(1));
+      expect(find.text(l10n('admin.settings')), findsAtLeast(1));
     });
 
     testWidgets('tapping users chip navigates to admin users', (tester) async {
@@ -83,7 +98,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text(l10n('admin.go_to_users')).first);
+      await tester.tap(find.text(l10n('admin.users')).first);
       await tester.pumpAndSettle();
 
       expect(find.text('Users'), findsOneWidget);

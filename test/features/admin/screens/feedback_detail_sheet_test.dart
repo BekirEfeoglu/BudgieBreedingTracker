@@ -38,6 +38,19 @@ Widget _createSubject({
   );
 }
 
+Future<void> _scrollSheetUntilVisible(
+  WidgetTester tester,
+  Finder target,
+) async {
+  await tester.dragUntilVisible(
+    target,
+    find.byType(ListView),
+    const Offset(0, -250),
+    maxIteration: 12,
+  );
+  await tester.pumpAndSettle();
+}
+
 class _SheetLauncher extends StatefulWidget {
   final Map<String, dynamic> item;
   final FeedbackSaveCallback onSave;
@@ -137,13 +150,9 @@ void main() {
     testWidgets('shows save button after scrolling', (tester) async {
       await pumpLocalizedApp(tester, _createSubject());
       await tester.pumpAndSettle();
-      // Scroll down enough to reveal save button at the bottom
-      final listView = find.byType(ListView);
-      await tester.drag(listView, const Offset(0, -300));
-      await tester.pumpAndSettle();
-      await tester.drag(listView, const Offset(0, -300));
-      await tester.pumpAndSettle();
-      expect(find.text(l10n('admin.feedback_save')), findsOneWidget);
+      final saveButton = find.text(l10n('admin.feedback_save'));
+      await _scrollSheetUntilVisible(tester, saveButton);
+      expect(saveButton, findsOneWidget);
     });
 
     testWidgets('shows existing admin response in text field', (tester) async {
@@ -151,10 +160,9 @@ void main() {
       item['admin_response'] = 'We are looking into this';
       await pumpLocalizedApp(tester, _createSubject(item: item));
       await tester.pumpAndSettle();
-      // Scroll to see admin response field
-      await tester.drag(find.byType(ListView), const Offset(0, -200));
-      await tester.pumpAndSettle();
-      expect(find.text('We are looking into this'), findsOneWidget);
+      final responseText = find.text('We are looking into this');
+      await _scrollSheetUntilVisible(tester, responseText);
+      expect(responseText, findsOneWidget);
     });
 
     testWidgets('renders two SegmentedButton widgets', (tester) async {
@@ -181,14 +189,9 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // Scroll down multiple times to reveal save button at the bottom
-      final listView = find.byType(ListView);
-      await tester.drag(listView, const Offset(0, -300));
-      await tester.pumpAndSettle();
-      await tester.drag(listView, const Offset(0, -300));
-      await tester.pumpAndSettle();
-
-      await tester.tap(find.text(l10n('admin.feedback_save')));
+      final saveButton = find.text(l10n('admin.feedback_save'));
+      await _scrollSheetUntilVisible(tester, saveButton);
+      await tester.tap(saveButton);
       await tester.pumpAndSettle();
 
       expect(savedStatus, 'open');

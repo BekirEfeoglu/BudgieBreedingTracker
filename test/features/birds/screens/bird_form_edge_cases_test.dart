@@ -26,26 +26,37 @@ void main() {
     registerFallbackValue(createTestBird(id: 'fb', name: 'Fb'));
   });
 
-  GoRouter _router({String? editBirdId}) => GoRouter(
+  GoRouter router({String? editBirdId}) => GoRouter(
     initialLocation: '/birds/form',
     routes: [
-      GoRoute(path: '/birds', builder: (_, __) => const SizedBox(), routes: [
-        GoRoute(
-          path: 'form',
-          builder: (_, s) => BirdFormScreen(
-            editBirdId: editBirdId ?? s.uri.queryParameters['editId'],
+      GoRoute(
+        path: '/birds',
+        builder: (_, __) => const SizedBox(),
+        routes: [
+          GoRoute(
+            path: 'form',
+            builder: (_, s) => BirdFormScreen(
+              editBirdId: editBirdId ?? s.uri.queryParameters['editId'],
+            ),
           ),
-        ),
-        GoRoute(path: ':id', builder: (_, s) => Text('${s.pathParameters['id']}')),
-      ]),
+          GoRoute(
+            path: ':id',
+            builder: (_, s) => Text('${s.pathParameters['id']}'),
+          ),
+        ],
+      ),
     ],
   );
 
-  void _stubRepo({Bird? editBird, String? editBirdId}) {
-    when(() => mockBirdRepo.watchAll(any())).thenAnswer((_) => Stream.value([]));
+  void stubRepo({Bird? editBird, String? editBirdId}) {
+    when(
+      () => mockBirdRepo.watchAll(any()),
+    ).thenAnswer((_) => Stream.value([]));
     when(() => mockBirdRepo.getAll(any())).thenAnswer((_) async => []);
     when(() => mockBirdRepo.save(any())).thenAnswer((_) async {});
-    when(() => mockBirdRepo.hasRingNumber(any(), any())).thenAnswer((_) async => false);
+    when(
+      () => mockBirdRepo.hasRingNumber(any(), any()),
+    ).thenAnswer((_) async => false);
     when(() => mockBirdRepo.watchById(any())).thenAnswer((inv) {
       final id = inv.positionalArguments.first as String;
       if (editBirdId != null && id == editBirdId) return Stream.value(editBird);
@@ -53,8 +64,12 @@ void main() {
     });
   }
 
-  Widget _subject({String? editBirdId, Bird? editBird, List<dynamic> extra = const []}) {
-    _stubRepo(editBird: editBird, editBirdId: editBirdId);
+  Widget subject({
+    String? editBirdId,
+    Bird? editBird,
+    List<dynamic> extra = const [],
+  }) {
+    stubRepo(editBird: editBird, editBirdId: editBirdId);
     return ProviderScope(
       overrides: [
         currentUserIdProvider.overrideWithValue('test-user'),
@@ -63,13 +78,13 @@ void main() {
         birdsStreamProvider('test-user').overrideWith((_) => Stream.value([])),
         ...extra,
       ],
-      child: MaterialApp.router(routerConfig: _router(editBirdId: editBirdId)),
+      child: MaterialApp.router(routerConfig: router(editBirdId: editBirdId)),
     );
   }
 
   group('Form validation edge cases', () {
     testWidgets('empty name shows validation error on submit', (t) async {
-      await t.pumpWidget(_subject());
+      await t.pumpWidget(subject());
       await t.pumpAndSettle();
       await t.enterText(find.byType(TextFormField).first, '');
       await t.pump();
@@ -82,7 +97,7 @@ void main() {
     });
 
     testWidgets('whitespace-only name shows validation error', (t) async {
-      await t.pumpWidget(_subject());
+      await t.pumpWidget(subject());
       await t.pumpAndSettle();
       await t.enterText(find.byType(TextFormField).first, '   ');
       await t.pump();
@@ -95,7 +110,7 @@ void main() {
     });
 
     testWidgets('very long name does not cause overflow', (t) async {
-      await t.pumpWidget(_subject());
+      await t.pumpWidget(subject());
       await t.pumpAndSettle();
       await t.enterText(find.byType(TextFormField).first, 'A' * 500);
       await t.pump();
@@ -103,11 +118,15 @@ void main() {
     });
 
     testWidgets('loading state shows progress indicator in button', (t) async {
-      await t.pumpWidget(_subject(extra: [
-        birdFormStateProvider.overrideWith(
-          () => _FixedNotifier(const BirdFormState(isLoading: true)),
+      await t.pumpWidget(
+        subject(
+          extra: [
+            birdFormStateProvider.overrideWith(
+              () => _FixedNotifier(const BirdFormState(isLoading: true)),
+            ),
+          ],
         ),
-      ]));
+      );
       await t.pump();
       await t.pump();
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
@@ -117,9 +136,9 @@ void main() {
   group('Error handling', () {
     testWidgets('error state triggers SnackBar via ref.listen', (t) async {
       final notifier = _TransitionNotifier();
-      await t.pumpWidget(_subject(extra: [
-        birdFormStateProvider.overrideWith(() => notifier),
-      ]));
+      await t.pumpWidget(
+        subject(extra: [birdFormStateProvider.overrideWith(() => notifier)]),
+      );
       await t.pumpAndSettle();
       notifier.simulateError('errors.unknown');
       await t.pump();
@@ -130,9 +149,9 @@ void main() {
 
     testWidgets('error state clears when notifier resets', (t) async {
       final notifier = _TransitionNotifier();
-      await t.pumpWidget(_subject(extra: [
-        birdFormStateProvider.overrideWith(() => notifier),
-      ]));
+      await t.pumpWidget(
+        subject(extra: [birdFormStateProvider.overrideWith(() => notifier)]),
+      );
       await t.pumpAndSettle();
       notifier.simulateError('errors.unknown');
       await t.pump();
@@ -146,7 +165,7 @@ void main() {
 
   group('Edit mode edge cases', () {
     testWidgets('non-existent editBirdId shows error state', (t) async {
-      await t.pumpWidget(_subject(editBirdId: 'missing'));
+      await t.pumpWidget(subject(editBirdId: 'missing'));
       await t.pumpAndSettle();
       expect(find.byType(ErrorState), findsOneWidget);
       expect(find.byType(Form), findsNothing);
@@ -155,16 +174,20 @@ void main() {
     testWidgets('edit mode shows loading before data arrives', (t) async {
       final ctrl = StreamController<Bird?>();
       when(() => mockBirdRepo.watchById(any())).thenAnswer((_) => ctrl.stream);
-      when(() => mockBirdRepo.watchAll(any())).thenAnswer((_) => Stream.value([]));
+      when(
+        () => mockBirdRepo.watchAll(any()),
+      ).thenAnswer((_) => Stream.value([]));
       when(() => mockBirdRepo.getAll(any())).thenAnswer((_) async => []);
       final w = ProviderScope(
         overrides: [
           currentUserIdProvider.overrideWithValue('test-user'),
           currentUserProvider.overrideWith((_) => null),
           birdRepositoryProvider.overrideWithValue(mockBirdRepo),
-          birdsStreamProvider('test-user').overrideWith((_) => Stream.value([])),
+          birdsStreamProvider(
+            'test-user',
+          ).overrideWith((_) => Stream.value([])),
         ],
-        child: MaterialApp.router(routerConfig: _router(editBirdId: 'slow')),
+        child: MaterialApp.router(routerConfig: router(editBirdId: 'slow')),
       );
       await t.pumpWidget(w);
       await t.pump();
@@ -174,9 +197,12 @@ void main() {
 
     testWidgets('form fields populated from existing bird', (t) async {
       final bird = createTestBird(
-        id: 'e1', name: 'Sari', ringNumber: 'TR-200', gender: BirdGender.female,
+        id: 'e1',
+        name: 'Sari',
+        ringNumber: 'TR-200',
+        gender: BirdGender.female,
       );
-      await t.pumpWidget(_subject(editBirdId: bird.id, editBird: bird));
+      await t.pumpWidget(subject(editBirdId: bird.id, editBird: bird));
       await t.pumpAndSettle();
       final texts = t.widgetList<EditableText>(find.byType(EditableText));
       expect(texts.any((f) => f.controller.text == 'Sari'), isTrue);
@@ -185,12 +211,18 @@ void main() {
   });
 
   group('Concurrent interaction', () {
-    testWidgets('loading disables save button preventing double save', (t) async {
-      await t.pumpWidget(_subject(extra: [
-        birdFormStateProvider.overrideWith(
-          () => _FixedNotifier(const BirdFormState(isLoading: true)),
+    testWidgets('loading disables save button preventing double save', (
+      t,
+    ) async {
+      await t.pumpWidget(
+        subject(
+          extra: [
+            birdFormStateProvider.overrideWith(
+              () => _FixedNotifier(const BirdFormState(isLoading: true)),
+            ),
+          ],
         ),
-      ]));
+      );
       await t.pump();
       await t.pump();
       final buttons = t.widgetList<FilledButton>(find.byType(FilledButton));
@@ -202,11 +234,14 @@ void main() {
 class _FixedNotifier extends BirdFormNotifier {
   final BirdFormState _s;
   _FixedNotifier(this._s);
-  @override BirdFormState build() => _s;
+  @override
+  BirdFormState build() => _s;
 }
 
 class _TransitionNotifier extends BirdFormNotifier {
-  @override BirdFormState build() => const BirdFormState();
+  @override
+  BirdFormState build() => const BirdFormState();
   void simulateError(String msg) => state = state.copyWith(error: msg);
-  @override void reset() => state = const BirdFormState();
+  @override
+  void reset() => state = const BirdFormState();
 }

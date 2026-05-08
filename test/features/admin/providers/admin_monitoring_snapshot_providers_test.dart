@@ -314,7 +314,7 @@ void main() {
 
     test('rethrows when snapshot query fails', () async {
       final adminFilter = _FakeFilterBuilder(
-        maybeSingleBuilder: _FakeMaybeSingleBuilder(result: {'id': 'admin-1'}),
+        maybeSingleBuilder: _FakeMaybeSingleBuilder(result: {'role': 'admin'}),
       );
       final snapshotFilter = _FakeFilterBuilder(
         maybeSingleBuilder: _FakeMaybeSingleBuilder(),

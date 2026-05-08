@@ -24,48 +24,69 @@ void main() {
     bool isDeleted = false,
   }) {
     return Bird(
-      id: id, userId: user, name: 'Bird $id', gender: gender,
-      status: status, species: Species.budgie,
-      isDeleted: isDeleted, createdAt: ts, updatedAt: ts,
+      id: id,
+      userId: user,
+      name: 'Bird $id',
+      gender: gender,
+      status: status,
+      species: Species.budgie,
+      isDeleted: isDeleted,
+      createdAt: ts,
+      updatedAt: ts,
     );
   }
 
   BreedingPair makePair({
     String id = 'bp-1',
     String user = user1,
-    String? maleId = 'bird-1',
-    String? femaleId = 'bird-2',
+    String? maleId,
+    String? femaleId,
     bool isDeleted = false,
   }) {
     return BreedingPair(
-      id: id, userId: user, maleId: maleId, femaleId: femaleId,
+      id: id,
+      userId: user,
+      maleId: maleId,
+      femaleId: femaleId,
       status: BreedingStatus.active,
-      isDeleted: isDeleted, createdAt: ts, updatedAt: ts,
+      isDeleted: isDeleted,
+      createdAt: ts,
+      updatedAt: ts,
     );
   }
 
   Clutch makeClutch({
     String id = 'clutch-1',
     String user = user1,
-    String? breedingId = 'bp-1',
+    String? breedingId,
     bool isDeleted = false,
   }) {
     return Clutch(
-      id: id, userId: user, breedingId: breedingId,
-      isDeleted: isDeleted, createdAt: ts, updatedAt: ts,
+      id: id,
+      userId: user,
+      breedingId: breedingId,
+      isDeleted: isDeleted,
+      createdAt: ts,
+      updatedAt: ts,
     );
   }
 
   Egg makeEgg({
     String id = 'egg-1',
     String user = user1,
-    String? clutchId = 'clutch-1',
+    String? clutchId,
     EggStatus status = EggStatus.incubating,
     bool isDeleted = false,
   }) {
     return Egg(
-      id: id, userId: user, clutchId: clutchId, status: status,
-      layDate: ts, isDeleted: isDeleted, createdAt: ts, updatedAt: ts,
+      id: id,
+      userId: user,
+      clutchId: clutchId,
+      status: status,
+      layDate: ts,
+      isDeleted: isDeleted,
+      createdAt: ts,
+      updatedAt: ts,
     );
   }
 
@@ -204,9 +225,7 @@ void main() {
 
   group('Batch operations', () {
     test('insertAll with 50 birds retrieves all', () async {
-      final birds = List.generate(
-        50, (i) => makeBird(id: 'b-$i'),
-      );
+      final birds = List.generate(50, (i) => makeBird(id: 'b-$i'));
       await db.birdsDao.insertAll(birds);
 
       final all = await db.birdsDao.getAll(user1);
@@ -234,10 +253,7 @@ void main() {
       // First emission should be empty, then insert triggers second
       final future = expectLater(
         stream,
-        emitsInOrder([
-          hasLength(0),
-          hasLength(1),
-        ]),
+        emitsInOrder([hasLength(0), hasLength(1)]),
       );
 
       // Small delay to ensure stream subscription is active
@@ -251,10 +267,7 @@ void main() {
       final stream = db.birdsDao.watchAll(user1);
       final future = expectLater(
         stream,
-        emitsInOrder([
-          hasLength(1),
-          hasLength(0),
-        ]),
+        emitsInOrder([hasLength(1), hasLength(0)]),
       );
 
       await db.birdsDao.softDelete('r1');
@@ -264,13 +277,7 @@ void main() {
     test('watchById emits null after hard delete', () async {
       await db.birdsDao.insertItem(makeBird(id: 'r1'));
       final stream = db.birdsDao.watchById('r1');
-      final future = expectLater(
-        stream,
-        emitsInOrder([
-          isNotNull,
-          isNull,
-        ]),
-      );
+      final future = expectLater(stream, emitsInOrder([isNotNull, isNull]));
 
       await db.birdsDao.hardDelete('r1');
       await future;

@@ -8,7 +8,7 @@ import '../../../core/widgets/app_icon.dart';
 import '../../../router/route_names.dart';
 import '../constants/admin_constants.dart';
 
-/// Responsive grid of 4 quick action chips for the admin dashboard.
+/// Responsive grid of quick action chips for the admin dashboard.
 class DashboardQuickActionsSection extends StatelessWidget {
   const DashboardQuickActionsSection({super.key});
 
@@ -47,32 +47,56 @@ class DashboardQuickActionsSection extends StatelessWidget {
                     AppIcons.users,
                     semanticsLabel: 'admin.go_to_users'.tr(),
                   ),
-                  label: 'admin.go_to_users'.tr(),
-                  onTap: () => context.go(AppRoutes.adminUsers),
+                  label: 'admin.users'.tr(),
+                  onTap: () => context.push(AppRoutes.adminUsers),
                 ),
                 DashboardQuickActionButton(
                   icon: AppIcon(
                     AppIcons.monitoring,
                     semanticsLabel: 'admin.go_to_monitoring'.tr(),
                   ),
-                  label: 'admin.go_to_monitoring'.tr(),
-                  onTap: () => context.go(AppRoutes.adminMonitoring),
+                  label: 'admin.monitoring'.tr(),
+                  onTap: () => context.push(AppRoutes.adminMonitoring),
                 ),
                 DashboardQuickActionButton(
                   icon: AppIcon(
                     AppIcons.database,
                     semanticsLabel: 'admin.go_to_database'.tr(),
                   ),
-                  label: 'admin.go_to_database'.tr(),
-                  onTap: () => context.go(AppRoutes.adminDatabase),
+                  label: 'admin.database'.tr(),
+                  onTap: () => context.push(AppRoutes.adminDatabase),
+                ),
+                DashboardQuickActionButton(
+                  icon: AppIcon(
+                    AppIcons.audit,
+                    semanticsLabel: 'admin.audit'.tr(),
+                  ),
+                  label: 'admin.audit'.tr(),
+                  onTap: () => context.push(AppRoutes.adminAudit),
+                ),
+                DashboardQuickActionButton(
+                  icon: AppIcon(
+                    AppIcons.security,
+                    semanticsLabel: 'admin.security'.tr(),
+                  ),
+                  label: 'admin.security'.tr(),
+                  onTap: () => context.push(AppRoutes.adminSecurity),
+                ),
+                DashboardQuickActionButton(
+                  icon: AppIcon(
+                    AppIcons.comment,
+                    semanticsLabel: 'admin.feedback_admin'.tr(),
+                  ),
+                  label: 'admin.feedback_admin'.tr(),
+                  onTap: () => context.push(AppRoutes.adminFeedback),
                 ),
                 DashboardQuickActionButton(
                   icon: AppIcon(
                     AppIcons.settings,
                     semanticsLabel: 'admin.go_to_settings'.tr(),
                   ),
-                  label: 'admin.go_to_settings'.tr(),
-                  onTap: () => context.go(AppRoutes.adminSettings),
+                  label: 'admin.settings'.tr(),
+                  onTap: () => context.push(AppRoutes.adminSettings),
                 ),
               ],
             );

@@ -23,16 +23,11 @@ abstract class AppVersion with _$AppVersion {
       _$AppVersionFromJson(json);
 
   /// Returns release notes for the given locale code, falling back to English.
-  String? releaseNotesFor(String localeCode) {
-    switch (localeCode) {
-      case 'tr':
-        return releaseNotesTr;
-      case 'de':
-        return releaseNotesDe;
-      case 'en':
-        return releaseNotesEn;
-      default:
-        return releaseNotesEn;
-    }
-  }
+  String? releaseNotesFor(String localeCode) =>
+      {
+        'tr': releaseNotesTr,
+        'de': releaseNotesDe,
+        'en': releaseNotesEn,
+      }[localeCode] ??
+      releaseNotesEn;
 }

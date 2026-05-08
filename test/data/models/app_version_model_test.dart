@@ -39,7 +39,7 @@ void main() {
 
       expect(model.releaseNotesFor('tr'), 'TR notes');
       expect(model.releaseNotesFor('en'), 'EN notes');
-      expect(model.releaseNotesFor('de'), isNull);
+      expect(model.releaseNotesFor('de'), 'EN notes');
       expect(model.releaseNotesFor('fr'), 'EN notes');
     });
   });

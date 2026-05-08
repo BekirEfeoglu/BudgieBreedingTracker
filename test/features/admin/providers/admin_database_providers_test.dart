@@ -497,8 +497,8 @@ void main() {
       );
     });
 
-    test('has 10 soft-deletable tables', () {
-      expect(AdminConstants.softDeletableTables, hasLength(10));
+    test('has 11 soft-deletable tables', () {
+      expect(AdminConstants.softDeletableTables, hasLength(11));
     });
 
     test('all table names are non-empty strings', () {

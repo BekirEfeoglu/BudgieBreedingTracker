@@ -160,6 +160,7 @@ class _FakeMaintenanceClient extends Fake implements SupabaseClient {
     requestedTables.add(table);
     switch (table) {
       case SupabaseConstants.profilesTable:
+      case SupabaseConstants.adminUsersTable:
         return adminQueryBuilder;
       case SupabaseConstants.adminLogsTable:
         return adminLogsQueryBuilder;

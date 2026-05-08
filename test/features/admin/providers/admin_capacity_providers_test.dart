@@ -59,7 +59,10 @@ class _FakeCapacityClient extends Fake implements SupabaseClient {
 
   @override
   SupabaseQueryBuilder from(String table) {
-    if (table == SupabaseConstants.adminUsersTable) return adminQueryBuilder;
+    if (table == SupabaseConstants.profilesTable ||
+        table == SupabaseConstants.adminUsersTable) {
+      return adminQueryBuilder;
+    }
     throw StateError('Unexpected table: $table');
   }
 

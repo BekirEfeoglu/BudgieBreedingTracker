@@ -14,7 +14,6 @@ import 'package:budgie_breeding_tracker/core/widgets/buttons/app_icon_button.dar
 import 'package:budgie_breeding_tracker/core/widgets/dialogs/confirm_dialog.dart';
 import 'package:budgie_breeding_tracker/data/models/health_record_model.dart';
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
-import 'package:budgie_breeding_tracker/core/extensions/num_extensions.dart';
 import 'package:budgie_breeding_tracker/features/health_records/providers/health_record_providers.dart';
 import 'package:budgie_breeding_tracker/features/health_records/providers/health_record_form_providers.dart';
 import 'package:budgie_breeding_tracker/shared/widgets/health_records.dart';
@@ -76,9 +75,9 @@ class _DetailContent extends ConsumerWidget {
         context.pop();
       }
       if (state.error != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(state.error!)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(state.error!)));
       }
     });
 
@@ -222,4 +221,3 @@ class _DetailContent extends ConsumerWidget {
     }
   }
 }
-
