@@ -2943,5 +2943,15 @@
     "cg_enforcement_body": "İhlaller şu sonuçlara yol açabilir: önceden haber verilmeksizin içerik kaldırma, geçici veya kalıcı hesap askıya alma, topluluk erişiminin kaybedilmesi. İhlalin ciddiyeti ve sıklığı sonucu belirler. Kararlar kesindir ancak support@budgiebreedingtracker.online üzerinden itiraz edilebilir.",
     "cg_reporting_title": "İhlalleri Bildirme",
     "cg_reporting_body": "Bu kurallara aykırı içerikleri bildirmek için herhangi bir gönderi veya yorumdaki rapor butonunu kullanın. Uygun nedeni seçin (spam, taciz, uygunsuz içerik, yanlış bilgi veya diğer). Raporlar incelenir ve hızla işleme alınır. Asılsız raporlar da yaptırıma neden olabilir."
+  },
+  "update": {
+    "title": "Yeni sürüm mevcut",
+    "optional_message": "Daha iyi bir deneyim için yeni sürümü yükleyin.",
+    "forced_title": "Güncelleme gerekli",
+    "forced_message": "Devam etmek için uygulamayı güncellemeniz gerekiyor.",
+    "update_now": "Şimdi güncelle",
+    "later": "Daha sonra",
+    "release_notes": "Sürüm notları",
+    "store_open_failed": "Mağaza açılamadı"
   }
 }

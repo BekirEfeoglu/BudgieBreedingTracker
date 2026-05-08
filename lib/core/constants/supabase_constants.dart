@@ -75,6 +75,9 @@ abstract class SupabaseConstants {
   static const String mfaLockoutsTable = 'mfa_lockouts';
   static const String dbMonitoringSnapshotsTable = 'db_monitoring_snapshots';
 
+  // App version metadata for force/optional update gating
+  static const String appVersionsTable = 'app_versions';
+
   // Push notification tables (server-side, no client remote source yet)
   static const String fcmTokensTable = 'fcm_tokens';
   static const String webPushSubscriptionsTable = 'web_push_subscriptions';
@@ -148,6 +151,16 @@ abstract class SupabaseConstants {
   static const String notificationColReferenceType = 'reference_type';
   static const String notificationColCreatedAt = 'created_at';
   static const String notificationColUpdatedAt = 'updated_at';
+
+  // App version columns
+  static const String appVersionColPlatform = 'platform';
+  static const String appVersionColLatestVersion = 'latest_version';
+  static const String appVersionColLatestBuild = 'latest_build';
+  static const String appVersionColMinSupportedBuild = 'min_supported_build';
+  static const String appVersionColStoreUrl = 'store_url';
+  static const String appVersionColReleaseNotesTr = 'release_notes_tr';
+  static const String appVersionColReleaseNotesEn = 'release_notes_en';
+  static const String appVersionColReleaseNotesDe = 'release_notes_de';
 
   // Storage Buckets
   static const String birdPhotosBucket = 'bird-photos';

@@ -29,6 +29,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:budgie_breeding_tracker/domain/services/ads/ad_service.dart';
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_permission_handler.dart';
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_providers.dart';
+import 'package:budgie_breeding_tracker/features/update/widgets/update_listener.dart';
 
 /// Main home dashboard screen.
 class HomeScreen extends ConsumerWidget {
@@ -53,13 +54,14 @@ class HomeScreen extends ConsumerWidget {
       }
     });
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const AppBrandTitle(size: AppBrandSize.small),
-        centerTitle: true,
-        scrolledUnderElevation: 0,
-        actions: const [NotificationBellButton(), ProfileMenuButton()],
-      ),
+    return UpdateListener(
+      child: Scaffold(
+        appBar: AppBar(
+          title: const AppBrandTitle(size: AppBrandSize.small),
+          centerTitle: true,
+          scrolledUnderElevation: 0,
+          actions: const [NotificationBellButton(), ProfileMenuButton()],
+        ),
       body: RefreshIndicator(
         onRefresh: () async {
           // Capture ScaffoldMessenger before async gap
@@ -114,6 +116,7 @@ class HomeScreen extends ConsumerWidget {
               const SizedBox(height: AppSpacing.xxxl * 2),
             ],
           ),
+        ),
         ),
       ),
     );
