@@ -7,7 +7,7 @@ project's security posture. Each check maps to a specific control listed
 in SECURITY.md / .claude/rules/security.md.
 
 Checks:
-  1. Build obfuscation: Codemagic + GitHub Actions release builds must
+  1. Build obfuscation: Codemagic + GitHub Actions release-ready builds must
      pass `--obfuscate --split-debug-info=...`.
   2. Edge Function CORS: shared cors.ts must emit baseline security
      headers (HSTS, X-Content-Type-Options, X-Frame-Options, CSP, etc.).
@@ -102,30 +102,30 @@ def check_release_obfuscation() -> List[Tuple[str, bool, str]]:
                     )
                 )
 
-    ci = read(ROOT / ".github" / "workflows" / "ci.yml")
-    if not ci:
-        results.append(fail(".github/workflows/ci.yml", "file missing"))
+    release_ready = read(ROOT / ".github" / "workflows" / "release-ready.yml")
+    if not release_ready:
+        results.append(fail(".github/workflows/release-ready.yml", "file missing"))
     else:
-        # GitHub Actions android-release must obfuscate.
+        # GitHub Actions release-ready android-release must obfuscate.
         match = re.search(
             r"flutter build appbundle --release[\s\S]*?(?=\n\s{0,6}- name:|\Z)",
-            ci,
+            release_ready,
         )
         if not match:
             results.append(
-                fail("ci.yml android-release", "build block not found")
+                fail("release-ready.yml android-release", "build block not found")
             )
         else:
             obf = "--obfuscate" in match.group(0)
             split = "--split-debug-info" in match.group(0)
             if obf and split:
                 results.append(
-                    ok("ci.yml android-release", "obfuscation enabled")
+                    ok("release-ready.yml android-release", "obfuscation enabled")
                 )
             else:
                 results.append(
                     fail(
-                        "ci.yml android-release",
+                        "release-ready.yml android-release",
                         f"missing --obfuscate or --split-debug-info "
                         f"(obfuscate={obf}, split={split})",
                     )
