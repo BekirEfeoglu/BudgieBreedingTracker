@@ -156,9 +156,21 @@ mixin ValidatedSyncMixin<T> on BaseRepository<T>, SyncableRepository<T> {
   /// Gets a local item by ID from the DAO.
   Future<T?> getLocalById(String id);
 
+  /// Gets the item used for sync.
+  ///
+  /// Soft-delete repositories override this to include deleted rows, because
+  /// those tombstones still need to be pushed to Supabase.
+  Future<T?> getLocalByIdForSync(String id) => getLocalById(id);
+
   /// Validates that an item's FK references exist locally.
   /// Returns null if valid, or a description of the broken FK.
   Future<String?> validateForeignKeys(T item);
+
+  /// Whether FK validation should run for this sync payload.
+  ///
+  /// Soft-deleted tombstones can be pushed without waiting on parent FK
+  /// metadata; if Supabase still rejects the payload, [push] records the error.
+  bool shouldValidateForeignKeys(T item) => true;
 
   /// Extracts the entity ID from an item.
   String getEntityId(T item);
@@ -179,7 +191,7 @@ mixin ValidatedSyncMixin<T> on BaseRepository<T>, SyncableRepository<T> {
     final tablePending = await syncDao.getPendingByTable(userId, syncTableName);
 
     for (final meta in tablePending) {
-      final item = await getLocalById(meta.recordId ?? '');
+      final item = await getLocalByIdForSync(meta.recordId ?? '');
       if (item == null) {
         AppLogger.warning(
           '[$syncLogTag] Orphan sync_metadata cleaned: ${meta.recordId}',
@@ -189,7 +201,9 @@ mixin ValidatedSyncMixin<T> on BaseRepository<T>, SyncableRepository<T> {
         continue;
       }
 
-      final orphanReason = await validateForeignKeys(item);
+      final orphanReason = shouldValidateForeignKeys(item)
+          ? await validateForeignKeys(item)
+          : null;
       if (orphanReason != null) {
         if (orphanReason.contains('not found locally')) {
           AppLogger.warning(

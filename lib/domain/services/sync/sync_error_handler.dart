@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/data/local/database/dao_providers.dart';
+import 'package:budgie_breeding_tracker/data/models/sync_metadata_model.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/sync/retry_scheduler.dart';
 import 'package:budgie_breeding_tracker/domain/services/sync/sync_push_handler.dart';
@@ -35,6 +36,11 @@ class SyncErrorHandler {
     AppLogger.info(
       '[SyncOrchestrator] Retrying ${readyRecords.length} failed records',
     );
+
+    final syncDao = _ref.read(syncMetadataDaoProvider);
+    for (final record in readyRecords) {
+      await syncDao.updateStatus(record.id, SyncStatus.pending);
+    }
 
     // Group by table and re-push affected tables
     final tables = readyRecords.map((r) => r.table).toSet();

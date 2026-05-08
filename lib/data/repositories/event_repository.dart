@@ -168,7 +168,7 @@ class EventRepository extends BaseRepository<Event>
     int orphansCleaned = 0;
     final tablePending = await _syncDao.getPendingByTable(userId, _table);
     for (final meta in tablePending) {
-      final item = await _localDao.getById(meta.recordId ?? '');
+      final item = await _localDao.getByIdIncludingDeleted(meta.recordId ?? '');
       if (item == null) {
         AppLogger.warning(
           '[EventRepo] Orphan sync_metadata cleaned: ${meta.recordId}',
@@ -249,8 +249,6 @@ class EventRepository extends BaseRepository<Event>
       _localDao.watchByBird(birdId);
 
   /// Active events for a specific chick filtered by event type (DB-level).
-  Future<List<Event>> getActiveByChickAndType(
-    String chickId,
-    EventType type,
-  ) => _localDao.getActiveByChickAndType(chickId, type);
+  Future<List<Event>> getActiveByChickAndType(String chickId, EventType type) =>
+      _localDao.getActiveByChickAndType(chickId, type);
 }

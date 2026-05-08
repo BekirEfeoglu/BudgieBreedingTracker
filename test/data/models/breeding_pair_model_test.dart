@@ -83,14 +83,14 @@ void main() {
         expect(pair.separationDate, isNull);
       });
 
-      test('falls back to active for unknown status', () {
+      test('falls back to unknown for unknown status', () {
         final pair = BreedingPair.fromJson({
           'id': 'pair-1',
           'user_id': 'user-1',
           'status': 'not-real-status',
         });
 
-        expect(pair.status, BreedingStatus.active);
+        expect(pair.status, BreedingStatus.unknown);
       });
     });
 

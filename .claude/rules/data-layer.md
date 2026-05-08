@@ -28,7 +28,7 @@ import 'package:budgie/data/local/database/tables/birds_table.dart';
 ## Supabase (Remote)
 - **Remote sources**: `lib/data/remote/api/` (26 entity + base + 2 caches + providers)
 - **Storage**: `lib/data/remote/storage/storage_service.dart`
-- **Constants**: `SupabaseConstants` class (141 table/column constants)
+- **Constants**: `SupabaseConstants` class (146 table/column constants)
 - **Edge Functions**: 8 in `supabase/functions/`
 - **Migrations**: 155 SQL files in `supabase/migrations/`
 - Always use `SupabaseConstants` for table/column names — never hardcode

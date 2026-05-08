@@ -340,6 +340,7 @@
     "same_species_required": "Nur Vögel derselben Art können gepaart werden",
     "invalid_male": "Der ausgewählte männliche Vogel ist nicht männlich",
     "invalid_female": "Der ausgewählte weibliche Vogel ist nicht weiblich",
+    "birds_must_be_alive": "Nur lebende Vögel können gepaart werden",
     "all_eggs_hatched": "Alle Eier sind erfolgreich geschlüpft",
     "sort_newest": "Neueste zuerst",
     "sort_oldest": "Älteste zuerst",

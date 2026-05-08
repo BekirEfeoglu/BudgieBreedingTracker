@@ -49,6 +49,10 @@ void main() {
     when(() => localDao.softDelete(any())).thenAnswer((_) async {});
     when(() => localDao.hardDelete(any())).thenAnswer((_) async {});
     when(() => localDao.getById(any())).thenAnswer((_) async => null);
+    when(() => localDao.getByIdIncludingDeleted(any())).thenAnswer(
+      (invocation) =>
+          localDao.getById(invocation.positionalArguments.first as String),
+    );
     when(() => localDao.getAll(any())).thenAnswer((_) async => []);
     when(() => localDao.getByGender(any(), any())).thenAnswer((_) async => []);
     when(() => localDao.getDeleted(any())).thenAnswer((_) async => []);
@@ -359,12 +363,15 @@ void main() {
             updatedAt: DateTime(2024, 6, 2), // newer
           );
 
-          when(() => remoteSource.fetchUpdatedSince(userId, any()))
-              .thenAnswer((_) async => [remoteBird]);
-          when(() => localDao.getAll(userId))
-              .thenAnswer((_) async => [localBird]);
-          when(() => syncDao.getPendingRecordIds(userId))
-              .thenAnswer((_) async => {'bird-1'}); // pending!
+          when(
+            () => remoteSource.fetchUpdatedSince(userId, any()),
+          ).thenAnswer((_) async => [remoteBird]);
+          when(
+            () => localDao.getAll(userId),
+          ).thenAnswer((_) async => [localBird]);
+          when(
+            () => syncDao.getPendingRecordIds(userId),
+          ).thenAnswer((_) async => {'bird-1'}); // pending!
 
           await repository.pull(userId, lastSyncedAt: DateTime(2024, 5, 1));
 
@@ -373,34 +380,34 @@ void main() {
         },
       );
 
-      test(
-        'pull does NOT report conflict for non-pending records',
-        () async {
-          final localBird = createTestBird(
-            id: 'bird-1',
-            name: 'Old Local',
-            userId: userId,
-            updatedAt: DateTime(2024, 6, 1),
-          );
-          final remoteBird = createTestBird(
-            id: 'bird-1',
-            name: 'Remote Update',
-            userId: userId,
-            updatedAt: DateTime(2024, 6, 2),
-          );
+      test('pull does NOT report conflict for non-pending records', () async {
+        final localBird = createTestBird(
+          id: 'bird-1',
+          name: 'Old Local',
+          userId: userId,
+          updatedAt: DateTime(2024, 6, 1),
+        );
+        final remoteBird = createTestBird(
+          id: 'bird-1',
+          name: 'Remote Update',
+          userId: userId,
+          updatedAt: DateTime(2024, 6, 2),
+        );
 
-          when(() => remoteSource.fetchUpdatedSince(userId, any()))
-              .thenAnswer((_) async => [remoteBird]);
-          when(() => localDao.getAll(userId))
-              .thenAnswer((_) async => [localBird]);
-          when(() => syncDao.getPendingRecordIds(userId))
-              .thenAnswer((_) async => {}); // NOT pending
+        when(
+          () => remoteSource.fetchUpdatedSince(userId, any()),
+        ).thenAnswer((_) async => [remoteBird]);
+        when(
+          () => localDao.getAll(userId),
+        ).thenAnswer((_) async => [localBird]);
+        when(
+          () => syncDao.getPendingRecordIds(userId),
+        ).thenAnswer((_) async => {}); // NOT pending
 
-          await repository.pull(userId, lastSyncedAt: DateTime(2024, 5, 1));
+        await repository.pull(userId, lastSyncedAt: DateTime(2024, 5, 1));
 
-          expect(repository.lastPullConflicts, isEmpty);
-        },
-      );
+        expect(repository.lastPullConflicts, isEmpty);
+      });
 
       test(
         'pull does NOT report conflict when remote is older than local',
@@ -418,12 +425,15 @@ void main() {
             updatedAt: DateTime(2024, 6, 1),
           );
 
-          when(() => remoteSource.fetchUpdatedSince(userId, any()))
-              .thenAnswer((_) async => [remoteBird]);
-          when(() => localDao.getAll(userId))
-              .thenAnswer((_) async => [localBird]);
-          when(() => syncDao.getPendingRecordIds(userId))
-              .thenAnswer((_) async => {'bird-1'});
+          when(
+            () => remoteSource.fetchUpdatedSince(userId, any()),
+          ).thenAnswer((_) async => [remoteBird]);
+          when(
+            () => localDao.getAll(userId),
+          ).thenAnswer((_) async => [localBird]);
+          when(
+            () => syncDao.getPendingRecordIds(userId),
+          ).thenAnswer((_) async => {'bird-1'});
 
           await repository.pull(userId, lastSyncedAt: DateTime(2024, 5, 1));
 
@@ -444,19 +454,23 @@ void main() {
           updatedAt: DateTime(2024, 6, 2),
         );
 
-        when(() => remoteSource.fetchUpdatedSince(userId, any()))
-            .thenAnswer((_) async => [remoteBird]);
-        when(() => localDao.getAll(userId))
-            .thenAnswer((_) async => [localBird]);
-        when(() => syncDao.getPendingRecordIds(userId))
-            .thenAnswer((_) async => {'bird-1'});
+        when(
+          () => remoteSource.fetchUpdatedSince(userId, any()),
+        ).thenAnswer((_) async => [remoteBird]);
+        when(
+          () => localDao.getAll(userId),
+        ).thenAnswer((_) async => [localBird]);
+        when(
+          () => syncDao.getPendingRecordIds(userId),
+        ).thenAnswer((_) async => {'bird-1'});
 
         await repository.pull(userId, lastSyncedAt: DateTime(2024, 5, 1));
         expect(repository.lastPullConflicts, hasLength(1));
 
         // Second pull with no conflicts
-        when(() => remoteSource.fetchUpdatedSince(userId, any()))
-            .thenAnswer((_) async => []);
+        when(
+          () => remoteSource.fetchUpdatedSince(userId, any()),
+        ).thenAnswer((_) async => []);
 
         await repository.pull(userId, lastSyncedAt: DateTime(2024, 5, 1));
         expect(repository.lastPullConflicts, isEmpty);

@@ -112,11 +112,18 @@ abstract class SupabaseConstants {
   static const String colClutchId = 'clutch_id';
   static const String colPostId = 'post_id';
   static const String colBreedingPairId = 'breeding_pair_id';
+  static const String colMaleId = 'male_id';
+  static const String colFemaleId = 'female_id';
+  static const String colIncubationId = 'incubation_id';
 
   // Entity-specific date columns
   static const String colHatchDate = 'hatch_date';
   static const String colMeasurementDate = 'measurement_date';
   static const String colStartDate = 'start_date';
+  static const String colPairingDate = 'pairing_date';
+
+  // Egg columns
+  static const String colEggNumber = 'egg_number';
 
   // Marketplace filter columns
   static const String colCity = 'city';

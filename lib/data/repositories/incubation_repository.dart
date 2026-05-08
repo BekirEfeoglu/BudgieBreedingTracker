@@ -1,6 +1,8 @@
 import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
 import 'package:budgie_breeding_tracker/core/errors/app_exception.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
+import 'package:budgie_breeding_tracker/data/local/database/daos/breeding_pairs_dao.dart';
+import 'package:budgie_breeding_tracker/data/local/database/daos/clutches_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/incubations_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/sync_metadata_dao.dart';
 import 'package:budgie_breeding_tracker/data/models/incubation_model.dart';
@@ -17,6 +19,8 @@ class IncubationRepository extends BaseRepository<Incubation>
   final IncubationsDao _localDao;
   final IncubationRemoteSource _remoteSource;
   final SyncMetadataDao _syncDao;
+  final BreedingPairsDao _breedingPairsDao;
+  final ClutchesDao _clutchesDao;
 
   static const _uuid = Uuid();
 
@@ -24,9 +28,13 @@ class IncubationRepository extends BaseRepository<Incubation>
     required IncubationsDao localDao,
     required IncubationRemoteSource remoteSource,
     required SyncMetadataDao syncDao,
+    required BreedingPairsDao breedingPairsDao,
+    required ClutchesDao clutchesDao,
   }) : _localDao = localDao,
        _remoteSource = remoteSource,
-       _syncDao = syncDao;
+       _syncDao = syncDao,
+       _breedingPairsDao = breedingPairsDao,
+       _clutchesDao = clutchesDao;
 
   static const _table = SupabaseConstants.incubationsTable;
 
@@ -53,8 +61,7 @@ class IncubationRepository extends BaseRepository<Incubation>
   Future<List<Incubation>> getAll(String userId) => _localDao.getAll(userId);
 
   /// Returns the count of active incubations (SQL COUNT).
-  Future<int> getActiveCount(String userId) =>
-      _localDao.getActiveCount(userId);
+  Future<int> getActiveCount(String userId) => _localDao.getActiveCount(userId);
 
   @override
   Future<Incubation?> getById(String id) => _localDao.getById(id);
@@ -173,6 +180,36 @@ class IncubationRepository extends BaseRepository<Incubation>
     }
   }
 
+  Future<String?> validateForeignKeys(Incubation incubation) async {
+    if (incubation.breedingPairId != null) {
+      final pair = await _breedingPairsDao.getById(incubation.breedingPairId!);
+      if (pair == null) {
+        return 'Referenced breeding pair ${incubation.breedingPairId} not found locally';
+      }
+      final syncMeta = await _syncDao.getByRecord(
+        SupabaseConstants.breedingPairsTable,
+        incubation.breedingPairId!,
+      );
+      if (syncMeta != null) {
+        return 'Breeding pair ${incubation.breedingPairId} not yet synced to server';
+      }
+    }
+    if (incubation.clutchId != null) {
+      final clutch = await _clutchesDao.getById(incubation.clutchId!);
+      if (clutch == null) {
+        return 'Referenced clutch ${incubation.clutchId} not found locally';
+      }
+      final syncMeta = await _syncDao.getByRecord(
+        SupabaseConstants.clutchesTable,
+        incubation.clutchId!,
+      );
+      if (syncMeta != null) {
+        return 'Clutch ${incubation.clutchId} not yet synced to server';
+      }
+    }
+    return null;
+  }
+
   @override
   Future<PushStats> pushAll(String userId) async {
     int pushed = 0;
@@ -195,6 +232,17 @@ class IncubationRepository extends BaseRepository<Incubation>
           );
           await _syncDao.deleteByRecord(_table, meta.recordId ?? '');
           orphansCleaned++;
+          continue;
+        }
+        final orphanReason = await validateForeignKeys(item);
+        if (orphanReason != null) {
+          if (orphanReason.contains('not found locally')) {
+            AppLogger.warning(
+              '[IncubationRepo] True orphan ${item.id}: $orphanReason',
+            );
+            await markError(item.id, item.userId, orphanReason);
+            orphansCleaned++;
+          }
           continue;
         }
         await push(item);

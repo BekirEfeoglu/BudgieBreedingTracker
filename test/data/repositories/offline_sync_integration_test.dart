@@ -1,3 +1,4 @@
+import 'package:drift/native.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -5,6 +6,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/egg_enums.dart';
+import 'package:budgie_breeding_tracker/data/local/database/app_database.dart';
 import 'package:budgie_breeding_tracker/data/local/database/dao_providers.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/birds_dao.dart';
 import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
@@ -116,6 +118,9 @@ void main() {
           () => syncDao.getPendingByTable(userId, SupabaseConstants.birdsTable),
         ).thenAnswer((_) async => [pending]);
         when(() => localDao.getById(bird.id)).thenAnswer((_) async => bird);
+        when(
+          () => localDao.getByIdIncludingDeleted(bird.id),
+        ).thenAnswer((_) async => bird);
         when(
           () => syncDao.deleteByRecord(any(), any()),
         ).thenAnswer((_) async {});
@@ -333,6 +338,9 @@ void main() {
         );
         when(() => localDao.getById('missing')).thenAnswer((_) async => null);
         when(
+          () => localDao.getByIdIncludingDeleted('missing'),
+        ).thenAnswer((_) async => null);
+        when(
           () => syncDao.deleteByRecord(any(), any()),
         ).thenAnswer((_) async {});
 
@@ -423,6 +431,43 @@ void main() {
         verifyNever(() => localDao.hardDelete('server-bird'));
       },
     );
+
+    test('offline soft-delete pushes deleted payload on next sync', () async {
+      final db = AppDatabase.forTesting(NativeDatabase.memory());
+      addTearDown(db.close);
+
+      final remote = MockEggRemoteSource();
+      final repo = EggRepository(
+        localDao: db.eggsDao,
+        remoteSource: remote,
+        syncDao: db.syncMetadataDao,
+        incubationsDao: db.incubationsDao,
+        clutchesDao: db.clutchesDao,
+      );
+      final egg = _egg(id: 'egg-delete');
+
+      when(() => remote.upsert(any())).thenThrow(Exception('offline'));
+
+      await repo.save(egg);
+      await repo.remove(egg.id);
+
+      clearInteractions(remote);
+      when(() => remote.upsert(any())).thenAnswer((_) async {});
+
+      await repo.pushAll(userId);
+
+      final pushed =
+          verify(() => remote.upsert(captureAny())).captured.single as Egg;
+      expect(pushed.id, egg.id);
+      expect(pushed.isDeleted, isTrue);
+      expect(
+        await db.syncMetadataDao.getByRecord(
+          SupabaseConstants.eggsTable,
+          egg.id,
+        ),
+        isNull,
+      );
+    });
 
     test(
       'pull reconciliation deletes orphans with NO sync metadata at all',

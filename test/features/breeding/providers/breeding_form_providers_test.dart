@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mocktail/mocktail.dart';
@@ -11,6 +13,7 @@ import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/breeding_enums.dart';
 import 'package:budgie_breeding_tracker/core/errors/app_exception.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/incubation/species_incubation_config.dart';
 import 'package:budgie_breeding_tracker/domain/services/premium/premium_providers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -33,13 +36,18 @@ BreedingPair _pair({
 Incubation _incubation({
   String id = 'inc-1',
   IncubationStatus status = IncubationStatus.active,
+  Species species = Species.budgie,
+  DateTime? startDate,
+  DateTime? expectedHatchDate,
 }) {
   return Incubation(
     id: id,
     userId: 'user-1',
     status: status,
+    species: species,
     breedingPairId: 'pair-1',
-    startDate: DateTime(2025, 1, 1),
+    startDate: startDate ?? DateTime(2025, 1, 1),
+    expectedHatchDate: expectedHatchDate,
   );
 }
 
@@ -48,12 +56,14 @@ void main() {
 
   late MockBreedingPairRepository mockPairRepo;
   late MockIncubationRepository mockIncubationRepo;
+  late MockEggRepository mockEggRepo;
   late MockBirdRepository mockBirdRepo;
 
   setUp(() {
     SharedPreferences.setMockInitialValues({});
     mockPairRepo = MockBreedingPairRepository();
     mockIncubationRepo = MockIncubationRepository();
+    mockEggRepo = MockEggRepository();
     mockBirdRepo = MockBirdRepository();
     registerFallbackValue(_pair());
     registerFallbackValue(
@@ -84,6 +94,7 @@ void main() {
       overrides: [
         breedingPairRepositoryProvider.overrideWithValue(mockPairRepo),
         incubationRepositoryProvider.overrideWithValue(mockIncubationRepo),
+        eggRepositoryProvider.overrideWithValue(mockEggRepo),
         birdRepositoryProvider.overrideWithValue(mockBirdRepo),
         isPremiumProvider.overrideWithValue(isPremium),
         effectivePremiumProvider.overrideWithValue(isPremium),
@@ -101,6 +112,12 @@ void main() {
     when(
       () => mockIncubationRepo.getActiveCount(any()),
     ).thenAnswer((_) async => 1);
+  }
+
+  void stubDeleteCleanupDeps() {
+    when(
+      () => mockIncubationRepo.getByBreedingPairIds(any()),
+    ).thenAnswer((_) async => const []);
   }
 
   group('BreedingFormState', () {
@@ -192,6 +209,110 @@ void main() {
       expect(savedIncubation.expectedHatchDate, isNull);
     });
 
+    test('sets incubation species from validated male bird species', () async {
+      stubUnderLimits();
+      when(() => mockBirdRepo.getById('male-1')).thenAnswer(
+        (_) async => const Bird(
+          id: 'male-1',
+          userId: 'user-1',
+          name: 'Male',
+          gender: BirdGender.male,
+          species: Species.canary,
+        ),
+      );
+      when(() => mockBirdRepo.getById('female-1')).thenAnswer(
+        (_) async => const Bird(
+          id: 'female-1',
+          userId: 'user-1',
+          name: 'Female',
+          gender: BirdGender.female,
+          species: Species.canary,
+        ),
+      );
+      when(() => mockPairRepo.save(any())).thenAnswer((_) async {});
+      when(() => mockIncubationRepo.save(any())).thenAnswer((_) async {});
+
+      final container = createContainer();
+      addTearDown(container.dispose);
+
+      await container
+          .read(breedingFormStateProvider.notifier)
+          .createBreeding(
+            userId: 'user-1',
+            maleId: 'male-1',
+            femaleId: 'female-1',
+            pairingDate: DateTime(2025, 1, 1),
+          );
+
+      final savedIncubation =
+          verify(() => mockIncubationRepo.save(captureAny())).captured.single
+              as Incubation;
+      expect(savedIncubation.species, Species.canary);
+      expect(savedIncubation.status, IncubationStatus.active);
+    });
+
+    test('rolls back saved pair when incubation save fails', () async {
+      stubUnderLimits();
+      when(() => mockPairRepo.save(any())).thenAnswer((_) async {});
+      when(
+        () => mockIncubationRepo.save(any()),
+      ).thenThrow(Exception('incubation save failed'));
+      when(() => mockPairRepo.remove(any())).thenAnswer((_) async {});
+
+      final container = createContainer();
+      addTearDown(container.dispose);
+
+      await container
+          .read(breedingFormStateProvider.notifier)
+          .createBreeding(
+            userId: 'user-1',
+            maleId: 'male-1',
+            femaleId: 'female-1',
+            pairingDate: DateTime(2025, 1, 1),
+          );
+
+      final savedPair =
+          verify(() => mockPairRepo.save(captureAny())).captured.single
+              as BreedingPair;
+      verify(() => mockPairRepo.remove(savedPair.id)).called(1);
+
+      final state = container.read(breedingFormStateProvider);
+      expect(state.isSuccess, isFalse);
+      expect(state.isLoading, isFalse);
+      expect(state.error, isNotNull);
+    });
+
+    test('ignores duplicate create while first create is loading', () async {
+      stubUnderLimits();
+      final pairSave = Completer<void>();
+      when(() => mockPairRepo.save(any())).thenAnswer((_) => pairSave.future);
+      when(() => mockIncubationRepo.save(any())).thenAnswer((_) async {});
+
+      final container = createContainer();
+      addTearDown(container.dispose);
+      final notifier = container.read(breedingFormStateProvider.notifier);
+
+      final first = notifier.createBreeding(
+        userId: 'user-1',
+        maleId: 'male-1',
+        femaleId: 'female-1',
+        pairingDate: DateTime(2025, 1, 1),
+      );
+      final second = notifier.createBreeding(
+        userId: 'user-1',
+        maleId: 'male-1',
+        femaleId: 'female-1',
+        pairingDate: DateTime(2025, 1, 2),
+      );
+
+      await Future<void>.delayed(Duration.zero);
+      verify(() => mockPairRepo.save(any())).called(1);
+
+      pairSave.complete();
+      await Future.wait([first, second]);
+      verify(() => mockIncubationRepo.save(any())).called(1);
+    });
+
     test('sets error state when pair repo throws', () async {
       stubUnderLimits();
       when(() => mockPairRepo.save(any())).thenThrow(Exception('DB error'));
@@ -267,6 +388,71 @@ void main() {
       expect(state.error, isNotNull);
       verifyNever(() => mockPairRepo.save(any()));
     });
+
+    test('rejects pairing when selected male bird is not male', () async {
+      stubUnderLimits();
+      when(() => mockPairRepo.save(any())).thenAnswer((_) async {});
+      when(() => mockIncubationRepo.save(any())).thenAnswer((_) async {});
+      when(() => mockBirdRepo.getById('male-1')).thenAnswer(
+        (_) async => const Bird(
+          id: 'male-1',
+          userId: 'user-1',
+          name: 'Wrong Male',
+          gender: BirdGender.female,
+          species: Species.budgie,
+        ),
+      );
+
+      final container = createContainer();
+      addTearDown(container.dispose);
+
+      await container
+          .read(breedingFormStateProvider.notifier)
+          .createBreeding(
+            userId: 'user-1',
+            maleId: 'male-1',
+            femaleId: 'female-1',
+            pairingDate: DateTime(2025, 1, 1),
+          );
+
+      final state = container.read(breedingFormStateProvider);
+      expect(state.isSuccess, isFalse);
+      expect(state.error, 'breeding.invalid_male');
+      verifyNever(() => mockPairRepo.save(any()));
+    });
+
+    test('rejects pairing when either selected bird is not alive', () async {
+      stubUnderLimits();
+      when(() => mockPairRepo.save(any())).thenAnswer((_) async {});
+      when(() => mockIncubationRepo.save(any())).thenAnswer((_) async {});
+      when(() => mockBirdRepo.getById('female-1')).thenAnswer(
+        (_) async => const Bird(
+          id: 'female-1',
+          userId: 'user-1',
+          name: 'Female',
+          gender: BirdGender.female,
+          status: BirdStatus.dead,
+          species: Species.budgie,
+        ),
+      );
+
+      final container = createContainer();
+      addTearDown(container.dispose);
+
+      await container
+          .read(breedingFormStateProvider.notifier)
+          .createBreeding(
+            userId: 'user-1',
+            maleId: 'male-1',
+            femaleId: 'female-1',
+            pairingDate: DateTime(2025, 1, 1),
+          );
+
+      final state = container.read(breedingFormStateProvider);
+      expect(state.isSuccess, isFalse);
+      expect(state.error, 'breeding.birds_must_be_alive');
+      verifyNever(() => mockPairRepo.save(any()));
+    });
   });
 
   group('BreedingFormNotifier.updateBreeding', () {
@@ -303,6 +489,63 @@ void main() {
         expect(state.isSuccess, isFalse);
         expect(state.error, 'breeding.same_species_required');
         verifyNever(() => mockPairRepo.save(any()));
+      },
+    );
+
+    test(
+      'updates linked incubation species when pair species changes',
+      () async {
+        final startDate = DateTime(2025, 1, 1);
+        final oldExpectedHatchDate = startDate.add(
+          Duration(days: incubationDaysForSpecies(Species.budgie)),
+        );
+        when(() => mockBirdRepo.getById('male-1')).thenAnswer(
+          (_) async => const Bird(
+            id: 'male-1',
+            userId: 'user-1',
+            name: 'Male',
+            gender: BirdGender.male,
+            species: Species.canary,
+          ),
+        );
+        when(() => mockBirdRepo.getById('female-1')).thenAnswer(
+          (_) async => const Bird(
+            id: 'female-1',
+            userId: 'user-1',
+            name: 'Female',
+            gender: BirdGender.female,
+            species: Species.canary,
+          ),
+        );
+        when(() => mockPairRepo.save(any())).thenAnswer((_) async {});
+        when(() => mockIncubationRepo.getByBreedingPair('pair-1')).thenAnswer(
+          (_) async => [
+            _incubation(
+              species: Species.budgie,
+              startDate: startDate,
+              expectedHatchDate: oldExpectedHatchDate,
+            ),
+          ],
+        );
+        when(() => mockIncubationRepo.save(any())).thenAnswer((_) async {});
+
+        final container = createContainer();
+        addTearDown(container.dispose);
+
+        await container
+            .read(breedingFormStateProvider.notifier)
+            .updateBreeding(_pair());
+
+        final updatedIncubation =
+            verify(() => mockIncubationRepo.save(captureAny())).captured.single
+                as Incubation;
+        expect(updatedIncubation.species, Species.canary);
+        expect(
+          updatedIncubation.expectedHatchDate,
+          startDate.add(
+            Duration(days: incubationDaysForSpecies(Species.canary)),
+          ),
+        );
       },
     );
   });
@@ -488,6 +731,9 @@ void main() {
   group('BreedingFormNotifier.updateBreeding', () {
     test('sets isSuccess after saving updated pair', () async {
       when(() => mockPairRepo.save(any())).thenAnswer((_) async {});
+      when(
+        () => mockIncubationRepo.getByBreedingPair(any()),
+      ).thenAnswer((_) async => const []);
 
       final container = createContainer();
       addTearDown(container.dispose);
@@ -519,6 +765,7 @@ void main() {
 
   group('BreedingFormNotifier.deleteBreeding', () {
     test('sets isSuccess after removing pair', () async {
+      stubDeleteCleanupDeps();
       when(() => mockPairRepo.remove(any())).thenAnswer((_) async {});
 
       final container = createContainer();
@@ -534,6 +781,7 @@ void main() {
     });
 
     test('calls remove with the correct id', () async {
+      stubDeleteCleanupDeps();
       when(() => mockPairRepo.remove(any())).thenAnswer((_) async {});
 
       final container = createContainer();
@@ -547,6 +795,7 @@ void main() {
     });
 
     test('sets error when remove throws', () async {
+      stubDeleteCleanupDeps();
       when(
         () => mockPairRepo.remove(any()),
       ).thenThrow(Exception('Delete failed'));

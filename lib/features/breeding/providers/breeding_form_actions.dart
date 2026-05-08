@@ -22,10 +22,7 @@ extension BreedingFormActions on BreedingFormNotifier {
           status: IncubationStatus.cancelled,
           closedAt: now,
         );
-        await _helper.cancelBreedingNotifications(
-          id,
-          incubations: incubations,
-        );
+        await _helper.cancelBreedingNotifications(id, incubations: incubations);
       } else {
         state = state.copyWith(
           isLoading: false,
@@ -62,10 +59,7 @@ extension BreedingFormActions on BreedingFormNotifier {
           status: IncubationStatus.completed,
           closedAt: now,
         );
-        await _helper.cancelBreedingNotifications(
-          id,
-          incubations: incubations,
-        );
+        await _helper.cancelBreedingNotifications(id, incubations: incubations);
       } else {
         state = state.copyWith(
           isLoading: false,
@@ -89,26 +83,19 @@ extension BreedingFormActions on BreedingFormNotifier {
       final incubationRepo = ref.read(incubationRepositoryProvider);
       final eggRepo = ref.read(eggRepositoryProvider);
 
-      try {
-        final incubations = await incubationRepo.getByBreedingPairIds([id]);
-        final eggs =
-            await _helper.getEggsForIncubations(incubations);
+      final incubations = await incubationRepo.getByBreedingPairIds([id]);
+      final eggs = await _helper.getEggsForIncubations(incubations);
 
-        await _helper.cancelBreedingNotifications(
-          id,
-          incubations: incubations,
-          eggs: eggs,
-        );
+      await _helper.cancelBreedingNotifications(
+        id,
+        incubations: incubations,
+        eggs: eggs,
+      );
 
-        await Future.wait(eggs.map((egg) => eggRepo.remove(egg.id)));
-        await Future.wait(
-          incubations.map((inc) => incubationRepo.remove(inc.id)),
-        );
-      } catch (e) {
-        AppLogger.warning(
-          'Failed to clean related incubation/egg records before deleting breeding $id: $e',
-        );
-      }
+      await Future.wait(eggs.map((egg) => eggRepo.remove(egg.id)));
+      await Future.wait(
+        incubations.map((inc) => incubationRepo.remove(inc.id)),
+      );
 
       await pairRepo.remove(id);
       state = state.copyWith(isLoading: false, isSuccess: true);

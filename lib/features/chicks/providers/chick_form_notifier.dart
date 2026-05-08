@@ -1,7 +1,8 @@
 part of 'chick_form_providers.dart';
 
 /// Notifier for chick form operations.
-class ChickFormNotifier extends Notifier<ChickFormState> with SentryErrorFilter {
+class ChickFormNotifier extends Notifier<ChickFormState>
+    with SentryErrorFilter {
   @override
   ChickFormState build() => const ChickFormState();
 
@@ -130,7 +131,9 @@ class ChickFormNotifier extends Notifier<ChickFormState> with SentryErrorFilter 
       var sideEffectError = false;
 
       // Reschedule banding reminders if bandingDay changed
-      if (previous != null && previous.bandingDay != chick.bandingDay && !chick.isBanded) {
+      if (previous != null &&
+          previous.bandingDay != chick.bandingDay &&
+          !chick.isBanded) {
         try {
           final scheduler = ref.read(notificationSchedulerProvider);
           final settings = ref.read(notificationToggleSettingsProvider);
@@ -152,7 +155,9 @@ class ChickFormNotifier extends Notifier<ChickFormState> with SentryErrorFilter 
 
       state = state.copyWith(
         isLoading: false,
-        warning: sideEffectError ? 'errors.background_tasks_partial'.tr() : null,
+        warning: sideEffectError
+            ? 'errors.background_tasks_partial'.tr()
+            : null,
         isSuccess: true,
       );
     } catch (e, st) {
@@ -169,17 +174,17 @@ class ChickFormNotifier extends Notifier<ChickFormState> with SentryErrorFilter 
     try {
       final repo = ref.read(chickRepositoryProvider);
       await repo.remove(id);
-      var sideEffectError = false;
-      try {
-        final scheduler = ref.read(notificationSchedulerProvider);
-        await scheduler.cancelBandingReminders(id);
-      } catch (e) {
-        AppLogger.warning('Failed to cancel banding reminders: $e');
-        sideEffectError = true;
-      }
+      final sideEffectError = await _cancelChickReminders(
+        ref,
+        id,
+        cancelCare: true,
+        cancelBanding: true,
+      );
       state = state.copyWith(
         isLoading: false,
-        warning: sideEffectError ? 'errors.background_tasks_partial'.tr() : null,
+        warning: sideEffectError
+            ? 'errors.background_tasks_partial'.tr()
+            : null,
         isSuccess: true,
       );
     } catch (e, st) {

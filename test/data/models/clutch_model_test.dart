@@ -112,6 +112,16 @@ void main() {
         expect(withOnlyIncubation.breedingId, isNull);
         expect(withOnlyIncubation.incubationId, 'inc-1');
       });
+
+      test('falls back to unknown for unknown status', () {
+        final clutch = Clutch.fromJson({
+          'id': 'clutch-1',
+          'user_id': 'user-1',
+          'status': 'not-real-status',
+        });
+
+        expect(clutch.status, BreedingStatus.unknown);
+      });
     });
 
     group('copyWith', () {

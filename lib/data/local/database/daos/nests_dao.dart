@@ -34,9 +34,17 @@ class NestsDao extends DatabaseAccessor<AppDatabase> with _$NestsDaoMixin {
   }
 
   Future<Nest?> getById(String id) async {
-    final row = await (select(nestsTable)..where(
-      (t) => t.id.equals(id) & t.isDeleted.equals(false),
-    )).getSingleOrNull();
+    final row =
+        await (select(nestsTable)
+              ..where((t) => t.id.equals(id) & t.isDeleted.equals(false)))
+            .getSingleOrNull();
+    return row?.toModel();
+  }
+
+  Future<Nest?> getByIdIncludingDeleted(String id) async {
+    final row = await (select(
+      nestsTable,
+    )..where((t) => t.id.equals(id))).getSingleOrNull();
     return row?.toModel();
   }
 

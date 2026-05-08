@@ -57,6 +57,13 @@ class ChickRepository extends BaseRepository<Chick>
   Future<Chick?> getLocalById(String id) => _localDao.getById(id);
 
   @override
+  Future<Chick?> getLocalByIdForSync(String id) =>
+      _localDao.getByIdIncludingDeleted(id);
+
+  @override
+  bool shouldValidateForeignKeys(Chick item) => !item.isDeleted;
+
+  @override
   String getEntityId(Chick item) => item.id;
 
   @override

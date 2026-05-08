@@ -55,6 +55,13 @@ class HealthRecordRepository extends BaseRepository<HealthRecord>
   Future<HealthRecord?> getLocalById(String id) => _localDao.getById(id);
 
   @override
+  Future<HealthRecord?> getLocalByIdForSync(String id) =>
+      _localDao.getByIdIncludingDeleted(id);
+
+  @override
+  bool shouldValidateForeignKeys(HealthRecord item) => !item.isDeleted;
+
+  @override
   String getEntityId(HealthRecord item) => item.id;
 
   @override

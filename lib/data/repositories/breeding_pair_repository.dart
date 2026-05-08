@@ -53,6 +53,13 @@ class BreedingPairRepository extends BaseRepository<BreedingPair>
   Future<BreedingPair?> getLocalById(String id) => _localDao.getById(id);
 
   @override
+  Future<BreedingPair?> getLocalByIdForSync(String id) =>
+      _localDao.getByIdIncludingDeleted(id);
+
+  @override
+  bool shouldValidateForeignKeys(BreedingPair item) => !item.isDeleted;
+
+  @override
   String getEntityId(BreedingPair item) => item.id;
 
   @override
@@ -102,8 +109,7 @@ class BreedingPairRepository extends BaseRepository<BreedingPair>
   Future<List<BreedingPair>> getAll(String userId) => _localDao.getAll(userId);
 
   /// Returns the count of active + ongoing breeding pairs (SQL COUNT).
-  Future<int> getActiveCount(String userId) =>
-      _localDao.getActiveCount(userId);
+  Future<int> getActiveCount(String userId) => _localDao.getActiveCount(userId);
 
   @override
   Future<BreedingPair?> getById(String id) => _localDao.getById(id);

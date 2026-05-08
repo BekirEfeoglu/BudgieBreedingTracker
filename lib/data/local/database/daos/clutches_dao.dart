@@ -34,9 +34,17 @@ class ClutchesDao extends DatabaseAccessor<AppDatabase>
   }
 
   Future<Clutch?> getById(String id) async {
-    final row = await (select(clutchesTable)..where(
-      (t) => t.id.equals(id) & t.isDeleted.equals(false),
-    )).getSingleOrNull();
+    final row =
+        await (select(clutchesTable)
+              ..where((t) => t.id.equals(id) & t.isDeleted.equals(false)))
+            .getSingleOrNull();
+    return row?.toModel();
+  }
+
+  Future<Clutch?> getByIdIncludingDeleted(String id) async {
+    final row = await (select(
+      clutchesTable,
+    )..where((t) => t.id.equals(id))).getSingleOrNull();
     return row?.toModel();
   }
 

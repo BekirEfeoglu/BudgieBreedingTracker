@@ -44,6 +44,10 @@ void main() {
     when(() => localDao.insertItem(any())).thenAnswer((_) async {});
     when(() => localDao.insertAll(any())).thenAnswer((_) async {});
     when(() => localDao.getById(any())).thenAnswer((_) async => null);
+    when(() => localDao.getByIdIncludingDeleted(any())).thenAnswer(
+      (invocation) =>
+          localDao.getById(invocation.positionalArguments.first as String),
+    );
     when(() => localDao.getAll(any())).thenAnswer((_) async => []);
     when(() => localDao.softDelete(any())).thenAnswer((_) async {});
     when(() => localDao.hardDelete(any())).thenAnswer((_) async => 1);
@@ -148,9 +152,9 @@ void main() {
           ),
         ).thenAnswer((_) async => [pending]);
         when(() => localDao.getById(pair.id)).thenAnswer((_) async => pair);
-        when(() => birdsDao.getById('missing-male')).thenAnswer(
-          (_) async => null,
-        );
+        when(
+          () => birdsDao.getById('missing-male'),
+        ).thenAnswer((_) async => null);
 
         await repository.pushAll(userId);
 

@@ -53,6 +53,13 @@ class EventReminderRepository extends BaseRepository<EventReminder>
   Future<EventReminder?> getLocalById(String id) => _localDao.getById(id);
 
   @override
+  Future<EventReminder?> getLocalByIdForSync(String id) =>
+      _localDao.getByIdIncludingDeleted(id);
+
+  @override
+  bool shouldValidateForeignKeys(EventReminder item) => !item.isDeleted;
+
+  @override
   String getEntityId(EventReminder item) => item.id;
 
   @override

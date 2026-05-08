@@ -74,13 +74,16 @@ class IncubationsDao extends DatabaseAccessor<AppDatabase>
   /// One-shot count of active incubations.
   Future<int> getActiveCount(String userId) async {
     final count = incubationsTable.id.count();
-    final row = await (selectOnly(incubationsTable)
-          ..addColumns([count])
-          ..where(
-            incubationsTable.userId.equals(userId) &
-                incubationsTable.status.equalsValue(IncubationStatus.active),
-          ))
-        .getSingle();
+    final row =
+        await (selectOnly(incubationsTable)
+              ..addColumns([count])
+              ..where(
+                incubationsTable.userId.equals(userId) &
+                    incubationsTable.status.equalsValue(
+                      IncubationStatus.active,
+                    ),
+              ))
+            .getSingle();
     return row.read(count) ?? 0;
   }
 
@@ -101,7 +104,7 @@ class IncubationsDao extends DatabaseAccessor<AppDatabase>
   /// Returns `{'YYYY-MM': {'completed': 2, 'cancelled': 1, ...}}`.
   Stream<Map<String, Map<String, int>>> watchMonthlyOutcomes(String userId) {
     final query = customSelect(
-      "SELECT strftime('%Y-%m', start_date) AS month, status, COUNT(*) AS cnt "
+      "SELECT strftime('%Y-%m', start_date, 'localtime') AS month, status, COUNT(*) AS cnt "
       'FROM incubations WHERE user_id = ? '
       'GROUP BY month, status ORDER BY month',
       variables: [Variable.withString(userId)],

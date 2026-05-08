@@ -39,9 +39,17 @@ class BreedingPairsDao extends DatabaseAccessor<AppDatabase>
 
   /// Gets a single breeding pair by id.
   Future<BreedingPair?> getById(String id) async {
-    final row = await (select(breedingPairsTable)..where(
-      (t) => t.id.equals(id) & t.isDeleted.equals(false),
-    )).getSingleOrNull();
+    final row =
+        await (select(breedingPairsTable)
+              ..where((t) => t.id.equals(id) & t.isDeleted.equals(false)))
+            .getSingleOrNull();
+    return row?.toModel();
+  }
+
+  Future<BreedingPair?> getByIdIncludingDeleted(String id) async {
+    final row = await (select(
+      breedingPairsTable,
+    )..where((t) => t.id.equals(id))).getSingleOrNull();
     return row?.toModel();
   }
 
@@ -83,17 +91,20 @@ class BreedingPairsDao extends DatabaseAccessor<AppDatabase>
   /// One-shot count of active + ongoing breeding pairs.
   Future<int> getActiveCount(String userId) async {
     final count = breedingPairsTable.id.count();
-    final row = await (selectOnly(breedingPairsTable)
-          ..addColumns([count])
-          ..where(
-            breedingPairsTable.userId.equals(userId) &
-                breedingPairsTable.isDeleted.equals(false) &
-                (breedingPairsTable.status.equalsValue(BreedingStatus.active) |
-                    breedingPairsTable.status.equalsValue(
-                      BreedingStatus.ongoing,
-                    )),
-          ))
-        .getSingle();
+    final row =
+        await (selectOnly(breedingPairsTable)
+              ..addColumns([count])
+              ..where(
+                breedingPairsTable.userId.equals(userId) &
+                    breedingPairsTable.isDeleted.equals(false) &
+                    (breedingPairsTable.status.equalsValue(
+                          BreedingStatus.active,
+                        ) |
+                        breedingPairsTable.status.equalsValue(
+                          BreedingStatus.ongoing,
+                        )),
+              ))
+            .getSingle();
     return row.read(count) ?? 0;
   }
 
@@ -114,13 +125,14 @@ class BreedingPairsDao extends DatabaseAccessor<AppDatabase>
         .map((row) => row.read(count) ?? 0);
   }
 
-  /// Watches active (non-deleted) breeding pairs for a user.
+  /// Watches active + ongoing (non-deleted) breeding pairs for a user.
   Stream<List<BreedingPair>> watchActive(String userId) {
     return (select(breedingPairsTable)..where(
           (t) =>
               t.userId.equals(userId) &
               t.isDeleted.equals(false) &
-              t.status.equalsValue(BreedingStatus.active),
+              (t.status.equalsValue(BreedingStatus.active) |
+                  t.status.equalsValue(BreedingStatus.ongoing)),
         ))
         .watch()
         .map((rows) => rows.map((r) => r.toModel()).toList());

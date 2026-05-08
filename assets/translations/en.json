@@ -340,6 +340,7 @@
     "same_species_required": "Only birds of the same species can be paired",
     "invalid_male": "Selected male bird is not a male",
     "invalid_female": "Selected female bird is not a female",
+    "birds_must_be_alive": "Birds must be alive to be paired",
     "all_eggs_hatched": "All eggs have hatched successfully",
     "sort_newest": "Newest First",
     "sort_oldest": "Oldest First",

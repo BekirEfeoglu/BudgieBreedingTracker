@@ -8,6 +8,7 @@ import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
 import 'package:budgie_breeding_tracker/data/models/incubation_model.dart';
 import 'package:budgie_breeding_tracker/core/enums/breeding_enums.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/notifications/notification_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/premium/premium_providers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -57,6 +58,7 @@ void main() {
   late MockIncubationRepository mockIncubationRepo;
   late MockEggRepository mockEggRepo;
   late MockBirdRepository mockBirdRepo;
+  late MockNotificationScheduler mockScheduler;
 
   setUp(() {
     SharedPreferences.setMockInitialValues({});
@@ -64,12 +66,19 @@ void main() {
     mockIncubationRepo = MockIncubationRepository();
     mockEggRepo = MockEggRepository();
     mockBirdRepo = MockBirdRepository();
+    mockScheduler = MockNotificationScheduler();
 
     registerFallbackValue(_pair());
     registerFallbackValue(
       const Incubation(id: 'fallback', userId: 'fallback-user'),
     );
     registerFallbackValue(_egg());
+    when(
+      () => mockScheduler.cancelIncubationMilestones(any()),
+    ).thenAnswer((_) async {});
+    when(
+      () => mockScheduler.cancelEggTurningReminders(any()),
+    ).thenAnswer((_) async {});
   });
 
   ProviderContainer createContainer() {
@@ -79,6 +88,7 @@ void main() {
         incubationRepositoryProvider.overrideWithValue(mockIncubationRepo),
         eggRepositoryProvider.overrideWithValue(mockEggRepo),
         birdRepositoryProvider.overrideWithValue(mockBirdRepo),
+        notificationSchedulerProvider.overrideWithValue(mockScheduler),
         isPremiumProvider.overrideWithValue(false),
         effectivePremiumProvider.overrideWithValue(false),
       ],
@@ -93,9 +103,7 @@ void main() {
     when(
       () => mockIncubationRepo.getByBreedingPairIds(any()),
     ).thenAnswer((_) async => incubations);
-    when(
-      () => mockIncubationRepo.saveAll(any()),
-    ).thenAnswer((_) async {});
+    when(() => mockIncubationRepo.saveAll(any())).thenAnswer((_) async {});
     when(
       () => mockEggRepo.getByIncubationIds(any()),
     ).thenAnswer((_) async => eggs);
@@ -105,9 +113,9 @@ void main() {
 
   group('BreedingFormActions.cancelBreeding', () {
     test('sets isSuccess when pair found and cancelled', () async {
-      when(() => mockPairRepo.getById('pair-1')).thenAnswer(
-        (_) async => _pair(),
-      );
+      when(
+        () => mockPairRepo.getById('pair-1'),
+      ).thenAnswer((_) async => _pair());
       when(() => mockPairRepo.save(any())).thenAnswer((_) async {});
       stubHelperDeps();
 
@@ -125,9 +133,9 @@ void main() {
     });
 
     test('saves pair with cancelled status and separationDate', () async {
-      when(() => mockPairRepo.getById('pair-1')).thenAnswer(
-        (_) async => _pair(),
-      );
+      when(
+        () => mockPairRepo.getById('pair-1'),
+      ).thenAnswer((_) async => _pair());
       when(() => mockPairRepo.save(any())).thenAnswer((_) async {});
       stubHelperDeps();
 
@@ -147,9 +155,9 @@ void main() {
 
     test('closes active incubations with cancelled status', () async {
       final activeInc = _incubation(status: IncubationStatus.active);
-      when(() => mockPairRepo.getById('pair-1')).thenAnswer(
-        (_) async => _pair(),
-      );
+      when(
+        () => mockPairRepo.getById('pair-1'),
+      ).thenAnswer((_) async => _pair());
       when(() => mockPairRepo.save(any())).thenAnswer((_) async {});
       stubHelperDeps(incubations: [activeInc]);
 
@@ -168,9 +176,7 @@ void main() {
     });
 
     test('sets error when pair not found', () async {
-      when(() => mockPairRepo.getById('pair-1')).thenAnswer(
-        (_) async => null,
-      );
+      when(() => mockPairRepo.getById('pair-1')).thenAnswer((_) async => null);
 
       final container = createContainer();
       addTearDown(container.dispose);
@@ -186,9 +192,9 @@ void main() {
     });
 
     test('sets error state when repo throws', () async {
-      when(() => mockPairRepo.getById('pair-1')).thenThrow(
-        Exception('DB error'),
-      );
+      when(
+        () => mockPairRepo.getById('pair-1'),
+      ).thenThrow(Exception('DB error'));
 
       final container = createContainer();
       addTearDown(container.dispose);
@@ -204,9 +210,9 @@ void main() {
     });
 
     test('sets loading true during operation', () async {
-      when(() => mockPairRepo.getById('pair-1')).thenAnswer(
-        (_) async => _pair(),
-      );
+      when(
+        () => mockPairRepo.getById('pair-1'),
+      ).thenAnswer((_) async => _pair());
       when(() => mockPairRepo.save(any())).thenAnswer((_) async {});
       stubHelperDeps();
 
@@ -231,9 +237,9 @@ void main() {
 
     test('does not save incubations when none are active', () async {
       final completedInc = _incubation(status: IncubationStatus.completed);
-      when(() => mockPairRepo.getById('pair-1')).thenAnswer(
-        (_) async => _pair(),
-      );
+      when(
+        () => mockPairRepo.getById('pair-1'),
+      ).thenAnswer((_) async => _pair());
       when(() => mockPairRepo.save(any())).thenAnswer((_) async {});
       stubHelperDeps(incubations: [completedInc]);
 
@@ -253,9 +259,9 @@ void main() {
 
   group('BreedingFormActions.completeBreeding', () {
     test('sets isSuccess when pair found and completed', () async {
-      when(() => mockPairRepo.getById('pair-1')).thenAnswer(
-        (_) async => _pair(),
-      );
+      when(
+        () => mockPairRepo.getById('pair-1'),
+      ).thenAnswer((_) async => _pair());
       when(() => mockPairRepo.save(any())).thenAnswer((_) async {});
       stubHelperDeps();
 
@@ -273,9 +279,9 @@ void main() {
     });
 
     test('saves pair with completed status and separationDate', () async {
-      when(() => mockPairRepo.getById('pair-1')).thenAnswer(
-        (_) async => _pair(),
-      );
+      when(
+        () => mockPairRepo.getById('pair-1'),
+      ).thenAnswer((_) async => _pair());
       when(() => mockPairRepo.save(any())).thenAnswer((_) async {});
       stubHelperDeps();
 
@@ -295,9 +301,9 @@ void main() {
 
     test('closes active incubations with completed status', () async {
       final activeInc = _incubation(status: IncubationStatus.active);
-      when(() => mockPairRepo.getById('pair-1')).thenAnswer(
-        (_) async => _pair(),
-      );
+      when(
+        () => mockPairRepo.getById('pair-1'),
+      ).thenAnswer((_) async => _pair());
       when(() => mockPairRepo.save(any())).thenAnswer((_) async {});
       stubHelperDeps(incubations: [activeInc]);
 
@@ -316,9 +322,7 @@ void main() {
     });
 
     test('sets error when pair not found', () async {
-      when(() => mockPairRepo.getById('pair-1')).thenAnswer(
-        (_) async => null,
-      );
+      when(() => mockPairRepo.getById('pair-1')).thenAnswer((_) async => null);
 
       final container = createContainer();
       addTearDown(container.dispose);
@@ -334,9 +338,9 @@ void main() {
     });
 
     test('sets error state when repo throws', () async {
-      when(() => mockPairRepo.getById('pair-1')).thenThrow(
-        Exception('DB error'),
-      );
+      when(
+        () => mockPairRepo.getById('pair-1'),
+      ).thenThrow(Exception('DB error'));
 
       final container = createContainer();
       addTearDown(container.dispose);
@@ -352,9 +356,9 @@ void main() {
     });
 
     test('sets loading true during operation', () async {
-      when(() => mockPairRepo.getById('pair-1')).thenAnswer(
-        (_) async => _pair(),
-      );
+      when(
+        () => mockPairRepo.getById('pair-1'),
+      ).thenAnswer((_) async => _pair());
       when(() => mockPairRepo.save(any())).thenAnswer((_) async {});
       stubHelperDeps();
 
@@ -446,7 +450,39 @@ void main() {
       verify(() => mockIncubationRepo.remove('inc-1')).called(1);
     });
 
-    test('still removes pair when related cleanup fails', () async {
+    test(
+      'cancels incubation and egg notifications for related records',
+      () async {
+        final incubations = [_incubation()];
+        final eggs = [_egg(), _egg(id: 'egg-2')];
+        stubHelperDeps(incubations: incubations, eggs: eggs);
+        when(() => mockEggRepo.remove(any())).thenAnswer((_) async {});
+        when(() => mockIncubationRepo.remove(any())).thenAnswer((_) async {});
+        when(() => mockPairRepo.remove(any())).thenAnswer((_) async {});
+
+        final container = createContainer();
+        addTearDown(container.dispose);
+
+        await container
+            .read(breedingFormStateProvider.notifier)
+            .deleteBreeding('pair-1');
+
+        verify(
+          () => mockScheduler.cancelIncubationMilestones('inc-1'),
+        ).called(1);
+        verify(
+          () => mockScheduler.cancelEggTurningReminders('inc-1'),
+        ).called(1);
+        verify(
+          () => mockScheduler.cancelEggTurningReminders('egg-1'),
+        ).called(1);
+        verify(
+          () => mockScheduler.cancelEggTurningReminders('egg-2'),
+        ).called(1);
+      },
+    );
+
+    test('does not remove pair when related cleanup fails', () async {
       when(
         () => mockIncubationRepo.getByBreedingPairIds(any()),
       ).thenThrow(Exception('Cleanup error'));
@@ -459,10 +495,11 @@ void main() {
           .read(breedingFormStateProvider.notifier)
           .deleteBreeding('pair-1');
 
-      // Pair should still be removed even if cleanup failed
-      verify(() => mockPairRepo.remove('pair-1')).called(1);
+      verifyNever(() => mockPairRepo.remove('pair-1'));
       final state = container.read(breedingFormStateProvider);
-      expect(state.isSuccess, isTrue);
+      expect(state.isSuccess, isFalse);
+      expect(state.error, isNotNull);
+      expect(state.isLoading, isFalse);
     });
 
     test('sets error when pair remove throws', () async {
@@ -514,9 +551,9 @@ void main() {
       addTearDown(container.dispose);
 
       // First, put notifier in a success state via another action
-      when(() => mockPairRepo.getById('pair-1')).thenAnswer(
-        (_) async => _pair(),
-      );
+      when(
+        () => mockPairRepo.getById('pair-1'),
+      ).thenAnswer((_) async => _pair());
       await container
           .read(breedingFormStateProvider.notifier)
           .cancelBreeding('pair-1');

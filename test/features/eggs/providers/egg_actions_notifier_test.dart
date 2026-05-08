@@ -39,6 +39,9 @@ void main() {
 
   setUpAll(() {
     registerFallbackValue(Species.budgie);
+    registerFallbackValue(
+      const Incubation(id: 'fallback', userId: 'fallback-user'),
+    );
   });
 
   setUp(() {
@@ -65,6 +68,15 @@ void main() {
 
     // Default stubs for side-effect services
     when(
+      () => mockScheduler.scheduleIncubationMilestones(
+        incubationId: any(named: 'incubationId'),
+        startDate: any(named: 'startDate'),
+        label: any(named: 'label'),
+        species: any(named: 'species'),
+        settings: any(named: 'settings'),
+      ),
+    ).thenAnswer((_) async {});
+    when(
       () => mockScheduler.scheduleEggTurningReminders(
         eggId: any(named: 'eggId'),
         startDate: any(named: 'startDate'),
@@ -90,6 +102,15 @@ void main() {
         hatchDate: any(named: 'hatchDate'),
         bandingDay: any(named: 'bandingDay'),
         settings: any(named: 'settings'),
+      ),
+    ).thenAnswer((_) async {});
+    when(
+      () => mockCalendarGen.generateIncubationEvents(
+        userId: any(named: 'userId'),
+        breedingPairId: any(named: 'breedingPairId'),
+        startDate: any(named: 'startDate'),
+        pairLabel: any(named: 'pairLabel'),
+        species: any(named: 'species'),
       ),
     ).thenAnswer((_) async {});
     when(
@@ -181,6 +202,18 @@ void main() {
     updatedAt: DateTime(2024, 1, 10),
   );
 
+  group('EggActionsState', () {
+    test('copyWith preserves nullable fields when omitted', () {
+      const state = EggActionsState(error: 'old error', warning: 'old warning');
+
+      final updated = state.copyWith(isLoading: true);
+
+      expect(updated.isLoading, isTrue);
+      expect(updated.error, 'old error');
+      expect(updated.warning, 'old warning');
+    });
+  });
+
   group('EggActionsNotifier - deleteEgg', () {
     test('transitions to success on successful delete', () async {
       when(() => eggRepo.remove('egg-1')).thenAnswer((_) async {});
@@ -226,9 +259,77 @@ void main() {
       completer.complete();
       await future;
     });
+
+    test('clears stale chickCreated flag on delete', () async {
+      when(() => eggRepo.save(any())).thenAnswer((_) async {});
+      when(() => chickRepo.getByEggId('egg-1')).thenAnswer((_) async => null);
+      when(() => chickRepo.save(any())).thenAnswer((_) async {});
+      when(() => eggRepo.remove('egg-1')).thenAnswer((_) async {});
+
+      final container = makeContainer();
+      addTearDown(container.dispose);
+
+      await container
+          .read(eggActionsProvider.notifier)
+          .updateEggStatus(testEgg(), EggStatus.hatched);
+      expect(container.read(eggActionsProvider).chickCreated, isTrue);
+
+      await container.read(eggActionsProvider.notifier).deleteEgg('egg-1');
+
+      final state = container.read(eggActionsProvider);
+      expect(state.isSuccess, isTrue);
+      expect(state.chickCreated, isFalse);
+    });
   });
 
   group('EggActionsNotifier - updateEggStatus with hatching', () {
+    test('ignores duplicate add while first add is loading', () async {
+      final saveCompleter = Completer<void>();
+      when(() => eggRepo.save(any())).thenAnswer((_) => saveCompleter.future);
+
+      final container = makeContainer();
+      addTearDown(container.dispose);
+      final notifier = container.read(eggActionsProvider.notifier);
+
+      final first = notifier.addEgg(
+        incubationId: 'inc-1',
+        layDate: DateTime(2024, 1, 10),
+        eggNumber: 1,
+      );
+      final second = notifier.addEgg(
+        incubationId: 'inc-1',
+        layDate: DateTime(2024, 1, 12),
+        eggNumber: 2,
+      );
+
+      await Future<void>.delayed(Duration.zero);
+      verify(() => eggRepo.save(any())).called(1);
+
+      saveCompleter.complete();
+      await Future.wait([first, second]);
+    });
+
+    test(
+      'ignores duplicate status update while first update is loading',
+      () async {
+        final saveCompleter = Completer<void>();
+        when(() => eggRepo.save(any())).thenAnswer((_) => saveCompleter.future);
+
+        final container = makeContainer();
+        addTearDown(container.dispose);
+        final notifier = container.read(eggActionsProvider.notifier);
+
+        final first = notifier.updateEggStatus(testEgg(), EggStatus.fertile);
+        final second = notifier.updateEggStatus(testEgg(), EggStatus.discarded);
+
+        await Future<void>.delayed(Duration.zero);
+        verify(() => eggRepo.save(any())).called(1);
+
+        saveCompleter.complete();
+        await Future.wait([first, second]);
+      },
+    );
+
     test('skips chick creation when chick already exists for egg', () async {
       when(() => eggRepo.save(any())).thenAnswer((_) async {});
       when(() => chickRepo.getByEggId('egg-1')).thenAnswer(
@@ -256,6 +357,100 @@ void main() {
       verifyNever(() => chickRepo.save(any()));
     });
 
+    test(
+      'creates chick with egg context and schedules chick follow-ups',
+      () async {
+        when(() => eggRepo.save(any())).thenAnswer((_) async {});
+        when(() => chickRepo.getByEggId('egg-1')).thenAnswer((_) async => null);
+        when(() => chickRepo.save(any())).thenAnswer((_) async {});
+
+        final container = makeContainer();
+        addTearDown(container.dispose);
+
+        await container
+            .read(eggActionsProvider.notifier)
+            .updateEggStatus(
+              testEgg(
+                status: EggStatus.incubating,
+                eggNumber: 7,
+              ).copyWith(clutchId: 'clutch-1'),
+              EggStatus.hatched,
+            );
+
+        final savedEgg =
+            verify(() => eggRepo.save(captureAny())).captured.single as Egg;
+        final savedChick =
+            verify(() => chickRepo.save(captureAny())).captured.single as Chick;
+
+        expect(savedChick.userId, 'test-user');
+        expect(savedChick.eggId, 'egg-1');
+        expect(savedChick.clutchId, 'clutch-1');
+        expect(savedChick.hatchDate, savedEgg.hatchDate);
+        expect(savedChick.gender, BirdGender.unknown);
+        expect(savedChick.healthStatus, ChickHealthStatus.healthy);
+
+        verify(
+          () => mockScheduler.scheduleChickCareReminder(
+            chickId: savedChick.id,
+            chickLabel: any(named: 'chickLabel'),
+            startDate: savedChick.hatchDate!,
+            intervalHours: 4,
+            durationDays: 14,
+            settings: any(named: 'settings'),
+          ),
+        ).called(1);
+        verify(
+          () => mockCalendarGen.generateChickEvents(
+            userId: 'test-user',
+            hatchDate: savedChick.hatchDate!,
+            chickLabel: any(named: 'chickLabel'),
+            chickId: savedChick.id,
+            bandingDay: 10,
+          ),
+        ).called(1);
+        verify(
+          () => mockScheduler.scheduleBandingReminders(
+            chickId: savedChick.id,
+            chickLabel: any(named: 'chickLabel'),
+            hatchDate: savedChick.hatchDate!,
+            bandingDay: 10,
+            settings: any(named: 'settings'),
+          ),
+        ).called(1);
+      },
+    );
+
+    test(
+      'keeps hatch success but warns when chick side-effect fails',
+      () async {
+        when(() => eggRepo.save(any())).thenAnswer((_) async {});
+        when(() => chickRepo.getByEggId('egg-1')).thenAnswer((_) async => null);
+        when(() => chickRepo.save(any())).thenAnswer((_) async {});
+        when(
+          () => mockScheduler.scheduleBandingReminders(
+            chickId: any(named: 'chickId'),
+            chickLabel: any(named: 'chickLabel'),
+            hatchDate: any(named: 'hatchDate'),
+            bandingDay: any(named: 'bandingDay'),
+            settings: any(named: 'settings'),
+          ),
+        ).thenThrow(Exception('banding scheduler failed'));
+
+        final container = makeContainer();
+        addTearDown(container.dispose);
+
+        await container
+            .read(eggActionsProvider.notifier)
+            .updateEggStatus(testEgg(), EggStatus.hatched);
+
+        final state = container.read(eggActionsProvider);
+        expect(state.isSuccess, isTrue);
+        expect(state.chickCreated, isTrue);
+        expect(state.warning, isNotNull);
+        expect(state.error, isNull);
+      },
+    );
+
     test('no chickCreated flag for non-hatched status', () async {
       when(() => eggRepo.save(any())).thenAnswer((_) async {});
 
@@ -270,6 +465,52 @@ void main() {
       expect(state.chickCreated, isFalse);
       expect(state.isSuccess, isTrue);
     });
+
+    test(
+      'schedules incubation milestones when first egg starts incubation',
+      () async {
+        final layDate = DateTime(2024, 1, 10);
+        when(() => eggRepo.save(any())).thenAnswer((_) async {});
+        when(
+          () => eggRepo.getByIncubation('inc-1'),
+        ).thenAnswer((_) async => []);
+        when(() => incubationRepo.getById('inc-1')).thenAnswer(
+          (_) async => const Incubation(
+            id: 'inc-1',
+            userId: 'test-user',
+            breedingPairId: 'pair-1',
+            species: Species.budgie,
+          ),
+        );
+        when(() => incubationRepo.save(any())).thenAnswer((_) async {});
+
+        final container = makeContainer();
+        addTearDown(container.dispose);
+
+        await container
+            .read(eggActionsProvider.notifier)
+            .addEgg(incubationId: 'inc-1', layDate: layDate, eggNumber: 1);
+
+        verify(
+          () => mockScheduler.scheduleIncubationMilestones(
+            incubationId: 'inc-1',
+            startDate: layDate,
+            label: any(named: 'label'),
+            species: Species.budgie,
+            settings: any(named: 'settings'),
+          ),
+        ).called(1);
+        verify(
+          () => mockCalendarGen.generateIncubationEvents(
+            userId: 'test-user',
+            breedingPairId: 'pair-1',
+            startDate: layDate,
+            pairLabel: any(named: 'pairLabel'),
+            species: Species.budgie,
+          ),
+        ).called(1);
+      },
+    );
 
     test(
       'sets warning when scheduler side-effect fails during addEgg',
@@ -335,6 +576,32 @@ void main() {
   });
 
   group('EggActionsNotifier - state transitions', () {
+    test('addEgg clears stale chickCreated flag from previous hatch', () async {
+      when(() => eggRepo.save(any())).thenAnswer((_) async {});
+      when(() => chickRepo.getByEggId('egg-1')).thenAnswer((_) async => null);
+      when(() => chickRepo.save(any())).thenAnswer((_) async {});
+
+      final container = makeContainer();
+      addTearDown(container.dispose);
+
+      await container
+          .read(eggActionsProvider.notifier)
+          .updateEggStatus(testEgg(), EggStatus.hatched);
+      expect(container.read(eggActionsProvider).chickCreated, isTrue);
+
+      await container
+          .read(eggActionsProvider.notifier)
+          .addEgg(
+            incubationId: 'inc-1',
+            layDate: DateTime(2024, 1, 12),
+            eggNumber: 2,
+          );
+
+      final state = container.read(eggActionsProvider);
+      expect(state.isSuccess, isTrue);
+      expect(state.chickCreated, isFalse);
+    });
+
     test('multiple sequential operations work after reset', () async {
       when(() => eggRepo.save(any())).thenAnswer((_) async {});
       when(() => eggRepo.remove(any())).thenAnswer((_) async {});

@@ -66,6 +66,8 @@ final incubationRepositoryProvider = Provider<IncubationRepository>((ref) {
     localDao: ref.watch(incubationsDaoProvider),
     remoteSource: ref.watch(incubationRemoteSourceProvider),
     syncDao: ref.watch(syncMetadataDaoProvider),
+    breedingPairsDao: ref.watch(breedingPairsDaoProvider),
+    clutchesDao: ref.watch(clutchesDaoProvider),
   );
 });
 

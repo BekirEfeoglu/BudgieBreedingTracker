@@ -27,10 +27,10 @@ class EggRemoteSource extends BaseRemoteSource<Egg> {
     try {
       final response = await table
           .select()
-          .eq('user_id', userId)
-          .eq('clutch_id', clutchId)
-          .eq('is_deleted', false)
-          .order('egg_number');
+          .eq(SupabaseConstants.colUserId, userId)
+          .eq(SupabaseConstants.colClutchId, clutchId)
+          .eq(SupabaseConstants.colIsDeleted, false)
+          .order(SupabaseConstants.colEggNumber);
       return response.map((json) => fromJson(json)).toList();
     } catch (e, st) {
       throw handleError(e, st);
@@ -45,10 +45,10 @@ class EggRemoteSource extends BaseRemoteSource<Egg> {
     try {
       final response = await table
           .select()
-          .eq('user_id', userId)
-          .eq('incubation_id', incubationId)
-          .eq('is_deleted', false)
-          .order('egg_number');
+          .eq(SupabaseConstants.colUserId, userId)
+          .eq(SupabaseConstants.colIncubationId, incubationId)
+          .eq(SupabaseConstants.colIsDeleted, false)
+          .order(SupabaseConstants.colEggNumber);
       return response.map((json) => fromJson(json)).toList();
     } catch (e, st) {
       throw handleError(e, st);

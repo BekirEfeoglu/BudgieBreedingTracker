@@ -1,8 +1,11 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:budgie_breeding_tracker/core/enums/egg_enums.dart';
+import 'package:budgie_breeding_tracker/core/widgets/error_state.dart';
 import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
 import 'package:budgie_breeding_tracker/domain/services/incubation/incubation_calculator.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_detail_providers.dart';
@@ -28,7 +31,8 @@ Future<void> _pump(
   List<dynamic> overrides = const [],
   bool settle = true,
 }) async {
-  await pumpLocalizedApp(tester,
+  await pumpLocalizedApp(
+    tester,
     ProviderScope(
       overrides: List.from(overrides),
       child: MaterialApp(
@@ -41,6 +45,32 @@ Future<void> _pump(
 
 void main() {
   group('BreedingEggsSection', () {
+    test('uses named route constants for chick action feedback', () {
+      final source = File(
+        'lib/features/breeding/widgets/breeding_eggs_section.dart',
+      ).readAsStringSync();
+
+      expect(source, isNot(contains("actionRoute: '/chicks'")));
+      expect(source, contains('actionRoute: AppRoutes.chicks'));
+    });
+
+    test('guards status update after async sheet dismissal', () {
+      final source = File(
+        'lib/features/breeding/widgets/breeding_eggs_section.dart',
+      ).readAsStringSync();
+
+      expect(
+        source,
+        matches(
+          RegExp(
+            r'final newStatus = await showEggStatusUpdateSheet[\s\S]*?'
+            r'if \(!context\.mounted\) return;[\s\S]*?'
+            r'ref\s*\.\s*read\(eggActionsProvider\.notifier\)',
+          ),
+        ),
+      );
+    });
+
     testWidgets('shows eggs section title', (tester) async {
       await _pump(
         tester,
@@ -149,7 +179,7 @@ void main() {
       expect(find.text(l10n('breeding.all_eggs_hatched')), findsOneWidget);
     });
 
-    testWidgets('shows nothing on error', (tester) async {
+    testWidgets('shows error state on stream error', (tester) async {
       await _pump(
         tester,
         const BreedingEggsSection(incubationId: 'inc-1', pairId: 'pair-1'),
@@ -162,13 +192,17 @@ void main() {
       );
       await tester.pumpAndSettle();
 
+      expect(find.byType(ErrorState), findsOneWidget);
+      expect(find.text(l10n('common.data_load_error')), findsOneWidget);
+      expect(find.text(l10n('common.retry')), findsOneWidget);
       expect(find.byType(EggSummaryRow), findsNothing);
     });
   });
 
   group('BreedingMilestoneSection', () {
     testWidgets('shows milestones title', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         ProviderScope(
           overrides: [
             dateFormatProvider.overrideWith(() => DateFormatNotifier()),
@@ -176,7 +210,9 @@ void main() {
           child: MaterialApp(
             home: Scaffold(
               body: SingleChildScrollView(
-                child: BreedingMilestoneSection(startDate: DateTime(2026, 3, 1)),
+                child: BreedingMilestoneSection(
+                  startDate: DateTime(2026, 3, 1),
+                ),
               ),
             ),
           ),
@@ -187,7 +223,8 @@ void main() {
     });
 
     testWidgets('shows MilestoneTimeline widget', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         ProviderScope(
           overrides: [
             dateFormatProvider.overrideWith(() => DateFormatNotifier()),
@@ -195,7 +232,9 @@ void main() {
           child: MaterialApp(
             home: Scaffold(
               body: SingleChildScrollView(
-                child: BreedingMilestoneSection(startDate: DateTime(2026, 3, 1)),
+                child: BreedingMilestoneSection(
+                  startDate: DateTime(2026, 3, 1),
+                ),
               ),
             ),
           ),
@@ -212,7 +251,8 @@ void main() {
 
   group('BreedingNotesSection', () {
     testWidgets('shows notes title', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         const MaterialApp(
           home: Scaffold(body: BreedingNotesSection(notes: 'Test notlar')),
         ),
@@ -222,7 +262,8 @@ void main() {
 
     testWidgets('shows notes content', (tester) async {
       const notes = 'Bu cift cok uyumlu';
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         const MaterialApp(
           home: Scaffold(body: BreedingNotesSection(notes: notes)),
         ),
@@ -231,7 +272,8 @@ void main() {
     });
 
     testWidgets('shows empty notes without error', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         const MaterialApp(
           home: Scaffold(body: BreedingNotesSection(notes: '')),
         ),

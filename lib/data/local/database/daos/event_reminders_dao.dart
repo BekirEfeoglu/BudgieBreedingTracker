@@ -43,9 +43,17 @@ class EventRemindersDao extends DatabaseAccessor<AppDatabase>
   }
 
   Future<EventReminder?> getById(String id) async {
-    final row = await (select(eventRemindersTable)..where(
-      (t) => t.id.equals(id) & t.isDeleted.equals(false),
-    )).getSingleOrNull();
+    final row =
+        await (select(eventRemindersTable)
+              ..where((t) => t.id.equals(id) & t.isDeleted.equals(false)))
+            .getSingleOrNull();
+    return row?.toModel();
+  }
+
+  Future<EventReminder?> getByIdIncludingDeleted(String id) async {
+    final row = await (select(
+      eventRemindersTable,
+    )..where((t) => t.id.equals(id))).getSingleOrNull();
     return row?.toModel();
   }
 

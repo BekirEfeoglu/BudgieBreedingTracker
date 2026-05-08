@@ -9,6 +9,7 @@ extension ChickFormStatusActions on ChickFormNotifier {
     try {
       final repo = ref.read(chickRepositoryProvider);
       final chick = await repo.getById(id);
+      var sideEffectError = false;
       if (chick != null) {
         await repo.save(
           chick.copyWith(
@@ -16,8 +17,20 @@ extension ChickFormStatusActions on ChickFormNotifier {
             updatedAt: DateTime.now(),
           ),
         );
+        sideEffectError = await _cancelChickReminders(
+          ref,
+          id,
+          cancelCare: true,
+          cancelBanding: false,
+        );
       }
-      state = state.copyWith(isLoading: false, isSuccess: true);
+      state = state.copyWith(
+        isLoading: false,
+        warning: sideEffectError
+            ? 'errors.background_tasks_partial'.tr()
+            : null,
+        isSuccess: true,
+      );
     } catch (e, st) {
       AppLogger.error('ChickFormNotifier', e, st);
       reportIfUnexpected(e, st);
@@ -41,13 +54,12 @@ extension ChickFormStatusActions on ChickFormNotifier {
             updatedAt: DateTime.now(),
           ),
         );
-        try {
-          final scheduler = ref.read(notificationSchedulerProvider);
-          await scheduler.cancelBandingReminders(id);
-        } catch (e) {
-          AppLogger.warning('Failed to cancel banding reminders: $e');
-          sideEffectError = true;
-        }
+        sideEffectError = await _cancelChickReminders(
+          ref,
+          id,
+          cancelCare: true,
+          cancelBanding: true,
+        );
       }
       state = state.copyWith(
         isLoading: false,
@@ -76,6 +88,11 @@ extension ChickFormStatusActions on ChickFormNotifier {
     try {
       final birdRepo = ref.read(birdRepositoryProvider);
       final chickRepo = ref.read(chickRepositoryProvider);
+
+      if (chick.birdId != null) {
+        state = state.copyWith(isLoading: false, isSuccess: true);
+        return;
+      }
 
       // Resolve parent IDs from breeding pair chain
       final (:fatherId, :motherId) = await _resolveParentIds(ref, chick.eggId);
@@ -111,21 +128,74 @@ extension ChickFormStatusActions on ChickFormNotifier {
       );
 
       await birdRepo.save(bird);
-      await chickRepo.save(
-        chick.copyWith(
-          birdId: birdId,
-          weanDate: chick.weanDate ?? DateTime.now(),
-          updatedAt: DateTime.now(),
-        ),
+      try {
+        await chickRepo.save(
+          chick.copyWith(
+            birdId: birdId,
+            weanDate: chick.weanDate ?? DateTime.now(),
+            updatedAt: DateTime.now(),
+          ),
+        );
+      } catch (e, st) {
+        try {
+          await birdRepo.remove(birdId);
+        } catch (rollbackError, rollbackSt) {
+          AppLogger.error(
+            'Failed to rollback promoted bird',
+            rollbackError,
+            rollbackSt,
+          );
+        }
+        Error.throwWithStackTrace(e, st);
+      }
+
+      final sideEffectError = await _cancelChickReminders(
+        ref,
+        chick.id,
+        cancelCare: true,
+        cancelBanding: true,
       );
 
-      state = state.copyWith(isLoading: false, isSuccess: true);
+      state = state.copyWith(
+        isLoading: false,
+        warning: sideEffectError
+            ? 'errors.background_tasks_partial'.tr()
+            : null,
+        isSuccess: true,
+      );
     } catch (e, st) {
       AppLogger.error('ChickFormNotifier', e, st);
       reportIfUnexpected(e, st);
       state = state.copyWith(isLoading: false, error: 'errors.unknown'.tr());
     }
   }
+}
+
+Future<bool> _cancelChickReminders(
+  Ref ref,
+  String chickId, {
+  required bool cancelCare,
+  required bool cancelBanding,
+}) async {
+  var sideEffectError = false;
+  final scheduler = ref.read(notificationSchedulerProvider);
+  if (cancelCare) {
+    try {
+      await scheduler.cancelChickCareReminders(chickId);
+    } catch (e) {
+      AppLogger.warning('Failed to cancel chick care reminders: $e');
+      sideEffectError = true;
+    }
+  }
+  if (cancelBanding) {
+    try {
+      await scheduler.cancelBandingReminders(chickId);
+    } catch (e) {
+      AppLogger.warning('Failed to cancel banding reminders: $e');
+      sideEffectError = true;
+    }
+  }
+  return sideEffectError;
 }
 
 /// Resolves father/mother IDs by traversing egg → incubation → breeding pair.

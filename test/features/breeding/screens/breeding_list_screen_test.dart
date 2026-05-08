@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -89,6 +90,17 @@ void main() {
   }
 
   group('BreedingListScreen', () {
+    test('uses route constants for detail navigation', () {
+      final source = File(
+        'lib/features/breeding/screens/breeding_list_screen.dart',
+      ).readAsStringSync();
+
+      expect(source, isNot(contains(r"'/breeding/${pair.id}'")));
+      expect(source, contains('AppRoutes.breedingDetail.replaceFirst'));
+      expect(source, contains("':id'"));
+      expect(source, contains('pair.id'));
+    });
+
     testWidgets('shows loading indicator while data is loading', (
       tester,
     ) async {

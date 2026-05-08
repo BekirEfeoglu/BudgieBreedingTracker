@@ -20,6 +20,7 @@ import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_for
 import 'package:budgie_breeding_tracker/features/breeding/widgets/breeding_pair_info_section.dart';
 import 'package:budgie_breeding_tracker/features/breeding/widgets/breeding_eggs_section.dart';
 import 'package:budgie_breeding_tracker/data/providers/date_format_providers.dart';
+import 'package:budgie_breeding_tracker/router/route_names.dart';
 
 part 'breeding_detail_sections.dart';
 
@@ -90,7 +91,8 @@ class _DetailContent extends ConsumerWidget {
             icon: const AppIcon(AppIcons.edit),
             tooltip: 'common.edit'.tr(),
             semanticLabel: 'common.edit'.tr(),
-            onPressed: () => context.push('/breeding/form?editId=${pair.id}'),
+            onPressed: () =>
+                context.push('${AppRoutes.breedingForm}?editId=${pair.id}'),
           ),
           PopupMenuButton<String>(
             onSelected: (value) => _handleMenuAction(context, ref, value),
@@ -129,7 +131,11 @@ class _DetailContent extends ConsumerWidget {
                     padding: AppSpacing.screenPadding,
                     child: LinearProgressIndicator(),
                   ),
-                  error: (_, __) => const SizedBox.shrink(),
+                  error: (_, __) => ErrorState(
+                    message: 'common.data_load_error'.tr(),
+                    onRetry: () =>
+                        ref.invalidate(incubationsByPairProvider(pair.id)),
+                  ),
                   data: (incubations) {
                     final incubation = selectPrimaryIncubation(incubations);
                     if (incubation == null) return const SizedBox.shrink();

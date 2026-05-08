@@ -74,20 +74,20 @@ scripts/test_verify_rules.py            # Tests for verify_rules.py
 
 | Metric | Value |
 | --- | --- |
-| Source files (lib/) | 948 Dart files |
-| Test files (test/) | 883 test files, 10,825+ individual tests |
+| Source files (lib/) | 955 Dart files |
+| Test files (test/) | 883 test files, 10,853+ individual tests |
 | Feature modules | 25 |
 | Drift tables / DAOs / Mappers | 20 each |
 | Repositories | 23 entity + base + sync_metadata |
 | Remote sources | 27 entity + base + 2 caches + providers |
 | Freezed models | 30 model files + statistics_models + supabase_extensions |
-| Domain services | 20 directories |
+| Domain services | 21 directories |
 | Routes | 73 |
 | Custom SVG icons | 84 constants, 84 files on disk |
-| Shared widgets | 23 (15 root + 4 buttons + 2 cards + 1 dialog + 1 bottom_sheet) |
+| Shared widgets | 28 (15 root + 4 buttons + 2 cards + 1 dialog + 1 bottom_sheet) |
 | Enum files | 15 |
-| Supabase constants | 141 (tables + buckets + columns) |
-| L10n keys | ~2,839 per language, 42 categories |
+| Supabase constants | 146 (tables + buckets + columns) |
+| L10n keys | ~2,840 per language, 42 categories |
 | DB schema version | 22 |
 
 ## CI/CD Pipeline
@@ -166,6 +166,7 @@ Comprehensive rules in `.claude/rules/` (auto-loaded):
 | --- | --- |
 | `architecture.md` | Tech stack, layers, folder structure, data flow, offline-first, performance, dependency mgmt |
 | `data-layer.md` | Drift + Supabase + Repository + Sync strategy + Storage + Cache + migration guidelines |
+| `breeding-eggs.md` | Breeding pair, incubation, egg, chick lifecycle rules, side effects, and tests |
 | `coding-standards.md` | Naming, Freezed/enum, icon API, file organization, extensions, async/await |
 | `providers.md` | Riverpod provider types, ref usage, AsyncNotifier, race conditions, error handling, keepAlive |
 | `ui-patterns.md` | Widget types, AsyncValue, forms, GoRouter, shared widgets, lists, dialogs |

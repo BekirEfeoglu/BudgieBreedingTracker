@@ -44,6 +44,10 @@ void main() {
     when(() => localDao.softDelete(any())).thenAnswer((_) async {});
     when(() => localDao.hardDelete(any())).thenAnswer((_) async {});
     when(() => localDao.getById(any())).thenAnswer((_) async => null);
+    when(() => localDao.getByIdIncludingDeleted(any())).thenAnswer(
+      (invocation) =>
+          localDao.getById(invocation.positionalArguments.first as String),
+    );
     when(() => localDao.getAll(any())).thenAnswer((_) async => []);
     when(
       () => localDao.watchAll(any()),

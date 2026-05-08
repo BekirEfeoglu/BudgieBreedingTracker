@@ -7,6 +7,7 @@ import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/chick_enums.dart';
 import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/notifications/notification_providers.dart';
 import 'package:budgie_breeding_tracker/features/chicks/providers/chick_form_providers.dart';
 
 import '../../../helpers/mocks.dart';
@@ -33,16 +34,27 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   late MockChickRepository mockChickRepo;
+  late MockNotificationScheduler mockScheduler;
 
   setUp(() {
     SharedPreferences.setMockInitialValues({});
     mockChickRepo = MockChickRepository();
+    mockScheduler = MockNotificationScheduler();
     registerFallbackValue(_chick());
+    when(
+      () => mockScheduler.cancelChickCareReminders(any()),
+    ).thenAnswer((_) async {});
+    when(
+      () => mockScheduler.cancelBandingReminders(any()),
+    ).thenAnswer((_) async {});
   });
 
   ProviderContainer createContainer() {
     return ProviderContainer(
-      overrides: [chickRepositoryProvider.overrideWithValue(mockChickRepo)],
+      overrides: [
+        chickRepositoryProvider.overrideWithValue(mockChickRepo),
+        notificationSchedulerProvider.overrideWithValue(mockScheduler),
+      ],
     );
   }
 
@@ -70,8 +82,7 @@ void main() {
           .read(chickFormStateProvider.notifier)
           .createChick(userId: 'user-1', hatchDate: DateTime(2025, 3, 1));
 
-      final captured =
-          verify(() => mockChickRepo.save(captureAny())).captured;
+      final captured = verify(() => mockChickRepo.save(captureAny())).captured;
       final savedChick = captured.first as Chick;
       expect(savedChick.gender, BirdGender.unknown);
       expect(savedChick.healthStatus, ChickHealthStatus.healthy);
@@ -85,7 +96,9 @@ void main() {
       final container = createContainer();
       addTearDown(container.dispose);
 
-      await container.read(chickFormStateProvider.notifier).createChick(
+      await container
+          .read(chickFormStateProvider.notifier)
+          .createChick(
             userId: 'user-1',
             name: 'Pamuk',
             gender: BirdGender.female,
@@ -99,8 +112,7 @@ void main() {
             bandingDay: 12,
           );
 
-      final captured =
-          verify(() => mockChickRepo.save(captureAny())).captured;
+      final captured = verify(() => mockChickRepo.save(captureAny())).captured;
       final savedChick = captured.first as Chick;
       expect(savedChick.name, 'Pamuk');
       expect(savedChick.gender, BirdGender.female);
@@ -128,8 +140,7 @@ void main() {
           .read(chickFormStateProvider.notifier)
           .createChick(userId: 'user-1', hatchDate: DateTime(2025, 3, 2));
 
-      final captured =
-          verify(() => mockChickRepo.save(captureAny())).captured;
+      final captured = verify(() => mockChickRepo.save(captureAny())).captured;
       final chick1 = captured[0] as Chick;
       final chick2 = captured[1] as Chick;
       expect(chick1.id, isNot(equals(chick2.id)));
@@ -150,32 +161,33 @@ void main() {
           .read(chickFormStateProvider.notifier)
           .updateChick(updated);
 
-      final captured =
-          verify(() => mockChickRepo.save(captureAny())).captured;
+      final captured = verify(() => mockChickRepo.save(captureAny())).captured;
       final saved = captured.first as Chick;
       expect(saved.name, 'New Name');
       expect(saved.updatedAt, isNotNull);
     });
 
-    test('reschedules banding when bandingDay changes and chick is not banded',
-        () async {
-      when(() => mockChickRepo.save(any())).thenAnswer((_) async {});
+    test(
+      'reschedules banding when bandingDay changes and chick is not banded',
+      () async {
+        when(() => mockChickRepo.save(any())).thenAnswer((_) async {});
 
-      final container = createContainer();
-      addTearDown(container.dispose);
+        final container = createContainer();
+        addTearDown(container.dispose);
 
-      final previous = _chick(bandingDay: 10);
-      final updated = previous.copyWith(bandingDay: 14);
+        final previous = _chick(bandingDay: 10);
+        final updated = previous.copyWith(bandingDay: 14);
 
-      await container
-          .read(chickFormStateProvider.notifier)
-          .updateChick(updated, previous: previous);
+        await container
+            .read(chickFormStateProvider.notifier)
+            .updateChick(updated, previous: previous);
 
-      final state = container.read(chickFormStateProvider);
-      expect(state.isSuccess, isTrue);
-      // Even without the scheduler mocked, the operation succeeds
-      // (side-effect errors are caught internally)
-    });
+        final state = container.read(chickFormStateProvider);
+        expect(state.isSuccess, isTrue);
+        // Even without the scheduler mocked, the operation succeeds
+        // (side-effect errors are caught internally)
+      },
+    );
   });
 
   group('ChickFormNotifier - deleteChick', () {
@@ -190,12 +202,17 @@ void main() {
           .deleteChick('chick-99');
 
       verify(() => mockChickRepo.remove('chick-99')).called(1);
+      verify(
+        () => mockScheduler.cancelChickCareReminders('chick-99'),
+      ).called(1);
+      verify(() => mockScheduler.cancelBandingReminders('chick-99')).called(1);
       expect(container.read(chickFormStateProvider).isSuccess, isTrue);
     });
 
     test('sets error state on failure', () async {
-      when(() => mockChickRepo.remove(any()))
-          .thenThrow(Exception('Delete failed'));
+      when(
+        () => mockChickRepo.remove(any()),
+      ).thenThrow(Exception('Delete failed'));
 
       final container = createContainer();
       addTearDown(container.dispose);

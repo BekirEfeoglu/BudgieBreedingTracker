@@ -12,6 +12,15 @@ part 'eggs_dao.g.dart';
 class EggsDao extends DatabaseAccessor<AppDatabase> with _$EggsDaoMixin {
   EggsDao(super.db);
 
+  Expression<bool> _isActiveIncubationEgg($EggsTableTable t) {
+    final isIncubating = t.status.equalsValue(EggStatus.incubating);
+    final isTrackedPreHatch =
+        t.incubationId.isNotNull() &
+        (t.status.equalsValue(EggStatus.laid) |
+            t.status.equalsValue(EggStatus.fertile));
+    return isIncubating | isTrackedPreHatch;
+  }
+
   Stream<List<Egg>> watchAll(String userId) {
     return (select(eggsTable)
           ..where((t) => t.userId.equals(userId) & t.isDeleted.equals(false))
@@ -39,6 +48,13 @@ class EggsDao extends DatabaseAccessor<AppDatabase> with _$EggsDaoMixin {
         await (select(eggsTable)
               ..where((t) => t.id.equals(id) & t.isDeleted.equals(false)))
             .getSingleOrNull();
+    return row?.toModel();
+  }
+
+  Future<Egg?> getByIdIncludingDeleted(String id) async {
+    final row = await (select(
+      eggsTable,
+    )..where((t) => t.id.equals(id))).getSingleOrNull();
     return row?.toModel();
   }
 
@@ -91,7 +107,7 @@ class EggsDao extends DatabaseAccessor<AppDatabase> with _$EggsDaoMixin {
           ..addColumns([count])
           ..where(
             eggsTable.userId.equals(userId) &
-                eggsTable.status.equalsValue(EggStatus.incubating) &
+                _isActiveIncubationEgg(eggsTable) &
                 eggsTable.isDeleted.equals(false),
           ))
         .watchSingle()
@@ -103,7 +119,7 @@ class EggsDao extends DatabaseAccessor<AppDatabase> with _$EggsDaoMixin {
   /// Returns a map of `'YYYY-MM'` → count. Only non-deleted eggs are counted.
   Stream<Map<String, int>> watchMonthlyProduction(String userId) {
     final query = customSelect(
-      "SELECT strftime('%Y-%m', lay_date) AS month, COUNT(*) AS cnt "
+      "SELECT strftime('%Y-%m', lay_date, 'localtime') AS month, COUNT(*) AS cnt "
       'FROM eggs WHERE user_id = ? AND is_deleted = 0 '
       'GROUP BY month ORDER BY month',
       variables: [Variable.withString(userId)],
@@ -128,11 +144,11 @@ class EggsDao extends DatabaseAccessor<AppDatabase> with _$EggsDaoMixin {
     String species,
   ) {
     final query = customSelect(
-      "SELECT strftime('%Y-%m', e.lay_date) AS month, COUNT(*) AS cnt "
+      "SELECT strftime('%Y-%m', e.lay_date, 'localtime') AS month, COUNT(*) AS cnt "
       'FROM eggs e '
       'INNER JOIN incubations i ON e.incubation_id = i.id '
       'WHERE e.user_id = ? AND e.is_deleted = 0 '
-      'AND i.is_deleted = 0 AND i.species = ? '
+      'AND i.species = ? '
       'GROUP BY month ORDER BY month',
       variables: [Variable.withString(userId), Variable.withString(species)],
       readsFrom: {eggsTable, incubationsTable},
@@ -203,7 +219,7 @@ class EggsDao extends DatabaseAccessor<AppDatabase> with _$EggsDaoMixin {
         await (select(eggsTable)..where(
               (t) =>
                   t.userId.equals(userId) &
-                  t.status.equalsValue(EggStatus.incubating) &
+                  _isActiveIncubationEgg(t) &
                   t.isDeleted.equals(false),
             ))
             .get();
@@ -216,7 +232,7 @@ class EggsDao extends DatabaseAccessor<AppDatabase> with _$EggsDaoMixin {
           ..where(
             (t) =>
                 t.userId.equals(userId) &
-                t.status.equalsValue(EggStatus.incubating) &
+                _isActiveIncubationEgg(t) &
                 t.isDeleted.equals(false),
           )
           ..orderBy([(t) => OrderingTerm.asc(t.layDate)])

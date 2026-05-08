@@ -172,9 +172,31 @@ void main() {
           _pair(id: 'p3', status: BreedingStatus.completed),
         ],
         eggs: [
-          _egg(id: 'e1', layDate: now, status: EggStatus.incubating),
-          _egg(id: 'e2', layDate: now, status: EggStatus.fertile),
-          _egg(id: 'e3', layDate: now, status: EggStatus.infertile),
+          _egg(
+            id: 'e1',
+            layDate: now,
+            status: EggStatus.incubating,
+            incubationId: 'inc-1',
+          ),
+          _egg(
+            id: 'e2',
+            layDate: now,
+            status: EggStatus.fertile,
+            incubationId: 'inc-1',
+          ),
+          _egg(
+            id: 'e3',
+            layDate: now,
+            status: EggStatus.laid,
+            incubationId: 'inc-1',
+          ),
+          _egg(id: 'e4', layDate: now, status: EggStatus.laid),
+          _egg(
+            id: 'e5',
+            layDate: now,
+            status: EggStatus.infertile,
+            incubationId: 'inc-1',
+          ),
         ],
         chicks: [
           _chick(id: 'c1', health: ChickHealthStatus.healthy, hatchDate: now),
@@ -210,7 +232,7 @@ void main() {
       final stats = value.requireValue;
       expect(stats.totalBirds, 2);
       expect(stats.activeBreedings, 2);
-      expect(stats.incubatingEggs, 1);
+      expect(stats.incubatingEggs, 3);
       expect(stats.totalHealthRecords, 3);
       expect(stats.fertilityRate, closeTo(0.5, 0.0001));
       expect(stats.chickSurvivalRate, closeTo(0.5, 0.0001));

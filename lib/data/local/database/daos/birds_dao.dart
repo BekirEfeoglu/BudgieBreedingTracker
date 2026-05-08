@@ -44,6 +44,13 @@ class BirdsDao extends DatabaseAccessor<AppDatabase> with _$BirdsDaoMixin {
     return row == null ? null : _rowToModel(row);
   }
 
+  Future<Bird?> getByIdIncludingDeleted(String id) async {
+    final row = await (select(
+      birdsTable,
+    )..where((t) => t.id.equals(id))).getSingleOrNull();
+    return row == null ? null : _rowToModel(row);
+  }
+
   Future<void> insertItem(Bird model) async {
     await into(
       birdsTable,

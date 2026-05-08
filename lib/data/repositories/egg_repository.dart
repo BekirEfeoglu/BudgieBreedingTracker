@@ -57,6 +57,13 @@ class EggRepository extends BaseRepository<Egg>
   Future<Egg?> getLocalById(String id) => _localDao.getById(id);
 
   @override
+  Future<Egg?> getLocalByIdForSync(String id) =>
+      _localDao.getByIdIncludingDeleted(id);
+
+  @override
+  bool shouldValidateForeignKeys(Egg item) => !item.isDeleted;
+
+  @override
   String getEntityId(Egg item) => item.id;
 
   @override

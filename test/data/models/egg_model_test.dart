@@ -95,7 +95,7 @@ void main() {
         expect(egg.hatchDate, isNull);
       });
 
-      test('falls back to laid for unknown status', () {
+      test('falls back to unknown for unknown status', () {
         final egg = Egg.fromJson({
           'id': 'egg-1',
           'lay_date': DateTime(2024, 1, 1).toIso8601String(),
@@ -103,7 +103,7 @@ void main() {
           'status': 'not-a-real-status',
         });
 
-        expect(egg.status, EggStatus.laid);
+        expect(egg.status, EggStatus.unknown);
       });
 
       test('parses all EggStatus values from json', () {
@@ -216,6 +216,11 @@ void main() {
         final json = status.toJson();
         expect(EggStatus.fromJson(json), status);
       }
+    });
+
+    test('fromJson falls back to unknown on invalid input', () {
+      expect(EggStatus.fromJson('invalid'), EggStatus.unknown);
+      expect(EggStatus.fromJson(''), EggStatus.unknown);
     });
   });
 }

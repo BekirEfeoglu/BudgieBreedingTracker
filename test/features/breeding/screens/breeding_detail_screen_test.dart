@@ -82,6 +82,7 @@ void main() {
   Widget createSubject({
     required Stream<BreedingPair?> pairStream,
     List<Incubation> incubations = const [],
+    Stream<List<Incubation>>? incubationsStream,
   }) {
     return ProviderScope(
       overrides: [
@@ -94,7 +95,7 @@ void main() {
         breedingPairByIdProvider('pair-1').overrideWith((_) => pairStream),
         incubationsByPairProvider(
           'pair-1',
-        ).overrideWith((_) => Stream.value(incubations)),
+        ).overrideWith((_) => incubationsStream ?? Stream.value(incubations)),
         eggsByIncubationProvider('inc-1').overrideWith((_) => Stream.value([])),
         eggActionsProvider.overrideWith(() => EggActionsNotifier()),
         // Override bird providers for male/female (null birds)
@@ -175,9 +176,24 @@ void main() {
       FlutterError.onError = originalOnError;
     });
 
-    testWidgets('pops screen when form state becomes success', (
+    testWidgets('shows error state when incubation stream errors', (
       tester,
     ) async {
+      await tester.pumpWidget(
+        createSubject(
+          pairStream: Stream.value(testPair),
+          incubationsStream: Stream.error(Exception('incubation load failed')),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      expect(find.byType(ErrorState), findsOneWidget);
+      expect(find.text(l10n('common.data_load_error')), findsOneWidget);
+      expect(find.text(l10n('common.retry')), findsOneWidget);
+    });
+
+    testWidgets('pops screen when form state becomes success', (tester) async {
       final formNotifier = _TestBreedingFormNotifier();
       var didNavigateAway = false;
 
@@ -193,9 +209,8 @@ void main() {
             routes: [
               GoRoute(
                 path: ':id',
-                builder: (_, state) => BreedingDetailScreen(
-                  pairId: state.pathParameters['id']!,
-                ),
+                builder: (_, state) =>
+                    BreedingDetailScreen(pairId: state.pathParameters['id']!),
                 routes: [
                   GoRoute(
                     path: 'eggs',

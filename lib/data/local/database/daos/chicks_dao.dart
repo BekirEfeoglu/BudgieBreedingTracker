@@ -34,9 +34,17 @@ class ChicksDao extends DatabaseAccessor<AppDatabase> with _$ChicksDaoMixin {
   }
 
   Future<Chick?> getById(String id) async {
-    final row = await (select(chicksTable)..where(
-      (t) => t.id.equals(id) & t.isDeleted.equals(false),
-    )).getSingleOrNull();
+    final row =
+        await (select(chicksTable)
+              ..where((t) => t.id.equals(id) & t.isDeleted.equals(false)))
+            .getSingleOrNull();
+    return row?.toModel();
+  }
+
+  Future<Chick?> getByIdIncludingDeleted(String id) async {
+    final row = await (select(
+      chicksTable,
+    )..where((t) => t.id.equals(id))).getSingleOrNull();
     return row?.toModel();
   }
 

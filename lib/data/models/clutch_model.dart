@@ -21,7 +21,7 @@ abstract class Clutch with _$Clutch {
     DateTime? startDate,
     DateTime? endDate,
     @Default(BreedingStatus.active)
-    @JsonKey(unknownEnumValue: BreedingStatus.active)
+    @JsonKey(unknownEnumValue: BreedingStatus.unknown)
     BreedingStatus status,
     String? notes,
     @Default(false) bool isDeleted,

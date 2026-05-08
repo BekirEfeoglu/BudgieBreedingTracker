@@ -10,5 +10,11 @@ enum EggStatus {
   incubating;
 
   String toJson() => name;
-  static EggStatus fromJson(String json) => values.byName(json);
+  static EggStatus fromJson(String json) {
+    try {
+      return values.byName(json);
+    } catch (_) {
+      return EggStatus.unknown;
+    }
+  }
 }

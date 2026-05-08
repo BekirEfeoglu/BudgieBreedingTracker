@@ -5,8 +5,9 @@ import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
 import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
 import 'package:budgie_breeding_tracker/data/models/incubation_model.dart';
 import 'package:budgie_breeding_tracker/domain/services/incubation/incubation_calculator.dart';
-
 import 'package:budgie_breeding_tracker/shared/widgets/eggs.dart';
+import 'package:budgie_breeding_tracker/router/route_names.dart';
+
 import 'breeding_card_header.dart';
 import 'breeding_card_progress.dart';
 import 'breeding_card_footer.dart';
@@ -42,7 +43,11 @@ class BreedingCard extends StatelessWidget {
       ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
-        onTap: onTap ?? () => context.push('/breeding/${pair.id}'),
+        onTap:
+            onTap ??
+            () => context.push(
+              AppRoutes.breedingDetail.replaceFirst(':id', pair.id),
+            ),
         child: Container(
           decoration: BoxDecoration(
             border: Border(left: BorderSide(color: stageColor, width: 4)),

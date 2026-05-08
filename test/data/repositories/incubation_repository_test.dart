@@ -20,11 +20,15 @@ Incubation _makeIncubation({
   String id = 'inc-1',
   String userId = 'user-1',
   Species species = Species.budgie,
+  String? clutchId,
+  String? breedingPairId,
 }) {
   return Incubation(
     id: id,
     userId: userId,
     species: species,
+    clutchId: clutchId,
+    breedingPairId: breedingPairId,
     createdAt: DateTime(2024, 1, 1),
     updatedAt: DateTime(2024, 1, 1),
   );
@@ -34,6 +38,8 @@ void main() {
   late MockIncubationsDao localDao;
   late MockIncubationRemoteSource remoteSource;
   late MockSyncMetadataDao syncDao;
+  late MockBreedingPairsDao breedingPairsDao;
+  late MockClutchesDao clutchesDao;
   late IncubationRepository repository;
 
   const userId = 'user-1';
@@ -48,11 +54,15 @@ void main() {
     localDao = MockIncubationsDao();
     remoteSource = MockIncubationRemoteSource();
     syncDao = MockSyncMetadataDao();
+    breedingPairsDao = MockBreedingPairsDao();
+    clutchesDao = MockClutchesDao();
 
     repository = IncubationRepository(
       localDao: localDao,
       remoteSource: remoteSource,
       syncDao: syncDao,
+      breedingPairsDao: breedingPairsDao,
+      clutchesDao: clutchesDao,
     );
 
     when(() => localDao.insertItem(any())).thenAnswer((_) async {});
@@ -92,6 +102,9 @@ void main() {
       () => syncDao.getPendingByTable(any(), any()),
     ).thenAnswer((_) async => []);
     when(() => syncDao.getPendingRecordIds(any())).thenAnswer((_) async => {});
+
+    when(() => breedingPairsDao.getById(any())).thenAnswer((_) async => null);
+    when(() => clutchesDao.getById(any())).thenAnswer((_) async => null);
   });
 
   group('IncubationRepository', () {
@@ -364,6 +377,51 @@ void main() {
         await repository.pushAll(userId);
 
         verify(() => remoteSource.upsert(inc1)).called(1);
+      },
+    );
+
+    test(
+      'pushAll marks sync error when breeding pair FK is missing locally',
+      () async {
+        final incubation = _makeIncubation(
+          id: 'inc-1',
+          userId: userId,
+          breedingPairId: 'missing-pair',
+        );
+        final pending = TestFixtures.sampleSyncMetadata(
+          id: 'meta-1',
+          table: SupabaseConstants.incubationsTable,
+          recordId: incubation.id,
+          userId: userId,
+        );
+        final existing = TestFixtures.sampleSyncMetadata(
+          table: SupabaseConstants.incubationsTable,
+          recordId: incubation.id,
+          userId: userId,
+          retryCount: 0,
+        );
+        when(
+          () => syncDao.getPendingByTable(
+            userId,
+            SupabaseConstants.incubationsTable,
+          ),
+        ).thenAnswer((_) async => [pending]);
+        when(
+          () => localDao.getById(incubation.id),
+        ).thenAnswer((_) async => incubation);
+        when(
+          () =>
+              syncDao.getByRecord(SupabaseConstants.incubationsTable, 'inc-1'),
+        ).thenAnswer((_) async => existing);
+
+        await repository.pushAll(userId);
+
+        final updated =
+            verify(() => syncDao.updateItem(captureAny())).captured.single
+                as SyncMetadata;
+        expect(updated.status, SyncStatus.error);
+        expect(updated.errorMessage, contains('not found locally'));
+        verifyNever(() => remoteSource.upsert(any()));
       },
     );
 

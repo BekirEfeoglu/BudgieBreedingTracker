@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:budgie_breeding_tracker/data/local/database/app_database.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/birds_dao.dart';
+import 'package:budgie_breeding_tracker/data/local/database/daos/breeding_pairs_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/clutches_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/conflict_history_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/eggs_dao.dart';
@@ -109,6 +110,8 @@ class MockClutchesDao extends Mock implements ClutchesDao {}
 class MockIncubationsDao extends Mock implements IncubationsDao {}
 
 class MockBirdsDao extends Mock implements BirdsDao {}
+
+class MockBreedingPairsDao extends Mock implements BreedingPairsDao {}
 
 class MockConflictHistoryDao extends Mock implements ConflictHistoryDao {}
 

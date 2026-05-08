@@ -21,6 +21,7 @@ import 'package:budgie_breeding_tracker/data/providers/egg_stream_providers.dart
 import 'package:budgie_breeding_tracker/features/breeding/widgets/breeding_card.dart';
 import 'package:budgie_breeding_tracker/features/breeding/widgets/breeding_filter_bar.dart';
 import 'package:budgie_breeding_tracker/features/breeding/widgets/breeding_search_bar.dart';
+import 'package:budgie_breeding_tracker/router/route_names.dart';
 import 'package:budgie_breeding_tracker/shared/widgets/app_shell.dart';
 import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
 
@@ -119,7 +120,7 @@ class BreedingListScreen extends ConsumerWidget {
                     title: 'breeding.no_breedings'.tr(),
                     subtitle: 'breeding.no_breedings_hint'.tr(),
                     actionLabel: 'breeding.add_breeding_label'.tr(),
-                    onAction: () => context.push('/breeding/form'),
+                    onAction: () => context.push(AppRoutes.breedingForm),
                   );
                 }
 
@@ -164,7 +165,12 @@ class BreedingListScreen extends ConsumerWidget {
                             pair: pair,
                             incubation: incubation,
                             eggs: eggs,
-                            onTap: () => navigateWithAd('/breeding/${pair.id}'),
+                            onTap: () => navigateWithAd(
+                              AppRoutes.breedingDetail.replaceFirst(
+                                ':id',
+                                pair.id,
+                              ),
+                            ),
                           );
                         },
                       ),
@@ -191,7 +197,7 @@ class BreedingListScreen extends ConsumerWidget {
             child: FabButton(
               icon: const AppIcon(AppIcons.add),
               tooltip: 'breeding.new_breeding'.tr(),
-              onPressed: () => context.push('/breeding/form'),
+              onPressed: () => context.push(AppRoutes.breedingForm),
             ),
           ),
         ),

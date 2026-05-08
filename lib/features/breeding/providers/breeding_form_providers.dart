@@ -9,6 +9,7 @@ import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
 import 'package:budgie_breeding_tracker/data/models/incubation_model.dart';
 import 'package:budgie_breeding_tracker/data/providers/bird_stream_providers.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/incubation/species_incubation_config.dart';
 import 'package:budgie_breeding_tracker/domain/services/premium/free_tier_limit_providers.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_notification_helpers.dart';
 import 'package:budgie_breeding_tracker/core/errors/app_exception.dart';
@@ -95,6 +96,28 @@ class BreedingFormNotifier extends Notifier<BreedingFormState>
       state = state.copyWith(isLoading: false, error: 'birds.not_found'.tr());
       return null;
     }
+    if (maleBird.gender != BirdGender.male) {
+      state = state.copyWith(
+        isLoading: false,
+        error: 'breeding.invalid_male'.tr(),
+      );
+      return null;
+    }
+    if (femaleBird.gender != BirdGender.female) {
+      state = state.copyWith(
+        isLoading: false,
+        error: 'breeding.invalid_female'.tr(),
+      );
+      return null;
+    }
+    if (maleBird.status != BirdStatus.alive ||
+        femaleBird.status != BirdStatus.alive) {
+      state = state.copyWith(
+        isLoading: false,
+        error: 'breeding.birds_must_be_alive'.tr(),
+      );
+      return null;
+    }
     if (maleBird.species != femaleBird.species) {
       state = state.copyWith(
         isLoading: false,
@@ -125,6 +148,28 @@ class BreedingFormNotifier extends Notifier<BreedingFormState>
       return 'birds.not_found'.tr();
     }
     return null;
+  }
+
+  Future<void> _updateIncubationSpeciesForPair({
+    required String pairId,
+    required Species species,
+  }) async {
+    final incubationRepo = ref.read(incubationRepositoryProvider);
+    final incubations = await incubationRepo.getByBreedingPair(pairId);
+    for (final incubation in incubations) {
+      if (incubation.species == species) continue;
+      final startDate = incubation.startDate;
+      final expectedHatchDate = startDate == null
+          ? incubation.expectedHatchDate
+          : startDate.add(Duration(days: incubationDaysForSpecies(species)));
+      await incubationRepo.save(
+        incubation.copyWith(
+          species: species,
+          expectedHatchDate: expectedHatchDate,
+          updatedAt: DateTime.now(),
+        ),
+      );
+    }
   }
 
   /// Creates a new breeding pair and its associated incubation atomically.
@@ -245,14 +290,22 @@ class BreedingFormNotifier extends Notifier<BreedingFormState>
     state = state.copyWith(isLoading: true, error: null, isSuccess: false);
     try {
       final repo = ref.read(breedingPairRepositoryProvider);
+      Species? validatedSpecies;
       if (pair.maleId != null && pair.femaleId != null) {
         final validated = await _validatePairBirds(
           maleId: pair.maleId!,
           femaleId: pair.femaleId!,
         );
         if (validated == null) return;
+        validatedSpecies = validated.maleBird.species;
       }
       await repo.save(pair.copyWith(updatedAt: DateTime.now()));
+      if (validatedSpecies != null) {
+        await _updateIncubationSpeciesForPair(
+          pairId: pair.id,
+          species: validatedSpecies,
+        );
+      }
       state = state.copyWith(isLoading: false, isSuccess: true);
     } catch (e, st) {
       AppLogger.error('BreedingFormNotifier', e, st);

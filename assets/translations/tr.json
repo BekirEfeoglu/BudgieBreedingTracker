@@ -340,6 +340,7 @@
     "same_species_required": "Sadece aynı tür kuşlar eşleştirilebilir",
     "invalid_male": "Seçilen erkek kuş erkek değil",
     "invalid_female": "Seçilen dişi kuş dişi değil",
+    "birds_must_be_alive": "Eşleştirilecek kuşlar yaşıyor olmalı",
     "all_eggs_hatched": "Tüm yumurtalar başarıyla çıktı",
     "sort_newest": "En Yeni",
     "sort_oldest": "En Eski",

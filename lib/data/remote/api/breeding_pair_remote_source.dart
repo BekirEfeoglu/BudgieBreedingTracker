@@ -22,10 +22,10 @@ class BreedingPairRemoteSource extends BaseRemoteSource<BreedingPair> {
     try {
       final response = await table
           .select()
-          .eq('user_id', userId)
-          .eq('status', 'active')
-          .eq('is_deleted', false)
-          .order('pairing_date');
+          .eq(SupabaseConstants.colUserId, userId)
+          .eq(SupabaseConstants.colStatus, 'active')
+          .eq(SupabaseConstants.colIsDeleted, false)
+          .order(SupabaseConstants.colPairingDate);
       return response.map((json) => fromJson(json)).toList();
     } catch (e, st) {
       throw handleError(e, st);
@@ -38,10 +38,13 @@ class BreedingPairRemoteSource extends BaseRemoteSource<BreedingPair> {
       // Do NOT Uri.encodeComponent — PostgREST client handles encoding.
       final response = await table
           .select()
-          .eq('user_id', userId)
-          .or('male_id.eq.$birdId,female_id.eq.$birdId')
-          .eq('is_deleted', false)
-          .order('pairing_date');
+          .eq(SupabaseConstants.colUserId, userId)
+          .or(
+            '${SupabaseConstants.colMaleId}.eq.$birdId,'
+            '${SupabaseConstants.colFemaleId}.eq.$birdId',
+          )
+          .eq(SupabaseConstants.colIsDeleted, false)
+          .order(SupabaseConstants.colPairingDate);
       return response.map((json) => fromJson(json)).toList();
     } catch (e, st) {
       throw handleError(e, st);

@@ -38,9 +38,17 @@ class EventsDao extends DatabaseAccessor<AppDatabase> with _$EventsDaoMixin {
 
   /// Gets a single event by id.
   Future<Event?> getById(String id) async {
-    final row = await (select(eventsTable)..where(
-      (t) => t.id.equals(id) & t.isDeleted.equals(false),
-    )).getSingleOrNull();
+    final row =
+        await (select(eventsTable)
+              ..where((t) => t.id.equals(id) & t.isDeleted.equals(false)))
+            .getSingleOrNull();
+    return row?.toModel();
+  }
+
+  Future<Event?> getByIdIncludingDeleted(String id) async {
+    final row = await (select(
+      eventsTable,
+    )..where((t) => t.id.equals(id))).getSingleOrNull();
     return row?.toModel();
   }
 
@@ -117,15 +125,15 @@ class EventsDao extends DatabaseAccessor<AppDatabase> with _$EventsDaoMixin {
     String chickId,
     EventType type,
   ) async {
-    final rows = await (select(eventsTable)
-          ..where(
-            (t) =>
-                t.chickId.equals(chickId) &
-                t.type.equalsValue(type) &
-                t.isDeleted.equals(false) &
-                t.status.equalsValue(EventStatus.active),
-          ))
-        .get();
+    final rows =
+        await (select(eventsTable)..where(
+              (t) =>
+                  t.chickId.equals(chickId) &
+                  t.type.equalsValue(type) &
+                  t.isDeleted.equals(false) &
+                  t.status.equalsValue(EventStatus.active),
+            ))
+            .get();
     return rows.map((r) => r.toModel()).toList();
   }
 

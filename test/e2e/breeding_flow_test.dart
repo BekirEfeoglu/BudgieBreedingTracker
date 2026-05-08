@@ -237,7 +237,7 @@ void main() {
     );
 
     test(
-      'GIVEN active clutch context WHEN 4 eggs are added THEN all eggs are incubating and hatch date calculation/calendar generation runs',
+      'GIVEN active clutch context WHEN 4 eggs are added THEN eggs are tracked for incubation and hatch date calculation/calendar generation runs',
       () async {
         final mockEggRepository = MockEggRepository();
         final mockIncubationRepository = MockIncubationRepository();
@@ -301,6 +301,7 @@ void main() {
         ).captured.cast<Egg>();
         expect(savedEggs, hasLength(4));
         expect(savedEggs.every((egg) => egg.status == EggStatus.laid), isTrue);
+        expect(savedEggs.every((egg) => egg.isActiveIncubationEgg), isTrue);
         expect(
           savedEggs.every(
             (egg) => egg.expectedHatchDate.difference(today).inDays == 18,

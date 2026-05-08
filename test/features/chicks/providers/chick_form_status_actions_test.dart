@@ -11,6 +11,7 @@ import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
 import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
 import 'package:budgie_breeding_tracker/data/models/incubation_model.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/notifications/notification_providers.dart';
 import 'package:budgie_breeding_tracker/features/chicks/providers/chick_form_providers.dart';
 
 import '../../../helpers/mocks.dart';
@@ -51,6 +52,7 @@ void main() {
   late MockIncubationRepository mockIncubationRepo;
   late MockBreedingPairRepository mockBreedingPairRepo;
   late MockClutchRepository mockClutchRepo;
+  late MockNotificationScheduler mockScheduler;
 
   setUp(() {
     SharedPreferences.setMockInitialValues({});
@@ -60,19 +62,13 @@ void main() {
     mockIncubationRepo = MockIncubationRepository();
     mockBreedingPairRepo = MockBreedingPairRepository();
     mockClutchRepo = MockClutchRepository();
+    mockScheduler = MockNotificationScheduler();
 
     registerFallbackValue(_chick());
     registerFallbackValue(
-      const Bird(
-        id: 'b',
-        userId: 'u',
-        name: 'B',
-        gender: BirdGender.unknown,
-      ),
+      const Bird(id: 'b', userId: 'u', name: 'B', gender: BirdGender.unknown),
     );
-    registerFallbackValue(
-      Egg(id: 'e', userId: 'u', layDate: DateTime(2024)),
-    );
+    registerFallbackValue(Egg(id: 'e', userId: 'u', layDate: DateTime(2024)));
 
     // Default stub for birdRepo.getById (species resolution)
     when(() => mockBirdRepo.getById(any())).thenAnswer(
@@ -84,6 +80,12 @@ void main() {
         species: Species.budgie,
       ),
     );
+    when(
+      () => mockScheduler.cancelChickCareReminders(any()),
+    ).thenAnswer((_) async {});
+    when(
+      () => mockScheduler.cancelBandingReminders(any()),
+    ).thenAnswer((_) async {});
   });
 
   ProviderContainer createContainer() {
@@ -95,6 +97,7 @@ void main() {
         incubationRepositoryProvider.overrideWithValue(mockIncubationRepo),
         breedingPairRepositoryProvider.overrideWithValue(mockBreedingPairRepo),
         clutchRepositoryProvider.overrideWithValue(mockClutchRepo),
+        notificationSchedulerProvider.overrideWithValue(mockScheduler),
       ],
     );
   }
@@ -102,8 +105,9 @@ void main() {
   group('ChickFormStatusActions - markAsWeaned', () {
     test('sets wean date and saves successfully', () async {
       final chick = _chick();
-      when(() => mockChickRepo.getById('chick-1'))
-          .thenAnswer((_) async => chick);
+      when(
+        () => mockChickRepo.getById('chick-1'),
+      ).thenAnswer((_) async => chick);
       when(() => mockChickRepo.save(any())).thenAnswer((_) async {});
 
       final container = createContainer();
@@ -118,16 +122,17 @@ void main() {
       expect(state.isSuccess, isTrue);
       expect(state.isLoading, isFalse);
 
-      final captured =
-          verify(() => mockChickRepo.save(captureAny())).captured;
+      final captured = verify(() => mockChickRepo.save(captureAny())).captured;
       final saved = captured.first as Chick;
       expect(saved.weanDate, weanDate);
+      verify(() => mockScheduler.cancelChickCareReminders('chick-1')).called(1);
     });
 
     test('uses current date when weanDate is not provided', () async {
       final chick = _chick();
-      when(() => mockChickRepo.getById('chick-1'))
-          .thenAnswer((_) async => chick);
+      when(
+        () => mockChickRepo.getById('chick-1'),
+      ).thenAnswer((_) async => chick);
       when(() => mockChickRepo.save(any())).thenAnswer((_) async {});
 
       final container = createContainer();
@@ -139,8 +144,7 @@ void main() {
           .markAsWeaned('chick-1');
       final after = DateTime.now();
 
-      final captured =
-          verify(() => mockChickRepo.save(captureAny())).captured;
+      final captured = verify(() => mockChickRepo.save(captureAny())).captured;
       final saved = captured.first as Chick;
       expect(saved.weanDate, isNotNull);
       expect(
@@ -154,8 +158,9 @@ void main() {
     });
 
     test('is a no-op when chick not found', () async {
-      when(() => mockChickRepo.getById('missing'))
-          .thenAnswer((_) async => null);
+      when(
+        () => mockChickRepo.getById('missing'),
+      ).thenAnswer((_) async => null);
 
       final container = createContainer();
       addTearDown(container.dispose);
@@ -170,8 +175,9 @@ void main() {
     });
 
     test('sets error state when getById throws', () async {
-      when(() => mockChickRepo.getById('chick-1'))
-          .thenThrow(Exception('DB error'));
+      when(
+        () => mockChickRepo.getById('chick-1'),
+      ).thenThrow(Exception('DB error'));
 
       final container = createContainer();
       addTearDown(container.dispose);
@@ -189,8 +195,9 @@ void main() {
   group('ChickFormStatusActions - markAsDeceased', () {
     test('updates health status to deceased', () async {
       final chick = _chick();
-      when(() => mockChickRepo.getById('chick-1'))
-          .thenAnswer((_) async => chick);
+      when(
+        () => mockChickRepo.getById('chick-1'),
+      ).thenAnswer((_) async => chick);
       when(() => mockChickRepo.save(any())).thenAnswer((_) async {});
 
       final container = createContainer();
@@ -201,17 +208,19 @@ void main() {
           .read(chickFormStateProvider.notifier)
           .markAsDeceased('chick-1', deathDate: deathDate);
 
-      final captured =
-          verify(() => mockChickRepo.save(captureAny())).captured;
+      final captured = verify(() => mockChickRepo.save(captureAny())).captured;
       final saved = captured.first as Chick;
       expect(saved.healthStatus, ChickHealthStatus.deceased);
       expect(saved.deathDate, deathDate);
+      verify(() => mockScheduler.cancelChickCareReminders('chick-1')).called(1);
+      verify(() => mockScheduler.cancelBandingReminders('chick-1')).called(1);
     });
 
     test('uses current date when deathDate is not provided', () async {
       final chick = _chick();
-      when(() => mockChickRepo.getById('chick-1'))
-          .thenAnswer((_) async => chick);
+      when(
+        () => mockChickRepo.getById('chick-1'),
+      ).thenAnswer((_) async => chick);
       when(() => mockChickRepo.save(any())).thenAnswer((_) async {});
 
       final container = createContainer();
@@ -221,16 +230,16 @@ void main() {
           .read(chickFormStateProvider.notifier)
           .markAsDeceased('chick-1');
 
-      final captured =
-          verify(() => mockChickRepo.save(captureAny())).captured;
+      final captured = verify(() => mockChickRepo.save(captureAny())).captured;
       final saved = captured.first as Chick;
       expect(saved.healthStatus, ChickHealthStatus.deceased);
       expect(saved.deathDate, isNotNull);
     });
 
     test('is a no-op when chick not found', () async {
-      when(() => mockChickRepo.getById('missing'))
-          .thenAnswer((_) async => null);
+      when(
+        () => mockChickRepo.getById('missing'),
+      ).thenAnswer((_) async => null);
 
       final container = createContainer();
       addTearDown(container.dispose);
@@ -245,10 +254,10 @@ void main() {
     });
 
     test('sets error when save fails', () async {
-      when(() => mockChickRepo.getById('chick-1'))
-          .thenAnswer((_) async => _chick());
-      when(() => mockChickRepo.save(any()))
-          .thenThrow(Exception('Save failed'));
+      when(
+        () => mockChickRepo.getById('chick-1'),
+      ).thenAnswer((_) async => _chick());
+      when(() => mockChickRepo.save(any())).thenThrow(Exception('Save failed'));
 
       final container = createContainer();
       addTearDown(container.dispose);
@@ -311,8 +320,9 @@ void main() {
       expect(state.isLoading, isFalse);
 
       // Verify bird was created
-      final birdCaptures =
-          verify(() => mockBirdRepo.save(captureAny())).captured;
+      final birdCaptures = verify(
+        () => mockBirdRepo.save(captureAny()),
+      ).captured;
       final savedBird = birdCaptures.first as Bird;
       expect(savedBird.name, 'Pamuk');
       expect(savedBird.gender, BirdGender.female);
@@ -322,11 +332,55 @@ void main() {
       expect(savedBird.status, BirdStatus.alive);
 
       // Verify chick was updated with birdId
-      final chickCaptures =
-          verify(() => mockChickRepo.save(captureAny())).captured;
+      final chickCaptures = verify(
+        () => mockChickRepo.save(captureAny()),
+      ).captured;
       final updatedChick = chickCaptures.first as Chick;
       expect(updatedChick.birdId, isNotNull);
       expect(updatedChick.weanDate, isNotNull);
+      verify(() => mockScheduler.cancelChickCareReminders(chick.id)).called(1);
+      verify(() => mockScheduler.cancelBandingReminders(chick.id)).called(1);
+    });
+
+    test(
+      'does not create duplicate bird when chick is already promoted',
+      () async {
+        final chick = _chick(eggId: null, birdId: 'existing-bird');
+
+        final container = createContainer();
+        addTearDown(container.dispose);
+
+        await container
+            .read(chickFormStateProvider.notifier)
+            .promoteToBird(chick);
+
+        final state = container.read(chickFormStateProvider);
+        expect(state.isSuccess, isTrue);
+        verifyNever(() => mockBirdRepo.save(any()));
+        verifyNever(() => mockChickRepo.save(any()));
+      },
+    );
+
+    test('rolls back created bird when linking chick fails', () async {
+      final chick = _chick(eggId: null);
+
+      when(() => mockBirdRepo.save(any())).thenAnswer((_) async {});
+      when(() => mockBirdRepo.remove(any())).thenAnswer((_) async {});
+      when(() => mockChickRepo.save(any())).thenThrow(Exception('link failed'));
+
+      final container = createContainer();
+      addTearDown(container.dispose);
+
+      await container
+          .read(chickFormStateProvider.notifier)
+          .promoteToBird(chick);
+
+      final savedBird =
+          verify(() => mockBirdRepo.save(captureAny())).captured.single as Bird;
+      verify(() => mockBirdRepo.remove(savedBird.id)).called(1);
+      final state = container.read(chickFormStateProvider);
+      expect(state.isSuccess, isFalse);
+      expect(state.error, isNotNull);
     });
 
     test('promotes chick without egg (no parent resolution)', () async {
@@ -345,8 +399,9 @@ void main() {
       final state = container.read(chickFormStateProvider);
       expect(state.isSuccess, isTrue);
 
-      final birdCaptures =
-          verify(() => mockBirdRepo.save(captureAny())).captured;
+      final birdCaptures = verify(
+        () => mockBirdRepo.save(captureAny()),
+      ).captured;
       final savedBird = birdCaptures.first as Bird;
       expect(savedBird.fatherId, isNull);
       expect(savedBird.motherId, isNull);
@@ -388,8 +443,9 @@ void main() {
           breedingPairId: 'pair-missing',
         ),
       );
-      when(() => mockBreedingPairRepo.getById('pair-missing'))
-          .thenAnswer((_) async => null);
+      when(
+        () => mockBreedingPairRepo.getById('pair-missing'),
+      ).thenAnswer((_) async => null);
 
       final container = createContainer();
       addTearDown(container.dispose);
@@ -398,8 +454,9 @@ void main() {
           .read(chickFormStateProvider.notifier)
           .promoteToBird(chick);
 
-      final birdCaptures =
-          verify(() => mockBirdRepo.save(captureAny())).captured;
+      final birdCaptures = verify(
+        () => mockBirdRepo.save(captureAny()),
+      ).captured;
       final savedBird = birdCaptures.first as Bird;
       expect(savedBird.fatherId, isNull);
       expect(savedBird.motherId, isNull);
@@ -419,8 +476,9 @@ void main() {
           .read(chickFormStateProvider.notifier)
           .promoteToBird(chick);
 
-      final chickCaptures =
-          verify(() => mockChickRepo.save(captureAny())).captured;
+      final chickCaptures = verify(
+        () => mockChickRepo.save(captureAny()),
+      ).captured;
       final updatedChick = chickCaptures.first as Chick;
       expect(updatedChick.weanDate, existingWeanDate);
     });

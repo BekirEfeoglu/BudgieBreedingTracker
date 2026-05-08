@@ -129,7 +129,7 @@ void main() {
     when(() => pairRepo.watchAll(any())).thenAnswer((_) => Stream.value(pairs));
     when(
       () => pairRepo.watchActive(any()),
-    ).thenAnswer((_) => Stream.value([pairs.first]));
+    ).thenAnswer((_) => Stream.value([pairs[0], pairs[1]]));
     when(() => birdRepo.watchAll(any())).thenAnswer(
       (_) => Stream.value([
         _bird(id: 'm1', name: 'Apollo'),
@@ -179,7 +179,7 @@ void main() {
         activeBreedingPairsProvider(userId).future,
       );
 
-      expect(result.map((e) => e.id), ['p1']);
+      expect(result.map((e) => e.id), ['p1', 'p2']);
       verify(() => pairRepo.watchActive(userId)).called(1);
     });
   });

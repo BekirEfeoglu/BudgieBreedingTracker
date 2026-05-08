@@ -45,6 +45,7 @@ void main() {
   setUpAll(() {
     // deleteStaleErrors uses Duration parameter — fallback required for any()
     registerFallbackValue(Duration.zero);
+    registerFallbackValue(sync_model.SyncStatus.pending);
   });
 
   late MockSyncMetadataDao mockSyncMetadataDao;
@@ -60,6 +61,9 @@ void main() {
     mockSyncMetadataRepository = MockSyncMetadataRepository();
     mockBirdRepository = MockBirdRepository();
     mockProfileRepository = MockProfileRepository();
+    when(
+      () => mockSyncMetadataDao.updateStatus(any(), any()),
+    ).thenAnswer((_) async {});
   });
 
   SyncErrorHandler buildHandler() {
@@ -205,6 +209,12 @@ void main() {
       handler = buildHandler();
       await handler.retryFailedRecords(_userId);
 
+      verify(
+        () => mockSyncMetadataDao.updateStatus(
+          '1',
+          sync_model.SyncStatus.pending,
+        ),
+      ).called(1);
       verify(() => mockBirdRepository.pushAll(_userId)).called(1);
     });
 

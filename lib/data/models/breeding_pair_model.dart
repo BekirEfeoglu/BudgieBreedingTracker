@@ -11,7 +11,7 @@ abstract class BreedingPair with _$BreedingPair {
     required String id,
     required String userId,
     @Default(BreedingStatus.active)
-    @JsonKey(unknownEnumValue: BreedingStatus.active)
+    @JsonKey(unknownEnumValue: BreedingStatus.unknown)
     BreedingStatus status,
     String? maleId,
     String? femaleId,

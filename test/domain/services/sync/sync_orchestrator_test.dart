@@ -60,6 +60,7 @@ void main() {
 
   setUpAll(() {
     registerFallbackValue(const Duration(hours: 1));
+    registerFallbackValue(sync_model.SyncStatus.pending);
   });
 
   late MockBirdRepository mockBirdRepository;
@@ -304,6 +305,9 @@ void main() {
     mockNotificationProcessor = MockNotificationProcessor();
 
     when(() => mockNotificationProcessor.processAll()).thenAnswer((_) async {});
+    when(
+      () => mockSyncMetadataDao.updateStatus(any(), any()),
+    ).thenAnswer((_) async {});
 
     stubRepositoryCalls();
   });

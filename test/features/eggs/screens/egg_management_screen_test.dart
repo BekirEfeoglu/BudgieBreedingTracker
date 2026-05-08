@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -96,6 +97,36 @@ void main() {
   }
 
   group('EggManagementScreen', () {
+    test('guards egg actions after async dialogs', () {
+      final screenSource = File(
+        'lib/features/eggs/screens/egg_management_screen.dart',
+      ).readAsStringSync();
+      final sheetSource = File(
+        'lib/features/eggs/screens/egg_management_add_sheet.dart',
+      ).readAsStringSync();
+
+      expect(
+        screenSource,
+        matches(
+          RegExp(
+            r'final newStatus = await showEggStatusUpdateSheet[\s\S]*?'
+            r'if \(!context\.mounted\) return;[\s\S]*?'
+            r'ref\s*\.\s*read\(eggActionsProvider\.notifier\)',
+          ),
+        ),
+      );
+      expect(
+        sheetSource,
+        matches(
+          RegExp(
+            r'final confirmed = await showConfirmDialog[\s\S]*?'
+            r'if \(!context\.mounted\) return;[\s\S]*?'
+            r'if \(confirmed == true\)',
+          ),
+        ),
+      );
+    });
+
     testWidgets('shows loading while incubations load', (tester) async {
       // Use a never-completing future to keep loading state
       await tester.pumpWidget(

@@ -15,7 +15,7 @@ abstract class Egg with _$Egg {
     required DateTime layDate,
     required String userId,
     @Default(EggStatus.laid)
-    @JsonKey(unknownEnumValue: EggStatus.laid)
+    @JsonKey(unknownEnumValue: EggStatus.unknown)
     EggStatus status,
     String? clutchId,
     String? incubationId,
@@ -66,4 +66,8 @@ extension EggX on Egg {
   bool get isFertile =>
       status == EggStatus.fertile || status == EggStatus.hatched;
   bool get isIncubating => status == EggStatus.incubating;
+  bool get isActiveIncubationEgg =>
+      status == EggStatus.incubating ||
+      (incubationId != null &&
+          (status == EggStatus.laid || status == EggStatus.fertile));
 }

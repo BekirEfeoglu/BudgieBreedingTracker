@@ -165,7 +165,7 @@ class ClutchRepository extends BaseRepository<Clutch>
     int orphansCleaned = 0;
     final tablePending = await _syncDao.getPendingByTable(userId, _table);
     for (final meta in tablePending) {
-      final item = await _localDao.getById(meta.recordId ?? '');
+      final item = await _localDao.getByIdIncludingDeleted(meta.recordId ?? '');
       if (item == null) {
         AppLogger.warning(
           '[ClutchRepo] Orphan sync_metadata cleaned: ${meta.recordId}',

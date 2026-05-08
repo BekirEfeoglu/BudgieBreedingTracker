@@ -38,9 +38,17 @@ class HealthRecordsDao extends DatabaseAccessor<AppDatabase>
 
   /// Gets a single health record by id.
   Future<HealthRecord?> getById(String id) async {
-    final row = await (select(healthRecordsTable)..where(
-      (t) => t.id.equals(id) & t.isDeleted.equals(false),
-    )).getSingleOrNull();
+    final row =
+        await (select(healthRecordsTable)
+              ..where((t) => t.id.equals(id) & t.isDeleted.equals(false)))
+            .getSingleOrNull();
+    return row?.toModel();
+  }
+
+  Future<HealthRecord?> getByIdIncludingDeleted(String id) async {
+    final row = await (select(
+      healthRecordsTable,
+    )..where((t) => t.id.equals(id))).getSingleOrNull();
     return row?.toModel();
   }
 

@@ -32,6 +32,7 @@ Detaylı liste: ai-workflow.md § Quality Gates (canonical).
 - [ ] Yeni `*Repository` offline-first mi? Drift table + DAO + SyncMetadata var mı?
 - [ ] Online-only ise `*RemoteService` / `*OnlineSource` adı kullanılıyor mu? (data-layer.md)
 - [ ] Yeni shared widget gerekiyor mu, yoksa mevcut biri mi? (`lib/core/widgets/`)
+- [ ] Üreme/Yumurta değişikliği varsa lifecycle, rollback, bildirim/takvim yan etkileri `breeding-eggs.md` ile uyumlu mu?
 
 ### 2. Anti-Pattern Taraması
 24 kuralın spot-check'i:

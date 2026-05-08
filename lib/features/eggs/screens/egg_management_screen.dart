@@ -18,8 +18,9 @@ import 'package:budgie_breeding_tracker/domain/services/incubation/incubation_ca
 import 'package:budgie_breeding_tracker/data/providers/breeding_detail_stream_providers.dart';
 import 'package:budgie_breeding_tracker/features/eggs/providers/egg_providers.dart';
 import 'package:budgie_breeding_tracker/core/providers/action_feedback_providers.dart';
-import 'package:budgie_breeding_tracker/shared/widgets/eggs.dart';
 import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
+import 'package:budgie_breeding_tracker/shared/widgets/eggs.dart';
+import 'package:budgie_breeding_tracker/router/route_names.dart';
 
 part 'egg_management_add_sheet.dart';
 
@@ -99,7 +100,7 @@ class _EggManagementContent extends ConsumerWidget {
       if (state.chickCreated) {
         ActionFeedbackService.show(
           'eggs.chick_created_from_egg'.tr(),
-          actionRoute: '/chicks',
+          actionRoute: AppRoutes.chicks,
           actionLabel: 'eggs.go_to_chicks'.tr(),
         );
       }
@@ -157,6 +158,7 @@ class _EggManagementContent extends ConsumerWidget {
                             context,
                             egg,
                           );
+                          if (!context.mounted) return;
                           if (newStatus != null) {
                             ref
                                 .read(eggActionsProvider.notifier)

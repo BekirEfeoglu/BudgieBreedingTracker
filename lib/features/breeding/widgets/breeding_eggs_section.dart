@@ -9,12 +9,14 @@ import 'package:budgie_breeding_tracker/core/enums/egg_enums.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
+import 'package:budgie_breeding_tracker/core/widgets/error_state.dart';
 import 'package:budgie_breeding_tracker/domain/services/incubation/incubation_calculator.dart';
+import 'package:budgie_breeding_tracker/domain/services/eggs/egg_actions_providers.dart';
 import 'package:budgie_breeding_tracker/features/breeding/widgets/milestone_timeline.dart';
-import 'package:budgie_breeding_tracker/shared/widgets/eggs.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_detail_providers.dart';
-import 'package:budgie_breeding_tracker/shared/providers/eggs.dart';
 import 'package:budgie_breeding_tracker/core/providers/action_feedback_providers.dart';
+import 'package:budgie_breeding_tracker/shared/widgets/eggs.dart';
+import 'package:budgie_breeding_tracker/router/route_names.dart';
 
 class BreedingEggsSection extends ConsumerWidget {
   final String incubationId;
@@ -47,7 +49,7 @@ class BreedingEggsSection extends ConsumerWidget {
       if (state.chickCreated) {
         ActionFeedbackService.show(
           'eggs.chick_created_from_egg'.tr(),
-          actionRoute: '/chicks',
+          actionRoute: AppRoutes.chicks,
           actionLabel: 'eggs.go_to_chicks'.tr(),
         );
       }
@@ -63,7 +65,9 @@ class BreedingEggsSection extends ConsumerWidget {
             children: [
               Text('breeding.eggs'.tr(), style: theme.textTheme.titleMedium),
               TextButton.icon(
-                onPressed: () => context.push('/breeding/$pairId/eggs'),
+                onPressed: () => context.push(
+                  AppRoutes.breedingEggs.replaceFirst(':id', pairId),
+                ),
                 icon: const AppIcon(AppIcons.add, size: 18),
                 label: Text('breeding.manage'.tr()),
               ),
@@ -75,7 +79,11 @@ class BreedingEggsSection extends ConsumerWidget {
             padding: AppSpacing.screenPadding,
             child: LinearProgressIndicator(),
           ),
-          error: (_, __) => const SizedBox.shrink(),
+          error: (_, __) => ErrorState(
+            message: 'common.data_load_error'.tr(),
+            onRetry: () =>
+                ref.invalidate(eggsByIncubationProvider(incubationId)),
+          ),
           data: (eggs) {
             if (eggs.isEmpty) {
               return Padding(
@@ -148,6 +156,7 @@ class BreedingEggsSection extends ConsumerWidget {
                           context,
                           egg,
                         );
+                        if (!context.mounted) return;
                         if (newStatus != null) {
                           ref
                               .read(eggActionsProvider.notifier)

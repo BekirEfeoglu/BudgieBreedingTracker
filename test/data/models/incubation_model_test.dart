@@ -88,14 +88,14 @@ void main() {
         expect(incubation.endDate, isNull);
       });
 
-      test('falls back to active for unknown status', () {
+      test('falls back to unknown for unknown status', () {
         final incubation = Incubation.fromJson({
           'id': 'inc-1',
           'user_id': 'user-1',
           'status': 'not-a-real-status',
         });
 
-        expect(incubation.status, IncubationStatus.active);
+        expect(incubation.status, IncubationStatus.unknown);
       });
 
       test('preserves unknown species instead of falling back to budgie', () {

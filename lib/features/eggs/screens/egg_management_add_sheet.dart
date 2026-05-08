@@ -127,6 +127,7 @@ Future<void> _confirmDeleteEgg(
     confirmLabel: 'common.delete'.tr(),
     isDestructive: true,
   );
+  if (!context.mounted) return;
   if (confirmed == true) {
     ref.read(eggActionsProvider.notifier).deleteEgg(egg.id);
   }

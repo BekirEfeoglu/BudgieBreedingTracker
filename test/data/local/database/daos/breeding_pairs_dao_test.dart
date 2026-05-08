@@ -204,7 +204,7 @@ void main() {
   });
 
   group('watchActive', () {
-    test('returns only active status pairs', () async {
+    test('returns active and ongoing status pairs', () async {
       await dao.insertItem(makePair(id: 'bp-1', status: BreedingStatus.active));
       await dao.insertItem(
         makePair(id: 'bp-2', status: BreedingStatus.ongoing),
@@ -214,8 +214,10 @@ void main() {
       );
 
       final results = await dao.watchActive(userId).first;
-      expect(results.length, equals(1));
-      expect(results.first.status, equals(BreedingStatus.active));
+      expect(results.map((pair) => pair.status), [
+        BreedingStatus.active,
+        BreedingStatus.ongoing,
+      ]);
     });
   });
 

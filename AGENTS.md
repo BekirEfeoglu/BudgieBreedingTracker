@@ -11,7 +11,7 @@ Stack: Flutter/Dart, Riverpod 3, GoRouter 17, Drift, Supabase, Freezed, easy_loc
 - Reply to the user in Turkish unless they explicitly ask for another language.
 - Be direct and implementation-focused.
 - If the worktree is dirty, preserve existing changes and avoid unrelated rewrites.
-- Treat `AGENTS.md` as the compact agent contract. Use `CLAUDE.md` and `.claude/rules/*.md` as the detailed development rulebook when a task touches architecture, data, UI, security, CI, or release flow.
+- Treat `AGENTS.md` as the compact agent contract. Use `CLAUDE.md` and `.claude/rules/*.md` as the detailed development rulebook when a task touches architecture, data, UI, security, CI, release flow, or domain-specific breeding/egg lifecycle behavior.
 
 ## Architecture Rules
 
@@ -32,6 +32,18 @@ Stack: Flutter/Dart, Riverpod 3, GoRouter 17, Drift, Supabase, Freezed, easy_loc
 - Do not send `created_at` or `updated_at` to Supabase. Use the existing `.toSupabase()` style.
 - Use `SupabaseConstants` for table, bucket, and column names.
 - Do not edit generated Drift, Freezed, JSON, or Riverpod files by hand. Change the source file and regenerate.
+
+## Breeding And Egg Rules
+
+- Follow `.claude/rules/breeding-eggs.md` when touching breeding pairs, incubations, clutches, eggs, chicks, reminders, or hatch flows.
+- Preserve the canonical lifecycle: `Bird -> BreedingPair -> Incubation -> Clutch -> Egg -> Chick`.
+- Validate breeding pair birds before writes: both birds must exist, be alive, have the expected genders, and share the same species.
+- Incubation species and hatch expectations must come from validated bird species and incubation helpers, never hardcoded default day counts.
+- Breeding creation is a logical atomic operation: if incubation save fails after pair save, rollback the pair.
+- Destructive parent flows must clean up or close related incubations/eggs and cancel related notification/calendar work before reporting success.
+- Notification and calendar generation are side effects after local persistence; optional side-effect failures should surface a localized warning without undoing the primary mutation.
+- Hatched eggs should auto-create at most one chick, preserving egg context (`userId`, `eggId`, `clutchId`, `hatchDate`).
+- Guard create/update/delete actions against duplicate submits while notifier state is loading.
 
 ## Riverpod Rules
 
@@ -96,6 +108,7 @@ Stack: Flutter/Dart, Riverpod 3, GoRouter 17, Drift, Supabase, Freezed, easy_loc
 
 - Tests should mirror the production path under `test/`.
 - Add or update tests for changed behavior, especially providers, repositories, services, route guards, and forms.
+- For breeding/egg changes, cover lifecycle transitions, rollback/error paths, duplicate submit guards, side-effect warnings, and notification cleanup.
 - Use existing helpers from `test/helpers/` before adding new test infrastructure.
 - Prefer behavior assertions over brittle implementation details.
 - Golden tests belong under `test/golden/` and should be tagged `golden`.

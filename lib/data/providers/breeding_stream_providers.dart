@@ -16,7 +16,7 @@ final breedingPairsStreamProvider =
       return repo.watchAll(userId);
     });
 
-/// Active breeding pairs only (live stream).
+/// Active + ongoing breeding pairs only (live stream).
 final activeBreedingPairsProvider =
     StreamProvider.family<List<BreedingPair>, String>((ref, userId) {
       final repo = ref.watch(breedingPairRepositoryProvider);
@@ -68,8 +68,10 @@ final eggsByIncubationMapProvider =
 
 /// Bird ID → lowercased name lookup (derived from birdsStreamProvider).
 /// Separated to avoid rebuilding the map on every search/filter change.
-final birdNameMapProvider =
-    Provider.family<Map<String, String>, String>((ref, userId) {
-      final birds = ref.watch(birdsStreamProvider(userId)).value ?? <Bird>[];
-      return {for (final bird in birds) bird.id: bird.name.toLowerCase()};
-    });
+final birdNameMapProvider = Provider.family<Map<String, String>, String>((
+  ref,
+  userId,
+) {
+  final birds = ref.watch(birdsStreamProvider(userId)).value ?? <Bird>[];
+  return {for (final bird in birds) bird.id: bird.name.toLowerCase()};
+});

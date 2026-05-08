@@ -17,7 +17,7 @@ abstract class Incubation with _$Incubation {
     @JsonKey(unknownEnumValue: Species.unknown)
     Species species,
     @Default(IncubationStatus.active)
-    @JsonKey(unknownEnumValue: IncubationStatus.active)
+    @JsonKey(unknownEnumValue: IncubationStatus.unknown)
     IncubationStatus status,
     @Default(1) int version,
     String? clutchId,

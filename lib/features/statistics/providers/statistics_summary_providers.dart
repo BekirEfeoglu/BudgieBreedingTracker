@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/chick_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/egg_enums.dart';
+import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
 import 'package:budgie_breeding_tracker/data/models/statistics_models.dart';
 import 'package:budgie_breeding_tracker/data/providers/bird_stream_providers.dart';
 import 'package:budgie_breeding_tracker/data/providers/chick_stream_providers.dart';
@@ -24,8 +25,16 @@ final summaryStatsProvider = Provider.family<AsyncValue<SummaryStats>, String>((
   final healthCount = ref.watch(healthRecordCountProvider(userId));
 
   // Fast-fail on any error
-  for (final a in [birdCount, activeBreedingCount, healthCount, eggsAsync, chicksAsync]) {
-    if (a.hasError) return AsyncError(a.error!, a.stackTrace ?? StackTrace.empty);
+  for (final a in [
+    birdCount,
+    activeBreedingCount,
+    healthCount,
+    eggsAsync,
+    chicksAsync,
+  ]) {
+    if (a.hasError) {
+      return AsyncError(a.error!, a.stackTrace ?? StackTrace.empty);
+    }
   }
 
   // Loading if any provider hasn't resolved
@@ -40,16 +49,14 @@ final summaryStatsProvider = Provider.family<AsyncValue<SummaryStats>, String>((
   final eggs = eggsAsync.requireValue;
   final chicks = chicksAsync.requireValue;
 
-  final incubatingEggs =
-      eggs.where((e) => e.status == EggStatus.incubating).length;
+  final incubatingEggs = eggs.where((e) => e.isActiveIncubationEgg).length;
 
   final fertile = eggs
       .where(
         (e) => e.status == EggStatus.fertile || e.status == EggStatus.hatched,
       )
       .length;
-  final infertile =
-      eggs.where((e) => e.status == EggStatus.infertile).length;
+  final infertile = eggs.where((e) => e.status == EggStatus.infertile).length;
   final checked = fertile + infertile;
   // fertilityRate is a 0.0-1.0 ratio (not a percentage).
   // UI widgets multiply by 100 for display where needed.
@@ -61,8 +68,9 @@ final summaryStatsProvider = Provider.family<AsyncValue<SummaryStats>, String>((
       .length;
   // chickSurvivalRate is a 0.0-1.0 ratio (not a percentage).
   // UI widgets multiply by 100 for display where needed.
-  final survivalRate =
-      totalChicks > 0 ? (totalChicks - deceased) / totalChicks : 0.0;
+  final survivalRate = totalChicks > 0
+      ? (totalChicks - deceased) / totalChicks
+      : 0.0;
 
   return AsyncData(
     SummaryStats(
@@ -103,9 +111,7 @@ final ageDistributionProvider =
 
       return birdsAsync.whenData((birds) {
         final now = DateTime.now();
-        final groups = <String, int>{
-          for (final key in ageBracketKeys) key: 0,
-        };
+        final groups = <String, int>{for (final key in ageBracketKeys) key: 0};
 
         for (final bird in birds) {
           final birth = bird.birthDate;
