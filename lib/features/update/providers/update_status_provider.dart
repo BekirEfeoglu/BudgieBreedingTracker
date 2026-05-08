@@ -35,7 +35,10 @@ final appVersionInfoProvider = FutureProvider<AppVersion?>((ref) async {
 final updateStatusProvider = FutureProvider<UpdateStatus>((ref) async {
   try {
     final currentBuild = await ref.watch(currentBuildNumberProvider.future);
-    final remote = await ref.watch(appVersionInfoProvider.future);
+    final platform = ref.watch(currentPlatformProvider);
+    if (platform == 'unknown') return UpdateStatus.none;
+    final source = ref.watch(appVersionRemoteSourceProvider);
+    final remote = await source.fetchForPlatform(platform);
     return UpdateCheckService.compare(
       currentBuild: currentBuild,
       remote: remote,

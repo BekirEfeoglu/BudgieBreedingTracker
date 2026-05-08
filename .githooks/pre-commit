@@ -47,9 +47,7 @@ if [ -n "$CHANGED_DART" ]; then
   if ! flutter --version &>/dev/null; then
     echo "  [UYARI] flutter komutu bulunamadi. Analyze atlaniyor."
   else
-    flutter analyze --no-fatal-infos \
-      --dart-define=SUPABASE_URL=https://placeholder.supabase.co \
-      --dart-define=SUPABASE_ANON_KEY=placeholder_key
+    flutter analyze --no-fatal-infos
     echo "==> Flutter analyze basarili."
   fi
 fi

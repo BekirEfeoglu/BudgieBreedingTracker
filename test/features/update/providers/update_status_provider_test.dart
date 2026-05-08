@@ -52,10 +52,7 @@ void main() {
     ).thenAnswer((_) async => remoteVersion);
 
     final c = makeContainer(currentBuild: 15);
-    expect(
-      await c.read(updateStatusProvider.future),
-      UpdateStatus.optional,
-    );
+    expect(await c.read(updateStatusProvider.future), UpdateStatus.optional);
   });
 
   test('returns forced when below min_supported', () async {
@@ -64,14 +61,38 @@ void main() {
     ).thenAnswer((_) async => remoteVersion);
 
     final c = makeContainer(currentBuild: 5);
-    expect(
-      await c.read(updateStatusProvider.future),
-      UpdateStatus.forced,
-    );
+    expect(await c.read(updateStatusProvider.future), UpdateStatus.forced);
   });
 
   test('returns none when remote returns null (fail-open)', () async {
     when(() => source.fetchForPlatform('ios')).thenAnswer((_) async => null);
+
+    final c = makeContainer(currentBuild: 1);
+    expect(await c.read(updateStatusProvider.future), UpdateStatus.none);
+  });
+
+  test('returns none when current platform is unknown', () async {
+    final container = ProviderContainer(
+      overrides: [
+        appVersionRemoteSourceProvider.overrideWithValue(source),
+        currentBuildNumberProvider.overrideWith((_) async => 1),
+        currentPlatformProvider.overrideWithValue('unknown'),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    expect(await container.read(appVersionInfoProvider.future), isNull);
+    expect(
+      await container.read(updateStatusProvider.future),
+      UpdateStatus.none,
+    );
+    verifyNever(() => source.fetchForPlatform(any()));
+  });
+
+  test('returns none when remote source throws (fail-open)', () async {
+    when(
+      () => source.fetchForPlatform('ios'),
+    ).thenAnswer((_) async => throw Exception('network down'));
 
     final c = makeContainer(currentBuild: 1);
     expect(await c.read(updateStatusProvider.future), UpdateStatus.none);
