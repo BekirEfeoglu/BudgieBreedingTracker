@@ -37,10 +37,10 @@ class ChickCard extends ConsumerWidget {
     final age = chick.age;
     final stage = chick.developmentStage;
     final stageColor = developmentStageColor(stage);
-    final parentsAsync = !resolveParents
-        ? const AsyncData<ChickParentsInfo?>(null)
-        : parents != null
+    final parentsAsync = parents != null
         ? AsyncValue.data(parents)
+        : !resolveParents
+        ? const AsyncData<ChickParentsInfo?>(null)
         : ref.watch(chickParentsProvider(chick.eggId));
 
     return Card(

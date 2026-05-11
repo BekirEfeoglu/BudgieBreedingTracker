@@ -68,7 +68,9 @@ void main() {
           recentChicksProvider(
             'test-user',
           ).overrideWith((_) => Stream.value([])),
-          chickParentsByEggProvider('test-user').overrideWith((_) async => {}),
+          chickParentsByEggProvider(
+            'test-user',
+          ).overrideWith((_) => Stream.value({})),
           activeBreedingsForDashboardProvider(
             'test-user',
           ).overrideWith((_) => Stream.value([])),

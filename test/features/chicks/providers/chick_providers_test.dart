@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -38,6 +40,11 @@ Chick _chick({
     createdAt: DateTime(2024, 1, 1),
     updatedAt: DateTime(2024, 1, 1),
   );
+}
+
+Future<void> _flushEventQueue() async {
+  await Future<void>.delayed(Duration.zero);
+  await Future<void>.delayed(Duration.zero);
 }
 
 void main() {
@@ -178,21 +185,117 @@ void main() {
 
   group('chick parent providers', () {
     test(
+      'batched lookup updates when related records arrive after the egg',
+      () async {
+        final eggController = StreamController<List<Egg>>.broadcast();
+        final incubationController =
+            StreamController<List<Incubation>>.broadcast();
+        final clutchController = StreamController<List<Clutch>>.broadcast();
+        final pairController = StreamController<List<BreedingPair>>.broadcast();
+        final birdController = StreamController<List<Bird>>.broadcast();
+        addTearDown(() async {
+          await eggController.close();
+          await incubationController.close();
+          await clutchController.close();
+          await pairController.close();
+          await birdController.close();
+        });
+
+        when(
+          () => eggRepo.watchAll('user-1'),
+        ).thenAnswer((_) => eggController.stream);
+        when(
+          () => incubationRepo.watchAll('user-1'),
+        ).thenAnswer((_) => incubationController.stream);
+        when(
+          () => clutchRepo.watchAll('user-1'),
+        ).thenAnswer((_) => clutchController.stream);
+        when(
+          () => breedingPairRepo.watchAll('user-1'),
+        ).thenAnswer((_) => pairController.stream);
+        when(
+          () => birdRepo.watchAll('user-1'),
+        ).thenAnswer((_) => birdController.stream);
+
+        final container = makeContainer();
+        addTearDown(container.dispose);
+        container.listen(chickParentsByEggProvider('user-1'), (_, __) {});
+        await _flushEventQueue();
+
+        eggController.add([
+          Egg(
+            id: 'egg-1',
+            userId: 'user-1',
+            incubationId: 'inc-1',
+            layDate: DateTime(2024, 1),
+          ),
+        ]);
+        incubationController.add(const []);
+        clutchController.add(const []);
+        pairController.add(const []);
+        birdController.add(const []);
+        await _flushEventQueue();
+
+        incubationController.add(const [
+          Incubation(
+            id: 'inc-1',
+            userId: 'user-1',
+            species: Species.canary,
+            breedingPairId: 'pair-1',
+          ),
+        ]);
+        pairController.add(const [
+          BreedingPair(
+            id: 'pair-1',
+            userId: 'user-1',
+            maleId: 'male-1',
+            femaleId: 'female-1',
+            cageNumber: 'A-17',
+          ),
+        ]);
+        birdController.add(const [
+          Bird(
+            id: 'male-1',
+            name: 'Mavi',
+            gender: BirdGender.male,
+            userId: 'user-1',
+          ),
+          Bird(
+            id: 'female-1',
+            name: 'Sarı',
+            gender: BirdGender.female,
+            userId: 'user-1',
+          ),
+        ]);
+        await _flushEventQueue();
+
+        final result = container
+            .read(chickParentsByEggProvider('user-1'))
+            .requireValue;
+        expect(result['egg-1']?.maleName, 'Mavi');
+        expect(result['egg-1']?.femaleName, 'Sarı');
+        expect(result['egg-1']?.cageNumber, 'A-17');
+      },
+    );
+
+    test(
       'batched lookup resolves parents and cage through clutch fallback',
       () async {
-        when(() => eggRepo.getAll('user-1')).thenAnswer(
-          (_) async => [
+        when(() => eggRepo.watchAll('user-1')).thenAnswer(
+          (_) => Stream.value([
             Egg(
               id: 'egg-1',
               userId: 'user-1',
               clutchId: 'clutch-1',
               layDate: DateTime(2024, 1),
             ),
-          ],
+          ]),
         );
-        when(() => incubationRepo.getAll('user-1')).thenAnswer((_) async => []);
-        when(() => clutchRepo.getAll('user-1')).thenAnswer(
-          (_) async => const [
+        when(
+          () => incubationRepo.watchAll('user-1'),
+        ).thenAnswer((_) => Stream.value([]));
+        when(() => clutchRepo.watchAll('user-1')).thenAnswer(
+          (_) => Stream.value(const [
             Clutch(
               id: 'clutch-1',
               userId: 'user-1',
@@ -200,10 +303,10 @@ void main() {
               maleBirdId: 'male-1',
               femaleBirdId: 'female-1',
             ),
-          ],
+          ]),
         );
-        when(() => breedingPairRepo.getAll('user-1')).thenAnswer(
-          (_) async => const [
+        when(() => breedingPairRepo.watchAll('user-1')).thenAnswer(
+          (_) => Stream.value(const [
             BreedingPair(
               id: 'pair-1',
               userId: 'user-1',
@@ -211,10 +314,10 @@ void main() {
               femaleId: 'female-1',
               cageNumber: 'A-17',
             ),
-          ],
+          ]),
         );
-        when(() => birdRepo.getAll('user-1')).thenAnswer(
-          (_) async => const [
+        when(() => birdRepo.watchAll('user-1')).thenAnswer(
+          (_) => Stream.value(const [
             Bird(
               id: 'male-1',
               name: 'Mavi',
@@ -227,12 +330,13 @@ void main() {
               gender: BirdGender.female,
               userId: 'user-1',
             ),
-          ],
+          ]),
         );
 
         final container = makeContainer();
         addTearDown(container.dispose);
 
+        container.listen(chickParentsByEggProvider('user-1'), (_, __) {});
         final result = await container.read(
           chickParentsByEggProvider('user-1').future,
         );

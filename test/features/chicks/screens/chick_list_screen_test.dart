@@ -96,7 +96,9 @@ void main() {
             'test-user',
           ).overrideWith((_) => Stream.value([])),
           chicksStreamProvider('test-user').overrideWith((_) => chicksStream),
-          chickParentsByEggProvider('test-user').overrideWith((_) async => {}),
+          chickParentsByEggProvider(
+            'test-user',
+          ).overrideWith((_) => Stream.value({})),
           chickParentsProvider.overrideWith((_, _) async => fallbackParents),
           adServiceProvider.overrideWithValue(_FakeAdService()),
           isPremiumProvider.overrideWithValue(true),

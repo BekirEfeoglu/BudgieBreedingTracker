@@ -253,6 +253,38 @@ void main() {
       expect(_textExceededMaxLines(tester, 'Test Dişi 1'), isFalse);
     });
 
+    testWidgets('uses provided parents when parent resolution is disabled', (
+      tester,
+    ) async {
+      final chickWithParents = Chick(
+        id: 'chick-9',
+        userId: 'user-1',
+        name: 'Yavru',
+        hatchDate: DateTime(2024, 1, 10),
+        eggId: 'egg-1',
+      );
+
+      await _pumpChickCard(
+        tester,
+        ChickCard(
+          chick: chickWithParents,
+          parents: (
+            maleName: 'Mavi',
+            femaleName: 'Sarı',
+            maleId: 'male-1',
+            femaleId: 'female-1',
+            cageNumber: 'A-17',
+          ),
+          resolveParents: false,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('A-17'), findsOneWidget);
+      expect(find.text('Mavi'), findsOneWidget);
+      expect(find.text('Sarı'), findsOneWidget);
+    });
+
     testWidgets('chick without eggId shows card without parent info', (
       tester,
     ) async {

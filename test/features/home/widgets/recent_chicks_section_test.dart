@@ -36,7 +36,9 @@ void main() {
 
     return ProviderScope(
       overrides: [
-        chickParentsByEggProvider('user-1').overrideWith((_) async => {}),
+        chickParentsByEggProvider(
+          'user-1',
+        ).overrideWith((_) => Stream.value({})),
       ],
       child: MaterialApp.router(routerConfig: router),
     );
